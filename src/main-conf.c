@@ -1080,6 +1080,18 @@ isInteger(const char *value)
 typedef int (*SET_PARAMETER)(struct Masscan *masscan, const char *name, const char *value);
 enum {CONF_OK, CONF_WARN, CONF_ERR};
 
+static int SET_stateless_banners(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+        if (masscan->is_stateless_banners || masscan->echo_all)
+            fprintf(masscan->echo, "stateless-banners = %s\n", masscan->is_stateless_banners?"true":"false");
+       return 0;
+    }
+    masscan->is_stateless_banners = parseBoolean(value);
+    return CONF_OK;
+}
+
 static int SET_arpscan(struct Masscan *masscan, const char *name, const char *value)
 {
     struct Range range;
@@ -2354,6 +2366,7 @@ struct ConfigParameter {
 };
 enum {F_NONE, F_BOOL=1, F_NUMABLE=2};
 struct ConfigParameter config_parameters[] = {
+    {"stateless-banners",SET_stateless_banners, F_BOOL, {"stateless",0}},
     {"resume-index",    SET_resume_index,       0,      {0}},
     {"resume-count",    SET_resume_count,       0,      {0}},
     {"seed",            SET_seed,               0,      {0}},
