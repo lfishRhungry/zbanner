@@ -164,4 +164,17 @@ tcp_send_RST(
     unsigned seqno_them, unsigned seqno_me
 );
 
+/**
+ * send ACK with(out) DATA in stateless-banners mode while TCP shaking
+ */
+void
+tcp_send_ACK(
+    struct TemplatePacket *templ,
+    struct stack_t *stack,
+    ipaddress ip_them, ipaddress ip_me,
+    unsigned port_them, unsigned port_me,
+    unsigned seqno_them, unsigned seqno_me,
+    const unsigned char *payload, size_t payload_length
+);
+
 #endif
