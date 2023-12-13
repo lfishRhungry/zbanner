@@ -178,4 +178,17 @@ tcp_send_ACK(
     const unsigned char *payload, size_t payload_length
 );
 
+/**
+ * send PSHACK with(out) DATA in stateless-banners mode after TCP shaking
+ */
+void
+tcp_send_PSHACK(
+    struct TemplatePacket *templ,
+    struct stack_t *stack,
+    ipaddress ip_them, ipaddress ip_me,
+    unsigned port_them, unsigned port_me,
+    unsigned seqno_them, unsigned seqno_me,
+    const unsigned char *payload, size_t payload_length
+);
+
 #endif

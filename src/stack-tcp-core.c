@@ -1275,6 +1275,63 @@ tcp_send_ACK(
     stack_transmit_packetbuffer(stack, response);
 }
 
+/***************************************************************************
+ ***************************************************************************/
+void
+tcp_send_PSHACK(
+    struct TemplatePacket *templ,
+    struct stack_t *stack,
+    ipaddress ip_them, ipaddress ip_me,
+    unsigned port_them, unsigned port_me,
+    unsigned seqno_them, unsigned seqno_me,
+    const unsigned char *payload, size_t payload_length
+)
+{
+    struct PacketBuffer *response = 0;
+    
+    LOGip(0, ip_them, port_them, "xmit PSHACK in stateless mode with DATA len=%u\n", payload_length);
+
+    /* Get a buffer for sending the response packet. This thread doesn't
+     * send the packet itself. Instead, it formats a packet, then hands
+     * that packet off to a transmit thread for later transmission. */
+    response = stack_get_packetbuffer(stack);
+    if (response == NULL) {
+        static int is_warning_printed = 0;
+        if (!is_warning_printed) {
+            LOG(0, "packet buffers empty (should be impossible)\n");
+            is_warning_printed = 1;
+        }
+        fflush(stdout);
+        pixie_usleep(100); /* no packet available */
+    }
+    if (response == NULL)
+        return;
+
+    /* Format the packet as requested. Note that there are really only
+     * four types of packets:
+     * 1. a SYN-ACK packet with no payload (0x12)
+     * 2. an ACK packet with(out) payload  (0x10)
+     * 3. a RST packet with no payload     (0x04)
+     * 4. a PSH-ACK packet WITH PAYLOAD    (0x18)
+     */
+    response->length = tcp_create_packet(
+        templ,
+        ip_them, port_them,
+        ip_me, port_me,
+        seqno_me, seqno_them,
+        0x18, /*PSHACK*/
+        payload, payload_length, /*with DATA or NOT*/
+        response->px, sizeof(response->px)
+        );
+
+
+    /* Put this buffer on the transmit queue. Remember: transmits happen
+     * from a transmit-thread only, and this function is being called
+     * from a receive-thread. Therefore, instead of transmitting ourselves,
+     * we have to queue it up for later transmission. */
+    stack_transmit_packetbuffer(stack, response);
+}
+
 
 /***************************************************************************
  * DEBUG: when printing debug messages (-d option), this prints a string
