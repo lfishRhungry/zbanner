@@ -93,6 +93,7 @@ struct Output
         struct {
             uint64_t open;
             uint64_t closed;
+            uint64_t running; /* count for ACKing our req of app-layer in stateless mode*/
             uint64_t banner;
         } tcp;
         struct {

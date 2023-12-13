@@ -19,6 +19,7 @@ enum PortStatus {
     PortStatus_Unknown,
     PortStatus_Open,
     PortStatus_Closed,
+    PortStatus_Running, /*ACK our req of app-layer in stateless mode*/
     PortStatus_Arp,
     PortStatus_Count
 
