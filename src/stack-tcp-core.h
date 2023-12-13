@@ -19,6 +19,7 @@ struct ProtocolParserStream;
 #define TCP_IS_ACK(px,i) ((TCP_FLAGS(px,i) & 0x10) == 0x10)
 #define TCP_IS_RST(px,i) ((TCP_FLAGS(px,i) & 0x4) == 0x4)
 #define TCP_IS_FIN(px,i) ((TCP_FLAGS(px,i) & 0x1) == 0x1)
+#define TCP_IS_PSHACK(px,i) ((TCP_FLAGS(px,i) & 0x18) == 0x18)
 
 
 /**

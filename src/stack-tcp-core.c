@@ -1252,17 +1252,17 @@ tcp_send_ACK(
 
     /* Format the packet as requested. Note that there are really only
      * four types of packets:
-     * 1. a SYN-ACK packet with no payload
-     * 2. an ACK packet with no payload
-     * 3. a RST packet with no payload
-     * 4. a PSH-ACK packet WITH PAYLOAD
+     * 1. a SYN-ACK packet with no payload (0x12)
+     * 2. an ACK packet with(out) payload  (0x10)
+     * 3. a RST packet with no payload     (0x04)
+     * 4. a PSH-ACK packet WITH PAYLOAD    (0x18)
      */
     response->length = tcp_create_packet(
         templ,
         ip_them, port_them,
         ip_me, port_me,
         seqno_me, seqno_them,
-        0x02, /*ACK*/
+        0x10, /*ACK*/
         payload, payload_length, /*with DATA or NOT*/
         response->px, sizeof(response->px)
         );
