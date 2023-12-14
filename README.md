@@ -594,6 +594,42 @@ a chronically slow operation on CPUs. Modern CPUs have doubled the speed
 at which they perform this calculation, making `masscan` much faster.
 
 
+# Improvements
+
+## Get banners with MASSCAN in LESSTATE
+
+Add `--stateless-banners` (`--stateless`) mode to send application-layer probes
+and obtain banners completely statelessly after the target port was identified
+open (received SYNACK).
+
+## Usage
+
+Do TCP SYN scan and get banners statelessly if ports are open:
+
+```
+masscan 10.0.0.0/8 -p80 --stateless
+```
+
+Suggest save receive packets to pcap file for analysis:
+
+```
+masscan 10.0.0.0/8 -p80 --stateless --pcap result.pcap
+```
+
+Also save status output:
+
+```
+masscan 10.0.0.0/8 -p80 --stateless --pcap result.pcap -oX result.xml
+```
+
+## note
+
+Do not use stateless-banners mode with `--banners` mode.
+
+Just support output to stdout, pcap file and XML file for now.
+
+
+
 # Authors
 
 This tool created by Robert Graham:
