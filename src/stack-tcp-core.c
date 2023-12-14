@@ -1232,7 +1232,7 @@ tcp_send_ACK(
 {
     struct PacketBuffer *response = 0;
     
-    LOGip(0, ip_them, port_them, "xmit ACK in stateless mode with DATA len=%u\n", payload_length);
+    LOGip(1, ip_them, port_them, "xmit ACK in stateless mode with DATA len=%u\n", payload_length);
 
     /* Get a buffer for sending the response packet. This thread doesn't
      * send the packet itself. Instead, it formats a packet, then hands
@@ -1289,7 +1289,7 @@ tcp_send_PSHACK(
 {
     struct PacketBuffer *response = 0;
     
-    LOGip(0, ip_them, port_them, "xmit PSHACK in stateless mode with DATA len=%u\n", payload_length);
+    LOGip(1, ip_them, port_them, "xmit PSHACK in stateless mode with DATA len=%u\n", payload_length);
 
     /* Get a buffer for sending the response packet. This thread doesn't
      * send the packet itself. Instead, it formats a packet, then hands
