@@ -642,6 +642,9 @@ This tool created by Robert Graham:
 email: robert_david_graham@yahoo.com
 twitter: @ErrataRob
 
+Stateless-banners mode support created by lfishRhungry:
+email: shineccy@aliyun.com
+
 # License
 
 Copyright (c) 2013 Robert David Graham
