@@ -1049,13 +1049,15 @@ receive_thread(void *v)
             || TCP_IS_RST(px, parsed.transport_offset)) {
             /* figure out the status */
             status = PortStatus_Unknown;
-            if (TCP_IS_SYNACK(px, parsed.transport_offset))
+            if (TCP_IS_SYNACK(px, parsed.transport_offset)) {
                 status = PortStatus_Open;
+                /*care the zero win in SYNACK*/
+                if (TCP_WIN(px, parsed.transport_offset)==0) {
+                    status = PortStatus_ZeroWin;
+                }
+            }
             if (TCP_IS_RST(px, parsed.transport_offset)) {
                 status = PortStatus_Closed;
-            }
-            if (TCP_WIN(px, parsed.transport_offset)==0) {
-                status = PortStatus_ZeroWin;
             }
 
             /* verify: syn-cookies */
@@ -1073,6 +1075,19 @@ receive_thread(void *v)
             /* keep statistics on number received */
             if (TCP_IS_SYNACK(px, parsed.transport_offset))
                 (*status_synack_count)++;
+            
+            /* Send ACK with req in stateless-banners mode*/
+            if (masscan->is_stateless_banners
+                && TCP_IS_SYNACK(px, parsed.transport_offset)
+                && status == PortStatus_Open) {
+                tcp_send_ACK(
+                    &parms->tmplset->pkts[Proto_TCP],
+                    parms->stack,
+                    ip_them, ip_me,
+                    port_them, port_me,
+                    seqno_them+1, seqno_me,
+                    "GET / HTTP 1.0\r\n\r\n", strlen("GET / HTTP 1.0\r\n\r\n"));
+            }
 
             /*
              * This is where we do the output
@@ -1091,10 +1106,9 @@ receive_thread(void *v)
             
 
             /*
-             * Send RST so other side isn't left hanging (only doing this in
-             * complete stateless mode where we aren't tracking banners)
+             * Send RST so other side isn't left hanging
              */
-            if (tcpcon == NULL && !masscan->is_noreset)
+            if (tcpcon == NULL && !masscan->is_noreset && !masscan->is_stateless_banners)
                 tcp_send_RST(
                     &parms->tmplset->pkts[Proto_TCP],
                     parms->stack,
@@ -1102,6 +1116,49 @@ receive_thread(void *v)
                     port_them, port_me,
                     0, seqno_me);
 
+        }
+
+        /*
+         * We could recv Response DATA in different TCP flags:
+         * 1.[PSH, ACK]
+         * 2.[FIN, PSH, ACK]
+         * because of possible TCP retransmission.
+         * 
+         * Try to recv all possible Response DATA to
+         * avoid packets lossing.
+         * 
+         * Note the verifying of cookies.
+         */
+        if (masscan->is_stateless_banners
+            && TCP_IS_ACK(px, parsed.transport_offset)
+            && cookie == (seqno_me - 1 - strlen("GET / HTTP 1.0\r\n\r\n"))) {
+            
+            /*May be ACK without DATA*/
+            if (!parsed.app_length)
+                continue;
+
+            output_report_status(
+                        out,
+                        global_now,
+                        PortStatus_Running,
+                        ip_them,
+                        6, /* ip proto = tcp */
+                        port_them,
+                        px[parsed.transport_offset + 13], /* tcp flags */
+                        parsed.ip_ttl,
+                        parsed.mac_src
+                        );
+
+            /*
+             * Send RST after server's response
+             */
+            if (!masscan->is_noreset)
+                tcp_send_RST(
+                    &parms->tmplset->pkts[Proto_TCP],
+                    parms->stack,
+                    ip_them, ip_me,
+                    port_them, port_me,
+                    seqno_them+strlen("GET / HTTP 1.0\r\n\r\n"), seqno_me);
         }
     }
 
