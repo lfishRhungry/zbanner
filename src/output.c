@@ -94,6 +94,8 @@ status_string(enum PortStatus status)
         case PortStatus_Open: return "open";
         case PortStatus_Closed: return "closed";
         case PortStatus_Arp: return "up";
+        case PortStatus_Running: return "running";
+        case PortStatus_ZeroWin: return "zerowin";
         default: return "unknown";
     }
 }
