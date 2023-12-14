@@ -1133,7 +1133,7 @@ receive_thread(void *v)
             && TCP_IS_ACK(px, parsed.transport_offset)
             && cookie == (seqno_me - 1 - strlen("GET / HTTP 1.0\r\n\r\n"))) {
             
-            /*May be ACK without DATA*/
+            /* Verify: we need to output packet with response*/
             if (!parsed.app_length)
                 continue;
 
