@@ -538,6 +538,7 @@ receive_thread(void *v)
     int data_link = stack_if_datalink(adapter);
     struct Output *out;
     struct DedupTable *dedup;
+    struct DedupTable *dedup_for_stateless;
     struct PcapFile *pcapfile = NULL;
     struct TCP_ConnectionTable *tcpcon = 0;
     uint64_t *status_synack_count;
@@ -597,6 +598,13 @@ receive_thread(void *v)
      * multiple responses, we only record the first one.
      */
     dedup = dedup_create();
+
+    /*
+     * Create deduplication table for stateless-banners mode.
+     * This is so when somebody sends us multiple app-layer responses,
+     * we only record the first one.
+     */
+    dedup_for_stateless = dedup_create();
 
     /*
      * Create a TCP connection table (per thread pair) for interacting with live
@@ -1145,6 +1153,10 @@ receive_thread(void *v)
             
             /* verify: we need to output packet with response*/
             if (!parsed.app_length)
+                continue;
+
+            /* verify: ignore duplicates */
+            if (dedup_is_duplicate(dedup_for_stateless, ip_them, port_them, ip_me, port_me))
                 continue;
 
             output_report_status(
