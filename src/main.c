@@ -1133,8 +1133,15 @@ receive_thread(void *v)
          * Note the verifying of cookies.
          */
         if (masscan->is_stateless_banners
-            && TCP_IS_ACK(px, parsed.transport_offset)
-            && cookie == (seqno_me - 1 - strlen("GET / HTTP 1.0\r\n\r\n"))) {
+            && TCP_IS_ACK(px, parsed.transport_offset)) {
+            
+            /* Verify: ack-cookie*/
+            if (cookie != (seqno_me - 1 - strlen("GET / HTTP 1.0\r\n\r\n"))) {
+                ipaddress_formatted_t fmt = ipaddress_fmt(ip_them);
+                LOG(2, "%s - bad ack cookie: ackno=0x%08x expected=0x%08x\n",
+                    fmt.string, seqno_me-1, cookie+strlen("GET / HTTP 1.0\r\n\r\n"));
+                continue;
+            }
             
             /* Verify: we need to output packet with response*/
             if (!parsed.app_length)
