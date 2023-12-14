@@ -610,6 +610,12 @@ Do TCP SYN scan and get banners statelessly if ports are open:
 masscan 10.0.0.0/8 -p80 --stateless
 ```
 
+Specify rate(pps) and time(sec) to wait after done:
+
+```
+masscan 10.0.0.0/8 -p80 --stateless --rate 300000 --wait 15
+```
+
 Suggest save receive packets to pcap file for analysis:
 
 ```
