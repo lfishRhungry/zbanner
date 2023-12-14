@@ -1054,6 +1054,9 @@ receive_thread(void *v)
             if (TCP_IS_RST(px, parsed.transport_offset)) {
                 status = PortStatus_Closed;
             }
+            if (TCP_WIN(px, parsed.transport_offset)==0) {
+                status = PortStatus_ZeroWin;
+            }
 
             /* verify: syn-cookies */
             if (cookie != seqno_me - 1) {

@@ -744,7 +744,7 @@ output_report_status(struct Output *out, time_t timestamp, int status,
      * don't report the status of closed-ports */
     if (!out->is_show_closed && status == PortStatus_Closed)
         return;
-    if (!out->is_show_open && status == PortStatus_Open && status == PortStatus_Running)
+    if (!out->is_show_open && (status == PortStatus_Open || status == PortStatus_Running || status == PortStatus_ZeroWin))
         return;
 
     /* If in "--interactive" mode, then print the banner to the command
@@ -844,6 +844,9 @@ output_report_status(struct Output *out, time_t timestamp, int status,
             break;
         case PortStatus_Running:
             out->counts.tcp.running++;
+            break;
+        case PortStatus_ZeroWin:
+            out->counts.tcp.zerowin++;
             break;
         default:
             LOG(0, "unknown status type: %u\n", status);

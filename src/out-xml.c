@@ -47,7 +47,7 @@ xml_out_close(struct Output *out, FILE *fp)
     fprintf(fp,
              "<runstats>\r\n"
               "<finished time=\"%u\" timestr=\"%s\" elapsed=\"%u\" />\r\n"
-              "<hosts up=\"%" PRIu64 "\" down=\"%" PRIu64 "\" running=\"%" PRIu64 "\" total=\"%" PRIu64 "\" />\r\n"
+              "<hosts up=\"%" PRIu64 "\" down=\"%" PRIu64 "\" total=\"%" PRIu64 "\" zerowin=\"%" PRIu64 "\" running=\"%" PRIu64 "\" />\r\n"
              "</runstats>\r\n"
             "</nmaprun>\r\n",
             (unsigned)now,                    /* time */
@@ -55,8 +55,9 @@ xml_out_close(struct Output *out, FILE *fp)
             (unsigned)(now - out->rotate.last), /* elapsed */
             out->counts.tcp.open,
             out->counts.tcp.closed,
-            out->counts.tcp.running,
-            out->counts.tcp.open + out->counts.tcp.closed
+            out->counts.tcp.open + out->counts.tcp.closed,
+            out->counts.tcp.zerowin,
+            out->counts.tcp.running
             );
 
 }
