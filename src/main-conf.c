@@ -2366,7 +2366,7 @@ struct ConfigParameter {
 };
 enum {F_NONE, F_BOOL=1, F_NUMABLE=2};
 struct ConfigParameter config_parameters[] = {
-    {"stateless-banners",SET_stateless_banners, F_BOOL, {"stateless",0}},
+    {"stateless-banners",SET_stateless_banners, F_BOOL, {"stateless", "stateless-banner", "stateless-mode",0}},
     {"resume-index",    SET_resume_index,       0,      {0}},
     {"resume-count",    SET_resume_count,       0,      {0}},
     {"seed",            SET_seed,               0,      {0}},
