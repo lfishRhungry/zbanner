@@ -1151,6 +1151,7 @@ receive_thread(void *v)
             }
             
             /* verify: we need to output packet with response*/
+            /* filter out ports that just ACK without data*/
             if (!parsed.app_length)
                 continue;
 
@@ -1161,7 +1162,7 @@ receive_thread(void *v)
             output_report_status(
                         out,
                         global_now,
-                        PortStatus_Running,
+                        PortStatus_Responsed,
                         ip_them,
                         6, /* ip proto = tcp */
                         port_them,

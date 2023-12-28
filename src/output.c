@@ -94,7 +94,7 @@ status_string(enum PortStatus status)
         case PortStatus_Open: return "open";
         case PortStatus_Closed: return "closed";
         case PortStatus_Arp: return "up";
-        case PortStatus_Running: return "running";
+        case PortStatus_Responsed: return "responsed";
         case PortStatus_ZeroWin: return "zerowin";
         default: return "unknown";
     }
@@ -746,7 +746,7 @@ output_report_status(struct Output *out, time_t timestamp, int status,
      * don't report the status of closed-ports */
     if (!out->is_show_closed && status == PortStatus_Closed)
         return;
-    if (!out->is_show_open && (status == PortStatus_Open || status == PortStatus_Running || status == PortStatus_ZeroWin))
+    if (!out->is_show_open && (status == PortStatus_Open || status == PortStatus_Responsed || status == PortStatus_ZeroWin))
         return;
 
     /* If in "--interactive" mode, then print the banner to the command
@@ -844,8 +844,8 @@ output_report_status(struct Output *out, time_t timestamp, int status,
         case PortStatus_Arp:
             out->counts.arp.open++;
             break;
-        case PortStatus_Running:
-            out->counts.tcp.running++;
+        case PortStatus_Responsed:
+            out->counts.tcp.responsed++;
             break;
         case PortStatus_ZeroWin:
             out->counts.tcp.zerowin++;

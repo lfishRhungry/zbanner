@@ -20,7 +20,7 @@ enum PortStatus {
     PortStatus_Open,
     PortStatus_Closed,
     PortStatus_ZeroWin, /*Recv a SYNACK with zero win*/
-    PortStatus_Running, /*ACK our req of app-layer in stateless mode*/
+    PortStatus_Responsed, /*ACK our req of app-layer with data in stateless mode*/
     PortStatus_Arp,
     PortStatus_Count
 
