@@ -1130,8 +1130,7 @@ receive_thread(void *v)
          * We could recv Response DATA in different TCP flags:
          * 1.[ACK]
          * 2.[PSH, ACK]
-         * 3.[FIN, ACK]
-         * 4.[FIN, PSH, ACK]
+         * 3.[FIN, PSH, ACK]
          * 
          * Because of different server or possible TCP retransmission.
          * 
