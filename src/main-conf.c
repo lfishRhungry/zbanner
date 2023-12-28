@@ -1082,7 +1082,6 @@ enum {CONF_OK, CONF_WARN, CONF_ERR};
 
 static int SET_stateless_banners(struct Masscan *masscan, const char *name, const char *value)
 {
-    UNUSEDPARM(name);
     if (masscan->echo) {
         if (masscan->is_stateless_banners || masscan->echo_all)
             fprintf(masscan->echo, "stateless-banners = %s\n", masscan->is_stateless_banners?"true":"false");
@@ -1091,9 +1090,9 @@ static int SET_stateless_banners(struct Masscan *masscan, const char *name, cons
     masscan->is_stateless_banners = parseBoolean(value);
 
     if (masscan->is_banners && masscan->is_stateless_banners) {
-        fprintf(stderr, "[-] FAIL: can not specify banners mode and stateless-banners mode at the same time.\n");
-        fprintf(stderr, "    Hint: banners mode gets banners with TCP\\IP stack in user mode.\n");
-        fprintf(stderr, "    Hint: stateless-banners mode gets banners in stateless. \n");
+        fprintf(stderr, "FAIL %s: can not specify banners mode and stateless-banners mode at the same time.\n", name);
+        fprintf(stderr, "Hint: banners mode gets banners with TCP\\IP stack in user mode.\n");
+        fprintf(stderr, "Hint: stateless-banners mode gets banners in stateless. \n");
         return CONF_ERR;
     }
 
@@ -1124,19 +1123,25 @@ static int SET_arpscan(struct Masscan *masscan, const char *name, const char *va
 
 static int SET_banners(struct Masscan *masscan, const char *name, const char *value)
 {
-    UNUSEDPARM(name);
     if (masscan->echo) {
         if (masscan->is_banners || masscan->echo_all)
             fprintf(masscan->echo, "banners = %s\n", masscan->is_banners?"true":"false");
        return 0;
     }
     masscan->is_banners = parseBoolean(value);
+
+    if (masscan->is_banners && masscan->is_stateless_banners) {
+        fprintf(stderr, "FAIL %s: can not specify banners mode and stateless-banners mode at the same time.\n", name);
+        fprintf(stderr, "Hint: banners mode gets banners with TCP\\IP stack in user mode.\n");
+        fprintf(stderr, "Hint: stateless-banners mode gets banners in stateless. \n");
+        return CONF_ERR;
+    }
+
     return CONF_OK;
 }
 
 static int SET_banners_rawudp(struct Masscan *masscan, const char *name, const char *value)
 {
-    UNUSEDPARM(name);
     if (masscan->echo) {
         if (masscan->is_banners_rawudp || masscan->echo_all)
             fprintf(masscan->echo, "rawudp = %s\n", masscan->is_banners_rawudp?"true":"false");
@@ -1145,6 +1150,14 @@ static int SET_banners_rawudp(struct Masscan *masscan, const char *name, const c
     masscan->is_banners_rawudp = parseBoolean(value);
     if (masscan->is_banners_rawudp)
         masscan->is_banners = true;
+
+    if (masscan->is_banners && masscan->is_stateless_banners) {
+        fprintf(stderr, "FAIL %s: can not specify banners mode and stateless-banners mode at the same time.\n", name);
+        fprintf(stderr, "Hint: banners mode gets banners with TCP\\IP stack in user mode.\n");
+        fprintf(stderr, "Hint: stateless-banners mode gets banners in stateless. \n");
+        return CONF_ERR;
+    }
+
     return CONF_OK;
 }
 
