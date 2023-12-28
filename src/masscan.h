@@ -196,6 +196,7 @@ struct Masscan
     unsigned is_capture_html:1; /* --capture html */
     unsigned is_capture_heartbleed:1; /* --capture heartbleed */
     unsigned is_capture_ticketbleed:1; /* --capture ticket */
+    unsigned is_capture_stateless:1; /* --capture stateless */
     unsigned is_test_csv:1;     /* (temporary testing feature) */
     unsigned is_infinite:1;     /* -infinite */
     unsigned is_readscan:1;     /* --readscan, Operation_Readscan */

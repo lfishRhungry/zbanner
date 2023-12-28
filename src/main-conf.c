@@ -1153,6 +1153,8 @@ static int SET_capture(struct Masscan *masscan, const char *name, const char *va
             fprintf(masscan->echo, "%scapture = heartbleed\n", masscan->is_capture_heartbleed?"":"no");
         if (masscan->is_capture_ticketbleed || masscan->echo_all)
             fprintf(masscan->echo, "%scapture = ticketbleed\n", masscan->is_capture_ticketbleed?"":"no");
+        if (masscan->is_capture_stateless || masscan->echo_all)
+            fprintf(masscan->echo, "%scapture = stateless\n", masscan->is_capture_stateless?"":"no");
         return 0;
     }
     if (EQUALS("capture", name)) {
@@ -1166,6 +1168,8 @@ static int SET_capture(struct Masscan *masscan, const char *name, const char *va
             masscan->is_capture_heartbleed = 1;
         else if (EQUALS("ticketbleed", value))
             masscan->is_capture_ticketbleed = 1;
+        else if (EQUALS("stateless", value))
+            masscan->is_capture_stateless = 1;
         else {
             fprintf(stderr, "FAIL: %s: unknown capture type\n", value);
             return CONF_ERR;
@@ -1181,6 +1185,8 @@ static int SET_capture(struct Masscan *masscan, const char *name, const char *va
             masscan->is_capture_heartbleed = 0;
         else if (EQUALS("ticketbleed", value))
             masscan->is_capture_ticketbleed = 0;
+        else if (EQUALS("stateless", value))
+            masscan->is_capture_stateless = 0;
         else {
             fprintf(stderr, "FAIL: %s: unknown nocapture type\n", value);
             return CONF_ERR;

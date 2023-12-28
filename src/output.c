@@ -398,6 +398,7 @@ output_create(const struct Masscan *masscan, unsigned thread_index)
     out->redis.password = masscan ->redis.password;
     out->is_banner = masscan->is_banners;               /* --banners */
     out->is_banner_rawudp = masscan->is_banners_rawudp; /* --rawudp */
+    out->is_banner_stateless = masscan->is_capture_stateless; /* --capture stateless*/
     out->is_gmt = masscan->is_gmt;
     out->is_interactive = masscan->output.is_interactive;
     out->is_show_open = masscan->output.is_show_open;
@@ -886,7 +887,7 @@ output_report_banner(struct Output *out, time_t now,
     /* If we aren't doing banners, then don't do anything. That's because
      * when doing UDP scans, we'll still get banner information from
      * decoding the response packets, even if the user isn't interested */
-    if (!out->is_banner)
+    if (!(out->is_banner || out->is_banner_stateless))
         return;
 
     /* If in "--interactive" mode, then print the banner to the command
