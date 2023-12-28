@@ -1723,16 +1723,6 @@ int main(int argc, char *argv[])
         masscan->seed = get_entropy(); /* entropy for randomness */
 
     /*
-     * Must avoid specifying both --banners and --stateless-banners
-     */
-    if (masscan->is_banners && masscan->is_stateless_banners){
-        fprintf(stderr, "[-] FAIL: can not specify banners mode and stateless-banners mode at the same time.\n");
-        fprintf(stderr, "    Hint: banners mode gets banners with TCP\\IP stack in user mode.\n");
-        fprintf(stderr, "    Hint: stateless-banners mode gets banners in stateless. \n");
-        exit(1);
-    }
-
-    /*
      * Load database files like "nmap-payloads" and "nmap-service-probes"
      */
     masscan_load_database_files(masscan);

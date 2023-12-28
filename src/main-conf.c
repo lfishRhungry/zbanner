@@ -1089,6 +1089,14 @@ static int SET_stateless_banners(struct Masscan *masscan, const char *name, cons
        return 0;
     }
     masscan->is_stateless_banners = parseBoolean(value);
+
+    if (masscan->is_banners && masscan->is_stateless_banners) {
+        fprintf(stderr, "[-] FAIL: can not specify banners mode and stateless-banners mode at the same time.\n");
+        fprintf(stderr, "    Hint: banners mode gets banners with TCP\\IP stack in user mode.\n");
+        fprintf(stderr, "    Hint: stateless-banners mode gets banners in stateless. \n");
+        return CONF_ERR;
+    }
+
     return CONF_OK;
 }
 
@@ -2372,7 +2380,6 @@ struct ConfigParameter {
 };
 enum {F_NONE, F_BOOL=1, F_NUMABLE=2};
 struct ConfigParameter config_parameters[] = {
-    {"stateless-banners",SET_stateless_banners, F_BOOL, {"stateless", "stateless-banner", "stateless-mode",0}},
     {"resume-index",    SET_resume_index,       0,      {0}},
     {"resume-count",    SET_resume_count,       0,      {0}},
     {"seed",            SET_seed,               0,      {0}},
@@ -2426,6 +2433,7 @@ struct ConfigParameter config_parameters[] = {
     {"tcp-tsecho",      SET_tcp_tsecho,         F_NUMABLE, {0}},
     {"tcp-sackok",      SET_tcp_sackok,         F_BOOL, {0}},
     {"top-ports",       SET_topports,           F_NUMABLE, {"top-port",0}},
+    {"stateless-banners",SET_stateless_banners, F_BOOL, {"stateless", "stateless-banner", "stateless-mode",0}},
 
     {"debug-tcp",       SET_debug_tcp,          F_BOOL, {"tcp-debug", 0}},
     {0}
