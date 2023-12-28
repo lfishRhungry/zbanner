@@ -42,6 +42,8 @@ enum ApplicationProtocol {
     PROTO_VNC_RFB,
     PROTO_VNC_INFO,
     PROTO_ISAKMP,           /* 35 - IPsec key exchange */
+
+    PROTO_STATELESS,        /* just for stateless mode*/
     
     PROTO_ERROR,
 

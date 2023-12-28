@@ -47,6 +47,8 @@ masscan_app_to_string(enum ApplicationProtocol proto)
     case PROTO_VNC_RFB:         return "vnc";
     case PROTO_VNC_INFO:        return "vnc-info";
     case PROTO_ISAKMP:          return "isakmp";
+
+    case PROTO_STATELESS:       return "stateless";
         
     case PROTO_ERROR:           return "error";
             
