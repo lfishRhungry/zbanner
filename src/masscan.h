@@ -12,6 +12,7 @@
 
 #include "massip.h"
 #include "stack-queue.h"
+#include "stateless-probes/stateless-probes.h"
 
 struct Adapter;
 struct TemplateSet;
@@ -183,6 +184,10 @@ struct Masscan
      */
     unsigned retries;
 
+	/**
+     * application probe/request for stateless mode
+    */
+    struct StatelessProbe *stateless_probe;
     
     unsigned is_pfring:1;       /* --pfring */
     unsigned is_sendq:1;        /* --sendq */

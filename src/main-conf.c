@@ -1099,6 +1099,29 @@ static int SET_stateless_banners(struct Masscan *masscan, const char *name, cons
     return CONF_OK;
 }
 
+static int SET_stateless_probe(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        if (masscan->stateless_probe){
+            fprintf(masscan->echo, "stateless-probe = %s\n", masscan->stateless_probe->name);
+        }
+        return 0;
+    }
+
+    if(!masscan->is_stateless_banners){
+        fprintf(stderr, "FAIL %s: use --stateless-banners mode before specify %s\n", value, name);
+        return CONF_ERR;
+    }
+
+    masscan->stateless_probe = get_stateless_probe(value);
+    if(!masscan->stateless_probe){
+        fprintf(stderr, "FAIL %s: no such stateless probe\n", value);
+        return CONF_ERR;
+    }
+
+    return CONF_OK;
+}
+
 static int SET_arpscan(struct Masscan *masscan, const char *name, const char *value)
 {
     struct Range range;
@@ -2447,6 +2470,7 @@ struct ConfigParameter config_parameters[] = {
     {"tcp-sackok",      SET_tcp_sackok,         F_BOOL, {0}},
     {"top-ports",       SET_topports,           F_NUMABLE, {"top-port",0}},
     {"stateless-banners",SET_stateless_banners, F_BOOL, {"stateless", "stateless-banner", "stateless-mode",0}},
+    {"stateless-probe", SET_stateless_probe,    0,      {"probe", 0}},
 
     {"debug-tcp",       SET_debug_tcp,          F_BOOL, {"tcp-debug", 0}},
     {0}

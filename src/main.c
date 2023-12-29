@@ -607,6 +607,15 @@ receive_thread(void *v)
     dedup_for_stateless = dedup_create();
 
     /*
+     * Do thread init for stateless probe
+     */
+    if (masscan->stateless_probe && masscan->stateless_probe->thread_init){
+        masscan->stateless_probe->thread_init(parms);
+    }
+
+
+
+    /*
      * Create a TCP connection table (per thread pair) for interacting with live
      * connections when doing --banners
      */
@@ -1088,13 +1097,20 @@ receive_thread(void *v)
             if (masscan->is_stateless_banners
                 && TCP_IS_SYNACK(px, parsed.transport_offset)
                 && status == PortStatus_Open) {
+
+                unsigned char payload[STATELESS_PAYLOAD_MAX_LEN];
+                size_t payload_len;
+                payload_len = masscan->stateless_probe->make_payload(
+                    ip_them, ip_me, port_them, port_me,
+                    payload, STATELESS_PAYLOAD_MAX_LEN);
+                
                 tcp_send_ACK(
                     &parms->tmplset->pkts[Proto_TCP],
                     parms->stack,
                     ip_them, ip_me,
                     port_them, port_me,
                     seqno_them+1, seqno_me,
-                    "GET / HTTP 1.0\r\n\r\n", strlen("GET / HTTP 1.0\r\n\r\n"));
+                    payload, payload_len);
             }
 
             /*
@@ -1142,11 +1158,14 @@ receive_thread(void *v)
         if (masscan->is_stateless_banners
             && TCP_IS_ACK(px, parsed.transport_offset)) {
             
+            size_t had_sent = masscan->stateless_probe->get_payload_length(
+                ip_them, ip_me, port_them, port_me);
+
             /* verify: ack-cookie*/
-            if (cookie != (seqno_me - 1 - strlen("GET / HTTP 1.0\r\n\r\n"))) {
+            if (cookie != (seqno_me - 1 - had_sent)) {
                 ipaddress_formatted_t fmt = ipaddress_fmt(ip_them);
                 LOG(2, "%s - bad ack cookie: ackno=0x%08x expected=0x%08x\n",
-                    fmt.string, seqno_me-1, cookie+strlen("GET / HTTP 1.0\r\n\r\n"));
+                    fmt.string, seqno_me-1, cookie+had_sent);
                 continue;
             }
             
@@ -1170,6 +1189,22 @@ receive_thread(void *v)
                         parsed.ip_ttl,
                         parsed.mac_src
                         );
+            
+            /* output banner in stateless mode*/
+            if (masscan->is_capture_stateless){
+                unsigned char report_buf[STATELESS_BANNER_MAX_LEN];
+                size_t report_len;
+
+                report_len = masscan->stateless_probe->get_report_banner(
+                    ip_them, ip_me, port_them, port_me,
+                    &px[parsed.app_offset], parsed.app_length,
+                    report_buf, STATELESS_BANNER_MAX_LEN);
+
+                output_report_banner(
+                    out, global_now, ip_them, 6, port_them, PROTO_STATELESS,
+                    parsed.ip_ttl, report_buf, report_len);
+            }
+            
 
             /*
              * Send RST after server's response
@@ -1180,7 +1215,7 @@ receive_thread(void *v)
                     parms->stack,
                     ip_them, ip_me,
                     port_them, port_me,
-                    seqno_them+strlen("GET / HTTP 1.0\r\n\r\n"), seqno_me);
+                    seqno_them+had_sent, seqno_me);
         }
     }
 
@@ -1327,6 +1362,13 @@ main_scan(struct Masscan *masscan)
      */
     payloads_udp_trim(masscan->payloads.udp, &masscan->targets);
     payloads_oproto_trim(masscan->payloads.oproto, &masscan->targets);
+
+    /*
+     * Do global init for stateless probe
+     */
+    if (masscan->stateless_probe && masscan->stateless_probe->global_init){
+        masscan->stateless_probe->global_init(masscan);
+    }
 
 
 #ifdef __AFL_HAVE_MANUAL_CONTROL
@@ -1632,6 +1674,13 @@ main_scan(struct Masscan *masscan)
 
         printf("%u milliseconds elapsed\n", (unsigned)((usec_now - usec_start)/1000));
     }
+
+	/**
+     * Do close for stateless probe
+    */
+    if (masscan->stateless_probe && masscan->stateless_probe->close) {
+        masscan->stateless_probe->close(masscan);
+    }
     
     LOG(1, "[+] all threads have exited                    \n");
 
@@ -1783,6 +1832,15 @@ int main(int argc, char *argv[])
         fprintf(stderr, "    Hint: scan range is number of IP addresses times number of ports\n");
         fprintf(stderr, "    Hint: IPv6 subnet must be at least /66 \n");
         exit(1);
+    }
+
+    /*
+     * Choose a default StatelessProbe if not specified.
+     * Wrong specification will be handled in SET_stateless_probe in main-conf.c
+     */
+    if (masscan->is_stateless_banners && !masscan->stateless_probe){
+        masscan->stateless_probe = get_stateless_probe("null");
+        LOG(0, "[-] Default NullProbe is chosen because no statelss-probe was specified.\n");
     }
 
     /*
