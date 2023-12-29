@@ -640,6 +640,19 @@ Also save status output:
 masscan 10.0.0.0/8 -p110 --stateless --pcap result.pcap -oX result.xml
 ```
 
+## Stateless Probe Module
+
+Aka application-layer request module.
+
+Achieve any logic by implementing your StatelessProbe and registering.
+
+Possible achievements:
+    - Get banner of specific protocol;
+    - Service identification;
+    - Detect application-layer vuln;
+    - Combine existing probe;
+    - etc.
+
 ## note
 
 1. Do not use stateless-banners mode with `--banners` mode.
