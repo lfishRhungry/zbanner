@@ -1,8 +1,27 @@
 #include "../masscan.h"
 #include "stateless-probes.h"
+#include "null-probe.h"
 
-static size_t
-null_make_payload(ipaddress ip_them, ipaddress ip_me,
+struct StatelessProbe NullProbe = {
+	.name = "null",
+	.help_text =
+		"NullProbe does not send any data to target port throught and after TCP"
+		" handshakes, just wait banner from server. However, waiting is the che"
+		"apest thing in stateless mode.\nNullProbe is the default stateless probe.",
+	.global_init = NULL,
+	.thread_init = NULL,
+	.make_payload = &make_no_payload,
+	.get_payload_length = &null_get_payload_length,
+	.get_report_banner = &just_report_banner,
+	.close = NULL
+};
+
+/*
+ * Did not use 'static' because other probe may use some of these func
+*/
+
+size_t
+make_no_payload(ipaddress ip_them, ipaddress ip_me,
 	unsigned port_them, unsigned port_me,
 	unsigned char *payload_buf, size_t buf_len)
 {
@@ -15,8 +34,8 @@ null_get_payload_length(ipaddress ip_them, ipaddress ip_me, unsigned port_them, 
 	return 0;
 }
 
-static size_t
-null_get_report_banner(ipaddress ip_them, ipaddress ip_me,
+size_t
+just_report_banner(ipaddress ip_them, ipaddress ip_me,
 	unsigned port_them, unsigned port_me,
 	const unsigned char *banner, size_t banner_len,
 	unsigned char *report_banner_buf, size_t buf_len)
@@ -25,17 +44,3 @@ null_get_report_banner(ipaddress ip_them, ipaddress ip_me,
 	memcpy(report_banner_buf, banner, len);
 	return len;
 }
-
-struct StatelessProbe NullProbe = {
-	.name = "null",
-	.help_text =
-		"NullProbe does not send any data to target port throught and after TCP"
-		" handshakes, just wait banner from server. However, waiting is the che"
-		"apest thing in stateless mode.",
-	.global_init = NULL,
-	.thread_init = NULL,
-	.make_payload = &null_make_payload,
-	.get_payload_length = &null_get_payload_length,
-	.get_report_banner = &null_get_report_banner,
-	.close = NULL
-};
