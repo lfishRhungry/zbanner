@@ -596,7 +596,7 @@ at which they perform this calculation, making `masscan` much faster.
 
 # Improvements
 
-## Get banners with MASSCAN in LESSTATE
+## Get banners with ZBanner (Masscan with stateless-banners mode)
 
 Add `--stateless-banners` (`--stateless`) mode to send application-layer probes
 and obtain banners completely statelessly after the target port was identified
@@ -607,32 +607,53 @@ open (received SYNACK).
 Do TCP SYN scan and get banners statelessly if ports are open:
 
 ```
-masscan 10.0.0.0/8 -p80 --stateless
+masscan 10.0.0.0/8 -p110 --stateless
 ```
 
 Specify rate(pps) and time(sec) to wait after done:
 
 ```
-masscan 10.0.0.0/8 -p80 --stateless --rate 300000 --wait 15
+masscan 10.0.0.0/8 -p110 --stateless --rate 300000 --wait 15
+```
+
+Specify application-layer probe:
+
+```
+masscan 10.0.0.0/8 -p80 --stateless --probe simplehttp
+```
+
+Output banner in result:
+
+```
+masscan 10.0.0.0/8 -p110 --stateless --capture stateless
 ```
 
 Suggest save receive packets to pcap file for analysis:
 
 ```
-masscan 10.0.0.0/8 -p80 --stateless --pcap result.pcap
+masscan 10.0.0.0/8 -p110 --stateless --pcap result.pcap
 ```
 
 Also save status output:
 
 ```
-masscan 10.0.0.0/8 -p80 --stateless --pcap result.pcap -oX result.xml
+masscan 10.0.0.0/8 -p110 --stateless --pcap result.pcap -oX result.xml
 ```
 
 ## note
 
-Do not use stateless-banners mode with `--banners` mode.
+1. Do not use stateless-banners mode with `--banners` mode.
 
-Just support output to stdout, pcap file and XML file for now.
+2. Use default null probe while no probe was specified.
+
+3. Supported output and save method in stateless mode:
+    - output to stdout;
+    - output to XML file(`-oX`): most detailed result with statistic info;
+    - output to grepable file(`-oG`);
+    - output to json file(`-oJ`);
+    - output to list file(`-oL`);
+    - output to binary file(`-oB`): a light and special format of masscan with info like list file. Can not keep 'reponsed' state data in stateless mode.
+    - save a pcap file(`--pcap`): raw result for later analysis.
 
 
 
@@ -642,7 +663,7 @@ This tool created by Robert Graham:
 email: robert_david_graham@yahoo.com
 twitter: @ErrataRob
 
-Stateless-banners mode support created by lfishRhungry:
+Support for Stateless-banners Mode created by lfishRhungry:
 email: shineccy@aliyun.com
 
 # License
