@@ -1122,6 +1122,20 @@ static int SET_stateless_probe(struct Masscan *masscan, const char *name, const 
     return CONF_OK;
 }
 
+/**
+ * It's not good enough to set --list-probes this way because possibly conflict
+ * with other parameter. Only using --list-probes would be no problem if want to
+ * list probes. 
+*/
+static int SET_list_probes(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+       return 0;
+    }
+    masscan->op = parseBoolean(value)?Operation_List_Probes:masscan->op;
+    return CONF_OK;
+}
+
 static int SET_arpscan(struct Masscan *masscan, const char *name, const char *value)
 {
     struct Range range;
@@ -2471,6 +2485,7 @@ struct ConfigParameter config_parameters[] = {
     {"top-ports",       SET_topports,           F_NUMABLE, {"top-port",0}},
     {"stateless-banners",SET_stateless_banners, F_BOOL, {"stateless", "stateless-banner", "stateless-mode",0}},
     {"stateless-probe", SET_stateless_probe,    0,      {"probe", 0}},
+    {"list-probes",     SET_list_probes,        F_BOOL, {"list-probe", 0}},
 
     {"debug-tcp",       SET_debug_tcp,          F_BOOL, {"tcp-debug", 0}},
     {0}

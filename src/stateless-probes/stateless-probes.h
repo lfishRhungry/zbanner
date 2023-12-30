@@ -82,4 +82,6 @@ struct StatelessProbe
 
 struct StatelessProbe *get_stateless_probe(const char *name);
 
+void list_all_probes();
+
 #endif

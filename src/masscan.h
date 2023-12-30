@@ -39,6 +39,7 @@ enum Operation {
     Operation_Echo = 9,             /* --echo */
     Operation_EchoAll = 10,         /* --echo-all */
     Operation_EchoCidr = 11,        /* --echo-cidr */
+    Operation_List_Probes,          /* --list-probes*/
 };
 
 /**

@@ -1999,6 +1999,10 @@ int main(int argc, char *argv[])
             }
         }
         break;
+    
+    case Operation_List_Probes:
+        list_all_probes();
+        break;
     }
 
 
