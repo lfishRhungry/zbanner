@@ -3,8 +3,6 @@
 #ifndef NULL_PROBE_H
 #define NULL_PROBE_H
 
-struct StatelessProbe NullProbe;
-
 size_t
 make_no_payload(ipaddress ip_them, ipaddress ip_me,
 	unsigned port_them, unsigned port_me,
