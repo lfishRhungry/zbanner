@@ -619,7 +619,7 @@ masscan 10.0.0.0/8 -p110 --stateless --rate 300000 --wait 15
 Specify application-layer probe:
 
 ```
-masscan 10.0.0.0/8 -p80 --stateless --probe simplehttp
+masscan 10.0.0.0/8 -p80 --stateless --probe getrequest
 ```
 
 Output banner in result:
