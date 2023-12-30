@@ -668,6 +668,8 @@ Possible achievements:
     - output to binary file(`-oB`): a light and special format of masscan with info like list file. Can not keep 'reponsed' state data in stateless mode.
     - save a pcap file(`--pcap`): raw result for later analysis.
 
+4. Use `--list-probes` to check stateless probes.
+
 
 
 # Authors
