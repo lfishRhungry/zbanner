@@ -665,10 +665,14 @@ Possible achievements:
     - output to grepable file(`-oG`);
     - output to json file(`-oJ`);
     - output to list file(`-oL`);
-    - output to binary file(`-oB`): a light and special format of masscan with info like list file. Can not keep 'reponsed' state data in stateless mode.
+    - output to binary file(`-oB`): a light and special format of masscan with info like list file.
+    Can not keep 'reponsed' state data in stateless mode.
     - save a pcap file(`--pcap`): raw result for later analysis.
 
 4. Use `--list-probes` to check stateless probes.
+
+5. Statistic result `responsed`(aka a PortStatus) is number of responsed target in application-layer.
+It's useful just in stateless mode.
 
 
 
