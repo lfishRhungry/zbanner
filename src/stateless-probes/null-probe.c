@@ -28,7 +28,7 @@ make_no_payload(ipaddress ip_them, ipaddress ip_me,
 	return 0;
 }
 
-static size_t
+size_t
 null_get_payload_length(ipaddress ip_them, ipaddress ip_me, unsigned port_them, unsigned port_me)
 {
 	return 0;
