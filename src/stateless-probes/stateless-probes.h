@@ -47,9 +47,9 @@ typedef size_t
 	unsigned port_me);
 
 /**
- * Get a "report_banner" to output by output_report_banner func.
- * report banner can be same to original banner,
- * or can be some other info:
+ * Get a "report_banner" to output by output_report_banner func
+ * when use `--capture stateless`.
+ * Report banner can be same to original banner, or can be some other info:
  * eg. protocol type, verification, special results...
  * @return length of report banner data
  * !Must be thread safe.
