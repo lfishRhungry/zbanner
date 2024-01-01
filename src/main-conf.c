@@ -1201,6 +1201,18 @@ static int SET_banners(struct Masscan *masscan, const char *name, const char *va
     return CONF_OK;
 }
 
+static int SET_nodedup(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+        if (masscan->is_nodedup || masscan->echo_all)
+            fprintf(masscan->echo, "nodedup = %s\n", masscan->is_nodedup?"true":"false");
+       return 0;
+    }
+    masscan->is_nodedup = parseBoolean(value);
+    return CONF_OK;
+}
+
 static int SET_banners_rawudp(struct Masscan *masscan, const char *name, const char *value)
 {
     if (masscan->echo) {
@@ -2510,6 +2522,7 @@ struct ConfigParameter config_parameters[] = {
     {"stateless-banners",SET_stateless_banners, F_BOOL, {"stateless", "stateless-banner", "stateless-mode",0}},
     {"stateless-probe", SET_stateless_probe,    0,      {"probe", 0}},
     {"list-probes",     SET_list_probes,        F_BOOL, {"list-probe", 0}},
+    {"no-dedup",        SET_nodedup,            F_BOOL, {"nodedup", 0}},
 
     {"debug-tcp",       SET_debug_tcp,          F_BOOL, {"tcp-debug", 0}},
     {0}

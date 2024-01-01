@@ -597,14 +597,22 @@ receive_thread(void *v)
      * Create deduplication table. This is so when somebody sends us
      * multiple responses, we only record the first one.
      */
-    dedup = dedup_create();
+    if (!masscan->is_nodedup){
+        dedup = dedup_create();
+    }else{
+        dedup = NULL;
+    }
 
     /*
      * Create deduplication table for stateless-banners mode.
      * This is so when somebody sends us multiple app-layer responses,
      * we only record the first one.
      */
-    dedup_for_stateless = dedup_create();
+    if (!masscan->is_nodedup){
+        dedup_for_stateless = dedup_create();
+    }else{
+        dedup_for_stateless = NULL;
+    }
 
     /*
      * Do thread init for stateless probe
@@ -915,8 +923,10 @@ receive_thread(void *v)
                         break;
 
                     /* Ignore duplicates */
-                    if (dedup_is_duplicate(dedup, ip_them, 0, ip_me, 0))
-                        continue;
+                    if (!masscan->is_nodedup){
+                        if (dedup_is_duplicate(dedup, ip_them, 0, ip_me, 0))
+                            continue;
+                    }
 
                     /* ...everything good, so now report this response */
                     arp_recv_response(out, secs, px, length, &parsed);
@@ -1086,8 +1096,10 @@ receive_thread(void *v)
             }
 
             /* verify: ignore duplicates */
-            if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me))
-                continue;
+            if (!masscan->is_nodedup){
+                if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me))
+                    continue;
+            }
 
             /* keep statistics on number received */
             if (TCP_IS_SYNACK(px, parsed.transport_offset))
@@ -1175,8 +1187,10 @@ receive_thread(void *v)
                 continue;
 
             /* verify: ignore duplicates */
-            if (dedup_is_duplicate(dedup_for_stateless, ip_them, port_them, ip_me, port_me))
-                continue;
+            if (!masscan->is_nodedup){
+                if (dedup_is_duplicate(dedup_for_stateless, ip_them, port_them, ip_me, port_me))
+                    continue;
+            }
 
             output_report_status(
                         out,
@@ -1228,7 +1242,12 @@ receive_thread(void *v)
 end:
     if (tcpcon)
         tcpcon_destroy_table(tcpcon);
-    dedup_destroy(dedup);
+    if (!masscan->is_nodedup){
+        dedup_destroy(dedup);
+        if (masscan->is_stateless_banners){
+            dedup_destroy(dedup_for_stateless);
+        }
+    }
     output_destroy(out);
     if (pcapfile)
         pcapfile_close(pcapfile);

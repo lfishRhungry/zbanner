@@ -674,6 +674,8 @@ Possible achievements:
 5. Statistic result `responsed`(aka a PortStatus) is number of responsed target in application-layer.
 It's useful just in stateless mode.
 
+6. Use `--nodedup` to switch off deduplication.
+
 
 
 # Authors
