@@ -22,10 +22,15 @@ struct Status
     uint64_t total_tcbs;
     uint64_t total_synacks;
     uint64_t total_syns;
+    uint64_t total_responsed;
 };
 
 
-void status_print(struct Status *status, uint64_t count, uint64_t max_count, double x, uint64_t total_tcbs, uint64_t total_synacks, uint64_t total_syns, uint64_t exiting, bool json_status);
+void status_print(struct Status *status, uint64_t count,
+    uint64_t max_count, double x,
+    uint64_t total_tcbs, uint64_t total_synacks,
+    uint64_t total_syns, uint64_t total_responsed,
+    uint64_t exiting, bool json_status);
 void status_finish(struct Status *status);
 void status_start(struct Status *status);
 

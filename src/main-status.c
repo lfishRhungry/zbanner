@@ -31,6 +31,7 @@ status_print(
     uint64_t total_tcbs,
     uint64_t total_synacks,
     uint64_t total_syns,
+    uint64_t total_responsed,
     uint64_t exiting,
     bool json_status)
 {
@@ -42,9 +43,11 @@ status_print(
     uint64_t current_tcbs = 0;
     uint64_t current_synacks = 0;
     uint64_t current_syns = 0;
+    uint64_t current_responsed = 0;
     double tcb_rate = 0.0;
     double synack_rate = 0.0;
     double syn_rate = 0.0;
+    double responsed_rate = 0.0;
     double kpps = pps / 1000;
     const char *fmt;
 
@@ -59,13 +62,14 @@ status_print(
         "\"rate\":"
         "{"
             "\"kpps\":%.2f,"
-            "\"pps\":%6$.2f,"
+            "\"pps\":%7$.2f,"
             "\"synps\":%.0f,"
             "\"ackps\":%.0f,"
-            "\"tcbps\":%.0f"
+            "\"tcbps\":%.0f,"
+            "\"responsedps\":%.0f"
         "},"
-        "\"tcb\":%5$" PRIu64 ","
-        "\"syn\":%7$" PRIu64
+        "\"tcb\":%6$" PRIu64 ","
+        "\"syn\":%8$" PRIu64
     "}\n";
     
     /**
@@ -77,18 +81,19 @@ status_print(
         "\"rate\":"
         "{"
             "\"kpps\":%.2f,"
-            "\"pps\":%5$.2f"
+            "\"pps\":%6$.2f"
         "},"
         "\"progress\":"
         "{"
             "\"percent\":%.2f,"
             "\"seconds\":%d,"
             "\"found\":%" PRIu64 ","
+            "\"responsed\":%" PRIu64 ","
             "\"syn\":"
             "{"
-                "\"sent\":%6$" PRIu64 ","
-                "\"total\":%7$" PRIu64 ","
-                "\"remaining\":%8$" PRIu64
+                "\"sent\":%7$" PRIu64 ","
+                "\"total\":%8$" PRIu64 ","
+                "\"remaining\":%9$" PRIu64
             "}" 
         "}"
     "}\n";
@@ -103,7 +108,7 @@ status_print(
         "\"rate\":"
         "{"
             "\"kpps\":%.2f,"
-            "\"pps\":%7$.2f"
+            "\"pps\":%8$.2f"
         "},"
         "\"progress\":"
         "{"
@@ -116,11 +121,12 @@ status_print(
             "},"
             "\"syn\":"
             "{"
-                "\"sent\":%8$" PRIu64 ","
-                "\"total\":%9$" PRIu64 ","
-                "\"remaining\":%10$" PRIu64
+                "\"sent\":%9$" PRIu64 ","
+                "\"total\":%10$" PRIu64 ","
+                "\"remaining\":%11$" PRIu64
             "}," 
-            "\"found\":%6$" PRIu64
+            "\"found\":%6$" PRIu64 ","
+            "\"responsed\":%7$" PRIu64
         "}"
     "}\n";
 
@@ -201,6 +207,11 @@ status_print(
         status->total_syns = total_syns;
         syn_rate = (1.0*current_syns)/elapsed_time;
     }
+    if (total_responsed) {
+        current_responsed = total_responsed - status->total_responsed;
+        status->total_responsed = total_responsed;
+        responsed_rate = (1.0*current_responsed)/elapsed_time;
+    }
 
     /*
      * Print the message to <stderr> so that <stdout> can be redirected
@@ -211,7 +222,7 @@ status_print(
         if (json_status == 1)
             fmt = json_fmt_infinite;
         else
-            fmt = "rate:%6.2f-kpps, syn/s=%.0f ack/s=%.0f tcb-rate=%.0f, %" PRIu64 "-tcbs,         \r";
+            fmt = "rate:%6.2f-kpps, syn/s=%.0f ack/s=%.0f tcb-rate=%.0f, responsed-rate=%.0f, %" PRIu64 "-tcbs,         \r";
 
         fprintf(stderr,
             fmt,
@@ -219,6 +230,7 @@ status_print(
                 syn_rate,
                 synack_rate,
                 tcb_rate,
+                responsed_rate,
                 total_tcbs,
                 pps,
                 count);
@@ -227,7 +239,7 @@ status_print(
             if (json_status == 1)
                 fmt = json_fmt_waiting;
             else
-                fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, found=%" PRIu64 "       \r";
+                fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, found=%" PRIu64 ", responsed=%" PRIu64 "       \r";
 
             fprintf(stderr,
                     fmt,
@@ -235,6 +247,7 @@ status_print(
                     percent_done,
                     (int)exiting,
                     total_synacks,
+                    total_responsed,
                     pps,
                     count,
                     max_count,
@@ -244,7 +257,7 @@ status_print(
             if (json_status == 1)
                 fmt = json_fmt_running;
             else
-                fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, found=%" PRIu64 "       \r";
+                fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, found=%" PRIu64 ", responsed=%" PRIu64 "       \r";
 
             fprintf(stderr,
                 fmt,
@@ -254,6 +267,7 @@ status_print(
                 (unsigned)(time_remaining/60)%60,
                 (unsigned)(time_remaining)%60,
                 total_synacks,
+                total_responsed,
                 pps,
                 count,
                 max_count,

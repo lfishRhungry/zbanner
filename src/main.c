@@ -153,6 +153,7 @@ struct ThreadPair {
     uint64_t *total_synacks;
     uint64_t *total_tcbs;
     uint64_t *total_syns;
+    uint64_t *total_responsed;
 
     size_t thread_handle_xmit;
     size_t thread_handle_recv;
@@ -543,6 +544,7 @@ receive_thread(void *v)
     struct TCP_ConnectionTable *tcpcon = 0;
     uint64_t *status_synack_count;
     uint64_t *status_tcb_count;
+    uint64_t *status_responsed_count;
     uint64_t entropy = masscan->seed;
     struct ResetFilter *rf;
     struct stack_t *stack = parms->stack;
@@ -561,6 +563,10 @@ receive_thread(void *v)
     status_tcb_count = MALLOC(sizeof(uint64_t));
     *status_tcb_count = 0;
     parms->total_tcbs = status_tcb_count;
+
+    status_responsed_count = MALLOC(sizeof(uint64_t));
+    *status_responsed_count = 0;
+    parms->total_responsed = status_responsed_count;
 
     LOG(1, "[+] starting receive thread #%u\n", parms->nic_index);
     
@@ -1206,6 +1212,9 @@ receive_thread(void *v)
                     continue;
             }
 
+            /* keep statistics on number responsed */
+            (*status_responsed_count)++;
+
             output_report_status(
                         out,
                         global_now,
@@ -1559,6 +1568,7 @@ main_scan(struct Masscan *masscan)
         uint64_t total_tcbs = 0;
         uint64_t total_synacks = 0;
         uint64_t total_syns = 0;
+        uint64_t total_responsed = 0;
 
 
         /* Find the minimum index of all the threads */
@@ -1577,6 +1587,8 @@ main_scan(struct Masscan *masscan)
                 total_synacks += *parms->total_synacks;
             if (parms->total_syns)
                 total_syns += *parms->total_syns;
+            if (parms->total_responsed)
+                total_responsed += *parms->total_responsed;
         }
 
         if (min_index >= range && !masscan->is_infinite) {
@@ -1590,7 +1602,7 @@ main_scan(struct Masscan *masscan)
          */
         if (masscan->output.is_status_updates)
             status_print(&status, min_index, range, rate,
-                total_tcbs, total_synacks, total_syns,
+                total_tcbs, total_synacks, total_syns, total_responsed,
                 0, masscan->output.is_status_ndjson);
 
         /* Sleep for almost a second */
@@ -1622,6 +1634,7 @@ main_scan(struct Masscan *masscan)
         uint64_t total_tcbs = 0;
         uint64_t total_synacks = 0;
         uint64_t total_syns = 0;
+        uint64_t total_responsed = 0;
 
 
         /* Find the minimum index of all the threads */
@@ -1640,6 +1653,8 @@ main_scan(struct Masscan *masscan)
                 total_synacks += *parms->total_synacks;
             if (parms->total_syns)
                 total_syns += *parms->total_syns;
+            if (parms->total_responsed)
+                total_responsed += *parms->total_responsed;
         }
 
 
@@ -1655,7 +1670,7 @@ main_scan(struct Masscan *masscan)
 
         if (masscan->output.is_status_updates) {
             status_print(&status, min_index, range, rate,
-                total_tcbs, total_synacks, total_syns,
+                total_tcbs, total_synacks, total_syns, total_responsed,
                 masscan->wait - (time(0) - now),
                 masscan->output.is_status_ndjson);
 
