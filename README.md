@@ -704,6 +704,10 @@ It's useful just in stateless mode.
 
 5. Use `--interactive` to also print result to cmdline while saving to file.
 
+6. Use `--nostatus` to switch off status printing.
+
+7. Use `--ndjson-status` to get status in details.
+
 # Authors
 
 This tool created by Robert Graham:
