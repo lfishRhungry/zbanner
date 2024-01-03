@@ -1676,15 +1676,27 @@ static int SET_nobanners(struct Masscan *masscan, const char *name, const char *
     return CONF_OK;
 }
 
-static int SET_noreset(struct Masscan *masscan, const char *name, const char *value)
+static int SET_noreset1(struct Masscan *masscan, const char *name, const char *value)
 {
     UNUSEDPARM(name);
     if (masscan->echo) {
-        if (masscan->is_noreset || masscan->echo_all)
-            fprintf(masscan->echo, "noreset = %s\n", masscan->is_noreset?"true":"false");
+        if (masscan->is_noreset1 || masscan->echo_all)
+            fprintf(masscan->echo, "noreset1 = %s\n", masscan->is_noreset1?"true":"false");
         return 0;
     }
-    masscan->is_noreset = parseBoolean(value);
+    masscan->is_noreset1 = parseBoolean(value);
+    return CONF_OK;
+}
+
+static int SET_noreset2(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+        if (masscan->is_noreset2 || masscan->echo_all)
+            fprintf(masscan->echo, "noreset2 = %s\n", masscan->is_noreset2?"true":"false");
+        return 0;
+    }
+    masscan->is_noreset2 = parseBoolean(value);
     return CONF_OK;
 }
 
@@ -2489,7 +2501,8 @@ struct ConfigParameter config_parameters[] = {
     {"rawudp",          SET_banners_rawudp,     F_BOOL, {"rawudp",0}}, /* --rawudp */
     {"nobanners",       SET_nobanners,          F_BOOL, {"nobanner",0}},
     {"retries",         SET_retries,            0,      {"retry", "max-retries", "max-retry", 0}},
-    {"noreset",         SET_noreset,            F_BOOL, {0}},
+    {"noreset1",        SET_noreset1,           F_BOOL, {0}},
+    {"noreset2",        SET_noreset2,           F_BOOL, {0}},
     {"nmap-payloads",   SET_nmap_payloads,      0,      {"nmap-payload",0}},
     {"nmap-service-probes",SET_nmap_service_probes, 0,  {"nmap-service-probe",0}},
     {"offline",         SET_offline,            F_BOOL, {"notransmit", "nosend", "dry-run", 0}},

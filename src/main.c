@@ -1142,15 +1142,29 @@ receive_thread(void *v)
             
 
             /*
-             * Send RST so other side isn't left hanging
+             * Send RST if no more connecting
              */
-            if (tcpcon == NULL && !masscan->is_noreset && !masscan->is_stateless_banners)
-                tcp_send_RST(
-                    &parms->tmplset->pkts[Proto_TCP],
-                    parms->stack,
-                    ip_them, ip_me,
-                    port_them, port_me,
-                    0, seqno_me);
+            if (tcpcon == NULL && !masscan->is_noreset1) {
+                if (masscan->is_stateless_banners) {
+                    if (status == PortStatus_ZeroWin)
+                        tcp_send_RST(
+                            &parms->tmplset->pkts[Proto_TCP],
+                            parms->stack,
+                            ip_them, ip_me,
+                            port_them, port_me,
+                            0, seqno_me);
+                }else{
+                    if (status == PortStatus_Open || status == PortStatus_ZeroWin)
+                        tcp_send_RST(
+                            &parms->tmplset->pkts[Proto_TCP],
+                            parms->stack,
+                            ip_them, ip_me,
+                            port_them, port_me,
+                            0, seqno_me);
+                }
+            }
+
+            continue;
 
         }
 
@@ -1223,7 +1237,7 @@ receive_thread(void *v)
             /*
              * Send RST after server's response
              */
-            if (!masscan->is_noreset)
+            if (!masscan->is_noreset2)
                 tcp_send_RST(
                     &parms->tmplset->pkts[Proto_TCP],
                     parms->stack,
