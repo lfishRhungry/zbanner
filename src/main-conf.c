@@ -1201,15 +1201,27 @@ static int SET_banners(struct Masscan *masscan, const char *name, const char *va
     return CONF_OK;
 }
 
-static int SET_nodedup(struct Masscan *masscan, const char *name, const char *value)
+static int SET_nodedup1(struct Masscan *masscan, const char *name, const char *value)
 {
     UNUSEDPARM(name);
     if (masscan->echo) {
-        if (masscan->is_nodedup || masscan->echo_all)
-            fprintf(masscan->echo, "nodedup = %s\n", masscan->is_nodedup?"true":"false");
+        if (masscan->is_nodedup1 || masscan->echo_all)
+            fprintf(masscan->echo, "nodedup1 = %s\n", masscan->is_nodedup1?"true":"false");
        return 0;
     }
-    masscan->is_nodedup = parseBoolean(value);
+    masscan->is_nodedup1 = parseBoolean(value);
+    return CONF_OK;
+}
+
+static int SET_nodedup2(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+        if (masscan->is_nodedup2 || masscan->echo_all)
+            fprintf(masscan->echo, "nodedup2 = %s\n", masscan->is_nodedup2?"true":"false");
+       return 0;
+    }
+    masscan->is_nodedup2 = parseBoolean(value);
     return CONF_OK;
 }
 
@@ -2522,7 +2534,8 @@ struct ConfigParameter config_parameters[] = {
     {"stateless-banners",SET_stateless_banners, F_BOOL, {"stateless", "stateless-banner", "stateless-mode",0}},
     {"stateless-probe", SET_stateless_probe,    0,      {"probe", 0}},
     {"list-probes",     SET_list_probes,        F_BOOL, {"list-probe", 0}},
-    {"no-dedup",        SET_nodedup,            F_BOOL, {"nodedup", 0}},
+    {"no-dedup1",       SET_nodedup1,            F_BOOL, {"nodedup1", 0}},
+    {"no-dedup2",       SET_nodedup2,            F_BOOL, {"nodedup2", 0}},
 
     {"debug-tcp",       SET_debug_tcp,          F_BOOL, {"tcp-debug", 0}},
     {0}

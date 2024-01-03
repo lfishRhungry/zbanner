@@ -197,7 +197,8 @@ struct Masscan
     unsigned is_stateless_banners:1; /* --stateless, --stateless-banners, get banners in stateless mode*/
     unsigned is_offline:1;      /* --offline */
     unsigned is_noreset:1;      /* --noreset, don't transmit RST */
-    unsigned is_nodedup:1;      /* --nodedup, don't deduplicate response */
+    unsigned is_nodedup1:1;      /* --nodedup1, don't deduplicate for SYN-ACK */
+    unsigned is_nodedup2:1;      /* --nodedup2, don't deduplicate Data Response */
     unsigned is_gmt:1;          /* --gmt, all times in GMT */
     unsigned is_capture_cert:1; /* --capture cert */
     unsigned is_capture_html:1; /* --capture html */

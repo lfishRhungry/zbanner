@@ -622,13 +622,19 @@ Specify application-layer probe:
 masscan 10.0.0.0/8 -p80 --stateless --probe getrequest
 ```
 
+List all application-layer probes:
+
+```
+masscan --list-probes
+```
+
 Output banner in result:
 
 ```
 masscan 10.0.0.0/8 -p110 --stateless --capture stateless
 ```
 
-Suggest save receive packets to pcap file for analysis:
+Save receive packets to pcap file for analysis:
 
 ```
 masscan 10.0.0.0/8 -p110 --stateless --pcap result.pcap
@@ -638,6 +644,18 @@ Also save status output:
 
 ```
 masscan 10.0.0.0/8 -p110 --stateless --pcap result.pcap -oX result.xml
+```
+
+Do not deduplicating for SYN-ACK:
+
+```
+masscan 10.0.0.0/8 -p110 --nodedup1
+```
+
+Do not deduplicating for response with data:
+
+```
+masscan 10.0.0.0/8 -p110 --stateless --nodedup2
 ```
 
 ## Stateless Probe Module
@@ -669,14 +687,8 @@ Possible achievements:
     Can not keep 'reponsed' state data in stateless mode.
     - save a pcap file(`--pcap`): raw result for later analysis.
 
-4. Use `--list-probes` to check stateless probes.
-
-5. Statistic result `responsed`(aka a PortStatus) is number of responsed target in application-layer.
+4. Statistic result `responsed`(aka a PortStatus) is number of responsed target in application-layer.
 It's useful just in stateless mode.
-
-6. Use `--nodedup` to switch off deduplication.
-
-
 
 # Authors
 

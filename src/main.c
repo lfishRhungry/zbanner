@@ -597,7 +597,7 @@ receive_thread(void *v)
      * Create deduplication table. This is so when somebody sends us
      * multiple responses, we only record the first one.
      */
-    if (!masscan->is_nodedup){
+    if (!masscan->is_nodedup1){
         dedup = dedup_create();
     }else{
         dedup = NULL;
@@ -608,7 +608,7 @@ receive_thread(void *v)
      * This is so when somebody sends us multiple app-layer responses,
      * we only record the first one.
      */
-    if (!masscan->is_nodedup){
+    if (masscan->is_stateless_banners && !masscan->is_nodedup2){
         dedup_for_stateless = dedup_create();
     }else{
         dedup_for_stateless = NULL;
@@ -923,7 +923,7 @@ receive_thread(void *v)
                         break;
 
                     /* Ignore duplicates */
-                    if (!masscan->is_nodedup){
+                    if (!masscan->is_nodedup1){
                         if (dedup_is_duplicate(dedup, ip_them, 0, ip_me, 0))
                             continue;
                     }
@@ -1096,7 +1096,7 @@ receive_thread(void *v)
             }
 
             /* verify: ignore duplicates */
-            if (!masscan->is_nodedup){
+            if (!masscan->is_nodedup1){
                 if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me))
                     continue;
             }
@@ -1187,7 +1187,7 @@ receive_thread(void *v)
                 continue;
 
             /* verify: ignore duplicates */
-            if (!masscan->is_nodedup){
+            if (!masscan->is_nodedup2){
                 if (dedup_is_duplicate(dedup_for_stateless, ip_them, port_them, ip_me, port_me))
                     continue;
             }
@@ -1242,11 +1242,11 @@ receive_thread(void *v)
 end:
     if (tcpcon)
         tcpcon_destroy_table(tcpcon);
-    if (!masscan->is_nodedup){
+    if (!masscan->is_nodedup1){
         dedup_destroy(dedup);
-        if (masscan->is_stateless_banners){
-            dedup_destroy(dedup_for_stateless);
-        }
+    }
+    if (masscan->is_stateless_banners && !masscan->is_nodedup2){
+        dedup_destroy(dedup_for_stateless);
     }
     output_destroy(out);
     if (pcapfile)
