@@ -2547,8 +2547,8 @@ struct ConfigParameter config_parameters[] = {
     {"stateless-banners",SET_stateless_banners, F_BOOL, {"stateless", "stateless-banner", "stateless-mode",0}},
     {"stateless-probe", SET_stateless_probe,    0,      {"probe", 0}},
     {"list-probes",     SET_list_probes,        F_BOOL, {"list-probe", 0}},
-    {"no-dedup1",       SET_nodedup1,            F_BOOL, {"nodedup1", 0}},
-    {"no-dedup2",       SET_nodedup2,            F_BOOL, {"nodedup2", 0}},
+    {"no-dedup1",       SET_nodedup1,           F_BOOL, {"nodedup1", 0}},
+    {"no-dedup2",       SET_nodedup2,           F_BOOL, {"nodedup2", 0}},
 
     {"debug-tcp",       SET_debug_tcp,          F_BOOL, {"tcp-debug", 0}},
     {0}
