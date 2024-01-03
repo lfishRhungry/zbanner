@@ -702,6 +702,8 @@ Possible achievements:
 4. Statistic result `responsed`(aka a PortStatus) is number of responsed target in application-layer.
 It's useful just in stateless mode.
 
+5. Use `--interactive` to also print result to cmdline while saving to file.
+
 # Authors
 
 This tool created by Robert Graham:
