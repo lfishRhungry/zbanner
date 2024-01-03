@@ -658,6 +658,18 @@ Do not deduplicating for response with data:
 masscan 10.0.0.0/8 -p110 --stateless --nodedup2
 ```
 
+Do not send RST for SYN-ACK:
+
+```
+masscan 10.0.0.0/8 -p110 --noreset1
+```
+
+Do not send RST for response with data:
+
+```
+masscan 10.0.0.0/8 -p110 --stateless --noreset2
+```
+
 ## Stateless Probe Module
 
 Aka application-layer request module.
