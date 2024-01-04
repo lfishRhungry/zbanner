@@ -1146,6 +1146,29 @@ static int SET_stateless_probe(struct Masscan *masscan, const char *name, const 
     return CONF_OK;
 }
 
+static int SET_probe_args(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+        if (masscan->stateless_probe){
+            fprintf(masscan->echo, "stateless-probe = %s\n", masscan->stateless_probe->name);
+        }
+        return 0;
+    }
+
+    
+    unsigned value_len = strlen(value);
+    if (value_len >= STATELESS_PROBE_ARGS_LEN) {
+        fprintf(stderr, "FAIL %s: length of value is too long\n", name);
+        fprintf(stderr, "Hint: length of %s value must be no more than %u.\n",
+            name, STATELESS_PROBE_ARGS_LEN-1);
+        return CONF_ERR;
+    }
+
+	memcpy(masscan->stateless_probe_args, value, value_len);
+    return CONF_OK;
+}
+
 /**
  * It's not good enough to set --list-probes this way because possibly conflict
  * with other parameter. Only using --list-probes would be no problem if want to
@@ -2559,6 +2582,7 @@ struct ConfigParameter config_parameters[] = {
     {"stateless-banners",SET_stateless_banners, F_BOOL, {"stateless", "stateless-banner", "stateless-mode",0}},
     {"stateless-probe", SET_stateless_probe,    0,      {"probe", 0}},
     {"list-probes",     SET_list_probes,        F_BOOL, {"list-probe", 0}},
+    {"probe-args",      SET_probe_args,         0,      {"probe-arg", 0}},
     {"no-dedup1",       SET_nodedup1,           F_BOOL, {"nodedup1", 0}},
     {"no-dedup2",       SET_nodedup2,           F_BOOL, {"nodedup2", 0}},
     {"feed-lzr",       SET_feed_lzr,            F_BOOL, {"feedlzr", 0}},

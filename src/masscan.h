@@ -189,6 +189,7 @@ struct Masscan
      * application probe/request for stateless mode
     */
     struct StatelessProbe *stateless_probe;
+    char stateless_probe_args[STATELESS_PROBE_ARGS_LEN];
     
     unsigned is_pfring:1;       /* --pfring */
     unsigned is_sendq:1;        /* --sendq */
