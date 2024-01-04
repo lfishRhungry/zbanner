@@ -15,7 +15,7 @@ struct ProtocolParserStream;
 #define TCP_SEQNO(px,i) (px[i+4]<<24|px[i+5]<<16|px[i+6]<<8|px[i+7])
 #define TCP_ACKNO(px,i) (px[i+8]<<24|px[i+9]<<16|px[i+10]<<8|px[i+11])
 #define TCP_FLAGS(px,i) (px[(i)+13])
-#define TCP_WIN(px,i) (px[i+14]<<24|px[i+15]<<16) /*calc TCP window size*/
+#define TCP_WIN(px,i) (px[i+14]<<8|px[i+15]) /*calc TCP window size*/
 /* Logically it is actually TCP_HAS_XXX instead of TCP_IS_XXX */
 #define TCP_IS_SYNACK(px,i) ((TCP_FLAGS(px,i) & 0x12) == 0x12)
 #define TCP_IS_ACK(px,i) ((TCP_FLAGS(px,i) & 0x10) == 0x10)
