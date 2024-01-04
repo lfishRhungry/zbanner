@@ -797,6 +797,7 @@ receive_thread(void *v)
         unsigned port_them;
         unsigned seqno_me;
         unsigned seqno_them;
+        unsigned win_them;
         unsigned cookie;
         unsigned Q = 0;
 
@@ -844,6 +845,7 @@ receive_thread(void *v)
         port_them = parsed.port_src;
         seqno_them = TCP_SEQNO(px, parsed.transport_offset);
         seqno_me = TCP_ACKNO(px, parsed.transport_offset);
+        win_them = TCP_WIN(px, parsed.transport_offset);
         
         assert(ip_me.version != 0);
         assert(ip_them.version != 0);
@@ -1085,7 +1087,7 @@ receive_thread(void *v)
             if (TCP_IS_SYNACK(px, parsed.transport_offset)) {
                 status = PortStatus_Open;
                 /*care the zero win in SYNACK*/
-                if (TCP_WIN(px, parsed.transport_offset)==0) {
+                if (win_them==0) {
                     status = PortStatus_ZeroWin;
                 }
             }
