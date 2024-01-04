@@ -1136,17 +1136,12 @@ receive_thread(void *v)
             /*
              * This is where we do the output
              */
-            output_report_status(
-                        out,
-                        global_now,
-                        status,
-                        ip_them,
-                        6, /* ip proto = tcp */
-                        port_them,
+            output_report_status(out, global_now, status, ip_them,
+                        6, /* ip proto = tcp */ port_them,
                         px[parsed.transport_offset + 13], /* tcp flags */
-                        parsed.ip_ttl,
-                        parsed.mac_src
-                        );
+                        parsed.ip_ttl, parsed.mac_src,
+                        /* these are for feeding LZR*/
+                        ip_me, port_me, seqno_them, seqno_me, win_them);
             
 
             /*

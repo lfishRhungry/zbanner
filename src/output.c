@@ -46,6 +46,7 @@
 #include <limits.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdarg.h>
 
 /* Put this at the bottom of the include lists because of warnings */
 #include "util-safefunc.h"
@@ -405,6 +406,7 @@ output_create(const struct Masscan *masscan, unsigned thread_index)
     out->is_show_closed = masscan->output.is_show_closed;
     out->is_show_host = masscan->output.is_show_host;
     out->is_append = masscan->output.is_append;
+    out->is_feed_lzr = masscan->output.is_feed_lzr;
     out->xml.stylesheet = duplicate_string(masscan->output.stylesheet);
     out->rotate.directory = duplicate_string(masscan->output.rotate.directory);
     if (masscan->nic_count <= 1)
@@ -735,7 +737,7 @@ oui_from_mac(const unsigned char mac[6])
 void
 output_report_status(struct Output *out, time_t timestamp, int status,
         ipaddress ip, unsigned ip_proto, unsigned port, unsigned reason, unsigned ttl,
-        const unsigned char mac[6])
+        const unsigned char mac[6], ...)
 {
     FILE *fp = out->fp;
     time_t now = time(0);
@@ -766,13 +768,36 @@ output_report_status(struct Output *out, time_t timestamp, int status,
                         oui_from_mac(mac)
                         );
             break;
-        default:
-            count = fprintf(stdout, "Discovered %s port %u/%s on %s",
-                        status_string(status),
-                        port,
-                        name_from_ip_proto(ip_proto),
-                        fmt.string
-                        );
+        default: {
+            if (out->is_feed_lzr && (status == PortStatus_Open || status == PortStatus_ZeroWin)) {
+                /**
+                 * LZR need format like:
+                 *   {"saddr":"42.194.129.165","daddr":"112.31.213.24","sport":80,"dport":49088,"seqnum":3867723978,"acknum":3830569963,"window":14600}
+                 * So I put additional parameters in `...` of sort:
+                 *   ip_me, port_me, seqno_them, seqno_me, win_them
+                */
+                va_list valist;
+                va_start(valist, 5);
+                ipaddress ip_me = va_arg(valist, ipaddress);
+                unsigned port_me = va_arg(valist, unsigned);
+                unsigned seqno_them = va_arg(valist, unsigned);
+                unsigned seqno_me = va_arg(valist, unsigned);
+                unsigned win_them = va_arg(valist, unsigned);
+
+                ipaddress_formatted_t ip_me_fmt = ipaddress_fmt(ip_me);
+                count = fprintf(stdout, "{\"saddr\":\"%s\",\"daddr\":\"%s\",\"sport\":%u,\"dport\":%u,\"seqnum\":%u,\"acknum\":%u,\"window\":%u}",
+                            fmt.string, ip_me_fmt.string, port, port_me,
+                            seqno_them, seqno_me, win_them);
+                va_end(valist);
+            } else {
+                count = fprintf(stdout, "Discovered %s port %u/%s on %s",
+                            status_string(status),
+                            port,
+                            name_from_ip_proto(ip_proto),
+                            fmt.string
+                            );
+            }
+        }
         }
 
         /* Because this line may overwrite the "%done" status line, print

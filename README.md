@@ -670,6 +670,13 @@ Do not send RST for response with data:
 masscan 10.0.0.0/8 -p110 --stateless --noreset2
 ```
 
+Work with LZR:
+
+```
+masscan 10.0.0.0/8 -p 80 --noreset1 --feedlzr | \
+lzr --handshakes http -sendInterface eth0 -f results.json
+```
+
 ## Stateless Probe Module
 
 Aka application-layer request module.

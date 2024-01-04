@@ -1225,6 +1225,18 @@ static int SET_nodedup2(struct Masscan *masscan, const char *name, const char *v
     return CONF_OK;
 }
 
+static int SET_feed_lzr(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+        if (masscan->output.is_feed_lzr || masscan->echo_all)
+            fprintf(masscan->echo, "feed-lzr = %s\n", masscan->output.is_feed_lzr?"true":"false");
+       return 0;
+    }
+    masscan->output.is_feed_lzr = parseBoolean(value);
+    return CONF_OK;
+}
+
 static int SET_banners_rawudp(struct Masscan *masscan, const char *name, const char *value)
 {
     if (masscan->echo) {
@@ -2549,6 +2561,7 @@ struct ConfigParameter config_parameters[] = {
     {"list-probes",     SET_list_probes,        F_BOOL, {"list-probe", 0}},
     {"no-dedup1",       SET_nodedup1,           F_BOOL, {"nodedup1", 0}},
     {"no-dedup2",       SET_nodedup2,           F_BOOL, {"nodedup2", 0}},
+    {"feed-lzr",       SET_feed_lzr,            F_BOOL, {"feedlzr", 0}},
 
     {"debug-tcp",       SET_debug_tcp,          F_BOOL, {"tcp-debug", 0}},
     {0}

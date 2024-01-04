@@ -90,6 +90,7 @@ struct Output
     unsigned is_show_closed:1; /* show closed ports */
     unsigned is_show_host:1; /* show host status info, like up/down */
     unsigned is_append:1; /* append to file */
+    unsigned is_feed_lzr:1; /* output SYN-ACK info in format of feeding to LZR */
     struct {
         struct {
             uint64_t open;
@@ -170,7 +171,7 @@ void output_destroy(struct Output *output);
 
 void output_report_status(struct Output *output, time_t timestamp,
     int status, ipaddress ip, unsigned ip_proto, unsigned port, unsigned reason, unsigned ttl,
-    const unsigned char mac[6]);
+    const unsigned char mac[6], ...);
 
 
 typedef void (*OUTPUT_REPORT_BANNER)(

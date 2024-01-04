@@ -304,6 +304,15 @@ struct Masscan
          * We should append to the output file rather than overwriting it.
          */
         unsigned is_append:1;
+
+        /**
+         * --feedlzr
+         * Output SYN-ACK info in format of feeding to LZR like:
+         *     {"saddr":"42.194.129.165","daddr":"112.31.213.24","sport":80,"dport":49088,"seqnum":3867723978,"acknum":3830569963,"window":14600}
+         * Use it for port scanning with `--noreset1` flag.
+         * Do not use --show or --noshow.
+        */
+        unsigned is_feed_lzr:1;
         
         /**
          * --json-status
