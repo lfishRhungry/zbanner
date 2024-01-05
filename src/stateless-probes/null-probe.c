@@ -1,5 +1,4 @@
 #include "../masscan.h"
-#include "stateless-probes.h"
 #include "null-probe.h"
 
 struct StatelessProbe NullProbe = {
