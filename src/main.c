@@ -1406,7 +1406,10 @@ main_scan(struct Masscan *masscan)
      * Do global init for stateless probe
      */
     if (masscan->stateless_probe && masscan->stateless_probe->global_init){
-        masscan->stateless_probe->global_init(masscan);
+        if (EXIT_FAILURE == masscan->stateless_probe->global_init(masscan)) {
+            LOG(0, "FAIL: errors in stateless probe global initializing\n");
+            exit(1);
+        }
     }
 
 

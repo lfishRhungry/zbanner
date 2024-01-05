@@ -15,6 +15,7 @@
  * and struct Masscan/ThreadPair must be used here.
  * Use 'void' to avoid circular dependency,
  * cast it to correct type in specific implementation of probe.
+ * @return EXIT_FAILURE to exit process if init failed
 */
 typedef int (*stateless_probe_global_init_cb)(const void *Masscan);
 
