@@ -96,4 +96,27 @@ safe_gmtime(struct tm* _tm, const time_t *time)
     return 0;
 }
 
-
+char *
+stristr (const char * haystack, const char * needle)
+{
+    char *cp = (char *) haystack;
+    char *s1, *s2;
+    
+    if (!*needle)
+        return((char *)haystack);
+    
+    while (*cp) {
+        s1 = cp;
+        s2 = (char *) needle;
+        
+        while (*s1 && *s2 && toupper(*s1)==toupper(*s2) ) {
+            s1++, s2++;
+        }
+        
+        if (!*s2) return(cp);
+        
+        cp++;
+    }
+    
+    return(NULL);
+}

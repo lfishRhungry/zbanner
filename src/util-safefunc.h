@@ -66,6 +66,9 @@ void safe_strcpy(char *dst, size_t sizeof_dst, const char *src);
 int safe_localtime(struct tm* _tm, const time_t *time);
 int safe_gmtime(struct tm* _tm, const time_t *time);
 
+/*`strstr` but in case insensitive*/
+char * stristr (const char * haystack, const char * needle);
+
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1900)
 /*Visual Studio 2015 and 2017*/
