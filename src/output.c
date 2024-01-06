@@ -802,8 +802,10 @@ output_report_status(struct Output *out, time_t timestamp, int status,
 
         /* Because this line may overwrite the "%done" status line, print
          * some spaces afterward to completely cover up the line */
-        if (count < 80)
-            fprintf(stdout, "%.*s", (int)(79-count),
+        /* People would like to save results to file when scan large number
+           of target, so use 90 spaces will be enough now*/
+        if (count < 90)
+            fprintf(stdout, "%.*s", (int)(89-count),
                     "                                          "
                     "                                          ");
 
