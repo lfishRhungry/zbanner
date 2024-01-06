@@ -1,6 +1,20 @@
 #include "../../masscan.h"
 #include "lzr-probe.h"
 
+/*
+ * LZR Probe will use `get_report_banner` funcs of all subprobes listed here
+ * to match the banner and identify its service automaticly.
+ * Subprobes' names always start with 'lzr-', and could be used as a normal
+ * StatelessProbe. It reports what service it identified out and will report
+ * nothong if no service identified.
+ * When they specified as subprobes in LZR probe with `--probe-args`, omit the
+ * 'lzr-' prefix. LZR probe uses specified subprobe to send data, and matches
+ * all subprobes to responsed banner. It could reports more than one service
+ * or 'unknown' if nothing identified.
+ * 
+ * Subprobes of LZR are also StatelessProbes but its init and close callback
+ * funcs will never be called. So leave all init and close funcs NULL.
+ */
 
 extern struct StatelessProbe LzrWaitProbe;
 extern struct StatelessProbe LzrHttpProbe;
@@ -107,6 +121,15 @@ lzr_report_banner(ipaddress ip_them, ipaddress ip_me,
         remain_len = buf_len - (buf_idx - report_banner_buf);
     }
 
+    /*got nothing*/
+    if (buf_idx==report_banner_buf) {
+        memcpy(report_banner_buf, "unknown", strlen("unknown"));
+        buf_idx += strlen("unknown");
+    } else {
     /* truncat the last '-' */
-    return buf_idx==report_banner_buf?0:buf_idx-report_banner_buf-1;
+        buf_idx--;
+    }
+
+    /* truncat the last '-' */
+    return buf_idx-report_banner_buf;
 }
