@@ -4,9 +4,9 @@
 struct StatelessProbe NullProbe = {
 	.name = "null",
 	.help_text =
-		"NullProbe does not send any data to target port throught and after TCP"
-		" handshakes, just wait banner from server. However, waiting is the che"
-		"apest thing in stateless mode.\n"
+		"NullProbe does not send any data to target port throught and after TCP\n"
+		" handshakes, just wait banner from server. However, waiting is the che-\n"
+		"-apest thing in stateless mode.\n"
 		"NullProbe is the default stateless probe.\n",
 	.global_init = NULL,
 	.thread_init = NULL,

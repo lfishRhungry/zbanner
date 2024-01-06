@@ -11,13 +11,21 @@ This is an Application Probe(or Request) Plugin System
 
 extern struct StatelessProbe NullProbe;
 extern struct StatelessProbe GetRequestProbe;
+extern struct StatelessProbe LzrProbe;
+extern struct StatelessProbe LzrWaitProbe;
+extern struct StatelessProbe LzrHttpProbe;
+extern struct StatelessProbe LzrFtpProbe;
 //! ADD YOUR PROBE HERE
 
 
 
 static struct StatelessProbe *stateless_probes[] = {
 	&NullProbe, /* its also the default probe*/
-	&GetRequestProbe
+	&GetRequestProbe,
+	&LzrProbe,
+	&LzrWaitProbe,
+	&LzrHttpProbe,
+    &LzrFtpProbe,
 	//! ADD YOUR PROBE HERE
 };
 

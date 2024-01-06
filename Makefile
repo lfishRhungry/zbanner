@@ -118,8 +118,11 @@ tmp/%.o: src/%.c src/*.h
 tmp/%.o: src/stateless-probes/%.c src/stateless-probes/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+tmp/%.o: src/stateless-probes/lzr-handshakes/%.c src/stateless-probes/lzr-handshakes/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
-SRC = $(sort $(wildcard src/*.c src/stateless-probes/*.c))
+
+SRC = $(sort $(wildcard src/*.c src/stateless-probes/*.c src/stateless-probes/lzr-handshakes/*.c))
 OBJ = $(addprefix tmp/, $(notdir $(addsuffix .o, $(basename $(SRC))))) 
 
 
