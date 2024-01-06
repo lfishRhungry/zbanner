@@ -777,7 +777,7 @@ output_report_status(struct Output *out, time_t timestamp, int status,
                  *   ip_me, port_me, seqno_them, seqno_me, win_them
                 */
                 va_list valist;
-                va_start(valist, 5);
+                va_start(valist, mac);
                 ipaddress ip_me = va_arg(valist, ipaddress);
                 unsigned port_me = va_arg(valist, unsigned);
                 unsigned seqno_them = va_arg(valist, unsigned);
