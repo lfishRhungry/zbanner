@@ -107,8 +107,7 @@ struct ThreadPair {
      * unsafe */
     const struct Masscan *masscan;
 
-    /** The adapter used by the thread-pair. Normally, thread-pairs have
-     * their own network adapter, especially when doing PF_RING
+    /** The adapter in struct masscan. Maybe diff when doing PF_RING
      * clustering. */
     struct Adapter *adapter;
 
@@ -130,15 +129,6 @@ struct ThreadPair {
     /* This is used both by the transmit and receive thread for
      * formatting packets */
     struct TemplateSet tmplset[1];
-
-    /**
-     * The current IP address we are using for transmit/receive.
-     */
-    struct stack_src_t _src_;
-
-    macaddress_t source_mac;
-    macaddress_t router_mac_ipv4;
-    macaddress_t router_mac_ipv6;
 
     unsigned done_transmitting;
     unsigned done_receiving;
@@ -915,7 +905,7 @@ receive_thread(void *v)
                      * ourself, or the router will lose track of us.*/
                      stack_arp_incoming_request(stack,
                                       ip_me.ipv4,
-                                      parms->source_mac,
+                                      masscan->nic.source_mac,
                                       px, length);
                     break;
                 case 2: /* response */
@@ -1419,6 +1409,19 @@ main_scan(struct Masscan *masscan)
 #endif
 
     /*
+     * Turn the adapter on, and get the running configuration
+     */
+    if (masscan_initialize_adapter(masscan) != 0)
+        exit(1);
+    if (!masscan->nic.is_usable) {
+        LOG(0, "FAIL: failed to detect IP of interface\n");
+        LOG(0, " [hint] did you spell the name correctly?\n");
+        LOG(0, " [hint] if it has no IP address, "
+                "manually set with \"--adapter-ip 192.168.100.5\"\n");
+        exit(1);
+    }
+
+    /*
      * Start scanning threads
      */
     unsigned threadpair_count = masscan->tx_thread_count>masscan->rx_thread_count?
@@ -1426,7 +1429,6 @@ main_scan(struct Masscan *masscan)
 
     for (index=0; index<threadpair_count; index++) {
         struct ThreadPair *parms = &parms_array[index];
-        int err;
 
         parms->masscan = masscan;
         parms->my_index = masscan->resume.index;
@@ -1439,26 +1441,7 @@ main_scan(struct Masscan *masscan)
          * the scan */
         parms->pt_start = 1.0 * pixie_gettime() / 1000000.0;
 
-
-        /*
-         * Turn the adapter on, and get the running configuration
-         */
-        err = masscan_initialize_adapter(
-                            masscan,
-                            &parms->source_mac,
-                            &parms->router_mac_ipv4,
-                            &parms->router_mac_ipv6
-                            );
-        if (err != 0)
-            exit(1);
         parms->adapter = masscan->nic.adapter;
-        if (!masscan->nic.is_usable) {
-            LOG(0, "FAIL: failed to detect IP of interface\n");
-            LOG(0, " [hint] did you spell the name correctly?\n");
-            LOG(0, " [hint] if it has no IP address, "
-                    "manually set with \"--adapter-ip 192.168.100.5\"\n");
-            exit(1);
-        }
 
 
         /*
@@ -1470,9 +1453,9 @@ main_scan(struct Masscan *masscan)
         parms->tmplset->vulncheck = vulncheck;
         template_packet_init(
                     parms->tmplset,
-                    parms->source_mac,
-                    parms->router_mac_ipv4,
-                    parms->router_mac_ipv6,
+                    masscan->nic.source_mac,
+                    masscan->nic.router_mac_ipv4,
+                    masscan->nic.router_mac_ipv6,
                     masscan->payloads.udp,
                     masscan->payloads.oproto,
                     stack_if_datalink(masscan->nic.adapter),
@@ -1489,7 +1472,7 @@ main_scan(struct Masscan *masscan)
             masscan->nic.src.port.range = 16;
         }
 
-        stack = stack_create(parms->source_mac, &masscan->nic.src);
+        stack = stack_create(masscan->nic.source_mac, &masscan->nic.src);
         parms->stack = stack;
 
         /*

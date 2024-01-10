@@ -19,12 +19,7 @@
  * in the configuration file.
  ***************************************************************************/
 int
-masscan_initialize_adapter(
-    struct Masscan *masscan,
-    macaddress_t *source_mac,
-    macaddress_t *router_mac_ipv4,
-    macaddress_t *router_mac_ipv6
-    )
+masscan_initialize_adapter(struct Masscan *masscan)
 {
     char *ifname;
     char ifname2[256];
@@ -91,13 +86,12 @@ masscan_initialize_adapter(
     } else if (masscan->nic.link_type == PCAP_DLT_RAW) {
         LOG(1, "[+] source-mac = %s\n", "none");
     } else {
-        *source_mac = masscan->nic.source_mac;
         if (masscan->nic.my_mac_count == 0) {
-            if (macaddress_is_zero(*source_mac)) {
-                rawsock_get_adapter_mac(ifname, source_mac->addr);
+            if (macaddress_is_zero(masscan->nic.source_mac)) {
+                rawsock_get_adapter_mac(ifname, masscan->nic.source_mac.addr);
             }
             /* If still zero, then print error message */
-            if (macaddress_is_zero(*source_mac)) {
+            if (macaddress_is_zero(masscan->nic.source_mac)) {
                 fprintf(stderr, "[-] FAIL: failed to detect MAC address of interface:"
                         " \"%s\"\n", ifname);
                 fprintf(stderr, " [hint] try something like "
@@ -106,7 +100,7 @@ masscan_initialize_adapter(
             }
         }
         
-        fmt = macaddress_fmt(*source_mac);
+        fmt = macaddress_fmt(masscan->nic.source_mac);
         LOG(1, "[+] source-mac = %s\n", fmt.string);
     }
     
@@ -155,18 +149,17 @@ masscan_initialize_adapter(
          * Note: in order to ARP the router, we need to first enable the libpcap
          * code above.
          */
-        *router_mac_ipv4 = masscan->nic.router_mac_ipv4;
         if (masscan->is_offline) {
             /* If we are doing offline benchmarking/testing, then create
              * a fake MAC address fro the router */
-            memcpy(router_mac_ipv4->addr, "\x66\x55\x44\x33\x22\x11", 6);
+            memcpy(masscan->nic.router_mac_ipv4.addr, "\x66\x55\x44\x33\x22\x11", 6);
         } else if (masscan->nic.link_type == PCAP_DLT_NULL) {
             /* If it's a VPN tunnel, then there is no Ethernet MAC address */
             LOG(1, "[+] router-mac-ipv4 = %s\n", "implicit");
 	} else if (masscan->nic.link_type == PCAP_DLT_RAW) {
             /* If it's a VPN tunnel, then there is no Ethernet MAC address */
             LOG(1, "[+] router-mac-ipv4 = %s\n", "implicit");
-        } else if (macaddress_is_zero(*router_mac_ipv4)) {
+        } else if (macaddress_is_zero(masscan->nic.router_mac_ipv4)) {
             ipv4address_t router_ipv4 = masscan->nic.router_ip;
             int err = 0;
 
@@ -182,14 +175,14 @@ masscan_initialize_adapter(
                 stack_arp_resolve(
                         masscan->nic.adapter,
                         adapter_ip,
-                        *source_mac,
+                        masscan->nic.source_mac,
                         router_ipv4,
-                        router_mac_ipv4);
+                        &masscan->nic.router_mac_ipv4);
             }
             
-            fmt = macaddress_fmt(*router_mac_ipv4);
+            fmt = macaddress_fmt(masscan->nic.router_mac_ipv4);
             LOG(1, "[+] router-mac-ipv4 = %s\n", fmt.string);
-            if (macaddress_is_zero(*router_mac_ipv4)) {
+            if (macaddress_is_zero(masscan->nic.router_mac_ipv4)) {
                 fmt = ipv4address_fmt(masscan->nic.router_ip);
                 LOG(0, "[-] FAIL: ARP timed-out resolving MAC address for router %s: \"%s\"\n", ifname, fmt.string);
                 LOG(0, "    [hint] try \"--router ip 192.0.2.1\" to specify different router\n");
@@ -231,24 +224,23 @@ masscan_initialize_adapter(
         /*
          * ROUTER MAC ADDRESS
          */
-        *router_mac_ipv6 = masscan->nic.router_mac_ipv6;
         if (masscan->is_offline) {
-            memcpy(router_mac_ipv6->addr, "\x66\x55\x44\x33\x22\x11", 6);
+            memcpy(masscan->nic.router_mac_ipv6.addr, "\x66\x55\x44\x33\x22\x11", 6);
         }
-        if (macaddress_is_zero(*router_mac_ipv6)) {
+        if (macaddress_is_zero(masscan->nic.router_mac_ipv6)) {
             /* [synchronous]
              * Wait for router neighbor notification. This may take
              * some time */
             stack_ndpv6_resolve(
                     masscan->nic.adapter,
                     adapter_ipv6,
-                    *source_mac,
-                    router_mac_ipv6);
+                    masscan->nic.source_mac,
+                    &masscan->nic.router_mac_ipv6);
         }
         
-        fmt = macaddress_fmt(*router_mac_ipv6);
+        fmt = macaddress_fmt(masscan->nic.router_mac_ipv6);
         LOG(1, "[+] router-mac-ipv6 = %s\n", fmt.string);
-        if (macaddress_is_zero(*router_mac_ipv6)) {
+        if (macaddress_is_zero(masscan->nic.router_mac_ipv6)) {
             fmt = ipv4address_fmt(masscan->nic.router_ip);
             LOG(0, "[-] FAIL: NDP timed-out resolving MAC address for router %s: \"%s\"\n", ifname, fmt.string);
             LOG(0, "    [hint] try \"--router-mac-ipv6 66-55-44-33-22-11\" instead to bypass ARP\n");

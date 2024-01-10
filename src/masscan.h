@@ -558,11 +558,7 @@ masscan_set_parameter(struct Masscan *masscan,
  * local routers.
  */
 int
-masscan_initialize_adapter(
-    struct Masscan *masscan,
-    macaddress_t *source_mac,
-    macaddress_t *router_mac_ipv4,
-    macaddress_t *router_mac_ipv6);
+masscan_initialize_adapter(struct Masscan *masscan);
 
 /**
  * Echoes the settings to the command-line. By default, echoes only
