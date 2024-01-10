@@ -47,7 +47,7 @@ struct Output
 {
     const struct Masscan *masscan;
     char *filename;
-    struct stack_src_t src[8];
+    struct stack_src_t src;
     FILE *fp;
     const struct OutputType *funcs;
     unsigned format;

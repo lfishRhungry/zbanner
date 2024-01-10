@@ -314,22 +314,16 @@ count_cidr6_bits(struct Range6 *range, bool *exact)
  * Echoes the configuration for one NIC
  ***************************************************************************/
 static void
-masscan_echo_nic(struct Masscan *masscan, FILE *fp, unsigned i)
+masscan_echo_nic(struct Masscan *masscan, FILE *fp)
 {
     char idx_str[64];
 
-    /* If we have only one adapter, then don't print the array indexes.
-     * Otherwise, we need to print the array indexes to distinguish
-     * the NICs from each other */
-    if (masscan->nic_count <= 1)
-        idx_str[0] = '\0';
-    else
-        snprintf(idx_str, sizeof(idx_str), "[%u]", i);
+    idx_str[0] = '\0';
 
-    if (masscan->nic[i].ifname[0])
-        fprintf(fp, "adapter%s = %s\n", idx_str, masscan->nic[i].ifname);
+    if (masscan->nic.ifname[0])
+        fprintf(fp, "adapter%s = %s\n", idx_str, masscan->nic.ifname);
     
-    if (masscan->nic[i].src.ipv4.first != 0 || masscan->nic[i].src.ipv4.last != 0) {
+    if (masscan->nic.src.ipv4.first != 0 || masscan->nic.src.ipv4.last != 0) {
 
         /**
          * FIX 495.1 for issue #495: Single adapter-ip is not saved at all
@@ -350,8 +344,8 @@ masscan_echo_nic(struct Masscan *masscan, FILE *fp, unsigned i)
          * users are doing multi-hour / multi-day scans, having them paused and
          * then resuming them (apparently)
          */
-        if (masscan->nic[i].src.ipv4.first == masscan->nic[i].src.ipv4.last) {
-            ipaddress_formatted_t fmt = ipv4address_fmt(masscan->nic[i].src.ipv4.first);
+        if (masscan->nic.src.ipv4.first == masscan->nic.src.ipv4.last) {
+            ipaddress_formatted_t fmt = ipv4address_fmt(masscan->nic.src.ipv4.first);
             fprintf(fp, "adapter-ip%s = %s\n", idx_str, fmt.string);
         }
 
@@ -374,38 +368,38 @@ masscan_echo_nic(struct Masscan *masscan, FILE *fp, unsigned i)
          * Changing it from < to <= fixes that issue and both of the above cases
          * now print the correct range as expected
          */
-        else if (masscan->nic[i].src.ipv4.first < masscan->nic[i].src.ipv4.last) {
-            ipaddress_formatted_t fmt1 = ipv4address_fmt(masscan->nic[i].src.ipv4.first);
-            ipaddress_formatted_t fmt2 = ipv4address_fmt(masscan->nic[i].src.ipv4.last);
+        else if (masscan->nic.src.ipv4.first < masscan->nic.src.ipv4.last) {
+            ipaddress_formatted_t fmt1 = ipv4address_fmt(masscan->nic.src.ipv4.first);
+            ipaddress_formatted_t fmt2 = ipv4address_fmt(masscan->nic.src.ipv4.last);
             fprintf(fp, "adapter-ip%s = %s-%s\n", idx_str, fmt1.string, fmt2.string);
         }
     }
 
-    if (masscan->nic[i].src.ipv6.range) {
-        if (ipv6address_is_lessthan(masscan->nic[i].src.ipv6.first, masscan->nic[i].src.ipv6.last)) {
-            ipaddress_formatted_t fmt1 = ipv6address_fmt(masscan->nic[i].src.ipv6.first);
-            ipaddress_formatted_t fmt2 = ipv6address_fmt(masscan->nic[i].src.ipv6.last);
+    if (masscan->nic.src.ipv6.range) {
+        if (ipv6address_is_lessthan(masscan->nic.src.ipv6.first, masscan->nic.src.ipv6.last)) {
+            ipaddress_formatted_t fmt1 = ipv6address_fmt(masscan->nic.src.ipv6.first);
+            ipaddress_formatted_t fmt2 = ipv6address_fmt(masscan->nic.src.ipv6.last);
             fprintf(fp, "adapter-ip%s = %s-%s\n", idx_str, fmt1.string, fmt2.string);
         } else {
-            ipaddress_formatted_t fmt = ipv6address_fmt(masscan->nic[i].src.ipv6.first);
+            ipaddress_formatted_t fmt = ipv6address_fmt(masscan->nic.src.ipv6.first);
             fprintf(fp, "adapter-ip%s = %s\n", idx_str, fmt.string);
         }
     }
 
-    if (masscan->nic[i].my_mac_count) {
-        ipaddress_formatted_t fmt = macaddress_fmt(masscan->nic[i].source_mac);
+    if (masscan->nic.my_mac_count) {
+        ipaddress_formatted_t fmt = macaddress_fmt(masscan->nic.source_mac);
         fprintf(fp, "adapter-mac%s = %s\n", idx_str, fmt.string);
     }
-    if (masscan->nic[i].router_ip) {
-        ipaddress_formatted_t fmt = ipv4address_fmt(masscan->nic[i].router_ip);
+    if (masscan->nic.router_ip) {
+        ipaddress_formatted_t fmt = ipv4address_fmt(masscan->nic.router_ip);
         fprintf(fp, "router-ip%s = %s\n", idx_str, fmt.string);
     }
-    if (!macaddress_is_zero(masscan->nic[i].router_mac_ipv4)) {
-        ipaddress_formatted_t fmt =  macaddress_fmt(masscan->nic[i].router_mac_ipv4);
+    if (!macaddress_is_zero(masscan->nic.router_mac_ipv4)) {
+        ipaddress_formatted_t fmt =  macaddress_fmt(masscan->nic.router_mac_ipv4);
         fprintf(fp, "router-mac-ipv4%s = %s\n", idx_str, fmt.string);
     }
-    if (!macaddress_is_zero(masscan->nic[i].router_mac_ipv6)) {
-        ipaddress_formatted_t fmt = macaddress_fmt(masscan->nic[i].router_mac_ipv6);
+    if (!macaddress_is_zero(masscan->nic.router_mac_ipv6)) {
+        ipaddress_formatted_t fmt = macaddress_fmt(masscan->nic.router_mac_ipv6);
         fprintf(fp, "router-mac-ipv6%s = %s\n", idx_str, fmt.string);
     }
 
@@ -1257,6 +1251,28 @@ static int SET_feed_lzr(struct Masscan *masscan, const char *name, const char *v
        return 0;
     }
     masscan->output.is_feed_lzr = parseBoolean(value);
+    return CONF_OK;
+}
+
+static int SET_thread_count(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        fprintf(masscan->echo, "transmit-thread-count = %u\n", masscan->tx_thread_count);
+        fprintf(masscan->echo, "receive-thread-count = %u\n", masscan->rx_thread_count);
+        return 0;
+    }
+
+    unsigned count = parseInt(value);
+    if (count==0) {
+        fprintf(stderr, "FAIL: %s: thread count cannot be zero.\n", name);
+        return CONF_ERR;
+    }
+
+    if (name[0]=='t') {
+        masscan->tx_thread_count = count;
+    } else {
+        masscan->rx_thread_count = count;
+    }
     return CONF_OK;
 }
 
@@ -2586,6 +2602,8 @@ struct ConfigParameter config_parameters[] = {
     {"no-dedup1",       SET_nodedup1,           F_BOOL, {"nodedup1", 0}},
     {"no-dedup2",       SET_nodedup2,           F_BOOL, {"nodedup2", 0}},
     {"feed-lzr",       SET_feed_lzr,            F_BOOL, {"feedlzr", 0}},
+    {"tansmit-thread-count", SET_thread_count,       F_NUMABLE, {"tx-thread-count", "tx-count", "tx-num", 0}},
+    {"receive-thread-count", SET_thread_count,       F_NUMABLE, {"rx-thread-count", "rx-count", "rx-num", 0}},
 
     {"debug-tcp",       SET_debug_tcp,          F_BOOL, {"tcp-debug", 0}},
     {0}
@@ -2599,12 +2617,6 @@ void
 masscan_set_parameter(struct Masscan *masscan,
                       const char *name, const char *value)
 {
-    unsigned index = ARRAY(name);
-    if (index >= 65536) {
-        fprintf(stderr, "%s: bad index\n", name);
-        exit(1);
-    }
-    
     /*
      * NEW:
      * Go through configured list of parameters
@@ -2637,13 +2649,11 @@ masscan_set_parameter(struct Masscan *masscan,
     if (EQUALS("conf", name) || EQUALS("config", name)) {
         masscan_read_config_file(masscan, value);
     } else if (EQUALS("adapter", name) || EQUALS("if", name) || EQUALS("interface", name)) {
-        if (masscan->nic[index].ifname[0]) {
-            fprintf(stderr, "CONF: overwriting \"adapter=%s\"\n", masscan->nic[index].ifname);
+        if (masscan->nic.ifname[0]) {
+            fprintf(stderr, "CONF: overwriting \"adapter=%s\"\n", masscan->nic.ifname);
         }
-        if (masscan->nic_count < index + 1)
-            masscan->nic_count = index + 1;
-        snprintf(  masscan->nic[index].ifname,
-                    sizeof(masscan->nic[index].ifname),
+        snprintf(  masscan->nic.ifname,
+                    sizeof(masscan->nic.ifname),
                     "%s",
                     value);
 
@@ -2667,14 +2677,14 @@ masscan_set_parameter(struct Masscan *masscan,
                         name, value);
                 exit(1);
             }
-            masscan->nic[index].src.ipv4.first = range.begin;
-            masscan->nic[index].src.ipv4.last = range.end;
-            masscan->nic[index].src.ipv4.range = range.end - range.begin + 1;
+            masscan->nic.src.ipv4.first = range.begin;
+            masscan->nic.src.ipv4.last = range.end;
+            masscan->nic.src.ipv4.range = range.end - range.begin + 1;
             break;
         case Ipv6_Address:
-            masscan->nic[index].src.ipv6.first = range6.begin;
-            masscan->nic[index].src.ipv6.last = range6.end;
-            masscan->nic[index].src.ipv6.range = 1; /* TODO: add support for more than one source */
+            masscan->nic.src.ipv6.first = range6.begin;
+            masscan->nic.src.ipv6.last = range6.end;
+            masscan->nic.src.ipv6.range = 1; /* TODO: add support for more than one source */
             break;
         default:
             LOG(0, "FAIL: bad source IP address: %s=%s\n",
@@ -2715,9 +2725,9 @@ masscan_set_parameter(struct Masscan *masscan,
             exit(1);
         }
 
-        masscan->nic[index].src.port.first = ports.list[0].begin;
-        masscan->nic[index].src.port.last = ports.list[0].end;
-        masscan->nic[index].src.port.range = ports.list[0].end - ports.list[0].begin + 1;
+        masscan->nic.src.port.first = ports.list[0].begin;
+        masscan->nic.src.port.last = ports.list[0].end;
+        masscan->nic.src.port.range = ports.list[0].end - ports.list[0].begin + 1;
     } else if (EQUALS("adapter-mac", name) || EQUALS("spoof-mac", name)
                || EQUALS("source-mac", name) || EQUALS("src-mac", name)) {
         /* Send packets FROM this MAC address */
@@ -2731,23 +2741,23 @@ masscan_set_parameter(struct Masscan *masscan,
         }
 
         /* Check for duplicates */
-        if (macaddress_is_equal(masscan->nic[index].source_mac, source_mac)) {
+        if (macaddress_is_equal(masscan->nic.source_mac, source_mac)) {
             /* suppresses warning message about duplicate MAC addresses if
              * they are in fact the same */
             return;
         }
 
         /* Warn if we are overwriting a Mac address */
-        if (masscan->nic[index].my_mac_count != 0) {
-            ipaddress_formatted_t fmt1 = macaddress_fmt(masscan->nic[index].source_mac);
+        if (masscan->nic.my_mac_count != 0) {
+            ipaddress_formatted_t fmt1 = macaddress_fmt(masscan->nic.source_mac);
             ipaddress_formatted_t fmt2 = macaddress_fmt(source_mac);
             LOG(0, "[-] WARNING: overwriting MAC address, was %s, now %s\n",
                 fmt1.string,
                 fmt2.string);
         }
 
-        masscan->nic[index].source_mac = source_mac;
-        masscan->nic[index].my_mac_count = 1;
+        masscan->nic.source_mac = source_mac;
+        masscan->nic.my_mac_count = 1;
     }
     else if (EQUALS("router-mac", name) || EQUALS("router", name)
              || EQUALS("dest-mac", name) || EQUALS("destination-mac", name)
@@ -2761,8 +2771,8 @@ masscan_set_parameter(struct Masscan *masscan,
             return;
         }
 
-        masscan->nic[index].router_mac_ipv4 = router_mac;
-        masscan->nic[index].router_mac_ipv6 = router_mac;
+        masscan->nic.router_mac_ipv4 = router_mac;
+        masscan->nic.router_mac_ipv6 = router_mac;
     }
     else if (EQUALS("router-mac-ipv4", name) || EQUALS("router-ipv4", name)) {
         macaddress_t router_mac;
@@ -2774,7 +2784,7 @@ masscan_set_parameter(struct Masscan *masscan,
             return;
         }
 
-        masscan->nic[index].router_mac_ipv4 = router_mac;
+        masscan->nic.router_mac_ipv4 = router_mac;
     }
     else if (EQUALS("router-mac-ipv6", name) || EQUALS("router-ipv6", name)) {
         macaddress_t router_mac;
@@ -2786,7 +2796,7 @@ masscan_set_parameter(struct Masscan *masscan,
             return;
         }
 
-        masscan->nic[index].router_mac_ipv6 = router_mac;
+        masscan->nic.router_mac_ipv6 = router_mac;
     }
     else if (EQUALS("router-ip", name)) {
         /* Send packets FROM this IP address */
@@ -2802,7 +2812,7 @@ masscan_set_parameter(struct Masscan *masscan,
             exit(1);
         }
 
-        masscan->nic[index].router_ip = range.begin;
+        masscan->nic.router_ip = range.begin;
     }
     else if (EQUALS("udp-ports", name) || EQUALS("udp-port", name)) {
         unsigned is_error = 0;
@@ -3188,8 +3198,8 @@ masscan_set_parameter(struct Masscan *masscan,
         fprintf(stderr, "nmap(%s): unsupported\n", name);
         exit(1);
     } else if (EQUALS("vlan", name) || EQUALS("adapter-vlan", name)) {
-        masscan->nic[index].is_vlan = 1;
-        masscan->nic[index].vlan_id = (unsigned)parseInt(value);
+        masscan->nic.is_vlan = 1;
+        masscan->nic.vlan_id = (unsigned)parseInt(value);
     } else if (EQUALS("wait", name)) {
         if (EQUALS("forever", value))
             masscan->wait =  INT_MAX;
@@ -3827,21 +3837,16 @@ masscan_echo(struct Masscan *masscan, FILE *fp, unsigned is_echo_all)
      * Things here below are the old way of echoing parameters.
      * TODO: cleanup this code, replacing with the new way.
      */
-    if (masscan->nic_count == 0)
-        masscan_echo_nic(masscan, fp, 0);
-    else {
-        for (i=0; i<masscan->nic_count; i++)
-            masscan_echo_nic(masscan, fp, i);
-    }
+    masscan_echo_nic(masscan, fp);
 
     /**
      * Fix for #737, save adapter-port/source-port value or range
      */
-    if (masscan->nic[0].src.port.first != 0) {
-        fprintf(fp, "adapter-port = %d", masscan->nic[0].src.port.first);
-        if (masscan->nic[0].src.port.first != masscan->nic[0].src.port.last) {
+    if (masscan->nic.src.port.first != 0) {
+        fprintf(fp, "adapter-port = %d", masscan->nic.src.port.first);
+        if (masscan->nic.src.port.first != masscan->nic.src.port.last) {
             /* --adapter-port <first>-<last> */
-            fprintf(fp, "-%d", masscan->nic[0].src.port.last);
+            fprintf(fp, "-%d", masscan->nic.src.port.last);
         }
         fprintf(fp, "\n");
     }

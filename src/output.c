@@ -380,7 +380,6 @@ struct Output *
 output_create(const struct Masscan *masscan, unsigned thread_index)
 {
     struct Output *out;
-    unsigned i;
 
     /* allocate/initialize memory */
     out = CALLOC(1, sizeof(*out));
@@ -409,14 +408,12 @@ output_create(const struct Masscan *masscan, unsigned thread_index)
     out->is_feed_lzr = masscan->output.is_feed_lzr;
     out->xml.stylesheet = duplicate_string(masscan->output.stylesheet);
     out->rotate.directory = duplicate_string(masscan->output.rotate.directory);
-    if (masscan->nic_count <= 1)
+    if (masscan->rx_thread_count <= 1)
         out->filename = duplicate_string(masscan->output.filename);
     else
         out->filename = indexed_filename(masscan->output.filename, thread_index);
 
-    for (i=0; i<8; i++) {
-        out->src[i] = masscan->nic[i].src;
-    }
+    out->src = masscan->nic.src;
 
     /*
      * Link the appropriate output module.

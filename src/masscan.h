@@ -129,8 +129,8 @@ struct Masscan
     unsigned echo_all;
 
     /**
-     * One or more network adapters that we'll use for scanning. Each adapter
-     * should have a separate set of IP source addresses, except in the case
+     * Just one network adapters that we'll use for scanning. Adapter
+     * should have a set of IP source addresses, except in the case
      * of PF_RING dnaX:Y adapters.
      */
     struct {
@@ -146,8 +146,14 @@ struct Masscan
         unsigned vlan_id;
         unsigned is_vlan:1;
         unsigned is_usable:1;
-    } nic[8];
-    unsigned nic_count;
+    } nic;
+
+    /**
+     * Now we could set the number of transmit threads and receive threads.
+     * !Actually, setting more than one tx is more useful than more than one rx.
+     */
+    unsigned tx_thread_count;
+    unsigned rx_thread_count;
 
     /**
      * The target ranges of IPv4 addresses that are included in the scan.
@@ -554,7 +560,6 @@ masscan_set_parameter(struct Masscan *masscan,
 int
 masscan_initialize_adapter(
     struct Masscan *masscan,
-    unsigned index,
     macaddress_t *source_mac,
     macaddress_t *router_mac_ipv4,
     macaddress_t *router_mac_ipv6);

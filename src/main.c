@@ -97,8 +97,9 @@ uint64_t usec_start;
 
 
 /***************************************************************************
- * We create a pair of transmit/receive threads for each network adapter.
- * This structure contains the parameters we send to each pair.
+ * Every ThreadPair could correspond to a pair (or one) of transmit/receive threads.
+ * 
+ * NOTE: This structure is used both by tx/rx thread because history.
  ***************************************************************************/
 struct ThreadPair {
     /** This points to the central configuration. Note that it's 'const',
@@ -114,14 +115,10 @@ struct ThreadPair {
     struct stack_t *stack;
 
     /**
-     * The index of the network adapter that we are using for this
-     * thread-pair. This is an index into the "masscan->nic[]"
-     * array.
-     *
-     * NOTE: this is also the "thread-id", because we create one
-     * transmit/receive thread pair per NIC.
+     * The index of the tx/rx thread
      */
-    unsigned nic_index;
+    unsigned tx_index;
+    unsigned rx_index;
 
     /**
      * A copy of the master 'index' variable. This is just advisory for
@@ -155,6 +152,9 @@ struct ThreadPair {
     uint64_t *total_syns;
     uint64_t *total_responsed;
 
+    /**
+     * Set to zero if no corresponded thread.
+     */
     size_t thread_handle_xmit;
     size_t thread_handle_recv;
 };
@@ -173,11 +173,9 @@ struct source_t {
  * range into useful variables we can use to pick things form that range.
  ***************************************************************************/
 static void
-adapter_get_source_addresses(const struct Masscan *masscan,
-            unsigned nic_index,
-            struct source_t *src)
+adapter_get_source_addresses(const struct Masscan *masscan, struct source_t *src)
 {
-    const struct stack_src_t *ifsrc = &masscan->nic[nic_index].src;
+    const struct stack_src_t *ifsrc = &masscan->nic.src;
     static ipv6address mask = {~0ULL, ~0ULL};
 
     src->ipv4 = ifsrc->ipv4.first;
@@ -221,7 +219,7 @@ transmit_thread(void *v) /*aka. scanning_thread() */
     struct TemplateSet pkt_template = templ_copy(parms->tmplset);
     struct Adapter *adapter = parms->adapter;
     uint64_t packets_sent = 0;
-    unsigned increment = masscan->shard.of * masscan->nic_count;
+    unsigned increment = masscan->shard.of * masscan->tx_thread_count;
     struct source_t src;
     uint64_t seed = masscan->seed;
     uint64_t repeats = 0; /* --infinite repeats */
@@ -230,7 +228,17 @@ transmit_thread(void *v) /*aka. scanning_thread() */
 
     /* Wait to make sure receive_thread is ready */
     pixie_usleep(1000000);
-    LOG(1, "[+] starting transmit thread #%u\n", parms->nic_index);
+    LOG(1, "[+] starting transmit thread #%u\n", parms->tx_index);
+    
+    /* Lock transmit threads to the CPUs from second, one by one if possible.
+     * It may be locked to the first one if tx threads are too more.
+     * TODO: Make CPU setting be flexible. 
+    **/
+    if (pixie_cpu_get_count() > 1) {
+        unsigned cpu_count = pixie_cpu_get_count();
+        unsigned cpu = (parms->tx_index+1)%cpu_count;
+        pixie_cpu_set_affinity(cpu);
+    }
 
     /* export a pointer to this variable outside this threads so
      * that the 'status' system can print the rate of syns we are
@@ -242,12 +250,12 @@ transmit_thread(void *v) /*aka. scanning_thread() */
 
     /* Normally, we have just one source address. In special cases, though
      * we can have multiple. */
-    adapter_get_source_addresses(masscan, parms->nic_index, &src);
+    adapter_get_source_addresses(masscan, &src);
 
 
     /* "THROTTLER" rate-limits how fast we transmit, set with the
      * --max-rate parameter */
-    throttler_start(throttler, masscan->max_rate/masscan->nic_count);
+    throttler_start(throttler, masscan->max_rate/masscan->tx_thread_count);
 
 infinite:
     
@@ -267,7 +275,7 @@ infinite:
      * a little bit past the end when we have --retries. Yet another
      * thing to do here is deal with multiple network adapters, which
      * is essentially the same logic as shards. */
-    start = masscan->resume.index + (masscan->shard.one-1) * masscan->nic_count + parms->nic_index;
+    start = masscan->resume.index + (masscan->shard.one-1) * masscan->tx_thread_count + parms->tx_index;
     end = range;
     if (masscan->resume.count && end > start + masscan->resume.count)
         end = start + masscan->resume.count;
@@ -460,7 +468,7 @@ infinite:
     /*
      * Wait until the receive thread realizes the scan is over
      */
-    LOG(1, "[+] transmit thread #%u complete\n", parms->nic_index);
+    LOG(1, "[+] transmit thread #%u complete\n", parms->tx_index);
 
     /*
      * We are done transmitting. However, response packets will take several
@@ -496,7 +504,7 @@ infinite:
 
     /* Thread is about to exit */
     parms->done_transmitting = 1;
-    LOG(1, "[+] exiting transmit thread #%u                    \n", parms->nic_index);
+    LOG(1, "[+] exiting transmit thread #%u                    \n", parms->tx_index);
 }
 
 
@@ -505,10 +513,8 @@ infinite:
 static unsigned
 is_nic_port(const struct Masscan *masscan, unsigned ip)
 {
-    unsigned i;
-    for (i=0; i<masscan->nic_count; i++)
-        if (is_my_port(&masscan->nic[i].src, ip))
-            return 1;
+    if (is_my_port(&masscan->nic.src, ip))
+        return 1;
     return 0;
 }
 
@@ -568,19 +574,13 @@ receive_thread(void *v)
     *status_responsed_count = 0;
     parms->total_responsed = status_responsed_count;
 
-    LOG(1, "[+] starting receive thread #%u\n", parms->nic_index);
+    LOG(1, "[+] starting receive thread #%u\n", parms->rx_index);
     
-    /* Lock this thread to a CPU. Transmit threads are on even CPUs,
-     * receive threads on odd CPUs */
+    /* Lock all receive threads to the first CPU.
+     * TODO: Make CPU setting be flexible. 
+    **/
     if (pixie_cpu_get_count() > 1) {
-        unsigned cpu_count = pixie_cpu_get_count();
-        unsigned cpu = parms->nic_index * 2 + 1;
-        while (cpu >= cpu_count) {
-            cpu -= cpu_count;
-            cpu++;
-        }
-        //TODO:
-        //pixie_cpu_set_affinity(cpu);
+        pixie_cpu_set_affinity(0);
     }
 
     /*
@@ -597,7 +597,7 @@ receive_thread(void *v)
      * Open output. This is where results are reported when saving
      * the --output-format to the --output-filename
      */
-    out = output_create(masscan, parms->nic_index);
+    out = output_create(masscan, parms->rx_index);
 
     /*
      * Create deduplication table. This is so when somebody sends us
@@ -630,7 +630,7 @@ receive_thread(void *v)
 
 
     /*
-     * Create a TCP connection table (per thread pair) for interacting with live
+     * Create a TCP connection table (per rx thread) for interacting with live
      * connections when doing --banners
      */
     if (masscan->is_banners) {
@@ -641,7 +641,7 @@ receive_thread(void *v)
          * Create TCP connection table
          */
         tcpcon = tcpcon_create_table(
-            (size_t)((masscan->max_rate/5) / masscan->nic_count),
+            (size_t)((masscan->max_rate/5) / masscan->rx_thread_count),
             parms->stack,
             &parms->tmplset->pkts[Proto_TCP],
             output_report_banner,
@@ -659,7 +659,7 @@ receive_thread(void *v)
          * Get the possible source IP addresses and ports that masscan
          * might be using to transmit from.
          */
-        adapter_get_source_addresses(masscan, parms->nic_index, &src);
+        adapter_get_source_addresses(masscan, &src);
                                
 
         /*
@@ -1254,7 +1254,7 @@ receive_thread(void *v)
     }
 
 
-    LOG(1, "[+] exiting receive thread #%u                    \n", parms->nic_index);
+    LOG(1, "[+] exiting receive thread #%u                    \n", parms->rx_index);
     
     /*
      * cleanup
@@ -1320,7 +1320,8 @@ static void control_c_handler(int x)
 static int
 main_scan(struct Masscan *masscan)
 {
-    struct ThreadPair parms_array[8];
+    /*We could have 32 tx threads + 32 rx threads at most*/
+    struct ThreadPair parms_array[32];
     uint64_t count_ips;
     uint64_t count_ports;
     uint64_t range;
@@ -1418,17 +1419,21 @@ main_scan(struct Masscan *masscan)
 #endif
 
     /*
-     * Start scanning threats for each adapter
+     * Start scanning threads
      */
-    for (index=0; index<masscan->nic_count; index++) {
+    unsigned threadpair_count = masscan->tx_thread_count>masscan->rx_thread_count?
+        masscan->tx_thread_count:masscan->rx_thread_count;
+
+    for (index=0; index<threadpair_count; index++) {
         struct ThreadPair *parms = &parms_array[index];
         int err;
 
         parms->masscan = masscan;
-        parms->nic_index = index;
         parms->my_index = masscan->resume.index;
         parms->done_transmitting = 0;
         parms->done_receiving = 0;
+        parms->thread_handle_xmit = 0;
+        parms->thread_handle_recv = 0;
 
         /* needed for --packet-trace option so that we know when we started
          * the scan */
@@ -1440,15 +1445,14 @@ main_scan(struct Masscan *masscan)
          */
         err = masscan_initialize_adapter(
                             masscan,
-                            index,
                             &parms->source_mac,
                             &parms->router_mac_ipv4,
                             &parms->router_mac_ipv6
                             );
         if (err != 0)
             exit(1);
-        parms->adapter = masscan->nic[index].adapter;
-        if (!masscan->nic[index].is_usable) {
+        parms->adapter = masscan->nic.adapter;
+        if (!masscan->nic.is_usable) {
             LOG(0, "FAIL: failed to detect IP of interface\n");
             LOG(0, " [hint] did you spell the name correctly?\n");
             LOG(0, " [hint] if it has no IP address, "
@@ -1471,21 +1475,21 @@ main_scan(struct Masscan *masscan)
                     parms->router_mac_ipv6,
                     masscan->payloads.udp,
                     masscan->payloads.oproto,
-                    stack_if_datalink(masscan->nic[index].adapter),
+                    stack_if_datalink(masscan->nic.adapter),
                     masscan->seed,
                     masscan->templ_opts);
 
         /*
          * Set the "source port" of everything we transmit.
          */
-        if (masscan->nic[index].src.port.range == 0) {
+        if (masscan->nic.src.port.range == 0) {
             unsigned port = 40000 + now % 20000;
-            masscan->nic[index].src.port.first = port;
-            masscan->nic[index].src.port.last = port + 16;
-            masscan->nic[index].src.port.range = 16;
+            masscan->nic.src.port.first = port;
+            masscan->nic.src.port.last = port + 16;
+            masscan->nic.src.port.range = 16;
         }
 
-        stack = stack_create(parms->source_mac, &masscan->nic[index].src);
+        stack = stack_create(parms->source_mac, &masscan->nic.src);
         parms->stack = stack;
 
         /*
@@ -1494,8 +1498,8 @@ main_scan(struct Masscan *masscan)
         if (masscan->nmap.ttl)
             template_set_ttl(parms->tmplset, masscan->nmap.ttl);
 
-        if (masscan->nic[0].is_vlan)
-            template_set_vlan(parms->tmplset, masscan->nic[0].vlan_id);
+        if (masscan->nic.is_vlan)
+            template_set_vlan(parms->tmplset, masscan->nic.vlan_id);
 
 
         /*
@@ -1538,7 +1542,7 @@ main_scan(struct Masscan *masscan)
     /*
      * Start all the threads
      */
-    for (index=0; index<masscan->nic_count; index++) {
+    for (index=0; index<threadpair_count; index++) {
         struct ThreadPair *parms = &parms_array[index];
         
         /*
@@ -1546,13 +1550,19 @@ main_scan(struct Masscan *masscan)
          * THIS IS WHERE THE PROGRAM STARTS SPEWING OUT PACKETS AT A HIGH
          * RATE OF SPEED.
          */
-        parms->thread_handle_xmit = pixie_begin_thread(transmit_thread, 0, parms);
+        if (index<masscan->tx_thread_count) {
+            parms->tx_index = index;
+            parms->thread_handle_xmit = pixie_begin_thread(transmit_thread, 0, parms);
+        }
 
         /*
          * Start the MATCHING receive thread. Transmit and receive threads
          * come in matching pairs.
          */
-        parms->thread_handle_recv = pixie_begin_thread(receive_thread, 0, parms);
+        if (index<masscan->rx_thread_count) {
+            parms->rx_index = index;
+            parms->thread_handle_recv = pixie_begin_thread(receive_thread, 0, parms);
+        }
     }
 
     /*
@@ -1573,13 +1583,16 @@ main_scan(struct Masscan *masscan)
 
         /* Find the minimum index of all the threads */
         min_index = UINT64_MAX;
-        for (i=0; i<masscan->nic_count; i++) {
+        for (i=0; i<threadpair_count; i++) {
             struct ThreadPair *parms = &parms_array[i];
 
-            if (min_index > parms->my_index)
-                min_index = parms->my_index;
+            /*Just tx's my_index & rate are meaningful*/
+            if (parms->thread_handle_xmit) {
+                if (min_index > parms->my_index)
+                    min_index = parms->my_index;
 
-            rate += parms->throttler->current_rate;
+                rate += parms->throttler->current_rate;
+            }
 
             if (parms->total_tcbs)
                 total_tcbs += *parms->total_tcbs;
@@ -1639,13 +1652,16 @@ main_scan(struct Masscan *masscan)
 
         /* Find the minimum index of all the threads */
         min_index = UINT64_MAX;
-        for (i=0; i<masscan->nic_count; i++) {
+        for (i=0; i<threadpair_count; i++) {
             struct ThreadPair *parms = &parms_array[i];
 
-            if (min_index > parms->my_index)
-                min_index = parms->my_index;
+            /*Just tx's my_index & rate are meaningful*/
+            if (parms->thread_handle_xmit) {
+                if (min_index > parms->my_index)
+                    min_index = parms->my_index;
 
-            rate += parms->throttler->current_rate;
+                rate += parms->throttler->current_rate;
+            }
 
             if (parms->total_tcbs)
                 total_tcbs += *parms->total_tcbs;
@@ -1674,7 +1690,7 @@ main_scan(struct Masscan *masscan)
                 masscan->wait - (time(0) - now),
                 masscan->output.is_status_ndjson);
 
-            for (i=0; i<masscan->nic_count; i++) {
+            for (i=0; i<threadpair_count; i++) {
                 struct ThreadPair *parms = &parms_array[i];
 
                 transmit_count += parms->done_transmitting;
@@ -1684,11 +1700,11 @@ main_scan(struct Masscan *masscan)
 
             pixie_mssleep(250);
 
-            if (transmit_count < masscan->nic_count)
+            if (transmit_count < masscan->tx_thread_count)
                 continue;
             is_tx_done = 1;
             is_rx_done = 1;
-            if (receive_count < masscan->nic_count)
+            if (receive_count < masscan->rx_thread_count)
                 continue;
 
         } else {
@@ -1696,13 +1712,17 @@ main_scan(struct Masscan *masscan)
              * Join the threads, which doesn't allow us to print out 
              * status messages, but allows us to exit cleanly without
              * any waiting */
-            for (i=0; i<masscan->nic_count; i++) {
+            for (i=0; i<threadpair_count; i++) {
                 struct ThreadPair *parms = &parms_array[i];
 
-                pixie_thread_join(parms->thread_handle_xmit);
-                parms->thread_handle_xmit = 0;
-                pixie_thread_join(parms->thread_handle_recv);
-                parms->thread_handle_recv = 0;
+                if (parms->thread_handle_xmit) {
+                    pixie_thread_join(parms->thread_handle_xmit);
+                    parms->thread_handle_xmit = 0;
+                }
+                if (parms->thread_handle_recv) {
+                    pixie_thread_join(parms->thread_handle_recv);
+                    parms->thread_handle_recv = 0;
+                }
             }
             is_tx_done = 1;
             is_rx_done = 1;
@@ -1776,7 +1796,8 @@ int main(int argc, char *argv[])
     masscan->output.is_status_updates = 1; /* default: show status updates */
     masscan->wait = 10; /* how long to wait for responses when done */
     masscan->max_rate = 100.0; /* max rate = hundred packets-per-second */
-    masscan->nic_count = 1;
+    masscan->tx_thread_count = 1; /*transmit thread count for every adapter*/
+    masscan->rx_thread_count = 1; /*receive thread count for every adapter*/
     masscan->shard.one = 1;
     masscan->shard.of = 1;
     masscan->min_packet_size = 60;
@@ -1941,8 +1962,7 @@ int main(int argc, char *argv[])
         break;
 
     case Operation_DebugIF:
-        for (i=0; i<masscan->nic_count; i++)
-            rawsock_selftest_if(masscan->nic[i].ifname);
+        rawsock_selftest_if(masscan->nic.ifname);
         return 0;
 
     case Operation_ReadRange:

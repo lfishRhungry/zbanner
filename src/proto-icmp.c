@@ -13,12 +13,8 @@
 static int
 matches_me(struct Output *out, ipaddress ip, unsigned port)
 {
-    unsigned i;
-
-    for (i=0; i<8; i++) {
-        if (is_myself(&out->src[i], ip, port))
-            return 1;
-    }
+    if (is_myself(&out->src, ip, port))
+        return 1;
     return 0;
 }
 
