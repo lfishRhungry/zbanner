@@ -107,8 +107,6 @@ struct ThreadPair {
      * unsafe */
     const struct Masscan *masscan;
 
-    struct stack_t *stack;
-
     /**
      * The index of the tx/rx thread
      */
@@ -290,8 +288,7 @@ infinite:
          * then "batch_size" will get decremented to zero, and we won't be
          * able to transmit SYN packets.
          */
-        stack_flush_packets(parms->stack, adapter,
-                        &packets_sent, &batch_size);
+        stack_flush_packets(masscan->stack, adapter, &packets_sent, &batch_size);
 
 
         /*
@@ -476,9 +473,7 @@ infinite:
 
 
             /* Transmit packets from the receive thread */
-            stack_flush_packets(  parms->stack, adapter,
-                            &packets_sent,
-                            &batch_size);
+            stack_flush_packets(masscan->stack, adapter, &packets_sent, &batch_size);
 
             /* Make sure they've actually been transmitted, not just queued up for
              * transmit */
@@ -539,7 +534,7 @@ receive_thread(void *v)
     uint64_t *status_responsed_count;
     uint64_t entropy = masscan->seed;
     struct ResetFilter *rf;
-    struct stack_t *stack = parms->stack;
+    struct stack_t *stack = masscan->stack;
     struct source_t src = {0};
 
     
@@ -628,7 +623,7 @@ receive_thread(void *v)
          */
         tcpcon = tcpcon_create_table(
             (size_t)((masscan->max_rate/5) / masscan->rx_thread_count),
-            parms->stack,
+            stack,
             &parms->tmplset->pkts[Proto_TCP],
             output_report_banner,
             out,
@@ -1112,7 +1107,7 @@ receive_thread(void *v)
                 
                 tcp_send_ACK(
                     &parms->tmplset->pkts[Proto_TCP],
-                    parms->stack,
+                    stack,
                     ip_them, ip_me,
                     port_them, port_me,
                     seqno_them+1, seqno_me,
@@ -1138,7 +1133,7 @@ receive_thread(void *v)
                     if (status == PortStatus_ZeroWin)
                         tcp_send_RST(
                             &parms->tmplset->pkts[Proto_TCP],
-                            parms->stack,
+                            stack,
                             ip_them, ip_me,
                             port_them, port_me,
                             0, seqno_me);
@@ -1146,7 +1141,7 @@ receive_thread(void *v)
                     if (status == PortStatus_Open || status == PortStatus_ZeroWin)
                         tcp_send_RST(
                             &parms->tmplset->pkts[Proto_TCP],
-                            parms->stack,
+                            stack,
                             ip_them, ip_me,
                             port_them, port_me,
                             0, seqno_me);
@@ -1232,7 +1227,7 @@ receive_thread(void *v)
             if (!masscan->is_noreset2)
                 tcp_send_RST(
                     &parms->tmplset->pkts[Proto_TCP],
-                    parms->stack,
+                    stack,
                     ip_them, ip_me,
                     port_them, port_me,
                     seqno_them+had_sent, seqno_me);
@@ -1316,7 +1311,6 @@ main_scan(struct Masscan *masscan)
     struct Status status;
     uint64_t min_index = UINT64_MAX;
     struct MassVulnCheck *vulncheck = NULL;
-    struct stack_t *stack;
 
     memset(parms_array, 0, sizeof(parms_array));
 
@@ -1417,6 +1411,12 @@ main_scan(struct Masscan *masscan)
         exit(1);
     }
 
+    /**
+     * create callback queue
+     * TODO: Maybe more queue?
+    */
+    masscan->stack = stack_create(masscan->nic.source_mac, &masscan->nic.src);
+
     /*
      * Start scanning threads
      */
@@ -1464,9 +1464,6 @@ main_scan(struct Masscan *masscan)
             masscan->nic.src.port.last = port + 16;
             masscan->nic.src.port.range = 16;
         }
-
-        stack = stack_create(masscan->nic.source_mac, &masscan->nic.src);
-        parms->stack = stack;
 
         /*
          * Set the "TTL" (IP time-to-live) of everything we send.

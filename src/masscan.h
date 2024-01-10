@@ -156,6 +156,11 @@ struct Masscan
     unsigned rx_thread_count;
 
     /**
+     * The callback queue from rx threads to tx threads
+    */
+    struct stack_t *stack;
+
+    /**
      * The target ranges of IPv4 addresses that are included in the scan.
      * The user can specify anything here, and we'll resolve all overlaps
      * and such, and sort the target ranges.
