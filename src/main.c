@@ -107,10 +107,6 @@ struct ThreadPair {
      * unsafe */
     const struct Masscan *masscan;
 
-    /** The adapter in struct masscan. Maybe diff when doing PF_RING
-     * clustering. */
-    struct Adapter *adapter;
-
     struct stack_t *stack;
 
     /**
@@ -207,7 +203,7 @@ transmit_thread(void *v) /*aka. scanning_thread() */
     uint64_t count_ipv6 = range6list_count(&masscan->targets.ipv6).lo;
     struct Throttler *throttler = parms->throttler;
     struct TemplateSet pkt_template = templ_copy(parms->tmplset);
-    struct Adapter *adapter = parms->adapter;
+    struct Adapter *adapter = masscan->nic.adapter;
     uint64_t packets_sent = 0;
     unsigned increment = masscan->shard.of * masscan->tx_thread_count;
     struct source_t src;
@@ -531,7 +527,7 @@ receive_thread(void *v)
 {
     struct ThreadPair *parms = (struct ThreadPair *)v;
     const struct Masscan *masscan = parms->masscan;
-    struct Adapter *adapter = parms->adapter;
+    struct Adapter *adapter = masscan->nic.adapter;
     int data_link = stack_if_datalink(adapter);
     struct Output *out;
     struct DedupTable *dedup;
@@ -1440,9 +1436,6 @@ main_scan(struct Masscan *masscan)
         /* needed for --packet-trace option so that we know when we started
          * the scan */
         parms->pt_start = 1.0 * pixie_gettime() / 1000000.0;
-
-        parms->adapter = masscan->nic.adapter;
-
 
         /*
          * Initialize the TCP packet template. The way this works is that
