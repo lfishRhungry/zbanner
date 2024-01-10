@@ -596,11 +596,28 @@ at which they perform this calculation, making `masscan` much faster.
 
 # Improvements
 
-## Get banners with ZBanner (Masscan with stateless-banners mode)
+## Get banners with ZBanner statelessly
 
 Add `--stateless-banners` (`--stateless`) mode to send application-layer probes
 and obtain banners completely statelessly after the target port was identified
 open (received SYNACK).
+
+## Stateless Probe Module
+
+Aka application-layer request module.
+
+Achieve any logic by implementing your StatelessProbe and registering.
+
+Possible achievements:
+    - Get banner of specific protocol;
+    - Service identification;
+    - Detect application-layer vuln;
+    - Combine existing probe;
+    - etc.
+
+## Multi Transmiting & Receiving Threads
+
+Multi-threads model was rewritten and supports any number of transmiting or receiving thread now. This makes it fast like zmap and could do many things in receiving threads if need in the future.
 
 ## Usage
 
@@ -682,19 +699,6 @@ Use multithread for transmitting or receiving (Usually, setting more tx is good 
 ```
 masscan 10.0.0.0/8 -p110 --noreset1 --tx-count 3 --rx-count 2
 ```
-
-## Stateless Probe Module
-
-Aka application-layer request module.
-
-Achieve any logic by implementing your StatelessProbe and registering.
-
-Possible achievements:
-    - Get banner of specific protocol;
-    - Service identification;
-    - Detect application-layer vuln;
-    - Combine existing probe;
-    - etc.
 
 ## note
 
