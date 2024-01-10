@@ -677,6 +677,12 @@ masscan 10.0.0.0/8 -p 80 --noreset1 --feedlzr | \
 lzr --handshakes http -sendInterface eth0 -f results.json
 ```
 
+Use multithread for transmitting or receiving (Usually, setting more tx is good enough):
+
+```
+masscan 10.0.0.0/8 -p110 --noreset1 --tx-count 3 --rx-count 2
+```
+
 ## Stateless Probe Module
 
 Aka application-layer request module.
