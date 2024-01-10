@@ -82,7 +82,8 @@ pixie_cpu_set_affinity(unsigned processor)
 
     CPU_ZERO(&cpuset);
 
-    CPU_SET(processor+1, &cpuset);
+    /*make it be understandable*/
+    CPU_SET(processor, &cpuset);
 
     x = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
     if (x != 0) {
