@@ -214,14 +214,17 @@ transmit_thread(void *v) /*aka. scanning_thread() */
     pixie_usleep(1000000);
     LOG(1, "[+] starting transmit thread #%u\n", parms->tx_index);
     
-    /* Lock transmit threads to the CPUs from second, one by one if possible.
-     * It may be locked to the first one if tx threads are too more.
-     * TODO: Make CPU setting be flexible. 
+    /* Lock threads to the CPUs one by one. Tx threads follow Rx threads.
+     * We'd better create less count of threads(tx+rx) than num of CPU kernels.
+     * Mostly one receiving thread is enought.
+     * TODO: Make CPU locking be settable. 
     **/
     if (pixie_cpu_get_count() > 1) {
         unsigned cpu_count = pixie_cpu_get_count();
-        unsigned cpu = (parms->tx_index+1)%cpu_count;
-        pixie_cpu_set_affinity(cpu);
+        unsigned cpu = (parms->tx_index+masscan->rx_thread_count)%cpu_count;
+        /* I think it is better to make (cpu>=cpu_count) threads free */
+        if (cpu<cpu_count)
+            pixie_cpu_set_affinity(cpu);
     }
 
     /* export a pointer to this variable outside this threads so
@@ -557,11 +560,17 @@ receive_thread(void *v)
 
     LOG(1, "[+] starting receive thread #%u\n", parms->rx_index);
     
-    /* Lock all receive threads to the first CPU.
-     * TODO: Make CPU setting be flexible. 
+    /* Lock threads to the CPUs one by one. Tx threads follow Rx threads.
+     * We'd better create less count of threads(tx+rx) than num of CPU kernels.
+     * Mostly one receiving thread is enought.
+     * TODO: Make CPU locking be settable. 
     **/
     if (pixie_cpu_get_count() > 1) {
-        pixie_cpu_set_affinity(0);
+        unsigned cpu_count = pixie_cpu_get_count();
+        unsigned cpu = (parms->rx_index)%cpu_count;
+        /* I think it is better to make (cpu>=cpu_count) threads free */
+        if (cpu<cpu_count)
+            pixie_cpu_set_affinity(cpu);
     }
 
     /*
