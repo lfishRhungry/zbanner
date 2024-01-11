@@ -2247,7 +2247,7 @@ static int SET_space(struct Masscan *masscan, const char *name, const char *valu
     UNUSEDPARM(name);
     UNUSEDPARM(value);
     if (masscan->echo) {
-        fprintf(masscan->echo, "\n");
+        fprintf(masscan->echo, "-=-=-=-=-=-=-=-=-=-\n");
         return 0;
     }
     return CONF_OK;
@@ -2575,9 +2575,6 @@ struct ConfigParameter config_parameters[] = {
     {"rawudp",          SET_banners_rawudp,     F_BOOL, {"rawudp",0}}, /* --rawudp */
     {"nobanners",       SET_nobanners,          F_BOOL, {"nobanner",0}},
     {"retries",         SET_retries,            0,      {"retry", "max-retries", "max-retry", 0}},
-    {"noreset1",        SET_noreset,            F_BOOL, {0}},
-    {"noreset2",        SET_noreset,            F_BOOL, {0}},
-    {"noreset",         SET_noreset,            F_BOOL, {0}},
     {"nmap-payloads",   SET_nmap_payloads,      0,      {"nmap-payload",0}},
     {"nmap-service-probes",SET_nmap_service_probes, 0,  {"nmap-service-probe",0}},
     {"offline",         SET_offline,            F_BOOL, {"notransmit", "nosend", "dry-run", 0}},
@@ -2598,9 +2595,9 @@ struct ConfigParameter config_parameters[] = {
     {"ndjson-status",   SET_status_ndjson,      F_BOOL, {"status-ndjson", 0}},
     {"json-status",     SET_status_json,        F_BOOL, {"status-json", 0}},
     {"min-packet",      SET_min_packet,         0,      {"min-pkt",0}},
-    {"capture",         SET_capture,            0,      {0}},
-    {"nocapture",       SET_capture,            0,      {"no-capture", 0}},
+
     {"SPACE",           SET_space,              0,      {0}},
+
     {"output-filename", SET_output_filename,    0,      {"output-file",0}},
     {"output-format",   SET_output_format,      0,      {0}},
     {"output-show",     SET_output_show,        0,      {"output-status", "show",0}},
@@ -2613,23 +2610,29 @@ struct ConfigParameter config_parameters[] = {
     {"rotate-size",     SET_rotate_filesize,    0,      {"output-rotate-filesize", "rotate-filesize", 0}},
     {"stylesheet",      SET_output_stylesheet,  0,      {0}},
     {"script",          SET_script,             0,      {0}},
+
     {"SPACE",           SET_space,              0,      {0}},
+
     {"tcp-mss",         SET_tcp_mss,            F_NUMABLE, {"tcpmss",0}},
     {"tcp-wscale",      SET_tcp_wscale,         F_NUMABLE, {0}},
     {"tcp-tsecho",      SET_tcp_tsecho,         F_NUMABLE, {0}},
     {"tcp-sackok",      SET_tcp_sackok,         F_BOOL, {0}},
     {"top-ports",       SET_topports,           F_NUMABLE, {"top-port",0}},
+
+    {"SPACE",           SET_space,              0,      {0}},
+
     {"stateless-banners",SET_stateless_banners, F_BOOL, {"stateless", "stateless-banner", "stateless-mode",0}},
     {"stateless-probe", SET_stateless_probe,    0,      {"probe", 0}},
+    {"capture",         SET_capture,            0,      {"nocapture", "no-capture", 0}},
     {"list-probes",     SET_list_probes,        F_BOOL, {"list-probe", 0}},
     {"probe-args",      SET_probe_args,         0,      {"probe-arg", 0}},
-    {"nodedup1",        SET_nodedup,            F_BOOL, {0}},
-    {"nodedup2",        SET_nodedup,            F_BOOL, {0}},
-    {"nodedup",         SET_nodedup,            F_BOOL, {0}},
+    {"tansmit-thread-count", SET_thread_count,  F_NUMABLE, {"tx-count", "tx-num", "receive-thread-count", "rx-count", "rx-num", 0}},
     {"dedup-win",       SET_dedup_win,          F_NUMABLE, {"dedupwin", "dedup-win1", "dedupwin1", "dedup-win2", "dedupwin2", 0}},
+    {"nodedup",         SET_nodedup,            F_BOOL, {"nodedup1", "nodedup2", 0}},
+    {"noreset",         SET_noreset,            F_BOOL, {"noreset1", "noreset2", 0}},
     {"feed-lzr",        SET_feed_lzr,           F_BOOL, {"feedlzr", 0}},
-    {"tansmit-thread-count", SET_thread_count,       F_NUMABLE, {"tx-thread-count", "tx-count", "tx-num", 0}},
-    {"receive-thread-count", SET_thread_count,       F_NUMABLE, {"rx-thread-count", "rx-count", "rx-num", 0}},
+
+    {"SPACE",           SET_space,              0,      {0}},
 
     {"debug-tcp",       SET_debug_tcp,          F_BOOL, {"tcp-debug", 0}},
     {0}
