@@ -1072,25 +1072,45 @@ receive_thread(void *v)
    
         if (TCP_IS_SYNACK(px, parsed.transport_offset)
             || TCP_IS_RST(px, parsed.transport_offset)) {
+
             /* figure out the status */
             status = PortStatus_Unknown;
+
             if (TCP_IS_SYNACK(px, parsed.transport_offset)) {
+
+                /* verify syn-cookies for syn-ack*/
+                if (cookie != seqno_me - 1) {
+                    ipaddress_formatted_t fmt = ipaddress_fmt(ip_them);
+                    LOG(2, "%s - bad syn-ack cookie: ackno=0x%08x expected=0x%08x\n",
+                        fmt.string, seqno_me-1, cookie);
+                    continue;
+                }
+
                 status = PortStatus_Open;
+
                 /*care the zero win in SYNACK*/
                 if (win_them==0) {
                     status = PortStatus_ZeroWin;
                 }
-            }
-            if (TCP_IS_RST(px, parsed.transport_offset)) {
-                status = PortStatus_Closed;
+
+                /* keep statistics on number received */
+                (*status_synack_count)++;
             }
 
-            /* verify: syn-cookies */
-            if (cookie != seqno_me - 1) {
-                ipaddress_formatted_t fmt = ipaddress_fmt(ip_them);
-                LOG(2, "%s - bad cookie: ackno=0x%08x expected=0x%08x\n",
-                    fmt.string, seqno_me-1, cookie);
-                continue;
+            if (TCP_IS_RST(px, parsed.transport_offset)) {
+
+                /**
+                 * verify syn-cookies for rst
+                 * NOTE: diff from handling syn-ack
+                */
+                if (cookie != seqno_me - 1 && cookie != seqno_me) {
+                    ipaddress_formatted_t fmt = ipaddress_fmt(ip_them);
+                    LOG(2, "%s - bad rst cookie: ackno=0x%08x expected=0x%08x\n",
+                        fmt.string, seqno_me-1, cookie);
+                    continue;
+                }
+
+                status = PortStatus_Closed;
             }
 
             /* verify: ignore duplicates */
@@ -1099,10 +1119,6 @@ receive_thread(void *v)
                     continue;
             }
 
-            /* keep statistics on number received */
-            if (TCP_IS_SYNACK(px, parsed.transport_offset))
-                (*status_synack_count)++;
-            
             /* Send ACK with req in stateless-banners mode*/
             if (masscan->is_stateless_banners
                 && TCP_IS_SYNACK(px, parsed.transport_offset)
