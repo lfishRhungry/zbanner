@@ -663,6 +663,20 @@ Also save status output:
 masscan 10.0.0.0/8 -p110 --stateless --pcap result.pcap -oX result.xml
 ```
 
+Set deduplication window for SYN-ACK:
+
+```
+masscan 10.0.0.0/8 -p110 --dedupwin1 65535
+```
+
+Set deduplication window for response with data:
+
+```
+masscan 10.0.0.0/8 -p110 --stateless --dedupwin2 65535
+```
+
+Also use `--dedupwin` to set both window.
+
 Do not deduplicating for SYN-ACK:
 
 ```
