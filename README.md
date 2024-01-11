@@ -675,6 +675,8 @@ Do not deduplicating for response with data:
 masscan 10.0.0.0/8 -p110 --stateless --nodedup2
 ```
 
+Also use `--nodedup` to ban deduplicating for all.
+
 Do not send RST for SYN-ACK:
 
 ```
@@ -686,6 +688,8 @@ Do not send RST for response with data:
 ```
 masscan 10.0.0.0/8 -p110 --stateless --noreset2
 ```
+
+Also use `--noreset` to ban reset for all.
 
 Work with LZR:
 

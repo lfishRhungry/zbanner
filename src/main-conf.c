@@ -1218,27 +1218,25 @@ static int SET_banners(struct Masscan *masscan, const char *name, const char *va
     return CONF_OK;
 }
 
-static int SET_nodedup1(struct Masscan *masscan, const char *name, const char *value)
+static int SET_nodedup(struct Masscan *masscan, const char *name, const char *value)
 {
-    UNUSEDPARM(name);
     if (masscan->echo) {
-        if (masscan->is_nodedup1 || masscan->echo_all)
+        if (masscan->is_nodedup1 || masscan->is_nodedup2 || masscan->echo_all) {
             fprintf(masscan->echo, "nodedup1 = %s\n", masscan->is_nodedup1?"true":"false");
-       return 0;
-    }
-    masscan->is_nodedup1 = parseBoolean(value);
-    return CONF_OK;
-}
-
-static int SET_nodedup2(struct Masscan *masscan, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (masscan->echo) {
-        if (masscan->is_nodedup2 || masscan->echo_all)
             fprintf(masscan->echo, "nodedup2 = %s\n", masscan->is_nodedup2?"true":"false");
+        }
        return 0;
     }
-    masscan->is_nodedup2 = parseBoolean(value);
+
+    if (EQUALS(name, "nodedup1"))
+        masscan->is_nodedup1 = parseBoolean(value);
+    else if (EQUALS(name, "nodedup2"))
+        masscan->is_nodedup2 = parseBoolean(value);
+    else if (EQUALS(name, "nodedup")) {
+        masscan->is_nodedup1 = parseBoolean(value);
+        masscan->is_nodedup2 = parseBoolean(value);
+    }
+
     return CONF_OK;
 }
 
@@ -1727,27 +1725,25 @@ static int SET_nobanners(struct Masscan *masscan, const char *name, const char *
     return CONF_OK;
 }
 
-static int SET_noreset1(struct Masscan *masscan, const char *name, const char *value)
+static int SET_noreset(struct Masscan *masscan, const char *name, const char *value)
 {
-    UNUSEDPARM(name);
     if (masscan->echo) {
-        if (masscan->is_noreset1 || masscan->echo_all)
+        if (masscan->is_noreset1 || masscan->is_noreset2 || masscan->echo_all) {
             fprintf(masscan->echo, "noreset1 = %s\n", masscan->is_noreset1?"true":"false");
-        return 0;
-    }
-    masscan->is_noreset1 = parseBoolean(value);
-    return CONF_OK;
-}
-
-static int SET_noreset2(struct Masscan *masscan, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (masscan->echo) {
-        if (masscan->is_noreset2 || masscan->echo_all)
             fprintf(masscan->echo, "noreset2 = %s\n", masscan->is_noreset2?"true":"false");
+        }
         return 0;
     }
-    masscan->is_noreset2 = parseBoolean(value);
+
+    if (EQUALS(name, "noreset1"))
+        masscan->is_noreset1 = parseBoolean(value);
+    else if (EQUALS(name, "noreset2"))
+        masscan->is_noreset2 = parseBoolean(value);
+    else if (EQUALS(name, "noreset")) {
+        masscan->is_noreset1 = parseBoolean(value);
+        masscan->is_noreset2 = parseBoolean(value);
+    }
+
     return CONF_OK;
 }
 
@@ -2552,8 +2548,9 @@ struct ConfigParameter config_parameters[] = {
     {"rawudp",          SET_banners_rawudp,     F_BOOL, {"rawudp",0}}, /* --rawudp */
     {"nobanners",       SET_nobanners,          F_BOOL, {"nobanner",0}},
     {"retries",         SET_retries,            0,      {"retry", "max-retries", "max-retry", 0}},
-    {"noreset1",        SET_noreset1,           F_BOOL, {0}},
-    {"noreset2",        SET_noreset2,           F_BOOL, {0}},
+    {"noreset1",        SET_noreset,            F_BOOL, {0}},
+    {"noreset2",        SET_noreset,            F_BOOL, {0}},
+    {"noreset",         SET_noreset,            F_BOOL, {0}},
     {"nmap-payloads",   SET_nmap_payloads,      0,      {"nmap-payload",0}},
     {"nmap-service-probes",SET_nmap_service_probes, 0,  {"nmap-service-probe",0}},
     {"offline",         SET_offline,            F_BOOL, {"notransmit", "nosend", "dry-run", 0}},
@@ -2599,9 +2596,10 @@ struct ConfigParameter config_parameters[] = {
     {"stateless-probe", SET_stateless_probe,    0,      {"probe", 0}},
     {"list-probes",     SET_list_probes,        F_BOOL, {"list-probe", 0}},
     {"probe-args",      SET_probe_args,         0,      {"probe-arg", 0}},
-    {"no-dedup1",       SET_nodedup1,           F_BOOL, {"nodedup1", 0}},
-    {"no-dedup2",       SET_nodedup2,           F_BOOL, {"nodedup2", 0}},
-    {"feed-lzr",       SET_feed_lzr,            F_BOOL, {"feedlzr", 0}},
+    {"nodedup1",        SET_nodedup,            F_BOOL, {0}},
+    {"nodedup2",        SET_nodedup,            F_BOOL, {0}},
+    {"nodedup",         SET_nodedup,            F_BOOL, {0}},
+    {"feed-lzr",        SET_feed_lzr,           F_BOOL, {"feedlzr", 0}},
     {"tansmit-thread-count", SET_thread_count,       F_NUMABLE, {"tx-thread-count", "tx-count", "tx-num", 0}},
     {"receive-thread-count", SET_thread_count,       F_NUMABLE, {"rx-thread-count", "rx-count", "rx-num", 0}},
 
