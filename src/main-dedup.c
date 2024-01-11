@@ -28,12 +28,6 @@
 #include <assert.h>
 #include "syn-cookie.h"
 
-/**
- * This is the number of entries in our table. More entries does a better job at the
- * cost of using more memory.
- */
-#define DEDUP_ENTRIES 65536
-
 struct DedupEntry_IPv4
 {
     unsigned ip_them;
@@ -50,14 +44,21 @@ struct DedupEntry_IPv6
     unsigned short port_me;
 };
 
+struct DedupEntry
+{
+    struct DedupEntry_IPv4 entries[4];
+    struct DedupEntry_IPv6 entries6[4];
+};
+
 /**
  * This is simply the array of entries. We have two arrays, one for IPv4
  * and another for IPv6.
  */
 struct DedupTable
 {
-    struct DedupEntry_IPv4 entries[DEDUP_ENTRIES][4];
-    struct DedupEntry_IPv6 entries6[DEDUP_ENTRIES][4];
+    /*num of entries*/
+    unsigned dedup_win;
+    struct DedupEntry all_entries[0];
 };
 
 /**
@@ -103,11 +104,14 @@ static inline unsigned fnv1a_longlong(unsigned long long data, unsigned hash)
  * and setting it to zero.
  */
 struct DedupTable *
-dedup_create(void)
+dedup_create(unsigned dedup_win)
 {
-    struct DedupTable *dedup;
+    assert(dedup_win != 0);
 
-    dedup = CALLOC(1, sizeof(*dedup));
+    struct DedupTable *dedup;
+    dedup = CALLOC(1,
+        sizeof(struct DedupTable) + sizeof(struct DedupEntry) * dedup_win);
+    dedup->dedup_win = dedup_win;
 
     return dedup;
 }
@@ -193,10 +197,10 @@ dedup_is_duplicate_ipv6(struct DedupTable *dedup,
     /* THREAT: probably need to secure this hash, though the syn-cookies
      * provides some protection */
     hash = dedup_hash_ipv6(ip_them, port_them, ip_me, port_me);
-    hash &= DEDUP_ENTRIES-1;
+    hash &= dedup->dedup_win-1;
 
     /* Search in this bucket */
-    bucket = dedup->entries6[hash];
+    bucket = dedup->all_entries[hash].entries6;
 
     /* If we find the entry in our table, move it to the front, so
      * that it won't be aged out as quickly. We keep prepending new
@@ -241,10 +245,10 @@ dedup_is_duplicate_ipv4(struct DedupTable *dedup,
     /* THREAT: probably need to secure this hash, though the syn-cookies
      * provides some protection */
     hash = (ip_them.ipv4 + port_them) ^ ((ip_me.ipv4) + (ip_them.ipv4>>16)) ^ (ip_them.ipv4>>24) ^ port_me;
-    hash &= DEDUP_ENTRIES-1;
+    hash &= dedup->dedup_win-1;
 
     /* Search in this bucket */
-    bucket = dedup->entries[hash];
+    bucket = dedup->all_entries[hash].entries;
 
     /* If we find the entry in our table, move it to the front, so
      * that it won't be aged out as quickly. We keep prepending new
@@ -338,7 +342,7 @@ dedup_selftest(void)
     unsigned found_match = 0;
     unsigned line = 0;
     
-    dedup = dedup_create();
+    dedup = dedup_create(65536);
     
     /* Deterministic test.
      *

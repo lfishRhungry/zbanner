@@ -7,6 +7,7 @@
 #include "massip-port.h"
 #include "main-dedup.h"
 
+#define ICMP_DEDUP_WIN 65536
 
 /***************************************************************************
  ***************************************************************************/
@@ -67,7 +68,7 @@ handle_icmp(struct Output *out, time_t timestamp,
 
 
     if (!echo_reply_dedup)
-        echo_reply_dedup = dedup_create();
+        echo_reply_dedup = dedup_create(ICMP_DEDUP_WIN);
 
     seqno_me = px[parsed->transport_offset+4]<<24
                 | px[parsed->transport_offset+5]<<16

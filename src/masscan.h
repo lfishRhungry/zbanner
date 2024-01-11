@@ -156,6 +156,14 @@ struct Masscan
     unsigned rx_thread_count;
 
     /**
+     * This is the number of entries in our table.
+     * More entries does a better job at the cost of using more memory.
+     * NOTE: Look into strustures to understand the memory cost.
+     */
+    unsigned dedup_win1;
+    unsigned dedup_win2;
+
+    /**
      * The callback queue from rx threads to tx threads
     */
     struct stack_t *stack;

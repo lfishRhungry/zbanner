@@ -594,7 +594,7 @@ receive_thread(void *v)
      * multiple responses, we only record the first one.
      */
     if (!masscan->is_nodedup1){
-        dedup = dedup_create();
+        dedup = dedup_create(masscan->dedup_win1);
     }else{
         dedup = NULL;
     }
@@ -605,7 +605,7 @@ receive_thread(void *v)
      * we only record the first one.
      */
     if (masscan->is_stateless_banners && !masscan->is_nodedup2){
-        dedup_for_stateless = dedup_create();
+        dedup_for_stateless = dedup_create(masscan->dedup_win2);
     }else{
         dedup_for_stateless = NULL;
     }
@@ -1790,6 +1790,8 @@ int main(int argc, char *argv[])
                 sizeof(masscan->output.rotate.directory),
                 ".");
     masscan->is_capture_cert = 1;
+    masscan->dedup_win1 = 1000000;
+    masscan->dedup_win2 = 1000000;
 
     /*
      * Pre-parse the command-line

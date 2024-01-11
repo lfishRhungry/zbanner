@@ -1240,6 +1240,33 @@ static int SET_nodedup(struct Masscan *masscan, const char *name, const char *va
     return CONF_OK;
 }
 
+static int SET_dedup_win(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        if (masscan->dedup_win1 || masscan->dedup_win2 || masscan->echo_all) {
+            fprintf(masscan->echo, "dedup-win1 = %u\n", masscan->dedup_win1);
+            fprintf(masscan->echo, "dedup-win2 = %u\n", masscan->dedup_win2);
+        }
+       return 0;
+    }
+
+    if (parseInt(value)<=0) {
+        fprintf(stderr, "FAIL: %s: dedup-win must > 0.\n", name);
+        return CONF_ERR;
+    }
+
+    if (EQUALS(name, "dedupwin1") || EQUALS(name, "dedup-win1"))
+        masscan->dedup_win1 = parseInt(value);
+    else if (EQUALS(name, "dedupwin2") || EQUALS(name, "dedup-win2"))
+        masscan->dedup_win2 = parseInt(value);
+    else if (EQUALS(name, "dedupwin") || EQUALS(name, "dedup-win")) {
+        masscan->dedup_win1 = parseInt(value);
+        masscan->dedup_win2 = parseInt(value);
+    }
+
+    return CONF_OK;
+}
+
 static int SET_feed_lzr(struct Masscan *masscan, const char *name, const char *value)
 {
     UNUSEDPARM(name);
@@ -2599,6 +2626,7 @@ struct ConfigParameter config_parameters[] = {
     {"nodedup1",        SET_nodedup,            F_BOOL, {0}},
     {"nodedup2",        SET_nodedup,            F_BOOL, {0}},
     {"nodedup",         SET_nodedup,            F_BOOL, {0}},
+    {"dedup-win",       SET_dedup_win,          F_NUMABLE, {"dedupwin", "dedup-win1", "dedupwin1", "dedup-win2", "dedupwin2", 0}},
     {"feed-lzr",        SET_feed_lzr,           F_BOOL, {"feedlzr", 0}},
     {"tansmit-thread-count", SET_thread_count,       F_NUMABLE, {"tx-thread-count", "tx-count", "tx-num", 0}},
     {"receive-thread-count", SET_thread_count,       F_NUMABLE, {"rx-thread-count", "rx-count", "rx-num", 0}},
