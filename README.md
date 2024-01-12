@@ -14,7 +14,7 @@ Actually some main code was modified and new things were added, also I will drop
 However, you'd better know the basic method and usages of Masscan.
 Contents only about ZBanner are followed.
 
-## Completely stateless Mode
+## Completely Stateless Mode
 
 Unlike scan on application-layer with TCP/IP stack of system or user mode,
 ZBanner sends application-layer probes and obtain banners completely stateless after the target port was identified open (received SYNACK).

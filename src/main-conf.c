@@ -112,9 +112,9 @@ print_version()
     const char *compiler_version = "unknown";
     const char *os = "unknown";
     printf("\n");
-    printf("Masscan version %s\n( %s )\n", 
+    printf("ZBanner version %s\n( %s )\n", 
         MASSCAN_VERSION,
-        "https://github.com/lfishRhungry/masscan-learn/tree/stateless"
+        "https://github.com/lfishRhungry/zbanner"
         );
     printf("Compiled on: %s %s\n", __DATE__, __TIME__);
 
@@ -199,7 +199,7 @@ print_version()
 static void
 print_nmap_help(void)
 {
-    printf("ZBanner (https://github.com/lfishRhungry/masscan-learn/tree/stateless)\n"
+    printf("\nZBanner (https://github.com/lfishRhungry/zbanner)\n"
 "Usage: zbanner [Options] -p{Target-Ports} {Target-IP-Ranges}\n"
 "TARGET SPECIFICATION:\n"
 "  Can pass only IPv4/IPv6 address, CIDR networks, or ranges (non-nmap style)\n"
@@ -255,9 +255,9 @@ print_nmap_help(void)
 "EXAMPLES:\n"
 "  zbanner -v -sS 192.168.0.0/16 10.0.0.0/8 -p 80\n"
 "  zbanner 23.0.0.0/0 -p80 --banners -output-format binary --output-filename internet.scan\n"
-"  zbanner --open --banners --readscan internet.scan -oG internet_scan.grepable\n"
+"  zbanner --open --banners --readscan internet.scan -oG internet_scan.grepable\n\n"
 "SEE (https://github.com/robertdavidgraham/masscan) FOR ORIGINAL HELP\n"
-"SEE (https://github.com/lfishRhungry/masscan-learn/tree/stateless) FOR ZBANNER HELP\n"
+"SEE (https://github.com/lfishRhungry/zbanner) FOR ZBANNER HELP\n"
 "\n");
 }
 

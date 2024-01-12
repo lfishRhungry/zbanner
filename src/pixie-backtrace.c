@@ -29,7 +29,7 @@ handle_segfault(int sig)
 
     printf("======================================================================\n");
     printf(" Segmentation fault: please post this backtrace to:\n");
-    printf(" https://github.com/lfishRhungry/masscan-learn/tree/stateless\n");
+    printf(" https://github.com/lfishRhungry/zbanner\n");
     printf("======================================================================\n");
 	size = backtrace(func, BACKTRACE_SIZE);
 	symb = backtrace_symbols(func, size);
