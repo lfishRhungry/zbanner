@@ -149,11 +149,22 @@ struct Masscan
     } nic;
 
     /**
-     * Now we could set the number of transmit threads and receive threads.
-     * !Actually, setting more than one tx is more useful than more than one rx.
+     * Now we could set the number of transmit threads.
+     * NOTE: Always only one receiving thread.
+     * !Actually, more than one rx thread make deduptable invalid.
+     * !And rx thread cost much less than tx thread, one rx could serve many tx well.
+     * TODO: maybe some costy thing(eg. identification) could be done by other
+     * thread instead of rx or tx.
      */
     unsigned tx_thread_count;
+    /**
+     * NOTE: Just keep this value for funcs in output.c
+    */
     unsigned rx_thread_count;
+
+    /* This is used both by the transmit and receive thread for
+     * formatting packets */
+    struct TemplateSet *tmplset;
 
     /**
      * This is the number of entries in our table.

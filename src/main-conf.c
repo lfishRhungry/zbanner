@@ -1246,6 +1246,7 @@ static int SET_dedup_win(struct Masscan *masscan, const char *name, const char *
         if (masscan->dedup_win1 || masscan->dedup_win2 || masscan->echo_all) {
             fprintf(masscan->echo, "dedup-win1 = %u\n", masscan->dedup_win1);
             fprintf(masscan->echo, "dedup-win2 = %u\n", masscan->dedup_win2);
+            fprintf(masscan->echo, "default win = 1000000\n");
         }
        return 0;
     }
@@ -1283,21 +1284,18 @@ static int SET_thread_count(struct Masscan *masscan, const char *name, const cha
 {
     if (masscan->echo) {
         fprintf(masscan->echo, "transmit-thread-count = %u\n", masscan->tx_thread_count);
-        fprintf(masscan->echo, "receive-thread-count = %u\n", masscan->rx_thread_count);
+        fprintf(masscan->echo, "always only one receive-thread\n");
         return 0;
     }
 
     unsigned count = parseInt(value);
     if (count==0) {
-        fprintf(stderr, "FAIL: %s: thread count cannot be zero.\n", name);
+        fprintf(stderr, "FAIL: %s: transmit thread count cannot be zero.\n", name);
         return CONF_ERR;
     }
 
-    if (name[0]=='t') {
-        masscan->tx_thread_count = count;
-    } else {
-        masscan->rx_thread_count = count;
-    }
+    masscan->tx_thread_count = count;
+
     return CONF_OK;
 }
 
@@ -2626,7 +2624,7 @@ struct ConfigParameter config_parameters[] = {
     {"capture",         SET_capture,            0,      {"nocapture", "no-capture", 0}},
     {"list-probes",     SET_list_probes,        F_BOOL, {"list-probe", 0}},
     {"probe-args",      SET_probe_args,         0,      {"probe-arg", 0}},
-    {"tansmit-thread-count", SET_thread_count,  F_NUMABLE, {"tx-count", "tx-num", "receive-thread-count", "rx-count", "rx-num", 0}},
+    {"tansmit-thread-count", SET_thread_count,  F_NUMABLE, {"tx-count", "tx-num", 0}},
     {"dedup-win",       SET_dedup_win,          F_NUMABLE, {"dedupwin", "dedup-win1", "dedupwin1", "dedup-win2", "dedupwin2", 0}},
     {"nodedup",         SET_nodedup,            F_BOOL, {"nodedup1", "nodedup2", 0}},
     {"noreset",         SET_noreset,            F_BOOL, {"noreset1", "noreset2", 0}},

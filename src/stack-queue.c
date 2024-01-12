@@ -12,7 +12,7 @@ stack_get_packetbuffer(struct stack_t *stack)
     struct PacketBuffer *response = NULL;
 
     for (err=1; err; ) {
-        err = rte_ring_mc_dequeue(stack->packet_buffers, (void**)&response);
+        err = rte_ring_sc_dequeue(stack->packet_buffers, (void**)&response);
         if (err != 0) {
             /* Pause and wait for a buffer to become available */
             pixie_usleep(1000);
@@ -26,7 +26,7 @@ stack_transmit_packetbuffer(struct stack_t *stack, struct PacketBuffer *response
 {
     int err;
     for (err=1; err; ) {
-        err = rte_ring_mp_enqueue(stack->transmit_queue, response);
+        err = rte_ring_sp_enqueue(stack->transmit_queue, response);
         if (err) {
             fprintf(stderr, "[-] transmit queue full (should be impossible)\n");
             pixie_usleep(1000);
@@ -109,9 +109,17 @@ stack_create(macaddress_t source_mac, struct stack_src_t *src)
      * Allocate packet buffers for sending
      */
 #define BUFFER_COUNT 16384
-    /* Zero means multi-producer & multi-consumer */
-    stack->packet_buffers = rte_ring_create(BUFFER_COUNT, 0);
-    stack->transmit_queue = rte_ring_create(BUFFER_COUNT, 0);
+    /*
+     * NOTE:
+     *
+     * Multi tx-threads produce unused packet_buffers to queue.
+     * Single rx-thread consumes packet_buffers from queue to use.
+     * 
+     * Single rx-thread produces packet to be transmitted.
+     * Multi tx-thread consume packet to transmit.
+     */
+    stack->packet_buffers = rte_ring_create(BUFFER_COUNT, RING_F_SC_DEQ);
+    stack->transmit_queue = rte_ring_create(BUFFER_COUNT, RING_F_SP_ENQ);
     for (i=0; i<BUFFER_COUNT-1; i++) {
         struct PacketBuffer *p;
         int err;

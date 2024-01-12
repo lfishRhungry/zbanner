@@ -675,7 +675,7 @@ Set deduplication window for response with data:
 masscan 10.0.0.0/8 -p110 --stateless --dedupwin2 65535
 ```
 
-Also use `--dedupwin` to set both window.
+Also use `--dedupwin` to set both window. Default win are 100M.
 
 Do not deduplicating for SYN-ACK:
 
@@ -712,10 +712,10 @@ masscan 10.0.0.0/8 -p 80 --noreset1 --feedlzr | \
 lzr --handshakes http -sendInterface eth0 -f results.json
 ```
 
-Use multithread for transmitting or receiving (Usually, setting more tx is good enough):
+Use multi transmit thread:
 
 ```
-masscan 10.0.0.0/8 -p110 --noreset1 --tx-count 3 --rx-count 2
+masscan 10.0.0.0/8 -p110 --noreset1 --tx-count 3
 ```
 
 ## note

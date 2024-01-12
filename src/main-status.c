@@ -290,7 +290,7 @@ status_finish(struct Status *status)
 {
     UNUSEDPARM(status);
     fprintf(stderr,
-"                                                                             \r");
+"                                                                                     \r");
 }
 
 /***************************************************************************
