@@ -175,9 +175,13 @@ struct Masscan
     unsigned dedup_win2;
 
     /**
-     * The callback queue from rx threads to tx threads
+     * This stack contains:
+     *     The callback queue (transmit queue) from rx threads to tx threads,
+     *     The packet buffer queue for memory reusing.
+     * 
     */
     struct stack_t *stack;
+    unsigned stack_buf_count;
 
     /**
      * The target ranges of IPv4 addresses that are included in the scan.

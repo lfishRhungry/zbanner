@@ -96,7 +96,7 @@ stack_flush_packets(
 }
 
 struct stack_t *
-stack_create(macaddress_t source_mac, struct stack_src_t *src)
+stack_create(macaddress_t source_mac, struct stack_src_t *src, unsigned buf_count)
 {
     struct stack_t *stack;
     size_t i;
@@ -107,9 +107,7 @@ stack_create(macaddress_t source_mac, struct stack_src_t *src)
 
     /*
      * Allocate packet buffers for sending
-     */
-#define BUFFER_COUNT 16384
-    /*
+     *
      * NOTE:
      *
      * Multi tx-threads produce unused packet_buffers to queue.
@@ -118,9 +116,9 @@ stack_create(macaddress_t source_mac, struct stack_src_t *src)
      * Single rx-thread produces packet to be transmitted.
      * Multi tx-thread consume packet to transmit.
      */
-    stack->packet_buffers = rte_ring_create(BUFFER_COUNT, RING_F_SC_DEQ);
-    stack->transmit_queue = rte_ring_create(BUFFER_COUNT, RING_F_SP_ENQ);
-    for (i=0; i<BUFFER_COUNT-1; i++) {
+    stack->packet_buffers = rte_ring_create(buf_count, RING_F_SC_DEQ);
+    stack->transmit_queue = rte_ring_create(buf_count, RING_F_SP_ENQ);
+    for (i=0; i<buf_count-1; i++) {
         struct PacketBuffer *p;
         int err;
 

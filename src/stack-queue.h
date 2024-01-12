@@ -43,6 +43,6 @@ stack_flush_packets(
     uint64_t *batchsize);
 
 struct stack_t *
-stack_create(macaddress_t source_mac, struct stack_src_t *src);
+stack_create(macaddress_t source_mac, struct stack_src_t *src, unsigned buf_count);
 
 #endif

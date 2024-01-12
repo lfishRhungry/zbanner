@@ -1280,6 +1280,33 @@ static int SET_feed_lzr(struct Masscan *masscan, const char *name, const char *v
     return CONF_OK;
 }
 
+static int SET_stack_buf_count(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+        if (masscan->stack_buf_count || masscan->echo_all) {
+            fprintf(masscan->echo, "stack-buf-count = %u\n", masscan->stack_buf_count);
+        }
+       return 0;
+    }
+
+    uint64_t v = parseInt(value);
+    if (v<=0) {
+        fprintf(stderr, "FAIL: %s: stack-buf-count must > 0.\n", value);
+        return CONF_ERR;
+    } else if (!is_power_of_two(v)) {
+        fprintf(stderr, "FAIL: %s: stack-buf-count must be power of 2.\n", value);
+        return CONF_ERR;
+    } else if (v>RTE_RING_SZ_MASK) {
+        fprintf(stderr, "FAIL: %s: stack-buf-count exceeded size limit.\n", value);
+        return CONF_ERR;
+    }
+
+    masscan->stack_buf_count = v;
+
+    return CONF_OK;
+}
+
 static int SET_thread_count(struct Masscan *masscan, const char *name, const char *value)
 {
     if (masscan->echo) {
@@ -2629,6 +2656,7 @@ struct ConfigParameter config_parameters[] = {
     {"nodedup",         SET_nodedup,            F_BOOL, {"nodedup1", "nodedup2", 0}},
     {"noreset",         SET_noreset,            F_BOOL, {"noreset1", "noreset2", 0}},
     {"feed-lzr",        SET_feed_lzr,           F_BOOL, {"feedlzr", 0}},
+    {"stack-buf-count", SET_stack_buf_count,    F_NUMABLE, {"queue-buf-count", "stack-buf-count", "packet-buf-count", 0}},
 
     {"SPACE",           SET_space,              0,      {0}},
 
@@ -2639,6 +2667,8 @@ struct ConfigParameter config_parameters[] = {
 /***************************************************************************
  * Called either from the "command-line" parser when it sees a --param,
  * or from the "config-file" parser for normal options.
+ * 
+ * Exit process if CONF_ERR happens.
  ***************************************************************************/
 void
 masscan_set_parameter(struct Masscan *masscan,
@@ -2653,13 +2683,15 @@ masscan_set_parameter(struct Masscan *masscan,
         
         for (i=0; config_parameters[i].name; i++) {
             if (EQUALS(config_parameters[i].name, name)) {
-                config_parameters[i].set(masscan, name, value);
+                if (CONF_ERR == config_parameters[i].set(masscan, name, value))
+                    exit(0);
                 return;
             } else {
                 size_t j;
                 for (j=0; config_parameters[i].alts[j]; j++) {
                     if (EQUALS(config_parameters[i].alts[j], name)) {
-                        config_parameters[i].set(masscan, name, value);
+                        if (CONF_ERR == config_parameters[i].set(masscan, name, value))
+                            exit(0);
                         return;
                     }
                 }

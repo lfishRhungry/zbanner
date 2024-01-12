@@ -1484,7 +1484,8 @@ main_scan(struct Masscan *masscan)
      * create callback queue
      * TODO: Maybe more queue?
     */
-    masscan->stack = stack_create(masscan->nic.source_mac, &masscan->nic.src);
+    masscan->stack = stack_create(masscan->nic.source_mac,
+        &masscan->nic.src, masscan->stack_buf_count);
 
     /*
         * trap <ctrl-c> to pause
@@ -1795,8 +1796,15 @@ int main(int argc, char *argv[])
                 sizeof(masscan->output.rotate.directory),
                 ".");
     masscan->is_capture_cert = 1;
+    /*default deduplication window(table) entries count*/
     masscan->dedup_win1 = 1000000;
     masscan->dedup_win2 = 1000000;
+    /*default entries count of callback queue and packet buffer queue*/
+    /**
+     * Default entries count of callback queue and packet buffer queue.
+     * Must be power of 2 and do not exceed the size limit of rte-ring.
+    */
+    masscan->stack_buf_count = 16384;
 
     /*
      * Pre-parse the command-line
