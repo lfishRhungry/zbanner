@@ -718,6 +718,15 @@ Use multi transmit thread:
 masscan 10.0.0.0/8 -p110 --noreset1 --tx-count 3
 ```
 
+use `--stack-buf-count` to set callback queue and packet buffer entries count:
+
+```
+masscan 10.0.0.0/8 -p110 --stack-buf-count 2048
+```
+
+`--stack-buf-count` must be power of 2 and do not exceed RTE_RING_SZ_MASK.
+
+
 ## note
 
 1. Do not use stateless-banners mode with `--banners` mode.
