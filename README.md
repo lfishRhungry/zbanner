@@ -8,9 +8,11 @@ Of cause asychronously too.
 The tool is developed based on the code of [Masscan](https://github.com/robertdavidgraham/masscan) and some thoughts of [ZMap](https://github.com/zmap/zmap).
 These two are both great tools and still maintained now.
 I have always held both authors in high esteem because of the many knowledge and skills I have learned from their code.
+(I will keep some Masscan style of code naming for respect and convenient for some time to come)
 
-ZBanner is as a sub-function of Masscan until now and has most of the capabilities of Masscan.
-Actually some main code was modified and new things were added, also I will drop many no stateless functions in the future.
+ZBanner is a variant of Masscan until now and has most of the capabilities of it.
+Actually some main code was modified and new things were added,
+also I will drop many no stateless functions in the future.
 However, you'd better know the basic method and usages of Masscan.
 Contents only about ZBanner are followed.
 
@@ -189,7 +191,7 @@ It's useful just in stateless mode.
 - [ ] Try to use Lua to write StatelessProbe.
 - [ ] Add some interesting probe.
 - [ ] Make it possible to load probe from Nmap's probes database.
-- [ ] Drop no stateless functions like `--banners` mode of Masscan. (Will detach from Masscan's branch)
+- [ ] Drop no stateless functions like `--banners` mode of Masscan.
 
 # Authors
 
