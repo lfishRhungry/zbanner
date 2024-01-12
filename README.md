@@ -1,5 +1,5 @@
 
-# ZBANNER: completely stateless port scanner and banner grabber
+# ZBANNER: A Completely Stateless Banner Grabber
 
 ZBanner is an Internet-scale port scanner and banner grabber.
 It scans port and grabs banner in completely stateless mode.
