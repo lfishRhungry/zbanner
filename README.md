@@ -25,13 +25,15 @@ Aka application-layer request module.
 
 Achieve what you want by implementing your StatelessProbe.
 
-Possible achievements:
+Possibly can do:
 
 - Get banner of specific protocol;
 - Service identification;
 - Detect application-layer vuln;
 - Integrate other probes;
 - etc.
+
+Now ZBanner contains some probes from [LZR](https://github.com/stanford-esrg/lzr) and can do fast identification of application-layer services.
 
 ## Multi Transmiting Threads
 
@@ -172,6 +174,22 @@ It's useful just in stateless mode.
 6. Use `--nostatus` to switch off status printing.
 
 7. Use `--ndjson-status` to get status in details.
+
+## TODOs
+
+- [x] Make banner grabbing completely stateless and very fast.
+- [x] Display number of responsed hosts in stateless mode.
+- [x] Add stateless probe module. Make it easy to define application-layer probe by self. 
+- [x] Make deduplication table for stateless probe.
+- [x] Filt out, display and do statistics for SYN-ACK with zero window.
+- [x] Drop multi-NICs support of Masscan, use multi-tx-threads to send packets faster.
+- [] Make a script for generating template of probe module by name.
+- [] Add all probes of LZR to probe module.
+- [] Use `Sendmmsg` to send packets in batch for possible better performance referring to ZMap.
+- [] Try to use Lua to write StatelessProbe.
+- [] Add some interesting probe.
+- [] Make it possible to load probe from Nmap's probes database.
+- [] Drop no stateless functions like `--banners` mode of Masscan. (Will detach from Masscan's branch)
 
 # Authors
 
