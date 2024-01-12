@@ -43,31 +43,31 @@ ZBanner supports any number of transmiting threads just like ZMap now and is as 
 Do TCP SYN scan and get banners statelessly if ports are open:
 
 ```
-masscan 10.0.0.0/8 -p110 --stateless
+zbanner 10.0.0.0/8 -p110 --stateless
 ```
 
 Specify rate(pps) and time(sec) to wait after done:
 
 ```
-masscan 10.0.0.0/8 -p110 --stateless --rate 300000 --wait 15
+zbanner 10.0.0.0/8 -p110 --stateless --rate 300000 --wait 15
 ```
 
 Specify application-layer probe:
 
 ```
-masscan 10.0.0.0/8 -p80 --stateless --probe getrequest
+zbanner 10.0.0.0/8 -p80 --stateless --probe getrequest
 ```
 
 List all application-layer probes:
 
 ```
-masscan --list-probes
+zbanner --list-probes
 ```
 
 Output banner in result:
 
 ```
-masscan 10.0.0.0/8 -p110 --stateless --capture stateless
+zbanner 10.0.0.0/8 -p110 --stateless --capture stateless
 ```
 
 The captured "Banner" could be any results of probe's verification.
@@ -75,25 +75,25 @@ The captured "Banner" could be any results of probe's verification.
 Save receive packets to pcap file for analysis:
 
 ```
-masscan 10.0.0.0/8 -p110 --stateless --pcap result.pcap
+zbanner 10.0.0.0/8 -p110 --stateless --pcap result.pcap
 ```
 
 Also save status output:
 
 ```
-masscan 10.0.0.0/8 -p110 --stateless --pcap result.pcap -oX result.xml
+zbanner 10.0.0.0/8 -p110 --stateless --pcap result.pcap -oX result.xml
 ```
 
 Set deduplication window for SYN-ACK:
 
 ```
-masscan 10.0.0.0/8 -p110 --dedupwin1 65535
+zbanner 10.0.0.0/8 -p110 --dedupwin1 65535
 ```
 
 Set deduplication window for response with data:
 
 ```
-masscan 10.0.0.0/8 -p110 --stateless --dedupwin2 65535
+zbanner 10.0.0.0/8 -p110 --stateless --dedupwin2 65535
 ```
 
 Also use `--dedupwin` to set both window. Default win are 100M.
@@ -101,13 +101,13 @@ Also use `--dedupwin` to set both window. Default win are 100M.
 Do not deduplicating for SYN-ACK:
 
 ```
-masscan 10.0.0.0/8 -p110 --nodedup1
+zbanner 10.0.0.0/8 -p110 --nodedup1
 ```
 
 Do not deduplicating for response with data:
 
 ```
-masscan 10.0.0.0/8 -p110 --stateless --nodedup2
+zbanner 10.0.0.0/8 -p110 --stateless --nodedup2
 ```
 
 Also use `--nodedup` to ban deduplicating for all.
@@ -115,13 +115,13 @@ Also use `--nodedup` to ban deduplicating for all.
 Do not send RST for SYN-ACK:
 
 ```
-masscan 10.0.0.0/8 -p110 --noreset1
+zbanner 10.0.0.0/8 -p110 --noreset1
 ```
 
 Do not send RST for response with data:
 
 ```
-masscan 10.0.0.0/8 -p110 --stateless --noreset2
+zbanner 10.0.0.0/8 -p110 --stateless --noreset2
 ```
 
 Also use `--noreset` to ban reset for all.
@@ -129,20 +129,20 @@ Also use `--noreset` to ban reset for all.
 Work with LZR:
 
 ```
-masscan 10.0.0.0/8 -p 80 --noreset1 --feedlzr | \
+zbanner 10.0.0.0/8 -p 80 --noreset1 --feedlzr | \
 lzr --handshakes http -sendInterface eth0 -f results.json
 ```
 
 Use multi transmit thread:
 
 ```
-masscan 10.0.0.0/8 -p110 --noreset1 --tx-count 3
+zbanner 10.0.0.0/8 -p110 --noreset1 --tx-count 3
 ```
 
 use `--stack-buf-count` to set callback queue and packet buffer entries count:
 
 ```
-masscan 10.0.0.0/8 -p110 --stack-buf-count 2048
+zbanner 10.0.0.0/8 -p110 --stack-buf-count 2048
 ```
 
 `--stack-buf-count` must be power of 2 and do not exceed RTE_RING_SZ_MASK.

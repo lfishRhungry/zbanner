@@ -68,35 +68,35 @@ void
 masscan_usage(void)
 {
     printf("\n");
-    printf("Welcome to MASSCAN with ZBanner support!\n");
+    printf("Welcome to ZBanner!\n");
     printf("\n");
-    printf("usage: masscan [options] [<IP|RANGE>... -pPORT[,PORT...]]\n");
+    printf("usage: zbanner [options] [<IP|RANGE>... -pPORT[,PORT...]]\n");
     printf("\n");
-    printf("original examples:\n");
-    printf("    masscan -p80,8000-8100 10.0.0.0/8 --rate=10000\n");
+    printf("original examples in masscan:\n");
+    printf("    zbanner -p80,8000-8100 10.0.0.0/8 --rate=10000\n");
     printf("        scan some web ports on 10.x.x.x at 10kpps\n");
     printf("\n");
-    printf("    masscan --nmap\n");
+    printf("    zbanner --nmap\n");
     printf("        list those options that are compatible with nmap\n");
     printf("\n");
-    printf("    masscan -p80 10.0.0.0/8 --banners -oB <filename>\n");
+    printf("    zbanner -p80 10.0.0.0/8 --banners -oB <filename>\n");
     printf("        save results of scan in binary format to <filename>\n");
     printf("\n");
-    printf("    masscan --open --banners --readscan <filename> -oX <savefile>\n");
+    printf("    zbanner --open --banners --readscan <filename> -oX <savefile>\n");
     printf("        read binary scan results in <filename> and save them as xml in <savefile>\n");
     printf("\n");
     printf("\n");
     printf("zbanner examples:\n");
-    printf("    masscan 10.0.0.0/8 -p21,110 --stateless\n");
+    printf("    zbanner 10.0.0.0/8 -p21,110 --stateless\n");
     printf("        scan some ftp & pop3 ports with default NULL probe\n");
     printf("\n");
-    printf("    masscan 10.0.0.0/8 -p80 --stateless --probe getrequest\n");
+    printf("    zbanner 10.0.0.0/8 -p80 --stateless --probe getrequest\n");
     printf("        scan some web ports with GetRequest probe\n");
     printf("\n");
-    printf("    masscan 10.0.0.0/8 -p110 --stateless --capture stateless\n");
+    printf("    zbanner 10.0.0.0/8 -p110 --stateless --capture stateless\n");
     printf("        capture banner result\n");
     printf("\n");
-    printf("    masscan 10.0.0.0/8 -p110 --stateless --pcap <pcapfile> -oX <xmlfile>\n");
+    printf("    zbanner 10.0.0.0/8 -p110 --stateless --pcap <pcapfile> -oX <xmlfile>\n");
     printf("        save packet result in <pcapfile> and save scan result in <xmlfile>\n");
     printf("\n");
     exit(1);
@@ -199,8 +199,8 @@ print_version()
 static void
 print_nmap_help(void)
 {
-    printf("Masscan with ZBanner support\n(https://github.com/lfishRhungry/masscan-learn/tree/stateless)\n"
-"Usage: masscan [Options] -p{Target-Ports} {Target-IP-Ranges}\n"
+    printf("ZBanner (https://github.com/lfishRhungry/masscan-learn/tree/stateless)\n"
+"Usage: zbanner [Options] -p{Target-Ports} {Target-IP-Ranges}\n"
 "TARGET SPECIFICATION:\n"
 "  Can pass only IPv4/IPv6 address, CIDR networks, or ranges (non-nmap style)\n"
 "  Ex: 10.0.0.0/8, 192.168.0.1, 10.0.0.1-10.0.0.254\n"
@@ -253,9 +253,9 @@ print_nmap_help(void)
 "  --list-probes: List stateless application probes.\n"
 "  --capture stateless: Capture banner results.\n"
 "EXAMPLES:\n"
-"  masscan -v -sS 192.168.0.0/16 10.0.0.0/8 -p 80\n"
-"  masscan 23.0.0.0/0 -p80 --banners -output-format binary --output-filename internet.scan\n"
-"  masscan --open --banners --readscan internet.scan -oG internet_scan.grepable\n"
+"  zbanner -v -sS 192.168.0.0/16 10.0.0.0/8 -p 80\n"
+"  zbanner 23.0.0.0/0 -p80 --banners -output-format binary --output-filename internet.scan\n"
+"  zbanner --open --banners --readscan internet.scan -oG internet_scan.grepable\n"
 "SEE (https://github.com/robertdavidgraham/masscan) FOR ORIGINAL HELP\n"
 "SEE (https://github.com/lfishRhungry/masscan-learn/tree/stateless) FOR ZBANNER HELP\n"
 "\n");
@@ -3344,13 +3344,13 @@ static void
 masscan_help()
 {
     printf(
-"\nWelcome to MASSCAN with ZBanner support!\n\n"
-"usage: masscan [options] [<IP|RANGE>... -pPORT[,PORT...]]\n"
-"MASSCAN is a fast port scanner. The primary input parameters are the\n"
-"IP addresses/ranges you want to scan, and the port numbers. An example\n"
-"is the following, which scans the 10.x.x.x network for web servers:\n"
+"\nWelcome to ZBanner!\n\n"
+"usage: zbanner [options] [<IP|RANGE>... -pPORT[,PORT...]]\n"
+"ZBanner is a fast completely stateless port scanner and banner grabber.\n"
+"The primary input parameters are the IP addresses/ranges you want to scan,\n"
+"and the port numbers. An example is the following:\n"
 "\n"
-"    masscan 10.0.0.0/8 -p80\n"
+"    zbanner 10.0.0.0/8 -p80\n"
 "\n"
 "The program auto-detects network interface/adapter settings. If this\n"
 "fails, you'll have to set these manually. The following is an\n"
@@ -3372,7 +3372,7 @@ masscan_help()
 "so '-p80' is the same as '--ports 80' (or 'ports = 80' in config file).\n"
 "To use the config file, type:\n"
 "\n"
-"    masscan -c <filename>\n"
+"    zbanner -c <filename>\n"
 "\n"
 "To generate a config-file from the current settings, use the --echo\n"
 "option. This stops the program from actually running, and just echoes\n"
@@ -3380,13 +3380,13 @@ masscan_help()
 "your first config file, or see a list of parameters you didn't know\n"
 "about. I suggest you try it now:\n"
 "\n"
-"    masscan -p1234 --echo\n"
+"    zbanner -p1234 --echo\n"
 "\n"
 "ZBanner provide a total stateless application layer banner fast grabbing.\n"
 "Allow you to use different application layer probe to grab and handle\n"
 "banners from target ports:\n"
 "\n"
-"    masscan -p1234 --stateless --probe getrequest --capture stateless\n"
+"    zbanner -p1234 --stateless --probe getrequest --capture stateless\n"
 "\n");
     exit(1);
 }
