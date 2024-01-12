@@ -101,7 +101,7 @@ DEFINES =
 CFLAGS = -g -ggdb $(FLAGS2) $(INCLUDES) $(DEFINES) -Wall -O2
 .SUFFIXES: .c .cpp
 
-all: bin/masscan 
+all: bin/zbanner
 
 
 tmp/main-conf.o: src/main-conf.c src/*.h
@@ -126,19 +126,19 @@ SRC = $(sort $(wildcard src/*.c src/stateless-probes/*.c src/stateless-probes/lz
 OBJ = $(addprefix tmp/, $(notdir $(addsuffix .o, $(basename $(SRC))))) 
 
 
-bin/masscan: $(OBJ)
+bin/zbanner: $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS) $(LIBS)
 
 clean:
 	rm -f tmp/*.o
-	rm -f bin/masscan
+	rm -f bin/zbanner
 
-regress: bin/masscan
-	bin/masscan --selftest
+regress: bin/zbanner
+	bin/zbanner --selftest
 
 test: regress
 
-install: bin/masscan
-	install $(INSTALL_DATA) bin/masscan $(DESTDIR)$(BINDIR)/masscan
+install: bin/zbanner
+	install $(INSTALL_DATA) bin/zbanner $(DESTDIR)$(BINDIR)/zbanner
 	
-default: bin/masscan
+default: bin/zbanner
