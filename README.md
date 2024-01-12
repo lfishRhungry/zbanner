@@ -183,13 +183,13 @@ It's useful just in stateless mode.
 - [x] Make deduplication table for stateless probe.
 - [x] Filt out, display and do statistics for SYN-ACK with zero window.
 - [x] Drop multi-NICs support of Masscan, use multi-tx-threads to send packets faster.
-- [] Make a script for generating template of probe module by name.
-- [] Add all probes of LZR to probe module.
-- [] Use `Sendmmsg` to send packets in batch for possible better performance referring to ZMap.
-- [] Try to use Lua to write StatelessProbe.
-- [] Add some interesting probe.
-- [] Make it possible to load probe from Nmap's probes database.
-- [] Drop no stateless functions like `--banners` mode of Masscan. (Will detach from Masscan's branch)
+- [ ] Make a script for generating template of probe module by name.
+- [ ] Add all probes of LZR to probe module.
+- [ ] Use `Sendmmsg` to send packets in batch for possible better performance referring to ZMap.
+- [ ] Try to use Lua to write StatelessProbe.
+- [ ] Add some interesting probe.
+- [ ] Make it possible to load probe from Nmap's probes database.
+- [ ] Drop no stateless functions like `--banners` mode of Masscan. (Will detach from Masscan's branch)
 
 # Authors
 
