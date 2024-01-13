@@ -113,7 +113,7 @@ print_version()
     const char *os = "unknown";
     printf("\n");
     printf("ZBanner version %s\n( %s )\n", 
-        MASSCAN_VERSION,
+        ZBANNER_VERSION,
         "https://github.com/lfishRhungry/zbanner"
         );
     printf("Compiled on: %s %s\n", __DATE__, __TIME__);

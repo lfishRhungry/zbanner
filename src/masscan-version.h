@@ -1,6 +1,6 @@
-#ifndef MASSCAN_VERSION
+#ifndef ZBANNER_VERSION
 
-#define MASSCAN_VERSION "1.0beta"
+#define ZBANNER_VERSION "1.0beta"
 
 #endif
 
