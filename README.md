@@ -219,11 +219,11 @@ It's useful just in stateless mode.
 # Authors
 
 The original Masscan was created by Robert Graham:
-email: robert_david_graham@yahoo.com
-twitter: @ErrataRob
+- email: robert_david_graham@yahoo.com
+- twitter: @ErrataRob
 
 ZBanner was written by lfishRhungry:
-email: shineccy@aliyun.com
+- email: shineccy@aliyun.com
 
 # License
 
