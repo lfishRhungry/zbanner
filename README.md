@@ -213,7 +213,7 @@ It's useful just in stateless mode.
 - [ ] Add some interesting probe.
 - [ ] Make it possible to load probe from Nmap's probes database.
 - [ ] Drop no stateless functions like `--banners` mode of Masscan.
-- [ ] Update compilation config of multi-platform.
+- [ ] Update compilation config of multi-platform. I dropped multi-platform compilation temporarily.
 - [ ] Migrate all parameters to new method and add help for all.
 
 # Authors
