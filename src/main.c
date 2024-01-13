@@ -1242,9 +1242,11 @@ receive_thread(void *v)
                     &px[parsed.app_offset], parsed.app_length,
                     report_buf, STATELESS_BANNER_MAX_LEN);
 
-                output_report_banner(
-                    out, global_now, ip_them, 6, port_them, PROTO_STATELESS,
-                    parsed.ip_ttl, report_buf, report_len);
+                /*reduce useless output*/
+                if (report_len>0)
+                    output_report_banner(
+                        out, global_now, ip_them, 6, port_them, PROTO_STATELESS,
+                        parsed.ip_ttl, report_buf, report_len);
             }
             
 
