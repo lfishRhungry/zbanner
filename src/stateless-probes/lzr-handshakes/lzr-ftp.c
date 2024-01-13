@@ -7,6 +7,7 @@
 
 struct StatelessProbe LzrFtpProbe = {
 	.name = "lzr-ftp",
+	.type = Tcp_Probe,
 	.help_text =
 		"LzrFtp Probe sends no data and identifies FTP service.\n",
 	.global_init = NULL,

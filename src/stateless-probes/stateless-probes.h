@@ -9,6 +9,12 @@
 #define STATELESS_BANNER_MAX_LEN 1460
 #define STATELESS_PROBE_ARGS_LEN 256
 
+enum StatelessProbeType {
+	Raw_Probe = 0, /*This is for transmit-layer*/
+	Tcp_Probe = 1, /*Only use it until now*/
+	Udp_Probe = 2,
+};
+
 
 /**
  * masscan.h need to includes stateless-probes.h
@@ -22,7 +28,7 @@ typedef int (*stateless_probe_global_init_cb)(const void *Masscan);
 /**
  * !Must be thread safe.
 */
-typedef int (*stateless_probe_thread_init_cb)(const void *ThreadPair);
+typedef int (*stateless_probe_thread_init_cb)(const void *RxThread);
 
 /**
  * @return length of payload data
@@ -73,6 +79,7 @@ struct StatelessProbe
 {
 	const char *name;
 	const char *help_text;
+	const enum StatelessProbeType type;
 
 	stateless_probe_global_init_cb global_init;
 	stateless_probe_thread_init_cb thread_init;

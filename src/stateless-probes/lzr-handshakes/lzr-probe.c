@@ -36,6 +36,7 @@ static struct StatelessProbe *specified_subprobe;
 
 struct StatelessProbe LzrProbe = {
     .name = "lzr",
+	.type = Tcp_Probe,
     .help_text =
         "LZR Probe is an implement of service identification of LZR. It sends a\n"
         "specified LZR subprobe(handshake) and try to match with all LZR subprobes.\n"

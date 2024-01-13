@@ -6,6 +6,7 @@
 
 struct StatelessProbe LzrHttpProbe = {
 	.name = "lzr-http",
+	.type = Tcp_Probe,
 	.help_text =
 		"LzrHttp Probe sends an HTTP GET request and identifies HTTP service.\n",
 	.global_init = NULL,

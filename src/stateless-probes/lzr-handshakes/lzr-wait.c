@@ -4,6 +4,7 @@
 
 struct StatelessProbe LzrWaitProbe = {
 	.name = "lzr-wait",
+	.type = Tcp_Probe,
 	.help_text =
 		"LzrWait Probe sends nothing and identifies no service. It is the default\n"
 		"subprobe of LzrProbe to help other subprobes to match services.\n",

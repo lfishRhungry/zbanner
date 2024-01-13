@@ -3,6 +3,7 @@
 
 struct StatelessProbe NullProbe = {
 	.name = "null",
+	.type = Tcp_Probe,
 	.help_text =
 		"NullProbe does not send any data to target port throught and after TCP\n"
 		" handshakes, just wait banner from server. However, waiting is the che-\n"

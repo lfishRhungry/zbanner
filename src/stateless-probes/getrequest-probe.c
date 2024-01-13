@@ -4,6 +4,7 @@
 
 struct StatelessProbe GetRequestProbe = {
 	.name = "getrequest",
+	.type = Tcp_Probe,
 	.help_text =
 		"GetRequest Probe sends target port a simple HTTP Get request:\n"
 		"    `GET / HTTP/1.0\\r\\n\\r\\n`\n"
