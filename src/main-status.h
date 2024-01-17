@@ -2,7 +2,7 @@
 #define MAIN_STATUS_H
 #include <stdint.h>
 #include <time.h>
-#include "util-bool.h"
+#include "util/util-bool.h"
 
 struct Status
 {

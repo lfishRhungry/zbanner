@@ -9,11 +9,11 @@
 
 */
 #include "main-status.h"
-#include "pixie-timer.h"
-#include "unusedparm.h"
+#include "pixie/pixie-timer.h"
+#include "util/unusedparm.h"
 #include "main-globals.h"
-#include "util-safefunc.h"
-#include "util-bool.h"
+#include "util/util-safefunc.h"
+#include "util/util-bool.h"
 #include <stdio.h>
 
 

@@ -112,21 +112,114 @@ tmp/main-conf.o: src/main-conf.c src/*.h
 # means that include file dependencies are broken, so sometimes when
 # the program crashes unexpectedly, 'make clean' then 'make' fixes the
 # problem that a .h file was out of date
-tmp/%.o: src/%.c \
+tmp/%.o: \
+	src/%.c \
 	src/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-tmp/%.o: src/stateless-probes/%.c \
+tmp/%.o: \
+	src/crypto/%.c \
+	src/crypto/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/in/%.c \
+	src/in/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/massip/%.c \
+	src/massip/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/out/%.c \
+	src/out/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/pixie/%.c \
+	src/pixie/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/proto/%.c \
+	src/proto/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/rawsock/%.c \
+	src/rawsock/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/scripting/%.c \
+	src/scripting/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/stack/%.c \
+	src/stack/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/stub/%.c \
+	src/stub/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/templ/%.c \
+	src/templ/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/util/%.c \
+	src/util/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/vulncheck/%.c \
+	src/vulncheck/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/smack/%.c \
+	src/smack/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/nmap-services/%.c \
+	src/nmap-services/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/stateless-probes/%.c \
 	src/stateless-probes/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-tmp/%.o: src/stateless-probes/lzr-handshakes/%.c \
+tmp/%.o: \
+	src/stateless-probes/lzr-handshakes/%.c \
 	src/stateless-probes/lzr-handshakes/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 
 SRC = $(sort $(wildcard \
 	src/*.c \
+	src/crypto/*.c \
+	src/in/*.c \
+	src/massip/*.c \
+	src/out/*.c \
+	src/pixie/*.c \
+	src/proto/*.c \
+	src/rawsock/*.c \
+	src/scripting/*.c \
+	src/stack/*.c \
+	src/stub/*.c \
+	src/templ/*.c \
+	src/util/*.c \
+	src/vulncheck/*.c \
+	src/smack/*.c \
+	src/nmap-services/*.c \
 	src/stateless-probes/*.c \
 	src/stateless-probes/lzr-handshakes/*.c \
 	))

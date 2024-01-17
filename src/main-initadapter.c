@@ -1,10 +1,10 @@
 #include "masscan.h"
-#include "util-logger.h"
-#include "rawsock.h"
-#include "rawsock-adapter.h"
-#include "stack-arpv4.h"
-#include "stack-ndpv6.h"
-#include "stub-pcap-dlt.h"
+#include "util/util-logger.h"
+#include "rawsock/rawsock.h"
+#include "rawsock/rawsock-adapter.h"
+#include "stack/stack-arpv4.h"
+#include "stack/stack-ndpv6.h"
+#include "stub/stub-pcap-dlt.h"
 
 
 /***************************************************************************

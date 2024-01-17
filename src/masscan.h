@@ -1,17 +1,17 @@
 #ifndef MASSCAN_H
 #define MASSCAN_H
-#include "massip-addr.h"
-#include "util-safefunc.h"
-#include "stack-src.h"
-#include "massip.h"
-#include "util-bool.h"
+#include "massip/massip-addr.h"
+#include "util/util-safefunc.h"
+#include "stack/stack-src.h"
+#include "massip/massip.h"
+#include "util/util-bool.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <time.h>
 
-#include "massip.h"
-#include "stack-queue.h"
+#include "massip/massip.h"
+#include "stack/stack-queue.h"
 #include "stateless-probes/stateless-probes.h"
 
 struct Adapter;
