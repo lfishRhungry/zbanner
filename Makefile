@@ -112,17 +112,24 @@ tmp/main-conf.o: src/main-conf.c src/*.h
 # means that include file dependencies are broken, so sometimes when
 # the program crashes unexpectedly, 'make clean' then 'make' fixes the
 # problem that a .h file was out of date
-tmp/%.o: src/%.c src/*.h
+tmp/%.o: src/%.c \
+	src/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-tmp/%.o: src/stateless-probes/%.c src/stateless-probes/*.h
+tmp/%.o: src/stateless-probes/%.c \
+	src/stateless-probes/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-tmp/%.o: src/stateless-probes/lzr-handshakes/%.c src/stateless-probes/lzr-handshakes/*.h
+tmp/%.o: src/stateless-probes/lzr-handshakes/%.c \
+	src/stateless-probes/lzr-handshakes/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 
-SRC = $(sort $(wildcard src/*.c src/stateless-probes/*.c src/stateless-probes/lzr-handshakes/*.c))
+SRC = $(sort $(wildcard \
+	src/*.c \
+	src/stateless-probes/*.c \
+	src/stateless-probes/lzr-handshakes/*.c \
+	))
 OBJ = $(addprefix tmp/, $(notdir $(addsuffix .o, $(basename $(SRC))))) 
 
 
