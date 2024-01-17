@@ -1779,6 +1779,9 @@ int main(int argc, char *argv[])
      * Initialize those defaults that aren't zero
      */
     memset(masscan, 0, sizeof(*masscan));
+
+    //=================================================Define default params
+
     /* 14 rounds seem to give way better statistical distribution than 4 with a 
     very low impact on scan rate */
     masscan->blackrock_rounds = 14;
@@ -1794,9 +1797,8 @@ int main(int argc, char *argv[])
     masscan->redis.password = NULL;
     masscan->payloads.udp = payloads_udp_create();
     masscan->payloads.oproto = payloads_oproto_create();
-    safe_strcpy(   masscan->output.rotate.directory,
-                sizeof(masscan->output.rotate.directory),
-                ".");
+    safe_strcpy(masscan->output.rotate.directory,
+        sizeof(masscan->output.rotate.directory), ".");
     masscan->is_capture_cert = 1;
     /*default deduplication window(table) entries count*/
     masscan->dedup_win1 = 1000000;
@@ -1826,7 +1828,7 @@ int main(int argc, char *argv[])
 #if !defined(WIN32)
     if (!masscan->is_readscan) {
         if (access("/etc/zbanner/zbanner.conf", 0) == 0) {
-            masscan_read_config_file(masscan, "/etc/zbanner/zbanner.conf");
+            masscan_set_parameter(masscan, "conf",  "/etc/zbanner/zbanner.conf");
         }
     }
 #endif

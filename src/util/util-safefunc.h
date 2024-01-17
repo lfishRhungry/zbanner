@@ -113,6 +113,11 @@ char * stristr (const char * haystack, const char * needle);
 #endif
 
 
+/***************************************************************************
+ * remove leading/trailing whitespace
+ ***************************************************************************/
+void
+trim(char *line, size_t sizeof_line);
 
 
 #endif

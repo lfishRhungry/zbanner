@@ -120,3 +120,15 @@ stristr (const char * haystack, const char * needle)
     
     return(NULL);
 }
+
+void
+trim(char *line, size_t sizeof_line)
+{
+    if (sizeof_line > strlen(line))
+        sizeof_line = strlen(line);
+
+    while (isspace(*line & 0xFF))
+        memmove(line, line+1, sizeof_line--);
+    while (*line && isspace(line[sizeof_line-1] & 0xFF))
+        line[--sizeof_line] = '\0';
+}

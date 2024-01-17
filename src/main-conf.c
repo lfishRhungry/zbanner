@@ -25,6 +25,7 @@
 #include "nmap-services/read-service-probes.h"
 #include "util/util-malloc.h"
 #include "massip/massip.h"
+#include "massip/massip-addr.h"
 #include "massip/massip-parse.h"
 #include "massip/massip-port.h"
 #include "templ/templ-opts.h"
@@ -196,74 +197,6 @@ print_version()
 
 /***************************************************************************
  ***************************************************************************/
-static void
-print_nmap_help(void)
-{
-    printf("\nZBanner (https://github.com/lfishRhungry/zbanner)\n"
-"Usage: zbanner [Options] -p{Target-Ports} {Target-IP-Ranges}\n"
-"TARGET SPECIFICATION:\n"
-"  Can pass only IPv4/IPv6 address, CIDR networks, or ranges (non-nmap style)\n"
-"  Ex: 10.0.0.0/8, 192.168.0.1, 10.0.0.1-10.0.0.254\n"
-"  -iL <inputfilename>: Input from list of hosts/networks\n"
-"  --exclude <host1[,host2][,host3],...>: Exclude hosts/networks\n"
-"  --excludefile <exclude_file>: Exclude list from file\n"
-"  --randomize-hosts: Randomize order of hosts (default)\n"
-"HOST DISCOVERY:\n"
-"  -Pn: Treat all hosts as online (default)\n"
-"  -n: Never do DNS resolution (default)\n"
-"SCAN TECHNIQUES:\n"
-"  -sS: TCP SYN (always on, default)\n"
-"SERVICE/VERSION DETECTION:\n"
-"  --banners: get the banners of the listening service if available. The\n"
-"    default timeout for waiting to receive data is 30 seconds.\n"
-"PORT SPECIFICATION AND SCAN ORDER:\n"
-"  -p <port ranges>: Only scan specified ports\n"
-"    Ex: -p22; -p1-65535; -p 111,137,80,139,8080\n"
-"TIMING AND PERFORMANCE:\n"
-"  --max-rate <number>: Send packets no faster than <number> per second\n"
-"  --connection-timeout <number>: time in seconds a TCP connection will\n"
-"    timeout while waiting for banner data from a port.\n"
-"FIREWALL/IDS EVASION AND SPOOFING:\n"
-"  -S/--source-ip <IP_Address>: Spoof source address\n"
-"  -e <iface>: Use specified interface\n"
-"  -g/--source-port <portnum>: Use given port number\n"
-"  --ttl <val>: Set IP time-to-live field\n"
-"  --spoof-mac <mac address/prefix/vendor name>: Spoof your MAC address\n"
-"OUTPUT:\n"
-"  --output-format <format>: Sets output to binary/list/unicornscan/json/ndjson/grepable/xml\n"
-"  --output-file <file>: Write scan results to file. If --output-format is\n"
-"     not given default is xml\n"
-"  -oL/-oJ/-oD/-oG/-oB/-oX/-oU <file>: Output scan in List/JSON/nDjson/Grepable/Binary/XML/Unicornscan format,\n"
-"     respectively, to the given filename. Shortcut for\n"
-"     --output-format <format> --output-file <file>\n"
-"  -v: Increase verbosity level (use -vv or more for greater effect)\n"
-"  -d: Increase debugging level (use -dd or more for greater effect)\n"
-"  --open: Only show open (or possibly open) ports\n"
-"  --packet-trace: Show all packets sent and received\n"
-"  --iflist: Print host interfaces and routes (for debugging)\n"
-"  --append-output: Append to rather than clobber specified output files\n"
-"  --resume <filename>: Resume an aborted scan\n"
-"MISC:\n"
-"  --send-eth: Send using raw ethernet frames (default)\n"
-"  -V: Print version number\n"
-"  -h: Print this help summary page.\n"
-"STATELESS:\n"
-"  --stateless-banners: Use stateless mode to grab banners.\n"
-"  --stateless-probe <probename>: Specify stateless application probe.\n"
-"  --list-probes: List stateless application probes.\n"
-"  --capture stateless: Capture banner results.\n"
-"EXAMPLES:\n"
-"  zbanner -v -sS 192.168.0.0/16 10.0.0.0/8 -p 80\n"
-"  zbanner 23.0.0.0/0 -p80 --banners -output-format binary --output-filename internet.scan\n"
-"  zbanner --open --banners --readscan internet.scan -oG internet_scan.grepable\n\n"
-"SEE (https://github.com/robertdavidgraham/masscan) FOR ORIGINAL HELP\n"
-"SEE (https://github.com/lfishRhungry/zbanner) FOR ZBANNER HELP\n"
-"\n");
-}
-
-
-/***************************************************************************
- ***************************************************************************/
 static unsigned
 count_cidr6_bits(struct Range6 *range, bool *exact)
 {
@@ -307,104 +240,6 @@ count_cidr6_bits(struct Range6 *range, bool *exact)
     }
     return 128;
 }
-
-
-
-/***************************************************************************
- * Echoes the configuration for one NIC
- ***************************************************************************/
-static void
-masscan_echo_nic(struct Masscan *masscan, FILE *fp)
-{
-    char idx_str[64];
-
-    idx_str[0] = '\0';
-
-    if (masscan->nic.ifname[0])
-        fprintf(fp, "adapter%s = %s\n", idx_str, masscan->nic.ifname);
-    
-    if (masscan->nic.src.ipv4.first != 0 || masscan->nic.src.ipv4.last != 0) {
-
-        /**
-         * FIX 495.1 for issue #495: Single adapter-ip is not saved at all
-         *
-         * The else case handles a simple invocation of one adapter-ip:
-         *
-         * 1. masscan ... --adapter-ip 1.2.3.1 ...   [BROKEN]
-         *
-         * This looks like it was just copy pasta/typo. If the first ip is the same
-         * as the last ip, it is a single adapter-ip
-         *
-         * This never worked as it was before so paused.conf would never save the
-         * adapter-ip as it fell through this if/else if into nowhere. It probably
-         * went undetected because in simple environments and/or in simple scans,
-         * masscan is able to intelligently determine the adapter-ip and only
-         * advanced usage requires overriding the chosen value. In addition to
-         * that, it is probably relatively uncommon to interrupt a scan as not many
-         * users are doing multi-hour / multi-day scans, having them paused and
-         * then resuming them (apparently)
-         */
-        if (masscan->nic.src.ipv4.first == masscan->nic.src.ipv4.last) {
-            ipaddress_formatted_t fmt = ipv4address_fmt(masscan->nic.src.ipv4.first);
-            fprintf(fp, "adapter-ip%s = %s\n", idx_str, fmt.string);
-        }
-
-        /**
-         * FIX 495.2 for issue #495: Ranges of size two don't print. When 495.1 is
-         * added, ranges of size two print as only the first value in the range
-         * Before 495.1, they didn't print at all, so this is not a bug that is
-         * introduced by 495.1, just noticed while applying that fix
-         *
-         * The first if case here is for handling when adapter-ip is a range
-         *
-         * Examples of the multiple/range case:
-         *
-         * 1. masscan ... --adapter-ip 1.2.3.1-1.2.3.2 ...   [BROKEN]
-         * 2. masscan ... --adapter-ip 1.2.3.1-1.2.3.4 ...   [OK]
-         *
-         * If the range spans exactly two adapter-ips, it will not hit the range
-         * printing logic case here because of an off-by-one
-         *
-         * Changing it from < to <= fixes that issue and both of the above cases
-         * now print the correct range as expected
-         */
-        else if (masscan->nic.src.ipv4.first < masscan->nic.src.ipv4.last) {
-            ipaddress_formatted_t fmt1 = ipv4address_fmt(masscan->nic.src.ipv4.first);
-            ipaddress_formatted_t fmt2 = ipv4address_fmt(masscan->nic.src.ipv4.last);
-            fprintf(fp, "adapter-ip%s = %s-%s\n", idx_str, fmt1.string, fmt2.string);
-        }
-    }
-
-    if (masscan->nic.src.ipv6.range) {
-        if (ipv6address_is_lessthan(masscan->nic.src.ipv6.first, masscan->nic.src.ipv6.last)) {
-            ipaddress_formatted_t fmt1 = ipv6address_fmt(masscan->nic.src.ipv6.first);
-            ipaddress_formatted_t fmt2 = ipv6address_fmt(masscan->nic.src.ipv6.last);
-            fprintf(fp, "adapter-ip%s = %s-%s\n", idx_str, fmt1.string, fmt2.string);
-        } else {
-            ipaddress_formatted_t fmt = ipv6address_fmt(masscan->nic.src.ipv6.first);
-            fprintf(fp, "adapter-ip%s = %s\n", idx_str, fmt.string);
-        }
-    }
-
-    if (masscan->nic.my_mac_count) {
-        ipaddress_formatted_t fmt = macaddress_fmt(masscan->nic.source_mac);
-        fprintf(fp, "adapter-mac%s = %s\n", idx_str, fmt.string);
-    }
-    if (masscan->nic.router_ip) {
-        ipaddress_formatted_t fmt = ipv4address_fmt(masscan->nic.router_ip);
-        fprintf(fp, "router-ip%s = %s\n", idx_str, fmt.string);
-    }
-    if (!macaddress_is_zero(masscan->nic.router_mac_ipv4)) {
-        ipaddress_formatted_t fmt =  macaddress_fmt(masscan->nic.router_mac_ipv4);
-        fprintf(fp, "router-mac-ipv4%s = %s\n", idx_str, fmt.string);
-    }
-    if (!macaddress_is_zero(masscan->nic.router_mac_ipv6)) {
-        ipaddress_formatted_t fmt = macaddress_fmt(masscan->nic.router_mac_ipv6);
-        fprintf(fp, "router-mac-ipv6%s = %s\n", idx_str, fmt.string);
-    }
-
-}
-
 
 /***************************************************************************
  ***************************************************************************/
@@ -1425,6 +1260,509 @@ static int SET_hello(struct Masscan *masscan, const char *name, const char *valu
         fprintf(stderr, "FAIL: %s: unknown hello type\n", value);
         return CONF_ERR;
     }
+    return CONF_OK;
+}
+
+static int SET_adapter(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+        if (masscan->nic.ifname[0] || masscan->echo_all) {
+            fprintf(masscan->echo, "adapter = %s\n", masscan->nic.ifname);
+        }
+        return 0;
+    }
+
+    if (masscan->nic.ifname[0]) {
+        fprintf(stderr, "CONF: overwriting \"adapter=%s\"\n", masscan->nic.ifname);
+    }
+    snprintf(  masscan->nic.ifname, sizeof(masscan->nic.ifname),
+        "%s", value);
+
+    return CONF_OK;
+}
+
+static int SET_source_ip(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+
+        if (masscan->nic.src.ipv4.first) {
+            ipaddress_formatted_t ipv4_first =
+                ipv4address_fmt((ipv4address)(masscan->nic.src.ipv4.first));
+            ipaddress_formatted_t ipv4_last =
+                ipv4address_fmt((ipv4address)(masscan->nic.src.ipv4.last));
+            fprintf(masscan->echo, "source IPv4 first = %s\n", ipv4_first.string);
+            fprintf(masscan->echo, "source IPv4 last = %s\n", ipv4_last.string);
+            fprintf(masscan->echo, "source IPv4 range = %u\n", masscan->nic.src.ipv4.range);
+        }
+
+        if (masscan->nic.src.ipv6.first.hi && masscan->nic.src.ipv6.first.lo) {
+            ipaddress_formatted_t ipv6_first =
+                ipv6address_fmt((ipv6address)(masscan->nic.src.ipv6.first));
+            ipaddress_formatted_t ipv6_last =
+                ipv6address_fmt((ipv6address)(masscan->nic.src.ipv6.last));
+            fprintf(masscan->echo, "source IPv6 first = %s\n", ipv6_first.string);
+            fprintf(masscan->echo, "source IPv6 last = %s\n", ipv6_last.string);
+            fprintf(masscan->echo, "source IPv6 range = %u\n", masscan->nic.src.ipv6.range);
+        }
+
+        return 0;
+    }
+
+    /* Send packets FROM this IP address */
+    struct Range range;
+    struct Range6 range6;
+    int err;
+
+    /* Grab the next IPv4 or IPv6 range */
+    err = massip_parse_range(value, 0, 0, &range, &range6);
+    switch (err) {
+        case Ipv4_Address:
+            /* If more than one IP address given, make the range is
+                * an even power of two (1, 2, 4, 8, 16, ...) */
+            if (!is_power_of_two((uint64_t)range.end - range.begin + 1)) {
+                fprintf(stderr, "FAIL: range must be even power of two: %s=%s\n",
+                    name, value);
+                return CONF_ERR;
+            }
+            masscan->nic.src.ipv4.first = range.begin;
+            masscan->nic.src.ipv4.last = range.end;
+            masscan->nic.src.ipv4.range = range.end - range.begin + 1;
+            break;
+        case Ipv6_Address:
+            masscan->nic.src.ipv6.first = range6.begin;
+            masscan->nic.src.ipv6.last = range6.end;
+            masscan->nic.src.ipv6.range = 1; /* TODO: add support for more than one source */
+            break;
+        default:
+            fprintf(stderr, "FAIL: bad source IP address: %s=%s\n",
+                name, value);
+            fprintf(stderr, "hint   addresses look like \"192.168.1.23\" or \"2001:db8:1::1ce9\".\n");
+            return CONF_ERR;
+    }
+
+    return CONF_OK;
+}
+
+static int SET_source_port(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        if (masscan->nic.src.port.first) {
+            fprintf(masscan->echo, "source port first = %u\n", masscan->nic.src.port.first);
+            fprintf(masscan->echo, "source port last = %u\n", masscan->nic.src.port.last);
+            fprintf(masscan->echo, "source port range = %u\n", masscan->nic.src.port.range);
+        }
+        return 0;
+    }
+
+    /* Send packets FROM this port number */
+    unsigned is_error = 0;
+    struct RangeList ports = {0};
+    memset(&ports, 0, sizeof(ports));
+
+    rangelist_parse_ports(&ports, value, &is_error, 0);
+
+    /* Check if there was an error in parsing */
+    if (is_error) {
+        fprintf(stderr, "FAIL: bad source port specification: %s\n", name);
+        return CONF_ERR;
+    }
+
+    /* Only allow one range of ports */
+    if (ports.count != 1) {
+        fprintf(stderr, "FAIL: only one '%s' range may be specified, found %u ranges\n",
+            name, ports.count);
+        return CONF_ERR;
+    }
+
+    /* verify range is even power of 2 (1, 2, 4, 8, 16, ...) */
+    if (!is_power_of_two(ports.list[0].end - ports.list[0].begin + 1)) {
+        fprintf(stderr, "FAIL: source port range must be even power of two: %s=%s\n",
+            name, value);
+        return CONF_ERR;
+    }
+
+    masscan->nic.src.port.first = ports.list[0].begin;
+    masscan->nic.src.port.last = ports.list[0].end;
+    masscan->nic.src.port.range = ports.list[0].end - ports.list[0].begin + 1;
+
+    return CONF_OK;
+}
+
+static int SET_target_output(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        fprintf(masscan->echo, "# TARGET SELECTION (IP, PORTS, EXCLUDES)\n");
+        fprintf(masscan->echo, "ports = ");
+        /* Disable comma generation for the first element */
+        unsigned i;
+        unsigned l = 0;
+        l = 0;
+        for (i=0; i<masscan->targets.ports.count; i++) {
+            struct Range range = masscan->targets.ports.list[i];
+            do {
+                struct Range rrange = range;
+                unsigned done = 0;
+                if (l)
+                    fprintf(masscan->echo, ",");
+                l = 1;
+                if (rrange.begin >= Templ_ICMP_echo) {
+                    rrange.begin -= Templ_ICMP_echo;
+                    rrange.end -= Templ_ICMP_echo;
+                    fprintf(masscan->echo,"I:");
+                    done = 1;
+                } else if (rrange.begin >= Templ_SCTP) {
+                    rrange.begin -= Templ_SCTP;
+                    rrange.end -= Templ_SCTP;
+                    fprintf(masscan->echo,"S:");
+                    range.begin = Templ_ICMP_echo;
+                } else if (rrange.begin >= Templ_UDP) {
+                    rrange.begin -= Templ_UDP;
+                    rrange.end -= Templ_UDP;
+                    fprintf(masscan->echo,"U:");
+                    range.begin = Templ_SCTP;
+                } else if (Templ_Oproto_first <= rrange.begin && rrange.begin <= Templ_Oproto_last) {
+                    rrange.begin -= Templ_Oproto_first;
+                    rrange.end -= Templ_Oproto_first;
+                    fprintf(masscan->echo, "O:");
+                    range.begin = Templ_Oproto_first;
+                } else
+                    range.begin = Templ_UDP;
+                rrange.end = min(rrange.end, 65535);
+                if (rrange.begin == rrange.end)
+                    fprintf(masscan->echo, "%u", rrange.begin);
+                else
+                    fprintf(masscan->echo, "%u-%u", rrange.begin, rrange.end);
+                if (done)
+                    break;
+            } while (range.begin <= range.end);
+        }
+        fprintf(masscan->echo, "\n");
+        /*
+        * IPv4 address targets
+        */
+        for (i=0; i<masscan->targets.ipv4.count; i++) {
+            unsigned prefix_bits;
+            struct Range range = masscan->targets.ipv4.list[i];
+
+            if (range.begin == range.end) {
+                fprintf(masscan->echo, "range = %u.%u.%u.%u",
+                        (range.begin>>24)&0xFF,
+                        (range.begin>>16)&0xFF,
+                        (range.begin>> 8)&0xFF,
+                        (range.begin>> 0)&0xFF
+                        );
+            } else if (range_is_cidr(range, &prefix_bits)) {
+                fprintf(masscan->echo, "range = %u.%u.%u.%u/%u",
+                        (range.begin>>24)&0xFF,
+                        (range.begin>>16)&0xFF,
+                        (range.begin>> 8)&0xFF,
+                        (range.begin>> 0)&0xFF,
+                        prefix_bits
+                        );
+
+            } else {
+                fprintf(masscan->echo, "range = %u.%u.%u.%u-%u.%u.%u.%u",
+                        (range.begin>>24)&0xFF,
+                        (range.begin>>16)&0xFF,
+                        (range.begin>> 8)&0xFF,
+                        (range.begin>> 0)&0xFF,
+                        (range.end>>24)&0xFF,
+                        (range.end>>16)&0xFF,
+                        (range.end>> 8)&0xFF,
+                        (range.end>> 0)&0xFF
+                        );
+            }
+            fprintf(masscan->echo, "\n");
+        }
+        for (i=0; i<masscan->targets.ipv6.count; i++) {
+            bool exact = false;
+            struct Range6 range = masscan->targets.ipv6.list[i];
+            ipaddress_formatted_t fmt = ipv6address_fmt(range.begin);
+            
+            fprintf(masscan->echo, "range = %s", fmt.string);
+            if (!ipv6address_is_equal(range.begin, range.end)) {
+                unsigned cidr_bits = count_cidr6_bits(&range, &exact);
+                
+                if (exact && cidr_bits) {
+                    fprintf(masscan->echo, "/%u", cidr_bits);
+                } else {
+                    fmt = ipv6address_fmt(range.end);
+                    fprintf(masscan->echo, "-%s", fmt.string);
+                }
+            }
+            fprintf(masscan->echo, "\n");
+        }
+    }
+
+    return CONF_OK;
+}
+
+static int SET_target_ip(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        /*echo in SET_target_output*/
+        return 0;
+    }
+    
+    int err;
+    err = massip_add_target_string(&masscan->targets, value);
+    if (err) {
+        fprintf(stderr, "ERROR: bad IP address/range: %s\n", value);
+        return CONF_ERR;
+    }
+
+    if (masscan->op == 0)
+        masscan->op = Operation_Scan;
+
+    return CONF_OK;
+}
+
+static int SET_target_port(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        /*echo in SET_target_output*/
+        return 0;
+    }
+    
+    unsigned is_error = 0;
+    int err = 0;
+
+    if (name[0]=='t') {
+        masscan->scan_type.tcp = 1;
+        rangelist_parse_ports(&masscan->targets.ports, value, &is_error, Templ_TCP);
+    } else if (name[0]=='u') {
+        masscan->scan_type.udp = 1;
+        rangelist_parse_ports(&masscan->targets.ports, value, &is_error, Templ_UDP);
+    } else {
+        unsigned defaultrange = 0;
+
+        if (masscan->scan_type.udp)
+            defaultrange = Templ_UDP;
+        else if (masscan->scan_type.sctp)
+            defaultrange = Templ_SCTP;
+        
+        err = massip_add_port_string(&masscan->targets, value, defaultrange);
+    }
+
+    if (is_error || err) {
+        fprintf(stderr, "[-] FAIL: bad target port: %s\n", value);
+        fprintf(stderr, "    Hint: a port is a number [0..65535]\n");
+        return CONF_ERR;
+    }
+
+    if (masscan->op == 0)
+        masscan->op = Operation_Scan;
+
+    return CONF_OK;
+}
+
+static int SET_exclude_ip(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        /*echo in SET_target_output*/
+        return 0;
+    }
+
+    int err;
+    err = massip_add_target_string(&masscan->exclude, value);
+    if (err) {
+        fprintf(stderr, "ERROR: bad exclude address/range: %s\n", value);
+        return CONF_ERR;
+    }
+
+    if (masscan->op == 0)
+        masscan->op = Operation_Scan;
+    
+    return CONF_OK;
+}
+
+static int SET_exclude_port(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        /*echo in SET_target_output*/
+        return 0;
+    }
+    unsigned defaultrange = 0;
+    int err;
+
+    if (masscan->scan_type.udp)
+        defaultrange = Templ_UDP;
+    else if (masscan->scan_type.sctp)
+        defaultrange = Templ_SCTP;
+    
+    err = massip_add_port_string(&masscan->exclude, value, defaultrange);
+    if (err) {
+        fprintf(stderr, "[-] FAIL: bad exclude port: %s\n", value);
+        fprintf(stderr, "    Hint: a port is a number [0..65535]\n");
+        return CONF_ERR;
+    }
+    if (masscan->op == 0)
+        masscan->op = Operation_Scan;
+    
+    return CONF_OK;
+}
+
+static int SET_source_mac(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        if (masscan->nic.my_mac_count) {
+            fprintf(masscan->echo, "source mac = %s\n",
+                macaddress_fmt(masscan->nic.source_mac).string);
+        }
+        return 0;
+    }
+
+    /* Send packets FROM this MAC address */
+    macaddress_t source_mac;
+    int err;
+
+    err = parse_mac_address(value, &source_mac);
+    if (err) {
+        fprintf(stderr, "[-] CONF: bad MAC address: %s = %s\n",
+            name, value);
+        return CONF_ERR;
+    }
+
+    /* Check for duplicates */
+    if (macaddress_is_equal(masscan->nic.source_mac, source_mac)) {
+        /* suppresses warning message about duplicate MAC addresses if
+            * they are in fact the same */
+        return CONF_OK;
+    }
+
+    /* Warn if we are overwriting a Mac address */
+    if (masscan->nic.my_mac_count != 0) {
+        ipaddress_formatted_t fmt1 = macaddress_fmt(masscan->nic.source_mac);
+        ipaddress_formatted_t fmt2 = macaddress_fmt(source_mac);
+        fprintf(stderr, "[-] WARNING: overwriting MAC address, was %s, now %s\n",
+            fmt1.string,
+            fmt2.string);
+    }
+
+    masscan->nic.source_mac = source_mac;
+    masscan->nic.my_mac_count = 1;
+
+    return CONF_OK;
+}
+
+static int SET_router_ip(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        if (masscan->nic.router_ip) {
+            ipaddress_formatted_t router_ip =
+                ipv4address_fmt(masscan->nic.router_ip);
+            fprintf(masscan->echo, "router ip first = %s\n", router_ip.string);
+        }
+
+        return 0;
+    }
+
+    /* Send packets FROM this IP address */
+    struct Range range;
+
+    range = range_parse_ipv4(value, 0, 0);
+
+    /* Check for bad format */
+    if (range.begin != range.end) {
+        fprintf(stderr, "FAIL: bad source IPv4 address: %s=%s\n", name, value);
+        fprintf(stderr, "hint   addresses look like \"19.168.1.23\"\n");
+        return CONF_ERR;
+    }
+
+    masscan->nic.router_ip = range.begin;
+
+    return CONF_OK;
+}
+
+static int SET_router_mac(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        if (masscan->nic.router_mac_ipv4.addr) {
+            fprintf(masscan->echo, "IPv4 router mac = %s\n",
+                macaddress_fmt(masscan->nic.router_mac_ipv4).string);
+        }
+
+        if (masscan->nic.router_mac_ipv6.addr) {
+            fprintf(masscan->echo, "IPv6 router mac = %s\n",
+                macaddress_fmt(masscan->nic.router_mac_ipv6).string);
+        }
+
+        return 0;
+    }
+
+    macaddress_t router_mac;
+    int err;
+    err = parse_mac_address(value, &router_mac);
+    if (err) {
+        fprintf(stderr, "[-] CONF: bad MAC address: %s = %s\n", name, value);
+        return CONF_ERR;
+    }
+    if (EQUALS("router-mac-ipv4", name))
+        masscan->nic.router_mac_ipv4 = router_mac;
+    else if (EQUALS("router-mac-ipv6", name))
+        masscan->nic.router_mac_ipv6 = router_mac;
+    else {
+        masscan->nic.router_mac_ipv4 = router_mac;
+        masscan->nic.router_mac_ipv6 = router_mac;
+    }
+
+    return CONF_OK;
+}
+
+/**
+ * read conf file and set params directly
+*/
+static int SET_read_conf(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        return 0;
+    }
+
+    FILE *fp;
+    char line[65536];
+
+    fp = fopen(value, "rt");
+    if (fp == NULL) {
+        char dir[512];
+        char *x;
+        
+        fprintf(stderr, "[-] FAIL: reading configuration file\n");
+        fprintf(stderr, "[-] %s: %s\n", value, strerror(errno));
+
+        x = getcwd(dir, sizeof(dir));
+        if (x)
+            fprintf(stderr, "[-] cwd = %s\n", dir);
+        return CONF_ERR;
+    }
+
+    while (fgets(line, sizeof(line), fp)) {
+        char *name;
+        char *value;
+
+        trim(line, sizeof(line));
+
+        if (ispunct(line[0] & 0xFF) || line[0] == '\0')
+            continue;
+
+        name = line;
+        value = strchr(line, '=');
+        if (value == NULL)
+            continue;
+        *value = '\0';
+        value++;
+        trim(name, sizeof(line));
+        trim(value, sizeof(line));
+
+        masscan_set_parameter(masscan, name, value);
+    }
+
+    fclose(fp);
+
+    if (EQUALS("resume", name))
+        masscan->output.is_append = true;
+
     return CONF_OK;
 }
 
@@ -2589,26 +2927,45 @@ struct ConfigParameter {
 };
 enum {F_NONE, F_BOOL=1, F_NUMABLE=2};
 struct ConfigParameter config_parameters[] = {
-    {"resume-index",    SET_resume_index,       0,      {0}},
-    {"resume-count",    SET_resume_count,       0,      {0}},
+    {"target-ip",       SET_target_ip,          0,      {"range", "ranges", "dst-ip", "ip",0}},
+    {"port",            SET_target_port,        0,      {"ports", "tcp-port", "udp-port", "tcp-ports", "udp-ports",0}},
+    {"exclude",         SET_exclude_ip,         0,      {"exclude-range", "exlude-ranges", "exclude-ip",0}},
+    {"exclude-port",    SET_exclude_port,       0,      {"exclude-ports",0}},
+
+    {"SPACE",           SET_space,              0,      {0}},
+
     {"seed",            SET_seed,               0,      {0}},
-    {"arpscan",         SET_arpscan,            F_BOOL, {"arp",0}},
-    {"randomize-hosts", SET_randomize_hosts,    F_BOOL, {0}},
     {"rate",            SET_rate,               0,      {"max-rate",0}},
     {"shard",           SET_shard,              0,      {"shards",0}},
-    {"banners",         SET_banners,            F_BOOL, {"banner",0}}, /* --banners */
-    {"rawudp",          SET_banners_rawudp,     F_BOOL, {"rawudp",0}}, /* --rawudp */
-    {"nobanners",       SET_nobanners,          F_BOOL, {"nobanner",0}},
+    {"randomize-hosts", SET_randomize_hosts,    F_BOOL, {0}},
     {"retries",         SET_retries,            0,      {"retry", "max-retries", "max-retry", 0}},
-    {"nmap-payloads",   SET_nmap_payloads,      0,      {"nmap-payload",0}},
-    {"nmap-service-probes",SET_nmap_service_probes, 0,  {"nmap-service-probe",0}},
     {"offline",         SET_offline,            F_BOOL, {"notransmit", "nosend", "dry-run", 0}},
+
+    {"arpscan",         SET_arpscan,            F_BOOL, {"arp",0}},
+    {"rawudp",          SET_banners_rawudp,     F_BOOL, {"rawudp",0}}, /* --rawudp */
+
+    {"adapter",         SET_adapter,            0,      {"if", "interface",0}},
+    {"source-ip",       SET_source_ip,          0,      {"src-ip",0}},
+    {"source-port",     SET_source_port,        0,      {"src-port",0}},
+    {"source-mac",      SET_source_mac,         0,      {"src-mac",0}},
+    {"router-ip",       SET_router_ip,          0,      {0}},
+    {"router-mac",      SET_router_mac,         0,      {"gateway-mac", "dst-mac", "router-mac-ipv4", "router-mac-ipv6",0}},
+
+    {"conf",            SET_read_conf,          0,      {"config", "resume",0}},
+    {"resume-index",    SET_resume_index,       0,      {0}},
+    {"resume-count",    SET_resume_count,       0,      {0}},
+
+    {"banners",         SET_banners,            F_BOOL, {"banner",0}}, /* --banners */
+    {"nobanners",       SET_nobanners,          F_BOOL, {"nobanner",0}},
+
     {"pcap-filename",   SET_pcap_filename,      0,      {"pcap",0}},
     {"pcap-payloads",   SET_pcap_payloads,      0,      {"pcap-payload",0}},
+
     {"hello",           SET_hello,              0,      {0}},
     {"hello-file",      SET_hello_file,         0,      {"hello-filename",0}},
     {"hello-string",    SET_hello_string,       0,      {0}},
     {"hello-timeout",   SET_hello_timeout,      0,      {0}},
+
     {"http-cookie",     SET_http_cookie,        0,      {0}},
     {"http-header",     SET_http_header,        0,      {"http-field", 0}},
     {"http-method",     SET_http_method,        0,      {0}},
@@ -2617,9 +2974,12 @@ struct ConfigParameter config_parameters[] = {
     {"http-user-agent", SET_http_user_agent,    0,      {"http-useragent",0}},
     {"http-host",       SET_http_host,          0,      {0}},
     {"http-payload",    SET_http_payload,       0,      {0}},
+
     {"ndjson-status",   SET_status_ndjson,      F_BOOL, {"status-ndjson", 0}},
     {"json-status",     SET_status_json,        F_BOOL, {"status-json", 0}},
-    {"min-packet",      SET_min_packet,         0,      {"min-pkt",0}},
+
+    {"nmap-payloads",   SET_nmap_payloads,      0,      {"nmap-payload",0}},
+    {"nmap-service-probes",SET_nmap_service_probes, 0,  {"nmap-service-probe",0}},
 
     {"SPACE",           SET_space,              0,      {0}},
 
@@ -2634,7 +2994,7 @@ struct ConfigParameter config_parameters[] = {
     {"rotate-offset",   SET_rotate_offset,      0,      {"output-rotate-offset", 0}},
     {"rotate-size",     SET_rotate_filesize,    0,      {"output-rotate-filesize", "rotate-filesize", 0}},
     {"stylesheet",      SET_output_stylesheet,  0,      {0}},
-    {"script",          SET_script,             0,      {0}},
+    {"feed-lzr",        SET_feed_lzr,           F_BOOL, {"feedlzr", 0}},
 
     {"SPACE",           SET_space,              0,      {0}},
 
@@ -2643,6 +3003,7 @@ struct ConfigParameter config_parameters[] = {
     {"tcp-tsecho",      SET_tcp_tsecho,         F_NUMABLE, {0}},
     {"tcp-sackok",      SET_tcp_sackok,         F_BOOL, {0}},
     {"top-ports",       SET_topports,           F_NUMABLE, {"top-port",0}},
+    {"min-packet",      SET_min_packet,         0,      {"min-pkt",0}},
 
     {"SPACE",           SET_space,              0,      {0}},
 
@@ -2651,16 +3012,21 @@ struct ConfigParameter config_parameters[] = {
     {"capture",         SET_capture,            0,      {"nocapture", "no-capture", 0}},
     {"list-probes",     SET_list_probes,        F_BOOL, {"list-probe", 0}},
     {"probe-args",      SET_probe_args,         0,      {"probe-arg", 0}},
+    
     {"tansmit-thread-count", SET_thread_count,  F_NUMABLE, {"tx-count", "tx-num", 0}},
     {"dedup-win",       SET_dedup_win,          F_NUMABLE, {"dedupwin", "dedup-win1", "dedupwin1", "dedup-win2", "dedupwin2", 0}},
     {"nodedup",         SET_nodedup,            F_BOOL, {"nodedup1", "nodedup2", 0}},
     {"noreset",         SET_noreset,            F_BOOL, {"noreset1", "noreset2", 0}},
-    {"feed-lzr",        SET_feed_lzr,           F_BOOL, {"feedlzr", 0}},
     {"stack-buf-count", SET_stack_buf_count,    F_NUMABLE, {"queue-buf-count", "stack-buf-count", "packet-buf-count", 0}},
 
     {"SPACE",           SET_space,              0,      {0}},
 
+    {"script",          SET_script,             0,      {0}},
     {"debug-tcp",       SET_debug_tcp,          F_BOOL, {"tcp-debug", 0}},
+
+    {"SPACE",           SET_space,              0,      {0}},
+    /*Put it at last for better "help" output*/
+    {"TARGET_OUTPUT",   SET_target_output,      0,      {0}},
     {0}
 };
 
@@ -2705,215 +3071,13 @@ masscan_set_parameter(struct Masscan *masscan,
      * system yet (see the NEW part above).
      * TODO: transition all these old params to the new system
      */
-    if (EQUALS("conf", name) || EQUALS("config", name)) {
-        masscan_read_config_file(masscan, value);
-    } else if (EQUALS("adapter", name) || EQUALS("if", name) || EQUALS("interface", name)) {
-        if (masscan->nic.ifname[0]) {
-            fprintf(stderr, "CONF: overwriting \"adapter=%s\"\n", masscan->nic.ifname);
-        }
-        snprintf(  masscan->nic.ifname,
-                    sizeof(masscan->nic.ifname),
-                    "%s",
-                    value);
-
-    }
-    else if (EQUALS("adapter-ip", name) || EQUALS("source-ip", name)
-             || EQUALS("source-address", name) || EQUALS("spoof-ip", name)
-             || EQUALS("spoof-address", name) || EQUALS("src-ip", name)) {
-        /* Send packets FROM this IP address */
-        struct Range range;
-        struct Range6 range6;
-        int err;
-
-        /* Grab the next IPv4 or IPv6 range */
-        err = massip_parse_range(value, 0, 0, &range, &range6);
-        switch (err) {
-        case Ipv4_Address:
-            /* If more than one IP address given, make the range is
-             * an even power of two (1, 2, 4, 8, 16, ...) */
-            if (!is_power_of_two((uint64_t)range.end - range.begin + 1)) {
-                LOG(0, "FAIL: range must be even power of two: %s=%s\n",
-                        name, value);
-                exit(1);
-            }
-            masscan->nic.src.ipv4.first = range.begin;
-            masscan->nic.src.ipv4.last = range.end;
-            masscan->nic.src.ipv4.range = range.end - range.begin + 1;
-            break;
-        case Ipv6_Address:
-            masscan->nic.src.ipv6.first = range6.begin;
-            masscan->nic.src.ipv6.last = range6.end;
-            masscan->nic.src.ipv6.range = 1; /* TODO: add support for more than one source */
-            break;
-        default:
-            LOG(0, "FAIL: bad source IP address: %s=%s\n",
-                    name, value);
-            LOG(0, "hint   addresses look like \"192.168.1.23\" or \"2001:db8:1::1ce9\".\n");
-            exit(1);
-        }
-
-
-
-    } else if (EQUALS("adapter-port", name) || EQUALS("source-port", name)
-               || EQUALS("src-port", name)) {
-        /* Send packets FROM this port number */
-        unsigned is_error = 0;
-        struct RangeList ports = {0};
-        memset(&ports, 0, sizeof(ports));
-
-        rangelist_parse_ports(&ports, value, &is_error, 0);
-
-        /* Check if there was an error in parsing */
-        if (is_error) {
-            LOG(0, "FAIL: bad source port specification: %s\n",
-                    name);
-            exit(1);
-        }
-
-        /* Only allow one range of ports */
-        if (ports.count != 1) {
-            LOG(0, "FAIL: only one '%s' range may be specified, found %u ranges\n",
-                    name, ports.count);
-            exit(1);
-        }
-
-        /* verify range is even power of 2 (1, 2, 4, 8, 16, ...) */
-        if (!is_power_of_two(ports.list[0].end - ports.list[0].begin + 1)) {
-            LOG(0, "FAIL: source port range must be even power of two: %s=%s\n",
-                    name, value);
-            exit(1);
-        }
-
-        masscan->nic.src.port.first = ports.list[0].begin;
-        masscan->nic.src.port.last = ports.list[0].end;
-        masscan->nic.src.port.range = ports.list[0].end - ports.list[0].begin + 1;
-    } else if (EQUALS("adapter-mac", name) || EQUALS("spoof-mac", name)
-               || EQUALS("source-mac", name) || EQUALS("src-mac", name)) {
-        /* Send packets FROM this MAC address */
-        macaddress_t source_mac;
-        int err;
-
-        err = parse_mac_address(value, &source_mac);
-        if (err) {
-            LOG(0, "[-] CONF: bad MAC address: %s = %s\n", name, value);
-            return;
-        }
-
-        /* Check for duplicates */
-        if (macaddress_is_equal(masscan->nic.source_mac, source_mac)) {
-            /* suppresses warning message about duplicate MAC addresses if
-             * they are in fact the same */
-            return;
-        }
-
-        /* Warn if we are overwriting a Mac address */
-        if (masscan->nic.my_mac_count != 0) {
-            ipaddress_formatted_t fmt1 = macaddress_fmt(masscan->nic.source_mac);
-            ipaddress_formatted_t fmt2 = macaddress_fmt(source_mac);
-            LOG(0, "[-] WARNING: overwriting MAC address, was %s, now %s\n",
-                fmt1.string,
-                fmt2.string);
-        }
-
-        masscan->nic.source_mac = source_mac;
-        masscan->nic.my_mac_count = 1;
-    }
-    else if (EQUALS("router-mac", name) || EQUALS("router", name)
-             || EQUALS("dest-mac", name) || EQUALS("destination-mac", name)
-             || EQUALS("dst-mac", name) || EQUALS("target-mac", name)) {
-        macaddress_t router_mac;
-        int err;
-        
-        err = parse_mac_address(value, &router_mac);
-        if (err) {
-            fprintf(stderr, "[-] CONF: bad MAC address: %s = %s\n", name, value);
-            return;
-        }
-
-        masscan->nic.router_mac_ipv4 = router_mac;
-        masscan->nic.router_mac_ipv6 = router_mac;
-    }
-    else if (EQUALS("router-mac-ipv4", name) || EQUALS("router-ipv4", name)) {
-        macaddress_t router_mac;
-        int err;
-        
-        err = parse_mac_address(value, &router_mac);
-        if (err) {
-            fprintf(stderr, "[-] CONF: bad MAC address: %s = %s\n", name, value);
-            return;
-        }
-
-        masscan->nic.router_mac_ipv4 = router_mac;
-    }
-    else if (EQUALS("router-mac-ipv6", name) || EQUALS("router-ipv6", name)) {
-        macaddress_t router_mac;
-        int err;
-        
-        err = parse_mac_address(value, &router_mac);
-        if (err) {
-            fprintf(stderr, "[-] CONF: bad MAC address: %s = %s\n", name, value);
-            return;
-        }
-
-        masscan->nic.router_mac_ipv6 = router_mac;
-    }
-    else if (EQUALS("router-ip", name)) {
-        /* Send packets FROM this IP address */
-        struct Range range;
-
-        range = range_parse_ipv4(value, 0, 0);
-
-        /* Check for bad format */
-        if (range.begin != range.end) {
-            LOG(0, "FAIL: bad source IPv4 address: %s=%s\n",
-                    name, value);
-            LOG(0, "hint   addresses look like \"19.168.1.23\"\n");
-            exit(1);
-        }
-
-        masscan->nic.router_ip = range.begin;
-    }
-    else if (EQUALS("udp-ports", name) || EQUALS("udp-port", name)) {
-        unsigned is_error = 0;
-        masscan->scan_type.udp = 1;
-        rangelist_parse_ports(&masscan->targets.ports, value, &is_error, Templ_UDP);
-        if (masscan->op == 0)
-            masscan->op = Operation_Scan;
-    }
-    else if (EQUALS("oprotos", name) || EQUALS("oproto", name)) {
+    if (EQUALS("oprotos", name) || EQUALS("oproto", name)) {
         unsigned is_error = 0;
         masscan->scan_type.oproto = 1;
         rangelist_parse_ports(&masscan->targets.ports, value, &is_error, Templ_Oproto_first);
         if (masscan->op == 0)
             masscan->op = Operation_Scan;
     }
-    else if (EQUALS("tcp-ports", name) || EQUALS("tcp-port", name)) {
-        unsigned is_error = 0;
-        masscan->scan_type.tcp = 1;
-        rangelist_parse_ports(&masscan->targets.ports, value, &is_error, Templ_TCP);
-        if (masscan->op == 0)
-            masscan->op = Operation_Scan;
-    }
-    else if (EQUALS("ports", name) || EQUALS("port", name)
-             || EQUALS("dst-port", name) || EQUALS("dest-port", name)
-             || EQUALS("destination-port", name)
-             || EQUALS("target-port", name)) {
-        unsigned defaultrange = 0;
-        int err;
-
-        if (masscan->scan_type.udp)
-            defaultrange = Templ_UDP;
-        else if (masscan->scan_type.sctp)
-            defaultrange = Templ_SCTP;
-        
-        err = massip_add_port_string(&masscan->targets, value, defaultrange);
-        if (err) {
-            fprintf(stderr, "[-] FAIL: bad target port: %s\n", value);
-            fprintf(stderr, "    Hint: a port is a number [0..65535]\n");
-            exit(1);
-        }
-        if (masscan->op == 0)
-            masscan->op = Operation_Scan;    }
     else if (EQUALS("banner-types", name) || EQUALS("banner-type", name)
              || EQUALS("banner-apps", name) || EQUALS("banner-app", name)
            ) {
@@ -2929,23 +3093,6 @@ masscan_set_parameter(struct Masscan *masscan,
             fprintf(stderr, "err\n");
             exit(1);
         }
-    } else if (EQUALS("exclude-ports", name) || EQUALS("exclude-port", name)) {
-        unsigned defaultrange = 0;
-        int err;
-
-        if (masscan->scan_type.udp)
-            defaultrange = Templ_UDP;
-        else if (masscan->scan_type.sctp)
-            defaultrange = Templ_SCTP;
-        
-        err = massip_add_port_string(&masscan->exclude, value, defaultrange);
-        if (err) {
-            fprintf(stderr, "[-] FAIL: bad exclude port: %s\n", value);
-            fprintf(stderr, "    Hint: a port is a number [0..65535]\n");
-            exit(1);
-        }
-        if (masscan->op == 0)
-            masscan->op = Operation_Scan;
     } else if (EQUALS("bpf", name)) {
         size_t len = strlen(value) + 1;
         if (masscan->bpf_filter)
@@ -2961,34 +3108,6 @@ masscan_set_parameter(struct Masscan *masscan,
         rangelist_sort(&masscan->targets.ports);
         masscan->scan_type.ping = 1;
         LOG(5, "--ping\n");
-    } else if (EQUALS("range", name) || EQUALS("ranges", name)
-               || EQUALS("ip", name) || EQUALS("ipv4", name)
-               || EQUALS("dst-ip", name) || EQUALS("dest-ip", name)
-               || EQUALS("destination-ip", name)
-               || EQUALS("target-ip", name)) {
-        int err;
-        err = massip_add_target_string(&masscan->targets, value);
-        if (err) {
-            fprintf(stderr, "ERROR: bad IP address/range: %s\n", value);
-        }
-
-        if (masscan->op == 0)
-            masscan->op = Operation_Scan;
-    }
-    else if (
-                EQUALS("exclude", name) ||
-                EQUALS("exclude-range", name) ||
-                EQUALS("exclude-ranges", name) ||
-                EQUALS("exclude-ip", name) ||
-                EQUALS("exclude-ipv4", name)
-                ) {
-        int err;
-        err = massip_add_target_string(&masscan->exclude, value);
-        if (err) {
-            fprintf(stderr, "ERROR: bad exclude address/range: %s\n", value);
-        }
-        if (masscan->op == 0)
-            masscan->op = Operation_Scan;
     } else if (EQUALS("badsum", name)) {
         masscan->nmap.badsum = 1;
     } else if (EQUALS("banner1", name)) {
@@ -3012,10 +3131,6 @@ masscan_set_parameter(struct Masscan *masscan,
         if (EQUALS("if", value)) {
             masscan->op = Operation_DebugIF;
         }
-    } else if (EQUALS("dns-servers", name)) {
-        fprintf(stderr, "nmap(%s): unsupported: DNS lookups too synchronous\n",
-                name);
-        exit(1);
     } else if (EQUALS("echo", name)) {
         masscan->op = Operation_Echo;
     } else if (EQUALS("echo-all", name)) {
@@ -3077,46 +3192,10 @@ masscan_set_parameter(struct Masscan *masscan,
         masscan->output.is_status_updates = 1;
     } else if (EQUALS("nostatus", name)) {
         masscan->output.is_status_updates = 0;
-    } else if (EQUALS("ip-options", name)) {
-        fprintf(stderr, "nmap(%s): unsupported: maybe soon\n", name);
-        exit(1);
-    } else if (EQUALS("log-errors", name)) {
-        fprintf(stderr, "nmap(%s): unsupported: maybe soon\n", name);
-        exit(1);
-    } else if (EQUALS("min-hostgroup", name) || EQUALS("max-hostgroup", name)) {
-        fprintf(stderr, "nmap(%s): unsupported: we randomize all the groups!\n", name);
-        exit(1);
-    } else if (EQUALS("min-parallelism", name) || EQUALS("max-parallelism", name)) {
-        fprintf(stderr, "nmap(%s): unsupported: we all the parallel!\n", name);
-        exit(1);
-    } else if (EQUALS("min-rtt-timeout", name) || EQUALS("max-rtt-timeout", name) || EQUALS("initial-rtt-timeout", name)) {
-        fprintf(stderr, "nmap(%s): unsupported: we are asynchronous, so no timeouts, no RTT tracking!\n", name);
-        exit(1);
-    } else if (EQUALS("min-rate", name)) {
-        fprintf(stderr, "nmap(%s): unsupported, we go as fast as --max-rate allows\n", name);
-        /* no exit here, since it's just info */
-    } else if (EQUALS("mtu", name)) {
-        fprintf(stderr, "nmap(%s): fragmentation not yet supported\n", name);
-        exit(1);
-    } else if (EQUALS("nmap", name)) {
-        print_nmap_help();
-        exit(1);
-    } else if (EQUALS("osscan-limit", name)) {
-        fprintf(stderr, "nmap(%s): OS scanning unsupported\n", name);
-        exit(1);
-    } else if (EQUALS("osscan-guess", name)) {
-        fprintf(stderr, "nmap(%s): OS scanning unsupported\n", name);
-        exit(1);
     } else if (EQUALS("packet-trace", name) || EQUALS("trace-packet", name)) {
         masscan->nmap.packet_trace = 1;
-    } else if (EQUALS("privileged", name) || EQUALS("unprivileged", name)) {
-        fprintf(stderr, "nmap(%s): unsupported\n", name);
-        exit(1);
     } else if (EQUALS("pfring", name)) {
         masscan->is_pfring = 1;
-    } else if (EQUALS("port-ratio", name)) {
-        fprintf(stderr, "nmap(%s): unsupported\n", name);
-        exit(1);
     } else if (EQUALS("readrange", name) || EQUALS("readranges", name)) {
         masscan->op = Operation_ReadRange;
     } else if (EQUALS("reason", name)) {
@@ -3155,11 +3234,6 @@ masscan_set_parameter(struct Masscan *masscan,
                  "<redis>");
     } else if(EQUALS("redis-pwd", name)) {
         masscan->redis.password = strdup(value);
-    } else if (EQUALS("release-memory", name)) {
-        fprintf(stderr, "nmap(%s): this is our default option\n", name);
-    } else if (EQUALS("resume", name)) {
-        masscan_read_config_file(masscan, value);
-        masscan_set_parameter(masscan, "output-append", "true");
     } else if (EQUALS("vuln", name)) {
         if (EQUALS("heartbleed", value)) {
             masscan_set_parameter(masscan, "heartbleed", "true");
@@ -3191,19 +3265,8 @@ masscan_set_parameter(struct Masscan *masscan,
         }
         
         masscan->vuln_name = vulncheck_lookup(value)->name;
-    } else if (EQUALS("scan-delay", name) || EQUALS("max-scan-delay", name)) {
-        fprintf(stderr, "nmap(%s): unsupported: we do timing VASTLY differently!\n", name);
-        exit(1);
-    } else if (EQUALS("scanflags", name)) {
-        fprintf(stderr, "nmap(%s): TCP scan flags not yet supported\n", name);
-        exit(1);
     } else if (EQUALS("sendq", name) || EQUALS("sendqueue", name)) {
         masscan->is_sendq = 1;
-    } else if (EQUALS("send-eth", name)) {
-        fprintf(stderr, "nmap(%s): unnecessary, we always do --send-eth\n", name);
-    } else if (EQUALS("send-ip", name)) {
-        fprintf(stderr, "nmap(%s): unsupported, we only do --send-eth\n", name);
-        exit(1);
     } else if (EQUALS("selftest", name) || EQUALS("self-test", name) || EQUALS("regress", name)) {
         masscan->op = Operation_Selftest;
         return;
@@ -3212,22 +3275,14 @@ masscan_set_parameter(struct Masscan *masscan,
         return;
     } else if (EQUALS("source-port", name) || EQUALS("sourceport", name)) {
         masscan_set_parameter(masscan, "adapter-port", value);
-    } else if (EQUALS("nobacktrace", name) || EQUALS("backtrace", name)) {
-        ;
     } else if (EQUALS("no-stylesheet", name)) {
         masscan->output.stylesheet[0] = '\0';
-    } else if (EQUALS("system-dns", name)) {
-        fprintf(stderr, "nmap(%s): DNS lookups will never be supported by this code\n", name);
-        exit(1);
     } else if (EQUALS("top-ports", name)) {
         unsigned n = (unsigned)parseInt(value);
         if (!isInteger(value))
             n = 100;
         LOG(2, "top-ports = %u\n", n);
         masscan->top_ports = n;
-    } else if (EQUALS("traceroute", name)) {
-        fprintf(stderr, "nmap(%s): unsupported\n", name);
-        exit(1);
     } else if (EQUALS("test", name)) {
         if (EQUALS("csv", value))
             masscan->is_test_csv = 1;
@@ -3243,18 +3298,6 @@ masscan_set_parameter(struct Masscan *masscan,
         }
     } else if (EQUALS("version", name)) {
         print_version();
-        exit(1);
-    } else if (EQUALS("version-intensity", name)) {
-        fprintf(stderr, "nmap(%s): unsupported\n", name);
-        exit(1);
-    } else if (EQUALS("version-light", name)) {
-        fprintf(stderr, "nmap(%s): unsupported\n", name);
-        exit(1);
-    } else if (EQUALS("version-all", name)) {
-        fprintf(stderr, "nmap(%s): unsupported\n", name);
-        exit(1);
-    } else if (EQUALS("version-trace", name)) {
-        fprintf(stderr, "nmap(%s): unsupported\n", name);
         exit(1);
     } else if (EQUALS("vlan", name) || EQUALS("adapter-vlan", name)) {
         masscan->nic.is_vlan = 1;
@@ -3561,22 +3604,6 @@ masscan_command_line(struct Masscan *masscan, int argc, char *argv[])
             const char *arg;
 
             switch (argv[i][1]) {
-            case '6':
-                /* Silently ignore this: IPv6 features enabled all the time */
-                break;
-            case 'A':
-                fprintf(stderr, "nmap(%s): unsupported: this tool only does SYN scan\n", argv[i]);
-                exit(1);
-            case 'b':
-                fprintf(stderr, "nmap(%s): FTP bounce scans will never be supported\n", argv[i]);
-                exit(1);
-            case 'c':
-                if (argv[i][2])
-                    arg = argv[i]+2;
-                else
-                    arg = argv[++i];
-                masscan_read_config_file(masscan, arg);
-                break;
             case 'd': /* just do same as verbosity level */
                 {
                     int v;
@@ -3584,26 +3611,6 @@ masscan_command_line(struct Masscan *masscan, int argc, char *argv[])
                         LOG_add_level(1);
                     }
                 }
-                break;
-            case 'e':
-                if (argv[i][2])
-                    arg = argv[i]+2;
-                else
-                    arg = argv[++i];
-                masscan_set_parameter(masscan, "adapter", arg);
-                break;
-            case 'f':
-                fprintf(stderr, "nmap(%s): fragmentation not yet supported\n", argv[i]);
-                exit(1);
-            case 'F':
-                fprintf(stderr, "nmap(%s): unsupported, no slow/fast mode\n", argv[i]);
-                exit(1);
-            case 'g':
-                if (argv[i][2])
-                    arg = argv[i]+2;
-                else
-                    arg = argv[++i];
-                masscan_set_parameter(masscan, "adapter-port", arg);
                 break;
             case 'h':
             case '?':
@@ -3626,13 +3633,6 @@ masscan_command_line(struct Masscan *masscan, int argc, char *argv[])
                         exit(1);
                     }
 
-                } else {
-                    if (argv[i][2])
-                        arg = argv[i]+2;
-                    else
-                        arg = argv[++i];
-
-                    masscan_set_parameter(masscan, "adapter", arg);
                 }
                 break;
             case 'n':
@@ -3698,10 +3698,6 @@ masscan_command_line(struct Masscan *masscan, int argc, char *argv[])
 
                 masscan_set_parameter(masscan, "output-filename", argv[i]);
                 break;
-            case 'O':
-                fprintf(stderr, "nmap(%s): unsupported, OS detection is too complex\n", argv[i]);
-                exit(1);
-                break;
             case 'p':
                 if (argv[i][2])
                     arg = argv[i]+2;
@@ -3712,79 +3708,23 @@ masscan_command_line(struct Masscan *masscan, int argc, char *argv[])
                 } else
                     masscan_set_parameter(masscan, "ports", arg);
                 break;
-            case 'P':
-                switch (argv[i][2]) {
-                case 'n':
-                    /* we already do this */
-                    break;
-                default:
-                    fprintf(stderr, "nmap(%s): unsupported option, maybe in future\n", argv[i]);
-                    exit(1);
-                }
-                break;
-            case 'r':
-                /* This looks like an nmap option*/
-                fprintf(stderr, "nmap(%s): wat? randomization is our raison d'etre!! rethink prease\n", argv[i]);
-                exit(1);
-                break;
-            case 'R':
-                /* This looks like an nmap option*/
-                fprintf(stderr, "nmap(%s): unsupported. This code will never do DNS lookups.\n", argv[i]);
-                exit(1);
-                break;
             case 's': /* NMAP: scan type */
                 if (argv[i][3] == '\0' && !isdigit(argv[i][2]&0xFF)) {
                     unsigned j;
 
                     for (j=2; argv[i][j]; j++)
                     switch (argv[i][j]) {
-                    case 'A':
-                        fprintf(stderr, "nmap(%s): ACK scan not yet supported\n", argv[i]);
-                        exit(1);
-                    case 'C':
-                        fprintf(stderr, "nmap(%s): unsupported\n", argv[i]);
-                        exit(1);
-                    case 'F':
-                        fprintf(stderr, "nmap(%s): FIN scan not yet supported\n", argv[i]);
-                        exit(1);
-                    case 'I':
-                        fprintf(stderr, "nmap(%s): Zombie scans will never be supported\n", argv[i]);
-                        exit(1);
                     case 'L': /* List Scan - simply list targets to scan */
                         masscan->op = Operation_ListScan;
                         break;
-                    case 'M':
-                        fprintf(stderr, "nmap(%s): Maimon scan not yet supported\n", argv[i]);
-                        exit(1);
-                    case 'n': /* Ping Scan - disable port scan */
-                        fprintf(stderr, "nmap(%s): ping-sweeps not yet supported\n", argv[i]);
-                        exit(1);
-                    case 'N':
-                        fprintf(stderr, "nmap(%s): NULL scan not yet supported\n", argv[i]);
-                        exit(1);
                     case 'O': /* Other IP protocols (not ICMP, UDP, TCP, or SCTP) */
                         masscan->scan_type.oproto = 1;
                         break;
                     case 'S': /* TCP SYN scan - THIS IS WHAT WE DO! */
                         masscan->scan_type.tcp = 1;
                         break;
-                    case 'T': /* TCP connect scan */
-                        fprintf(stderr, "nmap(%s): connect() is too synchronous for cool kids\n", argv[i]);
-                        fprintf(stderr, "WARNING: doing SYN scan (-sS) anyway, ignoring (-sT)\n");
-                        break;
                     case 'U': /* UDP scan */
                         masscan->scan_type.udp = 1;
-                        break;
-                    case 'V':
-                        fprintf(stderr, "nmap(%s): unlikely this will be supported\n", argv[i]);
-                        exit(1);
-                    case 'W':
-                        fprintf(stderr, "nmap(%s): Windows scan not yet supported\n", argv[i]);
-                        exit(1);
-                    case 'X':
-                        fprintf(stderr, "nmap(%s): Xmas scan not yet supported\n", argv[i]);
-                        exit(1);
-                    case 'Y':
                         break;
                     case 'Z':
                         masscan->scan_type.sctp = 1;
@@ -3799,13 +3739,6 @@ masscan_command_line(struct Masscan *masscan, int argc, char *argv[])
                     exit(1);
                 }
                 break;
-            case 'S':
-                if (argv[i][2])
-                    arg = argv[i]+2;
-                else
-                    arg = argv[++i];
-                masscan_set_parameter(masscan, "adapter-ip", arg);
-                break;
             case 'v':
                 {
                     int v;
@@ -3818,10 +3751,6 @@ masscan_command_line(struct Masscan *masscan, int argc, char *argv[])
                 break;
             case 'W':
                 masscan->op = Operation_List_Adapters;
-                return;
-            case 'T':
-                fprintf(stderr, "nmap(%s): unsupported, we do timing WAY different than nmap\n", argv[i]);
-                exit(1);
                 return;
             default:
                 LOG(0, "FAIL: unknown option: -%s\n", argv[i]);
@@ -3877,7 +3806,6 @@ void
 masscan_echo(struct Masscan *masscan, FILE *fp, unsigned is_echo_all)
 {
     unsigned i;
-    unsigned l = 0;
     
     /*
      * NEW:
@@ -3890,129 +3818,6 @@ masscan_echo(struct Masscan *masscan, FILE *fp, unsigned is_echo_all)
     }
     masscan->echo = 0;
     masscan->echo_all = 0;
-    
-    /*
-     * OLD:
-     * Things here below are the old way of echoing parameters.
-     * TODO: cleanup this code, replacing with the new way.
-     */
-    masscan_echo_nic(masscan, fp);
-
-    /**
-     * Fix for #737, save adapter-port/source-port value or range
-     */
-    if (masscan->nic.src.port.first != 0) {
-        fprintf(fp, "adapter-port = %d", masscan->nic.src.port.first);
-        if (masscan->nic.src.port.first != masscan->nic.src.port.last) {
-            /* --adapter-port <first>-<last> */
-            fprintf(fp, "-%d", masscan->nic.src.port.last);
-        }
-        fprintf(fp, "\n");
-    }
-
-    /*
-     * Targets
-     */
-    fprintf(fp, "# TARGET SELECTION (IP, PORTS, EXCLUDES)\n");
-    fprintf(fp, "ports = ");
-    /* Disable comma generation for the first element */
-    l = 0;
-    for (i=0; i<masscan->targets.ports.count; i++) {
-        struct Range range = masscan->targets.ports.list[i];
-        do {
-            struct Range rrange = range;
-            unsigned done = 0;
-            if (l)
-                fprintf(fp, ",");
-            l = 1;
-            if (rrange.begin >= Templ_ICMP_echo) {
-                rrange.begin -= Templ_ICMP_echo;
-                rrange.end -= Templ_ICMP_echo;
-                fprintf(fp,"I:");
-                done = 1;
-            } else if (rrange.begin >= Templ_SCTP) {
-                rrange.begin -= Templ_SCTP;
-                rrange.end -= Templ_SCTP;
-                fprintf(fp,"S:");
-                range.begin = Templ_ICMP_echo;
-            } else if (rrange.begin >= Templ_UDP) {
-                rrange.begin -= Templ_UDP;
-                rrange.end -= Templ_UDP;
-                fprintf(fp,"U:");
-                range.begin = Templ_SCTP;
-            } else if (Templ_Oproto_first <= rrange.begin && rrange.begin <= Templ_Oproto_last) {
-                rrange.begin -= Templ_Oproto_first;
-                rrange.end -= Templ_Oproto_first;
-                fprintf(fp, "O:");
-                range.begin = Templ_Oproto_first;
-            } else
-                range.begin = Templ_UDP;
-            rrange.end = min(rrange.end, 65535);
-            if (rrange.begin == rrange.end)
-                fprintf(fp, "%u", rrange.begin);
-            else
-                fprintf(fp, "%u-%u", rrange.begin, rrange.end);
-            if (done)
-                break;
-        } while (range.begin <= range.end);
-    }
-    fprintf(fp, "\n");
-
-    /*
-     * IPv4 address targets
-     */
-    for (i=0; i<masscan->targets.ipv4.count; i++) {
-        unsigned prefix_bits;
-        struct Range range = masscan->targets.ipv4.list[i];
-
-        if (range.begin == range.end) {
-            fprintf(fp, "range = %u.%u.%u.%u",
-                    (range.begin>>24)&0xFF,
-                    (range.begin>>16)&0xFF,
-                    (range.begin>> 8)&0xFF,
-                    (range.begin>> 0)&0xFF
-                    );
-        } else if (range_is_cidr(range, &prefix_bits)) {
-            fprintf(fp, "range = %u.%u.%u.%u/%u",
-                    (range.begin>>24)&0xFF,
-                    (range.begin>>16)&0xFF,
-                    (range.begin>> 8)&0xFF,
-                    (range.begin>> 0)&0xFF,
-                    prefix_bits
-                    );
-
-        } else {
-            fprintf(fp, "range = %u.%u.%u.%u-%u.%u.%u.%u",
-                    (range.begin>>24)&0xFF,
-                    (range.begin>>16)&0xFF,
-                    (range.begin>> 8)&0xFF,
-                    (range.begin>> 0)&0xFF,
-                    (range.end>>24)&0xFF,
-                    (range.end>>16)&0xFF,
-                    (range.end>> 8)&0xFF,
-                    (range.end>> 0)&0xFF
-                    );
-        }
-        fprintf(fp, "\n");
-    }
-    for (i=0; i<masscan->targets.ipv6.count; i++) {
-        bool exact = false;
-        struct Range6 range = masscan->targets.ipv6.list[i];
-        ipaddress_formatted_t fmt = ipv6address_fmt(range.begin);
-        
-        fprintf(fp, "range = %s", fmt.string);
-        if (!ipv6address_is_equal(range.begin, range.end)) {
-            unsigned cidr_bits = count_cidr6_bits(&range, &exact);
-            
-            if (exact && cidr_bits) {
-                fprintf(fp, "/%u", cidr_bits);
-            } else {
-                fmt = ipv6address_fmt(range.end);
-                fprintf(fp, "-%s", fmt.string);
-            }
-        }
-        fprintf(fp, "\n");
-    }
 }
 
 
@@ -4097,69 +3902,6 @@ masscan_echo_cidr(struct Masscan *masscan, FILE *fp, unsigned is_echo_all)
         }
     }
 }
-
-/***************************************************************************
- * remove leading/trailing whitespace
- ***************************************************************************/
-static void
-trim(char *line, size_t sizeof_line)
-{
-    if (sizeof_line > strlen(line))
-        sizeof_line = strlen(line);
-
-    while (isspace(*line & 0xFF))
-        memmove(line, line+1, sizeof_line--);
-    while (*line && isspace(line[sizeof_line-1] & 0xFF))
-        line[--sizeof_line] = '\0';
-}
-
-/***************************************************************************
- ***************************************************************************/
-void
-masscan_read_config_file(struct Masscan *masscan, const char *filename)
-{
-    FILE *fp;
-    char line[65536];
-
-    fp = fopen(filename, "rt");
-    if (fp == NULL) {
-        char dir[512];
-        char *x;
-        
-        fprintf(stderr, "[-] FAIL: reading configuration file\n");
-        fprintf(stderr, "[-] %s: %s\n", filename, strerror(errno));
-
-        x = getcwd(dir, sizeof(dir));
-        if (x)
-            fprintf(stderr, "[-] cwd = %s\n", dir);
-        return;
-    }
-
-    while (fgets(line, sizeof(line), fp)) {
-        char *name;
-        char *value;
-
-        trim(line, sizeof(line));
-
-        if (ispunct(line[0] & 0xFF) || line[0] == '\0')
-            continue;
-
-        name = line;
-        value = strchr(line, '=');
-        if (value == NULL)
-            continue;
-        *value = '\0';
-        value++;
-        trim(name, sizeof(line));
-        trim(value, sizeof(line));
-
-        masscan_set_parameter(masscan, name, value);
-    }
-
-    fclose(fp);
-}
-
-
 
 /***************************************************************************
  ***************************************************************************/
