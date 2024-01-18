@@ -1060,6 +1060,51 @@ static int SET_pfring(struct Masscan *masscan, const char *name, const char *val
     return CONF_OK;
 }
 
+/**
+ * See proto-oproto.h
+ * oproto does nothing now
+ * */
+static int SET_oproto(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+
+    if (masscan->echo) {
+        if (masscan->scan_type.oproto || masscan->echo_all)
+            fprintf(masscan->echo, "oproto = %s\n",
+                masscan->scan_type.oproto?"true":"false");
+        return 0;
+    }
+
+    unsigned is_error = 0;
+    masscan->scan_type.oproto = 1;
+    rangelist_parse_ports(&masscan->targets.ports, value, &is_error, Templ_Oproto_first);
+    if (masscan->op == 0)
+        masscan->op = Operation_Scan;
+
+    return CONF_OK;
+}
+
+static int SET_ping(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+
+    if (masscan->echo) {
+        if (masscan->scan_type.ping || masscan->echo_all)
+            fprintf(masscan->echo, "ping = %s\n", masscan->scan_type.ping?"true":"false");
+        return 0;
+    }
+
+    /* Add ICMP ping request */
+    struct Range range;
+    range.begin = Templ_ICMP_echo;
+    range.end = Templ_ICMP_echo;
+    rangelist_add_range(&masscan->targets.ports, range.begin, range.end);
+    rangelist_sort(&masscan->targets.ports);
+    masscan->scan_type.ping = 1;
+
+    return CONF_OK;
+}
+
 static int SET_arpscan(struct Masscan *masscan, const char *name, const char *value)
 {
     UNUSEDPARM(name);
@@ -1275,6 +1320,20 @@ static int SET_debug_interface(struct Masscan *masscan, const char *name, const 
     return CONF_OK;
 }
 
+static int SET_conn_timeout(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        if (masscan->tcp_connection_timeout || masscan->echo_all)
+            fprintf(masscan->echo, "connection-timeout = %u\n",
+                masscan->tcp_connection_timeout);
+       return 0;
+    }
+
+    masscan->tcp_connection_timeout = parseInt(value);
+
+    return CONF_OK;
+}
+
 static int SET_banners_rawudp(struct Masscan *masscan, const char *name, const char *value)
 {
     if (masscan->echo) {
@@ -1348,6 +1407,37 @@ static int SET_capture(struct Masscan *masscan, const char *name, const char *va
             return CONF_ERR;
         }
     }
+    return CONF_OK;
+}
+
+static int SET_banner_type(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+        if (masscan->banner_types.count > 0) {
+            fprintf(masscan->echo, "banner types =");
+            /*Actually, only one type will be print*/
+            for (unsigned i=0; i<masscan->banner_types.count; i++) {
+                fprintf(masscan->echo, " %s",
+                    masscan_app_to_string(masscan->banner_types.list[i].begin));
+            }
+            fprintf(masscan->echo, "\n");
+        }
+        return 0;
+    }
+
+    /*It may only add one type*/
+    enum ApplicationProtocol app;
+    app = masscan_string_to_app(value);
+    
+    if (app) {
+        rangelist_add_range(&masscan->banner_types, app, app);
+        rangelist_sort(&masscan->banner_types);
+    } else {
+        fprintf(stderr, "FAIL: bad banner app: %s\n", value);
+        return CONF_ERR;
+    }
+
     return CONF_OK;
 }
 
@@ -2841,6 +2931,24 @@ static int SET_rotate_filesize(struct Masscan *masscan, const char *name, const 
     
 }
 
+static int SET_bpf_filter(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+        if (masscan->bpf_filter || masscan->echo_all)
+            fprintf(masscan->echo, "bpf-filter = %s\n", masscan->bpf_filter);
+        return 0;
+    }
+
+    size_t len = strlen(value) + 1;
+    if (masscan->bpf_filter)
+        free(masscan->bpf_filter);
+    masscan->bpf_filter = MALLOC(len);
+    memcpy(masscan->bpf_filter, value, len);
+    
+    return CONF_OK;
+}
+
 static int SET_script(struct Masscan *masscan, const char *name, const char *value)
 {
     UNUSEDPARM(name);
@@ -2875,6 +2983,17 @@ static int SET_seed(struct Masscan *masscan, const char *name, const char *value
     else
         masscan->seed = parseInt(value);
     return CONF_OK;
+}
+
+static int SET_banner1(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    UNUSEDPARM(value);
+    if (masscan->echo) {
+        return 0;
+    }
+    banner1_test(value);
+    return CONF_ERR;
 }
 
 static int SET_delimiter(struct Masscan *masscan, const char *name, const char *value)
@@ -3185,6 +3304,20 @@ fail:
     return CONF_ERR;
 }
 
+static int SET_blackrock_rounds(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+
+    if (masscan->echo) {
+        if (masscan->blackrock_rounds!=14 || masscan->echo_all)
+            fprintf(masscan->echo, "blackrock rounds = %u\n", masscan->blackrock_rounds);
+        return 0;
+    }
+
+    masscan->blackrock_rounds = (unsigned)parseInt(value);
+    return CONF_OK;
+}
+
 static int SET_send_queue(struct Masscan *masscan, const char *name, const char *value)
 {
     UNUSEDPARM(name);
@@ -3237,9 +3370,6 @@ struct ConfigParameter config_parameters[] = {
     {"shard",           SET_shard,              0,      {"shards",0}},
     {"tansmit-thread-count", SET_thread_count,  F_NUMABLE, {"tx-count", "tx-num", 0}},
 
-    {"arpscan",         SET_arpscan,            F_BOOL, {"arp",0}},
-    {"pfring",          SET_pfring,             F_BOOL, {0}},
-
     // {"TARGET:",         SET_delimiter,          0,      {0}},
 
     {"target-ip",       SET_target_ip,          0,      {"range", "ranges", "dst-ip", "ip",0}},
@@ -3248,7 +3378,7 @@ struct ConfigParameter config_parameters[] = {
     {"include-file",    SET_include_file,       0,      {"includefile",0}},
     {"exclude",         SET_exclude_ip,         0,      {"exclude-range", "exlude-ranges", "exclude-ip",0}},
     {"exclude-port",    SET_exclude_port,       0,      {"exclude-ports",0}},
-    {"exclude-file",    SET_exclude_file,       0,      {"excludefile",0}},
+    {"exclude-file",    SET_exclude_file,       0,      {0}},
 
     {"INTERFACE:",      SET_delimiter,          0,      {0}},
 
@@ -3262,10 +3392,16 @@ struct ConfigParameter config_parameters[] = {
 
     {"OPERATION:",      SET_delimiter,          0,      {0}},
 
-    {"echo",            SET_echo,               F_BOOL, {"echo", "echo-all", "echo-cidr",0}},
+    {"echo",            SET_echo,               F_BOOL, {"echo-all", "echo-cidr",0}},
     {"iflist",          SET_iflist,             F_BOOL, {"list-interface", "list-adapter",0}},
-    {"read-range",      SET_read_range,         F_BOOL, {"readrange", "readranges", "read-ranges",0}},
+    {"read-range",      SET_read_range,         F_BOOL, {"read-ranges", 0}},
     {"debug-if",        SET_debug_interface,    F_BOOL, {"debug-interface",0}},
+
+    {"SCAN TYPE:",      SET_delimiter,          0,      {0}},
+
+    {"arpscan",         SET_arpscan,            F_BOOL, {"arp",0}},
+    {"ping",            SET_ping,            F_BOOL, {0}},
+    {"oproto",          SET_oproto,             F_BOOL, {"oprotos",0}}, /*other IP protocol*/
 
     {"STATUS & OUTPUT & RESULT:",SET_delimiter, 0,      {0}},
 
@@ -3286,7 +3422,7 @@ struct ConfigParameter config_parameters[] = {
     {"rotate-offset",   SET_rotate_offset,      0,      {"output-rotate-offset", 0}},
     {"rotate-size",     SET_rotate_filesize,    0,      {"output-rotate-filesize", "rotate-filesize", 0}},
 
-    {"stylesheet",      SET_output_stylesheet,  0,      {"webxml", "no-stylesheet", "nostylesheet",0}},
+    {"stylesheet",      SET_output_stylesheet,  0,      {"webxml", "no-stylesheet",0}},
     {"feed-lzr",        SET_feed_lzr,           F_BOOL, {"feedlzr", 0}},
 
     {"pcap-filename",   SET_pcap_filename,      0,      {"pcap",0}},
@@ -3295,7 +3431,9 @@ struct ConfigParameter config_parameters[] = {
 
     {"banners",         SET_banners,            F_BOOL, {"banner",0}},
     {"nobanners",       SET_nobanners,          F_BOOL, {"nobanner",0}},
+    {"banner-type",     SET_banner_type,        0,      {"banner-types", "banner-app", "banner-apps",0}},
     {"rawudp",          SET_banners_rawudp,     F_BOOL, {"rawudp",0}},
+    {"conn-timeout",    SET_conn_timeout,       F_NUMABLE, {"connection-timeout", "tcp-timeout",0}},
 
     {"hello",           SET_hello,              0,      {0}},
     {"hello-file",      SET_hello_file,         0,      {"hello-filename",0}},
@@ -3303,7 +3441,7 @@ struct ConfigParameter config_parameters[] = {
     {"hello-timeout",   SET_hello_timeout,      0,      {0}},
 
     {"nmap-datadir",    SET_nmap_datadir,       0,      {"datadir",0}},
-    {"nmap-data-length",SET_nmap_data_length,   F_NUMABLE,{"datalength", "data-length",0}},
+    {"nmap-datalength", SET_nmap_data_length,   F_NUMABLE,{"datalength",0}},
     {"nmap-payloads",   SET_nmap_payloads,      0,      {"nmap-payload",0}},
     {"nmap-service-probes",SET_nmap_service_probes, 0,  {"nmap-service-probe",0}},
     {"pcap-payloads",   SET_pcap_payloads,      0,      {"pcap-payload",0}},
@@ -3315,7 +3453,7 @@ struct ConfigParameter config_parameters[] = {
     {"http-method",     SET_http_method,        0,      {0}},
     {"http-version",    SET_http_version,       0,      {0}},
     {"http-url",        SET_http_url,           0,      {"http-uri",0}},
-    {"http-user-agent", SET_http_user_agent,    0,      {"http-useragent",0}},
+    {"http-user-agent", SET_http_user_agent,    0,      {0}},
     {"http-host",       SET_http_host,          0,      {0}},
     {"http-payload",    SET_http_payload,       0,      {0}},
 
@@ -3325,36 +3463,43 @@ struct ConfigParameter config_parameters[] = {
     {"stateless-probe", SET_stateless_probe,    0,      {"probe", 0}},
     {"list-probes",     SET_list_probes,        F_BOOL, {"list-probe", 0}},
     {"probe-args",      SET_probe_args,         0,      {"probe-arg", 0}},
-    {"capture",         SET_capture,            0,      {"nocapture", "no-capture", 0}},
+    {"capture",         SET_capture,            0,      {"nocapture",0}},
     {"noreset",         SET_noreset,            F_BOOL, {"noreset1", "noreset2", 0}},
 
-    {"PACKET TEMPLATE:",SET_delimiter,          0,      {0}},
+    {"PACKET ATTRIBUTE:",SET_delimiter,         0,      {0}},
 
     {"ttl",             SET_ttl,                F_NUMABLE, {0}},
-    {"badsum",          SET_badsum,             F_BOOL, {"bad-sum",0}},
-    {"tcp-mss",         SET_tcp_mss,            F_NUMABLE, {"tcpmss",0}},
+    {"badsum",          SET_badsum,             F_BOOL, {0}},
+    {"tcp-mss",         SET_tcp_mss,            F_NUMABLE, {0}},
     {"tcp-wscale",      SET_tcp_wscale,         F_NUMABLE, {0}},
     {"tcp-tsecho",      SET_tcp_tsecho,         F_NUMABLE, {0}},
     {"tcp-sackok",      SET_tcp_sackok,         F_BOOL, {"tcp-sack",0}},
     {"min-packet",      SET_min_packet,         0,      {"min-pkt",0}},
     {"packet-trace",    SET_packet_trace,       F_BOOL, {"trace-packet",0}},
+    {"bpf-filter",      SET_bpf_filter,         0,      {0}},
+
+    {"SELFTEST:",       SET_delimiter,          0,      {0}},
+
+    {"banner1",         SET_banner1,            F_BOOL, {0}},
 
     {"MISC:",           SET_delimiter,          0,      {0}},
 
     {"conf",            SET_read_conf,          0,      {"config", "resume",0}},
     {"resume-index",    SET_resume_index,       0,      {0}},
     {"resume-count",    SET_resume_count,       0,      {0}},
-    {"retries",         SET_retries,            0,      {"retry", "max-retries", "max-retry", 0}},
+    {"retries",         SET_retries,            0,      {"retry",0}},
     {"offline",         SET_offline,            F_BOOL, {"notransmit", "nosend", "dry-run", 0}},
     {"nodedup",         SET_nodedup,            F_BOOL, {"nodedup1", "nodedup2", 0}},
-    {"dedup-win",       SET_dedup_win,          F_NUMABLE, {"dedupwin", "dedup-win1", "dedupwin1", "dedup-win2", "dedupwin2", 0}},
-    {"stack-buf-count", SET_stack_buf_count,    F_NUMABLE, {"queue-buf-count", "stack-buf-count", "packet-buf-count", 0}},
-    {"send-queue",      SET_send_queue,         F_BOOL,  {"sendqueue", "sendq", 0}},
+    {"dedup-win",       SET_dedup_win,          F_NUMABLE, {"dedupwin", "dedupwin1", "dedupwin2", 0}},
+    {"stack-buf-count", SET_stack_buf_count,    F_NUMABLE, {"queue-buf-count", "packet-buf-count", 0}},
+    {"pfring",          SET_pfring,             F_BOOL, {0}},
+    {"send-queue",      SET_send_queue,         F_BOOL, {"sendq", 0}},
+    {"blackrock-rounds",SET_blackrock_rounds,   F_NUMABLE, {"blackrock-round",0}},
     {"script",          SET_script,             0,      {0}},
     {"debug-tcp",       SET_debug_tcp,          F_BOOL, {"tcp-debug", 0}},
 
     /*Put it at last for better "help" output*/
-    {"TARGET (IP, PORTS, EXCLUDES)",SET_delimiter,          0,      {0}},
+    {"TARGET (IP, PORTS, EXCLUDES)",SET_delimiter, 0,   {0}},
     {"TARGET_OUTPUT",   SET_target_output,      0,      {0}},
     {0}
 };
@@ -3400,52 +3545,7 @@ masscan_set_parameter(struct Masscan *masscan,
      * system yet (see the NEW part above).
      * TODO: transition all these old params to the new system
      */
-    if (EQUALS("oprotos", name) || EQUALS("oproto", name)) {
-        unsigned is_error = 0;
-        masscan->scan_type.oproto = 1;
-        rangelist_parse_ports(&masscan->targets.ports, value, &is_error, Templ_Oproto_first);
-        if (masscan->op == 0)
-            masscan->op = Operation_Scan;
-    }
-    else if (EQUALS("banner-types", name) || EQUALS("banner-type", name)
-             || EQUALS("banner-apps", name) || EQUALS("banner-app", name)
-           ) {
-        enum ApplicationProtocol app;
-        
-        app = masscan_string_to_app(value);
-        
-        if (app) {
-            rangelist_add_range(&masscan->banner_types, app, app);
-            rangelist_sort(&masscan->banner_types);
-        } else {
-            LOG(0, "FAIL: bad banner app: %s\n", value);
-            fprintf(stderr, "err\n");
-            exit(1);
-        }
-    } else if (EQUALS("bpf", name)) {
-        size_t len = strlen(value) + 1;
-        if (masscan->bpf_filter)
-            free(masscan->bpf_filter);
-        masscan->bpf_filter = MALLOC(len);
-        memcpy(masscan->bpf_filter, value, len);
-    } else if (EQUALS("ping", name) || EQUALS("ping-sweep", name)) {
-        /* Add ICMP ping request */
-        struct Range range;
-        range.begin = Templ_ICMP_echo;
-        range.end = Templ_ICMP_echo;
-        rangelist_add_range(&masscan->targets.ports, range.begin, range.end);
-        rangelist_sort(&masscan->targets.ports);
-        masscan->scan_type.ping = 1;
-        LOG(5, "--ping\n");
-    } else if (EQUALS("banner1", name)) {
-        banner1_test(value);
-        exit(1);
-    } else if (EQUALS("blackrock-rounds", name)) {
-        masscan->blackrock_rounds = (unsigned)parseInt(value);
-    } else if (EQUALS("connection-timeout", name) || EQUALS("tcp-timeout", name)) {
-        /* The timeout for banners TCP connections */
-        masscan->tcp_connection_timeout = (unsigned)parseInt(value);
-    } else if (EQUALS("heartbleed", name)) {
+    if (EQUALS("heartbleed", name)) {
         masscan->is_heartbleed = 1;
         masscan_set_parameter(masscan, "no-capture", "cert");
         masscan_set_parameter(masscan, "no-capture", "heartbleed");
