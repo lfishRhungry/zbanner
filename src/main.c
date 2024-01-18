@@ -1918,7 +1918,7 @@ int main(int argc, char *argv[])
     switch (masscan->op) {
     case Operation_Default:
         /* Print usage info and exit */
-        masscan_usage();
+        masscan_set_parameter(masscan, "usage", "true");
         break;
 
     case Operation_Scan:

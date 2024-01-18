@@ -395,7 +395,7 @@ output_create(const struct Masscan *masscan, unsigned thread_index)
     out->rotate.filesize = masscan->output.rotate.filesize;
     out->redis.port = masscan->redis.port;
     out->redis.ip = masscan->redis.ip;
-    out->redis.password = masscan ->redis.password;
+    out->redis.password = duplicate_string(masscan ->redis.password);
     out->is_banner = masscan->is_banners;               /* --banners */
     out->is_banner_rawudp = masscan->is_banners_rawudp; /* --rawudp */
     out->is_banner_stateless = masscan->is_capture_stateless; /* --capture stateless*/

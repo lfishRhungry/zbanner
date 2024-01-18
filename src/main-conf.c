@@ -63,137 +63,6 @@ static struct Range top_ports_sctp[] = {
     {7, 7},{9, 9},{20,22},{80,80},{179,179},{443,443},{1167,1167},
 };*/
 
-/***************************************************************************
- ***************************************************************************/
-void
-masscan_usage(void)
-{
-    printf("\n");
-    printf("Welcome to ZBanner!\n");
-    printf("\n");
-    printf("usage: zbanner [options] [<IP|RANGE>... -pPORT[,PORT...]]\n");
-    printf("\n");
-    printf("original examples in masscan:\n");
-    printf("    zbanner -p80,8000-8100 10.0.0.0/8 --rate=10000\n");
-    printf("        scan some web ports on 10.x.x.x at 10kpps\n");
-    printf("\n");
-    printf("    zbanner --nmap\n");
-    printf("        list those options that are compatible with nmap\n");
-    printf("\n");
-    printf("    zbanner -p80 10.0.0.0/8 --banners -oB <filename>\n");
-    printf("        save results of scan in binary format to <filename>\n");
-    printf("\n");
-    printf("    zbanner --open --banners --readscan <filename> -oX <savefile>\n");
-    printf("        read binary scan results in <filename> and save them as xml in <savefile>\n");
-    printf("\n");
-    printf("\n");
-    printf("zbanner examples:\n");
-    printf("    zbanner 10.0.0.0/8 -p21,110 --stateless\n");
-    printf("        scan some ftp & pop3 ports with default NULL probe\n");
-    printf("\n");
-    printf("    zbanner 10.0.0.0/8 -p80 --stateless --probe getrequest\n");
-    printf("        scan some web ports with GetRequest probe\n");
-    printf("\n");
-    printf("    zbanner 10.0.0.0/8 -p110 --stateless --capture stateless\n");
-    printf("        capture banner result\n");
-    printf("\n");
-    printf("    zbanner 10.0.0.0/8 -p110 --stateless --pcap <pcapfile> -oX <xmlfile>\n");
-    printf("        save packet result in <pcapfile> and save scan result in <xmlfile>\n");
-    printf("\n");
-    exit(1);
-}
-
-/***************************************************************************
- ***************************************************************************/
-static void
-print_version()
-{
-    const char *cpu = "unknown";
-    const char *compiler = "unknown";
-    const char *compiler_version = "unknown";
-    const char *os = "unknown";
-    printf("\n");
-    printf("ZBanner version %s\n( %s )\n", 
-        ZBANNER_VERSION,
-        "https://github.com/lfishRhungry/zbanner"
-        );
-    printf("Compiled on: %s %s\n", __DATE__, __TIME__);
-
-#if defined(__x86_64) || defined(__x86_64__)
-    cpu = "x86";
-#endif
-
-#if defined(_MSC_VER)
-    #if defined(_M_AMD64) || defined(_M_X64)
-        cpu = "x86";
-    #elif defined(_M_IX86)
-        cpu = "x86";
-    #elif defined (_M_ARM_FP)
-        cpu = "arm";
-    #endif
-
-    {
-        int msc_ver = _MSC_VER;
-
-        compiler = "VisualStudio";
-
-        if (msc_ver < 1500)
-            compiler_version = "pre2008";
-        else if (msc_ver == 1500)
-            compiler_version = "2008";
-        else if (msc_ver == 1600)
-            compiler_version = "2010";
-        else if (msc_ver == 1700)
-            compiler_version = "2012";
-        else if (msc_ver == 1800)
-            compiler_version = "2013";
-        else
-            compiler_version = "post-2013";
-    }
-
-    
-#elif defined(__GNUC__)
-# if defined(__clang__)
-    compiler = "clang";
-# else
-    compiler = "gcc";
-# endif
-    compiler_version = __VERSION__;
-
-#if defined(i386) || defined(__i386) || defined(__i386__)
-    cpu = "x86";
-#endif
-
-#if defined(__corei7) || defined(__corei7__)
-    cpu = "x86-Corei7";
-#endif
-
-#endif
-
-#if defined(WIN32)
-    os = "Windows";
-#elif defined(__linux__)
-    os = "Linux";
-#elif defined(__APPLE__)
-    os = "Apple";
-#elif defined(__MACH__)
-    os = "MACH";
-#elif defined(__FreeBSD__)
-    os = "FreeBSD";
-#elif defined(__NetBSD__)
-    os = "NetBSD";
-#elif defined(unix) || defined(__unix) || defined(__unix__)
-    os = "Unix";
-#endif
-
-    printf("Compiler: %s %s\n", compiler, compiler_version);
-    printf("OS: %s\n", os);
-    printf("CPU: %s (%u bits)\n", cpu, (unsigned)(sizeof(void*))*8);
-
-#if defined(GIT)
-    printf("GIT version: %s\n", GIT);
-#endif
-}
 
 /***************************************************************************
  ***************************************************************************/
@@ -1058,6 +927,28 @@ static int SET_selftest(struct Masscan *masscan, const char *name, const char *v
 
     if (parseBoolean(value))
         masscan->op = Operation_Selftest;
+
+    return CONF_OK;
+}
+
+static int SET_read_scan(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    UNUSEDPARM(value);
+
+    if (masscan->echo) {
+        if (masscan->op==Operation_ReadRange || masscan->echo_all)
+            fprintf(masscan->echo, "read-range = %s\n",
+                masscan->op==Operation_ReadRange?"true":"false");
+        return 0;
+    }
+
+    /* Read in a binary file instead of scanning the network*/
+    masscan->op = Operation_ReadScan;
+    
+    /* Default to reading banners */
+    masscan->is_banners = true;
+    masscan->is_banners_rawudp = true;
 
     return CONF_OK;
 }
@@ -2605,8 +2496,8 @@ static int SET_output_format(struct Masscan *masscan, const char *name, const ch
     else if (EQUALS("redis", value))        x = Output_Redis;
     else if (EQUALS("hostonly", value))     x = Output_Hostonly;
     else {
-        LOG(0, "FAIL: unknown output-format: %s\n", value);
-        LOG(0, "  hint: 'binary', 'xml', 'grepable', ...\n");
+        fprintf(stderr, "FAIL: unknown output-format: %s\n", value);
+        fprintf(stderr, "  hint: 'binary', 'xml', 'grepable', ...\n");
         return CONF_ERR;
     }
     masscan->output.format = x;
@@ -3099,7 +2990,7 @@ static int SET_delimiter(struct Masscan *masscan, const char *name, const char *
     UNUSEDPARM(name);
     UNUSEDPARM(value);
     if (masscan->echo) {
-        fprintf(masscan->echo, "\n-=-=-=-=-=-\n");
+        fprintf(masscan->echo, "-=-=-=-=-=-\n");
         return 0;
     }
     return CONF_OK;
@@ -3109,7 +3000,15 @@ static int SET_vuln_check(struct Masscan *masscan, const char *name, const char 
 {
     UNUSEDPARM(name);
     if (masscan->echo) {
-        fprintf(masscan->echo, "\n-=-=-=-=-=-\n");
+        if (masscan->is_heartbleed || masscan->echo_all)
+            fprintf(masscan->echo, "vulncheck heartbleed = %s\n",
+                masscan->is_heartbleed?"true":"false");
+        if (masscan->is_ticketbleed || masscan->echo_all)
+            fprintf(masscan->echo, "vulncheck ticketbleed = %s\n",
+                masscan->is_ticketbleed?"true":"false");
+        if (masscan->is_poodle_sslv3 || masscan->echo_all)
+            fprintf(masscan->echo, "vulncheck poodle-sslv3 = %s\n",
+                masscan->is_poodle_sslv3?"true":"false");
         return 0;
     }
 
@@ -3154,8 +3053,205 @@ static int SET_version(struct Masscan *masscan, const char *name, const char *va
     if (masscan->echo) {
         return 0;
     }
-    print_version();
+
+    const char *cpu = "unknown";
+    const char *compiler = "unknown";
+    const char *compiler_version = "unknown";
+    const char *os = "unknown";
+    printf("\n");
+    printf("ZBanner version %s\n( %s )\n", 
+        ZBANNER_VERSION,
+        "https://github.com/lfishRhungry/zbanner"
+        );
+    printf("Compiled on: %s %s\n", __DATE__, __TIME__);
+
+#if defined(__x86_64) || defined(__x86_64__)
+    cpu = "x86";
+#endif
+
+#if defined(_MSC_VER)
+    #if defined(_M_AMD64) || defined(_M_X64)
+        cpu = "x86";
+    #elif defined(_M_IX86)
+        cpu = "x86";
+    #elif defined (_M_ARM_FP)
+        cpu = "arm";
+    #endif
+
+    {
+        int msc_ver = _MSC_VER;
+
+        compiler = "VisualStudio";
+
+        if (msc_ver < 1500)
+            compiler_version = "pre2008";
+        else if (msc_ver == 1500)
+            compiler_version = "2008";
+        else if (msc_ver == 1600)
+            compiler_version = "2010";
+        else if (msc_ver == 1700)
+            compiler_version = "2012";
+        else if (msc_ver == 1800)
+            compiler_version = "2013";
+        else
+            compiler_version = "post-2013";
+    }
+
+    
+#elif defined(__GNUC__)
+# if defined(__clang__)
+    compiler = "clang";
+# else
+    compiler = "gcc";
+# endif
+    compiler_version = __VERSION__;
+
+#if defined(i386) || defined(__i386) || defined(__i386__)
+    cpu = "x86";
+#endif
+
+#if defined(__corei7) || defined(__corei7__)
+    cpu = "x86-Corei7";
+#endif
+
+#endif
+
+#if defined(WIN32)
+    os = "Windows";
+#elif defined(__linux__)
+    os = "Linux";
+#elif defined(__APPLE__)
+    os = "Apple";
+#elif defined(__MACH__)
+    os = "MACH";
+#elif defined(__FreeBSD__)
+    os = "FreeBSD";
+#elif defined(__NetBSD__)
+    os = "NetBSD";
+#elif defined(unix) || defined(__unix) || defined(__unix__)
+    os = "Unix";
+#endif
+
+    printf("Compiler: %s %s\n", compiler, compiler_version);
+    printf("OS: %s\n", os);
+    printf("CPU: %s (%u bits)\n", cpu, (unsigned)(sizeof(void*))*8);
+
     return CONF_ERR;
+}
+
+static int SET_usage(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    UNUSEDPARM(value);
+    if (masscan->echo) {
+        return 0;
+    }
+
+    printf("\n");
+    printf("Welcome to ZBanner!\n");
+    printf("\n");
+    printf("usage: zbanner [options] [<IP|RANGE>... -pPORT[,PORT...]]\n");
+    printf("\n");
+    printf("original examples in masscan:\n");
+    printf("    zbanner -p80,8000-8100 10.0.0.0/8 --rate=10000\n");
+    printf("        scan some web ports on 10.x.x.x at 10kpps\n");
+    printf("\n");
+    printf("    zbanner --nmap\n");
+    printf("        list those options that are compatible with nmap\n");
+    printf("\n");
+    printf("    zbanner -p80 10.0.0.0/8 --banners -oB <filename>\n");
+    printf("        save results of scan in binary format to <filename>\n");
+    printf("\n");
+    printf("    zbanner --open --banners --readscan <filename> -oX <savefile>\n");
+    printf("        read binary scan results in <filename> and save them as xml in <savefile>\n");
+    printf("\n");
+    printf("\n");
+    printf("zbanner examples:\n");
+    printf("    zbanner 10.0.0.0/8 -p21,110 --stateless\n");
+    printf("        scan some ftp & pop3 ports with default NULL probe\n");
+    printf("\n");
+    printf("    zbanner 10.0.0.0/8 -p80 --stateless --probe getrequest\n");
+    printf("        scan some web ports with GetRequest probe\n");
+    printf("\n");
+    printf("    zbanner 10.0.0.0/8 -p110 --stateless --capture stateless\n");
+    printf("        capture banner result\n");
+    printf("\n");
+    printf("    zbanner 10.0.0.0/8 -p110 --stateless --pcap <pcapfile> -oX <xmlfile>\n");
+    printf("        save packet result in <pcapfile> and save scan result in <xmlfile>\n");
+    printf("\n");
+
+    return CONF_ERR;
+}
+
+static int SET_help(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    UNUSEDPARM(value);
+    if (masscan->echo) {
+        return 0;
+    }
+
+    printf(
+"\nWelcome to ZBanner!\n\n"
+"usage: zbanner [options] [<IP|RANGE>... -pPORT[,PORT...]]\n"
+"ZBanner is a fast completely stateless port scanner and banner grabber.\n"
+"The primary input parameters are the IP addresses/ranges you want to scan,\n"
+"and the port numbers. An example is the following:\n"
+"\n"
+"    zbanner 10.0.0.0/8 -p80\n"
+"\n"
+"The program auto-detects network interface/adapter settings. If this\n"
+"fails, you'll have to set these manually. The following is an\n"
+"example of all the parameters that are needed:\n"
+"\n"
+"    --adapter-ip 192.168.10.123\n"
+"    --adapter-mac 00-11-22-33-44-55\n"
+"    --router-mac 66-55-44-33-22-11\n"
+"\n"
+"Parameters can be set either via the command-line or config-file. The\n"
+"names are the same for both. Thus, the above adapter settings would\n"
+"appear as follows in a configuration file:\n"
+"\n"
+"    adapter-ip = 192.168.10.123\n"
+"    adapter-mac = 00-11-22-33-44-55\n"
+"    router-mac = 66-55-44-33-22-11\n"
+"\n"
+"All single-dash parameters have a spelled out double-dash equivalent,\n"
+"so '-p80' is the same as '--ports 80' (or 'ports = 80' in config file).\n"
+"To use the config file, type:\n"
+"\n"
+"    zbanner -c <filename>\n"
+"\n"
+"To generate a config-file from the current settings, use the --echo\n"
+"option. This stops the program from actually running, and just echoes\n"
+"the current configuration instead. This is a useful way to generate\n"
+"your first config file, or see a list of parameters you didn't know\n"
+"about. I suggest you try it now:\n"
+"\n"
+"    zbanner -p1234 --echo\n"
+"\n"
+"ZBanner provide a total stateless application layer banner fast grabbing.\n"
+"Allow you to use different application layer probe to grab and handle\n"
+"banners from target ports:\n"
+"\n"
+"    zbanner -p1234 --stateless --probe getrequest --capture stateless\n"
+"\n");
+
+    return CONF_ERR;
+}
+
+static int SET_log_level(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(value);
+    if (masscan->echo) {
+        if (masscan->shard.of > 1  || masscan->echo_all)
+            fprintf(masscan->echo, "shard = %u/%u\n", masscan->shard.one, masscan->shard.of);
+        return 0;
+    }
+
+    LOG_add_level(strlen(name));
+    
+    return CONF_OK;
 }
 
 static int SET_shard(struct Masscan *masscan, const char *name, const char *value)
@@ -3177,13 +3273,13 @@ static int SET_shard(struct Masscan *masscan, const char *name, const char *valu
         of = of*10 + (*(value++)) - '0';
     
     if (one < 1) {
-        LOG(0, "FAIL: shard index can't be zero\n");
-        LOG(0, "hint   it goes like 1/4 2/4 3/4 4/4\n");
+        fprintf(stderr, "FAIL: shard index can't be zero\n");
+        fprintf(stderr, "hint   it goes like 1/4 2/4 3/4 4/4\n");
         return CONF_ERR;
     }
     if (one > of) {
-        LOG(0, "FAIL: shard spec is wrong\n");
-        LOG(0, "hint   it goes like 1/4 2/4 3/4 4/4\n");
+        fprintf(stderr, "FAIL: shard spec is wrong\n");
+        fprintf(stderr, "hint   it goes like 1/4 2/4 3/4 4/4\n");
         return CONF_ERR;
     }
     masscan->shard.one = one;
@@ -3519,15 +3615,19 @@ struct ConfigParameter config_parameters[] = {
     {"rate",            SET_rate,               0,      {"max-rate",0}},
     {"wait",            SET_wait,               F_NUMABLE,{"cooldown",0}},
     {"shard",           SET_shard,              0,      {"shards",0}},
-    {"version",         SET_version,            F_BOOL, {"v",0}},
     {"tansmit-thread-count", SET_thread_count,  F_NUMABLE, {"tx-count", "tx-num", 0}},
+    {"d",               SET_log_level,          F_BOOL, {"dd","ddd","dddd","ddddd",0}},
+    {"v",               SET_log_level,          F_BOOL, {"vv","vvv","vvvv","vvvvv",0}},
+    {"version",         SET_version,            F_BOOL, {"V",0}},
+    {"help",            SET_help,               F_BOOL, {"h", "?",0}},
+    {"usage",           SET_usage,              F_BOOL, {0}},
 
     // {"TARGET:",         SET_delimiter,          0,      {0}},
 
     {"target-ip",       SET_target_ip,          0,      {"range", "ranges", "dst-ip", "ip",0}},
-    {"port",            SET_target_port,        0,      {"ports", "tcp-port", "udp-port", "tcp-ports", "udp-ports",0}},
+    {"port",            SET_target_port,        0,      {"p", "tcp-port", "udp-port", 0}},
     {"top-port",        SET_top_port,           F_NUMABLE, {"top-ports",0}},
-    {"include-file",    SET_include_file,       0,      {"includefile",0}},
+    {"include-file",    SET_include_file,       0,      {"iL",0}},
     {"exclude",         SET_exclude_ip,         0,      {"exclude-range", "exlude-ranges", "exclude-ip",0}},
     {"exclude-port",    SET_exclude_port,       0,      {"exclude-ports",0}},
     {"exclude-file",    SET_exclude_file,       0,      {0}},
@@ -3546,7 +3646,8 @@ struct ConfigParameter config_parameters[] = {
 
     {"echo",            SET_echo,               F_BOOL, {"echo-all", "echo-cidr",0}},
     {"iflist",          SET_iflist,             F_BOOL, {"list-interface", "list-adapter",0}},
-    {"read-range",      SET_read_range,         F_BOOL, {"read-ranges", 0}},
+    {"readrange",       SET_read_range,         F_BOOL, {"readranges", 0}},
+    {"readscan",        SET_read_scan,          F_BOOL, {0}},
     {"selftest",        SET_selftest,           F_BOOL, {"regress", "regression",0}},
     {"benchmark",       SET_benchmark,          F_BOOL, {0}},
     {"debug-if",        SET_debug_interface,    F_BOOL, {"debug-interface",0}},
@@ -3591,7 +3692,7 @@ struct ConfigParameter config_parameters[] = {
     {"banner-type",     SET_banner_type,        0,      {"banner-types", "banner-app", "banner-apps",0}},
     {"rawudp",          SET_banners_rawudp,     F_BOOL, {"rawudp",0}},
     {"conn-timeout",    SET_conn_timeout,       F_NUMABLE, {"connection-timeout", "tcp-timeout",0}},
-    {"vuln-check",      SET_vuln_check,         0,      {0}}, /*some fish will drop the fxck code*/
+    {"vuln-check",      SET_vuln_check,         0,      {"vuln",0}}, /*some fish will drop the fxck code*/
 
     {"BANNERS-HELLO:",  SET_delimiter,          0,      {0}},
 
@@ -3766,59 +3867,6 @@ is_singleton(const char *name)
     return 0;
 }
 
-/*****************************************************************************
- *****************************************************************************/
-static void
-masscan_help()
-{
-    printf(
-"\nWelcome to ZBanner!\n\n"
-"usage: zbanner [options] [<IP|RANGE>... -pPORT[,PORT...]]\n"
-"ZBanner is a fast completely stateless port scanner and banner grabber.\n"
-"The primary input parameters are the IP addresses/ranges you want to scan,\n"
-"and the port numbers. An example is the following:\n"
-"\n"
-"    zbanner 10.0.0.0/8 -p80\n"
-"\n"
-"The program auto-detects network interface/adapter settings. If this\n"
-"fails, you'll have to set these manually. The following is an\n"
-"example of all the parameters that are needed:\n"
-"\n"
-"    --adapter-ip 192.168.10.123\n"
-"    --adapter-mac 00-11-22-33-44-55\n"
-"    --router-mac 66-55-44-33-22-11\n"
-"\n"
-"Parameters can be set either via the command-line or config-file. The\n"
-"names are the same for both. Thus, the above adapter settings would\n"
-"appear as follows in a configuration file:\n"
-"\n"
-"    adapter-ip = 192.168.10.123\n"
-"    adapter-mac = 00-11-22-33-44-55\n"
-"    router-mac = 66-55-44-33-22-11\n"
-"\n"
-"All single-dash parameters have a spelled out double-dash equivalent,\n"
-"so '-p80' is the same as '--ports 80' (or 'ports = 80' in config file).\n"
-"To use the config file, type:\n"
-"\n"
-"    zbanner -c <filename>\n"
-"\n"
-"To generate a config-file from the current settings, use the --echo\n"
-"option. This stops the program from actually running, and just echoes\n"
-"the current configuration instead. This is a useful way to generate\n"
-"your first config file, or see a list of parameters you didn't know\n"
-"about. I suggest you try it now:\n"
-"\n"
-"    zbanner -p1234 --echo\n"
-"\n"
-"ZBanner provide a total stateless application layer banner fast grabbing.\n"
-"Allow you to use different application layer probe to grab and handle\n"
-"banners from target ports:\n"
-"\n"
-"    zbanner -p1234 --stateless --probe getrequest --capture stateless\n"
-"\n");
-    exit(1);
-}
-
 /***************************************************************************
  ***************************************************************************/
 void
@@ -3880,27 +3928,28 @@ void
 masscan_command_line(struct Masscan *masscan, int argc, char *argv[])
 {
     int i;
+    unsigned name_length;
 
     for (i=1; i<argc; i++) {
 
         /*
-         * --name=value
-         * --name:value
-         * --name value
+         * -(-)name=value
+         * -(-)name:value
+         * -(-)name value
          */
-        if (argv[i][0] == '-' && argv[i][1] == '-') {
-            const char *argname = argv[i] + 2;
+        if (argv[i][0] == '-') {
+            unsigned tmp_step = 1;
+            /*true:double dashes, false:single dash*/
+            if (argv[i][1]=='-')
+                tmp_step++;
 
-            if (EQUALS("help", argname)) {
-                masscan_help();
-                exit(1);
-            } else if (is_numable(argname)) {
+            const char *argname = argv[i] + tmp_step;
+            char name2[64];
+            const char *value;
+
+            if (is_numable(argname)) {
                 /* May exist by itself like a bool or take an additional
                  * numeric argument */
-                char name2[64];
-                const char *name = argname;
-                unsigned name_length;
-                const char *value;
 
                 /* Look for:
                  * --name=value
@@ -3909,7 +3958,7 @@ masscan_command_line(struct Masscan *masscan, int argc, char *argv[])
                 if (value == NULL)
                     value = strchr(&argv[i][2], ':');
                 if (value) {
-                    name_length = (unsigned)(value - name);
+                    name_length = (unsigned)(value - argname);
                 } else {
                     /* The next parameter contains the name */
                     if (i+1 < argc) {
@@ -3925,230 +3974,48 @@ masscan_command_line(struct Masscan *masscan, int argc, char *argv[])
 
                 /* create a copy of the name */
                 if (name_length > sizeof(name2) - 1) {
-                    fprintf(stderr, "%.*s: name too long\n", name_length, name);
+                    fprintf(stderr, "%.*s: name too long\n", name_length, argname);
                     name_length = sizeof(name2) - 1;
                 }
-                memcpy(name2, name, name_length);
+                memcpy(name2, argname, name_length);
                 name2[name_length] = '\0';
 
                 masscan_set_parameter(masscan, name2, value);
-            } else if (EQUALS("readscan", argv[i]+2)) {
-                /* Read in a binary file instead of scanning the network*/
-                masscan->op = Operation_ReadScan;
-                
-                /* Default to reading banners */
-                masscan->is_banners = true;
-                masscan->is_banners_rawudp = true;
-
-                /* This option may be followed by many filenames, therefore,
-                 * skip forward in the argument list until the next
-                 * argument */
-                while (i+1 < argc && argv[i+1][0] != '-')
-                    i++;
-                continue;
             } else {
-                char name2[64];
-                char *name = argv[i] + 2;
-                unsigned name_length;
-                const char *value;
-
                 value = strchr(&argv[i][2], '=');
                 if (value == NULL)
                     value = strchr(&argv[i][2], ':');
                 if (value == NULL) {
-                    if (is_singleton(name))
+                    if (is_singleton(argname))
                         value = "";
                     else
                         value = argv[++i];
-                    name_length = (unsigned)strlen(name);
+                    name_length = (unsigned)strlen(argname);
                 } else {
-                    name_length = (unsigned)(value - name);
+                    name_length = (unsigned)(value - argname);
                     value++;
                 }
 
                 if (i >= argc) {
-                    fprintf(stderr, "%.*s: empty parameter\n", name_length, name);
+                    fprintf(stderr, "%.*s: empty parameter\n", name_length, argname);
                     break;
                 }
 
                 if (name_length > sizeof(name2) - 1) {
-                    fprintf(stderr, "%.*s: name too long\n", name_length, name);
+                    fprintf(stderr, "%.*s: name too long\n", name_length, argname);
                     name_length = sizeof(name2) - 1;
                 }
 
-                memcpy(name2, name, name_length);
+                memcpy(name2, argname, name_length);
                 name2[name_length] = '\0';
 
                 masscan_set_parameter(masscan, name2, value);
-            }
-            continue;
-        }
-
-        /* For for a single-dash parameter */
-        if (argv[i][0] == '-') {
-            const char *arg;
-
-            switch (argv[i][1]) {
-            case 'd': /* just do same as verbosity level */
-                {
-                    int v;
-                    for (v=1; argv[i][v] == 'd'; v++) {
-                        LOG_add_level(1);
-                    }
-                }
-                break;
-            case 'h':
-            case '?':
-                masscan_usage();
-                break;
-            case 'i':
-                if (argv[i][3] == '\0' && !isdigit(argv[i][2]&0xFF)) {
-                    /* This looks like an nmap option*/
-                    switch (argv[i][2]) {
-                    case 'L':
-                        masscan_set_parameter(masscan, "includefile", argv[++i]);
-                        break;
-                    case 'R':
-                        /* -iR in nmap makes it randomize addresses completely. Thus,
-                         * it's nearest equivalent is scanning the entire Internet range */
-                        masscan_set_parameter(masscan, "include", "0.0.0.0/0");
-                        break;
-                    default:
-                        fprintf(stderr, "nmap(%s): unsupported option\n", argv[i]);
-                        exit(1);
-                    }
-
-                }
-                break;
-            case 'n':
-                /* This looks like an nmap option*/
-                /* Do nothing: this code never does DNS lookups anyway */
-                break;
-            case 'o': /* nmap output format */
-                switch (argv[i][2]) {
-                case 'A':
-                    masscan->output.format = Output_All;
-                    fprintf(stderr, "nmap(%s): unsupported output format\n", argv[i]);
-                    exit(1);
-                    break;
-                case 'B':
-                    masscan->output.format = Output_Binary;
-                    break;
-                case 'D':
-                    masscan->output.format = Output_NDJSON;
-                    break;
-                case 'J':
-                    masscan->output.format = Output_JSON;
-                    break;
-                case 'N':
-                    masscan->output.format = Output_Nmap;
-                    fprintf(stderr, "nmap(%s): unsupported output format\n", argv[i]);
-                    exit(1);
-                    break;
-                case 'X':
-                    masscan->output.format = Output_XML;
-                    break;
-                case 'R':
-                    masscan->output.format = Output_Redis;
-                    if (i+1 < argc && argv[i+1][0] != '-')
-                        masscan_set_parameter(masscan, "redis", argv[i+1]);
-                    break;
-                case 'S':
-                    masscan->output.format = Output_ScriptKiddie;
-                    fprintf(stderr, "nmap(%s): unsupported output format\n", argv[i]);
-                    exit(1);
-                    break;
-                case 'G':
-                    masscan->output.format = Output_Grepable;
-                    break;
-                case 'L':
-                    masscan_set_parameter(masscan, "output-format", "list");
-                    break;
-                case 'U':
-                    masscan_set_parameter(masscan, "output-format", "unicornscan");
-                    break;
-                case 'H':
-                    masscan_set_parameter(masscan, "output-format", "hostonly");
-                    break;
-                default:
-                    fprintf(stderr, "nmap(%s): unknown output format\n", argv[i]);
-                    exit(1);
-                }
-
-                ++i;
-                if (i >= argc || (argv[i][0] == '-' && argv[i][1] != '\0')) {
-                    fprintf(stderr, "missing output filename\n");
-                    exit(1);
-                }
-
-                masscan_set_parameter(masscan, "output-filename", argv[i]);
-                break;
-            case 'p':
-                if (argv[i][2])
-                    arg = argv[i]+2;
-                else
-                    arg = argv[++i];
-                if (i >= argc || arg[0] == 0) { // if string is empty
-                    fprintf(stderr, "%s: empty parameter\n", argv[i]);
-                } else
-                    masscan_set_parameter(masscan, "ports", arg);
-                break;
-            case 's': /* NMAP: scan type */
-                if (argv[i][3] == '\0' && !isdigit(argv[i][2]&0xFF)) {
-                    unsigned j;
-
-                    for (j=2; argv[i][j]; j++)
-                    switch (argv[i][j]) {
-                    case 'L': /* List Scan - simply list targets to scan */
-                        masscan->op = Operation_ListScan;
-                        break;
-                    case 'O': /* Other IP protocols (not ICMP, UDP, TCP, or SCTP) */
-                        masscan->scan_type.oproto = 1;
-                        break;
-                    case 'S': /* TCP SYN scan - THIS IS WHAT WE DO! */
-                        masscan->scan_type.tcp = 1;
-                        break;
-                    case 'U': /* UDP scan */
-                        masscan->scan_type.udp = 1;
-                        break;
-                    case 'Z':
-                        masscan->scan_type.sctp = 1;
-                        break;
-                    default:
-                        fprintf(stderr, "nmap(%s): unsupported option\n", argv[i]);
-                        exit(1);
-                    }
-
-                } else {
-                    fprintf(stderr, "%s: unknown parameter\n", argv[i]);
-                    exit(1);
-                }
-                break;
-            case 'v':
-                {
-                    int v;
-                    for (v=1; argv[i][v] == 'v'; v++)
-                        LOG_add_level(1);
-                }
-                break;
-            case 'V': /* print version and exit */
-                masscan_set_parameter(masscan, "version", "");
-                break;
-            case 'W':
-                masscan->op = Operation_List_Adapters;
-                return;
-            default:
-                LOG(0, "FAIL: unknown option: -%s\n", argv[i]);
-                LOG(0, " [hint] try \"--help\"\n");
-                LOG(0, " [hint] ...or, to list nmap-compatible options, try \"--nmap\"\n");
-                exit(1);
             }
             continue;
         }
 
         if (!isdigit(argv[i][0]) && argv[i][0] != ':' && argv[i][0] != '[') {
             fprintf(stderr, "FAIL: unknown command-line parameter \"%s\"\n", argv[i]);
-            fprintf(stderr, " [hint] did you want \"--%s\"?\n", argv[i]);
             exit(1);
         }
 
@@ -4172,10 +4039,6 @@ masscan_command_line(struct Masscan *masscan, int argc, char *argv[])
      */
     if (masscan->top_ports) {
         config_top_ports(masscan, masscan->top_ports);
-    }
-    if (masscan->shard.of < masscan->shard.one) {
-        fprintf(stderr, "[-] WARNING: the shard number must be less than the total shard count: %u/%u\n",
-            masscan->shard.one, masscan->shard.of);
     }
     if (masscan->shard.of > 1 && masscan->seed == 0) {
         fprintf(stderr, "[-] WARNING: --seed <num> is not specified\n    HINT: all shards must share the same seed\n");
