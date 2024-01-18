@@ -3059,7 +3059,7 @@ static int SET_version(struct Masscan *masscan, const char *name, const char *va
     const char *compiler_version = "unknown";
     const char *os = "unknown";
     printf("\n");
-    printf("Xtat version %s\n( %s )\n", 
+    printf("Xtate version %s\n( %s )\n", 
         XTATE_VERSION,
         "https://github.com/lfishRhungry/xtate"
         );
