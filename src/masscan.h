@@ -241,7 +241,6 @@ struct Masscan
     unsigned is_capture_heartbleed:1; /* --capture heartbleed */
     unsigned is_capture_ticketbleed:1; /* --capture ticket */
     unsigned is_capture_stateless:1; /* --capture stateless */
-    unsigned is_test_csv:1;     /* (temporary testing feature) */
     unsigned is_infinite:1;     /* -infinite */
     unsigned is_readscan:1;     /* --readscan, Operation_Readscan */
     unsigned is_heartbleed:1;   /* --heartbleed, scan for this vuln */
@@ -512,7 +511,7 @@ struct Masscan
 
     struct {
         ipaddress ip;
-        char    *password;
+        char      password[20];
         unsigned port;
     } redis;
 

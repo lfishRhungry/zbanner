@@ -1794,13 +1794,11 @@ int main(int argc, char *argv[])
     masscan->shard.one = 1;
     masscan->shard.of = 1;
     masscan->min_packet_size = 60;
-    masscan->redis.password = NULL;
     masscan->payloads.udp = payloads_udp_create();
     masscan->payloads.oproto = payloads_oproto_create();
     safe_strcpy(masscan->output.rotate.directory,
         sizeof(masscan->output.rotate.directory), ".");
     masscan->is_capture_cert = 1;
-    /*default deduplication window(table) entries count*/
     masscan->dedup_win1 = 1000000;
     masscan->dedup_win2 = 1000000;
     /*default entries count of callback queue and packet buffer queue*/

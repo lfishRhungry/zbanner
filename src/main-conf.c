@@ -1028,6 +1028,40 @@ static int SET_iflist(struct Masscan *masscan, const char *name, const char *val
     return CONF_OK;
 }
 
+static int SET_benchmark(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+
+    if (masscan->echo) {
+        if (masscan->op==Operation_Benchmark || masscan->echo_all)
+            fprintf(masscan->echo, "benchmark = %s\n",
+                masscan->op==Operation_Benchmark?"true":"false");
+        return 0;
+    }
+
+    if (parseBoolean(value))
+        masscan->op = Operation_Benchmark;
+
+    return CONF_OK;
+}
+
+static int SET_selftest(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+
+    if (masscan->echo) {
+        if (masscan->op==Operation_Selftest || masscan->echo_all)
+            fprintf(masscan->echo, "selftest = %s\n",
+                masscan->op==Operation_Selftest?"true":"false");
+        return 0;
+    }
+
+    if (parseBoolean(value))
+        masscan->op = Operation_Selftest;
+
+    return CONF_OK;
+}
+
 static int SET_read_range(struct Masscan *masscan, const char *name, const char *value)
 {
     UNUSEDPARM(name);
@@ -2660,6 +2694,70 @@ static int SET_output_show(struct Masscan *masscan, const char *name, const char
     return CONF_OK;
 }
 
+static int SET_output_redis(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+        if (masscan->output.format==Output_Redis || masscan->echo_all) {
+            fprintf(masscan->echo, "output-redis = %s\n",
+                masscan->output.format==Output_Redis?"true":"false");
+            if (masscan->output.format==Output_Redis) {
+            fprintf(masscan->echo, "redis address = %s:%u\n",
+                ipv4address_fmt((ipv4address)(masscan->redis.ip.ipv4)).string,
+                masscan->redis.port);
+            }
+        }
+        return 0;
+    }
+
+    struct Range range;
+    unsigned offset = 0;
+    unsigned max_offset = (unsigned)strlen(value);
+    unsigned port = 6379;
+
+    range = range_parse_ipv4(value, &offset, max_offset);
+    if ((range.begin == 0 && range.end == 0) || range.begin != range.end) {
+        fprintf(stderr, "FAIL:  bad redis IP address: %s\n", value);
+        return CONF_ERR;
+    }
+    if (offset < max_offset) {
+        while (offset < max_offset && isspace(value[offset]))
+            offset++;
+        if (offset+1 < max_offset && value[offset] == ':' && isdigit(value[offset+1]&0xFF)) {
+            port = (unsigned)strtoul(value+offset+1, 0, 0);
+            if (port > 65535 || port == 0) {
+                fprintf(stderr, "FAIL: bad redis port: %s\n", value+offset+1);
+                return CONF_ERR;
+            }
+        }
+    }
+
+    /* TODO: add support for connecting to IPv6 addresses here */
+    masscan->redis.ip.ipv4 = range.begin;
+    masscan->redis.ip.version = 4;
+
+    masscan->redis.port = port;
+    masscan->output.format = Output_Redis;
+    safe_strcpy(masscan->output.filename, 
+                sizeof(masscan->output.filename), 
+                "<redis>");
+
+    return CONF_OK;
+}
+
+static int SET_redis_password(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+        if (masscan->redis.password[0] || masscan->echo_all)
+            fprintf(masscan->echo, "redis-password = %s\n",
+                masscan->redis.password);
+        return 0;
+    }
+    safe_strcpy(masscan->redis.password, 20, value);
+    return CONF_OK;
+}
+
 static int SET_reason(struct Masscan *masscan, const char *name, const char *value)
 {
     UNUSEDPARM(name);
@@ -3005,6 +3103,59 @@ static int SET_delimiter(struct Masscan *masscan, const char *name, const char *
         return 0;
     }
     return CONF_OK;
+}
+
+static int SET_vuln_check(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+        fprintf(masscan->echo, "\n-=-=-=-=-=-\n");
+        return 0;
+    }
+
+    if (EQUALS("heartbleed", value)) {
+        masscan->is_heartbleed = 1;
+        masscan_set_parameter(masscan, "no-capture", "cert");
+        masscan_set_parameter(masscan, "no-capture", "heartbleed");
+        masscan_set_parameter(masscan, "banners", "true");
+    } else if (EQUALS("ticketbleed", value)) {
+        masscan->is_ticketbleed = 1;
+        masscan_set_parameter(masscan, "no-capture", "cert");
+        masscan_set_parameter(masscan, "no-capture", "ticketbleed");
+        masscan_set_parameter(masscan, "banners", "true");
+    } else if (EQUALS("poodle", value) || EQUALS("sslv3", value)) {
+        masscan->is_poodle_sslv3 = 1;
+        masscan_set_parameter(masscan, "no-capture", "cert");
+        masscan_set_parameter(masscan, "banners", "true");
+    } else {
+        if (!vulncheck_lookup(value)) {
+            fprintf(stderr, "FAIL: vuln check '%s' does not exist\n", value);
+            fprintf(stderr, "  hint: use '--vuln list' to list available scripts\n");
+            return CONF_ERR;
+        }
+        if (masscan->vuln_name != NULL) {
+            if (strcmp(masscan->vuln_name, value) != 0) {
+                fprintf(stderr, "FAIL: only one vuln check supported at a time\n");
+                fprintf(stderr, "  hint: '%s' is existing vuln check, '%s' is new vuln check\n",
+                        masscan->vuln_name, value);
+                return CONF_ERR;
+            }
+        }
+        masscan->vuln_name = vulncheck_lookup(value)->name;
+    }
+
+    return CONF_OK;
+}
+
+static int SET_version(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    UNUSEDPARM(value);
+    if (masscan->echo) {
+        return 0;
+    }
+    print_version();
+    return CONF_ERR;
 }
 
 static int SET_shard(struct Masscan *masscan, const char *name, const char *value)
@@ -3368,6 +3519,7 @@ struct ConfigParameter config_parameters[] = {
     {"rate",            SET_rate,               0,      {"max-rate",0}},
     {"wait",            SET_wait,               F_NUMABLE,{"cooldown",0}},
     {"shard",           SET_shard,              0,      {"shards",0}},
+    {"version",         SET_version,            F_BOOL, {"v",0}},
     {"tansmit-thread-count", SET_thread_count,  F_NUMABLE, {"tx-count", "tx-num", 0}},
 
     // {"TARGET:",         SET_delimiter,          0,      {0}},
@@ -3395,6 +3547,8 @@ struct ConfigParameter config_parameters[] = {
     {"echo",            SET_echo,               F_BOOL, {"echo-all", "echo-cidr",0}},
     {"iflist",          SET_iflist,             F_BOOL, {"list-interface", "list-adapter",0}},
     {"read-range",      SET_read_range,         F_BOOL, {"read-ranges", 0}},
+    {"selftest",        SET_selftest,           F_BOOL, {"regress", "regression",0}},
+    {"benchmark",       SET_benchmark,          F_BOOL, {0}},
     {"debug-if",        SET_debug_interface,    F_BOOL, {"debug-interface",0}},
 
     {"SCAN TYPE:",      SET_delimiter,          0,      {0}},
@@ -3415,6 +3569,8 @@ struct ConfigParameter config_parameters[] = {
     {"output-noshow",   SET_output_noshow,      0,      {"noshow",0}},
     {"output-show-open",SET_output_show_open,   F_BOOL, {"open", "open-only", 0}},
     {"output-append",   SET_output_append,      0,      {"append-output",0}},
+    {"output-redis",    SET_output_redis,       0,      {"redis",0}}, /*--redis IP:port*/
+    {"redis-password",  SET_redis_password,     0,      {"redis-pwd",0}},
     {"reason",          SET_reason,             F_BOOL, {0}},
 
     {"rotate",          SET_rotate_time,        0,      {"output-rotate", "rotate-output", "rotate-time", 0}},
@@ -3431,14 +3587,20 @@ struct ConfigParameter config_parameters[] = {
 
     {"banners",         SET_banners,            F_BOOL, {"banner",0}},
     {"nobanners",       SET_nobanners,          F_BOOL, {"nobanner",0}},
+    {"banner1",         SET_banner1,            F_BOOL, {0}},
     {"banner-type",     SET_banner_type,        0,      {"banner-types", "banner-app", "banner-apps",0}},
     {"rawudp",          SET_banners_rawudp,     F_BOOL, {"rawudp",0}},
     {"conn-timeout",    SET_conn_timeout,       F_NUMABLE, {"connection-timeout", "tcp-timeout",0}},
+    {"vuln-check",      SET_vuln_check,         0,      {0}}, /*some fish will drop the fxck code*/
+
+    {"BANNERS-HELLO:",  SET_delimiter,          0,      {0}},
 
     {"hello",           SET_hello,              0,      {0}},
     {"hello-file",      SET_hello_file,         0,      {"hello-filename",0}},
     {"hello-string",    SET_hello_string,       0,      {0}},
     {"hello-timeout",   SET_hello_timeout,      0,      {0}},
+
+    {"BANNERS-PAYLOAD:",SET_delimiter,          0,      {0}},
 
     {"nmap-datadir",    SET_nmap_datadir,       0,      {"datadir",0}},
     {"nmap-datalength", SET_nmap_data_length,   F_NUMABLE,{"datalength",0}},
@@ -3478,10 +3640,6 @@ struct ConfigParameter config_parameters[] = {
     {"packet-trace",    SET_packet_trace,       F_BOOL, {"trace-packet",0}},
     {"bpf-filter",      SET_bpf_filter,         0,      {0}},
 
-    {"SELFTEST:",       SET_delimiter,          0,      {0}},
-
-    {"banner1",         SET_banner1,            F_BOOL, {0}},
-
     {"MISC:",           SET_delimiter,          0,      {0}},
 
     {"conf",            SET_read_conf,          0,      {"config", "resume",0}},
@@ -3515,7 +3673,6 @@ masscan_set_parameter(struct Masscan *masscan,
                       const char *name, const char *value)
 {
     /*
-     * NEW:
      * Go through configured list of parameters
      */
     {
@@ -3539,106 +3696,8 @@ masscan_set_parameter(struct Masscan *masscan,
         }
     }
 
-    /*
-     * OLD:
-     * Configure the old parameters, the ones we don't have in the new config
-     * system yet (see the NEW part above).
-     * TODO: transition all these old params to the new system
-     */
-    if (EQUALS("heartbleed", name)) {
-        masscan->is_heartbleed = 1;
-        masscan_set_parameter(masscan, "no-capture", "cert");
-        masscan_set_parameter(masscan, "no-capture", "heartbleed");
-        masscan_set_parameter(masscan, "banners", "true");
-    } else if (EQUALS("ticketbleed", name)) {
-        masscan->is_ticketbleed = 1;
-        masscan_set_parameter(masscan, "no-capture", "cert");
-        masscan_set_parameter(masscan, "no-capture", "ticketbleed");
-        masscan_set_parameter(masscan, "banners", "true");
-    } else if (EQUALS("redis", name)) {
-        struct Range range;
-        unsigned offset = 0;
-        unsigned max_offset = (unsigned)strlen(value);
-        unsigned port = 6379;
-
-        range = range_parse_ipv4(value, &offset, max_offset);
-        if ((range.begin == 0 && range.end == 0) || range.begin != range.end) {
-            LOG(0, "FAIL:  bad redis IP address: %s\n", value);
-            exit(1);
-        }
-        if (offset < max_offset) {
-            while (offset < max_offset && isspace(value[offset]))
-                offset++;
-            if (offset+1 < max_offset && value[offset] == ':' && isdigit(value[offset+1]&0xFF)) {
-                port = (unsigned)strtoul(value+offset+1, 0, 0);
-                if (port > 65535 || port == 0) {
-                    LOG(0, "FAIL: bad redis port: %s\n", value+offset+1);
-                    exit(1);
-                }
-            }
-        }
-
-        /* TODO: add support for connecting to IPv6 addresses here */
-        masscan->redis.ip.ipv4 = range.begin;
-        masscan->redis.ip.version = 4;
-
-        masscan->redis.port = port;
-        masscan->output.format = Output_Redis;
-        safe_strcpy(masscan->output.filename, 
-                 sizeof(masscan->output.filename), 
-                 "<redis>");
-    } else if(EQUALS("redis-pwd", name)) {
-        masscan->redis.password = strdup(value);
-    } else if (EQUALS("vuln", name)) {
-        if (EQUALS("heartbleed", value)) {
-            masscan_set_parameter(masscan, "heartbleed", "true");
-            return;
-		} else if (EQUALS("ticketbleed", value)) {
-            masscan_set_parameter(masscan, "ticketbleed", "true");
-            return;
-        } else if (EQUALS("poodle", value) || EQUALS("sslv3", value)) {
-            masscan->is_poodle_sslv3 = 1;
-            masscan_set_parameter(masscan, "no-capture", "cert");
-            masscan_set_parameter(masscan, "banners", "true");
-            return;
-        }
-        
-        if (!vulncheck_lookup(value)) {
-            fprintf(stderr, "FAIL: vuln check '%s' does not exist\n", value);
-            fprintf(stderr, "  hint: use '--vuln list' to list available scripts\n");
-            exit(1);
-        }
-        if (masscan->vuln_name != NULL) {
-            if (strcmp(masscan->vuln_name, value) == 0)
-                return; /* ok */
-            else {
-                fprintf(stderr, "FAIL: only one vuln check supported at a time\n");
-                fprintf(stderr, "  hint: '%s' is existing vuln check, '%s' is new vuln check\n",
-                        masscan->vuln_name, value);
-                exit(1);
-            }
-        }
-        
-        masscan->vuln_name = vulncheck_lookup(value)->name;
-    } else if (EQUALS("selftest", name) || EQUALS("self-test", name) || EQUALS("regress", name)) {
-        masscan->op = Operation_Selftest;
-        return;
-    } else if (EQUALS("benchmark", name)) {
-        masscan->op = Operation_Benchmark;
-        return;
-    } else if (EQUALS("test", name)) {
-        if (EQUALS("csv", value))
-            masscan->is_test_csv = 1;
-    } else if (EQUALS("notest", name)) {
-        if (EQUALS("csv", value))
-            masscan->is_test_csv = 0;
-    } else if (EQUALS("version", name)) {
-        print_version();
-        exit(1);
-    } else {
-        fprintf(stderr, "CONF: unknown config option: %s=%s\n", name, value);
-        exit(1);
-    }
+    fprintf(stderr, "CONF: unknown config option: %s=%s\n", name, value);
+    exit(1);
 }
 
 static bool

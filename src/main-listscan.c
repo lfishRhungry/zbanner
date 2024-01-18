@@ -44,13 +44,7 @@ infinite:
         massip_pick(&masscan->targets, xXx, &addr, &port);
         
 
-        if (masscan->is_test_csv) {
-            /* [KLUDGE] [TEST]
-             * For testing randomness output, prints last two bytes of
-             * IP address as CSV format for import into spreadsheet
-             */
-            printf("%u,%u\n",(addr.ipv4>>8)&0xFF, (addr.ipv4>>0)&0xFF);
-        } else if (masscan->targets.count_ports == 1) {
+        if (masscan->targets.count_ports == 1) {
             ipaddress_formatted_t fmt = ipaddress_fmt(addr);
             /* This is the normal case */
             printf("%s\n", fmt.string);
