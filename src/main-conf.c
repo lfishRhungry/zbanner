@@ -1012,25 +1012,75 @@ static int SET_list_probes(struct Masscan *masscan, const char *name, const char
     return CONF_OK;
 }
 
+static int SET_iflist(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+
+    if (masscan->echo) {
+        if (masscan->op==Operation_ReadRange || masscan->echo_all)
+            fprintf(masscan->echo, "iflist = %s\n",
+                masscan->op==Operation_List_Adapters?"true":"false");
+        return 0;
+    }
+
+    if (parseBoolean(value))
+        masscan->op = Operation_List_Adapters;
+    return CONF_OK;
+}
+
+static int SET_read_range(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+
+    if (masscan->echo) {
+        if (masscan->op==Operation_ReadRange || masscan->echo_all)
+            fprintf(masscan->echo, "read-range = %s\n",
+                masscan->op==Operation_ReadRange?"true":"false");
+        return 0;
+    }
+
+    if (parseBoolean(value))
+        masscan->op = Operation_ReadRange;
+
+    return CONF_OK;
+}
+
+static int SET_pfring(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+
+    if (masscan->echo) {
+        if (masscan->is_pfring || masscan->echo_all)
+            fprintf(masscan->echo, "pfring = %s\n", masscan->is_pfring?"true":"false");
+        return 0;
+    }
+
+    masscan->is_pfring = parseBoolean(value);
+
+    return CONF_OK;
+}
+
 static int SET_arpscan(struct Masscan *masscan, const char *name, const char *value)
 {
-    struct Range range;
-
     UNUSEDPARM(name);
-    UNUSEDPARM(value);
 
     if (masscan->echo) {
         if (masscan->scan_type.arp || masscan->echo_all)
             fprintf(masscan->echo, "arpscan = %s\n", masscan->scan_type.arp?"true":"false");
         return 0;
     }
-    range.begin = Templ_ARP;
-    range.end = Templ_ARP;
-    rangelist_add_range(&masscan->targets.ports, range.begin, range.end);
-    rangelist_sort(&masscan->targets.ports);
-    masscan_set_parameter(masscan, "router-mac", "ff-ff-ff-ff-ff-ff");
-    masscan->scan_type.arp = 1;
-    LOG(5, "--arpscan\n");
+
+    struct Range range;
+
+    if (parseBoolean(value)) {
+        range.begin = Templ_ARP;
+        range.end = Templ_ARP;
+        rangelist_add_range(&masscan->targets.ports, range.begin, range.end);
+        rangelist_sort(&masscan->targets.ports);
+        masscan_set_parameter(masscan, "router-mac", "ff-ff-ff-ff-ff-ff");
+        masscan->scan_type.arp = 1;
+    }
+
     return CONF_OK;
 }
 
@@ -1056,8 +1106,10 @@ static int SET_banners(struct Masscan *masscan, const char *name, const char *va
 static int SET_nodedup(struct Masscan *masscan, const char *name, const char *value)
 {
     if (masscan->echo) {
-        if (masscan->is_nodedup1 || masscan->is_nodedup2 || masscan->echo_all) {
+        if (masscan->is_nodedup1 || masscan->echo_all) {
             fprintf(masscan->echo, "nodedup1 = %s\n", masscan->is_nodedup1?"true":"false");
+        }
+        if (masscan->is_nodedup2 || masscan->echo_all) {
             fprintf(masscan->echo, "nodedup2 = %s\n", masscan->is_nodedup2?"true":"false");
         }
        return 0;
@@ -1075,14 +1127,45 @@ static int SET_nodedup(struct Masscan *masscan, const char *name, const char *va
     return CONF_OK;
 }
 
+static int SET_badsum(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        if (masscan->nmap.badsum || masscan->echo_all)
+            fprintf(masscan->echo, "badsum = %s\n", masscan->nmap.badsum?"true":"false");
+       return 0;
+    }
+
+    masscan->nmap.badsum = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static int SET_ttl(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        if (masscan->nmap.ttl || masscan->echo_all)
+            fprintf(masscan->echo, "ttl = %u\n", masscan->nmap.ttl);
+       return 0;
+    }
+
+    unsigned x = parseInt(value);
+    if (x >= 256) {
+        fprintf(stderr, "error: %s=<n>: expected number less than 256\n", name);
+        return CONF_ERR;
+    } else {
+        masscan->nmap.ttl = x;
+    }
+
+    return CONF_OK;
+}
+
 static int SET_dedup_win(struct Masscan *masscan, const char *name, const char *value)
 {
     if (masscan->echo) {
-        if (masscan->dedup_win1 || masscan->dedup_win2 || masscan->echo_all) {
+        if (masscan->dedup_win1!=1000000 || masscan->echo_all)
             fprintf(masscan->echo, "dedup-win1 = %u\n", masscan->dedup_win1);
+        if (masscan->dedup_win2!=1000000 || masscan->echo_all)
             fprintf(masscan->echo, "dedup-win2 = %u\n", masscan->dedup_win2);
-            fprintf(masscan->echo, "default win = 1000000\n");
-        }
        return 0;
     }
 
@@ -1119,7 +1202,7 @@ static int SET_stack_buf_count(struct Masscan *masscan, const char *name, const 
 {
     UNUSEDPARM(name);
     if (masscan->echo) {
-        if (masscan->stack_buf_count || masscan->echo_all) {
+        if (masscan->stack_buf_count!=16384 || masscan->echo_all) {
             fprintf(masscan->echo, "stack-buf-count = %u\n", masscan->stack_buf_count);
         }
        return 0;
@@ -1142,11 +1225,29 @@ static int SET_stack_buf_count(struct Masscan *masscan, const char *name, const 
     return CONF_OK;
 }
 
+static int SET_wait(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        if (masscan->wait==INT_MAX)
+            fprintf(masscan->echo, "wait = forever\n");
+        else
+            fprintf(masscan->echo, "wait = %u\n", masscan->wait);
+        return 0;
+    }
+
+    if (EQUALS("forever", value))
+        masscan->wait =  INT_MAX;
+    else
+        masscan->wait = (unsigned)parseInt(value);
+
+    return CONF_OK;
+}
+
 static int SET_thread_count(struct Masscan *masscan, const char *name, const char *value)
 {
     if (masscan->echo) {
         fprintf(masscan->echo, "transmit-thread-count = %u\n", masscan->tx_thread_count);
-        fprintf(masscan->echo, "always only one receive-thread\n");
+        fprintf(masscan->echo, "receive-thread-count  = 1 (always)\n");
         return 0;
     }
 
@@ -1158,6 +1259,19 @@ static int SET_thread_count(struct Masscan *masscan, const char *name, const cha
 
     masscan->tx_thread_count = count;
 
+    return CONF_OK;
+}
+
+static int SET_debug_interface(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        if (masscan->op==Operation_DebugIF || masscan->echo_all)
+            fprintf(masscan->echo, "debug interface = %s\n",
+                masscan->op==Operation_DebugIF?"true":"false");
+       return 0;
+    }
+    if (parseBoolean(value))
+        masscan->op = Operation_DebugIF;
     return CONF_OK;
 }
 
@@ -1393,7 +1507,6 @@ static int SET_source_port(struct Masscan *masscan, const char *name, const char
 static int SET_target_output(struct Masscan *masscan, const char *name, const char *value)
 {
     if (masscan->echo) {
-        fprintf(masscan->echo, "# TARGET SELECTION (IP, PORTS, EXCLUDES)\n");
         fprintf(masscan->echo, "ports = ");
         /* Disable comma generation for the first element */
         unsigned i;
@@ -1519,6 +1632,25 @@ static int SET_target_ip(struct Masscan *masscan, const char *name, const char *
     return CONF_OK;
 }
 
+static int SET_adapter_vlan(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+        if (masscan->nic.is_vlan || masscan->echo_all) {
+            if (masscan->nic.is_vlan)
+                fprintf(masscan->echo, "vlan id = %u\n", masscan->nic.vlan_id);
+            else
+                fprintf(masscan->echo, "use vlan = false\n");
+        }
+        return 0;
+    }
+    
+    masscan->nic.is_vlan = 1;
+    masscan->nic.vlan_id = (unsigned)parseInt(value);
+
+    return CONF_OK;
+}
+
 static int SET_target_port(struct Masscan *masscan, const char *name, const char *value)
 {
     if (masscan->echo) {
@@ -1604,6 +1736,55 @@ static int SET_exclude_port(struct Masscan *masscan, const char *name, const cha
     return CONF_OK;
 }
 
+static int SET_include_file(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        /*echo in SET_target_output*/
+        return 0;
+    }
+
+    int err;
+    const char *filename = value;
+
+    err = massip_parse_file(&masscan->targets, filename);
+    if (err) {
+        fprintf(stderr, "[-] FAIL: error reading from include file\n");
+        return CONF_ERR;
+    }
+    if (masscan->op == 0)
+        masscan->op = Operation_Scan;
+    
+    return CONF_OK;
+}
+
+static int SET_exclude_file(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        /*echo in SET_target_output*/
+        return 0;
+    }
+
+    unsigned count1 = masscan->exclude.ipv4.count;
+    unsigned count2;
+    int err;
+    const char *filename = value;
+
+    // LOG(1, "EXCLUDING: %s\n", value);
+    err = massip_parse_file(&masscan->exclude, filename);
+    if (err) {
+        fprintf(stderr, "[-] FAIL: error reading from exclude file\n");
+        return CONF_ERR;
+    }
+    /* Detect if this file has made any change, otherwise don't print
+        * a message */
+    count2 = masscan->exclude.ipv4.count;
+    if (count2 - count1)
+        fprintf(stderr, "%s: excluding %u ranges from file\n",
+            value, count2 - count1);
+    
+    return CONF_OK;
+}
+
 static int SET_source_mac(struct Masscan *masscan, const char *name, const char *value)
 {
     if (masscan->echo) {
@@ -1679,12 +1860,12 @@ static int SET_router_ip(struct Masscan *masscan, const char *name, const char *
 static int SET_router_mac(struct Masscan *masscan, const char *name, const char *value)
 {
     if (masscan->echo) {
-        if (masscan->nic.router_mac_ipv4.addr) {
+        if (masscan->nic.router_mac_ipv4.addr[0]) {
             fprintf(masscan->echo, "IPv4 router mac = %s\n",
                 macaddress_fmt(masscan->nic.router_mac_ipv4).string);
         }
 
-        if (masscan->nic.router_mac_ipv6.addr) {
+        if (masscan->nic.router_mac_ipv6.addr[0]) {
             fprintf(masscan->echo, "IPv6 router mac = %s\n",
                 macaddress_fmt(masscan->nic.router_mac_ipv6).string);
         }
@@ -2066,7 +2247,21 @@ static int SET_http_payload(struct Masscan *masscan, const char *name, const cha
     return CONF_OK;
 }
 
-static int SET_status_ndjson(struct Masscan *masscan, const char *name, const char *value)
+static int SET_packet_trace(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+
+    if (masscan->echo) {
+        if (masscan->nmap.packet_trace || masscan->echo_all)
+            fprintf(masscan->echo, "packet-trace = %s\n",
+                masscan->nmap.packet_trace?"true":"false");
+        return 0;
+    }
+    masscan->nmap.packet_trace = parseBoolean(value);
+    return CONF_OK;
+}
+
+static int SET_json_status(struct Masscan *masscan, const char *name, const char *value)
 {
     UNUSEDPARM(name);
 
@@ -2077,19 +2272,6 @@ static int SET_status_ndjson(struct Masscan *masscan, const char *name, const ch
     }
     masscan->output.is_status_ndjson = parseBoolean(value);
     return CONF_OK;
-}
-static int SET_status_json(struct Masscan *masscan, const char *name, const char *value)
-{
-    /* NOTE: this is here just to warn people they mistyped it */
-    UNUSEDPARM(name);
-    UNUSEDPARM(value);
-
-    if (masscan->echo) {
-        return 0;
-    }
-    fprintf(stderr, "[-] FAIL: %s not supported, use --status-ndjson\n", name);
-    fprintf(stderr, "    hint: new-line delimited JSON status is what we use\n");
-    return CONF_ERR;
 }
 
 static int SET_min_packet(struct Masscan *masscan, const char *name, const char *value)
@@ -2118,10 +2300,10 @@ static int SET_nobanners(struct Masscan *masscan, const char *name, const char *
 static int SET_noreset(struct Masscan *masscan, const char *name, const char *value)
 {
     if (masscan->echo) {
-        if (masscan->is_noreset1 || masscan->is_noreset2 || masscan->echo_all) {
+        if (masscan->is_noreset1 || masscan->echo_all)
             fprintf(masscan->echo, "noreset1 = %s\n", masscan->is_noreset1?"true":"false");
+        if (masscan->is_noreset2 || masscan->echo_all)
             fprintf(masscan->echo, "noreset2 = %s\n", masscan->is_noreset2?"true":"false");
-        }
         return 0;
     }
 
@@ -2133,6 +2315,42 @@ static int SET_noreset(struct Masscan *masscan, const char *name, const char *va
         masscan->is_noreset1 = parseBoolean(value);
         masscan->is_noreset2 = parseBoolean(value);
     }
+
+    return CONF_OK;
+}
+
+static int SET_nmap_data_length(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    
+    if (masscan->echo) {
+        if (masscan->nmap.data_length || masscan->echo_all)
+            fprintf(masscan->echo, "nmap-data-length = %u\n", masscan->nmap.data_length);
+        return 0;
+    }
+    
+    unsigned x = parseInt(value);
+    if (x >= 1514 - 14 - 40) {
+        fprintf(stderr, "error: %s=<n>: expected number less than 1500\n", name);
+        return CONF_ERR;
+    } else {
+        masscan->nmap.data_length = x;
+    }
+
+    return CONF_OK;
+}
+
+static int SET_nmap_datadir(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    
+    if (masscan->echo) {
+        if (masscan->nmap.datadir[0] || masscan->echo_all)
+            fprintf(masscan->echo, "nmap-datadir = %s\n", masscan->nmap.datadir);
+        return 0;
+    }
+    
+    safe_strcpy(masscan->nmap.datadir, sizeof(masscan->nmap.datadir), value);
 
     return CONF_OK;
 }
@@ -2351,6 +2569,20 @@ static int SET_output_show(struct Masscan *masscan, const char *name, const char
     }
     return CONF_OK;
 }
+
+static int SET_reason(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (masscan->echo) {
+        if (masscan->output.is_reason || masscan->echo_all)
+            fprintf(masscan->echo, "show reason = %s\n",
+                masscan->output.is_reason?"true":"false");
+        return 0;
+    }
+    masscan->output.is_reason =  parseBoolean(value);
+    return CONF_OK;
+}
+
 static int SET_output_show_open(struct Masscan *masscan, const char *name, const char *value)
 {
     UNUSEDPARM(name);
@@ -2407,15 +2639,55 @@ static int SET_pcap_payloads(struct Masscan *masscan, const char *name, const ch
     return CONF_OK;
 }
 
-
-static int SET_randomize_hosts(struct Masscan *masscan, const char *name, const char *value)
+static int SET_status(struct Masscan *masscan, const char *name, const char *value)
 {
-    UNUSEDPARM(name);
-    UNUSEDPARM(value);
     if (masscan->echo) {
-        //fprintf(masscan->echo, "randomize-hosts = true\n");
+        if (!masscan->output.is_status_updates || masscan->echo_all)
+            fprintf(masscan->echo, "update status = %s\n",
+                masscan->output.is_status_updates?"true":"false");
         return 0;
     }
+    
+    if (EQUALS("status", name))
+        masscan->output.is_status_updates = parseBoolean(value);
+    else if (EQUALS("nostatus", name))
+        masscan->output.is_status_updates = !parseBoolean(value);
+    
+    return CONF_OK;
+}
+
+static int SET_interactive(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        if (masscan->output.is_interactive || masscan->echo_all)
+            fprintf(masscan->echo, "output interacitve = %s\n",
+                masscan->output.is_interactive?"true":"false");
+        return 0;
+    }
+    
+    if (EQUALS("interactive", name))
+        masscan->output.is_interactive = parseBoolean(value);
+    else if (EQUALS("nointeractive", name))
+        masscan->output.is_interactive = !parseBoolean(value);
+    
+    return CONF_OK;
+}
+
+static int SET_echo(struct Masscan *masscan, const char *name, const char *value)
+{
+    if (masscan->echo) {
+        if (masscan->echo_all)
+            fprintf(masscan->echo, "echo = %s\n", masscan->echo?"true":"false");
+        return 0;
+    }
+    
+    if (EQUALS("echo", name) && parseBoolean(value))
+        masscan->op = Operation_Echo;
+    else if (EQUALS("echo-all", name) && parseBoolean(value))
+        masscan->op = Operation_EchoAll;
+    else if (EQUALS("echo-cidr", name) && parseBoolean(value))
+        masscan->op = Operation_EchoCidr;
+    
     return CONF_OK;
 }
 
@@ -2605,12 +2877,12 @@ static int SET_seed(struct Masscan *masscan, const char *name, const char *value
     return CONF_OK;
 }
 
-static int SET_space(struct Masscan *masscan, const char *name, const char *value)
+static int SET_delimiter(struct Masscan *masscan, const char *name, const char *value)
 {
     UNUSEDPARM(name);
     UNUSEDPARM(value);
     if (masscan->echo) {
-        fprintf(masscan->echo, "-=-=-=-=-=-=-=-=-=-\n");
+        fprintf(masscan->echo, "\n-=-=-=-=-=-\n");
         return 0;
     }
     return CONF_OK;
@@ -2623,7 +2895,7 @@ static int SET_shard(struct Masscan *masscan, const char *name, const char *valu
 
     UNUSEDPARM(name);
     if (masscan->echo) {
-        if (masscan->shard.of > 0  || masscan->echo_all)
+        if (masscan->shard.of > 1  || masscan->echo_all)
             fprintf(masscan->echo, "shard = %u/%u\n", masscan->shard.one, masscan->shard.of);
         return 0;
     }
@@ -2651,21 +2923,30 @@ static int SET_shard(struct Masscan *masscan, const char *name, const char *valu
 
 static int SET_output_stylesheet(struct Masscan *masscan, const char *name, const char *value)
 {
-    UNUSEDPARM(name);
     if (masscan->echo) {
         if (masscan->output.stylesheet[0] || masscan->echo_all)
             fprintf(masscan->echo, "stylesheet = %s\n", masscan->output.stylesheet);
         return 0;
     }
+
+
+    if (name[0]=='n') {
+        masscan->output.stylesheet[0] = '\0';
+        return CONF_OK;
+    }
     
     if (masscan->output.format == 0)
         masscan->output.format = Output_XML;
-    
-    safe_strcpy(masscan->output.stylesheet, sizeof(masscan->output.stylesheet), value);
+
+    const char webxml[] =  "http://nmap.org/svn/docs/nmap.xsl";
+    if (EQUALS(name, "webxml"))
+        safe_strcpy(masscan->output.stylesheet, sizeof(masscan->output.stylesheet), webxml);
+    else
+        safe_strcpy(masscan->output.stylesheet, sizeof(masscan->output.stylesheet), value);
     return CONF_OK;
 }
 
-static int SET_topports(struct Masscan *masscan, const char *name, const char *value)
+static int SET_top_port(struct Masscan *masscan, const char *name, const char *value)
 {
     unsigned default_value = 20;
 
@@ -2904,11 +3185,32 @@ fail:
     return CONF_ERR;
 }
 
+static int SET_send_queue(struct Masscan *masscan, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
 
-static int SET_debug_tcp(struct Masscan *masscan, const char *name, const char *value) {
+    if (masscan->echo) {
+        if (masscan->is_sendq || masscan->echo_all)
+            fprintf(masscan->echo, "send queue = %s\n", masscan->is_sendq?"true":"false");
+        return 0;
+    }
+
+    masscan->is_sendq = parseBoolean(value);
+    return CONF_OK;
+}
+
+static int SET_debug_tcp(struct Masscan *masscan, const char *name, const char *value)
+{
     extern int is_tcp_debug; /* global */
+
     UNUSEDPARM(name);
     UNUSEDPARM(masscan);
+
+    if (masscan->echo) {
+        if (is_tcp_debug || masscan->echo_all)
+            fprintf(masscan->echo, "tcp debug = %s\n", is_tcp_debug?"true":"false");
+        return 0;
+    }
 
     if (value == 0 || value[0] == '\0')
         is_tcp_debug = 1;
@@ -2927,22 +3229,28 @@ struct ConfigParameter {
 };
 enum {F_NONE, F_BOOL=1, F_NUMABLE=2};
 struct ConfigParameter config_parameters[] = {
-    {"target-ip",       SET_target_ip,          0,      {"range", "ranges", "dst-ip", "ip",0}},
-    {"port",            SET_target_port,        0,      {"ports", "tcp-port", "udp-port", "tcp-ports", "udp-ports",0}},
-    {"exclude",         SET_exclude_ip,         0,      {"exclude-range", "exlude-ranges", "exclude-ip",0}},
-    {"exclude-port",    SET_exclude_port,       0,      {"exclude-ports",0}},
-
-    {"SPACE",           SET_space,              0,      {0}},
+    {"BASIC",           SET_delimiter,          0,      {0}},
 
     {"seed",            SET_seed,               0,      {0}},
     {"rate",            SET_rate,               0,      {"max-rate",0}},
+    {"wait",            SET_wait,               F_NUMABLE,{"cooldown",0}},
     {"shard",           SET_shard,              0,      {"shards",0}},
-    {"randomize-hosts", SET_randomize_hosts,    F_BOOL, {0}},
-    {"retries",         SET_retries,            0,      {"retry", "max-retries", "max-retry", 0}},
-    {"offline",         SET_offline,            F_BOOL, {"notransmit", "nosend", "dry-run", 0}},
+    {"tansmit-thread-count", SET_thread_count,  F_NUMABLE, {"tx-count", "tx-num", 0}},
 
     {"arpscan",         SET_arpscan,            F_BOOL, {"arp",0}},
-    {"rawudp",          SET_banners_rawudp,     F_BOOL, {"rawudp",0}}, /* --rawudp */
+    {"pfring",          SET_pfring,             F_BOOL, {0}},
+
+    // {"TARGET:",         SET_delimiter,          0,      {0}},
+
+    {"target-ip",       SET_target_ip,          0,      {"range", "ranges", "dst-ip", "ip",0}},
+    {"port",            SET_target_port,        0,      {"ports", "tcp-port", "udp-port", "tcp-ports", "udp-ports",0}},
+    {"top-port",        SET_top_port,           F_NUMABLE, {"top-ports",0}},
+    {"include-file",    SET_include_file,       0,      {"includefile",0}},
+    {"exclude",         SET_exclude_ip,         0,      {"exclude-range", "exlude-ranges", "exclude-ip",0}},
+    {"exclude-port",    SET_exclude_port,       0,      {"exclude-ports",0}},
+    {"exclude-file",    SET_exclude_file,       0,      {"excludefile",0}},
+
+    {"INTERFACE:",      SET_delimiter,          0,      {0}},
 
     {"adapter",         SET_adapter,            0,      {"if", "interface",0}},
     {"source-ip",       SET_source_ip,          0,      {"src-ip",0}},
@@ -2950,21 +3258,57 @@ struct ConfigParameter config_parameters[] = {
     {"source-mac",      SET_source_mac,         0,      {"src-mac",0}},
     {"router-ip",       SET_router_ip,          0,      {0}},
     {"router-mac",      SET_router_mac,         0,      {"gateway-mac", "dst-mac", "router-mac-ipv4", "router-mac-ipv6",0}},
+    {"adapter-vlan",    SET_adapter_vlan,       F_NUMABLE, {"vlan",0}},
 
-    {"conf",            SET_read_conf,          0,      {"config", "resume",0}},
-    {"resume-index",    SET_resume_index,       0,      {0}},
-    {"resume-count",    SET_resume_count,       0,      {0}},
+    {"OPERATION:",      SET_delimiter,          0,      {0}},
 
-    {"banners",         SET_banners,            F_BOOL, {"banner",0}}, /* --banners */
-    {"nobanners",       SET_nobanners,          F_BOOL, {"nobanner",0}},
+    {"echo",            SET_echo,               F_BOOL, {"echo", "echo-all", "echo-cidr",0}},
+    {"iflist",          SET_iflist,             F_BOOL, {"list-interface", "list-adapter",0}},
+    {"read-range",      SET_read_range,         F_BOOL, {"readrange", "readranges", "read-ranges",0}},
+    {"debug-if",        SET_debug_interface,    F_BOOL, {"debug-interface",0}},
+
+    {"STATUS & OUTPUT & RESULT:",SET_delimiter, 0,      {0}},
+
+    {"interactive",     SET_interactive,        F_BOOL, {"nointeractive",0}},
+    {"status",          SET_status,             F_BOOL, {"nostatus",0}},
+    {"json-status",     SET_json_status,        F_BOOL, {"status-json", 0}},
+
+    {"output-filename", SET_output_filename,    0,      {"output-file",0}},
+    {"output-format",   SET_output_format,      0,      {0}},
+    {"output-show",     SET_output_show,        0,      {"output-status", "show",0}},
+    {"output-noshow",   SET_output_noshow,      0,      {"noshow",0}},
+    {"output-show-open",SET_output_show_open,   F_BOOL, {"open", "open-only", 0}},
+    {"output-append",   SET_output_append,      0,      {"append-output",0}},
+    {"reason",          SET_reason,             F_BOOL, {0}},
+
+    {"rotate",          SET_rotate_time,        0,      {"output-rotate", "rotate-output", "rotate-time", 0}},
+    {"rotate-dir",      SET_rotate_directory,   0,      {"output-rotate-dir", "rotate-directory", 0}},
+    {"rotate-offset",   SET_rotate_offset,      0,      {"output-rotate-offset", 0}},
+    {"rotate-size",     SET_rotate_filesize,    0,      {"output-rotate-filesize", "rotate-filesize", 0}},
+
+    {"stylesheet",      SET_output_stylesheet,  0,      {"webxml", "no-stylesheet", "nostylesheet",0}},
+    {"feed-lzr",        SET_feed_lzr,           F_BOOL, {"feedlzr", 0}},
 
     {"pcap-filename",   SET_pcap_filename,      0,      {"pcap",0}},
-    {"pcap-payloads",   SET_pcap_payloads,      0,      {"pcap-payload",0}},
+
+    {"BANNERS:",        SET_delimiter,          0,      {0}},
+
+    {"banners",         SET_banners,            F_BOOL, {"banner",0}},
+    {"nobanners",       SET_nobanners,          F_BOOL, {"nobanner",0}},
+    {"rawudp",          SET_banners_rawudp,     F_BOOL, {"rawudp",0}},
 
     {"hello",           SET_hello,              0,      {0}},
     {"hello-file",      SET_hello_file,         0,      {"hello-filename",0}},
     {"hello-string",    SET_hello_string,       0,      {0}},
     {"hello-timeout",   SET_hello_timeout,      0,      {0}},
+
+    {"nmap-datadir",    SET_nmap_datadir,       0,      {"datadir",0}},
+    {"nmap-data-length",SET_nmap_data_length,   F_NUMABLE,{"datalength", "data-length",0}},
+    {"nmap-payloads",   SET_nmap_payloads,      0,      {"nmap-payload",0}},
+    {"nmap-service-probes",SET_nmap_service_probes, 0,  {"nmap-service-probe",0}},
+    {"pcap-payloads",   SET_pcap_payloads,      0,      {"pcap-payload",0}},
+
+    {"BANNERS-HTTP:",   SET_delimiter,          0,      {0}},
 
     {"http-cookie",     SET_http_cookie,        0,      {0}},
     {"http-header",     SET_http_header,        0,      {"http-field", 0}},
@@ -2975,57 +3319,42 @@ struct ConfigParameter config_parameters[] = {
     {"http-host",       SET_http_host,          0,      {0}},
     {"http-payload",    SET_http_payload,       0,      {0}},
 
-    {"ndjson-status",   SET_status_ndjson,      F_BOOL, {"status-ndjson", 0}},
-    {"json-status",     SET_status_json,        F_BOOL, {"status-json", 0}},
-
-    {"nmap-payloads",   SET_nmap_payloads,      0,      {"nmap-payload",0}},
-    {"nmap-service-probes",SET_nmap_service_probes, 0,  {"nmap-service-probe",0}},
-
-    {"SPACE",           SET_space,              0,      {0}},
-
-    {"output-filename", SET_output_filename,    0,      {"output-file",0}},
-    {"output-format",   SET_output_format,      0,      {0}},
-    {"output-show",     SET_output_show,        0,      {"output-status", "show",0}},
-    {"output-noshow",   SET_output_noshow,      0,      {"noshow",0}},
-    {"output-show-open",SET_output_show_open,   F_BOOL, {"open", "open-only", 0}},
-    {"output-append",   SET_output_append,      0,      {"append-output",0}},
-    {"rotate",          SET_rotate_time,        0,      {"output-rotate", "rotate-output", "rotate-time", 0}},
-    {"rotate-dir",      SET_rotate_directory,   0,      {"output-rotate-dir", "rotate-directory", 0}},
-    {"rotate-offset",   SET_rotate_offset,      0,      {"output-rotate-offset", 0}},
-    {"rotate-size",     SET_rotate_filesize,    0,      {"output-rotate-filesize", "rotate-filesize", 0}},
-    {"stylesheet",      SET_output_stylesheet,  0,      {0}},
-    {"feed-lzr",        SET_feed_lzr,           F_BOOL, {"feedlzr", 0}},
-
-    {"SPACE",           SET_space,              0,      {0}},
-
-    {"tcp-mss",         SET_tcp_mss,            F_NUMABLE, {"tcpmss",0}},
-    {"tcp-wscale",      SET_tcp_wscale,         F_NUMABLE, {0}},
-    {"tcp-tsecho",      SET_tcp_tsecho,         F_NUMABLE, {0}},
-    {"tcp-sackok",      SET_tcp_sackok,         F_BOOL, {0}},
-    {"top-ports",       SET_topports,           F_NUMABLE, {"top-port",0}},
-    {"min-packet",      SET_min_packet,         0,      {"min-pkt",0}},
-
-    {"SPACE",           SET_space,              0,      {0}},
+    {"STATELESS:",      SET_delimiter,          0,      {0}},
 
     {"stateless-banners",SET_stateless_banners, F_BOOL, {"stateless", "stateless-banner", "stateless-mode",0}},
     {"stateless-probe", SET_stateless_probe,    0,      {"probe", 0}},
-    {"capture",         SET_capture,            0,      {"nocapture", "no-capture", 0}},
     {"list-probes",     SET_list_probes,        F_BOOL, {"list-probe", 0}},
     {"probe-args",      SET_probe_args,         0,      {"probe-arg", 0}},
-    
-    {"tansmit-thread-count", SET_thread_count,  F_NUMABLE, {"tx-count", "tx-num", 0}},
-    {"dedup-win",       SET_dedup_win,          F_NUMABLE, {"dedupwin", "dedup-win1", "dedupwin1", "dedup-win2", "dedupwin2", 0}},
-    {"nodedup",         SET_nodedup,            F_BOOL, {"nodedup1", "nodedup2", 0}},
+    {"capture",         SET_capture,            0,      {"nocapture", "no-capture", 0}},
     {"noreset",         SET_noreset,            F_BOOL, {"noreset1", "noreset2", 0}},
+
+    {"PACKET TEMPLATE:",SET_delimiter,          0,      {0}},
+
+    {"ttl",             SET_ttl,                F_NUMABLE, {0}},
+    {"badsum",          SET_badsum,             F_BOOL, {"bad-sum",0}},
+    {"tcp-mss",         SET_tcp_mss,            F_NUMABLE, {"tcpmss",0}},
+    {"tcp-wscale",      SET_tcp_wscale,         F_NUMABLE, {0}},
+    {"tcp-tsecho",      SET_tcp_tsecho,         F_NUMABLE, {0}},
+    {"tcp-sackok",      SET_tcp_sackok,         F_BOOL, {"tcp-sack",0}},
+    {"min-packet",      SET_min_packet,         0,      {"min-pkt",0}},
+    {"packet-trace",    SET_packet_trace,       F_BOOL, {"trace-packet",0}},
+
+    {"MISC:",           SET_delimiter,          0,      {0}},
+
+    {"conf",            SET_read_conf,          0,      {"config", "resume",0}},
+    {"resume-index",    SET_resume_index,       0,      {0}},
+    {"resume-count",    SET_resume_count,       0,      {0}},
+    {"retries",         SET_retries,            0,      {"retry", "max-retries", "max-retry", 0}},
+    {"offline",         SET_offline,            F_BOOL, {"notransmit", "nosend", "dry-run", 0}},
+    {"nodedup",         SET_nodedup,            F_BOOL, {"nodedup1", "nodedup2", 0}},
+    {"dedup-win",       SET_dedup_win,          F_NUMABLE, {"dedupwin", "dedup-win1", "dedupwin1", "dedup-win2", "dedupwin2", 0}},
     {"stack-buf-count", SET_stack_buf_count,    F_NUMABLE, {"queue-buf-count", "stack-buf-count", "packet-buf-count", 0}},
-
-    {"SPACE",           SET_space,              0,      {0}},
-
+    {"send-queue",      SET_send_queue,         F_BOOL,  {"sendqueue", "sendq", 0}},
     {"script",          SET_script,             0,      {0}},
     {"debug-tcp",       SET_debug_tcp,          F_BOOL, {"tcp-debug", 0}},
 
-    {"SPACE",           SET_space,              0,      {0}},
     /*Put it at last for better "help" output*/
+    {"TARGET (IP, PORTS, EXCLUDES)",SET_delimiter,          0,      {0}},
     {"TARGET_OUTPUT",   SET_target_output,      0,      {0}},
     {0}
 };
@@ -3108,8 +3437,6 @@ masscan_set_parameter(struct Masscan *masscan,
         rangelist_sort(&masscan->targets.ports);
         masscan->scan_type.ping = 1;
         LOG(5, "--ping\n");
-    } else if (EQUALS("badsum", name)) {
-        masscan->nmap.badsum = 1;
     } else if (EQUALS("banner1", name)) {
         banner1_test(value);
         exit(1);
@@ -3118,44 +3445,6 @@ masscan_set_parameter(struct Masscan *masscan,
     } else if (EQUALS("connection-timeout", name) || EQUALS("tcp-timeout", name)) {
         /* The timeout for banners TCP connections */
         masscan->tcp_connection_timeout = (unsigned)parseInt(value);
-    } else if (EQUALS("datadir", name)) {
-        safe_strcpy(masscan->nmap.datadir, sizeof(masscan->nmap.datadir), value);
-    } else if (EQUALS("data-length", name)) {
-        unsigned x = (unsigned)strtoul(value, 0, 0);
-        if (x >= 1514 - 14 - 40) {
-            fprintf(stderr, "error: %s=<n>: expected number less than 1500\n", name);
-        } else {
-            masscan->nmap.data_length = x;
-        }
-    } else if (EQUALS("debug", name)) {
-        if (EQUALS("if", value)) {
-            masscan->op = Operation_DebugIF;
-        }
-    } else if (EQUALS("echo", name)) {
-        masscan->op = Operation_Echo;
-    } else if (EQUALS("echo-all", name)) {
-        masscan->op = Operation_EchoAll;
-    } else if (EQUALS("echo-cidr", name)) {
-        masscan->op = Operation_EchoCidr;
-    } else if (EQUALS("excludefile", name)) {
-        unsigned count1 = masscan->exclude.ipv4.count;
-        unsigned count2;
-        int err;
-        const char *filename = value;
-
-        LOG(1, "EXCLUDING: %s\n", value);
-        err = massip_parse_file(&masscan->exclude, filename);
-        if (err) {
-            LOG(0, "[-] FAIL: error reading from exclude file\n");
-            exit(1);
-        }
-
-        /* Detect if this file has made any change, otherwise don't print
-         * a message */
-        count2 = masscan->exclude.ipv4.count;
-        if (count2 - count1)
-            fprintf(stderr, "%s: excluding %u ranges from file\n",
-                value, count2 - count1);
     } else if (EQUALS("heartbleed", name)) {
         masscan->is_heartbleed = 1;
         masscan_set_parameter(masscan, "no-capture", "cert");
@@ -3166,40 +3455,6 @@ masscan_set_parameter(struct Masscan *masscan,
         masscan_set_parameter(masscan, "no-capture", "cert");
         masscan_set_parameter(masscan, "no-capture", "ticketbleed");
         masscan_set_parameter(masscan, "banners", "true");
-    } else if (EQUALS("host-timeout", name)) {
-        fprintf(stderr, "nmap(%s): unsupported: this is an asynchronous tool, so no timeouts\n", name);
-        exit(1);
-    } else if (EQUALS("iflist", name)) {
-        masscan->op = Operation_List_Adapters;
-    } else if (EQUALS("includefile", name)) {
-        int err;
-        const char *filename = value;
-
-        err = massip_parse_file(&masscan->targets, filename);
-        if (err) {
-            LOG(0, "[-] FAIL: error reading from include file\n");
-            exit(1);
-        }
-        if (masscan->op == 0)
-            masscan->op = Operation_Scan;
-    } else if (EQUALS("infinite", name)) {
-        masscan->is_infinite = 1;
-    } else if (EQUALS("interactive", name)) {
-        masscan->output.is_interactive = 1;
-    } else if (EQUALS("nointeractive", name)) {
-        masscan->output.is_interactive = 0;
-    } else if (EQUALS("status", name)) {
-        masscan->output.is_status_updates = 1;
-    } else if (EQUALS("nostatus", name)) {
-        masscan->output.is_status_updates = 0;
-    } else if (EQUALS("packet-trace", name) || EQUALS("trace-packet", name)) {
-        masscan->nmap.packet_trace = 1;
-    } else if (EQUALS("pfring", name)) {
-        masscan->is_pfring = 1;
-    } else if (EQUALS("readrange", name) || EQUALS("readranges", name)) {
-        masscan->op = Operation_ReadRange;
-    } else if (EQUALS("reason", name)) {
-        masscan->output.is_reason = 1;
     } else if (EQUALS("redis", name)) {
         struct Range range;
         unsigned offset = 0;
@@ -3265,50 +3520,21 @@ masscan_set_parameter(struct Masscan *masscan,
         }
         
         masscan->vuln_name = vulncheck_lookup(value)->name;
-    } else if (EQUALS("sendq", name) || EQUALS("sendqueue", name)) {
-        masscan->is_sendq = 1;
     } else if (EQUALS("selftest", name) || EQUALS("self-test", name) || EQUALS("regress", name)) {
         masscan->op = Operation_Selftest;
         return;
     } else if (EQUALS("benchmark", name)) {
         masscan->op = Operation_Benchmark;
         return;
-    } else if (EQUALS("source-port", name) || EQUALS("sourceport", name)) {
-        masscan_set_parameter(masscan, "adapter-port", value);
-    } else if (EQUALS("no-stylesheet", name)) {
-        masscan->output.stylesheet[0] = '\0';
-    } else if (EQUALS("top-ports", name)) {
-        unsigned n = (unsigned)parseInt(value);
-        if (!isInteger(value))
-            n = 100;
-        LOG(2, "top-ports = %u\n", n);
-        masscan->top_ports = n;
     } else if (EQUALS("test", name)) {
         if (EQUALS("csv", value))
             masscan->is_test_csv = 1;
     } else if (EQUALS("notest", name)) {
         if (EQUALS("csv", value))
             masscan->is_test_csv = 0;
-    } else if (EQUALS("ttl", name)) {
-        unsigned x = (unsigned)strtoul(value, 0, 0);
-        if (x >= 256) {
-            fprintf(stderr, "error: %s=<n>: expected number less than 256\n", name);
-        } else {
-            masscan->nmap.ttl = x;
-        }
     } else if (EQUALS("version", name)) {
         print_version();
         exit(1);
-    } else if (EQUALS("vlan", name) || EQUALS("adapter-vlan", name)) {
-        masscan->nic.is_vlan = 1;
-        masscan->nic.vlan_id = (unsigned)parseInt(value);
-    } else if (EQUALS("wait", name)) {
-        if (EQUALS("forever", value))
-            masscan->wait =  INT_MAX;
-        else
-            masscan->wait = (unsigned)parseInt(value);
-    } else if (EQUALS("webxml", name)) {
-        masscan_set_parameter(masscan, "stylesheet", "http://nmap.org/svn/docs/nmap.xsl");
     } else {
         fprintf(stderr, "CONF: unknown config option: %s=%s\n", name, value);
         exit(1);
