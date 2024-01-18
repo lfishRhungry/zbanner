@@ -21,12 +21,7 @@ endif
 PREFIX ?= /usr
 BINDIR ?= $(PREFIX)/bin
 SYS := $(shell $(CC) -dumpmachine)
-GITVER := $(shell git describe --tags)
 INSTALL_DATA := -pDm755
-
-ifeq ($(GITVER),)
-GITVER = "unknown"
-endif
 
 # LINUX
 # The automated regression tests run on Linux, so this is the one
@@ -101,11 +96,11 @@ DEFINES =
 CFLAGS = -g -ggdb $(FLAGS2) $(INCLUDES) $(DEFINES) -Wall -O2
 .SUFFIXES: .c .cpp
 
-all: bin/zbanner
+all: bin/xtate
 
 
 tmp/main-conf.o: src/main-conf.c src/*.h
-	$(CC) $(CFLAGS) -c $< -o $@ -DGIT=\"$(GITVER)\"
+	$(CC) $(CFLAGS) -c $< -o $@
 
 
 # just compile everything in the 'src' directory. Using this technique
@@ -226,19 +221,19 @@ SRC = $(sort $(wildcard \
 OBJ = $(addprefix tmp/, $(notdir $(addsuffix .o, $(basename $(SRC))))) 
 
 
-bin/zbanner: $(OBJ)
+bin/xtate: $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS) $(LIBS)
 
 clean:
 	rm -f tmp/*.o
-	rm -f bin/zbanner
+	rm -f bin/xtate
 
-regress: bin/zbanner
-	bin/zbanner --selftest
+regress: bin/xtate
+	bin/xtate --selftest
 
 test: regress
 
-install: bin/zbanner
-	install $(INSTALL_DATA) bin/zbanner $(DESTDIR)$(BINDIR)/zbanner
+install: bin/xtate
+	install $(INSTALL_DATA) bin/xtate $(DESTDIR)$(BINDIR)/xtate
 	
-default: bin/zbanner
+default: bin/xtate

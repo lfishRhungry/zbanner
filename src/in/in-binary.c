@@ -505,9 +505,9 @@ _binaryfile_parse(struct Output *out, const char *filename,
     }
 
     /* Make sure it's got the format string */
-    if (memcmp(buf, "zbanner/1.0beta", 11) != 0) {
+    if (memcmp(buf, "xtate/1.0beta", 11) != 0) {
         LOG(0,
-                "[-] %s: unknown file format (expeced \"zbanner/1.0beta\")\n",
+                "[-] %s: unknown file format (expeced \"xtate/1.0beta\")\n",
                 filename);
         goto end;
     }

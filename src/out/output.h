@@ -8,6 +8,7 @@
 #include "../stack/stack-src.h"
 #include "../util/unusedparm.h"
 #include "../proto/masscan-app.h"
+#include "../masscan-version.h"
 
 #define MAX_BANNER_LENGTH 8192
 

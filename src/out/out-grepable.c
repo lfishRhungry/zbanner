@@ -81,7 +81,7 @@ grepable_out_open(struct Output *out, FILE *fp)
     //%a %b %d %H:%M:%S %Y
     strftime(timestamp, sizeof(timestamp), "%c", &tm);
 
-    fprintf(fp, "# ZBanner " ZBANNER_VERSION " scan initiated %s\n", 
+    fprintf(fp, "# Xtate " XTATE_VERSION " scan initiated %s\n", 
                 timestamp);
 
     count = count_type(&out->masscan->targets.ports, Templ_TCP, Templ_TCP_last);
@@ -128,7 +128,7 @@ grepable_out_close(struct Output *out, FILE *fp)
     //%a %b %d %H:%M:%S %Y
     strftime(timestamp, sizeof(timestamp), "%c", &tm);
 
-    fprintf(fp, "# ZBanner done at %s\n", 
+    fprintf(fp, "# Xtate done at %s\n", 
                 timestamp);
 }
 

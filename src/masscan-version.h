@@ -1,6 +1,6 @@
-#ifndef ZBANNER_VERSION
+#ifndef XTATE_VERSION
 
-#define ZBANNER_VERSION "1.0beta"
+#define XTATE_VERSION "1.0beta"
 
 #endif
 

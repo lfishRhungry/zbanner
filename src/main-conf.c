@@ -3059,9 +3059,9 @@ static int SET_version(struct Masscan *masscan, const char *name, const char *va
     const char *compiler_version = "unknown";
     const char *os = "unknown";
     printf("\n");
-    printf("ZBanner version %s\n( %s )\n", 
-        ZBANNER_VERSION,
-        "https://github.com/lfishRhungry/zbanner"
+    printf("Xtat version %s\n( %s )\n", 
+        XTATE_VERSION,
+        "https://github.com/lfishRhungry/xtate"
         );
     printf("Compiled on: %s %s\n", __DATE__, __TIME__);
 
@@ -3148,35 +3148,30 @@ static int SET_usage(struct Masscan *masscan, const char *name, const char *valu
     }
 
     printf("\n");
-    printf("Welcome to ZBanner!\n");
+    printf("Welcome to Xtate!\n");
     printf("\n");
-    printf("usage: zbanner [options] [<IP|RANGE>... -pPORT[,PORT...]]\n");
+    printf("usage: xtate [options] [<IP|RANGE>... -p PORT[,PORT...]]\n");
     printf("\n");
     printf("original examples in masscan:\n");
-    printf("    zbanner -p80,8000-8100 10.0.0.0/8 --rate=10000\n");
+    printf("    xtate -p 80,8000-8100 10.0.0.0/8 --rate=10000\n");
     printf("        scan some web ports on 10.x.x.x at 10kpps\n");
     printf("\n");
-    printf("    zbanner --nmap\n");
-    printf("        list those options that are compatible with nmap\n");
-    printf("\n");
-    printf("    zbanner -p80 10.0.0.0/8 --banners -oB <filename>\n");
+    printf("    xtate -p 80 10.0.0.0/8 --banners -oB <filename>\n");
     printf("        save results of scan in binary format to <filename>\n");
     printf("\n");
-    printf("    zbanner --open --banners --readscan <filename> -oX <savefile>\n");
+    printf("    xtate --open --banners --readscan <filename> -oX <savefile>\n");
     printf("        read binary scan results in <filename> and save them as xml in <savefile>\n");
     printf("\n");
-    printf("\n");
-    printf("zbanner examples:\n");
-    printf("    zbanner 10.0.0.0/8 -p21,110 --stateless\n");
+    printf("    xtate 10.0.0.0/8 -p 21,110 --stateless\n");
     printf("        scan some ftp & pop3 ports with default NULL probe\n");
     printf("\n");
-    printf("    zbanner 10.0.0.0/8 -p80 --stateless --probe getrequest\n");
+    printf("    xtate 10.0.0.0/8 -p 80 --stateless --probe getrequest\n");
     printf("        scan some web ports with GetRequest probe\n");
     printf("\n");
-    printf("    zbanner 10.0.0.0/8 -p110 --stateless --capture stateless\n");
+    printf("    xtate 10.0.0.0/8 -p 110 --stateless --capture stateless\n");
     printf("        capture banner result\n");
     printf("\n");
-    printf("    zbanner 10.0.0.0/8 -p110 --stateless --pcap <pcapfile> -oX <xmlfile>\n");
+    printf("    xtate 10.0.0.0/8 -p 110 --stateless --pcap <pcapfile> -oX <xmlfile>\n");
     printf("        save packet result in <pcapfile> and save scan result in <xmlfile>\n");
     printf("\n");
 
@@ -3191,51 +3186,7 @@ static int SET_help(struct Masscan *masscan, const char *name, const char *value
         return 0;
     }
 
-    printf(
-"\nWelcome to ZBanner!\n\n"
-"usage: zbanner [options] [<IP|RANGE>... -pPORT[,PORT...]]\n"
-"ZBanner is a fast completely stateless port scanner and banner grabber.\n"
-"The primary input parameters are the IP addresses/ranges you want to scan,\n"
-"and the port numbers. An example is the following:\n"
-"\n"
-"    zbanner 10.0.0.0/8 -p80\n"
-"\n"
-"The program auto-detects network interface/adapter settings. If this\n"
-"fails, you'll have to set these manually. The following is an\n"
-"example of all the parameters that are needed:\n"
-"\n"
-"    --adapter-ip 192.168.10.123\n"
-"    --adapter-mac 00-11-22-33-44-55\n"
-"    --router-mac 66-55-44-33-22-11\n"
-"\n"
-"Parameters can be set either via the command-line or config-file. The\n"
-"names are the same for both. Thus, the above adapter settings would\n"
-"appear as follows in a configuration file:\n"
-"\n"
-"    adapter-ip = 192.168.10.123\n"
-"    adapter-mac = 00-11-22-33-44-55\n"
-"    router-mac = 66-55-44-33-22-11\n"
-"\n"
-"All single-dash parameters have a spelled out double-dash equivalent,\n"
-"so '-p80' is the same as '--ports 80' (or 'ports = 80' in config file).\n"
-"To use the config file, type:\n"
-"\n"
-"    zbanner -c <filename>\n"
-"\n"
-"To generate a config-file from the current settings, use the --echo\n"
-"option. This stops the program from actually running, and just echoes\n"
-"the current configuration instead. This is a useful way to generate\n"
-"your first config file, or see a list of parameters you didn't know\n"
-"about. I suggest you try it now:\n"
-"\n"
-"    zbanner -p1234 --echo\n"
-"\n"
-"ZBanner provide a total stateless application layer banner fast grabbing.\n"
-"Allow you to use different application layer probe to grab and handle\n"
-"banners from target ports:\n"
-"\n"
-"    zbanner -p1234 --stateless --probe getrequest --capture stateless\n"
-"\n");
+    printf("\nWelcome to Xtate!\n\n");
 
     return CONF_ERR;
 }

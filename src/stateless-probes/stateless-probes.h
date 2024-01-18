@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "../massip/massip-addr.h"
+#include "../masscan-version.h"
 
 #ifndef STATELESS_PROBES_H
 #define STATELESS_PROBES_H

@@ -13,15 +13,15 @@ xml_out_open(struct Output *out, FILE *fp)
     //const struct Masscan *masscan = out->masscan;
 
     fprintf(fp, "<?xml version=\"1.0\"?>\r\n");
-    fprintf(fp, "<!-- zbanner scan -->\r\n");
+    fprintf(fp, "<!-- xtate scan -->\r\n");
     if (out->xml.stylesheet && out->xml.stylesheet[0]) {
         fprintf(fp, "<?xml-stylesheet href=\"%s\" type=\"text/xsl\"?>\r\n",
             out->xml.stylesheet);
     }
     fprintf(fp, "<nmaprun scanner=\"%s\" start=\"%u\" version=\"%s\"  xmloutputversion=\"%s\">\r\n",
-        "zbanner",
+        "xtate",
         (unsigned)time(0),
-        "1.0-BETA",
+        XTATE_VERSION,
         "1.03" /* xml output version I copied from their site */
         );
     fprintf(fp, "<scaninfo type=\"%s\" protocol=\"%s\" />\r\n",
