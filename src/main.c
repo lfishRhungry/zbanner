@@ -23,7 +23,6 @@
 #include <stdint.h>
 
 #include "xconf.h"
-#include "port-status.h"     /* open or closed */
 #include "globals.h"       /* all the global variables in the program */
 #include "xtatus.h"        /* printf() regular status updates */
 #include "syn-cookie.h"         /* for SYN-cookies on send */

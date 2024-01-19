@@ -1,6 +1,4 @@
 #include "output.h"
-#include "../xconf.h"
-#include "../port-status.h"
 #include "out-tcp-services.h"
 #include "../massip/massip-port.h"
 #include "../util/mas-safefunc.h"

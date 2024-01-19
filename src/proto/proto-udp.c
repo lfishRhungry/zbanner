@@ -11,7 +11,6 @@
 #include "../syn-cookie.h"
 #include "../util/logger.h"
 #include "../out/output.h"
-#include "../port-status.h"
 #include "../util/unusedparm.h"
 
 
@@ -34,7 +33,6 @@ default_udp_parse(struct Output *out, time_t timestamp,
     unsigned port_them = parsed->port_src;
     
     UNUSEDPARM(entropy);
-
 
     if (length > 64)
         length = 64;

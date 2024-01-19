@@ -3,7 +3,6 @@
 #include "../syn-cookie.h"
 #include "../util/logger.h"
 #include "../out/output.h"
-#include "../port-status.h"
 #include "../massip/massip-port.h"
 #include "../util/dedup.h"
 

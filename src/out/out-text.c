@@ -1,7 +1,6 @@
 #include "output.h"
 #include "../xconf.h"
 #include "../proto/masscan-app.h"
-#include "../port-status.h"
 #include "../util/unusedparm.h"
 
 #include <ctype.h>

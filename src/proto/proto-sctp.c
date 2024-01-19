@@ -1,6 +1,5 @@
 #include "proto-sctp.h"
 #include "proto-preprocess.h"
-#include "../port-status.h"
 #include "../out/output.h"
 #include <stdio.h>
 #include <stdlib.h>

@@ -33,7 +33,6 @@
 
 #include "output.h"
 #include "../xconf.h"
-#include "../port-status.h"
 #include "../proto/proto-banner1.h"
 #include "../proto/masscan-app.h"
 #include "../globals.h"

@@ -6,7 +6,6 @@
 #include "in-binary.h"
 #include "../xconf.h"
 #include "../proto/masscan-app.h"
-#include "../port-status.h"
 #include "../globals.h"
 #include "../out/output.h"
 #include "../util/mas-safefunc.h"

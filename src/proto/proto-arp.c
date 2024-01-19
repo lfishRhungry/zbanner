@@ -2,7 +2,6 @@
 #include "proto-preprocess.h"
 #include "../util/logger.h"
 #include "../out/output.h"
-#include "../port-status.h"
 #include "../util/unusedparm.h"
 
 
