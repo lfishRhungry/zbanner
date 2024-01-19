@@ -2452,7 +2452,7 @@ static int SET_output_filename(struct Masscan *masscan, const char *name, const 
 static int SET_output_format(struct Masscan *masscan, const char *name, const char *value)
 {
     enum OutputFormat x = 0;
-    UNUSEDPARM(name);
+    // UNUSEDPARM(name);
     if (masscan->echo) {
         FILE *fp = masscan->echo;
         ipaddress_formatted_t fmt;
@@ -2481,20 +2481,21 @@ static int SET_output_format(struct Masscan *masscan, const char *name, const ch
         }
         return 0;
     }
-    if (EQUALS("unknown(0)", value))        x = Output_Interactive;
-    else if (EQUALS("interactive", value))  x = Output_Interactive;
-    else if (EQUALS("list", value))         x = Output_List;
-    else if (EQUALS("unicornscan", value))  x = Output_Unicornscan;
-    else if (EQUALS("xml", value))          x = Output_XML;
-    else if (EQUALS("binary", value))       x = Output_Binary;
-    else if (EQUALS("greppable", value))    x = Output_Grepable;
-    else if (EQUALS("grepable", value))     x = Output_Grepable;
-    else if (EQUALS("json", value))         x = Output_JSON;
-    else if (EQUALS("ndjson", value))       x = Output_NDJSON;
-    else if (EQUALS("certs", value))        x = Output_Certs;
-    else if (EQUALS("none", value))         x = Output_None;
-    else if (EQUALS("redis", value))        x = Output_Redis;
-    else if (EQUALS("hostonly", value))     x = Output_Hostonly;
+
+    if (EQUALS("unknown(0)", value))                            x = Output_Interactive;
+    else if (EQUALS("interactive", value))                      x = Output_Interactive;
+    else if (EQUALS("list", value)||EQUALS("oL", name))         x = Output_List;
+    else if (EQUALS("unicornscan", value)||EQUALS("oU", name))  x = Output_Unicornscan;
+    else if (EQUALS("xml", value)||EQUALS("oX", name))          x = Output_XML;
+    else if (EQUALS("binary", value)||EQUALS("oB", name))       x = Output_Binary;
+    else if (EQUALS("greppable", value)||EQUALS("oG", name))    x = Output_Grepable;
+    else if (EQUALS("grepable", value)||EQUALS("oG", name))     x = Output_Grepable;
+    else if (EQUALS("json", value)||EQUALS("oJ", name))         x = Output_JSON;
+    else if (EQUALS("ndjson", value)||EQUALS("oD", name))       x = Output_NDJSON;
+    else if (EQUALS("certs", value))                            x = Output_Certs;
+    else if (EQUALS("none", value))                             x = Output_None;
+    else if (EQUALS("redis", value)||EQUALS("oR", name))        x = Output_Redis;
+    else if (EQUALS("hostonly", value)||EQUALS("oH", name))     x = Output_Hostonly;
     else {
         fprintf(stderr, "FAIL: unknown output-format: %s\n", value);
         fprintf(stderr, "  hint: 'binary', 'xml', 'grepable', ...\n");
@@ -2590,13 +2591,9 @@ static int SET_output_redis(struct Masscan *masscan, const char *name, const cha
     UNUSEDPARM(name);
     if (masscan->echo) {
         if (masscan->output.format==Output_Redis || masscan->echo_all) {
-            fprintf(masscan->echo, "output-redis = %s\n",
-                masscan->output.format==Output_Redis?"true":"false");
-            if (masscan->output.format==Output_Redis) {
             fprintf(masscan->echo, "redis address = %s:%u\n",
                 ipv4address_fmt((ipv4address)(masscan->redis.ip.ipv4)).string,
                 masscan->redis.port);
-            }
         }
         return 0;
     }
@@ -3195,8 +3192,9 @@ static int SET_log_level(struct Masscan *masscan, const char *name, const char *
 {
     UNUSEDPARM(value);
     if (masscan->echo) {
-        if (masscan->shard.of > 1  || masscan->echo_all)
-            fprintf(masscan->echo, "shard = %u/%u\n", masscan->shard.one, masscan->shard.of);
+        int level = LOG_get_level();
+        if (level > 0  || masscan->echo_all)
+            fprintf(masscan->echo, "log level = %d\n", level);
         return 0;
     }
 
@@ -3606,7 +3604,7 @@ struct ConfigParameter config_parameters[] = {
     {"SCAN TYPE:",      SET_delimiter,          0,      {0}},
 
     {"arpscan",         SET_arpscan,            F_BOOL, {"arp",0}},
-    {"ping",            SET_ping,            F_BOOL, {0}},
+    {"ping",            SET_ping,               F_BOOL, {0}},
     {"oproto",          SET_oproto,             F_BOOL, {"oprotos",0}}, /*other IP protocol*/
 
     {"STATUS & OUTPUT & RESULT:",SET_delimiter, 0,      {0}},
@@ -3617,6 +3615,8 @@ struct ConfigParameter config_parameters[] = {
 
     {"output-filename", SET_output_filename,    0,      {"output-file",0}},
     {"output-format",   SET_output_format,      0,      {0}},
+    {"oB",              SET_output_format,      F_BOOL, {"oD","oJ","oX","oR","oG",0}},
+    {"oL",              SET_output_format,      F_BOOL, {"oU","oH",0}},
     {"output-show",     SET_output_show,        0,      {"output-status", "show",0}},
     {"output-noshow",   SET_output_noshow,      0,      {"noshow",0}},
     {"output-show-open",SET_output_show_open,   F_BOOL, {"open", "open-only", 0}},
@@ -4007,12 +4007,22 @@ masscan_echo(struct Masscan *masscan, FILE *fp, unsigned is_echo_all)
     unsigned i;
     
     /*
-     * NEW:
      * Print all configuration parameters
      */
     masscan->echo = fp;
     masscan->echo_all = is_echo_all;
+
+    SET_PARAMETER tmp = NULL;
     for (i=0; config_parameters[i].name; i++) {
+        /**
+         * We may use same `set` func more than one times back-to-back
+         * in config_paramiters.
+         * Do a dedup easily when echoing.
+        */
+        if (config_parameters[i].set == tmp)
+            continue;
+        tmp = config_parameters[i].set;
+
         config_parameters[i].set(masscan, 0, 0);
     }
     masscan->echo = 0;
