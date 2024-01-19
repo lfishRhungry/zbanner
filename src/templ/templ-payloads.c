@@ -10,6 +10,7 @@
 
  */
 #include "templ-payloads.h"
+#include "../xconf.h"
 #include "../massip/massip-port.h"
 #include "../rawsock/rawsock-pcapfile.h"   /* for reading payloads from pcap files */
 #include "../proto/proto-preprocess.h"   /* parse packets */
@@ -251,7 +252,7 @@ struct PayloadUDP_Default hard_coded_udp_payloads[] = {
         "MAN: \"ssdp:discover\"\r\n"
         "MX: 1\r\n"
         "ST: ssdp:all\r\n"
-        "USER-AGENT: unix/1.0 UPnP/1.1 xtate/1.x\r\n"},
+        "USER-AGENT: unix/1.0 UPnP/1.1 "XTATE_WITH_VERSION"\r\n"},
 
     /* NFS - kludge: use the DNS cookie, setting first 2 bytes instead of 4 */
     {2049, 65536, 40, 0, dns_set_cookie,

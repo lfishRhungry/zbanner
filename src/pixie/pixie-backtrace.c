@@ -3,6 +3,7 @@
 */
 #include "pixie-backtrace.h"
 #include "../util/unusedparm.h"
+#include "../xconf.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -29,7 +30,7 @@ handle_segfault(int sig)
 
     printf("======================================================================\n");
     printf(" Segmentation fault: please post this backtrace to:\n");
-    printf(" https://github.com/lfishRhungry/xtate/issues\n");
+    printf(" "XTATE_GITHUB_ISSUES"\n");
     printf("======================================================================\n");
 	size = backtrace(func, BACKTRACE_SIZE);
 	symb = backtrace_symbols(func, size);
@@ -176,7 +177,7 @@ handle_segfault(int sig)
     UNUSEDPARM(sig);
     printf("======================================================================");
     printf(" Segmentation fault: please post this backtrace to:\n");
-    printf(" https://github.com/lfishRhungry/xtate/issues\n");
+    printf(" "XTATE_GITHUB_ISSUES"\n");
     printf("======================================================================");
     exit(1);
 }

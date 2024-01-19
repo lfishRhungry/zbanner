@@ -1536,7 +1536,7 @@ main_scan(struct Xconf *xconf)
         now = time(0);
         safe_gmtime(&x, &now);
         strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S GMT", &x);
-        LOG(0, "Starting Xtate " XTATE_VERSION " (https://github.com/lfishRhungry/xtate) at %s\n",
+        LOG(0, "Starting "XTATE_FIRST_UPPER_NAME" " XTATE_VERSION " ("XTATE_GITHUB") at %s\n",
             buffer);
 
         if (count_ports == 1 && \
@@ -1834,8 +1834,8 @@ int main(int argc, char *argv[])
      */
 #if !defined(WIN32)
     if (!xconf->is_readscan) {
-        if (access("/etc/xtate/xtate.conf", 0) == 0) {
-            xconf_set_parameter(xconf, "conf",  "/etc/xtate/xtate.conf");
+        if (access(XTATE_DEFAULT_CONF, 0) == 0) {
+            xconf_set_parameter(xconf, "conf", XTATE_DEFAULT_CONF);
         }
     }
 #endif

@@ -1,11 +1,12 @@
 #include "../stateless-probes.h"
+#include "../../xconf.h"
 
 #ifndef LZR_HTTP_PROBE_H
 #define LZR_HTTP_PROBE_H
 
 static char lzr_http_fmt[] = "GET / HTTP/1.1\r\n"
     "Host: %s:%u\r\n"
-    "User-Agent: Mozilla/5.0 xtate/"XTATE_VERSION"\r\n"
+    "User-Agent: Mozilla/5.0 "XTATE_WITH_VERSION"\r\n"
     "Accept: */*\r\n"
     "Accept-Encoding: gzip\r\n"
     "\r\n";

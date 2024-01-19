@@ -2952,9 +2952,9 @@ static int SET_version(struct Xconf *xconf, const char *name, const char *value)
     const char *compiler_version = "unknown";
     const char *os = "unknown";
     printf("\n");
-    printf("Xtate version %s\n( %s )\n", 
+    printf(""XTATE_FIRST_UPPER_NAME" version %s\n( %s )\n", 
         XTATE_VERSION,
-        "https://github.com/lfishRhungry/xtate"
+        XTATE_GITHUB
         );
     printf("Compiled on: %s %s\n", __DATE__, __TIME__);
 
@@ -3041,30 +3041,30 @@ static int SET_usage(struct Xconf *xconf, const char *name, const char *value)
     }
 
     printf("\n");
-    printf("Welcome to Xtate!\n");
+    printf("Welcome to "XTATE_FIRST_UPPER_NAME"!\n");
     printf("\n");
-    printf("usage: xtate [options] [<IP|RANGE>... -p PORT[,PORT...]]\n");
+    printf("usage: "XTATE_NAME" [options] [<IP|RANGE>... -p PORT[,PORT...]]\n");
     printf("\n");
     printf("original examples in xtate:\n");
-    printf("    xtate -p 80,8000-8100 10.0.0.0/8 --rate=10000\n");
+    printf("    "XTATE_NAME" -p 80,8000-8100 10.0.0.0/8 --rate=10000\n");
     printf("        scan some web ports on 10.x.x.x at 10kpps\n");
     printf("\n");
-    printf("    xtate -p 80 10.0.0.0/8 --banners -oB <filename>\n");
+    printf("    "XTATE_NAME" -p 80 10.0.0.0/8 --banners -oB <filename>\n");
     printf("        save results of scan in binary format to <filename>\n");
     printf("\n");
-    printf("    xtate --open --banners --readscan <filename> -oX <savefile>\n");
+    printf("    "XTATE_NAME" --open --banners --readscan <filename> -oX <savefile>\n");
     printf("        read binary scan results in <filename> and save them as xml in <savefile>\n");
     printf("\n");
-    printf("    xtate 10.0.0.0/8 -p 21,110 --stateless\n");
+    printf("    "XTATE_NAME" 10.0.0.0/8 -p 21,110 --stateless\n");
     printf("        scan some ftp & pop3 ports with default NULL probe\n");
     printf("\n");
-    printf("    xtate 10.0.0.0/8 -p 80 --stateless --probe getrequest\n");
+    printf("    "XTATE_NAME" 10.0.0.0/8 -p 80 --stateless --probe getrequest\n");
     printf("        scan some web ports with GetRequest probe\n");
     printf("\n");
-    printf("    xtate 10.0.0.0/8 -p 110 --stateless --capture stateless\n");
+    printf("    "XTATE_NAME" 10.0.0.0/8 -p 110 --stateless --capture stateless\n");
     printf("        capture banner result\n");
     printf("\n");
-    printf("    xtate 10.0.0.0/8 -p 110 --stateless --pcap <pcapfile> -oX <xmlfile>\n");
+    printf("    "XTATE_NAME" 10.0.0.0/8 -p 110 --stateless --pcap <pcapfile> -oX <xmlfile>\n");
     printf("        save packet result in <pcapfile> and save scan result in <xmlfile>\n");
     printf("\n");
 
@@ -3079,7 +3079,7 @@ static int SET_help(struct Xconf *xconf, const char *name, const char *value)
         return 0;
     }
 
-    printf("\nWelcome to Xtate!\n\n");
+    printf("\nWelcome to "XTATE_FIRST_UPPER_NAME"!\n\n");
 
     return CONF_ERR;
 }

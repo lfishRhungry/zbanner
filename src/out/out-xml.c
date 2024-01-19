@@ -13,13 +13,13 @@ xml_out_open(struct Output *out, FILE *fp)
     //const struct Xconf *xconf = out->xconf;
 
     fprintf(fp, "<?xml version=\"1.0\"?>\r\n");
-    fprintf(fp, "<!-- xtate scan -->\r\n");
+    fprintf(fp, "<!-- "XTATE_NAME" scan -->\r\n");
     if (out->xml.stylesheet && out->xml.stylesheet[0]) {
         fprintf(fp, "<?xml-stylesheet href=\"%s\" type=\"text/xsl\"?>\r\n",
             out->xml.stylesheet);
     }
     fprintf(fp, "<nmaprun scanner=\"%s\" start=\"%u\" version=\"%s\"  xmloutputversion=\"%s\">\r\n",
-        "xtate",
+        XTATE_NAME,
         (unsigned)time(0),
         XTATE_VERSION,
         "1.03" /* xml output version I copied from their site */
