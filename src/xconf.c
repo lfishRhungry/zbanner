@@ -849,6 +849,24 @@ static int SET_selftest(struct Xconf *xconf, const char *name, const char *value
     return CONF_OK;
 }
 
+static int SET_list_scan(struct Xconf *xconf, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    UNUSEDPARM(value);
+
+    if (xconf->echo) {
+        if (xconf->op==Operation_ListScan || xconf->echo_all)
+            fprintf(xconf->echo, "list-scan = %s\n",
+                xconf->op==Operation_ListScan?"true":"false");
+        return 0;
+    }
+
+    /* Read in a binary file instead of scanning the network*/
+    xconf->op = Operation_ListScan;
+
+    return CONF_OK;
+}
+
 static int SET_read_scan(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
@@ -856,7 +874,7 @@ static int SET_read_scan(struct Xconf *xconf, const char *name, const char *valu
 
     if (xconf->echo) {
         if (xconf->op==Operation_ReadRange || xconf->echo_all)
-            fprintf(xconf->echo, "read-range = %s\n",
+            fprintf(xconf->echo, "read-scan = %s\n",
                 xconf->op==Operation_ReadRange?"true":"false");
         return 0;
     }
@@ -3516,6 +3534,7 @@ struct ConfigParameter config_parameters[] = {
     {"iflist",          SET_iflist,             F_BOOL, {"list-interface", "list-adapter",0}},
     {"readrange",       SET_read_range,         F_BOOL, {"readranges", 0}},
     {"readscan",        SET_read_scan,          F_BOOL, {0}},
+    {"listscan",        SET_list_scan,          F_BOOL, {0}},
     {"selftest",        SET_selftest,           F_BOOL, {"regress", "regression",0}},
     {"benchmark",       SET_benchmark,          F_BOOL, {0}},
     {"debug-if",        SET_debug_interface,    F_BOOL, {"debug-interface",0}},

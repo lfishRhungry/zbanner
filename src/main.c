@@ -569,7 +569,6 @@ main_scan(struct Xconf *xconf)
 int main(int argc, char *argv[])
 {
     struct Xconf xconf[1];
-    unsigned i;
     int has_target_addresses = 0;
     int has_target_ports = 0;
     
@@ -583,7 +582,7 @@ int main(int argc, char *argv[])
     /* Set system to report debug information on crash */
     {
         int is_backtrace = 1;
-        for (i=1; i<(unsigned)argc; i++) {
+        for (unsigned i=1; i<(unsigned)argc; i++) {
             if (strcmp(argv[i], "--nobacktrace") == 0)
                 is_backtrace = 0;
         }
