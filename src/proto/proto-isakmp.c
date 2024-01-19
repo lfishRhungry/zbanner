@@ -22,7 +22,7 @@
 #include "proto-isakmp.h"
 #include "proto-banout.h"
 #include "proto-preprocess.h"
-#include "../syn-cookie.h"
+#include "../cookie.h"
 #include "../massip/massip-port.h"
 #include "../out/output.h"
 #include "../util/extract.h"
@@ -398,7 +398,7 @@ isakmp_parse(struct Output *out, time_t timestamp,
     ip_me = parsed->dst_ip;
     
     /* Calculate the expected SYN-cookie */
-    cookie = (unsigned)syn_cookie(ip_them, port_them | Templ_UDP, ip_me, port_me, entropy);
+    cookie = (unsigned)get_cookie(ip_them, port_them | Templ_UDP, ip_me, port_me, entropy);
     
     /* Extract the SYN-cookie from the response. We just do this byte-by-byte */
     resp_cookie = (uint64_t)px[0] << 56ull;

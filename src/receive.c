@@ -10,7 +10,7 @@
 #include "xconf.h"
 #include "globals.h"       /* all the global variables in the program */
 #include "xtatus.h"        /* printf() regular status updates */
-#include "syn-cookie.h"         /* for SYN-cookies on send */
+#include "cookie.h"         /* for SYN-cookies on send */
 
 #include "out/output.h"             /* for outputting results */
 #include "stub/stub-pcap.h"          /* dynamically load libpcap library */
@@ -403,10 +403,10 @@ receive_thread(void *v)
 
         switch (parsed.ip_protocol) {
         case 132: /* SCTP */
-            cookie = syn_cookie(ip_them, port_them | (Proto_SCTP<<16), ip_me, port_me, entropy) & 0xFFFFFFFF;
+            cookie = get_cookie(ip_them, port_them | (Proto_SCTP<<16), ip_me, port_me, entropy) & 0xFFFFFFFF;
             break;
         default:
-            cookie = syn_cookie(ip_them, port_them, ip_me, port_me, entropy) & 0xFFFFFFFF;
+            cookie = get_cookie(ip_them, port_them, ip_me, port_me, entropy) & 0xFFFFFFFF;
         }
 
         /* verify: my IP address */

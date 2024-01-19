@@ -62,7 +62,7 @@
 #include <time.h>
 #include <stddef.h>
 #include <stdarg.h>
-#include "../syn-cookie.h"
+#include "../cookie.h"
 #include "../util/event-timeout.h"      /* for tracking future events */
 #include "../rawsock/rawsock.h"
 #include "../util/logger.h"
@@ -763,7 +763,7 @@ tcb_hash(   ipaddress ip_me, unsigned port_me,
         ipv6address ipv6 = ip_me.ipv6;
         ipv6.hi ^= ip_them.ipv6.hi;
         ipv6.lo ^= ip_them.ipv6.lo;
-        index = (unsigned)syn_cookie_ipv6(
+        index = (unsigned)get_cookie_ipv6(
                                     ipv6, 
                                     port_me ^ port_them,
                                     ipv6, 
@@ -771,7 +771,7 @@ tcb_hash(   ipaddress ip_me, unsigned port_me,
                                     entropy);
 
     } else {
-        index = (unsigned)syn_cookie_ipv4(   ip_me.ipv4   ^ ip_them.ipv4,
+        index = (unsigned)get_cookie_ipv4(   ip_me.ipv4   ^ ip_them.ipv4,
                                         port_me ^ port_them,
                                         ip_me.ipv4   ^ ip_them.ipv4,
                                         port_me ^ port_them,
@@ -1789,7 +1789,7 @@ _do_reconnect(struct TCP_ConnectionTable *tcpcon,
      * SYN packets. However, since we'll probably be using a different
      * port or IP address, it'll be different in practice.
      */
-    seqno = (unsigned)syn_cookie(ip_them, port_them,
+    seqno = (unsigned)get_cookie(ip_them, port_them,
                                  ip_me, port_me,
                                  tcpcon->entropy);
 

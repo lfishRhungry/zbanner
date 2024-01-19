@@ -1,6 +1,6 @@
 #include "proto-icmp.h"
 #include "proto-preprocess.h"
-#include "../syn-cookie.h"
+#include "../cookie.h"
 #include "../util/logger.h"
 #include "../out/output.h"
 #include "../massip/massip-port.h"
@@ -77,7 +77,7 @@ handle_icmp(struct Output *out, time_t timestamp,
     switch (type) {
     case 0: /* ICMP echo reply */
     case 129:
-        cookie = (unsigned)syn_cookie(ip_them, Templ_ICMP_echo, ip_me, 0, entropy);
+        cookie = (unsigned)get_cookie(ip_them, Templ_ICMP_echo, ip_me, 0, entropy);
         if ((cookie & 0xFFFFFFFF) != seqno_me)
             return; /* not my response */
 

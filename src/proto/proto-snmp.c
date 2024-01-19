@@ -46,7 +46,7 @@
 #include "masscan-app.h"
 #include "proto-preprocess.h"
 #include "proto-banner1.h"
-#include "../syn-cookie.h"
+#include "../cookie.h"
 #include "../massip/massip-port.h"
 
 static struct SMACK *global_mib;
@@ -564,7 +564,7 @@ handle_snmp(struct Output *out, time_t timestamp,
     /* Validate the "syn-cookie" style information. In the case of SNMP,
      * this will be held in the "request-id" field. If the cookie isn't
      * a good one, then we'll ignore the response */
-    seqno = (unsigned)syn_cookie(ip_them, port_them | Templ_UDP, ip_me, port_me, entropy);
+    seqno = (unsigned)get_cookie(ip_them, port_them | Templ_UDP, ip_me, port_me, entropy);
     if ((seqno&0x7FFFffff) != request_id)
         return 1;
 

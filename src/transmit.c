@@ -10,7 +10,7 @@
 #include "xconf.h"
 #include "globals.h"       /* all the global variables in the program */
 #include "xtatus.h"        /* printf() regular status updates */
-#include "syn-cookie.h"         /* for SYN-cookies on send */
+#include "cookie.h"         /* for SYN-cookies on send */
 
 #include "out/output.h"             /* for outputting results */
 #include "stub/stub-pcap.h"          /* dynamically load libpcap library */
@@ -225,7 +225,7 @@ infinite:
                 ip_me = src.ipv6;
                 port_me = src.port;
                 
-                cookie = syn_cookie_ipv6(ip_them, port_them, ip_me, port_me, entropy);
+                cookie = get_cookie_ipv6(ip_them, port_them, ip_me, port_me, entropy);
 
                 rawsock_send_probe_ipv6(
                         adapter,
@@ -256,7 +256,7 @@ infinite:
                  *  Figure out the source IP/port, and the SYN cookie
                  */
                 if (src.ipv4_mask > 1 || src.port_mask > 1) {
-                    uint64_t ck = syn_cookie_ipv4((unsigned)(i+repeats),
+                    uint64_t ck = get_cookie_ipv4((unsigned)(i+repeats),
                                             (unsigned)((i+repeats)>>32),
                                             (unsigned)xXx, (unsigned)(xXx>>32),
                                             entropy);
@@ -266,7 +266,7 @@ infinite:
                     ip_me = src.ipv4;
                     port_me = src.port;
                 }
-                cookie = syn_cookie_ipv4(ip_them, port_them, ip_me, port_me, entropy);
+                cookie = get_cookie_ipv4(ip_them, port_them, ip_me, port_me, entropy);
 
                 /*
                  * SEND THE PROBE

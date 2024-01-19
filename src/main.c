@@ -27,7 +27,7 @@
 #include "transmit.h"
 #include "receive.h"
 #include "xtatus.h"        /* printf() regular status updates */
-#include "syn-cookie.h"         /* for SYN-cookies on send */
+#include "cookie.h"         /* for SYN-cookies on send */
 
 #include "out/output.h"             /* for outputting results */
 #include "stub/stub-pcap.h"          /* dynamically load libpcap library */

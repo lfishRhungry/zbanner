@@ -13,7 +13,7 @@
 #include "../proto/proto-preprocess.h"
 #include "../proto/proto-ssl.h"
 #include "../proto/proto-udp.h"
-#include "../syn-cookie.h"
+#include "../cookie.h"
 #include "../massip/massip-rangesv4.h" /* kludge: TODO: FIXME: change this */
 #include "../massip/massip-port.h"
 #include <ctype.h>

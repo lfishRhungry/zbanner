@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "../syn-cookie.h"
+#include "../cookie.h"
 
 struct DedupEntry_IPv4
 {

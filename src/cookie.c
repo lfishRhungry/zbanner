@@ -1,4 +1,4 @@
-#include "syn-cookie.h"
+#include "cookie.h"
 #include "pixie/pixie-timer.h"
 #include "util/mas-safefunc.h"
 #include "crypto/crypto-siphash24.h"
@@ -114,15 +114,15 @@ murmur(uint64_t entropy, ...)
 /***************************************************************************
  ***************************************************************************/
 uint64_t
-syn_cookie( ipaddress ip_them, unsigned port_them,
+get_cookie( ipaddress ip_them, unsigned port_them,
             ipaddress ip_me, unsigned port_me,
             uint64_t entropy)
 {
     switch (ip_them.version) {
     case 4:
-        return syn_cookie_ipv4(ip_them.ipv4, port_them, ip_me.ipv4, port_me, entropy);
+        return get_cookie_ipv4(ip_them.ipv4, port_them, ip_me.ipv4, port_me, entropy);
     case 6:
-        return syn_cookie_ipv6(ip_them.ipv6, port_them, ip_me.ipv6, port_me, entropy);
+        return get_cookie_ipv6(ip_them.ipv6, port_them, ip_me.ipv6, port_me, entropy);
     default:
         assert(!"unknown ip version");
         return 0;
@@ -132,7 +132,7 @@ syn_cookie( ipaddress ip_them, unsigned port_them,
 /***************************************************************************
  ***************************************************************************/
 uint64_t
-syn_cookie_ipv4( unsigned ip_them, unsigned port_them,
+get_cookie_ipv4( unsigned ip_them, unsigned port_them,
             unsigned ip_me, unsigned port_me,
             uint64_t entropy)
 {
@@ -152,7 +152,7 @@ syn_cookie_ipv4( unsigned ip_them, unsigned port_them,
 /***************************************************************************
  ***************************************************************************/
 uint64_t
-syn_cookie_ipv6( ipv6address ip_them, unsigned port_them,
+get_cookie_ipv6( ipv6address ip_them, unsigned port_them,
             ipv6address ip_me, unsigned port_me,
             uint64_t entropy)
 {

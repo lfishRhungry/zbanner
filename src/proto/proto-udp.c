@@ -8,7 +8,7 @@
 #include "proto-ntp.h"
 #include "proto-zeroaccess.h"
 #include "proto-preprocess.h"
-#include "../syn-cookie.h"
+#include "../cookie.h"
 #include "../util/logger.h"
 #include "../out/output.h"
 #include "../util/unusedparm.h"

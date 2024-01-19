@@ -37,7 +37,7 @@
 #include "proto-preprocess.h"
 #include "proto-ssl.h"
 #include "proto-udp.h"
-#include "../syn-cookie.h"
+#include "../cookie.h"
 #include "../massip/massip-port.h"
 #include "../util/mas-malloc.h"
 #include "../util/mas-safefunc.h"
@@ -561,7 +561,7 @@ coap_handle_response(struct Output *out, time_t timestamp,
     
     
     /* Validate the "syn-cookie" style information, which should match the "Message ID field*/
-    cookie = (unsigned)syn_cookie(ip_them, port_them | Templ_UDP, ip_me, port_me, entropy);
+    cookie = (unsigned)get_cookie(ip_them, port_them | Templ_UDP, ip_me, port_me, entropy);
     /*if ((seqno&0xffff) != message_id)
      goto not_this_protocol;*/
     

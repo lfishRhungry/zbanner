@@ -10,7 +10,7 @@
 #include "masscan-app.h"
 #include "proto-preprocess.h"
 #include "proto-banner1.h"
-#include "../syn-cookie.h"
+#include "../cookie.h"
 #include "../massip/massip-port.h"
 #include "../util/unusedparm.h"
 
@@ -262,7 +262,7 @@ ntp_handle_response(struct Output *out, time_t timestamp,
     }
     
     /* Validate the "syn-cookie" style information. */
-    //seqno = (unsigned)syn_cookie(ip_them, port_them | Templ_UDP, ip_me, port_me);
+    //seqno = (unsigned)get_cookie(ip_them, port_them | Templ_UDP, ip_me, port_me);
     //if ((seqno&0x7FFFffff) != request_id)
     //    return 1;
     

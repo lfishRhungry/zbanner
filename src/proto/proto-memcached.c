@@ -12,7 +12,7 @@
 #include "proto-preprocess.h"
 #include "proto-ssl.h"
 #include "proto-udp.h"
-#include "../syn-cookie.h"
+#include "../cookie.h"
 #include "../massip/massip-port.h"
 #include "../util/mas-malloc.h"
 #include <ctype.h>
@@ -350,7 +350,7 @@ memcached_udp_parse(struct Output *out, time_t timestamp,
     /* Validate the "syn-cookie" style information. In the case of SNMP,
      * this will be held in the "request-id" field. If the cookie isn't
      * a good one, then we'll ignore the response */
-    cookie = (unsigned)syn_cookie(ip_them, port_them | Templ_UDP, ip_me, port_me, entropy);
+    cookie = (unsigned)get_cookie(ip_them, port_them | Templ_UDP, ip_me, port_me, entropy);
     /*if ((seqno&0xffff) != request_id)
         return 1;*/
 

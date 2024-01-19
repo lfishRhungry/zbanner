@@ -17,7 +17,7 @@
 #include "../pixie/pixie-timer.h"
 #include "../util/logger.h"
 #include "templ-payloads.h"
-#include "../syn-cookie.h"
+#include "../cookie.h"
 #include "../util/unusedparm.h"
 #include "../vulncheck/vulncheck.h"
 #include "../util/checksum.h"
@@ -837,7 +837,7 @@ template_set_target_ipv6(
     case Proto_ICMP_ping:
     case Proto_ICMP_timestamp:
             /* TODO: IPv6 */
-            seqno = (unsigned)syn_cookie_ipv6(ip_them, port_them, ip_me, 0, entropy);
+            seqno = (unsigned)get_cookie_ipv6(ip_them, port_them, ip_me, 0, entropy);
             px[offset_tcp+ 4] = (unsigned char)(seqno >> 24);
             px[offset_tcp+ 5] = (unsigned char)(seqno >> 16);
             px[offset_tcp+ 6] = (unsigned char)(seqno >>  8);
@@ -1064,7 +1064,7 @@ template_set_target_ipv4(
         break;
     case Proto_ICMP_ping:
     case Proto_ICMP_timestamp:
-            seqno = (unsigned)syn_cookie_ipv4(ip_them, port_them, ip_me, 0, entropy);
+            seqno = (unsigned)get_cookie_ipv4(ip_them, port_them, ip_me, 0, entropy);
             px[offset_tcp+ 4] = (unsigned char)(seqno >> 24);
             px[offset_tcp+ 5] = (unsigned char)(seqno >> 16);
             px[offset_tcp+ 6] = (unsigned char)(seqno >>  8);

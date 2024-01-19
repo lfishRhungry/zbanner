@@ -12,7 +12,7 @@
 #include "proto-preprocess.h"
 #include "proto-ssl.h"
 #include "proto-udp.h"
-#include "../syn-cookie.h"
+#include "../cookie.h"
 #include "../massip/massip-port.h"
 #include <ctype.h>
 #include <string.h>

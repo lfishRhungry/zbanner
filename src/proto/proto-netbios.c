@@ -2,7 +2,7 @@
 #include "proto-udp.h"
 #include "proto-dns-parse.h"
 #include "proto-preprocess.h"
-#include "../syn-cookie.h"
+#include "../cookie.h"
 #include "../util/logger.h"
 #include "../out/output.h"
 #include "masscan-app.h"
@@ -122,7 +122,7 @@ handle_nbtstat(struct Output *out, time_t timestamp,
     uint64_t seqno;
 
 
-    seqno = (unsigned)syn_cookie(ip_them, port_them | Templ_UDP, ip_me, port_me, entropy);
+    seqno = (unsigned)get_cookie(ip_them, port_them | Templ_UDP, ip_me, port_me, entropy);
 
     proto_dns_parse(dns, px, parsed->app_offset, parsed->app_offset + parsed->app_length);
 
