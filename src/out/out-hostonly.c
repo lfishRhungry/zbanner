@@ -1,7 +1,7 @@
 #include "output.h"
-#include "../masscan.h"
+#include "../xconf.h"
 #include "../proto/masscan-app.h"
-#include "../masscan-status.h"
+#include "../port-status.h"
 #include "../util/unusedparm.h"
 #include "out-tcp-services.h"
 

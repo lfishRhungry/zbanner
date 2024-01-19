@@ -13,15 +13,15 @@
 #include "../massip/massip-port.h"
 #include "../proto/proto-preprocess.h"
 #include "../proto/proto-sctp.h"
-#include "../util/util-safefunc.h"
+#include "../util/mas-safefunc.h"
 #include "../pixie/pixie-timer.h"
-#include "../util/util-logger.h"
+#include "../util/logger.h"
 #include "templ-payloads.h"
 #include "../syn-cookie.h"
 #include "../util/unusedparm.h"
 #include "../vulncheck/vulncheck.h"
-#include "../util/util-checksum.h"
-#include "../util/util-malloc.h"
+#include "../util/checksum.h"
+#include "../util/mas-malloc.h"
 #include "../stub/stub-pcap-dlt.h" /* data link types, like NULL, RAW, or ETHERNET */
 #include <assert.h>
 #include <string.h>
@@ -1361,7 +1361,7 @@ _template_init(
 	/* the default, do nothing */
     } else {
 	LOG(0, "[-] FAILED: bad packet template, unknown data link type\n");
-        LOG(0, "    [hint] masscan doesn't know how to format packets for this interface\n");
+        LOG(0, "    [hint] xtate doesn't know how to format packets for this interface\n");
 	exit(1);
     }
 

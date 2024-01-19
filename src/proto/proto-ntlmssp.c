@@ -1,8 +1,8 @@
 #include "proto-ntlmssp.h"
 #include "masscan-app.h"
 #include "proto-banout.h"
-#include "../util/util-safefunc.h"
-#include "../util/util-malloc.h"
+#include "../util/mas-safefunc.h"
+#include "../util/mas-malloc.h"
 #include <string.h>
 #include <stdlib.h>
 

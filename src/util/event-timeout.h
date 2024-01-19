@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stddef.h> /* offsetof*/
-#include "util-bool.h" /* <stdbool.h> */
+#include "bool.h" /* <stdbool.h> */
 #if defined(_MSC_VER)
 #undef inline
 #define inline _inline

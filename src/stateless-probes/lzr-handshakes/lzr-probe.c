@@ -1,4 +1,4 @@
-#include "../../masscan.h"
+#include "../../xconf.h"
 #include "lzr-probe.h"
 
 /*
@@ -51,17 +51,17 @@ struct StatelessProbe LzrProbe = {
     // make_payload and get_paylaod_length will be set dynamicly in lzr_global_init.
 };
 
-static int lzr_global_init(const void *Masscan)
+static int lzr_global_init(const void *Xconf)
 {
-    const struct Masscan *masscan = Masscan;
+    const struct Xconf *xconf = Xconf;
 
     /*Use LzrWait if no subprobe specified*/
-    if (!masscan->stateless_probe_args[0]) {
+    if (!xconf->stateless_probe_args[0]) {
         specified_subprobe = &LzrWaitProbe;
         fprintf(stderr, "[-] Use default LzrWait as subprobe of LzrProbe because no subprobe was specified by --probe-args.\n");
     } else {
         char subprobe_name[LZR_SUBPROBE_NAME_LEN] = "lzr-";
-        memcpy(subprobe_name+strlen(subprobe_name), masscan->stateless_probe_args,
+        memcpy(subprobe_name+strlen(subprobe_name), xconf->stateless_probe_args,
             LZR_SUBPROBE_NAME_LEN-strlen(subprobe_name)-1);
 
         specified_subprobe = get_stateless_probe(subprobe_name);

@@ -11,7 +11,7 @@
 #include "proto-preprocess.h"
 #include "../out/output.h"
 #include "proto-banner1.h"
-#include "../util/util-safefunc.h"
+#include "../util/mas-safefunc.h"
 #include <stdio.h>
 #include <string.h>
 

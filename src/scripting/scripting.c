@@ -1,18 +1,18 @@
-#include "../masscan.h"
+#include "../xconf.h"
 #include "scripting.h"
 #include "../stub/stub-lua.h"
-#include "../util/util-logger.h"
+#include "../util/logger.h"
 
 #include <stdlib.h>
 
 /***************************************************************************
  ***************************************************************************/
 void
-scripting_init(struct Masscan *masscan)
+scripting_init(struct Xconf *xconf)
 {
     int version;
     struct lua_State *L;
-    const char *filename = masscan->scripting.name;
+    const char *filename = xconf->scripting.name;
     int x;
 
     
@@ -37,7 +37,7 @@ scripting_init(struct Masscan *masscan)
      */
     L = luaL_newstate();
     luaL_openlibs(L);
-    masscan->scripting.L = L;
+    xconf->scripting.L = L;
     
     /*
      * TODO: Sandbox stuff
@@ -46,9 +46,9 @@ scripting_init(struct Masscan *masscan)
      * written scripts from disrupting the system */
     
     /*
-     * Create the Masscan object
+     * Create the Xconf object
      */
-    scripting_masscan_init(masscan);
+    scripting_xconf_init(xconf);
     
     /*
      * Load the script. This will verify the syntax.

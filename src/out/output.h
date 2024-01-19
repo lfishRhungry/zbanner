@@ -1,18 +1,20 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <time.h>
+
+#include "../xconf.h"
 #include "../massip/massip-addr.h"
 #include "../stack/stack-src.h"
 #include "../util/unusedparm.h"
 #include "../proto/masscan-app.h"
-#include "../masscan-version.h"
 
 #define MAX_BANNER_LENGTH 8192
 
-struct Masscan;
+struct Xconf;
 struct Output;
 enum ApplicationProtocol;
 enum PortStatus;
@@ -42,11 +44,11 @@ struct OutputType {
 };
 
 /**
- * Masscan creates one "output" structure per thread.
+ * Xconf creates one "output" structure per thread.
  */
 struct Output
 {
-    const struct Masscan *masscan;
+    const struct Xconf *xconf;
     char *filename;
     struct stack_src_t src;
     FILE *fp;
@@ -157,7 +159,7 @@ extern const struct OutputType grepable_output;
  * Creates an "output" object. This is called by the receive thread in order
  * to send "status" information (open/closed ports) and "banners" to either
  * the command-line or to files in specific formats, such as XML or Redis
- * @param masscan
+ * @param xconf
  *      The master configuration.
  * @param thread_index
  *      When there are more than one receive threads, they are differentiated
@@ -166,7 +168,7 @@ extern const struct OutputType grepable_output;
  *      an output object that must eventually be destroyed by output_destroy().
  */
 struct Output *
-output_create(const struct Masscan *masscan, unsigned thread_index);
+output_create(const struct Xconf *xconf, unsigned thread_index);
 
 void output_destroy(struct Output *output);
 

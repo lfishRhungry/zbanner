@@ -1,6 +1,6 @@
 #include "syn-cookie.h"
 #include "pixie/pixie-timer.h"
-#include "util/util-safefunc.h"
+#include "util/mas-safefunc.h"
 #include "crypto/crypto-siphash24.h"
 #include <assert.h>
 #include <time.h>
@@ -16,7 +16,7 @@
  * NOTE: Mostly it's here to amuse cryptographers with its lulz.
  ***************************************************************************/
 uint64_t
-get_entropy(void)
+get_one_entropy(void)
 {
     uint64_t entropy[2] = {0,0};
     unsigned i;

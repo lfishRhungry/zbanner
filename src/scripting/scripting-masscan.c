@@ -1,13 +1,13 @@
-#include "../masscan.h"
+#include "../xconf.h"
 #include "scripting.h"
 #include "../stub/stub-lua.h"
 #include "../util/unusedparm.h"
 
-#define MASSCAN_CLASS "Masscan Class"
+#define XTATE_CLASS "Xtate Class"
 
-struct MasscanWrapper
+struct XconfWrapper
 {
-    struct Masscan *masscan;
+    struct Xconf *xconf;
 };
 
 /***************************************************************************
@@ -19,17 +19,17 @@ struct MasscanWrapper
  ***************************************************************************/
 static int mass_setconfig(struct lua_State *L)
 {
-    struct MasscanWrapper *wrapper;
-    struct Masscan *masscan;
+    struct XconfWrapper *wrapper;
+    struct Xconf *xconf;
     const char *name;
     const char *value;
     
-    wrapper = luaL_checkudata(L, 1, MASSCAN_CLASS);
-    masscan = wrapper->masscan;
+    wrapper = luaL_checkudata(L, 1, XTATE_CLASS);
+    xconf = wrapper->xconf;
     name = luaL_checkstring(L, 2);
     value = luaL_checkstring(L, 3);
     
-    masscan_set_parameter(masscan, name, value);
+    xconf_set_parameter(xconf, name, value);
     
     return 0;
 }
@@ -38,13 +38,13 @@ static int mass_setconfig(struct lua_State *L)
  ***************************************************************************/
 static int mass_gc(struct lua_State *L)
 {
-    //struct MasscanWrapper *wrapper;
-    //struct Masscan *masscan;
+    //struct XconfWrapper *wrapper;
+    //struct Xconf *xconf;
 
     UNUSEDPARM(L);
 
-    //wrapper = luaL_checkudata(L, 1, MASSCAN_CLASS);
-    //masscan = wrapper->masscan;
+    //wrapper = luaL_checkudata(L, 1, XTATE_CLASS);
+    //xconf = wrapper->xconf;
 
     /* I'm hot sure what I should do here for shutting down this object,
      * but I'm registering a garbage collection function anyway */
@@ -54,15 +54,15 @@ static int mass_gc(struct lua_State *L)
 
 
 /***************************************************************************
- * This function creases the object called "Masscan" in the global
+ * This function creases the object called "Xconf" in the global
  * variable space of a Lua script. The script can then interact
  * with this object in order to setup the scan that it wants to
  * do.
  ***************************************************************************/
-void scripting_masscan_init(struct Masscan *masscan)
+void scripting_xconf_init(struct Xconf *xconf)
 {
-    struct MasscanWrapper *wrapper;
-    struct lua_State *L = masscan->scripting.L;
+    struct XconfWrapper *wrapper;
+    struct lua_State *L = xconf->scripting.L;
 
     static const luaL_Reg my_methods[] = {
         {"setconfig",   mass_setconfig},
@@ -74,7 +74,7 @@ void scripting_masscan_init(struct Masscan *masscan)
      * Lua: Create a class to wrap a 'socket'
      */
     
-    luaL_newmetatable(L, MASSCAN_CLASS);
+    luaL_newmetatable(L, XTATE_CLASS);
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
     luaL_setfuncs(L, my_methods, 0);
@@ -83,11 +83,11 @@ void scripting_masscan_init(struct Masscan *masscan)
     /* Lua: create a  wrapper object and push it onto the stack */
     wrapper = lua_newuserdata(L, sizeof(*wrapper));
     memset(wrapper, 0, sizeof(*wrapper));
-    wrapper->masscan = masscan;
+    wrapper->xconf = xconf;
     
     /* Lua: set the class/type */
-    luaL_setmetatable(L, MASSCAN_CLASS);
+    luaL_setmetatable(L, XTATE_CLASS);
     
-    lua_setglobal(L, "Masscan");
+    lua_setglobal(L, "Xtate");
     
 }

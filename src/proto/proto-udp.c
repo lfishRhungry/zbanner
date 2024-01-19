@@ -9,9 +9,9 @@
 #include "proto-zeroaccess.h"
 #include "proto-preprocess.h"
 #include "../syn-cookie.h"
-#include "../util/util-logger.h"
+#include "../util/logger.h"
 #include "../out/output.h"
-#include "../masscan-status.h"
+#include "../port-status.h"
 #include "../util/unusedparm.h"
 
 

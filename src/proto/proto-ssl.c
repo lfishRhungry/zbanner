@@ -50,8 +50,8 @@
 #include "../util/unusedparm.h"
 #include "masscan-app.h"
 #include "../crypto/crypto-siphash24.h"
-#include "../util/util-safefunc.h"
-#include "../util/util-malloc.h"
+#include "../util/mas-safefunc.h"
+#include "../util/mas-malloc.h"
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
@@ -1241,7 +1241,7 @@ ssl_hello(const void *templ)
     px[13] = (unsigned char)(now>> 8);
     px[14] = (unsigned char)(now>> 0);
     
-    /* create a pattern to make this detectable as specifically masscan */
+    /* create a pattern to make this detectable as specifically xtate */
     for (i=4; i<32; i++) {
         static const uint64_t key[2] = {0,0};
         unsigned val = i+now;

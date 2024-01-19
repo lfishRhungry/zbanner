@@ -10,12 +10,12 @@
 #include "proto-dns-parse.h"
 #include "proto-preprocess.h"
 #include "../syn-cookie.h"
-#include "../util/util-logger.h"
+#include "../util/logger.h"
 #include "../out/output.h"
 #include "../proto/masscan-app.h"
 #include "proto-banner1.h"
 #include "../massip/massip-port.h"
-#include "../masscan.h"
+#include "../xconf.h"
 #include "../util/unusedparm.h"
 
 

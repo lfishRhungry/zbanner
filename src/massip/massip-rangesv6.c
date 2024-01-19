@@ -3,8 +3,8 @@
 */
 #include "massip-rangesv6.h"
 #include "massip-rangesv4.h"
-#include "../util/util-malloc.h"
-#include "../util/util-logger.h"
+#include "../util/mas-malloc.h"
+#include "../util/logger.h"
 #include "massip.h"
 #include "massip-parse.h"
 

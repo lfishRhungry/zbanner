@@ -26,7 +26,7 @@ syn_cookie_ipv6( ipv6address ip_dst, unsigned port_dst,
 /**
  * Called on startup to set a secret key
  */
-uint64_t get_entropy(void);
+uint64_t get_one_entropy(void);
 
 
 #endif

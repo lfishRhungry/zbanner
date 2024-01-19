@@ -7,7 +7,7 @@
 #include "../util/unusedparm.h"
 #include "masscan-app.h"
 #include "../crypto/crypto-siphash24.h"
-#include "../util/util-safefunc.h"
+#include "../util/mas-safefunc.h"
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
@@ -1270,7 +1270,7 @@ smb_parse_smb(struct SMBSTUFF *smb, const unsigned char *px, size_t max, struct 
         /*
             UCHAR Protocol[4];
             UCHAR Command;
-            SMB_ERROR Status;
+            SMB_ERROR Xtatus;
             UCHAR Flags;
             USHORT Flags2;
             USHORT PIDHigh;

@@ -1,7 +1,6 @@
 #include <stdlib.h>
 
 #include "../massip/massip-addr.h"
-#include "../masscan-version.h"
 
 #ifndef STATELESS_PROBES_H
 #define STATELESS_PROBES_H
@@ -18,13 +17,13 @@ enum StatelessProbeType {
 
 
 /**
- * masscan.h need to includes stateless-probes.h
- * and struct Masscan/ThreadPair must be used here.
+ * xconf.h need to includes stateless-probes.h
+ * and struct Xconf/ThreadPair must be used here.
  * Use 'void' to avoid circular dependency,
  * cast it to correct type in specific implementation of probe.
  * @return EXIT_FAILURE to exit process if init failed
 */
-typedef int (*stateless_probe_global_init_cb)(const void *Masscan);
+typedef int (*stateless_probe_global_init_cb)(const void *Xconf);
 
 /**
  * !Must be thread safe.
@@ -74,7 +73,7 @@ typedef size_t
 	unsigned char *report_banner_buf,
 	size_t report_banner_buf_length);
 
-typedef int (*stateless_probe_close_cb)(const void *Masscan);
+typedef int (*stateless_probe_close_cb)(const void *Xconf);
 
 struct StatelessProbe
 {

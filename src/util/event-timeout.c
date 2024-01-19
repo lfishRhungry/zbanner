@@ -24,8 +24,8 @@
     code and causing the bug to come back again.
 */
 #include "event-timeout.h"
-#include "util-logger.h"
-#include "util-malloc.h"
+#include "logger.h"
+#include "mas-malloc.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>

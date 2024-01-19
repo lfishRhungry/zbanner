@@ -30,7 +30,7 @@
 #include "proto-banner1.h"
 #include "../smack/smack.h"
 #include "../util/unusedparm.h"
-#include "../util/util-logger.h"
+#include "../util/logger.h"
 #include "../proto/masscan-app.h"
 #include "../out/output.h"
 #include "../stack/stack-tcp-api.h"
@@ -39,9 +39,9 @@
 #include "proto-udp.h"
 #include "../syn-cookie.h"
 #include "../massip/massip-port.h"
-#include "../util/util-malloc.h"
-#include "../util/util-safefunc.h"
-#include "../util/util-bool.h"
+#include "../util/mas-malloc.h"
+#include "../util/mas-safefunc.h"
+#include "../util/bool.h"
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>

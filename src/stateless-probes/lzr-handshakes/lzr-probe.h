@@ -5,7 +5,7 @@
 
 #define LZR_SUBPROBE_NAME_LEN 20
 
-static int lzr_global_init(const void *Masscan);
+static int lzr_global_init(const void *Xconf);
 
 static size_t
 lzr_report_banner(ipaddress ip_them, ipaddress ip_me,

@@ -41,7 +41,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "../smack/smack.h"
-#include "../util/util-safefunc.h"
+#include "../util/mas-safefunc.h"
 #include "../out/output.h"
 #include "masscan-app.h"
 #include "proto-preprocess.h"

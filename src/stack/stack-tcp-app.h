@@ -1,7 +1,7 @@
 #ifndef STACK_TCP_APP_H
 #define STACK_TCP_APP_H
 #include <stdio.h>
-#include "../util/util-bool.h" /* <stdbool.h> */
+#include "../util/bool.h" /* <stdbool.h> */
 struct stack_handle_t;
 struct ProtocolParserStream;
 struct Banner1;
@@ -18,7 +18,7 @@ enum App_Event {
 
 /**
  * This is the interface between the underlying custom TCP/IP stack and
- * the rest of masscan. SCRIPTING will eventually go in here.
+ * the rest of xtate. SCRIPTING will eventually go in here.
  */
 unsigned
 application_event(  struct stack_handle_t *socket,

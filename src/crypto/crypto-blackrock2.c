@@ -1,8 +1,8 @@
 #include "crypto-blackrock.h"
 #include "../pixie/pixie-timer.h"
 #include "../util/unusedparm.h"
-#include "../util/util-malloc.h"
-#include "../util/util-safefunc.h"
+#include "../util/mas-malloc.h"
+#include "../util/mas-safefunc.h"
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>

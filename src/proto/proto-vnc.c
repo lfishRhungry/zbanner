@@ -3,7 +3,7 @@
 #include "../stack/stack-tcp-api.h"
 #include "../util/unusedparm.h"
 #include "masscan-app.h"
-#include "../util/util-safefunc.h"
+#include "../util/mas-safefunc.h"
 #include "../smack/smack.h"
 #include <ctype.h>
 

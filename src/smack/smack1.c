@@ -103,7 +103,7 @@
  ****************************************************************************/
 #include "smack.h"
 #include "smackqueue.h"
-#include "../util/util-logger.h"
+#include "../util/logger.h"
 
 #include <stdio.h>
 #include <stdlib.h>

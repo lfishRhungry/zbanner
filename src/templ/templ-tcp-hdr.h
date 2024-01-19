@@ -1,6 +1,6 @@
 #ifndef TEMPL_TCP_H
 #define TEMPL_TCP_H
-#include "../util/util-bool.h" /* <stdbool.h> */
+#include "../util/bool.h" /* <stdbool.h> */
 #include <stdio.h>
 struct TemplateOptions;
 

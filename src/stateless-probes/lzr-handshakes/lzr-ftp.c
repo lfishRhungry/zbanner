@@ -1,6 +1,6 @@
 #include <string.h>
 
-#include "../../masscan.h"
+#include "../../xconf.h"
 #include "lzr-ftp.h"
 #include "../null-probe.h"
 

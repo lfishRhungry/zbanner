@@ -1,8 +1,8 @@
 #include "../out/output.h"
 #include "../proto/masscan-app.h"
-#include "../masscan-status.h"
+#include "../port-status.h"
 #include "out-record.h"
-#include "../util/util-safefunc.h"
+#include "../util/mas-safefunc.h"
 #include <assert.h>
 
 /****************************************************************************

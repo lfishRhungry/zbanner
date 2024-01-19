@@ -7,8 +7,8 @@
 
 */
 #include "stub-pfring.h"
-#include "../util/util-safefunc.h"
-#include "../util/util-logger.h"
+#include "../util/mas-safefunc.h"
+#include "../util/logger.h"
 
 struct PFRING PFRING;
 

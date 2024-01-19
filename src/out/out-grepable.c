@@ -1,10 +1,9 @@
 #include "output.h"
-#include "../masscan.h"
-#include "../masscan-version.h"
-#include "../masscan-status.h"
+#include "../xconf.h"
+#include "../port-status.h"
 #include "out-tcp-services.h"
 #include "../massip/massip-port.h"
-#include "../util/util-safefunc.h"
+#include "../util/mas-safefunc.h"
 
 
 /****************************************************************************
@@ -84,26 +83,26 @@ grepable_out_open(struct Output *out, FILE *fp)
     fprintf(fp, "# Xtate " XTATE_VERSION " scan initiated %s\n", 
                 timestamp);
 
-    count = count_type(&out->masscan->targets.ports, Templ_TCP, Templ_TCP_last);
+    count = count_type(&out->xconf->targets.ports, Templ_TCP, Templ_TCP_last);
     fprintf(fp, "# Ports scanned: TCP(%u;", count);
     if (count)
-        print_port_list(&out->masscan->targets.ports, Templ_TCP, fp);
+        print_port_list(&out->xconf->targets.ports, Templ_TCP, fp);
 
-    count = count_type(&out->masscan->targets.ports, Templ_UDP, Templ_UDP_last);
+    count = count_type(&out->xconf->targets.ports, Templ_UDP, Templ_UDP_last);
     fprintf(fp, ") UDP(%u;", count);
     if (count)
-        print_port_list(&out->masscan->targets.ports, Templ_UDP, fp);
+        print_port_list(&out->xconf->targets.ports, Templ_UDP, fp);
     
     
-    count = count_type(&out->masscan->targets.ports, Templ_SCTP, Templ_SCTP_last);
+    count = count_type(&out->xconf->targets.ports, Templ_SCTP, Templ_SCTP_last);
     fprintf(fp, ") SCTP(%u;", count);
     if (count)
-        print_port_list(&out->masscan->targets.ports, Templ_SCTP, fp);
+        print_port_list(&out->xconf->targets.ports, Templ_SCTP, fp);
 
-    count = count_type(&out->masscan->targets.ports, Templ_Oproto_first, Templ_Oproto_last);
+    count = count_type(&out->xconf->targets.ports, Templ_Oproto_first, Templ_Oproto_last);
     fprintf(fp, ") PROTOCOLS(%u;", count);
     if (count)
-        print_port_list(&out->masscan->targets.ports, Templ_Oproto_first, fp);
+        print_port_list(&out->xconf->targets.ports, Templ_Oproto_first, fp);
     
     fprintf(fp, ")\n");
 }

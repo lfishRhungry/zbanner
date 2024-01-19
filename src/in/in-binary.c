@@ -4,16 +4,16 @@
 */
 #include "../massip/massip-addr.h"
 #include "in-binary.h"
-#include "../masscan.h"
+#include "../xconf.h"
 #include "../proto/masscan-app.h"
-#include "../masscan-status.h"
-#include "../main-globals.h"
+#include "../port-status.h"
+#include "../globals.h"
 #include "../out/output.h"
-#include "../util/util-safefunc.h"
+#include "../util/mas-safefunc.h"
 #include "in-filter.h"
 #include "in-report.h"
-#include "../util/util-malloc.h"
-#include "../util/util-logger.h"
+#include "../util/mas-malloc.h"
+#include "../util/logger.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -24,7 +24,7 @@
 
 static const size_t BUF_MAX = 1024*1024;
 
-struct MasscanRecord {
+struct XtateRecord {
     unsigned timestamp;
     ipaddress ip;
     unsigned char ip_proto;
@@ -43,7 +43,7 @@ parse_status(struct Output *out,
         enum PortStatus status, /* open/closed */
         const unsigned char *buf, size_t buf_length)
 {
-    struct MasscanRecord record;
+    struct XtateRecord record;
 
     if (buf_length < 12)
         return;
@@ -105,7 +105,7 @@ parse_status2(struct Output *out,
         const unsigned char *buf, size_t buf_length,
         struct MassIP *filter)
 {
-    struct MasscanRecord record;
+    struct XtateRecord record;
 
     if (buf_length < 13)
         return;
@@ -230,7 +230,7 @@ parse_status6(struct Output *out,
         const unsigned char *buf, size_t length,
         struct MassIP *filter)
 {
-    struct MasscanRecord record;
+    struct XtateRecord record;
     size_t offset = 0;
 
     /* parse record */
@@ -282,7 +282,7 @@ parse_banner6(struct Output *out, unsigned char *buf, size_t length,
               const struct MassIP *filter,
               const struct RangeList *btypes)
 {
-    struct MasscanRecord record;
+    struct XtateRecord record;
     size_t offset = 0;
 
     /*
@@ -339,7 +339,7 @@ parse_banner6(struct Output *out, unsigned char *buf, size_t length,
 static void
 parse_banner3(struct Output *out, unsigned char *buf, size_t buf_length)
 {
-    struct MasscanRecord record;
+    struct XtateRecord record;
 
     /*
      * Parse the parts that are common to most records
@@ -375,7 +375,7 @@ parse_banner3(struct Output *out, unsigned char *buf, size_t buf_length)
 static void
 parse_banner4(struct Output *out, unsigned char *buf, size_t buf_length)
 {
-    struct MasscanRecord record;
+    struct XtateRecord record;
 
     if (buf_length < 13)
         return;
@@ -416,7 +416,7 @@ parse_banner9(struct Output *out, unsigned char *buf, size_t buf_length,
               const struct MassIP *filter,
               const struct RangeList *btypes)
 {
-    struct MasscanRecord record;
+    struct XtateRecord record;
     unsigned char *data = buf+14;
     size_t data_length = buf_length-14;
 
@@ -647,13 +647,13 @@ end:
 
 
 /*****************************************************************************
- * When masscan is called with the "--readscan" parameter, it doesn't
+ * When xtate is called with the "--readscan" parameter, it doesn't
  * do a scan of the live network, but instead reads scan results from
  * a file. Those scan results can then be written out in any of the
  * other formats. This preserves the original timestamps.
  *****************************************************************************/
 void
-readscan_binary_scanfile(struct Masscan *masscan,
+readscan_binary_scanfile(struct Xconf *xconf,
                      int arg_first, int arg_max, char *argv[])
 {
     struct Output *out;
@@ -662,7 +662,7 @@ readscan_binary_scanfile(struct Masscan *masscan,
     /*
      * Create the output system, such as XML or JSON output
      */
-    out = output_create(masscan, 0);
+    out = output_create(xconf, 0);
     
     /*
      * Set the start time to zero. We'll read it from the first file
@@ -677,11 +677,11 @@ readscan_binary_scanfile(struct Masscan *masscan,
      * parameter, and 'arg_max' is the parameter after
      * the last filename. For example, consider an argument list that
      * looks like:
-     *   masscan --foo --readscan file1.scan file2.scan --bar
+     *   xtate --foo --readscan file1.scan file2.scan --bar
      * Then arg_first=3 and arg_max=5.
      */
     for (i=arg_first; i<arg_max; i++) {
-        _binaryfile_parse(out, argv[i], &masscan->targets, &masscan->banner_types);
+        _binaryfile_parse(out, argv[i], &xconf->targets, &xconf->banner_types);
     }
 
     /* Done! */

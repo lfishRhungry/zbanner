@@ -5,8 +5,8 @@
 
 #include "crypto-lcg.h"
 #include "crypto-primegen.h" /* DJB's prime factoring code */
-#include "../util/util-safefunc.h"
-#include "../util/util-malloc.h"
+#include "../util/mas-safefunc.h"
+#include "../util/mas-malloc.h"
 
 #include <math.h>  /* for 'sqrt()', may need -lm for gcc */
 #include <stdint.h>

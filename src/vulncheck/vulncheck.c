@@ -1,5 +1,5 @@
 #include "vulncheck.h"
-#include "../util/util-safefunc.h"
+#include "../util/mas-safefunc.h"
 
 extern struct MassVulnCheck vuln_ntp_monlist;
 

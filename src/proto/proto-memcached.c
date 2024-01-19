@@ -14,7 +14,7 @@
 #include "proto-udp.h"
 #include "../syn-cookie.h"
 #include "../massip/massip-port.h"
-#include "../util/util-malloc.h"
+#include "../util/mas-malloc.h"
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>

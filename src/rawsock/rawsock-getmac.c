@@ -10,8 +10,8 @@
     I think it'll work the same on any BSD system.
 */
 #include "rawsock.h"
-#include "../util/util-safefunc.h"
-#include "../util/util-logger.h"
+#include "../util/mas-safefunc.h"
+#include "../util/logger.h"
 
 /*****************************************************************************
  *****************************************************************************/

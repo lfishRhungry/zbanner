@@ -4,7 +4,7 @@
 #include "../proto/proto-x509.h"
 #include "../proto/proto-banout.h"
 #include "../smack/smack.h"
-#include "../util/util-malloc.h"
+#include "../util/mas-malloc.h"
 
 #include <assert.h>
 #include <stdlib.h>

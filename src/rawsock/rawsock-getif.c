@@ -5,9 +5,9 @@
     This works on both Linux and windows.
 */
 #include "rawsock.h"
-#include "../util/util-safefunc.h"
-#include "../util/util-malloc.h"
-#include "../util/util-logger.h"
+#include "../util/mas-safefunc.h"
+#include "../util/mas-malloc.h"
+#include "../util/logger.h"
 
 #if defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__sun__)
 #include <unistd.h>

@@ -3,9 +3,9 @@
 #include "../proto/proto-banner1.h"
 #include "../proto/proto-ssl.h"
 #include "../util/unusedparm.h"
-#include "../util/util-malloc.h"
-#include "../util/util-logger.h"
-#include "../util/util-errormsg.h"
+#include "../util/mas-malloc.h"
+#include "../util/logger.h"
+#include "../util/errormsg.h"
 #include <stdlib.h>
 
 enum {

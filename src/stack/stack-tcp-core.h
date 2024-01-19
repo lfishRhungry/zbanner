@@ -3,7 +3,7 @@
 #include "../massip/massip-addr.h"
 #include "stack-queue.h"
 #include "../out/output.h"
-#include "../util/util-bool.h"
+#include "../util/bool.h"
 
 struct Adapter;
 struct TCP_Control_Block;

@@ -1,6 +1,6 @@
 #include "proto-sctp.h"
 #include "proto-preprocess.h"
-#include "../masscan-status.h"
+#include "../port-status.h"
 #include "../out/output.h"
 #include <stdio.h>
 #include <stdlib.h>

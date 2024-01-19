@@ -1,7 +1,7 @@
 #ifndef STACK_HANDLE_H
 #define STACK_HANDLE_H
 #include <stdio.h>
-#include "../util/util-bool.h" /* <stdbool.h> */
+#include "../util/bool.h" /* <stdbool.h> */
 
 struct ProtocolParserStream;
 

@@ -1,11 +1,11 @@
 #include "proto-icmp.h"
 #include "proto-preprocess.h"
 #include "../syn-cookie.h"
-#include "../util/util-logger.h"
+#include "../util/logger.h"
 #include "../out/output.h"
-#include "../masscan-status.h"
+#include "../port-status.h"
 #include "../massip/massip-port.h"
-#include "../util/main-dedup.h"
+#include "../util/dedup.h"
 
 #define ICMP_DEDUP_WIN 65536
 

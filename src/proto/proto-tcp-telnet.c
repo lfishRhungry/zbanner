@@ -3,10 +3,10 @@
 #include "../stack/stack-tcp-api.h"
 #include "../util/unusedparm.h"
 #include "masscan-app.h"
-#include "../util/util-malloc.h"
+#include "../util/mas-malloc.h"
 #include <ctype.h>
 #include <string.h>
-#include "../util/util-safefunc.h"
+#include "../util/mas-safefunc.h"
 
 struct TelnetOptions {
     unsigned num;
@@ -23,7 +23,7 @@ struct TelnetOptions options[] = {
     //{ 2, "recon"},      /* 0x02     Reconnection  */
     { 3, "sga"},             /* 0x03     Suppress go ahead */
     //{ 4, "msgsz"},      /* 0x04     Approx Message Size Negotiation */
-    { 5, "status"},       /* 0x05     Status  */
+    { 5, "status"},       /* 0x05     Xtatus  */
     { 6, "timing-mark"},  /* 0x06     Timing Mark */
     /*
     7     Remote Controlled Trans and Echo                   [107,JBP]

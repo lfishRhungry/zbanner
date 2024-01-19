@@ -22,8 +22,8 @@
 #include "proto-versioning.h"
 #include "../proto/masscan-app.h"
 #include "../scripting/scripting.h"
-#include "../util/util-malloc.h"
-#include "../util/util-logger.h"
+#include "../util/mas-malloc.h"
+#include "../util/logger.h"
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>

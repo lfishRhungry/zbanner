@@ -32,16 +32,16 @@
 #define _FILE_OFFSET_BITS 64
 
 #include "output.h"
-#include "../masscan.h"
-#include "../masscan-status.h"
+#include "../xconf.h"
+#include "../port-status.h"
 #include "../proto/proto-banner1.h"
 #include "../proto/masscan-app.h"
-#include "../main-globals.h"
+#include "../globals.h"
 #include "../pixie/pixie-file.h"
 #include "../pixie/pixie-sockets.h"
-#include "../util/util-malloc.h"
-#include "../util/util-errormsg.h"
-#include "../util/util-logger.h"
+#include "../util/mas-malloc.h"
+#include "../util/errormsg.h"
+#include "../util/logger.h"
 
 #include <limits.h>
 #include <ctype.h>
@@ -49,7 +49,7 @@
 #include <stdarg.h>
 
 /* Put this at the bottom of the include lists because of warnings */
-#include "../util/util-safefunc.h"
+#include "../util/mas-safefunc.h"
 
 
 /*****************************************************************************
@@ -377,49 +377,49 @@ indexed_filename(const char *filename, unsigned index)
  * rather than later in the scan when it might fail.
  *****************************************************************************/
 struct Output *
-output_create(const struct Masscan *masscan, unsigned thread_index)
+output_create(const struct Xconf *xconf, unsigned thread_index)
 {
     struct Output *out;
 
     /* allocate/initialize memory */
     out = CALLOC(1, sizeof(*out));
-    out->masscan = masscan;
+    out->xconf = xconf;
     out->when_scan_started = time(0);
     out->is_virgin_file = 1;
 
     /*
-     * Copy the configuration information from the 'masscan' structure.
+     * Copy the configuration information from the 'xconf' structure.
      */
-    out->rotate.period = masscan->output.rotate.timeout;
-    out->rotate.offset = masscan->output.rotate.offset;
-    out->rotate.filesize = masscan->output.rotate.filesize;
-    out->redis.port = masscan->redis.port;
-    out->redis.ip = masscan->redis.ip;
-    out->redis.password = duplicate_string(masscan ->redis.password);
-    out->is_banner = masscan->is_banners;               /* --banners */
-    out->is_banner_rawudp = masscan->is_banners_rawudp; /* --rawudp */
-    out->is_banner_stateless = masscan->is_capture_stateless; /* --capture stateless*/
-    out->is_gmt = masscan->is_gmt;
-    out->is_interactive = masscan->output.is_interactive;
-    out->is_show_open = masscan->output.is_show_open;
-    out->is_show_closed = masscan->output.is_show_closed;
-    out->is_show_host = masscan->output.is_show_host;
-    out->is_append = masscan->output.is_append;
-    out->is_feed_lzr = masscan->output.is_feed_lzr;
-    out->xml.stylesheet = duplicate_string(masscan->output.stylesheet);
-    out->rotate.directory = duplicate_string(masscan->output.rotate.directory);
-    if (masscan->rx_thread_count <= 1)
-        out->filename = duplicate_string(masscan->output.filename);
+    out->rotate.period = xconf->output.rotate.timeout;
+    out->rotate.offset = xconf->output.rotate.offset;
+    out->rotate.filesize = xconf->output.rotate.filesize;
+    out->redis.port = xconf->redis.port;
+    out->redis.ip = xconf->redis.ip;
+    out->redis.password = duplicate_string(xconf ->redis.password);
+    out->is_banner = xconf->is_banners;               /* --banners */
+    out->is_banner_rawudp = xconf->is_banners_rawudp; /* --rawudp */
+    out->is_banner_stateless = xconf->is_capture_stateless; /* --capture stateless*/
+    out->is_gmt = xconf->is_gmt;
+    out->is_interactive = xconf->output.is_interactive;
+    out->is_show_open = xconf->output.is_show_open;
+    out->is_show_closed = xconf->output.is_show_closed;
+    out->is_show_host = xconf->output.is_show_host;
+    out->is_append = xconf->output.is_append;
+    out->is_feed_lzr = xconf->output.is_feed_lzr;
+    out->xml.stylesheet = duplicate_string(xconf->output.stylesheet);
+    out->rotate.directory = duplicate_string(xconf->output.rotate.directory);
+    if (xconf->rx_thread_count <= 1)
+        out->filename = duplicate_string(xconf->output.filename);
     else
-        out->filename = indexed_filename(masscan->output.filename, thread_index);
+        out->filename = indexed_filename(xconf->output.filename, thread_index);
 
-    out->src = masscan->nic.src;
+    out->src = xconf->nic.src;
 
     /*
      * Link the appropriate output module.
      * TODO: support multiple output modules
      */
-    out->format = masscan->output.format;
+    out->format = xconf->output.format;
     switch (out->format) {
     case Output_List:
         out->funcs = &text_output;
@@ -464,12 +464,12 @@ output_create(const struct Masscan *masscan, unsigned thread_index)
      * so that we can immediately notify the user of an error, rather than
      * waiting midway through a long scan and have it fail.
      */
-    if (masscan->output.filename[0] && out->funcs != &null_output) {
+    if (xconf->output.filename[0] && out->funcs != &null_output) {
         FILE *fp;
 
-        fp = open_rotate(out, masscan->output.filename);
+        fp = open_rotate(out, xconf->output.filename);
         if (fp == NULL) {
-            perror(masscan->output.filename);
+            perror(xconf->output.filename);
             exit(1);
         }
 
@@ -482,7 +482,7 @@ output_create(const struct Masscan *masscan, unsigned thread_index)
      * this time will be set at "infinity" in the future.
      * TODO: this code isn't Y2036 compliant.
      */
-    if (masscan->output.rotate.timeout == 0) {
+    if (xconf->output.rotate.timeout == 0) {
         /* TODO: how does one find the max time_t value??*/
         out->rotate.next = (time_t)LONG_MAX;
     } else {

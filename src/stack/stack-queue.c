@@ -1,7 +1,7 @@
 #include "stack-queue.h"
 #include "../pixie/pixie-timer.h"
 #include "../rawsock/rawsock.h"
-#include "../util/util-malloc.h"
+#include "../util/mas-malloc.h"
 #include <string.h>
 #include <stdio.h>
 

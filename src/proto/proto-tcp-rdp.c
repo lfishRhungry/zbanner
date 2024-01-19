@@ -4,11 +4,11 @@
 #include "../stack/stack-tcp-api.h"
 #include "../util/unusedparm.h"
 #include "masscan-app.h"
-#include "../util/util-malloc.h"
+#include "../util/mas-malloc.h"
 #include "assert.h"
 #include <ctype.h>
 #include <string.h>
-#include "../util/util-safefunc.h"
+#include "../util/mas-safefunc.h"
 
 /***************************************************************************
  * @param length
@@ -366,7 +366,7 @@ rdp_selftest(void)
 static const char rdp_hello[] =
 "\x03\x00\x00\x2d"
 "\x28\xe0\x00\x00\x00\x00\x00\x43\x6f\x6f\x6b\x69\x65\x3a\x20\x6d" \
-"\x73\x74\x73\x68\x61\x73\x68\x3d"  "masscan" "\x0d\x0a\x01\x00" \
+"\x73\x74\x73\x68\x61\x73\x68\x3d"  "xtate" "\x0d\x0a\x01\x00" \
 "\x08\x00\x03\x00\x00\x00";
 
 

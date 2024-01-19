@@ -12,7 +12,7 @@
     banner for the same connection.
 */
 #include "proto-banner1.h"
-#include "../util/util-malloc.h"
+#include "../util/mas-malloc.h"
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>

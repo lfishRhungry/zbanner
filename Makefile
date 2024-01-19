@@ -99,8 +99,8 @@ CFLAGS = -g -ggdb $(FLAGS2) $(INCLUDES) $(DEFINES) -Wall -O2
 all: bin/xtate
 
 
-tmp/main-conf.o: src/main-conf.c src/*.h
-	$(CC) $(CFLAGS) -c $< -o $@
+# tmp/main-conf.o: src/xconf.c src/*.h
+# 	$(CC) $(CFLAGS) -c $< -o $@
 
 
 # just compile everything in the 'src' directory. Using this technique

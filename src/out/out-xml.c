@@ -1,7 +1,7 @@
 #include "output.h"
 #include "../proto/masscan-app.h"
-#include "../masscan-status.h"
-#include "../util/util-safefunc.h"
+#include "../port-status.h"
+#include "../util/mas-safefunc.h"
 
 
 
@@ -10,7 +10,7 @@
 static void
 xml_out_open(struct Output *out, FILE *fp)
 {
-    //const struct Masscan *masscan = out->masscan;
+    //const struct Xconf *xconf = out->xconf;
 
     fprintf(fp, "<?xml version=\"1.0\"?>\r\n");
     fprintf(fp, "<!-- xtate scan -->\r\n");

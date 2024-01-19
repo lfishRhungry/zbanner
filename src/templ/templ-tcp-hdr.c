@@ -68,7 +68,7 @@
  */
 #include "templ-tcp-hdr.h"
 #include "templ-opts.h"
-#include "../util/util-logger.h"
+#include "../util/logger.h"
 #include "../proto/proto-preprocess.h"
 #include <string.h>
 #include <stdlib.h>

@@ -65,7 +65,7 @@
 #include "../syn-cookie.h"
 #include "../util/event-timeout.h"      /* for tracking future events */
 #include "../rawsock/rawsock.h"
-#include "../util/util-logger.h"
+#include "../util/logger.h"
 #include "../templ/templ-pkt.h"
 #include "../pixie/pixie-timer.h"
 #include "stack-queue.h"
@@ -75,11 +75,11 @@
 #include "../proto/proto-smb.h"
 #include "../proto/proto-versioning.h"
 #include "../out/output.h"
-#include "../util/util-safefunc.h"
-#include "../main-globals.h"
+#include "../util/mas-safefunc.h"
+#include "../globals.h"
 #include "../crypto/crypto-base64.h"
-#include "../util/util-malloc.h"
-#include "../util/util-errormsg.h"
+#include "../util/mas-malloc.h"
+#include "../util/errormsg.h"
 #include "../scripting/scripting.h"
 
 
@@ -427,7 +427,7 @@ tcpcon_set_parameter(struct TCP_ConnectionTable *tcpcon,
      * You can reset your user-agent here. Whenever I do a scan, I always
      * reset my user-agent. That's now you know it's not me scanning
      * you on the open Internet -- I would never use the default user-agent
-     * string built into masscan
+     * string built into xconf
      */
     if (name_equals(name, "http-user-agent")) {
         banner_http.hello_length = http_change_field(

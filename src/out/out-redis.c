@@ -1,7 +1,7 @@
 #include "output.h"
-#include "../masscan.h"
+#include "../xconf.h"
 #include "../pixie/pixie-sockets.h"
-#include "../util/util-logger.h"
+#include "../util/logger.h"
 #include <ctype.h>
 
 /****************************************************************************

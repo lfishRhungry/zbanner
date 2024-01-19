@@ -25,8 +25,8 @@
 #include "../syn-cookie.h"
 #include "../massip/massip-port.h"
 #include "../out/output.h"
-#include "../util/util-extract.h"
-#include "../util/util-logger.h"
+#include "../util/extract.h"
+#include "../util/logger.h"
 #include <stdarg.h>
 #include <string.h>
 

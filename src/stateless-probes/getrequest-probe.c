@@ -1,4 +1,4 @@
-#include "../masscan.h"
+#include "../xconf.h"
 #include "null-probe.h"
 #include "getrequest-probe.h"
 

@@ -1,5 +1,5 @@
 #include "masscan-app.h"
-#include "../util/util-safefunc.h"
+#include "../util/mas-safefunc.h"
 
 /******************************************************************************
  * When outputting results, we call this function to print out the type of 

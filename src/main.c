@@ -15,46 +15,65 @@
     of headers, and the functions have a lot of local variables. I'm trying
     to make this file relative "flat" this way so that everything is visible.
 */
-#include "masscan.h"
-#include "masscan-version.h"
-#include "masscan-status.h"     /* open or closed */
-#include "massip/massip-parse.h"
-#include "massip/massip-port.h"
-#include "main-status.h"        /* printf() regular status updates */
-#include "util/main-throttle.h"      /* rate limit */
-#include "util/main-dedup.h"         /* ignore duplicate responses */
-#include "util/main-ptrace.h"        /* for nmap --packet-trace feature */
-#include "main-globals.h"       /* all the global variables in the program */
-#include "util/main-readrange.h"
-#include "crypto/crypto-siphash24.h"   /* hash function, for hash tables */
-#include "crypto/crypto-blackrock.h"   /* the BlackRock shuffling func */
-#include "crypto/crypto-lcg.h"         /* the LCG randomization func */
-#include "crypto/crypto-base64.h"      /* base64 encode/decode */
-#include "templ/templ-pkt.h"          /* packet template, that we use to send */
-#include "util/util-logger.h"             /* adjust with -v command-line opt */
-#include "stack/stack-ndpv6.h"        /* IPv6 Neighbor Discovery Protocol */
-#include "stack/stack-arpv4.h"        /* Handle ARP resolution and requests */
-#include "rawsock/rawsock.h"            /* API on top of Linux, Windows, Mac OS X*/
-#include "rawsock/rawsock-adapter.h"    /* Get Ethernet adapter configuration */
-#include "rawsock/rawsock-pcapfile.h"   /* for saving pcap files w/ raw packets */
+#include <assert.h>
+#include <string.h>
+#include <time.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <stdint.h>
+
+#include "xconf.h"
+#include "port-status.h"     /* open or closed */
+#include "globals.h"       /* all the global variables in the program */
+#include "xtatus.h"        /* printf() regular status updates */
 #include "syn-cookie.h"         /* for SYN-cookies on send */
+
 #include "out/output.h"             /* for outputting results */
-#include "util/rte-ring.h"           /* producer/consumer ring buffer */
 #include "stub/stub-pcap.h"          /* dynamically load libpcap library */
 #include "smack/smack.h"              /* Aho-corasick state-machine pattern-matcher */
-#include "pixie/pixie-timer.h"        /* portable time functions */
-#include "pixie/pixie-threads.h"      /* portable threads */
-#include "pixie/pixie-backtrace.h"    /* maybe print backtrace on crash */
-#include "templ/templ-payloads.h"     /* UDP packet payloads */
 #include "in/in-binary.h"          /* convert binary output to XML/JSON */
 #include "vulncheck/vulncheck.h"          /* checking vulns like monlist, poodle, heartblee */
 #include "scripting/scripting.h"
 #include "nmap-services/read-service-probes.h"
-#include "util/misc-rstfilter.h"
+
+#include "massip/massip-parse.h"
+#include "massip/massip-port.h"
+
+#include "templ/templ-pkt.h"          /* packet template, that we use to send */
+#include "templ/templ-payloads.h"     /* UDP packet payloads */
+
+#include "rawsock/rawsock.h"            /* API on top of Linux, Windows, Mac OS X*/
+#include "rawsock/rawsock-adapter.h"    /* Get Ethernet adapter configuration */
+#include "rawsock/rawsock-pcapfile.h"   /* for saving pcap files w/ raw packets */
+
+#include "stack/stack-ndpv6.h"        /* IPv6 Neighbor Discovery Protocol */
+#include "stack/stack-arpv4.h"        /* Handle ARP resolution and requests */
+#include "stack/stack-tcp-core.h"          /* for TCP/IP connection table */
+
+#include "pixie/pixie-timer.h"        /* portable time functions */
+#include "pixie/pixie-threads.h"      /* portable threads */
+#include "pixie/pixie-backtrace.h"    /* maybe print backtrace on crash */
+
+#include "crypto/crypto-siphash24.h"   /* hash function, for hash tables */
+#include "crypto/crypto-blackrock.h"   /* the BlackRock shuffling func */
+#include "crypto/crypto-lcg.h"         /* the LCG randomization func */
+#include "crypto/crypto-base64.h"      /* base64 encode/decode */
+
+#include "util/throttle.h"      /* rate limit */
+#include "util/dedup.h"         /* ignore duplicate responses */
+#include "util/ptrace.h"        /* for nmap --packet-trace feature */
+#include "util/initadapter.h"
+#include "util/readrange.h"
+#include "util/listscan.h"
+#include "util/logger.h"             /* adjust with -v command-line opt */
+#include "util/rte-ring.h"           /* producer/consumer ring buffer */
+#include "util/rstfilter.h"
+#include "util/mas-malloc.h"
+#include "util/checksum.h"
+
 #include "proto/proto-x509.h"
 #include "proto/proto-arp.h"          /* for responding to ARP requests */
 #include "proto/proto-banner1.h"      /* for snatching banners from systems */
-#include "stack/stack-tcp-core.h"          /* for TCP/IP connection table */
 #include "proto/proto-preprocess.h"   /* quick parse of packets */
 #include "proto/proto-icmp.h"         /* handle ICMP responses */
 #include "proto/proto-udp.h"          /* handle UDP responses */
@@ -64,16 +83,6 @@
 #include "proto/proto-zeroaccess.h"
 #include "proto/proto-sctp.h"
 #include "proto/proto-oproto.h"       /* Other protocols on top of IP */
-#include "util/util-malloc.h"
-#include "util/util-checksum.h"
-
-#include <assert.h>
-#include <limits.h>
-#include <string.h>
-#include <time.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <stdint.h>
 
 #if defined(WIN32)
 #include <WinSock.h>
@@ -105,7 +114,7 @@ struct TxThread {
     /** This points to the central configuration. Note that it's 'const',
      * meaning that the thread cannot change the contents. That'd be
      * unsafe */
-    const struct Masscan *masscan;
+    const struct Xconf *xconf;
 
     /**
      * The index of the tx/rx thread
@@ -134,7 +143,7 @@ struct RxThread {
     /** This points to the central configuration. Note that it's 'const',
      * meaning that the thread cannot change the contents. That'd be
      * unsafe */
-    const struct Masscan *masscan;
+    const struct Xconf *xconf;
 
     unsigned done_receiving;
 
@@ -164,9 +173,9 @@ struct source_t {
  * range into useful variables we can use to pick things form that range.
  ***************************************************************************/
 static void
-adapter_get_source_addresses(const struct Masscan *masscan, struct source_t *src)
+adapter_get_source_addresses(const struct Xconf *xconf, struct source_t *src)
 {
-    const struct stack_src_t *ifsrc = &masscan->nic.src;
+    const struct stack_src_t *ifsrc = &xconf->nic.src;
     static ipv6address mask = {~0ULL, ~0ULL};
 
     src->ipv4 = ifsrc->ipv4.first;
@@ -197,25 +206,25 @@ transmit_thread(void *v) /*aka. scanning_thread() */
     uint64_t i;
     uint64_t start;
     uint64_t end;
-    const struct Masscan *masscan = parms->masscan;
-    uint64_t retries = masscan->retries;
-    uint64_t rate = (uint64_t)masscan->max_rate;
+    const struct Xconf *xconf = parms->xconf;
+    uint64_t retries = xconf->retries;
+    uint64_t rate = (uint64_t)xconf->max_rate;
     unsigned r = (unsigned)retries + 1;
     uint64_t range;
     uint64_t range_ipv6;
     struct BlackRock blackrock;
-    uint64_t count_ipv4 = rangelist_count(&masscan->targets.ipv4);
-    uint64_t count_ipv6 = range6list_count(&masscan->targets.ipv6).lo;
+    uint64_t count_ipv4 = rangelist_count(&xconf->targets.ipv4);
+    uint64_t count_ipv6 = range6list_count(&xconf->targets.ipv6).lo;
     struct Throttler *throttler = parms->throttler;
-    struct TemplateSet pkt_template = templ_copy(masscan->tmplset);
-    struct Adapter *adapter = masscan->nic.adapter;
+    struct TemplateSet pkt_template = templ_copy(xconf->tmplset);
+    struct Adapter *adapter = xconf->nic.adapter;
     uint64_t packets_sent = 0;
-    unsigned increment = masscan->shard.of * masscan->tx_thread_count;
+    unsigned increment = xconf->shard.of * xconf->tx_thread_count;
     struct source_t src;
-    uint64_t seed = masscan->seed;
+    uint64_t seed = xconf->seed;
     uint64_t repeats = 0; /* --infinite repeats */
     uint64_t *status_syn_count;
-    uint64_t entropy = masscan->seed;
+    uint64_t entropy = xconf->seed;
 
     /* Wait to make sure receive_thread is ready */
     pixie_usleep(1000000);
@@ -243,12 +252,12 @@ transmit_thread(void *v) /*aka. scanning_thread() */
 
     /* Normally, we have just one source address. In special cases, though
      * we can have multiple. */
-    adapter_get_source_addresses(masscan, &src);
+    adapter_get_source_addresses(xconf, &src);
 
 
     /* "THROTTLER" rate-limits how fast we transmit, set with the
      * --max-rate parameter */
-    throttler_start(throttler, masscan->max_rate/masscan->tx_thread_count);
+    throttler_start(throttler, xconf->max_rate/xconf->tx_thread_count);
 
 infinite:
     
@@ -257,10 +266,10 @@ infinite:
      * ports.
      * IPv6: low index will pick addresses from the IPv6 ranges, and high
      * indexes will pick addresses from the IPv4 ranges. */
-    range = count_ipv4 * rangelist_count(&masscan->targets.ports)
-            + count_ipv6 * rangelist_count(&masscan->targets.ports);
-    range_ipv6 = count_ipv6 * rangelist_count(&masscan->targets.ports);
-    blackrock_init(&blackrock, range, seed, masscan->blackrock_rounds);
+    range = count_ipv4 * rangelist_count(&xconf->targets.ports)
+            + count_ipv6 * rangelist_count(&xconf->targets.ports);
+    range_ipv6 = count_ipv6 * rangelist_count(&xconf->targets.ports);
+    blackrock_init(&blackrock, range, seed, xconf->blackrock_rounds);
 
     /* Calculate the 'start' and 'end' of a scan. One reason to do this is
      * to support --shard, so that multiple machines can co-operate on
@@ -268,10 +277,10 @@ infinite:
      * a little bit past the end when we have --retries. Yet another
      * thing to do here is deal with multiple network adapters, which
      * is essentially the same logic as shards. */
-    start = masscan->resume.index + (masscan->shard.one-1) * masscan->tx_thread_count + parms->tx_index;
+    start = xconf->resume.index + (xconf->shard.one-1) * xconf->tx_thread_count + parms->tx_index;
     end = range;
-    if (masscan->resume.count && end > start + masscan->resume.count)
-        end = start + masscan->resume.count;
+    if (xconf->resume.count && end > start + xconf->resume.count)
+        end = start + xconf->resume.count;
     end += retries * range;
 
 
@@ -297,7 +306,7 @@ infinite:
          * then "batch_size" will get decremented to zero, and we won't be
          * able to transmit SYN packets.
          */
-        stack_flush_packets(masscan->stack, adapter, &packets_sent, &batch_size);
+        stack_flush_packets(xconf->stack, adapter, &packets_sent, &batch_size);
 
 
         /*
@@ -340,8 +349,8 @@ infinite:
                 ipv6address ip_me;
                 unsigned port_me;
 
-                ip_them = range6list_pick(&masscan->targets.ipv6, xXx % count_ipv6);
-                port_them = rangelist_pick(&masscan->targets.ports, xXx / count_ipv6);
+                ip_them = range6list_pick(&xconf->targets.ipv6, xXx % count_ipv6);
+                port_them = rangelist_pick(&xconf->targets.ports, xXx / count_ipv6);
 
                 ip_me = src.ipv6;
                 port_me = src.port;
@@ -369,8 +378,8 @@ infinite:
 
                 xXx -= range_ipv6;
 
-                ip_them = rangelist_pick(&masscan->targets.ipv4, xXx % count_ipv4);
-                port_them = rangelist_pick(&masscan->targets.ports, xXx / count_ipv4);
+                ip_them = rangelist_pick(&xconf->targets.ipv4, xXx % count_ipv4);
+                port_them = rangelist_pick(&xconf->targets.ports, xXx / count_ipv4);
 
                 /*
                  * SYN-COOKIE LOGIC
@@ -443,7 +452,7 @@ infinite:
      * --infinite
      *  For load testing, go around and do this again
      */
-    if (masscan->is_infinite && !is_tx_done) {
+    if (xconf->is_infinite && !is_tx_done) {
         seed++;
         repeats++;
         goto infinite;
@@ -482,7 +491,7 @@ infinite:
 
 
             /* Transmit packets from the receive thread */
-            stack_flush_packets(masscan->stack, adapter, &packets_sent, &batch_size);
+            stack_flush_packets(xconf->stack, adapter, &packets_sent, &batch_size);
 
             /* Make sure they've actually been transmitted, not just queued up for
              * transmit */
@@ -501,9 +510,9 @@ infinite:
 /***************************************************************************
  ***************************************************************************/
 static unsigned
-is_nic_port(const struct Masscan *masscan, unsigned ip)
+is_nic_port(const struct Xconf *xconf, unsigned ip)
 {
-    if (is_my_port(&masscan->nic.src, ip))
+    if (is_my_port(&xconf->nic.src, ip))
         return 1;
     return 0;
 }
@@ -530,8 +539,8 @@ static void
 receive_thread(void *v)
 {
     struct RxThread *parms = (struct RxThread *)v;
-    const struct Masscan *masscan = parms->masscan;
-    struct Adapter *adapter = masscan->nic.adapter;
+    const struct Xconf *xconf = parms->xconf;
+    struct Adapter *adapter = xconf->nic.adapter;
     int data_link = stack_if_datalink(adapter);
     struct Output *out;
     struct DedupTable *dedup;
@@ -541,9 +550,9 @@ receive_thread(void *v)
     uint64_t *status_synack_count;
     uint64_t *status_tcb_count;
     uint64_t *status_responsed_count;
-    uint64_t entropy = masscan->seed;
+    uint64_t entropy = xconf->seed;
     struct ResetFilter *rf;
-    struct stack_t *stack = masscan->stack;
+    struct stack_t *stack = xconf->stack;
     struct source_t src = {0};
 
     
@@ -579,22 +588,22 @@ receive_thread(void *v)
      * strange things people send us. Note that we don't record transmitted
      * packets, just the packets we've received.
      */
-    if (masscan->pcap_filename[0]) {
-        pcapfile = pcapfile_openwrite(masscan->pcap_filename, 1);
+    if (xconf->pcap_filename[0]) {
+        pcapfile = pcapfile_openwrite(xconf->pcap_filename, 1);
     }
 
     /*
      * Open output. This is where results are reported when saving
      * the --output-format to the --output-filename
      */
-    out = output_create(masscan, 0);
+    out = output_create(xconf, 0);
 
     /*
      * Create deduplication table. This is so when somebody sends us
      * multiple responses, we only record the first one.
      */
-    if (!masscan->is_nodedup1){
-        dedup = dedup_create(masscan->dedup_win1);
+    if (!xconf->is_nodedup1){
+        dedup = dedup_create(xconf->dedup_win1);
     }else{
         dedup = NULL;
     }
@@ -604,8 +613,8 @@ receive_thread(void *v)
      * This is so when somebody sends us multiple app-layer responses,
      * we only record the first one.
      */
-    if (masscan->is_stateless_banners && !masscan->is_nodedup2){
-        dedup_for_stateless = dedup_create(masscan->dedup_win2);
+    if (xconf->is_stateless_banners && !xconf->is_nodedup2){
+        dedup_for_stateless = dedup_create(xconf->dedup_win2);
     }else{
         dedup_for_stateless = NULL;
     }
@@ -613,8 +622,8 @@ receive_thread(void *v)
     /*
      * Do thread init for stateless probe
      */
-    if (masscan->stateless_probe && masscan->stateless_probe->thread_init){
-        masscan->stateless_probe->thread_init(parms);
+    if (xconf->stateless_probe && xconf->stateless_probe->thread_init){
+        xconf->stateless_probe->thread_init(parms);
     }
 
 
@@ -623,7 +632,7 @@ receive_thread(void *v)
      * Create a TCP connection table (per rx thread) for interacting with live
      * connections when doing --banners
      */
-    if (masscan->is_banners) {
+    if (xconf->is_banners) {
         struct TcpCfgPayloads *pay;
         size_t i;
 
@@ -631,121 +640,121 @@ receive_thread(void *v)
          * Create TCP connection table
          */
         tcpcon = tcpcon_create_table(
-            (size_t)(masscan->max_rate/5),
+            (size_t)(xconf->max_rate/5),
             stack,
-            &masscan->tmplset->pkts[Proto_TCP],
+            &xconf->tmplset->pkts[Proto_TCP],
             output_report_banner,
             out,
-            masscan->tcb.timeout,
-            masscan->seed
+            xconf->tcb.timeout,
+            xconf->seed
             );
         
         /*
          * Initialize TCP scripting
          */
-        scripting_init_tcp(tcpcon, masscan->scripting.L);
+        scripting_init_tcp(tcpcon, xconf->scripting.L);
 
         /*
-         * Get the possible source IP addresses and ports that masscan
+         * Get the possible source IP addresses and ports that xconf
          * might be using to transmit from.
          */
-        adapter_get_source_addresses(masscan, &src);
+        adapter_get_source_addresses(xconf, &src);
                                
 
         /*
          * Set some flags [kludge]
          */
         tcpcon_set_banner_flags(tcpcon,
-                masscan->is_capture_cert,
-                masscan->is_capture_servername,
-                masscan->is_capture_html,
-                masscan->is_capture_heartbleed,
-				masscan->is_capture_ticketbleed);
-        if (masscan->is_hello_smbv1)
+                xconf->is_capture_cert,
+                xconf->is_capture_servername,
+                xconf->is_capture_html,
+                xconf->is_capture_heartbleed,
+				xconf->is_capture_ticketbleed);
+        if (xconf->is_hello_smbv1)
             tcpcon_set_parameter(tcpcon, "hello", 1, "smbv1");
-        if (masscan->is_hello_http)
+        if (xconf->is_hello_http)
             tcpcon_set_parameter(tcpcon, "hello", 1, "http");
-        if (masscan->is_hello_ssl)
+        if (xconf->is_hello_ssl)
             tcpcon_set_parameter(tcpcon, "hello", 1, "ssl");
-        if (masscan->is_heartbleed)
+        if (xconf->is_heartbleed)
             tcpcon_set_parameter(tcpcon, "heartbleed", 1, "1");
-        if (masscan->is_ticketbleed)
+        if (xconf->is_ticketbleed)
             tcpcon_set_parameter(tcpcon, "ticketbleed", 1, "1");
-        if (masscan->is_poodle_sslv3)
+        if (xconf->is_poodle_sslv3)
             tcpcon_set_parameter(tcpcon, "sslv3", 1, "1");
 
-        if (masscan->http.payload)
+        if (xconf->http.payload)
             tcpcon_set_parameter(   tcpcon,
                                     "http-payload",
-                                    masscan->http.payload_length,
-                                    masscan->http.payload);
-        if (masscan->http.user_agent)
+                                    xconf->http.payload_length,
+                                    xconf->http.payload);
+        if (xconf->http.user_agent)
             tcpcon_set_parameter(   tcpcon,
                                     "http-user-agent",
-                                    masscan->http.user_agent_length,
-                                    masscan->http.user_agent);
-        if (masscan->http.host)
+                                    xconf->http.user_agent_length,
+                                    xconf->http.user_agent);
+        if (xconf->http.host)
             tcpcon_set_parameter(   tcpcon,
                                     "http-host",
-                                    masscan->http.host_length,
-                                    masscan->http.host);
-        if (masscan->http.method)
+                                    xconf->http.host_length,
+                                    xconf->http.host);
+        if (xconf->http.method)
             tcpcon_set_parameter(   tcpcon,
                                     "http-method",
-                                    masscan->http.method_length,
-                                    masscan->http.method);
-        if (masscan->http.url)
+                                    xconf->http.method_length,
+                                    xconf->http.method);
+        if (xconf->http.url)
             tcpcon_set_parameter(   tcpcon,
                                     "http-url",
-                                    masscan->http.url_length,
-                                    masscan->http.url);
-        if (masscan->http.version)
+                                    xconf->http.url_length,
+                                    xconf->http.url);
+        if (xconf->http.version)
             tcpcon_set_parameter(   tcpcon,
                                     "http-version",
-                                    masscan->http.version_length,
-                                    masscan->http.version);
+                                    xconf->http.version_length,
+                                    xconf->http.version);
 
 
-        if (masscan->tcp_connection_timeout) {
+        if (xconf->tcp_connection_timeout) {
             char foo[64];
-            snprintf(foo, sizeof(foo), "%u", masscan->tcp_connection_timeout);
+            snprintf(foo, sizeof(foo), "%u", xconf->tcp_connection_timeout);
             tcpcon_set_parameter(   tcpcon,
                                  "timeout",
                                  strlen(foo),
                                  foo);
         }
-        if (masscan->tcp_hello_timeout) {
+        if (xconf->tcp_hello_timeout) {
             char foo[64];
-            snprintf(foo, sizeof(foo), "%u", masscan->tcp_hello_timeout);
+            snprintf(foo, sizeof(foo), "%u", xconf->tcp_hello_timeout);
             tcpcon_set_parameter(   tcpcon,
                                  "hello-timeout",
                                  strlen(foo),
                                  foo);
         }
         
-        for (i=0; i<masscan->http.headers_count; i++) {
+        for (i=0; i<xconf->http.headers_count; i++) {
             tcpcon_set_http_header(tcpcon,
-                        masscan->http.headers[i].name,
-                        masscan->http.headers[i].value_length,
-                        masscan->http.headers[i].value,
+                        xconf->http.headers[i].name,
+                        xconf->http.headers[i].value_length,
+                        xconf->http.headers[i].value,
                         http_field_replace);
         }
-        for (i=0; i<masscan->http.cookies_count; i++) {
+        for (i=0; i<xconf->http.cookies_count; i++) {
             tcpcon_set_http_header(tcpcon,
                         "Cookie",
-                        masscan->http.cookies[i].value_length,
-                        masscan->http.cookies[i].value,
+                        xconf->http.cookies[i].value_length,
+                        xconf->http.cookies[i].value,
                         http_field_add);
         }
-        for (i=0; i<masscan->http.remove_count; i++) {
+        for (i=0; i<xconf->http.remove_count; i++) {
             tcpcon_set_http_header(tcpcon,
-                        masscan->http.headers[i].name,
+                        xconf->http.headers[i].name,
                         0,
                         0,
                         http_field_remove);
         }
 
-        for (pay = masscan->payloads.tcp; pay; pay = pay->next) {
+        for (pay = xconf->payloads.tcp; pay; pay = pay->next) {
             char name[64];
             snprintf(name, sizeof(name), "hello-string[%u]", pay->port);
             tcpcon_set_parameter(   tcpcon, 
@@ -760,7 +769,7 @@ receive_thread(void *v)
      * In "offline" mode, we don't have any receive threads, so simply
      * wait until transmitter thread is done then go to the end
      */
-    if (masscan->is_offline) {
+    if (xconf->is_offline) {
         while (!is_rx_done)
             pixie_usleep(10000);
         parms->done_receiving = 1;
@@ -905,7 +914,7 @@ receive_thread(void *v)
                      * ourself, or the router will lose track of us.*/
                      stack_arp_incoming_request(stack,
                                       ip_me.ipv4,
-                                      masscan->nic.source_mac,
+                                      xconf->nic.source_mac,
                                       px, length);
                     break;
                 case 2: /* response */
@@ -913,15 +922,15 @@ receive_thread(void *v)
                      * than port scanning them */
 
                     /* If we aren't doing an ARP scan, then ignore ARP responses */
-                    if (!masscan->scan_type.arp)
+                    if (!xconf->scan_type.arp)
                         break;
 
                     /* If this response isn't in our range, then ignore it */
-                    if (!rangelist_is_contains(&masscan->targets.ipv4, ip_them.ipv4))
+                    if (!rangelist_is_contains(&xconf->targets.ipv4, ip_them.ipv4))
                         break;
 
                     /* Ignore duplicates */
-                    if (!masscan->is_nodedup1){
+                    if (!xconf->is_nodedup1){
                         if (dedup_is_duplicate(dedup, ip_them, 0, ip_me, 0))
                             continue;
                     }
@@ -933,9 +942,9 @@ receive_thread(void *v)
                 continue;
             case FOUND_UDP:
             case FOUND_DNS:
-                if (!is_nic_port(masscan, port_me))
+                if (!is_nic_port(xconf, port_me))
                     continue;
-                if (parms->masscan->nmap.packet_trace)
+                if (parms->xconf->nmap.packet_trace)
                     packet_trace(stdout, parms->pt_start, px, length, 0);
                 handle_udp(out, secs, px, length, &parsed, entropy);
                 continue;
@@ -959,7 +968,7 @@ receive_thread(void *v)
         /* verify: my port number */
         if (!is_my_port(stack->src, port_me))
             continue;
-        if (parms->masscan->nmap.packet_trace)
+        if (parms->xconf->nmap.packet_trace)
             packet_trace(stdout, parms->pt_start, px, length, 0);
 
         Q = 0;
@@ -1111,7 +1120,7 @@ receive_thread(void *v)
             }
 
             /* verify: ignore duplicates */
-            if (!masscan->is_nodedup1){
+            if (!xconf->is_nodedup1){
                 if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me))
                     continue;
             }
@@ -1122,18 +1131,18 @@ receive_thread(void *v)
             }
 
             /* Send ACK with req in stateless-banners mode*/
-            if (masscan->is_stateless_banners
+            if (xconf->is_stateless_banners
                 && TCP_IS_SYNACK(px, parsed.transport_offset)
                 && status == PortStatus_Open) {
 
                 unsigned char payload[STATELESS_PAYLOAD_MAX_LEN];
                 size_t payload_len;
-                payload_len = masscan->stateless_probe->make_payload(
+                payload_len = xconf->stateless_probe->make_payload(
                     ip_them, ip_me, port_them, port_me,
                     payload, STATELESS_PAYLOAD_MAX_LEN);
                 
                 tcp_send_ACK(
-                    &masscan->tmplset->pkts[Proto_TCP],
+                    &xconf->tmplset->pkts[Proto_TCP],
                     stack,
                     ip_them, ip_me,
                     port_them, port_me,
@@ -1155,11 +1164,11 @@ receive_thread(void *v)
             /*
              * Send RST if no more connecting
              */
-            if (tcpcon == NULL && !masscan->is_noreset1) {
-                if (masscan->is_stateless_banners) {
+            if (tcpcon == NULL && !xconf->is_noreset1) {
+                if (xconf->is_stateless_banners) {
                     if (status == PortStatus_ZeroWin)
                         tcp_send_RST(
-                            &masscan->tmplset->pkts[Proto_TCP],
+                            &xconf->tmplset->pkts[Proto_TCP],
                             stack,
                             ip_them, ip_me,
                             port_them, port_me,
@@ -1167,7 +1176,7 @@ receive_thread(void *v)
                 }else{
                     if (status == PortStatus_Open || status == PortStatus_ZeroWin)
                         tcp_send_RST(
-                            &masscan->tmplset->pkts[Proto_TCP],
+                            &xconf->tmplset->pkts[Proto_TCP],
                             stack,
                             ip_them, ip_me,
                             port_them, port_me,
@@ -1192,10 +1201,10 @@ receive_thread(void *v)
          * 
          * Note the verifying of cookies.
          */
-        if (masscan->is_stateless_banners
+        if (xconf->is_stateless_banners
             && TCP_IS_ACK(px, parsed.transport_offset)) {
             
-            size_t had_sent = masscan->stateless_probe->get_payload_length(
+            size_t had_sent = xconf->stateless_probe->get_payload_length(
                 ip_them, ip_me, port_them, port_me);
 
             /* verify: ack-cookie*/
@@ -1212,7 +1221,7 @@ receive_thread(void *v)
                 continue;
 
             /* verify: ignore duplicates */
-            if (!masscan->is_nodedup2){
+            if (!xconf->is_nodedup2){
                 if (dedup_is_duplicate(dedup_for_stateless, ip_them, port_them, ip_me, port_me))
                     continue;
             }
@@ -1233,11 +1242,11 @@ receive_thread(void *v)
                         );
             
             /* output banner in stateless mode*/
-            if (masscan->is_capture_stateless){
+            if (xconf->is_capture_stateless){
                 unsigned char report_buf[STATELESS_BANNER_MAX_LEN];
                 size_t report_len;
 
-                report_len = masscan->stateless_probe->get_report_banner(
+                report_len = xconf->stateless_probe->get_report_banner(
                     ip_them, ip_me, port_them, port_me,
                     &px[parsed.app_offset], parsed.app_length,
                     report_buf, STATELESS_BANNER_MAX_LEN);
@@ -1253,9 +1262,9 @@ receive_thread(void *v)
             /*
              * Send RST after server's response
              */
-            if (!masscan->is_noreset2)
+            if (!xconf->is_noreset2)
                 tcp_send_RST(
-                    &masscan->tmplset->pkts[Proto_TCP],
+                    &xconf->tmplset->pkts[Proto_TCP],
                     stack,
                     ip_them, ip_me,
                     port_them, port_me,
@@ -1272,10 +1281,10 @@ receive_thread(void *v)
 end:
     if (tcpcon)
         tcpcon_destroy_table(tcpcon);
-    if (!masscan->is_nodedup1){
+    if (!xconf->is_nodedup1){
         dedup_destroy(dedup);
     }
-    if (masscan->is_stateless_banners && !masscan->is_nodedup2){
+    if (xconf->is_stateless_banners && !xconf->is_nodedup2){
         dedup_destroy(dedup_for_stateless);
     }
     output_destroy(out);
@@ -1328,7 +1337,7 @@ static void control_c_handler(int x)
  * them to exit.
  ***************************************************************************/
 static int
-main_scan(struct Masscan *masscan)
+main_scan(struct Xconf *xconf)
 {
     /*We could have many tx threads but one rx thread*/
     struct TxThread *tx_thread;
@@ -1339,30 +1348,30 @@ main_scan(struct Masscan *masscan)
     uint64_t range;
     unsigned index;
     time_t now = time(0);
-    struct Status status;
+    struct Xtatus status;
     uint64_t min_index = UINT64_MAX;
     struct MassVulnCheck *vulncheck = NULL;
 
 
     memset(rx_thread, 0, sizeof(struct RxThread));
-    tx_thread = CALLOC(masscan->tx_thread_count, sizeof(struct TxThread));
+    tx_thread = CALLOC(xconf->tx_thread_count, sizeof(struct TxThread));
 
     /*
      * Vuln check initialization
      */
-    if (masscan->vuln_name) {
+    if (xconf->vuln_name) {
         unsigned i;
 		unsigned is_error;
-        vulncheck = vulncheck_lookup(masscan->vuln_name);
+        vulncheck = vulncheck_lookup(xconf->vuln_name);
         
         /* If no ports specified on command-line, grab default ports */
         is_error = 0;
-        if (rangelist_count(&masscan->targets.ports) == 0)
-            rangelist_parse_ports(&masscan->targets.ports, vulncheck->ports, &is_error, 0);
+        if (rangelist_count(&xconf->targets.ports) == 0)
+            rangelist_parse_ports(&xconf->targets.ports, vulncheck->ports, &is_error, 0);
         
         /* Kludge: change normal port range to vulncheck range */
-        for (i=0; i<masscan->targets.ports.count; i++) {
-            struct Range *r = &masscan->targets.ports.list[i];
+        for (i=0; i<xconf->targets.ports.count; i++) {
+            struct Range *r = &xconf->targets.ports.list[i];
             r->begin = (r->begin&0xFFFF) | Templ_VulnCheck;
             r->end = (r->end & 0xFFFF) | Templ_VulnCheck;
         }
@@ -1371,14 +1380,14 @@ main_scan(struct Masscan *masscan)
     /*
      * Initialize the task size
      */
-    count_ips = rangelist_count(&masscan->targets.ipv4) + range6list_count(&masscan->targets.ipv6).lo;
+    count_ips = rangelist_count(&xconf->targets.ipv4) + range6list_count(&xconf->targets.ipv6).lo;
     if (count_ips == 0) {
         LOG(0, "FAIL: target IP address list empty\n");
         LOG(0, " [hint] try something like \"--range 10.0.0.0/8\"\n");
         LOG(0, " [hint] try something like \"--range 192.168.0.100-192.168.0.200\"\n");
         return 1;
     }
-    count_ports = rangelist_count(&masscan->targets.ports);
+    count_ports = rangelist_count(&xconf->targets.ports);
     if (count_ports == 0) {
         LOG(0, "FAIL: no ports were specified\n");
         LOG(0, " [hint] try something like \"-p80,8000-9000\"\n");
@@ -1386,13 +1395,13 @@ main_scan(struct Masscan *masscan)
         return 1;
     }
     range = count_ips * count_ports;
-    range += (uint64_t)(masscan->retries * range);
+    range += (uint64_t)(xconf->retries * range);
 
     /*
      * If doing an ARP scan, then don't allow port scanning
      */
-    if (rangelist_is_contains(&masscan->targets.ports, Templ_ARP)) {
-        if (masscan->targets.ports.count != 1) {
+    if (rangelist_is_contains(&xconf->targets.ports, Templ_ARP)) {
+        if (xconf->targets.ports.count != 1) {
             LOG(0, "FAIL: cannot arpscan and portscan at the same time\n");
             return 1;
         }
@@ -1402,7 +1411,7 @@ main_scan(struct Masscan *masscan)
      * If the IP address range is very big, then require that that the
      * user apply an exclude range
      */
-    if (count_ips > 1000000000ULL && rangelist_count(&masscan->exclude.ipv4) == 0) {
+    if (count_ips > 1000000000ULL && rangelist_count(&xconf->exclude.ipv4) == 0) {
         LOG(0, "FAIL: range too big, need confirmation\n");
         LOG(0, " [hint] to prevent accidents, at least one --exclude must be specified\n");
         LOG(0, " [hint] use \"--exclude 255.255.255.255\" as a simple confirmation\n");
@@ -1413,14 +1422,14 @@ main_scan(struct Masscan *masscan)
      * trim the nmap UDP payloads down to only those ports we are using. This
      * makes lookups faster at high packet rates.
      */
-    payloads_udp_trim(masscan->payloads.udp, &masscan->targets);
-    payloads_oproto_trim(masscan->payloads.oproto, &masscan->targets);
+    payloads_udp_trim(xconf->payloads.udp, &xconf->targets);
+    payloads_oproto_trim(xconf->payloads.oproto, &xconf->targets);
 
     /*
      * Do global init for stateless probe
      */
-    if (masscan->stateless_probe && masscan->stateless_probe->global_init){
-        if (EXIT_FAILURE == masscan->stateless_probe->global_init(masscan)) {
+    if (xconf->stateless_probe && xconf->stateless_probe->global_init){
+        if (EXIT_FAILURE == xconf->stateless_probe->global_init(xconf)) {
             LOG(0, "FAIL: errors in stateless probe global initializing\n");
             exit(1);
         }
@@ -1434,9 +1443,9 @@ main_scan(struct Masscan *masscan)
     /*
      * Turn the adapter on, and get the running configuration
      */
-    if (masscan_initialize_adapter(masscan) != 0)
+    if (initialize_adapter(xconf) != 0)
         exit(1);
-    if (!masscan->nic.is_usable) {
+    if (!xconf->nic.is_usable) {
         LOG(0, "FAIL: failed to detect IP of interface\n");
         LOG(0, " [hint] did you spell the name correctly?\n");
         LOG(0, " [hint] if it has no IP address, "
@@ -1450,44 +1459,44 @@ main_scan(struct Masscan *masscan)
         * scanning. Then, we adjust the template with additional features,
         * such as the IP address and so on.
         */
-    masscan->tmplset = &tmplset;
-    masscan->tmplset->vulncheck = vulncheck;
+    xconf->tmplset = &tmplset;
+    xconf->tmplset->vulncheck = vulncheck;
     template_packet_init(
-                masscan->tmplset,
-                masscan->nic.source_mac,
-                masscan->nic.router_mac_ipv4,
-                masscan->nic.router_mac_ipv6,
-                masscan->payloads.udp,
-                masscan->payloads.oproto,
-                stack_if_datalink(masscan->nic.adapter),
-                masscan->seed,
-                masscan->templ_opts);
+                xconf->tmplset,
+                xconf->nic.source_mac,
+                xconf->nic.router_mac_ipv4,
+                xconf->nic.router_mac_ipv6,
+                xconf->payloads.udp,
+                xconf->payloads.oproto,
+                stack_if_datalink(xconf->nic.adapter),
+                xconf->seed,
+                xconf->templ_opts);
 
     /*
         * Set the "source port" of everything we transmit.
         */
-    if (masscan->nic.src.port.range == 0) {
+    if (xconf->nic.src.port.range == 0) {
         unsigned port = 40000 + now % 20000;
-        masscan->nic.src.port.first = port;
-        masscan->nic.src.port.last = port + 16;
-        masscan->nic.src.port.range = 16;
+        xconf->nic.src.port.first = port;
+        xconf->nic.src.port.last = port + 16;
+        xconf->nic.src.port.range = 16;
     }
 
     /*
         * Set the "TTL" (IP time-to-live) of everything we send.
         */
-    if (masscan->nmap.ttl)
-        template_set_ttl(masscan->tmplset, masscan->nmap.ttl);
+    if (xconf->nmap.ttl)
+        template_set_ttl(xconf->tmplset, xconf->nmap.ttl);
 
-    if (masscan->nic.is_vlan)
-        template_set_vlan(masscan->tmplset, masscan->nic.vlan_id);
+    if (xconf->nic.is_vlan)
+        template_set_vlan(xconf->tmplset, xconf->nic.vlan_id);
 
     /**
      * create callback queue
      * TODO: Maybe more queue?
     */
-    masscan->stack = stack_create(masscan->nic.source_mac,
-        &masscan->nic.src, masscan->stack_buf_count);
+    xconf->stack = stack_create(xconf->nic.source_mac,
+        &xconf->nic.src, xconf->stack_buf_count);
 
     /*
         * trap <ctrl-c> to pause
@@ -1498,18 +1507,18 @@ main_scan(struct Masscan *masscan)
     /*
      * Prepare for tx threads
      */
-    for (index=0; index<masscan->tx_thread_count; index++) {
+    for (index=0; index<xconf->tx_thread_count; index++) {
         struct TxThread *parms = &tx_thread[index];
-        parms->masscan = masscan;
+        parms->xconf = xconf;
         parms->tx_index = index;
-        parms->my_index = masscan->resume.index;
+        parms->my_index = xconf->resume.index;
         parms->done_transmitting = 0;
         parms->thread_handle_xmit = 0;
     }
     /*
      * Prepare for rx threads
      */
-    rx_thread->masscan = masscan;
+    rx_thread->xconf = xconf;
     rx_thread->done_receiving = 0;
     rx_thread->thread_handle_recv = 0;
     /** needed for --packet-trace option so that we know when we started
@@ -1531,8 +1540,8 @@ main_scan(struct Masscan *masscan)
             buffer);
 
         if (count_ports == 1 && \
-            masscan->targets.ports.list->begin == Templ_ICMP_echo && \
-            masscan->targets.ports.list->end == Templ_ICMP_echo)
+            xconf->targets.ports.list->begin == Templ_ICMP_echo && \
+            xconf->targets.ports.list->end == Templ_ICMP_echo)
             { /* ICMP only */
                 //LOG(0, " -- forced options: -sn -n --randomize-hosts -v --send-eth\n");
                 LOG(0, "Initiating ICMP Echo Scan\n");
@@ -1552,7 +1561,7 @@ main_scan(struct Masscan *masscan)
      * Start all the threads
      */
     rx_thread->thread_handle_recv = pixie_begin_thread(receive_thread, 0, rx_thread);
-    for (index=0; index<masscan->tx_thread_count; index++) {
+    for (index=0; index<xconf->tx_thread_count; index++) {
         struct TxThread *parms = &tx_thread[index];
         parms->thread_handle_xmit = pixie_begin_thread(transmit_thread, 0, parms);
     }
@@ -1562,9 +1571,9 @@ main_scan(struct Masscan *masscan)
      */
     pixie_usleep(1000 * 100);
     LOG(1, "[+] waiting for threads to finish\n");
-    status_start(&status);
-    status.is_infinite = masscan->is_infinite;
-    while (!is_tx_done && masscan->output.is_status_updates) {
+    xtatus_start(&status);
+    status.is_infinite = xconf->is_infinite;
+    while (!is_tx_done && xconf->output.is_status_updates) {
         unsigned i;
         double rate = 0;
         uint64_t total_tcbs = 0;
@@ -1575,7 +1584,7 @@ main_scan(struct Masscan *masscan)
 
         /* Find the minimum index of all the threads */
         min_index = UINT64_MAX;
-        for (i=0; i<masscan->tx_thread_count; i++) {
+        for (i=0; i<xconf->tx_thread_count; i++) {
             struct TxThread *parms = &tx_thread[i];
 
             /*Just tx's my_index & rate are meaningful*/
@@ -1597,7 +1606,7 @@ main_scan(struct Masscan *masscan)
         if (rx_thread->total_responsed)
             total_responsed = *rx_thread->total_responsed;
 
-        if (min_index >= range && !masscan->is_infinite) {
+        if (min_index >= range && !xconf->is_infinite) {
             /* Note: This is how we can tell the scan has ended */
             is_tx_done = 1;
         }
@@ -1606,10 +1615,10 @@ main_scan(struct Masscan *masscan)
          * update screen about once per second with statistics,
          * namely packets/second.
          */
-        if (masscan->output.is_status_updates)
-            status_print(&status, min_index, range, rate,
+        if (xconf->output.is_status_updates)
+            xtatus_print(&status, min_index, range, rate,
                 total_tcbs, total_synacks, total_syns, total_responsed,
-                0, masscan->output.is_status_ndjson);
+                0, xconf->output.is_status_ndjson);
 
         /* Sleep for almost a second */
         pixie_mssleep(750);
@@ -1620,10 +1629,10 @@ main_scan(struct Masscan *masscan)
      * information.
      */
     if (min_index < count_ips * count_ports) {
-        masscan->resume.index = min_index;
+        xconf->resume.index = min_index;
 
         /* Write current settings to "paused.conf" so that the scan can be restarted */
-        masscan_save_state(masscan);
+        xconf_save_state(xconf);
     }
 
 
@@ -1644,7 +1653,7 @@ main_scan(struct Masscan *masscan)
 
         /* Find the minimum index of all the threads */
         min_index = UINT64_MAX;
-        for (i=0; i<masscan->tx_thread_count; i++) {
+        for (i=0; i<xconf->tx_thread_count; i++) {
             struct TxThread *parms = &tx_thread[i];
 
             /*Just tx's my_index & rate are meaningful*/
@@ -1666,29 +1675,29 @@ main_scan(struct Masscan *masscan)
         if (rx_thread->total_responsed)
             total_responsed = *rx_thread->total_responsed;
 
-        if (time(0) - now >= masscan->wait) {
+        if (time(0) - now >= xconf->wait) {
             is_rx_done = 1;
         }
 
-        if (time(0) - now - 10 > masscan->wait) {
+        if (time(0) - now - 10 > xconf->wait) {
             LOG(0, "[-] Passed the wait window but still running, forcing exit...        \n");
             exit(0);
         }
 
-        if (masscan->output.is_status_updates) {
-            status_print(&status, min_index, range, rate,
+        if (xconf->output.is_status_updates) {
+            xtatus_print(&status, min_index, range, rate,
                 total_tcbs, total_synacks, total_syns, total_responsed,
-                masscan->wait - (time(0) - now),
-                masscan->output.is_status_ndjson);
+                xconf->wait - (time(0) - now),
+                xconf->output.is_status_ndjson);
 
-            for (i=0; i<masscan->tx_thread_count; i++) {
+            for (i=0; i<xconf->tx_thread_count; i++) {
                 struct TxThread *parms = &tx_thread[i];
                 tx_done_count += parms->done_transmitting;
             }
 
             pixie_mssleep(250);
 
-            if (tx_done_count < masscan->tx_thread_count)
+            if (tx_done_count < xconf->tx_thread_count)
                 continue;
             is_tx_done = 1;
             if (!rx_thread->done_receiving)
@@ -1700,7 +1709,7 @@ main_scan(struct Masscan *masscan)
              * Join the threads, which doesn't allow us to print out 
              * status messages, but allows us to exit cleanly without
              * any waiting */
-            for (i=0; i<masscan->tx_thread_count; i++) {
+            for (i=0; i<xconf->tx_thread_count; i++) {
                 struct TxThread *parms = &tx_thread[i];
 
                 if (parms->thread_handle_xmit) {
@@ -1723,9 +1732,9 @@ main_scan(struct Masscan *masscan)
     /*
      * Now cleanup everything
      */
-    status_finish(&status);
+    xtatus_finish(&status);
 
-    if (!masscan->output.is_status_updates) {
+    if (!xconf->output.is_status_updates) {
         uint64_t usec_now = pixie_gettime();
 
         printf("%u milliseconds elapsed\n", (unsigned)((usec_now - usec_start)/1000));
@@ -1734,8 +1743,8 @@ main_scan(struct Masscan *masscan)
 	/**
      * Do close for stateless probe
     */
-    if (masscan->stateless_probe && masscan->stateless_probe->close) {
-        masscan->stateless_probe->close(masscan);
+    if (xconf->stateless_probe && xconf->stateless_probe->close) {
+        xconf->stateless_probe->close(xconf);
     }
 
     free(tx_thread);
@@ -1752,7 +1761,7 @@ main_scan(struct Masscan *masscan)
  ***************************************************************************/
 int main(int argc, char *argv[])
 {
-    struct Masscan masscan[1];
+    struct Xconf xconf[1];
     unsigned i;
     int has_target_addresses = 0;
     int has_target_ports = 0;
@@ -1778,41 +1787,41 @@ int main(int argc, char *argv[])
     /*
      * Initialize those defaults that aren't zero
      */
-    memset(masscan, 0, sizeof(*masscan));
+    memset(xconf, 0, sizeof(*xconf));
 
     //=================================================Define default params
 
     /* 14 rounds seem to give way better statistical distribution than 4 with a 
     very low impact on scan rate */
-    masscan->blackrock_rounds = 14;
-    masscan->output.is_show_open = 1; /* default: show syn-ack, not rst */
-    masscan->output.is_status_updates = 1; /* default: show status updates */
-    masscan->wait = 10; /* how long to wait for responses when done */
-    masscan->max_rate = 100.0; /* max rate = hundred packets-per-second */
-    masscan->tx_thread_count = 1;
-    masscan->rx_thread_count = 1; /*receive thread num is always 1*/
-    masscan->shard.one = 1;
-    masscan->shard.of = 1;
-    masscan->min_packet_size = 60;
-    masscan->payloads.udp = payloads_udp_create();
-    masscan->payloads.oproto = payloads_oproto_create();
-    safe_strcpy(masscan->output.rotate.directory,
-        sizeof(masscan->output.rotate.directory), ".");
-    masscan->is_capture_cert = 1;
-    masscan->dedup_win1 = 1000000;
-    masscan->dedup_win2 = 1000000;
+    xconf->blackrock_rounds = 14;
+    xconf->output.is_show_open = 1; /* default: show syn-ack, not rst */
+    xconf->output.is_status_updates = 1; /* default: show status updates */
+    xconf->wait = 10; /* how long to wait for responses when done */
+    xconf->max_rate = 100.0; /* max rate = hundred packets-per-second */
+    xconf->tx_thread_count = 1;
+    xconf->rx_thread_count = 1; /*receive thread num is always 1*/
+    xconf->shard.one = 1;
+    xconf->shard.of = 1;
+    xconf->min_packet_size = 60;
+    xconf->payloads.udp = payloads_udp_create();
+    xconf->payloads.oproto = payloads_oproto_create();
+    safe_strcpy(xconf->output.rotate.directory,
+        sizeof(xconf->output.rotate.directory), ".");
+    xconf->is_capture_cert = 1;
+    xconf->dedup_win1 = 1000000;
+    xconf->dedup_win2 = 1000000;
     /*default entries count of callback queue and packet buffer queue*/
     /**
      * Default entries count of callback queue and packet buffer queue.
      * Must be power of 2 and do not exceed the size limit of rte-ring.
     */
-    masscan->stack_buf_count = 16384;
+    xconf->stack_buf_count = 16384;
 
     /*
      * Pre-parse the command-line
      */
-    if (masscan_conf_contains("--readscan", argc, argv)) {
-        masscan->is_readscan = 1;
+    if (xconf_contains("--readscan", argc, argv)) {
+        xconf->is_readscan = 1;
     }
 
     /*
@@ -1824,9 +1833,9 @@ int main(int argc, char *argv[])
      * makes a mistake
      */
 #if !defined(WIN32)
-    if (!masscan->is_readscan) {
+    if (!xconf->is_readscan) {
         if (access("/etc/xtate/xtate.conf", 0) == 0) {
-            masscan_set_parameter(masscan, "conf",  "/etc/xtate/xtate.conf");
+            xconf_set_parameter(xconf, "conf",  "/etc/xtate/xtate.conf");
         }
     }
 #endif
@@ -1835,21 +1844,21 @@ int main(int argc, char *argv[])
      * Read in the configuration from the command-line. We are looking for
      * either options or a list of IPv4 address ranges.
      */
-    masscan_command_line(masscan, argc, argv);
-    if (masscan->seed == 0)
-        masscan->seed = get_entropy(); /* entropy for randomness */
+    xconf_command_line(xconf, argc, argv);
+    if (xconf->seed == 0)
+        xconf->seed = get_one_entropy(); /* entropy for randomness */
 
     /*
      * Load database files like "nmap-payloads" and "nmap-service-probes"
      */
-    masscan_load_database_files(masscan);
+    load_database_files(xconf);
 
     /*
      * Load the scripting engine if needed and run those that were
      * specified.
      */
-    if (masscan->is_scripting)
-        scripting_init(masscan);
+    if (xconf->is_scripting)
+        scripting_init(xconf);
 
     /* We need to do a separate "raw socket" initialization step. This is
      * for Windows and PF_RING. */
@@ -1867,11 +1876,11 @@ int main(int argc, char *argv[])
      * of their ranges, and when doing wide scans, add the exclude list to
      * prevent them from being scanned.
      */
-    has_target_addresses = massip_has_ipv4_targets(&masscan->targets) || massip_has_ipv6_targets(&masscan->targets);
-    has_target_ports = massip_has_target_ports(&masscan->targets);
-    massip_apply_excludes(&masscan->targets, &masscan->exclude);
-    if (!has_target_ports && masscan->op == Operation_ListScan)
-        massip_add_port_string(&masscan->targets, "80", 0);
+    has_target_addresses = massip_has_ipv4_targets(&xconf->targets) || massip_has_ipv6_targets(&xconf->targets);
+    has_target_ports = massip_has_target_ports(&xconf->targets);
+    massip_apply_excludes(&xconf->targets, &xconf->exclude);
+    if (!has_target_ports && xconf->op == Operation_ListScan)
+        massip_add_port_string(&xconf->targets, "80", 0);
 
 
 
@@ -1880,7 +1889,7 @@ int main(int argc, char *argv[])
      * of walking large memory tables. When we scan the entire Internet
      * our --excludefile will chop up our pristine 0.0.0.0/0 range into
      * hundreds of subranges. This allows us to grab addresses faster. */
-    massip_optimize(&masscan->targets);
+    massip_optimize(&xconf->targets);
     
     /* FIXME: we only support 63-bit scans at the current time.
      * This is big enough for the IPv4 Internet, where scanning
@@ -1894,9 +1903,9 @@ int main(int argc, char *argv[])
      * difficult for 32-bit processors, for now, I'm going to stick
      * to a simple 63-bit scan.
      */
-    if (massint128_bitcount(massip_range(&masscan->targets)) > 63) {
+    if (massint128_bitcount(massip_range(&xconf->targets)) > 63) {
         fprintf(stderr, "[-] FAIL: scan range too large, max is 63-bits, requested is %u bits\n",
-                massint128_bitcount(massip_range(&masscan->targets)));
+                massint128_bitcount(massip_range(&xconf->targets)));
         fprintf(stderr, "    Hint: scan range is number of IP addresses times number of ports\n");
         fprintf(stderr, "    Hint: IPv6 subnet must be at least /66 \n");
         exit(1);
@@ -1906,8 +1915,8 @@ int main(int argc, char *argv[])
      * Choose a default StatelessProbe if not specified.
      * Wrong specification will be handled in SET_stateless_probe in main-conf.c
      */
-    if (masscan->is_stateless_banners && !masscan->stateless_probe){
-        masscan->stateless_probe = get_stateless_probe("null");
+    if (xconf->is_stateless_banners && !xconf->stateless_probe){
+        xconf->stateless_probe = get_stateless_probe("null");
         LOG(0, "[-] Default NullProbe is chosen because no statelss-probe was specified.\n");
     }
 
@@ -1915,17 +1924,17 @@ int main(int argc, char *argv[])
      * Once we've read in the configuration, do the operation that was
      * specified
      */
-    switch (masscan->op) {
+    switch (xconf->op) {
     case Operation_Default:
         /* Print usage info and exit */
-        masscan_set_parameter(masscan, "usage", "true");
+        xconf_set_parameter(xconf, "usage", "true");
         break;
 
     case Operation_Scan:
         /*
          * THIS IS THE NORMAL THING
          */
-        if (rangelist_count(&masscan->targets.ipv4) == 0 && massint128_is_zero(range6list_count(&masscan->targets.ipv6))) {
+        if (rangelist_count(&xconf->targets.ipv4) == 0 && massint128_is_zero(range6list_count(&xconf->targets.ipv6))) {
             /* We check for an empty target list here first, before the excludes,
              * so that we can differentiate error messages after excludes, in case
              * the user specified addresses, but they were removed by excludes. */
@@ -1938,7 +1947,7 @@ int main(int argc, char *argv[])
             }
             exit(1);
         }
-        if (rangelist_count(&masscan->targets.ports) == 0) {
+        if (rangelist_count(&xconf->targets.ports) == 0) {
             if (has_target_ports) {
                 LOG(0, " [hint] all ports were removed by exclusion ranges\n");
             } else {
@@ -1948,11 +1957,11 @@ int main(int argc, char *argv[])
             }
             return 1;
         }
-        return main_scan(masscan);
+        return main_scan(xconf);
 
     case Operation_ListScan:
         /* Create a randomized list of IP addresses */
-        main_listscan(masscan);
+        listscan(xconf);
         return 0;
 
     case Operation_List_Adapters:
@@ -1961,11 +1970,11 @@ int main(int argc, char *argv[])
         break;
 
     case Operation_DebugIF:
-        rawsock_selftest_if(masscan->nic.ifname);
+        rawsock_selftest_if(xconf->nic.ifname);
         return 0;
 
     case Operation_ReadRange:
-        main_readrange(masscan);
+        readrange(xconf);
         return 0;
 
     case Operation_ReadScan:
@@ -1989,31 +1998,31 @@ int main(int argc, char *argv[])
              * read the binary files, and output them again depending upon
              * the output parameters
              */
-            readscan_binary_scanfile(masscan, start, stop, argv);
+            readscan_binary_scanfile(xconf, start, stop, argv);
 
         }
         break;
 
     case Operation_Benchmark:
         printf("=== benchmarking (%u-bits) ===\n\n", (unsigned)sizeof(void*)*8);
-        blackrock_benchmark(masscan->blackrock_rounds);
-        blackrock2_benchmark(masscan->blackrock_rounds);
+        blackrock_benchmark(xconf->blackrock_rounds);
+        blackrock2_benchmark(xconf->blackrock_rounds);
         smack_benchmark();
         exit(1);
         break;
 
     case Operation_Echo:
-        masscan_echo(masscan, stdout, 0);
+        xconf_echo(xconf, stdout, 0);
         exit(0);
         break;
 
     case Operation_EchoAll:
-        masscan_echo(masscan, stdout, 0);
+        xconf_echo(xconf, stdout, 0);
         exit(0);
         break;
 
     case Operation_EchoCidr:
-        masscan_echo_cidr(masscan, stdout, 0);
+        xconf_echo_cidr(xconf, stdout, 0);
         exit(0);
         break;
 
@@ -2049,7 +2058,7 @@ int main(int argc, char *argv[])
             x += massip_parse_selftest();
             x += pixie_time_selftest();
             x += rte_ring_selftest();
-            x += mainconf_selftest();
+            x += xconf_selftest();
             x += zeroaccess_selftest();
             x += nmapserviceprobes_selftest();
             x += rstfilter_selftest();

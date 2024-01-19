@@ -6,7 +6,7 @@
 #include "../proto/proto-banner1.h"
 #include "../smack/smack.h"
 #include "../util/unusedparm.h"
-#include "../util/util-logger.h"
+#include "../util/logger.h"
 #include "../proto/masscan-app.h"
 #include "../out/output.h"
 #include "../stack/stack-tcp-api.h"

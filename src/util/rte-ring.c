@@ -69,7 +69,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ***************************************************************************/
-#include "../util/util-safefunc.h"
+#include "mas-safefunc.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
