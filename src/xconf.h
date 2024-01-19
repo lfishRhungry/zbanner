@@ -53,7 +53,6 @@ enum Operation {
     Operation_ReadRange = 7,        /* --readrange */
     Operation_Benchmark = 8,        /* --benchmark */
     Operation_Echo = 9,             /* --echo */
-    Operation_EchoAll = 10,         /* --echo-all */
     Operation_EchoCidr = 11,        /* --echo-cidr */
     Operation_List_Probes,          /* --list-probes*/
 };
@@ -595,13 +594,13 @@ xconf_set_parameter(struct Xconf *xconf,
  * non-default values. With "echo-all", everything is echoed.
  */
 void
-xconf_echo(struct Xconf *xconf, FILE *fp, unsigned is_echo_all);
+xconf_echo(struct Xconf *xconf, FILE *fp);
 
 /**
  * Echoes the list of CIDR ranges to scan.
  */
 void
-xconf_echo_cidr(struct Xconf *xconf, FILE *fp, unsigned is_echo_all);
+xconf_echo_cidr(struct Xconf *xconf, FILE *fp);
 
 
 #endif

@@ -2012,17 +2012,12 @@ int main(int argc, char *argv[])
         break;
 
     case Operation_Echo:
-        xconf_echo(xconf, stdout, 0);
-        exit(0);
-        break;
-
-    case Operation_EchoAll:
-        xconf_echo(xconf, stdout, 0);
+        xconf_echo(xconf, stdout);
         exit(0);
         break;
 
     case Operation_EchoCidr:
-        xconf_echo_cidr(xconf, stdout, 0);
+        xconf_echo_cidr(xconf, stdout);
         exit(0);
         break;
 

@@ -135,7 +135,7 @@ xconf_save_state(struct Xconf *xconf)
     }
 
     
-    xconf_echo(xconf, fp, 0);
+    xconf_echo(xconf, fp);
 
     fclose(fp);
 }
@@ -2649,14 +2649,16 @@ static int SET_echo(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
         if (xconf->echo_all)
-            fprintf(xconf->echo, "echo = %s\n", xconf->echo?"true":"false");
+            fprintf(xconf->echo, "echo-all = %s\n", xconf->echo?"true":"false");
         return 0;
     }
     
     if (EQUALS("echo", name) && parseBoolean(value))
         xconf->op = Operation_Echo;
-    else if (EQUALS("echo-all", name) && parseBoolean(value))
-        xconf->op = Operation_EchoAll;
+    else if (EQUALS("echo-all", name) && parseBoolean(value)) {
+        xconf->op = Operation_Echo;
+        xconf->echo_all = 1;
+    }
     else if (EQUALS("echo-cidr", name) && parseBoolean(value))
         xconf->op = Operation_EchoCidr;
     
@@ -2728,7 +2730,6 @@ static int SET_resume_index(struct Xconf *xconf, const char *name, const char *v
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->resume.index  || xconf->echo_all) {
-            fprintf(xconf->echo, "\n# resume information\n");
             fprintf(xconf->echo, "resume-index = %" PRIu64 "\n", xconf->resume.index);
         }
         return 0;
@@ -3874,7 +3875,7 @@ xconf_command_line(struct Xconf *xconf, int argc, char *argv[])
  * Use#2: make sure your configuration was interpreted correctly.
  ***************************************************************************/
 void
-xconf_echo(struct Xconf *xconf, FILE *fp, unsigned is_echo_all)
+xconf_echo(struct Xconf *xconf, FILE *fp)
 {
     unsigned i;
     
@@ -3882,7 +3883,6 @@ xconf_echo(struct Xconf *xconf, FILE *fp, unsigned is_echo_all)
      * Print all configuration parameters
      */
     xconf->echo = fp;
-    xconf->echo_all = is_echo_all;
 
     SET_PARAMETER tmp = NULL;
     for (i=0; config_parameters[i].name; i++) {
@@ -3918,10 +3918,9 @@ xconf_echo(struct Xconf *xconf, FILE *fp, unsigned is_echo_all)
  *  10.0.0.128/25
  ***************************************************************************/
 void
-xconf_echo_cidr(struct Xconf *xconf, FILE *fp, unsigned is_echo_all)
+xconf_echo_cidr(struct Xconf *xconf, FILE *fp)
 {
     unsigned i;
-    UNUSEDPARM(is_echo_all);
 
     xconf->echo = fp;
 
