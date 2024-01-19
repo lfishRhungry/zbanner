@@ -18,7 +18,7 @@
 #include "xconf.h"
 #include "crypto/crypto-base64.h"
 #include "vulncheck/vulncheck.h"
-#include "nmap-services/read-service-probes.h"
+#include "nmap-service/read-service-probes.h"
 
 #include "proto/proto-banner1.h"
 #include "proto/masscan-app.h"
@@ -66,6 +66,28 @@ static struct Range top_ports_udp[] = {
 static struct Range top_ports_sctp[] = {
     {7, 7},{9, 9},{20,22},{80,80},{179,179},{443,443},{1167,1167},
 };*/
+
+
+/***************************************************************************
+ ***************************************************************************/
+void
+adapter_get_source_addresses(const struct Xconf *xconf, struct source_t *src)
+{
+    const struct stack_src_t *ifsrc = &xconf->nic.src;
+    static ipv6address mask = {~0ULL, ~0ULL};
+
+    src->ipv4 = ifsrc->ipv4.first;
+    src->ipv4_mask = ifsrc->ipv4.last - ifsrc->ipv4.first;
+
+    src->port = ifsrc->port.first;
+    src->port_mask = ifsrc->port.last - ifsrc->port.first;
+
+    src->ipv6 = ifsrc->ipv6.first;
+
+    /* TODO: currently supports only a single address. This needs to
+     * be fixed to support a list of addresses */
+    src->ipv6_mask = mask;
+}
 
 
 /***************************************************************************

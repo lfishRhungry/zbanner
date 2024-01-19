@@ -183,8 +183,8 @@ tmp/%.o: \
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
-	src/nmap-services/%.c \
-	src/nmap-services/*.h
+	src/nmap-service/%.c \
+	src/nmap-service/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
@@ -214,7 +214,7 @@ SRC = $(sort $(wildcard \
 	src/util/*.c \
 	src/vulncheck/*.c \
 	src/smack/*.c \
-	src/nmap-services/*.c \
+	src/nmap-service/*.c \
 	src/stateless-probes/*.c \
 	src/stateless-probes/lzr-handshakes/*.c \
 	))

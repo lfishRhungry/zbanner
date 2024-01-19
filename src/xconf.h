@@ -93,6 +93,15 @@ enum OutputFormat {
     Output_All          = 0xFFBF,   /* not supported */
 };
 
+struct source_t {
+    unsigned ipv4;
+    unsigned ipv4_mask;
+    unsigned port;
+    unsigned port_mask;
+    ipv6address ipv6;
+    ipv6address ipv6_mask;
+};
+
 
 /**
  * Holds the list of TCP "hello" payloads, specified with the "--hello-file"
@@ -612,6 +621,14 @@ xconf_echo(struct Xconf *xconf, FILE *fp);
  */
 void
 xconf_echo_cidr(struct Xconf *xconf, FILE *fp);
+
+
+/***************************************************************************
+ * We support a range of source IP/port. This function converts that
+ * range into useful variables we can use to pick things form that range.
+ ***************************************************************************/
+void
+adapter_get_source_addresses(const struct Xconf *xconf, struct source_t *src);
 
 
 #endif

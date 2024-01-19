@@ -28,7 +28,7 @@ struct stack_src_t
 
 int is_myself(const struct stack_src_t *src, ipaddress ip, unsigned port);
 int is_my_ip(const struct stack_src_t *src, ipaddress ip);
-int is_my_port(const struct stack_src_t *src, unsigned ip);
+int is_my_port(const struct stack_src_t *src, unsigned port);
 
 
 
