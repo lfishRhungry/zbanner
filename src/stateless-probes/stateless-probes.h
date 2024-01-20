@@ -17,8 +17,8 @@ enum StatelessProbeType {
 
 
 /**
- * xconf.h need to includes stateless-probes.h
- * and struct Xconf/ThreadPair must be used here.
+ * xconf.h need to includes this file
+ * and struct Xconf/Thread must be used here.
  * Use 'void' to avoid circular dependency,
  * cast it to correct type in specific implementation of probe.
  * @return EXIT_FAILURE to exit process if init failed

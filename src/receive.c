@@ -98,28 +98,21 @@ receive_thread(void *v)
     struct DedupTable *dedup;
     struct DedupTable *dedup_for_stateless;
     struct PcapFile *pcapfile = NULL;
-    struct TCP_ConnectionTable *tcpcon = 0;
     uint64_t *status_synack_count;
-    uint64_t *status_tcb_count;
     uint64_t *status_responsed_count;
     uint64_t entropy = xconf->seed;
-    struct ResetFilter *rf;
     struct stack_t *stack = xconf->stack;
-    struct source_t src = {0};
 
     
     
     /* For reducing RST responses, see rstfilter_is_filter() below */
-    rf = rstfilter_create(entropy, 16384);
+    // struct ResetFilter *rf;
+    // rf = rstfilter_create(entropy, 16384);
 
     /* some status variables */
     status_synack_count = MALLOC(sizeof(uint64_t));
     *status_synack_count = 0;
     parms->total_synacks = status_synack_count;
-
-    status_tcb_count = MALLOC(sizeof(uint64_t));
-    *status_tcb_count = 0;
-    parms->total_tcbs = status_tcb_count;
 
     status_responsed_count = MALLOC(sizeof(uint64_t));
     *status_responsed_count = 0;
@@ -179,144 +172,6 @@ receive_thread(void *v)
     }
 
 
-
-    /*
-     * Create a TCP connection table (per rx thread) for interacting with live
-     * connections when doing --banners
-     */
-    if (xconf->is_banners) {
-        struct TcpCfgPayloads *pay;
-        size_t i;
-
-        /*
-         * Create TCP connection table
-         */
-        tcpcon = tcpcon_create_table(
-            (size_t)(xconf->max_rate/5),
-            stack,
-            &xconf->tmplset->pkts[Proto_TCP],
-            output_report_banner,
-            out,
-            xconf->tcb.timeout,
-            xconf->seed
-            );
-        
-        /*
-         * Initialize TCP scripting
-         */
-        scripting_init_tcp(tcpcon, xconf->scripting.L);
-
-        /*
-         * Get the possible source IP addresses and ports that xconf
-         * might be using to transmit from.
-         */
-        adapter_get_source_addresses(xconf, &src);
-                               
-
-        /*
-         * Set some flags [kludge]
-         */
-        tcpcon_set_banner_flags(tcpcon,
-                xconf->is_capture_cert,
-                xconf->is_capture_servername,
-                xconf->is_capture_html,
-                xconf->is_capture_heartbleed,
-				xconf->is_capture_ticketbleed);
-        if (xconf->is_hello_smbv1)
-            tcpcon_set_parameter(tcpcon, "hello", 1, "smbv1");
-        if (xconf->is_hello_http)
-            tcpcon_set_parameter(tcpcon, "hello", 1, "http");
-        if (xconf->is_hello_ssl)
-            tcpcon_set_parameter(tcpcon, "hello", 1, "ssl");
-        if (xconf->is_heartbleed)
-            tcpcon_set_parameter(tcpcon, "heartbleed", 1, "1");
-        if (xconf->is_ticketbleed)
-            tcpcon_set_parameter(tcpcon, "ticketbleed", 1, "1");
-        if (xconf->is_poodle_sslv3)
-            tcpcon_set_parameter(tcpcon, "sslv3", 1, "1");
-
-        if (xconf->http.payload)
-            tcpcon_set_parameter(   tcpcon,
-                                    "http-payload",
-                                    xconf->http.payload_length,
-                                    xconf->http.payload);
-        if (xconf->http.user_agent)
-            tcpcon_set_parameter(   tcpcon,
-                                    "http-user-agent",
-                                    xconf->http.user_agent_length,
-                                    xconf->http.user_agent);
-        if (xconf->http.host)
-            tcpcon_set_parameter(   tcpcon,
-                                    "http-host",
-                                    xconf->http.host_length,
-                                    xconf->http.host);
-        if (xconf->http.method)
-            tcpcon_set_parameter(   tcpcon,
-                                    "http-method",
-                                    xconf->http.method_length,
-                                    xconf->http.method);
-        if (xconf->http.url)
-            tcpcon_set_parameter(   tcpcon,
-                                    "http-url",
-                                    xconf->http.url_length,
-                                    xconf->http.url);
-        if (xconf->http.version)
-            tcpcon_set_parameter(   tcpcon,
-                                    "http-version",
-                                    xconf->http.version_length,
-                                    xconf->http.version);
-
-
-        if (xconf->tcp_connection_timeout) {
-            char foo[64];
-            snprintf(foo, sizeof(foo), "%u", xconf->tcp_connection_timeout);
-            tcpcon_set_parameter(   tcpcon,
-                                 "timeout",
-                                 strlen(foo),
-                                 foo);
-        }
-        if (xconf->tcp_hello_timeout) {
-            char foo[64];
-            snprintf(foo, sizeof(foo), "%u", xconf->tcp_hello_timeout);
-            tcpcon_set_parameter(   tcpcon,
-                                 "hello-timeout",
-                                 strlen(foo),
-                                 foo);
-        }
-        
-        for (i=0; i<xconf->http.headers_count; i++) {
-            tcpcon_set_http_header(tcpcon,
-                        xconf->http.headers[i].name,
-                        xconf->http.headers[i].value_length,
-                        xconf->http.headers[i].value,
-                        http_field_replace);
-        }
-        for (i=0; i<xconf->http.cookies_count; i++) {
-            tcpcon_set_http_header(tcpcon,
-                        "Cookie",
-                        xconf->http.cookies[i].value_length,
-                        xconf->http.cookies[i].value,
-                        http_field_add);
-        }
-        for (i=0; i<xconf->http.remove_count; i++) {
-            tcpcon_set_http_header(tcpcon,
-                        xconf->http.headers[i].name,
-                        0,
-                        0,
-                        http_field_remove);
-        }
-
-        for (pay = xconf->payloads.tcp; pay; pay = pay->next) {
-            char name[64];
-            snprintf(name, sizeof(name), "hello-string[%u]", pay->port);
-            tcpcon_set_parameter(   tcpcon, 
-                                    name, 
-                                    strlen(pay->payload_base64), 
-                                    pay->payload_base64);
-        }
-
-    }
-
     /*
      * In "offline" mode, we don't have any receive threads, so simply
      * wait until transmitter thread is done then go to the end
@@ -350,7 +205,6 @@ receive_thread(void *v)
         unsigned seqno_them;
         unsigned win_them;
         unsigned cookie;
-        unsigned Q = 0;
 
         /*
          * RECEIVE
@@ -364,21 +218,9 @@ receive_thread(void *v)
                     &usecs,
                     &px);
         if (err != 0) {
-            if (tcpcon)
-                tcpcon_timeouts(tcpcon, (unsigned)time(0), 0);
             continue;
         }
         
-
-        /*
-         * Do any TCP event timeouts based on the current timestamp from
-         * the packet. For example, if the connection has been open for
-         * around 10 seconds, we'll close the connection. (--banners)
-         */
-        if (tcpcon) {
-            tcpcon_timeouts(tcpcon, secs, usecs);
-        }
-
         if (length > 1514)
             continue;
 
@@ -523,8 +365,6 @@ receive_thread(void *v)
         if (parms->xconf->nmap.packet_trace)
             packet_trace(stdout, parms->pt_start, px, length, 0);
 
-        Q = 0;
-
         /* Save raw packet in --pcap file */
         if (pcapfile) {
             pcapfile_writeframe(
@@ -544,92 +384,6 @@ receive_thread(void *v)
                 reason_string(TCP_FLAGS(px, parsed.transport_offset), buf, sizeof(buf)));
         }
 
-        /* If recording --banners, create a new "TCP Control Block (TCB)" */
-        if (tcpcon) {
-            struct TCP_Control_Block *tcb;
-
-            /* does a TCB already exist for this connection? */
-            tcb = tcpcon_lookup_tcb(tcpcon,
-                            ip_me, ip_them,
-                            port_me, port_them);
-
-            if (TCP_IS_SYNACK(px, parsed.transport_offset)) {
-                if (cookie != seqno_me - 1) {
-                    ipaddress_formatted_t fmt = ipaddress_fmt(ip_them);
-                    LOG(2, "%s - bad cookie: ackno=0x%08x expected=0x%08x\n",
-                        fmt.string, seqno_me-1, cookie);
-                    continue;
-                }
-                if (tcb == NULL) {
-                    tcb = tcpcon_create_tcb(tcpcon,
-                                    ip_me, ip_them,
-                                    port_me, port_them,
-                                    seqno_me, seqno_them+1,
-                                    parsed.ip_ttl, NULL,
-                                    secs, usecs);
-                    (*status_tcb_count)++;
-                }
-                Q += stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_SYNACK,
-                    0, 0, secs, usecs, seqno_them+1, seqno_me);
-
-            } else if (tcb) {
-                /* If this is an ACK, then handle that first */
-                if (TCP_IS_ACK(px, parsed.transport_offset)) {
-                    Q += stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_ACK,
-                        0, 0, secs, usecs, seqno_them, seqno_me);
-                }
-
-                /* If this contains payload, handle that second */
-                if (parsed.app_length) {
-                    Q += stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_DATA,
-                        px + parsed.app_offset, parsed.app_length,
-                        secs, usecs, seqno_them, seqno_me);
-                }
-
-                /* If this is a FIN, handle that. Note that ACK +
-                 * payload + FIN can come together */
-                if (TCP_IS_FIN(px, parsed.transport_offset)
-                    && !TCP_IS_RST(px, parsed.transport_offset)) {
-                    Q += stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_FIN,
-                            0, 0, 
-                            secs, usecs, 
-                            seqno_them + parsed.app_length, /* the FIN comes after any data in the packet */
-                            seqno_me);
-                }
-
-                /* If this is a RST, then we'll be closing the connection */
-                if (TCP_IS_RST(px, parsed.transport_offset)) {
-                    Q += stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_RST,
-                        0, 0, secs, usecs, seqno_them, seqno_me);
-                }
-            } else if (TCP_IS_FIN(px, parsed.transport_offset)) {
-                ipaddress_formatted_t fmt;
-                /*
-                 * NO TCB!
-                 *  This happens when we've sent a FIN, deleted our connection,
-                 *  but the other side didn't get the packet.
-                 */
-                fmt = ipaddress_fmt(ip_them);
-                LOG(4, "%s: received FIN but no TCB\n", fmt.string);
-                if (TCP_IS_RST(px, parsed.transport_offset))
-                    ; /* ignore if it's own TCP flag is set */
-                else {
-                    int is_suppress;
-                    
-                    is_suppress = rstfilter_is_filter(rf, ip_me, port_me, ip_them, port_them);
-                    if (!is_suppress)
-                        tcpcon_send_RST(
-                            tcpcon,
-                            ip_me, ip_them,
-                            port_me, port_them,
-                            seqno_them, seqno_me);
-                }
-            }
-
-        }
-
-        if (Q == 0)
-            ; //printf("\nerr\n");
    
         if (TCP_IS_SYNACK(px, parsed.transport_offset)
             || TCP_IS_RST(px, parsed.transport_offset)) {
@@ -716,7 +470,7 @@ receive_thread(void *v)
             /*
              * Send RST if no more connecting
              */
-            if (tcpcon == NULL && !xconf->is_noreset1) {
+            if (!xconf->is_noreset1) {
                 if (xconf->is_stateless_banners) {
                     if (status == PortStatus_ZeroWin)
                         tcp_send_RST(
@@ -831,8 +585,6 @@ receive_thread(void *v)
      * cleanup
      */
 end:
-    if (tcpcon)
-        tcpcon_destroy_table(tcpcon);
     if (!xconf->is_nodedup1){
         dedup_destroy(dedup);
     }

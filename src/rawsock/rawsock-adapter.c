@@ -1,5 +1,5 @@
-#include "../rawsock/rawsock.h"
-#include "../rawsock/rawsock-adapter.h"
+#include "rawsock.h"
+#include "rawsock-adapter.h"
 
 /***************************************************************************
  ***************************************************************************/

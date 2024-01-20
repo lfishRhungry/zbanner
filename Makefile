@@ -197,6 +197,11 @@ tmp/%.o: \
 	src/stateless-probes/lzr-handshakes/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+tmp/%.o: \
+	src/scan-modules/%.c \
+	src/scan-modules/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 
 SRC = $(sort $(wildcard \
 	src/*.c \
@@ -217,6 +222,7 @@ SRC = $(sort $(wildcard \
 	src/nmap-service/*.c \
 	src/stateless-probes/*.c \
 	src/stateless-probes/lzr-handshakes/*.c \
+	src/scan-modules/*.c \
 	))
 OBJ = $(addprefix tmp/, $(notdir $(addsuffix .o, $(basename $(SRC))))) 
 
