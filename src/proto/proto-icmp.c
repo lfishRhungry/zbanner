@@ -81,7 +81,7 @@ handle_icmp(struct Output *out, time_t timestamp,
         if ((cookie & 0xFFFFFFFF) != seqno_me)
             return; /* not my response */
 
-        if (dedup_is_duplicate(echo_reply_dedup, ip_them, 0, ip_me, 0))
+        if (dedup_is_duplicate(echo_reply_dedup, ip_them, 0, ip_me, 0, 0))
             break;
 
         //if (syn_hash(ip_them, Templ_ICMP_echo) != seqno_me)

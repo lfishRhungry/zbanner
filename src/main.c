@@ -149,7 +149,7 @@ main_scan(struct Xconf *xconf)
     /*We could have many tx threads but one rx thread*/
     struct TxThread *tx_thread;
     struct RxThread rx_thread[1];
-    struct TemplateSet tmplset;
+    struct TemplatePacket tmpl_pkt;
     uint64_t count_ips;
     uint64_t count_ports;
     uint64_t range;
@@ -232,16 +232,6 @@ main_scan(struct Xconf *xconf)
     payloads_udp_trim(xconf->payloads.udp, &xconf->targets);
     payloads_oproto_trim(xconf->payloads.oproto, &xconf->targets);
 
-    /*
-     * Do global init for stateless probe
-     */
-    if (xconf->stateless_probe && xconf->stateless_probe->global_init){
-        if (EXIT_FAILURE == xconf->stateless_probe->global_init(xconf)) {
-            LOG(0, "FAIL: errors in stateless probe global initializing\n");
-            exit(1);
-        }
-    }
-
 
 #ifdef __AFL_HAVE_MANUAL_CONTROL
   __AFL_INIT();
@@ -266,18 +256,70 @@ main_scan(struct Xconf *xconf)
         * scanning. Then, we adjust the template with additional features,
         * such as the IP address and so on.
         */
-    xconf->tmplset = &tmplset;
-    xconf->tmplset->vulncheck = vulncheck;
-    template_packet_init(
-                xconf->tmplset,
-                xconf->nic.source_mac,
-                xconf->nic.router_mac_ipv4,
-                xconf->nic.router_mac_ipv6,
-                xconf->payloads.udp,
-                xconf->payloads.oproto,
-                stack_if_datalink(xconf->nic.adapter),
-                xconf->seed,
-                xconf->templ_opts);
+    xconf->tmpl_pkt = &tmpl_pkt;
+    // xconf->tmplset->vulncheck = vulncheck;
+    // template_packet_init(
+    //             xconf->tmplset,
+    //             xconf->nic.source_mac,
+    //             xconf->nic.router_mac_ipv4,
+    //             xconf->nic.router_mac_ipv6,
+    //             xconf->payloads.udp,
+    //             xconf->payloads.oproto,
+    //             stack_if_datalink(xconf->nic.adapter),
+    //             xconf->seed,
+    //             xconf->templ_opts);
+
+    /*
+     * Choose a default ScanModule if not specified.
+     * Wrong specification will be handled in SET_scan_module in xconf.c
+     */
+    if (!xconf->scan_module){
+        xconf->scan_module = get_scan_module_by_name("tcpsyn");
+        LOG(0, "[-] Default ScanModule `tcpsyn` is chosen because no ScanModule was specified.\n");
+    }
+
+    /*
+     * Do global init for ScanModule
+     */
+    if (xconf->scan_module->global_init_cb){
+        if (EXIT_FAILURE == xconf->scan_module->global_init_cb(
+            xconf->tmpl_pkt, xconf->nic.source_mac,
+            xconf->nic.router_mac_ipv4, xconf->nic.router_mac_ipv6,
+            xconf->payloads.udp, xconf->payloads.oproto,
+            stack_if_datalink(xconf->nic.adapter), xconf->templ_opts)) {
+
+            LOG(0, "FAIL: errors happened in global init of ScanModule\n");
+            exit(1);
+        }
+    }
+
+    /*
+     * Set the "TTL" (IP time-to-live) of everything we send.
+     */
+    if (xconf->nmap.ttl)
+        template_set_ttl(xconf->tmpl_pkt, xconf->nmap.ttl);
+
+    if (xconf->nic.is_vlan)
+        template_set_vlan(xconf->tmpl_pkt, xconf->nic.vlan_id);
+
+    /*
+     * Choose a default StatelessProbe if not specified.
+     * Wrong specification will be handled in SET_stateless_probe in xconf.c
+     */
+    if (xconf->is_stateless_banners && !xconf->stateless_probe){
+        xconf->stateless_probe = get_stateless_probe("null");
+        LOG(0, "[-] Default NullProbe is chosen because no statelss-probe was specified.\n");
+    }
+
+    /*
+     * Do global init for stateless probe
+     */
+    if (xconf->stateless_probe && xconf->stateless_probe->global_init){
+        if (EXIT_FAILURE == xconf->stateless_probe->global_init(xconf)) {
+            LOG(0, "FAIL: errors in stateless probe global initializing\n");
+            exit(1);
+        }
+    }
 
     /*
         * Set the "source port" of everything we transmit.
@@ -289,21 +331,22 @@ main_scan(struct Xconf *xconf)
         xconf->nic.src.port.range = 16;
     }
 
-    /*
-        * Set the "TTL" (IP time-to-live) of everything we send.
-        */
-    if (xconf->nmap.ttl)
-        template_set_ttl(xconf->tmplset, xconf->nmap.ttl);
-
-    if (xconf->nic.is_vlan)
-        template_set_vlan(xconf->tmplset, xconf->nic.vlan_id);
-
     /**
      * create callback queue
      * TODO: Maybe more queue?
     */
     xconf->stack = stack_create(xconf->nic.source_mac,
         &xconf->nic.src, xconf->stack_buf_count);
+
+    /*
+     * Do global init for stateless probe
+     */
+    if (xconf->stateless_probe && xconf->stateless_probe->global_init){
+        if (EXIT_FAILURE == xconf->stateless_probe->global_init(xconf)) {
+            LOG(0, "FAIL: errors in stateless probe global initializing\n");
+            exit(1);
+        }
+    }
 
     /*
         * trap <ctrl-c> to pause
@@ -685,7 +728,7 @@ int main(int argc, char *argv[])
     has_target_addresses = massip_has_ipv4_targets(&xconf->targets) || massip_has_ipv6_targets(&xconf->targets);
     has_target_ports = massip_has_target_ports(&xconf->targets);
     massip_apply_excludes(&xconf->targets, &xconf->exclude);
-    if (!has_target_ports && xconf->op == Operation_ListScan)
+    if (!has_target_ports && xconf->op == Operation_ListTargets)
         massip_add_port_string(&xconf->targets, "80", 0);
 
 
@@ -715,15 +758,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "    Hint: scan range is number of IP addresses times number of ports\n");
         fprintf(stderr, "    Hint: IPv6 subnet must be at least /66 \n");
         exit(1);
-    }
-
-    /*
-     * Choose a default StatelessProbe if not specified.
-     * Wrong specification will be handled in SET_stateless_probe in main-conf.c
-     */
-    if (xconf->is_stateless_banners && !xconf->stateless_probe){
-        xconf->stateless_probe = get_stateless_probe("null");
-        LOG(0, "[-] Default NullProbe is chosen because no statelss-probe was specified.\n");
     }
 
     /*
@@ -765,12 +799,12 @@ int main(int argc, char *argv[])
         }
         return main_scan(xconf);
 
-    case Operation_ListScan:
+    case Operation_ListTargets:
         /* Create a randomized list of IP addresses */
         listscan(xconf);
         return 0;
 
-    case Operation_List_Adapters:
+    case Operation_ListAdapters:
         /* List the network adapters we might want to use for scanning */
         rawsock_list_adapters();
         break;
@@ -877,8 +911,12 @@ int main(int argc, char *argv[])
         }
         break;
     
-    case Operation_List_Probes:
+    case Operation_ListProbes:
         list_all_probes();
+        break;
+    
+    case Operation_ListScanModules:
+        list_all_scan_modules();
         break;
     }
 

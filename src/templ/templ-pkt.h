@@ -82,7 +82,7 @@ struct TemplateSet
     struct TemplatePacket pkts[Proto_Count];
 };
 
-struct TemplateSet templ_copy(const struct TemplateSet *templ);
+struct TemplatePacket templ_copy(const struct TemplatePacket *tmpl_pkt);
 
 
 
@@ -120,6 +120,11 @@ template_packet_init(
     int data_link,
     uint64_t entropy,
     const struct TemplateOptions *templ_opts);
+
+void
+template_fill_target_ipv4_hdr(struct TemplatePacket *tmpl_pkt,
+    ipv4address ip_them, ipv4address ip_me, unsigned entropy,
+    unsigned char *px, size_t sizeof_px);
 
 /**
  * Sets the target/destination IP address of the packet, the destination port
@@ -190,7 +195,7 @@ void
 tcp_set_window(unsigned char *px, size_t px_length, unsigned window);
 
 
-void template_set_ttl(struct TemplateSet *tmplset, unsigned ttl);
-void template_set_vlan(struct TemplateSet *tmplset, unsigned vlan);
+void template_set_ttl(struct TemplatePacket *tmpl_pkt, unsigned ttl);
+void template_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan);
 
 #endif

@@ -350,11 +350,35 @@ static int SET_stateless_banners(struct Xconf *xconf, const char *name, const ch
     return CONF_OK;
 }
 
+static int SET_scan_module(struct Xconf *xconf, const char *name, const char *value)
+{
+    if (xconf->echo) {
+        if (xconf->scan_module || xconf->echo_all){
+            if (xconf->scan_module)
+                fprintf(xconf->echo, "scan-module = %s\n", xconf->scan_module->name);
+            else
+                fprintf(xconf->echo, "scan-module = \n");
+        }
+        return 0;
+    }
+
+    xconf->scan_module = get_scan_module_by_name(value);
+    if(!xconf->scan_module){
+        fprintf(stderr, "FAIL %s: no such scan module named %s\n", name, value);
+        return CONF_ERR;
+    }
+
+    return CONF_OK;
+}
+
 static int SET_stateless_probe(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
-        if (xconf->stateless_probe){
-            fprintf(xconf->echo, "stateless-probe = %s\n", xconf->stateless_probe->name);
+        if (xconf->stateless_probe || xconf->echo_all){
+            if (xconf->stateless_probe)
+                fprintf(xconf->echo, "stateless-probe = %s\n", xconf->stateless_probe->name);
+            else
+                fprintf(xconf->echo, "stateless-probe = \n");
         }
         return 0;
     }
@@ -373,12 +397,35 @@ static int SET_stateless_probe(struct Xconf *xconf, const char *name, const char
     return CONF_OK;
 }
 
+static int SET_scan_module_args(struct Xconf *xconf, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    if (xconf->echo) {
+        if (xconf->scan_module_args[0] || xconf->echo_all){
+            fprintf(xconf->echo, "scan-module-args = %s\n", xconf->scan_module_args);
+        }
+        return 0;
+    }
+
+    
+    unsigned value_len = strlen(value);
+    if (value_len >= SCAN_MODULE_ARGS_LEN) {
+        fprintf(stderr, "FAIL %s: length of args is too long\n", name);
+        fprintf(stderr, "Hint: length of %s args must be no more than %u.\n",
+            name, SCAN_MODULE_ARGS_LEN-1);
+        return CONF_ERR;
+    }
+
+	memcpy(xconf->scan_module_args, value, value_len);
+    return CONF_OK;
+}
+
 static int SET_probe_args(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->stateless_probe){
-            fprintf(xconf->echo, "stateless-probe = %s\n", xconf->stateless_probe->name);
+        if (xconf->stateless_probe_args[0] || xconf->echo_all){
+            fprintf(xconf->echo, "stateless-probe-args = %s\n", xconf->stateless_probe_args);
         }
         return 0;
     }
@@ -386,8 +433,8 @@ static int SET_probe_args(struct Xconf *xconf, const char *name, const char *val
     
     unsigned value_len = strlen(value);
     if (value_len >= STATELESS_PROBE_ARGS_LEN) {
-        fprintf(stderr, "FAIL %s: length of value is too long\n", name);
-        fprintf(stderr, "Hint: length of %s value must be no more than %u.\n",
+        fprintf(stderr, "FAIL %s: length of args is too long\n", name);
+        fprintf(stderr, "Hint: length of %s args must be no more than %u.\n",
             name, STATELESS_PROBE_ARGS_LEN-1);
         return CONF_ERR;
     }
@@ -396,17 +443,25 @@ static int SET_probe_args(struct Xconf *xconf, const char *name, const char *val
     return CONF_OK;
 }
 
-/**
- * It's not good enough to set --list-probes this way because possibly conflict
- * with other parameter. Only using --list-probes would be no problem if want to
- * list probes. 
-*/
-static int SET_list_probes(struct Xconf *xconf, const char *name, const char *value)
+static int SET_list_scan_modules(struct Xconf *xconf, const char *name, const char *value)
 {
+    UNUSEDPARM(name);
+
     if (xconf->echo) {
        return 0;
     }
-    xconf->op = parseBoolean(value)?Operation_List_Probes:xconf->op;
+    xconf->op = parseBoolean(value)?Operation_ListScanModules:xconf->op;
+    return CONF_OK;
+}
+
+static int SET_list_probes(struct Xconf *xconf, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+       return 0;
+    }
+    xconf->op = parseBoolean(value)?Operation_ListProbes:xconf->op;
     return CONF_OK;
 }
 
@@ -417,12 +472,12 @@ static int SET_iflist(struct Xconf *xconf, const char *name, const char *value)
     if (xconf->echo) {
         if (xconf->op==Operation_ReadRange || xconf->echo_all)
             fprintf(xconf->echo, "iflist = %s\n",
-                xconf->op==Operation_List_Adapters?"true":"false");
+                xconf->op==Operation_ListAdapters?"true":"false");
         return 0;
     }
 
     if (parseBoolean(value))
-        xconf->op = Operation_List_Adapters;
+        xconf->op = Operation_ListAdapters;
     return CONF_OK;
 }
 
@@ -460,20 +515,20 @@ static int SET_selftest(struct Xconf *xconf, const char *name, const char *value
     return CONF_OK;
 }
 
-static int SET_list_scan(struct Xconf *xconf, const char *name, const char *value)
+static int SET_list_target(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
     UNUSEDPARM(value);
 
     if (xconf->echo) {
-        if (xconf->op==Operation_ListScan || xconf->echo_all)
+        if (xconf->op==Operation_ListTargets || xconf->echo_all)
             fprintf(xconf->echo, "list-scan = %s\n",
-                xconf->op==Operation_ListScan?"true":"false");
+                xconf->op==Operation_ListTargets?"true":"false");
         return 0;
     }
 
     /* Read in a binary file instead of scanning the network*/
-    xconf->op = Operation_ListScan;
+    xconf->op = Operation_ListTargets;
 
     return CONF_OK;
 }
@@ -3135,7 +3190,7 @@ struct ConfigParameter config_parameters[] = {
     {"iflist",          SET_iflist,             F_BOOL, {"list-interface", "list-adapter",0}},
     {"readrange",       SET_read_range,         F_BOOL, {"readranges", 0}},
     {"readscan",        SET_read_scan,          F_BOOL, {0}},
-    {"listscan",        SET_list_scan,          F_BOOL, {0}},
+    {"listtarget",      SET_list_target,        F_BOOL, {"list-targets",0}},
     {"selftest",        SET_selftest,           F_BOOL, {"regress", "regression",0}},
     {"benchmark",       SET_benchmark,          F_BOOL, {0}},
     {"debug-if",        SET_debug_interface,    F_BOOL, {"debug-interface",0}},
@@ -3218,6 +3273,12 @@ struct ConfigParameter config_parameters[] = {
     {"probe-args",      SET_probe_args,         0,      {"probe-arg", 0}},
     {"capture",         SET_capture,            0,      {"nocapture",0}},
     {"noreset",         SET_noreset,            F_BOOL, {"noreset1", "noreset2", 0}},
+
+    {"SCAN MODULES:",   SET_delimiter,          0,      {0}},
+
+    {"scan-module",     SET_scan_module,        0,      {"scan", 0}},
+    {"list-scan-modules",SET_list_scan_modules, F_BOOL, {"list-scan-module", "list-scan",0}},
+    {"scan-module-args", SET_scan_module_args,  0,      {"scan-module-arg",0}},
 
     {"PACKET ATTRIBUTE:",SET_delimiter,         0,      {0}},
 

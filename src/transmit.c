@@ -86,7 +86,7 @@ transmit_thread(void *v) /*aka. scanning_thread() */
     uint64_t count_ipv4 = rangelist_count(&xconf->targets.ipv4);
     uint64_t count_ipv6 = range6list_count(&xconf->targets.ipv6).lo;
     struct Throttler *throttler = parms->throttler;
-    struct TemplateSet pkt_template = templ_copy(xconf->tmplset);
+    struct TemplatePacket tmpl_pkt = templ_copy(xconf->tmpl_pkt);
     struct Adapter *adapter = xconf->nic.adapter;
     uint64_t packets_sent = 0;
     unsigned increment = xconf->shard.of * xconf->tx_thread_count;
@@ -214,6 +214,7 @@ infinite:
             xXx = blackrock_shuffle(&blackrock,  xXx);
             
             if (xXx < range_ipv6) {
+                /* Our index selects an IPv6 target */
                 ipv6address ip_them;
                 unsigned port_them;
                 ipv6address ip_me;
@@ -224,19 +225,24 @@ infinite:
 
                 ip_me = src.ipv6;
                 port_me = src.port;
+
+               /*
+                * Construct the destination packet by ScanModule
+                */
+                unsigned char px[2048];
+                size_t packet_length;
+
+                xconf->scan_module->make_packet_ipv6_cb(&tmpl_pkt,
+                    ip_them, port_them,
+                    ip_me, port_me,
+                    entropy, 0,
+                    px, sizeof(px), &packet_length);
                 
-                cookie = get_cookie_ipv6(ip_them, port_them, ip_me, port_me, entropy);
+                /*
+                * Send it
+                */
+                rawsock_send_packet(adapter, px, (unsigned)packet_length, !batch_size);
 
-                rawsock_send_probe_ipv6(
-                        adapter,
-                        ip_them, port_them,
-                        ip_me, port_me,
-                        (unsigned)cookie,
-                        !batch_size, /* flush queue on last packet in batch */
-                        &pkt_template
-                        );
-
-                /* Our index selects an IPv6 target */
             } else {
                 /* Our index selects an IPv4 target. In other words, low numbers
                  * index into the IPv6 ranges, and high numbers index into the
@@ -253,7 +259,7 @@ infinite:
 
                 /*
                  * SYN-COOKIE LOGIC
-                 *  Figure out the source IP/port, and the SYN cookie
+                 *  Figure out the source IP/port
                  */
                 if (src.ipv4_mask > 1 || src.port_mask > 1) {
                     uint64_t ck = get_cookie_ipv4((unsigned)(i+repeats),
@@ -266,8 +272,20 @@ infinite:
                     ip_me = src.ipv4;
                     port_me = src.port;
                 }
-                cookie = get_cookie_ipv4(ip_them, port_them, ip_me, port_me, entropy);
 
+
+                /*
+                * Construct the destination packet by ScanModule
+                */
+                unsigned char px[2048];
+                size_t packet_length;
+
+                xconf->scan_module->make_packet_ipv4_cb(&tmpl_pkt,
+                    ip_them, port_them,
+                    ip_me, port_me,
+                    entropy, 0,
+                    px, sizeof(px), &packet_length);
+                
                 /*
                  * SEND THE PROBE
                  *  This is sorta the entire point of the program, but little
@@ -275,14 +293,7 @@ infinite:
                  *  be a "raw" transmit that bypasses the kernel, meaning
                  *  we can call this function millions of times a second.
                  */
-                rawsock_send_probe_ipv4(
-                        adapter,
-                        ip_them, port_them,
-                        ip_me, port_me,
-                        (unsigned)cookie,
-                        !batch_size, /* flush queue on last packet in batch */
-                        &pkt_template
-                        );
+                rawsock_send_packet(adapter, px, (unsigned)packet_length, !batch_size);
             }
 
             batch_size--;

@@ -349,21 +349,18 @@ icmp_ipv4_checksum(struct TemplatePacket *tmpl)
 
 /***************************************************************************
  ***************************************************************************/
-struct TemplateSet templ_copy(const struct TemplateSet *templset)
+struct TemplatePacket templ_copy(const struct TemplatePacket *tmpl_pkt)
 {
-    struct TemplateSet result;
-    unsigned i;
+    struct TemplatePacket result;
 
-    memcpy(&result, templset, sizeof(result));
+    memcpy(&result, tmpl_pkt, sizeof(result));
 
-    for (i=0; i<templset->count; i++) {
-        const struct TemplatePacket *p1 = &templset->pkts[i];
-        struct TemplatePacket *p2 = &result.pkts[i];
-        p2->ipv4.packet = MALLOC(2048+p2->ipv4.length);
-        memcpy(p2->ipv4.packet, p1->ipv4.packet, p2->ipv4.length);
-        p2->ipv6.packet = MALLOC(2048+p2->ipv6.length);
-        memcpy(p2->ipv6.packet, p1->ipv6.packet, p2->ipv6.length);
-    }
+    const struct TemplatePacket *p1 = tmpl_pkt;
+    struct TemplatePacket *p2 = &result;
+    p2->ipv4.packet = MALLOC(2048+p2->ipv4.length);
+    memcpy(p2->ipv4.packet, p1->ipv4.packet, p2->ipv4.length);
+    p2->ipv6.packet = MALLOC(2048+p2->ipv6.length);
+    memcpy(p2->ipv6.packet, p1->ipv6.packet, p2->ipv6.length);
 
     return result;
 }
@@ -658,6 +655,82 @@ udp_payload_fixup(struct TemplatePacket *tmpl, unsigned port, unsigned seqno)
     tmpl->ipv6.length = tmpl->ipv6.offset_app + length2;
 }
 
+/***************************************************************************
+ * Fill in the empty fields in the IPv6 header and then re-calculate
+ * the checksum.
+ ***************************************************************************/
+void
+template_fill_target_ipv6_hdr(struct TemplatePacket *tmpl_pkt,
+    ipv6address ip_them, ipv6address ip_me, unsigned entropy,
+    unsigned char *px, size_t sizeof_px)
+{
+    unsigned offset_ip;
+    unsigned payload_length;
+    offset_ip = tmpl_pkt->ipv6.offset_ip;
+/*
+
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version| Traffic Class |           Flow Label                  |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Payload Length        |  Next Header  |   Hop Limit   |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +                         Source Address                        +
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +                      Destination Address                      +
+   |                                                               |
+   +                                                               +
+   |                                                               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+*/
+    payload_length = tmpl_pkt->ipv6.length - tmpl_pkt->ipv6.offset_ip - 40;
+    px[offset_ip+4] = (unsigned char)(payload_length>>8);
+    px[offset_ip+5] = (unsigned char)(payload_length>>0);
+    px[offset_ip+ 8] = (unsigned char)((ip_me.hi >> 56ULL) & 0xFF);
+    px[offset_ip+ 9] = (unsigned char)((ip_me.hi >> 48ULL) & 0xFF);
+    px[offset_ip+10] = (unsigned char)((ip_me.hi >> 40ULL) & 0xFF);
+    px[offset_ip+11] = (unsigned char)((ip_me.hi >> 32ULL) & 0xFF);
+    px[offset_ip+12] = (unsigned char)((ip_me.hi >> 24ULL) & 0xFF);
+    px[offset_ip+13] = (unsigned char)((ip_me.hi >> 16ULL) & 0xFF);
+    px[offset_ip+14] = (unsigned char)((ip_me.hi >>  8ULL) & 0xFF);
+    px[offset_ip+15] = (unsigned char)((ip_me.hi >>  0ULL) & 0xFF);
+
+    px[offset_ip+16] = (unsigned char)((ip_me.lo >> 56ULL) & 0xFF);
+    px[offset_ip+17] = (unsigned char)((ip_me.lo >> 48ULL) & 0xFF);
+    px[offset_ip+18] = (unsigned char)((ip_me.lo >> 40ULL) & 0xFF);
+    px[offset_ip+19] = (unsigned char)((ip_me.lo >> 32ULL) & 0xFF);
+    px[offset_ip+20] = (unsigned char)((ip_me.lo >> 24ULL) & 0xFF);
+    px[offset_ip+21] = (unsigned char)((ip_me.lo >> 16ULL) & 0xFF);
+    px[offset_ip+22] = (unsigned char)((ip_me.lo >>  8ULL) & 0xFF);
+    px[offset_ip+23] = (unsigned char)((ip_me.lo >>  0ULL) & 0xFF);
+
+    px[offset_ip+24] = (unsigned char)((ip_them.hi >> 56ULL) & 0xFF);
+    px[offset_ip+25] = (unsigned char)((ip_them.hi >> 48ULL) & 0xFF);
+    px[offset_ip+26] = (unsigned char)((ip_them.hi >> 40ULL) & 0xFF);
+    px[offset_ip+27] = (unsigned char)((ip_them.hi >> 32ULL) & 0xFF);
+    px[offset_ip+28] = (unsigned char)((ip_them.hi >> 24ULL) & 0xFF);
+    px[offset_ip+29] = (unsigned char)((ip_them.hi >> 16ULL) & 0xFF);
+    px[offset_ip+30] = (unsigned char)((ip_them.hi >>  8ULL) & 0xFF);
+    px[offset_ip+31] = (unsigned char)((ip_them.hi >>  0ULL) & 0xFF);
+
+    px[offset_ip+32] = (unsigned char)((ip_them.lo >> 56ULL) & 0xFF);
+    px[offset_ip+33] = (unsigned char)((ip_them.lo >> 48ULL) & 0xFF);
+    px[offset_ip+34] = (unsigned char)((ip_them.lo >> 40ULL) & 0xFF);
+    px[offset_ip+35] = (unsigned char)((ip_them.lo >> 32ULL) & 0xFF);
+    px[offset_ip+36] = (unsigned char)((ip_them.lo >> 24ULL) & 0xFF);
+    px[offset_ip+37] = (unsigned char)((ip_them.lo >> 16ULL) & 0xFF);
+    px[offset_ip+38] = (unsigned char)((ip_them.lo >>  8ULL) & 0xFF);
+    px[offset_ip+39] = (unsigned char)((ip_them.lo >>  0ULL) & 0xFF);
+}
+
 void
 template_set_target_ipv6(
     struct TemplateSet *tmplset,
@@ -667,12 +740,11 @@ template_set_target_ipv6(
     unsigned char *px, size_t sizeof_px, size_t *r_length
     )
 {
-    unsigned offset_ip;
     unsigned offset_tcp;
+    unsigned offset_ip;
     uint64_t xsum;
     struct TemplatePacket *tmpl = NULL;
     uint64_t entropy = tmplset->entropy;
-    unsigned payload_length;
 
     *r_length = sizeof_px;
 
@@ -712,9 +784,6 @@ template_set_target_ipv6(
     if (*r_length > tmpl->ipv6.length)
         *r_length = tmpl->ipv6.length;
     memcpy(px, tmpl->ipv6.packet, *r_length);
-    offset_ip = tmpl->ipv6.offset_ip;
-    offset_tcp = tmpl->ipv6.offset_tcp;
-    //ip_id = ip_them ^ port_them ^ seqno;
 
 /*
 
@@ -744,44 +813,11 @@ template_set_target_ipv6(
      * Fill in the empty fields in the IP header and then re-calculate
      * the checksum.
      */
-    payload_length = tmpl->ipv6.length - tmpl->ipv6.offset_ip - 40;
-    px[offset_ip+4] = (unsigned char)(payload_length>>8);
-    px[offset_ip+5] = (unsigned char)(payload_length>>0);
-    px[offset_ip+ 8] = (unsigned char)((ip_me.hi >> 56ULL) & 0xFF);
-    px[offset_ip+ 9] = (unsigned char)((ip_me.hi >> 48ULL) & 0xFF);
-    px[offset_ip+10] = (unsigned char)((ip_me.hi >> 40ULL) & 0xFF);
-    px[offset_ip+11] = (unsigned char)((ip_me.hi >> 32ULL) & 0xFF);
-    px[offset_ip+12] = (unsigned char)((ip_me.hi >> 24ULL) & 0xFF);
-    px[offset_ip+13] = (unsigned char)((ip_me.hi >> 16ULL) & 0xFF);
-    px[offset_ip+14] = (unsigned char)((ip_me.hi >>  8ULL) & 0xFF);
-    px[offset_ip+15] = (unsigned char)((ip_me.hi >>  0ULL) & 0xFF);
 
-    px[offset_ip+16] = (unsigned char)((ip_me.lo >> 56ULL) & 0xFF);
-    px[offset_ip+17] = (unsigned char)((ip_me.lo >> 48ULL) & 0xFF);
-    px[offset_ip+18] = (unsigned char)((ip_me.lo >> 40ULL) & 0xFF);
-    px[offset_ip+19] = (unsigned char)((ip_me.lo >> 32ULL) & 0xFF);
-    px[offset_ip+20] = (unsigned char)((ip_me.lo >> 24ULL) & 0xFF);
-    px[offset_ip+21] = (unsigned char)((ip_me.lo >> 16ULL) & 0xFF);
-    px[offset_ip+22] = (unsigned char)((ip_me.lo >>  8ULL) & 0xFF);
-    px[offset_ip+23] = (unsigned char)((ip_me.lo >>  0ULL) & 0xFF);
+    template_fill_target_ipv6_hdr(tmpl, ip_them, ip_me, entropy, px, *r_length);
 
-    px[offset_ip+24] = (unsigned char)((ip_them.hi >> 56ULL) & 0xFF);
-    px[offset_ip+25] = (unsigned char)((ip_them.hi >> 48ULL) & 0xFF);
-    px[offset_ip+26] = (unsigned char)((ip_them.hi >> 40ULL) & 0xFF);
-    px[offset_ip+27] = (unsigned char)((ip_them.hi >> 32ULL) & 0xFF);
-    px[offset_ip+28] = (unsigned char)((ip_them.hi >> 24ULL) & 0xFF);
-    px[offset_ip+29] = (unsigned char)((ip_them.hi >> 16ULL) & 0xFF);
-    px[offset_ip+30] = (unsigned char)((ip_them.hi >>  8ULL) & 0xFF);
-    px[offset_ip+31] = (unsigned char)((ip_them.hi >>  0ULL) & 0xFF);
-
-    px[offset_ip+32] = (unsigned char)((ip_them.lo >> 56ULL) & 0xFF);
-    px[offset_ip+33] = (unsigned char)((ip_them.lo >> 48ULL) & 0xFF);
-    px[offset_ip+34] = (unsigned char)((ip_them.lo >> 40ULL) & 0xFF);
-    px[offset_ip+35] = (unsigned char)((ip_them.lo >> 32ULL) & 0xFF);
-    px[offset_ip+36] = (unsigned char)((ip_them.lo >> 24ULL) & 0xFF);
-    px[offset_ip+37] = (unsigned char)((ip_them.lo >> 16ULL) & 0xFF);
-    px[offset_ip+38] = (unsigned char)((ip_them.lo >>  8ULL) & 0xFF);
-    px[offset_ip+39] = (unsigned char)((ip_them.lo >>  0ULL) & 0xFF);
+    offset_tcp = tmpl->ipv6.offset_tcp;
+    offset_ip = tmpl->ipv6.offset_ip;
 
     /*
      * Now do the checksum for the higher layer protocols
@@ -869,6 +905,73 @@ template_set_target_ipv6(
 
 
 /***************************************************************************
+ * Fill in the empty fields in the IPv4 header and then re-calculate
+ * the checksum.
+ ***************************************************************************/
+void
+template_fill_target_ipv4_hdr(struct TemplatePacket *tmpl_pkt,
+    ipv4address ip_them, ipv4address ip_me, unsigned entropy,
+    unsigned char *px, size_t sizeof_px)
+{
+    unsigned offset_ip;
+    unsigned ip_id;
+    unsigned xsum2;
+
+    offset_ip = tmpl_pkt->ipv4.offset_ip;
+    ip_id = ip_them ^ ip_me ^ entropy;
+
+    /*
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |Version|  IHL  |Type of Service|          Total Length         |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |         Identification        |Flags|      Fragment Offset    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |  Time to Live |    Protocol   |         Header Checksum       |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                       Source Address                          |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Destination Address                        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |                    Options                    |    Padding    |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+*/
+
+    /*
+     * Fill in the empty fields in the IP header and then re-calculate
+     * the checksum.
+     */
+    {
+        unsigned total_length = tmpl_pkt->ipv4.length - tmpl_pkt->ipv4.offset_ip;
+        px[offset_ip+2] = (unsigned char)(total_length>>8);
+        px[offset_ip+3] = (unsigned char)(total_length>>0);
+    }
+    px[offset_ip+4] = (unsigned char)(ip_id >> 8);
+    px[offset_ip+5] = (unsigned char)(ip_id & 0xFF);
+    px[offset_ip+12] = (unsigned char)((ip_me >> 24) & 0xFF);
+    px[offset_ip+13] = (unsigned char)((ip_me >> 16) & 0xFF);
+    px[offset_ip+14] = (unsigned char)((ip_me >>  8) & 0xFF);
+    px[offset_ip+15] = (unsigned char)((ip_me >>  0) & 0xFF);
+    px[offset_ip+16] = (unsigned char)((ip_them >> 24) & 0xFF);
+    px[offset_ip+17] = (unsigned char)((ip_them >> 16) & 0xFF);
+    px[offset_ip+18] = (unsigned char)((ip_them >>  8) & 0xFF);
+    px[offset_ip+19] = (unsigned char)((ip_them >>  0) & 0xFF);
+
+
+    px[offset_ip+10] = (unsigned char)(0);
+    px[offset_ip+11] = (unsigned char)(0);
+
+    xsum2 = (unsigned)~ip_header_checksum(px, offset_ip, tmpl_pkt->ipv4.length);
+
+    px[offset_ip+10] = (unsigned char)(xsum2 >> 8);
+    px[offset_ip+11] = (unsigned char)(xsum2 & 0xFF);
+}
+
+
+/***************************************************************************
  * This is the function that formats the transmitted packets for probing
  * machines. It takes a template for the protocol (usually a TCP SYN
  * packet), then sets the destination IP address and port numbers.
@@ -885,7 +988,6 @@ template_set_target_ipv4(
     unsigned offset_ip;
     unsigned offset_tcp;
     uint64_t xsum;
-    unsigned ip_id;
     struct TemplatePacket *tmpl = NULL;
     unsigned xsum2;
     uint64_t entropy = tmplset->entropy;
@@ -933,14 +1035,6 @@ template_set_target_ipv4(
         return;
     }
 
-    /* Create some shorter local variables to work with */
-    if (*r_length > tmpl->ipv4.length)
-        *r_length = tmpl->ipv4.length;
-    memcpy(px, tmpl->ipv4.packet, *r_length);
-    offset_ip = tmpl->ipv4.offset_ip;
-    offset_tcp = tmpl->ipv4.offset_tcp;
-    ip_id = ip_them ^ port_them ^ seqno;
-
     /*
 
     0                   1                   2                   3
@@ -961,35 +1055,13 @@ template_set_target_ipv4(
 
 */
 
-    /*
-     * Fill in the empty fields in the IP header and then re-calculate
-     * the checksum.
-     */
-    {
-        unsigned total_length = tmpl->ipv4.length - tmpl->ipv4.offset_ip;
-        px[offset_ip+2] = (unsigned char)(total_length>>8);
-        px[offset_ip+3] = (unsigned char)(total_length>>0);
-    }
-    px[offset_ip+4] = (unsigned char)(ip_id >> 8);
-    px[offset_ip+5] = (unsigned char)(ip_id & 0xFF);
-    px[offset_ip+12] = (unsigned char)((ip_me >> 24) & 0xFF);
-    px[offset_ip+13] = (unsigned char)((ip_me >> 16) & 0xFF);
-    px[offset_ip+14] = (unsigned char)((ip_me >>  8) & 0xFF);
-    px[offset_ip+15] = (unsigned char)((ip_me >>  0) & 0xFF);
-    px[offset_ip+16] = (unsigned char)((ip_them >> 24) & 0xFF);
-    px[offset_ip+17] = (unsigned char)((ip_them >> 16) & 0xFF);
-    px[offset_ip+18] = (unsigned char)((ip_them >>  8) & 0xFF);
-    px[offset_ip+19] = (unsigned char)((ip_them >>  0) & 0xFF);
+    if (*r_length > tmpl->ipv4.length)
+        *r_length = tmpl->ipv4.length;
+    memcpy(px, tmpl->ipv4.packet, *r_length);
 
+    template_fill_target_ipv4_hdr(tmpl, ip_them, ip_me, entropy, px, *r_length);
 
-    px[offset_ip+10] = (unsigned char)(0);
-    px[offset_ip+11] = (unsigned char)(0);
-
-    xsum2 = (unsigned)~ip_header_checksum(px, offset_ip, tmpl->ipv4.length);
-
-    px[offset_ip+10] = (unsigned char)(xsum2 >> 8);
-    px[offset_ip+11] = (unsigned char)(xsum2 & 0xFF);
-
+    offset_tcp = tmpl->ipv4.offset_tcp;
 
     /*
      * Now do the checksum for the higher layer protocols
@@ -1471,50 +1543,39 @@ template_packet_init(
  * Overwrites the TTL of the packet
  ***************************************************************************/
 void
-template_set_ttl(struct TemplateSet *tmplset, unsigned ttl)
+template_set_ttl(struct TemplatePacket *tmpl_pkt, unsigned ttl)
 {
-    unsigned i;
+    unsigned char *px = tmpl_pkt->ipv4.packet;
+    unsigned offset = tmpl_pkt->ipv4.offset_ip;
 
-    for (i=0; i<tmplset->count; i++) {
-        struct TemplatePacket *tmpl = &tmplset->pkts[i];
-        unsigned char *px = tmpl->ipv4.packet;
-        unsigned offset = tmpl->ipv4.offset_ip;
-
-        px[offset+8] = (unsigned char)(ttl);
-        tmpl->ipv4.checksum_ip = ip_header_checksum(    tmpl->ipv4.packet,
-                                                    tmpl->ipv4.offset_ip,
-                                                    tmpl->ipv4.length);
-    }
+    px[offset+8] = (unsigned char)(ttl);
+    tmpl_pkt->ipv4.checksum_ip = ip_header_checksum(tmpl_pkt->ipv4.packet,
+        tmpl_pkt->ipv4.offset_ip, tmpl_pkt->ipv4.length);
 }
 
 void
-template_set_vlan(struct TemplateSet *tmplset, unsigned vlan)
+template_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan)
 {
-    unsigned i;
-    
-    for (i=0; i<tmplset->count; i++) {
-        struct TemplatePacket *tmpl = &tmplset->pkts[i];
-        unsigned char *px;
+    unsigned char *px;
 
-        if (tmpl->ipv4.length < 14)
-            continue;
-        
-        px = MALLOC(tmpl->ipv4.length + 4);
-        memcpy(px, tmpl->ipv4.packet, 12);
-        memcpy(px+16, tmpl->ipv4.packet+12, tmpl->ipv4.length - 12);
-        
-        px[12] = 0x81;
-        px[13] = 0x00;
-        px[14] = (unsigned char)(vlan>>8);
-        px[15] = (unsigned char)(vlan>>0);
-        
-        tmpl->ipv4.packet = px;
-        tmpl->ipv4.length += 4;
-        
-        tmpl->ipv4.offset_ip += 4;
-        tmpl->ipv4.offset_tcp += 4;
-        tmpl->ipv4.offset_app += 4;
-    }
+    if (tmpl_pkt->ipv4.length < 14)
+        return;
+    
+    px = MALLOC(tmpl_pkt->ipv4.length + 4);
+    memcpy(px, tmpl_pkt->ipv4.packet, 12);
+    memcpy(px+16, tmpl_pkt->ipv4.packet+12, tmpl_pkt->ipv4.length - 12);
+    
+    px[12] = 0x81;
+    px[13] = 0x00;
+    px[14] = (unsigned char)(vlan>>8);
+    px[15] = (unsigned char)(vlan>>0);
+    
+    tmpl_pkt->ipv4.packet = px;
+    tmpl_pkt->ipv4.length += 4;
+    
+    tmpl_pkt->ipv4.offset_ip += 4;
+    tmpl_pkt->ipv4.offset_tcp += 4;
+    tmpl_pkt->ipv4.offset_app += 4;
 }
 
 

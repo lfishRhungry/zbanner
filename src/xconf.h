@@ -14,6 +14,7 @@
 #include "stack/stack-src.h"
 #include "stack/stack-queue.h"
 #include "stateless-probes/stateless-probes.h"
+#include "scan-modules/scan_modules.h"
 
 
 /**
@@ -55,17 +56,18 @@ struct TemplateOptions;
  */
 enum Operation {
     Operation_Default = 0,          /* nothing specified, so print usage */
-    Operation_List_Adapters = 1,    /* --listif */
+    Operation_ListAdapters = 1,    /* --listif */
     Operation_Selftest = 2,         /* --selftest or --regress */
     Operation_Scan = 3,         /* this is what you expect */
     Operation_DebugIF = 4,          /* --debug if */
-    Operation_ListScan = 5,         /* -sL */
+    Operation_ListTargets = 5,         /* -sL */
     Operation_ReadScan = 6,         /* --readscan <binary-output> */
     Operation_ReadRange = 7,        /* --readrange */
     Operation_Benchmark = 8,        /* --benchmark */
     Operation_Echo = 9,             /* --echo */
     Operation_EchoCidr = 11,        /* --echo-cidr */
-    Operation_List_Probes,          /* --list-probes*/
+    Operation_ListProbes,          /* --list-probes*/
+    Operation_ListScanModules,         /* --list-modules*/
 };
 
 /**
@@ -197,9 +199,9 @@ struct Xconf
     */
     unsigned rx_thread_count;
 
-    /* This is used both by the transmit and receive thread for
+    /* This is used by ScanModule both in transmit and receive thread for
      * formatting packets */
-    struct TemplateSet *tmplset;
+    struct TemplatePacket *tmpl_pkt;
 
     /**
      * This is the number of entries in our table.
@@ -259,6 +261,12 @@ struct Xconf
     */
     struct StatelessProbe *stateless_probe;
     char stateless_probe_args[STATELESS_PROBE_ARGS_LEN];
+
+	/**
+     * Choosed ScanModule
+    */
+    struct ScanModule *scan_module;
+    char scan_module_args[SCAN_MODULE_ARGS_LEN];
     
     unsigned is_pfring:1;       /* --pfring */
     unsigned is_sendq:1;        /* --sendq */

@@ -325,7 +325,7 @@ receive_thread(void *v)
 
                     /* Ignore duplicates */
                     if (!xconf->is_nodedup1){
-                        if (dedup_is_duplicate(dedup, ip_them, 0, ip_me, 0))
+                        if (dedup_is_duplicate(dedup, ip_them, 0, ip_me, 0, 0))
                             continue;
                     }
 
@@ -427,7 +427,7 @@ receive_thread(void *v)
 
             /* verify: ignore duplicates */
             if (!xconf->is_nodedup1){
-                if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me))
+                if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me, 0))
                     continue;
             }
 
@@ -528,7 +528,7 @@ receive_thread(void *v)
 
             /* verify: ignore duplicates */
             if (!xconf->is_nodedup2){
-                if (dedup_is_duplicate(dedup_for_stateless, ip_them, port_them, ip_me, port_me))
+                if (dedup_is_duplicate(dedup_for_stateless, ip_them, port_them, ip_me, port_me, 0))
                     continue;
             }
 
