@@ -12,6 +12,7 @@
 #include "xtatus.h"        /* printf() regular status updates */
 #include "cookie.h"         /* for SYN-cookies on send */
 
+#include "output-modules/output-modules.h"
 #include "out/output.h"             /* for outputting results */
 #include "stub/stub-pcap.h"          /* dynamically load libpcap library */
 #include "smack/smack.h"              /* Aho-corasick state-machine pattern-matcher */
@@ -33,6 +34,7 @@
 #include "stack/stack-ndpv6.h"        /* IPv6 Neighbor Discovery Protocol */
 #include "stack/stack-arpv4.h"        /* Handle ARP resolution and requests */
 #include "stack/stack-tcp-core.h"          /* for TCP/IP connection table */
+#include "stack/stack-queue.h"
 
 #include "pixie/pixie-timer.h"        /* portable time functions */
 #include "pixie/pixie-threads.h"      /* portable threads */
@@ -188,7 +190,6 @@ receive_thread(void *v)
      */
     LOG(2, "[+] THREAD: recv: starting main loop\n");
     while (!is_rx_done) {
-        int status;
         unsigned length;
         unsigned secs;
         unsigned usecs;
@@ -230,7 +231,6 @@ receive_thread(void *v)
 
             if (SCAN_MODULE_FILTER_OUT ==
                 scan_module->filter_packet_cb(&parsed, entropy,
-                    ip_them, port_them, ip_me, port_me,
                     px, length, is_myip, is_myport)) {
 
                 continue;
@@ -253,7 +253,6 @@ receive_thread(void *v)
 
             if (SCAN_MODULE_INVALID_PACKET ==
                 scan_module->validate_packet_cb(&parsed, entropy,
-                    ip_them, port_them, ip_me, port_me,
                     px, length)) {
 
                         continue;
@@ -270,12 +269,10 @@ receive_thread(void *v)
 
             if (SCAN_MODULE_DO_DEDUP ==
                 scan_module->dedup_packet_cb(&parsed, entropy,
-                    ip_them, port_them, ip_me, port_me,
                     px, length, &dedup_type)) {
 
                 if (dedup_is_duplicate(dedup, ip_them, port_them,
                         ip_me, port_me, dedup_type)) {
-
                     continue;
                 }
             }
@@ -288,12 +285,51 @@ receive_thread(void *v)
         unsigned need_response = SCAN_MODULE_NO_RESPONSE;
         unsigned successed = SCAN_MODULE_FAILURE_PACKET;
         char classification[SCAN_MODULE_CLS_LEN];
+        char report[SCAN_MODULE_RPT_LEN];
 
         if (scan_module->handle_packet_cb) {
             need_response = scan_module->handle_packet_cb(&parsed, entropy,
-                ip_them, port_them, ip_me, port_me,
                 px, length, &successed,
-                classification, SCAN_MODULE_CLS_LEN);
+                classification, SCAN_MODULE_CLS_LEN,
+                report, SCAN_MODULE_RPT_LEN);
+            
+            output_tmp(&parsed, global_now, successed, classification, report);
+        }
+
+        /**
+         * callback funcs of ScanModule in rx-thread.
+         * Step 5: Response
+        */
+        if (SCAN_MODULE_NEED_RESPONSE == need_response) {
+            if (scan_module->response_packet_cb) {
+                unsigned idx = 0;
+                while(1) {
+                    struct PacketBuffer *response = stack_get_packetbuffer(stack);
+                    size_t rsp_len = 0;
+                    if (response == NULL) {
+                        static int is_warning_printed = 0;
+                        if (!is_warning_printed) {
+                            LOG(0, "packet buffers empty (should be impossible)\n");
+                            is_warning_printed = 1;
+                        }
+                        fflush(stdout);
+                        pixie_usleep(100); /* no packet available */
+                    }
+                    if (response == NULL)
+                        exit(0);
+                    
+                    need_response = scan_module->response_packet_cb(&parsed, entropy,
+                        px, length, response->px, sizeof(response->px), &rsp_len, idx);
+                    response->length = rsp_len;
+
+                    stack_transmit_packetbuffer(stack, response);
+
+                    if (need_response == SCAN_MODULE_NO_MORE_RESPONSE)
+                        break;
+                    
+                    idx++;
+                }
+            }
         }
 
    

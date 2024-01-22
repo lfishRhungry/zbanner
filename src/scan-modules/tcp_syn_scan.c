@@ -30,8 +30,6 @@ tcpsyn_make_packet(
 static int
 tcpsyn_filter_packet(
     struct PreprocessedInfo *parsed, uint64_t entropy,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
     const unsigned char *px, unsigned sizeof_px,
     unsigned is_myip, unsigned is_myport)
 {
@@ -45,10 +43,12 @@ tcpsyn_filter_packet(
 static int
 tcpsyn_validate_packet(
     struct PreprocessedInfo *parsed, uint64_t entropy,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
     const unsigned char *px, unsigned sizeof_px)
 {
+    ipaddress ip_me = parsed->dst_ip;
+    ipaddress ip_them = parsed->src_ip;
+    unsigned port_me = parsed->port_dst;
+    unsigned port_them = parsed->port_src;
     unsigned seqno_me   = TCP_ACKNO(px, parsed->transport_offset);
     unsigned cookie     = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
 
@@ -72,8 +72,6 @@ tcpsyn_validate_packet(
 static int
 tcpsyn_dedup_packet(
     struct PreprocessedInfo *parsed, uint64_t entropy,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
     const unsigned char *px, unsigned sizeof_px,
     unsigned *type)
 {
@@ -85,11 +83,10 @@ tcpsyn_dedup_packet(
 static int
 tcpsyn_handle_packet(
     struct PreprocessedInfo *parsed, uint64_t entropy,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
     const unsigned char *px, unsigned sizeof_px,
     unsigned *successed,
-    char *classification, unsigned cls_length)
+    char *classification, unsigned cls_length,
+    char *report, unsigned rpt_length)
 {
     uint16_t win_them   = TCP_WIN(px, parsed->transport_offset);
 

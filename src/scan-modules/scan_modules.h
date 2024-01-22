@@ -44,6 +44,7 @@
 #define SCAN_MODULE_DEFAULT_DEDUP_TYPE  0
 
 #define SCAN_MODULE_CLS_LEN            15
+#define SCAN_MODULE_RPT_LEN          1460
 #define SCAN_MODULE_ARGS_LEN           50
 
 /***************************************************************************
@@ -107,10 +108,6 @@ typedef int (*scan_modules_make_new_packet)(
  * 
  * @param parsed Parsed info about this packet.
  * @param entropy a rand seed (generated or user-specified).
- * @param ip_them IP of this target.
- * @param port_them Port of this target (if port is meaningful).
- * @param ip_me IP of us.
- * @param port_me Port of us (if port is meaningful).
  * @param px point to packet data.
  * @param sizeof_px length of packet data.
  * @param is_myip for reference
@@ -121,8 +118,6 @@ typedef int (*scan_modules_make_new_packet)(
 */
 typedef int (*scan_modules_filter_packet)(
     struct PreprocessedInfo *parsed, uint64_t entropy,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
     const unsigned char *px, unsigned sizeof_px,
     unsigned is_myip, unsigned is_myport);
 
@@ -131,10 +126,6 @@ typedef int (*scan_modules_filter_packet)(
  * 
  * @param parsed Parsed info about this packet.
  * @param entropy a rand seed (generated or user-specified).
- * @param ip_them IP of this target.
- * @param port_them Port of this target (if port is meaningful).
- * @param ip_me IP of us.
- * @param port_me Port of us (if port is meaningful).
  * @param px point to packet data.
  * @param sizeof_px length of packet data.
  * 
@@ -143,8 +134,6 @@ typedef int (*scan_modules_filter_packet)(
 */
 typedef int (*scan_modules_validate_packet)(
     struct PreprocessedInfo *parsed, uint64_t entropy,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
     const unsigned char *px, unsigned sizeof_px);
 
 /**
@@ -152,10 +141,6 @@ typedef int (*scan_modules_validate_packet)(
  * 
  * @param parsed Parsed info about this packet.
  * @param entropy a rand seed (generated or user-specified).
- * @param ip_them IP of this target.
- * @param port_them Port of this target (if port is meaningful).
- * @param ip_me IP of us.
- * @param port_me Port of us (if port is meaningful).
  * @param px point to packet data.
  * @param sizeof_px length of packet data.
  * @param type dedup type for keep same (ip_them, port_them, ip_me, port_me) packet in diff type.
@@ -164,8 +149,6 @@ typedef int (*scan_modules_validate_packet)(
 */
 typedef int (*scan_modules_dedup_packet)(
     struct PreprocessedInfo *parsed, uint64_t entropy,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
     const unsigned char *px, unsigned sizeof_px,
     unsigned *type);
 
@@ -174,35 +157,29 @@ typedef int (*scan_modules_dedup_packet)(
  * 
  * @param parsed Parsed info about this packet.
  * @param entropy a rand seed (generated or user-specified).
- * @param ip_them IP of this target.
- * @param port_them Port of this target (if port is meaningful).
- * @param ip_me IP of us.
- * @param port_me Port of us (if port is meaningful).
  * @param px point to packet data.
  * @param sizeof_px length of packet data.
  * @param successed Is this packet considered success.
  * @param classification Packet classification string.
  * @param cls_length Length of classification string buffer.
+ * @param report Report string.
+ * @param rpt_length Length of report string buffer.
  * 
  * @return SCAN_MODULE_NEED_RESPONSE if need to response in Step 5.
 */
 typedef int (*scan_modules_handle_packet)(
     struct PreprocessedInfo *parsed, uint64_t entropy,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
     const unsigned char *px, unsigned sizeof_px,
     unsigned *successed,
-    char *classification, unsigned cls_length);
+    char *classification, unsigned cls_length,
+    char *report, unsigned rpt_length);
+
 
 /**
  * Step 5 Response
  * 
  * @param parsed Parsed info about this packet.
  * @param entropy a rand seed (generated or user-specified).
- * @param ip_them IP of this target.
- * @param port_them Port of this target (if port is meaningful).
- * @param ip_me IP of us.
- * @param port_me Port of us (if port is meaningful).
  * @param px point to packet data.
  * @param sizeof_px length of packet data.
  * @param r_px Put data of packet need to be sent here.
@@ -214,8 +191,6 @@ typedef int (*scan_modules_handle_packet)(
 */
 typedef int (*scan_modules_make_response_packet)(
     struct PreprocessedInfo *parsed, uint64_t entropy,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
     const unsigned char *px, unsigned sizeof_px,
     unsigned char *r_px, unsigned sizeof_r_px,
     size_t *r_length, unsigned index);
