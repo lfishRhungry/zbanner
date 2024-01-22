@@ -73,27 +73,19 @@ void
 transmit_thread(void *v) /*aka. scanning_thread() */
 {
     struct TxThread *parms = (struct TxThread *)v;
-    uint64_t i;
-    uint64_t start;
-    uint64_t end;
     const struct Xconf *xconf = parms->xconf;
     uint64_t retries = xconf->retries;
     uint64_t rate = (uint64_t)xconf->max_rate;
     unsigned r = (unsigned)retries + 1;
-    uint64_t range;
-    uint64_t range_ipv6;
-    struct BlackRock blackrock;
     uint64_t count_ipv4 = rangelist_count(&xconf->targets.ipv4);
     uint64_t count_ipv6 = range6list_count(&xconf->targets.ipv6).lo;
     struct Throttler *throttler = parms->throttler;
-    struct TemplatePacket tmpl_pkt = templ_copy(xconf->tmpl_pkt);
+    struct TemplateSet tmplset = templ_copy(xconf->tmplset);
     struct Adapter *adapter = xconf->nic.adapter;
     uint64_t packets_sent = 0;
     unsigned increment = xconf->shard.of * xconf->tx_thread_count;
-    struct source_t src;
     uint64_t seed = xconf->seed;
     uint64_t repeats = 0; /* --infinite repeats */
-    uint64_t *status_syn_count;
     uint64_t entropy = xconf->seed;
 
     /* Wait to make sure receive_thread is ready */
@@ -115,13 +107,25 @@ transmit_thread(void *v) /*aka. scanning_thread() */
     /* export a pointer to this variable outside this threads so
      * that the 'status' system can print the rate of syns we are
      * sending */
-    status_syn_count = MALLOC(sizeof(uint64_t));
+    uint64_t *status_syn_count = MALLOC(sizeof(uint64_t));
     *status_syn_count = 0;
     parms->total_syns = status_syn_count;
+
+    /*
+     * Do tx-thread init for ScanModule
+     */
+    if (xconf->scan_module->tx_thread_init_cb){
+        if (SCAN_MODULE_INIT_FAILED ==
+            xconf->scan_module->tx_thread_init_cb()) {
+            LOG(0, "FAIL: errors happened in tx-thread(%u) init of ScanModule.\n", parms->tx_index);
+            exit(1);
+        }
+    }
 
 
     /* Normally, we have just one source address. In special cases, though
      * we can have multiple. */
+    struct source_t src;
     adapter_get_source_addresses(xconf, &src);
 
 
@@ -136,9 +140,11 @@ infinite:
      * ports.
      * IPv6: low index will pick addresses from the IPv6 ranges, and high
      * indexes will pick addresses from the IPv4 ranges. */
-    range = count_ipv4 * rangelist_count(&xconf->targets.ports)
+    uint64_t range = count_ipv4 * rangelist_count(&xconf->targets.ports)
             + count_ipv6 * rangelist_count(&xconf->targets.ports);
-    range_ipv6 = count_ipv6 * rangelist_count(&xconf->targets.ports);
+    uint64_t range_ipv6 = count_ipv6 * rangelist_count(&xconf->targets.ports);
+
+    struct BlackRock blackrock;
     blackrock_init(&blackrock, range, seed, xconf->blackrock_rounds);
 
     /* Calculate the 'start' and 'end' of a scan. One reason to do this is
@@ -147,8 +153,8 @@ infinite:
      * a little bit past the end when we have --retries. Yet another
      * thing to do here is deal with multiple network adapters, which
      * is essentially the same logic as shards. */
-    start = xconf->resume.index + (xconf->shard.one-1) * xconf->tx_thread_count + parms->tx_index;
-    end = range;
+    uint64_t start = xconf->resume.index + (xconf->shard.one-1) * xconf->tx_thread_count + parms->tx_index;
+    uint64_t end = range;
     if (xconf->resume.count && end > start + xconf->resume.count)
         end = start + xconf->resume.count;
     end += retries * range;
@@ -158,8 +164,7 @@ infinite:
      * the main loop
      * -----------------*/
     LOG(3, "THREAD: xmit: starting main loop: [%llu..%llu]\n", start, end);
-    for (i=start; i<end; ) {
-        uint64_t batch_size;
+    for (uint64_t i=start; i<end; ) {
 
         /*
          * Do a batch of many packets at a time. That because per-packet
@@ -167,7 +172,7 @@ infinite:
          * per-packet cost by doing batches. At slower rates, the batch
          * size will always be one. (--max-rate)
          */
-        batch_size = throttler_next_batch(throttler, packets_sent);
+        uint64_t batch_size = throttler_next_batch(throttler, packets_sent);
 
         /*
          * Transmit packets from other thread, when doing --banners. This
@@ -190,11 +195,6 @@ infinite:
          * while not incurring the overhead for high packet rates.
          */
         while (batch_size && i < end) {
-            uint64_t xXx;
-            uint64_t cookie;
-            
-
-
             /*
              * RANDOMIZE THE TARGET:
              *  This is kinda a tricky bit that picks a random IP and port
@@ -205,61 +205,46 @@ infinite:
              *  order. Then, once we've shuffled the index, we "pick" the
              *  IP address and port that the index refers to.
              */
-            xXx = (i + (r--) * rate);
-            if (rate > range)
+            uint64_t xXx = (i + (r--) * rate);
+            if (rate > range) {
                 xXx %= range;
-            else
-                while (xXx >= range)
+            } else {
+                while (xXx >= range) {
                     xXx -= range;
+                }
+            }
             xXx = blackrock_shuffle(&blackrock,  xXx);
+
+            ipaddress ip_them;
+            unsigned port_them;
+            ipaddress ip_me;
+            unsigned port_me;
             
             if (xXx < range_ipv6) {
                 /* Our index selects an IPv6 target */
-                ipv6address ip_them;
-                unsigned port_them;
-                ipv6address ip_me;
-                unsigned port_me;
+                ip_them.version = 6;
+                ip_me.version = 6;
 
-                ip_them = range6list_pick(&xconf->targets.ipv6, xXx % count_ipv6);
+                ip_them.ipv6 = range6list_pick(&xconf->targets.ipv6, xXx % count_ipv6);
                 port_them = rangelist_pick(&xconf->targets.ports, xXx / count_ipv6);
 
-                ip_me = src.ipv6;
+                ip_me.ipv6 = src.ipv6;
                 port_me = src.port;
-
-               /*
-                * Construct the destination packet by ScanModule
-                */
-                unsigned char px[2048];
-                size_t packet_length;
-
-                xconf->scan_module->make_packet_ipv6_cb(&tmpl_pkt,
-                    ip_them, port_them,
-                    ip_me, port_me,
-                    entropy, 0,
-                    px, sizeof(px), &packet_length);
-                
-                /*
-                * Send it
-                */
-                rawsock_send_packet(adapter, px, (unsigned)packet_length, !batch_size);
 
             } else {
                 /* Our index selects an IPv4 target. In other words, low numbers
                  * index into the IPv6 ranges, and high numbers index into the
                  * IPv4 ranges. */
-                ipv4address ip_them;
-                ipv4address port_them;
-                unsigned ip_me;
-                unsigned port_me;
+                ip_them.version = 4;
+                ip_me.version = 4;
 
                 xXx -= range_ipv6;
 
-                ip_them = rangelist_pick(&xconf->targets.ipv4, xXx % count_ipv4);
+                ip_them.ipv4 = rangelist_pick(&xconf->targets.ipv4, xXx % count_ipv4);
                 port_them = rangelist_pick(&xconf->targets.ports, xXx / count_ipv4);
 
                 /*
-                 * SYN-COOKIE LOGIC
-                 *  Figure out the source IP/port
+                 *  Figure out the source IP/port through COOKIE
                  */
                 if (src.ipv4_mask > 1 || src.port_mask > 1) {
                     uint64_t ck = get_cookie_ipv4((unsigned)(i+repeats),
@@ -267,34 +252,36 @@ infinite:
                                             (unsigned)xXx, (unsigned)(xXx>>32),
                                             entropy);
                     port_me = src.port + (ck & src.port_mask);
-                    ip_me = src.ipv4 + ((ck>>16) & src.ipv4_mask);
+                    ip_me.ipv4 = src.ipv4 + ((ck>>16) & src.ipv4_mask);
                 } else {
-                    ip_me = src.ipv4;
+                    ip_me.ipv4 = src.ipv4;
                     port_me = src.port;
                 }
 
-
-                /*
-                * Construct the destination packet by ScanModule
-                */
-                unsigned char px[2048];
-                size_t packet_length;
-
-                xconf->scan_module->make_packet_ipv4_cb(&tmpl_pkt,
-                    ip_them, port_them,
-                    ip_me, port_me,
-                    entropy, 0,
-                    px, sizeof(px), &packet_length);
-                
-                /*
-                 * SEND THE PROBE
-                 *  This is sorta the entire point of the program, but little
-                 *  exciting happens here. The thing to note that this may
-                 *  be a "raw" transmit that bypasses the kernel, meaning
-                 *  we can call this function millions of times a second.
-                 */
-                rawsock_send_packet(adapter, px, (unsigned)packet_length, !batch_size);
             }
+
+            /*
+            * Construct the destination packet by ScanModule
+            */
+            unsigned char px[2048];
+            size_t packet_length = 0;
+
+            xconf->scan_module->make_packet_cb(&tmplset,
+                ip_them, port_them,
+                ip_me, port_me,
+                entropy, 0,
+                px, sizeof(px), &packet_length);
+            /*
+                * SEND THE PROBE
+                *  This is sorta the entire point of the program, but little
+                *  exciting happens here. The thing to note that this may
+                *  be a "raw" transmit that bypasses the kernel, meaning
+                *  we can call this function millions of times a second.
+                */
+            if (!packet_length) continue;
+
+            rawsock_send_packet(adapter, px,
+                (unsigned)packet_length, !batch_size);
 
             batch_size--;
             packets_sent++;

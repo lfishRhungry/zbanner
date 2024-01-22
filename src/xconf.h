@@ -201,15 +201,15 @@ struct Xconf
 
     /* This is used by ScanModule both in transmit and receive thread for
      * formatting packets */
-    struct TemplatePacket *tmpl_pkt;
+    // struct TemplatePacket *tmpl_pkt;
+    struct TemplateSet *tmplset;
 
     /**
      * This is the number of entries in our table.
      * More entries does a better job at the cost of using more memory.
      * NOTE: Look into strustures to understand the memory cost.
      */
-    unsigned dedup_win1;
-    unsigned dedup_win2;
+    unsigned dedup_win;
 
     /**
      * This stack contains:
@@ -276,8 +276,7 @@ struct Xconf
     unsigned is_offline:1;      /* --offline */
     unsigned is_noreset1:1;      /* --noreset1, don't transmit RST in PORT-IS-OPEN phase*/
     unsigned is_noreset2:1;      /* --noreset2, don't transmit RST in DATA-IS-RESPONED phase*/
-    unsigned is_nodedup1:1;      /* --nodedup1, don't deduplicate for SYN-ACK */
-    unsigned is_nodedup2:1;      /* --nodedup2, don't deduplicate Data Response */
+    unsigned is_nodedup:1;      /* --nodedup, don't deduplicate */
     unsigned is_gmt:1;          /* --gmt, all times in GMT */
     unsigned is_capture_cert:1; /* --capture cert */
     unsigned is_capture_html:1; /* --capture html */

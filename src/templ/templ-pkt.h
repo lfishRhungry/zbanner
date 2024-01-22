@@ -3,6 +3,23 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "../massip/massip-addr.h"
+
+#define TCP_FLAG_CWR 0B10000000
+#define TCP_FLAG_ECE 0B01000000
+#define TCP_FLAG_URG 0B00100000
+#define TCP_FLAG_ACK 0B00010000
+#define TCP_FLAG_PSH 0B00001000
+#define TCP_FLAG_RST 0B00000100
+#define TCP_FLAG_SYN 0B00000010
+#define TCP_FLAG_FIN 0B00000001
+
+#define TCP_SEQNO(px,i) (px[i+4]<<24|px[i+5]<<16|px[i+6]<<8|px[i+7])
+#define TCP_ACKNO(px,i) (px[i+8]<<24|px[i+9]<<16|px[i+10]<<8|px[i+11])
+#define TCP_FLAGS(px,i) (px[(i)+13])
+#define TCP_WIN(px,i) (px[i+14]<<8|px[i+15]) /*calc TCP window size*/
+
+#define TCP_HAS_FLAG(px,i,flag) ((TCP_FLAGS((px),(i)) & (flag)) == (flag))
+
 struct PayloadsUDP;
 struct MassVulnCheck;
 struct TemplateOptions;
@@ -82,7 +99,8 @@ struct TemplateSet
     struct TemplatePacket pkts[Proto_Count];
 };
 
-struct TemplatePacket templ_copy(const struct TemplatePacket *tmpl_pkt);
+struct TemplateSet templ_copy(const struct TemplateSet *templset);
+// struct TemplatePacket templ_copy(const struct TemplatePacket *tmpl_pkt);
 
 
 
@@ -195,7 +213,10 @@ void
 tcp_set_window(unsigned char *px, size_t px_length, unsigned window);
 
 
-void template_set_ttl(struct TemplatePacket *tmpl_pkt, unsigned ttl);
-void template_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan);
+void template_set_ttl(struct TemplateSet *tmplset, unsigned ttl);
+// void template_set_ttl(struct TemplatePacket *tmpl_pkt, unsigned ttl);
+
+void template_set_vlan(struct TemplateSet *tmplset, unsigned vlan);
+// void template_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan);
 
 #endif

@@ -349,21 +349,39 @@ icmp_ipv4_checksum(struct TemplatePacket *tmpl)
 
 /***************************************************************************
  ***************************************************************************/
-struct TemplatePacket templ_copy(const struct TemplatePacket *tmpl_pkt)
+struct TemplateSet templ_copy(const struct TemplateSet *templset)
 {
-    struct TemplatePacket result;
+    struct TemplateSet result;
+    unsigned i;
 
-    memcpy(&result, tmpl_pkt, sizeof(result));
+    memcpy(&result, templset, sizeof(result));
 
-    const struct TemplatePacket *p1 = tmpl_pkt;
-    struct TemplatePacket *p2 = &result;
-    p2->ipv4.packet = MALLOC(2048+p2->ipv4.length);
-    memcpy(p2->ipv4.packet, p1->ipv4.packet, p2->ipv4.length);
-    p2->ipv6.packet = MALLOC(2048+p2->ipv6.length);
-    memcpy(p2->ipv6.packet, p1->ipv6.packet, p2->ipv6.length);
+    for (i=0; i<templset->count; i++) {
+        const struct TemplatePacket *p1 = &templset->pkts[i];
+        struct TemplatePacket *p2 = &result.pkts[i];
+        p2->ipv4.packet = MALLOC(2048+p2->ipv4.length);
+        memcpy(p2->ipv4.packet, p1->ipv4.packet, p2->ipv4.length);
+        p2->ipv6.packet = MALLOC(2048+p2->ipv6.length);
+        memcpy(p2->ipv6.packet, p1->ipv6.packet, p2->ipv6.length);
+    }
 
     return result;
 }
+// struct TemplatePacket templ_copy(const struct TemplatePacket *tmpl_pkt)
+// {
+//     struct TemplatePacket result;
+
+//     memcpy(&result, tmpl_pkt, sizeof(result));
+
+//     const struct TemplatePacket *p1 = tmpl_pkt;
+//     struct TemplatePacket *p2 = &result;
+//     p2->ipv4.packet = MALLOC(2048+p2->ipv4.length);
+//     memcpy(p2->ipv4.packet, p1->ipv4.packet, p2->ipv4.length);
+//     p2->ipv6.packet = MALLOC(2048+p2->ipv6.length);
+//     memcpy(p2->ipv6.packet, p1->ipv6.packet, p2->ipv6.length);
+
+//     return result;
+// }
 
 /***************************************************************************
  ***************************************************************************/
@@ -780,35 +798,11 @@ template_set_target_ipv6(
         return;
     }
 
-    /* Create some shorter local variables to work with */
+    /*based on packet template*/
     if (*r_length > tmpl->ipv6.length)
         *r_length = tmpl->ipv6.length;
     memcpy(px, tmpl->ipv6.packet, *r_length);
 
-/*
-
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |Version| Traffic Class |           Flow Label                  |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |         Payload Length        |  Next Header  |   Hop Limit   |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +                         Source Address                        +
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +                      Destination Address                      +
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-*/
     /*
      * Fill in the empty fields in the IP header and then re-calculate
      * the checksum.
@@ -989,7 +983,6 @@ template_set_target_ipv4(
     unsigned offset_tcp;
     uint64_t xsum;
     struct TemplatePacket *tmpl = NULL;
-    unsigned xsum2;
     uint64_t entropy = tmplset->entropy;
     
     *r_length = sizeof_px;
@@ -1035,26 +1028,8 @@ template_set_target_ipv4(
         return;
     }
 
-    /*
 
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |Version|  IHL  |Type of Service|          Total Length         |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |         Identification        |Flags|      Fragment Offset    |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |  Time to Live |    Protocol   |         Header Checksum       |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                       Source Address                          |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                    Destination Address                        |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                    Options                    |    Padding    |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-*/
-
+    /*based on packet template*/
     if (*r_length > tmpl->ipv4.length)
         *r_length = tmpl->ipv4.length;
     memcpy(px, tmpl->ipv4.packet, *r_length);
@@ -1062,6 +1037,7 @@ template_set_target_ipv4(
     template_fill_target_ipv4_hdr(tmpl, ip_them, ip_me, entropy, px, *r_length);
 
     offset_tcp = tmpl->ipv4.offset_tcp;
+    offset_ip = tmpl->ipv4.offset_ip;
 
     /*
      * Now do the checksum for the higher layer protocols
@@ -1543,40 +1519,85 @@ template_packet_init(
  * Overwrites the TTL of the packet
  ***************************************************************************/
 void
-template_set_ttl(struct TemplatePacket *tmpl_pkt, unsigned ttl)
+template_set_ttl(struct TemplateSet *tmplset, unsigned ttl)
 {
-    unsigned char *px = tmpl_pkt->ipv4.packet;
-    unsigned offset = tmpl_pkt->ipv4.offset_ip;
+    unsigned i;
 
-    px[offset+8] = (unsigned char)(ttl);
-    tmpl_pkt->ipv4.checksum_ip = ip_header_checksum(tmpl_pkt->ipv4.packet,
-        tmpl_pkt->ipv4.offset_ip, tmpl_pkt->ipv4.length);
+    for (i=0; i<tmplset->count; i++) {
+        struct TemplatePacket *tmpl = &tmplset->pkts[i];
+        unsigned char *px = tmpl->ipv4.packet;
+        unsigned offset = tmpl->ipv4.offset_ip;
+
+        px[offset+8] = (unsigned char)(ttl);
+        tmpl->ipv4.checksum_ip = ip_header_checksum(    tmpl->ipv4.packet,
+                                                    tmpl->ipv4.offset_ip,
+                                                    tmpl->ipv4.length);
+    }
 }
+// void
+// template_set_ttl(struct TemplatePacket *tmpl_pkt, unsigned ttl)
+// {
+//     unsigned char *px = tmpl_pkt->ipv4.packet;
+//     unsigned offset = tmpl_pkt->ipv4.offset_ip;
+
+//     px[offset+8] = (unsigned char)(ttl);
+//     tmpl_pkt->ipv4.checksum_ip = ip_header_checksum(tmpl_pkt->ipv4.packet,
+//         tmpl_pkt->ipv4.offset_ip, tmpl_pkt->ipv4.length);
+// }
 
 void
-template_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan)
+template_set_vlan(struct TemplateSet *tmplset, unsigned vlan)
 {
-    unsigned char *px;
+    unsigned i;
+    
+    for (i=0; i<tmplset->count; i++) {
+        struct TemplatePacket *tmpl = &tmplset->pkts[i];
+        unsigned char *px;
 
-    if (tmpl_pkt->ipv4.length < 14)
-        return;
-    
-    px = MALLOC(tmpl_pkt->ipv4.length + 4);
-    memcpy(px, tmpl_pkt->ipv4.packet, 12);
-    memcpy(px+16, tmpl_pkt->ipv4.packet+12, tmpl_pkt->ipv4.length - 12);
-    
-    px[12] = 0x81;
-    px[13] = 0x00;
-    px[14] = (unsigned char)(vlan>>8);
-    px[15] = (unsigned char)(vlan>>0);
-    
-    tmpl_pkt->ipv4.packet = px;
-    tmpl_pkt->ipv4.length += 4;
-    
-    tmpl_pkt->ipv4.offset_ip += 4;
-    tmpl_pkt->ipv4.offset_tcp += 4;
-    tmpl_pkt->ipv4.offset_app += 4;
+        if (tmpl->ipv4.length < 14)
+            continue;
+        
+        px = MALLOC(tmpl->ipv4.length + 4);
+        memcpy(px, tmpl->ipv4.packet, 12);
+        memcpy(px+16, tmpl->ipv4.packet+12, tmpl->ipv4.length - 12);
+        
+        px[12] = 0x81;
+        px[13] = 0x00;
+        px[14] = (unsigned char)(vlan>>8);
+        px[15] = (unsigned char)(vlan>>0);
+        
+        tmpl->ipv4.packet = px;
+        tmpl->ipv4.length += 4;
+        
+        tmpl->ipv4.offset_ip += 4;
+        tmpl->ipv4.offset_tcp += 4;
+        tmpl->ipv4.offset_app += 4;
+    }
 }
+// void
+// template_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan)
+// {
+//     unsigned char *px;
+
+//     if (tmpl_pkt->ipv4.length < 14)
+//         return;
+    
+//     px = MALLOC(tmpl_pkt->ipv4.length + 4);
+//     memcpy(px, tmpl_pkt->ipv4.packet, 12);
+//     memcpy(px+16, tmpl_pkt->ipv4.packet+12, tmpl_pkt->ipv4.length - 12);
+    
+//     px[12] = 0x81;
+//     px[13] = 0x00;
+//     px[14] = (unsigned char)(vlan>>8);
+//     px[15] = (unsigned char)(vlan>>0);
+    
+//     tmpl_pkt->ipv4.packet = px;
+//     tmpl_pkt->ipv4.length += 4;
+    
+//     tmpl_pkt->ipv4.offset_ip += 4;
+//     tmpl_pkt->ipv4.offset_tcp += 4;
+//     tmpl_pkt->ipv4.offset_app += 4;
+// }
 
 
 

@@ -15,50 +15,68 @@
 #include "../proto/proto-preprocess.h"
 #include "../templ/templ-pkt.h"
 
-#define SCAN_MODULE_ARGS_LEN 50
 
-/**
+
+#define SCAN_MODULE_INIT_SUCCESS        1
+#define SCAN_MODULE_INIT_FAILED         0
+
+#define SCAN_MODULE_SEND_AGAIN          1
+#define SCAN_MODULE_NO_MORE_SEND        0
+
+#define SCAN_MODULE_KEEP_PACKET         1
+#define SCAN_MODULE_FILTER_OUT          0
+
+#define SCAN_MODULE_VALID_PACKET        1
+#define SCAN_MODULE_INVALID_PACKET      0
+
+#define SCAN_MODULE_DO_DEDUP            1
+#define SCAN_MODULE_NO_DEDUP            0
+
+#define SCAN_MODULE_SUCCESS_PACKET      1
+#define SCAN_MODULE_FAILURE_PACKET      0
+
+#define SCAN_MODULE_NEED_RESPONSE       1
+#define SCAN_MODULE_NO_RESPONSE         0
+
+#define SCAN_MODULE_RESPONSE_AGAIN      1
+#define SCAN_MODULE_NO_MORE_RESPONSE    0
+
+#define SCAN_MODULE_DEFAULT_DEDUP_TYPE  0
+
+#define SCAN_MODULE_CLS_LEN            15
+#define SCAN_MODULE_ARGS_LEN           50
+
+/***************************************************************************
  * * callback functions for Init
-*/
+****************************************************************************/
 
 /**
- * We always do some initialization here,
- * especially prepare the packet template.
- * I provide some params set in xtate for all ScanModules.
- * You could use them as you like.
- * @param tmpl_pkt set this (initialized) packet template for some fixed features.
- * @param source_mac our mac addr.
- * @param router_mac_ipv4 our gateway mac for ipv4 packet sending.
- * @param router_mac_ipv6 out gateway mac for ipv6 packet sending.
- * @param udp_payloads user-specified UDP payload.
- * @param oproto_payloads user-specified payload for other UDP packet.
- * @param data_link data link type of adapter (1 for eth, 12 for raw IP).
- * @param templ_opts user-specified packet options like ttl, mss and etc. (NULL if no specified)
- * @return EXIT_FAILURE for initing failed and exit process.
+ * Do some initialization here if you have to.
+ * NOTE: Xtate had init many packet templates. But you can change
+ * the template set by specific options.
+ * @param tmplset packet template Xtate had prepared most of transmit protocol.
+ * @return SCAN_MODULE_INIT_FAILED for initing failed and exit process.
 */
-typedef int (*scan_modules_global_init)(
-    struct TemplatePacket *tmpl_pkt, macaddress_t source_mac,
-    macaddress_t router_mac_ipv4, macaddress_t router_mac_ipv6,
-    struct PayloadsUDP *udp_payloads, struct PayloadsUDP *oproto_payloads, 
-    int data_link, const struct TemplateOptions *templ_opts);
+typedef int (*scan_modules_global_init)(struct TemplateSet *tmplset);
 
 /**
- * @return EXIT_FAILURE for initing failed and exit process.
+ * @return SCAN_MODULE_INIT_FAILED for initing failed and exit process.
 */
 typedef int (*scan_modules_rxthread_init)();
 
 /**
- * @return EXIT_FAILURE for initing failed and exit process.
+ * @return SCAN_MODULE_INIT_FAILED for initing failed and exit process.
 */
 typedef int (*scan_modules_txthread_init)();
 
-/**
+/***************************************************************************
  * * callback functions for Transmit
-*/
+****************************************************************************/
 
 /**
- * It happens in Tx Thread
- * @param tmpl_pkt packet template we have prepared in global init.
+ * Happens in Tx Thread
+ * 
+ * @param tmplset packet template Xtate had prepared most of transmit protocol.
  * @param ip_them IP of this target.
  * @param port_them Port of this target (if port is meaningful).
  * @param ip_me IP of us.
@@ -67,88 +85,144 @@ typedef int (*scan_modules_txthread_init)();
  * @param index This is the index times to send the packet
  * for this target in tx_thread (not through callback queue).
  * @param px Load your packet data to here.
- * @param px_length Length of buffer.
- * @param r_length Length of returned packet length.
- * @return TRUE if need to send packet to for target in tx_thread again.
+ * @param sizeof_px Length of buffer.
+ * @param r_length Length of returned packet length (doesn't send anything if zero).
+ * 
+ * @return SCAN_MODULE_SEND_AGAIN for this target in tx_thread again.
 */
-typedef int (*scan_modules_make_new_packet_ipv4)(
-    struct TemplatePacket *tmpl_pkt,
-    ipv4address ip_them, unsigned port_them,
-    ipv4address ip_me, unsigned port_me,
+typedef int (*scan_modules_make_new_packet)(
+    struct TemplateSet *tmplset,
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
     uint64_t entropy, unsigned index,
-    unsigned char *px, unsigned px_length, size_t *r_length);
+    unsigned char *px, unsigned sizeof_px, size_t *r_length);
 
-/**
- * It happens in Tx Thread
- * @param tmpl_pkt packet template we have prepared in global init.
- * @param ip_them IP of this target.
- * @param port_them Port of this target (if port is meaningful).
- * @param ip_me IP of us.
- * @param port_me Port of us (if port is meaningful).
- * @param entropy a rand seed (generated or user-specified).
- * @param index This is the index times to send the packet
- * for this target in tx_thread (not through callback queue).
- * @param px Load your packet data to here.
- * @param px_length Length of buffer.
- * @param r_length Length of returned packet length.
- * @return TRUE if need to send packet to for target in tx_thread again.
-*/
-typedef int (*scan_modules_make_new_packet_ipv6)(
-    struct TemplatePacket *tmpl_pkt,
-    ipv6address ip_them, unsigned port_them,
-    ipv6address ip_me, unsigned port_me,
-    uint64_t entropy, unsigned index,
-    unsigned char *px, unsigned px_length, size_t *r_length);
-
-/**
+/***************************************************************************
  * * callback functions for Receive
-*/
+****************************************************************************/
 
 /**
- * Step 1 Validate: Is this packet need to be handle?
+ * Step 1 Filter: Is this packet need to be record (to pcap)
+ * and possibly validate in next step?
+ * 
  * @param parsed Parsed info about this packet.
- * @return is this a valid packet for this ScanModule to handle (and save to pcap file)?
+ * @param entropy a rand seed (generated or user-specified).
+ * @param ip_them IP of this target.
+ * @param port_them Port of this target (if port is meaningful).
+ * @param ip_me IP of us.
+ * @param port_me Port of us (if port is meaningful).
+ * @param px point to packet data.
+ * @param sizeof_px length of packet data.
+ * @param is_myip for reference
+ * @param is_myport for reference
+ * 
+ * @return should we SCAN_MODULE_KEEP_PACKET
+ * for this ScanModule to handle (and save to pcap file) and go on Step 2?
 */
-typedef int (*scan_modules_validate_packet)(struct PreprocessedInfo *parsed);
+typedef int (*scan_modules_filter_packet)(
+    struct PreprocessedInfo *parsed, uint64_t entropy,
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    const unsigned char *px, unsigned sizeof_px,
+    unsigned is_myip, unsigned is_myport);
 
 /**
- * Step 2 Decuplicate: Is and how this packet to be deduped?
+ * Step 2 Validate: Is this packet need to be handle?
+ * 
  * @param parsed Parsed info about this packet.
- * @return Zero for no dedup or an unsigned for a dedup type.
+ * @param entropy a rand seed (generated or user-specified).
+ * @param ip_them IP of this target.
+ * @param port_them Port of this target (if port is meaningful).
+ * @param ip_me IP of us.
+ * @param port_me Port of us (if port is meaningful).
+ * @param px point to packet data.
+ * @param sizeof_px length of packet data.
+ * 
+ * @return is this a SCAN_MODULE_VALID_PACKET
+ * for this ScanModule to go on to dedup meaningfully in Step 3?
 */
-typedef unsigned (*scan_modules_dedup_packet)(struct PreprocessedInfo *parsed);
+typedef int (*scan_modules_validate_packet)(
+    struct PreprocessedInfo *parsed, uint64_t entropy,
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    const unsigned char *px, unsigned sizeof_px);
 
 /**
- * Step 2 Handle: 
+ * Step 3 Decuplicate: Is and how this packet to be deduped?
+ * 
  * @param parsed Parsed info about this packet.
- * @param px Put data of packet need to be sent here.
- * @param px_length Length of buffer that px points.
+ * @param entropy a rand seed (generated or user-specified).
+ * @param ip_them IP of this target.
+ * @param port_them Port of this target (if port is meaningful).
+ * @param ip_me IP of us.
+ * @param port_me Port of us (if port is meaningful).
+ * @param px point to packet data.
+ * @param sizeof_px length of packet data.
+ * @param type dedup type for keep same (ip_them, port_them, ip_me, port_me) packet in diff type.
+ * 
+ * @return SCAN_MODULE_NO_DEDUP if you like.
+*/
+typedef int (*scan_modules_dedup_packet)(
+    struct PreprocessedInfo *parsed, uint64_t entropy,
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    const unsigned char *px, unsigned sizeof_px,
+    unsigned *type);
+
+/**
+ * Step 4 Handle
+ * 
+ * @param parsed Parsed info about this packet.
+ * @param entropy a rand seed (generated or user-specified).
+ * @param ip_them IP of this target.
+ * @param port_them Port of this target (if port is meaningful).
+ * @param ip_me IP of us.
+ * @param port_me Port of us (if port is meaningful).
+ * @param px point to packet data.
+ * @param sizeof_px length of packet data.
  * @param successed Is this packet considered success.
  * @param classification Packet classification string.
  * @param cls_length Length of classification string buffer.
- * @param px Put data of packet need to be sent here.
- * @param px_length Length of buffer that px points.
- * @param index This is the index times to send the packet
- * for this target in tx_thread (not through callback queue).
- * @return TRUE if need to response.
+ * 
+ * @return SCAN_MODULE_NEED_RESPONSE if need to response in Step 5.
 */
 typedef int (*scan_modules_handle_packet)(
-    struct PreprocessedInfo *parsed, unsigned *successed,
+    struct PreprocessedInfo *parsed, uint64_t entropy,
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    const unsigned char *px, unsigned sizeof_px,
+    unsigned *successed,
     char *classification, unsigned cls_length);
 
 /**
- * Step 3 Response: 
- * @param px Put data of packet need to be sent here.
- * @param px_length Length of buffer that px points.
+ * Step 5 Response
+ * 
+ * @param parsed Parsed info about this packet.
+ * @param entropy a rand seed (generated or user-specified).
+ * @param ip_them IP of this target.
+ * @param port_them Port of this target (if port is meaningful).
+ * @param ip_me IP of us.
+ * @param port_me Port of us (if port is meaningful).
+ * @param px point to packet data.
+ * @param sizeof_px length of packet data.
+ * @param r_px Put data of packet need to be sent here.
+ * @param sizeof_r_px Length of buffer that px points.
+ * @param r_length Length of returned packet length (doesn't send anything if zero).
  * @param index This is the index times to response.
- * @return TRUE if need to response.
+ * 
+ * @param return SCAN_MODULE_RESPONSE_AGAIN if need to do more response.
 */
 typedef int (*scan_modules_make_response_packet)(
-    unsigned char *px, unsigned px_length, unsigned index);
+    struct PreprocessedInfo *parsed, uint64_t entropy,
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    const unsigned char *px, unsigned sizeof_px,
+    unsigned char *r_px, unsigned sizeof_r_px,
+    size_t *r_length, unsigned index);
 
-/**
+/***************************************************************************
  * * callback functions for Close
-*/
+****************************************************************************/
 
 /**
  * It happens before normal exit in mainscan function.
@@ -158,26 +232,22 @@ typedef void (*scan_modules_close)();
 
 struct ScanModule
 {
-    const char *name;
-    const char *description;
-
+    const char *                      name;
+    const char *                      description;
     /*for init*/
-    scan_modules_global_init global_init_cb;
-    scan_modules_rxthread_init rx_thread_init_cb;
-    scan_modules_txthread_init tx_thread_init_cb;
-
+    scan_modules_global_init          global_init_cb;
+    scan_modules_rxthread_init        rx_thread_init_cb;
+    scan_modules_txthread_init        tx_thread_init_cb;
     /*for transmit*/
-    scan_modules_make_new_packet_ipv4 make_packet_ipv4_cb;
-    scan_modules_make_new_packet_ipv6 make_packet_ipv6_cb;
-
+    scan_modules_make_new_packet      make_packet_cb;
     /*for receive*/
-    scan_modules_validate_packet validate_packet_cb;
-    scan_modules_dedup_packet dedup_packet_cb;
-    scan_modules_handle_packet handle_packet_cb;
+    scan_modules_filter_packet        filter_packet_cb;
+    scan_modules_validate_packet      validate_packet_cb;
+    scan_modules_dedup_packet         dedup_packet_cb;
+    scan_modules_handle_packet        handle_packet_cb;
     scan_modules_make_response_packet response_packet_cb;
-
     /*for close*/
-    scan_modules_close close_cb;
+    scan_modules_close                close_cb;
 };
 
 struct ScanModule *get_scan_module_by_name(const char *name);

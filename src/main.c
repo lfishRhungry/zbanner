@@ -149,7 +149,7 @@ main_scan(struct Xconf *xconf)
     /*We could have many tx threads but one rx thread*/
     struct TxThread *tx_thread;
     struct RxThread rx_thread[1];
-    struct TemplatePacket tmpl_pkt;
+    struct TemplateSet tmplset;
     uint64_t count_ips;
     uint64_t count_ports;
     uint64_t range;
@@ -256,18 +256,28 @@ main_scan(struct Xconf *xconf)
         * scanning. Then, we adjust the template with additional features,
         * such as the IP address and so on.
         */
-    xconf->tmpl_pkt = &tmpl_pkt;
-    // xconf->tmplset->vulncheck = vulncheck;
-    // template_packet_init(
-    //             xconf->tmplset,
-    //             xconf->nic.source_mac,
-    //             xconf->nic.router_mac_ipv4,
-    //             xconf->nic.router_mac_ipv6,
-    //             xconf->payloads.udp,
-    //             xconf->payloads.oproto,
-    //             stack_if_datalink(xconf->nic.adapter),
-    //             xconf->seed,
-    //             xconf->templ_opts);
+    xconf->tmplset = &tmplset;
+    xconf->tmplset->vulncheck = vulncheck;
+    template_packet_init(
+                xconf->tmplset,
+                xconf->nic.source_mac,
+                xconf->nic.router_mac_ipv4,
+                xconf->nic.router_mac_ipv6,
+                xconf->payloads.udp,
+                xconf->payloads.oproto,
+                stack_if_datalink(xconf->nic.adapter),
+                xconf->seed,
+                xconf->templ_opts);
+
+    /*
+     * Set the "TTL" (IP time-to-live) of everything we send.
+     */
+    if (xconf->nmap.ttl)
+        template_set_ttl(xconf->tmplset, xconf->nmap.ttl);
+
+    if (xconf->nic.is_vlan)
+        template_set_vlan(xconf->tmplset, xconf->nic.vlan_id);
+
 
     /*
      * Choose a default ScanModule if not specified.
@@ -282,25 +292,13 @@ main_scan(struct Xconf *xconf)
      * Do global init for ScanModule
      */
     if (xconf->scan_module->global_init_cb){
-        if (EXIT_FAILURE == xconf->scan_module->global_init_cb(
-            xconf->tmpl_pkt, xconf->nic.source_mac,
-            xconf->nic.router_mac_ipv4, xconf->nic.router_mac_ipv6,
-            xconf->payloads.udp, xconf->payloads.oproto,
-            stack_if_datalink(xconf->nic.adapter), xconf->templ_opts)) {
+        if (SCAN_MODULE_INIT_FAILED ==
+            xconf->scan_module->global_init_cb(xconf->tmplset)) {
 
-            LOG(0, "FAIL: errors happened in global init of ScanModule\n");
+            LOG(0, "FAIL: errors happened in global init of ScanModule.\n");
             exit(1);
         }
     }
-
-    /*
-     * Set the "TTL" (IP time-to-live) of everything we send.
-     */
-    if (xconf->nmap.ttl)
-        template_set_ttl(xconf->tmpl_pkt, xconf->nmap.ttl);
-
-    if (xconf->nic.is_vlan)
-        template_set_vlan(xconf->tmpl_pkt, xconf->nic.vlan_id);
 
     /*
      * Choose a default StatelessProbe if not specified.
@@ -437,13 +435,10 @@ main_scan(struct Xconf *xconf)
         for (i=0; i<xconf->tx_thread_count; i++) {
             struct TxThread *parms = &tx_thread[i];
 
-            /*Just tx's my_index & rate are meaningful*/
-            if (parms->thread_handle_xmit) {
-                if (min_index > parms->my_index)
-                    min_index = parms->my_index;
+            if (min_index > parms->my_index)
+                min_index = parms->my_index;
 
-                rate += parms->throttler->current_rate;
-            }
+            rate += parms->throttler->current_rate;
 
             if (parms->total_syns)
                 total_syns += *parms->total_syns;
@@ -506,13 +501,10 @@ main_scan(struct Xconf *xconf)
         for (i=0; i<xconf->tx_thread_count; i++) {
             struct TxThread *parms = &tx_thread[i];
 
-            /*Just tx's my_index & rate are meaningful*/
-            if (parms->thread_handle_xmit) {
-                if (min_index > parms->my_index)
-                    min_index = parms->my_index;
+            if (min_index > parms->my_index)
+                min_index = parms->my_index;
 
-                rate += parms->throttler->current_rate;
-            }
+            rate += parms->throttler->current_rate;
 
             if (parms->total_syns)
                 total_syns += *parms->total_syns;
@@ -657,8 +649,7 @@ int main(int argc, char *argv[])
     safe_strcpy(xconf->output.rotate.directory,
         sizeof(xconf->output.rotate.directory), ".");
     xconf->is_capture_cert = 1;
-    xconf->dedup_win1 = 1000000;
-    xconf->dedup_win2 = 1000000;
+    xconf->dedup_win = 1000000;
     /*default entries count of callback queue and packet buffer queue*/
     /**
      * Default entries count of callback queue and packet buffer queue.

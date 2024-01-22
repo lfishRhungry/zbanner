@@ -678,23 +678,13 @@ static int SET_banners(struct Xconf *xconf, const char *name, const char *value)
 static int SET_nodedup(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
-        if (xconf->is_nodedup1 || xconf->echo_all) {
-            fprintf(xconf->echo, "nodedup1 = %s\n", xconf->is_nodedup1?"true":"false");
-        }
-        if (xconf->is_nodedup2 || xconf->echo_all) {
-            fprintf(xconf->echo, "nodedup2 = %s\n", xconf->is_nodedup2?"true":"false");
+        if (xconf->is_nodedup || xconf->echo_all) {
+            fprintf(xconf->echo, "nodedup = %s\n", xconf->is_nodedup?"true":"false");
         }
        return 0;
     }
 
-    if (EQUALS(name, "nodedup1"))
-        xconf->is_nodedup1 = parseBoolean(value);
-    else if (EQUALS(name, "nodedup2"))
-        xconf->is_nodedup2 = parseBoolean(value);
-    else if (EQUALS(name, "nodedup")) {
-        xconf->is_nodedup1 = parseBoolean(value);
-        xconf->is_nodedup2 = parseBoolean(value);
-    }
+    xconf->is_nodedup = parseBoolean(value);
 
     return CONF_OK;
 }
@@ -734,10 +724,8 @@ static int SET_ttl(struct Xconf *xconf, const char *name, const char *value)
 static int SET_dedup_win(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
-        if (xconf->dedup_win1!=1000000 || xconf->echo_all)
-            fprintf(xconf->echo, "dedup-win1 = %u\n", xconf->dedup_win1);
-        if (xconf->dedup_win2!=1000000 || xconf->echo_all)
-            fprintf(xconf->echo, "dedup-win2 = %u\n", xconf->dedup_win2);
+        if (xconf->dedup_win!=1000000 || xconf->echo_all)
+            fprintf(xconf->echo, "dedup-win = %u\n", xconf->dedup_win);
        return 0;
     }
 
@@ -746,14 +734,7 @@ static int SET_dedup_win(struct Xconf *xconf, const char *name, const char *valu
         return CONF_ERR;
     }
 
-    if (EQUALS(name, "dedupwin1") || EQUALS(name, "dedup-win1"))
-        xconf->dedup_win1 = parseInt(value);
-    else if (EQUALS(name, "dedupwin2") || EQUALS(name, "dedup-win2"))
-        xconf->dedup_win2 = parseInt(value);
-    else if (EQUALS(name, "dedupwin") || EQUALS(name, "dedup-win")) {
-        xconf->dedup_win1 = parseInt(value);
-        xconf->dedup_win2 = parseInt(value);
-    }
+    xconf->dedup_win = parseInt(value);
 
     return CONF_OK;
 }
@@ -3299,8 +3280,8 @@ struct ConfigParameter config_parameters[] = {
     {"resume-count",    SET_resume_count,       0,      {0}},
     {"retries",         SET_retries,            0,      {"retry",0}},
     {"offline",         SET_offline,            F_BOOL, {"notransmit", "nosend", "dry-run", 0}},
-    {"nodedup",         SET_nodedup,            F_BOOL, {"nodedup1", "nodedup2", 0}},
-    {"dedup-win",       SET_dedup_win,          F_NUMABLE, {"dedupwin", "dedupwin1", "dedupwin2", 0}},
+    {"nodedup",         SET_nodedup,            F_BOOL, {0}},
+    {"dedup-win",       SET_dedup_win,          F_NUMABLE, {0}},
     {"stack-buf-count", SET_stack_buf_count,    F_NUMABLE, {"queue-buf-count", "packet-buf-count", 0}},
     {"pfring",          SET_pfring,             F_BOOL, {0}},
     {"send-queue",      SET_send_queue,         F_BOOL, {"sendq", 0}},
