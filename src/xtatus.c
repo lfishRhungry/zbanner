@@ -28,10 +28,8 @@ xtatus_print(
     uint64_t count,
     uint64_t max_count,
     double pps,
-    uint64_t total_tcbs,
-    uint64_t total_synacks,
-    uint64_t total_syns,
-    uint64_t total_responsed,
+    uint64_t total_successed,
+    uint64_t total_sent,
     uint64_t exiting,
     bool json_status)
 {
@@ -40,14 +38,10 @@ xtatus_print(
     double now;
     double percent_done;
     double time_remaining;
-    uint64_t current_tcbs = 0;
-    uint64_t current_synacks = 0;
-    uint64_t current_syns = 0;
-    uint64_t current_responsed = 0;
-    double tcb_rate = 0.0;
-    double synack_rate = 0.0;
-    double syn_rate = 0.0;
-    double responsed_rate = 0.0;
+    uint64_t current_successed = 0;
+    uint64_t current_sent = 0;
+    double successed_rate = 0.0;
+    double sent_rate = 0.0;
     double kpps = pps / 1000;
     const char *fmt;
 
@@ -62,14 +56,11 @@ xtatus_print(
         "\"rate\":"
         "{"
             "\"kpps\":%.2f,"
-            "\"pps\":%7$.2f,"
-            "\"synps\":%.0f,"
-            "\"ackps\":%.0f,"
-            "\"tcbps\":%.0f,"
-            "\"responsedps\":%.0f"
+            "\"pps\":%4$.2f,"
+            "\"sent ps\":%.0f,"
+            "\"successed ps\":%.0f,"
         "},"
-        "\"tcb\":%6$" PRIu64 ","
-        "\"syn\":%8$" PRIu64
+        "\"sent\":%5$" PRIu64
     "}\n";
     
     /**
@@ -81,19 +72,18 @@ xtatus_print(
         "\"rate\":"
         "{"
             "\"kpps\":%.2f,"
-            "\"pps\":%6$.2f"
+            "\"pps\":%5$.2f"
         "},"
         "\"progress\":"
         "{"
             "\"percent\":%.2f,"
             "\"seconds\":%d,"
-            "\"found\":%" PRIu64 ","
-            "\"responsed\":%" PRIu64 ","
-            "\"syn\":"
+            "\"successed\":%" PRIu64 ","
+            "\"transmit\":"
             "{"
-                "\"sent\":%7$" PRIu64 ","
-                "\"total\":%8$" PRIu64 ","
-                "\"remaining\":%9$" PRIu64
+                "\"sent\":%6$" PRIu64 ","
+                "\"total\":%7$" PRIu64 ","
+                "\"remaining\":%8$" PRIu64
             "}" 
         "}"
     "}\n";
@@ -108,7 +98,7 @@ xtatus_print(
         "\"rate\":"
         "{"
             "\"kpps\":%.2f,"
-            "\"pps\":%8$.2f"
+            "\"pps\":%7$.2f"
         "},"
         "\"progress\":"
         "{"
@@ -119,14 +109,13 @@ xtatus_print(
                 "\"mins\":%u,"
                 "\"seconds\":%u"
             "},"
-            "\"syn\":"
+            "\"transmit\":"
             "{"
-                "\"sent\":%9$" PRIu64 ","
-                "\"total\":%10$" PRIu64 ","
-                "\"remaining\":%11$" PRIu64
+                "\"sent\":%8$" PRIu64 ","
+                "\"total\":%9$" PRIu64 ","
+                "\"remaining\":%10$" PRIu64
             "}," 
-            "\"found\":%6$" PRIu64 ","
-            "\"responsed\":%7$" PRIu64
+            "\"successed\":%6$" PRIu64 ","
         "}"
     "}\n";
 
@@ -192,25 +181,15 @@ xtatus_print(
     /*
      * some other stats
      */
-    if (total_tcbs) {
-        current_tcbs = total_tcbs - xtatus->total_tcbs;
-        xtatus->total_tcbs = total_tcbs;
-        tcb_rate = (1.0*current_tcbs)/elapsed_time;
+    if (total_successed) {
+        current_successed = total_successed - xtatus->total_successed;
+        xtatus->total_successed = total_successed;
+        successed_rate = (1.0*current_successed)/elapsed_time;
     }
-    if (total_synacks) {
-        current_synacks = total_synacks - xtatus->total_synacks;
-        xtatus->total_synacks = total_synacks;
-        synack_rate = (1.0*current_synacks)/elapsed_time;
-    }
-    if (total_syns) {
-        current_syns = total_syns - xtatus->total_syns;
-        xtatus->total_syns = total_syns;
-        syn_rate = (1.0*current_syns)/elapsed_time;
-    }
-    if (total_responsed) {
-        current_responsed = total_responsed - xtatus->total_responsed;
-        xtatus->total_responsed = total_responsed;
-        responsed_rate = (1.0*current_responsed)/elapsed_time;
+    if (total_sent) {
+        current_sent = total_sent - xtatus->total_sent;
+        xtatus->total_sent = total_sent;
+        sent_rate = (1.0*current_sent)/elapsed_time;
     }
 
     /*
@@ -222,16 +201,13 @@ xtatus_print(
         if (json_status == 1)
             fmt = json_fmt_infinite;
         else
-            fmt = "rate:%6.2f-kpps, syn/s=%.0f ack/s=%.0f tcb-rate=%.0f, responsed-rate=%.0f, %" PRIu64 "-tcbs,         \r";
+            fmt = "rate:%6.2f-kpps, sent/s=%.0f, successed/s=%.0f                  \r";
 
         fprintf(stderr,
             fmt,
                 kpps,
-                syn_rate,
-                synack_rate,
-                tcb_rate,
-                responsed_rate,
-                total_tcbs,
+                sent_rate,
+                successed_rate,
                 pps,
                 count);
     } else {
@@ -239,15 +215,14 @@ xtatus_print(
             if (json_status == 1)
                 fmt = json_fmt_waiting;
             else
-                fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, found=%" PRIu64 ", responsed=%" PRIu64 "       \r";
+                fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, successed=%" PRIu64 "       \r";
 
             fprintf(stderr,
                     fmt,
                     pps/1000.0,
                     percent_done,
                     (int)exiting,
-                    total_synacks,
-                    total_responsed,
+                    total_successed,
                     pps,
                     count,
                     max_count,
@@ -257,7 +232,7 @@ xtatus_print(
             if (json_status == 1)
                 fmt = json_fmt_running;
             else
-                fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, found=%" PRIu64 ", responsed=%" PRIu64 "       \r";
+                fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, successed=%" PRIu64 "     \r";
 
             fprintf(stderr,
                 fmt,
@@ -266,8 +241,7 @@ xtatus_print(
                 (unsigned)(time_remaining/60/60),
                 (unsigned)(time_remaining/60)%60,
                 (unsigned)(time_remaining)%60,
-                total_synacks,
-                total_responsed,
+                total_successed,
                 pps,
                 count,
                 max_count,

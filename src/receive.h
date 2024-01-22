@@ -16,9 +16,7 @@ struct RxThread {
 
     double pt_start;
 
-    uint64_t *total_synacks;
-    uint64_t *total_tcbs;
-    uint64_t *total_responsed;
+    uint64_t *total_successed;
 
     /**
      * Set to zero if no corresponded thread.

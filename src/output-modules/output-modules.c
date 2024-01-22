@@ -16,7 +16,7 @@ output_tmp(
     ipaddress_formatted_t ip_me_fmt = ipaddress_fmt(ip_me);
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(ip_them);
 
-    char fmt[] = "Discovered %s port %u is %s (%s), report: %s";
+    char fmt[] = "Discovered %15s on port %5u is %s (%8s), report: %s";
     unsigned count = fprintf(stdout, fmt, ip_them_fmt.string, port_them,
         successed==SCAN_MODULE_SUCCESS_PACKET?"success":"failure",
         classification, report);

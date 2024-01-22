@@ -107,9 +107,9 @@ transmit_thread(void *v) /*aka. scanning_thread() */
     /* export a pointer to this variable outside this threads so
      * that the 'status' system can print the rate of syns we are
      * sending */
-    uint64_t *status_syn_count = MALLOC(sizeof(uint64_t));
-    *status_syn_count = 0;
-    parms->total_syns = status_syn_count;
+    uint64_t *status_sent_count = MALLOC(sizeof(uint64_t));
+    *status_sent_count = 0;
+    parms->total_sent = status_sent_count;
 
     /*
      * Do tx-thread init for ScanModule
@@ -164,7 +164,9 @@ infinite:
      * the main loop
      * -----------------*/
     LOG(3, "THREAD: xmit: starting main loop: [%llu..%llu]\n", start, end);
-    for (uint64_t i=start; i<end; ) {
+
+    uint64_t i;
+    for (i=start; i<end; ) {
 
         /*
          * Do a batch of many packets at a time. That because per-packet
@@ -194,6 +196,8 @@ infinite:
          * very precise packet-timing for low rates below 100,000 pps,
          * while not incurring the overhead for high packet rates.
          */
+        unsigned send_idx_for_a_target = 0;
+
         while (batch_size && i < end) {
             /*
              * RANDOMIZE THE TARGET:
@@ -266,10 +270,10 @@ infinite:
             unsigned char px[2048];
             size_t packet_length = 0;
 
-            xconf->scan_module->make_packet_cb(&tmplset,
+            unsigned send_again = xconf->scan_module->make_packet_cb(&tmplset,
                 ip_them, port_them,
                 ip_me, port_me,
-                entropy, 0,
+                entropy, send_idx_for_a_target,
                 px, sizeof(px), &packet_length);
             /*
                 * SEND THE PROBE
@@ -285,7 +289,7 @@ infinite:
 
             batch_size--;
             packets_sent++;
-            (*status_syn_count)++;
+            (*status_sent_count)++;
 
             /*
              * SEQUENTIALLY INCREMENT THROUGH THE RANGE
@@ -296,6 +300,15 @@ infinite:
              *  number, we can do lots of creative stuff, like doing clever
              *  retransmits and sharding.
              */
+            //trick for send_again
+            //cannot use `--retry` now
+            if (send_again == SCAN_MODULE_SEND_AGAIN) {
+                i -= increment;
+                send_idx_for_a_target++;
+            } else {
+                send_idx_for_a_target = 0;
+            }
+
             if (r == 0) {
                 i += increment; /* <------ increment by 1 normally, more with shards/nics */
                 r = (unsigned)retries + 1;

@@ -99,8 +99,6 @@ receive_thread(void *v)
     struct Output *out;
     struct DedupTable *dedup;
     struct PcapFile *pcapfile = NULL;
-    uint64_t *status_synack_count;
-    uint64_t *status_responsed_count;
     uint64_t entropy = xconf->seed;
     struct stack_t *stack = xconf->stack;
 
@@ -111,13 +109,9 @@ receive_thread(void *v)
     // rf = rstfilter_create(entropy, 16384);
 
     /* some status variables */
-    status_synack_count = MALLOC(sizeof(uint64_t));
-    *status_synack_count = 0;
-    parms->total_synacks = status_synack_count;
-
-    status_responsed_count = MALLOC(sizeof(uint64_t));
-    *status_responsed_count = 0;
-    parms->total_responsed = status_responsed_count;
+    uint64_t *status_successed_count = MALLOC(sizeof(uint64_t));
+    *status_successed_count = 0;
+    parms->total_successed = status_successed_count;
 
     LOG(1, "[+] starting receive thread\n");
     
@@ -292,8 +286,11 @@ receive_thread(void *v)
                 px, length, &successed,
                 classification, SCAN_MODULE_CLS_LEN,
                 report, SCAN_MODULE_RPT_LEN);
-            
+
             output_tmp(&parsed, global_now, successed, classification, report);
+            
+            if (SCAN_MODULE_SUCCESS_PACKET == successed)
+                (*status_successed_count)++;
         }
 
         /**

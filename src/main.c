@@ -215,7 +215,7 @@ main_scan(struct Xconf *xconf)
     }
 
     /*
-     * If the IP address range is very big, then require that that the
+     * If the IP address range is very big, then require the
      * user apply an exclude range
      */
     if (count_ips > 1000000000ULL && rangelist_count(&xconf->exclude.ipv4) == 0) {
@@ -424,10 +424,8 @@ main_scan(struct Xconf *xconf)
     while (!is_tx_done && xconf->output.is_status_updates) {
         unsigned i;
         double rate = 0;
-        uint64_t total_tcbs = 0;
-        uint64_t total_synacks = 0;
-        uint64_t total_syns = 0;
-        uint64_t total_responsed = 0;
+        uint64_t total_successed = 0;
+        uint64_t total_sent = 0;
 
 
         /* Find the minimum index of all the threads */
@@ -440,16 +438,12 @@ main_scan(struct Xconf *xconf)
 
             rate += parms->throttler->current_rate;
 
-            if (parms->total_syns)
-                total_syns += *parms->total_syns;
+            if (parms->total_sent)
+                total_sent += *parms->total_sent;
         }
 
-        if (rx_thread->total_tcbs)
-            total_tcbs = *rx_thread->total_tcbs;
-        if (rx_thread->total_synacks)
-            total_synacks = *rx_thread->total_synacks;
-        if (rx_thread->total_responsed)
-            total_responsed = *rx_thread->total_responsed;
+        if (rx_thread->total_successed)
+            total_successed = *rx_thread->total_successed;
 
         if (min_index >= range && !xconf->is_infinite) {
             /* Note: This is how we can tell the scan has ended */
@@ -462,7 +456,7 @@ main_scan(struct Xconf *xconf)
          */
         if (xconf->output.is_status_updates)
             xtatus_print(&status, min_index, range, rate,
-                total_tcbs, total_synacks, total_syns, total_responsed,
+                total_successed, total_sent,
                 0, xconf->output.is_status_ndjson);
 
         /* Sleep for almost a second */
@@ -490,10 +484,8 @@ main_scan(struct Xconf *xconf)
         unsigned tx_done_count = 0;
         unsigned i;
         double rate = 0;
-        uint64_t total_tcbs = 0;
-        uint64_t total_synacks = 0;
-        uint64_t total_syns = 0;
-        uint64_t total_responsed = 0;
+        uint64_t total_successed = 0;
+        uint64_t total_sent = 0;
 
 
         /* Find the minimum index of all the threads */
@@ -506,16 +498,12 @@ main_scan(struct Xconf *xconf)
 
             rate += parms->throttler->current_rate;
 
-            if (parms->total_syns)
-                total_syns += *parms->total_syns;
+            if (parms->total_sent)
+                total_sent += *parms->total_sent;
         }
 
-        if (rx_thread->total_tcbs)
-            total_tcbs = *rx_thread->total_tcbs;
-        if (rx_thread->total_synacks)
-            total_synacks = *rx_thread->total_synacks;
-        if (rx_thread->total_responsed)
-            total_responsed = *rx_thread->total_responsed;
+        if (rx_thread->total_successed)
+            total_successed = *rx_thread->total_successed;
 
         if (time(0) - now >= xconf->wait) {
             is_rx_done = 1;
@@ -528,7 +516,7 @@ main_scan(struct Xconf *xconf)
 
         if (xconf->output.is_status_updates) {
             xtatus_print(&status, min_index, range, rate,
-                total_tcbs, total_synacks, total_syns, total_responsed,
+                total_successed, total_sent,
                 xconf->wait - (time(0) - now),
                 xconf->output.is_status_ndjson);
 
@@ -587,6 +575,13 @@ main_scan(struct Xconf *xconf)
     */
     if (xconf->stateless_probe && xconf->stateless_probe->close) {
         xconf->stateless_probe->close(xconf);
+    }
+
+	/**
+     * Do close for ScanModule
+    */
+    if (xconf->scan_module->close_cb) {
+        xconf->scan_module->close_cb();
     }
 
     free(tx_thread);
