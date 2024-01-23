@@ -45,6 +45,15 @@ enum TemplateProtocol {
     Proto_Count
 };
 
+/**
+ * transfer port from blackrock random algo to real port
+ * and get what protocol this port belong to.
+ * @param port port from blackrock random algo
+ * @return enum TemplateProtocol or zero if invalid.
+*/
+unsigned
+get_real_protocol_and_port(unsigned *port);
+
 struct TemplatePayload {
     unsigned length;
     unsigned checksum;

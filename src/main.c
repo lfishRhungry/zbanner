@@ -345,21 +345,10 @@ main_scan(struct Xconf *xconf)
         LOG(0, "Starting "XTATE_FIRST_UPPER_NAME" " XTATE_VERSION " ("XTATE_GITHUB") at %s\n",
             buffer);
 
-        if (count_ports == 1 && \
-            xconf->targets.ports.list->begin == Templ_ICMP_echo && \
-            xconf->targets.ports.list->end == Templ_ICMP_echo)
-            { /* ICMP only */
-                //LOG(0, " -- forced options: -sn -n --randomize-hosts -v --send-eth\n");
-                LOG(0, "Initiating ICMP Echo Scan\n");
-                LOG(0, "Scanning %u hosts\n",(unsigned)count_ips);
-             }
-        else /* This could actually also be a UDP only or mixed UDP/TCP/ICMP scan */
-            {
-                //LOG(0, " -- forced options: -sS -Pn -n --randomize-hosts -v --send-eth\n");
-                LOG(0, "Initiating SYN Stealth Scan\n");
-                LOG(0, "Scanning %u hosts [%u port%s/host]\n",
-                    (unsigned)count_ips, (unsigned)count_ports, (count_ports==1)?"":"s");
-            }
+        //LOG(0, " -- forced options: -sS -Pn -n --randomize-hosts -v --send-eth\n");
+        LOG(0, "Initiating ScanModule: %s\n", xconf->scan_module->name);
+        LOG(0, "Scanning %u hosts [%u port%s/host]\n",
+            (unsigned)count_ips, (unsigned)count_ports, (count_ports==1)?"":"s");
     }
     
 

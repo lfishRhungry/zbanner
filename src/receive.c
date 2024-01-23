@@ -249,8 +249,8 @@ receive_thread(void *v)
         */
         unsigned need_response = 0;
         unsigned successed = 0;
-        char classification[SCAN_MODULE_CLS_LEN];
-        char report[SCAN_MODULE_RPT_LEN];
+        char classification[SCAN_MODULE_CLS_LEN] = {0};
+        char report[SCAN_MODULE_RPT_LEN] = {0};
 
         if (scan_module->handle_packet_cb) {
             need_response = scan_module->handle_packet_cb(&parsed, entropy,
@@ -259,7 +259,8 @@ receive_thread(void *v)
                 report, SCAN_MODULE_RPT_LEN);
 
             output_tmp(&parsed, global_now, successed,
-                classification, report, xconf->is_show_failed);
+                classification, report,
+                xconf->is_show_failed, xconf->is_show_report);
             
             if (successed)
                 (*status_successed_count)++;

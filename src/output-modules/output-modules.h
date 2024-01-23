@@ -11,6 +11,6 @@ output_tmp(
     struct PreprocessedInfo * parsed,
     time_t timestamp, unsigned successed,
     const char *classification, const char *report,
-    unsigned is_show_failed);
+    unsigned is_show_failed, unsigned is_show_report);
 
 #endif

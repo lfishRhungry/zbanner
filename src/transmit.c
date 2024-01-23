@@ -242,13 +242,20 @@ infinite:
 
             }
 
+            /**
+             * Due to our port store method.
+             * I think it is flexible.
+            */
+            unsigned port_proto = get_real_protocol_and_port(&port_them);
+
             /*
             * Construct the destination packet by ScanModule
             */
             unsigned char px[2048];
             size_t packet_length = 0;
 
-            unsigned send_again = xconf->scan_module->make_packet_cb(&tmplset,
+            unsigned send_again = xconf->scan_module->make_packet_cb(
+                &tmplset, port_proto,
                 ip_them, port_them,
                 ip_me, port_me,
                 entropy, send_idx_for_a_target,
@@ -260,14 +267,15 @@ infinite:
                 *  be a "raw" transmit that bypasses the kernel, meaning
                 *  we can call this function millions of times a second.
                 */
-            if (!packet_length) continue;
+            if (packet_length) {
+                rawsock_send_packet(adapter, px,
+                    (unsigned)packet_length, !batch_size);
 
-            rawsock_send_packet(adapter, px,
-                (unsigned)packet_length, !batch_size);
+                batch_size--;
+                packets_sent++;
+                (*status_sent_count)++;
+            }
 
-            batch_size--;
-            packets_sent++;
-            (*status_sent_count)++;
 
             /*
              * `r` means forced retry-times+1 -> `send` for a target.

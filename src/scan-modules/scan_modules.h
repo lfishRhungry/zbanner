@@ -52,6 +52,7 @@ typedef int (*scan_modules_txthread_init)();
  * Happens in Tx Thread
  * 
  * @param tmplset packet template Xtate had prepared most of transmit protocol.
+ * @param cur_proto what TemplateProto this port belongs to.
  * @param ip_them IP of this target.
  * @param port_them Port of this target (if port is meaningful).
  * @param ip_me IP of us.
@@ -66,7 +67,7 @@ typedef int (*scan_modules_txthread_init)();
  * @return true for this target in tx_thread again.
 */
 typedef int (*scan_modules_make_new_packet)(
-    struct TemplateSet *tmplset,
+    struct TemplateSet *tmplset, unsigned cur_proto,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
     uint64_t entropy, unsigned index,

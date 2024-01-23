@@ -1610,3 +1610,25 @@ template_selftest(void)
     return failures;
 }
 
+unsigned
+get_real_protocol_and_port(unsigned *port)
+{
+    if (*port < Templ_TCP + 65536)
+        return Proto_TCP;
+    else if (*port < Templ_UDP + 65536) {
+        *port &= 0xFFFF;
+        return Proto_UDP;
+    } else if (*port < Templ_SCTP + 65536) {
+        *port &= 0xFFFF;
+        return Proto_SCTP;
+    } else if (*port == Templ_ICMP_echo) {
+        return Proto_ICMP_ping;
+    } else if (*port == Templ_ICMP_timestamp) {
+        return Proto_ICMP_timestamp;
+    } else if (*port == Templ_ARP) {
+        return Proto_ARP;
+    } else {
+        return 0;
+    }
+
+}

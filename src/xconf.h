@@ -79,22 +79,6 @@ struct Xconf
      */
     enum Operation op;
     
-    struct {
-        unsigned tcp:1;
-        unsigned udp:1;     /* -sU */
-        unsigned sctp:1;
-        unsigned ping:1;    /* --ping, ICMP echo */
-        unsigned arp:1;     /* --arp, local ARP scan */
-        unsigned oproto:1;  /* -sO */
-    } scan_type;
-    
-    /**
-     * After scan type has been configured, add these ports. In other words,
-     * the user may specify `-sU` or `-sT` after the `--top-ports` parameter,
-     * so we have to wait until after parsing arguments to fill in the ports.
-     */
-    unsigned top_ports;
-    
     /**
      * Temporary file to echo parameters to, used for saving configuration
      * to a file
@@ -195,6 +179,7 @@ struct Xconf
     char scan_module_args[SCAN_MODULE_ARGS_LEN];
 
     unsigned is_show_failed:1;
+    unsigned is_show_report:1;
     unsigned is_status_ndjson:1;
     unsigned is_pfring:1;       /* --pfring */
     unsigned is_sendq:1;        /* --sendq */

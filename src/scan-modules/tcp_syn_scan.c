@@ -5,17 +5,24 @@
 #include "../util/mas-malloc.h"
 #include "../cookie.h"
 #include "../util/unusedparm.h"
+// #include "../templ/templ-tcp.h"
 
 extern struct ScanModule TcpSynScan; /*for internal x-ref*/
 
 static int
 tcpsyn_make_packet(
-    struct TemplateSet *tmplset,
+    struct TemplateSet *tmplset, unsigned cur_proto,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
     uint64_t entropy, unsigned index,
     unsigned char *px, unsigned sizeof_px, size_t *r_length)
 {
+    /*we just handle tcp target*/
+    if (cur_proto != Proto_TCP) {
+        *r_length = 0;
+        return 0;
+    }
+
     unsigned cookie = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
 
     *r_length = tcp_create_packet(&tmplset->pkts[Proto_TCP],
