@@ -95,6 +95,7 @@ receive_thread(void *v)
     struct RxThread *parms = (struct RxThread *)v;
     const struct Xconf *xconf = parms->xconf;
     struct Adapter *adapter = xconf->nic.adapter;
+    struct TemplateSet tmplset = templ_copy(xconf->tmplset);
     int data_link = stack_if_datalink(adapter);
     struct Output *out;
     struct DedupTable *dedup;
@@ -152,8 +153,7 @@ receive_thread(void *v)
      * Do rx-thread init for ScanModule
      */
     if (xconf->scan_module->rx_thread_init_cb){
-        if (SCAN_MODULE_INIT_FAILED ==
-            xconf->scan_module->rx_thread_init_cb()) {
+        if (!xconf->scan_module->rx_thread_init_cb()) {
             LOG(0, "FAIL: errors happened in rx-thread init of ScanModule.\n");
             exit(1);
         }
@@ -223,8 +223,7 @@ receive_thread(void *v)
         */
         if (scan_module->filter_packet_cb) {
 
-            if (SCAN_MODULE_FILTER_OUT ==
-                scan_module->filter_packet_cb(&parsed, entropy,
+            if (!scan_module->filter_packet_cb(&parsed, entropy,
                     px, length, is_myip, is_myport)) {
 
                 continue;
@@ -245,8 +244,7 @@ receive_thread(void *v)
         */
         if (scan_module->validate_packet_cb) {
 
-            if (SCAN_MODULE_INVALID_PACKET ==
-                scan_module->validate_packet_cb(&parsed, entropy,
+            if (!scan_module->validate_packet_cb(&parsed, entropy,
                     px, length)) {
 
                         continue;
@@ -261,8 +259,7 @@ receive_thread(void *v)
 
             unsigned dedup_type = SCAN_MODULE_DEFAULT_DEDUP_TYPE;
 
-            if (SCAN_MODULE_DO_DEDUP ==
-                scan_module->dedup_packet_cb(&parsed, entropy,
+            if (scan_module->dedup_packet_cb(&parsed, entropy,
                     px, length, &dedup_type)) {
 
                 if (dedup_is_duplicate(dedup, ip_them, port_them,
@@ -276,8 +273,8 @@ receive_thread(void *v)
          * callback funcs of ScanModule in rx-thread.
          * Step 4: Handle
         */
-        unsigned need_response = SCAN_MODULE_NO_RESPONSE;
-        unsigned successed = SCAN_MODULE_FAILURE_PACKET;
+        unsigned need_response = 0;
+        unsigned successed = 0;
         char classification[SCAN_MODULE_CLS_LEN];
         char report[SCAN_MODULE_RPT_LEN];
 
@@ -287,9 +284,10 @@ receive_thread(void *v)
                 classification, SCAN_MODULE_CLS_LEN,
                 report, SCAN_MODULE_RPT_LEN);
 
-            output_tmp(&parsed, global_now, successed, classification, report);
+            output_tmp(&parsed, global_now, successed,
+                classification, report, xconf->is_show_failed);
             
-            if (SCAN_MODULE_SUCCESS_PACKET == successed)
+            if (successed)
                 (*status_successed_count)++;
         }
 
@@ -297,12 +295,14 @@ receive_thread(void *v)
          * callback funcs of ScanModule in rx-thread.
          * Step 5: Response
         */
-        if (SCAN_MODULE_NEED_RESPONSE == need_response) {
+        if (need_response) {
+
             if (scan_module->response_packet_cb) {
+
                 unsigned idx = 0;
+
                 while(1) {
                     struct PacketBuffer *response = stack_get_packetbuffer(stack);
-                    size_t rsp_len = 0;
                     if (response == NULL) {
                         static int is_warning_printed = 0;
                         if (!is_warning_printed) {
@@ -315,13 +315,16 @@ receive_thread(void *v)
                     if (response == NULL)
                         exit(0);
                     
-                    need_response = scan_module->response_packet_cb(&parsed, entropy,
+                    size_t rsp_len = 0;
+                    need_response = scan_module->response_packet_cb(&tmplset, &parsed, entropy,
                         px, length, response->px, sizeof(response->px), &rsp_len, idx);
+
                     response->length = rsp_len;
+                    if(rsp_len) {
+                        stack_transmit_packetbuffer(stack, response);
+                    }
 
-                    stack_transmit_packetbuffer(stack, response);
-
-                    if (need_response == SCAN_MODULE_NO_MORE_RESPONSE)
+                    if (!need_response)
                         break;
                     
                     idx++;

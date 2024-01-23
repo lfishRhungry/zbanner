@@ -250,12 +250,6 @@ struct Xconf
      */
     double max_rate;
 
-    /**
-     * Number of retries (--retries or --max-retries parameter). Retries
-     * happen a few seconds apart.
-     */
-    unsigned retries;
-
 	/**
      * application probe/request for stateless mode
     */
@@ -267,6 +261,7 @@ struct Xconf
     */
     struct ScanModule *scan_module;
     char scan_module_args[SCAN_MODULE_ARGS_LEN];
+    unsigned is_show_failed:1;
     
     unsigned is_pfring:1;       /* --pfring */
     unsigned is_sendq:1;        /* --sendq */

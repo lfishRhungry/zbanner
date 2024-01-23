@@ -202,7 +202,6 @@ main_scan(struct Xconf *xconf)
         return 1;
     }
     range = count_ips * count_ports;
-    range += (uint64_t)(xconf->retries * range);
 
     /*
      * If doing an ARP scan, then don't allow port scanning
@@ -292,8 +291,7 @@ main_scan(struct Xconf *xconf)
      * Do global init for ScanModule
      */
     if (xconf->scan_module->global_init_cb){
-        if (SCAN_MODULE_INIT_FAILED ==
-            xconf->scan_module->global_init_cb(xconf->tmplset)) {
+        if (!xconf->scan_module->global_init_cb(xconf->tmplset)) {
 
             LOG(0, "FAIL: errors happened in global init of ScanModule.\n");
             exit(1);

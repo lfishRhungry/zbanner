@@ -74,9 +74,7 @@ transmit_thread(void *v) /*aka. scanning_thread() */
 {
     struct TxThread *parms = (struct TxThread *)v;
     const struct Xconf *xconf = parms->xconf;
-    uint64_t retries = xconf->retries;
     uint64_t rate = (uint64_t)xconf->max_rate;
-    unsigned r = (unsigned)retries + 1;
     uint64_t count_ipv4 = rangelist_count(&xconf->targets.ipv4);
     uint64_t count_ipv6 = range6list_count(&xconf->targets.ipv6).lo;
     struct Throttler *throttler = parms->throttler;
@@ -115,8 +113,7 @@ transmit_thread(void *v) /*aka. scanning_thread() */
      * Do tx-thread init for ScanModule
      */
     if (xconf->scan_module->tx_thread_init_cb){
-        if (SCAN_MODULE_INIT_FAILED ==
-            xconf->scan_module->tx_thread_init_cb()) {
+        if (!xconf->scan_module->tx_thread_init_cb()) {
             LOG(0, "FAIL: errors happened in tx-thread(%u) init of ScanModule.\n", parms->tx_index);
             exit(1);
         }
@@ -157,7 +154,6 @@ infinite:
     uint64_t end = range;
     if (xconf->resume.count && end > start + xconf->resume.count)
         end = start + xconf->resume.count;
-    end += retries * range;
 
 
     /* -----------------
@@ -165,6 +161,7 @@ infinite:
      * -----------------*/
     LOG(3, "THREAD: xmit: starting main loop: [%llu..%llu]\n", start, end);
 
+    unsigned send_idx_for_a_target = 0;
     uint64_t i;
     for (i=start; i<end; ) {
 
@@ -196,7 +193,6 @@ infinite:
          * very precise packet-timing for low rates below 100,000 pps,
          * while not incurring the overhead for high packet rates.
          */
-        unsigned send_idx_for_a_target = 0;
 
         while (batch_size && i < end) {
             /*
@@ -209,7 +205,7 @@ infinite:
              *  order. Then, once we've shuffled the index, we "pick" the
              *  IP address and port that the index refers to.
              */
-            uint64_t xXx = (i + (r--) * rate);
+            uint64_t xXx = i;
             if (rate > range) {
                 xXx %= range;
             } else {
@@ -292,27 +288,20 @@ infinite:
             (*status_sent_count)++;
 
             /*
-             * SEQUENTIALLY INCREMENT THROUGH THE RANGE
-             *  Yea, I know this is a puny 'i++' here, but it's a core feature
-             *  of the system that is linearly increments through the range,
-             *  but produces from that a shuffled sequence of targets (as
-             *  described above). Because we are linearly incrementing this
-             *  number, we can do lots of creative stuff, like doing clever
-             *  retransmits and sharding.
+             * `r` means forced retry-times+1 -> `send` for a target.
+             * `send_again` is internal logic of ScanModule. 
              */
-            //trick for send_again
-            //cannot use `--retry` now
-            if (send_again == SCAN_MODULE_SEND_AGAIN) {
-                i -= increment;
+            if (send_again) {
+
                 send_idx_for_a_target++;
+
             } else {
+
                 send_idx_for_a_target = 0;
+
+                i += increment; /* <------ increment by 1 normally, more with shards/nics */
             }
 
-            if (r == 0) {
-                i += increment; /* <------ increment by 1 normally, more with shards/nics */
-                r = (unsigned)retries + 1;
-            }
 
         } /* end of batch */
 

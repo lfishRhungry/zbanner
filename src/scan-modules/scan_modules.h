@@ -16,36 +16,10 @@
 #include "../templ/templ-pkt.h"
 
 
-
-#define SCAN_MODULE_INIT_SUCCESS        1
-#define SCAN_MODULE_INIT_FAILED         0
-
-#define SCAN_MODULE_SEND_AGAIN          1
-#define SCAN_MODULE_NO_MORE_SEND        0
-
-#define SCAN_MODULE_KEEP_PACKET         1
-#define SCAN_MODULE_FILTER_OUT          0
-
-#define SCAN_MODULE_VALID_PACKET        1
-#define SCAN_MODULE_INVALID_PACKET      0
-
-#define SCAN_MODULE_DO_DEDUP            1
-#define SCAN_MODULE_NO_DEDUP            0
-
-#define SCAN_MODULE_SUCCESS_PACKET      1
-#define SCAN_MODULE_FAILURE_PACKET      0
-
-#define SCAN_MODULE_NEED_RESPONSE       1
-#define SCAN_MODULE_NO_RESPONSE         0
-
-#define SCAN_MODULE_RESPONSE_AGAIN      1
-#define SCAN_MODULE_NO_MORE_RESPONSE    0
-
-#define SCAN_MODULE_DEFAULT_DEDUP_TYPE  0
-
 #define SCAN_MODULE_CLS_LEN            15
 #define SCAN_MODULE_RPT_LEN          1460
 #define SCAN_MODULE_ARGS_LEN           50
+#define SCAN_MODULE_DEFAULT_DEDUP_TYPE  0
 
 /***************************************************************************
  * * callback functions for Init
@@ -56,17 +30,17 @@
  * NOTE: Xtate had init many packet templates. But you can change
  * the template set by specific options.
  * @param tmplset packet template Xtate had prepared most of transmit protocol.
- * @return SCAN_MODULE_INIT_FAILED for initing failed and exit process.
+ * @return false for initing failed and exit process.
 */
 typedef int (*scan_modules_global_init)(struct TemplateSet *tmplset);
 
 /**
- * @return SCAN_MODULE_INIT_FAILED for initing failed and exit process.
+ * @return false for initing failed and exit process.
 */
 typedef int (*scan_modules_rxthread_init)();
 
 /**
- * @return SCAN_MODULE_INIT_FAILED for initing failed and exit process.
+ * @return false for initing failed and exit process.
 */
 typedef int (*scan_modules_txthread_init)();
 
@@ -89,7 +63,7 @@ typedef int (*scan_modules_txthread_init)();
  * @param sizeof_px Length of buffer.
  * @param r_length Length of returned packet length (doesn't send anything if zero).
  * 
- * @return SCAN_MODULE_SEND_AGAIN for this target in tx_thread again.
+ * @return true for this target in tx_thread again.
 */
 typedef int (*scan_modules_make_new_packet)(
     struct TemplateSet *tmplset,
@@ -113,8 +87,8 @@ typedef int (*scan_modules_make_new_packet)(
  * @param is_myip for reference
  * @param is_myport for reference
  * 
- * @return should we SCAN_MODULE_KEEP_PACKET
- * for this ScanModule to handle (and save to pcap file) and go on Step 2?
+ * @return true for this ScanModule to handle (and save to pcap file)
+ * and go on Step 2?
 */
 typedef int (*scan_modules_filter_packet)(
     struct PreprocessedInfo *parsed, uint64_t entropy,
@@ -129,8 +103,7 @@ typedef int (*scan_modules_filter_packet)(
  * @param px point to packet data.
  * @param sizeof_px length of packet data.
  * 
- * @return is this a SCAN_MODULE_VALID_PACKET
- * for this ScanModule to go on to dedup meaningfully in Step 3?
+ * @return true for this ScanModule to go on to dedup meaningfully in Step 3?
 */
 typedef int (*scan_modules_validate_packet)(
     struct PreprocessedInfo *parsed, uint64_t entropy,
@@ -145,7 +118,7 @@ typedef int (*scan_modules_validate_packet)(
  * @param sizeof_px length of packet data.
  * @param type dedup type for keep same (ip_them, port_them, ip_me, port_me) packet in diff type.
  * 
- * @return SCAN_MODULE_NO_DEDUP if you like.
+ * @return false for nodedup
 */
 typedef int (*scan_modules_dedup_packet)(
     struct PreprocessedInfo *parsed, uint64_t entropy,
@@ -165,7 +138,7 @@ typedef int (*scan_modules_dedup_packet)(
  * @param report Report string.
  * @param rpt_length Length of report string buffer.
  * 
- * @return SCAN_MODULE_NEED_RESPONSE if need to response in Step 5.
+ * @return true if need to response in Step 5.
 */
 typedef int (*scan_modules_handle_packet)(
     struct PreprocessedInfo *parsed, uint64_t entropy,
@@ -178,6 +151,7 @@ typedef int (*scan_modules_handle_packet)(
 /**
  * Step 5 Response
  * 
+ * @param tmplset packet template Xtate had prepared most of transmit protocol.
  * @param parsed Parsed info about this packet.
  * @param entropy a rand seed (generated or user-specified).
  * @param px point to packet data.
@@ -187,9 +161,10 @@ typedef int (*scan_modules_handle_packet)(
  * @param r_length Length of returned packet length (doesn't send anything if zero).
  * @param index This is the index times to response.
  * 
- * @param return SCAN_MODULE_RESPONSE_AGAIN if need to do more response.
+ * @param return true if need to do more response.
 */
 typedef int (*scan_modules_make_response_packet)(
+    struct TemplateSet *tmplset,
     struct PreprocessedInfo *parsed, uint64_t entropy,
     const unsigned char *px, unsigned sizeof_px,
     unsigned char *r_px, unsigned sizeof_r_px,

@@ -397,6 +397,27 @@ static int SET_stateless_probe(struct Xconf *xconf, const char *name, const char
     return CONF_OK;
 }
 
+static int SET_show(struct Xconf *xconf, const char *name, const char *value)
+{
+    if (xconf->echo) {
+        if (xconf->is_show_failed || xconf->echo_all){
+            fprintf(xconf->echo, "show failed = %s\n",
+                xconf->is_show_failed?"true":"false");
+        }
+        return 0;
+    }
+
+    
+    if (EQUALS("failed",value)||EQUALS("fail",value)) {
+        xconf->is_show_failed = true;
+    } else {
+        fprintf(stderr, "FAIL %s: no item named %s\n", name, value);
+        return CONF_ERR;
+    }
+
+    return CONF_OK;
+}
+
 static int SET_scan_module_args(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
@@ -2425,26 +2446,6 @@ static int SET_resume_index(struct Xconf *xconf, const char *name, const char *v
     return CONF_OK;
 }
 
-static int SET_retries(struct Xconf *xconf, const char *name, const char *value)
-{
-    uint64_t x;
-    
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->retries || xconf->echo_all)
-            fprintf(xconf->echo, "retries = %u\n", xconf->retries);
-        return 0;
-    }
-    x = strtoul(value, 0, 0);
-    if (x >= 1000) {
-        fprintf(stderr, "FAIL: retries=<n>: expected number less than 1000\n");
-        return CONF_ERR;
-    }
-    xconf->retries = (unsigned)x;
-    return CONF_OK;
-    
-}
-
 static int SET_rotate_time(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
@@ -3260,6 +3261,7 @@ struct ConfigParameter config_parameters[] = {
     {"scan-module",     SET_scan_module,        0,      {"scan", 0}},
     {"list-scan-modules",SET_list_scan_modules, F_BOOL, {"list-scan-module", "list-scan",0}},
     {"scan-module-args", SET_scan_module_args,  0,      {"scan-module-arg",0}},
+    {"show",            SET_show,               0,      {0}},
 
     {"PACKET ATTRIBUTE:",SET_delimiter,         0,      {0}},
 
@@ -3278,7 +3280,6 @@ struct ConfigParameter config_parameters[] = {
     {"conf",            SET_read_conf,          0,      {"config", "resume",0}},
     {"resume-index",    SET_resume_index,       0,      {0}},
     {"resume-count",    SET_resume_count,       0,      {0}},
-    {"retries",         SET_retries,            0,      {"retry",0}},
     {"offline",         SET_offline,            F_BOOL, {"notransmit", "nosend", "dry-run", 0}},
     {"nodedup",         SET_nodedup,            F_BOOL, {0}},
     {"dedup-win",       SET_dedup_win,          F_NUMABLE, {0}},

@@ -32,7 +32,6 @@ infinite:
     end = range;
     if (xconf->resume.count && end > start + xconf->resume.count)
         end = start + xconf->resume.count;
-    end += (uint64_t)(xconf->retries * xconf->max_rate);
 
     for (i=start; i<end; ) {
         uint64_t xXx;

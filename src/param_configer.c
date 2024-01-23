@@ -499,7 +499,8 @@ set_parameters_from_args(struct Xconf *xconf, struct ConfigParameter *cp,
 
                 if (i >= argc) {
                     fprintf(stderr, "%.*s: empty parameter\n", name_length, argname);
-                    break;
+                    // break;
+                    exit(1);
                 }
 
                 if (name_length > sizeof(name2) - 1) {

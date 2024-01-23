@@ -24,7 +24,7 @@ tcpsyn_make_packet(
         NULL, 0, px, sizeof_px);
     
     /*no need do send again in this moment*/
-    return SCAN_MODULE_NO_MORE_SEND;
+    return 0;
 }
 
 static int
@@ -35,9 +35,9 @@ tcpsyn_filter_packet(
 {
     /*record tcp packet to our source port*/
     if (parsed->found == FOUND_TCP && is_myip && is_myport)
-        return SCAN_MODULE_KEEP_PACKET;
+        return 1;
     
-    return SCAN_MODULE_FILTER_OUT;
+    return 0;
 }
 
 static int
@@ -55,18 +55,18 @@ tcpsyn_validate_packet(
     /*SYNACK*/
     if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_SYN|TCP_FLAG_ACK)) {
         if (cookie == seqno_me - 1) {
-            return SCAN_MODULE_VALID_PACKET;
+            return 1;
         }
     }
     /*RST*/
     else if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_RST)) {
         /*NOTE: diff from SYNACK*/
         if (cookie == seqno_me - 1 || cookie == seqno_me) {
-            return SCAN_MODULE_VALID_PACKET;
+            return 1;
         }
     }
 
-    return SCAN_MODULE_INVALID_PACKET;
+    return 0;
 }
 
 static int
@@ -77,7 +77,7 @@ tcpsyn_dedup_packet(
 {
     //do not differenciate in type
     *type = SCAN_MODULE_DEFAULT_DEDUP_TYPE;
-    return SCAN_MODULE_DO_DEDUP;
+    return 1;
 }
 
 static int
@@ -90,11 +90,11 @@ tcpsyn_handle_packet(
 {
     uint16_t win_them   = TCP_WIN(px, parsed->transport_offset);
 
-    *successed = SCAN_MODULE_FAILURE_PACKET;
+    *successed = 0;
 
     /*SYNACK*/
     if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_SYN|TCP_FLAG_ACK)) {
-        *successed = SCAN_MODULE_SUCCESS_PACKET;
+        *successed = 1;
         if (win_them == 0) {
             safe_strcpy(classification, cls_length, "zerowin");
         } else {
@@ -106,7 +106,8 @@ tcpsyn_handle_packet(
         safe_strcpy(classification, cls_length, "closed");
     }
 
-    return SCAN_MODULE_NO_RESPONSE;
+    /*no need to response*/
+    return 0;
 }
 
 struct ScanModule TcpSynScan = {
