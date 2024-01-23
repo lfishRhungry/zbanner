@@ -913,7 +913,6 @@ nmapserviceprobes_print_ports(const struct RangeList *ranges, FILE *fp, const ch
                 case Templ_ICMP_echo: fprintf(fp, "e");  break;
                 case Templ_ICMP_timestamp: fprintf(fp, "t");  break;
                 case Templ_ARP: fprintf(fp, "A"); break;
-                case Templ_VulnCheck: fprintf(fp, "v"); break;
             }
         }
         fprintf(fp, "%u", begin);

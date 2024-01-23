@@ -15,13 +15,6 @@
 #include "../rawsock/rawsock-pcapfile.h"   /* for reading payloads from pcap files */
 #include "../proto/proto-preprocess.h"   /* parse packets */
 #include "../util/logger.h"
-#include "../proto/proto-zeroaccess.h"   /* botnet p2p protocol */
-#include "../proto/proto-snmp.h"
-#include "../proto/proto-memcached.h"
-#include "../proto/proto-coap.h"         /* constrained app proto for IoT udp/5683*/
-#include "../proto/proto-ntp.h"
-#include "../proto/proto-dns.h"
-#include "../proto/proto-isakmp.h"
 #include "../util/mas-malloc.h"
 #include "../massip/massip.h"
 #include "templ-nmap-payloads.h"
@@ -74,16 +67,16 @@ struct PayloadUDP_Default hard_coded_udp_payloads[] = {
     /* chargen - character generator (amplifier) */
     {19, 65536, 12, 0, 0, "xtate-test"},
     
-    {53, 65536, 0x1f, 0, dns_set_cookie,
-        /* 00 */"\x50\xb6"  /* transaction id */
-        /* 02 */"\x01\x20"  /* query */
-        /* 04 */"\x00\x01"  /* query = 1 */
-        /* 06 */"\x00\x00\x00\x00\x00\x00"
-        /* 0c */"\x07" "version"  "\x04" "bind" "\x00"
-        /* 1b */"\x00\x10" /* TXT */
-        /* 1d */"\x00\x03" /* CHAOS */
-        /* 1f */
-    },
+    // {53, 65536, 0x1f, 0, dns_set_cookie,
+    //     /* 00 */"\x50\xb6"  /* transaction id */
+    //     /* 02 */"\x01\x20"  /* query */
+    //     /* 04 */"\x00\x01"  /* query = 1 */
+    //     /* 06 */"\x00\x00\x00\x00\x00\x00"
+    //     /* 0c */"\x07" "version"  "\x04" "bind" "\x00"
+    //     /* 1b */"\x00\x10" /* TXT */
+    //     /* 1d */"\x00\x03" /* CHAOS */
+    //     /* 1f */
+    // },
 
     {69, 65536, 24, 0, 0,
         "\x00\x01"          /* opcode = read */
@@ -91,32 +84,32 @@ struct PayloadUDP_Default hard_coded_udp_payloads[] = {
         "netascii" "\0"     /* type = "netascii" */
     },
     /* portmapper */
-    {111, 65536, 40, 0, dns_set_cookie,
-        "\x00\x00\x00\x00" /* xid - first two bytes set by dns_set_cookie() */
-        "\x00\x00\x00\x00" /* RPC opcode = CALL*/
-        "\x00\x00\x00\x02" /* RPC version = 2 */
-        "\x00\x01\x86\xa0" /* RPC program = NFS */
-        "\x00\x00\x00\x02" /* portmapper version = 2 */
-        "\x00\x00\x00\x00" /* portmapper procedure = 0 (NULL, ping) */
-        "\x00\x00\x00\x00\x00\x00\x00\x00" /* credentials = none*/
-        "\x00\x00\x00\x00\x00\x00\x00\x00" /* verifier = none   */
-    },
+    // {111, 65536, 40, 0, dns_set_cookie,
+    //     "\x00\x00\x00\x00" /* xid - first two bytes set by dns_set_cookie() */
+    //     "\x00\x00\x00\x00" /* RPC opcode = CALL*/
+    //     "\x00\x00\x00\x02" /* RPC version = 2 */
+    //     "\x00\x01\x86\xa0" /* RPC program = NFS */
+    //     "\x00\x00\x00\x02" /* portmapper version = 2 */
+    //     "\x00\x00\x00\x00" /* portmapper procedure = 0 (NULL, ping) */
+    //     "\x00\x00\x00\x00\x00\x00\x00\x00" /* credentials = none*/
+    //     "\x00\x00\x00\x00\x00\x00\x00\x00" /* verifier = none   */
+    // },
 
-    {123, 65536, 48, 0, ntp_set_cookie,
-        "\x17\x00\x03\x2a\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-    },
-    {137, 65536, 50, 0, dns_set_cookie,
-        "\xab\x12" /* transaction id */
-        "\x00\x00" /* query */
-        "\x00\x01\x00\x00\x00\x00\x00\x00" /* one question */
-        "\x20" /*name length*/
-        "CKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        "\x00"
-        "\x00\x21" /* type = nbt */
-        "\x00\x01" /* class = iternet*/
-    },
+    // {123, 65536, 48, 0, ntp_set_cookie,
+    //     "\x17\x00\x03\x2a\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    //     "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    //     "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    // },
+    // {137, 65536, 50, 0, dns_set_cookie,
+    //     "\xab\x12" /* transaction id */
+    //     "\x00\x00" /* query */
+    //     "\x00\x01\x00\x00\x00\x00\x00\x00" /* one question */
+    //     "\x20" /*name length*/
+    //     "CKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    //     "\x00"
+    //     "\x00\x21" /* type = nbt */
+    //     "\x00\x01" /* class = iternet*/
+    // },
 
     /* NetBIOS-SMB BROWSER protocol */
     {138, 65536, 174, 0, 0,
@@ -144,21 +137,21 @@ struct PayloadUDP_Default hard_coded_udp_payloads[] = {
         "\x09\x04\x01\x00\x00\x00"
     },
 
-    {161, 65536, 59, 0, snmp_set_cookie,
-        "\x30" "\x39"
-        "\x02\x01\x00"                    /* version */
-        "\x04\x06" "public"               /* community = public */
-        "\xa0" "\x2c"                     /* type = GET */
-        "\x02\x04\x00\x00\x00\x00"      /* transaction id = ???? */
-        "\x02\x01\x00"                  /* error = 0 */
-        "\x02\x01\x00"                  /* error index = 0 */
-        "\x30\x1e"
-        "\x30\x0d"
-        "\x06\x09\x2b\x06\x01\x80\x02\x01\x01\x01\x00" /*sysName*/
-        "\x05\x00"          /*^^^^_____IDS LULZ HAH HA HAH*/
-        "\x30\x0d"
-        "\x06\x09\x2b\x06\x01\x80\x02\x01\x01\x05\x00" /*sysDesc*/
-        "\x05\x00"},        /*^^^^_____IDS LULZ HAH HA HAH*/
+    // {161, 65536, 59, 0, snmp_set_cookie,
+    //     "\x30" "\x39"
+    //     "\x02\x01\x00"                    /* version */
+    //     "\x04\x06" "public"               /* community = public */
+    //     "\xa0" "\x2c"                     /* type = GET */
+    //     "\x02\x04\x00\x00\x00\x00"      /* transaction id = ???? */
+    //     "\x02\x01\x00"                  /* error = 0 */
+    //     "\x02\x01\x00"                  /* error index = 0 */
+    //     "\x30\x1e"
+    //     "\x30\x0d"
+    //     "\x06\x09\x2b\x06\x01\x80\x02\x01\x01\x01\x00" /*sysName*/
+    //     "\x05\x00"          /*^^^^_____IDS LULZ HAH HA HAH*/
+    //     "\x30\x0d"
+    //     "\x06\x09\x2b\x06\x01\x80\x02\x01\x01\x05\x00" /*sysDesc*/
+    //     "\x05\x00"},        /*^^^^_____IDS LULZ HAH HA HAH*/
 
     {443, 65536, 115, 0, 0,
         "\x16" /* opcode = handshake */
@@ -255,16 +248,16 @@ struct PayloadUDP_Default hard_coded_udp_payloads[] = {
         "USER-AGENT: unix/1.0 UPnP/1.1 "XTATE_WITH_VERSION"\r\n"},
 
     /* NFS - kludge: use the DNS cookie, setting first 2 bytes instead of 4 */
-    {2049, 65536, 40, 0, dns_set_cookie,
-        "\x00\x00\x00\x00" /* xid - first two bytes set by dns_set_cookie() */
-        "\x00\x00\x00\x00" /* RPC opcode = CALL*/
-        "\x00\x00\x00\x02" /* RPC version = 2 */
-        "\x00\x01\x86\xa3" /* RPC program = NFS */
-        "\x00\x00\x00\x02" /* NFS version = 2 */
-        "\x00\x00\x00\x00" /* NFS procedure = 0 (NULL, ping) */
-        "\x00\x00\x00\x00\x00\x00\x00\x00" /* credentials = none*/
-        "\x00\x00\x00\x00\x00\x00\x00\x00" /* verifier = none   */
-    },
+    // {2049, 65536, 40, 0, dns_set_cookie,
+    //     "\x00\x00\x00\x00" /* xid - first two bytes set by dns_set_cookie() */
+    //     "\x00\x00\x00\x00" /* RPC opcode = CALL*/
+    //     "\x00\x00\x00\x02" /* RPC version = 2 */
+    //     "\x00\x01\x86\xa3" /* RPC program = NFS */
+    //     "\x00\x00\x00\x02" /* NFS version = 2 */
+    //     "\x00\x00\x00\x00" /* NFS procedure = 0 (NULL, ping) */
+    //     "\x00\x00\x00\x00\x00\x00\x00\x00" /* credentials = none*/
+    //     "\x00\x00\x00\x00\x00\x00\x00\x00" /* verifier = none   */
+    // },
     {5060, 65536, 0xFFFFFFFF, 0, 0,
         "OPTIONS sip:carol@chicago.com SIP/2.0\r\n"
         "Via: SIP/2.0/UDP pc33.atlanta.com;branch=z9hG4bKhjhs8ass877\r\n"
@@ -279,32 +272,32 @@ struct PayloadUDP_Default hard_coded_udp_payloads[] = {
     },
     
     /* CoAP (contrained app proto for IoT) GET /.well-known/core request */
-    {5683, 65536, 21, 0, coap_udp_set_cookie,
-        "\x40"      /* ver=1 type=con */
-        "\x01"      /* code=GET */
-        "\x01\xce"  /* message id (changed by set-cookie) */
-        "\xbb" /* ".well-known */
-        "\x2e\x77\x65\x6c\x6c\x2d\x6b\x6e\x6f\x77\x6e"
-        "\x04" /* "core" */
-        "\x63\x6f\x72\x65"
+    // {5683, 65536, 21, 0, coap_udp_set_cookie,
+    //     "\x40"      /* ver=1 type=con */
+    //     "\x01"      /* code=GET */
+    //     "\x01\xce"  /* message id (changed by set-cookie) */
+    //     "\xbb" /* ".well-known */
+    //     "\x2e\x77\x65\x6c\x6c\x2d\x6b\x6e\x6f\x77\x6e"
+    //     "\x04" /* "core" */
+    //     "\x63\x6f\x72\x65"
 
-    },
+    // },
 
     /* memcached "stats" request. This looks for memcached systems that can
      * be used for DDoS amplifiers */
-    {11211, 65536, 15, 0, memcached_udp_set_cookie,
-        "\x00\x00\x00\x00\x00\x01\x00\x00stats\r\n"
-    },
+    // {11211, 65536, 15, 0, memcached_udp_set_cookie,
+    //     "\x00\x00\x00\x00\x00\x01\x00\x00stats\r\n"
+    // },
 
     //16464,16465,16470, 16471
-    {16464, 65536, zeroaccess_getL_length, 0, 0,
-        (char *)zeroaccess_getL},
-    {16465, 65536, zeroaccess_getL_length, 0, 0,
-        (char *)zeroaccess_getL},
-    {16470, 65536, zeroaccess_getL_length, 0, 0,
-        (char *)zeroaccess_getL},
-    {16471, 65536, zeroaccess_getL_length, 0, 0,
-        (char *)zeroaccess_getL},
+    // {16464, 65536, zeroaccess_getL_length, 0, 0,
+    //     (char *)zeroaccess_getL},
+    // {16465, 65536, zeroaccess_getL_length, 0, 0,
+    //     (char *)zeroaccess_getL},
+    // {16470, 65536, zeroaccess_getL_length, 0, 0,
+    //     (char *)zeroaccess_getL},
+    // {16471, 65536, zeroaccess_getL_length, 0, 0,
+    //     (char *)zeroaccess_getL},
 
     /* Quake 3 (amplifier)
      * http://blog.alejandronolla.com/2013/06/24/amplification-ddos-attack-with-quake3-servers-an-analysis-1-slash-2/
@@ -313,161 +306,161 @@ struct PayloadUDP_Default hard_coded_udp_payloads[] = {
         "\xFF\xFF\xFF\xFF\x67\x65\x74\x73\x74\x61\x74\x75\x73\x10"},
 
     /* ISAKMP */
-    {500, 500, 352, 0, isakmp_set_cookie,
-     /* ISAKMP */
-     "\x00\x11\x22\x33\x44\x55\x66\x77"/* init_cookie, overwritten on send() */
-     "\x00\x00\x00\x00\x00\x00\x00\x00" /* resp_cookie*/
-     "\x01" /* next_payload: SA */
-     "\x10" /* version */
-     "\x02" /* exch_type: identity prot. */
-     "\x00" /* flags */
-     "\x00\x00\x00\x00" /* id */
-     "\x00\x00\x01\x60" /* length: 352 */
-     /* ISAKMP_SA */
-     "\x00" /* next_payload: None */
-     "\x00" /* reserved */
-     "\x01\x44" /* length: 324 */
-     "\x00\x00\x00\x01" /* DOI: IPSEC */
-     "\x00\x00\x00\x01" /* situation: identity */
-     /* Proposal */
-     "\x00" /* next_payload: None */
-     "\x00" /* reserved */
-     "\x01\x38" /* length: 312 */
-     "\x01" /* proposal: 1 */
-     "\x01" /* protocol: ISAKMP */
-     "\x00" /* SPIsize: 0 */
-     "\x0d" /* trans_count: 13 */
-     "" /* SPI */
-     /* Tranforms */
-     "\x03" /* next_payload: Transform */
-     "\x00" /* reserved */
-     "\x00\x20" /* length: 32 */
-     "\x00" /* num */
-     "\x01" /* id: KEY_IKE */
-     "\x00\x00" /* reserved */
-     "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\x00\x01\x80\x04\x00\x02"
-     "\x80\x0b\x00\x01\x80\x0c\x00\x01"
-     /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'), ('Authentication', 'PSK'),
-        ('GroupDesc', '1024MODPgr'), ('LifeType', 'Seconds'),
-        ('LifeDuration', 1) */
-     "\x03" /* next_payload: Transform */
-     "\x00" /* reserved */
-     "\x00\x20" /* length: 32 */
-     "\x00" /* num */
-     "\x01"  /* id: KEY_IKE */
-     "\x00\x00"  /* reserved */
-     "\x80\x01\x00\x01\x80\x02\x00\x01\x80\x03\x00\x01\x80\x04\x00\x02"
-     "\x80\x0b\x00\x01\x80\x0c\x00\x01"
-     /* ('Encryption', 'DES-CBC'), ('Hash', 'MD5'), ('Authentication', 'PSK'),
-        ('GroupDesc', '1024MODPgr'), ('LifeType', 'Seconds'),
-        ('LifeDuration', 1) */
-     "\x03" /* next_payload: Transform */
-     "\x00" /* reserved */
-     "\x00\x20" /* length: 32 */
-     "\x00" /* num */
-     "\x01"  /* id: KEY_IKE */
-     "\x00\x00"  /* reserved */
-     "\x80\x01\x00\x07\x80\x02\x00\x04\x80\x03\x00\x01\x80\x04\x00\x0e"
-     "\x80\x0b\x00\x01\x80\x0c\x00\x01"
-     /* ('Encryption', 'AES-CBC'), ('Hash', 'SHA2-256'),
-        ('Authentication', 'PSK'), ('GroupDesc', '2048MODPgr'),
-        ('LifeType', 'Seconds'), ('LifeDuration', 1) */
-     "\x03" /* next_payload: Transform */
-     "\x00" /* reserved */
-     "\x00\x14" /* length: 20 */
-     "\x00" /* num */
-     "\x01"  /* id: KEY_IKE */
-     "\x00\x00"  /* reserved */
-     "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\x00\x02"
-     /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
-        ('Authentication', 'DSS') */
-     "\x03" /* next_payload: Transform */
-     "\x00" /* reserved */
-     "\x00\x14" /* length: 20 */
-     "\x00" /* num */
-     "\x01"  /* id: KEY_IKE */
-     "\x00\x00"  /* reserved */
-     "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\x00\x03"
-     /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
-        ('Authentication', 'RSA Sig') */
-     "\x03" /* next_payload: Transform */
-     "\x00" /* reserved */
-     "\x00\x14" /* length: 20 */
-     "\x00" /* num */
-     "\x01"  /* id: KEY_IKE */
-     "\x00\x00"  /* reserved */
-     "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\x00\x04"
-     /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
-        ('Authentication', 'RSA Encryption') */
-     "\x03" /* next_payload: Transform */
-     "\x00" /* reserved */
-     "\x00\x14" /* length: 20 */
-     "\x00" /* num */
-     "\x01"  /* id: KEY_IKE */
-     "\x00\x00"  /* reserved */
-     "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\x00\x08"
-     /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
-        ('Authentication', 'ECDSA Sig') */
-     "\x03" /* next_payload: Transform */
-     "\x00" /* reserved */
-     "\x00\x14" /* length: 20 */
-     "\x00" /* num */
-     "\x01"  /* id: KEY_IKE */
-     "\x00\x00"  /* reserved */
-     "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\xfa\xdd"
-     /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
-        ('Authentication', 'HybridInitRSA') */
-     "\x03" /* next_payload: Transform */
-     "\x00" /* reserved */
-     "\x00\x14" /* length: 20 */
-     "\x00" /* num */
-     "\x01"  /* id: KEY_IKE */
-     "\x00\x00"  /* reserved */
-     "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\xfa\xdf"
-     /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
-        ('Authentication', 'HybridInitDSS') */
-     "\x03" /* next_payload: Transform */
-     "\x00" /* reserved */
-     "\x00\x14" /* length: 20 */
-     "\x00" /* num */
-     "\x01"  /* id: KEY_IKE */
-     "\x00\x00"  /* reserved */
-     "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\xfd\xe9"
-     /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
-        ('Authentication', 'XAUTHInitPreShared') */
-     "\x03" /* next_payload: Transform */
-     "\x00" /* reserved */
-     "\x00\x14" /* length: 20 */
-     "\x00" /* num */
-     "\x01"  /* id: KEY_IKE */
-     "\x00\x00"  /* reserved */
-     "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\xfd\xeb"
-     /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
-        ('Authentication', 'XAUTHInitDSS') */
-     "\x03" /* next_payload: Transform */
-     "\x00" /* reserved */
-     "\x00\x14" /* length: 20 */
-     "\x00" /* num */
-     "\x01"  /* id: KEY_IKE */
-     "\x00\x00"  /* reserved */
-     "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\xfd\xed"
-     /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
-        ('Authentication', 'XAUTHInitRSA') */
-     "\x03" /* next_payload: Transform */
-     "\x00" /* reserved */
-     "\x00\x14" /* length: 20 */
-     "\x00" /* num */
-     "\x01"  /* id: KEY_IKE */
-     "\x00\x00"  /* reserved */
-     "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\xfd\xef"
-     /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
-        ('Authentication', 'XAUTHInitRSAEncryption') */
-     "\x00" /* next_payload: None */
-     "\x00" /* reserved */
-     "\x00\x08" /* length: 8 */
-     "\x00" /* num */
-     "\x01"  /* id: KEY_IKE */
-     "\x00\x00"  /* reserved */},
+    // {500, 500, 352, 0, isakmp_set_cookie,
+    //  /* ISAKMP */
+    //  "\x00\x11\x22\x33\x44\x55\x66\x77"/* init_cookie, overwritten on send() */
+    //  "\x00\x00\x00\x00\x00\x00\x00\x00" /* resp_cookie*/
+    //  "\x01" /* next_payload: SA */
+    //  "\x10" /* version */
+    //  "\x02" /* exch_type: identity prot. */
+    //  "\x00" /* flags */
+    //  "\x00\x00\x00\x00" /* id */
+    //  "\x00\x00\x01\x60" /* length: 352 */
+    //  /* ISAKMP_SA */
+    //  "\x00" /* next_payload: None */
+    //  "\x00" /* reserved */
+    //  "\x01\x44" /* length: 324 */
+    //  "\x00\x00\x00\x01" /* DOI: IPSEC */
+    //  "\x00\x00\x00\x01" /* situation: identity */
+    //  /* Proposal */
+    //  "\x00" /* next_payload: None */
+    //  "\x00" /* reserved */
+    //  "\x01\x38" /* length: 312 */
+    //  "\x01" /* proposal: 1 */
+    //  "\x01" /* protocol: ISAKMP */
+    //  "\x00" /* SPIsize: 0 */
+    //  "\x0d" /* trans_count: 13 */
+    //  "" /* SPI */
+    //  /* Tranforms */
+    //  "\x03" /* next_payload: Transform */
+    //  "\x00" /* reserved */
+    //  "\x00\x20" /* length: 32 */
+    //  "\x00" /* num */
+    //  "\x01" /* id: KEY_IKE */
+    //  "\x00\x00" /* reserved */
+    //  "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\x00\x01\x80\x04\x00\x02"
+    //  "\x80\x0b\x00\x01\x80\x0c\x00\x01"
+    //  /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'), ('Authentication', 'PSK'),
+    //     ('GroupDesc', '1024MODPgr'), ('LifeType', 'Seconds'),
+    //     ('LifeDuration', 1) */
+    //  "\x03" /* next_payload: Transform */
+    //  "\x00" /* reserved */
+    //  "\x00\x20" /* length: 32 */
+    //  "\x00" /* num */
+    //  "\x01"  /* id: KEY_IKE */
+    //  "\x00\x00"  /* reserved */
+    //  "\x80\x01\x00\x01\x80\x02\x00\x01\x80\x03\x00\x01\x80\x04\x00\x02"
+    //  "\x80\x0b\x00\x01\x80\x0c\x00\x01"
+    //  /* ('Encryption', 'DES-CBC'), ('Hash', 'MD5'), ('Authentication', 'PSK'),
+    //     ('GroupDesc', '1024MODPgr'), ('LifeType', 'Seconds'),
+    //     ('LifeDuration', 1) */
+    //  "\x03" /* next_payload: Transform */
+    //  "\x00" /* reserved */
+    //  "\x00\x20" /* length: 32 */
+    //  "\x00" /* num */
+    //  "\x01"  /* id: KEY_IKE */
+    //  "\x00\x00"  /* reserved */
+    //  "\x80\x01\x00\x07\x80\x02\x00\x04\x80\x03\x00\x01\x80\x04\x00\x0e"
+    //  "\x80\x0b\x00\x01\x80\x0c\x00\x01"
+    //  /* ('Encryption', 'AES-CBC'), ('Hash', 'SHA2-256'),
+    //     ('Authentication', 'PSK'), ('GroupDesc', '2048MODPgr'),
+    //     ('LifeType', 'Seconds'), ('LifeDuration', 1) */
+    //  "\x03" /* next_payload: Transform */
+    //  "\x00" /* reserved */
+    //  "\x00\x14" /* length: 20 */
+    //  "\x00" /* num */
+    //  "\x01"  /* id: KEY_IKE */
+    //  "\x00\x00"  /* reserved */
+    //  "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\x00\x02"
+    //  /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
+    //     ('Authentication', 'DSS') */
+    //  "\x03" /* next_payload: Transform */
+    //  "\x00" /* reserved */
+    //  "\x00\x14" /* length: 20 */
+    //  "\x00" /* num */
+    //  "\x01"  /* id: KEY_IKE */
+    //  "\x00\x00"  /* reserved */
+    //  "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\x00\x03"
+    //  /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
+    //     ('Authentication', 'RSA Sig') */
+    //  "\x03" /* next_payload: Transform */
+    //  "\x00" /* reserved */
+    //  "\x00\x14" /* length: 20 */
+    //  "\x00" /* num */
+    //  "\x01"  /* id: KEY_IKE */
+    //  "\x00\x00"  /* reserved */
+    //  "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\x00\x04"
+    //  /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
+    //     ('Authentication', 'RSA Encryption') */
+    //  "\x03" /* next_payload: Transform */
+    //  "\x00" /* reserved */
+    //  "\x00\x14" /* length: 20 */
+    //  "\x00" /* num */
+    //  "\x01"  /* id: KEY_IKE */
+    //  "\x00\x00"  /* reserved */
+    //  "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\x00\x08"
+    //  /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
+    //     ('Authentication', 'ECDSA Sig') */
+    //  "\x03" /* next_payload: Transform */
+    //  "\x00" /* reserved */
+    //  "\x00\x14" /* length: 20 */
+    //  "\x00" /* num */
+    //  "\x01"  /* id: KEY_IKE */
+    //  "\x00\x00"  /* reserved */
+    //  "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\xfa\xdd"
+    //  /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
+    //     ('Authentication', 'HybridInitRSA') */
+    //  "\x03" /* next_payload: Transform */
+    //  "\x00" /* reserved */
+    //  "\x00\x14" /* length: 20 */
+    //  "\x00" /* num */
+    //  "\x01"  /* id: KEY_IKE */
+    //  "\x00\x00"  /* reserved */
+    //  "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\xfa\xdf"
+    //  /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
+    //     ('Authentication', 'HybridInitDSS') */
+    //  "\x03" /* next_payload: Transform */
+    //  "\x00" /* reserved */
+    //  "\x00\x14" /* length: 20 */
+    //  "\x00" /* num */
+    //  "\x01"  /* id: KEY_IKE */
+    //  "\x00\x00"  /* reserved */
+    //  "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\xfd\xe9"
+    //  /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
+    //     ('Authentication', 'XAUTHInitPreShared') */
+    //  "\x03" /* next_payload: Transform */
+    //  "\x00" /* reserved */
+    //  "\x00\x14" /* length: 20 */
+    //  "\x00" /* num */
+    //  "\x01"  /* id: KEY_IKE */
+    //  "\x00\x00"  /* reserved */
+    //  "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\xfd\xeb"
+    //  /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
+    //     ('Authentication', 'XAUTHInitDSS') */
+    //  "\x03" /* next_payload: Transform */
+    //  "\x00" /* reserved */
+    //  "\x00\x14" /* length: 20 */
+    //  "\x00" /* num */
+    //  "\x01"  /* id: KEY_IKE */
+    //  "\x00\x00"  /* reserved */
+    //  "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\xfd\xed"
+    //  /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
+    //     ('Authentication', 'XAUTHInitRSA') */
+    //  "\x03" /* next_payload: Transform */
+    //  "\x00" /* reserved */
+    //  "\x00\x14" /* length: 20 */
+    //  "\x00" /* num */
+    //  "\x01"  /* id: KEY_IKE */
+    //  "\x00\x00"  /* reserved */
+    //  "\x80\x01\x00\x05\x80\x02\x00\x02\x80\x03\xfd\xef"
+    //  /* ('Encryption', '3DES-CBC'), ('Hash', 'SHA'),
+    //     ('Authentication', 'XAUTHInitRSAEncryption') */
+    //  "\x00" /* next_payload: None */
+    //  "\x00" /* reserved */
+    //  "\x00\x08" /* length: 8 */
+    //  "\x00" /* num */
+    //  "\x01"  /* id: KEY_IKE */
+    //  "\x00\x00"  /* reserved */},
 
     {0,0,0,0,0}
 };

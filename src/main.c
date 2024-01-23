@@ -29,12 +29,8 @@
 #include "xtatus.h"        /* printf() regular status updates */
 #include "cookie.h"         /* for SYN-cookies on send */
 
-#include "out/output.h"             /* for outputting results */
 #include "stub/stub-pcap.h"          /* dynamically load libpcap library */
 #include "smack/smack.h"              /* Aho-corasick state-machine pattern-matcher */
-#include "in/in-binary.h"          /* convert binary output to XML/JSON */
-#include "vulncheck/vulncheck.h"          /* checking vulns like monlist, poodle, heartblee */
-#include "scripting/scripting.h"
 #include "nmap-service/read-service-probes.h"
 
 #include "massip/massip-parse.h"
@@ -49,7 +45,6 @@
 
 #include "stack/stack-ndpv6.h"        /* IPv6 Neighbor Discovery Protocol */
 #include "stack/stack-arpv4.h"        /* Handle ARP resolution and requests */
-#include "stack/stack-tcp-core.h"          /* for TCP/IP connection table */
 
 #include "pixie/pixie-timer.h"        /* portable time functions */
 #include "pixie/pixie-threads.h"      /* portable threads */
@@ -71,19 +66,6 @@
 #include "util/rstfilter.h"
 #include "util/mas-malloc.h"
 #include "util/checksum.h"
-
-#include "proto/proto-x509.h"
-#include "proto/proto-arp.h"          /* for responding to ARP requests */
-#include "proto/proto-banner1.h"      /* for snatching banners from systems */
-#include "proto/proto-preprocess.h"   /* quick parse of packets */
-#include "proto/proto-icmp.h"         /* handle ICMP responses */
-#include "proto/proto-udp.h"          /* handle UDP responses */
-#include "proto/proto-snmp.h"         /* parse SNMP responses */
-#include "proto/proto-ntp.h"          /* parse NTP responses */
-#include "proto/proto-coap.h"         /* CoAP selftest */
-#include "proto/proto-zeroaccess.h"
-#include "proto/proto-sctp.h"
-#include "proto/proto-oproto.h"       /* Other protocols on top of IP */
 
 #if defined(WIN32)
 #include <WinSock.h>
@@ -157,32 +139,11 @@ main_scan(struct Xconf *xconf)
     time_t now = time(0);
     struct Xtatus status;
     uint64_t min_index = UINT64_MAX;
-    struct MassVulnCheck *vulncheck = NULL;
 
 
     memset(rx_thread, 0, sizeof(struct RxThread));
     tx_thread = CALLOC(xconf->tx_thread_count, sizeof(struct TxThread));
 
-    /*
-     * Vuln check initialization
-     */
-    if (xconf->vuln_name) {
-        unsigned i;
-		unsigned is_error;
-        vulncheck = vulncheck_lookup(xconf->vuln_name);
-        
-        /* If no ports specified on command-line, grab default ports */
-        is_error = 0;
-        if (rangelist_count(&xconf->targets.ports) == 0)
-            rangelist_parse_ports(&xconf->targets.ports, vulncheck->ports, &is_error, 0);
-        
-        /* Kludge: change normal port range to vulncheck range */
-        for (i=0; i<xconf->targets.ports.count; i++) {
-            struct Range *r = &xconf->targets.ports.list[i];
-            r->begin = (r->begin&0xFFFF) | Templ_VulnCheck;
-            r->end = (r->end & 0xFFFF) | Templ_VulnCheck;
-        }
-    }
     
     /*
      * Initialize the task size
@@ -256,7 +217,6 @@ main_scan(struct Xconf *xconf)
         * such as the IP address and so on.
         */
     xconf->tmplset = &tmplset;
-    xconf->tmplset->vulncheck = vulncheck;
     template_packet_init(
                 xconf->tmplset,
                 xconf->nic.source_mac,
@@ -419,7 +379,7 @@ main_scan(struct Xconf *xconf)
     LOG(1, "[+] waiting for threads to finish\n");
     xtatus_start(&status);
     status.is_infinite = xconf->is_infinite;
-    while (!is_tx_done && xconf->output.is_status_updates) {
+    while (!is_tx_done) {
         unsigned i;
         double rate = 0;
         uint64_t total_successed = 0;
@@ -452,10 +412,9 @@ main_scan(struct Xconf *xconf)
          * update screen about once per second with statistics,
          * namely packets/second.
          */
-        if (xconf->output.is_status_updates)
-            xtatus_print(&status, min_index, range, rate,
-                total_successed, total_sent,
-                0, xconf->output.is_status_ndjson);
+        xtatus_print(&status, min_index, range, rate,
+            total_successed, total_sent,
+            0, xconf->is_status_ndjson);
 
         /* Sleep for almost a second */
         pixie_mssleep(750);
@@ -512,46 +471,25 @@ main_scan(struct Xconf *xconf)
             exit(0);
         }
 
-        if (xconf->output.is_status_updates) {
-            xtatus_print(&status, min_index, range, rate,
-                total_successed, total_sent,
-                xconf->wait - (time(0) - now),
-                xconf->output.is_status_ndjson);
+        xtatus_print(&status, min_index, range, rate,
+            total_successed, total_sent,
+            xconf->wait - (time(0) - now),
+            xconf->is_status_ndjson);
 
-            for (i=0; i<xconf->tx_thread_count; i++) {
-                struct TxThread *parms = &tx_thread[i];
-                tx_done_count += parms->done_transmitting;
-            }
-
-            pixie_mssleep(250);
-
-            if (tx_done_count < xconf->tx_thread_count)
-                continue;
-            is_tx_done = 1;
-            if (!rx_thread->done_receiving)
-                continue;
-            is_rx_done = 1;
-
-        } else {
-            /* [AFL-fuzz]
-             * Join the threads, which doesn't allow us to print out 
-             * status messages, but allows us to exit cleanly without
-             * any waiting */
-            for (i=0; i<xconf->tx_thread_count; i++) {
-                struct TxThread *parms = &tx_thread[i];
-
-                if (parms->thread_handle_xmit) {
-                    pixie_thread_join(parms->thread_handle_xmit);
-                    parms->thread_handle_xmit = 0;
-                }
-            }
-            if (rx_thread->thread_handle_recv) {
-                pixie_thread_join(rx_thread->thread_handle_recv);
-                rx_thread->thread_handle_recv = 0;
-            }
-            is_tx_done = 1;
-            is_rx_done = 1;
+        for (i=0; i<xconf->tx_thread_count; i++) {
+            struct TxThread *parms = &tx_thread[i];
+            tx_done_count += parms->done_transmitting;
         }
+
+        pixie_mssleep(250);
+
+        if (tx_done_count < xconf->tx_thread_count)
+            continue;
+        is_tx_done = 1;
+        if (!rx_thread->done_receiving)
+            continue;
+        is_rx_done = 1;
+
 
         break;
     }
@@ -562,11 +500,8 @@ main_scan(struct Xconf *xconf)
      */
     xtatus_finish(&status);
 
-    if (!xconf->output.is_status_updates) {
-        uint64_t usec_now = pixie_gettime();
-
-        printf("%u milliseconds elapsed\n", (unsigned)((usec_now - usec_start)/1000));
-    }
+    uint64_t usec_now = pixie_gettime();
+    printf("%u milliseconds elapsed\n", (unsigned)((usec_now - usec_start)/1000));
 
 	/**
      * Do close for stateless probe
@@ -628,8 +563,6 @@ int main(int argc, char *argv[])
     /* 14 rounds seem to give way better statistical distribution than 4 with a 
     very low impact on scan rate */
     xconf->blackrock_rounds = 14;
-    xconf->output.is_show_open = 1; /* default: show syn-ack, not rst */
-    xconf->output.is_status_updates = 1; /* default: show status updates */
     xconf->wait = 10; /* how long to wait for responses when done */
     xconf->max_rate = 100.0; /* max rate = hundred packets-per-second */
     xconf->tx_thread_count = 1;
@@ -639,9 +572,6 @@ int main(int argc, char *argv[])
     xconf->min_packet_size = 60;
     xconf->payloads.udp = payloads_udp_create();
     xconf->payloads.oproto = payloads_oproto_create();
-    safe_strcpy(xconf->output.rotate.directory,
-        sizeof(xconf->output.rotate.directory), ".");
-    xconf->is_capture_cert = 1;
     xconf->dedup_win = 1000000;
     /*default entries count of callback queue and packet buffer queue*/
     /**
@@ -650,28 +580,6 @@ int main(int argc, char *argv[])
     */
     xconf->stack_buf_count = 16384;
 
-    /*
-     * Pre-parse the command-line
-     */
-    if (xconf_contains("--readscan", argc, argv)) {
-        xconf->is_readscan = 1;
-    }
-
-    /*
-     * On non-Windows systems, read the defaults from the file in
-     * the /etc directory. These defaults will contain things
-     * like the output directory, max packet rates, and so on. Most
-     * importantly, the master "--excludefile" might be placed here,
-     * so that blacklisted ranges won't be scanned, even if the user
-     * makes a mistake
-     */
-#if !defined(WIN32)
-    if (!xconf->is_readscan) {
-        if (access(XTATE_DEFAULT_CONF, 0) == 0) {
-            xconf_set_parameter(xconf, "conf", XTATE_DEFAULT_CONF);
-        }
-    }
-#endif
 
     /*
      * Read in the configuration from the command-line. We are looking for
@@ -686,22 +594,11 @@ int main(int argc, char *argv[])
      */
     load_database_files(xconf);
 
-    /*
-     * Load the scripting engine if needed and run those that were
-     * specified.
-     */
-    if (xconf->is_scripting)
-        scripting_init(xconf);
-
     /* We need to do a separate "raw socket" initialization step. This is
      * for Windows and PF_RING. */
     if (pcap_init() != 0)
         LOG(2, "libpcap: failed to load\n");
     rawsock_init();
-
-    /* Init some protocol parser data structures */
-    snmp_init();
-    x509_init();
 
 
     /*
@@ -709,7 +606,8 @@ int main(int argc, char *argv[])
      * of their ranges, and when doing wide scans, add the exclude list to
      * prevent them from being scanned.
      */
-    has_target_addresses = massip_has_ipv4_targets(&xconf->targets) || massip_has_ipv6_targets(&xconf->targets);
+    has_target_addresses =
+        massip_has_ipv4_targets(&xconf->targets) || massip_has_ipv6_targets(&xconf->targets);
     has_target_ports = massip_has_target_ports(&xconf->targets);
     massip_apply_excludes(&xconf->targets, &xconf->exclude);
     if (!has_target_ports && xconf->op == Operation_ListTargets)
@@ -801,40 +699,6 @@ int main(int argc, char *argv[])
         readrange(xconf);
         return 0;
 
-    case Operation_ReadScan:
-        {
-            unsigned start;
-            unsigned stop;
-
-            /* find first file */
-            for (start=1; start<(unsigned)argc; start++) {
-                if (memcmp(argv[start], "--readscan", 10) == 0) {
-                    start++;
-                    break;
-                }
-            }
-
-            /* find last file */
-            for (stop=start+1; stop<(unsigned)argc && argv[stop][0] != '-'; stop++)
-                ;
-
-            /*
-             * read the binary files, and output them again depending upon
-             * the output parameters
-             */
-            readscan_binary_scanfile(xconf, start, stop, argv);
-
-        }
-        break;
-
-    case Operation_Benchmark:
-        printf("=== benchmarking (%u-bits) ===\n\n", (unsigned)sizeof(void*)*8);
-        blackrock_benchmark(xconf->blackrock_rounds);
-        blackrock2_benchmark(xconf->blackrock_rounds);
-        smack_benchmark();
-        exit(1);
-        break;
-
     case Operation_Echo:
         xconf_echo(xconf, stdout);
         exit(0);
@@ -845,56 +709,6 @@ int main(int argc, char *argv[])
         exit(0);
         break;
 
-    case Operation_Selftest:
-        /*
-         * Do a regression test of all the significant units
-         */
-        {
-            int x = 0;
-            extern int proto_isakmp_selftest(void);
-            
-            x += massip_selftest();
-            x += ranges6_selftest();
-            x += dedup_selftest();
-            x += checksum_selftest();
-            x += ipv6address_selftest();
-            x += proto_coap_selftest();
-            x += smack_selftest();
-            x += sctp_selftest();
-            x += base64_selftest();
-            x += banner1_selftest();
-            x += output_selftest();
-            x += siphash24_selftest();
-            x += ntp_selftest();
-            x += snmp_selftest();
-            x += proto_isakmp_selftest();
-            x += templ_payloads_selftest();
-            x += blackrock_selftest();
-            x += rawsock_selftest();
-            x += lcg_selftest();
-            x += template_selftest();
-            x += ranges_selftest();
-            x += massip_parse_selftest();
-            x += pixie_time_selftest();
-            x += rte_ring_selftest();
-            x += xconf_selftest();
-            x += zeroaccess_selftest();
-            x += nmapserviceprobes_selftest();
-            x += rstfilter_selftest();
-            x += masscan_app_selftest();
-
-
-            if (x != 0) {
-                /* one of the selftests failed, so return error */
-                fprintf(stderr, "regression test: failed :( \n");
-                return 1;
-            } else {
-                fprintf(stderr, "regression test: success!\n");
-                return 0;
-            }
-        }
-        break;
-    
     case Operation_ListProbes:
         list_all_probes();
         break;

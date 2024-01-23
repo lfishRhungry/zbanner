@@ -13,12 +13,8 @@
 #include "cookie.h"         /* for SYN-cookies on send */
 
 #include "output-modules/output-modules.h"
-#include "out/output.h"             /* for outputting results */
 #include "stub/stub-pcap.h"          /* dynamically load libpcap library */
 #include "smack/smack.h"              /* Aho-corasick state-machine pattern-matcher */
-#include "in/in-binary.h"          /* convert binary output to XML/JSON */
-#include "vulncheck/vulncheck.h"          /* checking vulns like monlist, poodle, heartblee */
-#include "scripting/scripting.h"
 #include "nmap-service/read-service-probes.h"
 
 #include "massip/massip-parse.h"
@@ -33,7 +29,6 @@
 
 #include "stack/stack-ndpv6.h"        /* IPv6 Neighbor Discovery Protocol */
 #include "stack/stack-arpv4.h"        /* Handle ARP resolution and requests */
-#include "stack/stack-tcp-core.h"          /* for TCP/IP connection table */
 #include "stack/stack-queue.h"
 
 #include "pixie/pixie-timer.h"        /* portable time functions */
@@ -56,20 +51,6 @@
 #include "util/rstfilter.h"
 #include "util/mas-malloc.h"
 #include "util/checksum.h"
-
-#include "proto/proto-x509.h"
-#include "proto/proto-arp.h"          /* for responding to ARP requests */
-#include "proto/proto-banner1.h"      /* for snatching banners from systems */
-#include "proto/proto-preprocess.h"   /* quick parse of packets */
-#include "proto/proto-icmp.h"         /* handle ICMP responses */
-#include "proto/proto-udp.h"          /* handle UDP responses */
-#include "proto/proto-snmp.h"         /* parse SNMP responses */
-#include "proto/proto-ntp.h"          /* parse NTP responses */
-#include "proto/proto-coap.h"         /* CoAP selftest */
-#include "proto/proto-zeroaccess.h"
-#include "proto/proto-sctp.h"
-#include "proto/proto-oproto.h"       /* Other protocols on top of IP */
-
 
 /***************************************************************************
  ***************************************************************************/
@@ -97,7 +78,6 @@ receive_thread(void *v)
     struct Adapter *adapter = xconf->nic.adapter;
     struct TemplateSet tmplset = templ_copy(xconf->tmplset);
     int data_link = stack_if_datalink(adapter);
-    struct Output *out;
     struct DedupTable *dedup;
     struct PcapFile *pcapfile = NULL;
     uint64_t entropy = xconf->seed;
@@ -132,12 +112,6 @@ receive_thread(void *v)
     if (xconf->pcap_filename[0]) {
         pcapfile = pcapfile_openwrite(xconf->pcap_filename, 1);
     }
-
-    /*
-     * Open output. This is where results are reported when saving
-     * the --output-format to the --output-filename
-     */
-    out = output_create(xconf, 0);
 
     /*
      * Create deduplication table. This is so when somebody sends us
@@ -342,10 +316,8 @@ receive_thread(void *v)
      * cleanup
      */
 end:
-    if (!xconf->is_nodedup){
+    if (!xconf->is_nodedup)
         dedup_destroy(dedup);
-    }
-    output_destroy(out);
     if (pcapfile)
         pcapfile_close(pcapfile);
 

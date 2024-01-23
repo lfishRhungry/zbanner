@@ -2,7 +2,6 @@
 #include "proto-preprocess.h"
 #include "../cookie.h"
 #include "../util/logger.h"
-#include "../out/output.h"
 #include "../massip/massip-port.h"
 #include "../util/dedup.h"
 
@@ -11,10 +10,8 @@
 /***************************************************************************
  ***************************************************************************/
 static int
-matches_me(struct Output *out, ipaddress ip, unsigned port)
+matches_me(ipaddress ip, unsigned port)
 {
-    if (is_myself(&out->src, ip, port))
-        return 1;
     return 0;
 }
 
@@ -90,16 +87,16 @@ handle_icmp(struct Output *out, time_t timestamp,
         /*
          * Report "open" or "existence" of host
          */
-        output_report_status(
-                            out,
-                            timestamp,
-                            PortStatus_Open,
-                            ip_them,
-                            1, /* ip proto */
-                            0,
-                            0,
-                            parsed->ip_ttl,
-                            parsed->mac_src);
+        // output_report_status(
+        //                     out,
+        //                     timestamp,
+        //                     PortStatus_Open,
+        //                     ip_them,
+        //                     1, /* ip proto */
+        //                     0,
+        //                     0,
+        //                     parsed->ip_ttl,
+        //                     parsed->mac_src);
         break;
     case 3: /* destination unreachable */
         switch (code) {
@@ -133,47 +130,47 @@ handle_icmp(struct Output *out, time_t timestamp,
                 if (err)
                     return;
 
-                if (!matches_me(out, ip_me2, port_me2))
-                    return;
+                // if (!matches_me(out, ip_me2, port_me2))
+                //     return;
 
-                switch (ip_proto) {
-                case 6:
-                    output_report_status(
-                                        out,
-                                        timestamp,
-                                        PortStatus_Closed,
-                                        ip_them2,
-                                        ip_proto,
-                                        port_them2,
-                                        0,
-                                        parsed->ip_ttl,
-                                        parsed->mac_src);
-                    break;
-                case 17:
-                    output_report_status(
-                                        out,
-                                        timestamp,
-                                        PortStatus_Closed,
-                                        ip_them2,
-                                        ip_proto,
-                                        port_them2,
-                                        0,
-                                        parsed->ip_ttl,
-                                        parsed->mac_src);
-                    break;
-                case 132:
-                    output_report_status(
-                                        out,
-                                        timestamp,
-                                        PortStatus_Closed,
-                                        ip_them2,
-                                        ip_proto,
-                                        port_them2,
-                                        0,
-                                        parsed->ip_ttl,
-                                        parsed->mac_src);
-                    break;
-                }
+                // switch (ip_proto) {
+                // case 6:
+                //     output_report_status(
+                //                         out,
+                //                         timestamp,
+                //                         PortStatus_Closed,
+                //                         ip_them2,
+                //                         ip_proto,
+                //                         port_them2,
+                //                         0,
+                //                         parsed->ip_ttl,
+                //                         parsed->mac_src);
+                //     break;
+                // case 17:
+                //     output_report_status(
+                //                         out,
+                //                         timestamp,
+                //                         PortStatus_Closed,
+                //                         ip_them2,
+                //                         ip_proto,
+                //                         port_them2,
+                //                         0,
+                //                         parsed->ip_ttl,
+                //                         parsed->mac_src);
+                //     break;
+                // case 132:
+                //     output_report_status(
+                //                         out,
+                //                         timestamp,
+                //                         PortStatus_Closed,
+                //                         ip_them2,
+                //                         ip_proto,
+                //                         port_them2,
+                //                         0,
+                //                         parsed->ip_ttl,
+                //                         parsed->mac_src);
+                //     break;
+                // }
             }
 
         }

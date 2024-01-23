@@ -30,21 +30,8 @@
 #define XTATE_GITHUB_ISSUES       "https://github.com/lfishRhungry/xtate/issues"
 
 
-enum PortStatus {
-    PortStatus_Unknown,
-    PortStatus_Open,
-    PortStatus_Closed,
-    PortStatus_ZeroWin, /*Recv a SYNACK with zero win*/
-    PortStatus_Responsed, /*ACK our req of app-layer with data in stateless mode*/
-    PortStatus_Arp,
-    PortStatus_Count
-
-};
-
-
 struct Adapter;
 struct TemplateSet;
-struct Banner1;
 struct TemplateOptions;
 
 /**
@@ -57,42 +44,14 @@ struct TemplateOptions;
 enum Operation {
     Operation_Default = 0,          /* nothing specified, so print usage */
     Operation_ListAdapters = 1,    /* --listif */
-    Operation_Selftest = 2,         /* --selftest or --regress */
     Operation_Scan = 3,         /* this is what you expect */
     Operation_DebugIF = 4,          /* --debug if */
     Operation_ListTargets = 5,         /* -sL */
-    Operation_ReadScan = 6,         /* --readscan <binary-output> */
     Operation_ReadRange = 7,        /* --readrange */
-    Operation_Benchmark = 8,        /* --benchmark */
     Operation_Echo = 9,             /* --echo */
     Operation_EchoCidr = 11,        /* --echo-cidr */
     Operation_ListProbes,          /* --list-probes*/
     Operation_ListScanModules,         /* --list-modules*/
-};
-
-/**
- * The format of the output. If nothing is specified, then the default will
- * be "--interactive", meaning that we'll print to the command-line live as
- * results come in. Only one output format can be specified, except that
- * "--interactive" can be specified alongside any of the other ones.
- */
-enum OutputFormat {
-    Output_Default      = 0x0000,
-    Output_Interactive  = 0x0001,   /* --interactive, print to cmdline */
-    Output_List         = 0x0002,
-    Output_Binary       = 0x0004,   /* -oB, "binary", the primary format */
-    Output_XML          = 0x0008,   /* -oX, "xml" */
-    Output_JSON         = 0x0010,   /* -oJ, "json" */
-    Output_NDJSON       = 0x0011,   /* -oD, "ndjson" */
-    Output_Nmap         = 0x0020,
-    Output_ScriptKiddie = 0x0040,
-    Output_Grepable     = 0x0080,   /* -oG, "grepable" */
-    Output_Redis        = 0x0100, 
-    Output_Unicornscan  = 0x0200,   /* -oU, "unicornscan" */
-    Output_None         = 0x0400,
-    Output_Certs        = 0x0800,
-    Output_Hostonly     = 0x1000,   /* -oH, "hostonly" */
-    Output_All          = 0xFFBF,   /* not supported */
 };
 
 struct source_t {
@@ -103,28 +62,6 @@ struct source_t {
     ipv6address ipv6;
     ipv6address ipv6_mask;
 };
-
-
-/**
- * Holds the list of TCP "hello" payloads, specified with the "--hello-file"
- * or "--hello-string" options
- */
-struct TcpCfgPayloads
-{
-    /** The "hello" data in base64 format. This is either the base64 string
-     * specified in the cmdline/cfgfile with "--hello-string", or the 
-     * contents of a file specified with "--hello-file" that we've converted
-     * into base64 */
-    char *payload_base64;
-    
-    /** The TCP port that this hello belongs to */
-    unsigned port;
-    
-    /** These configuration options are stored as a linked-list */
-    struct TcpCfgPayloads *next;
-};
-
-
 
 
 /**
@@ -237,11 +174,6 @@ struct Xconf
      */
     struct MassIP exclude;
 
-    /**
-     * Only output these types of banners
-     */
-    struct RangeList banner_types;
-
 
     /**
      * Maximum rate, in packets-per-second (--rate parameter). This can be
@@ -261,37 +193,16 @@ struct Xconf
     */
     struct ScanModule *scan_module;
     char scan_module_args[SCAN_MODULE_ARGS_LEN];
+
     unsigned is_show_failed:1;
-    
+    unsigned is_status_ndjson:1;
     unsigned is_pfring:1;       /* --pfring */
     unsigned is_sendq:1;        /* --sendq */
-    unsigned is_banners:1;      /* --banners */
-    unsigned is_banners_rawudp:1; /* --rawudp */
     unsigned is_stateless_banners:1; /* --stateless, --stateless-banners, get banners in stateless mode*/
     unsigned is_offline:1;      /* --offline */
-    unsigned is_noreset1:1;      /* --noreset1, don't transmit RST in PORT-IS-OPEN phase*/
-    unsigned is_noreset2:1;      /* --noreset2, don't transmit RST in DATA-IS-RESPONED phase*/
     unsigned is_nodedup:1;      /* --nodedup, don't deduplicate */
     unsigned is_gmt:1;          /* --gmt, all times in GMT */
-    unsigned is_capture_cert:1; /* --capture cert */
-    unsigned is_capture_html:1; /* --capture html */
-    unsigned is_capture_heartbleed:1; /* --capture heartbleed */
-    unsigned is_capture_ticketbleed:1; /* --capture ticket */
-    unsigned is_capture_stateless:1; /* --capture stateless */
     unsigned is_infinite:1;     /* -infinite */
-    unsigned is_readscan:1;     /* --readscan, Operation_Readscan */
-    unsigned is_heartbleed:1;   /* --heartbleed, scan for this vuln */
-    unsigned is_ticketbleed:1;  /* --ticketbleed, scan for this vuln */
-    unsigned is_poodle_sslv3:1; /* --vuln poodle, scan for this vuln */
-    unsigned is_hello_ssl:1;    /* --ssl, use SSL HELLO on all ports */
-    unsigned is_hello_smbv1:1;  /* --smbv1, use SMBv1 hello, instead of v1/v2 hello */
-    unsigned is_hello_http:1;    /* --hello=http, use HTTP on all ports */
-    unsigned is_scripting:1;    /* whether scripting is needed */
-    unsigned is_capture_servername:1; /* --capture servername */
-
-    /** Packet template options, such as whether we should add a TCP MSS
-     * value, or remove it from the packet */
-    struct TemplateOptions *templ_opts; /* e.g. --tcpmss */
 
     /**
      * Wait forever for responses, instead of the default 10 seconds
@@ -331,6 +242,12 @@ struct Xconf
     } shard;
 
     /**
+     * A random seed for randomization if zero, otherwise we'll use
+     * the configured seed for repeatable tests.
+     */
+    uint64_t seed;
+
+    /**
      * The packet template set we are current using. We store a binary template
      * for TCP, UDP, SCTP, ICMP, and so on. All the scans using that protocol
      * are then scanned using that basic template. IP and TCP options can be
@@ -339,126 +256,10 @@ struct Xconf
      */
     struct TemplateSet *pkt_template;
 
-    /**
-     * A random seed for randomization if zero, otherwise we'll use
-     * the configured seed for repeatable tests.
-     */
-    uint64_t seed;
+    /** Packet template options, such as whether we should add a TCP MSS
+     * value, or remove it from the packet */
+    struct TemplateOptions *templ_opts; /* e.g. --tcpmss */
     
-    /**
-     * This block configures what we do for the output files
-     */
-    struct OutputStuff {
-        
-        /**
-         * --output-format
-         * Examples are "xml", "binary", "json", "ndjson", "grepable", and so on.
-         */
-        enum OutputFormat format;
-        
-        /**
-         * --output-filename
-         * The name of the file where we are storing scan results.
-         * Note: the filename "-" means that we should send the file to
-         * <stdout> rather than to a file.
-         */
-        char filename[256];
-        
-        /**
-         * A feature of the XML output where we can insert an optional 
-         * stylesheet into the file for better rendering on web browsers
-         */
-        char stylesheet[256];
-
-        /**
-         * --append
-         * We should append to the output file rather than overwriting it.
-         */
-        unsigned is_append:1;
-
-        /**
-         * --feedlzr
-         * Output SYN-ACK info in format of feeding to LZR like:
-         *     {"saddr":"42.194.129.165","daddr":"112.31.213.24","sport":80,"dport":49088,"seqnum":3867723978,"acknum":3830569963,"window":14600}
-         * Use it for port scanning with `--noreset1` flag.
-         * Do not use --show or --noshow.
-        */
-        unsigned is_feed_lzr:1;
-        
-        /**
-         * --json-status
-         * Print each status update line to stderr as JSON ending with a newline
-         *
-         * This only applies to the three types of status lines that are printed
-         * in xtatus_print(); it does *not* apply to things like startup messages,
-         * error messages or discovery of individual ports
-         *
-         */
-        bool is_status_ndjson;
-
-        /**
-         * --open
-         * --open-only
-         * --show open
-         * Whether to show open ports
-         */
-        unsigned is_show_open:1;
-        
-        /**
-         * --show closed
-         * Whether to show closed ports (i.e. RSTs)
-         */
-        unsigned is_show_closed:1;
-        
-        /**
-         * --show host
-         * Whether to show host messages other than closed ports
-         */
-        unsigned is_show_host:1;
-        
-        /**
-         * print reason port is open, which is redundant for us 
-         */
-        unsigned is_reason:1;
-    
-        /**
-         * --interactive
-         * Print to command-line while also writing to output file. This isn't
-         * needed if the output format is already 'interactive' (the default),
-         * but only if the default output format is anything else, and the
-         * user also wants interactivity.
-         */
-        unsigned is_interactive:1;
-        
-        /**
-        * Print state updates
-        */
-        unsigned is_status_updates:1;
-
-        struct {
-            /**
-             * When we should rotate output into the target directory
-             */
-            unsigned timeout;
-            
-            /**
-             * When doing "--rotate daily", the rotation is done at GMT. In 
-             * order to fix this, add an offset.
-             */
-            unsigned offset;
-            
-            /**
-             * Instead of rotating by timeout, we can rotate by filesize 
-             */
-            uint64_t filesize;
-            
-            /**
-             * The directory to which we store rotated files
-             */
-            char directory[256];
-        } rotate;
-    } output;
-
     struct {
         unsigned data_length; /* number of bytes to randomly append */
         unsigned ttl; /* starting IP TTL field */
@@ -482,77 +283,11 @@ struct Xconf
     
         struct PayloadsUDP *udp;
         struct PayloadsUDP *oproto;
-        struct TcpCfgPayloads *tcp;
         struct NmapServiceProbeList *probes;
     } payloads;
     
-    /** Reconfigure the HTTP header */
-    struct {
-        /* Method */
-        unsigned char *method;
-        size_t method_length;
-
-        /* URL */
-        unsigned char *url;
-        size_t url_length;
-
-        /* Version */
-        unsigned char *version;
-        size_t version_length;
-
-        /* Host */
-        unsigned char *host;
-        size_t host_length;
-
-        /* User-Agent */
-        unsigned char *user_agent;
-        size_t user_agent_length;
-
-        /* Payload after the header*/
-        unsigned char *payload;
-        size_t payload_length;
-
-        /* Headers */
-        struct {
-            const char *name;
-            unsigned char *value;
-            size_t value_length;
-        } headers[16];
-        size_t headers_count;
-
-        /* Cookies */
-        struct {
-            unsigned char *value;
-            size_t value_length;
-        } cookies[16];
-        size_t cookies_count;
-
-        /* Remove */
-        struct {
-            unsigned char *name;
-        } remove[16];
-        size_t remove_count;
-    } http;
-
-    unsigned tcp_connection_timeout;
-    
-    /** Number of seconds to wait for a 'hello' from the server before
-     * giving up and sending a 'hello' from the client. Should be a small
-     * value when doing scans that expect client-side hellos, like HTTP or
-     * SSL, but should be a longer value when doing scans that expect server
-     * hellos, such as FTP or VNC */
-    unsigned tcp_hello_timeout;
-
 
     char *bpf_filter;
-
-    struct {
-        ipaddress ip;
-        char      password[20];
-        unsigned port;
-    } redis;
-
-
 
     /**
      * --min-packet
@@ -564,29 +299,10 @@ struct Xconf
      * --blackrock-rounds
      */
     unsigned blackrock_rounds;
-    
-    /**
-     * --script <name>
-     */
-    struct {
-        /* The name (filename) of the script to run */
-        char *name;
-        
-        /* The script VM */
-        struct lua_State *L;
-    } scripting;
-
-    
-    /**
-     * --vuln <name>
-     * The name of a vuln to check, like "poodle"
-     */
-    const char *vuln_name;
 
 };
 
 
-int xconf_selftest(void);
 void xconf_command_line(struct Xconf *xconf, int argc, char *argv[]);
 void xconf_save_state(struct Xconf *xconf);
 

@@ -118,18 +118,8 @@ tmp/%.o: \
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
-	src/in/%.c \
-	src/in/*.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-tmp/%.o: \
 	src/massip/%.c \
 	src/massip/*.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-tmp/%.o: \
-	src/out/%.c \
-	src/out/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
@@ -173,11 +163,6 @@ tmp/%.o: \
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
-	src/vulncheck/%.c \
-	src/vulncheck/*.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-tmp/%.o: \
 	src/smack/%.c \
 	src/smack/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -211,9 +196,7 @@ tmp/%.o: \
 SRC = $(sort $(wildcard \
 	src/*.c \
 	src/crypto/*.c \
-	src/in/*.c \
 	src/massip/*.c \
-	src/out/*.c \
 	src/pixie/*.c \
 	src/proto/*.c \
 	src/rawsock/*.c \
@@ -222,7 +205,6 @@ SRC = $(sort $(wildcard \
 	src/stub/*.c \
 	src/templ/*.c \
 	src/util/*.c \
-	src/vulncheck/*.c \
 	src/smack/*.c \
 	src/nmap-service/*.c \
 	src/stateless-probes/*.c \

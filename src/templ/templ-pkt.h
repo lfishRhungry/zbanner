@@ -21,7 +21,6 @@
 #define TCP_HAS_FLAG(px,i,flag) ((TCP_FLAGS((px),(i)) & (flag)) == (flag))
 
 struct PayloadsUDP;
-struct MassVulnCheck;
 struct TemplateOptions;
 
 /**
@@ -40,7 +39,7 @@ enum TemplateProtocol {
     Proto_ICMP_timestamp,
     Proto_ARP,
     Proto_Oproto,
-    Proto_VulnCheck,
+    // Proto_VulnCheck,
     //Proto_IP,
     //Proto_Custom,
     Proto_Count
@@ -87,14 +86,13 @@ struct TemplatePacket {
 };
 
 /**
- * We can run multiple types of scans (TCP, UDP, vulns, etc.) at the same
+ * We can run multiple types of scans (TCP, UDP, etc.) at the same
  * time. Therefore, instead of one packet prototype for all scans, we have
  * a set of prototypes/templates.
  */
 struct TemplateSet
 {
     unsigned count;
-    struct MassVulnCheck *vulncheck;
     uint64_t entropy;
     struct TemplatePacket pkts[Proto_Count];
 };

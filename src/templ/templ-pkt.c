@@ -19,7 +19,6 @@
 #include "templ-payloads.h"
 #include "../cookie.h"
 #include "../util/unusedparm.h"
-#include "../vulncheck/vulncheck.h"
 #include "../util/checksum.h"
 #include "../util/mas-malloc.h"
 #include "../stub/stub-pcap-dlt.h" /* data link types, like NULL, RAW, or ETHERNET */
@@ -791,9 +790,6 @@ template_set_target_ipv6(
             *r_length = tmpl->ipv6.length;
         memcpy(px, tmpl->ipv6.packet, *r_length);
         return;
-    } else if (port_them == Templ_VulnCheck) {
-        tmpl = &tmplset->pkts[Proto_VulnCheck];
-        port_them &= 0xFFFF;
     } else {
         return;
     }
@@ -876,14 +872,6 @@ template_set_target_ipv6(
             px[offset_tcp+2] = (unsigned char)(xsum >>  8);
             px[offset_tcp+3] = (unsigned char)(xsum >>  0);
         break;
-    case Proto_VulnCheck:
-            /* TODO: IPv6 */
-            /*tmplset->vulncheck->set_target(tmpl,
-                                     ip_them, port_them,
-                                     ip_me, port_me,
-                                     seqno,
-                                     px, sizeof_px, r_length);*/
-            break;
     case Proto_ARP:
             /* TODO: IPv6 */
         /* don't do any checksumming */
@@ -1021,9 +1009,6 @@ template_set_target_ipv4(
         px[26] = (unsigned char)((ip_them >>  8) & 0xFF);
         px[27] = (unsigned char)((ip_them >>  0) & 0xFF);
         return;
-    } else if (port_them == Templ_VulnCheck) {
-        tmpl = &tmplset->pkts[Proto_VulnCheck];
-        port_them &= 0xFFFF;
     } else {
         return;
     }
@@ -1126,13 +1111,6 @@ template_set_target_ipv4(
             px[offset_tcp+2] = (unsigned char)(xsum >>  8);
             px[offset_tcp+3] = (unsigned char)(xsum >>  0);
         break;
-    case Proto_VulnCheck:
-            tmplset->vulncheck->set_target(tmpl,
-                                     ip_them, port_them,
-                                     ip_me, port_me,
-                                     seqno,
-                                     px, sizeof_px, r_length);
-            break;
     case Proto_ARP:
         /* don't do any checksumming */
         break;
@@ -1501,15 +1479,6 @@ template_packet_init(
                     data_link);
     templset->count++;
 
-    /* [VulnCheck] */
-    if (templset->vulncheck) {
-        _template_init( &templset->pkts[Proto_VulnCheck],
-                       source_mac, router_mac_ipv4, router_mac_ipv6,
-                       templset->vulncheck->packet,
-                       templset->vulncheck->packet_length,
-                       data_link);
-        templset->count++;
-    }
 }
 
 

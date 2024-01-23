@@ -18,12 +18,7 @@
 #include "xconf.h"
 #include "param-configer.h"
 #include "crypto/crypto-base64.h"
-#include "vulncheck/vulncheck.h"
 #include "nmap-service/read-service-probes.h"
-
-#include "proto/proto-banner1.h"
-#include "proto/masscan-app.h"
-
 
 #include "templ/templ-payloads.h"
 #include "templ/templ-opts.h"
@@ -340,7 +335,7 @@ static int SET_stateless_banners(struct Xconf *xconf, const char *name, const ch
     }
     xconf->is_stateless_banners = parseBoolean(value);
 
-    if (xconf->is_banners && xconf->is_stateless_banners) {
+    if (xconf->is_stateless_banners) {
         fprintf(stderr, "FAIL %s: can not specify banners mode and stateless-banners mode at the same time.\n", name);
         fprintf(stderr, "Hint: banners mode gets banners with TCP\\IP stack in user mode.\n");
         fprintf(stderr, "Hint: stateless-banners mode gets banners in stateless. \n");
@@ -502,40 +497,6 @@ static int SET_iflist(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_benchmark(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-
-    if (xconf->echo) {
-        if (xconf->op==Operation_Benchmark || xconf->echo_all)
-            fprintf(xconf->echo, "benchmark = %s\n",
-                xconf->op==Operation_Benchmark?"true":"false");
-        return 0;
-    }
-
-    if (parseBoolean(value))
-        xconf->op = Operation_Benchmark;
-
-    return CONF_OK;
-}
-
-static int SET_selftest(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-
-    if (xconf->echo) {
-        if (xconf->op==Operation_Selftest || xconf->echo_all)
-            fprintf(xconf->echo, "selftest = %s\n",
-                xconf->op==Operation_Selftest?"true":"false");
-        return 0;
-    }
-
-    if (parseBoolean(value))
-        xconf->op = Operation_Selftest;
-
-    return CONF_OK;
-}
-
 static int SET_list_target(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
@@ -550,28 +511,6 @@ static int SET_list_target(struct Xconf *xconf, const char *name, const char *va
 
     /* Read in a binary file instead of scanning the network*/
     xconf->op = Operation_ListTargets;
-
-    return CONF_OK;
-}
-
-static int SET_read_scan(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    UNUSEDPARM(value);
-
-    if (xconf->echo) {
-        if (xconf->op==Operation_ReadRange || xconf->echo_all)
-            fprintf(xconf->echo, "read-scan = %s\n",
-                xconf->op==Operation_ReadRange?"true":"false");
-        return 0;
-    }
-
-    /* Read in a binary file instead of scanning the network*/
-    xconf->op = Operation_ReadScan;
-    
-    /* Default to reading banners */
-    xconf->is_banners = true;
-    xconf->is_banners_rawudp = true;
 
     return CONF_OK;
 }
@@ -677,25 +616,6 @@ static int SET_arpscan(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_banners(struct Xconf *xconf, const char *name, const char *value)
-{
-    if (xconf->echo) {
-        if (xconf->is_banners || xconf->echo_all)
-            fprintf(xconf->echo, "banners = %s\n", xconf->is_banners?"true":"false");
-       return 0;
-    }
-    xconf->is_banners = parseBoolean(value);
-
-    if (xconf->is_banners && xconf->is_stateless_banners) {
-        fprintf(stderr, "FAIL %s: can not specify banners mode and stateless-banners mode at the same time.\n", name);
-        fprintf(stderr, "Hint: banners mode gets banners with TCP\\IP stack in user mode.\n");
-        fprintf(stderr, "Hint: stateless-banners mode gets banners in stateless. \n");
-        return CONF_ERR;
-    }
-
-    return CONF_OK;
-}
-
 static int SET_nodedup(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
@@ -757,18 +677,6 @@ static int SET_dedup_win(struct Xconf *xconf, const char *name, const char *valu
 
     xconf->dedup_win = parseInt(value);
 
-    return CONF_OK;
-}
-
-static int SET_feed_lzr(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->output.is_feed_lzr || xconf->echo_all)
-            fprintf(xconf->echo, "feed-lzr = %s\n", xconf->output.is_feed_lzr?"true":"false");
-       return 0;
-    }
-    xconf->output.is_feed_lzr = parseBoolean(value);
     return CONF_OK;
 }
 
@@ -846,153 +754,6 @@ static int SET_debug_interface(struct Xconf *xconf, const char *name, const char
     }
     if (parseBoolean(value))
         xconf->op = Operation_DebugIF;
-    return CONF_OK;
-}
-
-static int SET_conn_timeout(struct Xconf *xconf, const char *name, const char *value)
-{
-    if (xconf->echo) {
-        if (xconf->tcp_connection_timeout || xconf->echo_all)
-            fprintf(xconf->echo, "connection-timeout = %u\n",
-                xconf->tcp_connection_timeout);
-       return 0;
-    }
-
-    xconf->tcp_connection_timeout = parseInt(value);
-
-    return CONF_OK;
-}
-
-static int SET_banners_rawudp(struct Xconf *xconf, const char *name, const char *value)
-{
-    if (xconf->echo) {
-        if (xconf->is_banners_rawudp || xconf->echo_all)
-            fprintf(xconf->echo, "rawudp = %s\n", xconf->is_banners_rawudp?"true":"false");
-       return 0;
-    }
-    xconf->is_banners_rawudp = parseBoolean(value);
-    if (xconf->is_banners_rawudp)
-        xconf->is_banners = true;
-
-    if (xconf->is_banners && xconf->is_stateless_banners) {
-        fprintf(stderr, "FAIL %s: can not specify banners mode and stateless-banners mode at the same time.\n", name);
-        fprintf(stderr, "Hint: banners mode gets banners with TCP\\IP stack in user mode.\n");
-        fprintf(stderr, "Hint: stateless-banners mode gets banners in stateless. \n");
-        return CONF_ERR;
-    }
-
-    return CONF_OK;
-}
-
-static int SET_capture(struct Xconf *xconf, const char *name, const char *value)
-{
-    if (xconf->echo) {
-        if (!xconf->is_capture_cert || xconf->echo_all)
-            fprintf(xconf->echo, "%scapture = cert\n", xconf->is_capture_cert?"":"no");
-        if (!xconf->is_capture_servername || xconf->echo_all)
-            fprintf(xconf->echo, "%scapture = servername\n", xconf->is_capture_servername?"":"no");
-        if (xconf->is_capture_html || xconf->echo_all)
-            fprintf(xconf->echo, "%scapture = html\n", xconf->is_capture_html?"":"no");
-        if (xconf->is_capture_heartbleed || xconf->echo_all)
-            fprintf(xconf->echo, "%scapture = heartbleed\n", xconf->is_capture_heartbleed?"":"no");
-        if (xconf->is_capture_ticketbleed || xconf->echo_all)
-            fprintf(xconf->echo, "%scapture = ticketbleed\n", xconf->is_capture_ticketbleed?"":"no");
-        if (xconf->is_capture_stateless || xconf->echo_all)
-            fprintf(xconf->echo, "%scapture = stateless\n", xconf->is_capture_stateless?"":"no");
-        return 0;
-    }
-    if (EQUALS("capture", name)) {
-        if (EQUALS("cert", value))
-            xconf->is_capture_cert = 1;
-        else if (EQUALS("servername", value))
-            xconf->is_capture_servername = 1;
-        else if (EQUALS("html", value))
-            xconf->is_capture_html = 1;
-        else if (EQUALS("heartbleed", value))
-            xconf->is_capture_heartbleed = 1;
-        else if (EQUALS("ticketbleed", value))
-            xconf->is_capture_ticketbleed = 1;
-        else if (EQUALS("stateless", value))
-            xconf->is_capture_stateless = 1;
-        else {
-            fprintf(stderr, "FAIL: %s: unknown capture type\n", value);
-            return CONF_ERR;
-        }
-    } else if (EQUALS("nocapture", name)) {
-        if (EQUALS("cert", value))
-            xconf->is_capture_cert = 0;
-        else if (EQUALS("servername", value))
-            xconf->is_capture_servername = 0;
-        else if (EQUALS("html", value))
-            xconf->is_capture_html = 0;
-        else if (EQUALS("heartbleed", value))
-            xconf->is_capture_heartbleed = 0;
-        else if (EQUALS("ticketbleed", value))
-            xconf->is_capture_ticketbleed = 0;
-        else if (EQUALS("stateless", value))
-            xconf->is_capture_stateless = 0;
-        else {
-            fprintf(stderr, "FAIL: %s: unknown nocapture type\n", value);
-            return CONF_ERR;
-        }
-    }
-    return CONF_OK;
-}
-
-static int SET_banner_type(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->banner_types.count > 0) {
-            fprintf(xconf->echo, "banner types =");
-            /*Actually, only one type will be print*/
-            for (unsigned i=0; i<xconf->banner_types.count; i++) {
-                fprintf(xconf->echo, " %s",
-                    masscan_app_to_string(xconf->banner_types.list[i].begin));
-            }
-            fprintf(xconf->echo, "\n");
-        }
-        return 0;
-    }
-
-    /*It may only add one type*/
-    enum ApplicationProtocol app;
-    app = masscan_string_to_app(value);
-    
-    if (app) {
-        rangelist_add_range(&xconf->banner_types, app, app);
-        rangelist_sort(&xconf->banner_types);
-    } else {
-        fprintf(stderr, "FAIL: bad banner app: %s\n", value);
-        return CONF_ERR;
-    }
-
-    return CONF_OK;
-}
-
-static int SET_hello(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->is_hello_ssl) {
-            fprintf(xconf->echo, "hello = ssl\n");
-        } else if (xconf->is_hello_smbv1) {
-            fprintf(xconf->echo, "hello = smbv1\n");
-        } else if (xconf->is_hello_http) {
-            fprintf(xconf->echo, "hello = http\n");
-        }
-        return 0;
-    }
-    if (EQUALS("ssl", value))
-        xconf->is_hello_ssl = 1;
-    else if (EQUALS("smbv1", value))
-        xconf->is_hello_smbv1 = 1;
-    else if (EQUALS("http", value))
-        xconf->is_hello_http = 1;
-    else {
-        fprintf(stderr, "FAIL: %s: unknown hello type\n", value);
-        return CONF_ERR;
-    }
     return CONF_OK;
 }
 
@@ -1560,309 +1321,6 @@ static int SET_read_conf(struct Xconf *xconf, const char *name, const char *valu
 
     fclose(fp);
 
-    if (EQUALS("resume", name))
-        xconf->output.is_append = true;
-
-    return CONF_OK;
-}
-
-static int SET_hello_file(struct Xconf *xconf, const char *name, const char *value)
-{
-    unsigned index;
-    FILE *fp;
-    char buf[16384];
-    char buf2[16384];
-    size_t bytes_read;
-    size_t bytes_encoded;
-    char foo[64];
-
-    if (xconf->echo) {
-        //Echoed as a string "hello-string" that was originally read
-        //from a file, not the "hello-filename"
-        return 0;
-    }
-    
-    index = ARRAY(name);
-    if (index >= 65536) {
-        fprintf(stderr, "%s: bad index\n", name);
-        return CONF_ERR;
-    }
-
-    /* When connecting via TCP, send this file */
-    fp = fopen(value, "rb");
-    if (fp == NULL) {
-        LOG(0, "[-] [FAILED] --hello-file\n");
-        LOG(0, "[-] %s: %s\n", value, strerror(errno));
-        return CONF_ERR;
-    }
-    
-    bytes_read = fread(buf, 1, sizeof(buf), fp);
-    if (bytes_read == 0) {
-        LOG(0, "[FAILED] could not read hello file\n");
-        perror(value);
-        fclose(fp);
-        return CONF_ERR;
-    }
-    fclose(fp);
-    
-    bytes_encoded = base64_encode(buf2, sizeof(buf2)-1, buf, bytes_read);
-    buf2[bytes_encoded] = '\0';
-    
-    snprintf(foo, sizeof(foo), "hello-string[%u]", (unsigned)index);
-    
-    xconf_set_parameter(xconf, foo, buf2);
-
-    return CONF_OK;
-}
-
-static int SET_hello_string(struct Xconf *xconf, const char *name, const char *value)
-{
-    unsigned index;
-    char *value2;
-    struct TcpCfgPayloads *pay;
-
-    if (xconf->echo) {
-        for (pay = xconf->payloads.tcp; pay; pay = pay->next) {
-            fprintf(xconf->echo, "hello-string[%u] = %s\n",
-                    pay->port, pay->payload_base64);
-        }
-        return 0;
-    }
-    
-    index = ARRAY(name);
-    if (index >= 65536) {
-        fprintf(stderr, "%s: bad index\n", name);
-        exit(1);
-    }
-
-    
-    value2 = STRDUP(value);
-
-    pay = MALLOC(sizeof(*pay));
-    
-    pay->payload_base64 = value2;
-    pay->port = index;
-    pay->next = xconf->payloads.tcp;
-    xconf->payloads.tcp = pay;
-    return CONF_OK;
-}
-
-static int SET_hello_timeout(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->tcp_hello_timeout || xconf->echo_all)
-            fprintf(xconf->echo, "hello-timeout = %u\n", xconf->tcp_hello_timeout);
-        return 0;
-    }
-    xconf->tcp_hello_timeout = (unsigned)parseInt(value);
-    return CONF_OK;
-}
-
-static int SET_http_cookie(struct Xconf *xconf, const char *name, const char *value)
-{
-    unsigned char *newvalue;
-    size_t value_length;
-
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->http.cookies_count || xconf->echo_all) {
-            size_t i;
-            for (i=0; i<xconf->http.cookies_count; i++) {
-                fprintf(xconf->echo,
-                        "http-cookie = %.*s\n",
-                        (unsigned)xconf->http.cookies[i].value_length,
-                        xconf->http.cookies[i].value);
-            }
-        }
-        return 0;
-    }
-
-    /* allocate new value */
-    value_length = strlen(value);
-    newvalue = MALLOC(value_length+1);
-    memcpy(newvalue, value, value_length+1);
-    newvalue[value_length] = '\0';
-
-    /* Add to our list of headers */
-    if (xconf->http.cookies_count < sizeof(xconf->http.cookies)/sizeof(xconf->http.cookies[0])) {
-        size_t x = xconf->http.cookies_count;
-        xconf->http.cookies[x].value = newvalue;
-        xconf->http.cookies[x].value_length = value_length;
-        xconf->http.cookies_count++;
-    }
-    return CONF_OK;
-}
-
-static int SET_http_header(struct Xconf *xconf, const char *name, const char *value)
-{
-    unsigned name_length;
-    char *newname;
-    unsigned char *newvalue;
-    size_t value_length;
-
-    if (xconf->echo) {
-        if (xconf->http.headers_count || xconf->echo_all) {
-            size_t i;
-            for (i=0; i<xconf->http.headers_count; i++) {
-                if (xconf->http.headers[i].name == 0)
-                    continue;
-                fprintf(xconf->echo,
-                        "http-header = %s:%.*s\n",
-                        xconf->http.headers[i].name,
-                        (unsigned)xconf->http.headers[i].value_length,
-                        xconf->http.headers[i].value);
-            }
-        }
-        return 0;
-    }
-
-    /* 
-     * allocate a new name 
-     */
-    name += 11;
-    if (*name == '[') {
-        /* Specified as: "--http-header[name] value" */
-        while (ispunct(*name))
-            name++;
-        name_length = (unsigned)strlen(name);
-        while (name_length && ispunct(name[name_length-1]))
-            name_length--;
-        newname = MALLOC(name_length+1);
-        memcpy(newname, name, name_length+1);
-        newname[name_length] = '\0';
-    } else if (strchr(value, ':')) {
-        /* Specified as: "--http-header Name:value" */
-        name_length = INDEX_OF(value, ':');
-        newname = MALLOC(name_length + 1);
-        memcpy(newname, value, name_length + 1);
-            
-        /* Trim the value */
-        value = value + name_length + 1;
-        while (*value && isspace(*value & 0xFF))
-            value++;
-
-        /* Trim the name */
-        while (name_length && isspace(newname[name_length-1]&0xFF))
-            name_length--;
-        newname[name_length] = '\0';
-    } else {
-        fprintf(stderr, "[-] --http-header needs both a name and value\n");
-        fprintf(stderr, "    hint: \"--http-header Name:value\"\n");
-        exit(1);
-    }
-
-    /* allocate new value */
-    value_length = strlen(value);
-    newvalue = MALLOC(value_length+1);
-    memcpy(newvalue, value, value_length+1);
-    newvalue[value_length] = '\0';
-
-    /* Add to our list of headers */
-    if (xconf->http.headers_count < sizeof(xconf->http.headers)/sizeof(xconf->http.headers[0])) {
-        size_t x = xconf->http.headers_count;
-        xconf->http.headers[x].name = newname;
-        xconf->http.headers[x].value = newvalue;
-        xconf->http.headers[x].value_length = value_length;
-        xconf->http.headers_count++;
-    }
-    return CONF_OK;
-}
-
-static int SET_http_method(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->http.method || xconf->echo_all)
-            fprintf(xconf->echo, "http-method = %.*s\n", (unsigned)xconf->http.method_length, xconf->http.method);
-        return 0;
-    }
-    if (xconf->http.method)
-        free(xconf->http.method);
-    xconf->http.method_length = strlen(value);
-    xconf->http.method = MALLOC(xconf->http.method_length+1);
-    memcpy(xconf->http.method, value, xconf->http.method_length+1);
-    return CONF_OK;
-}
-static int SET_http_url(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->http.url || xconf->echo_all)
-            fprintf(xconf->echo, "http-url = %.*s\n", (unsigned)xconf->http.url_length, xconf->http.url);
-        return 0;
-    }
-    if (xconf->http.url)
-        free(xconf->http.url);
-    xconf->http.url_length = strlen(value);
-    xconf->http.url = MALLOC(xconf->http.url_length+1);
-    memcpy(xconf->http.url, value, xconf->http.url_length+1);
-    return CONF_OK;
-}
-static int SET_http_version(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->http.version || xconf->echo_all)
-            fprintf(xconf->echo, "http-version = %.*s\n", (unsigned)xconf->http.version_length, xconf->http.version);
-        return 0;
-    }
-    if (xconf->http.version)
-        free(xconf->http.version);
-    xconf->http.version_length = strlen(value);
-    xconf->http.version = MALLOC(xconf->http.version_length+1);
-    memcpy(xconf->http.version, value, xconf->http.version_length+1);
-    return CONF_OK;
-}
-static int SET_http_host(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->http.host || xconf->echo_all)
-            fprintf(xconf->echo, "http-host = %.*s\n", (unsigned)xconf->http.host_length, xconf->http.host);
-        return 0;
-    }
-    if (xconf->http.host)
-        free(xconf->http.host);
-    xconf->http.host_length = strlen(value);
-    xconf->http.host = MALLOC(xconf->http.host_length+1);
-    memcpy(xconf->http.host, value, xconf->http.host_length+1);
-    return CONF_OK;
-}
-
-static int SET_http_user_agent(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->http.user_agent || xconf->echo_all)
-            fprintf(xconf->echo, "http-user-agent = %.*s\n", (unsigned)xconf->http.user_agent_length, xconf->http.user_agent);
-        return 0;
-    }
-    if (xconf->http.user_agent)
-        free(xconf->http.user_agent);
-    xconf->http.user_agent_length = strlen(value);
-    xconf->http.user_agent = MALLOC(xconf->http.user_agent_length+1);
-    memcpy( xconf->http.user_agent,
-            value,
-            xconf->http.user_agent_length+1
-            );
-    return CONF_OK;
-}
-
-static int SET_http_payload(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->http.payload || xconf->echo_all)
-            fprintf(xconf->echo, "http-payload = %.*s\n", (unsigned)xconf->http.payload_length, xconf->http.payload);
-        return 0;
-    }
-    xconf->http.payload_length = strlen(value);
-    xconf->http.payload = REALLOC(xconf->http.payload, xconf->http.payload_length+1);
-    memcpy( xconf->http.payload,
-            value,
-            xconf->http.payload_length+1
-            );
     return CONF_OK;
 }
 
@@ -1880,16 +1338,16 @@ static int SET_packet_trace(struct Xconf *xconf, const char *name, const char *v
     return CONF_OK;
 }
 
-static int SET_json_status(struct Xconf *xconf, const char *name, const char *value)
+static int SET_ndjson_status(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->output.is_status_ndjson || xconf->echo_all)
-            fprintf(xconf->echo, "ndjson-status = %s\n", xconf->output.is_status_ndjson?"true":"false");
+        if (xconf->is_status_ndjson || xconf->echo_all)
+            fprintf(xconf->echo, "ndjson-status = %s\n", xconf->is_status_ndjson?"true":"false");
         return 0;
     }
-    xconf->output.is_status_ndjson = parseBoolean(value);
+    xconf->is_status_ndjson = parseBoolean(value);
     return CONF_OK;
 }
 
@@ -1902,39 +1360,6 @@ static int SET_min_packet(struct Xconf *xconf, const char *name, const char *val
         return 0;
     }
     xconf->min_packet_size = (unsigned)parseInt(value);
-    return CONF_OK;
-}
-
-
-static int SET_nobanners(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        return 0;
-    }
-    xconf->is_banners = !parseBoolean(value);
-    return CONF_OK;
-}
-
-static int SET_noreset(struct Xconf *xconf, const char *name, const char *value)
-{
-    if (xconf->echo) {
-        if (xconf->is_noreset1 || xconf->echo_all)
-            fprintf(xconf->echo, "noreset1 = %s\n", xconf->is_noreset1?"true":"false");
-        if (xconf->is_noreset2 || xconf->echo_all)
-            fprintf(xconf->echo, "noreset2 = %s\n", xconf->is_noreset2?"true":"false");
-        return 0;
-    }
-
-    if (EQUALS(name, "noreset1"))
-        xconf->is_noreset1 = parseBoolean(value);
-    else if (EQUALS(name, "noreset2"))
-        xconf->is_noreset2 = parseBoolean(value);
-    else if (EQUALS(name, "noreset")) {
-        xconf->is_noreset1 = parseBoolean(value);
-        xconf->is_noreset2 = parseBoolean(value);
-    }
-
     return CONF_OK;
 }
 
@@ -2022,261 +1447,6 @@ static int SET_offline(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_output_append(struct Xconf *xconf, const char *name, const char *value)
-{
-    if (xconf->echo) {
-        if (xconf->output.is_append || xconf->echo_all)
-            fprintf(xconf->echo, "output-append = %s\n",
-                    xconf->output.is_append?"true":"false");
-        return 0;
-    }
-    if (EQUALS("overwrite", name) || !parseBoolean(value))
-        xconf->output.is_append = 0;
-    else
-        xconf->output.is_append = 1;
-    return CONF_OK;
-}
-
-static int SET_output_filename(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->output.filename[0] || xconf->echo_all)
-            fprintf(xconf->echo, "output-filename = %s\n", xconf->output.filename);
-        return 0;
-    }
-    if (xconf->output.format == 0)
-        xconf->output.format = Output_XML; /*TODO: Why is the default XML?*/
-    safe_strcpy(xconf->output.filename,
-             sizeof(xconf->output.filename),
-             value);
-    return CONF_OK;
-}
-
-static int SET_output_format(struct Xconf *xconf, const char *name, const char *value)
-{
-    enum OutputFormat x = 0;
-    // UNUSEDPARM(name);
-    if (xconf->echo) {
-        FILE *fp = xconf->echo;
-        ipaddress_formatted_t fmt;
-        switch (xconf->output.format) {
-            case Output_Default:    if (xconf->echo_all) fprintf(fp, "output-format = interactive\n"); break;
-            case Output_Interactive:fprintf(fp, "output-format = interactive\n"); break;
-            case Output_List:       fprintf(fp, "output-format = list\n"); break;
-            case Output_Unicornscan:fprintf(fp, "output-format = unicornscan\n"); break;
-            case Output_XML:        fprintf(fp, "output-format = xml\n"); break;
-            case Output_Binary:     fprintf(fp, "output-format = binary\n"); break;
-            case Output_Grepable:   fprintf(fp, "output-format = grepable\n"); break;
-            case Output_JSON:       fprintf(fp, "output-format = json\n"); break;
-            case Output_NDJSON:     fprintf(fp, "output-format = ndjson\n"); break;
-            case Output_Certs:      fprintf(fp, "output-format = certs\n"); break;
-            case Output_None:       fprintf(fp, "output-format = none\n"); break;
-            case Output_Hostonly:   fprintf(fp, "output-format = hostonly\n"); break;
-            case Output_Redis:
-                fmt = ipaddress_fmt(xconf->redis.ip);
-                fprintf(fp, "output-format = redis\n");
-                fprintf(fp, "redis = %s %u\n", fmt.string, xconf->redis.port);
-                break;
-                
-            default:
-                fprintf(fp, "output-format = unknown(%u)\n", xconf->output.format);
-                break;
-        }
-        return 0;
-    }
-
-    if (EQUALS("unknown(0)", value))                            x = Output_Interactive;
-    else if (EQUALS("interactive", value))                      x = Output_Interactive;
-    else if (EQUALS("list", value)||EQUALS("oL", name))         x = Output_List;
-    else if (EQUALS("unicornscan", value)||EQUALS("oU", name))  x = Output_Unicornscan;
-    else if (EQUALS("xml", value)||EQUALS("oX", name))          x = Output_XML;
-    else if (EQUALS("binary", value)||EQUALS("oB", name))       x = Output_Binary;
-    else if (EQUALS("greppable", value)||EQUALS("oG", name))    x = Output_Grepable;
-    else if (EQUALS("grepable", value)||EQUALS("oG", name))     x = Output_Grepable;
-    else if (EQUALS("json", value)||EQUALS("oJ", name))         x = Output_JSON;
-    else if (EQUALS("ndjson", value)||EQUALS("oD", name))       x = Output_NDJSON;
-    else if (EQUALS("certs", value))                            x = Output_Certs;
-    else if (EQUALS("none", value))                             x = Output_None;
-    else if (EQUALS("redis", value)||EQUALS("oR", name))        x = Output_Redis;
-    else if (EQUALS("hostonly", value)||EQUALS("oH", name))     x = Output_Hostonly;
-    else {
-        fprintf(stderr, "FAIL: unknown output-format: %s\n", value);
-        fprintf(stderr, "  hint: 'binary', 'xml', 'grepable', ...\n");
-        return CONF_ERR;
-    }
-    xconf->output.format = x;
-
-    return CONF_OK;
-}
-
-static int SET_output_noshow(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->echo_all) {
-            fprintf(xconf->echo, "output-noshow = %s%s%s\n",
-                    (!xconf->output.is_show_open)?"open,":"",
-                    (!xconf->output.is_show_closed)?"closed,":"",
-                    (!xconf->output.is_show_host)?"host,":""
-                    );
-        }
-        return 0;
-    }
-    for (;;) {
-        const char *val2 = value;
-        unsigned val2_len = INDEX_OF(val2, ',');
-        if (val2_len == 0)
-            break;
-        if (EQUALSx("open", val2, val2_len))
-            xconf->output.is_show_open = 0;
-        else if (EQUALSx("closed", val2, val2_len) || EQUALSx("close", val2, val2_len))
-            xconf->output.is_show_closed = 0;
-        else if (EQUALSx("open", val2, val2_len))
-            xconf->output.is_show_host = 0;
-        else if (EQUALSx("all",val2,val2_len)) {
-            xconf->output.is_show_open = 0;
-            xconf->output.is_show_host = 0;
-            xconf->output.is_show_closed = 0;
-        }
-        else {
-            LOG(0, "FAIL: unknown 'noshow' spec: %.*s\n", val2_len, val2);
-            exit(1);
-        }
-        value += val2_len;
-        while (*value == ',')
-            value++;
-    }
-    return CONF_OK;
-}
-
-static int SET_output_show(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->echo_all) {
-            fprintf(xconf->echo, "output-show = %s%s%s\n",
-                    xconf->output.is_show_open?"open,":"",
-                    xconf->output.is_show_closed?"closed,":"",
-                    xconf->output.is_show_host?"host,":""
-                    );
-        }
-        return 0;
-    }
-    for (;;) {
-        const char *val2 = value;
-        unsigned val2_len = INDEX_OF(val2, ',');
-        if (val2_len == 0)
-            break;
-        if (EQUALSx("open", val2, val2_len))
-            xconf->output.is_show_open = 1;
-        else if (EQUALSx("closed", val2, val2_len) || EQUALSx("close", val2, val2_len))
-            xconf->output.is_show_closed = 1;
-        else if (EQUALSx("open", val2, val2_len))
-            xconf->output.is_show_host = 1;
-        else if (EQUALSx("all",val2,val2_len)) {
-            xconf->output.is_show_open = 1;
-            xconf->output.is_show_host = 1;
-            xconf->output.is_show_closed = 1;
-        }
-        else {
-            LOG(0, "FAIL: unknown 'show' spec: %.*s\n", val2_len, val2);
-            exit(1);
-        }
-        value += val2_len;
-        while (*value == ',')
-            value++;
-    }
-    return CONF_OK;
-}
-
-static int SET_output_redis(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->output.format==Output_Redis || xconf->echo_all) {
-            fprintf(xconf->echo, "redis address = %s:%u\n",
-                ipv4address_fmt((ipv4address)(xconf->redis.ip.ipv4)).string,
-                xconf->redis.port);
-        }
-        return 0;
-    }
-
-    struct Range range;
-    unsigned offset = 0;
-    unsigned max_offset = (unsigned)strlen(value);
-    unsigned port = 6379;
-
-    range = range_parse_ipv4(value, &offset, max_offset);
-    if ((range.begin == 0 && range.end == 0) || range.begin != range.end) {
-        fprintf(stderr, "FAIL:  bad redis IP address: %s\n", value);
-        return CONF_ERR;
-    }
-    if (offset < max_offset) {
-        while (offset < max_offset && isspace(value[offset]))
-            offset++;
-        if (offset+1 < max_offset && value[offset] == ':' && isdigit(value[offset+1]&0xFF)) {
-            port = (unsigned)strtoul(value+offset+1, 0, 0);
-            if (port > 65535 || port == 0) {
-                fprintf(stderr, "FAIL: bad redis port: %s\n", value+offset+1);
-                return CONF_ERR;
-            }
-        }
-    }
-
-    /* TODO: add support for connecting to IPv6 addresses here */
-    xconf->redis.ip.ipv4 = range.begin;
-    xconf->redis.ip.version = 4;
-
-    xconf->redis.port = port;
-    xconf->output.format = Output_Redis;
-    safe_strcpy(xconf->output.filename, 
-                sizeof(xconf->output.filename), 
-                "<redis>");
-
-    return CONF_OK;
-}
-
-static int SET_redis_password(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->redis.password[0] || xconf->echo_all)
-            fprintf(xconf->echo, "redis-password = %s\n",
-                xconf->redis.password);
-        return 0;
-    }
-    safe_strcpy(xconf->redis.password, 20, value);
-    return CONF_OK;
-}
-
-static int SET_reason(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->output.is_reason || xconf->echo_all)
-            fprintf(xconf->echo, "show reason = %s\n",
-                xconf->output.is_reason?"true":"false");
-        return 0;
-    }
-    xconf->output.is_reason =  parseBoolean(value);
-    return CONF_OK;
-}
-
-static int SET_output_show_open(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    UNUSEDPARM(value);
-    if (xconf->echo) {
-        return 0;
-    }
-    /* "open" "open-only" */
-    xconf->output.is_show_open = 1;
-    xconf->output.is_show_closed = 0;
-    xconf->output.is_show_host = 0;
-    return CONF_OK;
-}
-
 /* Specifies a 'libpcap' file where the received packets will be written.
  * This is useful while debugging so that we can see what exactly is
  * going on. It's also an alternate mode for getting output from this
@@ -2315,40 +1485,6 @@ static int SET_pcap_payloads(struct Xconf *xconf, const char *name, const char *
     xconf->payloads.pcap_payloads_filename = strdup(value);
     
     /* file will be loaded in "load_database_files()" */
-    
-    return CONF_OK;
-}
-
-static int SET_status(struct Xconf *xconf, const char *name, const char *value)
-{
-    if (xconf->echo) {
-        if (!xconf->output.is_status_updates || xconf->echo_all)
-            fprintf(xconf->echo, "update status = %s\n",
-                xconf->output.is_status_updates?"true":"false");
-        return 0;
-    }
-    
-    if (EQUALS("status", name))
-        xconf->output.is_status_updates = parseBoolean(value);
-    else if (EQUALS("nostatus", name))
-        xconf->output.is_status_updates = !parseBoolean(value);
-    
-    return CONF_OK;
-}
-
-static int SET_interactive(struct Xconf *xconf, const char *name, const char *value)
-{
-    if (xconf->echo) {
-        if (xconf->output.is_interactive || xconf->echo_all)
-            fprintf(xconf->echo, "output interacitve = %s\n",
-                xconf->output.is_interactive?"true":"false");
-        return 0;
-    }
-    
-    if (EQUALS("interactive", name))
-        xconf->output.is_interactive = parseBoolean(value);
-    else if (EQUALS("nointeractive", name))
-        xconf->output.is_interactive = !parseBoolean(value);
     
     return CONF_OK;
 }
@@ -2446,61 +1582,6 @@ static int SET_resume_index(struct Xconf *xconf, const char *name, const char *v
     return CONF_OK;
 }
 
-static int SET_rotate_time(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->output.rotate.timeout || xconf->echo_all)
-            fprintf(xconf->echo, "rotate = %u\n", xconf->output.rotate.timeout);
-        return 0;
-    }
-    xconf->output.rotate.timeout = (unsigned)parseTime(value);
-    return CONF_OK;
-}
-static int SET_rotate_directory(struct Xconf *xconf, const char *name, const char *value)
-{
-    char *p;
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (memcmp(xconf->output.rotate.directory, ".",2) != 0 || xconf->echo_all) {
-            fprintf(xconf->echo, "rotate-dir = %s\n", xconf->output.rotate.directory);
-        }
-        return 0;
-    }
-    safe_strcpy(   xconf->output.rotate.directory,
-             sizeof(xconf->output.rotate.directory),
-             value);
-    /* strip trailing slashes */
-    p = xconf->output.rotate.directory;
-    while (*p && (p[strlen(p)-1] == '/' || p[strlen(p)-1] == '\\')) /* Fix for #561 */
-        p[strlen(p)-1] = '\0';
-    return CONF_OK;
-}
-static int SET_rotate_offset(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    /* Time offset, otherwise output files are aligned to nearest time
-     * interval, e.g. at the start of the hour for "hourly" */
-    if (xconf->echo) {
-        if (xconf->output.rotate.offset || xconf->echo_all)
-            fprintf(xconf->echo, "rotate-offset = %u\n", xconf->output.rotate.offset);
-        return 0;
-    }
-    xconf->output.rotate.offset = (unsigned)parseTime(value);
-    return CONF_OK;
-}
-static int SET_rotate_filesize(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->output.rotate.filesize || xconf->echo_all)
-            fprintf(xconf->echo, "rotate-size = %" PRIu64 "\n", xconf->output.rotate.filesize);
-        return 0;
-    }
-    xconf->output.rotate.filesize = parseSize(value);
-    return CONF_OK;
-    
-}
 
 static int SET_bpf_filter(struct Xconf *xconf, const char *name, const char *value)
 {
@@ -2520,27 +1601,6 @@ static int SET_bpf_filter(struct Xconf *xconf, const char *name, const char *val
     return CONF_OK;
 }
 
-static int SET_script(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if ((xconf->scripting.name && xconf->scripting.name[0]) || xconf->echo_all)
-            fprintf(xconf->echo, "script = %s\n", xconf->scripting.name);
-        return 0;
-    }
-    if (value && value[0])
-        xconf->is_scripting = 1;
-    else
-        xconf->is_scripting = 0;
-    
-    if (xconf->scripting.name)
-        free(xconf->scripting.name);
-    
-    xconf->scripting.name = strdup(value);
-    
-    return CONF_OK;
-}
-
 
 static int SET_seed(struct Xconf *xconf, const char *name, const char *value)
 {
@@ -2556,17 +1616,6 @@ static int SET_seed(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_banner1(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    UNUSEDPARM(value);
-    if (xconf->echo) {
-        return 0;
-    }
-    banner1_test(value);
-    return CONF_ERR;
-}
-
 static int SET_delimiter(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
@@ -2575,56 +1624,6 @@ static int SET_delimiter(struct Xconf *xconf, const char *name, const char *valu
         fprintf(xconf->echo, "-=-=-=-=-=-\n");
         return 0;
     }
-    return CONF_OK;
-}
-
-static int SET_vuln_check(struct Xconf *xconf, const char *name, const char *value)
-{
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->is_heartbleed || xconf->echo_all)
-            fprintf(xconf->echo, "vulncheck heartbleed = %s\n",
-                xconf->is_heartbleed?"true":"false");
-        if (xconf->is_ticketbleed || xconf->echo_all)
-            fprintf(xconf->echo, "vulncheck ticketbleed = %s\n",
-                xconf->is_ticketbleed?"true":"false");
-        if (xconf->is_poodle_sslv3 || xconf->echo_all)
-            fprintf(xconf->echo, "vulncheck poodle-sslv3 = %s\n",
-                xconf->is_poodle_sslv3?"true":"false");
-        return 0;
-    }
-
-    if (EQUALS("heartbleed", value)) {
-        xconf->is_heartbleed = 1;
-        xconf_set_parameter(xconf, "no-capture", "cert");
-        xconf_set_parameter(xconf, "no-capture", "heartbleed");
-        xconf_set_parameter(xconf, "banners", "true");
-    } else if (EQUALS("ticketbleed", value)) {
-        xconf->is_ticketbleed = 1;
-        xconf_set_parameter(xconf, "no-capture", "cert");
-        xconf_set_parameter(xconf, "no-capture", "ticketbleed");
-        xconf_set_parameter(xconf, "banners", "true");
-    } else if (EQUALS("poodle", value) || EQUALS("sslv3", value)) {
-        xconf->is_poodle_sslv3 = 1;
-        xconf_set_parameter(xconf, "no-capture", "cert");
-        xconf_set_parameter(xconf, "banners", "true");
-    } else {
-        if (!vulncheck_lookup(value)) {
-            fprintf(stderr, "FAIL: vuln check '%s' does not exist\n", value);
-            fprintf(stderr, "  hint: use '--vuln list' to list available scripts\n");
-            return CONF_ERR;
-        }
-        if (xconf->vuln_name != NULL) {
-            if (strcmp(xconf->vuln_name, value) != 0) {
-                fprintf(stderr, "FAIL: only one vuln check supported at a time\n");
-                fprintf(stderr, "  hint: '%s' is existing vuln check, '%s' is new vuln check\n",
-                        xconf->vuln_name, value);
-                return CONF_ERR;
-            }
-        }
-        xconf->vuln_name = vulncheck_lookup(value)->name;
-    }
-
     return CONF_OK;
 }
 
@@ -2818,31 +1817,6 @@ static int SET_shard(struct Xconf *xconf, const char *name, const char *value)
     }
     xconf->shard.one = one;
     xconf->shard.of = of;
-    return CONF_OK;
-}
-
-static int SET_output_stylesheet(struct Xconf *xconf, const char *name, const char *value)
-{
-    if (xconf->echo) {
-        if (xconf->output.stylesheet[0] || xconf->echo_all)
-            fprintf(xconf->echo, "stylesheet = %s\n", xconf->output.stylesheet);
-        return 0;
-    }
-
-
-    if (name[0]=='n') {
-        xconf->output.stylesheet[0] = '\0';
-        return CONF_OK;
-    }
-    
-    if (xconf->output.format == 0)
-        xconf->output.format = Output_XML;
-
-    const char webxml[] =  "http://nmap.org/svn/docs/nmap.xsl";
-    if (EQUALS(name, "webxml"))
-        safe_strcpy(xconf->output.stylesheet, sizeof(xconf->output.stylesheet), webxml);
-    else
-        safe_strcpy(xconf->output.stylesheet, sizeof(xconf->output.stylesheet), value);
     return CONF_OK;
 }
 
@@ -3113,25 +2087,6 @@ static int SET_send_queue(struct Xconf *xconf, const char *name, const char *val
     return CONF_OK;
 }
 
-static int SET_debug_tcp(struct Xconf *xconf, const char *name, const char *value)
-{
-    extern int is_tcp_debug; /* global */
-
-    UNUSEDPARM(name);
-    UNUSEDPARM(xconf);
-
-    if (xconf->echo) {
-        if (is_tcp_debug || xconf->echo_all)
-            fprintf(xconf->echo, "tcp debug = %s\n", is_tcp_debug?"true":"false");
-        return 0;
-    }
-
-    if (value == 0 || value[0] == '\0')
-        is_tcp_debug = 1;
-    else
-        is_tcp_debug = parseBoolean(value);
-    return CONF_OK;
-}
 struct ConfigParameter config_parameters[] = {
     {"BASIC",           SET_delimiter,          0,      {0}},
 
@@ -3171,10 +2126,7 @@ struct ConfigParameter config_parameters[] = {
     {"echo",            SET_echo,               F_BOOL, {"echo-all", "echo-cidr",0}},
     {"iflist",          SET_iflist,             F_BOOL, {"list-interface", "list-adapter",0}},
     {"readrange",       SET_read_range,         F_BOOL, {"readranges", 0}},
-    {"readscan",        SET_read_scan,          F_BOOL, {0}},
     {"listtarget",      SET_list_target,        F_BOOL, {"list-targets",0}},
-    {"selftest",        SET_selftest,           F_BOOL, {"regress", "regression",0}},
-    {"benchmark",       SET_benchmark,          F_BOOL, {0}},
     {"debug-if",        SET_debug_interface,    F_BOOL, {"debug-interface",0}},
 
     {"SCAN TYPE:",      SET_delimiter,          0,      {0}},
@@ -3183,52 +2135,12 @@ struct ConfigParameter config_parameters[] = {
     {"ping",            SET_ping,               F_BOOL, {0}},
     {"oproto",          SET_oproto,             F_BOOL, {"oprotos",0}}, /*other IP protocol*/
 
-    {"STATUS & OUTPUT & RESULT:",SET_delimiter, 0,      {0}},
+    {"STATUS & OUTPUTT:",SET_delimiter, 0,      {0}},
 
-    {"interactive",     SET_interactive,        F_BOOL, {"nointeractive",0}},
-    {"status",          SET_status,             F_BOOL, {"nostatus",0}},
-    {"json-status",     SET_json_status,        F_BOOL, {"status-json", 0}},
-
-    {"output-filename", SET_output_filename,    0,      {"output-file",0}},
-    {"output-format",   SET_output_format,      0,      {0}},
-    {"oB",              SET_output_format,      F_BOOL, {"oD","oJ","oX","oR","oG",0}},
-    {"oL",              SET_output_format,      F_BOOL, {"oU","oH",0}},
-    {"output-show",     SET_output_show,        0,      {"output-status", "show",0}},
-    {"output-noshow",   SET_output_noshow,      0,      {"noshow",0}},
-    {"output-show-open",SET_output_show_open,   F_BOOL, {"open", "open-only", 0}},
-    {"output-append",   SET_output_append,      0,      {"append-output",0}},
-    {"output-redis",    SET_output_redis,       0,      {"redis",0}}, /*--redis IP:port*/
-    {"redis-password",  SET_redis_password,     0,      {"redis-pwd",0}},
-    {"reason",          SET_reason,             F_BOOL, {0}},
-
-    {"rotate",          SET_rotate_time,        0,      {"output-rotate", "rotate-output", "rotate-time", 0}},
-    {"rotate-dir",      SET_rotate_directory,   0,      {"output-rotate-dir", "rotate-directory", 0}},
-    {"rotate-offset",   SET_rotate_offset,      0,      {"output-rotate-offset", 0}},
-    {"rotate-size",     SET_rotate_filesize,    0,      {"output-rotate-filesize", "rotate-filesize", 0}},
-
-    {"stylesheet",      SET_output_stylesheet,  0,      {"webxml", "no-stylesheet",0}},
-    {"feed-lzr",        SET_feed_lzr,           F_BOOL, {"feedlzr", 0}},
-
+    {"ndjson-status",   SET_ndjson_status,      F_BOOL, {"status-ndjson", 0}},
     {"pcap-filename",   SET_pcap_filename,      0,      {"pcap",0}},
 
-    {"BANNERS:",        SET_delimiter,          0,      {0}},
-
-    {"banners",         SET_banners,            F_BOOL, {"banner",0}},
-    {"nobanners",       SET_nobanners,          F_BOOL, {"nobanner",0}},
-    {"banner1",         SET_banner1,            F_BOOL, {0}},
-    {"banner-type",     SET_banner_type,        0,      {"banner-types", "banner-app", "banner-apps",0}},
-    {"rawudp",          SET_banners_rawudp,     F_BOOL, {"rawudp",0}},
-    {"conn-timeout",    SET_conn_timeout,       F_NUMABLE, {"connection-timeout", "tcp-timeout",0}},
-    {"vuln-check",      SET_vuln_check,         0,      {"vuln",0}}, /*some fish will drop the fxck code*/
-
-    {"BANNERS-HELLO:",  SET_delimiter,          0,      {0}},
-
-    {"hello",           SET_hello,              0,      {0}},
-    {"hello-file",      SET_hello_file,         0,      {"hello-filename",0}},
-    {"hello-string",    SET_hello_string,       0,      {0}},
-    {"hello-timeout",   SET_hello_timeout,      0,      {0}},
-
-    {"BANNERS-PAYLOAD:",SET_delimiter,          0,      {0}},
+    {"PAYLOAD:",        SET_delimiter,          0,      {0}},
 
     {"nmap-datadir",    SET_nmap_datadir,       0,      {"datadir",0}},
     {"nmap-datalength", SET_nmap_data_length,   F_NUMABLE,{"datalength",0}},
@@ -3236,25 +2148,12 @@ struct ConfigParameter config_parameters[] = {
     {"nmap-service-probes",SET_nmap_service_probes, 0,  {"nmap-service-probe",0}},
     {"pcap-payloads",   SET_pcap_payloads,      0,      {"pcap-payload",0}},
 
-    {"BANNERS-HTTP:",   SET_delimiter,          0,      {0}},
-
-    {"http-cookie",     SET_http_cookie,        0,      {0}},
-    {"http-header",     SET_http_header,        0,      {"http-field", 0}},
-    {"http-method",     SET_http_method,        0,      {0}},
-    {"http-version",    SET_http_version,       0,      {0}},
-    {"http-url",        SET_http_url,           0,      {"http-uri",0}},
-    {"http-user-agent", SET_http_user_agent,    0,      {0}},
-    {"http-host",       SET_http_host,          0,      {0}},
-    {"http-payload",    SET_http_payload,       0,      {0}},
-
     {"STATELESS:",      SET_delimiter,          0,      {0}},
 
     {"stateless-banners",SET_stateless_banners, F_BOOL, {"stateless", "stateless-banner", "stateless-mode",0}},
     {"stateless-probe", SET_stateless_probe,    0,      {"probe", 0}},
     {"list-probes",     SET_list_probes,        F_BOOL, {"list-probe", 0}},
     {"probe-args",      SET_probe_args,         0,      {"probe-arg", 0}},
-    {"capture",         SET_capture,            0,      {"nocapture",0}},
-    {"noreset",         SET_noreset,            F_BOOL, {"noreset1", "noreset2", 0}},
 
     {"SCAN MODULES:",   SET_delimiter,          0,      {0}},
 
@@ -3287,8 +2186,6 @@ struct ConfigParameter config_parameters[] = {
     {"pfring",          SET_pfring,             F_BOOL, {0}},
     {"send-queue",      SET_send_queue,         F_BOOL, {"sendq", 0}},
     {"blackrock-rounds",SET_blackrock_rounds,   F_NUMABLE, {"blackrock-round",0}},
-    {"script",          SET_script,             0,      {0}},
-    {"debug-tcp",       SET_debug_tcp,          F_BOOL, {"tcp-debug", 0}},
 
     /*Put it at last for better "help" output*/
     {"TARGET (IP, PORTS, EXCLUDES)",SET_delimiter, 0,   {0}},
@@ -3499,36 +2396,3 @@ int xconf_contains(const char *x, int argc, char **argv)
 
     return 0;
 }
-
-
-/***************************************************************************
- ***************************************************************************/
-int
-xconf_selftest()
-{
-    char test[] = " test 1 ";
-
-    trim(test, sizeof(test));
-    if (strcmp(test, "test 1") != 0) {
-        goto failure;
-    }
-
-
-    /* */
-    {
-        int argc = 6;
-        char *argv[] = { "foo", "bar", "-ddd", "--readscan", "xxx", "--something" };
-    
-        if (xconf_contains("--nothing", argc, argv))
-            goto failure;
-
-        if (!xconf_contains("--readscan", argc, argv))
-            goto failure;
-    }
-
-    return 0;
-failure:
-    fprintf(stderr, "[+] selftest failure: config subsystem\n");
-    return 1;
-}
-

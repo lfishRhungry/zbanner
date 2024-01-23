@@ -1,8 +1,9 @@
-#include "proto-sctp.h"
-#include "proto-preprocess.h"
-#include "../out/output.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "proto-sctp.h"
+#include "proto-preprocess.h"
+#include "../util/unusedparm.h"
 
 
 #define CRC32C_POLY 0x1EDC6F41
@@ -156,28 +157,28 @@ handle_sctp(struct Output *out, time_t timestamp,
 
     switch (px[offset + 12]) {
     case 2: /* init ACK */
-        output_report_status(
-                        out,
-                        timestamp,
-                        PortStatus_Open,
-                        ip_them,
-                        132, /* ip proto = sctp */
-                        port_them,
-                        0,
-                        parsed->ip_ttl,
-                        parsed->mac_src);
+        // output_report_status(
+        //                 out,
+        //                 timestamp,
+        //                 PortStatus_Open,
+        //                 ip_them,
+        //                 132, /* ip proto = sctp */
+        //                 port_them,
+        //                 0,
+        //                 parsed->ip_ttl,
+        //                 parsed->mac_src);
         break;
     case 6: /* abort */
-        output_report_status(
-                        out,
-                        timestamp,
-                        PortStatus_Closed,
-                        ip_them,
-                        132, /* ip proto = sctp */
-                        port_them,
-                        0,
-                        parsed->ip_ttl,
-                        parsed->mac_src);
+        // output_report_status(
+        //                 out,
+        //                 timestamp,
+        //                 PortStatus_Closed,
+        //                 ip_them,
+        //                 132, /* ip proto = sctp */
+        //                 port_them,
+        //                 0,
+        //                 parsed->ip_ttl,
+        //                 parsed->mac_src);
         break;
     default:
         ;

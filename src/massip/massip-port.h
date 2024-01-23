@@ -20,7 +20,6 @@ enum {
     Templ_ARP = 65536*3+2,
     Templ_Oproto_first = 65536*3 + 256,
     Templ_Oproto_last = 65536*3 + 256 + 255,
-    Templ_VulnCheck = 65536*4,
     
 };
 
