@@ -36,7 +36,7 @@
 #include "massip/massip-parse.h"
 #include "massip/massip-port.h"
 
-#include "templ/templ-pkt.h"          /* packet template, that we use to send */
+#include "templ/templ-init.h"          /* packet template, that we use to send */
 #include "templ/templ-payloads.h"     /* UDP packet payloads */
 
 #include "rawsock/rawsock.h"            /* API on top of Linux, Windows, Mac OS X*/
@@ -83,6 +83,7 @@
  */
 unsigned volatile is_tx_done = 0;
 unsigned volatile is_rx_done = 0;
+
 time_t global_now;
 
 uint64_t usec_start;

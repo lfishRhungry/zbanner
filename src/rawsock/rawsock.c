@@ -5,7 +5,7 @@
     basic raw sockets, bypassing libpcap for better performance.
 */
 #include "rawsock.h"
-#include "../templ/templ-pkt.h"
+#include "../templ/templ-init.h"
 #include "../util/logger.h"
 #include "../util/ptrace.h"
 #include "../util/mas-safefunc.h"

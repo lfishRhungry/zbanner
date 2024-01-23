@@ -19,7 +19,7 @@
 #include "massip/massip-parse.h"
 #include "massip/massip-port.h"
 
-#include "templ/templ-pkt.h"          /* packet template, that we use to send */
+#include "templ/templ-init.h"          /* packet template, that we use to send */
 #include "templ/templ-payloads.h"     /* UDP packet payloads */
 
 #include "rawsock/rawsock.h"            /* API on top of Linux, Windows, Mac OS X*/

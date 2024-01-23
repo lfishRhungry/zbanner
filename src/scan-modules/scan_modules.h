@@ -13,7 +13,7 @@
 
 #include "../massip/massip-addr.h"
 #include "../proto/proto-preprocess.h"
-#include "../templ/templ-pkt.h"
+#include "../templ/templ-init.h"
 
 
 #define SCAN_MODULE_CLS_LEN            15

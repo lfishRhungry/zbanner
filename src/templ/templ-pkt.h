@@ -1,35 +1,10 @@
-#ifndef TCP_PACKET_H
-#define TCP_PACKET_H
-#include <stdio.h>
-#include <stdint.h>
-#include "../massip/massip-addr.h"
-
-#define TCP_FLAG_CWR 0B10000000
-#define TCP_FLAG_ECE 0B01000000
-#define TCP_FLAG_URG 0B00100000
-#define TCP_FLAG_ACK 0B00010000
-#define TCP_FLAG_PSH 0B00001000
-#define TCP_FLAG_RST 0B00000100
-#define TCP_FLAG_SYN 0B00000010
-#define TCP_FLAG_FIN 0B00000001
-
-#define TCP_SEQNO(px,i) (px[i+4]<<24|px[i+5]<<16|px[i+6]<<8|px[i+7])
-#define TCP_ACKNO(px,i) (px[i+8]<<24|px[i+9]<<16|px[i+10]<<8|px[i+11])
-#define TCP_FLAGS(px,i) (px[(i)+13])
-#define TCP_WIN(px,i) (px[i+14]<<8|px[i+15]) /*calc TCP window size*/
-
-#define TCP_HAS_FLAG(px,i,flag) ((TCP_FLAGS((px),(i)) & (flag)) == (flag))
-
-struct PayloadsUDP;
-struct TemplateOptions;
-
 /**
- * Does a regression test of this module.
- * @return
- *      1 on failure
- *      0 on success
- */
-int template_selftest(void);
+ * Store the declare of struct and corresponding funcs
+*/
+#ifndef TCP_PKT_H
+#define TCP_PKT_H
+
+#include <stdint.h>
 
 enum TemplateProtocol {
     Proto_TCP,
@@ -44,26 +19,6 @@ enum TemplateProtocol {
     //Proto_Custom,
     Proto_Count
 };
-
-/**
- * transfer port from blackrock random algo to real port
- * and get what protocol this port belong to.
- * @param port port from blackrock random algo
- * @return enum TemplateProtocol or zero if invalid.
-*/
-unsigned
-get_real_protocol_and_port(unsigned *port);
-
-struct TemplatePayload {
-    unsigned length;
-    unsigned checksum;
-    unsigned char buf[1500];
-};
-
-unsigned
-udp_checksum2(const unsigned char *px, unsigned offset_ip,
-              unsigned offset_tcp, size_t tcp_length);
-
 /**
  * Describes a packet template. The scan packets we transmit are based on a
  * a template containing most of the data, and we fill in just the necessary
@@ -107,123 +62,7 @@ struct TemplateSet
 };
 
 struct TemplateSet templ_copy(const struct TemplateSet *templset);
-// struct TemplatePacket templ_copy(const struct TemplatePacket *tmpl_pkt);
 
-
-
-/**
- * Initialize the "template" packets. As we spew out probes, we simply make
- * minor adjustments to the template, such as changing the target IP
- * address or port number
- *
- * @param templset
- *      The template we are creating.
- * @param source_ip
- *      Our own IP address that we send packets from. The caller will have
- *      retrieved this automatically from the network interface/adapter, or
- *      the user will have set this with --source-ip parameter.
- * @param source_mac
- *      Our own MAC address. Gotten automatically from the network adapter,
- *      or on the commandline with --source-mac parameter
- * @param router_mac
- *      The MAC address of the local router/gateway, which will be placed in
- *      the Ethernet destination address field. This is gotten by ARPing
- *      the local router, or by --router-mac configuration parameter.
- * @param data_link
- *      The OSI layer 2 protocol, as defined in <pcap.h> standard.
- *       1 = Ethernet
- *      12 = Raw IP (no data link)
- */
-void
-template_packet_init(
-    struct TemplateSet *templset,
-    macaddress_t source_mac,
-    macaddress_t router_mac_ipv4,
-    macaddress_t router_mac_ipv6,
-    struct PayloadsUDP *udp_payloads,
-    struct PayloadsUDP *oproto_payloads,
-    int data_link,
-    uint64_t entropy,
-    const struct TemplateOptions *templ_opts);
-
-void
-template_fill_target_ipv4_hdr(struct TemplatePacket *tmpl_pkt,
-    ipv4address ip_them, ipv4address ip_me, unsigned entropy,
-    unsigned char *px, size_t sizeof_px);
-
-/**
- * Sets the target/destination IP address of the packet, the destination port
- * number, and other bits of interest about the packet, such as a unique
- * sequence number. The template can contain things like IP or TCP options
- * with specific values. The program contains several built-in templates,
- * but they can also be read from a file.
- *
- * @param templset
- *      A template created by "template_packet_init()" and further modified
- *      by various configuration parameters.
- * @param ip
- *      The target/destination IPv4 address.
- * @param port
- *      The TCP port number, or port number from another protocol that will
- *      be shifted into the appropriate range. We actually build six base
- *      templates, one for each of these six protocols.
- *      [     0.. 65535] = TCP port number
- *      [ 65536..131071] = UDP port number
- *      [131072..196607] = SCTP port number
- *      [     196608   ] = ICMP
- *      [     196609   ] = ARP
- *      [     196610   ] = IP
- *      [      more    ] = custom
- * @param seqno
- *      On TCP, this will be the desired sequence number, which the caller
- *      will create from SYN-cookies. Other protocols may use this in a
- *      different manner. For example, if the UDP port is 161, then
- *      this will be the transaction ID of the SNMP request template.
- */
-void
-template_set_target_ipv4(
-    struct TemplateSet *templset,
-    ipv4address ip_them, unsigned port_them,
-    ipv4address ip_me, unsigned port_me,
-    unsigned seqno,
-    unsigned char *px, size_t sizeof_px, size_t *r_length);
-
-void
-template_set_target_ipv6(
-    struct TemplateSet *templset,
-    ipv6address ip_them, unsigned port_them,
-    ipv6address ip_me, unsigned port_me,
-    unsigned seqno,
-    unsigned char *px, size_t sizeof_px, size_t *r_length);
-
-
-/**
- * Create a TCP packet containing a payload, based on the original
- * template used for the SYN
- */
-size_t
-tcp_create_packet(
-        struct TemplatePacket *pkt,
-        ipaddress ip_them, unsigned port_them,
-        ipaddress ip_me, unsigned port_me,
-        unsigned seqno, unsigned ackno,
-        unsigned flags,
-        const unsigned char *payload, size_t payload_length,
-        unsigned char *px, size_t px_length);
-
-/**
- * Set's the TCP "window" field. The purpose is to cause the recipient
- * to fragment data on the response, thus evading IDS that triggers on
- * out going packets
- */
-void
-tcp_set_window(unsigned char *px, size_t px_length, unsigned window);
-
-
-void template_set_ttl(struct TemplateSet *tmplset, unsigned ttl);
-// void template_set_ttl(struct TemplatePacket *tmpl_pkt, unsigned ttl);
-
-void template_set_vlan(struct TemplateSet *tmplset, unsigned vlan);
-// void template_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan);
+struct TemplatePacket templ_packet_copy(const struct TemplatePacket *tmpl_pkt);
 
 #endif

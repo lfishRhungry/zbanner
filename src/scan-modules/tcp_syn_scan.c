@@ -1,9 +1,10 @@
 #include <stdlib.h>
 
 #include "tcp_syn_scan.h"
+#include "../cookie.h"
+#include "../templ/templ-tcp.h"
 #include "../util/mas-safefunc.h"
 #include "../util/mas-malloc.h"
-#include "../cookie.h"
 #include "../util/unusedparm.h"
 // #include "../templ/templ-tcp.h"
 
