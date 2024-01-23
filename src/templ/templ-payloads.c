@@ -742,7 +742,6 @@ payloads_read_pcap(const char *filename,
          * Make sure it has UDP
          */
         switch (parsed.found) {
-            case FOUND_DNS:
             case FOUND_UDP:
                 /*
                  * Kludge: mark the port in the format the API wants

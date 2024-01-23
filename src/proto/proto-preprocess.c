@@ -173,9 +173,6 @@ parse_udp:
         info->app_length = length - info->app_offset;
         assert(info->app_length < 2000);
 
-        if (info->port_dst == 53 || info->port_src == 53) {
-            goto parse_dns;
-        }
         return 1;
     }
 
@@ -203,12 +200,6 @@ parse_sctp:
         info->app_offset = offset + 12;
         info->app_length = length - info->app_offset;
         assert(info->app_length < 2000);
-        return 1;
-    }
-
-parse_dns:
-    {
-        VERIFY_REMAINING(8, FOUND_DNS);
         return 1;
     }
 

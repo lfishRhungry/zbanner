@@ -53,7 +53,6 @@ packet_trace(FILE *fp, double pt_start, const unsigned char *px, size_t length, 
             fprintf(fp, "%s (%5.4f) ARP  %-21s > %-21s %s\n", direction,
                     timestamp - pt_start, from, to, sz_type);
             break;
-        case FOUND_DNS:
         case FOUND_UDP:
             fprintf(fp, "%s (%5.4f) UDP  %-21s > %-21s \n", direction,
                     timestamp - pt_start, from, to);
