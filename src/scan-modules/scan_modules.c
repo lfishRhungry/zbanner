@@ -4,10 +4,12 @@
 #include "scan_modules.h"
 
 extern struct ScanModule TcpSynScan;
+extern struct ScanModule IcmpEchoScan;
 //! REGIST YOUR SCAN MODULE HERE
 
 static struct ScanModule *scan_modules_list[] = {
     &TcpSynScan, /*default scan module*/
+	&IcmpEchoScan,
 	//! REGIST YOUR SCAN MODULE HERE
 };
 

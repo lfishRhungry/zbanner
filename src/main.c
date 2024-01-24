@@ -672,12 +672,13 @@ int main(int argc, char *argv[])
         if (rangelist_count(&xconf->targets.ports) == 0) {
             if (has_target_ports) {
                 LOG(0, " [hint] all ports were removed by exclusion ranges\n");
+                return 1;
             } else {
-                LOG(0, "FAIL: no ports were specified\n");
-                LOG(0, " [hint] try something like \"-p80,8000-9000\"\n");
-                LOG(0, " [hint] try something like \"--ports 0-65535\"\n");
+                LOG(0, "NOTE: no ports were specified, use default port TCP:80 .\n");
+                LOG(0, " [hint] ignored if the ScanModule does not need port. (eg. IcmpEchoScan)\n");
+                LOG(0, " [hint] or try something like \"-p 80,8000-9000\"\n");
+                massip_add_port_string(&xconf->targets, "80", 0);
             }
-            return 1;
         }
         return main_scan(xconf);
 

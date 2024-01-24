@@ -265,11 +265,21 @@ icmp_create_timestamp_packet(
 }
 
 unsigned
-try_get_cookie_from_icmp(struct PreprocessedInfo *parsed,const unsigned char *px)
+get_icmp_cookie(const struct PreprocessedInfo *parsed,const unsigned char *px)
 {
     unsigned cookie =  px[parsed->transport_offset+4]<<24
                         | px[parsed->transport_offset+5]<<16
                         | px[parsed->transport_offset+6]<<8
                         | px[parsed->transport_offset+7]<<0;
     return cookie;
+}
+
+unsigned
+get_icmp_type(const struct PreprocessedInfo *parsed) {
+    return parsed->port_src;
+}
+
+unsigned
+get_icmp_code(const struct PreprocessedInfo *parsed) {
+    return parsed->port_dst;
 }

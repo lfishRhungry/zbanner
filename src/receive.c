@@ -235,10 +235,19 @@ receive_thread(void *v)
 
             if (scan_module->dedup_packet_cb(&parsed, entropy,
                     px, length, &dedup_type)) {
-
-                if (dedup_is_duplicate(dedup, ip_them, port_them,
-                        ip_me, port_me, dedup_type)) {
-                    continue;
+                /**
+                 * dedup ICMP without port
+                */
+                if (parsed.found == FOUND_ICMP) {
+                    if (dedup_is_duplicate(dedup, ip_them, 0,
+                            ip_me, 0, dedup_type)) {
+                        continue;
+                    }
+                } else {
+                    if (dedup_is_duplicate(dedup, ip_them, port_them,
+                            ip_me, port_me, dedup_type)) {
+                        continue;
+                    }
                 }
             }
         }

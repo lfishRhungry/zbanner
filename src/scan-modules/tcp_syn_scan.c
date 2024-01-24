@@ -81,7 +81,7 @@ tcpsyn_dedup_packet(
     const unsigned char *px, unsigned sizeof_px,
     unsigned *type)
 {
-    //do not differenciate in type
+    //just one type for tcpsyn
     *type = SCAN_MODULE_DEFAULT_DEDUP_TYPE;
     return 1;
 }

@@ -1477,7 +1477,7 @@ static int SET_usage(struct Xconf *xconf, const char *name, const char *value)
     printf("\n");
     printf("Welcome to "XTATE_FIRST_UPPER_NAME"!\n");
     printf("\n");
-    printf("usage: "XTATE_NAME" [options] [<IP|RANGE>... -p PORT[,PORT...]]\n");
+    printf("usage: "XTATE_NAME" [options] [-range <IP|RANGE>... -p PORT[,PORT...]]\n");
     printf("\n");
     printf("original examples in xtate:\n");
     printf("    "XTATE_NAME" -p 80,8000-8100 10.0.0.0/8 --rate=10000\n");
