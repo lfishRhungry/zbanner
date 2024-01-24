@@ -27,7 +27,7 @@
 #include "../util/mas-malloc.h"
 #include "../stub/stub-pcap-dlt.h" /* data link types, like NULL, RAW, or ETHERNET */
 
-static unsigned char default_tcp_template[] =
+unsigned char default_tcp_template[] =
     "\0\1\2\3\4\5"  /* Ethernet: destination */
     "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
     "\x08\x00"      /* Ethernet type: IPv4 */
@@ -175,35 +175,6 @@ static unsigned char default_arp_template[] =
     "\x00\x00\x00\x00"
 ;
 
-
-/***************************************************************************
- * Checksum the IP header. This is a "partial" checksum, so we
- * don't reverse the bits ~.
- ***************************************************************************/
-static unsigned
-ip_header_checksum(const unsigned char *px, unsigned offset, unsigned max_offset)
-{
-    unsigned header_length = (px[offset]&0xF) * 4;
-    unsigned xsum = 0;
-    unsigned i;
-
-    /* restrict check only over packet */
-    if (max_offset > offset + header_length)
-        max_offset = offset + header_length;
-
-    /* add all the two-byte words together */
-    xsum = 0;
-    for (i = offset; i < max_offset; i += 2) {
-        xsum += px[i]<<8 | px[i+1];
-    }
-
-    /* if more than 16 bits in result, reduce to 16 bits */
-    xsum = (xsum & 0xFFFF) + (xsum >> 16);
-    xsum = (xsum & 0xFFFF) + (xsum >> 16);
-    xsum = (xsum & 0xFFFF) + (xsum >> 16);
-
-    return xsum;
-}
 
 /***************************************************************************
  ***************************************************************************/

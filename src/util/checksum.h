@@ -38,6 +38,13 @@ checksum_ipv4(unsigned ip_src, unsigned ip_dst, unsigned ip_proto, size_t payloa
 unsigned 
 checksum_ipv6(const unsigned char *ip_src, const unsigned char *ip_dst, unsigned ip_proto, size_t payload_length, const void *payload);
 
+/***************************************************************************
+ * Checksum the IP header. This is a "partial" checksum, so we
+ * don't reverse the bits ~.
+ ***************************************************************************/
+unsigned
+ip_header_checksum(const unsigned char *px, unsigned offset, unsigned max_offset);
+
 
 /**
  * Simple unit tests.

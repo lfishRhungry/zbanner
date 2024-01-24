@@ -7,6 +7,8 @@
 #include "../util/bool.h" /* <stdbool.h> */
 #include "../massip/massip-addr.h"
 
+struct TemplateOptions;
+
 #define TCP_FLAG_CWR 0B10000000
 #define TCP_FLAG_ECE 0B01000000
 #define TCP_FLAG_URG 0B00100000
@@ -23,7 +25,6 @@
 
 #define TCP_HAS_FLAG(px,i,flag) ((TCP_FLAGS((px),(i)) & (flag)) == (flag))
 
-struct TemplateOptions;
 
 /**
  * Called during configuration, to apply all the various changes the
@@ -56,8 +57,20 @@ templ_tcp_selftest(void);
  * template used for the SYN
  */
 size_t
+tcp_create_by_template(
+        const struct TemplatePacket *pkt,
+        ipaddress ip_them, unsigned port_them,
+        ipaddress ip_me, unsigned port_me,
+        unsigned seqno, unsigned ackno,
+        unsigned flags,
+        const unsigned char *payload, size_t payload_length,
+        unsigned char *px, size_t px_length);
+
+/**
+ * This is a wrapped func that uses global_tmplset to create tcp packet.
+*/
+size_t
 tcp_create_packet(
-        struct TemplatePacket *pkt,
         ipaddress ip_them, unsigned port_them,
         ipaddress ip_me, unsigned port_me,
         unsigned seqno, unsigned ackno,

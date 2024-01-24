@@ -72,6 +72,7 @@
 
 #include "templ-tcp.h"
 #include "templ-opts.h"
+#include "../globals.h"
 #include "../util/logger.h"
 #include "../util/checksum.h"
 #include "../proto/proto-preprocess.h"
@@ -1686,11 +1687,9 @@ tcp_set_window(unsigned char *px, size_t px_length, unsigned window)
     px[offset + 17] = (unsigned char)(xsum>>0);
 }
 
-/***************************************************************************
- ***************************************************************************/
 size_t
-tcp_create_packet(
-        struct TemplatePacket *tmpl,
+tcp_create_by_template(
+        const struct TemplatePacket *tmpl,
         ipaddress ip_them, unsigned port_them,
         ipaddress ip_me, unsigned port_me,
         unsigned seqno, unsigned ackno,
@@ -1698,6 +1697,11 @@ tcp_create_packet(
         const unsigned char *payload, size_t payload_length,
         unsigned char *px, size_t px_length)
 {
+    if (tmpl->proto != Proto_TCP) {
+            fprintf(stderr, "tcp_create_packet: need a Proto_TCP TemplatePacket.\n");
+            return 0;
+    }
+
     uint64_t xsum;
   
     if (ip_them.version == 4) {
@@ -1882,4 +1886,19 @@ tcp_create_packet(
 
         return offset_app + payload_length;
     }
+}
+
+size_t
+tcp_create_packet(
+        ipaddress ip_them, unsigned port_them,
+        ipaddress ip_me, unsigned port_me,
+        unsigned seqno, unsigned ackno,
+        unsigned flags,
+        const unsigned char *payload, size_t payload_length,
+        unsigned char *px, size_t px_length)
+{
+    return tcp_create_by_template(&global_tmplset->pkts[Proto_TCP],
+        ip_them, port_them, ip_me, port_me,
+        seqno, ackno, flags,
+        payload, payload_length, px, px_length);
 }

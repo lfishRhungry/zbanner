@@ -76,12 +76,12 @@ receive_thread(void *v)
     struct RxThread *parms = (struct RxThread *)v;
     const struct Xconf *xconf = parms->xconf;
     struct Adapter *adapter = xconf->nic.adapter;
-    struct TemplateSet tmplset = templ_copy(xconf->tmplset);
     int data_link = stack_if_datalink(adapter);
     struct DedupTable *dedup;
     struct PcapFile *pcapfile = NULL;
     uint64_t entropy = xconf->seed;
     struct stack_t *stack = xconf->stack;
+    // struct TemplateSet tmplset = templ_copy(xconf->tmplset);
 
     
     
@@ -291,7 +291,7 @@ receive_thread(void *v)
                         exit(0);
                     
                     size_t rsp_len = 0;
-                    need_response = scan_module->response_packet_cb(&tmplset, &parsed, entropy,
+                    need_response = scan_module->response_packet_cb(&parsed, entropy,
                         px, length, response->px, sizeof(response->px), &rsp_len, idx);
 
                     response->length = rsp_len;

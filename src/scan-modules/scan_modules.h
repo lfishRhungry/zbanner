@@ -13,7 +13,6 @@
 
 #include "../massip/massip-addr.h"
 #include "../proto/proto-preprocess.h"
-#include "../templ/templ-init.h"
 
 
 #define SCAN_MODULE_CLS_LEN            15
@@ -32,7 +31,7 @@
  * @param tmplset packet template Xtate had prepared most of transmit protocol.
  * @return false for initing failed and exit process.
 */
-typedef int (*scan_modules_global_init)(struct TemplateSet *tmplset);
+typedef int (*scan_modules_global_init)();
 
 /**
  * @return false for initing failed and exit process.
@@ -51,7 +50,6 @@ typedef int (*scan_modules_txthread_init)();
 /**
  * Happens in Tx Thread
  * 
- * @param tmplset packet template Xtate had prepared most of transmit protocol.
  * @param cur_proto what TemplateProto this port belongs to.
  * @param ip_them IP of this target.
  * @param port_them Port of this target (if port is meaningful).
@@ -67,7 +65,7 @@ typedef int (*scan_modules_txthread_init)();
  * @return true for this target in tx_thread again.
 */
 typedef int (*scan_modules_make_new_packet)(
-    struct TemplateSet *tmplset, unsigned cur_proto,
+    unsigned cur_proto,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
     uint64_t entropy, unsigned index,
@@ -152,7 +150,6 @@ typedef int (*scan_modules_handle_packet)(
 /**
  * Step 5 Response
  * 
- * @param tmplset packet template Xtate had prepared most of transmit protocol.
  * @param parsed Parsed info about this packet.
  * @param entropy a rand seed (generated or user-specified).
  * @param px point to packet data.
@@ -165,7 +162,6 @@ typedef int (*scan_modules_handle_packet)(
  * @param return true if need to do more response.
 */
 typedef int (*scan_modules_make_response_packet)(
-    struct TemplateSet *tmplset,
     struct PreprocessedInfo *parsed, uint64_t entropy,
     const unsigned char *px, unsigned sizeof_px,
     unsigned char *r_px, unsigned sizeof_r_px,

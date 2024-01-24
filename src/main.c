@@ -88,6 +88,12 @@ time_t global_now;
 
 uint64_t usec_start;
 
+/**
+ * This is for some wrappered functions that use TemplateSet to create packets.
+ * Do not modify it unless you know what u are doing.
+*/
+struct TemplateSet *global_tmplset;
+
 /***************************************************************************
  * We trap the <ctrl-c> so that instead of exiting immediately, we sit in
  * a loop for a few seconds waiting for any late response. But, the user
@@ -218,6 +224,10 @@ main_scan(struct Xconf *xconf)
         * such as the IP address and so on.
         */
     xconf->tmplset = &tmplset;
+    /*
+        * Set TemplateSet to Global for some wrappered functions to create packet.
+    */
+    global_tmplset = &tmplset;
     template_packet_init(
                 xconf->tmplset,
                 xconf->nic.source_mac,
@@ -252,7 +262,7 @@ main_scan(struct Xconf *xconf)
      * Do global init for ScanModule
      */
     if (xconf->scan_module->global_init_cb){
-        if (!xconf->scan_module->global_init_cb(xconf->tmplset)) {
+        if (!xconf->scan_module->global_init_cb()) {
 
             LOG(0, "FAIL: errors happened in global init of ScanModule.\n");
             exit(1);

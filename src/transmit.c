@@ -60,13 +60,13 @@ transmit_thread(void *v) /*aka. scanning_thread() */
     uint64_t count_ipv4 = rangelist_count(&xconf->targets.ipv4);
     uint64_t count_ipv6 = range6list_count(&xconf->targets.ipv6).lo;
     struct Throttler *throttler = parms->throttler;
-    struct TemplateSet tmplset = templ_copy(xconf->tmplset);
     struct Adapter *adapter = xconf->nic.adapter;
     uint64_t packets_sent = 0;
     unsigned increment = xconf->shard.of * xconf->tx_thread_count;
     uint64_t seed = xconf->seed;
     uint64_t repeats = 0; /* --infinite repeats */
     uint64_t entropy = xconf->seed;
+    // struct TemplateSet tmplset = templ_copy(xconf->tmplset);
 
     /* Wait to make sure receive_thread is ready */
     pixie_usleep(1000000);
@@ -255,7 +255,7 @@ infinite:
             size_t packet_length = 0;
 
             unsigned send_again = xconf->scan_module->make_packet_cb(
-                &tmplset, port_proto,
+                port_proto,
                 ip_them, port_them,
                 ip_me, port_me,
                 entropy, send_idx_for_a_target,
