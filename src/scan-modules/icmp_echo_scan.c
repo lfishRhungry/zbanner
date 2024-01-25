@@ -6,7 +6,7 @@
 #include "../util/mas-safefunc.h"
 #include "../util/mas-malloc.h"
 
-extern struct ScanModule TcpSynScan; /*for internal x-ref*/
+extern struct ScanModule IcmpEchoScan; /*for internal x-ref*/
 
 static int
 icmpecho_make_packet(
