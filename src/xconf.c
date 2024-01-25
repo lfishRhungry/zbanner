@@ -1255,6 +1255,21 @@ static int SET_echo(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
+static int SET_lan_mode(struct Xconf *xconf, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->is_lan_mode||xconf->echo_all)
+            fprintf(xconf->echo, "LAN mode = %s\n", xconf->is_lan_mode?"true":"false");
+        return 0;
+    }
+    
+    xconf->is_lan_mode = parseBoolean(value);
+    SET_router_mac(xconf, "router-mac", "ff-ff-ff-ff-ff-ff");
+    
+    return CONF_OK;
+}
 
 static int SET_rate(struct Xconf *xconf, const char *name, const char *value)
 {
@@ -1832,6 +1847,7 @@ struct ConfigParameter config_parameters[] = {
     {"router-ip",       SET_router_ip,          0,      {0}},
     {"router-mac",      SET_router_mac,         0,      {"gateway-mac", "dst-mac", "router-mac-ipv4", "router-mac-ipv6",0}},
     {"adapter-vlan",    SET_adapter_vlan,       F_NUMABLE, {"vlan",0}},
+    {"lan-mode",        SET_lan_mode,                F_BOOL, {"local", "lan",0}},
 
     {"OPERATION:",      SET_delimiter,          0,      {0}},
 

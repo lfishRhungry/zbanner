@@ -82,7 +82,9 @@ struct ScanModule ArpReqScan = {
         "ArpReqScan does not support ipv6 target because ipv6 use neighbor "
         "discovery messages of Neighbor Dicovery Protocol(NDP) implemented by ICMPv6 "
         " to dicovery neighbors and their mac addr. ArpReqScan will ignore ipv6 "
-        "targets.\n",
+        "targets.\n"
+        "NOTE: ArpReqScan works in local area network only, so remember to use "
+        "`--lan-mode` or set `--router-mac ff-ff-ff-ff-ff-ff`.",
 
     .global_init_cb = NULL,
     .rx_thread_init_cb = NULL,
