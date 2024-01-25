@@ -232,22 +232,18 @@ receive_thread(void *v)
         if (scan_module->dedup_packet_cb && !xconf->is_nodedup) {
 
             unsigned dedup_type = SCAN_MODULE_DEFAULT_DEDUP_TYPE;
+            ipaddress dedup_ip_me = ip_me;
+            ipaddress dedup_ip_them = ip_them;
+            unsigned dedup_port_me = port_me;
+            unsigned dedup_port_them = port_them;
 
-            if (scan_module->dedup_packet_cb(&parsed, entropy,
-                    px, length, &dedup_type)) {
-                /**
-                 * dedup ICMP without port
-                */
-                if (parsed.found == FOUND_ICMP) {
-                    if (dedup_is_duplicate(dedup, ip_them, 0,
-                            ip_me, 0, dedup_type)) {
-                        continue;
-                    }
-                } else {
-                    if (dedup_is_duplicate(dedup, ip_them, port_them,
-                            ip_me, port_me, dedup_type)) {
-                        continue;
-                    }
+            if (scan_module->dedup_packet_cb(&parsed, entropy, px, length,
+                &dedup_ip_them, &dedup_port_them,
+                &dedup_ip_me, &dedup_port_me, &dedup_type)) {
+                /** ports are all `zero` in default when receive ICMP packet*/
+                if (dedup_is_duplicate(dedup, dedup_ip_them, dedup_port_them,
+                        dedup_ip_me, dedup_port_me, dedup_type)) {
+                    continue;
                 }
             }
         }

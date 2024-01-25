@@ -115,14 +115,20 @@ typedef int (*scan_modules_validate_packet)(
  * @param entropy a rand seed (generated or user-specified).
  * @param px point to packet data.
  * @param sizeof_px length of packet data.
- * @param type dedup type for keep same (ip_them, port_them, ip_me, port_me) packet in diff type.
+ * @param ip_them for dedup, modify it when use other value.
+ * @param port_them for dedup, modify it when use other value.
+ * @param ip_me for dedup, modify it when use other value.
+ * @param port_me for dedup, modify it when use other value.
+ * @param type dedup type, modify it when use other value.
+ * useful while differ from same (ip_them, port_them, ip_me, port_me).
  * 
  * @return false for nodedup
 */
 typedef int (*scan_modules_dedup_packet)(
     struct PreprocessedInfo *parsed, uint64_t entropy,
     const unsigned char *px, unsigned sizeof_px,
-    unsigned *type);
+    ipaddress *ip_them, unsigned *port_them,
+    ipaddress *ip_me, unsigned *port_me, unsigned *type);
 
 /**
  * Step 4 Handle

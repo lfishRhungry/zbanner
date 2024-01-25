@@ -69,10 +69,9 @@ static int
 icmpecho_dedup_packet(
     struct PreprocessedInfo *parsed, uint64_t entropy,
     const unsigned char *px, unsigned sizeof_px,
-    unsigned *type)
+    ipaddress *ip_them, unsigned *port_them,
+    ipaddress *ip_me, unsigned *port_me, unsigned *type)
 {
-    //just one type for icmpecho
-    *type = SCAN_MODULE_DEFAULT_DEDUP_TYPE;
     return 1;
 }
 
