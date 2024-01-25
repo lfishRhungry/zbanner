@@ -23,13 +23,13 @@ output_tmp(
     unsigned count = 0;
 
     if (parsed->found==FOUND_ICMP || parsed->found==FOUND_ARP) {
-        char fmt[] = "%s on host: %-15s because of %-8s";
+        char fmt[] = "%s on host: %-15s because of \"%s\"";
         count = fprintf(stdout, fmt,
             successed?"Success":"Failure",
             ip_them_fmt.string,
             classification);
     } else {
-        char fmt[] = "%s on host: %-15s port: %-5u because of %s";
+        char fmt[] = "%s on host: %-15s port: %-5u because of \"%s\"";
         count = fprintf(stdout, fmt,
             successed?"Success":"Failure",
             ip_them_fmt.string, port_them,
