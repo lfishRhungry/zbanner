@@ -22,7 +22,7 @@ output_tmp(
 
     unsigned count = 0;
 
-    if (parsed->found==FOUND_ICMP) {
+    if (parsed->found==FOUND_ICMP || parsed->found==FOUND_ARP) {
         char fmt[] = "%s on host: %-15s because of %-8s";
         count = fprintf(stdout, fmt,
             successed?"Success":"Failure",

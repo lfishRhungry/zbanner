@@ -172,16 +172,6 @@ main_scan(struct Xconf *xconf)
     range = count_ips * count_ports;
 
     /*
-     * If doing an ARP scan, then don't allow port scanning
-     */
-    if (rangelist_is_contains(&xconf->targets.ports, Templ_ARP)) {
-        if (xconf->targets.ports.count != 1) {
-            LOG(0, "FAIL: cannot arpscan and portscan at the same time\n");
-            return 1;
-        }
-    }
-
-    /*
      * If the IP address range is very big, then require the
      * user apply an exclude range
      */
@@ -675,7 +665,7 @@ int main(int argc, char *argv[])
                 return 1;
             } else {
                 LOG(0, "NOTE: no ports were specified, use default port TCP:80 .\n");
-                LOG(0, " [hint] ignored if the ScanModule does not need port. (eg. IcmpEchoScan)\n");
+                LOG(0, " [hint] ignored if the ScanModule does not need port. (eg. icmp or arp)\n");
                 LOG(0, " [hint] or try something like \"-p 80,8000-9000\"\n");
                 massip_add_port_string(&xconf->targets, "80", 0);
             }
