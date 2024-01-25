@@ -47,8 +47,8 @@
 #define ICMPv6_CODE_ECHO_REPLY 0
 
 /**
- * @param cookie we set cookie in the `other data of icmp header`(unused).
- * Its better to set to zero if not icmp echo.
+ * @param tmpl TemplatePacket of ICMP.
+ * @param cookie we set cookie on `Identifier` and `Sequence Number` fields.
  * @param ip_id just for ipv4 and could set it randomly.
  * @param ttl it is for ipv4's ttl or ipv6's hop limit.
  * @return len of packet generated.
@@ -62,8 +62,7 @@ icmp_create_by_template(
 
 /**
  * This is a wrapped func that uses global_tmplset to create icmp echo packet.
- * @param cookie we set cookie in the `unused` of ICMPv4
- * or `identifier` and `sequence number` of ICMPv6.
+ * @param cookie we set cookie on `Identifier` and `Sequence Number` fields.
  * @param ip_id just for ipv4 and could set it randomly.
  * @param ttl it is for ipv4's ttl or ipv6's hop limit.
  * @return len of packet generated.
@@ -76,8 +75,7 @@ icmp_create_echo_packet(
 
 /**
  * This is a wrapped func that uses global_tmplset to create icmp icmp packet.
- * @param cookie we set cookie in the `unused` of ICMPv4
- * or `identifier` and `sequence number` of ICMPv6.
+ * @param cookie we set cookie on `Identifier` and `Sequence Number` fields.
  * @param ip_id just for ipv4 and could set it randomly.
  * @param ttl it is for ipv4's ttl or ipv6's hop limit.
  * @return len of packet generated.
@@ -89,8 +87,7 @@ icmp_create_timestamp_packet(
     unsigned char *px, size_t sizeof_px);
 
 /**
- * Try to get cookie from the `unused` of ICMPv4
- * or `identifier` and `sequence number` of ICMPv6.
+ * Try to get cookie from `Identifier` and `Sequence Number` fields.
 */
 unsigned
 get_icmp_cookie(const struct PreprocessedInfo *parsed,const unsigned char *px);

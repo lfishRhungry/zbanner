@@ -1698,7 +1698,7 @@ tcp_create_by_template(
         unsigned char *px, size_t px_length)
 {
     if (tmpl->proto != Proto_TCP) {
-            fprintf(stderr, "tcp_create_packet: need a Proto_TCP TemplatePacket.\n");
+            fprintf(stderr, "tcp_create_by_template: need a Proto_TCP TemplatePacket.\n");
             return 0;
     }
 

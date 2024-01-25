@@ -5,7 +5,7 @@
 #include "../globals.h"
 #include "../util/checksum.h"
 
-/*ICMP
+/* Generic ICMPv4 according to RFC792
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -15,6 +15,31 @@
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |      Internet Header + 64 bits of Original Data Datagram      |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+*/
+
+/* Generic ICMPv6 according to RFC4443
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |     Type      |     Code      |          Checksum             |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                                                               |
+      +                         Message Body                          +
+      |                                                               |
+*/
+
+/* echo or echo reply ICMP(v4/v6) according to RFC792 and RFC4443.
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |     Type      |     Code      |          Checksum             |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |           Identifier          |        Sequence Number        |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   |     Data ...
+   +-+-+-+-+-
+
+   So we set cookie on `Identifier` and `Sequence Number` fields when echoing.
 */
 
 static size_t
@@ -228,7 +253,7 @@ icmp_create_by_template(
 {
     if (tmpl->proto != Proto_ICMP_ping
         && tmpl->proto != Proto_ICMP_timestamp) {
-            fprintf(stderr, "icmp_create_packet: need a Proto_ICMP_ping or Proto_ICMP_timestamp TemplatePacket.\n");
+            fprintf(stderr, "icmp_create_by_template: need a Proto_ICMP_ping or Proto_ICMP_timestamp TemplatePacket.\n");
             return 0;
     }
 
