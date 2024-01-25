@@ -524,7 +524,7 @@ parse_linktype:
         case 1:     goto parse_ethernet;
         case 12:
             switch (px[offset]>>4) {
-		case 4: goto parse_ipv4;
+        case 4: goto parse_ipv4;
                 case 6: goto parse_ipv6;
             }
             return 0;

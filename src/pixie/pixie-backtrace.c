@@ -24,20 +24,20 @@ char global_self[512] = "";
 static void
 handle_segfault(int sig)
 {
-	void *func[BACKTRACE_SIZE];
-	char **symb = NULL;
-	int size;
+    void *func[BACKTRACE_SIZE];
+    char **symb = NULL;
+    int size;
 
     printf("======================================================================\n");
     printf(" Segmentation fault: please post this backtrace to:\n");
     printf(" "XTATE_GITHUB_ISSUES"\n");
     printf("======================================================================\n");
-	size = backtrace(func, BACKTRACE_SIZE);
-	symb = backtrace_symbols(func, size);
-	while (size > 0) {
+    size = backtrace(func, BACKTRACE_SIZE);
+    symb = backtrace_symbols(func, size);
+    while (size > 0) {
         const char *symbol = symb[size - 1];
         char foo[1024];
-		printf("%d: [%s]\n", size, symbol);
+        printf("%d: [%s]\n", size, symbol);
         if (strstr(symbol, "[0x")) {
             char *p = strstr(symbol, "[0x") + 1;
             char *pp = strchr(p, ']');
@@ -49,8 +49,8 @@ handle_segfault(int sig)
             if (system(foo) == -1)
                 printf("(addr2line missing)\n");
         }
-		size --;
-	}
+        size --;
+    }
     exit(1);
     return;
 }
@@ -207,7 +207,7 @@ pixie_backtrace_init(const char *self)
         }
     }
 
-	//signal(SIGSEGV, handle_segfault);
+    //signal(SIGSEGV, handle_segfault);
 }
 #else
 void

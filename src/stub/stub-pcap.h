@@ -184,10 +184,10 @@ struct PcapFunctions {
     PCAP_DEV_NEXT           dev_next;
 
     /* Windows-only functions */
-	PCAP_SENDQUEUE_ALLOC	sendqueue_alloc;
-	PCAP_SENDQUEUE_TRANSMIT	sendqueue_transmit;
-	PCAP_SENDQUEUE_DESTROY	sendqueue_destroy;
-	PCAP_SENDQUEUE_QUEUE	sendqueue_queue;
+    PCAP_SENDQUEUE_ALLOC    sendqueue_alloc;
+    PCAP_SENDQUEUE_TRANSMIT    sendqueue_transmit;
+    PCAP_SENDQUEUE_DESTROY    sendqueue_destroy;
+    PCAP_SENDQUEUE_QUEUE    sendqueue_queue;
 
     PCAP_CREATE              create;
     PCAP_SET_SNAPLEN         set_snaplen;

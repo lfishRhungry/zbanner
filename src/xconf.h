@@ -166,13 +166,13 @@ struct Xconf
      */
     double max_rate;
 
-	/**
+    /**
      * application probe/request for stateless mode
     */
     struct StatelessProbe *stateless_probe;
     char stateless_probe_args[STATELESS_PROBE_ARGS_LEN];
 
-	/**
+    /**
      * Choosed ScanModule
     */
     struct ScanModule *scan_module;

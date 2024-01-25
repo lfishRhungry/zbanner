@@ -503,14 +503,14 @@ main_scan(struct Xconf *xconf)
     uint64_t usec_now = pixie_gettime();
     printf("%u milliseconds elapsed\n", (unsigned)((usec_now - usec_start)/1000));
 
-	/**
+    /**
      * Do close for stateless probe
     */
     if (xconf->stateless_probe && xconf->stateless_probe->close) {
         xconf->stateless_probe->close(xconf);
     }
 
-	/**
+    /**
      * Do close for ScanModule
     */
     if (xconf->scan_module->close_cb) {

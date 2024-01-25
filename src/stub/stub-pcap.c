@@ -3,7 +3,7 @@
  * Programmer(s): Robert David Graham [rdg]
  */
 /*
-	LIBPCAP INTERFACE
+    LIBPCAP INTERFACE
  
  This VERY MESSY code is a hack to load the 'libpcap' library 
  at runtime rather than compile time.
@@ -57,10 +57,10 @@
 
 struct pcap_if {
     struct pcap_if *next;
-    char *name;		/* name to hand to "pcap_open_live()" */
-    char *description;	/* textual description of interface, or NULL */
+    char *name;        /* name to hand to "pcap_open_live()" */
+    char *description;    /* textual description of interface, or NULL */
     void  *addresses;
-    unsigned flags;	/* PCAP_IF_ interface flags */
+    unsigned flags;    /* PCAP_IF_ interface flags */
 };
 
 static void seterr(char *errbuf, const char *msg)
@@ -205,7 +205,7 @@ struct PcapFunctions PCAP = {
 
 static void *my_null(int x, ...)
 {
-	UNUSEDPARM(x);
+    UNUSEDPARM(x);
     printf("%.*s", 0, "a"); /* Remove warnings about no effects */
     return 0;
 }
@@ -222,7 +222,7 @@ static int null_PCAP_SENDPACKET(pcap_t *p, const unsigned char *buf, int size)
     return pcap_sendpacket(p, buf, size);
 #endif
     my_null(3, p, buf, size);
-	return 0;
+    return 0;
 }
 
 static const unsigned char *null_PCAP_NEXT(pcap_t *p, struct pcap_pkthdr *h)
@@ -238,7 +238,7 @@ static int null_PCAP_SETDIRECTION(pcap_t *p, pcap_direction_t d)
 #ifdef STATICPCAP
     return pcap_setdirection(p, d);
 #endif
-	my_null(2, p, d);
+    my_null(2, p, d);
     return 0;
 }
 static const char *null_PCAP_DATALINK_VAL_TO_NAME(int dlt)
@@ -246,7 +246,7 @@ static const char *null_PCAP_DATALINK_VAL_TO_NAME(int dlt)
 #ifdef STATICPCAP
     return pcap_datalink_val_to_name(dlt);
 #endif
-	my_null(1, dlt);
+    my_null(1, dlt);
     return 0;
 }
 static void null_PCAP_PERROR(pcap_t *p, char *prefix)
@@ -255,8 +255,8 @@ static void null_PCAP_PERROR(pcap_t *p, char *prefix)
     pcap_perror(p, prefix);
     return;
 #endif
-	UNUSEDPARM(p);
-	fprintf(stderr, "%s\n", prefix);
+    UNUSEDPARM(p);
+    fprintf(stderr, "%s\n", prefix);
     perror("pcap");
 }
 static const char*null_PCAP_GETERR(pcap_t *p)
@@ -264,8 +264,8 @@ static const char*null_PCAP_GETERR(pcap_t *p)
 #ifdef STATICPCAP
     return pcap_geterr(p);
 #endif
-	UNUSEDPARM(p);
-	return "(unknown)";
+    UNUSEDPARM(p);
+    return "(unknown)";
 }
 static const char *null_PCAP_DEV_NAME(const pcap_if_t *dev)
 {
@@ -286,25 +286,25 @@ static const pcap_if_t *null_PCAP_DEV_NEXT(const pcap_if_t *dev)
 #if defined(WIN32)
 static pcap_send_queue *null_PCAP_SENDQUEUE_ALLOC(size_t size)
 {
-	UNUSEDPARM(size);
-	return 0;
+    UNUSEDPARM(size);
+    return 0;
 }
 static unsigned null_PCAP_SENDQUEUE_TRANSMIT(pcap_t *p, pcap_send_queue *queue, int sync)
 {
-	my_null(3, p, queue, sync);
-	return 0;
+    my_null(3, p, queue, sync);
+    return 0;
 }
 static void null_PCAP_SENDQUEUE_DESTROY(pcap_send_queue *queue) 
 {
-	my_null(1, queue);
-	UNUSEDPARM(queue);
+    my_null(1, queue);
+    UNUSEDPARM(queue);
 }
 static int null_PCAP_SENDQUEUE_QUEUE(pcap_send_queue *queue,
     const struct pcap_pkthdr *pkt_header,
     const unsigned char *pkt_data)
 {
-	my_null(4, queue, pkt_header, pkt_data);
-	return 0;
+    my_null(4, queue, pkt_header, pkt_data);
+    return 0;
 }
 #endif /*WIN32*/
 
@@ -404,16 +404,16 @@ pl->func_err=0, pl->datalink = null_##PCAP_DATALINK;
 #endif
 #endif
     
-    DOLINK(PCAP_CLOSE			, close);
-    DOLINK(PCAP_DATALINK		, datalink);
-    DOLINK(PCAP_DISPATCH		, dispatch);
-    DOLINK(PCAP_FINDALLDEVS		, findalldevs);
-    DOLINK(PCAP_FREEALLDEVS		, freealldevs);
-    DOLINK(PCAP_LIB_VERSION		, lib_version);
-    DOLINK(PCAP_LOOKUPDEV		, lookupdev);
-    DOLINK(PCAP_MAJOR_VERSION	, major_version);
-    DOLINK(PCAP_MINOR_VERSION	, minor_version);
-    DOLINK(PCAP_OPEN_LIVE		, open_live);
+    DOLINK(PCAP_CLOSE            , close);
+    DOLINK(PCAP_DATALINK        , datalink);
+    DOLINK(PCAP_DISPATCH        , dispatch);
+    DOLINK(PCAP_FINDALLDEVS        , findalldevs);
+    DOLINK(PCAP_FREEALLDEVS        , freealldevs);
+    DOLINK(PCAP_LIB_VERSION        , lib_version);
+    DOLINK(PCAP_LOOKUPDEV        , lookupdev);
+    DOLINK(PCAP_MAJOR_VERSION    , major_version);
+    DOLINK(PCAP_MINOR_VERSION    , minor_version);
+    DOLINK(PCAP_OPEN_LIVE        , open_live);
     
     DOLINK(PCAP_OPEN_OFFLINE    , open_offline);
     DOLINK(PCAP_SENDPACKET      , sendpacket);
@@ -431,10 +431,10 @@ pl->func_err=0, pl->datalink = null_##PCAP_DATALINK;
 
     /* windows-only functions that might improve speed */
 #if defined(WIN32)
-	DOLINK(PCAP_SENDQUEUE_ALLOC		, sendqueue_alloc);
-	DOLINK(PCAP_SENDQUEUE_TRANSMIT	, sendqueue_transmit);
-	DOLINK(PCAP_SENDQUEUE_DESTROY	, sendqueue_destroy);
-	DOLINK(PCAP_SENDQUEUE_QUEUE		, sendqueue_queue);
+    DOLINK(PCAP_SENDQUEUE_ALLOC        , sendqueue_alloc);
+    DOLINK(PCAP_SENDQUEUE_TRANSMIT    , sendqueue_transmit);
+    DOLINK(PCAP_SENDQUEUE_DESTROY    , sendqueue_destroy);
+    DOLINK(PCAP_SENDQUEUE_QUEUE        , sendqueue_queue);
 #endif
 
     DOLINK(PCAP_CREATE              , create);

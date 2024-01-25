@@ -6,23 +6,23 @@
 
 
 struct StatelessProbe LzrFtpProbe = {
-	.name = "lzr-ftp",
-	.type = Tcp_Probe,
-	.help_text =
-		"LzrFtp Probe sends no data and identifies FTP service.\n",
-	.global_init = NULL,
-	.thread_init = NULL,
-	.make_payload = &make_no_payload,
-	.get_payload_length = &null_get_payload_length,
-	.get_report_banner = &lzr_ftp_report_banner,
-	.close = NULL
+    .name = "lzr-ftp",
+    .type = Tcp_Probe,
+    .help_text =
+        "LzrFtp Probe sends no data and identifies FTP service.\n",
+    .global_init = NULL,
+    .thread_init = NULL,
+    .make_payload = &make_no_payload,
+    .get_payload_length = &null_get_payload_length,
+    .get_report_banner = &lzr_ftp_report_banner,
+    .close = NULL
 };
 
 size_t
 lzr_ftp_report_banner(ipaddress ip_them, ipaddress ip_me,
-	unsigned port_them, unsigned port_me,
-	const unsigned char *banner, size_t banner_len,
-	unsigned char *report_banner_buf, size_t buf_len)
+    unsigned port_them, unsigned port_me,
+    const unsigned char *banner, size_t banner_len,
+    unsigned char *report_banner_buf, size_t buf_len)
 {
     if (stristr((const char *)banner, "ftp")) {
         memcpy(report_banner_buf, "ftp", strlen("ftp"));

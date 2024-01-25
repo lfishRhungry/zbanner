@@ -36,7 +36,7 @@ static struct StatelessProbe *specified_subprobe;
 
 struct StatelessProbe LzrProbe = {
     .name = "lzr",
-	.type = Tcp_Probe,
+    .type = Tcp_Probe,
     .help_text =
         "LZR Probe is an implement of service identification of LZR. It sends a\n"
         "specified LZR subprobe(handshake) and try to match with all LZR subprobes.\n"
@@ -78,9 +78,9 @@ static int lzr_global_init(const void *Xconf)
 
 static size_t
 lzr_report_banner(ipaddress ip_them, ipaddress ip_me,
-	unsigned port_them, unsigned port_me,
-	const unsigned char *banner, size_t banner_len,
-	unsigned char *report_banner_buf, size_t buf_len)
+    unsigned port_them, unsigned port_me,
+    const unsigned char *banner, size_t banner_len,
+    unsigned char *report_banner_buf, size_t buf_len)
 {
     /**
      * I think STATELESS_BANNER_MAX_LEN is long enough.

@@ -171,7 +171,7 @@ rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
 fail:
     free(rtm);
     if (fd > 0)
-	close(fd);
+    close(fd);
     return -1;
 }
 

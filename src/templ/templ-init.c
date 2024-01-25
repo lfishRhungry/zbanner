@@ -814,8 +814,8 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6, u
             /* FIXME: insert platform dependent value here */
             *(int*)buf = AF_INET6;
             break;
-	case PCAP_DLT_RAW: /* Raw (nothing before IP header) */
-	    break;
+    case PCAP_DLT_RAW: /* Raw (nothing before IP header) */
+        break;
         case PCAP_DLT_ETHERNET: /* Ethernet */
             /* Reset the destination MAC address to be the IPv6 router
              * instead of the IPv4 router, which sometimes are different */
@@ -1012,11 +1012,11 @@ _template_init(
                 tmpl->ipv4.length);
         tmpl->ipv4.offset_ip = 0;
     } else if (data_link_type == PCAP_DLT_ETHERNET) {
-	/* the default, do nothing */
+    /* the default, do nothing */
     } else {
-	LOG(0, "[-] FAILED: bad packet template, unknown data link type\n");
+    LOG(0, "[-] FAILED: bad packet template, unknown data link type\n");
         LOG(0, "    [hint] xtate doesn't know how to format packets for this interface\n");
-	exit(1);
+    exit(1);
     }
 
     /* Now create an IPv6 template based upon the IPv4 template */

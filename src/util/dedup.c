@@ -414,7 +414,7 @@ dedup_selftest(void)
         ip_me.version = 6;
         ip_them.version = 6;
         ip_me.ipv6.hi = 0x12345678;
-	    ip_me.ipv6.lo = 0x12345678;
+        ip_me.ipv6.lo = 0x12345678;
         ip_them.ipv6.hi = 0xabcdef0;
         ip_them.ipv6.lo = 0xabcdef0;
         type = 4;
@@ -427,8 +427,8 @@ dedup_selftest(void)
             ipaddress_formatted_t fmt1 = ipaddress_fmt(ip_them);
             ipaddress_formatted_t fmt2 = ipaddress_fmt(ip_me);
             fprintf(stderr, "[-] [%s]:%u -> [%s]:%u\n", 
-			    fmt1.string, port_them,
-			    fmt2.string, port_me);
+                fmt1.string, port_them,
+                fmt2.string, port_me);
             line = __LINE__;
             goto fail;
         }

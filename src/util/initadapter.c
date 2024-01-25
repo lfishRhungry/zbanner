@@ -156,7 +156,7 @@ initialize_adapter(struct Xconf *xconf)
         } else if (xconf->nic.link_type == PCAP_DLT_NULL) {
             /* If it's a VPN tunnel, then there is no Ethernet MAC address */
             LOG(1, "[+] router-mac-ipv4 = %s\n", "implicit");
-	} else if (xconf->nic.link_type == PCAP_DLT_RAW) {
+    } else if (xconf->nic.link_type == PCAP_DLT_RAW) {
             /* If it's a VPN tunnel, then there is no Ethernet MAC address */
             LOG(1, "[+] router-mac-ipv4 = %s\n", "implicit");
         } else if (macaddress_is_zero(xconf->nic.router_mac_ipv4)) {

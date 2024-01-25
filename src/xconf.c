@@ -267,7 +267,7 @@ static int SET_scan_module_args(struct Xconf *xconf, const char *name, const cha
         return CONF_ERR;
     }
 
-	memcpy(xconf->scan_module_args, value, value_len);
+    memcpy(xconf->scan_module_args, value, value_len);
     return CONF_OK;
 }
 
@@ -290,7 +290,7 @@ static int SET_probe_args(struct Xconf *xconf, const char *name, const char *val
         return CONF_ERR;
     }
 
-	memcpy(xconf->stateless_probe_args, value, value_len);
+    memcpy(xconf->stateless_probe_args, value, value_len);
     return CONF_OK;
 }
 

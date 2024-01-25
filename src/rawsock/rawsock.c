@@ -781,7 +781,7 @@ rawsock_init_adapter(const char *adapter_name,
                 LOG(0, "    [hint] need to sudo or run as root or something\n");
                 goto pcap_error;
             default:
-	            LOG(0, "[-] if(%s): activate:%d: %s\n", adapter_name, err, PCAP.geterr(adapter->pcap));
+                LOG(0, "[-] if(%s): activate:%d: %s\n", adapter_name, err, PCAP.geterr(adapter->pcap));
                 if (err < 0)
                     goto pcap_error;
             }
