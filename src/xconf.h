@@ -43,15 +43,15 @@ struct TemplateOptions;
  */
 enum Operation {
     Operation_Default = 0,          /* nothing specified, so print usage */
-    Operation_ListAdapters = 1,    /* --listif */
-    Operation_Scan = 3,         /* this is what you expect */
-    Operation_DebugIF = 4,          /* --debug if */
-    Operation_ListTargets = 5,         /* -sL */
-    Operation_ReadRange = 7,        /* --readrange */
-    Operation_Echo = 9,             /* --echo */
-    Operation_EchoCidr = 11,        /* --echo-cidr */
-    Operation_ListProbes,          /* --list-probes*/
-    Operation_ListScanModules,         /* --list-modules*/
+    Operation_ListAdapters = 1,     /* list all usable interfaces */
+    Operation_Scan = 3,             /* do scan */
+    Operation_DebugIF = 4,          /* debug the interface */
+    Operation_ListTargets = 5,      /* list all targets uniquely in random */
+    Operation_ReadRange = 7,        /* list all targets in range */
+    Operation_Echo = 9,             /* echo the config used now or all configs with --echo-all */
+    Operation_EchoCidr = 11,        /* list all targets in CIDR */
+    Operation_ListProbes,           /* list all probes */
+    Operation_ListScanModules,      /* list all scan modules */
 };
 
 struct source_t {
