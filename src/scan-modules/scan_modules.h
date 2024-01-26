@@ -25,9 +25,6 @@
 
 /**
  * Do some initialization here if you have to.
- * NOTE: Xtate had init many packet templates. But you can change
- * the template set by specific options.
- * @param tmplset packet template Xtate had prepared most of transmit protocol.
  * @return false for initing failed and exit process.
 */
 typedef int (*scan_modules_global_init)();
@@ -186,6 +183,7 @@ struct ScanModule
 {
     const char *                      name;
     const char *                      description;
+    char *                            scan_args;
     /*for init*/
     scan_modules_global_init          global_init_cb;
     scan_modules_rxthread_init        rx_thread_init_cb;

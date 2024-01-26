@@ -248,6 +248,8 @@ main_scan(struct Xconf *xconf)
         LOG(0, "[-] Default ScanModule `tcpsyn` is chosen because no ScanModule was specified.\n");
     }
 
+    xconf->scan_module->scan_args = xconf->scan_module_args;
+
     /*
      * Do global init for ScanModule
      */
