@@ -187,7 +187,6 @@ struct Xconf
         unsigned is_show_report:1;
     } output;
 
-    unsigned is_lan_mode:1;          /*--lan work in local area network(LAN)*/
     unsigned is_status_ndjson:1;
     unsigned is_pfring:1;       /* --pfring */
     unsigned is_sendq:1;        /* --sendq */

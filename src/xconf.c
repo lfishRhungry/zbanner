@@ -164,13 +164,6 @@ static int SET_stateless_banners(struct Xconf *xconf, const char *name, const ch
     }
     xconf->is_stateless_banners = parseBoolean(value);
 
-    if (xconf->is_stateless_banners) {
-        fprintf(stderr, "FAIL %s: can not specify banners mode and stateless-banners mode at the same time.\n", name);
-        fprintf(stderr, "Hint: banners mode gets banners with TCP\\IP stack in user mode.\n");
-        fprintf(stderr, "Hint: stateless-banners mode gets banners in stateless. \n");
-        return CONF_ERR;
-    }
-
     return CONF_OK;
 }
 
@@ -241,12 +234,10 @@ static int SET_show(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
         if (xconf->output.is_show_failed || xconf->echo_all){
-            fprintf(xconf->echo, "show failed = %s\n",
-                xconf->output.is_show_failed?"true":"false");
+            fprintf(xconf->echo, "show = failed\n");
         }
         if (xconf->output.is_show_report || xconf->echo_all){
-            fprintf(xconf->echo, "show report = %s\n",
-                xconf->output.is_show_report?"true":"false");
+            fprintf(xconf->echo, "show = report\n");
         }
         return 0;
     }
@@ -268,7 +259,7 @@ static int SET_scan_module_args(struct Xconf *xconf, const char *name, const cha
 {
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->scan_module_args || xconf->echo_all){
+        if (xconf->scan_module_args){
             fprintf(xconf->echo, "scan-module-args = %s\n", xconf->scan_module_args);
         }
         return 0;
@@ -287,7 +278,7 @@ static int SET_probe_args(struct Xconf *xconf, const char *name, const char *val
 {
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->stateless_probe_args[0] || xconf->echo_all){
+        if (xconf->stateless_probe_args[0]){
             fprintf(xconf->echo, "stateless-probe-args = %s\n", xconf->stateless_probe_args);
         }
         return 0;
@@ -351,7 +342,7 @@ static int SET_list_target(struct Xconf *xconf, const char *name, const char *va
 
     if (xconf->echo) {
         if (xconf->op==Operation_ListTargets || xconf->echo_all)
-            fprintf(xconf->echo, "list-scan = %s\n",
+            fprintf(xconf->echo, "list-target = %s\n",
                 xconf->op==Operation_ListTargets?"true":"false");
         return 0;
     }
@@ -398,7 +389,7 @@ static int SET_nodedup(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
         if (xconf->is_nodedup || xconf->echo_all) {
-            fprintf(xconf->echo, "nodedup = %s\n", xconf->is_nodedup?"true":"false");
+            fprintf(xconf->echo, "no-dedup = %s\n", xconf->is_nodedup?"true":"false");
         }
        return 0;
     }
@@ -508,7 +499,6 @@ static int SET_thread_count(struct Xconf *xconf, const char *name, const char *v
     if (xconf->echo) {
         if (xconf->tx_thread_count!=1 || xconf->echo_all) {
             fprintf(xconf->echo, "transmit-thread-count = %u\n", xconf->tx_thread_count);
-            fprintf(xconf->echo, "receive-thread-count  = 1 (always)\n");
         }
         return 0;
     }
@@ -528,7 +518,7 @@ static int SET_debug_interface(struct Xconf *xconf, const char *name, const char
 {
     if (xconf->echo) {
         if (xconf->op==Operation_DebugIF || xconf->echo_all)
-            fprintf(xconf->echo, "debug interface = %s\n",
+            fprintf(xconf->echo, "debug-interface = %s\n",
                 xconf->op==Operation_DebugIF?"true":"false");
        return 0;
     }
@@ -561,24 +551,30 @@ static int SET_source_ip(struct Xconf *xconf, const char *name, const char *valu
     UNUSEDPARM(name);
     if (xconf->echo) {
 
-        if (xconf->nic.src.ipv4.first) {
+        if (xconf->nic.src.ipv4.first!=0 || xconf->nic.src.ipv4.last!=0) {
             ipaddress_formatted_t ipv4_first =
                 ipv4address_fmt((ipv4address)(xconf->nic.src.ipv4.first));
             ipaddress_formatted_t ipv4_last =
                 ipv4address_fmt((ipv4address)(xconf->nic.src.ipv4.last));
-            fprintf(xconf->echo, "source IPv4 first = %s\n", ipv4_first.string);
-            fprintf(xconf->echo, "source IPv4 last = %s\n", ipv4_last.string);
-            fprintf(xconf->echo, "source IPv4 range = %u\n", xconf->nic.src.ipv4.range);
+            if (xconf->nic.src.ipv4.first == xconf->nic.src.ipv4.last) {
+                fprintf(xconf->echo, "source-ip = %s\n", ipv4_first.string);
+            } else if (xconf->nic.src.ipv4.first < xconf->nic.src.ipv4.last) {
+                fprintf(xconf->echo, "source-ip = %s-%s\n",
+                    ipv4_first.string, ipv4_last.string);
+            }
         }
 
-        if (xconf->nic.src.ipv6.first.hi && xconf->nic.src.ipv6.first.lo) {
+        if (xconf->nic.src.ipv6.range) {
             ipaddress_formatted_t ipv6_first =
                 ipv6address_fmt((ipv6address)(xconf->nic.src.ipv6.first));
             ipaddress_formatted_t ipv6_last =
                 ipv6address_fmt((ipv6address)(xconf->nic.src.ipv6.last));
-            fprintf(xconf->echo, "source IPv6 first = %s\n", ipv6_first.string);
-            fprintf(xconf->echo, "source IPv6 last = %s\n", ipv6_last.string);
-            fprintf(xconf->echo, "source IPv6 range = %u\n", xconf->nic.src.ipv6.range);
+            if (ipv6address_is_lessthan(xconf->nic.src.ipv6.first, xconf->nic.src.ipv6.last)) {
+                fprintf(xconf->echo, "source-ip = %s-%s\n",
+                    ipv6_first.string, ipv6_last.string);
+            } else {
+                fprintf(xconf->echo, "source-ip = %s\n", ipv6_first.string);
+            }
         }
 
         return 0;
@@ -627,6 +623,13 @@ static int SET_source_port(struct Xconf *xconf, const char *name, const char *va
             fprintf(xconf->echo, "source port last = %u\n", xconf->nic.src.port.last);
             fprintf(xconf->echo, "source port range = %u\n", xconf->nic.src.port.range);
         }
+        if (xconf->nic.src.port.first != 0) {
+        fprintf(xconf->echo, "source-port = %d", xconf->nic.src.port.first);
+        if (xconf->nic.src.port.first != xconf->nic.src.port.last) {
+            fprintf(xconf->echo, "-%d", xconf->nic.src.port.last);
+        }
+        fprintf(xconf->echo, "\n");
+    }
         return 0;
     }
 
@@ -679,7 +682,7 @@ static int SET_target_output(struct Xconf *xconf, const char *name, const char *
                 if (l) {
                     fprintf(xconf->echo, ",");
                 } else {
-                    fprintf(xconf->echo, "ports = ");
+                    fprintf(xconf->echo, "port = ");
                 }
                 l = 1;
                 if (rrange.begin >= Templ_ICMP_echo) {
@@ -800,9 +803,7 @@ static int SET_adapter_vlan(struct Xconf *xconf, const char *name, const char *v
     if (xconf->echo) {
         if (xconf->nic.is_vlan || xconf->echo_all) {
             if (xconf->nic.is_vlan)
-                fprintf(xconf->echo, "vlan id = %u\n", xconf->nic.vlan_id);
-            else
-                fprintf(xconf->echo, "use vlan = false\n");
+                fprintf(xconf->echo, "adapter-vlan = %u\n", xconf->nic.vlan_id);
         }
         return 0;
     }
@@ -1109,8 +1110,8 @@ static int SET_source_mac(struct Xconf *xconf, const char *name, const char *val
 {
     if (xconf->echo) {
         if (xconf->nic.my_mac_count) {
-            fprintf(xconf->echo, "source mac = %s\n",
-                macaddress_fmt(xconf->nic.source_mac).string);
+            ipaddress_formatted_t fmt = macaddress_fmt(xconf->nic.source_mac);
+            fprintf(xconf->echo, "source-mac = %s\n", fmt.string);
         }
         return 0;
     }
@@ -1154,7 +1155,7 @@ static int SET_router_ip(struct Xconf *xconf, const char *name, const char *valu
         if (xconf->nic.router_ip) {
             ipaddress_formatted_t router_ip =
                 ipv4address_fmt(xconf->nic.router_ip);
-            fprintf(xconf->echo, "router ip first = %s\n", router_ip.string);
+            fprintf(xconf->echo, "router-ip = %s\n", router_ip.string);
         }
 
         return 0;
@@ -1180,14 +1181,13 @@ static int SET_router_ip(struct Xconf *xconf, const char *name, const char *valu
 static int SET_router_mac(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
-        if (xconf->nic.router_mac_ipv4.addr[0]) {
-            fprintf(xconf->echo, "IPv4 router mac = %s\n",
-                macaddress_fmt(xconf->nic.router_mac_ipv4).string);
+        if (!macaddress_is_zero(xconf->nic.router_mac_ipv4)) {
+            ipaddress_formatted_t fmt =  macaddress_fmt(xconf->nic.router_mac_ipv4);
+            fprintf(xconf->echo, "router-mac-ipv4 = %s\n", fmt.string);
         }
-
-        if (xconf->nic.router_mac_ipv6.addr[0]) {
-            fprintf(xconf->echo, "IPv6 router mac = %s\n",
-                macaddress_fmt(xconf->nic.router_mac_ipv6).string);
+        if (!macaddress_is_zero(xconf->nic.router_mac_ipv6)) {
+            ipaddress_formatted_t fmt = macaddress_fmt(xconf->nic.router_mac_ipv6);
+            fprintf(xconf->echo, "router-mac-ipv6 = %s\n", fmt.string);
         }
 
         return 0;
@@ -1460,8 +1460,6 @@ static int SET_pcap_payloads(struct Xconf *xconf, const char *name, const char *
 static int SET_echo(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
-        if (xconf->echo_all)
-            fprintf(xconf->echo, "echo-all = %s\n", xconf->echo?"true":"false");
         return 0;
     }
     
@@ -1482,13 +1480,12 @@ static int SET_lan_mode(struct Xconf *xconf, const char *name, const char *value
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->is_lan_mode||xconf->echo_all)
-            fprintf(xconf->echo, "LAN mode = %s\n", xconf->is_lan_mode?"true":"false");
         return 0;
     }
     
-    xconf->is_lan_mode = parseBoolean(value);
-    SET_router_mac(xconf, "router-mac", "ff-ff-ff-ff-ff-ff");
+    if (parseBoolean(value)) {
+        SET_router_mac(xconf, "router-mac", "ff-ff-ff-ff-ff-ff");
+    }
     
     return CONF_OK;
 }
@@ -1604,7 +1601,7 @@ static int SET_delimiter(struct Xconf *xconf, const char *name, const char *valu
     UNUSEDPARM(name);
     UNUSEDPARM(value);
     if (xconf->echo) {
-        fprintf(xconf->echo, "-=-=-=-=-=-\n");
+        // fprintf(xconf->echo, "-=-=-=-=-=-\n");
         return 0;
     }
     return CONF_OK;
@@ -1742,8 +1739,12 @@ static int SET_log_level(struct Xconf *xconf, const char *name, const char *valu
     UNUSEDPARM(value);
     if (xconf->echo) {
         int level = LOG_get_level();
-        if (level > 0  || xconf->echo_all)
-            fprintf(xconf->echo, "log level = %d\n", level);
+        if (level > 0) {
+            for (unsigned i=0; i<level; i++) {
+                fprintf(xconf->echo, "%c", 'd');
+            }
+            fprintf(xconf->echo, " = true\n");
+        }
         return 0;
     }
 
@@ -1997,7 +1998,7 @@ static int SET_blackrock_rounds(struct Xconf *xconf, const char *name, const cha
 
     if (xconf->echo) {
         if (xconf->blackrock_rounds!=14 || xconf->echo_all)
-            fprintf(xconf->echo, "blackrock rounds = %u\n", xconf->blackrock_rounds);
+            fprintf(xconf->echo, "blackrock-rounds = %u\n", xconf->blackrock_rounds);
         return 0;
     }
 
@@ -2011,7 +2012,7 @@ static int SET_send_queue(struct Xconf *xconf, const char *name, const char *val
 
     if (xconf->echo) {
         if (xconf->is_sendq || xconf->echo_all)
-            fprintf(xconf->echo, "send queue = %s\n", xconf->is_sendq?"true":"false");
+            fprintf(xconf->echo, "send-queue = %s\n", xconf->is_sendq?"true":"false");
         return 0;
     }
 
@@ -2051,7 +2052,7 @@ struct ConfigParameter config_parameters[] = {
     {"source-port",     SET_source_port,        0,      {"src-port",0}},
     {"source-mac",      SET_source_mac,         0,      {"src-mac",0}},
     {"router-ip",       SET_router_ip,          0,      {0}},
-    {"router-mac",      SET_router_mac,         0,      {"gateway-mac", "dst-mac", "router-mac-ipv4", "router-mac-ipv6",0}},
+    {"router-mac",      SET_router_mac,         0,      {"gateway-mac", "router-mac-ipv4", "router-mac-ipv6",0}},
     {"adapter-vlan",    SET_adapter_vlan,       F_NUMABLE, {"vlan",0}},
     {"lan-mode",        SET_lan_mode,           F_BOOL, {"local", "lan",0}},
 
