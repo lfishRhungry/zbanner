@@ -188,8 +188,8 @@ tmp/%.o: \
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
-	src/output-modules/%.c \
-	src/output-modules/*.h
+	src/output/%.c \
+	src/output/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 
@@ -210,7 +210,7 @@ SRC = $(sort $(wildcard \
 	src/stateless-probes/*.c \
 	src/stateless-probes/lzr-handshakes/*.c \
 	src/scan-modules/*.c \
-	src/output-modules/*.c \
+	src/output/*.c \
 	))
 OBJ = $(addprefix tmp/, $(notdir $(addsuffix .o, $(basename $(SRC))))) 
 

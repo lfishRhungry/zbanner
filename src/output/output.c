@@ -1,15 +1,15 @@
 #include <stdio.h>
 
-#include "output-modules.h"
+#include "output.h"
 
 void
-output_tmp(
+output_result(
+    struct Output *output,
     struct PreprocessedInfo * parsed,
     time_t timestamp, unsigned successed,
-    const char *classification, const char *report,
-    unsigned is_show_failed, unsigned is_show_report)
+    const char *classification, const char *report)
 {
-    if (!successed && !is_show_failed)
+    if (!successed && !output->is_show_failed)
         return;
 
     ipaddress ip_me = parsed->dst_ip;
@@ -36,7 +36,7 @@ output_tmp(
             classification);
     }
     
-    if (is_show_report) {
+    if (output->is_show_report) {
         count += fprintf(stdout, ". Report: [%s]", report);
     }
     

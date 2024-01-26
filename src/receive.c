@@ -12,7 +12,7 @@
 #include "xtatus.h"        /* printf() regular status updates */
 #include "cookie.h"         /* for SYN-cookies on send */
 
-#include "output-modules/output-modules.h"
+#include "output/output.h"
 #include "stub/stub-pcap.h"          /* dynamically load libpcap library */
 #include "smack/smack.h"              /* Aho-corasick state-machine pattern-matcher */
 #include "nmap-service/read-service-probes.h"
@@ -75,6 +75,7 @@ receive_thread(void *v)
 {
     struct RxThread *parms = (struct RxThread *)v;
     const struct Xconf *xconf = parms->xconf;
+    struct Output *output = &xconf->output;
     struct Adapter *adapter = xconf->nic.adapter;
     int data_link = stack_if_datalink(adapter);
     struct DedupTable *dedup;
@@ -263,9 +264,8 @@ receive_thread(void *v)
                 classification, SCAN_MODULE_CLS_LEN,
                 report, SCAN_MODULE_RPT_LEN);
 
-            output_tmp(&parsed, global_now, successed,
-                classification, report,
-                xconf->output.is_show_failed, xconf->output.is_show_report);
+            output_result(output, &parsed, global_now, successed,
+                classification, report);
             
             if (successed)
                 (*status_successed_count)++;

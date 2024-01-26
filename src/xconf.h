@@ -13,6 +13,7 @@
 #include "massip/massip.h"
 #include "stack/stack-src.h"
 #include "stack/stack-queue.h"
+#include "output/output.h"
 #include "stateless-probes/stateless-probes.h"
 #include "scan-modules/scan_modules.h"
 
@@ -178,14 +179,8 @@ struct Xconf
     struct ScanModule *scan_module;
     char *scan_module_args;
 
-    struct {
-        char output_filename[256];
-        FILE *output_file;
-        unsigned is_append:1;
-        unsigned is_interactive:1;
-        unsigned is_show_failed:1;
-        unsigned is_show_report:1;
-    } output;
+    struct Output output;
+    
 
     unsigned is_status_ndjson:1;
     unsigned is_pfring:1;       /* --pfring */
