@@ -491,7 +491,7 @@ main_scan(struct Xconf *xconf)
     xtatus_finish(&status);
 
     uint64_t usec_now = pixie_gettime();
-    printf("%u milliseconds elapsed\n", (unsigned)((usec_now - usec_start)/1000));
+    fprintf(stderr, "%u milliseconds elapsed\n", (unsigned)((usec_now - usec_start)/1000));
 
     /**
      * Do close for stateless probe

@@ -1495,26 +1495,8 @@ static int SET_usage(struct Xconf *xconf, const char *name, const char *value)
     printf("usage: "XTATE_NAME" [options] [-range <IP|RANGE>... -p PORT[,PORT...]]\n");
     printf("\n");
     printf("original examples in xtate:\n");
-    printf("    "XTATE_NAME" -p 80,8000-8100 10.0.0.0/8 --rate=10000\n");
+    printf("    "XTATE_NAME" -p 80,8000-8100 -range 10.0.0.0/8 --rate=10000\n");
     printf("        scan some web ports on 10.x.x.x at 10kpps\n");
-    printf("\n");
-    printf("    "XTATE_NAME" -p 80 10.0.0.0/8 --banners -oB <filename>\n");
-    printf("        save results of scan in binary format to <filename>\n");
-    printf("\n");
-    printf("    "XTATE_NAME" --open --banners --readscan <filename> -oX <savefile>\n");
-    printf("        read binary scan results in <filename> and save them as xml in <savefile>\n");
-    printf("\n");
-    printf("    "XTATE_NAME" 10.0.0.0/8 -p 21,110 --stateless\n");
-    printf("        scan some ftp & pop3 ports with default NULL probe\n");
-    printf("\n");
-    printf("    "XTATE_NAME" 10.0.0.0/8 -p 80 --stateless --probe getrequest\n");
-    printf("        scan some web ports with GetRequest probe\n");
-    printf("\n");
-    printf("    "XTATE_NAME" 10.0.0.0/8 -p 110 --stateless --capture stateless\n");
-    printf("        capture banner result\n");
-    printf("\n");
-    printf("    "XTATE_NAME" 10.0.0.0/8 -p 110 --stateless --pcap <pcapfile> -oX <xmlfile>\n");
-    printf("        save packet result in <pcapfile> and save scan result in <xmlfile>\n");
     printf("\n");
 
     return CONF_ERR;

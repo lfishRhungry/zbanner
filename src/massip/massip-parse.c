@@ -1138,12 +1138,12 @@ selftest_massip_parse_range(void)
             switch (x) {
                 default:
                 case Bad_Address:
-                    fprintf(stdout, "[-] selftest_massip_parse_range[%u] fail\n", (unsigned)i);
+                    fprintf(stderr, "[-] selftest_massip_parse_range[%u] fail\n", (unsigned)i);
                     return 1;
                 case Ipv4_Address:
                     if (cases[i].list[j].ipv4.begin != range4.begin
                         || cases[i].list[j].ipv4.end != range4.end) {
-                        fprintf(stdout, "[-] %u.%u.%u.%u - %u.%u.%u.%u\n",
+                        fprintf(stderr, "[-] %u.%u.%u.%u - %u.%u.%u.%u\n",
                                 (unsigned char)(range4.begin>>24),
                                 (unsigned char)(range4.begin>>16),
                                 (unsigned char)(range4.begin>> 8),
@@ -1153,7 +1153,7 @@ selftest_massip_parse_range(void)
                                 (unsigned char)(range4.end>> 8),
                                 (unsigned char)(range4.end>> 0)
                                 );
-                        fprintf(stdout, "[-] selftest_massip_parse_range[%u] fail\n", (unsigned)i);
+                        fprintf(stderr, "[-] selftest_massip_parse_range[%u] fail\n", (unsigned)i);
                         return 1;
                     }
                     break;
@@ -1163,7 +1163,7 @@ selftest_massip_parse_range(void)
         
         /* Make sure we have found all the expected cases */
         if (cases[i].list[j].ipv4.begin != 0) {
-            fprintf(stdout, "[-] selftest_massip_parse_range[%u] fail\n", (unsigned)i);
+            fprintf(stderr, "[-] selftest_massip_parse_range[%u] fail\n", (unsigned)i);
             return 1;
         }
     }
