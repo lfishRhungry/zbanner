@@ -1807,7 +1807,7 @@ struct ConfigParameter config_parameters[] = {
     {"tansmit-thread-count", SET_thread_count,  F_NUMABLE, {"tx-count", "tx-num", 0}},
     {"d",               SET_log_level,          F_BOOL, {"dd","ddd","dddd","ddddd",0}},
     {"v",               SET_log_level,          F_BOOL, {"vv","vvv","vvvv","vvvvv",0}},
-    {"version",         SET_version,            F_BOOL, {"V",0}},
+    {"version",         SET_version,            F_BOOL, {0}},
     {"help",            SET_help,               F_BOOL, {"h", "?",0}},
     {"usage",           SET_usage,              F_BOOL, {0}},
 
@@ -1829,7 +1829,7 @@ struct ConfigParameter config_parameters[] = {
     {"router-ip",       SET_router_ip,          0,      {0}},
     {"router-mac",      SET_router_mac,         0,      {"gateway-mac", "dst-mac", "router-mac-ipv4", "router-mac-ipv6",0}},
     {"adapter-vlan",    SET_adapter_vlan,       F_NUMABLE, {"vlan",0}},
-    {"lan-mode",        SET_lan_mode,                F_BOOL, {"local", "lan",0}},
+    {"lan-mode",        SET_lan_mode,           F_BOOL, {"local", "lan",0}},
 
     {"OPERATION:",      SET_delimiter,          0,      {0}},
 
@@ -1839,10 +1839,17 @@ struct ConfigParameter config_parameters[] = {
     {"listtarget",      SET_list_target,        F_BOOL, {"list-targets",0}},
     {"debug-if",        SET_debug_interface,    F_BOOL, {"debug-interface",0}},
 
-    {"STATUS & OUTPUTT:",SET_delimiter, 0,      {0}},
+    {"SCAN MODULES:",   SET_delimiter,          0,      {0}},
+
+    {"scan-module",     SET_scan_module,        0,      {"scan", 0}},
+    {"list-scan-modules",SET_list_scan_modules, F_BOOL, {"list-scan-module", "list-scan",0}},
+    {"scan-module-args", SET_scan_module_args,  0,      {"scan-module-arg", "scan-args", "scan-arg",0}},
+
+    {"STATUS & OUTPUT:",SET_delimiter, 0,      {0}},
 
     {"ndjson-status",   SET_ndjson_status,      F_BOOL, {"status-ndjson", 0}},
     {"pcap-filename",   SET_pcap_filename,      0,      {"pcap",0}},
+    {"show",            SET_show,               0,      {0}},
 
     {"PAYLOAD:",        SET_delimiter,          0,      {0}},
 
@@ -1858,13 +1865,6 @@ struct ConfigParameter config_parameters[] = {
     {"stateless-probe", SET_stateless_probe,    0,      {"probe", 0}},
     {"list-probes",     SET_list_probes,        F_BOOL, {"list-probe", 0}},
     {"probe-args",      SET_probe_args,         0,      {"probe-arg", 0}},
-
-    {"SCAN MODULES:",   SET_delimiter,          0,      {0}},
-
-    {"scan-module",     SET_scan_module,        0,      {"scan", 0}},
-    {"list-scan-modules",SET_list_scan_modules, F_BOOL, {"list-scan-module", "list-scan",0}},
-    {"scan-module-args", SET_scan_module_args,  0,      {"scan-module-arg",0}},
-    {"show",            SET_show,               0,      {0}},
 
     {"PACKET ATTRIBUTE:",SET_delimiter,         0,      {0}},
 
@@ -1884,7 +1884,7 @@ struct ConfigParameter config_parameters[] = {
     {"resume-index",    SET_resume_index,       0,      {0}},
     {"resume-count",    SET_resume_count,       0,      {0}},
     {"offline",         SET_offline,            F_BOOL, {"notransmit", "nosend", "dry-run", 0}},
-    {"nodedup",         SET_nodedup,            F_BOOL, {0}},
+    {"no-dedup",        SET_nodedup,            F_BOOL, {0}},
     {"dedup-win",       SET_dedup_win,          F_NUMABLE, {0}},
     {"stack-buf-count", SET_stack_buf_count,    F_NUMABLE, {"queue-buf-count", "packet-buf-count", 0}},
     {"pfring",          SET_pfring,             F_BOOL, {0}},
@@ -1892,7 +1892,7 @@ struct ConfigParameter config_parameters[] = {
     {"blackrock-rounds",SET_blackrock_rounds,   F_NUMABLE, {"blackrock-round",0}},
 
     /*Put it at last for better "help" output*/
-    {"TARGET (IP, PORTS, EXCLUDES)",SET_delimiter, 0,   {0}},
+    {"TARGET",          SET_delimiter,          0,      {0}},
     {"TARGET_OUTPUT",   SET_target_output,      0,      {0}},
     {0}
 };
