@@ -649,7 +649,6 @@ static int SET_source_port(struct Xconf *xconf, const char *name, const char *va
 static int SET_target_output(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
-        fprintf(xconf->echo, "ports = ");
         /* Disable comma generation for the first element */
         unsigned i;
         unsigned l = 0;
@@ -659,8 +658,11 @@ static int SET_target_output(struct Xconf *xconf, const char *name, const char *
             do {
                 struct Range rrange = range;
                 unsigned done = 0;
-                if (l)
+                if (l) {
                     fprintf(xconf->echo, ",");
+                } else {
+                    fprintf(xconf->echo, "ports = ");
+                }
                 l = 1;
                 if (rrange.begin >= Templ_ICMP_echo) {
                     rrange.begin -= Templ_ICMP_echo;
