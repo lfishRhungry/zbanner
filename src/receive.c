@@ -265,7 +265,7 @@ receive_thread(void *v)
 
             output_tmp(&parsed, global_now, successed,
                 classification, report,
-                xconf->is_show_failed, xconf->is_show_report);
+                xconf->output.is_show_failed, xconf->output.is_show_report);
             
             if (successed)
                 (*status_successed_count)++;

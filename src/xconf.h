@@ -178,9 +178,16 @@ struct Xconf
     struct ScanModule *scan_module;
     char *scan_module_args;
 
+    struct {
+        char output_filename[256];
+        FILE *output_file;
+        unsigned is_append:1;
+        unsigned is_interactive:1;
+        unsigned is_show_failed:1;
+        unsigned is_show_report:1;
+    } output;
+
     unsigned is_lan_mode:1;          /*--lan work in local area network(LAN)*/
-    unsigned is_show_failed:1;
-    unsigned is_show_report:1;
     unsigned is_status_ndjson:1;
     unsigned is_pfring:1;       /* --pfring */
     unsigned is_sendq:1;        /* --sendq */

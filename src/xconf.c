@@ -221,25 +221,41 @@ static int SET_stateless_probe(struct Xconf *xconf, const char *name, const char
     return CONF_OK;
 }
 
+static int SET_output_filename(struct Xconf *xconf, const char *name, const char *value)
+{
+    if (xconf->echo) {
+        if (xconf->output.output_filename[0]){
+            fprintf(xconf->echo, "output-file = %s\n",
+                xconf->output.output_filename);
+        }
+        return 0;
+    }
+
+    safe_strcpy(xconf->output.output_filename,
+        sizeof(xconf->output.output_filename), value);
+
+    return CONF_OK;
+}
+
 static int SET_show(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
-        if (xconf->is_show_failed || xconf->echo_all){
+        if (xconf->output.is_show_failed || xconf->echo_all){
             fprintf(xconf->echo, "show failed = %s\n",
-                xconf->is_show_failed?"true":"false");
+                xconf->output.is_show_failed?"true":"false");
         }
-        if (xconf->is_show_report || xconf->echo_all){
+        if (xconf->output.is_show_report || xconf->echo_all){
             fprintf(xconf->echo, "show report = %s\n",
-                xconf->is_show_report?"true":"false");
+                xconf->output.is_show_report?"true":"false");
         }
         return 0;
     }
 
     
     if (EQUALS("failed",value)||EQUALS("fail",value)) {
-        xconf->is_show_failed = true;
+        xconf->output.is_show_failed = true;
     } else if (EQUALS("report",value)) {
-        xconf->is_show_report = true;
+        xconf->output.is_show_report = true;
     } else {
         fprintf(stderr, "FAIL %s: no item named %s\n", name, value);
         return CONF_ERR;
@@ -1275,6 +1291,34 @@ static int SET_ndjson_status(struct Xconf *xconf, const char *name, const char *
     return CONF_OK;
 }
 
+static int SET_append(struct Xconf *xconf, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->output.is_append || xconf->echo_all)
+            fprintf(xconf->echo, "append = %s\n",
+                xconf->output.is_append?"true":"false");
+        return 0;
+    }
+    xconf->output.is_append = parseBoolean(value);
+    return CONF_OK;
+}
+
+static int SET_interactive(struct Xconf *xconf, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->output.is_interactive || xconf->echo_all)
+            fprintf(xconf->echo, "interactive = %s\n",
+                xconf->output.is_interactive?"true":"false");
+        return 0;
+    }
+    xconf->output.is_interactive = parseBoolean(value);
+    return CONF_OK;
+}
+
 static int SET_min_packet(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
@@ -2025,11 +2069,14 @@ struct ConfigParameter config_parameters[] = {
     {"list-scan-modules",SET_list_scan_modules, F_BOOL, {"list-scan-module", "list-scan",0}},
     {"scan-module-args", SET_scan_module_args,  0,      {"scan-module-arg", "scan-args", "scan-arg",0}},
 
-    {"STATUS & OUTPUT:",SET_delimiter, 0,      {0}},
+    {"STATUS & OUTPUT:",SET_delimiter,          0,      {0}},
 
     {"ndjson-status",   SET_ndjson_status,      F_BOOL, {"status-ndjson", 0}},
     {"pcap-filename",   SET_pcap_filename,      0,      {"pcap",0}},
     {"show",            SET_show,               0,      {0}},
+    {"interactive",     SET_interactive,        F_BOOL, {"interact", 0}},
+    {"append",          SET_append,             F_BOOL, {0}},
+    {"output-file",     SET_output_filename,    0,      {"output", "o", "output-filename",0}},
 
     {"PAYLOAD:",        SET_delimiter,          0,      {0}},
 
