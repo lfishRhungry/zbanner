@@ -258,16 +258,12 @@ static int SET_scan_module_args(struct Xconf *xconf, const char *name, const cha
         return 0;
     }
 
-    
-    unsigned value_len = strlen(value);
-    if (value_len >= SCAN_MODULE_ARGS_LEN) {
-        fprintf(stderr, "FAIL %s: length of args is too long\n", name);
-        fprintf(stderr, "Hint: length of %s args must be no more than %u.\n",
-            name, SCAN_MODULE_ARGS_LEN-1);
-        return CONF_ERR;
-    }
+    size_t len = strlen(value) + 1;
+    if (xconf->scan_module_args)
+        free(xconf->scan_module_args);
+    xconf->scan_module_args = CALLOC(1, len);
+    memcpy(xconf->scan_module_args, value, len);
 
-    memcpy(xconf->scan_module_args, value, value_len);
     return CONF_OK;
 }
 

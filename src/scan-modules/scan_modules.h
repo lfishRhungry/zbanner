@@ -17,7 +17,6 @@
 
 #define SCAN_MODULE_CLS_LEN            15
 #define SCAN_MODULE_RPT_LEN          1460
-#define SCAN_MODULE_ARGS_LEN           50
 #define SCAN_MODULE_DEFAULT_DEDUP_TYPE  0
 
 /***************************************************************************

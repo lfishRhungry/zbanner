@@ -176,7 +176,7 @@ struct Xconf
      * Choosed ScanModule
     */
     struct ScanModule *scan_module;
-    char scan_module_args[SCAN_MODULE_ARGS_LEN];
+    char *scan_module_args;
 
     unsigned is_lan_mode:1;          /*--lan work in local area network(LAN)*/
     unsigned is_show_failed:1;
