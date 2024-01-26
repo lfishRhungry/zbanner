@@ -490,8 +490,10 @@ static int SET_wait(struct Xconf *xconf, const char *name, const char *value)
 static int SET_thread_count(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
-        fprintf(xconf->echo, "transmit-thread-count = %u\n", xconf->tx_thread_count);
-        fprintf(xconf->echo, "receive-thread-count  = 1 (always)\n");
+        if (xconf->tx_thread_count!=1 || xconf->echo_all) {
+            fprintf(xconf->echo, "transmit-thread-count = %u\n", xconf->tx_thread_count);
+            fprintf(xconf->echo, "receive-thread-count  = 1 (always)\n");
+        }
         return 0;
     }
 
