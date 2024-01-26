@@ -191,11 +191,8 @@ static int SET_scan_module(struct Xconf *xconf, const char *name, const char *va
 static int SET_stateless_probe(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
-        if (xconf->stateless_probe || xconf->echo_all){
-            if (xconf->stateless_probe)
-                fprintf(xconf->echo, "stateless-probe = %s\n", xconf->stateless_probe->name);
-            else
-                fprintf(xconf->echo, "stateless-probe = \n");
+        if (xconf->stateless_probe){
+            fprintf(xconf->echo, "stateless-probe = %s\n", xconf->stateless_probe->name);
         }
         return 0;
     }
@@ -415,7 +412,7 @@ static int SET_badsum(struct Xconf *xconf, const char *name, const char *value)
 static int SET_ttl(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
-        if (xconf->nmap.ttl || xconf->echo_all)
+        if (xconf->nmap.ttl!=0)
             fprintf(xconf->echo, "ttl = %u\n", xconf->nmap.ttl);
        return 0;
     }
@@ -531,7 +528,7 @@ static int SET_adapter(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->nic.ifname[0] || xconf->echo_all) {
+        if (xconf->nic.ifname[0]) {
             fprintf(xconf->echo, "adapter = %s\n", xconf->nic.ifname);
         }
         return 0;
@@ -1336,7 +1333,7 @@ static int SET_nmap_data_length(struct Xconf *xconf, const char *name, const cha
     UNUSEDPARM(name);
     
     if (xconf->echo) {
-        if (xconf->nmap.data_length || xconf->echo_all)
+        if (xconf->nmap.data_length)
             fprintf(xconf->echo, "nmap-data-length = %u\n", xconf->nmap.data_length);
         return 0;
     }
@@ -1357,7 +1354,7 @@ static int SET_nmap_datadir(struct Xconf *xconf, const char *name, const char *v
     UNUSEDPARM(name);
     
     if (xconf->echo) {
-        if (xconf->nmap.datadir[0] || xconf->echo_all)
+        if (xconf->nmap.datadir[0])
             fprintf(xconf->echo, "nmap-datadir = %s\n", xconf->nmap.datadir);
         return 0;
     }
@@ -1372,7 +1369,7 @@ static int SET_nmap_payloads(struct Xconf *xconf, const char *name, const char *
     UNUSEDPARM(name);
     
     if (xconf->echo) {
-        if ((xconf->payloads.nmap_payloads_filename && xconf->payloads.nmap_payloads_filename[0]) || xconf->echo_all)
+        if ((xconf->payloads.nmap_payloads_filename && xconf->payloads.nmap_payloads_filename[0]))
             fprintf(xconf->echo, "nmap-payloads = %s\n", xconf->payloads.nmap_payloads_filename);
         return 0;
     }
@@ -1389,7 +1386,7 @@ static int SET_nmap_service_probes(struct Xconf *xconf, const char *name, const 
     UNUSEDPARM(name);
     
     if (xconf->echo) {
-        if ((xconf->payloads.nmap_service_probes_filename && xconf->payloads.nmap_service_probes_filename[0]) || xconf->echo_all)
+        if ((xconf->payloads.nmap_service_probes_filename && xconf->payloads.nmap_service_probes_filename[0]))
             fprintf(xconf->echo, "nmap-service-probes = %s\n", xconf->payloads.nmap_service_probes_filename);
         return 0;
     }
@@ -1443,7 +1440,7 @@ static int SET_pcap_payloads(struct Xconf *xconf, const char *name, const char *
 {
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if ((xconf->payloads.pcap_payloads_filename && xconf->payloads.pcap_payloads_filename[0]) || xconf->echo_all)
+        if ((xconf->payloads.pcap_payloads_filename && xconf->payloads.pcap_payloads_filename[0]))
             fprintf(xconf->echo, "pcap-payloads = %s\n", xconf->payloads.pcap_payloads_filename);
         return 0;
     }
@@ -1540,7 +1537,7 @@ static int SET_resume_count(struct Xconf *xconf, const char *name, const char *v
 {
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->resume.count || xconf->echo_all) {
+        if (xconf->resume.count!=0) {
             fprintf(xconf->echo, "resume-count = %" PRIu64 "\n", xconf->resume.count);
         }
         return 0;
@@ -1553,7 +1550,7 @@ static int SET_resume_index(struct Xconf *xconf, const char *name, const char *v
 {
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->resume.index  || xconf->echo_all) {
+        if (xconf->resume.index!=0) {
             fprintf(xconf->echo, "resume-index = %" PRIu64 "\n", xconf->resume.index);
         }
         return 0;
@@ -1567,7 +1564,7 @@ static int SET_bpf_filter(struct Xconf *xconf, const char *name, const char *val
 {
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->bpf_filter || xconf->echo_all)
+        if (xconf->bpf_filter)
             fprintf(xconf->echo, "bpf-filter = %s\n", xconf->bpf_filter);
         return 0;
     }
