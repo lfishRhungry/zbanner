@@ -252,7 +252,7 @@ static int SET_scan_module_args(struct Xconf *xconf, const char *name, const cha
 {
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->scan_module_args[0] || xconf->echo_all){
+        if (xconf->scan_module_args || xconf->echo_all){
             fprintf(xconf->echo, "scan-module-args = %s\n", xconf->scan_module_args);
         }
         return 0;
