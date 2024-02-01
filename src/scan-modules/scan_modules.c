@@ -19,7 +19,7 @@ static struct ScanModule *scan_modules_list[] = {
 
 struct ScanModule *get_scan_module_by_name(const char *name)
 {
-    int len = (int)(sizeof(struct ScanModule)/sizeof(struct StatelessProbe *));
+    int len = (int)(sizeof(scan_modules_list)/sizeof(struct ScanModule *));
     for (int i = 0; i < len; i++) {
         if (!strcmp(scan_modules_list[i]->name, name)) {
             return scan_modules_list[i];
