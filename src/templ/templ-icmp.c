@@ -308,3 +308,109 @@ unsigned
 get_icmp_code(const struct PreprocessedInfo *parsed) {
     return parsed->port_dst;
 }
+
+/***************************************************************************
+ ***************************************************************************/
+int
+parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
+    ipaddress *r_ip_them, unsigned *r_port_them,
+    ipaddress *r_ip_me, unsigned *r_port_me,
+    unsigned *r_ip_proto)
+{
+    const unsigned char *ip_header_in_icmp = transport_px + 8;
+    unsigned data_length_in_icmp = length - (ip_header_in_icmp - transport_px);
+
+    if (ip_header_in_icmp[0]>>4 == 0B0100) {
+        /*ipv4*/
+        r_ip_them->version = 4;
+        r_ip_me->version = 4;
+
+        r_ip_me->ipv4 = ip_header_in_icmp[12]<<24
+            | ip_header_in_icmp[13]<<16
+            | ip_header_in_icmp[14]<<8
+            | ip_header_in_icmp[15];
+        r_ip_them->ipv4 = ip_header_in_icmp[16]<<24
+            | ip_header_in_icmp[17]<<16
+            | ip_header_in_icmp[18]<<8
+            | ip_header_in_icmp[19];
+        
+        if (ip_header_in_icmp[9]==6) {
+            *r_ip_proto = Proto_TCP;
+        } else if (ip_header_in_icmp[9]==17) {
+            *r_ip_proto = Proto_UDP;
+        } else {
+            return 0;
+        }
+
+        ip_header_in_icmp += (ip_header_in_icmp[0]&0xF)<<2;
+        data_length_in_icmp -= (ip_header_in_icmp[0]&0xF)<<2;
+
+        if (data_length_in_icmp < 4)
+            return 0;
+
+        *r_port_me = ip_header_in_icmp[0]<<8 | ip_header_in_icmp[1];
+        *r_port_them = ip_header_in_icmp[2]<<8 | ip_header_in_icmp[3];
+
+    } else if (ip_header_in_icmp[0]>>4 == 0B0110) {
+        /*ipv6*/
+        r_ip_them->version = 6;
+        r_ip_me->version = 6;
+
+        r_ip_me->ipv6.hi = 0ULL
+                            | (uint64_t)ip_header_in_icmp[8] << 56ULL
+                            | (uint64_t)ip_header_in_icmp[9] << 48ULL
+                            | (uint64_t)ip_header_in_icmp[10] << 40ULL
+                            | (uint64_t)ip_header_in_icmp[11] << 32ULL
+                            | (uint64_t)ip_header_in_icmp[12] << 24ULL
+                            | (uint64_t)ip_header_in_icmp[13] << 16ULL
+                            | (uint64_t)ip_header_in_icmp[14] <<  8ULL
+                            | (uint64_t)ip_header_in_icmp[15] <<  0ULL;
+        r_ip_me->ipv6.lo = 0ULL
+                            | (uint64_t)ip_header_in_icmp[16] << 56ULL
+                            | (uint64_t)ip_header_in_icmp[17] << 48ULL
+                            | (uint64_t)ip_header_in_icmp[18] << 40ULL
+                            | (uint64_t)ip_header_in_icmp[19] << 32ULL
+                            | (uint64_t)ip_header_in_icmp[20] << 24ULL
+                            | (uint64_t)ip_header_in_icmp[21] << 16ULL
+                            | (uint64_t)ip_header_in_icmp[22] <<  8ULL
+                            | (uint64_t)ip_header_in_icmp[23] <<  0ULL;
+
+        r_ip_them->ipv6.hi = 0ULL
+                            | (uint64_t)ip_header_in_icmp[24] << 56ULL
+                            | (uint64_t)ip_header_in_icmp[25] << 48ULL
+                            | (uint64_t)ip_header_in_icmp[26] << 40ULL
+                            | (uint64_t)ip_header_in_icmp[27] << 32ULL
+                            | (uint64_t)ip_header_in_icmp[28] << 24ULL
+                            | (uint64_t)ip_header_in_icmp[29] << 16ULL
+                            | (uint64_t)ip_header_in_icmp[30] <<  8ULL
+                            | (uint64_t)ip_header_in_icmp[31] <<  0ULL;
+        r_ip_them->ipv6.lo = 0ULL
+                            | (uint64_t)ip_header_in_icmp[32] << 56ULL
+                            | (uint64_t)ip_header_in_icmp[33] << 48ULL
+                            | (uint64_t)ip_header_in_icmp[34] << 40ULL
+                            | (uint64_t)ip_header_in_icmp[35] << 32ULL
+                            | (uint64_t)ip_header_in_icmp[36] << 24ULL
+                            | (uint64_t)ip_header_in_icmp[37] << 16ULL
+                            | (uint64_t)ip_header_in_icmp[38] <<  8ULL
+                            | (uint64_t)ip_header_in_icmp[39] <<  0ULL;
+
+        if (ip_header_in_icmp[6]==6) {
+            *r_ip_proto = Proto_TCP;
+        } else if (ip_header_in_icmp[6]==17) {
+            *r_ip_proto = Proto_UDP;
+        } else {
+            return 0;
+        }
+
+        ip_header_in_icmp += ((ip_header_in_icmp[4]<<8)+(ip_header_in_icmp[5]));
+        data_length_in_icmp -= ((ip_header_in_icmp[4]<<8)+(ip_header_in_icmp[5]));
+
+        if (data_length_in_icmp < 4)
+            return 0;
+
+        *r_port_me = ip_header_in_icmp[0]<<8 | ip_header_in_icmp[1];
+        *r_port_them = ip_header_in_icmp[2]<<8 | ip_header_in_icmp[3];
+    }
+
+    return 0;
+}

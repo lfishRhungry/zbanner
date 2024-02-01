@@ -98,4 +98,13 @@ get_icmp_type(const struct PreprocessedInfo *parsed);
 unsigned
 get_icmp_code(const struct PreprocessedInfo *parsed);
 
+/**
+ * @return TRUE if parse successfully
+*/
+int
+parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
+    ipaddress *r_ip_them, unsigned *r_port_them,
+    ipaddress *r_ip_me, unsigned *r_port_me,
+    unsigned *r_ip_proto);
+
 #endif
