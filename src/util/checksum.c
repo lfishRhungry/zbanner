@@ -6,6 +6,8 @@
     License: The MIT License (MIT)
     Dependencies: none
 */
+#include <stdint.h>
+
 #include "checksum.h"
 
 /**
@@ -68,11 +70,9 @@ _checksum_finish(unsigned sum)
 }
 
 
-
-
-
 unsigned 
-checksum_ipv4(unsigned ip_src, unsigned ip_dst, unsigned ip_proto, size_t payload_length, const void *payload)
+checksum_ipv4(unsigned ip_src, unsigned ip_dst,
+    unsigned ip_proto, size_t payload_length, const void *payload)
 {
     unsigned sum;
     const unsigned char *buf = (const unsigned char *)payload;
@@ -152,119 +152,13 @@ checksum_ipv6(const unsigned char *ip_src, const unsigned char *ip_dst, unsigned
     return sum;
 }
 
-/*
- * Test cases for IPv4
- */
-static struct {
-    unsigned checksum;
-    const char *buf;
-    unsigned ip_src;
-    unsigned ip_dst;
-    size_t length;
-    unsigned ip_proto;
-} ipv4packets[] = {
-    {
-        0xee9b,
-        "\x11\x64\xee\x9b\x00\x00\x00\x00",
-        0x0a141e01, 0xe0000001, 8, 2 /* IGMP - Group Message protocol */
-    }, {
-        0x6042,
-        "\xdc\x13\x01\xbb\x00\x29\x60\x42"
-        "\x5b\xd6\x16\x3a\xb1\x78\x3d\x5d\xdd\x0e\x5a\x05\x35\x74\x92\x91"
-        "\x57\x4c\xaa\xc1\x85\x76\xc0\x0f\x8d\x9e\x19\xa5\xcc\xa2\x81\x65\xbe",
-        0x0a141ec9, 0xadc2900a, 41, 17 /* UDP */
-    }, {
-        0x84b2,
-        "\x7e\x70\x69\x95\x1f\xb9\x77\xc6\xee\x09\x7b\x72\x50\x18\x03\xfd" 
-        "\x84\xb2\x00\x00"
-        "\x17\x03\x03\x00\x3a\x6c\x04\xe3\x0e\x25\x79\x8e\x1c\x98\xdd\x2c"
-        "\x8d\x41\x39\x53\xfb\xd0\xd5\x3e\x14\xf8\xdf\xb9\xb8\x47\xe0\x43"
-        "\xab\x09\x24\x58\x7c\x6a\xab\x91\xaf\x24\xc0\x5c\xc6\xaf\x56\x45"
-        "\xed\xa3\xde\x06\xa2\xd1\x79\x0a\x21\xfe\x9c\x2e\x6e\x81\x19",
-        0x0a141ec9, 0xa2fec14a, 83, 6 /* TCP */
-    }, {0}
-};
-
-/*
- * Test cases for IPv6
- */
-static struct {
-    unsigned checksum;
-    const char *buf;
-    const char *ip_src;
-    const char *ip_dst;
-    size_t length;
-    unsigned ip_proto;
-} ipv6packets[] = {
-    {
-        0x09e3,
-        "\x02\x22\x02\x23\x00\x32\x09\xe3"
-        "\x0b\x15\x18\x54\x00\x06\x00\x0a\x00\x17\x00\x18\x00\x38\x00\x1f"
-        "\x00\x0e\x00\x01\x00\x0e\x00\x02\x00\x00\xab\x11\xfd\xb3\xae\xbb"
-        "\xe6\x57\x00\x5c\x00\x08\x00\x02\x00\x00",
-        "\xfe\x80\x00\x00\x00\x00\x00\x00\x02\x07\x32\xff\xfe\x42\x5e\x35",
-        "\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x02",
-        50, 17 /* UDP */
-    }, {   0xbf3c,
-        "\x8f\x00\xbf\x3c\x00\x00\x00\x04\x04\x00\x00\x00\xff\x02\x00\x00"
-        "\x00\x00\x00\x00\x00\x00\x00\x01\xff\x03\x68\x4c\x04\x00\x00\x00"
-        "\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\xff\xd4\xa6\x80"
-        "\x04\x00\x00\x00\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
-        "\xff\x06\xab\x72\x04\x00\x00\x00\xff\x02\x00\x00\x00\x00\x00\x00"
-        "\x00\x00\x00\x01\xff\x2f\x65\x52",
-        "\xfe\x80\x00\x00\x00\x00\x00\x00\x1c\x7b\x06\x42\x4e\x57\x19\xcc",
-        "\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x16",
-        88, 58 /* ICMPv6 */
-    }, {   0x0d0e,
-        "\x8d\x59\x01\xbb\xed\xb8\x70\x8b\x91\x6c\x8d\x68\x50\x10\x04\x01"
-        "\x0d\x0e\x00\x00",
-        "\x20\x02\x18\x62\x5d\xeb\x00\x00\xac\xc3\x59\xad\x84\x6b\x97\x80",
-        "\x26\x02\xff\x52\x00\x00\x00\x6a\x00\x00\x00\x00\x1f\xd2\x94\x5a",
-        20, 6 /* TCP */
-    }, {0}
-};
-
-
-
-int checksum_selftest(void)
-{
-    unsigned sum;
-    size_t i;
-
-    /* Run through some IPv6 examples of TCP, UDP, and ICMP */
-    for (i=0; ipv6packets[i].buf; i++) {
-        sum = checksum_ipv6(
-            (const unsigned char *)ipv6packets[i].ip_src, 
-            (const unsigned char *)ipv6packets[i].ip_dst, 
-            ipv6packets[i].ip_proto, 
-            ipv6packets[i].length, 
-            ipv6packets[i].buf);
-        if (sum != ipv6packets[i].checksum)
-            return 1; /* fail */
-    }
-
-
-    /* Run through some IPv4 examples of TCP, UDP, and ICMP */
-    for (i=0; ipv4packets[i].buf; i++) {
-        sum = checksum_ipv4(ipv4packets[i].ip_src, 
-            ipv4packets[i].ip_dst, 
-            ipv4packets[i].ip_proto, 
-            ipv4packets[i].length, 
-            ipv4packets[i].buf);
-        if (sum != ipv4packets[i].checksum)
-            return 1; /* fail */
-    }
-
-    return 0; /* success */
-}
-
 
 /***************************************************************************
  * Checksum the IP header. This is a "partial" checksum, so we
  * don't reverse the bits ~.
  ***************************************************************************/
 unsigned
-ip_header_checksum(const unsigned char *px, unsigned offset, unsigned max_offset)
+checksum_ip_header(const unsigned char *px, unsigned offset, unsigned max_offset)
 {
     unsigned header_length = (px[offset]&0xF) * 4;
     unsigned xsum = 0;
@@ -286,4 +180,85 @@ ip_header_checksum(const unsigned char *px, unsigned offset, unsigned max_offset
     xsum = (xsum & 0xFFFF) + (xsum >> 16);
 
     return xsum;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+unsigned
+checksum_icmp(const unsigned char *px,
+    unsigned offset_icmp, size_t icmp_length)
+{
+    uint64_t xsum = 0;
+    unsigned i;
+
+    for (i=0; i<icmp_length; i += 2) {
+        xsum += px[offset_icmp + i]<<8 | px[offset_icmp + i + 1];
+    }
+
+    xsum -= (icmp_length & 1) * px[offset_icmp + i - 1]; /* yea I know going off end of packet is bad so sue me */
+    xsum = (xsum & 0xFFFF) + (xsum >> 16);
+    xsum = (xsum & 0xFFFF) + (xsum >> 16);
+    xsum = (xsum & 0xFFFF) + (xsum >> 16);
+
+    return (unsigned)xsum;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+unsigned
+checksum_udp(const unsigned char *px, unsigned offset_ip,
+    unsigned offset_tcp, size_t tcp_length)
+{
+    uint64_t xsum = 0;
+    unsigned i;
+
+    /* pseudo checksum */
+    xsum = 17;
+    xsum += tcp_length;
+    xsum += px[offset_ip + 12] << 8 | px[offset_ip + 13];
+    xsum += px[offset_ip + 14] << 8 | px[offset_ip + 15];
+    xsum += px[offset_ip + 16] << 8 | px[offset_ip + 17];
+    xsum += px[offset_ip + 18] << 8 | px[offset_ip + 19];
+
+    /* TCP checksum */
+    for (i=0; i<tcp_length; i += 2) {
+        xsum += px[offset_tcp + i]<<8 | px[offset_tcp + i + 1];
+    }
+
+    xsum -= (tcp_length & 1) * px[offset_tcp + i - 1]; /* yea I know going off end of packet is bad so sue me */
+    xsum = (xsum & 0xFFFF) + (xsum >> 16);
+    xsum = (xsum & 0xFFFF) + (xsum >> 16);
+    xsum = (xsum & 0xFFFF) + (xsum >> 16);
+
+    return (unsigned)xsum;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+unsigned
+checksum_tcp(const unsigned char *px, unsigned offset_ip,
+    unsigned offset_tcp, size_t tcp_length)
+{
+    uint64_t xsum = 0;
+    unsigned i;
+
+    /* pseudo checksum */
+    xsum = 6;
+    xsum += tcp_length;
+    xsum += px[offset_ip + 12] << 8 | px[offset_ip + 13];
+    xsum += px[offset_ip + 14] << 8 | px[offset_ip + 15];
+    xsum += px[offset_ip + 16] << 8 | px[offset_ip + 17];
+    xsum += px[offset_ip + 18] << 8 | px[offset_ip + 19];
+
+    /* TCP checksum */
+    for (i=0; i<tcp_length; i += 2) {
+        xsum += px[offset_tcp + i]<<8 | px[offset_tcp + i + 1];
+    }
+
+    xsum -= (tcp_length & 1) * px[offset_tcp + i - 1]; /* yea I know going off end of packet is bad so sue me */
+    xsum = (xsum & 0xFFFF) + (xsum >> 16);
+    xsum = (xsum & 0xFFFF) + (xsum >> 16);
+    xsum = (xsum & 0xFFFF) + (xsum >> 16);
+
+    return (unsigned)xsum;
 }

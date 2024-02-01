@@ -32,11 +32,6 @@ struct TemplatePayload {
     unsigned char buf[1500];
 };
 
-unsigned
-udp_checksum2(const unsigned char *px, unsigned offset_ip,
-              unsigned offset_tcp, size_t tcp_length);
-
-
 /**
  * Initialize the "template" packets. As we spew out probes, we simply make
  * minor adjustments to the template, such as changing the target IP

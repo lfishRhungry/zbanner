@@ -1,52 +1,37 @@
-#include <stdio.h>
+/**
+ * RFC 768
+                      User Datagram Header Format
+
+                  0      7 8     15 16    23 24    31
+                 +--------+--------+--------+--------+
+                 |     Source      |   Destination   |
+                 |      Port       |      Port       |
+                 +--------+--------+--------+--------+
+                 |                 |                 |
+                 |     Length      |    Checksum     |
+                 +--------+--------+--------+--------+
+                 |
+                 |          data octets ...
+                 +---------------- ...
+
+*/
+
 #include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 
-#include "templ-icmp.h"
+#include "templ-udp.h"
 #include "../globals.h"
+#include "../util/logger.h"
 #include "../util/checksum.h"
-
-/* Generic ICMPv4 according to RFC792
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |     Type      |     Code      |          Checksum             |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                             unused                            |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |      Internet Header + 64 bits of Original Data Datagram      |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-*/
-
-/* Generic ICMPv6 according to RFC4443
-       0                   1                   2                   3
-       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-      |     Type      |     Code      |          Checksum             |
-      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-      |                                                               |
-      +                         Message Body                          +
-      |                                                               |
-*/
-
-/* echo or echo reply ICMP(v4/v6) according to RFC792 and RFC4443.
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |     Type      |     Code      |          Checksum             |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |           Identifier          |        Sequence Number        |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |     Data ...
-   +-+-+-+-+-
-
-   So we set cookie on `Identifier` and `Sequence Number` fields when echoing.
-*/
+#include "../proto/proto-preprocess.h"
 
 static size_t
-icmp_create_by_template_ipv4(
-    const struct TemplatePacket *tmpl,
-    ipv4address ip_them, ipv4address ip_me,
-    unsigned cookie, uint16_t ip_id, uint8_t ttl,
+udp_create_by_template_ipv4(
+    struct TemplatePacket *tmpl,
+    ipv4address ip_them, unsigned port_them,
+    ipv4address ip_me, unsigned port_me,
+    unsigned char *payload, size_t payload_length,
     unsigned char *px, size_t sizeof_px)
 {
     unsigned offset_ip;
@@ -55,6 +40,9 @@ icmp_create_by_template_ipv4(
     unsigned xsum2;
     unsigned r_len = sizeof_px;
 
+    memcpy(tmpl->ipv4.packet+tmpl->ipv4.offset_app,
+        payload, payload_length);
+    tmpl->ipv4.length = tmpl->ipv4.offset_app + payload_length;
 
     /* Create some shorter local variables to work with */
     if (r_len > tmpl->ipv4.length)
@@ -62,6 +50,7 @@ icmp_create_by_template_ipv4(
     memcpy(px, tmpl->ipv4.packet, r_len);
     offset_ip = tmpl->ipv4.offset_ip;
     offset_tcp = tmpl->ipv4.offset_tcp;
+    unsigned ip_id = ip_them ^ port_them;
 
     /*
 
@@ -94,9 +83,6 @@ icmp_create_by_template_ipv4(
     }
     px[offset_ip+4] = (unsigned char)(ip_id >> 8);
     px[offset_ip+5] = (unsigned char)(ip_id & 0xFF);
-
-    px[offset_ip+8] = (unsigned char)(ttl);
-
     px[offset_ip+12] = (unsigned char)((ip_me >> 24) & 0xFF);
     px[offset_ip+13] = (unsigned char)((ip_me >> 16) & 0xFF);
     px[offset_ip+14] = (unsigned char)((ip_me >>  8) & 0xFF);
@@ -120,36 +106,39 @@ icmp_create_by_template_ipv4(
      * Now do the checksum for the higher layer protocols
      */
     xsum = 0;
+    px[offset_tcp+ 0] = (unsigned char)(port_me >> 8);
+    px[offset_tcp+ 1] = (unsigned char)(port_me & 0xFF);
+    px[offset_tcp+ 2] = (unsigned char)(port_them >> 8);
+    px[offset_tcp+ 3] = (unsigned char)(port_them & 0xFF);
+    px[offset_tcp+ 4] = (unsigned char)((tmpl->ipv4.length - tmpl->ipv4.offset_app + 8)>>8);
+    px[offset_tcp+ 5] = (unsigned char)((tmpl->ipv4.length - tmpl->ipv4.offset_app + 8)&0xFF);
 
-    px[offset_tcp+ 4] = (unsigned char)(cookie >> 24);
-    px[offset_tcp+ 5] = (unsigned char)(cookie >> 16);
-    px[offset_tcp+ 6] = (unsigned char)(cookie >>  8);
-    px[offset_tcp+ 7] = (unsigned char)(cookie >>  0);
-    xsum = (uint64_t)tmpl->ipv4.checksum_tcp
-            + (uint64_t)cookie;
-    xsum = (xsum >> 16) + (xsum & 0xFFFF);
-    xsum = (xsum >> 16) + (xsum & 0xFFFF);
-    xsum = (xsum >> 16) + (xsum & 0xFFFF);
+    px[offset_tcp+6] = (unsigned char)(0);
+    px[offset_tcp+7] = (unsigned char)(0);
+    xsum = checksum_udp(px, offset_ip, offset_tcp, tmpl->ipv4.length - offset_tcp);
     xsum = ~xsum;
-    px[offset_tcp+2] = (unsigned char)(xsum >>  8);
-    px[offset_tcp+3] = (unsigned char)(xsum >>  0);
+    px[offset_tcp+6] = (unsigned char)(xsum >>  8);
+    px[offset_tcp+7] = (unsigned char)(xsum >>  0);
 
     return r_len;
 }
 
 static size_t
-icmp_create_by_template_ipv6(
-    const struct TemplatePacket *tmpl,
-    ipv6address ip_them, ipv6address ip_me,
-    unsigned cookie, uint8_t ttl,
+udp_create_by_template_ipv6(
+    struct TemplatePacket *tmpl,
+    ipv6address ip_them, unsigned port_them,
+    ipv6address ip_me, unsigned port_me,
+    unsigned char *payload, size_t payload_length,
     unsigned char *px, size_t sizeof_px)
 {
     unsigned offset_ip;
     unsigned offset_tcp;
     uint64_t xsum;
-    unsigned payload_length;
-
     unsigned r_len = sizeof_px;
+
+    memcpy(tmpl->ipv6.packet+tmpl->ipv6.offset_app,
+        payload, payload_length);
+    tmpl->ipv6.length = tmpl->ipv6.offset_app + payload_length;
 
     /* Create some shorter local variables to work with */
     if (r_len > tmpl->ipv6.length)
@@ -190,9 +179,6 @@ icmp_create_by_template_ipv6(
     payload_length = tmpl->ipv6.length - tmpl->ipv6.offset_ip - 40;
     px[offset_ip+4] = (unsigned char)(payload_length>>8);
     px[offset_ip+5] = (unsigned char)(payload_length>>0);
-
-    px[offset_ip+7] = (unsigned char)(ttl);
-
     px[offset_ip+ 8] = (unsigned char)((ip_me.hi >> 56ULL) & 0xFF);
     px[offset_ip+ 9] = (unsigned char)((ip_me.hi >> 48ULL) & 0xFF);
     px[offset_ip+10] = (unsigned char)((ip_me.hi >> 40ULL) & 0xFF);
@@ -232,79 +218,48 @@ icmp_create_by_template_ipv6(
     /*
      * Now do the checksum for the higher layer protocols
      */
-    /* TODO: IPv6 */
-    px[offset_tcp+ 4] = (unsigned char)(cookie >> 24);
-    px[offset_tcp+ 5] = (unsigned char)(cookie >> 16);
-    px[offset_tcp+ 6] = (unsigned char)(cookie >>  8);
-    px[offset_tcp+ 7] = (unsigned char)(cookie >>  0);
-    xsum = checksum_ipv6(px + offset_ip + 8, px + offset_ip + 24, 58,  tmpl->ipv6.length - offset_tcp, px + offset_tcp);
-    px[offset_tcp+2] = (unsigned char)(xsum >>  8);
-    px[offset_tcp+3] = (unsigned char)(xsum >>  0);
+            /* TODO: IPv6 */
+    px[offset_tcp+ 0] = (unsigned char)(port_me >> 8);
+    px[offset_tcp+ 1] = (unsigned char)(port_me & 0xFF);
+    px[offset_tcp+ 2] = (unsigned char)(port_them >> 8);
+    px[offset_tcp+ 3] = (unsigned char)(port_them & 0xFF);
+    px[offset_tcp+ 4] = (unsigned char)((tmpl->ipv6.length - tmpl->ipv6.offset_app + 8)>>8);
+    px[offset_tcp+ 5] = (unsigned char)((tmpl->ipv6.length - tmpl->ipv6.offset_app + 8)&0xFF);
+
+    px[offset_tcp+6] = (unsigned char)(0);
+    px[offset_tcp+7] = (unsigned char)(0);
+    xsum = checksum_ipv6(px + offset_ip + 8, px + offset_ip + 24, 17,  tmpl->ipv6.length - offset_tcp, px + offset_tcp);
+    px[offset_tcp+6] = (unsigned char)(xsum >>  8);
+    px[offset_tcp+7] = (unsigned char)(xsum >>  0);
 
     return r_len;
 }
 
 size_t
-icmp_create_by_template(
-    const struct TemplatePacket *tmpl,
-    ipaddress ip_them, ipaddress ip_me,
-    unsigned cookie, uint16_t ip_id, uint8_t ttl,
+udp_create_by_template(
+    struct TemplatePacket *tmpl,
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    unsigned char *payload, size_t payload_length,
     unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->proto != Proto_ICMP_ping
-        && tmpl->proto != Proto_ICMP_timestamp) {
-            fprintf(stderr, "icmp_create_by_template: need a Proto_ICMP_ping or Proto_ICMP_timestamp TemplatePacket.\n");
+    if (tmpl->proto != Proto_UDP) {
+            fprintf(stderr, "udp_create_by_template: need a Proto_UDP TemplatePacket.\n");
             return 0;
     }
 
     size_t r_len = 0;
 
     if (ip_them.version == 4) {
-        r_len = icmp_create_by_template_ipv4(tmpl, ip_them.ipv4, ip_me.ipv4,
-            cookie, ip_id, ttl, px, sizeof_px);
+        r_len = udp_create_by_template_ipv4(tmpl,
+            ip_them.ipv4, port_them,
+            ip_me.ipv4, port_me,
+            payload, payload_length, px, sizeof_px);
     } else {
-        r_len = icmp_create_by_template_ipv6(tmpl, ip_them.ipv6, ip_me.ipv6,
-            cookie, ttl, px, sizeof_px);
+        r_len = udp_create_by_template_ipv6(tmpl,
+            ip_them.ipv6, port_them,
+            ip_me.ipv6, port_me,
+            payload, payload_length, px, sizeof_px);
     }
     return r_len;
-}
-
-size_t
-icmp_create_echo_packet(
-    ipaddress ip_them, const ipaddress ip_me,
-    unsigned cookie, uint16_t ip_id, uint8_t ttl,
-    unsigned char *px, size_t sizeof_px)
-{
-    return icmp_create_by_template(&global_tmplset->pkts[Proto_ICMP_ping],
-        ip_them, ip_me, cookie, ip_id, ttl, px, sizeof_px);
-}
-
-size_t
-icmp_create_timestamp_packet(
-    ipaddress ip_them, const ipaddress ip_me,
-    unsigned cookie, uint16_t ip_id, uint8_t ttl,
-    unsigned char *px, size_t sizeof_px)
-{
-    return icmp_create_by_template(&global_tmplset->pkts[Proto_ICMP_timestamp],
-        ip_them, ip_me, cookie, ip_id, ttl, px, sizeof_px);
-}
-
-unsigned
-get_icmp_cookie(const struct PreprocessedInfo *parsed,const unsigned char *px)
-{
-    unsigned cookie =  px[parsed->transport_offset+4]<<24
-                        | px[parsed->transport_offset+5]<<16
-                        | px[parsed->transport_offset+6]<<8
-                        | px[parsed->transport_offset+7]<<0;
-    return cookie;
-}
-
-unsigned
-get_icmp_type(const struct PreprocessedInfo *parsed) {
-    return parsed->port_src;
-}
-
-unsigned
-get_icmp_code(const struct PreprocessedInfo *parsed) {
-    return parsed->port_dst;
 }

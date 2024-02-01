@@ -1610,36 +1610,6 @@ fail:
     return 1; /* failure */
 }
 
-/***************************************************************************
- ***************************************************************************/
-static unsigned
-tcp_checksum2(const unsigned char *px, unsigned offset_ip,
-              unsigned offset_tcp, size_t tcp_length)
-{
-    uint64_t xsum = 0;
-    unsigned i;
-
-    /* pseudo checksum */
-    xsum = 6;
-    xsum += tcp_length;
-    xsum += px[offset_ip + 12] << 8 | px[offset_ip + 13];
-    xsum += px[offset_ip + 14] << 8 | px[offset_ip + 15];
-    xsum += px[offset_ip + 16] << 8 | px[offset_ip + 17];
-    xsum += px[offset_ip + 18] << 8 | px[offset_ip + 19];
-
-    /* TCP checksum */
-    for (i=0; i<tcp_length; i += 2) {
-        xsum += px[offset_tcp + i]<<8 | px[offset_tcp + i + 1];
-    }
-
-    xsum -= (tcp_length & 1) * px[offset_tcp + i - 1]; /* yea I know going off end of packet is bad so sue me */
-    xsum = (xsum & 0xFFFF) + (xsum >> 16);
-    xsum = (xsum & 0xFFFF) + (xsum >> 16);
-    xsum = (xsum & 0xFFFF) + (xsum >> 16);
-
-    return (unsigned)xsum;
-}
-
 
 /***************************************************************************
  ***************************************************************************/
@@ -1680,8 +1650,8 @@ tcp_set_window(unsigned char *px, size_t px_length, unsigned window)
     px[offset + 17] = (unsigned char)(0);
 
 
-    xsum = ~tcp_checksum2(px, parsed.ip_offset, parsed.transport_offset,
-                            parsed.transport_length);
+    xsum = ~checksum_tcp(px, parsed.ip_offset, parsed.transport_offset,
+        parsed.transport_length);
 
     px[offset + 16] = (unsigned char)(xsum>>8);
     px[offset + 17] = (unsigned char)(xsum>>0);
@@ -1776,8 +1746,8 @@ tcp_create_by_template(
         px[offset_tcp+16] = (unsigned char)(0 >>  8);
         px[offset_tcp+17] = (unsigned char)(0 >>  0);
 
-        xsum = tcp_checksum2(px, tmpl->ipv4.offset_ip, tmpl->ipv4.offset_tcp,
-                             new_length - tmpl->ipv4.offset_tcp);
+        xsum = checksum_tcp(px, tmpl->ipv4.offset_ip, tmpl->ipv4.offset_tcp,
+            new_length - tmpl->ipv4.offset_tcp);
         xsum = ~xsum;
 
         px[offset_tcp+16] = (unsigned char)(xsum >>  8);

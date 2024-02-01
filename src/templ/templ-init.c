@@ -178,117 +178,6 @@ static unsigned char default_arp_template[] =
 
 /***************************************************************************
  ***************************************************************************/
-/***************************************************************************
- ***************************************************************************/
-static unsigned
-tcp_ipv4_checksum(struct TemplatePacket *tmpl)
-{
-    const unsigned char *px = tmpl->ipv4.packet;
-    unsigned offset_ip = tmpl->ipv4.offset_ip;
-    unsigned offset_app = tmpl->ipv4.offset_app;
-    unsigned offset_tcp = tmpl->ipv4.offset_tcp;
-    unsigned xsum = 0;
-    unsigned i;
-
-
-
-    /* pseudo checksum */
-    xsum = 6;
-    xsum += offset_app - offset_tcp;
-    xsum += px[offset_ip + 12] << 8 | px[offset_ip + 13];
-    xsum += px[offset_ip + 14] << 8 | px[offset_ip + 15];
-    xsum += px[offset_ip + 16] << 8 | px[offset_ip + 17];
-    xsum += px[offset_ip + 18] << 8 | px[offset_ip + 19];
-
-    /* TCP checksum */
-    for (i=offset_tcp; i<offset_app; i += 2) {
-        xsum += px[i]<<8 | px[i+1];
-    }
-    xsum = (xsum & 0xFFFF) + (xsum >> 16);
-    xsum = (xsum & 0xFFFF) + (xsum >> 16);
-    xsum = (xsum & 0xFFFF) + (xsum >> 16);
-
-    return xsum;
-}
-
-
-
-/***************************************************************************
- ***************************************************************************/
-unsigned
-udp_checksum2(const unsigned char *px, unsigned offset_ip,
-              unsigned offset_tcp, size_t tcp_length)
-{
-    uint64_t xsum = 0;
-    unsigned i;
-
-    /* pseudo checksum */
-    xsum = 17;
-    xsum += tcp_length;
-    xsum += px[offset_ip + 12] << 8 | px[offset_ip + 13];
-    xsum += px[offset_ip + 14] << 8 | px[offset_ip + 15];
-    xsum += px[offset_ip + 16] << 8 | px[offset_ip + 17];
-    xsum += px[offset_ip + 18] << 8 | px[offset_ip + 19];
-
-    /* TCP checksum */
-    for (i=0; i<tcp_length; i += 2) {
-        xsum += px[offset_tcp + i]<<8 | px[offset_tcp + i + 1];
-    }
-
-    xsum -= (tcp_length & 1) * px[offset_tcp + i - 1]; /* yea I know going off end of packet is bad so sue me */
-    xsum = (xsum & 0xFFFF) + (xsum >> 16);
-    xsum = (xsum & 0xFFFF) + (xsum >> 16);
-    xsum = (xsum & 0xFFFF) + (xsum >> 16);
-
-    return (unsigned)xsum;
-}
-
-/***************************************************************************
- ***************************************************************************/
-static unsigned
-udp_ipv4_checksum(struct TemplatePacket *tmpl)
-{
-    return udp_checksum2(
-                         tmpl->ipv4.packet,
-                         tmpl->ipv4.offset_ip,
-                         tmpl->ipv4.offset_tcp,
-                         tmpl->ipv4.length - tmpl->ipv4.offset_tcp);
-}
-
-/***************************************************************************
- ***************************************************************************/
-static unsigned
-icmp_checksum2(const unsigned char *px,
-              unsigned offset_icmp, size_t icmp_length)
-{
-    uint64_t xsum = 0;
-    unsigned i;
-
-    for (i=0; i<icmp_length; i += 2) {
-        xsum += px[offset_icmp + i]<<8 | px[offset_icmp + i + 1];
-    }
-
-    xsum -= (icmp_length & 1) * px[offset_icmp + i - 1]; /* yea I know going off end of packet is bad so sue me */
-    xsum = (xsum & 0xFFFF) + (xsum >> 16);
-    xsum = (xsum & 0xFFFF) + (xsum >> 16);
-    xsum = (xsum & 0xFFFF) + (xsum >> 16);
-
-    return (unsigned)xsum;
-}
-
-/***************************************************************************
- ***************************************************************************/
-static unsigned
-icmp_ipv4_checksum(struct TemplatePacket *tmpl)
-{
-    return icmp_checksum2(
-                         tmpl->ipv4.packet,
-                         tmpl->ipv4.offset_tcp,
-                         tmpl->ipv4.length - tmpl->ipv4.offset_tcp);
-}
-
-/***************************************************************************
- ***************************************************************************/
 static void
 udp_payload_fixup(struct TemplatePacket *tmpl, unsigned port, unsigned seqno)
 {
@@ -646,7 +535,7 @@ template_set_target_ipv4(
     px[offset_ip+10] = (unsigned char)(0);
     px[offset_ip+11] = (unsigned char)(0);
 
-    xsum2 = (unsigned)~ip_header_checksum(px, offset_ip, tmpl->ipv4.length);
+    xsum2 = (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.length);
 
     px[offset_ip+10] = (unsigned char)(xsum2 >> 8);
     px[offset_ip+11] = (unsigned char)(xsum2 & 0xFF);
@@ -691,7 +580,7 @@ template_set_target_ipv4(
 
         px[offset_tcp+6] = (unsigned char)(0);
         px[offset_tcp+7] = (unsigned char)(0);
-        xsum = udp_checksum2(px, offset_ip, offset_tcp, tmpl->ipv4.length - offset_tcp);
+        xsum = checksum_udp(px, offset_ip, offset_tcp, tmpl->ipv4.length - offset_tcp);
         /*xsum += (uint64_t)tmpl->checksum_tcp
                 + (uint64_t)ip_me
                 + (uint64_t)ip_them
@@ -944,7 +833,7 @@ _template_init(
     memset(px + tmpl->ipv4.offset_ip + 4, 0, 2);  /* IP ID field */
     memset(px + tmpl->ipv4.offset_ip + 10, 0, 2); /* checksum */
     memset(px + tmpl->ipv4.offset_ip + 12, 0, 8); /* addresses */
-    tmpl->ipv4.checksum_ip = ip_header_checksum( tmpl->ipv4.packet,
+    tmpl->ipv4.checksum_ip = checksum_ip_header( tmpl->ipv4.packet,
                                             tmpl->ipv4.offset_ip,
                                             tmpl->ipv4.length);
 
@@ -955,7 +844,8 @@ _template_init(
     switch (parsed.ip_protocol) {
     case 1: /* ICMP */
             tmpl->ipv4.offset_app = tmpl->ipv4.length;
-            tmpl->ipv4.checksum_tcp = icmp_ipv4_checksum(tmpl);
+            tmpl->ipv4.checksum_tcp = checksum_icmp(tmpl->ipv4.packet,
+                tmpl->ipv4.offset_tcp, tmpl->ipv4.length-tmpl->ipv4.offset_tcp);
             switch (px[tmpl->ipv4.offset_tcp]) {
                 case 8:
                     tmpl->proto = Proto_ICMP_ping;
@@ -970,12 +860,15 @@ _template_init(
         /* zero out fields that'll be overwritten */
         memset(px + tmpl->ipv4.offset_tcp + 0, 0, 8); /* destination port and seqno */
         memset(px + tmpl->ipv4.offset_tcp + 16, 0, 2); /* checksum */
-        tmpl->ipv4.checksum_tcp = tcp_ipv4_checksum(tmpl);
+        tmpl->ipv4.checksum_tcp = checksum_tcp(tmpl->ipv4.packet, tmpl->ipv4.offset_ip,
+            tmpl->ipv4.offset_tcp, tmpl->ipv4.length-tmpl->ipv4.offset_tcp);
         tmpl->proto = Proto_TCP;
         break;
     case 17: /* UDP */
         memset(px + tmpl->ipv4.offset_tcp + 6, 0, 2); /* checksum */
-        tmpl->ipv4.checksum_tcp = udp_ipv4_checksum(tmpl);
+        tmpl->ipv4.checksum_tcp = checksum_udp(tmpl->ipv4.packet,
+            tmpl->ipv4.offset_ip, tmpl->ipv4.offset_tcp,
+            tmpl->ipv4.length-tmpl->ipv4.offset_tcp);
         tmpl->proto = Proto_UDP;
         break;
     case 132: /* SCTP */
@@ -1120,7 +1013,7 @@ template_set_ttl(struct TemplateSet *tmplset, unsigned ttl)
         unsigned offset = tmpl->ipv4.offset_ip;
 
         px[offset+8] = (unsigned char)(ttl);
-        tmpl->ipv4.checksum_ip = ip_header_checksum(    tmpl->ipv4.packet,
+        tmpl->ipv4.checksum_ip = checksum_ip_header(    tmpl->ipv4.packet,
                                                     tmpl->ipv4.offset_ip,
                                                     tmpl->ipv4.length);
     }
@@ -1133,7 +1026,7 @@ template_packet_set_ttl(struct TemplatePacket *tmpl_pkt, unsigned ttl)
     unsigned offset = tmpl_pkt->ipv4.offset_ip;
 
     px[offset+8] = (unsigned char)(ttl);
-    tmpl_pkt->ipv4.checksum_ip = ip_header_checksum(tmpl_pkt->ipv4.packet,
+    tmpl_pkt->ipv4.checksum_ip = checksum_ip_header(tmpl_pkt->ipv4.packet,
         tmpl_pkt->ipv4.offset_ip, tmpl_pkt->ipv4.length);
 }
 

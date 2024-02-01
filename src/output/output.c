@@ -4,8 +4,8 @@
 
 void
 output_result(
-    struct Output *output,
-    struct PreprocessedInfo * parsed,
+    const struct Output *output,
+    const struct PreprocessedInfo *parsed,
     time_t timestamp, unsigned successed,
     const char *classification, const char *report)
 {

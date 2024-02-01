@@ -58,7 +58,7 @@ templ_tcp_selftest(void);
  */
 size_t
 tcp_create_by_template(
-        const struct TemplatePacket *pkt,
+        const struct TemplatePacket *tmpl,
         ipaddress ip_them, unsigned port_them,
         ipaddress ip_me, unsigned port_me,
         unsigned seqno, unsigned ackno,

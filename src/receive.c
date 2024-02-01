@@ -75,7 +75,7 @@ receive_thread(void *v)
 {
     struct RxThread *parms = (struct RxThread *)v;
     const struct Xconf *xconf = parms->xconf;
-    struct Output *output = &xconf->output;
+    const struct Output *output = &xconf->output;
     struct Adapter *adapter = xconf->nic.adapter;
     int data_link = stack_if_datalink(adapter);
     struct DedupTable *dedup;
