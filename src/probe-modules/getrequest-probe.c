@@ -2,19 +2,19 @@
 #include "null-probe.h"
 #include "getrequest-probe.h"
 
-struct StatelessProbe GetRequestProbe = {
+struct ProbeModule GetRequestProbe = {
     .name = "getrequest",
     .type = Tcp_Probe,
     .help_text =
         "GetRequest Probe sends target port a simple HTTP Get request:\n"
         "    `GET / HTTP/1.0\\r\\n\\r\\n`\n"
         "It could get result from http server fastly.\n",
-    .global_init = NULL,
-    .thread_init = NULL,
-    .make_payload = &getrequest_make_payload,
-    .get_payload_length = &getrequest_get_payload_length,
-    .get_report_banner = &just_report_banner,
-    .close = NULL
+    .global_init_cb = NULL,
+    .thread_init_cb = NULL,
+    .make_payload_cb = &getrequest_make_payload,
+    .get_payload_length_cb = &getrequest_get_payload_length,
+    .get_report_banner_cb = &just_report_banner,
+    .close_cb = NULL
 };
 
 size_t getrequest_make_payload(ipaddress ip_them, ipaddress ip_me,

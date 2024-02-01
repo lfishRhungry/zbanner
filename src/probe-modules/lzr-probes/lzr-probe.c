@@ -5,7 +5,7 @@
  * LZR Probe will use `get_report_banner` funcs of all subprobes listed here
  * to match the banner and identify its service automaticly.
  * Subprobes' names always start with 'lzr-', and could be used as a normal
- * StatelessProbe. It reports what service it identified out and will report
+ * ProbeModule. It reports what service it identified out and will report
  * nothong if no service identified.
  * When they specified as subprobes in LZR probe with `--probe-args`, omit the
  * 'lzr-' prefix. LZR probe uses specified subprobe to send data, and matches
@@ -16,15 +16,15 @@
  * funcs will never be called. So leave all init and close funcs NULL.
  */
 
-extern struct StatelessProbe LzrWaitProbe;
-extern struct StatelessProbe LzrHttpProbe;
-extern struct StatelessProbe LzrFtpProbe;
+extern struct ProbeModule LzrWaitProbe;
+extern struct ProbeModule LzrHttpProbe;
+extern struct ProbeModule LzrFtpProbe;
 //! ADD NEW LZR SUBPROBES HERE
 //! ALSO ADD TO stateless-probes.c IF NEEDED
 
 
 
-static struct StatelessProbe *lzr_subprobes[] = {
+static struct ProbeModule *lzr_subprobes[] = {
     &LzrWaitProbe,
     &LzrHttpProbe,
     &LzrFtpProbe,
@@ -32,9 +32,9 @@ static struct StatelessProbe *lzr_subprobes[] = {
     //! ALSO ADD TO stateless-probes.c IF NEEDED
 };
 
-static struct StatelessProbe *specified_subprobe;
+static struct ProbeModule *specified_subprobe;
 
-struct StatelessProbe LzrProbe = {
+struct ProbeModule LzrProbe = {
     .name = "lzr",
     .type = Tcp_Probe,
     .help_text =
@@ -44,11 +44,11 @@ struct StatelessProbe LzrProbe = {
         "    `--probe-args http`\n",
         // "Note! LZR Probe will stop send next subprobe if no data responsed because\n",
         // "of no state.\n",
-    .global_init = &lzr_global_init,
-    .thread_init = NULL,
-    .get_report_banner = &lzr_report_banner,
-    .close = NULL,
-    // make_payload and get_paylaod_length will be set dynamicly in lzr_global_init.
+    .global_init_cb = &lzr_global_init,
+    .thread_init_cb = NULL,
+    .get_report_banner_cb = &lzr_report_banner,
+    .close_cb = NULL,
+    // make_payload_cb and get_paylaod_length will be set dynamicly in lzr_global_init.
 };
 
 static int lzr_global_init(const void *Xconf)
@@ -56,22 +56,22 @@ static int lzr_global_init(const void *Xconf)
     const struct Xconf *xconf = Xconf;
 
     /*Use LzrWait if no subprobe specified*/
-    if (!xconf->stateless_probe_args[0]) {
+    if (!xconf->probe_module_args[0]) {
         specified_subprobe = &LzrWaitProbe;
         fprintf(stderr, "[-] Use default LzrWait as subprobe of LzrProbe because no subprobe was specified by --probe-args.\n");
     } else {
         char subprobe_name[LZR_SUBPROBE_NAME_LEN] = "lzr-";
-        memcpy(subprobe_name+strlen(subprobe_name), xconf->stateless_probe_args,
+        memcpy(subprobe_name+strlen(subprobe_name), xconf->probe_module_args,
             LZR_SUBPROBE_NAME_LEN-strlen(subprobe_name)-1);
 
-        specified_subprobe = get_stateless_probe(subprobe_name);
+        specified_subprobe = get_probe_module_by_name(subprobe_name);
         if (specified_subprobe == NULL) {
             return EXIT_FAILURE;
         }
     }
 
-    LzrProbe.make_payload = specified_subprobe->make_payload;
-    LzrProbe.get_payload_length = specified_subprobe->get_payload_length;
+    LzrProbe.make_payload_cb = specified_subprobe->make_payload_cb;
+    LzrProbe.get_payload_length_cb = specified_subprobe->get_payload_length_cb;
 
     return EXIT_SUCCESS;
 }
@@ -90,7 +90,7 @@ lzr_report_banner(ipaddress ip_them, ipaddress ip_me,
     size_t remain_len = buf_len;
 
     /*match specified subprobe first*/
-    size_t len = specified_subprobe->get_report_banner(ip_them, ip_me, port_them, port_me,
+    size_t len = specified_subprobe->get_report_banner_cb(ip_them, ip_me, port_them, port_me,
         banner, banner_len, report_banner_buf, buf_len);
     
     /**
@@ -107,11 +107,11 @@ lzr_report_banner(ipaddress ip_them, ipaddress ip_me,
     /**
      * strcat every lzr subprobes match result
     */
-    for (size_t i=0; i<sizeof(lzr_subprobes)/sizeof(struct StatelessProbe*); i++) {
+    for (size_t i=0; i<sizeof(lzr_subprobes)/sizeof(struct ProbeModule*); i++) {
         if (lzr_subprobes[i] == specified_subprobe)
             continue;
 
-        len = lzr_subprobes[i]->get_report_banner(ip_them, ip_me, port_them, port_me,
+        len = lzr_subprobes[i]->get_report_banner_cb(ip_them, ip_me, port_them, port_me,
             banner, banner_len, buf_idx, remain_len);
 
         buf_idx += len;

@@ -1,4 +1,4 @@
-#include "stateless-probes.h"
+#include "probe-modules.h"
 
 #ifndef NULL_PROBE_H
 #define NULL_PROBE_H

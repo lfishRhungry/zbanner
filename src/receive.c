@@ -137,8 +137,8 @@ receive_thread(void *v)
     /*
      * Do thread init for stateless probe
      */
-    if (xconf->stateless_probe && xconf->stateless_probe->thread_init){
-        xconf->stateless_probe->thread_init(parms);
+    if (xconf->probe_module && xconf->probe_module->thread_init_cb){
+        xconf->probe_module->thread_init_cb(parms);
     }
 
 

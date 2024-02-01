@@ -14,7 +14,7 @@
 #include "stack/stack-src.h"
 #include "stack/stack-queue.h"
 #include "output/output.h"
-#include "stateless-probes/stateless-probes.h"
+#include "probe-modules/probe-modules.h"
 #include "scan-modules/scan_modules.h"
 
 
@@ -51,7 +51,7 @@ enum Operation {
     Operation_ReadRange = 7,        /* list all targets in range */
     Operation_Echo = 9,             /* echo the config used now or all configs with --echo-all */
     Operation_EchoCidr = 11,        /* list all targets in CIDR */
-    Operation_ListProbes,           /* list all probes */
+    Operation_ListProbeModules,           /* list all probes */
     Operation_ListScanModules,      /* list all scan modules */
 };
 
@@ -170,8 +170,8 @@ struct Xconf
     /**
      * application probe/request for stateless mode
     */
-    struct StatelessProbe *stateless_probe;
-    char stateless_probe_args[STATELESS_PROBE_ARGS_LEN];
+    struct ProbeModule *probe_module;
+    char *probe_module_args;
 
     /**
      * Choosed ScanModule
@@ -185,7 +185,6 @@ struct Xconf
     unsigned is_status_ndjson:1;
     unsigned is_pfring:1;       /* --pfring */
     unsigned is_sendq:1;        /* --sendq */
-    unsigned is_stateless_banners:1; /* --stateless, --stateless-banners, get banners in stateless mode*/
     unsigned is_offline:1;      /* --offline */
     unsigned is_nodedup:1;      /* --nodedup, don't deduplicate */
     unsigned is_gmt:1;          /* --gmt, all times in GMT */

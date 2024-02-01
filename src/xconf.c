@@ -154,19 +154,6 @@ xconf_save_state(struct Xconf *xconf)
     fclose(fp);
 }
 
-
-static int SET_stateless_banners(struct Xconf *xconf, const char *name, const char *value)
-{
-    if (xconf->echo) {
-        if (xconf->is_stateless_banners || xconf->echo_all)
-            fprintf(xconf->echo, "stateless-banners = %s\n", xconf->is_stateless_banners?"true":"false");
-       return 0;
-    }
-    xconf->is_stateless_banners = parseBoolean(value);
-
-    return CONF_OK;
-}
-
 static int SET_scan_module(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
@@ -188,23 +175,18 @@ static int SET_scan_module(struct Xconf *xconf, const char *name, const char *va
     return CONF_OK;
 }
 
-static int SET_stateless_probe(struct Xconf *xconf, const char *name, const char *value)
+static int SET_probe_module(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
-        if (xconf->stateless_probe){
-            fprintf(xconf->echo, "stateless-probe = %s\n", xconf->stateless_probe->name);
+        if (xconf->probe_module){
+            fprintf(xconf->echo, "probe-module = %s\n", xconf->probe_module->name);
         }
         return 0;
     }
 
-    if(!xconf->is_stateless_banners){
-        fprintf(stderr, "FAIL %s: use --stateless-banners mode before specify %s\n", value, name);
-        return CONF_ERR;
-    }
-
-    xconf->stateless_probe = get_stateless_probe(value);
-    if(!xconf->stateless_probe){
-        fprintf(stderr, "FAIL %s: no such stateless probe\n", value);
+    xconf->probe_module = get_probe_module_by_name(value);
+    if(!xconf->probe_module){
+        fprintf(stderr, "FAIL %s: no such probe module\n", value);
         return CONF_ERR;
     }
 
@@ -271,26 +253,22 @@ static int SET_scan_module_args(struct Xconf *xconf, const char *name, const cha
     return CONF_OK;
 }
 
-static int SET_probe_args(struct Xconf *xconf, const char *name, const char *value)
+static int SET_probe_module_args(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->stateless_probe_args[0]){
-            fprintf(xconf->echo, "stateless-probe-args = %s\n", xconf->stateless_probe_args);
+        if (xconf->probe_module_args){
+            fprintf(xconf->echo, "probe-module-args = %s\n", xconf->probe_module_args);
         }
         return 0;
     }
 
-    
-    unsigned value_len = strlen(value);
-    if (value_len >= STATELESS_PROBE_ARGS_LEN) {
-        fprintf(stderr, "FAIL %s: length of args is too long\n", name);
-        fprintf(stderr, "Hint: length of %s args must be no more than %u.\n",
-            name, STATELESS_PROBE_ARGS_LEN-1);
-        return CONF_ERR;
-    }
+    size_t len = strlen(value) + 1;
+    if (xconf->probe_module_args)
+        free(xconf->probe_module_args);
+    xconf->probe_module_args = CALLOC(1, len);
+    memcpy(xconf->probe_module_args, value, len);
 
-    memcpy(xconf->stateless_probe_args, value, value_len);
     return CONF_OK;
 }
 
@@ -305,14 +283,14 @@ static int SET_list_scan_modules(struct Xconf *xconf, const char *name, const ch
     return CONF_OK;
 }
 
-static int SET_list_probes(struct Xconf *xconf, const char *name, const char *value)
+static int SET_list_probe_modules(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
 
     if (xconf->echo) {
        return 0;
     }
-    xconf->op = parseBoolean(value)?Operation_ListProbes:xconf->op;
+    xconf->op = parseBoolean(value)?Operation_ListProbeModules:xconf->op;
     return CONF_OK;
 }
 
@@ -2017,7 +1995,7 @@ static int SET_send_queue(struct Xconf *xconf, const char *name, const char *val
 }
 
 struct ConfigParameter config_parameters[] = {
-    {"BASIC",           SET_nothing,              0,      {0}},
+    {"BASIC",           SET_nothing,            0,      {0}},
 
     {"seed",            SET_seed,               0,      {0}},
     {"rate",            SET_rate,               0,      {"max-rate",0}},
@@ -2030,7 +2008,7 @@ struct ConfigParameter config_parameters[] = {
     {"help",            SET_help,               F_BOOL, {"h", "?",0}},
     {"usage",           SET_usage,              F_BOOL, {0}},
 
-    {"TARGET:",         SET_nothing,              0,      {0}},
+    {"TARGET:",         SET_nothing,            0,      {0}},
 
     {"target-ip",       SET_target_ip,          0,      {"range", "ranges", "dst-ip", "ip",0}},
     {"port",            SET_target_port,        0,      {"p", "ports",0}},
@@ -2041,7 +2019,7 @@ struct ConfigParameter config_parameters[] = {
     {"exclude-port",    SET_exclude_port,       0,      {"exclude-ports",0}},
     {"exclude-file",    SET_exclude_file,       0,      {0}},
 
-    {"INTERFACE:",      SET_nothing,              0,      {0}},
+    {"INTERFACE:",      SET_nothing,            0,      {0}},
 
     {"adapter",         SET_adapter,            0,      {"if", "interface",0}},
     {"source-ip",       SET_source_ip,          0,      {"src-ip",0}},
@@ -2052,7 +2030,7 @@ struct ConfigParameter config_parameters[] = {
     {"adapter-vlan",    SET_adapter_vlan,       F_NUMABLE, {"vlan",0}},
     {"lan-mode",        SET_lan_mode,           F_BOOL, {"local", "lan",0}},
 
-    {"OPERATION:",      SET_nothing,              0,      {0}},
+    {"OPERATION:",      SET_nothing,            0,      {0}},
 
     {"echo",            SET_echo,               F_BOOL, {"echo-all", "echo-cidr",0}},
     {"iflist",          SET_iflist,             F_BOOL, {"list-interface", "list-adapter",0}},
@@ -2060,13 +2038,19 @@ struct ConfigParameter config_parameters[] = {
     {"listtarget",      SET_list_target,        F_BOOL, {"list-targets",0}},
     {"debug-if",        SET_debug_interface,    F_BOOL, {"debug-interface",0}},
 
-    {"SCAN MODULES:",   SET_nothing,              0,      {0}},
+    {"SCAN MODULES:",   SET_nothing,            0,      {0}},
 
     {"scan-module",     SET_scan_module,        0,      {"scan", 0}},
-    {"list-scan-modules",SET_list_scan_modules, F_BOOL, {"list-scan-module", "list-scan",0}},
+    {"list-scan-modules",SET_list_scan_modules, F_BOOL, {"list-scan-module", "list-scan", "list-scans",0}},
     {"scan-module-args", SET_scan_module_args,  0,      {"scan-module-arg", "scan-args", "scan-arg",0}},
 
-    {"STATUS & OUTPUT:",SET_nothing,              0,      {0}},
+    {"PROBE MODULES:",  SET_nothing,            0,      {0}},
+
+    {"probe-module",    SET_probe_module,       0,      {"probe", 0}},
+    {"list-probe-modules",SET_list_probe_modules,F_BOOL, {"list-probe-module", "list-probe", "list-probes", 0}},
+    {"probe-module-args",SET_probe_module_args, 0,      {"probe-module-arg", "probe-args", "probe-arg", 0}},
+
+    {"STATUS & OUTPUT:",SET_nothing,            0,      {0}},
 
     {"ndjson-status",   SET_ndjson_status,      F_BOOL, {"status-ndjson", 0}},
     {"pcap-filename",   SET_pcap_filename,      0,      {"pcap",0}},
@@ -2075,7 +2059,7 @@ struct ConfigParameter config_parameters[] = {
     {"append",          SET_append,             F_BOOL, {0}},
     {"output-file",     SET_output_filename,    0,      {"output", "o", "output-filename",0}},
 
-    {"PAYLOAD:",        SET_nothing,              0,      {0}},
+    {"PAYLOAD:",        SET_nothing,            0,      {0}},
 
     {"nmap-datadir",    SET_nmap_datadir,       0,      {"datadir",0}},
     {"nmap-datalength", SET_nmap_data_length,   F_NUMABLE,{"datalength",0}},
@@ -2083,14 +2067,7 @@ struct ConfigParameter config_parameters[] = {
     {"nmap-service-probes",SET_nmap_service_probes, 0,  {"nmap-service-probe",0}},
     {"pcap-payloads",   SET_pcap_payloads,      0,      {"pcap-payload",0}},
 
-    {"STATELESS:",      SET_nothing,              0,      {0}},
-
-    {"stateless-banners",SET_stateless_banners, F_BOOL, {"stateless", "stateless-banner", "stateless-mode",0}},
-    {"stateless-probe", SET_stateless_probe,    0,      {"probe", 0}},
-    {"list-probes",     SET_list_probes,        F_BOOL, {"list-probe", 0}},
-    {"probe-args",      SET_probe_args,         0,      {"probe-arg", 0}},
-
-    {"PACKET ATTRIBUTE:",SET_nothing,             0,      {0}},
+    {"PACKET ATTRIBUTE:",SET_nothing,           0,      {0}},
 
     {"ttl",             SET_ttl,                F_NUMABLE, {0}},
     {"badsum",          SET_badsum,             F_BOOL, {0}},
@@ -2102,7 +2079,7 @@ struct ConfigParameter config_parameters[] = {
     {"packet-trace",    SET_packet_trace,       F_BOOL, {"trace-packet",0}},
     {"bpf-filter",      SET_bpf_filter,         0,      {0}},
 
-    {"MISC:",           SET_nothing,              0,      {0}},
+    {"MISC:",           SET_nothing,            0,      {0}},
 
     {"conf",            SET_read_conf,          0,      {"config", "resume",0}},
     {"resume-index",    SET_resume_index,       0,      {0}},
@@ -2116,7 +2093,7 @@ struct ConfigParameter config_parameters[] = {
     {"blackrock-rounds",SET_blackrock_rounds,   F_NUMABLE, {"blackrock-round",0}},
 
     /*Put it at last for better "help" output*/
-    {"TARGET",          SET_nothing,              0,      {0}},
+    {"TARGET",          SET_nothing,            0,      {0}},
     {"TARGET_OUTPUT",   SET_target_output,      0,      {0}},
     {0}
 };

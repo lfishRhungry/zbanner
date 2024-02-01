@@ -173,13 +173,13 @@ tmp/%.o: \
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
-	src/stateless-probes/%.c \
-	src/stateless-probes/*.h
+	src/probe-modules/%.c \
+	src/probe-modules/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
-	src/stateless-probes/lzr-handshakes/%.c \
-	src/stateless-probes/lzr-handshakes/*.h
+	src/probe-modules/lzr-probes/%.c \
+	src/probe-modules/lzr-probes/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
@@ -207,8 +207,8 @@ SRC = $(sort $(wildcard \
 	src/util/*.c \
 	src/smack/*.c \
 	src/nmap-service/*.c \
-	src/stateless-probes/*.c \
-	src/stateless-probes/lzr-handshakes/*.c \
+	src/probe-modules/*.c \
+	src/probe-modules/lzr-probes/*.c \
 	src/scan-modules/*.c \
 	src/output/*.c \
 	))

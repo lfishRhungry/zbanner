@@ -2,18 +2,18 @@
 #include "../null-probe.h"
 #include "lzr-wait.h"
 
-struct StatelessProbe LzrWaitProbe = {
+struct ProbeModule LzrWaitProbe = {
     .name = "lzr-wait",
     .type = Tcp_Probe,
     .help_text =
         "LzrWait Probe sends nothing and identifies no service. It is the default\n"
         "subprobe of LzrProbe to help other subprobes to match services.\n",
-    .global_init = NULL,
-    .thread_init = NULL,
-    .make_payload = &make_no_payload,
-    .get_payload_length = &null_get_payload_length,
-    .get_report_banner = &report_no_banner,
-    .close = NULL
+    .global_init_cb = NULL,
+    .thread_init_cb = NULL,
+    .make_payload_cb = &make_no_payload,
+    .get_payload_length_cb = &null_get_payload_length,
+    .get_report_banner_cb = &report_no_banner,
+    .close_cb = NULL
 };
 
 

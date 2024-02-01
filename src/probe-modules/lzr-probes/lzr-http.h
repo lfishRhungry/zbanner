@@ -1,4 +1,4 @@
-#include "../stateless-probes.h"
+#include "../probe-modules.h"
 #include "../../xconf.h"
 
 #ifndef LZR_HTTP_PROBE_H

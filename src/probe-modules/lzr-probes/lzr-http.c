@@ -4,17 +4,17 @@
 #include "lzr-http.h"
 
 
-struct StatelessProbe LzrHttpProbe = {
+struct ProbeModule LzrHttpProbe = {
     .name = "lzr-http",
     .type = Tcp_Probe,
     .help_text =
         "LzrHttp Probe sends an HTTP GET request and identifies HTTP service.\n",
-    .global_init = NULL,
-    .thread_init = NULL,
-    .make_payload = &lzr_http_make_payload,
-    .get_payload_length = &lzr_http_get_payload_length,
-    .get_report_banner = &lzr_http_report_banner,
-    .close = NULL
+    .global_init_cb = NULL,
+    .thread_init_cb = NULL,
+    .make_payload_cb = &lzr_http_make_payload,
+    .get_payload_length_cb = &lzr_http_get_payload_length,
+    .get_report_banner_cb = &lzr_http_report_banner,
+    .close_cb = NULL
 };
 
 size_t

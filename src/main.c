@@ -262,19 +262,19 @@ main_scan(struct Xconf *xconf)
     }
 
     /*
-     * Choose a default StatelessProbe if not specified.
-     * Wrong specification will be handled in SET_stateless_probe in xconf.c
+     * Choose a default ProbeModule if not specified.
+     * Wrong specification will be handled in SET_probe_module in xconf.c
      */
-    if (xconf->is_stateless_banners && !xconf->stateless_probe){
-        xconf->stateless_probe = get_stateless_probe("null");
+    if (!xconf->probe_module){
+        xconf->probe_module = get_probe_module_by_name("null");
         LOG(0, "[-] Default NullProbe is chosen because no statelss-probe was specified.\n");
     }
 
     /*
      * Do global init for stateless probe
      */
-    if (xconf->stateless_probe && xconf->stateless_probe->global_init){
-        if (EXIT_FAILURE == xconf->stateless_probe->global_init(xconf)) {
+    if (xconf->probe_module && xconf->probe_module->global_init_cb){
+        if (EXIT_FAILURE == xconf->probe_module->global_init_cb(xconf)) {
             LOG(0, "FAIL: errors in stateless probe global initializing\n");
             exit(1);
         }
@@ -300,8 +300,8 @@ main_scan(struct Xconf *xconf)
     /*
      * Do global init for stateless probe
      */
-    if (xconf->stateless_probe && xconf->stateless_probe->global_init){
-        if (EXIT_FAILURE == xconf->stateless_probe->global_init(xconf)) {
+    if (xconf->probe_module && xconf->probe_module->global_init_cb){
+        if (EXIT_FAILURE == xconf->probe_module->global_init_cb(xconf)) {
             LOG(0, "FAIL: errors in stateless probe global initializing\n");
             exit(1);
         }
@@ -498,8 +498,8 @@ main_scan(struct Xconf *xconf)
     /**
      * Do close for stateless probe
     */
-    if (xconf->stateless_probe && xconf->stateless_probe->close) {
-        xconf->stateless_probe->close(xconf);
+    if (xconf->probe_module && xconf->probe_module->close_cb) {
+        xconf->probe_module->close_cb(xconf);
     }
 
     /**
@@ -702,8 +702,8 @@ int main(int argc, char *argv[])
         exit(0);
         break;
 
-    case Operation_ListProbes:
-        list_all_probes();
+    case Operation_ListProbeModules:
+        list_all_probe_modules();
         break;
     
     case Operation_ListScanModules:

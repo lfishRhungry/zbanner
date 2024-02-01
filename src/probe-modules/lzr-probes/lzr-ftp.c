@@ -5,17 +5,17 @@
 #include "../null-probe.h"
 
 
-struct StatelessProbe LzrFtpProbe = {
+struct ProbeModule LzrFtpProbe = {
     .name = "lzr-ftp",
     .type = Tcp_Probe,
     .help_text =
         "LzrFtp Probe sends no data and identifies FTP service.\n",
-    .global_init = NULL,
-    .thread_init = NULL,
-    .make_payload = &make_no_payload,
-    .get_payload_length = &null_get_payload_length,
-    .get_report_banner = &lzr_ftp_report_banner,
-    .close = NULL
+    .global_init_cb = NULL,
+    .thread_init_cb = NULL,
+    .make_payload_cb = &make_no_payload,
+    .get_payload_length_cb = &null_get_payload_length,
+    .get_report_banner_cb = &lzr_ftp_report_banner,
+    .close_cb = NULL
 };
 
 size_t

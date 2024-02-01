@@ -1,7 +1,7 @@
 #include "../xconf.h"
 #include "null-probe.h"
 
-struct StatelessProbe NullProbe = {
+struct ProbeModule NullProbe = {
     .name = "null",
     .type = Tcp_Probe,
     .help_text =
@@ -9,12 +9,12 @@ struct StatelessProbe NullProbe = {
         " handshakes, just wait banner from server. However, waiting is the che-\n"
         "-apest thing in stateless mode.\n"
         "NullProbe is the default stateless probe.\n",
-    .global_init = NULL,
-    .thread_init = NULL,
-    .make_payload = &make_no_payload,
-    .get_payload_length = &null_get_payload_length,
-    .get_report_banner = &just_report_banner,
-    .close = NULL
+    .global_init_cb = NULL,
+    .thread_init_cb = NULL,
+    .make_payload_cb = &make_no_payload,
+    .get_payload_length_cb = &null_get_payload_length,
+    .get_report_banner_cb = &just_report_banner,
+    .close_cb = NULL
 };
 
 /*

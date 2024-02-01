@@ -2,14 +2,13 @@
 
 #include "../massip/massip-addr.h"
 
-#ifndef STATELESS_PROBES_H
-#define STATELESS_PROBES_H
+#ifndef PROBE_MODULES_H
+#define PROBE_MODULES_H
 
 #define STATELESS_PAYLOAD_MAX_LEN 1460
 #define STATELESS_BANNER_MAX_LEN 1460
-#define STATELESS_PROBE_ARGS_LEN 256
 
-enum StatelessProbeType {
+enum ProbeModuleType {
     Raw_Probe = 0, /*This is for transmit-layer*/
     Tcp_Probe = 1, /*Only use it until now*/
     Udp_Probe = 2,
@@ -23,19 +22,19 @@ enum StatelessProbeType {
  * cast it to correct type in specific implementation of probe.
  * @return EXIT_FAILURE to exit process if init failed
 */
-typedef int (*stateless_probe_global_init_cb)(const void *Xconf);
+typedef int (*probe_modules_global_init)(const void *Xconf);
 
 /**
  * !Must be thread safe.
 */
-typedef int (*stateless_probe_thread_init_cb)(const void *RxThread);
+typedef int (*probe_modules_thread_init)(const void *RxThread);
 
 /**
  * @return length of payload data
  * !Must be thread safe.
 */
 typedef size_t
-(*stateless_probe_make_payload_cb)(
+(*probe_modules_make_payload)(
     ipaddress ip_them,
     ipaddress ip_me,
     unsigned port_them,
@@ -48,7 +47,7 @@ typedef size_t
  * !Must be thread safe.
 */
 typedef size_t
-(*stateless_probe_get_payload_length_cb)(
+(*probe_modules_get_payload_length)(
     ipaddress ip_them,
     ipaddress ip_me,
     unsigned port_them,
@@ -63,7 +62,7 @@ typedef size_t
  * !Must be thread safe.
  */
 typedef size_t
-(*stateless_probe_get_report_banner_cb)(
+(*probe_modules_get_report_banner)(
     ipaddress ip_them,
     ipaddress ip_me,
     unsigned port_them,
@@ -73,24 +72,24 @@ typedef size_t
     unsigned char *report_banner_buf,
     size_t report_banner_buf_length);
 
-typedef int (*stateless_probe_close_cb)(const void *Xconf);
+typedef int (*probe_modules_close)(const void *Xconf);
 
-struct StatelessProbe
+struct ProbeModule
 {
     const char *name;
     const char *help_text;
-    const enum StatelessProbeType type;
+    const enum ProbeModuleType type;
 
-    stateless_probe_global_init_cb global_init;
-    stateless_probe_thread_init_cb thread_init;
-    stateless_probe_make_payload_cb make_payload;
-    stateless_probe_get_payload_length_cb get_payload_length;
-    stateless_probe_get_report_banner_cb get_report_banner;
-    stateless_probe_close_cb close;
+    probe_modules_global_init global_init_cb;
+    probe_modules_thread_init thread_init_cb;
+    probe_modules_make_payload make_payload_cb;
+    probe_modules_get_payload_length get_payload_length_cb;
+    probe_modules_get_report_banner get_report_banner_cb;
+    probe_modules_close close_cb;
 };
 
-struct StatelessProbe *get_stateless_probe(const char *name);
+struct ProbeModule *get_probe_module_by_name(const char *name);
 
-void list_all_probes();
+void list_all_probe_modules();
 
 #endif
