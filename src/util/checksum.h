@@ -59,4 +59,7 @@ unsigned
 checksum_tcp(const unsigned char *px, unsigned offset_ip,
     unsigned offset_tcp, size_t tcp_length);
 
+unsigned
+checksum_sctp(const void *vbuffer, size_t length);
+
 #endif

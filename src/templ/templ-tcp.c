@@ -1688,8 +1688,8 @@ tcp_create_by_template(
             return 0;
         }
 
-        memcpy(px + 0,              tmpl->ipv4.packet,   tmpl->ipv4.length);
-        memcpy(px + offset_payload, payload,        payload_length);
+        memcpy(px + 0, tmpl->ipv4.packet, tmpl->ipv4.length);
+        memcpy(px + offset_payload, payload, payload_length);
         old_len = px[offset_ip+2]<<8 | px[offset_ip+3];
 
         /*
