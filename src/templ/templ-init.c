@@ -17,7 +17,6 @@
 #include "templ-payloads.h"
 #include "../massip/massip-port.h"
 #include "../proto/proto-preprocess.h"
-#include "../proto/proto-sctp.h"
 #include "../util/mas-safefunc.h"
 #include "../pixie/pixie-timer.h"
 #include "../util/logger.h"
@@ -389,7 +388,7 @@ template_set_target_ipv6(
         px[offset_tcp+18] = (unsigned char)(seqno >>  8);
         px[offset_tcp+19] = (unsigned char)(seqno >>  0);
 
-        xsum = sctp_checksum(px + offset_tcp, tmpl->ipv6.length - offset_tcp);
+        xsum = checksum_sctp(px + offset_tcp, tmpl->ipv6.length - offset_tcp);
         px[offset_tcp+ 8] = (unsigned char)(xsum >>  24);
         px[offset_tcp+ 9] = (unsigned char)(xsum >>  16);
         px[offset_tcp+10] = (unsigned char)(xsum >>   8);
@@ -606,7 +605,7 @@ template_set_target_ipv4(
         px[offset_tcp+18] = (unsigned char)(seqno >>  8);
         px[offset_tcp+19] = (unsigned char)(seqno >>  0);
 
-        xsum = sctp_checksum(px + offset_tcp, tmpl->ipv4.length - offset_tcp);
+        xsum = checksum_sctp(px + offset_tcp, tmpl->ipv4.length - offset_tcp);
         px[offset_tcp+ 8] = (unsigned char)(xsum >>  24);
         px[offset_tcp+ 9] = (unsigned char)(xsum >>  16);
         px[offset_tcp+10] = (unsigned char)(xsum >>   8);
@@ -872,7 +871,7 @@ _template_init(
         tmpl->proto = Proto_UDP;
         break;
     case 132: /* SCTP */
-        tmpl->ipv4.checksum_tcp = sctp_checksum(
+        tmpl->ipv4.checksum_tcp = checksum_sctp(
                                     tmpl->ipv4.packet + tmpl->ipv4.offset_tcp,
                                     tmpl->ipv4.length - tmpl->ipv4.offset_tcp);
         tmpl->proto = Proto_SCTP;

@@ -15,9 +15,9 @@
 #include "../proto/proto-preprocess.h"
 
 
-#define SCAN_MODULE_CLS_LEN            15
-#define SCAN_MODULE_RPT_LEN          1460
-#define SCAN_MODULE_DEFAULT_DEDUP_TYPE  0
+#define SCAN_MODULE_CLS_LEN               15
+#define SCAN_MODULE_RPT_LEN             1460
+#define SCAN_MODULE_DEFAULT_DEDUP_TYPE     0
 
 /***************************************************************************
  * * callback functions for Init
