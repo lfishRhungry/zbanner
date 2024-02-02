@@ -402,8 +402,8 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
             return 0;
         }
 
-        ip_header_in_icmp += ((ip_header_in_icmp[4]<<8)+(ip_header_in_icmp[5]));
-        data_length_in_icmp -= ((ip_header_in_icmp[4]<<8)+(ip_header_in_icmp[5]));
+        ip_header_in_icmp += ((ip_header_in_icmp[4]<<8)|(ip_header_in_icmp[5]));
+        data_length_in_icmp -= ((ip_header_in_icmp[4]<<8)|(ip_header_in_icmp[5]));
 
         if (data_length_in_icmp < 4)
             return 0;
