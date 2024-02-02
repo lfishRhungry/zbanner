@@ -119,5 +119,12 @@ char * stristr (const char * haystack, const char * needle);
 void
 trim(char *line, size_t sizeof_line);
 
+/*****************************************************************************
+ * Remove bad characters from the banner, especially new lines and HTML
+ * control codes.
+ *****************************************************************************/
+const char *
+normalize_string(const unsigned char *px, size_t length,
+    char *buf, size_t buf_len);
 
 #endif
