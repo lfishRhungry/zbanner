@@ -1994,7 +1994,7 @@ static int SET_send_queue(struct Xconf *xconf, const char *name, const char *val
 }
 
 struct ConfigParameter config_parameters[] = {
-    {"BASIC",           SET_nothing,            0,      {0}},
+    {"BASIC:",           SET_nothing,            0,      {0}},
 
     {"seed",            SET_seed,               0,      {0}},
     {"rate",            SET_rate,               0,      {"max-rate",0}},
@@ -2092,8 +2092,7 @@ struct ConfigParameter config_parameters[] = {
     {"blackrock-rounds",SET_blackrock_rounds,   F_NUMABLE, {"blackrock-round",0}},
 
     /*Put it at last for better "help" output*/
-    {"TARGET",          SET_nothing,            0,      {0}},
-    {"TARGET_OUTPUT",   SET_target_output,      0,      {0}},
+    {"TARGET_OUTPUT:",   SET_target_output,      0,      {0}},
     {0}
 };
 
