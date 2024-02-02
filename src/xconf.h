@@ -116,10 +116,6 @@ struct Xconf
      * thread instead of rx or tx.
      */
     unsigned tx_thread_count;
-    /**
-     * NOTE: Just keep this value for funcs in output.c
-    */
-    unsigned rx_thread_count;
 
     /* This is used by ScanModule both in transmit and receive thread for
      * formatting packets */
@@ -257,10 +253,6 @@ struct Xconf
     } nmap;
 
     char pcap_filename[256];
-
-    struct {
-        unsigned timeout;
-    } tcb;
 
     struct {
         char *pcap_payloads_filename;

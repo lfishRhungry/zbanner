@@ -558,7 +558,6 @@ int main(int argc, char *argv[])
     xconf->wait = 10; /* how long to wait for responses when done */
     xconf->max_rate = 100.0; /* max rate = hundred packets-per-second */
     xconf->tx_thread_count = 1;
-    xconf->rx_thread_count = 1; /*receive thread num is always 1*/
     xconf->shard.one = 1;
     xconf->shard.of = 1;
     xconf->min_packet_size = 60;
