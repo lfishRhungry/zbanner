@@ -13,6 +13,7 @@
 
 #include "../massip/massip-addr.h"
 #include "../proto/proto-preprocess.h"
+#include "../probe-modules/probe-modules.h"
 
 
 #define SCAN_MODULE_CLS_LEN               15
@@ -30,11 +31,13 @@
 typedef int (*scan_modules_global_init)();
 
 /**
+ * !Must be thread safe.
  * @return false for initing failed and exit process.
 */
 typedef int (*scan_modules_rxthread_init)();
 
 /**
+ * !Must be thread safe.
  * @return false for initing failed and exit process.
 */
 typedef int (*scan_modules_txthread_init)();
@@ -45,6 +48,7 @@ typedef int (*scan_modules_txthread_init)();
 
 /**
  * Happens in Tx Thread
+ * !Must be thread safe.
  * 
  * @param cur_proto what TemplateProto this port belongs to.
  * @param ip_them IP of this target.
@@ -74,6 +78,7 @@ typedef int (*scan_modules_make_new_packet)(
 /**
  * Step 1 Filter: Is this packet need to be record (to pcap)
  * and possibly validate in next step?
+ * !Must be thread safe.
  * 
  * @param parsed Parsed info about this packet.
  * @param entropy a rand seed (generated or user-specified).
@@ -92,6 +97,7 @@ typedef int (*scan_modules_filter_packet)(
 
 /**
  * Step 2 Validate: Is this packet need to be handle?
+ * !Must be thread safe.
  * 
  * @param parsed Parsed info about this packet.
  * @param entropy a rand seed (generated or user-specified).
@@ -106,6 +112,7 @@ typedef int (*scan_modules_validate_packet)(
 
 /**
  * Step 3 Decuplicate: Is and how this packet to be deduped?
+ * !Must be thread safe.
  * 
  * @param parsed Parsed info about this packet.
  * @param entropy a rand seed (generated or user-specified).
@@ -128,6 +135,7 @@ typedef int (*scan_modules_dedup_packet)(
 
 /**
  * Step 4 Handle
+ * !Must be thread safe.
  * 
  * @param parsed Parsed info about this packet.
  * @param entropy a rand seed (generated or user-specified).
@@ -151,6 +159,7 @@ typedef int (*scan_modules_handle_packet)(
 
 /**
  * Step 5 Response
+ * !Must be thread safe.
  * 
  * @param parsed Parsed info about this packet.
  * @param entropy a rand seed (generated or user-specified).
@@ -181,23 +190,24 @@ typedef void (*scan_modules_close)();
 
 struct ScanModule
 {
-    const char *                      name;
-    const char *                      description;
-    char *                            scan_args;
+    const char                          *name;
+    const char                          *desc;
+    char                                *args;
+    struct ProbeModule                  *probe;
     /*for init*/
-    scan_modules_global_init          global_init_cb;
-    scan_modules_rxthread_init        rx_thread_init_cb;
-    scan_modules_txthread_init        tx_thread_init_cb;
+    scan_modules_global_init             global_init_cb;
+    scan_modules_rxthread_init           rx_thread_init_cb;
+    scan_modules_txthread_init           tx_thread_init_cb;
     /*for transmit*/
-    scan_modules_make_new_packet      make_packet_cb;
+    scan_modules_make_new_packet         make_packet_cb;
     /*for receive*/
-    scan_modules_filter_packet        filter_packet_cb;
-    scan_modules_validate_packet      validate_packet_cb;
-    scan_modules_dedup_packet         dedup_packet_cb;
-    scan_modules_handle_packet        handle_packet_cb;
-    scan_modules_make_response_packet response_packet_cb;
+    scan_modules_filter_packet           filter_packet_cb;
+    scan_modules_validate_packet         validate_packet_cb;
+    scan_modules_dedup_packet            dedup_packet_cb;
+    scan_modules_handle_packet           handle_packet_cb;
+    scan_modules_make_response_packet    response_packet_cb;
     /*for close*/
-    scan_modules_close                close_cb;
+    scan_modules_close                   close_cb;
 };
 
 struct ScanModule *get_scan_module_by_name(const char *name);

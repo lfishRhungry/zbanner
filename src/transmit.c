@@ -101,6 +101,16 @@ transmit_thread(void *v) /*aka. scanning_thread() */
         }
     }
 
+    /*
+     * Do tx-thread init for ProbeModule
+     */
+    if (xconf->probe_module&&xconf->probe_module->tx_thread_init_cb){
+        if (!xconf->probe_module->tx_thread_init_cb()) {
+            LOG(0, "FAIL: errors happened in tx-thread(%u) init of ProbeModule.\n", parms->tx_index);
+            exit(1);
+        }
+    }
+
 
     /* Normally, we have just one source address. In special cases, though
      * we can have multiple. */

@@ -1,47 +1,43 @@
-#include "../xconf.h"
 #include "null-probe.h"
+#include "../util/mas-safefunc.h"
 
 struct ProbeModule NullProbe = {
     .name = "null",
-    .type = Tcp_Probe,
-    .help_text =
-        "NullProbe does not send any data to target port throught and after TCP\n"
-        " handshakes, just wait banner from server. However, waiting is the che-\n"
-        "-apest thing in stateless mode.\n"
-        "NullProbe is the default stateless probe.\n",
+    .type = ProbeType_TCP,
+    .desc =
+        "NullProbe does not send any data to target port. It just wait banner "
+        "from server. However, waiting is the cheapest thing while we are in "
+        "stateless mode.\n",
     .global_init_cb = NULL,
-    .thread_init_cb = NULL,
+    .rx_thread_init_cb = NULL,
+    .tx_thread_init_cb = NULL,
     .make_payload_cb = &make_no_payload,
-    .get_payload_length_cb = &null_get_payload_length,
-    .get_report_banner_cb = &just_report_banner,
+    .validate_response_cb = NULL,
+    .handle_response_cb = &just_report_banner,
     .close_cb = NULL
 };
 
-/*
- * Did not use 'static' because other probe may use some of these func
-*/
-
 size_t
-make_no_payload(ipaddress ip_them, ipaddress ip_me,
-    unsigned port_them, unsigned port_me,
-    unsigned char *payload_buf, size_t buf_len)
+make_no_payload(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    unsigned cookie,
+    unsigned char *payload_buf,
+    size_t buf_length)
 {
     return 0;
 }
 
-size_t
-null_get_payload_length(ipaddress ip_them, ipaddress ip_me, unsigned port_them, unsigned port_me)
+void
+just_report_banner(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    const unsigned char *px, unsigned sizeof_px,
+    unsigned *successed,
+    char *classification, unsigned cls_length,
+    char *report, unsigned rpt_length)
 {
-    return 0;
-}
-
-size_t
-just_report_banner(ipaddress ip_them, ipaddress ip_me,
-    unsigned port_them, unsigned port_me,
-    const unsigned char *banner, size_t banner_len,
-    unsigned char *report_banner_buf, size_t buf_len)
-{
-    size_t len = banner_len<=buf_len?banner_len:buf_len;
-    memcpy(report_banner_buf, banner, len);
-    return len;
+    *successed = 1;
+    safe_strcpy(classification, cls_length, "banner");
+    normalize_string(px, sizeof_px, report, rpt_length);
 }

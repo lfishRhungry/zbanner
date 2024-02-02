@@ -248,7 +248,7 @@ main_scan(struct Xconf *xconf)
         LOG(0, "[-] Default ScanModule `tcpsyn` is chosen because no ScanModule was specified.\n");
     }
 
-    xconf->scan_module->scan_args = xconf->scan_module_args;
+    xconf->scan_module->args = xconf->scan_module_args;
 
     /*
      * Do global init for ScanModule
@@ -261,21 +261,17 @@ main_scan(struct Xconf *xconf)
         }
     }
 
-    /*
-     * Choose a default ProbeModule if not specified.
-     * Wrong specification will be handled in SET_probe_module in xconf.c
-     */
-    if (!xconf->probe_module){
-        xconf->probe_module = get_probe_module_by_name("null");
-        LOG(0, "[-] Default NullProbe is chosen because no statelss-probe was specified.\n");
+	/*probemodule may not be set*/
+    if (xconf->probe_module) {
+        xconf->probe_module->args = xconf->probe_module_args;
     }
 
     /*
-     * Do global init for stateless probe
+     * Do global init for probe
      */
     if (xconf->probe_module && xconf->probe_module->global_init_cb){
         if (EXIT_FAILURE == xconf->probe_module->global_init_cb(xconf)) {
-            LOG(0, "FAIL: errors in stateless probe global initializing\n");
+            LOG(0, "FAIL: errors in ProbeModule global initializing\n");
             exit(1);
         }
     }
@@ -507,6 +503,13 @@ main_scan(struct Xconf *xconf)
     */
     if (xconf->scan_module->close_cb) {
         xconf->scan_module->close_cb();
+    }
+
+    /**
+     * Do close for ProbeModule
+    */
+    if (xconf->probe_module&&xconf->probe_module->close_cb) {
+        xconf->probe_module->close_cb();
     }
 
     free(tx_thread);

@@ -137,8 +137,11 @@ receive_thread(void *v)
     /*
      * Do thread init for stateless probe
      */
-    if (xconf->probe_module && xconf->probe_module->thread_init_cb){
-        xconf->probe_module->thread_init_cb(parms);
+    if (xconf->probe_module && xconf->probe_module->rx_thread_init_cb){
+        if (!xconf->probe_module->rx_thread_init_cb()) {
+            LOG(0, "FAIL: errors happened in rx-thread init of ProbeModule.\n");
+            exit(1);
+        }
     }
 
 

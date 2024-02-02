@@ -1,55 +1,60 @@
 #include <string.h>
 
-#include "../../xconf.h"
 #include "lzr-http.h"
+#include "../../util/mas-safefunc.h"
 
+static char lzr_http_fmt[] = "GET / HTTP/1.1\r\n"
+    "Host: %s:%u\r\n"
+    "User-Agent: Mozilla/5.0 "XTATE_WITH_VERSION"\r\n"
+    "Accept: */*\r\n"
+    "Accept-Encoding: gzip\r\n"
+    "\r\n";
+
+static size_t
+lzr_http_make_payload(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    unsigned cookie,
+    unsigned char *payload_buf,
+    size_t buf_length)
+{
+    return snprintf((char *)payload_buf, buf_length, lzr_http_fmt,
+        ipaddress_fmt(ip_them).string, port_them);
+}
+
+static void
+lzr_http_handle_reponse(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    const unsigned char *px, unsigned sizeof_px,
+    unsigned *successed,
+    char *classification, unsigned cls_length,
+    char *report, unsigned rpt_length)
+{
+    if (!strstr((const char *)px, "HTTPS")
+        &&
+        (strstr((const char *)px, "HTTP")
+            || strstr((const char *)px, "html")
+            || strstr((const char *)px, "HTML")
+            || strstr((const char *)px, "<h1>"))) {
+        safe_strcpy(report, rpt_length, "http");
+        *successed = 1;
+    } else {
+        *successed = 0;
+    }
+    /*Too many string copies if we set classification while LzrProbe*/
+}
 
 struct ProbeModule LzrHttpProbe = {
     .name = "lzr-http",
-    .type = Tcp_Probe,
-    .help_text =
+    .type = ProbeType_TCP,
+    .desc =
         "LzrHttp Probe sends an HTTP GET request and identifies HTTP service.\n",
     .global_init_cb = NULL,
-    .thread_init_cb = NULL,
+    .rx_thread_init_cb = NULL,
+    .tx_thread_init_cb = NULL,
     .make_payload_cb = &lzr_http_make_payload,
-    .get_payload_length_cb = &lzr_http_get_payload_length,
-    .get_report_banner_cb = &lzr_http_report_banner,
+    .validate_response_cb = NULL,
+    .handle_response_cb = &lzr_http_handle_reponse,
     .close_cb = NULL
 };
-
-size_t
-lzr_http_make_payload(ipaddress ip_them, ipaddress ip_me,
-    unsigned port_them, unsigned port_me,
-    unsigned char *payload_buf, size_t buf_len)
-{
-    return snprintf((char *)payload_buf, buf_len, lzr_http_fmt,
-        ipaddress_fmt(ip_them).string, port_them);
-}
-
-size_t
-lzr_http_get_payload_length(ipaddress ip_them, ipaddress ip_me,
-    unsigned port_them, unsigned port_me)
-{
-    char tmp_str[160];
-    return snprintf(tmp_str, 160, lzr_http_fmt,
-        ipaddress_fmt(ip_them).string, port_them);
-}
-
-size_t
-lzr_http_report_banner(ipaddress ip_them, ipaddress ip_me,
-    unsigned port_them, unsigned port_me,
-    const unsigned char *banner, size_t banner_len,
-    unsigned char *report_banner_buf, size_t buf_len)
-{
-    if (!strstr((const char *)banner, "HTTPS")
-        &&
-        (strstr((const char *)banner, "HTTP")
-            || strstr((const char *)banner, "html")
-            || strstr((const char *)banner, "HTML")
-            || strstr((const char *)banner, "<h1>"))) {
-        memcpy(report_banner_buf, "http", strlen("http"));
-        return strlen("http");
-    }
-
-    return 0;
-}

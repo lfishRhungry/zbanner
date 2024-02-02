@@ -41,31 +41,32 @@ struct ProbeModule *get_probe_module_by_name(const char *name)
     return NULL;
 }
 
-static char *get_probe_type_name(enum ProbeModuleType type)
+static char *get_type_name_by_flag(unsigned flag)
 {
-    switch (type) {
-        case Raw_Probe:
-            return "raw";
-        case Tcp_Probe:
-            return "tcp";
-        case Udp_Probe:
-            return "udp";
-        default:
-            break;
-    }
-    return "unknown";
+    if (flag==1)
+        return " tcp";
+    else if (flag>>1==1)
+        return " udp";
+    else if (flag>>2==1)
+        return " sctp";
+    return "";
 }
 
 void list_all_probe_modules()
 {
     int len = (int)(sizeof(probe_modules_list)/sizeof(struct ProbeModule *));
-    printf("\nNow contains %d stateless probes:\n\n", len);
+    printf("\nNow contains %d ProbeModules:\n\n", len);
 
     for (int i = 0; i < len; i++) {
         printf("========================\n\n");
-        printf("Probe Name: %s\n", probe_modules_list[i]->name);
-        printf("Probe Type: %s\n", get_probe_type_name(probe_modules_list[i]->type));
-        printf("Probe Help:\n%s\n", probe_modules_list[i]->help_text);
+        printf("ProbeModule Name: %s\n", probe_modules_list[i]->name);
+        printf("ProbeModule Type:");
+        for (unsigned i=1;i<ProbeType_MAX;i<<=1) {
+            if ((probe_modules_list[i]->type & i) > 0)
+                puts(get_type_name_by_flag(i));
+        }
+        printf("\n");
+        printf("Description:\n%s\n", probe_modules_list[i]->desc);
     }
     printf("========================\n");
 }

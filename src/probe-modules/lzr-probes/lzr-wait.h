@@ -3,10 +3,14 @@
 #ifndef LZR_WAIT_PROBE_H
 #define LZR_WAIT_PROBE_H
 
-size_t
-report_no_banner(ipaddress ip_them, ipaddress ip_me,
-    unsigned port_them, unsigned port_me,
-    const unsigned char *banner, size_t banner_len,
-    unsigned char *report_banner_buf, size_t buf_len);
+void
+report_nothing(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    const unsigned char *px, unsigned sizeof_px,
+    unsigned *successed,
+    char *classification, unsigned cls_length,
+    char *report, unsigned rpt_length
+);
 
 #endif

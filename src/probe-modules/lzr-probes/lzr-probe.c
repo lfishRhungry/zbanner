@@ -1,19 +1,27 @@
-#include "../../xconf.h"
+#include <stdio.h>
+
 #include "lzr-probe.h"
+#include "../../util/mas-safefunc.h"
+
+#define LZR_SUBPROBE_NAME_LEN 20
 
 /*
- * LZR Probe will use `get_report_banner` funcs of all subprobes listed here
+ * LZR Probe will use `handle_response_cb` of all subprobes listed here
  * to match the banner and identify its service automaticly.
+ * 
  * Subprobes' names always start with 'lzr-', and could be used as a normal
  * ProbeModule. It reports what service it identified out and will report
  * nothong if no service identified.
- * When they specified as subprobes in LZR probe with `--probe-args`, omit the
- * 'lzr-' prefix. LZR probe uses specified subprobe to send data, and matches
- * all subprobes to responsed banner. It could reports more than one service
+ * 
+ * When they specified as subprobes in LZR probe with `--probe-args`, we should
+ * omit the 'lzr-' prefix like 'lzr-http' -> 'http'.
+ * 
+ * LZR probe uses specified subprobe to send payload, and matches all subprobes
+ * for result reporting. It could reports more than one identified service type
  * or 'unknown' if nothing identified.
  * 
- * Subprobes of LZR are also StatelessProbes but its init and close callback
- * funcs will never be called. So leave all init and close funcs NULL.
+ * NOTE: While ProbeModule is as Subprobe of LZR, its init and close callback
+ * funcs will never be called.
  */
 
 extern struct ProbeModule LzrWaitProbe;
@@ -29,108 +37,108 @@ static struct ProbeModule *lzr_subprobes[] = {
     &LzrHttpProbe,
     &LzrFtpProbe,
     //! ADD NEW LZR SUBPROBES HERE
-    //! ALSO ADD TO stateless-probes.c IF NEEDED
+    //! ALSO ADD TO probe-modules.c IF NEEDED
 };
+
+/******************************************************************/
+
+/*for x-refer*/
+extern struct ProbeModule LzrProbe;
 
 static struct ProbeModule *specified_subprobe;
 
-struct ProbeModule LzrProbe = {
-    .name = "lzr",
-    .type = Tcp_Probe,
-    .help_text =
-        "LZR Probe is an implement of service identification of LZR. It sends a\n"
-        "specified LZR subprobe(handshake) and try to match with all LZR subprobes.\n"
-        "Specify LZR subprobes by probe arguments:\n"
-        "    `--probe-args http`\n",
-        // "Note! LZR Probe will stop send next subprobe if no data responsed because\n",
-        // "of no state.\n",
-    .global_init_cb = &lzr_global_init,
-    .thread_init_cb = NULL,
-    .get_report_banner_cb = &lzr_report_banner,
-    .close_cb = NULL,
-    // make_payload_cb and get_paylaod_length will be set dynamicly in lzr_global_init.
-};
-
-static int lzr_global_init(const void *Xconf)
+static int
+lzr_global_init()
 {
-    const struct Xconf *xconf = Xconf;
-
     /*Use LzrWait if no subprobe specified*/
-    if (!xconf->probe_module_args[0]) {
+    if (!LzrProbe.args) {
         specified_subprobe = &LzrWaitProbe;
-        fprintf(stderr, "[-] Use default LzrWait as subprobe of LzrProbe because no subprobe was specified by --probe-args.\n");
+        fprintf(stderr, "[-] Use default LzrWait as subprobe of LzrProbe "
+            "because no subprobe was specified by --probe-module-args.\n");
     } else {
         char subprobe_name[LZR_SUBPROBE_NAME_LEN] = "lzr-";
-        memcpy(subprobe_name+strlen(subprobe_name), xconf->probe_module_args,
+        memcpy(subprobe_name+strlen(subprobe_name), LzrProbe.args,
             LZR_SUBPROBE_NAME_LEN-strlen(subprobe_name)-1);
 
         specified_subprobe = get_probe_module_by_name(subprobe_name);
         if (specified_subprobe == NULL) {
-            return EXIT_FAILURE;
+            fprintf(stderr, "[-] Invalid name of subprobe for lzr.\n");
+            return 0;
         }
     }
 
     LzrProbe.make_payload_cb = specified_subprobe->make_payload_cb;
-    LzrProbe.get_payload_length_cb = specified_subprobe->get_payload_length_cb;
 
-    return EXIT_SUCCESS;
+    return 1;
 }
 
-static size_t
-lzr_report_banner(ipaddress ip_them, ipaddress ip_me,
-    unsigned port_them, unsigned port_me,
-    const unsigned char *banner, size_t banner_len,
-    unsigned char *report_banner_buf, size_t buf_len)
+static void
+lzr_handle_response(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    const unsigned char *px, unsigned sizeof_px,
+    unsigned *successed,
+    char *classification, unsigned cls_length,
+    char *report, unsigned rpt_length)
 {
     /**
      * I think STATELESS_BANNER_MAX_LEN is long enough.
      * However I am tired while coding there.
+     * But its safe while I use safe copy funcs in every time.
     */
-    unsigned char *buf_idx = report_banner_buf;
-    size_t remain_len = buf_len;
-
-    /*match specified subprobe first*/
-    size_t len = specified_subprobe->get_report_banner_cb(ip_them, ip_me, port_them, port_me,
-        banner, banner_len, report_banner_buf, buf_len);
-    
-    /**
-     * We want to print much results like:
-     *     pop3-smtp-http
-    */
-    buf_idx += len;
-    if (len) {
-        buf_idx[0] = '-';
-        buf_idx++;
-    }
-    remain_len = buf_len - (buf_idx - report_banner_buf);
+    char *buf_idx = report;
+    size_t remain_len = rpt_length;
     
     /**
      * strcat every lzr subprobes match result
+     * print results just like lzr:
+     *     pop3-smtp-http
     */
     for (size_t i=0; i<sizeof(lzr_subprobes)/sizeof(struct ProbeModule*); i++) {
-        if (lzr_subprobes[i] == specified_subprobe)
-            continue;
+        if (lzr_subprobes[i]->handle_response_cb) {
+            lzr_subprobes[i]->handle_response_cb(
+                ip_them, port_them, ip_me, port_me,
+                px, sizeof_px,
+                successed,
+                classification, cls_length,
+                buf_idx, remain_len
+            );
 
-        len = lzr_subprobes[i]->get_report_banner_cb(ip_them, ip_me, port_them, port_me,
-            banner, banner_len, buf_idx, remain_len);
-
-        buf_idx += len;
-        if (len) {
+            for (;buf_idx[0]!='\0';buf_idx++) {}
             buf_idx[0] = '-';
             buf_idx++;
+            remain_len = rpt_length - (buf_idx - report);
         }
-        remain_len = buf_len - (buf_idx - report_banner_buf);
     }
 
     /*got nothing*/
-    if (buf_idx==report_banner_buf) {
-        memcpy(report_banner_buf, "unknown", strlen("unknown"));
+    if (buf_idx==report) {
+        safe_strcpy(report, rpt_length, "unknown");
         buf_idx += strlen("unknown");
+        *successed = 0;
+        safe_strcpy(classification, cls_length, "not identified");
     } else {
     /* truncat the last '-' */
-        buf_idx--;
+        buf_idx[0] = '\0';
+        *successed = 1;
+        safe_strcpy(classification, cls_length, "identified");
     }
-
-    /* truncat the last '-' */
-    return buf_idx-report_banner_buf;
 }
+
+struct ProbeModule LzrProbe = {
+    .name = "lzr",
+    .type = ProbeType_TCP,
+    .desc =
+        "LZR Probe is an implement of service identification of LZR. It sends a "
+        "specified LZR subprobe(handshake) and try to match with all LZR subprobes "
+        "with `handle_reponse_cb`.\n"
+        "Specify LZR subprobe by probe arguments:\n"
+        "    `--probe-module-args http`\n",
+    .global_init_cb = &lzr_global_init,
+    .rx_thread_init_cb = NULL,
+    .tx_thread_init_cb = NULL,
+    // `make_payload_cb` will be set dynamicly in lzr_global_init.
+    .validate_response_cb = NULL,
+    .handle_response_cb = &lzr_handle_response,
+    .close_cb = NULL,
+};

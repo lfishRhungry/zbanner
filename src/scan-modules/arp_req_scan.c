@@ -75,7 +75,7 @@ arpreq_handle_packet(
 
 struct ScanModule ArpReqScan = {
     .name = "arpreq",
-    .description =
+    .desc =
         "ArpReqScan sends an ARP Request packet to broadcast mac addr"
         "(all zero) with target ipv4 addr we request. Expect an ARP Reply packet "
         "with actual mac addr of requested target and print mac addr as report. "
