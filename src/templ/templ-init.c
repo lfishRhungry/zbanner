@@ -1012,9 +1012,8 @@ template_set_ttl(struct TemplateSet *tmplset, unsigned ttl)
         unsigned offset = tmpl->ipv4.offset_ip;
 
         px[offset+8] = (unsigned char)(ttl);
-        tmpl->ipv4.checksum_ip = checksum_ip_header(    tmpl->ipv4.packet,
-                                                    tmpl->ipv4.offset_ip,
-                                                    tmpl->ipv4.length);
+        tmpl->ipv4.checksum_ip = checksum_ip_header(
+            tmpl->ipv4.packet, tmpl->ipv4.offset_ip, tmpl->ipv4.length);
     }
 }
 

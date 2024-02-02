@@ -776,9 +776,8 @@ static int SET_adapter_vlan(struct Xconf *xconf, const char *name, const char *v
 {
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->nic.is_vlan || xconf->echo_all) {
-            if (xconf->nic.is_vlan)
-                fprintf(xconf->echo, "adapter-vlan = %u\n", xconf->nic.vlan_id);
+        if (xconf->nic.is_vlan) {
+            fprintf(xconf->echo, "adapter-vlan = %u\n", xconf->nic.vlan_id);
         }
         return 0;
     }
