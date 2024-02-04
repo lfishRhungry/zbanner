@@ -66,6 +66,7 @@ typedef size_t
  * 
  * Use this interface for possible copies reducing or just wrap
  * `probe_modules_make_payload`.
+ * The length of payload is independent of cookie.
  * 
  * !Must be implemented for ProbeType_TCP.
  * !Must be thread safe.
@@ -80,8 +81,7 @@ typedef size_t
 typedef size_t
 (*probe_modules_get_payload_length)(
     ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie);
+    ipaddress ip_me, unsigned port_me);
 
 /**
  * Happens in Rx Thread

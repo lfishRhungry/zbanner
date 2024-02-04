@@ -40,8 +40,7 @@ lzr_ftp_handle_response(
 static size_t
 lzr_ftp_get_payload_length(
     ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie)
+    ipaddress ip_me, unsigned port_me)
 {
     return 0;
 }

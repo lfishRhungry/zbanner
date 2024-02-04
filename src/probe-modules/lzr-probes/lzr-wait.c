@@ -7,8 +7,7 @@ extern struct ProbeModule LzrWaitProbe;
 static size_t
 lzrwait_get_payload_length(
     ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie)
+    ipaddress ip_me, unsigned port_me)
 {
     return 0;
 }

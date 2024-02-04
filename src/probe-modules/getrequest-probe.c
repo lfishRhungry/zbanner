@@ -23,8 +23,7 @@ getrequest_make_payload(
 static size_t
 getrequest_get_payload_length(
     ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie)
+    ipaddress ip_me, unsigned port_me)
 {
     return strlen(GETREQUEST_PAYLOAD);
 }

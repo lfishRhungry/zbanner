@@ -32,8 +32,7 @@ just_report_banner(
 static size_t
 null_get_payload_length(
     ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie)
+    ipaddress ip_me, unsigned port_me)
 {
     return 0;
 }

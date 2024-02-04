@@ -28,8 +28,7 @@ lzr_http_make_payload(
 static size_t
 lzr_http_get_payload_length(
     ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie)
+    ipaddress ip_me, unsigned port_me)
 {
     char tmp_str[160];
     return snprintf(tmp_str, 160, lzr_http_fmt,
