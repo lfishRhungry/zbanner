@@ -8,8 +8,6 @@ just_report_banner(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
     const unsigned char *px, unsigned sizeof_px,
-    unsigned *successed,
-    char *classification, unsigned cls_length,
     char *report, unsigned rpt_length);
 
 #endif
