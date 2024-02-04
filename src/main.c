@@ -271,7 +271,7 @@ main_scan(struct Xconf *xconf)
      * Do global init for probe
      */
     if (xconf->probe_module && xconf->probe_module->global_init_cb){
-        if (EXIT_FAILURE == xconf->probe_module->global_init_cb(xconf)) {
+        if (!xconf->probe_module->global_init_cb(xconf)) {
             LOG(0, "FAIL: errors in ProbeModule global initializing\n");
             exit(1);
         }
@@ -295,18 +295,8 @@ main_scan(struct Xconf *xconf)
         &xconf->nic.src, xconf->stack_buf_count);
 
     /*
-     * Do global init for stateless probe
-     */
-    if (xconf->probe_module && xconf->probe_module->global_init_cb){
-        if (EXIT_FAILURE == xconf->probe_module->global_init_cb(xconf)) {
-            LOG(0, "FAIL: errors in stateless probe global initializing\n");
-            exit(1);
-        }
-    }
-
-    /*
-        * trap <ctrl-c> to pause
-        */
+    * trap <ctrl-c> to pause
+    */
     signal(SIGINT, control_c_handler);
 
 
