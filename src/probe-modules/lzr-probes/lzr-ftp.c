@@ -4,6 +4,9 @@
 #include "../null-probe.h"
 #include "../../util/mas-safefunc.h"
 
+/*for internal x-ref*/
+extern struct ProbeModule LzrFtpProbe;
+
 static void
 lzr_ftp_handle_response(
     ipaddress ip_them, unsigned port_them,
@@ -34,6 +37,15 @@ lzr_ftp_handle_response(
     *successed = 0;
 }
 
+static size_t
+lzr_ftp_get_payload_length(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    unsigned cookie)
+{
+    return 0;
+}
+
 struct ProbeModule LzrFtpProbe = {
     .name = "lzr-ftp",
     .type = ProbeType_TCP,
@@ -43,6 +55,7 @@ struct ProbeModule LzrFtpProbe = {
     .rx_thread_init_cb = NULL,
     .tx_thread_init_cb = NULL,
     .make_payload_cb = &make_no_payload,
+    .get_payload_length_cb = &lzr_ftp_get_payload_length,
     .validate_response_cb = NULL,
     .handle_response_cb = &lzr_ftp_handle_response,
     .close_cb = NULL

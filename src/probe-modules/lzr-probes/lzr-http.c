@@ -3,6 +3,9 @@
 #include "lzr-http.h"
 #include "../../util/mas-safefunc.h"
 
+/*for internal x-ref*/
+extern struct ProbeModule LzrHttpProbe;
+
 static char lzr_http_fmt[] = "GET / HTTP/1.1\r\n"
     "Host: %s:%u\r\n"
     "User-Agent: Mozilla/5.0 "XTATE_WITH_VERSION"\r\n"
@@ -19,6 +22,17 @@ lzr_http_make_payload(
     size_t buf_length)
 {
     return snprintf((char *)payload_buf, buf_length, lzr_http_fmt,
+        ipaddress_fmt(ip_them).string, port_them);
+}
+
+static size_t
+lzr_http_get_payload_length(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    unsigned cookie)
+{
+    char tmp_str[160];
+    return snprintf(tmp_str, 160, lzr_http_fmt,
         ipaddress_fmt(ip_them).string, port_them);
 }
 
@@ -54,6 +68,7 @@ struct ProbeModule LzrHttpProbe = {
     .rx_thread_init_cb = NULL,
     .tx_thread_init_cb = NULL,
     .make_payload_cb = &lzr_http_make_payload,
+    .get_payload_length_cb = &lzr_http_get_payload_length,
     .validate_response_cb = NULL,
     .handle_response_cb = &lzr_http_handle_reponse,
     .close_cb = NULL

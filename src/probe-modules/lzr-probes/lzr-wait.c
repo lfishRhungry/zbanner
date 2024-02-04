@@ -1,6 +1,18 @@
 #include "../null-probe.h"
 #include "lzr-wait.h"
 
+/*for internal x-ref*/
+extern struct ProbeModule LzrWaitProbe;
+
+static size_t
+lzrwait_get_payload_length(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    unsigned cookie)
+{
+    return 0;
+}
+
 struct ProbeModule LzrWaitProbe = {
     .name = "lzr-wait",
     .type = ProbeType_TCP,
@@ -11,6 +23,7 @@ struct ProbeModule LzrWaitProbe = {
     .rx_thread_init_cb = NULL,
     .tx_thread_init_cb = NULL,
     .make_payload_cb = &make_no_payload,
+    .get_payload_length_cb = &lzrwait_get_payload_length,
     .validate_response_cb = NULL,
     .handle_response_cb = NULL,
     .close_cb = NULL

@@ -40,6 +40,8 @@ typedef int (*probe_modules_txthread_init)();
  * 
  * Make correspond payload data for a target.
  * We could embed a cookie to payload for response validating.
+ * 
+ * !Must be implemented.
  * !Must be thread safe.
  * 
  * @param ip_them target ip
@@ -60,12 +62,35 @@ typedef size_t
     size_t buf_length);
 
 /**
+ * Happens both in Tx and Rx thread.
+ * 
+ * Use this interface for possible copies reducing or just wrap
+ * `probe_modules_make_payload`.
+ * 
+ * !Must be implemented for ProbeType_TCP.
+ * !Must be thread safe.
+ * 
+ * @param ip_them target ip
+ * @param port_them target port
+ * @param ip_me source ip
+ * @param port_me source port
+ * @param cookie unique identification for this target
+ * @return length of payload data
+*/
+typedef size_t
+(*probe_modules_get_payload_length)(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    unsigned cookie);
+
+/**
  * Happens in Rx Thread
  * 
  * Validate whether the response is for us(because of stateless).
  * This is useful when ScanModule cannot validate through the
  * packet attributes.
- * Validate is not need for every probe.
+ * 
+ * !Must be implemented for ProbeType_UDP.
  * !Must be thread safe.
  * 
  * @param ip_them target ip
@@ -86,12 +111,11 @@ typedef int
 );
 
 /**
- * Happens in Rx Thread
+ * Happens in Rx Thread,
+ * Decide the classification and report of the reponse
+ * and whether it is successed.
  * 
- * Validate whether the response is for us(because of stateless).
- * This is useful when ScanModule cannot validate through the
- * packet attributes.
- * Validate is not need for every probe.
+ * !Must be implemented.
  * !Must be thread safe.
  * 
  * @param ip_them target ip
@@ -133,6 +157,7 @@ struct ProbeModule
     probe_modules_txthread_init        tx_thread_init_cb;
     /*for payload and response*/
     probe_modules_make_payload         make_payload_cb;
+    probe_modules_get_payload_length   get_payload_length_cb;
     probe_modules_validate_response    validate_response_cb;
     probe_modules_handle_response      handle_response_cb;
     /*for close*/
