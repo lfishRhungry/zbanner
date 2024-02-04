@@ -102,19 +102,21 @@ lzr_handle_response(
             );
 
             for (;buf_idx[0]!='\0';buf_idx++) {}
-            buf_idx[0] = '-';
-            buf_idx++;
-            remain_len = rpt_length - (buf_idx - report);
+            /*identified in this turn*/
+            if (buf_idx!=report && (buf_idx-1)[0]!='-') {
+                buf_idx[0] = '-';
+                buf_idx++;
+                remain_len = rpt_length - (buf_idx - report);
+            }
         }
     }
 
-    /*got nothing*/
     if (buf_idx==report) {
+        /*got nothing*/
         safe_strcpy(report, rpt_length, "unknown");
-        buf_idx += strlen("unknown");
     } else {
-    /* truncat the last '-' */
-        buf_idx[0] = '\0';
+        /* remove last '-' */
+        (buf_idx-1)[0] = '\0';
     }
 }
 
