@@ -183,7 +183,7 @@ typedef int (*scan_modules_handle_packet)(
  * 
  * @param return true if need to do more response.
 */
-typedef int (*scan_modules_make_response_packet)(
+typedef int (*scan_modules_response_packet)(
     struct PreprocessedInfo *parsed, uint64_t entropy,
     const unsigned char *px, unsigned sizeof_px,
     unsigned char *r_px, unsigned sizeof_r_px,
@@ -216,7 +216,7 @@ struct ScanModule
     scan_modules_validate_packet         validate_packet_cb;
     scan_modules_dedup_packet            dedup_packet_cb;
     scan_modules_handle_packet           handle_packet_cb;
-    scan_modules_make_response_packet    response_packet_cb;
+    scan_modules_response_packet         response_packet_cb;
     /*for close*/
     scan_modules_close                   close_cb;
 };
