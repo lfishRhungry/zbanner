@@ -78,8 +78,6 @@ lzr_handle_response(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
     const unsigned char *px, unsigned sizeof_px,
-    unsigned *successed,
-    char *classification, unsigned cls_length,
     char *report, unsigned rpt_length)
 {
     /**
@@ -100,8 +98,6 @@ lzr_handle_response(
             lzr_subprobes[i]->handle_response_cb(
                 ip_them, port_them, ip_me, port_me,
                 px, sizeof_px,
-                successed,
-                classification, cls_length,
                 buf_idx, remain_len
             );
 
@@ -116,13 +112,9 @@ lzr_handle_response(
     if (buf_idx==report) {
         safe_strcpy(report, rpt_length, "unknown");
         buf_idx += strlen("unknown");
-        *successed = 0;
-        safe_strcpy(classification, cls_length, "not identified");
     } else {
     /* truncat the last '-' */
         buf_idx[0] = '\0';
-        *successed = 1;
-        safe_strcpy(classification, cls_length, "identified");
     }
 }
 

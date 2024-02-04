@@ -40,8 +40,6 @@ lzr_http_handle_reponse(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
     const unsigned char *px, unsigned sizeof_px,
-    unsigned *successed,
-    char *classification, unsigned cls_length,
     char *report, unsigned rpt_length)
 {
     if (!strstr((const char *)px, "HTTPS")
@@ -51,11 +49,7 @@ lzr_http_handle_reponse(
             || strstr((const char *)px, "HTML")
             || strstr((const char *)px, "<h1>"))) {
         safe_strcpy(report, rpt_length, "http");
-        *successed = 1;
-    } else {
-        *successed = 0;
     }
-    /*Too many string copies if we set classification while LzrProbe*/
 }
 
 struct ProbeModule LzrHttpProbe = {

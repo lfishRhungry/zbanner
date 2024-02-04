@@ -124,9 +124,6 @@ typedef int
  * @param port_me source port
  * @param px response data
  * @param sizeof_px len of reponse
- * @param successed Is this packet considered success.
- * @param classification Packet classification string.
- * @param cls_length Length of classification string buffer.
  * @param report Report string.
  * @param rpt_length Length of report string buffer.
 */
@@ -135,8 +132,6 @@ typedef void
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
     const unsigned char *px, unsigned sizeof_px,
-    unsigned *successed,
-    char *classification, unsigned cls_length,
     char *report, unsigned rpt_length
 );
 

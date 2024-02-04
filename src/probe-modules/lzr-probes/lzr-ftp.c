@@ -12,13 +12,10 @@ lzr_ftp_handle_response(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
     const unsigned char *px, unsigned sizeof_px,
-    unsigned *successed,
-    char *classification, unsigned cls_length,
     char *report, unsigned rpt_length)
 {
     if (stristr((const char *)px, "ftp")) {
         safe_strcpy(report, rpt_length, "ftp");
-        *successed = 1;
         return;
     }
 
@@ -30,11 +27,8 @@ lzr_ftp_handle_response(
         || strstr(tmp_str, "550")
         || strstr(tmp_str, "230")) {
         safe_strcpy(report, rpt_length, "ftp");
-        *successed = 1;
         return;
     }
-
-    *successed = 0;
 }
 
 static size_t
