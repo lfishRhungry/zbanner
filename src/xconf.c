@@ -341,17 +341,12 @@ static int SET_show(struct Xconf *xconf, const char *name, const char *value)
         if (xconf->output.is_show_failed || xconf->echo_all){
             fprintf(xconf->echo, "show = failed\n");
         }
-        if (xconf->output.is_show_report || xconf->echo_all){
-            fprintf(xconf->echo, "show = report\n");
-        }
         return 0;
     }
 
     
     if (EQUALS("failed",value)||EQUALS("fail",value)) {
         xconf->output.is_show_failed = true;
-    } else if (EQUALS("report",value)) {
-        xconf->output.is_show_report = true;
     } else {
         fprintf(stderr, "FAIL %s: no item named %s\n", name, value);
         return CONF_ERR;

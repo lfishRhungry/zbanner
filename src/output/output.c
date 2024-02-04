@@ -36,7 +36,7 @@ output_result(
             classification);
     }
     
-    if (output->is_show_report) {
+    if (report[0]) {
         count += fprintf(stdout, ". Report: [%s]", report);
     }
     
