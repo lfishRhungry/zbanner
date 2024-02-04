@@ -31,14 +31,6 @@ lzr_ftp_handle_response(
     }
 }
 
-static size_t
-lzr_ftp_get_payload_length(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me)
-{
-    return 0;
-}
-
 struct ProbeModule LzrFtpProbe = {
     .name = "lzr-ftp",
     .type = ProbeType_TCP,
@@ -48,7 +40,6 @@ struct ProbeModule LzrFtpProbe = {
     .rx_thread_init_cb = NULL,
     .tx_thread_init_cb = NULL,
     .make_payload_cb = NULL,
-    .get_payload_length_cb = &lzr_ftp_get_payload_length,
     .validate_response_cb = NULL,
     .handle_response_cb = &lzr_ftp_handle_response,
     .close_cb = NULL

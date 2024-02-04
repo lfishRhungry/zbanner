@@ -25,16 +25,6 @@ lzr_http_make_payload(
         ipaddress_fmt(ip_them).string, port_them);
 }
 
-static size_t
-lzr_http_get_payload_length(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me)
-{
-    char tmp_str[160];
-    return snprintf(tmp_str, 160, lzr_http_fmt,
-        ipaddress_fmt(ip_them).string, port_them);
-}
-
 static void
 lzr_http_handle_reponse(
     ipaddress ip_them, unsigned port_them,
@@ -61,7 +51,6 @@ struct ProbeModule LzrHttpProbe = {
     .rx_thread_init_cb = NULL,
     .tx_thread_init_cb = NULL,
     .make_payload_cb = &lzr_http_make_payload,
-    .get_payload_length_cb = &lzr_http_get_payload_length,
     .validate_response_cb = NULL,
     .handle_response_cb = &lzr_http_handle_reponse,
     .close_cb = NULL
