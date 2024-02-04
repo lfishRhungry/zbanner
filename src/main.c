@@ -249,6 +249,7 @@ main_scan(struct Xconf *xconf)
     }
 
     xconf->scan_module->args = xconf->scan_module_args;
+    xconf->scan_module->probe = xconf->probe_module;
 
     /*
      * Do global init for ScanModule
@@ -261,7 +262,7 @@ main_scan(struct Xconf *xconf)
         }
     }
 
-	/*probemodule may not be set*/
+    /*probemodule may not be set*/
     if (xconf->probe_module) {
         xconf->probe_module->args = xconf->probe_module_args;
     }
