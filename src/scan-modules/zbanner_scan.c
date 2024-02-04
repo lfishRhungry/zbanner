@@ -86,7 +86,6 @@ zbanner_validate_packet(
     if (validate_hash == seqno_me_vhash)
         return 1;
 
-    LOG(0, "wrong cookie\n");
     return 0;
 }
 
@@ -121,19 +120,19 @@ zbanner_handle_packet(
     char *classification, unsigned cls_length,
     char *report, unsigned rpt_length)
 {
-    uint16_t win_them = TCP_WIN(px, parsed->transport_offset);
 
     *successed = 0;
 
     /*SYNACK*/
     if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_SYN|TCP_FLAG_ACK)) {
         *successed = 1;
+        /*check for zero window of synack*/
+        uint16_t win_them = TCP_WIN(px, parsed->transport_offset);
         if (win_them == 0) {
             safe_strcpy(classification, cls_length, "zerowin");
             return 0;
         } else {
             safe_strcpy(classification, cls_length, "open");
-            /*need to send probe*/
             return 1;
         }
     }
@@ -144,30 +143,30 @@ zbanner_handle_packet(
         return 0;
     }
 
-    ipaddress ip_me    = parsed->dst_ip;
-    ipaddress ip_them  = parsed->src_ip;
-    unsigned port_me   = parsed->port_dst;
-    unsigned port_them = parsed->port_src;
-
     /*Banner*/
     if (parsed->app_length) {
         /*
-        * We could recv Response DATA with different TCP flags:
-        * 1.[ACK]
-        * 2.[PSH, ACK]
-        * 3.[FIN, PSH, ACK]
+        * We could recv Response DATA with some combinations of TCP flags
+        * 1.[ACK]: maybe more data
+        * 2.[PSH, ACK]: no more data
+        * 3.[FIN, PSH, ACK]: no more data and disconnecting
         */
         *successed = 1;
         safe_strcpy(classification, cls_length, ZBannerScan.probe->name);
 
         if (ZBannerScan.probe->handle_response_cb) {
+
+            ipaddress ip_me    = parsed->dst_ip;
+            ipaddress ip_them  = parsed->src_ip;
+            unsigned port_me   = parsed->port_dst;
+            unsigned port_them = parsed->port_src;
+
             ZBannerScan.probe->handle_response_cb(
                 ip_them, port_them, ip_me, port_me,
                 &px[parsed->app_offset], parsed->app_length,
                 report, rpt_length);
         }
 
-        /*need to send rst*/
         return 1;
     }
 
