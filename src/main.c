@@ -337,6 +337,8 @@ main_scan(struct Xconf *xconf)
 
         //LOG(0, " -- forced options: -sS -Pn -n --randomize-hosts -v --send-eth\n");
         LOG(0, "Initiating ScanModule: %s\n", xconf->scan_module->name);
+        if (xconf->probe_module)
+            LOG(0, "Initiating ProbeModule: %s\n", xconf->probe_module->name);
         LOG(0, "Scanning %u hosts [%u port%s/host]\n",
             (unsigned)count_ips, (unsigned)count_ports, (count_ports==1)?"":"s");
     }
