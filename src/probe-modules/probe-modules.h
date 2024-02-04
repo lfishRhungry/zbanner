@@ -5,8 +5,8 @@
 #ifndef PROBE_MODULES_H
 #define PROBE_MODULES_H
 
-#define PROBE_PAYLOAD_MAX_LEN 1460
-#define PROBE_REPORT_MAX_LEN 1460
+#define PROBE_PAYLOAD_MAX_LEN 2048
+#define PROBE_REPORT_MAX_LEN 2048
 
 enum ProbeType {
     ProbeType_TCP   = 1,
