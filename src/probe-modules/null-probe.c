@@ -4,17 +4,6 @@
 /*for internal x-ref*/
 extern struct ProbeModule NullProbe;
 
-size_t
-make_no_payload(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie,
-    unsigned char *payload_buf,
-    size_t buf_length)
-{
-    return 0;
-}
-
 void
 just_report_banner(
     ipaddress ip_them, unsigned port_them,
@@ -23,14 +12,6 @@ just_report_banner(
     char *report, unsigned rpt_length)
 {
     normalize_string(px, sizeof_px, report, rpt_length);
-}
-
-static size_t
-null_get_payload_length(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me)
-{
-    return 0;
 }
 
 struct ProbeModule NullProbe = {
@@ -43,8 +24,8 @@ struct ProbeModule NullProbe = {
     .global_init_cb = NULL,
     .rx_thread_init_cb = NULL,
     .tx_thread_init_cb = NULL,
-    .make_payload_cb = &make_no_payload,
-    .get_payload_length_cb = &null_get_payload_length,
+    .make_payload_cb = NULL,
+    .get_payload_length_cb = NULL,
     .validate_response_cb = NULL,
     .handle_response_cb = &just_report_banner,
     .close_cb = NULL

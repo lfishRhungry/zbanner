@@ -41,7 +41,8 @@ typedef int (*probe_modules_txthread_init)();
  * Make correspond payload data for a target.
  * We could embed a cookie to payload for response validating.
  * 
- * !Must be implemented.
+ * If not implemented, assume it as null payload.
+ * 
  * !Must be thread safe.
  * 
  * @param ip_them target ip
@@ -68,7 +69,8 @@ typedef size_t
  * `probe_modules_make_payload`.
  * The length of payload is independent of cookie.
  * 
- * !Must be implemented for ProbeType_TCP.
+ * Assume length is 0 if not implemented.
+ * 
  * !Must be thread safe.
  * 
  * @param ip_them target ip
@@ -115,7 +117,8 @@ typedef int
  * Decide the classification and report of the reponse
  * and whether it is successed.
  * 
- * !Must be implemented.
+ * Assume report nothing if not implemented.
+ * 
  * !Must be thread safe.
  * 
  * @param ip_them target ip
