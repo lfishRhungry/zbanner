@@ -485,13 +485,6 @@ main_scan(struct Xconf *xconf)
     fprintf(stderr, "%u milliseconds elapsed\n", (unsigned)((usec_now - usec_start)/1000));
 
     /**
-     * Do close for stateless probe
-    */
-    if (xconf->probe_module && xconf->probe_module->close_cb) {
-        xconf->probe_module->close_cb(xconf);
-    }
-
-    /**
      * Do close for ScanModule
     */
     if (xconf->scan_module->close_cb) {
