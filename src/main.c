@@ -104,20 +104,26 @@ static void control_c_handler(int x)
     static unsigned control_c_pressed = 0;
     static unsigned control_c_pressed_again = 0;
     if (control_c_pressed == 0) {
+        /*First time of <ctrl-c>*/
         fprintf(stderr,
                 "waiting several seconds to exit..."
                 "                                                            \n"
                 );
         fflush(stderr);
-        control_c_pressed = 1+x;
-        is_tx_done = control_c_pressed;
+        control_c_pressed++;
+        /*Make xtate change into waiting status*/
+        is_tx_done = 1;
     } else {
+
         if (is_rx_done) {
-            fprintf(stderr, "\nERROR: threads not exiting %d\n", is_rx_done);
+            /*Rx thread is exiting after being told `is_rx_done`*/
+            fprintf(stderr, "\nERROR: Rx Thread still running\n");
             if (is_rx_done++ > 1)
                 exit(1);
         } else {
+            /*Second time of <ctrl-c>*/
             control_c_pressed_again = 1;
+            /*tell Rx thread to exit*/
             is_rx_done = control_c_pressed_again;
         }
     }
@@ -354,7 +360,10 @@ main_scan(struct Xconf *xconf)
     }
 
     /*
-     * Now wait for <ctrl-c> to be pressed OR for threads to exit
+     * Now wait for <ctrl-c> to be pressed OR for Tx Threads to exit.
+     * Tx Threads can shutdown by themselves for finishing their tasks.
+     * We also can use <ctrl-c> to make them exit early.
+     * All controls are decided by global variable `is_tx_done`.
      */
     pixie_usleep(1000 * 100);
     LOG(1, "[+] waiting for threads to finish\n");
@@ -415,7 +424,10 @@ main_scan(struct Xconf *xconf)
 
 
     /*
-     * Now wait for all threads to exit
+     * Now Tx Threads breaked out the main loop of sending because of `is_tx_done`
+     * and try to finish `stack_flush_packets` before `is_rx_done`.
+     * But Rx Thread exits just by our setting of `is_rx_done` according to time
+     * waiting.
      */
     now = time(0);
     for (;;) {
@@ -447,6 +459,7 @@ main_scan(struct Xconf *xconf)
             is_rx_done = 1;
         }
 
+        /*Last line of defense infinite waiting*/
         if (time(0) - now - 10 > xconf->wait) {
             LOG(0, "[-] Passed the wait window but still running, forcing exit...        \n");
             exit(0);
@@ -464,12 +477,14 @@ main_scan(struct Xconf *xconf)
 
         pixie_mssleep(250);
 
+        /*Hope all Tx Threads finished `stack_flush_packets`*/
         if (tx_done_count < xconf->tx_thread_count)
             continue;
         is_tx_done = 1;
+        /*Tell Rx Thread to exit*/
+        is_rx_done = 1;
         if (!rx_thread->done_receiving)
             continue;
-        is_rx_done = 1;
 
 
         break;
