@@ -219,17 +219,18 @@ zbanner_response_packet(
 struct ScanModule ZBannerScan = {
     .name = "zbanner",
     .desc =
-        "ZBannerScan try to contruct TCP conn with target port and send data "
-        "from specified ProbeModule. Response data will be handled by specified "
-        "ProbeModule.\n"
+        "ZBannerScan tries to contruct TCP conn with target port and send data "
+        "from specified ProbeModule. Data in first reponse packet will be handled"
+        " by specified ProbeModule.\n"
         "What important is the whole process was done in completely stateless. "
-        "So ZBannerScan is very fast for large-scale probing.\n\n"
+        "So ZBannerScan is very fast for large-scale probing like banner grabbing,"
+        " service identification and etc.\n\n"
         "Must specify a ProbeModule for ZBannerScan like:\n"
         "    `--probe-module null`\n\n"
-        "ZBannerScan will construct complete TCP conn. So must avoid Linux system "
+        "ZBannerScan will construct complete TCP conns. So must avoid Linux system "
         "sending RST automatically by adding iptable rule like:\n"
         "    `sudo iptables -A OUTPUT -p tcp --tcp-flags RST RST -j DROP -s <src-ip>`\n"
-        "Line number of added rule could be check like:\n"
+        "Line number of added rule could be checked like:\n"
         "    `sudo iptables -L --line-numbers`\n"
         "Remove the rule by its line number if we do not need it:\n"
         "    `sudo iptables -D OUTPUT <line-number>`\n",

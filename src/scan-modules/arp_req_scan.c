@@ -77,14 +77,16 @@ struct ScanModule ArpReqScan = {
     .name = "arpreq",
     .desc =
         "ArpReqScan sends an ARP Request packet to broadcast mac addr"
-        "(all zero) with target ipv4 addr we request. Expect an ARP Reply packet "
+        "(all one) with target ipv4 addr we request. Expect an ARP Reply packet "
         "with actual mac addr of requested target and print mac addr as report. "
         "ArpReqScan does not support ipv6 target because ipv6 use neighbor "
         "discovery messages of Neighbor Dicovery Protocol(NDP) implemented by ICMPv6 "
         " to dicovery neighbors and their mac addr. ArpReqScan will ignore ipv6 "
         "targets.\n"
-        "NOTE: ArpReqScan works in local area network only, so remember to use "
-        "`--lan-mode` or set `--router-mac ff-ff-ff-ff-ff-ff`.",
+        "NOTE: ArpReqScan works in local area network only, so remember to use\n"
+        "    `--lan-mode`\n"
+        "or to set router mac like:\n"
+        "    `--router-mac ff-ff-ff-ff-ff-ff`.\n",
 
     .global_init_cb = NULL,
     .rx_thread_init_cb = NULL,
