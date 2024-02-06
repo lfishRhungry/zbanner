@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "scan_modules.h"
+#include "scan-modules.h"
 
 extern struct ScanModule TcpSynScan;
 extern struct ScanModule IcmpEchoScan;

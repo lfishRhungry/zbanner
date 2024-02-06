@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "scan_modules.h"
+#include "scan-modules.h"
 #include "../cookie.h"
 #include "../templ/templ-icmp.h"
 #include "../util/mas-safefunc.h"

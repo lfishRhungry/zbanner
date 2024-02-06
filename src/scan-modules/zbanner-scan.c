@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 
-#include "scan_modules.h"
+#include "scan-modules.h"
 #include "../cookie.h"
 #include "../templ/templ-tcp.h"
 #include "../util/mas-safefunc.h"

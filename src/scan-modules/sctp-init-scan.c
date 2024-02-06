@@ -1,15 +1,15 @@
 #include <stdlib.h>
 
-#include "scan_modules.h"
+#include "scan-modules.h"
 #include "../cookie.h"
-#include "../templ/templ-tcp.h"
+#include "../templ/templ-sctp.h"
 #include "../util/mas-safefunc.h"
 #include "../util/mas-malloc.h"
 
-extern struct ScanModule TcpSynScan; /*for internal x-ref*/
+extern struct ScanModule SctpInitScan; /*for internal x-ref*/
 
 static int
-tcpsyn_make_packet(
+sctpinit_make_packet(
     unsigned cur_proto,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
@@ -17,66 +17,64 @@ tcpsyn_make_packet(
     unsigned char *px, unsigned sizeof_px, size_t *r_length)
 {
     /*we just handle tcp target*/
-    if (cur_proto != Proto_TCP) {
+    if (cur_proto != Proto_SCTP) {
         *r_length = 0;
         return 0;
     }
 
     unsigned cookie = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
 
-    *r_length = tcp_create_packet(
+    *r_length = sctp_create_packet(
         ip_them, port_them, ip_me, port_me,
-        cookie, 0, TCP_FLAG_SYN,
-        NULL, 0, px, sizeof_px);
+        cookie, px, sizeof_px);
     
     /*no need do send again in this moment*/
     return 0;
 }
 
 static int
-tcpsyn_filter_packet(
+sctpinit_filter_packet(
     struct PreprocessedInfo *parsed, uint64_t entropy,
     const unsigned char *px, unsigned sizeof_px,
     unsigned is_myip, unsigned is_myport)
 {
     /*record tcp packet to our source port*/
-    if (parsed->found == FOUND_TCP && is_myip && is_myport)
+    if (parsed->found == FOUND_SCTP && is_myip && is_myport)
         return 1;
     
     return 0;
 }
 
 static int
-tcpsyn_validate_packet(
+sctpinit_validate_packet(
     struct PreprocessedInfo *parsed, uint64_t entropy,
     const unsigned char *px, unsigned sizeof_px)
 {
+    /*packet is too short*/
+    if (parsed->transport_offset + 16 > sizeof_px)
+        return 0;
+
     ipaddress ip_me    = parsed->dst_ip;
     ipaddress ip_them  = parsed->src_ip;
     unsigned port_me   = parsed->port_dst;
     unsigned port_them = parsed->port_src;
-    unsigned seqno_me  = TCP_ACKNO(px, parsed->transport_offset);
+    unsigned veri_tag  = SCTP_VERI_TAG(px, parsed->transport_offset);
     unsigned cookie    = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
 
-    /*SYNACK*/
-    if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_SYN|TCP_FLAG_ACK)) {
-        if (cookie == seqno_me - 1) {
-            return 1;
-        }
-    }
-    /*RST*/
-    else if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_RST)) {
-        /*NOTE: diff from SYNACK*/
-        if (cookie == seqno_me - 1 || cookie == seqno_me) {
-            return 1;
-        }
-    }
+    if (cookie != veri_tag)
+        return 0;
+    
+    if (SCTP_IS_CHUNK_TYPE(px, parsed->transport_offset, SCTP_CHUNK_TYPE_INIT_ACK))
+        return 1;
+    
+    if (SCTP_IS_CHUNK_TYPE(px, parsed->transport_offset, SCTP_CHUNK_TYPE_ABORT))
+        return 1;
 
     return 0;
 }
 
 static int
-tcpsyn_dedup_packet(
+sctpinit_dedup_packet(
     struct PreprocessedInfo *parsed, uint64_t entropy,
     const unsigned char *px, unsigned sizeof_px,
     ipaddress *ip_them, unsigned *port_them,
@@ -87,52 +85,43 @@ tcpsyn_dedup_packet(
 }
 
 static int
-tcpsyn_handle_packet(
+sctpinit_handle_packet(
     struct PreprocessedInfo *parsed, uint64_t entropy,
     const unsigned char *px, unsigned sizeof_px,
     unsigned *successed,
     char *classification, unsigned cls_length,
     char *report, unsigned rpt_length)
 {
-    uint16_t win_them   = TCP_WIN(px, parsed->transport_offset);
-
     *successed = 0;
 
-    /*SYNACK*/
-    if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_SYN|TCP_FLAG_ACK)) {
+    if (SCTP_IS_CHUNK_TYPE(px, parsed->transport_offset, SCTP_CHUNK_TYPE_INIT_ACK)) {
         *successed = 1;
-        if (win_them == 0) {
-            safe_strcpy(classification, cls_length, "syn-ack(zerowin)");
-        } else {
-            safe_strcpy(classification, cls_length, "syn-ack");
-        }
-    }
-    /*RST*/
-    else if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_RST)) {
-        safe_strcpy(classification, cls_length, "rst");
+        safe_strcpy(classification, cls_length, "init-ack");
+    } else if (SCTP_IS_CHUNK_TYPE(px, parsed->transport_offset, SCTP_CHUNK_TYPE_ABORT)) {
+        safe_strcpy(classification, cls_length, "abort");
     }
 
     /*no need to response*/
     return 0;
 }
 
-struct ScanModule TcpSynScan = {
-    .name = "tcpsyn",
+struct ScanModule SctpInitScan = {
+    .name = "sctpinit",
     .desc =
-        "TcpSynScan sends a TCP SYN packet to target port. Expect a SYNACK "
-        "response to believe the port is open or an RST for closed in TCP protocol.\n"
-        "TcpSynScan is the default ScanModule.\n",
+        "SctpInitScan sends an SCTP INIT packet(chunk) to target port. Expect an "
+        "INIT ACK response to believe the port is open or an ABORT for closed in "
+        "SCTP protocol.\n",
 
     .global_init_cb = NULL,
     .rx_thread_init_cb = NULL,
     .tx_thread_init_cb = NULL,
 
-    .make_packet_cb = tcpsyn_make_packet,
+    .make_packet_cb = sctpinit_make_packet,
 
-    .filter_packet_cb = tcpsyn_filter_packet,
-    .validate_packet_cb = tcpsyn_validate_packet,
-    .dedup_packet_cb = tcpsyn_dedup_packet,
-    .handle_packet_cb = tcpsyn_handle_packet,
+    .filter_packet_cb = sctpinit_filter_packet,
+    .validate_packet_cb = sctpinit_validate_packet,
+    .dedup_packet_cb = sctpinit_dedup_packet,
+    .handle_packet_cb = sctpinit_handle_packet,
     .response_packet_cb = NULL,
 
     .close_cb = NULL,

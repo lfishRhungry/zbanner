@@ -15,7 +15,7 @@
 #include "stack/stack-queue.h"
 #include "output/output.h"
 #include "probe-modules/probe-modules.h"
-#include "scan-modules/scan_modules.h"
+#include "scan-modules/scan-modules.h"
 
 
 struct Adapter;

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "scan_modules.h"
+#include "scan-modules.h"
 #include "../cookie.h"
 #include "../templ/templ-arp.h"
 #include "../util/mas-safefunc.h"
