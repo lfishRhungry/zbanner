@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "sctp_init_scan.h"
+#include "scan_modules.h"
 #include "../cookie.h"
 #include "../templ/templ-sctp.h"
 #include "../util/mas-safefunc.h"

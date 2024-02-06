@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "tcp_syn_scan.h"
+#include "scan_modules.h"
 #include "../cookie.h"
 #include "../templ/templ-tcp.h"
 #include "../util/mas-safefunc.h"
