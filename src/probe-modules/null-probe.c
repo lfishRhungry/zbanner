@@ -1,18 +1,7 @@
-#include "null-probe.h"
-#include "../util/mas-safefunc.h"
+#include "probe-modules.h"
 
 /*for internal x-ref*/
 extern struct ProbeModule NullProbe;
-
-void
-just_report_banner(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    const unsigned char *px, unsigned sizeof_px,
-    char *report, unsigned rpt_length)
-{
-    normalize_string(px, sizeof_px, report, rpt_length);
-}
 
 struct ProbeModule NullProbe = {
     .name = "null",

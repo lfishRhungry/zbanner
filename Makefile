@@ -179,7 +179,7 @@ tmp/%.o: \
 
 tmp/%.o: \
 	src/probe-modules/lzr-probes/%.c \
-	src/probe-modules/lzr-probes/*.h
+	src/probe-modules/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \

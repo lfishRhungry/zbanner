@@ -1,7 +1,6 @@
 #include <string.h>
 
-#include "null-probe.h"
-#include "getrequest-probe.h"
+#include "probe-modules.h"
 
 #define GETREQUEST_PAYLOAD "GET / HTTP/1.0\r\n\r\n"
 

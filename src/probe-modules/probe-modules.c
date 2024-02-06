@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "probe-modules.h"
+#include "../util/mas-safefunc.h"
 
 /*
 This is an Application Probe(or Request) Plugin System
@@ -69,4 +70,15 @@ void list_all_probe_modules()
         printf("Description:\n%s\n", probe_modules_list[i]->desc);
     }
     printf("========================\n");
+}
+
+
+void
+just_report_banner(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    const unsigned char *px, unsigned sizeof_px,
+    char *report, unsigned rpt_length)
+{
+    normalize_string(px, sizeof_px, report, rpt_length);
 }

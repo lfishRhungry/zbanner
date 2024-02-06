@@ -1,6 +1,7 @@
 #include <string.h>
 
-#include "lzr-http.h"
+#include "../probe-modules.h"
+#include "../../version.h"
 #include "../../util/mas-safefunc.h"
 
 /*for internal x-ref*/

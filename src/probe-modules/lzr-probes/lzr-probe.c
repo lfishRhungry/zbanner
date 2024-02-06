@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "lzr-probe.h"
+#include "../probe-modules.h"
 #include "../../util/mas-safefunc.h"
 
 #define LZR_SUBPROBE_NAME_LEN 20

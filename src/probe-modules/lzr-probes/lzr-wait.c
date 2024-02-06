@@ -1,5 +1,4 @@
-#include "../null-probe.h"
-#include "lzr-wait.h"
+#include "../probe-modules.h"
 
 /*for internal x-ref*/
 extern struct ProbeModule LzrWaitProbe;

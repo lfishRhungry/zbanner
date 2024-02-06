@@ -1,7 +1,6 @@
 #include <string.h>
 
-#include "lzr-ftp.h"
-#include "../null-probe.h"
+#include "../probe-modules.h"
 #include "../../util/mas-safefunc.h"
 
 /*for internal x-ref*/

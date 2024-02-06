@@ -142,4 +142,16 @@ struct ProbeModule *get_probe_module_by_name(const char *name);
 
 void list_all_probe_modules();
 
+/************************************************************************
+Some useful implemented interfaces
+************************************************************************/
+
+/*implemented `probe_modules_handle_reponse`*/
+void
+just_report_banner(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    const unsigned char *px, unsigned sizeof_px,
+    char *report, unsigned rpt_length);
+
 #endif
