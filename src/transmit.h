@@ -30,9 +30,6 @@ struct TxThread {
 
     uint64_t *total_sent;
 
-    /**
-     * Set to zero if no corresponded thread.
-     */
     size_t thread_handle_xmit;
 };
 

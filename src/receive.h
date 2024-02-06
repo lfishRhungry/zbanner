@@ -18,9 +18,6 @@ struct RxThread {
 
     uint64_t *total_successed;
 
-    /**
-     * Set to zero if no corresponded thread.
-     */
     size_t thread_handle_recv;
 };
 

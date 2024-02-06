@@ -430,7 +430,6 @@ main_scan(struct Xconf *xconf)
      */
     now = time(0);
     for (;;) {
-        unsigned tx_done_count = 0;
         unsigned i;
         double rate = 0;
         uint64_t total_successed = 0;
@@ -454,49 +453,36 @@ main_scan(struct Xconf *xconf)
         if (rx_thread->total_successed)
             total_successed = *rx_thread->total_successed;
 
-        if (time(0) - now >= xconf->wait) {
-            /*Tell Rx Thread to exit*/
-            is_rx_done = 1;
-            LOG(1, "[+] tell threads to exit...                    \n");
-        }
-
-        /*Last line of defense infinite waiting*/
-        if (time(0) - now - 10 > xconf->wait) {
-            LOG(0, "[-] Passed the wait window but still running, forcing exit...        \n");
-            exit(0);
-        }
-
         xtatus_print(&status, min_index, range, rate,
             total_successed, total_sent,
             xconf->wait - (time(0) - now),
             xconf->is_status_ndjson);
 
-        for (i=0; i<xconf->tx_thread_count; i++) {
-            struct TxThread *parms = &tx_thread[i];
-            tx_done_count += parms->done_transmitting;
+        if (time(0) - now >= xconf->wait /*no more waiting time*/
+            || is_rx_done                /*too many <ctrl-c>*/
+            ) {
+            LOG(1, "[+] tell threads to exit...                    \n");
+            is_rx_done = 1;
+            break;
         }
 
         pixie_mssleep(250);
-
-        /*Hope Tx Threads to exit normally*/
-        if (tx_done_count < xconf->tx_thread_count)
-            continue;
-        /*Hope Rx Thread to exit normally*/
-        if (!rx_thread->done_receiving)
-            continue;
-
-
-        break;
     }
 
+    for (unsigned i=0; i<xconf->tx_thread_count; i++) {
+        struct TxThread *parms = &tx_thread[i];
+        pixie_thread_join(parms->thread_handle_xmit);
+    }
+    pixie_thread_join(rx_thread->thread_handle_recv);
+
+
+    uint64_t usec_now = pixie_gettime();
+    fprintf(stderr, "\n%u milliseconds elapsed\n", (unsigned)((usec_now - usec_start)/1000));
 
     /*
      * Now cleanup everything
      */
     xtatus_finish(&status);
-
-    uint64_t usec_now = pixie_gettime();
-    fprintf(stderr, "%u milliseconds elapsed\n", (unsigned)((usec_now - usec_start)/1000));
 
     /**
      * Do close for ScanModule
