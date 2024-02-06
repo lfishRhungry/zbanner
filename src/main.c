@@ -102,7 +102,6 @@ struct TemplateSet *global_tmplset;
 static void control_c_handler(int x)
 {
     static unsigned control_c_pressed = 0;
-    static unsigned control_c_pressed_again = 0;
     if (control_c_pressed == 0) {
         /*First time of <ctrl-c>*/
         fprintf(stderr,
@@ -116,15 +115,14 @@ static void control_c_handler(int x)
     } else {
 
         if (is_rx_done) {
-            /*Rx thread is exiting after being told `is_rx_done`*/
-            fprintf(stderr, "\nERROR: Rx Thread still running\n");
+            /*Rx thread is being exiting after being told `is_rx_done`*/
+            fprintf(stderr, "\nERROR: Rx Thread is still running\n");
             if (is_rx_done++ > 1)
                 exit(1);
         } else {
             /*Second time of <ctrl-c>*/
-            control_c_pressed_again = 1;
             /*tell Rx thread to exit*/
-            is_rx_done = control_c_pressed_again;
+            is_rx_done = 1;
         }
     }
 
@@ -424,10 +422,11 @@ main_scan(struct Xconf *xconf)
 
 
     /*
-     * Now Tx Threads breaked out the main loop of sending because of `is_tx_done`
-     * and try to finish `stack_flush_packets` before `is_rx_done`.
-     * But Rx Thread exits just by our setting of `is_rx_done` according to time
+     * Now Tx Threads have breaked out the main loop of sending because of
+     * `is_tx_done` and go into loop of `stack_flush_packets` before `is_rx_done`.
+     * Rx Thread exits just by our setting of `is_rx_done` according to time
      * waiting.
+     * So `is_rx_done` is the important signal both for Tx/Rx Thread to exit.
      */
     now = time(0);
     for (;;) {
@@ -456,7 +455,9 @@ main_scan(struct Xconf *xconf)
             total_successed = *rx_thread->total_successed;
 
         if (time(0) - now >= xconf->wait) {
+            /*Tell Rx Thread to exit*/
             is_rx_done = 1;
+            LOG(1, "[+] tell threads to exit...                    \n");
         }
 
         /*Last line of defense infinite waiting*/
@@ -477,12 +478,10 @@ main_scan(struct Xconf *xconf)
 
         pixie_mssleep(250);
 
-        /*Hope all Tx Threads finished `stack_flush_packets`*/
+        /*Hope Tx Threads to exit normally*/
         if (tx_done_count < xconf->tx_thread_count)
             continue;
-        is_tx_done = 1;
-        /*Tell Rx Thread to exit*/
-        is_rx_done = 1;
+        /*Hope Rx Thread to exit normally*/
         if (!rx_thread->done_receiving)
             continue;
 
