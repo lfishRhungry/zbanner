@@ -28,6 +28,7 @@
 #include "receive.h"
 #include "xtatus.h"        /* printf() regular status updates */
 #include "cookie.h"         /* for SYN-cookies on send */
+#include "version.h"
 
 #include "stub/stub-pcap.h"          /* dynamically load libpcap library */
 #include "smack/smack.h"              /* Aho-corasick state-machine pattern-matcher */

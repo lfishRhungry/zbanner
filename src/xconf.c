@@ -16,6 +16,7 @@
 #include <limits.h>
 
 #include "xconf.h"
+#include "version.h"
 #include "param-configer.h"
 #include "crypto/crypto-base64.h"
 #include "nmap-service/read-service-probes.h"

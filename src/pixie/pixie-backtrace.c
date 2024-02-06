@@ -3,7 +3,7 @@
 */
 #include "pixie-backtrace.h"
 #include "../util/unusedparm.h"
-#include "../xconf.h"
+#include "../version.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

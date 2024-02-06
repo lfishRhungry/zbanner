@@ -10,14 +10,15 @@
 
  */
 #include "templ-payloads.h"
+#include "templ-nmap-payloads.h"
 #include "../xconf.h"
+#include "../version.h"
 #include "../massip/massip-port.h"
 #include "../rawsock/rawsock-pcapfile.h"   /* for reading payloads from pcap files */
 #include "../proto/proto-preprocess.h"   /* parse packets */
 #include "../util/logger.h"
 #include "../util/mas-malloc.h"
 #include "../massip/massip.h"
-#include "templ-nmap-payloads.h"
 
 #include <stdio.h>
 #include <string.h>
