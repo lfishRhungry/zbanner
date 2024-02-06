@@ -7,8 +7,15 @@
 /*for internal x-ref*/
 extern struct ProbeModule LzrHttpProbe;
 
-static char lzr_http_fmt[] = "GET / HTTP/1.1\r\n"
+static char lzr_http_fmt_ipv4[] = "GET / HTTP/1.1\r\n"
     "Host: %s:%u\r\n"
+    "User-Agent: Mozilla/5.0 "XTATE_WITH_VERSION"\r\n"
+    "Accept: */*\r\n"
+    "Accept-Encoding: gzip\r\n"
+    "\r\n";
+
+static char lzr_http_fmt_ipv6[] = "GET / HTTP/1.1\r\n"
+    "Host: [%s:%u]\r\n"
     "User-Agent: Mozilla/5.0 "XTATE_WITH_VERSION"\r\n"
     "Accept: */*\r\n"
     "Accept-Encoding: gzip\r\n"
@@ -22,8 +29,12 @@ lzr_http_make_payload(
     unsigned char *payload_buf,
     size_t buf_length)
 {
-    return snprintf((char *)payload_buf, buf_length, lzr_http_fmt,
-        ipaddress_fmt(ip_them).string, port_them);
+    if (ip_them.version==4)
+        return snprintf((char *)payload_buf, buf_length, lzr_http_fmt_ipv4,
+            ipaddress_fmt(ip_them).string, port_them);
+    else
+        return snprintf((char *)payload_buf, buf_length, lzr_http_fmt_ipv6,
+            ipaddress_fmt(ip_them).string, port_them);
 }
 
 static void
