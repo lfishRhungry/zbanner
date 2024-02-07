@@ -1254,7 +1254,7 @@ static int SET_append(struct Xconf *xconf, const char *name, const char *value)
 
     if (xconf->echo) {
         if (xconf->output.is_append || xconf->echo_all)
-            fprintf(xconf->echo, "append = %s\n",
+            fprintf(xconf->echo, "append-output = %s\n",
                 xconf->output.is_append?"true":"false");
         return 0;
     }
@@ -2038,7 +2038,7 @@ struct ConfigParameter config_parameters[] = {
     {"pcap-filename",   SET_pcap_filename,      0,      {"pcap",0}},
     {"show",            SET_show,               0,      {0}},
     {"interactive",     SET_interactive,        F_BOOL, {"interact", 0}},
-    {"append",          SET_append,             F_BOOL, {0}},
+    {"append-output",   SET_append,             F_BOOL, {"output-append", "append",0}},
     {"output-file",     SET_output_filename,    0,      {"output", "o", "output-filename",0}},
 
     {"PAYLOAD:",        SET_nothing,            0,      {0}},
