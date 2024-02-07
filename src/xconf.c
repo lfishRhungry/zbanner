@@ -813,7 +813,9 @@ static int SET_target_output(struct Xconf *xconf, const char *name, const char *
                     break;
             } while (range.begin <= range.end);
         }
-        fprintf(xconf->echo, "\n");
+
+        if (l)
+            fprintf(xconf->echo, "\n");
         /*
         * IPv4 address targets
         */
