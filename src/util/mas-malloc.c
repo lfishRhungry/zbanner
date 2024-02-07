@@ -116,3 +116,27 @@ STRDUP(const char *str)
 }
 
 
+char *
+duplicate_string(const char *str)
+{
+    size_t length;
+    char *result;
+
+    /* Find the length of the string. We allow NULL strings, in which case
+     * the length is zero */
+    if (str == NULL)
+        length = 0;
+    else
+        length = strlen(str);
+
+    /* Allocate memory for the string */
+    result = MALLOC(length + 1);
+    
+
+    /* Copy the string */
+    if (str)
+        memcpy(result, str, length+1);
+    result[length] = '\0';
+
+    return result;
+}

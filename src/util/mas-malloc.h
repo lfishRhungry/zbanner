@@ -25,6 +25,13 @@ REALLOC(void *p, size_t size);
 char *
 STRDUP(const char *str);
 
+/*****************************************************************************
+ * strdup(): compilers don't like strdup(), so I just write my own here. I
+ * should probably find a better solution.
+ *****************************************************************************/
+char *
+duplicate_string(const char *str);
+
 
 
 #endif

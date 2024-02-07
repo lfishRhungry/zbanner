@@ -1887,7 +1887,7 @@ tcp_flags_to_string(unsigned flag, char *string, size_t str_len)
             (flag&TCP_FLAG_CWR)?"cwr-":""
             );
         if (string[0] == '\0')
-            return "none";
+            snprintf(string, str_len, "none");
         else
             string[strlen(string)-1] = '\0';
 }
