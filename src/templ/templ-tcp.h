@@ -78,4 +78,8 @@ tcp_create_packet(
         const unsigned char *payload, size_t payload_length,
         unsigned char *px, size_t px_length);
 
+/*Convert TCP flags into string*/
+void
+tcp_flags_to_string(unsigned flag, char *string, size_t str_len);
+
 #endif

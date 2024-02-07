@@ -1872,3 +1872,22 @@ tcp_create_packet(
         seqno, ackno, flags,
         payload, payload_length, px, px_length);
 }
+
+void
+tcp_flags_to_string(unsigned flag, char *string, size_t str_len)
+{
+    snprintf(string, str_len, "%s%s%s%s%s%s%s%s",
+            (flag&TCP_FLAG_FIN)?"fin-":"",
+            (flag&TCP_FLAG_SYN)?"syn-":"",
+            (flag&TCP_FLAG_RST)?"rst-":"",
+            (flag&TCP_FLAG_PSH)?"psh-":"",
+            (flag&TCP_FLAG_ACK)?"ack-":"",
+            (flag&TCP_FLAG_URG)?"urg-":"",
+            (flag&TCP_FLAG_ECE)?"ece-":"",
+            (flag&TCP_FLAG_CWR)?"cwr-":""
+            );
+        if (string[0] == '\0')
+            return "none";
+        else
+            string[strlen(string)-1] = '\0';
+}
