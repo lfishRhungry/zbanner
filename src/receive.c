@@ -75,7 +75,7 @@ receive_thread(void *v)
 {
     struct RxThread *parms = (struct RxThread *)v;
     const struct Xconf *xconf = parms->xconf;
-    struct Output *output = &xconf->output;
+    struct Output output = xconf->output;
     struct Adapter *adapter = xconf->nic.adapter;
     int data_link = stack_if_datalink(adapter);
     struct DedupTable *dedup = NULL;
@@ -97,7 +97,7 @@ receive_thread(void *v)
 
     LOG(1, "[+] starting receive thread\n");
 
-    output_init(output);
+    output_init(&output);
     
     /* Lock threads to the CPUs one by one.
      * Tx threads follow  the only one Rx thread.
@@ -266,7 +266,7 @@ receive_thread(void *v)
                 classification, SCAN_MODULE_CLS_LEN,
                 report, SCAN_MODULE_RPT_LEN);
 
-            output_result(output, &parsed, global_now, successed,
+            output_result(&output, &parsed, global_now, successed,
                 classification, report);
             
             if (successed)
@@ -324,7 +324,7 @@ receive_thread(void *v)
      * cleanup
      */
 end:
-    output_close(output);
+    output_close(&output);
 
     if (!xconf->is_nodedup)
         dedup_destroy(dedup);
