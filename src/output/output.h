@@ -14,11 +14,19 @@ struct Output{
     unsigned is_show_failed:1;
 };
 
+/*prepare for outputing results*/
+void
+output_init(struct Output *output);
+
 void
 output_result(
     const struct Output *output,
     const struct PreprocessedInfo *parsed,
     time_t timestamp, unsigned successed,
     const char *classification, const char *report);
+
+/*destroy resources of output*/
+void
+output_close(struct Output *output);
 
 #endif
