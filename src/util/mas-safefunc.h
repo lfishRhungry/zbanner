@@ -127,4 +127,11 @@ const char *
 normalize_string(const unsigned char *px, size_t length,
     char *buf, size_t buf_len);
 
+/*****************************************************************************
+ * strdup(): compilers don't like strdup(), so I just write my own here. I
+ * should probably find a better solution.
+ *****************************************************************************/
+char *
+duplicate_string(const char *str);
+
 #endif
