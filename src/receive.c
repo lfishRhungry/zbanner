@@ -78,7 +78,7 @@ receive_thread(void *v)
     struct Output *output = &xconf->output;
     struct Adapter *adapter = xconf->nic.adapter;
     int data_link = stack_if_datalink(adapter);
-    struct DedupTable *dedup;
+    struct DedupTable *dedup = NULL;
     struct PcapFile *pcapfile = NULL;
     uint64_t entropy = xconf->seed;
     struct stack_t *stack = xconf->stack;
@@ -120,11 +120,8 @@ receive_thread(void *v)
      * Create deduplication table. This is so when somebody sends us
      * multiple responses, we only record the first one.
      */
-    if (!xconf->is_nodedup){
+    if (!xconf->is_nodedup)
         dedup = dedup_create(xconf->dedup_win);
-    }else{
-        dedup = NULL;
-    }
 
     /*
      * Do rx-thread init for ScanModule
