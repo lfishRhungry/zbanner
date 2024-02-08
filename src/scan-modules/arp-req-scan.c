@@ -69,7 +69,7 @@ arpreq_handle_packet(
     item->is_success = 1;
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "arp reply");
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "alive");
-    snprintf(item->report, OUTPUT_RPT_LEN, "mac addr: %02X:%02X:%02X:%02X:%02X:%02X",
+    snprintf(item->report, OUTPUT_RPT_LEN, "%02X:%02X:%02X:%02X:%02X:%02X",
         parsed->mac_src[0], parsed->mac_src[1], parsed->mac_src[2],
         parsed->mac_src[3], parsed->mac_src[4], parsed->mac_src[5]);
 
