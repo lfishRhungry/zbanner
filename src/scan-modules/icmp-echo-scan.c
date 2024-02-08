@@ -79,12 +79,16 @@ static int
 icmpecho_handle_packet(
     struct PreprocessedInfo *parsed, uint64_t entropy,
     const unsigned char *px, unsigned sizeof_px,
-    unsigned *successed,
-    char *classification, unsigned cls_length,
-    char *report, unsigned rpt_length)
+    struct OutputItem *item)
 {
-    *successed = 1;
-    safe_strcpy(classification, cls_length, "echo reply");
+    item->ip_them   = parsed->src_ip;
+    item->port_them = 0;
+    item->ip_me     = parsed->dst_ip;
+    item->port_me   = 0;
+
+    item->is_success = 1;
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "echo reply");
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "alive");
 
     /*no need to response*/
     return 0;

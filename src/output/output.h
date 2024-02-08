@@ -3,8 +3,13 @@
 
 #include <time.h>
 #include <ctype.h>
+#include <stdio.h>
 
-#include "../proto/proto-preprocess.h"
+#include "../massip/massip-addr.h"
+
+#define OUTPUT_RSN_LEN   20
+#define OUTPUT_CLS_LEN   20
+#define OUTPUT_RPT_LEN 2048
 
 struct Output{
     char output_filename[256];
@@ -14,6 +19,20 @@ struct Output{
     unsigned is_show_failed:1;
 };
 
+struct OutputItem{
+    unsigned no_output:1;
+    unsigned is_success:1;
+    time_t timestamp;
+    ipaddress ip_them;
+    unsigned port_them; /*no outputting if zero*/
+    ipaddress ip_me;
+    unsigned port_me; /*no outputting if zero*/
+    /*no outputting if start with zero*/
+    char reason[OUTPUT_RSN_LEN];
+    char classification[OUTPUT_CLS_LEN];
+    char report[OUTPUT_RPT_LEN];
+};
+
 /*prepare for outputing results*/
 void
 output_init(struct Output *output);
@@ -21,9 +40,7 @@ output_init(struct Output *output);
 void
 output_result(
     const struct Output *output,
-    const struct PreprocessedInfo *parsed,
-    time_t timestamp, unsigned successed,
-    const char *classification, const char *report);
+    const struct OutputItem *item);
 
 /*destroy resources of output*/
 void

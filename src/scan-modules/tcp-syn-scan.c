@@ -90,26 +90,30 @@ static int
 tcpsyn_handle_packet(
     struct PreprocessedInfo *parsed, uint64_t entropy,
     const unsigned char *px, unsigned sizeof_px,
-    unsigned *successed,
-    char *classification, unsigned cls_length,
-    char *report, unsigned rpt_length)
+    struct OutputItem *item)
 {
     uint16_t win_them   = TCP_WIN(px, parsed->transport_offset);
 
-    *successed = 0;
+    item->ip_them   = parsed->src_ip;
+    item->port_them = parsed->port_src;
+    item->ip_me     = parsed->dst_ip;
+    item->port_me   = parsed->port_dst;
 
     /*SYNACK*/
     if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_SYN|TCP_FLAG_ACK)) {
-        *successed = 1;
+        item->is_success = 1;
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "syn-ack");
+
         if (win_them == 0) {
-            safe_strcpy(classification, cls_length, "syn-ack(zerowin)");
+            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "zerowin");
         } else {
-            safe_strcpy(classification, cls_length, "syn-ack");
+            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
         }
     }
     /*RST*/
     else if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_RST)) {
-        safe_strcpy(classification, cls_length, "rst");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "rst");
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
     }
 
     /*no need to response*/

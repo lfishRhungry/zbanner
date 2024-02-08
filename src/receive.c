@@ -256,20 +256,17 @@ receive_thread(void *v)
          * Step 4: Handle
         */
         unsigned need_response = 0;
-        unsigned successed = 0;
-        char classification[SCAN_MODULE_CLS_LEN] = {0};
-        char report[SCAN_MODULE_RPT_LEN] = {0};
 
         if (scan_module->handle_packet_cb) {
-            need_response = scan_module->handle_packet_cb(&parsed, entropy,
-                px, length, &successed,
-                classification, SCAN_MODULE_CLS_LEN,
-                report, SCAN_MODULE_RPT_LEN);
+            struct OutputItem item = {0};
+            item.timestamp = global_now;
 
-            output_result(&output, &parsed, global_now, successed,
-                classification, report);
+            need_response = scan_module->handle_packet_cb(&parsed, entropy,
+                px, length, &item);
+
+            output_result(&output, &item);
             
-            if (successed)
+            if (item.is_success)
                 (*status_successed_count)++;
         }
 

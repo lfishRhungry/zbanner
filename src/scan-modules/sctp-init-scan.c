@@ -88,17 +88,20 @@ static int
 sctpinit_handle_packet(
     struct PreprocessedInfo *parsed, uint64_t entropy,
     const unsigned char *px, unsigned sizeof_px,
-    unsigned *successed,
-    char *classification, unsigned cls_length,
-    char *report, unsigned rpt_length)
+    struct OutputItem *item)
 {
-    *successed = 0;
+    item->ip_them   = parsed->src_ip;
+    item->port_them = parsed->port_src;
+    item->ip_me     = parsed->dst_ip;
+    item->port_me   = parsed->port_dst;
 
     if (SCTP_IS_CHUNK_TYPE(px, parsed->transport_offset, SCTP_CHUNK_TYPE_INIT_ACK)) {
-        *successed = 1;
-        safe_strcpy(classification, cls_length, "init-ack");
+        item->is_success = 1;
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "init-ack");
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
     } else if (SCTP_IS_CHUNK_TYPE(px, parsed->transport_offset, SCTP_CHUNK_TYPE_ABORT)) {
-        safe_strcpy(classification, cls_length, "abort");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "abort");
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
     }
 
     /*no need to response*/

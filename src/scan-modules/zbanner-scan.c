@@ -116,30 +116,32 @@ static int
 zbanner_handle_packet(
     struct PreprocessedInfo *parsed, uint64_t entropy,
     const unsigned char *px, unsigned sizeof_px,
-    unsigned *successed,
-    char *classification, unsigned cls_length,
-    char *report, unsigned rpt_length)
+    struct OutputItem *item)
 {
-
-    *successed = 0;
+    item->ip_them   = parsed->src_ip;
+    item->port_them = parsed->port_src;
+    item->ip_me     = parsed->dst_ip;
+    item->port_me   = parsed->port_dst;
 
     /*SYNACK*/
     if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_SYN|TCP_FLAG_ACK)) {
-        *successed = 1;
+        item->is_success = 1;
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "syn-ack");
         /*check for zero window of synack*/
         uint16_t win_them = TCP_WIN(px, parsed->transport_offset);
         if (win_them == 0) {
-            safe_strcpy(classification, cls_length, "zerowin");
+            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "zerowin");
             return 0;
         } else {
-            safe_strcpy(classification, cls_length, "open");
+            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
             return 1;
         }
     }
 
     /*RST for SYN. (RST for probe was deduped.)*/
     if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_RST)) {
-        safe_strcpy(classification, cls_length, "closed");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "rst");
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
         return 0;
     }
 
@@ -151,8 +153,11 @@ zbanner_handle_packet(
         * 2.[PSH, ACK]: no more data
         * 3.[FIN, PSH, ACK]: no more data and disconnecting
         */
-        *successed = 1;
-        safe_strcpy(classification, cls_length, ZBannerScan.probe->name);
+        item->is_success = 1;
+        tcp_flags_to_string(TCP_FLAGS(px, parsed->transport_offset),
+            item->reason, OUTPUT_RSN_LEN);
+        safe_strcpy(
+            item->classification, OUTPUT_CLS_LEN, ZBannerScan.probe->name);
 
         if (ZBannerScan.probe->handle_response_cb) {
 
@@ -164,7 +169,7 @@ zbanner_handle_packet(
             ZBannerScan.probe->handle_response_cb(
                 ip_them, port_them, ip_me, port_me,
                 &px[parsed->app_offset], parsed->app_length,
-                report, rpt_length);
+                item->report, OUTPUT_RPT_LEN);
         }
 
         return 1;

@@ -12,12 +12,11 @@
 #include <ctype.h>
 
 #include "../massip/massip-addr.h"
+#include "../output/output.h"
 #include "../proto/proto-preprocess.h"
 #include "../probe-modules/probe-modules.h"
 
 
-#define SCAN_MODULE_CLS_LEN               15
-#define SCAN_MODULE_RPT_LEN             1460
 #define SCAN_MODULE_DEFAULT_DEDUP_TYPE     0
 
 /***************************************************************************
@@ -162,9 +161,7 @@ typedef int (*scan_modules_dedup_packet)(
 typedef int (*scan_modules_handle_packet)(
     struct PreprocessedInfo *parsed, uint64_t entropy,
     const unsigned char *px, unsigned sizeof_px,
-    unsigned *successed,
-    char *classification, unsigned cls_length,
-    char *report, unsigned rpt_length);
+    struct OutputItem *item);
 
 
 /**
