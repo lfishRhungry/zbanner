@@ -6,7 +6,7 @@
 
 static char fmt_success_host[] = "%s on host: %-15s";
 static char fmt_port[] = " port: %-5u";
-static char fmt_classification[] = " in type \"%s\"";
+static char fmt_classification[] = " \"%s\"";
 static char fmt_reason[] = " because of \"%s\"";
 static char fmt_report[] = ". Report: [%s]";
 
