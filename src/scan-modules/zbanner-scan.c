@@ -156,8 +156,7 @@ zbanner_handle_packet(
         item->is_success = 1;
         tcp_flags_to_string(TCP_FLAGS(px, parsed->transport_offset),
             item->reason, OUTPUT_RSN_LEN);
-        safe_strcpy(
-            item->classification, OUTPUT_CLS_LEN, ZBannerScan.probe->name);
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "serving");
 
         if (ZBannerScan.probe->handle_response_cb) {
 
