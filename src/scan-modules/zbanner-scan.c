@@ -26,6 +26,11 @@ zbanner_global_init()
         LOG(0, "    Hint: specify ProbeModule like `--probe-module null`.\n");
         return 0;
     }
+
+    if (ZBannerScan.probe->type != ProbeType_TCP) {
+        LOG(0, "FAIL: ZBannerScan needs a tcp type ProbeModule.\n");
+        return 0;
+    }
     return 1;
 }
 

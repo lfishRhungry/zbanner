@@ -42,15 +42,19 @@ struct ProbeModule *get_probe_module_by_name(const char *name)
     return NULL;
 }
 
-static char *get_type_name_by_flag(unsigned flag)
+static const char *
+get_probe_type_name(const enum ProbeType type)
 {
-    if (flag==1)
-        return " tcp";
-    else if (flag>>1==1)
-        return " udp";
-    else if (flag>>2==1)
-        return " sctp";
-    return "";
+    switch (type) {
+        case ProbeType_TCP:
+            return "tcp";
+        case ProbeType_UDP:
+            return "udp";
+        case ProbeType_SCTP:
+            return "sctp";
+        default:
+            return "";
+    }
 }
 
 void list_all_probe_modules()
@@ -61,12 +65,7 @@ void list_all_probe_modules()
     for (int i = 0; i < len; i++) {
         printf("========================\n\n");
         printf("ProbeModule Name: %s\n", probe_modules_list[i]->name);
-        printf("ProbeModule Type:");
-        for (unsigned i=1;i<ProbeType_MAX;i<<=1) {
-            if ((probe_modules_list[i]->type & i) > 0)
-                puts(get_type_name_by_flag(i));
-        }
-        printf("\n");
+        printf("ProbeModule Type: %s\n", get_probe_type_name(probe_modules_list[i]->type));
         printf("Description:\n%s\n", probe_modules_list[i]->desc);
     }
     printf("========================\n");

@@ -8,11 +8,11 @@
 #define PROBE_PAYLOAD_MAX_LEN 2048
 #define PROBE_REPORT_MAX_LEN 2048
 
+/*a probe belongs to one type*/
 enum ProbeType {
     ProbeType_TCP   = 1,
-    ProbeType_UDP   = 1<<1,
-    ProbeType_SCTP  = 1<<2,
-    ProbeType_MAX   = 1<<3,
+    ProbeType_UDP,
+    ProbeType_SCTP,
 };
 
 
@@ -123,7 +123,7 @@ typedef int (*probe_modules_close)();
 struct ProbeModule
 {
     const char                        *name;
-    const unsigned                     type;
+    const enum ProbeType               type;
     const char                        *desc;
     char                              *args;
     /*for init*/
