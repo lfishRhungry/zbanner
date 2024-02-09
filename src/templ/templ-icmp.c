@@ -402,14 +402,42 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
             return 0;
         }
 
-        ip_header_in_icmp += ((ip_header_in_icmp[4]<<8)|(ip_header_in_icmp[5]));
-        data_length_in_icmp -= ((ip_header_in_icmp[4]<<8)|(ip_header_in_icmp[5]));
+        /*length of ipv6 header is fixed*/
+        ip_header_in_icmp += 40;
+        data_length_in_icmp -= 40;
 
         if (data_length_in_icmp < 4)
             return 0;
 
         *r_port_me = ip_header_in_icmp[0]<<8 | ip_header_in_icmp[1];
         *r_port_them = ip_header_in_icmp[2]<<8 | ip_header_in_icmp[3];
+    }
+
+    return 1;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+unsigned
+get_icmp_port_unreachable_proto(const unsigned char *transport_px, unsigned length)
+{
+    const unsigned char *ip_header_in_icmp = transport_px + 8;
+
+    if (ip_header_in_icmp[0]>>4 == 0B0100) {
+        
+        if (ip_header_in_icmp[9]==6) {
+            return Proto_TCP;
+        } else if (ip_header_in_icmp[9]==17) {
+            return Proto_UDP;
+        }
+
+    } else if (ip_header_in_icmp[0]>>4 == 0B0110) {
+
+        if (ip_header_in_icmp[6]==6) {
+            return Proto_TCP;
+        } else if (ip_header_in_icmp[6]==17) {
+            return Proto_UDP;
+        }
     }
 
     return 0;
