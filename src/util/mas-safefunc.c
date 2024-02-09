@@ -121,6 +121,31 @@ stristr (const char * haystack, const char * needle)
     return(NULL);
 }
 
+void *
+safe_memismem (const void * haystack, size_t haystacklen,
+    const void * needle, size_t needlelen)
+{
+    char *cp = (char *) haystack;
+    char *s1, *s2;
+    
+    while (*cp) {
+        s1 = cp;
+        s2 = (char *) needle;
+        
+        while ((s1-(char *)haystack)!=haystacklen
+            && (s2-(char *)needle)!=needlelen
+            && toupper(*s1)==toupper(*s2) ) {
+            s1++, s2++;
+        }
+        
+        if ((s2-(char *)needle)==needlelen) return(cp);
+        
+        cp++;
+    }
+    
+    return(NULL);
+}
+
 void
 trim(char *line, size_t sizeof_line)
 {

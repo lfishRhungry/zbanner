@@ -133,4 +133,9 @@ normalize_string(const unsigned char *px, size_t length,
 void *
 safe_memmem(const void *src,int srclen,const void *trg,int trglen);
 
+/*`memmem` but in case insensitive*/
+void *
+safe_memismem (const void * haystack, size_t haystacklen,
+    const void * needle, size_t needlelen);
+
 #endif
