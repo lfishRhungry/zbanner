@@ -44,12 +44,12 @@ lzr_http_handle_reponse(
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length)
 {
-    if (!strstr((const char *)px, "HTTPS")
+    if (!safe_memmem(px, sizeof_px, "HTTPS", strlen("HTTPS"))
         &&
-        (strstr((const char *)px, "HTTP")
-            || strstr((const char *)px, "html")
-            || strstr((const char *)px, "HTML")
-            || strstr((const char *)px, "<h1>"))) {
+        (safe_memmem(px, sizeof_px, "HTTP", strlen("HTTP"))
+            || safe_memmem(px, sizeof_px, "html", strlen("html"))
+            || safe_memmem(px, sizeof_px, "HTML", strlen("HTML"))
+            || safe_memmem(px, sizeof_px, "<h1>", strlen("<h1>")))) {
         safe_strcpy(report, rpt_length, "http");
     }
 }
