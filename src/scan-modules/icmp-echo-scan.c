@@ -96,6 +96,7 @@ icmpecho_handle_packet(
 
 struct ScanModule IcmpEchoScan = {
     .name = "icmpecho",
+    .required_probe_type = 0,
     .desc =
         "IcmpEchoScan sends a ICMP ECHO Request packet to target host. Expect an "
         "ICMP ECHO Reply to believe the host is alive.\n",

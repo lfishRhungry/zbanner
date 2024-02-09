@@ -37,7 +37,9 @@ void list_all_scan_modules()
 
     for (int i = 0; i < len; i++) {
         printf("========================\n\n");
-        printf("ScanModule Name: %s\n\n", scan_modules_list[i]->name);
+        printf("ScanModule Name: %s\n", scan_modules_list[i]->name);
+        printf("Required Probe Type: %s\n", scan_modules_list[i]->required_probe_type?
+            get_probe_type_name(scan_modules_list[i]->required_probe_type):"no probe");
         printf("Description:\n%s\n", scan_modules_list[i]->desc);
     }
     printf("========================\n");

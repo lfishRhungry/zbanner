@@ -122,6 +122,7 @@ tcpsyn_handle_packet(
 
 struct ScanModule TcpSynScan = {
     .name = "tcpsyn",
+    .required_probe_type = 0,
     .desc =
         "TcpSynScan sends a TCP SYN packet to target port. Expect a SYNACK "
         "response to believe the port is open or an RST for closed in TCP protocol.\n"

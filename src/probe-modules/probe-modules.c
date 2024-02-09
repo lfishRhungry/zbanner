@@ -42,7 +42,7 @@ struct ProbeModule *get_probe_module_by_name(const char *name)
     return NULL;
 }
 
-static const char *
+const char *
 get_probe_type_name(const enum ProbeType type)
 {
     switch (type) {

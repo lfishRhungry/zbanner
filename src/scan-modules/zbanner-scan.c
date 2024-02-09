@@ -227,6 +227,7 @@ zbanner_response_packet(
 
 struct ScanModule ZBannerScan = {
     .name = "zbanner",
+    .required_probe_type = ProbeType_TCP,
     .desc =
         "ZBannerScan tries to contruct TCP conn with target port and send data "
         "from specified ProbeModule. Data in first reponse packet will be handled"

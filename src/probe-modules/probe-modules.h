@@ -140,6 +140,9 @@ struct ProbeModule
 
 struct ProbeModule *get_probe_module_by_name(const char *name);
 
+const char *
+get_probe_type_name(const enum ProbeType type);
+
 void list_all_probe_modules();
 
 /************************************************************************

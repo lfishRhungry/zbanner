@@ -200,6 +200,8 @@ struct ScanModule
 {
     const char                          *name;
     const char                          *desc;
+    const enum ProbeType                 required_probe_type; /*set zero if not using probe*/
+    /*useful params*/
     char                                *args;
     struct ProbeModule                  *probe;
     /*for init*/
