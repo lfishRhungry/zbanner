@@ -22,13 +22,15 @@ static int
 zbanner_global_init()
 {
     if (!ZBannerScan.probe) {
-        LOG(0, "FAIL: No ProbeModule was specified.\n");
+        LOG(0, "FAIL: ZBannerScan needs a specified tcp ProbeModule.\n");
         LOG(0, "    Hint: specify ProbeModule like `--probe-module null`.\n");
         return 0;
     }
 
     if (ZBannerScan.probe->type != ProbeType_TCP) {
         LOG(0, "FAIL: ZBannerScan needs a tcp type ProbeModule.\n");
+        LOG(0, "    Current ProbeModule %s is %s type.\n",
+            ZBannerScan.probe->name, get_probe_type_name(ZBannerScan.probe->type));
         return 0;
     }
     return 1;
