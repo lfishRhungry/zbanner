@@ -161,3 +161,30 @@ normalize_string(const unsigned char *px, size_t length,
 
     return buf;
 }
+
+void *
+safe_memmem(const void *src,int srclen,const void *trg,int trglen)
+{
+    unsigned char *csrc = (unsigned char *)src;
+    unsigned char *ctrg = (unsigned char *)trg;
+    unsigned char *tptr,*cptr;
+    int searchlen,ndx=0;
+
+    /* add some initial error checking if you want */
+
+    while (ndx<=srclen) {
+        cptr = &csrc[ndx];
+        if ((searchlen = srclen-ndx-trglen+1) <= 0) {
+            return NULL;
+        } /* if */
+        if ((tptr = memchr(cptr,*ctrg,searchlen)) == NULL) {
+            return NULL;
+        } /* if */
+        if (memcmp(tptr,ctrg,trglen) == 0) {
+            return tptr;
+        } /* if */
+        ndx += tptr-cptr+1;
+    } /* while */
+
+    return NULL;
+}

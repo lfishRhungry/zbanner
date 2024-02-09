@@ -127,4 +127,10 @@ const char *
 normalize_string(const unsigned char *px, size_t length,
     char *buf, size_t buf_len);
 
+/*****************************************************************************
+ * os undependant memmem
+ *****************************************************************************/
+void *
+safe_memmem(const void *src,int srclen,const void *trg,int trglen);
+
 #endif
