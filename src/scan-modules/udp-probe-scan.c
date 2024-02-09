@@ -189,8 +189,9 @@ struct ScanModule UdpProbeScan = {
     .required_probe_type = ProbeType_UDP,
     .desc =
         "UdpProbeScan sends a udp packet with ProbeModule data to target port "
-        "and expects a udp response to believe the port is open. Responsed data "
-        "will be processed and formed a report by ProbeModule.\n"
+        "and expects a udp response to believe the port is open or an icmp port "
+        "unreachable message if closed. Responsed data will be processed and "
+        "formed a report by ProbeModule.\n"
         "UdpProbeScan prefer the first reponse udp packet. But all packets to us "
         "could be record to pcap file.\n",
 
