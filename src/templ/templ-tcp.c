@@ -65,6 +65,16 @@
  |      Right Edge of nth Block      |
  +--------+--------+--------+--------+
 
+
+TCP pseudo header
+
+                     +--------+--------+--------+--------+
+                     |           Source Address          |
+                     +--------+--------+--------+--------+
+                     |         Destination Address       |
+                     +--------+--------+--------+--------+
+                     |  zero  |  PTCL  |    TCP Length   |
+                     +--------+--------+--------+--------+
  */
 #include <string.h>
 #include <stdlib.h>
