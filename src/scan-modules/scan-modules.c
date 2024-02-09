@@ -8,6 +8,7 @@ extern struct ScanModule IcmpEchoScan;
 extern struct ScanModule ArpReqScan;
 extern struct ScanModule SctpInitScan;
 extern struct ScanModule ZBannerScan;
+extern struct ScanModule UdpProbeScan;
 //! REGIST YOUR SCAN MODULE HERE
 
 static struct ScanModule *scan_modules_list[] = {
@@ -16,6 +17,7 @@ static struct ScanModule *scan_modules_list[] = {
     &ArpReqScan,
     &SctpInitScan,
     &ZBannerScan,
+    &UdpProbeScan,
     //! REGIST YOUR SCAN MODULE HERE
 };
 
