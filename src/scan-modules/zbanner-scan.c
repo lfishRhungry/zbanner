@@ -43,6 +43,10 @@ zbanner_global_init(const void *xconf)
     return 1;
 }
 
+/**
+ * NOTE: zbanner uses a trick of src-port to implement multi-probes.
+ * Be careful to the source port range.
+*/
 static int
 zbanner_make_packet(
     unsigned cur_proto,

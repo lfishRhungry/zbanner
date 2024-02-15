@@ -35,6 +35,10 @@ udpprobe_global_init(const void *xconf)
     return 1;
 }
 
+/**
+ * NOTE: udpprobe uses a trick of src-port to implement multi-probes.
+ * Be careful to the source port range.
+*/
 static int
 udpprobe_make_packet(
     unsigned cur_proto,
