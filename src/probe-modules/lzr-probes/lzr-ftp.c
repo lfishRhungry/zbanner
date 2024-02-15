@@ -6,7 +6,7 @@
 /*for internal x-ref*/
 extern struct ProbeModule LzrFtpProbe;
 
-static void
+static int
 lzr_ftp_handle_response(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
@@ -15,7 +15,7 @@ lzr_ftp_handle_response(
 {
     if (safe_memismem(px, sizeof_px, "ftp", strlen("ftp"))) {
         safe_strcpy(report, rpt_length, "ftp");
-        return;
+        return 0; /*no probe again*/
     }
 
     /* This matching is like fallback condition in Nmap*/
@@ -26,8 +26,9 @@ lzr_ftp_handle_response(
         || strstr(tmp_str, "550")
         || strstr(tmp_str, "230")) {
         safe_strcpy(report, rpt_length, "ftp");
-        return;
+        return 0; /*no probe again*/
     }
+    return 0; /*no probe again*/
 }
 
 struct ProbeModule LzrFtpProbe = {

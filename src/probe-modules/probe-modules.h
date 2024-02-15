@@ -105,8 +105,9 @@ typedef int
  * @param sizeof_px len of reponse
  * @param report Report string.
  * @param rpt_length Length of report string buffer.
+ * @param return true if need to probe again. (with other source port)
 */
-typedef void
+typedef int
 (*probe_modules_handle_response)(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
@@ -149,7 +150,7 @@ Some useful implemented interfaces
 ************************************************************************/
 
 /*implemented `probe_modules_handle_reponse`*/
-void
+int
 just_report_banner(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,

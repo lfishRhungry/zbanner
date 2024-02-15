@@ -37,7 +37,7 @@ lzr_http_make_payload(
             ipaddress_fmt(ip_them).string, port_them);
 }
 
-static void
+static int
 lzr_http_handle_reponse(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
@@ -52,6 +52,7 @@ lzr_http_handle_reponse(
             || safe_memmem(px, sizeof_px, "<h1>", strlen("<h1>")))) {
         safe_strcpy(report, rpt_length, "http");
     }
+    return 0; /*no probe again*/
 }
 
 struct ProbeModule LzrHttpProbe = {

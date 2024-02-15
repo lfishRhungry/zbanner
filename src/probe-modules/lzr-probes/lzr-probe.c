@@ -72,7 +72,7 @@ lzr_global_init()
     return 1;
 }
 
-static void
+static int
 lzr_handle_response(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
@@ -117,6 +117,8 @@ lzr_handle_response(
         /* remove last '-' */
         (buf_idx-1)[0] = '\0';
     }
+
+    return 0; /*no probe again*/
 }
 
 struct ProbeModule LzrProbe = {
