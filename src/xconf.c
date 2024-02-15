@@ -695,7 +695,8 @@ static int SET_source_ip(struct Xconf *xconf, const char *name, const char *valu
             }
             xconf->nic.src.ipv4.first = range.begin;
             xconf->nic.src.ipv4.last = range.end;
-            xconf->nic.src.ipv4.range = range.end - range.begin + 1;
+            // xconf->nic.src.ipv4.range = range.end - range.begin + 1;
+            xconf->nic.src.ipv4.range = 1; /*Just need one source ip now*/
             break;
         case Ipv6_Address:
             xconf->nic.src.ipv6.first = range6.begin;
