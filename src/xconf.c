@@ -716,17 +716,13 @@ static int SET_source_port(struct Xconf *xconf, const char *name, const char *va
 {
     if (xconf->echo) {
         if (xconf->nic.src.port.first) {
-            fprintf(xconf->echo, "source port first = %u\n", xconf->nic.src.port.first);
-            fprintf(xconf->echo, "source port last = %u\n", xconf->nic.src.port.last);
-            fprintf(xconf->echo, "source port range = %u\n", xconf->nic.src.port.range);
+            fprintf(xconf->echo, "source-port = %d", xconf->nic.src.port.first);
+            if (xconf->nic.src.port.first != xconf->nic.src.port.last) {
+                /* --adapter-port <first>-<last> */
+                fprintf(xconf->echo, "-%d", xconf->nic.src.port.last);
+            }
+            fprintf(xconf->echo, "\n");
         }
-        if (xconf->nic.src.port.first != 0) {
-        fprintf(xconf->echo, "source-port = %d", xconf->nic.src.port.first);
-        if (xconf->nic.src.port.first != xconf->nic.src.port.last) {
-            fprintf(xconf->echo, "-%d", xconf->nic.src.port.last);
-        }
-        fprintf(xconf->echo, "\n");
-    }
         return 0;
     }
 
