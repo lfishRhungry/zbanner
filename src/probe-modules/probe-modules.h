@@ -12,7 +12,6 @@
 enum ProbeType {
     ProbeType_TCP   = 1,
     ProbeType_UDP,
-    ProbeType_SCTP,
 };
 
 
