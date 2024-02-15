@@ -95,7 +95,7 @@ transmit_thread(void *v) /*aka. scanning_thread() */
      * Do tx-thread init for ScanModule
      */
     if (xconf->scan_module->tx_thread_init_cb){
-        if (!xconf->scan_module->tx_thread_init_cb()) {
+        if (!xconf->scan_module->tx_thread_init_cb(parms)) {
             LOG(0, "FAIL: errors happened in tx-thread(%u) init of ScanModule.\n", parms->tx_index);
             exit(1);
         }
@@ -105,7 +105,7 @@ transmit_thread(void *v) /*aka. scanning_thread() */
      * Do tx-thread init for ProbeModule
      */
     if (xconf->probe_module&&xconf->probe_module->tx_thread_init_cb){
-        if (!xconf->probe_module->tx_thread_init_cb()) {
+        if (!xconf->probe_module->tx_thread_init_cb(parms)) {
             LOG(0, "FAIL: errors happened in tx-thread(%u) init of ProbeModule.\n", parms->tx_index);
             exit(1);
         }

@@ -25,21 +25,24 @@
 
 /**
  * Do some initialization here if you have to.
+ * @param xconf main conf of xtate, use `void` to avoiding x-ref.
  * @return false for initing failed and exit process.
 */
-typedef int (*scan_modules_global_init)();
+typedef int (*scan_modules_global_init)(const void *xconf);
 
 /**
  * !Must be thread safe.
+ * @param rxthread main conf of rxthread, use `void` to avoiding x-ref.
  * @return false for initing failed and exit process.
 */
-typedef int (*scan_modules_rxthread_init)();
+typedef int (*scan_modules_rxthread_init)(const void *rxthread);
 
 /**
  * !Must be thread safe.
+ * @param txthread main conf of txthread, use `void` to avoiding x-ref.
  * @return false for initing failed and exit process.
 */
-typedef int (*scan_modules_txthread_init)();
+typedef int (*scan_modules_txthread_init)(const void *txthread);
 
 /***************************************************************************
  * * callback functions for Transmit

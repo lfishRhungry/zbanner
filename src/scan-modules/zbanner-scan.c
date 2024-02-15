@@ -19,7 +19,7 @@
 extern struct ScanModule ZBannerScan; /*for internal x-ref*/
 
 static int
-zbanner_global_init()
+zbanner_global_init(const void *xconf)
 {
     if (!ZBannerScan.probe) {
         LOG(0, "FAIL: ZBannerScan needs a specified tcp ProbeModule.\n");

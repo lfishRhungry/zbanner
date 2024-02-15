@@ -11,7 +11,7 @@
 extern struct ScanModule UdpProbeScan; /*for internal x-ref*/
 
 static int
-udpprobe_global_init()
+udpprobe_global_init(const void *xconf)
 {
     if (!UdpProbeScan.probe) {
         LOG(0, "FAIL: UdpProbeScan needs a specified udp ProbeModule.\n");

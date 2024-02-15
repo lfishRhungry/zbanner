@@ -16,23 +16,26 @@ enum ProbeType {
 
 
 /**
+ * @param xconf main conf of xtate, use `void` to avoiding x-ref.
  * @return FALSE to exit process if init failed
 */
-typedef int (*probe_modules_global_init)();
+typedef int (*probe_modules_global_init)(const void *xconf);
 
 /**
  * Happens in Rx Thread
  * !Must be thread safe.
+ * @param rxthread main conf of rxthread, use `void` to avoiding x-ref.
  * @return FALSE to exit process if init failed
 */
-typedef int (*probe_modules_rxthread_init)();
+typedef int (*probe_modules_rxthread_init)(const void *rxthread);
 
 /**
  * Happens in Tx Thread
  * !Must be thread safe.
+ * @param txthread main conf of txthread, use `void` to avoiding x-ref.
  * @return FALSE to exit process if init failed
 */
-typedef int (*probe_modules_txthread_init)();
+typedef int (*probe_modules_txthread_init)(const void *txthread);
 
 /**
  * Happens in Tx Thread or Rx Thread for different ScanModules.

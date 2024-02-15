@@ -260,7 +260,7 @@ main_scan(struct Xconf *xconf)
      * Do global init for ScanModule
      */
     if (xconf->scan_module->global_init_cb){
-        if (!xconf->scan_module->global_init_cb()) {
+        if (!xconf->scan_module->global_init_cb(xconf)) {
 
             LOG(0, "FAIL: errors happened in global init of ScanModule.\n");
             exit(1);
