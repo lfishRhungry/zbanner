@@ -213,6 +213,23 @@ main_scan(struct Xconf *xconf)
     }
 
     /*
+        * Set the "source port" of everything we transmit.
+        */
+    if (xconf->nic.src.port.range == 0) {
+        unsigned port = 40000 + now % 20000;
+        xconf->nic.src.port.first = port;
+        xconf->nic.src.port.last = port + 16;
+        xconf->nic.src.port.range = 16;
+    }
+
+    /**
+     * create callback queue
+     * TODO: Maybe more queue?
+    */
+    xconf->stack = stack_create(xconf->nic.source_mac,
+        &xconf->nic.src, xconf->stack_buf_count);
+
+    /*
         * Initialize the TCP packet template. The way this works is that
         * we parse an existing TCP packet, and use that as the template for
         * scanning. Then, we adjust the template with additional features,
@@ -281,23 +298,6 @@ main_scan(struct Xconf *xconf)
             exit(1);
         }
     }
-
-    /*
-        * Set the "source port" of everything we transmit.
-        */
-    if (xconf->nic.src.port.range == 0) {
-        unsigned port = 40000 + now % 20000;
-        xconf->nic.src.port.first = port;
-        xconf->nic.src.port.last = port + 16;
-        xconf->nic.src.port.range = 16;
-    }
-
-    /**
-     * create callback queue
-     * TODO: Maybe more queue?
-    */
-    xconf->stack = stack_create(xconf->nic.source_mac,
-        &xconf->nic.src, xconf->stack_buf_count);
 
     /*
     * trap <ctrl-c> to pause

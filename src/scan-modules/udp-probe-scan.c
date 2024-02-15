@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "scan-modules.h"
+#include "../xconf.h"
 #include "../cookie.h"
 #include "../templ/templ-udp.h"
 #include "../templ/templ-icmp.h"
@@ -9,6 +10,9 @@
 #include "../util/logger.h"
 
 extern struct ScanModule UdpProbeScan; /*for internal x-ref*/
+
+/*for calc the conn index*/
+static unsigned src_port_start;
 
 static int
 udpprobe_global_init(const void *xconf)
@@ -25,6 +29,9 @@ udpprobe_global_init(const void *xconf)
             UdpProbeScan.probe->name, get_probe_type_name(UdpProbeScan.probe->type));
         return 0;
     }
+
+    src_port_start = ((const struct Xconf *)xconf)->nic.src.port.first;
+
     return 1;
 }
 
@@ -42,21 +49,26 @@ udpprobe_make_packet(
         return 0;
     }
 
-    unsigned cookie = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
+    unsigned cookie = get_cookie(ip_them, port_them, ip_me,
+        src_port_start+index, entropy);
     
     unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
     size_t payload_len = 0;
     if (UdpProbeScan.probe->make_payload_cb) {
         payload_len = UdpProbeScan.probe->make_payload_cb(
             ip_them, port_them, ip_me, port_me,
-            cookie, payload, PROBE_PAYLOAD_MAX_LEN);
+            cookie, port_me-src_port_start,
+            payload, PROBE_PAYLOAD_MAX_LEN);
     }
 
     *r_length = udp_create_packet(
-        ip_them, port_them, ip_me, port_me,
+        ip_them, port_them, ip_me, src_port_start+index,
         payload, payload_len, px, sizeof_px);
-    
-    /*no need do send again in this moment*/
+        
+    /*multi-probing for a target*/
+    if (index<UdpProbeScan.probe->max_index)
+        return 1;
+
     return 0;
 }
 
@@ -108,7 +120,8 @@ udpprobe_validate_packet(
 
         if (UdpProbeScan.probe->validate_response_cb) {
             return UdpProbeScan.probe->validate_response_cb(
-                ip_them, port_them, ip_me, port_me, cookie,
+                ip_them, port_them, ip_me, port_me,
+                cookie, port_me-src_port_start,
                 &px[parsed->app_offset], parsed->app_length);
         }
     }
@@ -175,6 +188,7 @@ udpprobe_handle_packet(
 
             UdpProbeScan.probe->handle_response_cb(
                 ip_them, port_them, ip_me, port_me,
+                port_me-src_port_start,
                 &px[parsed->app_offset], parsed->app_length,
                 item->report, OUTPUT_RPT_LEN);
         }

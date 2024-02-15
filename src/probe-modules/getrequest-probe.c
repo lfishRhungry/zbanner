@@ -11,7 +11,7 @@ static size_t
 getrequest_make_payload(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
-    unsigned cookie,
+    unsigned cookie, unsigned idx,
     unsigned char *payload_buf,
     size_t buf_length)
 {

@@ -25,7 +25,7 @@ static size_t
 lzr_http_make_payload(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
-    unsigned cookie,
+    unsigned cookie, unsigned idx,
     unsigned char *payload_buf,
     size_t buf_length)
 {
@@ -37,10 +37,11 @@ lzr_http_make_payload(
             ipaddress_fmt(ip_them).string, port_them);
 }
 
-static int
+static void
 lzr_http_handle_reponse(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
+    unsigned idx,
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length)
 {
@@ -52,7 +53,6 @@ lzr_http_handle_reponse(
             || safe_memmem(px, sizeof_px, "<h1>", strlen("<h1>")))) {
         safe_strcpy(report, rpt_length, "http");
     }
-    return 0; /*no probe again*/
 }
 
 struct ProbeModule LzrHttpProbe = {

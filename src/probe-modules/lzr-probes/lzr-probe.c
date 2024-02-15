@@ -48,7 +48,7 @@ extern struct ProbeModule LzrProbe;
 static struct ProbeModule *specified_subprobe;
 
 static int
-lzr_global_init()
+lzr_global_init(const void * xconf)
 {
     /*Use LzrWait if no subprobe specified*/
     if (!LzrProbe.args) {
@@ -72,10 +72,11 @@ lzr_global_init()
     return 1;
 }
 
-static int
+static void
 lzr_handle_response(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
+    unsigned idx,
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length)
 {
@@ -96,7 +97,7 @@ lzr_handle_response(
         if (lzr_subprobes[i]->handle_response_cb) {
             lzr_subprobes[i]->handle_response_cb(
                 ip_them, port_them, ip_me, port_me,
-                px, sizeof_px,
+                idx, px, sizeof_px,
                 buf_idx, remain_len
             );
 
@@ -117,8 +118,6 @@ lzr_handle_response(
         /* remove last '-' */
         (buf_idx-1)[0] = '\0';
     }
-
-    return 0; /*no probe again*/
 }
 
 struct ProbeModule LzrProbe = {
@@ -130,6 +129,7 @@ struct ProbeModule LzrProbe = {
         "with `handle_reponse_cb`.\n"
         "Specify LZR subprobe by probe arguments:\n"
         "    `--probe-module-args http`\n",
+    .max_index=1,
     .global_init_cb = &lzr_global_init,
     .rx_thread_init_cb = NULL,
     .tx_thread_init_cb = NULL,

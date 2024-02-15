@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 #include "scan-modules.h"
+#include "../xconf.h"
 #include "../cookie.h"
 #include "../templ/templ-tcp.h"
 #include "../util/mas-safefunc.h"
@@ -17,6 +18,9 @@
 #include "../util/logger.h"
 
 extern struct ScanModule ZBannerScan; /*for internal x-ref*/
+
+/*for calc the conn index*/
+static unsigned src_port_start;
 
 static int
 zbanner_global_init(const void *xconf)
@@ -33,6 +37,9 @@ zbanner_global_init(const void *xconf)
             ZBannerScan.probe->name, get_probe_type_name(ZBannerScan.probe->type));
         return 0;
     }
+
+    src_port_start = ((const struct Xconf *)xconf)->nic.src.port.first;
+
     return 1;
 }
 
@@ -51,14 +58,18 @@ zbanner_make_packet(
     }
 
     /*`index` is unused now*/
-    unsigned seqno = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
+    unsigned seqno = get_cookie(ip_them, port_them, ip_me,
+        src_port_start+index, entropy);
 
     *r_length = tcp_create_packet(
-        ip_them, port_them, ip_me, port_me,
+        ip_them, port_them, ip_me, src_port_start+index,
         seqno, 0, TCP_FLAG_SYN,
         NULL, 0, px, sizeof_px);
-    
-    /*no need do send again in this moment*/
+        
+    /*multi-probing for a target*/
+    if (index<ZBannerScan.probe->max_index)
+        return 1;
+
     return 0;
 }
 
@@ -173,7 +184,7 @@ zbanner_handle_packet(
             unsigned port_them = parsed->port_src;
 
             ZBannerScan.probe->handle_response_cb(
-                ip_them, port_them, ip_me, port_me,
+                ip_them, port_them, ip_me, port_me, port_me-src_port_start,
                 &px[parsed->app_offset], parsed->app_length,
                 item->report, OUTPUT_RPT_LEN);
         }
@@ -214,6 +225,7 @@ zbanner_response_packet(
             payload_len = ZBannerScan.probe->make_payload_cb(
                 ip_them, port_them, ip_me, port_me,
                 0, /*zbanner can recognize reponse by itself*/
+                port_me-src_port_start,
                 payload, PROBE_PAYLOAD_MAX_LEN);
         }
         

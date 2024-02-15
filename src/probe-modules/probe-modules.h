@@ -52,6 +52,7 @@ typedef int (*probe_modules_txthread_init)(const void *txthread);
  * @param ip_me source ip
  * @param port_me source port
  * @param cookie unique identification for this target
+ * @param idx index of probing to this target.
  * @param payload_buf buffer to fill with payload data
  * @param buf_len length of buffer
  * @return length of payload data
@@ -60,7 +61,7 @@ typedef size_t
 (*probe_modules_make_payload)(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
-    unsigned cookie,
+    unsigned cookie, unsigned idx,
     unsigned char *payload_buf,
     size_t buf_length);
 
@@ -79,6 +80,7 @@ typedef size_t
  * @param ip_me source ip
  * @param port_me source port
  * @param cookie unique identification for this target
+ * @param idx index of probing to this target.
  * @param px response data
  * @param sizeof_px len of reponse
  * @return TRUE if the response is for us.
@@ -87,7 +89,7 @@ typedef int
 (*probe_modules_validate_response)(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
-    unsigned cookie,
+    unsigned cookie, unsigned idx,
     const unsigned char *px, unsigned sizeof_px
 );
 
@@ -104,16 +106,17 @@ typedef int
  * @param port_them target port
  * @param ip_me source ip
  * @param port_me source port
+ * @param idx index of probing to this target.
  * @param px response data
  * @param sizeof_px len of reponse
  * @param report Report string.
  * @param rpt_length Length of report string buffer.
- * @param return true if need to probe again. (with other source port)
 */
-typedef int
+typedef void
 (*probe_modules_handle_response)(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
+    unsigned idx,
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length
 );
@@ -129,6 +132,7 @@ struct ProbeModule
     const enum ProbeType               type;
     const char                        *desc;
     char                              *args;
+    unsigned                           max_index; /*max conn and send time index*/
     /*for init*/
     probe_modules_global_init          global_init_cb;
     probe_modules_rxthread_init        rx_thread_init_cb;
@@ -153,10 +157,11 @@ Some useful implemented interfaces
 ************************************************************************/
 
 /*implemented `probe_modules_handle_reponse`*/
-int
+void
 just_report_banner(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
+    unsigned idx,
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length);
 

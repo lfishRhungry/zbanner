@@ -72,13 +72,13 @@ void list_all_probe_modules()
 }
 
 
-int
+void
 just_report_banner(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
+    unsigned idx,
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length)
 {
     normalize_string(px, sizeof_px, report, rpt_length);
-    return 0; /*no probe again*/
 }
