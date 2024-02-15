@@ -129,7 +129,6 @@ struct ProbeModule LzrProbe = {
         "with `handle_reponse_cb`.\n"
         "Specify LZR subprobe by probe arguments:\n"
         "    `--probe-module-args http`\n",
-    .max_index=1,
     .global_init_cb = &lzr_global_init,
     .rx_thread_init_cb = NULL,
     .tx_thread_init_cb = NULL,
