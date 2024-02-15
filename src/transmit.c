@@ -210,11 +210,7 @@ infinite:
             ipaddress ip_them;
             unsigned port_them;
             ipaddress ip_me;
-            /**
-             * source port is also for identifying the index of connection,
-             * make it the start of port range in first time of conn.
-            */
-            unsigned port_me = src.port;
+            unsigned port_me;
             
             if (xXx < range_ipv6) {
                 /* Our index selects an IPv6 target */
@@ -225,6 +221,7 @@ infinite:
                 port_them = rangelist_pick(&xconf->targets.ports, xXx / count_ipv6);
 
                 ip_me.ipv6 = src.ipv6;
+                port_me = src.port;
 
             } else {
                 /* Our index selects an IPv4 target. In other words, low numbers
@@ -241,14 +238,16 @@ infinite:
                 /*
                  *  Figure out the source IP/port through COOKIE
                  */
-                if (src.ipv4_mask > 1) {
+                if (src.ipv4_mask > 1 || src.port_mask > 1) {
                     uint64_t ck = get_cookie_ipv4((unsigned)(i+repeats),
                                             (unsigned)((i+repeats)>>32),
                                             (unsigned)xXx, (unsigned)(xXx>>32),
                                             entropy);
+                    port_me = src.port + (ck & src.port_mask);
                     ip_me.ipv4 = src.ipv4 + ((ck>>16) & src.ipv4_mask);
                 } else {
                     ip_me.ipv4 = src.ipv4;
+                    port_me = src.port;
                 }
 
             }
