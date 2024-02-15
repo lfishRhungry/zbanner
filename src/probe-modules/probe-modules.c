@@ -52,8 +52,6 @@ get_probe_type_name(const enum ProbeType type)
             return "tcp";
         case ProbeType_UDP:
             return "udp";
-        case ProbeType_SCTP:
-            return "sctp";
         default:
             return "";
     }
