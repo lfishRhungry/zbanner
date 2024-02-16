@@ -68,6 +68,7 @@ lzr_global_init(const void * xconf)
     }
 
     LzrProbe.make_payload_cb = specified_subprobe->make_payload_cb;
+    LzrProbe.get_payload_length_cb = specified_subprobe->get_payload_length_cb;
 
     return 1;
 }
@@ -133,6 +134,7 @@ struct ProbeModule LzrProbe = {
     .rx_thread_init_cb = NULL,
     .tx_thread_init_cb = NULL,
     // `make_payload_cb` will be set dynamicly in lzr_global_init.
+    // `get_payload_length_cb` will be set dynamicly in lzr_global_init.
     .validate_response_cb = NULL,
     .handle_response_cb = &lzr_handle_response,
     .close_cb = NULL,

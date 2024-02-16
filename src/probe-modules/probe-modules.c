@@ -71,7 +71,6 @@ void list_all_probe_modules()
     printf("========================\n");
 }
 
-
 void
 just_report_banner(
     ipaddress ip_them, unsigned port_them,
@@ -81,4 +80,13 @@ just_report_banner(
     char *report, unsigned rpt_length)
 {
     normalize_string(px, sizeof_px, report, rpt_length);
+}
+
+size_t
+no_payload_length(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    unsigned cookie, unsigned idx)
+{
+    return 0;
 }

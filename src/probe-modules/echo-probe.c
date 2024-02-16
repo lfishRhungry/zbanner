@@ -52,6 +52,7 @@ struct ProbeModule EchoProbe = {
     .rx_thread_init_cb = NULL,
     .tx_thread_init_cb = NULL,
     .make_payload_cb = &echo_make_payload,
+    .get_payload_length_cb = NULL,
     .validate_response_cb = &echo_validate_response,
     .handle_response_cb = &just_report_banner,
     .close_cb = NULL

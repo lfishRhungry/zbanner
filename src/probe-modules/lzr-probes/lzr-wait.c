@@ -13,6 +13,7 @@ struct ProbeModule LzrWaitProbe = {
     .rx_thread_init_cb = NULL,
     .tx_thread_init_cb = NULL,
     .make_payload_cb = NULL,
+    .get_payload_length_cb = &no_payload_length,
     .validate_response_cb = NULL,
     .handle_response_cb = NULL,
     .close_cb = NULL

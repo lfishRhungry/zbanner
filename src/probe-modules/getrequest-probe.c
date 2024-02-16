@@ -19,6 +19,15 @@ getrequest_make_payload(
     return strlen(GETREQUEST_PAYLOAD);
 }
 
+static size_t
+getrequest_get_payload_length(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    unsigned cookie, unsigned idx)
+{
+    return strlen(GETREQUEST_PAYLOAD);
+}
+
 struct ProbeModule GetRequestProbe = {
     .name = "getrequest",
     .type = ProbeType_TCP,
@@ -30,6 +39,7 @@ struct ProbeModule GetRequestProbe = {
     .rx_thread_init_cb = NULL,
     .tx_thread_init_cb = NULL,
     .make_payload_cb = &getrequest_make_payload,
+    .get_payload_length_cb = &getrequest_get_payload_length,
     .validate_response_cb = NULL,
     .handle_response_cb = &just_report_banner,
     .close_cb = NULL

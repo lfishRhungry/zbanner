@@ -101,14 +101,41 @@ zbanner_validate_packet(
     ipaddress ip_them  = parsed->src_ip;
     unsigned port_me   = parsed->port_dst;
     unsigned port_them = parsed->port_src;
-    unsigned seqno_me  = TCP_ACKNO(px, parsed->transport_offset);
+    unsigned seqno_me;
+    unsigned cookie;
+    size_t payload_len;
 
-    uint16_t validate_hash  = get_cookie(ip_them, port_them, ip_me, port_me, entropy)>>16;
-    uint16_t seqno_me_vhash = seqno_me>>16;
+    /*syn-ack*/
+    if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_SYN|TCP_FLAG_ACK)) {
+        seqno_me  = TCP_ACKNO(px, parsed->transport_offset);
+        cookie    = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
+        if (seqno_me == cookie + 1)
+            return 1;
+    }
+    /*
+    * First packet with reponsed banner data.
 
-	/*Just validate the first 2 bytes to leave all correspond packets*/
-    if (validate_hash == seqno_me_vhash)
-        return 1;
+    * We could recv Response DATA with some combinations of TCP flags
+    * 1.[ACK]: maybe more data
+    * 2.[PSH, ACK]: no more data
+    * 3.[FIN, PSH, ACK]: no more data and disconnecting
+    */
+    else if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_ACK)
+        && parsed->app_length) {
+        seqno_me  = TCP_ACKNO(px, parsed->transport_offset);
+        cookie    = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
+        payload_len = ZBannerScan.probe->get_payload_length_cb(
+            ip_them, port_them, ip_me, port_me, cookie, port_me-src_port_start);
+        if (seqno_me == cookie + payload_len + 1)
+            return 1;
+    }
+    /*rst for syn (a little different)*/
+    else if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_RST)) {
+        seqno_me  = TCP_ACKNO(px, parsed->transport_offset);
+        cookie    = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
+        if (seqno_me == cookie + 1 || seqno_me == cookie)
+            return 1;
+    }
 
     return 0;
 }
