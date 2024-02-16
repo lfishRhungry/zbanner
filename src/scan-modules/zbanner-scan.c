@@ -165,11 +165,6 @@ zbanner_handle_packet(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    item->ip_them   = parsed->src_ip;
-    item->port_them = parsed->port_src;
-    item->ip_me     = parsed->dst_ip;
-    item->port_me   = parsed->port_dst;
-
     /*SYNACK*/
     if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_SYN|TCP_FLAG_ACK)) {
         item->is_success = 1;
@@ -194,6 +189,12 @@ zbanner_handle_packet(
 
     /*Banner*/
     if (parsed->app_length) {
+
+        ipaddress ip_me    = parsed->dst_ip;
+        ipaddress ip_them  = parsed->src_ip;
+        unsigned port_me   = parsed->port_dst;
+        unsigned port_them = parsed->port_src;
+
         /*
         * We could recv Response DATA with some combinations of TCP flags
         * 1.[ACK]: maybe more data
@@ -205,18 +206,10 @@ zbanner_handle_packet(
             item->reason, OUTPUT_RSN_LEN);
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "serving");
 
-        if (ZBannerScan.probe->handle_response_cb) {
-
-            ipaddress ip_me    = parsed->dst_ip;
-            ipaddress ip_them  = parsed->src_ip;
-            unsigned port_me   = parsed->port_dst;
-            unsigned port_them = parsed->port_src;
-
-            ZBannerScan.probe->handle_response_cb(
-                ip_them, port_them, ip_me, port_me, port_me-src_port_start,
-                &px[parsed->app_offset], parsed->app_length,
-                item->report, OUTPUT_RPT_LEN);
-        }
+        ZBannerScan.probe->handle_response_cb(
+            ip_them, port_them, ip_me, port_me, port_me-src_port_start,
+            &px[parsed->app_offset], parsed->app_length,
+            item->report, OUTPUT_RPT_LEN);
 
         return 1;
     }
