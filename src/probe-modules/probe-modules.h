@@ -155,7 +155,7 @@ struct ProbeModule
     const enum ProbeType               type;
     const char                        *desc;
     char                              *args;
-    unsigned                           max_index; /*max conn and send time index*/
+    unsigned                           multi_index; /*max index for multi-probe*/
     /*for init*/
     probe_modules_global_init          global_init_cb;
     probe_modules_rxthread_init        rx_thread_init_cb;

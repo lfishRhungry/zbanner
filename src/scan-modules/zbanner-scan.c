@@ -65,17 +65,13 @@ zbanner_make_packet(
 
     /*`index` is unused now*/
     unsigned seqno = get_cookie(ip_them, port_them, ip_me,
-        src_port_start+index, entropy);
+        src_port_start, entropy);
 
     *r_length = tcp_create_packet(
-        ip_them, port_them, ip_me, src_port_start+index,
+        ip_them, port_them, ip_me, src_port_start,
         seqno, 0, TCP_FLAG_SYN,
         NULL, 0, px, sizeof_px);
         
-    /*multi-probing for a target*/
-    if (index<ZBannerScan.probe->max_index)
-        return 1;
-
     return 0;
 }
 
@@ -235,10 +231,26 @@ zbanner_response_packet(
     unsigned char *r_px, unsigned sizeof_r_px,
     size_t *r_length, unsigned index)
 {
-    ipaddress ip_me      = parsed->dst_ip;
     ipaddress ip_them    = parsed->src_ip;
-    unsigned  port_me    = parsed->port_dst;
     unsigned  port_them  = parsed->port_src;
+    ipaddress ip_me      = parsed->dst_ip;
+
+    /*for multi-probe*/
+    if (index) {
+        unsigned seqno = get_cookie(ip_them, port_them, ip_me,
+            src_port_start+index, entropy);
+
+        *r_length = tcp_create_packet(
+            ip_them, port_them, ip_me, src_port_start+index,
+            seqno, 0, TCP_FLAG_SYN,
+            NULL, 0, r_px, sizeof_r_px);
+        
+        if (index < ZBannerScan.probe->multi_index)
+            return 1;
+        return 0;
+    }
+
+    unsigned  port_me    = parsed->port_dst;
     unsigned  seqno_me   = TCP_ACKNO(px, parsed->transport_offset);
     unsigned  seqno_them = TCP_SEQNO(px, parsed->transport_offset);
 
@@ -249,7 +261,7 @@ zbanner_response_packet(
             seqno_me, 0, TCP_FLAG_RST,
             NULL, 0, r_px, sizeof_r_px);
     } else {
-        /*send probe*/
+        /*port is open, send probe*/
 
         unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
         size_t payload_len = 0; 
@@ -264,6 +276,11 @@ zbanner_response_packet(
             ip_them, port_them, ip_me, port_me,
             seqno_me, seqno_them+1, TCP_FLAG_ACK,
             payload, payload_len, r_px, sizeof_r_px);
+        
+        /*for multi-probe*/
+        if (ZBannerScan.probe->multi_index && port_me==src_port_start) {
+            return 1;
+        }
     }
 
     /*one reponse is enough*/

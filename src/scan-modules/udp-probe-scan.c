@@ -72,7 +72,7 @@ udpprobe_make_packet(
         payload, payload_len, px, sizeof_px);
         
     /*multi-probing for a target*/
-    if (index<UdpProbeScan.probe->max_index)
+    if (index<UdpProbeScan.probe->multi_index)
         return 1;
 
     return 0;
