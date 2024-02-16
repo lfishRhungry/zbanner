@@ -71,8 +71,44 @@ void list_all_probe_modules()
     printf("========================\n");
 }
 
+int probe_init_nothing(const void *params)
+{
+    return 1;
+}
+
+size_t
+probe_make_no_payload(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    unsigned cookie, unsigned idx,
+    unsigned char *payload_buf,
+    size_t buf_length)
+{
+    return 0;
+}
+
+size_t
+probe_no_payload_length(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    unsigned cookie, unsigned idx)
+{
+    return 0;
+}
+
 void
-just_report_banner(
+probe_report_nothing(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    unsigned idx,
+    const unsigned char *px, unsigned sizeof_px,
+    char *report, unsigned rpt_length)
+{
+    return;
+}
+
+void
+probe_just_report_banner(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
     unsigned idx,
@@ -82,11 +118,7 @@ just_report_banner(
     normalize_string(px, sizeof_px, report, rpt_length);
 }
 
-size_t
-no_payload_length(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie, unsigned idx)
+void probe_close_nothing()
 {
-    return 0;
+    return;
 }

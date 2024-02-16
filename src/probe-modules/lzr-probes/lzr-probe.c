@@ -95,20 +95,18 @@ lzr_handle_response(
      *     pop3-smtp-http
     */
     for (size_t i=0; i<sizeof(lzr_subprobes)/sizeof(struct ProbeModule*); i++) {
-        if (lzr_subprobes[i]->handle_response_cb) {
-            lzr_subprobes[i]->handle_response_cb(
-                ip_them, port_them, ip_me, port_me,
-                idx, px, sizeof_px,
-                buf_idx, remain_len
-            );
+        lzr_subprobes[i]->handle_response_cb(
+            ip_them, port_them, ip_me, port_me,
+            idx, px, sizeof_px,
+            buf_idx, remain_len
+        );
 
-            for (;buf_idx[0]!='\0';buf_idx++) {}
-            /*identified in this turn*/
-            if (buf_idx!=report && (buf_idx-1)[0]!='-') {
-                buf_idx[0] = '-';
-                buf_idx++;
-                remain_len = rpt_length - (buf_idx - report);
-            }
+        for (;buf_idx[0]!='\0';buf_idx++) {}
+        /*identified in this turn*/
+        if (buf_idx!=report && (buf_idx-1)[0]!='-') {
+            buf_idx[0] = '-';
+            buf_idx++;
+            remain_len = rpt_length - (buf_idx - report);
         }
     }
 
@@ -131,11 +129,11 @@ struct ProbeModule LzrProbe = {
         "Specify LZR subprobe by probe arguments:\n"
         "    `--probe-module-args http`\n",
     .global_init_cb = &lzr_global_init,
-    .rx_thread_init_cb = NULL,
-    .tx_thread_init_cb = NULL,
+    .rx_thread_init_cb = &probe_init_nothing,
+    .tx_thread_init_cb = &probe_init_nothing,
     // `make_payload_cb` will be set dynamicly in lzr_global_init.
     // `get_payload_length_cb` will be set dynamicly in lzr_global_init.
     .validate_response_cb = NULL,
     .handle_response_cb = &lzr_handle_response,
-    .close_cb = NULL,
+    .close_cb = &probe_close_nothing,
 };

@@ -128,17 +128,17 @@ struct ScanModule TcpSynScan = {
         "response to believe the port is open or an RST for closed in TCP protocol.\n"
         "TcpSynScan is the default ScanModule.\n",
 
-    .global_init_cb = NULL,
-    .rx_thread_init_cb = NULL,
-    .tx_thread_init_cb = NULL,
+    .global_init_cb = &scan_init_nothing,
+    .rx_thread_init_cb = &scan_init_nothing,
+    .tx_thread_init_cb = &scan_init_nothing,
 
-    .make_packet_cb = tcpsyn_make_packet,
+    .make_packet_cb = &tcpsyn_make_packet,
 
-    .filter_packet_cb = tcpsyn_filter_packet,
-    .validate_packet_cb = tcpsyn_validate_packet,
-    .dedup_packet_cb = tcpsyn_dedup_packet,
-    .handle_packet_cb = tcpsyn_handle_packet,
-    .response_packet_cb = NULL,
+    .filter_packet_cb = &tcpsyn_filter_packet,
+    .validate_packet_cb = &tcpsyn_validate_packet,
+    .dedup_packet_cb = &tcpsyn_dedup_packet,
+    .handle_packet_cb = &tcpsyn_handle_packet,
+    .response_packet_cb = &scan_response_nothing,
 
-    .close_cb = NULL,
+    .close_cb = &scan_close_nothing,
 };

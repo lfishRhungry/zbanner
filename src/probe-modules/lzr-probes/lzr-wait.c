@@ -9,12 +9,12 @@ struct ProbeModule LzrWaitProbe = {
     .desc =
         "LzrWait Probe sends nothing and identifies no service. It is the default\n"
         "subprobe of LzrProbe to help other subprobes to match services.\n",
-    .global_init_cb = NULL,
-    .rx_thread_init_cb = NULL,
-    .tx_thread_init_cb = NULL,
-    .make_payload_cb = NULL,
-    .get_payload_length_cb = &no_payload_length,
+    .global_init_cb = &probe_init_nothing,
+    .rx_thread_init_cb = &probe_init_nothing,
+    .tx_thread_init_cb = &probe_init_nothing,
+    .make_payload_cb = &probe_make_no_payload,
+    .get_payload_length_cb = &probe_no_payload_length,
     .validate_response_cb = NULL,
-    .handle_response_cb = NULL,
-    .close_cb = NULL
+    .handle_response_cb = &probe_report_nothing,
+    .close_cb = &probe_close_nothing,
 };

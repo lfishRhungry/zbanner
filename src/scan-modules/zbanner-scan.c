@@ -254,13 +254,11 @@ zbanner_response_packet(
         unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
         size_t payload_len = 0; 
 
-        if (ZBannerScan.probe->make_payload_cb) {
-            payload_len = ZBannerScan.probe->make_payload_cb(
-                ip_them, port_them, ip_me, port_me,
-                0, /*zbanner can recognize reponse by itself*/
-                port_me-src_port_start,
-                payload, PROBE_PAYLOAD_MAX_LEN);
-        }
+        payload_len = ZBannerScan.probe->make_payload_cb(
+            ip_them, port_them, ip_me, port_me,
+            0, /*zbanner can recognize reponse by itself*/
+            port_me-src_port_start,
+            payload, PROBE_PAYLOAD_MAX_LEN);
         
         *r_length = tcp_create_packet(
             ip_them, port_them, ip_me, port_me,
@@ -293,8 +291,8 @@ struct ScanModule ZBannerScan = {
         "    `sudo iptables -D OUTPUT <line-number>`\n",
 
     .global_init_cb = &zbanner_global_init,
-    .rx_thread_init_cb = NULL,
-    .tx_thread_init_cb = NULL,
+    .rx_thread_init_cb = &scan_init_nothing,
+    .tx_thread_init_cb = &scan_init_nothing,
 
     .make_packet_cb = &zbanner_make_packet,
 
@@ -304,5 +302,5 @@ struct ScanModule ZBannerScan = {
     .handle_packet_cb = &zbanner_handle_packet,
     .response_packet_cb = &zbanner_response_packet,
 
-    .close_cb = NULL,
+    .close_cb = &scan_close_nothing,
 };

@@ -126,17 +126,15 @@ receive_thread(void *v)
     /*
      * Do rx-thread init for ScanModule
      */
-    if (xconf->scan_module->rx_thread_init_cb){
-        if (!xconf->scan_module->rx_thread_init_cb(parms)) {
-            LOG(0, "FAIL: errors happened in rx-thread init of ScanModule.\n");
-            exit(1);
-        }
+    if (!xconf->scan_module->rx_thread_init_cb(parms)) {
+        LOG(0, "FAIL: errors happened in rx-thread init of ScanModule.\n");
+        exit(1);
     }
 
     /*
      * Do thread init for stateless probe
      */
-    if (xconf->probe_module && xconf->probe_module->rx_thread_init_cb){
+    if (xconf->probe_module){
         if (!xconf->probe_module->rx_thread_init_cb(parms)) {
             LOG(0, "FAIL: errors happened in rx-thread init of ProbeModule.\n");
             exit(1);
@@ -198,13 +196,10 @@ receive_thread(void *v)
          * callback funcs of ScanModule in rx-thread.
          * Step 1: Filter
         */
-        if (scan_module->filter_packet_cb) {
+        if (!scan_module->filter_packet_cb(&parsed, entropy,
+                px, length, is_myip, is_myport)) {
 
-            if (!scan_module->filter_packet_cb(&parsed, entropy,
-                    px, length, is_myip, is_myport)) {
-
-                continue;
-            }
+            continue;
         }
 
         if (parms->xconf->nmap.packet_trace)
@@ -219,20 +214,17 @@ receive_thread(void *v)
          * callback funcs of ScanModule in rx-thread.
          * Step 2: Validate
         */
-        if (scan_module->validate_packet_cb) {
+        if (!scan_module->validate_packet_cb(&parsed, entropy,
+                px, length)) {
 
-            if (!scan_module->validate_packet_cb(&parsed, entropy,
-                    px, length)) {
-
-                        continue;
-            }
+                    continue;
         }
 
         /**
          * callback funcs of ScanModule in rx-thread.
          * Step 3: Dedup
         */
-        if (scan_module->dedup_packet_cb && !xconf->is_nodedup) {
+        if (!xconf->is_nodedup) {
 
             unsigned dedup_type = SCAN_MODULE_DEFAULT_DEDUP_TYPE;
             ipaddress dedup_ip_me = ip_me;
@@ -257,18 +249,16 @@ receive_thread(void *v)
         */
         unsigned need_response = 0;
 
-        if (scan_module->handle_packet_cb) {
-            struct OutputItem item = {0};
-            item.timestamp = global_now;
+        struct OutputItem item = {0};
+        item.timestamp = global_now;
 
-            need_response = scan_module->handle_packet_cb(&parsed, entropy,
-                px, length, &item);
+        need_response = scan_module->handle_packet_cb(&parsed, entropy,
+            px, length, &item);
 
-            output_result(&output, &item);
-            
-            if (item.is_success)
-                (*status_successed_count)++;
-        }
+        output_result(&output, &item);
+        
+        if (item.is_success)
+            (*status_successed_count)++;
 
         /**
          * callback funcs of ScanModule in rx-thread.
@@ -276,38 +266,35 @@ receive_thread(void *v)
         */
         if (need_response) {
 
-            if (scan_module->response_packet_cb) {
+            unsigned idx = 0;
 
-                unsigned idx = 0;
-
-                while(1) {
-                    struct PacketBuffer *response = stack_get_packetbuffer(stack);
-                    if (response == NULL) {
-                        static int is_warning_printed = 0;
-                        if (!is_warning_printed) {
-                            LOG(0, "packet buffers empty (should be impossible)\n");
-                            is_warning_printed = 1;
-                        }
-                        fflush(stdout);
-                        pixie_usleep(100); /* no packet available */
+            while(1) {
+                struct PacketBuffer *response = stack_get_packetbuffer(stack);
+                if (response == NULL) {
+                    static int is_warning_printed = 0;
+                    if (!is_warning_printed) {
+                        LOG(0, "packet buffers empty (should be impossible)\n");
+                        is_warning_printed = 1;
                     }
-                    if (response == NULL)
-                        exit(0);
-                    
-                    size_t rsp_len = 0;
-                    need_response = scan_module->response_packet_cb(&parsed, entropy,
-                        px, length, response->px, sizeof(response->px), &rsp_len, idx);
-
-                    response->length = rsp_len;
-                    if(rsp_len) {
-                        stack_transmit_packetbuffer(stack, response);
-                    }
-
-                    if (!need_response)
-                        break;
-                    
-                    idx++;
+                    fflush(stdout);
+                    pixie_usleep(100); /* no packet available */
                 }
+                if (response == NULL)
+                    exit(0);
+                
+                size_t rsp_len = 0;
+                need_response = scan_module->response_packet_cb(&parsed, entropy,
+                    px, length, response->px, sizeof(response->px), &rsp_len, idx);
+
+                response->length = rsp_len;
+                if(rsp_len) {
+                    stack_transmit_packetbuffer(stack, response);
+                }
+
+                if (!need_response)
+                    break;
+                
+                idx++;
             }
         }
 

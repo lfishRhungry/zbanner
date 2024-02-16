@@ -35,12 +35,12 @@ struct ProbeModule GetRequestProbe = {
         "GetRequest Probe sends target port a simple HTTP Get request:\n"
         "    `GET / HTTP/1.0\\r\\n\\r\\n`\n"
         "It could get a simple result from http server fastly.\n",
-    .global_init_cb = NULL,
-    .rx_thread_init_cb = NULL,
-    .tx_thread_init_cb = NULL,
+    .global_init_cb = &probe_init_nothing,
+    .rx_thread_init_cb = &probe_init_nothing,
+    .tx_thread_init_cb = &probe_init_nothing,
     .make_payload_cb = &getrequest_make_payload,
     .get_payload_length_cb = &getrequest_get_payload_length,
     .validate_response_cb = NULL,
-    .handle_response_cb = &just_report_banner,
-    .close_cb = NULL
+    .handle_response_cb = &probe_just_report_banner,
+    .close_cb = &probe_close_nothing,
 };

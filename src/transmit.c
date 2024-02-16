@@ -94,17 +94,15 @@ transmit_thread(void *v) /*aka. scanning_thread() */
     /*
      * Do tx-thread init for ScanModule
      */
-    if (xconf->scan_module->tx_thread_init_cb){
-        if (!xconf->scan_module->tx_thread_init_cb(parms)) {
-            LOG(0, "FAIL: errors happened in tx-thread(%u) init of ScanModule.\n", parms->tx_index);
-            exit(1);
-        }
+    if (!xconf->scan_module->tx_thread_init_cb(parms)) {
+        LOG(0, "FAIL: errors happened in tx-thread(%u) init of ScanModule.\n", parms->tx_index);
+        exit(1);
     }
 
     /*
      * Do tx-thread init for ProbeModule
      */
-    if (xconf->probe_module&&xconf->probe_module->tx_thread_init_cb){
+    if (xconf->probe_module){
         if (!xconf->probe_module->tx_thread_init_cb(parms)) {
             LOG(0, "FAIL: errors happened in tx-thread(%u) init of ProbeModule.\n", parms->tx_index);
             exit(1);
@@ -142,7 +140,9 @@ infinite:
      * a little bit past the end when we have --retries. Yet another
      * thing to do here is deal with multiple network adapters, which
      * is essentially the same logic as shards. */
-    uint64_t start = xconf->resume.index + (xconf->shard.one-1) * xconf->tx_thread_count + parms->tx_index;
+    uint64_t start = xconf->resume.index
+        + (xconf->shard.one-1) * xconf->tx_thread_count
+        + parms->tx_index;
     uint64_t end = range;
     if (xconf->resume.count && end > start + xconf->resume.count)
         end = start + xconf->resume.count;

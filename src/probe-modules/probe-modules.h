@@ -16,6 +16,7 @@ enum ProbeType {
 
 
 /**
+ * !Must be implemented.
  * @param xconf main conf of xtate, use `void` to avoiding x-ref.
  * @return FALSE to exit process if init failed
 */
@@ -23,6 +24,7 @@ typedef int (*probe_modules_global_init)(const void *xconf);
 
 /**
  * Happens in Rx Thread
+ * !Must be implemented.
  * !Must be thread safe.
  * @param rxthread main conf of rxthread, use `void` to avoiding x-ref.
  * @return FALSE to exit process if init failed
@@ -31,6 +33,7 @@ typedef int (*probe_modules_rxthread_init)(const void *rxthread);
 
 /**
  * Happens in Tx Thread
+ * !Must be implemented.
  * !Must be thread safe.
  * @param txthread main conf of txthread, use `void` to avoiding x-ref.
  * @return FALSE to exit process if init failed
@@ -43,8 +46,8 @@ typedef int (*probe_modules_txthread_init)(const void *txthread);
  * Make correspond payload data for a target.
  * We could embed a cookie to payload for response validating.
  * 
- * If not implemented, assume it as null payload.
  * 
+ * !Must be implemented.
  * !Must be thread safe.
  * 
  * @param ip_them target ip
@@ -118,8 +121,7 @@ typedef int
  * Decide the classification and report of the reponse
  * and whether it is successed.
  * 
- * Assume report nothing if not implemented.
- * 
+ * !Must be implemented.
  * !Must be thread safe.
  * 
  * @param ip_them target ip
@@ -143,8 +145,9 @@ typedef void
 
 /**
  * It happens before normal exit in mainscan function.
+ * !Must be implemented.
 */
-typedef int (*probe_modules_close)();
+typedef void (*probe_modules_close)();
 
 struct ProbeModule
 {
@@ -177,20 +180,43 @@ void list_all_probe_modules();
 Some useful implemented interfaces
 ************************************************************************/
 
+/*implemented `probe_modules_xxx_init`*/
+int probe_init_nothing(const void *params);
+
+size_t
+probe_make_no_payload(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    unsigned cookie, unsigned idx,
+    unsigned char *payload_buf,
+    size_t buf_length);
+
+/*implemented `probe_modules_get_payload_length`*/
+size_t
+probe_no_payload_length(
+    ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    unsigned cookie, unsigned idx);
+
 /*implemented `probe_modules_handle_reponse`*/
 void
-just_report_banner(
+probe_report_nothing(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
     unsigned idx,
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length);
 
-/*implemented `probe_modules_get_payload_length`*/
-size_t
-no_payload_length(
+/*implemented `probe_modules_handle_reponse`*/
+void
+probe_just_report_banner(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
-    unsigned cookie, unsigned idx);
+    unsigned idx,
+    const unsigned char *px, unsigned sizeof_px,
+    char *report, unsigned rpt_length);
+
+/*implemented `probe_modules_close`*/
+void probe_close_nothing();
 
 #endif

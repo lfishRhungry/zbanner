@@ -216,8 +216,8 @@ struct ScanModule UdpProbeScan = {
         "could be record to pcap file.\n",
 
     .global_init_cb = &udpprobe_global_init,
-    .rx_thread_init_cb = NULL,
-    .tx_thread_init_cb = NULL,
+    .rx_thread_init_cb = &scan_init_nothing,
+    .tx_thread_init_cb = &scan_init_nothing,
 
     .make_packet_cb = &udpprobe_make_packet,
 
@@ -225,7 +225,7 @@ struct ScanModule UdpProbeScan = {
     .validate_packet_cb = &udpprobe_validate_packet,
     .dedup_packet_cb = &udpprobe_dedup_packet,
     .handle_packet_cb = &udpprobe_handle_packet,
-    .response_packet_cb = NULL,
+    .response_packet_cb = &scan_response_nothing,
 
-    .close_cb = NULL,
+    .close_cb = &scan_close_nothing,
 };

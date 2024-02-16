@@ -36,12 +36,12 @@ struct ProbeModule LzrFtpProbe = {
     .type = ProbeType_TCP,
     .desc =
         "LzrFtp Probe sends no payload and identifies FTP service.\n",
-    .global_init_cb = NULL,
-    .rx_thread_init_cb = NULL,
-    .tx_thread_init_cb = NULL,
-    .make_payload_cb = NULL,
-    .get_payload_length_cb = &no_payload_length,
+    .global_init_cb = &probe_init_nothing,
+    .rx_thread_init_cb = &probe_init_nothing,
+    .tx_thread_init_cb = &probe_init_nothing,
+    .make_payload_cb = &probe_make_no_payload,
+    .get_payload_length_cb = &probe_no_payload_length,
     .validate_response_cb = NULL,
     .handle_response_cb = &lzr_ftp_handle_response,
-    .close_cb = NULL
+    .close_cb = &probe_close_nothing,
 };

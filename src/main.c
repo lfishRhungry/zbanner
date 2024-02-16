@@ -276,12 +276,10 @@ main_scan(struct Xconf *xconf)
     /*
      * Do global init for ScanModule
      */
-    if (xconf->scan_module->global_init_cb){
-        if (!xconf->scan_module->global_init_cb(xconf)) {
+    if (!xconf->scan_module->global_init_cb(xconf)) {
 
-            LOG(0, "FAIL: errors happened in global init of ScanModule.\n");
-            exit(1);
-        }
+        LOG(0, "FAIL: errors happened in global init of ScanModule.\n");
+        exit(1);
     }
 
     /*probemodule may not be set*/
@@ -292,7 +290,7 @@ main_scan(struct Xconf *xconf)
     /*
      * Do global init for probe
      */
-    if (xconf->probe_module && xconf->probe_module->global_init_cb){
+    if (xconf->probe_module){
         if (!xconf->probe_module->global_init_cb(xconf)) {
             LOG(0, "FAIL: errors in ProbeModule global initializing\n");
             exit(1);
@@ -488,14 +486,12 @@ main_scan(struct Xconf *xconf)
     /**
      * Do close for ScanModule
     */
-    if (xconf->scan_module->close_cb) {
-        xconf->scan_module->close_cb();
-    }
+    xconf->scan_module->close_cb();
 
     /**
      * Do close for ProbeModule
     */
-    if (xconf->probe_module&&xconf->probe_module->close_cb) {
+    if (xconf->probe_module) {
         xconf->probe_module->close_cb();
     }
 
