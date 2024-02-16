@@ -11,7 +11,13 @@
 
 extern struct ScanModule UdpProbeScan; /*for internal x-ref*/
 
-/*for calc the conn index*/
+/**
+ *For calc the conn index.
+ * NOTE: We use a trick of src-port to differenciate multi-probes to avoid
+ * mutual interference of connections.
+ * Be careful to the source port range and probe num. Source port range is 16 in
+ * default and can be set with flag `--source-port`.
+*/
 static unsigned src_port_start;
 
 static int
@@ -35,10 +41,6 @@ udpprobe_global_init(const void *xconf)
     return 1;
 }
 
-/**
- * NOTE: udpprobe uses a trick of src-port to implement multi-probes.
- * Be careful to the source port range.
-*/
 static int
 udpprobe_make_packet(
     unsigned cur_proto,
