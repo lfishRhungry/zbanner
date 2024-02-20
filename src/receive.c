@@ -271,16 +271,10 @@ receive_thread(void *v)
             while(1) {
                 struct PacketBuffer *response = stack_get_packetbuffer(stack);
                 if (response == NULL) {
-                    static int is_warning_printed = 0;
-                    if (!is_warning_printed) {
-                        LOG(0, "packet buffers empty (should be impossible)\n");
-                        is_warning_printed = 1;
-                    }
+                    LOG(0, "packet buffers empty (should be impossible)\n");
                     fflush(stdout);
-                    pixie_usleep(100); /* no packet available */
-                }
-                if (response == NULL)
                     exit(0);
+                }
                 
                 size_t rsp_len = 0;
                 need_response = scan_module->response_packet_cb(&parsed, entropy,
