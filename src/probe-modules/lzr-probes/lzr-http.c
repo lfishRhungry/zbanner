@@ -67,8 +67,9 @@ lzr_http_handle_reponse(
 }
 
 struct ProbeModule LzrHttpProbe = {
-    .name = "lzr-http",
-    .type = ProbeType_TCP,
+    .name      = "lzr-http",
+    .type      = ProbeType_TCP,
+    .probe_num = 1,
     .desc =
         "LzrHttp Probe sends an HTTP GET request and identifies HTTP service.\n",
     .global_init_cb                          = &probe_init_nothing,

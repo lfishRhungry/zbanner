@@ -4,8 +4,9 @@
 extern struct ProbeModule LzrWaitProbe;
 
 struct ProbeModule LzrWaitProbe = {
-    .name = "lzr-wait",
-    .type = ProbeType_TCP,
+    .name      = "lzr-wait",
+    .type      = ProbeType_TCP,
+    .probe_num = 1,
     .desc =
         "LzrWait Probe sends nothing and identifies no service. It is the default\n"
         "subprobe of LzrProbe to help other subprobes to match services.\n",

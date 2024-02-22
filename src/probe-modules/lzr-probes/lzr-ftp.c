@@ -32,8 +32,9 @@ lzr_ftp_handle_response(
 }
 
 struct ProbeModule LzrFtpProbe = {
-    .name = "lzr-ftp",
-    .type = ProbeType_TCP,
+    .name      = "lzr-ftp",
+    .type      = ProbeType_TCP,
+    .probe_num = 1,
     .desc =
         "LzrFtp Probe sends no payload and identifies FTP service.\n",
     .global_init_cb                       = &probe_init_nothing,

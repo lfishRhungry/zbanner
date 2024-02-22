@@ -136,9 +136,9 @@ struct ProbeModule
 {
     const char                                 *name;
     const enum ProbeType                        type;
+    unsigned                                    probe_num; /*for multi-probe*/
     const char                                 *desc;
     char                                       *args;
-    unsigned                                    probe_num; /*for multi-probe*/
     /*for init*/
     probe_modules_global_init                   global_init_cb;
     /*for payload*/

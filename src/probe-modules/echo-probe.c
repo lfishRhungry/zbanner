@@ -40,8 +40,9 @@ echo_validate_response(
 }
 
 struct ProbeModule EchoProbe = {
-    .name = "echo",
-    .type = ProbeType_UDP,
+    .name      = "echo",
+    .type      = ProbeType_UDP,
+    .probe_num = 1,
     .desc =
         "EchoProbe sends 4 bytes of random data to target udp port and expects "
 		"response that contains our random data.\n"
