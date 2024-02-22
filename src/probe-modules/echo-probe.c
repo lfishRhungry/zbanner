@@ -45,10 +45,10 @@ struct ProbeModule EchoProbe = {
     .probe_num = 1,
     .desc =
         "EchoProbe sends 4 bytes of random data to target udp port and expects "
-		"response that contains our random data.\n"
+        "response that contains our random data.\n"
         "EchoProbe could be used for finding UDP echo service or alive hosts "
-		"by icmp port unreachable messages. Its `validate_reponsed_cb` cannot be "
-		"used when making a ScanModule if you like.\n",
+        "by icmp port unreachable messages. Its `validate_reponsed_cb` cannot be "
+        "used when making a ScanModule if you like.\n",
     .global_init_cb                 = &probe_init_nothing,
     .make_payload_cb                = &echo_make_payload,
     .get_payload_length_cb          = NULL,
