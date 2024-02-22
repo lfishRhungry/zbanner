@@ -8,90 +8,65 @@
 
 extern struct ScanModule IcmpEchoScan; /*for internal x-ref*/
 
-static int
-icmpecho_make_packet(
-    unsigned cur_proto,
+static void
+icmpecho_transmit(
+    unsigned cur_proto, uint64_t entropy,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
-    uint64_t entropy, unsigned index,
-    unsigned char *px, unsigned sizeof_px, size_t *r_length)
+    sendp_in_tx sendp, void * sendp_params)
 {
     /*we do not care target port*/
     unsigned cookie = get_cookie(ip_them, 0, ip_me, 0, entropy);
 
-    *r_length = icmp_create_echo_packet(ip_them, ip_me,
-        cookie, cookie, 255, px, sizeof_px);
-    
-    /*no need do send again in this moment*/
-    return 0;
+    unsigned char px[2048];
+    size_t length = icmp_create_echo_packet(ip_them, ip_me,
+        cookie, cookie, 255, px, 2048);
+
+    sendp(sendp_params, px, length);
 }
 
-static int
-icmpecho_filter_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    unsigned is_myip, unsigned is_myport)
+static void
+icmpecho_validate(
+    uint64_t entropy,
+    struct Received *recved,
+    struct PreHandle *pre)
 {
-    if (parsed->found == FOUND_ICMP && is_myip) {
-        return 1;
-    }
+    /*record icmp to my ip*/
+    if (recved->parsed.found == FOUND_ICMP
+        && recved->is_myip)
+        pre->go_record = 1;
+    else return;
     
-    return 0;
-}
-
-static int
-icmpecho_validate_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px)
-{
-    ipaddress ip_me = parsed->dst_ip;
-    ipaddress ip_them = parsed->src_ip;
+    ipaddress ip_them = recved->parsed.src_ip;
+    ipaddress ip_me = recved->parsed.dst_ip;
     unsigned cookie = get_cookie(ip_them, 0, ip_me, 0, entropy);
 
-    if (parsed->src_ip.version==4
-        &&get_icmp_type(parsed)==ICMPv4_TYPE_ECHO_REPLY
-        &&get_icmp_code(parsed)==ICMPv4_CODE_ECHO_REPLY
-        &&get_icmp_cookie(parsed,px)==cookie) {
-        return 1;
+    if (recved->parsed.src_ip.version==4
+        &&get_icmp_type(&recved->parsed)==ICMPv4_TYPE_ECHO_REPLY
+        &&get_icmp_code(&recved->parsed)==ICMPv4_CODE_ECHO_REPLY
+        &&get_icmp_cookie(&recved->parsed, recved->packet)==cookie) {
+        pre->go_dedup = 1;
+    } else if (recved->parsed.src_ip.version==6
+        &&get_icmp_type(&recved->parsed)==ICMPv6_TYPE_ECHO_REPLY
+        &&get_icmp_code(&recved->parsed)==ICMPv6_CODE_ECHO_REPLY
+        &&get_icmp_cookie(&recved->parsed, recved->packet)==cookie) {
+        pre->go_dedup = 1;
     }
-
-    if (parsed->src_ip.version==6
-        &&get_icmp_type(parsed)==ICMPv6_TYPE_ECHO_REPLY
-        &&get_icmp_code(parsed)==ICMPv6_CODE_ECHO_REPLY
-        &&get_icmp_cookie(parsed,px)==cookie) {
-        return 1;
-    }
-
-    return 0;
 }
 
-static int
-icmpecho_dedup_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    ipaddress *ip_them, unsigned *port_them,
-    ipaddress *ip_me, unsigned *port_me, unsigned *type)
+static void
+icmpecho_handle(
+    uint64_t entropy,
+    struct Received *recved,
+    struct OutputItem *item,
+    struct stack_t *stack)
 {
-    return 1;
-}
-
-static int
-icmpecho_handle_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
-{
-    item->ip_them   = parsed->src_ip;
-    item->port_them = 0;
-    item->ip_me     = parsed->dst_ip;
-    item->port_me   = 0;
-
+    item->port_them  = 0;
+    item->port_me    = 0;
     item->is_success = 1;
+
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "echo reply");
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "alive");
-
-    /*no need to response*/
-    return 0;
 }
 
 struct ScanModule IcmpEchoScan = {
@@ -104,14 +79,8 @@ struct ScanModule IcmpEchoScan = {
     .global_init_cb = &scan_init_nothing,
     .rx_thread_init_cb = &scan_init_nothing,
     .tx_thread_init_cb = &scan_init_nothing,
-
-    .make_packet_cb = &icmpecho_make_packet,
-
-    .filter_packet_cb = &icmpecho_filter_packet,
-    .validate_packet_cb = &icmpecho_validate_packet,
-    .dedup_packet_cb = &icmpecho_dedup_packet,
-    .handle_packet_cb = &icmpecho_handle_packet,
-    .response_packet_cb = &scan_response_nothing,
-
+    .transmit_cb = &icmpecho_transmit,
+    .validate_cb = &icmpecho_validate,
+    .handle_cb = &icmpecho_handle,
     .close_cb = &scan_close_nothing,
 };

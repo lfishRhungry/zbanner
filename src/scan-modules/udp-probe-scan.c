@@ -41,167 +41,115 @@ udpprobe_global_init(const void *xconf)
     return 1;
 }
 
-static int
-udpprobe_make_packet(
-    unsigned cur_proto,
+static void
+udpprobe_transmit(
+    unsigned cur_proto, uint64_t entropy,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
-    uint64_t entropy, unsigned index,
-    unsigned char *px, unsigned sizeof_px, size_t *r_length)
+    sendp_in_tx sendp, void * sendp_params)
 {
     /*we just handle tcp target*/
-    if (cur_proto != Proto_UDP) {
-        *r_length = 0;
-        return 0;
-    }
+    if (cur_proto != Proto_UDP)
+        return;
 
-    unsigned cookie = get_cookie(ip_them, port_them, ip_me,
-        src_port_start+index, entropy);
-    
-    unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
-    size_t payload_len = 0;
-    if (UdpProbeScan.probe->make_payload_cb) {
-        payload_len = UdpProbeScan.probe->make_payload_cb(
-            ip_them, port_them, ip_me, port_me,
-            cookie, port_me-src_port_start,
-            payload, PROBE_PAYLOAD_MAX_LEN);
-    }
+    for (unsigned idx=0; idx < UdpProbeScan.probe->probe_num; idx++) {
 
-    *r_length = udp_create_packet(
-        ip_them, port_them, ip_me, src_port_start+index,
-        payload, payload_len, px, sizeof_px);
-        
-    /*multi-probing for a target*/
-    if (index<UdpProbeScan.probe->multi_index)
-        return 1;
-
-    return 0;
-}
-
-static int
-udpprobe_filter_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    unsigned is_myip, unsigned is_myport)
-{
-    /*record packet to our source port*/
-    if (parsed->found == FOUND_UDP && is_myip && is_myport)
-        return 1;
-    
-    /*record ICMP (udp) port unreachable message*/
-    if (parsed->found == FOUND_ICMP && is_myip) {
-        if (parsed->dst_ip.version == 4) {
-            if (get_icmp_type(parsed)==ICMPv4_TYPE_ERR
-                && get_icmp_code(parsed)==ICMPv4_CODE_ERR_PORT_UNREACHABLE) {
-                if (Proto_UDP==get_icmp_port_unreachable_proto(
-                    &px[parsed->transport_offset], parsed->transport_length))
-                    return 1;
-            }
-        }
-        if (parsed->dst_ip.version == 6) {
-            if (get_icmp_type(parsed)==ICMPv6_TYPE_ERR
-                && get_icmp_code(parsed)==ICMPv6_CODE_ERR_PORT_UNREACHABLE) {
-                if (Proto_UDP==get_icmp_port_unreachable_proto(
-                    &px[parsed->transport_offset], parsed->transport_length))
-                    return 1;
-            }
-        }
-    }
-    
-    return 0;
-}
-
-static int
-udpprobe_validate_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px)
-{
-    /*just validate udp response*/
-    if (parsed->found == FOUND_UDP) {
-        ipaddress ip_me     = parsed->dst_ip;
-        ipaddress ip_them   = parsed->src_ip;
-        unsigned  port_me   = parsed->port_dst;
-        unsigned  port_them = parsed->port_src;
-        unsigned  cookie    = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
-
-        if (UdpProbeScan.probe->validate_response_cb) {
-            return UdpProbeScan.probe->validate_response_cb(
+        unsigned cookie = get_cookie(ip_them, port_them, ip_me,
+            src_port_start+idx, entropy);
+        unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
+        size_t payload_len = 0;
+        if (UdpProbeScan.probe->make_payload_cb) {
+            payload_len = UdpProbeScan.probe->make_payload_cb(
                 ip_them, port_them, ip_me, port_me,
                 cookie, port_me-src_port_start,
-                &px[parsed->app_offset], parsed->app_length);
+                payload, PROBE_PAYLOAD_MAX_LEN);
         }
+
+        unsigned char px[2048];
+        size_t length = udp_create_packet(
+            ip_them, port_them, ip_me, src_port_start+idx,
+            payload, payload_len, px, 2048);
+
+        sendp(sendp_params, px, length);
     }
-
-    /*icmp message cannot be validated nice*/
-    if (parsed->found == FOUND_ICMP)
-        return 1;
-
-    return 0;
+    
 }
 
-static int
-udpprobe_dedup_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    ipaddress *ip_them, unsigned *port_them,
-    ipaddress *ip_me, unsigned *port_me, unsigned *type)
+static void
+udpprobe_validate(
+    uint64_t entropy,
+    struct Received *recved,
+    struct PreHandle *pre)
 {
-    if (parsed->found == FOUND_ICMP) {
-        unsigned proto;
-        parse_icmp_port_unreachable(
-            &px[parsed->transport_offset], parsed->transport_length,
-            ip_them, port_them, ip_me, port_me, &proto);
+    /*record packet to our source port*/
+    if (recved->parsed.found == FOUND_UDP
+        && recved->is_myip
+        && recved->is_myport) {
+        pre->go_record = 1;
+        ipaddress ip_them  = recved->parsed.src_ip;
+        ipaddress ip_me    = recved->parsed.dst_ip;
+        unsigned port_them = recved->parsed.port_src;
+        unsigned port_me   = recved->parsed.port_dst;
+        unsigned cookie    = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
+
+        if (UdpProbeScan.probe->validate_response_cb(
+            ip_them, port_them, ip_me, port_me,
+            cookie, port_me-src_port_start,
+            &recved->packet[recved->parsed.app_offset],
+            recved->parsed.app_length))
+            pre->go_dedup = 1;
+        else return;
     }
-    /*just care the first udp response*/
-    return 1;
+    
+    /*record ICMP (udp) port unreachable message*/
+    if (recved->parsed.found != FOUND_ICMP
+        || !recved->is_myip)
+        return;
+
+    if (recved->parsed.dst_ip.version == 4
+        && get_icmp_type(&recved->parsed)==ICMPv4_TYPE_ERR
+        && get_icmp_code(&recved->parsed)==ICMPv4_CODE_ERR_PORT_UNREACHABLE) {
+
+    } else if (recved->parsed.dst_ip.version == 6
+        && get_icmp_type(&recved->parsed)==ICMPv6_TYPE_ERR
+        && get_icmp_code(&recved->parsed)==ICMPv6_CODE_ERR_PORT_UNREACHABLE) {
+
+    } else return;
+
+    unsigned proto;
+    parse_icmp_port_unreachable(
+        &recved->packet[recved->parsed.transport_offset],
+        recved->parsed.transport_length,
+        &pre->dedup_ip_them, &pre->dedup_port_them,
+        &pre->dedup_ip_me, &pre->dedup_port_me, &proto);
+    if (proto==Proto_UDP) {
+        pre->go_record = 1;
+        pre->go_dedup = 1;
+    }
 }
 
-static int
-udpprobe_handle_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+static void
+udpprobe_handle(
+    uint64_t entropy,
+    struct Received *recved,
+    struct OutputItem *item,
+    struct stack_t *stack)
 {
-    if (parsed->found==FOUND_ICMP) {
-        unsigned proto;
-        parse_icmp_port_unreachable(
-            &px[parsed->transport_offset], parsed->transport_length,
-            &item->ip_them, &item->port_them,
-            &item->ip_me, &item->port_me, &proto);
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "port unreachable");
-        /*no reponse*/
-        return 0;
-    }
-
-    item->ip_them   = parsed->src_ip;
-    item->port_them = parsed->port_src;
-    item->ip_me     = parsed->dst_ip;
-    item->port_me   = parsed->port_dst;
-
     item->is_success = 1;
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "udp reponse");
 
-    /*theoretically, udp can take no data*/
-    if (parsed->app_length) {
-        if (UdpProbeScan.probe->handle_response_cb) {
+    ipaddress ip_them  = recved->parsed.src_ip;
+    ipaddress ip_me    = recved->parsed.dst_ip;
+    unsigned port_them = recved->parsed.port_src;
+    unsigned port_me   = recved->parsed.port_dst;
 
-            ipaddress ip_me    = parsed->dst_ip;
-            ipaddress ip_them  = parsed->src_ip;
-            unsigned port_me   = parsed->port_dst;
-            unsigned port_them = parsed->port_src;
-
-            UdpProbeScan.probe->handle_response_cb(
-                ip_them, port_them, ip_me, port_me,
-                port_me-src_port_start,
-                &px[parsed->app_offset], parsed->app_length,
-                item->report, OUTPUT_RPT_LEN);
-        }
-    }
-
-    /*no reponse*/
-    return 0;
+    UdpProbeScan.probe->handle_response_cb(
+        ip_them, port_them, ip_me, port_me,
+        port_me-src_port_start,
+        &recved->packet[recved->parsed.app_offset],
+        recved->parsed.app_length,
+        item->report, OUTPUT_RPT_LEN);
 }
 
 struct ScanModule UdpProbeScan = {
@@ -218,14 +166,8 @@ struct ScanModule UdpProbeScan = {
     .global_init_cb = &udpprobe_global_init,
     .rx_thread_init_cb = &scan_init_nothing,
     .tx_thread_init_cb = &scan_init_nothing,
-
-    .make_packet_cb = &udpprobe_make_packet,
-
-    .filter_packet_cb = &udpprobe_filter_packet,
-    .validate_packet_cb = &udpprobe_validate_packet,
-    .dedup_packet_cb = &udpprobe_dedup_packet,
-    .handle_packet_cb = &udpprobe_handle_packet,
-    .response_packet_cb = &scan_response_nothing,
-
+    .transmit_cb = &udpprobe_transmit,
+    .validate_cb = &udpprobe_validate,
+    .handle_cb = &udpprobe_handle,
     .close_cb = &scan_close_nothing,
 };

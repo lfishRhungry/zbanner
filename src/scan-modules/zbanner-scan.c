@@ -40,64 +40,57 @@ zbanner_global_init(const void *xconf)
     return 1;
 }
 
-static int
-zbanner_make_packet(
-    unsigned cur_proto,
+static void
+zbanner_transmit_packet(
+    unsigned cur_proto, uint64_t entropy,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
-    uint64_t entropy, unsigned index,
-    unsigned char *px, unsigned sizeof_px, size_t *r_length)
+    sendp_in_tx sendp, void * sendp_params)
 {
     /*we just handle tcp target*/
-    if (cur_proto != Proto_TCP) {
-        *r_length = 0;
-        return 0;
-    }
+    if (cur_proto != Proto_TCP)
+        return;
 
     /*`index` is unused now*/
     unsigned seqno = get_cookie(ip_them, port_them, ip_me,
         src_port_start, entropy);
 
-    *r_length = tcp_create_packet(
+    unsigned char px[2048];
+    size_t length = tcp_create_packet(
         ip_them, port_them, ip_me, src_port_start,
         seqno, 0, TCP_FLAG_SYN,
-        NULL, 0, px, sizeof_px);
-        
-    return 0;
+        NULL, 0, px, 2048);
+
+    sendp(sendp_params, px, length);
 }
 
-static int
-zbanner_filter_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    unsigned is_myip, unsigned is_myport)
+static void
+zbanner_validate(
+    uint64_t entropy,
+    struct Received *recved,
+    struct PreHandle *pre)
 {
-    /*record packet to our source port*/
-    if (parsed->found == FOUND_TCP && is_myip && is_myport)
-        return 1;
-    
-    return 0;
-}
+    if (recved->parsed.found == FOUND_TCP
+        && recved->is_myip
+        && recved->is_myport)
+        pre->go_record = 1;
+    else return;
 
-static int
-zbanner_validate_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px)
-{
-    ipaddress ip_me    = parsed->dst_ip;
-    ipaddress ip_them  = parsed->src_ip;
-    unsigned port_me   = parsed->port_dst;
-    unsigned port_them = parsed->port_src;
-    unsigned seqno_me;
-    unsigned cookie;
-    size_t payload_len;
+    ipaddress ip_them  = recved->parsed.src_ip;
+    ipaddress ip_me    = recved->parsed.dst_ip;
+    unsigned port_them = recved->parsed.port_src;
+    unsigned port_me   = recved->parsed.port_dst;
+    unsigned seqno_me  = TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
+    unsigned cookie    = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
+
 
     /*syn-ack*/
-    if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_SYN|TCP_FLAG_ACK)) {
-        seqno_me  = TCP_ACKNO(px, parsed->transport_offset);
-        cookie    = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
-        if (seqno_me == cookie + 1)
-            return 1;
+    if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
+        TCP_FLAG_SYN|TCP_FLAG_ACK)) {
+        if (cookie == seqno_me - 1) {
+            pre->go_dedup = 1;
+            pre->dedup_type = 0;
+        }
     }
     /*
     * First packet with reponsed banner data.
@@ -107,169 +100,125 @@ zbanner_validate_packet(
     * 2.[PSH, ACK]: no more data
     * 3.[FIN, PSH, ACK]: no more data and disconnecting
     */
-    else if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_ACK)
-        && parsed->app_length) {
-        seqno_me  = TCP_ACKNO(px, parsed->transport_offset);
-        cookie    = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
+    else if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset, TCP_FLAG_ACK)
+        && recved->parsed.app_length) {
+        size_t payload_len;
         payload_len = ZBannerScan.probe->get_payload_length_cb(
             ip_them, port_them, ip_me, port_me, cookie, port_me-src_port_start);
-        if (seqno_me == cookie + payload_len + 1)
-            return 1;
-    }
-    /*rst for syn (a little different)*/
-    else if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_RST)) {
-        seqno_me  = TCP_ACKNO(px, parsed->transport_offset);
-        cookie    = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
-        if (seqno_me == cookie + 1 || seqno_me == cookie)
-            return 1;
-    }
-
-    return 0;
-}
-
-static int
-zbanner_dedup_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    ipaddress *ip_them, unsigned *port_them,
-    ipaddress *ip_me, unsigned *port_me, unsigned *type)
-{
-    /*
-     * Simply differ from before and after contructing TCP conn.
-     * Maybe it can make RST(for probe) same with SYNACK and
-     * RST(for SYN). But we can also recognize open/closed port
-     * and get banner from the first packet with data.
-     * 
-     * However, all relative packets could be save to pcap file
-     * if we want.*/
-
-    if (parsed->app_length)
-        *type = 0;
-    else
-        *type = 1;
-    return 1;
-}
-
-static int
-zbanner_handle_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
-{
-    /*SYNACK*/
-    if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_SYN|TCP_FLAG_ACK)) {
-        item->is_success = 1;
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "syn-ack");
-        /*check for zero window of synack*/
-        uint16_t win_them = TCP_WIN(px, parsed->transport_offset);
-        if (win_them == 0) {
-            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "zerowin");
-            return 0;
-        } else {
-            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
-            return 1;
+        if (seqno_me == cookie + payload_len + 1) {
+            pre->go_dedup = 1;
+            pre->dedup_type = 1;
         }
     }
+    /*rst for syn (a little different)*/
+    else if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
+        TCP_FLAG_RST)) {
+        if (seqno_me == cookie + 1 || seqno_me == cookie) {
+            pre->go_dedup = 1;
+            pre->dedup_type = 0;
+        }
+    }
+}
 
-    /*RST for SYN. (RST for probe was deduped.)*/
-    if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_RST)) {
+static void
+zbanner_handle(
+    uint64_t entropy,
+    struct Received *recved,
+    struct OutputItem *item,
+    struct stack_t *stack)
+{
+    ipaddress ip_them   = recved->parsed.src_ip;
+    ipaddress ip_me     = recved->parsed.dst_ip;
+    unsigned port_them  = recved->parsed.port_src;
+    unsigned port_me    = recved->parsed.port_dst;
+    unsigned seqno_me   = TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
+    unsigned seqno_them = TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
+
+    /*SYNACK*/
+    if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
+        TCP_FLAG_SYN|TCP_FLAG_ACK)) {
+        item->is_success = 1;
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "syn-ack");
+
+        uint16_t win_them =
+            TCP_WIN(recved->packet, recved->parsed.transport_offset);
+        if (win_them == 0) {
+            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "zerowin");
+        } else {
+            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
+
+            /*stack(send) ack with probe*/
+
+            unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
+            size_t payload_len = 0; 
+
+            payload_len = ZBannerScan.probe->make_payload_cb(
+                ip_them, port_them, ip_me, port_me,
+                0, /*zbanner can recognize reponse by itself*/
+                port_me-src_port_start,
+                payload, PROBE_PAYLOAD_MAX_LEN);
+            
+            struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+
+            pkt_buffer->length = tcp_create_packet(
+                ip_them, port_them, ip_me, port_me,
+                seqno_me, seqno_them+1, TCP_FLAG_ACK,
+                payload, payload_len, pkt_buffer->px, PKT_BUF_LEN);
+            
+            stack_transmit_packetbuffer(stack, pkt_buffer);
+
+            /*for multi-probe*/
+            if (port_me==src_port_start && ZBannerScan.probe->probe_num) {
+                for (unsigned idx=1; idx<ZBannerScan.probe->probe_num; idx++) {
+
+                    unsigned cookie = get_cookie(ip_them, port_them, ip_me,
+                        src_port_start+idx, entropy);
+
+                    struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+
+                    pkt_buffer->length = tcp_create_packet(
+                        ip_them, port_them, ip_me, src_port_start+idx,
+                        cookie, 0, TCP_FLAG_SYN,
+                        NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+
+                    stack_transmit_packetbuffer(stack, pkt_buffer);
+            
+                }
+            }
+        }
+    }
+    /*RST*/
+    else if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
+        TCP_FLAG_RST)) {
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "rst");
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
-        return 0;
     }
-
     /*Banner*/
-    if (parsed->app_length) {
-
-        ipaddress ip_me    = parsed->dst_ip;
-        ipaddress ip_them  = parsed->src_ip;
-        unsigned port_me   = parsed->port_dst;
-        unsigned port_them = parsed->port_src;
-
-        /*
-        * We could recv Response DATA with some combinations of TCP flags
-        * 1.[ACK]: maybe more data
-        * 2.[PSH, ACK]: no more data
-        * 3.[FIN, PSH, ACK]: no more data and disconnecting
-        */
+    else {
         item->is_success = 1;
-        tcp_flags_to_string(TCP_FLAGS(px, parsed->transport_offset),
+        tcp_flags_to_string(
+            TCP_FLAGS(recved->packet, recved->parsed.transport_offset),
             item->reason, OUTPUT_RSN_LEN);
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "serving");
 
         ZBannerScan.probe->handle_response_cb(
             ip_them, port_them, ip_me, port_me, port_me-src_port_start,
-            &px[parsed->app_offset], parsed->app_length,
+            &recved->packet[recved->parsed.app_offset],
+            recved->parsed.app_length,
             item->report, OUTPUT_RPT_LEN);
 
-        return 1;
-    }
+        /*send rst to disconn*/
+        struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
 
-    return 0;
+        pkt_buffer->length = tcp_create_packet(
+            ip_them, port_them, ip_me, port_me,
+            seqno_me, seqno_them+1, TCP_FLAG_RST,
+            NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+
+        stack_transmit_packetbuffer(stack, pkt_buffer);
+    }
 }
 
-static int
-zbanner_response_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    unsigned char *r_px, unsigned sizeof_r_px,
-    size_t *r_length, unsigned index)
-{
-    ipaddress ip_them    = parsed->src_ip;
-    unsigned  port_them  = parsed->port_src;
-    ipaddress ip_me      = parsed->dst_ip;
-
-    /*for multi-probe*/
-    if (index) {
-        unsigned seqno = get_cookie(ip_them, port_them, ip_me,
-            src_port_start+index, entropy);
-
-        *r_length = tcp_create_packet(
-            ip_them, port_them, ip_me, src_port_start+index,
-            seqno, 0, TCP_FLAG_SYN,
-            NULL, 0, r_px, sizeof_r_px);
-        
-        if (index < ZBannerScan.probe->multi_index)
-            return 1;
-        return 0;
-    }
-
-    unsigned  port_me    = parsed->port_dst;
-    unsigned  seqno_me   = TCP_ACKNO(px, parsed->transport_offset);
-    unsigned  seqno_them = TCP_SEQNO(px, parsed->transport_offset);
-
-    if (parsed->app_length) {
-        /*send rst*/
-        *r_length = tcp_create_packet(
-            ip_them, port_them, ip_me, port_me,
-            seqno_me, 0, TCP_FLAG_RST,
-            NULL, 0, r_px, sizeof_r_px);
-    } else {
-        /*port is open, send probe*/
-
-        unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
-        size_t payload_len = 0; 
-
-        payload_len = ZBannerScan.probe->make_payload_cb(
-            ip_them, port_them, ip_me, port_me,
-            0, /*zbanner can recognize reponse by itself*/
-            port_me-src_port_start,
-            payload, PROBE_PAYLOAD_MAX_LEN);
-        
-        *r_length = tcp_create_packet(
-            ip_them, port_them, ip_me, port_me,
-            seqno_me, seqno_them+1, TCP_FLAG_ACK,
-            payload, payload_len, r_px, sizeof_r_px);
-        
-        /*for multi-probe*/
-        if (ZBannerScan.probe->multi_index && port_me==src_port_start) {
-            return 1;
-        }
-    }
-
-    /*one reponse is enough*/
-    return 0;
-}
 
 struct ScanModule ZBannerScan = {
     .name = "zbanner",
@@ -294,14 +243,8 @@ struct ScanModule ZBannerScan = {
     .global_init_cb = &zbanner_global_init,
     .rx_thread_init_cb = &scan_init_nothing,
     .tx_thread_init_cb = &scan_init_nothing,
-
-    .make_packet_cb = &zbanner_make_packet,
-
-    .filter_packet_cb = &zbanner_filter_packet,
-    .validate_packet_cb = &zbanner_validate_packet,
-    .dedup_packet_cb = &zbanner_dedup_packet,
-    .handle_packet_cb = &zbanner_handle_packet,
-    .response_packet_cb = &zbanner_response_packet,
-
+    .transmit_cb = &zbanner_transmit_packet,
+    .validate_cb = &zbanner_validate,
+    .handle_cb = &zbanner_handle,
     .close_cb = &scan_close_nothing,
 };

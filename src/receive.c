@@ -52,22 +52,29 @@
 #include "util/mas-malloc.h"
 #include "util/checksum.h"
 
-/***************************************************************************
- ***************************************************************************/
-// static unsigned
-// is_nic_port(const struct Xconf *xconf, unsigned ip)
-// {
-//     if (is_my_port(&xconf->nic.src, ip))
-//         return 1;
-//     return 0;
-// }
 
-// static unsigned
-// is_ipv6_multicast(ipaddress ip_me)
+/**
+ * I try to implement a wrapper func for set packet in sending buffer.
+ * (Damn C...)
+*/
+// struct StackInTransmit {
+//     struct stack_t *stack;
+// };
+
+// static void
+// stack_in_transmit(
+//     void *SIT, unsigned char *packet, size_t length)
 // {
-//     /* If this is an IPv6 multicast packet, one sent to the IPv6
-//      * address with a prefix of FF02::/16 */
-//     return ip_me.version == 6 && (ip_me.ipv6.hi>>48ULL) == 0xFF02;
+//     struct StackInTransmit *sit = (struct StackInTransmit *)SIT;
+
+//     struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(sit->stack);
+//     if (pkt_buffer == NULL) {
+//         LOG(0, "packet buffers empty (should be impossible)\n");
+//         fflush(stdout);
+//         exit(0);
+//     }
+
+//     stack_transmit_packetbuffer(sit->stack, pkt_buffer);
 // }
 
 void
@@ -159,17 +166,15 @@ receive_thread(void *v)
      */
     LOG(2, "[+] THREAD: recv: starting main loop\n");
     while (!is_rx_done) {
-        unsigned length;
-        unsigned secs;
-        unsigned usecs;
-        const unsigned char *px;
         struct ScanModule *scan_module = xconf->scan_module;
+        struct Received recved = {0};
 
-        int err = rawsock_recv_packet(adapter, &length, &secs, &usecs, &px);
+        int err = rawsock_recv_packet(adapter, &(recved.length),
+            &(recved.secs), &(recved.usecs), &(recved.packet));
         if (err != 0) {
             continue;
         }
-        if (length > 1514)
+        if (recved.length > 1514)
             continue;
 
         /*
@@ -177,122 +182,79 @@ receive_thread(void *v)
          * figure out where the TCP/IP headers are and the locations of
          * some fields, like IP address and port numbers.
          */
-        struct PreprocessedInfo parsed;
-        unsigned x = preprocess_frame(px, length, data_link, &parsed);
+        unsigned x = preprocess_frame(recved.packet, recved.length,
+            data_link, &recved.parsed);
         if (!x)
             continue; /* corrupt packet */
-        ipaddress ip_me = parsed.dst_ip;
-        ipaddress ip_them = parsed.src_ip;
-        unsigned port_me = parsed.port_dst;
-        unsigned port_them = parsed.port_src;
+        
+        ipaddress ip_them   = recved.parsed.src_ip;
+        ipaddress ip_me     = recved.parsed.dst_ip;
+        unsigned  port_them = recved.parsed.port_src;
+        unsigned  port_me   = recved.parsed.port_dst;
         
         assert(ip_me.version != 0);
         assert(ip_them.version != 0);
 
-        int is_myip = is_my_ip(stack->src, ip_me);
-        int is_myport = is_my_port(stack->src, port_me);
+        recved.is_myip = is_my_ip(stack->src, ip_me);
+        recved.is_myport = is_my_port(stack->src, port_me);
 
-        /**
-         * callback funcs of ScanModule in rx-thread.
-         * Step 1: Filter
-        */
-        if (!scan_module->filter_packet_cb(&parsed, entropy,
-                px, length, is_myip, is_myport)) {
+        struct PreHandle pre = {
+            .go_record = 0,
+            .go_dedup = 0,
+            .dedup_ip_them = ip_them,
+            .dedup_port_them = port_them,
+            .dedup_ip_me = ip_me,
+            .dedup_port_me = port_me,
+            .dedup_type = SCAN_MODULE_DEFAULT_DEDUP_TYPE,
+        };
 
+        scan_module->validate_cb(entropy, &recved, &pre);
+
+        if (!pre.go_record)
             continue;
-        }
 
         if (parms->xconf->nmap.packet_trace)
-            packet_trace(stdout, parms->pt_start, px, length, 0);
+            packet_trace(stdout, parms->pt_start,
+                recved.packet, recved.length, 0);
 
         /* Save raw packet in --pcap file */
         if (pcapfile) {
-            pcapfile_writeframe(pcapfile, px, length, length, secs, usecs);
+            pcapfile_writeframe(pcapfile,
+                recved.packet, recved.length,
+                recved.length,
+                recved.secs, recved.usecs);
         }
 
-        /**
-         * callback funcs of ScanModule in rx-thread.
-         * Step 2: Validate
-        */
-        if (!scan_module->validate_packet_cb(&parsed, entropy,
-                px, length)) {
+        if (!pre.go_dedup)
+            continue;
 
-                    continue;
-        }
-
-        /**
-         * callback funcs of ScanModule in rx-thread.
-         * Step 3: Dedup
-        */
-        if (!xconf->is_nodedup) {
-
-            unsigned dedup_type = SCAN_MODULE_DEFAULT_DEDUP_TYPE;
-            ipaddress dedup_ip_me = ip_me;
-            ipaddress dedup_ip_them = ip_them;
-            unsigned dedup_port_me = port_me;
-            unsigned dedup_port_them = port_them;
-
-            if (scan_module->dedup_packet_cb(&parsed, entropy, px, length,
-                &dedup_ip_them, &dedup_port_them,
-                &dedup_ip_me, &dedup_port_me, &dedup_type)) {
-                /** ports are all `zero` in default when receive ICMP packet*/
-                if (dedup_is_duplicate(dedup, dedup_ip_them, dedup_port_them,
-                        dedup_ip_me, dedup_port_me, dedup_type)) {
-                    continue;
-                }
+        if (!xconf->is_nodedup && !pre.no_dedup) {
+            if (dedup_is_duplicate(dedup,
+                pre.dedup_ip_them, pre.dedup_port_them,
+                pre.dedup_ip_me, pre.dedup_port_me,
+                pre.dedup_type)) {
+                continue;
             }
         }
 
-        /**
-         * callback funcs of ScanModule in rx-thread.
-         * Step 4: Handle
-        */
-        unsigned need_response = 0;
+        struct OutputItem item = {
+            .ip_them   = ip_them,
+            .ip_me     = ip_me,
+            .port_them = port_them,
+            .port_me   = port_me,
+        };
 
-        struct OutputItem item = {0};
-        item.timestamp = global_now;
+        // struct StackInTransmit sit = {
+        //     .stack = stack,
+        // };
 
-        need_response = scan_module->handle_packet_cb(&parsed, entropy,
-            px, length, &item);
+        scan_module->handle_cb(entropy, &recved, &item, stack);
 
         output_result(&output, &item);
         
         if (item.is_success)
             (*status_successed_count)++;
 
-        /**
-         * callback funcs of ScanModule in rx-thread.
-         * Step 5: Response
-        */
-        if (need_response) {
-
-            unsigned idx = 0;
-
-            while(1) {
-                struct PacketBuffer *response = stack_get_packetbuffer(stack);
-                if (response == NULL) {
-                    LOG(0, "packet buffers empty (should be impossible)\n");
-                    fflush(stdout);
-                    exit(0);
-                }
-                
-                size_t rsp_len = 0;
-                need_response = scan_module->response_packet_cb(&parsed, entropy,
-                    px, length, response->px, sizeof(response->px), &rsp_len, idx);
-
-                response->length = rsp_len;
-                if(rsp_len) {
-                    stack_transmit_packetbuffer(stack, response);
-                }
-
-                if (!need_response)
-                    break;
-                
-                idx++;
-            }
-        }
-
-   
     }
 
 

@@ -3,6 +3,9 @@
 #include "../util/rte-ring.h"
 #include "../massip/massip-addr.h"
 #include <limits.h>
+
+#define PKT_BUF_LEN 2048
+
 struct stack_src_t;
 struct Adapter;
 
@@ -10,7 +13,7 @@ typedef struct rte_ring PACKET_QUEUE;
 
 struct PacketBuffer {
     size_t length;
-    unsigned char px[2040];
+    unsigned char px[PKT_BUF_LEN];
 };
 
 struct stack_t {

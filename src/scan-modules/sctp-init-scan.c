@@ -8,104 +8,81 @@
 
 extern struct ScanModule SctpInitScan; /*for internal x-ref*/
 
-static int
-sctpinit_make_packet(
-    unsigned cur_proto,
+static void
+sctpinit_transmit(
+    unsigned cur_proto, uint64_t entropy,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
-    uint64_t entropy, unsigned index,
-    unsigned char *px, unsigned sizeof_px, size_t *r_length)
+    sendp_in_tx sendp, void * sendp_params)
 {
     /*we just handle tcp target*/
-    if (cur_proto != Proto_SCTP) {
-        *r_length = 0;
-        return 0;
-    }
+    if (cur_proto != Proto_SCTP)
+        return;
 
     unsigned cookie = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
 
-    *r_length = sctp_create_packet(
+    unsigned char px[2048];
+    size_t length = sctp_create_packet(
         ip_them, port_them, ip_me, port_me,
-        cookie, px, sizeof_px);
-    
-    /*no need do send again in this moment*/
-    return 0;
+        cookie, px, 2048);
+
+    sendp(sendp_params, px, length);
 }
 
-static int
-sctpinit_filter_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    unsigned is_myip, unsigned is_myport)
+static void
+sctpinit_validate(
+    uint64_t entropy,
+    struct Received *recved,
+    struct PreHandle *pre)
 {
-    /*record tcp packet to our source port*/
-    if (parsed->found == FOUND_SCTP && is_myip && is_myport)
-        return 1;
-    
-    return 0;
-}
+    /*record all sctp to me*/
+    if (recved->parsed.found == FOUND_SCTP
+        && recved->is_myip
+        && recved->is_myport)
+        pre->go_record = 1;
+    else return;
 
-static int
-sctpinit_validate_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px)
-{
     /*packet is too short*/
-    if (parsed->transport_offset + 16 > sizeof_px)
-        return 0;
+    if (recved->parsed.transport_offset + 16 > recved->length)
+        return;
 
-    ipaddress ip_me    = parsed->dst_ip;
-    ipaddress ip_them  = parsed->src_ip;
-    unsigned port_me   = parsed->port_dst;
-    unsigned port_them = parsed->port_src;
-    unsigned veri_tag  = SCTP_VERI_TAG(px, parsed->transport_offset);
+    ipaddress ip_them  = recved->parsed.src_ip;
+    ipaddress ip_me    = recved->parsed.dst_ip;
+    unsigned port_them = recved->parsed.port_src;
+    unsigned port_me   = recved->parsed.port_dst;
+
+    unsigned veri_tag  = SCTP_VERI_TAG(recved->packet, recved->parsed.transport_offset);
     unsigned cookie    = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
 
     if (cookie != veri_tag)
-        return 0;
+        return;
     
-    if (SCTP_IS_CHUNK_TYPE(px, parsed->transport_offset, SCTP_CHUNK_TYPE_INIT_ACK))
-        return 1;
-    
-    if (SCTP_IS_CHUNK_TYPE(px, parsed->transport_offset, SCTP_CHUNK_TYPE_ABORT))
-        return 1;
-
-    return 0;
+    if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
+        SCTP_CHUNK_TYPE_INIT_ACK)) {
+        pre->go_dedup = 1;
+    } else if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
+        SCTP_CHUNK_TYPE_ABORT)) {
+        pre->go_dedup = 1;
+    }
 }
 
-static int
-sctpinit_dedup_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    ipaddress *ip_them, unsigned *port_them,
-    ipaddress *ip_me, unsigned *port_me, unsigned *type)
+static void
+sctpinit_handle(
+    uint64_t entropy,
+    struct Received *recved,
+    struct OutputItem *item,
+    struct stack_t *stack)
 {
-    //just one type for tcpsyn and use default ip:port
-    return 1;
-}
-
-static int
-sctpinit_handle_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
-{
-    item->ip_them   = parsed->src_ip;
-    item->port_them = parsed->port_src;
-    item->ip_me     = parsed->dst_ip;
-    item->port_me   = parsed->port_dst;
-
-    if (SCTP_IS_CHUNK_TYPE(px, parsed->transport_offset, SCTP_CHUNK_TYPE_INIT_ACK)) {
+    if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
+        SCTP_CHUNK_TYPE_INIT_ACK)) {
         item->is_success = 1;
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "init-ack");
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
-    } else if (SCTP_IS_CHUNK_TYPE(px, parsed->transport_offset, SCTP_CHUNK_TYPE_ABORT)) {
+    } else if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
+        SCTP_CHUNK_TYPE_ABORT)) {
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "abort");
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
     }
-
-    /*no need to response*/
-    return 0;
 }
 
 struct ScanModule SctpInitScan = {
@@ -119,14 +96,8 @@ struct ScanModule SctpInitScan = {
     .global_init_cb = &scan_init_nothing,
     .rx_thread_init_cb = &scan_init_nothing,
     .tx_thread_init_cb = &scan_init_nothing,
-
-    .make_packet_cb = &sctpinit_make_packet,
-
-    .filter_packet_cb = &sctpinit_filter_packet,
-    .validate_packet_cb = &sctpinit_validate_packet,
-    .dedup_packet_cb = &sctpinit_dedup_packet,
-    .handle_packet_cb = &sctpinit_handle_packet,
-    .response_packet_cb = &scan_response_nothing,
-
+    .transmit_cb = &sctpinit_transmit,
+    .validate_cb = &sctpinit_validate,
+    .handle_cb = &sctpinit_handle,
     .close_cb = &scan_close_nothing,
 };

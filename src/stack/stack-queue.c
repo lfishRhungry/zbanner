@@ -2,6 +2,7 @@
 #include "../pixie/pixie-timer.h"
 #include "../rawsock/rawsock.h"
 #include "../util/mas-malloc.h"
+#include "../util/logger.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -17,6 +18,12 @@ stack_get_packetbuffer(struct stack_t *stack)
             /* Pause and wait for a buffer to become available */
             pixie_usleep(1000);
         }
+    }
+
+    if (response == NULL) {
+        LOG(0, "FAIL: packet buffers empty. (IMPOSSIBLE)\n");
+        fflush(stdout);
+        exit(1);
     }
     return response;
 }

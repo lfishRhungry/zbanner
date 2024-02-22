@@ -8,102 +8,81 @@
 
 extern struct ScanModule TcpSynScan; /*for internal x-ref*/
 
-static int
-tcpsyn_make_packet(
-    unsigned cur_proto,
+static void
+tcpsyn_transmit(
+    unsigned cur_proto, uint64_t entropy,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
-    uint64_t entropy, unsigned index,
-    unsigned char *px, unsigned sizeof_px, size_t *r_length)
+    sendp_in_tx sendp, void * sendp_params)
 {
     /*we just handle tcp target*/
-    if (cur_proto != Proto_TCP) {
-        *r_length = 0;
-        return 0;
-    }
+    if (cur_proto != Proto_TCP)
+        return;
 
     unsigned cookie = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
 
-    *r_length = tcp_create_packet(
+    unsigned char px[2048];
+    size_t length = tcp_create_packet(
         ip_them, port_them, ip_me, port_me,
         cookie, 0, TCP_FLAG_SYN,
-        NULL, 0, px, sizeof_px);
-    
-    /*no need do send again in this moment*/
-    return 0;
+        NULL, 0, px, 2048);
+
+    sendp(sendp_params, px, length);
 }
 
-static int
-tcpsyn_filter_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    unsigned is_myip, unsigned is_myport)
+static void
+tcpsyn_validate(
+    uint64_t entropy,
+    struct Received *recved,
+    struct PreHandle *pre)
 {
     /*record tcp packet to our source port*/
-    if (parsed->found == FOUND_TCP && is_myip && is_myport)
-        return 1;
-    
-    return 0;
-}
+    if (recved->parsed.found == FOUND_TCP
+        && recved->is_myip
+        && recved->is_myport)
+        pre->go_record = 1;
+    else return;
 
-static int
-tcpsyn_validate_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px)
-{
-    ipaddress ip_me    = parsed->dst_ip;
-    ipaddress ip_them  = parsed->src_ip;
-    unsigned port_me   = parsed->port_dst;
-    unsigned port_them = parsed->port_src;
-    unsigned seqno_me  = TCP_ACKNO(px, parsed->transport_offset);
+    ipaddress ip_them  = recved->parsed.src_ip;
+    ipaddress ip_me    = recved->parsed.dst_ip;
+    unsigned port_them = recved->parsed.port_src;
+    unsigned port_me   = recved->parsed.port_dst;
+    unsigned seqno_me  = TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
     unsigned cookie    = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
 
     /*SYNACK*/
-    if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_SYN|TCP_FLAG_ACK)) {
+    if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
+        TCP_FLAG_SYN|TCP_FLAG_ACK)) {
         if (cookie == seqno_me - 1) {
-            return 1;
+            pre->go_dedup = 1;
         }
     }
     /*RST*/
-    else if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_RST)) {
+    else if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
+        TCP_FLAG_RST)) {
         /*NOTE: diff from SYNACK*/
         if (cookie == seqno_me - 1 || cookie == seqno_me) {
-            return 1;
+            pre->go_dedup = 1;
         }
     }
-
-    return 0;
 }
 
-static int
-tcpsyn_dedup_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    ipaddress *ip_them, unsigned *port_them,
-    ipaddress *ip_me, unsigned *port_me, unsigned *type)
+static void
+tcpsyn_handle(
+    uint64_t entropy,
+    struct Received *recved,
+    struct OutputItem *item,
+    struct stack_t *stack)
 {
-    //just one type for tcpsyn and use default ip:port
-    return 1;
-}
-
-static int
-tcpsyn_handle_packet(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
-{
-    uint16_t win_them   = TCP_WIN(px, parsed->transport_offset);
-
-    item->ip_them   = parsed->src_ip;
-    item->port_them = parsed->port_src;
-    item->ip_me     = parsed->dst_ip;
-    item->port_me   = parsed->port_dst;
 
     /*SYNACK*/
-    if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_SYN|TCP_FLAG_ACK)) {
+    if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
+        TCP_FLAG_SYN|TCP_FLAG_ACK)) {
         item->is_success = 1;
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "syn-ack");
 
+        uint16_t win_them =
+            TCP_WIN(recved->packet, recved->parsed.transport_offset);
         if (win_them == 0) {
             safe_strcpy(item->classification, OUTPUT_CLS_LEN, "zerowin");
         } else {
@@ -111,13 +90,10 @@ tcpsyn_handle_packet(
         }
     }
     /*RST*/
-    else if (TCP_HAS_FLAG(px, parsed->transport_offset, TCP_FLAG_RST)) {
+    else {
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "rst");
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
     }
-
-    /*no need to response*/
-    return 0;
 }
 
 struct ScanModule TcpSynScan = {
@@ -131,14 +107,8 @@ struct ScanModule TcpSynScan = {
     .global_init_cb = &scan_init_nothing,
     .rx_thread_init_cb = &scan_init_nothing,
     .tx_thread_init_cb = &scan_init_nothing,
-
-    .make_packet_cb = &tcpsyn_make_packet,
-
-    .filter_packet_cb = &tcpsyn_filter_packet,
-    .validate_packet_cb = &tcpsyn_validate_packet,
-    .dedup_packet_cb = &tcpsyn_dedup_packet,
-    .handle_packet_cb = &tcpsyn_handle_packet,
-    .response_packet_cb = &scan_response_nothing,
-
+    .transmit_cb = &tcpsyn_transmit,
+    .validate_cb = &tcpsyn_validate,
+    .handle_cb = &tcpsyn_handle,
     .close_cb = &scan_close_nothing,
 };

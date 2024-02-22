@@ -51,6 +51,33 @@
 #include "util/checksum.h"
 
 
+/**
+ * I try to implement a wrapper func for packet sending.
+ * (Damn C...)
+*/
+struct SendInTransmit {
+    struct Adapter *adapter;
+    uint64_t *batch_size;
+    uint64_t *packets_sent;
+    uint64_t *status_sent_count;
+};
+
+static int
+send_in_transmit(
+    void *SIT, unsigned char *packet, size_t length)
+{
+    struct SendInTransmit *sit = (struct SendInTransmit *)SIT;
+
+    int ret = rawsock_send_packet(
+        sit->adapter, packet, (unsigned)length, !*(sit->batch_size));
+
+    (*(sit->batch_size))--;
+    (*(sit->packets_sent))++;
+    (*(sit->status_sent_count))++;
+
+    return ret;
+}
+
 void
 transmit_thread(void *v) /*aka. scanning_thread() */
 {
@@ -153,7 +180,6 @@ infinite:
      * -----------------*/
     LOG(3, "THREAD: xmit: starting main loop: [%llu..%llu]\n", start, end);
 
-    unsigned send_idx_for_a_target = 0;
     uint64_t i;
     for (i=start; i<end; ) {
 
@@ -258,49 +284,21 @@ infinite:
             */
             unsigned port_proto = get_real_protocol_and_port(&port_them);
 
-            /*
-            * Construct the destination packet by ScanModule
-            */
-            unsigned char px[2048];
-            size_t packet_length = 0;
+            struct SendInTransmit sit = {
+                .adapter = adapter,
+                .batch_size = &batch_size,
+                .packets_sent = &packets_sent,
+                .status_sent_count = status_sent_count,
+            };
 
-            unsigned send_again = xconf->scan_module->make_packet_cb(
-                port_proto,
+            /* send packets by ScanModule (bypassing the kernal)*/
+            xconf->scan_module->transmit_cb(
+                port_proto, entropy,
                 ip_them, port_them,
                 ip_me, port_me,
-                entropy, send_idx_for_a_target,
-                px, sizeof(px), &packet_length);
-            /*
-                * SEND THE PROBE
-                *  This is sorta the entire point of the program, but little
-                *  exciting happens here. The thing to note that this may
-                *  be a "raw" transmit that bypasses the kernel, meaning
-                *  we can call this function millions of times a second.
-                */
-            if (packet_length) {
-                rawsock_send_packet(adapter, px,
-                    (unsigned)packet_length, !batch_size);
+                &send_in_transmit, &sit);
 
-                batch_size--;
-                packets_sent++;
-                (*status_sent_count)++;
-            }
-
-
-            /*
-             * `r` means forced retry-times+1 -> `send` for a target.
-             * `send_again` is internal logic of ScanModule. 
-             */
-            if (send_again) {
-
-                send_idx_for_a_target++;
-
-            } else {
-
-                send_idx_for_a_target = 0;
-
-                i += increment; /* <------ increment by 1 normally, more with shards/nics */
-            }
+            i += increment; /* <------ increment by 1 normally, more with shards/nics */
 
 
         } /* end of batch */

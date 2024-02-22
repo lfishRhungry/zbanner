@@ -14,6 +14,7 @@
 #include "../massip/massip-addr.h"
 #include "../output/output.h"
 #include "../proto/proto-preprocess.h"
+#include "../stack/stack-queue.h"
 #include "../probe-modules/probe-modules.h"
 
 
@@ -51,147 +52,94 @@ typedef int (*scan_modules_txthread_init)(const void *txthread);
  * * callback functions for Transmit
 ****************************************************************************/
 
+typedef int (*sendp_in_tx)(
+    void *SIT, unsigned char *packet, size_t length);
+
 /**
- * Happens in Tx Thread
+ * Happens in Tx Thread.
+ * Do the first packet transmitting for every target.
  * 
  * !Must be implemented.
  * !Must be thread safe.
  * 
  * @param cur_proto what TemplateProto this port belongs to.
+ * @param entropy a rand seed (generated or user-specified).
  * @param ip_them IP of this target.
  * @param port_them Port of this target (if port is meaningful).
  * @param ip_me IP of us.
  * @param port_me Port of us (if port is meaningful).
- * @param entropy a rand seed (generated or user-specified).
- * @param index This is the index times to send the packet
- * for this target in tx_thread (not through callback queue).
- * @param px Load your packet data to here.
- * @param sizeof_px Length of buffer.
- * @param r_length Length of returned packet length (doesn't send anything if zero).
- * 
- * @return true for this target in tx_thread again.
+ * @param sendp use this func to actually sending packets.
+ * @param sendp_params as the first param of sendp func.
 */
-typedef int (*scan_modules_make_new_packet)(
-    unsigned cur_proto,
+typedef void (*scan_modules_transmit)(
+    unsigned cur_proto, uint64_t entropy,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
-    uint64_t entropy, unsigned index,
-    unsigned char *px, unsigned sizeof_px, size_t *r_length);
+    sendp_in_tx sendp, void * sendp_params);
 
 /***************************************************************************
  * * callback functions for Receive
 ****************************************************************************/
 
-/**
- * Step 1 Filter: Is this packet need to be record (trace or pcap)
- * and possibly validate in next step?
- *
- * !Must be implemented.
- * !Must be thread safe.
- * 
- * @param parsed Parsed info about this packet.
- * @param entropy a rand seed (generated or user-specified).
- * @param px point to packet data.
- * @param sizeof_px length of packet data.
- * @param is_myip for reference
- * @param is_myport for reference
- * 
- * @return true for this ScanModule to handle (and save to pcap file)
- * and go on Step 2?
-*/
-typedef int (*scan_modules_filter_packet)(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    unsigned is_myip, unsigned is_myport);
+struct Received {
+    struct PreprocessedInfo parsed;
+    const unsigned char *packet;
+    unsigned length;
+    unsigned is_myip;
+    unsigned is_myport;
+    unsigned secs;
+    unsigned usecs;
+};
+
+struct PreHandle {
+    unsigned go_record:1; /*proceed to record or stop*/
+    unsigned go_dedup:1; /*proceed to dedup or stop*/
+    unsigned no_dedup:1; /*go on with(out) deduping*/
+    ipaddress dedup_ip_them;
+    unsigned dedup_port_them;
+    ipaddress dedup_ip_me;
+    unsigned dedup_port_me;
+    unsigned dedup_type;
+};
 
 /**
- * Step 2 Validate: Is this packet need to be handle?
- *
- * !Must be implemented.
- * !Must be thread safe.
- * 
- * @param parsed Parsed info about this packet.
- * @param entropy a rand seed (generated or user-specified).
- * @param px point to packet data.
- * @param sizeof_px length of packet data.
- * 
- * @return true for this ScanModule to go on to dedup meaningfully in Step 3?
-*/
-typedef int (*scan_modules_validate_packet)(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px);
-
-/**
- * Step 3 Decuplicate: Is and how this packet to be deduped?
- *
- * !Must be implemented.
- * !Must be thread safe.
- * 
- * @param parsed Parsed info about this packet.
- * @param entropy a rand seed (generated or user-specified).
- * @param px point to packet data.
- * @param sizeof_px length of packet data.
- * @param ip_them for dedup, modify it when use other value.
- * @param port_them for dedup, modify it when use other value.
- * @param ip_me for dedup, modify it when use other value.
- * @param port_me for dedup, modify it when use other value.
- * @param type dedup type, modify it when use other value.
- * useful while differ from same (ip_them, port_them, ip_me, port_me).
- * 
- * @return false for nodedup
-*/
-typedef int (*scan_modules_dedup_packet)(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    ipaddress *ip_them, unsigned *port_them,
-    ipaddress *ip_me, unsigned *port_me, unsigned *type);
-
-/**
- * Step 4 Handle
- *
- * !Must be implemented.
- * !Must be thread safe.
- * 
- * @param parsed Parsed info about this packet.
- * @param entropy a rand seed (generated or user-specified).
- * @param px point to packet data.
- * @param sizeof_px length of packet data.
- * @param successed Is this packet considered success.
- * @param classification Packet classification string.
- * @param cls_length Length of classification string buffer.
- * @param report Report string.
- * @param rpt_length Length of report string buffer.
- * 
- * @return true if need to response in Step 5.
-*/
-typedef int (*scan_modules_handle_packet)(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item);
-
-
-/**
- * Step 5 Response
+ * !First Step Happens in Rx Thread.
+ * Do following things for a received packet:
+ *  1. Record or stop.
+ *  2. Is and How to dedup or stop.
  * 
  * !Must be implemented.
  * !Must be thread safe.
  * 
- * @param parsed Parsed info about this packet.
  * @param entropy a rand seed (generated or user-specified).
- * @param px point to packet data.
- * @param sizeof_px length of packet data.
- * @param r_px Put data of packet need to be sent here.
- * @param sizeof_r_px Length of buffer that px points.
- * @param r_length Length of returned packet length (doesn't send anything if zero).
- * @param index This is the index times to response.
- * 
- * @param return true if need to do more response.
+ * @param recved info of received packet.
+ * @param pre some preHandle results.
 */
-typedef int (*scan_modules_response_packet)(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    unsigned char *r_px, unsigned sizeof_r_px,
-    size_t *r_length, unsigned index);
+typedef void (*scan_modules_validate)(
+    uint64_t entropy,
+    struct Received *recved,
+    struct PreHandle *pre);
+
+/**
+ * !Second Step Happens in Rx Thread.
+ * Do following things for a received packet:
+ *  1. Is and How to output a result.
+ *  2. How and What packet to response.
+ * 
+ * !Must be implemented.
+ * !Must be thread safe.
+ * 
+ * @param entropy a rand seed (generated or user-specified).
+ * @param recved info of received packet.
+ * @param item some outputting results.
+ * @param stack packet buffer queue stack for preparing transmitting.
+*/
+typedef void (*scan_modules_handle)(
+    uint64_t entropy,
+    struct Received *recved,
+    struct OutputItem *item,
+    struct stack_t *stack);
+
 
 /***************************************************************************
  * * callback functions for Close
@@ -205,26 +153,23 @@ typedef void (*scan_modules_close)();
 
 struct ScanModule
 {
-    const char                          *name;
-    const char                          *desc;
-    const enum ProbeType                 required_probe_type; /*set zero if not using probe*/
+    const char                     *name;
+    const char                     *desc;
+    const enum ProbeType            required_probe_type; /*set zero if not using probe*/
     /*useful params*/
-    char                                *args;
-    struct ProbeModule                  *probe;
+    char                           *args;
+    struct ProbeModule             *probe;
     /*for init*/
-    scan_modules_global_init             global_init_cb;
-    scan_modules_rxthread_init           rx_thread_init_cb;
-    scan_modules_txthread_init           tx_thread_init_cb;
+    scan_modules_global_init        global_init_cb;
+    scan_modules_rxthread_init      rx_thread_init_cb;
+    scan_modules_txthread_init      tx_thread_init_cb;
     /*for transmit*/
-    scan_modules_make_new_packet         make_packet_cb;
+    scan_modules_transmit           transmit_cb;
     /*for receive*/
-    scan_modules_filter_packet           filter_packet_cb;
-    scan_modules_validate_packet         validate_packet_cb;
-    scan_modules_dedup_packet            dedup_packet_cb;
-    scan_modules_handle_packet           handle_packet_cb;
-    scan_modules_response_packet         response_packet_cb;
+    scan_modules_validate           validate_cb;
+    scan_modules_handle             handle_cb;
     /*for close*/
-    scan_modules_close                   close_cb;
+    scan_modules_close              close_cb;
 };
 
 struct ScanModule *get_scan_module_by_name(const char *name);
