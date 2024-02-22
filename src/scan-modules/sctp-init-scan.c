@@ -93,11 +93,9 @@ struct ScanModule SctpInitScan = {
         "INIT ACK response to believe the port is open or an ABORT for closed in "
         "SCTP protocol.\n",
 
-    .global_init_cb = &scan_init_nothing,
-    .rx_thread_init_cb = &scan_init_nothing,
-    .tx_thread_init_cb = &scan_init_nothing,
-    .transmit_cb = &sctpinit_transmit,
-    .validate_cb = &sctpinit_validate,
-    .handle_cb = &sctpinit_handle,
-    .close_cb = &scan_close_nothing,
+    .global_init_cb          = &scan_init_nothing,
+    .transmit_cb             = &sctpinit_transmit,
+    .validate_cb             = &sctpinit_validate,
+    .handle_cb               = &sctpinit_handle,
+    .close_cb                = &scan_close_nothing,
 };

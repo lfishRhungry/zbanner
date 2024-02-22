@@ -129,12 +129,10 @@ struct ProbeModule LzrProbe = {
         "with `handle_reponse_cb`.\n"
         "Specify LZR subprobe by probe arguments:\n"
         "    `--probe-module-args http`\n",
-    .global_init_cb = &lzr_global_init,
-    .rx_thread_init_cb = &probe_init_nothing,
-    .tx_thread_init_cb = &probe_init_nothing,
+    .global_init_cb                        = &lzr_global_init,
+    .validate_response_cb                  = NULL,
+    .handle_response_cb                    = &lzr_handle_response,
+    .close_cb                              = &probe_close_nothing,
     // `make_payload_cb` will be set dynamicly in lzr_global_init.
     // `get_payload_length_cb` will be set dynamicly in lzr_global_init.
-    .validate_response_cb = NULL,
-    .handle_response_cb = &lzr_handle_response,
-    .close_cb = &probe_close_nothing,
 };

@@ -32,22 +32,6 @@
 */
 typedef int (*scan_modules_global_init)(const void *xconf);
 
-/**
- * !Must be implemented.
- * !Must be thread safe.
- * @param rxthread main conf of rxthread, use `void` to avoiding x-ref.
- * @return false for initing failed and exit process.
-*/
-typedef int (*scan_modules_rxthread_init)(const void *rxthread);
-
-/**
- * !Must be implemented.
- * !Must be thread safe.
- * @param txthread main conf of txthread, use `void` to avoiding x-ref.
- * @return false for initing failed and exit process.
-*/
-typedef int (*scan_modules_txthread_init)(const void *txthread);
-
 /***************************************************************************
  * * callback functions for Transmit
 ****************************************************************************/
@@ -153,23 +137,21 @@ typedef void (*scan_modules_close)();
 
 struct ScanModule
 {
-    const char                     *name;
-    const char                     *desc;
-    const enum ProbeType            required_probe_type; /*set zero if not using probe*/
+    const char                                 *name;
+    const char                                 *desc;
+    const enum ProbeType                        required_probe_type; /*set zero if not using probe*/
     /*useful params*/
-    char                           *args;
-    struct ProbeModule             *probe;
+    char                                       *args;
+    struct ProbeModule                         *probe;
     /*for init*/
-    scan_modules_global_init        global_init_cb;
-    scan_modules_rxthread_init      rx_thread_init_cb;
-    scan_modules_txthread_init      tx_thread_init_cb;
+    scan_modules_global_init                    global_init_cb;
     /*for transmit*/
-    scan_modules_transmit           transmit_cb;
+    scan_modules_transmit                       transmit_cb;
     /*for receive*/
-    scan_modules_validate           validate_cb;
-    scan_modules_handle             handle_cb;
+    scan_modules_validate                       validate_cb;
+    scan_modules_handle                         handle_cb;
     /*for close*/
-    scan_modules_close              close_cb;
+    scan_modules_close                          close_cb;
 };
 
 struct ScanModule *get_scan_module_by_name(const char *name);
@@ -182,31 +164,6 @@ Some useful implemented interfaces
 
 /*implemented `scan_modules_xxx_init`*/
 int scan_init_nothing(const void *params);
-
-/*implemented `scan_modules_filter_packet`*/
-int scan_filter_nothing(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    unsigned is_myip, unsigned is_myport);
-
-/*implemented `scan_modules_validate_packet`*/
-int scan_valid_all(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px);
-
-/*implemented `scan_modules_dedup_packet`*/
-int scan_no_dedup(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    ipaddress *ip_them, unsigned *port_them,
-    ipaddress *ip_me, unsigned *port_me, unsigned *type);
-
-/*implemented `scan_modules_response_packet`*/
-int scan_response_nothing(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    unsigned char *r_px, unsigned sizeof_r_px,
-    size_t *r_length, unsigned index);
 
 /*implemented `scan_modules_close`*/
 void scan_close_nothing();

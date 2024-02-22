@@ -163,11 +163,9 @@ struct ScanModule UdpProbeScan = {
         "UdpProbeScan prefer the first reponse udp packet. But all packets to us "
         "could be record to pcap file.\n",
 
-    .global_init_cb = &udpprobe_global_init,
-    .rx_thread_init_cb = &scan_init_nothing,
-    .tx_thread_init_cb = &scan_init_nothing,
-    .transmit_cb = &udpprobe_transmit,
-    .validate_cb = &udpprobe_validate,
-    .handle_cb = &udpprobe_handle,
-    .close_cb = &scan_close_nothing,
+    .global_init_cb              = &udpprobe_global_init,
+    .transmit_cb                 = &udpprobe_transmit,
+    .validate_cb                 = &udpprobe_validate,
+    .handle_cb                   = &udpprobe_handle,
+    .close_cb                    = &scan_close_nothing,
 };

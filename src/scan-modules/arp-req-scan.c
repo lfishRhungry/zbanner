@@ -74,11 +74,9 @@ struct ScanModule ArpReqScan = {
         "or to set router mac like:\n"
         "    `--router-mac ff-ff-ff-ff-ff-ff`.\n",
 
-    .global_init_cb = &scan_init_nothing,
-    .rx_thread_init_cb = &scan_init_nothing,
-    .tx_thread_init_cb = &scan_init_nothing,
-    .transmit_cb = &arpreq_transmit,
-    .validate_cb = &arpreq_validate,
-    .handle_cb = &arpreq_handle,
-    .close_cb = &scan_close_nothing,
+    .global_init_cb    = &scan_init_nothing,
+    .transmit_cb       = &arpreq_transmit,
+    .validate_cb       = &arpreq_validate,
+    .handle_cb         = &arpreq_handle,
+    .close_cb          = &scan_close_nothing,
 };

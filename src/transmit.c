@@ -118,25 +118,6 @@ transmit_thread(void *v) /*aka. scanning_thread() */
     *status_sent_count = 0;
     parms->total_sent = status_sent_count;
 
-    /*
-     * Do tx-thread init for ScanModule
-     */
-    if (!xconf->scan_module->tx_thread_init_cb(parms)) {
-        LOG(0, "FAIL: errors happened in tx-thread(%u) init of ScanModule.\n", parms->tx_index);
-        exit(1);
-    }
-
-    /*
-     * Do tx-thread init for ProbeModule
-     */
-    if (xconf->probe_module){
-        if (!xconf->probe_module->tx_thread_init_cb(parms)) {
-            LOG(0, "FAIL: errors happened in tx-thread(%u) init of ProbeModule.\n", parms->tx_index);
-            exit(1);
-        }
-    }
-
-
     /* Normally, we have just one source address. In special cases, though
      * we can have multiple. */
     struct source_t src;

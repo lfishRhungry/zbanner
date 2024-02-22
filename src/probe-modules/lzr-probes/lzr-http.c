@@ -71,12 +71,10 @@ struct ProbeModule LzrHttpProbe = {
     .type = ProbeType_TCP,
     .desc =
         "LzrHttp Probe sends an HTTP GET request and identifies HTTP service.\n",
-    .global_init_cb = &probe_init_nothing,
-    .rx_thread_init_cb = &probe_init_nothing,
-    .tx_thread_init_cb = &probe_init_nothing,
-    .make_payload_cb = &lzr_http_make_payload,
-    .get_payload_length_cb = &lzr_http_get_payload_length,
-    .validate_response_cb = NULL,
-    .handle_response_cb = &lzr_http_handle_reponse,
-    .close_cb = &probe_close_nothing,
+    .global_init_cb                          = &probe_init_nothing,
+    .make_payload_cb                         = &lzr_http_make_payload,
+    .get_payload_length_cb                   = &lzr_http_get_payload_length,
+    .validate_response_cb                    = NULL,
+    .handle_response_cb                      = &lzr_http_handle_reponse,
+    .close_cb                                = &probe_close_nothing,
 };

@@ -131,25 +131,6 @@ receive_thread(void *v)
         dedup = dedup_create(xconf->dedup_win);
 
     /*
-     * Do rx-thread init for ScanModule
-     */
-    if (!xconf->scan_module->rx_thread_init_cb(parms)) {
-        LOG(0, "FAIL: errors happened in rx-thread init of ScanModule.\n");
-        exit(1);
-    }
-
-    /*
-     * Do thread init for stateless probe
-     */
-    if (xconf->probe_module){
-        if (!xconf->probe_module->rx_thread_init_cb(parms)) {
-            LOG(0, "FAIL: errors happened in rx-thread init of ProbeModule.\n");
-            exit(1);
-        }
-    }
-
-
-    /*
      * In "offline" mode, we don't have any receive threads, so simply
      * wait until transmitter thread is done then go to the end
      */

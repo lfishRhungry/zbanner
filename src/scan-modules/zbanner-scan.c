@@ -240,11 +240,9 @@ struct ScanModule ZBannerScan = {
         "Remove the rule by its line number if we do not need it:\n"
         "    `sudo iptables -D OUTPUT <line-number>`\n",
 
-    .global_init_cb = &zbanner_global_init,
-    .rx_thread_init_cb = &scan_init_nothing,
-    .tx_thread_init_cb = &scan_init_nothing,
-    .transmit_cb = &zbanner_transmit_packet,
-    .validate_cb = &zbanner_validate,
-    .handle_cb = &zbanner_handle,
-    .close_cb = &scan_close_nothing,
+    .global_init_cb               = &zbanner_global_init,
+    .transmit_cb                  = &zbanner_transmit_packet,
+    .validate_cb                  = &zbanner_validate,
+    .handle_cb                    = &zbanner_handle,
+    .close_cb                     = &scan_close_nothing,
 };

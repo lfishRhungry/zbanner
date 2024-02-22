@@ -23,24 +23,6 @@ enum ProbeType {
 typedef int (*probe_modules_global_init)(const void *xconf);
 
 /**
- * Happens in Rx Thread
- * !Must be implemented.
- * !Must be thread safe.
- * @param rxthread main conf of rxthread, use `void` to avoiding x-ref.
- * @return FALSE to exit process if init failed
-*/
-typedef int (*probe_modules_rxthread_init)(const void *rxthread);
-
-/**
- * Happens in Tx Thread
- * !Must be implemented.
- * !Must be thread safe.
- * @param txthread main conf of txthread, use `void` to avoiding x-ref.
- * @return FALSE to exit process if init failed
-*/
-typedef int (*probe_modules_txthread_init)(const void *txthread);
-
-/**
  * Happens in Tx Thread or Rx Thread for different ScanModules.
  * 
  * Make correspond payload data for a target.
@@ -151,22 +133,21 @@ typedef void (*probe_modules_close)();
 
 struct ProbeModule
 {
-    const char                        *name;
-    const enum ProbeType               type;
-    const char                        *desc;
-    char                              *args;
-    unsigned                           probe_num; /*for multi-probe*/
+    const char                                 *name;
+    const enum ProbeType                        type;
+    const char                                 *desc;
+    char                                       *args;
+    unsigned                                    probe_num; /*for multi-probe*/
     /*for init*/
-    probe_modules_global_init          global_init_cb;
-    probe_modules_rxthread_init        rx_thread_init_cb;
-    probe_modules_txthread_init        tx_thread_init_cb;
-    /*for payload and response*/
-    probe_modules_make_payload         make_payload_cb;
-    probe_modules_get_payload_length   get_payload_length_cb;
-    probe_modules_validate_response    validate_response_cb;
-    probe_modules_handle_response      handle_response_cb;
+    probe_modules_global_init                   global_init_cb;
+    /*for payload*/
+    probe_modules_make_payload                  make_payload_cb;
+    probe_modules_get_payload_length            get_payload_length_cb;
+    /*for response*/
+    probe_modules_validate_response             validate_response_cb;
+    probe_modules_handle_response               handle_response_cb;
     /*for close*/
-    probe_modules_close                close_cb;
+    probe_modules_close                         close_cb;
 };
 
 struct ProbeModule *get_probe_module_by_name(const char *name);
