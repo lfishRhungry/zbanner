@@ -40,28 +40,25 @@ zbanner_global_init(const void *xconf)
     return 1;
 }
 
-static void
+static int
 zbanner_transmit_packet(
-    unsigned cur_proto, uint64_t entropy,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    sendp_in_tx sendp, void * sendp_params)
+    uint64_t entropy,
+    struct Target *target,
+    unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
-    if (cur_proto != Proto_TCP)
-        return;
+    if (target->proto != Proto_TCP)
+        return 0;
 
     /*`index` is unused now*/
-    unsigned seqno = get_cookie(ip_them, port_them, ip_me,
+    unsigned seqno = get_cookie(target->ip_them, target->port_them, target->ip_me,
         src_port_start, entropy);
 
-    unsigned char px[2048];
-    size_t length = tcp_create_packet(
-        ip_them, port_them, ip_me, src_port_start,
-        seqno, 0, TCP_FLAG_SYN,
-        NULL, 0, px, 2048);
-
-    sendp(sendp_params, px, length);
+    *len = tcp_create_packet(
+        target->ip_them, target->port_them, target->ip_me, src_port_start,
+        seqno, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_LEN);
+    
+    return 0;
 }
 
 static void

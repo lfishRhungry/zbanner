@@ -41,37 +41,35 @@ udpprobe_global_init(const void *xconf)
     return 1;
 }
 
-static void
+static int
 udpprobe_transmit(
-    unsigned cur_proto, uint64_t entropy,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    sendp_in_tx sendp, void * sendp_params)
+    uint64_t entropy,
+    struct Target *target,
+    unsigned char *px, size_t *len)
 {
-    /*we just handle tcp target*/
-    if (cur_proto != Proto_UDP)
-        return;
+    /*we just handle udp target*/
+    if (target->proto != Proto_UDP)
+        return 0;
+    
+    unsigned cookie = get_cookie(target->ip_them, target->port_them,
+        target->ip_me, src_port_start+target->index, entropy);
 
-    for (unsigned idx=0; idx < UdpProbeScan.probe->probe_num; idx++) {
+    unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
+    size_t payload_len = 0;
 
-        unsigned cookie = get_cookie(ip_them, port_them, ip_me,
-            src_port_start+idx, entropy);
-        unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
-        size_t payload_len = 0;
-        if (UdpProbeScan.probe->make_payload_cb) {
-            payload_len = UdpProbeScan.probe->make_payload_cb(
-                ip_them, port_them, ip_me, port_me,
-                cookie, port_me-src_port_start,
-                payload, PROBE_PAYLOAD_MAX_LEN);
-        }
+    payload_len = UdpProbeScan.probe->make_payload_cb(
+        target->ip_them, target->port_them, target->ip_me, target->port_me,
+        cookie, target->index,
+        payload, PROBE_PAYLOAD_MAX_LEN);
 
-        unsigned char px[2048];
-        size_t length = udp_create_packet(
-            ip_them, port_them, ip_me, src_port_start+idx,
-            payload, payload_len, px, 2048);
-
-        sendp(sendp_params, px, length);
-    }
+    *len = udp_create_packet(target->ip_them, target->port_them,
+        target->ip_me, src_port_start+target->index,
+        payload, payload_len, px, PKT_BUF_LEN);
+    
+    /*for multi-probe*/
+    if (target->index+1<UdpProbeScan.probe->probe_num)
+        return 1;
+    else return 0;
     
 }
 

@@ -8,21 +8,21 @@
 
 extern struct ScanModule IcmpEchoScan; /*for internal x-ref*/
 
-static void
+static int
 icmpecho_transmit(
-    unsigned cur_proto, uint64_t entropy,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    sendp_in_tx sendp, void * sendp_params)
+    uint64_t entropy,
+    struct Target *target,
+    unsigned char *px, size_t *len)
 {
     /*we do not care target port*/
-    unsigned cookie = get_cookie(ip_them, 0, ip_me, 0, entropy);
+    unsigned cookie = get_cookie(
+        target->ip_them, 0, target->ip_me, 0, entropy);
 
-    unsigned char px[2048];
-    size_t length = icmp_create_echo_packet(ip_them, ip_me,
-        cookie, cookie, 255, px, 2048);
+    *len = icmp_create_echo_packet(
+        target->ip_them, target->ip_me,
+        cookie, cookie, 255, px, PKT_BUF_LEN);
 
-    sendp(sendp_params, px, length);
+    return 0;
 }
 
 static void

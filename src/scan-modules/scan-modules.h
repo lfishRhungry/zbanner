@@ -36,8 +36,14 @@ typedef int (*scan_modules_global_init)(const void *xconf);
  * * callback functions for Transmit
 ****************************************************************************/
 
-typedef int (*sendp_in_tx)(
-    void *SIT, unsigned char *packet, size_t length);
+struct Target {
+    ipaddress ip_them;
+    ipaddress ip_me;
+    unsigned port_them;
+    unsigned port_me;
+    unsigned proto;
+    unsigned index;
+};
 
 /**
  * Happens in Tx Thread.
@@ -46,20 +52,16 @@ typedef int (*sendp_in_tx)(
  * !Must be implemented.
  * !Must be thread safe.
  * 
- * @param cur_proto what TemplateProto this port belongs to.
  * @param entropy a rand seed (generated or user-specified).
- * @param ip_them IP of this target.
- * @param port_them Port of this target (if port is meaningful).
- * @param ip_me IP of us.
- * @param port_me Port of us (if port is meaningful).
- * @param sendp use this func to actually sending packets.
- * @param sendp_params as the first param of sendp func.
+ * @param target info of target.
+ * @param px packet buffer to transmit. (Length is PKT_BUF_LEN)
+ * @param len length of packet data.
+ * @return true if need to transmit one more packet.
 */
-typedef void (*scan_modules_transmit)(
-    unsigned cur_proto, uint64_t entropy,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    sendp_in_tx sendp, void * sendp_params);
+typedef int (*scan_modules_transmit)(
+    uint64_t entropy,
+    struct Target *target,
+    unsigned char *px, size_t *len);
 
 /***************************************************************************
  * * callback functions for Receive

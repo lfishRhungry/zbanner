@@ -51,33 +51,6 @@
 #include "util/checksum.h"
 
 
-/**
- * I try to implement a wrapper func for packet sending.
- * (Damn C...)
-*/
-struct SendInTransmit {
-    struct Adapter *adapter;
-    uint64_t *batch_size;
-    uint64_t *packets_sent;
-    uint64_t *status_sent_count;
-};
-
-static int
-send_in_transmit(
-    void *SIT, unsigned char *packet, size_t length)
-{
-    struct SendInTransmit *sit = (struct SendInTransmit *)SIT;
-
-    int ret = rawsock_send_packet(
-        sit->adapter, packet, (unsigned)length, !*(sit->batch_size));
-
-    (*(sit->batch_size))--;
-    (*(sit->packets_sent))++;
-    (*(sit->status_sent_count))++;
-
-    return ret;
-}
-
 void
 transmit_thread(void *v) /*aka. scanning_thread() */
 {
@@ -162,6 +135,7 @@ infinite:
     LOG(3, "THREAD: xmit: starting main loop: [%llu..%llu]\n", start, end);
 
     uint64_t i;
+    unsigned more_idx = 0;
     for (i=start; i<end; ) {
 
         /*
@@ -218,34 +192,31 @@ infinite:
              * figure out src/dst
             */
 
-            ipaddress ip_them;
-            unsigned port_them;
-            ipaddress ip_me;
-            unsigned port_me;
+            struct Target target = {.index = more_idx};
             
             if (xXx < range_ipv6) {
                 /* Our index selects an IPv6 target */
-                ip_them.version = 6;
-                ip_me.version = 6;
+                target.ip_them.version = 6;
+                target.ip_me.version = 6;
 
-                ip_them.ipv6 = range6list_pick(&xconf->targets.ipv6, xXx % count_ipv6);
-                port_them = rangelist_pick(&xconf->targets.ports, xXx / count_ipv6);
+                target.ip_them.ipv6 = range6list_pick(&xconf->targets.ipv6, xXx % count_ipv6);
+                target.port_them = rangelist_pick(&xconf->targets.ports, xXx / count_ipv6);
 
-                ip_me.ipv6 = src.ipv6;
+                target.ip_me.ipv6 = src.ipv6;
 
             } else {
                 /* Our index selects an IPv4 target. In other words, low numbers
                  * index into the IPv6 ranges, and high numbers index into the
                  * IPv4 ranges. */
-                ip_them.version = 4;
-                ip_me.version = 4;
+                target.ip_them.version = 4;
+                target.ip_me.version = 4;
 
                 xXx -= range_ipv6;
 
-                ip_them.ipv4 = rangelist_pick(&xconf->targets.ipv4, xXx % count_ipv4);
-                port_them = rangelist_pick(&xconf->targets.ports, xXx / count_ipv4);
+                target.ip_them.ipv4 = rangelist_pick(&xconf->targets.ipv4, xXx % count_ipv4);
+                target.port_them = rangelist_pick(&xconf->targets.ports, xXx / count_ipv4);
 
-                ip_me.ipv4 = src.ipv4;
+                target.ip_me.ipv4 = src.ipv4;
 
             }
 
@@ -254,33 +225,37 @@ infinite:
                                         (unsigned)((i+repeats)>>32),
                                         (unsigned)xXx, (unsigned)(xXx>>32),
                                         entropy);
-                port_me = src.port + (ck & src.port_mask);
+                target.port_me = src.port + (ck & src.port_mask);
             } else {
-                port_me = src.port;
+                target.port_me = src.port;
             }
 
             /**
              * Due to our port store method.
              * I think it is flexible.
             */
-            unsigned port_proto = get_real_protocol_and_port(&port_them);
+            target.proto = get_real_protocol_and_port(&(target.port_them));
 
-            struct SendInTransmit sit = {
-                .adapter = adapter,
-                .batch_size = &batch_size,
-                .packets_sent = &packets_sent,
-                .status_sent_count = status_sent_count,
-            };
+            unsigned char pkt_buffer[PKT_BUF_LEN];
+            size_t pkt_len = 0;
 
-            /* send packets by ScanModule (bypassing the kernal)*/
-            xconf->scan_module->transmit_cb(
-                port_proto, entropy,
-                ip_them, port_them,
-                ip_me, port_me,
-                &send_in_transmit, &sit);
+            int more = 0;
+            more = xconf->scan_module->transmit_cb(
+                entropy, &target, pkt_buffer, &pkt_len);
 
-            i += increment; /* <------ increment by 1 normally, more with shards/nics */
+            /* send packets (bypassing the kernal)*/
+            rawsock_send_packet(adapter, pkt_buffer, (unsigned)pkt_len, !batch_size);
 
+            if (more) {
+                more_idx++;
+            } else {
+                i += increment; /* <------ increment by 1 normally, more with shards/nics */
+                more_idx = 0;
+            }
+
+            batch_size--;
+            packets_sent++;
+            status_sent_count++;
 
         } /* end of batch */
 

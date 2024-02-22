@@ -9,18 +9,17 @@
 
 extern struct ScanModule ArpReqScan; /*for internal x-ref*/
 
-static void
+static int
 arpreq_transmit(
-    unsigned cur_proto, uint64_t entropy,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    sendp_in_tx sendp, void * sendp_params)
+    uint64_t entropy,
+    struct Target *target,
+    unsigned char *px, size_t *len)
 {
-    unsigned char px[2048];
     /*we do not need a cookie and actually cannot set it*/
-    size_t length = arp_create_request_packet(ip_them, ip_me, px, 2048);
+    *len = arp_create_request_packet(
+        target->ip_them, target->ip_me, px, PKT_BUF_LEN);
 
-    sendp(sendp_params, px, length);
+    return 0;
 }
 
 static void

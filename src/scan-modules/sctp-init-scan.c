@@ -8,25 +8,24 @@
 
 extern struct ScanModule SctpInitScan; /*for internal x-ref*/
 
-static void
+static int
 sctpinit_transmit(
-    unsigned cur_proto, uint64_t entropy,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    sendp_in_tx sendp, void * sendp_params)
+    uint64_t entropy,
+    struct Target *target,
+    unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
-    if (cur_proto != Proto_SCTP)
-        return;
+    if (target->proto != Proto_SCTP)
+        return 0;
 
-    unsigned cookie = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
+    unsigned cookie = get_cookie(target->ip_them, target->port_them,
+        target->ip_me, target->port_me, entropy);
 
-    unsigned char px[2048];
-    size_t length = sctp_create_packet(
-        ip_them, port_them, ip_me, port_me,
-        cookie, px, 2048);
+    *len = sctp_create_packet(target->ip_them, target->port_them,
+        target->ip_me, target->port_me,
+        cookie, px, PKT_BUF_LEN);
 
-    sendp(sendp_params, px, length);
+    return 0;
 }
 
 static void
