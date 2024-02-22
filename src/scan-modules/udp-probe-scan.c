@@ -133,21 +133,32 @@ udpprobe_handle(
     struct OutputItem *item,
     struct stack_t *stack)
 {
-    item->is_success = 1;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "udp reponse");
+    if (recved->parsed.found == FOUND_UDP) {
+        item->is_success = 1;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "udp reponse");
 
-    ipaddress ip_them  = recved->parsed.src_ip;
-    ipaddress ip_me    = recved->parsed.dst_ip;
-    unsigned port_them = recved->parsed.port_src;
-    unsigned port_me   = recved->parsed.port_dst;
+        ipaddress ip_them  = recved->parsed.src_ip;
+        ipaddress ip_me    = recved->parsed.dst_ip;
+        unsigned port_them = recved->parsed.port_src;
+        unsigned port_me   = recved->parsed.port_dst;
 
-    UdpProbeScan.probe->handle_response_cb(
-        ip_them, port_them, ip_me, port_me,
-        port_me-src_port_start,
-        &recved->packet[recved->parsed.app_offset],
-        recved->parsed.app_length,
-        item->report, OUTPUT_RPT_LEN);
+        UdpProbeScan.probe->handle_response_cb(
+            ip_them, port_them, ip_me, port_me,
+            port_me-src_port_start,
+            &recved->packet[recved->parsed.app_offset],
+            recved->parsed.app_length,
+            item->report, OUTPUT_RPT_LEN);
+    } else {
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "port unreachable");
+        unsigned proto;
+        parse_icmp_port_unreachable(
+            &recved->packet[recved->parsed.transport_offset],
+            recved->parsed.transport_length,
+            &item->ip_them, &item->port_them,
+            &item->ip_me, &item->port_me, &proto);
+        }
 }
 
 struct ScanModule UdpProbeScan = {
