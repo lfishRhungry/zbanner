@@ -10,7 +10,8 @@
 
 /*a probe belongs to one type*/
 enum ProbeType {
-    ProbeType_TCP   = 1,
+    ProbeType_NULL = 0,
+    ProbeType_TCP,
     ProbeType_UDP,
 };
 

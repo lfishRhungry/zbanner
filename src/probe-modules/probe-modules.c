@@ -48,6 +48,8 @@ const char *
 get_probe_type_name(const enum ProbeType type)
 {
     switch (type) {
+        case ProbeType_NULL:
+            return "null";
         case ProbeType_TCP:
             return "tcp";
         case ProbeType_UDP:
