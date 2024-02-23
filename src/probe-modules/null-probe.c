@@ -4,9 +4,10 @@
 extern struct ProbeModule NullProbe;
 
 struct ProbeModule NullProbe = {
-    .name      = "null",
-    .type      = ProbeType_TCP,
-    .probe_num = 1,
+    .name       = "null",
+    .type       = ProbeType_TCP,
+    .multi_mode = Multi_Null,
+    .probe_num  = 1,
     .desc =
         "NullProbe does not send any data to target port. It just wait banner "
         "from server. However, waiting is the cheapest thing while we are in "

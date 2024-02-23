@@ -80,29 +80,21 @@ int probe_init_nothing(const void *params)
 
 size_t
 probe_make_no_payload(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie, unsigned idx,
-    unsigned char *payload_buf,
-    size_t buf_length)
+    struct ProbeTarget *target,
+    unsigned char *payload_buf)
 {
     return 0;
 }
 
 size_t
-probe_no_payload_length(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie, unsigned idx)
+probe_no_payload_length(struct ProbeTarget *target)
 {
     return 0;
 }
 
 void
 probe_report_nothing(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned idx,
+    struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length)
 {
@@ -111,9 +103,7 @@ probe_report_nothing(
 
 void
 probe_just_report_banner(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned idx,
+    struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length)
 {

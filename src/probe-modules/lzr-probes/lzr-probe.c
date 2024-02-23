@@ -75,9 +75,7 @@ lzr_global_init(const void * xconf)
 
 static void
 lzr_handle_response(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned idx,
+    struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length)
 {
@@ -96,8 +94,7 @@ lzr_handle_response(
     */
     for (size_t i=0; i<sizeof(lzr_subprobes)/sizeof(struct ProbeModule*); i++) {
         lzr_subprobes[i]->handle_response_cb(
-            ip_them, port_them, ip_me, port_me,
-            idx, px, sizeof_px,
+            target, px, sizeof_px,
             buf_idx, remain_len
         );
 
@@ -120,9 +117,10 @@ lzr_handle_response(
 }
 
 struct ProbeModule LzrProbe = {
-    .name      = "lzr",
-    .type      = ProbeType_TCP,
-    .probe_num = 1,
+    .name       = "lzr",
+    .type       = ProbeType_TCP,
+    .multi_mode = Multi_Null,
+    .probe_num  = 1,
     .desc =
         "LZR Probe is an implement of service identification of LZR. It sends a "
         "specified LZR subprobe(handshake) and try to match with all LZR subprobes "

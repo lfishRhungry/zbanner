@@ -8,13 +8,6 @@
 #define PROBE_PAYLOAD_MAX_LEN 2048
 #define PROBE_REPORT_MAX_LEN 2048
 
-/*a probe belongs to one type*/
-enum ProbeType {
-    ProbeType_NULL = 0,
-    ProbeType_TCP,
-    ProbeType_UDP,
-};
-
 
 /**
  * !Must be implemented.
@@ -22,6 +15,15 @@ enum ProbeType {
  * @return FALSE to exit process if init failed
 */
 typedef int (*probe_modules_global_init)(const void *xconf);
+
+struct ProbeTarget {
+    ipaddress ip_them;
+    ipaddress ip_me;
+    unsigned port_them;
+    unsigned port_me;
+    unsigned cookie;
+    unsigned index;
+};
 
 /**
  * Happens in Tx Thread or Rx Thread for different ScanModules.
@@ -33,23 +35,14 @@ typedef int (*probe_modules_global_init)(const void *xconf);
  * !Must be implemented.
  * !Must be thread safe.
  * 
- * @param ip_them target ip
- * @param port_them target port
- * @param ip_me source ip
- * @param port_me source port
- * @param cookie unique identification for this target
- * @param idx index of probing to this target.
- * @param payload_buf buffer to fill with payload data
- * @param buf_len length of buffer
- * @return length of payload data
+ * @param target info of a target
+ * @param payload_buf buffer to fill with payload. (Length is PROBE_PAYLOAD_MAX_LEN)
+ * @return paylaod length.
 */
 typedef size_t
 (*probe_modules_make_payload)(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie, unsigned idx,
-    unsigned char *payload_buf,
-    size_t buf_length);
+    struct ProbeTarget *target,
+    unsigned char *payload_buf);
 
 /**
  * Happens in Tx Thread or Rx Thread for different ScanModules.
@@ -57,19 +50,11 @@ typedef size_t
  * !Must be implemented for ProbeType_TCP.
  * !Must be thread safe.
  * 
- * @param ip_them target ip
- * @param port_them target port
- * @param ip_me source ip
- * @param port_me source port
- * @param cookie unique identification for this target
- * @param idx index of probing to this target.
+ * @param target info of a target
  * @return length of payload data
 */
 typedef size_t
-(*probe_modules_get_payload_length)(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie, unsigned idx);
+(*probe_modules_get_payload_length)(struct ProbeTarget *target);
 
 /**
  * Happens in Rx Thread
@@ -81,21 +66,14 @@ typedef size_t
  * !Must be implemented for ProbeType_UDP.
  * !Must be thread safe.
  * 
- * @param ip_them target ip
- * @param port_them target port
- * @param ip_me source ip
- * @param port_me source port
- * @param cookie unique identification for this target
- * @param idx index of probing to this target.
+ * @param target info of a target
  * @param px response data
  * @param sizeof_px len of reponse
  * @return TRUE if the response is for us.
 */
 typedef int
 (*probe_modules_validate_response)(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie, unsigned idx,
+    struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px
 );
 
@@ -107,11 +85,7 @@ typedef int
  * !Must be implemented.
  * !Must be thread safe.
  * 
- * @param ip_them target ip
- * @param port_them target port
- * @param ip_me source ip
- * @param port_me source port
- * @param idx index of probing to this target.
+ * @param target info of a target
  * @param px response data
  * @param sizeof_px len of reponse
  * @param report Report string.
@@ -119,9 +93,7 @@ typedef int
 */
 typedef void
 (*probe_modules_handle_response)(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned idx,
+    struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length
 );
@@ -132,13 +104,27 @@ typedef void
 */
 typedef void (*probe_modules_close)();
 
+/*a probe belongs to one type*/
+enum ProbeType {
+    ProbeType_NULL = 0,
+    ProbeType_TCP,
+    ProbeType_UDP,
+};
+
+enum MultiMode {
+    Multi_Null = 0,
+    Multi_Direct, /*send multi-probe when first connect.*/
+    Multi_IfOpen, /*send multi-probe if port is open.*/
+};
+
 struct ProbeModule
 {
     const char                                 *name;
     const enum ProbeType                        type;
-    unsigned                                    probe_num; /*for multi-probe*/
     const char                                 *desc;
     char                                       *args;
+    enum MultiMode                              multi_mode;
+    unsigned                                    probe_num; /*for multi-probe*/
     /*for init*/
     probe_modules_global_init                   global_init_cb;
     /*for payload*/
@@ -167,34 +153,24 @@ int probe_init_nothing(const void *params);
 
 size_t
 probe_make_no_payload(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie, unsigned idx,
-    unsigned char *payload_buf,
-    size_t buf_length);
+    struct ProbeTarget *target,
+    unsigned char *payload_buf);
 
 /*implemented `probe_modules_get_payload_length`*/
 size_t
-probe_no_payload_length(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie, unsigned idx);
+probe_no_payload_length(struct ProbeTarget *target);
 
 /*implemented `probe_modules_handle_reponse`*/
 void
 probe_report_nothing(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned idx,
+    struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length);
 
 /*implemented `probe_modules_handle_reponse`*/
 void
 probe_just_report_banner(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned idx,
+    struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length);
 

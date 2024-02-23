@@ -9,29 +9,24 @@ extern struct ProbeModule GetRequestProbe;
 
 static size_t
 getrequest_make_payload(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie, unsigned idx,
-    unsigned char *payload_buf,
-    size_t buf_length)
+    struct ProbeTarget *target,
+    unsigned char *payload_buf)
 {
     memcpy(payload_buf, GETREQUEST_PAYLOAD, strlen(GETREQUEST_PAYLOAD));
     return strlen(GETREQUEST_PAYLOAD);
 }
 
 static size_t
-getrequest_get_payload_length(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie, unsigned idx)
+getrequest_get_payload_length(struct ProbeTarget *target)
 {
     return strlen(GETREQUEST_PAYLOAD);
 }
 
 struct ProbeModule GetRequestProbe = {
-    .name      = "getrequest",
-    .type      = ProbeType_TCP,
-    .probe_num = 1,
+    .name       = "getrequest",
+    .type       = ProbeType_TCP,
+    .multi_mode = Multi_Null,
+    .probe_num  = 1,
     .desc =
         "GetRequest Probe sends target port a simple HTTP Get request:\n"
         "    `GET / HTTP/1.0\\r\\n\\r\\n`\n"

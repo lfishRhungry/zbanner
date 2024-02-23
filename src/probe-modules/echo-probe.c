@@ -6,32 +6,27 @@ extern struct ProbeModule EchoProbe;
 
 static size_t
 echo_make_payload(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie, unsigned idx,
-    unsigned char *payload_buf,
-    size_t buf_length)
+    struct ProbeTarget *target,
+    unsigned char *payload_buf)
 {
-    payload_buf[0] = cookie >> 24;
-    payload_buf[1] = cookie >> 16;
-    payload_buf[2] = cookie >>  8;
-    payload_buf[3] = cookie >>  0;
+    payload_buf[0] = target->cookie >> 24;
+    payload_buf[1] = target->cookie >> 16;
+    payload_buf[2] = target->cookie >>  8;
+    payload_buf[3] = target->cookie >>  0;
 
     return 4;
 }
 
 static int
 echo_validate_response(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned cookie, unsigned idx,
+    struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px)
 {
     unsigned char needle[4];
-    needle[0] = cookie >> 24;
-    needle[1] = cookie >> 16;
-    needle[2] = cookie >>  8;
-    needle[3] = cookie >>  0;
+    needle[0] = target->cookie >> 24;
+    needle[1] = target->cookie >> 16;
+    needle[2] = target->cookie >>  8;
+    needle[3] = target->cookie >>  0;
 
     if (safe_memmem(needle, 4, px, sizeof_px))
         return 1;
@@ -40,9 +35,10 @@ echo_validate_response(
 }
 
 struct ProbeModule EchoProbe = {
-    .name      = "echo",
-    .type      = ProbeType_UDP,
-    .probe_num = 1,
+    .name       = "echo",
+    .type       = ProbeType_UDP,
+    .multi_mode = Multi_Null,
+    .probe_num  = 1,
     .desc =
         "EchoProbe sends 4 bytes of random data to target udp port and expects "
         "response that contains our random data.\n"

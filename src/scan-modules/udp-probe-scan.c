@@ -54,20 +54,27 @@ udpprobe_transmit(
     unsigned cookie = get_cookie(target->ip_them, target->port_them,
         target->ip_me, src_port_start+target->index, entropy);
 
+    struct ProbeTarget ptarget = {
+        .ip_them   = target->ip_them,
+        .ip_me     = target->ip_me,
+        .port_them = target->port_them,
+        .port_me   = target->port_me,
+        .cookie    = cookie,
+        .index     = target->port_me-src_port_start,
+    };
+
     unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
     size_t payload_len = 0;
 
-    payload_len = UdpProbeScan.probe->make_payload_cb(
-        target->ip_them, target->port_them, target->ip_me, target->port_me,
-        cookie, target->index,
-        payload, PROBE_PAYLOAD_MAX_LEN);
+    payload_len = UdpProbeScan.probe->make_payload_cb(&ptarget, payload);
 
     *len = udp_create_packet(target->ip_them, target->port_them,
         target->ip_me, src_port_start+target->index,
         payload, payload_len, px, PKT_BUF_LEN);
     
     /*for multi-probe*/
-    if (target->index+1<UdpProbeScan.probe->probe_num)
+    if (UdpProbeScan.probe->multi_mode==Multi_Direct
+        && target->index+1 < UdpProbeScan.probe->probe_num)
         return 1;
     else return 0;
     
@@ -84,15 +91,18 @@ udpprobe_validate(
         && recved->is_myip
         && recved->is_myport) {
         pre->go_record = 1;
-        ipaddress ip_them  = recved->parsed.src_ip;
-        ipaddress ip_me    = recved->parsed.dst_ip;
-        unsigned port_them = recved->parsed.port_src;
-        unsigned port_me   = recved->parsed.port_dst;
-        unsigned cookie    = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
 
-        if (UdpProbeScan.probe->validate_response_cb(
-            ip_them, port_them, ip_me, port_me,
-            cookie, port_me-src_port_start,
+        struct ProbeTarget ptarget = {
+            .ip_them   = recved->parsed.src_ip,
+            .ip_me     = recved->parsed.dst_ip,
+            .port_them = recved->parsed.port_src,
+            .port_me   = recved->parsed.port_dst,
+            .cookie    = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
+                recved->parsed.dst_ip, recved->parsed.port_dst, entropy),
+            .index     = recved->parsed.port_dst-src_port_start,
+        };
+
+        if (UdpProbeScan.probe->validate_response_cb(&ptarget,
             &recved->packet[recved->parsed.app_offset],
             recved->parsed.app_length))
             pre->go_dedup = 1;
@@ -138,17 +148,54 @@ udpprobe_handle(
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "udp reponse");
 
-        ipaddress ip_them  = recved->parsed.src_ip;
-        ipaddress ip_me    = recved->parsed.dst_ip;
-        unsigned port_them = recved->parsed.port_src;
-        unsigned port_me   = recved->parsed.port_dst;
+        struct ProbeTarget ptarget = {
+            .ip_them   = recved->parsed.src_ip,
+            .ip_me     = recved->parsed.dst_ip,
+            .port_them = recved->parsed.port_src,
+            .port_me   = recved->parsed.port_dst,
+            .cookie    = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
+                recved->parsed.dst_ip, recved->parsed.port_dst, entropy),
+            .index     = recved->parsed.port_dst-src_port_start,
+        };
 
-        UdpProbeScan.probe->handle_response_cb(
-            ip_them, port_them, ip_me, port_me,
-            port_me-src_port_start,
+        UdpProbeScan.probe->handle_response_cb(&ptarget,
             &recved->packet[recved->parsed.app_offset],
             recved->parsed.app_length,
             item->report, OUTPUT_RPT_LEN);
+
+        /*for multi-probe*/
+        if (UdpProbeScan.probe->multi_mode==Multi_IfOpen
+            && recved->parsed.port_dst==src_port_start
+            && UdpProbeScan.probe->probe_num) {
+
+            for (unsigned idx=1; idx<UdpProbeScan.probe->probe_num; idx++) {
+
+                struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+
+                struct ProbeTarget ptarget = {
+                    .ip_them   = recved->parsed.src_ip,
+                    .ip_me     = recved->parsed.dst_ip,
+                    .port_them = recved->parsed.port_src,
+                    .port_me   = src_port_start+idx,
+                    .cookie    = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
+                        recved->parsed.dst_ip, src_port_start+idx, entropy),
+                    .index     = idx,
+                };
+
+                unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
+                size_t payload_len = 0;
+
+                payload_len = UdpProbeScan.probe->make_payload_cb(&ptarget, payload);
+
+                pkt_buffer->length = udp_create_packet(
+                    recved->parsed.src_ip, recved->parsed.port_src,
+                    recved->parsed.dst_ip, src_port_start+idx,
+                    payload, payload_len, pkt_buffer->px, PKT_BUF_LEN);
+
+                stack_transmit_packetbuffer(stack, pkt_buffer);
+        
+            }
+        }
     } else {
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "port unreachable");
