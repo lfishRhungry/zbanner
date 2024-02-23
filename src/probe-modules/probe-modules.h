@@ -90,8 +90,9 @@ typedef int
  * @param sizeof_px len of reponse
  * @param report Report string.
  * @param rpt_length Length of report string buffer.
+ * @return true for starting multi-probe in Multi_AfterHandle mode.
 */
-typedef void
+typedef int
 (*probe_modules_handle_response)(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
@@ -115,6 +116,7 @@ enum MultiMode {
     Multi_Null = 0,
     Multi_Direct, /*send multi-probe when first connect.*/
     Multi_IfOpen, /*send multi-probe if port is open.*/
+    Multi_AfterHandle, /*send multi-probe after handle.*/
 };
 
 struct ProbeModule
@@ -161,14 +163,14 @@ size_t
 probe_no_payload_length(struct ProbeTarget *target);
 
 /*implemented `probe_modules_handle_reponse`*/
-void
+int
 probe_report_nothing(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length);
 
 /*implemented `probe_modules_handle_reponse`*/
-void
+int
 probe_just_report_banner(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

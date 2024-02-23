@@ -43,7 +43,7 @@ lzr_http_get_payload_length(struct ProbeTarget *target)
     return lzr_http_make_payload(target, tmp_str);
 }
 
-static void
+static int
 lzr_http_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
@@ -57,6 +57,8 @@ lzr_http_handle_reponse(
             || safe_memmem(px, sizeof_px, "<h1>", strlen("<h1>")))) {
         safe_strcpy(report, rpt_length, "http");
     }
+
+    return 0;
 }
 
 struct ProbeModule LzrHttpProbe = {

@@ -92,22 +92,23 @@ probe_no_payload_length(struct ProbeTarget *target)
     return 0;
 }
 
-void
+int
 probe_report_nothing(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length)
 {
-    return;
+    return 0;
 }
 
-void
+int
 probe_just_report_banner(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length)
 {
     normalize_string(px, sizeof_px, report, rpt_length);
+    return 0;
 }
 
 void probe_close_nothing()

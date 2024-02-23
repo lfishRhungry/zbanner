@@ -58,6 +58,7 @@ zbanner_transmit_packet(
         target->ip_them, target->port_them, target->ip_me, src_port_start+target->index,
         seqno, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_LEN);
     
+    /*multi-probe Multi_Direct*/
     if (ZBannerScan.probe->multi_mode==Multi_Direct
         && target->index+1<ZBannerScan.probe->probe_num)
         return 1;
@@ -180,10 +181,9 @@ zbanner_handle(
             
             stack_transmit_packetbuffer(stack, pkt_buffer);
 
-            /*for multi-probe*/
+            /*multi-probe Multi_IfOpen*/
             if (ZBannerScan.probe->multi_mode==Multi_IfOpen
-                && recved->parsed.port_dst==src_port_start
-                && ZBannerScan.probe->probe_num) {
+                && recved->parsed.port_dst==src_port_start) {
 
                 for (unsigned idx=1; idx<ZBannerScan.probe->probe_num; idx++) {
 
@@ -227,7 +227,7 @@ zbanner_handle(
             .index     = recved->parsed.port_dst-src_port_start,
         };
 
-        ZBannerScan.probe->handle_response_cb(&ptarget,
+        int is_multi = ZBannerScan.probe->handle_response_cb(&ptarget,
             &recved->packet[recved->parsed.app_offset],
             recved->parsed.app_length,
             item->report, OUTPUT_RPT_LEN);
@@ -242,6 +242,26 @@ zbanner_handle(
             NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
 
         stack_transmit_packetbuffer(stack, pkt_buffer);
+
+        /*multi-probe Multi_AfterHandle*/
+        if (is_multi && recved->parsed.port_dst==src_port_start) {
+            for (unsigned idx=1; idx<ZBannerScan.probe->probe_num; idx++) {
+
+                unsigned cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
+                    recved->parsed.dst_ip, src_port_start+idx, entropy);
+
+                struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+
+                pkt_buffer->length = tcp_create_packet(
+                    recved->parsed.src_ip, recved->parsed.port_src,
+                    recved->parsed.dst_ip, src_port_start+idx,
+                    cookie, 0, TCP_FLAG_SYN,
+                    NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+
+                stack_transmit_packetbuffer(stack, pkt_buffer);
+        
+            }
+        }
     }
 }
 

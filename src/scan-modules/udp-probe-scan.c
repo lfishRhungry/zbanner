@@ -158,13 +158,14 @@ udpprobe_handle(
             .index     = recved->parsed.port_dst-src_port_start,
         };
 
-        UdpProbeScan.probe->handle_response_cb(&ptarget,
+        int is_multi = UdpProbeScan.probe->handle_response_cb(&ptarget,
             &recved->packet[recved->parsed.app_offset],
             recved->parsed.app_length,
             item->report, OUTPUT_RPT_LEN);
 
-        /*for multi-probe*/
-        if (UdpProbeScan.probe->multi_mode==Multi_IfOpen
+        /*for multi-probe Multi_IfOpen and Multi_AfterHandle*/
+        if ((UdpProbeScan.probe->multi_mode==Multi_IfOpen
+            ||(UdpProbeScan.probe->multi_mode==Multi_AfterHandle&&is_multi))
             && recved->parsed.port_dst==src_port_start
             && UdpProbeScan.probe->probe_num) {
 
