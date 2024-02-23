@@ -58,9 +58,9 @@ udpprobe_transmit(
         .ip_them   = target->ip_them,
         .ip_me     = target->ip_me,
         .port_them = target->port_them,
-        .port_me   = target->port_me,
+        .port_me   = src_port_start+target->index,
         .cookie    = cookie,
-        .index     = target->port_me-src_port_start,
+        .index     = target->index,
     };
 
     unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
