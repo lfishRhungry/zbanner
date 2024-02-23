@@ -77,12 +77,7 @@ zbanner_validate(
         pre->go_record = 1;
     else return;
 
-    // ipaddress ip_them  = recved->parsed.src_ip;
-    // ipaddress ip_me    = recved->parsed.dst_ip;
-    // unsigned port_them = recved->parsed.port_src;
-    // unsigned port_me   = recved->parsed.port_dst;
     unsigned seqno_me  = TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
-    // unsigned cookie    = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
     unsigned cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
             recved->parsed.dst_ip, recved->parsed.port_dst, entropy);
 
