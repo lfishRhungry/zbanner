@@ -192,7 +192,7 @@ infinite:
              * figure out src/dst
             */
 
-            struct Target target = {.index = more_idx};
+            struct ScanTarget target = {.index = more_idx};
             
             if (xXx < range_ipv6) {
                 /* Our index selects an IPv6 target */

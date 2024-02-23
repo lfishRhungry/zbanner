@@ -11,7 +11,7 @@ extern struct ScanModule IcmpEchoScan; /*for internal x-ref*/
 static int
 icmpecho_transmit(
     uint64_t entropy,
-    struct Target *target,
+    struct ScanTarget *target,
     unsigned char *px, size_t *len)
 {
     /*we do not care target port*/

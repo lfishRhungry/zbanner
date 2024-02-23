@@ -12,7 +12,7 @@ extern struct ScanModule ArpReqScan; /*for internal x-ref*/
 static int
 arpreq_transmit(
     uint64_t entropy,
-    struct Target *target,
+    struct ScanTarget *target,
     unsigned char *px, size_t *len)
 {
     /*we do not need a cookie and actually cannot set it*/

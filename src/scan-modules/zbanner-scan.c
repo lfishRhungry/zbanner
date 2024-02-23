@@ -43,7 +43,7 @@ zbanner_global_init(const void *xconf)
 static int
 zbanner_transmit_packet(
     uint64_t entropy,
-    struct Target *target,
+    struct ScanTarget *target,
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/

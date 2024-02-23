@@ -36,7 +36,7 @@ typedef int (*scan_modules_global_init)(const void *xconf);
  * * callback functions for Transmit
 ****************************************************************************/
 
-struct Target {
+struct ScanTarget {
     ipaddress ip_them;
     ipaddress ip_me;
     unsigned port_them;
@@ -60,7 +60,7 @@ struct Target {
 */
 typedef int (*scan_modules_transmit)(
     uint64_t entropy,
-    struct Target *target,
+    struct ScanTarget *target,
     unsigned char *px, size_t *len);
 
 /***************************************************************************

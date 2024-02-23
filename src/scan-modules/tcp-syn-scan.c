@@ -11,7 +11,7 @@ extern struct ScanModule TcpSynScan; /*for internal x-ref*/
 static int
 tcpsyn_transmit(
     uint64_t entropy,
-    struct Target *target,
+    struct ScanTarget *target,
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
