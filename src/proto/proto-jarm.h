@@ -1,0 +1,70 @@
+#ifndef PROTO_JARM_H
+#define PROTO_JARM_H
+
+#include "proto-tls.h"
+
+enum JarmCipherChoice {
+    CipherList_ALL,
+    CipherList_NO_1_3,
+};
+
+enum JarmCipherOrder {
+    CipherOrder_FORWARD,
+    CipherOrder_REVERSE,
+    CipherOrder_TOP_HALF,         /*from middle to top*/
+    CipherOrder_BOTTOM_HALF,      /*from middle to bottom (without middle)*/
+    CipherOrder_MIDDLE_OUT,       /*from middle to both edge (contains middle)*/
+};
+
+enum JarmGreaseUse {
+    GreaseUse_YES,
+    GreaseUse_NO,
+};
+
+enum JarmAlpnUse {
+    AlpnUse_ALL,
+    AlpnUse_RARE,
+    AlpnUse_NULL,
+};
+
+enum JarmExtensionOrder {
+    ExtOrder_FORWARD,
+    ExtOrder_REVERSE,
+};
+
+enum JarmSupportVersionsExtension {
+    SupportVerExt_1_2_SUPPORT,    /*Only support up to TLSv1.2*/
+    SupportVerExt_NO_SUPPORT,     /*No Supported Version Extension*/
+    SupportVerExt_1_3_SUPPORT,    /*Support up to TLSv1.3*/
+};
+
+struct JarmConfig {
+    char                                    *servername; /* end with zero */
+    unsigned                                 dst_port;
+    enum TLS_Version                         version;
+    enum JarmCipherChoice                    cipher_list;
+    enum JarmCipherOrder                     cipher_order;
+    enum JarmGreaseUse                       grease_use;
+    enum JarmAlpnUse                         alpn_use;
+    enum JarmSupportVersionsExtension        support_ver_ext;
+    enum JarmExtensionOrder                  ext_order;
+};
+
+/**
+ * Create a client with specified Jarm Config for jarm probing.
+ * @param jc config of jarm.
+ * @param buf buffer to load CH probe.
+ * @param buf_len length of buffer.
+ * @return length of CH probe or 0 if error happened.
+*/
+size_t jarm_create_ch(struct JarmConfig *jc, unsigned char *buf, unsigned buf_len);
+
+/**
+ * Just get length of clienthello for the JarmConfig.
+ * It is used for ProbeModule building and reduced one time of memory copy.
+ * @param jc config of jarm.
+ * @return length of CH probe or 0 if error happened.
+*/
+// size_t jarm_get_ch_length(struct JarmConfig *jc);
+
+#endif
