@@ -1976,105 +1976,181 @@ static int SET_send_queue(struct Xconf *xconf, const char *name, const char *val
 }
 
 struct ConfigParameter config_parameters[] = {
-    {"BASIC:",           SET_nothing,            0,      {0}},
+    {   "BASIC:",                         SET_nothing,                 0,                {0}, NULL},
 
-    {"seed",            SET_seed,               0,      {0}},
-    {"rate",            SET_rate,               0,      {"max-rate",0}},
-    {"wait",            SET_wait,               F_NUMABLE,{"cooldown",0}},
-    {"shard",           SET_shard,              0,      {"shards",0}},
-    {"tansmit-thread-count", SET_thread_count,  F_NUMABLE, {"tx-count", "tx-num", 0}},
-    {"d",               SET_log_level,          F_BOOL, {"dd","ddd","dddd","ddddd",0}},
-    {"v",               SET_log_level,          F_BOOL, {"vv","vvv","vvvv","vvvvv",0}},
-    {"version",         SET_version,            F_BOOL, {0}},
-    {"help",            SET_help,               F_BOOL, {"h", "?",0}},
-    {"usage",           SET_usage,              F_BOOL, {0}},
+    {
+        "seed",                           SET_seed,                    0,                {0},
+        "Set a global seed for randomizing of target addresses(ports), and to "
+        "generate cookies in some ScanModules & ProbeModules."
+    },
+    {
+        "rate",                           SET_rate,                    0,                {"max-rate",0},
+        "Set a rate(packets per second) for total speed of all transmit threads."
+    },
+    {
+        "wait",                           SET_wait,                    F_NUMABLE,        {"cooldown",0},
+        "How many seconds should Xtate waiting and handling incoming packets "
+        " after all transmit threads finished. Default is 10s."
+    },
+    {
+        "shard",                          SET_shard,                   0,                {"shards",0}},
+    {
+        "tansmit-thread-count",           SET_thread_count,            F_NUMABLE,        {"tx-count", "tx-num", 0}},
+    {
+        "d",                              SET_log_level,               F_BOOL,           {"dd","ddd","dddd","ddddd",0}},
+    {
+        "v",                              SET_log_level,               F_BOOL,           {"vv","vvv","vvvv","vvvvv",0}},
+    {
+        "version",                        SET_version,                 F_BOOL,           {0}},
+    {
+        "help",                           SET_help,                    F_BOOL,           {"h", "?",0}},
+    {
+        "usage",                          SET_usage,                   F_BOOL,           {0}},
 
-    {"TARGET:",         SET_nothing,            0,      {0}},
+    {   "TARGET:",                        SET_nothing,                 0,                {0}, NULL},
 
-    {"target-ip",       SET_target_ip,          0,      {"range", "ranges", "dst-ip", "ip",0}},
-    {"port",            SET_target_port,        0,      {"p", "ports",0}},
-    {"top-port",        SET_top_port,           F_NUMABLE,{"top", "tcp-top", "tcp-top-port",0}},
-    {"udp-top-port",    SET_top_port,           F_NUMABLE,{"udp-top",0}},
-    {"include-file",    SET_include_file,       0,      {"iL",0}},
-    {"exclude",         SET_exclude_ip,         0,      {"exclude-range", "exlude-ranges", "exclude-ip",0}},
-    {"exclude-port",    SET_exclude_port,       0,      {"exclude-ports",0}},
-    {"exclude-file",    SET_exclude_file,       0,      {0}},
+    {
+        "target-ip",                      SET_target_ip,               0,                {"range", "ranges", "dst-ip", "ip",0}},
+    {
+        "port",                           SET_target_port,             0,                {"p", "ports",0}},
+    {
+        "top-port",                       SET_top_port,                F_NUMABLE,        {"top", "tcp-top", "tcp-top-port",0}},
+    {
+        "udp-top-port",                   SET_top_port,                F_NUMABLE,        {"udp-top",0}},
+    {
+        "include-file",                   SET_include_file,            0,                {"iL",0}},
+    {
+        "exclude",                        SET_exclude_ip,              0,                {"exclude-range", "exlude-ranges", "exclude-ip",0}},
+    {
+        "exclude-port",                   SET_exclude_port,            0,                {"exclude-ports",0}},
+    {
+        "exclude-file",                   SET_exclude_file,            0,                {0}},
 
-    {"INTERFACE:",      SET_nothing,            0,      {0}},
+    {   "INTERFACE:",                     SET_nothing,                 0,                {0}, NULL},
 
-    {"adapter",         SET_adapter,            0,      {"if", "interface",0}},
-    {"source-ip",       SET_source_ip,          0,      {"src-ip",0}},
-    {"source-port",     SET_source_port,        0,      {"src-port",0}},
-    {"source-mac",      SET_source_mac,         0,      {"src-mac",0}},
-    {"router-ip",       SET_router_ip,          0,      {0}},
-    {"router-mac",      SET_router_mac,         0,      {"gateway-mac", "router-mac-ipv4", "router-mac-ipv6",0}},
-    {"adapter-vlan",    SET_adapter_vlan,       F_NUMABLE, {"vlan",0}},
-    {"lan-mode",        SET_lan_mode,           F_BOOL, {"local", "lan",0}},
+    {
+        "adapter",                        SET_adapter,                 0,                {"if", "interface",0}},
+    {
+        "source-ip",                      SET_source_ip,               0,                {"src-ip",0}},
+    {
+        "source-port",                    SET_source_port,             0,                {"src-port",0}},
+    {
+        "source-mac",                     SET_source_mac,              0,                {"src-mac",0}},
+    {
+        "router-ip",                      SET_router_ip,               0,                {0}},
+    {
+        "router-mac",                     SET_router_mac,              0,                {"gateway-mac", "router-mac-ipv4", "router-mac-ipv6",0}},
+    {
+        "adapter-vlan",                   SET_adapter_vlan,            F_NUMABLE,        {"vlan",0}},
+    {
+        "lan-mode",                       SET_lan_mode,                F_BOOL,           {"local", "lan",0}},
 
-    {"OPERATION:",      SET_nothing,            0,      {0}},
+    {   "OPERATION:",                     SET_nothing,                 0,                {0}, NULL},
 
-    {"echo",            SET_echo,               F_BOOL, {"echo-all", "echo-cidr",0}},
-    {"iflist",          SET_iflist,             F_BOOL, {"list-interface", "list-adapter",0}},
-    {"readrange",       SET_read_range,         F_BOOL, {"readranges", 0}},
-    {"listtarget",      SET_list_target,        F_BOOL, {"list-targets",0}},
-    {"debug-if",        SET_debug_interface,    F_BOOL, {"debug-interface",0}},
+    {
+        "echo",                           SET_echo,                    F_BOOL,           {"echo-all", "echo-cidr",0}},
+    {
+        "iflist",                         SET_iflist,                  F_BOOL,           {"list-interface", "list-adapter",0}},
+    {
+        "readrange",                      SET_read_range,              F_BOOL,           {"readranges", 0}},
+    {
+        "listtarget",                     SET_list_target,             F_BOOL,           {"list-targets",0}},
+    {
+        "debug-if",                       SET_debug_interface,         F_BOOL,           {"debug-interface",0}},
 
-    {"SCAN MODULES:",   SET_nothing,            0,      {0}},
+    {   "SCAN MODULES:",                  SET_nothing,                 0,                {0}, NULL},
 
-    {"scan-module",     SET_scan_module,        0,      {"scan", 0}},
-    {"list-scan-modules",SET_list_scan_modules, F_BOOL, {"list-scan-module", "list-scan", "list-scans",0}},
-    {"scan-module-args", SET_scan_module_args,  0,      {"scan-module-arg", "scan-args", "scan-arg",0}},
+    {
+        "scan-module",                    SET_scan_module,             0,                {"scan", 0}},
+    {
+        "list-scan-modules",              SET_list_scan_modules,       F_BOOL,           {"list-scan-module", "list-scan", "list-scans",0}},
+    {
+        "scan-module-args",               SET_scan_module_args,        0,                {"scan-module-arg", "scan-args", "scan-arg",0}},
 
-    {"PROBE MODULES:",  SET_nothing,            0,      {0}},
+    {   "PROBE MODULES:",                 SET_nothing,                 0,                {0}, NULL},
 
-    {"probe-module",    SET_probe_module,       0,      {"probe", 0}},
-    {"list-probe-modules",SET_list_probe_modules,F_BOOL, {"list-probe-module", "list-probe", "list-probes", 0}},
-    {"probe-module-args",SET_probe_module_args, 0,      {"probe-module-arg", "probe-args", "probe-arg", 0}},
+    {
+        "probe-module",                   SET_probe_module,            0,                {"probe", 0}},
+    {
+        "list-probe-modules",             SET_list_probe_modules,      F_BOOL,           {"list-probe-module", "list-probe", "list-probes", 0}},
+    {
+        "probe-module-args",              SET_probe_module_args,       0,                {"probe-module-arg", "probe-args", "probe-arg", 0}},
 
-    {"STATUS & OUTPUT:",SET_nothing,            0,      {0}},
+    {   "STATUS & OUTPUT:",               SET_nothing,                 0,                {0}, NULL},
 
-    {"ndjson-status",   SET_ndjson_status,      F_BOOL, {"status-ndjson", 0}},
-    {"pcap-filename",   SET_pcap_filename,      0,      {"pcap",0}},
-    {"show",            SET_show,               0,      {0}},
-    {"interactive",     SET_interactive,        F_BOOL, {"interact", 0}},
-    {"append-output",   SET_append,             F_BOOL, {"output-append", "append",0}},
-    {"output-file",     SET_output_filename,    0,      {"output", "o", "output-filename",0}},
+    {
+        "ndjson-status",                  SET_ndjson_status,           F_BOOL,           {"status-ndjson", 0}},
+    {
+        "pcap-filename",                  SET_pcap_filename,           0,                {"pcap",0}},
+    {
+        "show",                           SET_show,                    0,                {0}},
+    {
+        "interactive",                    SET_interactive,             F_BOOL,           {"interact", 0}},
+    {
+        "append-output",                  SET_append,                  F_BOOL,           {"output-append", "append",0}},
+    {
+        "output-file",                    SET_output_filename,         0,                {"output", "o", "output-filename",0}},
 
-    {"PAYLOAD:",        SET_nothing,            0,      {0}},
+    {   "PAYLOAD:",                       SET_nothing,                 0,                {0}, NULL},
 
-    {"nmap-datadir",    SET_nmap_datadir,       0,      {"datadir",0}},
-    {"nmap-datalength", SET_nmap_data_length,   F_NUMABLE,{"datalength",0}},
-    {"nmap-payloads",   SET_nmap_payloads,      0,      {"nmap-payload",0}},
-    {"nmap-service-probes",SET_nmap_service_probes, 0,  {"nmap-service-probe",0}},
-    {"pcap-payloads",   SET_pcap_payloads,      0,      {"pcap-payload",0}},
+    {
+        "nmap-datadir",                   SET_nmap_datadir,            0,                {"datadir",0}},
+    {
+        "nmap-datalength",                SET_nmap_data_length,        F_NUMABLE,        {"datalength",0}},
+    {
+        "nmap-payloads",                  SET_nmap_payloads,           0,                {"nmap-payload",0}},
+    {
+        "nmap-service-probes",            SET_nmap_service_probes,     0,                {"nmap-service-probe",0}},
+    {
+        "pcap-payloads",                  SET_pcap_payloads,           0,                {"pcap-payload",0}},
 
-    {"PACKET ATTRIBUTE:",SET_nothing,           0,      {0}},
+    {   "PACKET ATTRIBUTE:",              SET_nothing,                 0,                {0}, NULL},
 
-    {"ttl",             SET_ttl,                F_NUMABLE, {0}},
-    {"badsum",          SET_badsum,             F_BOOL, {0}},
-    {"tcp-mss",         SET_tcp_mss,            F_NUMABLE, {0}},
-    {"tcp-wscale",      SET_tcp_wscale,         F_NUMABLE, {0}},
-    {"tcp-tsecho",      SET_tcp_tsecho,         F_NUMABLE, {0}},
-    {"tcp-sackok",      SET_tcp_sackok,         F_BOOL, {"tcp-sack",0}},
-    {"min-packet",      SET_min_packet,         0,      {"min-pkt",0}},
-    {"packet-trace",    SET_packet_trace,       F_BOOL, {"trace-packet",0}},
-    {"bpf-filter",      SET_bpf_filter,         0,      {0}},
+    {
+        "ttl",                            SET_ttl,                     F_NUMABLE,        {0}},
+    {
+        "badsum",                         SET_badsum,                  F_BOOL,           {0}},
+    {
+        "tcp-mss",                        SET_tcp_mss,                 F_NUMABLE,        {0}},
+    {
+        "tcp-wscale",                     SET_tcp_wscale,              F_NUMABLE,        {0}},
+    {
+        "tcp-tsecho",                     SET_tcp_tsecho,              F_NUMABLE,        {0}},
+    {
+        "tcp-sackok",                     SET_tcp_sackok,              F_BOOL,           {"tcp-sack",0}},
+    {
+        "min-packet",                     SET_min_packet,              0,                {"min-pkt",0}},
+    {
+        "packet-trace",                   SET_packet_trace,            F_BOOL,           {"trace-packet",0}},
+    {
+        "bpf-filter",                     SET_bpf_filter,              0,                {0}},
 
-    {"MISC:",           SET_nothing,            0,      {0}},
+    {   "MISC:",                          SET_nothing,                 0,                {0}, NULL},
 
-    {"conf",            SET_read_conf,          0,      {"config", "resume",0}},
-    {"resume-index",    SET_resume_index,       0,      {0}},
-    {"resume-count",    SET_resume_count,       0,      {0}},
-    {"offline",         SET_offline,            F_BOOL, {"notransmit", "nosend", "dry-run", 0}},
-    {"no-dedup",        SET_nodedup,            F_BOOL, {0}},
-    {"dedup-win",       SET_dedup_win,          F_NUMABLE, {0}},
-    {"stack-buf-count", SET_stack_buf_count,    F_NUMABLE, {"queue-buf-count", "packet-buf-count", 0}},
-    {"pfring",          SET_pfring,             F_BOOL, {0}},
-    {"send-queue",      SET_send_queue,         F_BOOL, {"sendq", 0}},
-    {"blackrock-rounds",SET_blackrock_rounds,   F_NUMABLE, {"blackrock-round",0}},
+    {
+        "conf",                           SET_read_conf,               0,                {"config", "resume",0}},
+    {
+        "resume-index",                   SET_resume_index,            0,                {0}},
+    {
+        "resume-count",                   SET_resume_count,            0,                {0}},
+    {
+        "offline",                        SET_offline,                 F_BOOL,           {"notransmit", "nosend", "dry-run", 0}},
+    {
+        "no-dedup",                       SET_nodedup,                 F_BOOL,           {0}},
+    {
+        "dedup-win",                      SET_dedup_win,               F_NUMABLE,        {0}},
+    {
+        "stack-buf-count",                SET_stack_buf_count,         F_NUMABLE,        {"queue-buf-count", "packet-buf-count", 0}},
+    {
+        "pfring",                         SET_pfring,                  F_BOOL,           {0}},
+    {
+        "send-queue",                     SET_send_queue,              F_BOOL,           {"sendq", 0}},
+    {
+        "blackrock-rounds",               SET_blackrock_rounds,        F_NUMABLE,        {"blackrock-round",0}},
 
     /*Put it at last for better "help" output*/
-    {"TARGET_OUTPUT:",   SET_target_output,      0,      {0}},
+    {   "TARGET_OUTPUT:",                 SET_target_output,           0,                {0}, NULL},
+
     {0}
 };
 

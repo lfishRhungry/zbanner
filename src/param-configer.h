@@ -22,6 +22,7 @@ struct ConfigParameter {
     SET_PARAMETER set;
     unsigned flags;
     const char *alts[6];
+    const char *helps; /*set NULL if not normal prarameter*/
 };
 
 enum {F_NONE, F_BOOL=1, F_NUMABLE=2};
