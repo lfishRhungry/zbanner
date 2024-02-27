@@ -239,7 +239,8 @@ zbanner_handle(
         stack_transmit_packetbuffer(stack, pkt_buffer);
 
         /*multi-probe Multi_AfterHandle*/
-        if (is_multi && recved->parsed.port_dst==src_port_start) {
+        if (ZBannerScan.probe->multi_mode==Multi_AfterHandle
+            && is_multi && recved->parsed.port_dst==src_port_start) {
             for (unsigned idx=1; idx<ZBannerScan.probe->probe_num; idx++) {
 
                 unsigned cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
