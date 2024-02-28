@@ -26,13 +26,15 @@
 #include "../util/mas-malloc.h"
 #include "../stub/stub-pcap-dlt.h" /* data link types, like NULL, RAW, or ETHERNET */
 
-unsigned char default_tcp_template[] =
+/* For adding some fixed tcp options*/
+unsigned char default_tcp_syn_template[] =
     "\0\1\2\3\4\5"  /* Ethernet: destination */
     "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
     "\x08\x00"      /* Ethernet type: IPv4 */
+
     "\x45"          /* IP type */
     "\x00"
-    "\x00\x2c"      /* total length = 40 bytes */
+    "\x00\x2c"      /* total length = 44 bytes */
     "\x00\x00"      /* identification */
     "\x00\x00"      /* fragmentation flags */
     "\xFF\x06"      /* TTL=255, proto=TCP */
@@ -44,12 +46,39 @@ unsigned char default_tcp_template[] =
     "\0\0"          /* destination port */
     "\0\0\0\0"      /* sequence number */
     "\0\0\0\0"      /* ACK number */
-    "\x60"          /* header length */
+    "\x60"          /* header length: the first 4bits 0110=6 -> 6*4=24bytes */
     "\x02"          /* SYN */
-    "\x04\x01"      /* window fixed to 1024 */
+    "\xfa\xf0"      /* window 64240 (default ipv4 tcp win of my win11, and tcp win of win11 ipv6 is \xfd\x20->64800) */
     "\xFF\xFF"      /* checksum */
     "\x00\x00"      /* urgent pointer */
-      "\x02\x04\x05\xb4"  /* opt [mss 1460] h/t @IvreRocks */
+    "\x02\x04\x05\xb4"  /* opt [mss 1460] */
+;
+
+/* No options */
+unsigned char default_tcp_template[] =
+    "\0\1\2\3\4\5"  /* Ethernet: destination */
+    "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
+    "\x08\x00"      /* Ethernet type: IPv4 */
+
+    "\x45"          /* IP type */
+    "\x00"
+    "\x00\x28"      /* total length = 40 bytes */
+    "\x00\x00"      /* identification */
+    "\x00\x00"      /* fragmentation flags */
+    "\xFF\x06"      /* TTL=255, proto=TCP */
+    "\xFF\xFF"      /* checksum */
+    "\0\0\0\0"      /* source address */
+    "\0\0\0\0"      /* destination address */
+
+    "\0\0"          /* source port */
+    "\0\0"          /* destination port */
+    "\0\0\0\0"      /* sequence number */
+    "\0\0\0\0"      /* ACK number */
+    "\x50"          /* header length: the first 4bits 0101=5 -> 5*4=20bytes */
+    "\x02"          /* SYN */
+    "\xfa\xf0"      /* window 64240 (default ipv4 tcp win of my win11, and tcp win of win11 ipv6 is \xfd\x20->64800) */
+    "\xFF\xFF"      /* checksum */
+    "\x00\x00"      /* urgent pointer */
 ;
 
 static unsigned char default_udp_template[] =
@@ -416,6 +445,10 @@ template_set_target_ipv6(
         break;
     case Proto_Count:
         break;
+    case Proto_TCP_SYN: {
+        LOG(0, "template_set_target_ipv6: impossible protocol(Proto_TCP_SYN) for template.\n");
+        exit(1);
+    }
     }
 }
 
@@ -635,6 +668,10 @@ template_set_target_ipv4(
         break;
     case Proto_Count:
         break;
+    case Proto_TCP_SYN: {
+        LOG(0, "template_set_target_ipv4: impossible protocol(Proto_TCP_SYN) for template.\n");
+        exit(1);
+    }
     }
 }
 
@@ -947,8 +984,20 @@ template_packet_init(
     length = sizeof(default_tcp_template) - 1;
     buf = MALLOC(length);
     memcpy(buf, default_tcp_template, length);
-    templ_tcp_apply_options(&buf, &length, templ_opts);
     _template_init(&templset->pkts[Proto_TCP],
+                   source_mac, router_mac_ipv4, router_mac_ipv6,
+                   buf,
+                   length,
+                   data_link);
+    templset->count++;
+    free(buf);
+
+    /* [TCP SYN] */
+    length = sizeof(default_tcp_syn_template) - 1;
+    buf = MALLOC(length);
+    memcpy(buf, default_tcp_syn_template, length);
+    templ_tcp_apply_options(&buf, &length, templ_opts); /*set options for syn*/
+    _template_init(&templset->pkts[Proto_TCP_SYN],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    buf,
                    length,

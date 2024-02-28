@@ -8,13 +8,14 @@
 
 enum TemplateProtocol {
     Proto_TCP,
+    Proto_TCP_SYN, /*convenient to set options for packets with syn flag*/
     Proto_UDP,
     Proto_SCTP,
     Proto_ICMP_ping,
     Proto_ICMP_timestamp,
     Proto_ARP,
     Proto_Oproto,
-    // Proto_VulnCheck,
+    //Proto_VulnCheck,
     //Proto_IP,
     //Proto_Custom,
     Proto_Count

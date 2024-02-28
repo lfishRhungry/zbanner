@@ -110,23 +110,23 @@ parse_ipv4:
 
 
         /* Save off pseudo header for checksum calculation */
-        info->ip_version = (px[offset]>>4)&0xF;
-        info->_ip_src = px+offset+12;
-        info->_ip_dst = px+offset+16;
+        info->ip_version  = (px[offset]>>4)&0xF;
+        info->_ip_src     = px+offset+12;
+        info->_ip_dst     = px+offset+16;
         info->src_ip.ipv4 = px[offset+12] << 24
                             | px[offset+13] << 16
                             | px[offset+14] << 8
                             | px[offset+15] << 0;
         info->src_ip.version = 4;
-        info->dst_ip.ipv4 = px[offset+16] << 24
-                            | px[offset+17] << 16
-                            | px[offset+18] << 8
-                            | px[offset+19] << 0;
+        info->dst_ip.ipv4    = px[offset+16] << 24
+                               | px[offset+17] << 16
+                               | px[offset+18] << 8
+                               | px[offset+19] << 0;
         info->dst_ip.version = 4;
         
-        info->ip_ttl = px[offset+8];
+        info->ip_ttl      = px[offset+8];
         info->ip_protocol = px[offset+9];
-        info->ip_length = total_length;
+        info->ip_length   = total_length;
         if (info->ip_version != 4)
             return 0;
 

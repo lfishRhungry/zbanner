@@ -15,9 +15,9 @@ typedef enum {Default, Add, Remove} addremove_t;
 
 struct TemplateOptions {
     struct {
-        addremove_t is_badsum:4; /* intentionally bad checksum */
-        addremove_t is_tsecho:4; /* enable timestamp echo */
-        addremove_t is_tsreply:4; /* enable timestamp echo */
+        addremove_t is_badsum:4;         /* intentionally bad checksum */
+        addremove_t is_tsecho:4;         /* enable timestamp echo */
+        addremove_t is_tsreply:4;        /* enable timestamp echo */
         addremove_t is_flags:4;
         addremove_t is_ackno:4;
         addremove_t is_seqno:4;

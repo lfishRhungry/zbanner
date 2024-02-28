@@ -1750,11 +1750,13 @@ tcp_create_by_template(
 
         px[offset_tcp+13] = (unsigned char)flags;
 
-        px[offset_tcp+14] = (unsigned char)(1200>>8);
-        px[offset_tcp+15] = (unsigned char)(1200 & 0xFF);
+        /*tcp window: we have set in the default template*/
+        // px[offset_tcp+14] = (unsigned char)(1200>>8);
+        // px[offset_tcp+15] = (unsigned char)(1200 & 0xFF);
 
-        px[offset_tcp+16] = (unsigned char)(0 >>  8);
-        px[offset_tcp+17] = (unsigned char)(0 >>  0);
+        /*urgent pointer: we have set in the default template*/
+        // px[offset_tcp+16] = (unsigned char)(0 >>  8);
+        // px[offset_tcp+17] = (unsigned char)(0 >>  0);
 
         xsum = checksum_tcp(px, tmpl->ipv4.offset_ip, tmpl->ipv4.offset_tcp,
             new_length - tmpl->ipv4.offset_tcp);
@@ -1877,10 +1879,18 @@ tcp_create_packet(
         const unsigned char *payload, size_t payload_length,
         unsigned char *px, size_t px_length)
 {
-    return tcp_create_by_template(&global_tmplset->pkts[Proto_TCP],
-        ip_them, port_them, ip_me, port_me,
-        seqno, ackno, flags,
-        payload, payload_length, px, px_length);
+    /*use different template for tcp with syn flags to apply some options*/
+    if ((flags&TCP_FLAG_SYN)==TCP_FLAG_SYN) {
+        return tcp_create_by_template(&global_tmplset->pkts[Proto_TCP_SYN],
+            ip_them, port_them, ip_me, port_me,
+            seqno, ackno, flags,
+            payload, payload_length, px, px_length);
+    } else {
+        return tcp_create_by_template(&global_tmplset->pkts[Proto_TCP],
+            ip_them, port_them, ip_me, port_me,
+            seqno, ackno, flags,
+            payload, payload_length, px, px_length);
+    }
 }
 
 void
