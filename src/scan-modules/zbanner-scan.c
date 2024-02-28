@@ -78,7 +78,7 @@ zbanner_validate(
     else return;
 
     unsigned seqno_me  = TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
-    unsigned cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
+    unsigned cookie    = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
             recved->parsed.dst_ip, recved->parsed.port_dst, entropy);
 
 
@@ -86,7 +86,7 @@ zbanner_validate(
     if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
         TCP_FLAG_SYN|TCP_FLAG_ACK)) {
         if (cookie == seqno_me - 1) {
-            pre->go_dedup = 1;
+            pre->go_dedup   = 1;
             pre->dedup_type = 0;
         }
     }
@@ -114,7 +114,7 @@ zbanner_validate(
         payload_len = ZBannerScan.probe->get_payload_length_cb(&ptarget);
 
         if (seqno_me == cookie + payload_len + 1) {
-            pre->go_dedup = 1;
+            pre->go_dedup   = 1;
             pre->dedup_type = 1;
         }
     }
@@ -122,7 +122,7 @@ zbanner_validate(
     else if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
         TCP_FLAG_RST)) {
         if (seqno_me == cookie + 1 || seqno_me == cookie) {
-            pre->go_dedup = 1;
+            pre->go_dedup   = 1;
             pre->dedup_type = 0;
         }
     }
