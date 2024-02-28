@@ -46,6 +46,29 @@
 #define strdup _strdup
 #endif
 
+extern struct ConfigParameter config_parameters[];
+
+
+const char ascii_xtate1[] =
+"     /$$   /$$ /$$$$$$$$ /$$$$$$  /$$$$$$$$ /$$$$$$$$\n"
+"    | $$  / $$|__  $$__//$$__  $$|__  $$__/| $$_____/\n"
+"    |  $$/ $$/   | $$  | $$  \\ $$   | $$   | $$      \n"
+"     \\  $$$$/    | $$  | $$$$$$$$   | $$   | $$$$$   \n"
+"      >$$  $$    | $$  | $$__  $$   | $$   | $$__/   \n"
+"     /$$/\\  $$   | $$  | $$  | $$   | $$   | $$      \n"
+"    | $$  \\ $$   | $$  | $$  | $$   | $$   | $$$$$$$$\n"
+"    |__/  |__/   |__/  |__/  |__/   |__/   |________/\n";
+
+
+const char ascii_xtate2[] =
+"    `YMM'   `MP'MMP\"\"MM\"\"YMM   db   MMP\"\"MM\"\"YMM `7MM\"\"\"YMM  \n"
+"      VMb.  ,P  P'   MM   `7  ;MM:  P'   MM   `7   MM    `7  \n"
+"       `MM.M'        MM      ,V^MM.      MM        MM   d    \n"
+"         MMb         MM     ,M  `MM      MM        MMmmMM    \n"
+"       ,M'`Mb.       MM     AbmmmqMA     MM        MM   Y  , \n"
+"      ,P   `MM.      MM    A'     VML    MM        MM     ,M \n"
+"    .MM:.  .:MMa.  .JMML..AMA.   .AMMA..JMML.    .JMMmmmmMMM \n";
+
 static const unsigned short top_udp_ports[] = {
     161, /* SNMP - should be found on all network equipment */
     135, /* MS-RPC - should be found on all modern Windows */
@@ -1684,7 +1707,40 @@ static int SET_help(struct Xconf *xconf, const char *name, const char *value)
         return 0;
     }
 
-    printf("\nWelcome to "XTATE_FIRST_UPPER_NAME"!\n\n");
+    printf("\n\n\n");
+    printf("%s", ascii_xtate1);
+    printf("\n                    "XTATE_GOD"\n\n");
+
+    printf("\nWelcome to "XTATE_FIRST_UPPER_NAME"!\n  -- A modular all-stack "
+        "network scanner running on a completely stateless mode for next-generation "
+        "Internet-scale surveys!\n\n");
+    printf("  Here are some detailed help text of all parameters of "XTATE_FIRST_UPPER_NAME". ");
+    printf("I hope these will help you a lot. ");
+    printf("\n  If any problem, please contact me on:\n        "XTATE_GITHUB".");
+    printf("\n\n\n");
+
+    unsigned count = 0;
+    // printf("---------------------------------------------------------------\n");
+    for (unsigned i=0; config_parameters[i].name; i++) {
+
+        if (!config_parameters[i].helps)
+            continue;
+
+        printf("  --%s", config_parameters[i].name);
+        for (unsigned j=0; config_parameters[i].alts[j]; j++) {
+            printf(", --%s", config_parameters[i].alts[j]);
+        }
+        printf("\n\n      %s\n\n\n", config_parameters[i].helps);
+        
+        count++;
+        // printf("---------------------------------------------------------------\n");
+    }
+
+    printf("\n\n\n");
+    printf("**********************************************************************\n");
+    printf(" Now Xtate has %d parameters in total, use them to unleash your power!\n", count);
+    printf("**********************************************************************\n");
+    printf("\n\n\n");
 
     return CONF_ERR;
 }
@@ -1976,43 +2032,130 @@ static int SET_send_queue(struct Xconf *xconf, const char *name, const char *val
 }
 
 struct ConfigParameter config_parameters[] = {
-    {   "BASIC:",                         SET_nothing,                 0,                {0}, NULL},
+    {"BASIC:", SET_nothing, 0, {0}, NULL},
 
     {
-        "seed",                           SET_seed,                    0,                {0},
+        "seed",
+        SET_seed,
+        0,
+        {0},
         "Set a global seed for randomizing of target addresses(ports), and to "
         "generate cookies in some ScanModules & ProbeModules."
+        "Specify an integer that seeds the random number generator for randomizing"
+        " targets and cookie(for ScanModules & ProbeModules) generation. Using a"
+        " different seed will cause packets to be sent in a different random "
+        "order. Instead of an integer, the string time can be specified, which "
+        "seeds using the local timestamp, automatically generating a different "
+        "random order of scans. If no seed specified, time is the default."
     },
     {
-        "rate",                           SET_rate,                    0,                {"max-rate",0},
-        "Set a rate(packets per second) for total speed of all transmit threads."
+        "rate",
+        SET_rate,
+        0,
+        {"max-rate", 0},
+        "Specifies the desired rate for transmitting packets. This can be very "
+        "small numbers, like 0.1 for transmitting packets at rates of one every "
+        "10 seconds, for very large numbers like 10000000, which attempts to "
+        "transmit at 10 million packets/second. In usual experience, Windows can"
+        " do 250 thousand packets per second, and latest versions of Linux can "
+        "do 2.5 million packets per second. The PF_RING driver is needed to get "
+        "to 25 million packets/second. This rate(packets per second) is for total"
+        " speed of all transmit threads."
     },
     {
-        "wait",                           SET_wait,                    F_NUMABLE,        {"cooldown",0},
+        "wait",
+        SET_wait,
+        F_NUMABLE,
+        {"cooldown", 0},
         "How many seconds should Xtate waiting and handling incoming packets "
         " after all transmit threads finished. Default is 10s."
+        "Specifies the number of seconds after transmit is done to wait for "
+        "receiving packets before exiting the program. The default is 10 "
+        "seconds. The string \"forever\" can be specified to never terminate."
     },
     {
-        "shard",                          SET_shard,                   0,                {"shards",0}},
+        "shard",
+        SET_shard,
+        0,
+        {"shards", 0},
+        "Set a string like \"x/y\" to splits the scan among instances. x is the "
+        "id for this scan, while y is the total number of instances. For example,"
+        " --shard 1/2 tells an instance to send every other packet, starting with"
+        " index 0. Likewise, --shard 2/2 sends every other packet, but starting "
+        "with index 1, so that it doesn't overlap with the first example."
+    },
     {
-        "tansmit-thread-count",           SET_thread_count,            F_NUMABLE,        {"tx-count", "tx-num", 0}},
+        "tansmit-thread-count",
+        SET_thread_count,
+        F_NUMABLE,
+        {"tx-count", "tx-num", 0},
+        "Specify the number of transmit threads. Xtate could has multiple transmit"
+        " threads but only one receive thread. Every thread will be lock on a CPU"
+        "kernel if the number of all threads is no more than kernel's."
+    },
     {
-        "d",                              SET_log_level,               F_BOOL,           {"dd","ddd","dddd","ddddd",0}},
+        "d",
+        SET_log_level,
+        F_BOOL,
+        {"dd", "ddd", "dddd", "ddddd", 0},
+        "Set the log level for Xtate. You can set \"-d\", \"-dd\", \"-ddd\" or "
+        "\"-v\", \"-vv\", \"-vvv\"and etc."
+    },
     {
-        "v",                              SET_log_level,               F_BOOL,           {"vv","vvv","vvvv","vvvvv",0}},
+        "v",
+        SET_log_level,
+        F_BOOL,
+        {"vv", "vvv", "vvvv", "vvvvv", 0},
+        NULL
+    },
     {
-        "version",                        SET_version,                 F_BOOL,           {0}},
+        "version",
+        SET_version,
+        F_BOOL,
+        {0},
+        "Print the version info of Xtate."
+    },
     {
-        "help",                           SET_help,                    F_BOOL,           {"h", "?",0}},
+        "usage",
+        SET_usage,
+        F_BOOL,
+        {0},
+        "Print a simple usage of Xtate."
+    },
     {
-        "usage",                          SET_usage,                   F_BOOL,           {0}},
+        "help",
+        SET_help,
+        F_BOOL,
+        {"h", "?", 0},
+        "Print the detailed help text of Xtate."
+    },
 
-    {   "TARGET:",                        SET_nothing,                 0,                {0}, NULL},
+    {"TARGET:", SET_nothing, 0, {0}, NULL},
 
     {
-        "target-ip",                      SET_target_ip,               0,                {"range", "ranges", "dst-ip", "ip",0}},
+        "target-ip",
+        SET_target_ip,
+        0,
+        {"range", "ranges", "dst-ip", "ip", 0},
+        "Specifies an IP address or range as target of Xtate. There are three valid"
+        " formats. The first is a single IP address like 192.168.0.1 or "
+        "2001:db8::1. The second is a range like 10.0.0.1-10.0.0.100. The third "
+        "is a CIDR address, like 0.0.0.0/0 or 2001:db8::/90. At least one target"
+        " must be specified. Multiple targets can be specified. This can be "
+        "specified as multiple options separated by a comma as a single option, "
+        "such as 10.0.0.0/8,192.168.0.1,2001:db8::1."
+    },
     {
-        "port",                           SET_target_port,             0,                {"p", "ports",0}},
+        "port",
+        SET_target_port,
+        0,
+        {"p", "ports", 0},
+        "Specifies the port(s) to be scanned. A single port can be specified, "
+        "like -p 80. A range of ports can be specified, like -p 20-25. A list of"
+        " ports/ranges can be specified, like -p 80,20-25. UDP ports can be"
+        " specified, like --ports U:161,u:1024-1100. SCTP ports can be specified"
+        " like --ports S:36412,s:38412, too."
+    },
     {
         "top-port",                       SET_top_port,                F_NUMABLE,        {"top", "tcp-top", "tcp-top-port",0}},
     {
