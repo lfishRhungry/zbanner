@@ -1754,9 +1754,8 @@ tcp_create_by_template(
         // px[offset_tcp+14] = (unsigned char)(1200>>8);
         // px[offset_tcp+15] = (unsigned char)(1200 & 0xFF);
 
-        /*urgent pointer: we have set in the default template*/
-        // px[offset_tcp+16] = (unsigned char)(0 >>  8);
-        // px[offset_tcp+17] = (unsigned char)(0 >>  0);
+        px[offset_tcp+16] = (unsigned char)(0 >>  8);
+        px[offset_tcp+17] = (unsigned char)(0 >>  0);
 
         xsum = checksum_tcp(px, tmpl->ipv4.offset_ip, tmpl->ipv4.offset_tcp,
             new_length - tmpl->ipv4.offset_tcp);
