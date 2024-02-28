@@ -80,16 +80,15 @@
 void
 receive_thread(void *v)
 {
-    struct RxThread *parms = (struct RxThread *)v;
-    const struct Xconf *xconf = parms->xconf;
-    struct Output output = xconf->output;
-    struct Adapter *adapter = xconf->nic.adapter;
-    int data_link = stack_if_datalink(adapter);
-    struct DedupTable *dedup = NULL;
-    struct PcapFile *pcapfile = NULL;
-    uint64_t entropy = xconf->seed;
-    struct stack_t *stack = xconf->stack;
-    // struct TemplateSet tmplset = templ_copy(xconf->tmplset);
+    struct RxThread *parms          = (struct RxThread *)v;
+    const struct Xconf *xconf       = parms->xconf;
+    struct Output output            = xconf->output;
+    struct Adapter *adapter         = xconf->nic.adapter;
+    int data_link                   = stack_if_datalink(adapter);
+    struct DedupTable *dedup        = NULL;
+    struct PcapFile *pcapfile       = NULL;
+    uint64_t entropy                = xconf->seed;
+    struct stack_t *stack           = xconf->stack;
 
     
     

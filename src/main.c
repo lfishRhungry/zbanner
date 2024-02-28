@@ -218,7 +218,7 @@ main_scan(struct Xconf *xconf)
     if (xconf->nic.src.port.range == 0) {
         unsigned port = 40000 + now % 20000;
         xconf->nic.src.port.first = port;
-        xconf->nic.src.port.last = port + 16;
+        xconf->nic.src.port.last  = port + 16;
         xconf->nic.src.port.range = 16;
     }
 
@@ -270,7 +270,7 @@ main_scan(struct Xconf *xconf)
         LOG(0, "[-] Default ScanModule `tcpsyn` is chosen because no ScanModule was specified.\n");
     }
 
-    xconf->scan_module->args = xconf->scan_module_args;
+    xconf->scan_module->args  = xconf->scan_module_args;
     xconf->scan_module->probe = xconf->probe_module;
 
     /*
@@ -307,18 +307,18 @@ main_scan(struct Xconf *xconf)
      * Prepare for tx threads
      */
     for (index=0; index<xconf->tx_thread_count; index++) {
-        struct TxThread *parms = &tx_thread[index];
-        parms->xconf = xconf;
-        parms->tx_index = index;
-        parms->my_index = xconf->resume.index;
-        parms->done_transmitting = 0;
+        struct TxThread *parms    = &tx_thread[index];
+        parms->xconf              = xconf;
+        parms->tx_index           = index;
+        parms->my_index           = xconf->resume.index;
+        parms->done_transmitting  = 0;
         parms->thread_handle_xmit = 0;
     }
     /*
      * Prepare for rx threads
      */
-    rx_thread->xconf = xconf;
-    rx_thread->done_receiving = 0;
+    rx_thread->xconf              = xconf;
+    rx_thread->done_receiving     = 0;
     rx_thread->thread_handle_recv = 0;
     /** needed for --packet-trace option so that we know when we started
      * the scan
@@ -368,9 +368,9 @@ main_scan(struct Xconf *xconf)
     status.is_infinite = xconf->is_infinite;
     while (!is_tx_done) {
         unsigned i;
-        double rate = 0;
+        double rate              = 0;
         uint64_t total_successed = 0;
-        uint64_t total_sent = 0;
+        uint64_t total_sent      = 0;
 
 
         /* Find the minimum index of all the threads */
@@ -540,16 +540,16 @@ int main(int argc, char *argv[])
 
     /* 14 rounds seem to give way better statistical distribution than 4 with a 
     very low impact on scan rate */
-    xconf->blackrock_rounds = 14;
-    xconf->wait = 10; /* how long to wait for responses when done */
-    xconf->max_rate = 100.0; /* max rate = hundred packets-per-second */
-    xconf->tx_thread_count = 1;
-    xconf->shard.one = 1;
-    xconf->shard.of = 1;
-    xconf->min_packet_size = 60;
-    xconf->payloads.udp = payloads_udp_create();
-    xconf->payloads.oproto = payloads_oproto_create();
-    xconf->dedup_win = 1000000;
+    xconf->blackrock_rounds     = 14;
+    xconf->wait                 = 10; /* how long to wait for responses when done */
+    xconf->max_rate             = 100.0; /* max rate = hundred packets-per-second */
+    xconf->tx_thread_count      = 1;
+    xconf->shard.one            = 1;
+    xconf->shard.of             = 1;
+    xconf->min_packet_size      = 60;
+    xconf->payloads.udp         = payloads_udp_create();
+    xconf->payloads.oproto      = payloads_oproto_create();
+    xconf->dedup_win            = 1000000;
     /*default entries count of callback queue and packet buffer queue*/
     /**
      * Default entries count of callback queue and packet buffer queue.

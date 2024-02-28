@@ -54,18 +54,18 @@
 void
 transmit_thread(void *v) /*aka. scanning_thread() */
 {
-    struct TxThread *parms = (struct TxThread *)v;
-    const struct Xconf *xconf = parms->xconf;
-    uint64_t rate = (uint64_t)xconf->max_rate;
-    uint64_t count_ipv4 = rangelist_count(&xconf->targets.ipv4);
-    uint64_t count_ipv6 = range6list_count(&xconf->targets.ipv6).lo;
-    struct Throttler *throttler = parms->throttler;
-    struct Adapter *adapter = xconf->nic.adapter;
-    uint64_t packets_sent = 0;
-    unsigned increment = xconf->shard.of * xconf->tx_thread_count;
-    uint64_t seed = xconf->seed;
-    uint64_t repeats = 0; /* --infinite repeats */
-    uint64_t entropy = xconf->seed;
+    struct TxThread *parms           = (struct TxThread *)v;
+    const struct Xconf *xconf        = parms->xconf;
+    uint64_t rate                    = (uint64_t)xconf->max_rate;
+    uint64_t count_ipv4              = rangelist_count(&xconf->targets.ipv4);
+    uint64_t count_ipv6              = range6list_count(&xconf->targets.ipv6).lo;
+    struct Throttler *throttler      = parms->throttler;
+    struct Adapter *adapter          = xconf->nic.adapter;
+    uint64_t packets_sent            = 0;
+    unsigned increment               = xconf->shard.of * xconf->tx_thread_count;
+    uint64_t seed                    = xconf->seed;
+    uint64_t repeats                 = 0; /* --infinite repeats */
+    uint64_t entropy                 = xconf->seed;
     // struct TemplateSet tmplset = templ_copy(xconf->tmplset);
 
     /* Wait to make sure receive_thread is ready */
@@ -197,26 +197,23 @@ infinite:
             if (xXx < range_ipv6) {
                 /* Our index selects an IPv6 target */
                 target.ip_them.version = 6;
-                target.ip_me.version = 6;
-
-                target.ip_them.ipv6 = range6list_pick(&xconf->targets.ipv6, xXx % count_ipv6);
-                target.port_them = rangelist_pick(&xconf->targets.ports, xXx / count_ipv6);
-
-                target.ip_me.ipv6 = src.ipv6;
+                target.ip_me.version   = 6;
+                target.ip_them.ipv6    = range6list_pick(&xconf->targets.ipv6, xXx % count_ipv6);
+                target.port_them       = rangelist_pick(&xconf->targets.ports, xXx / count_ipv6);
+                target.ip_me.ipv6      = src.ipv6;
 
             } else {
                 /* Our index selects an IPv4 target. In other words, low numbers
                  * index into the IPv6 ranges, and high numbers index into the
                  * IPv4 ranges. */
                 target.ip_them.version = 4;
-                target.ip_me.version = 4;
+                target.ip_me.version   = 4;
 
                 xXx -= range_ipv6;
 
                 target.ip_them.ipv4 = rangelist_pick(&xconf->targets.ipv4, xXx % count_ipv4);
-                target.port_them = rangelist_pick(&xconf->targets.ports, xXx / count_ipv4);
-
-                target.ip_me.ipv4 = src.ipv4;
+                target.port_them    = rangelist_pick(&xconf->targets.ports, xXx / count_ipv4);
+                target.ip_me.ipv4   = src.ipv4;
 
             }
 
