@@ -532,6 +532,44 @@ static int SET_badsum(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
+static int SET_tcp_window(struct Xconf *xconf, const char *name, const char *value)
+{
+    if (xconf->echo) {
+        if (xconf->tcp_window!=0)
+            fprintf(xconf->echo, "tcp-window = %u\n", xconf->tcp_window);
+       return 0;
+    }
+
+    unsigned x = parseInt(value);
+    if (x > 65535) {
+        fprintf(stderr, "error: %s=<n>: expected number less than 65535\n", name);
+        return CONF_ERR;
+    } else {
+        xconf->tcp_window = x;
+    }
+
+    return CONF_OK;
+}
+
+static int SET_tcp_init_window(struct Xconf *xconf, const char *name, const char *value)
+{
+    if (xconf->echo) {
+        if (xconf->tcp_init_window!=0)
+            fprintf(xconf->echo, "tcp-init-window = %u\n", xconf->tcp_init_window);
+       return 0;
+    }
+
+    unsigned x = parseInt(value);
+    if (x > 65535) {
+        fprintf(stderr, "error: %s=<n>: expected number less than 65535\n", name);
+        return CONF_ERR;
+    } else {
+        xconf->tcp_init_window = x;
+    }
+
+    return CONF_OK;
+}
+
 static int SET_ttl(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
@@ -2298,6 +2336,10 @@ struct ConfigParameter config_parameters[] = {
         "tcp-wscale",                     SET_tcp_wscale,              F_NUMABLE,        {0}},
     {
         "tcp-tsecho",                     SET_tcp_tsecho,              F_NUMABLE,        {0}},
+    {
+        "tcp-init-window",                SET_tcp_init_window,         F_NUMABLE,        {"tcp-init-win", 0}},
+    {
+        "tcp-window",                     SET_tcp_window,              F_NUMABLE,        {"tcp-win", 0}},
     {
         "tcp-sackok",                     SET_tcp_sackok,              F_BOOL,           {"tcp-sack",0}},
     {

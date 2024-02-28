@@ -239,6 +239,14 @@ main_scan(struct Xconf *xconf)
     /*
         * Set TemplateSet to Global for some wrappered functions to create packet.
     */
+    
+    /* it should be set before template init*/
+    if (xconf->tcp_init_window)
+        template_set_tcp_syn_window_of_default(xconf->tcp_init_window);
+
+    if (xconf->tcp_window)
+        template_set_tcp_window_of_default(xconf->tcp_window);
+    
     global_tmplset = &tmplset;
     template_packet_init(
                 xconf->tmplset,
@@ -251,9 +259,6 @@ main_scan(struct Xconf *xconf)
                 xconf->seed,
                 xconf->templ_opts);
 
-    /*
-     * Set the "TTL" (IP time-to-live) of everything we send.
-     */
     if (xconf->nmap.ttl)
         template_set_ttl(xconf->tmplset, xconf->nmap.ttl);
 

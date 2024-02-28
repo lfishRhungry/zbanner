@@ -114,6 +114,16 @@ template_set_target_ipv6(
 
 
 /***************************************************************************
+ * Overwrites the Window of default tcp syn template
+ ***************************************************************************/
+void template_set_tcp_syn_window_of_default(unsigned window);
+
+/***************************************************************************
+ * Overwrites the Window of default tcp template
+ ***************************************************************************/
+void template_set_tcp_window_of_default(unsigned window);
+
+/***************************************************************************
  * Overwrites the TTL of all packet in templateset
  ***************************************************************************/
 void template_set_ttl(struct TemplateSet *tmplset, unsigned ttl);

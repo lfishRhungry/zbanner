@@ -255,6 +255,16 @@ struct Xconf
     char *bpf_filter;
 
     /**
+     * --tcp-init-window
+    */
+    unsigned tcp_init_window; /*window of the first syn or syn-ack packet*/
+
+    /**
+     * --tcp-window
+    */
+    unsigned tcp_window; /*window of other packets*/
+
+    /**
      * --min-packet
      */
     unsigned min_packet_size;

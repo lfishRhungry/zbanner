@@ -1050,6 +1050,18 @@ template_packet_init(
 
 }
 
+void template_set_tcp_syn_window_of_default(unsigned window)
+{
+    default_tcp_syn_template[48] = (unsigned char)(window>>8);
+    default_tcp_syn_template[49] = (unsigned char)(window>>0);
+}
+
+void template_set_tcp_window_of_default(unsigned window)
+{
+    default_tcp_template[48] = (unsigned char)(window>>8);
+    default_tcp_template[49] = (unsigned char)(window>>0);
+}
+
 void
 template_set_ttl(struct TemplateSet *tmplset, unsigned ttl)
 {
