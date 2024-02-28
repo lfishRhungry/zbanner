@@ -2157,19 +2157,58 @@ struct ConfigParameter config_parameters[] = {
         " like --ports S:36412,s:38412, too."
     },
     {
-        "top-port",                       SET_top_port,                F_NUMABLE,        {"top", "tcp-top", "tcp-top-port",0}},
+        "top-port",
+        SET_top_port,
+        F_NUMABLE,
+        {"top", "tcp-top", "tcp-top-port", 0},
+        "Add a number of tcp ports to scan from predefined top list."
+    },
     {
-        "udp-top-port",                   SET_top_port,                F_NUMABLE,        {"udp-top",0}},
+        "udp-top-port",
+        SET_top_port,
+        F_NUMABLE,
+        {"udp-top", 0},
+        "Add a number of udp ports to scan from predefined top list."
+    },
     {
-        "include-file",                   SET_include_file,            0,                {"iL",0}},
+        "include-file",
+        SET_include_file,
+        0,
+        {"iL", 0},
+        "Reads in a list of ranges from specified file to scan, in the same "
+        "target format described above for IP addresses and ranges. This file "
+        "can contain millions of addresses and ranges."
+    },
     {
-        "exclude",                        SET_exclude_ip,              0,                {"exclude-range", "exlude-ranges", "exclude-ip",0}},
+        "exclude",
+        SET_exclude_ip,
+        0,
+        {"exclude-range", "exlude-ranges", "exclude-ip", 0},
+        "Blacklist an IP address or range, preventing it from being scanned. "
+        "This overrides any target specification, guaranteeing that this "
+        "address/range won't be scanned. This has the same format as the normal "
+        "target specification."
+    },
     {
-        "exclude-port",                   SET_exclude_port,            0,                {"exclude-ports",0}},
+        "exclude-port",
+        SET_exclude_port,
+        0,
+        {"exclude-ports", 0},
+        "Blacklist ports to preventing it from being scanned. This overrides "
+        "any port specification. This has the same format as the normal port "
+        "specification."
+    },
     {
-        "exclude-file",                   SET_exclude_file,            0,                {0}},
+        "exclude-file",
+        SET_exclude_file,
+        0,
+        {0},
+        "Reads in a list of exclude ranges, in the same target format described "
+        "above. These ranges override any targets, preventing them from being "
+        "scanned."
+    },
 
-    {   "INTERFACE:",                     SET_nothing,                 0,                {0}, NULL},
+    {"INTERFACE:", SET_nothing, 0, {0}, NULL},
 
     {
         "adapter",                        SET_adapter,                 0,                {"if", "interface",0}},
@@ -2188,7 +2227,7 @@ struct ConfigParameter config_parameters[] = {
     {
         "lan-mode",                       SET_lan_mode,                F_BOOL,           {"local", "lan",0}},
 
-    {   "OPERATION:",                     SET_nothing,                 0,                {0}, NULL},
+    {"OPERATION:", SET_nothing, 0, {0}, NULL},
 
     {
         "echo",                           SET_echo,                    F_BOOL,           {"echo-all", "echo-cidr",0}},
@@ -2201,7 +2240,7 @@ struct ConfigParameter config_parameters[] = {
     {
         "debug-if",                       SET_debug_interface,         F_BOOL,           {"debug-interface",0}},
 
-    {   "SCAN MODULES:",                  SET_nothing,                 0,                {0}, NULL},
+    {"SCAN MODULES:", SET_nothing, 0, {0}, NULL},
 
     {
         "scan-module",                    SET_scan_module,             0,                {"scan", 0}},
@@ -2210,7 +2249,7 @@ struct ConfigParameter config_parameters[] = {
     {
         "scan-module-args",               SET_scan_module_args,        0,                {"scan-module-arg", "scan-args", "scan-arg",0}},
 
-    {   "PROBE MODULES:",                 SET_nothing,                 0,                {0}, NULL},
+    {"PROBE MODULES:", SET_nothing, 0, {0}, NULL},
 
     {
         "probe-module",                   SET_probe_module,            0,                {"probe", 0}},
@@ -2219,7 +2258,7 @@ struct ConfigParameter config_parameters[] = {
     {
         "probe-module-args",              SET_probe_module_args,       0,                {"probe-module-arg", "probe-args", "probe-arg", 0}},
 
-    {   "STATUS & OUTPUT:",               SET_nothing,                 0,                {0}, NULL},
+    {"STATUS & OUTPUT:", SET_nothing, 0, {0}, NULL},
 
     {
         "ndjson-status",                  SET_ndjson_status,           F_BOOL,           {"status-ndjson", 0}},
@@ -2234,7 +2273,7 @@ struct ConfigParameter config_parameters[] = {
     {
         "output-file",                    SET_output_filename,         0,                {"output", "o", "output-filename",0}},
 
-    {   "PAYLOAD:",                       SET_nothing,                 0,                {0}, NULL},
+    {"PAYLOAD:", SET_nothing, 0, {0}, NULL},
 
     {
         "nmap-datadir",                   SET_nmap_datadir,            0,                {"datadir",0}},
@@ -2247,7 +2286,7 @@ struct ConfigParameter config_parameters[] = {
     {
         "pcap-payloads",                  SET_pcap_payloads,           0,                {"pcap-payload",0}},
 
-    {   "PACKET ATTRIBUTE:",              SET_nothing,                 0,                {0}, NULL},
+    {"PACKET ATTRIBUTE:", SET_nothing, 0, {0}, NULL},
 
     {
         "ttl",                            SET_ttl,                     F_NUMABLE,        {0}},
@@ -2268,7 +2307,7 @@ struct ConfigParameter config_parameters[] = {
     {
         "bpf-filter",                     SET_bpf_filter,              0,                {0}},
 
-    {   "MISC:",                          SET_nothing,                 0,                {0}, NULL},
+    {"MISC:", SET_nothing, 0, {0}, NULL},
 
     {
         "conf",                           SET_read_conf,               0,                {"config", "resume",0}},
@@ -2292,7 +2331,7 @@ struct ConfigParameter config_parameters[] = {
         "blackrock-rounds",               SET_blackrock_rounds,        F_NUMABLE,        {"blackrock-round",0}},
 
     /*Put it at last for better "help" output*/
-    {   "TARGET_OUTPUT:",                 SET_target_output,           0,                {0}, NULL},
+    {"TARGET_OUTPUT:", SET_target_output, 0, {0}, NULL},
 
     {0}
 };
