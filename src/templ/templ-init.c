@@ -76,7 +76,7 @@ unsigned char default_tcp_template[] =
     "\0\0\0\0"      /* ACK number */
     "\x50"          /* header length: the first 4bits 0101=5 -> 5*4=20bytes */
     "\x02"          /* SYN */
-    "\xfa\xf0"      /* window 64240 (default ipv4 tcp win of my win11, and tcp win of win11 ipv6 is \xfd\x20->64800) */
+    "\x04\x01"      /* window fixed to 1024, too large could make troubles for zbanner*/
     "\xFF\xFF"      /* checksum */
     "\x00\x00"      /* urgent pointer */
 ;
