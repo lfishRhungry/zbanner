@@ -38,7 +38,7 @@ enum Operation {
     Operation_ReadRange = 7,        /* list all targets in range */
     Operation_Echo = 9,             /* echo the config used now or all configs with --echo-all */
     Operation_EchoCidr = 11,        /* list all targets in CIDR */
-    Operation_ListProbeModules,           /* list all probes */
+    Operation_ListProbeModules,     /* list all probes */
     Operation_ListScanModules,      /* list all scan modules */
 };
 
