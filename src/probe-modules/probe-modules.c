@@ -3,6 +3,7 @@
 
 #include "probe-modules.h"
 #include "../util/mas-safefunc.h"
+#include "../util/xprint.h"
 
 /*
 This is an Application Probe(or Request) Plugin System
@@ -64,15 +65,28 @@ get_probe_type_name(const enum ProbeType type)
 void list_all_probe_modules()
 {
     int len = (int)(sizeof(probe_modules_list)/sizeof(struct ProbeModule *));
-    printf("\nNow contains %d ProbeModules:\n\n", len);
+    
+    printf("\n");
+    printf("\n");
+    printf("      Now contains [%d] ProbeModules\n", len);
+    printf("\n");
+    printf("\n");
 
     for (int i = 0; i < len; i++) {
-        printf("========================\n\n");
-        printf("ProbeModule Name: %s\n", probe_modules_list[i]->name);
-        printf("ProbeModule Type: %s\n", get_probe_type_name(probe_modules_list[i]->type));
-        printf("Description:\n%s\n", probe_modules_list[i]->desc);
+        printf(XPRINT_DASH_LINE);
+        printf("\n");
+        printf("\n");
+        printf("  ProbeModule Name: %s\n", probe_modules_list[i]->name);
+        printf("\n");
+        printf("  ProbeModule Type: %s\n", get_probe_type_name(probe_modules_list[i]->type));
+        printf("\n");
+        printf("  Description:\n");
+        print_with_indent(probe_modules_list[i]->desc, 6, 80);
+        printf("\n");
     }
-    printf("========================\n");
+    printf(XPRINT_DASH_LINE);
+    printf("\n");
+    printf("\n");
 }
 
 int probe_init_nothing(const void *params)

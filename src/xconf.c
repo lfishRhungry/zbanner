@@ -28,6 +28,7 @@
 #include "util/logger.h"
 #include "util/unusedparm.h"
 #include "util/mas-malloc.h"
+#include "util/xprint.h"
 
 #include "massip/massip-addr.h"
 #include "massip/massip.h"
@@ -50,24 +51,24 @@ extern struct ConfigParameter config_parameters[];
 
 
 const char ascii_xtate1[] =
-"     /$$   /$$ /$$$$$$$$ /$$$$$$  /$$$$$$$$ /$$$$$$$$\n"
-"    | $$  / $$|__  $$__//$$__  $$|__  $$__/| $$_____/\n"
-"    |  $$/ $$/   | $$  | $$  \\ $$   | $$   | $$      \n"
-"     \\  $$$$/    | $$  | $$$$$$$$   | $$   | $$$$$   \n"
-"      >$$  $$    | $$  | $$__  $$   | $$   | $$__/   \n"
-"     /$$/\\  $$   | $$  | $$  | $$   | $$   | $$      \n"
-"    | $$  \\ $$   | $$  | $$  | $$   | $$   | $$$$$$$$\n"
-"    |__/  |__/   |__/  |__/  |__/   |__/   |________/\n";
+" /$$   /$$ /$$$$$$$$ /$$$$$$  /$$$$$$$$ /$$$$$$$$\n"
+"| $$  / $$|__  $$__//$$__  $$|__  $$__/| $$_____/\n"
+"|  $$/ $$/   | $$  | $$  \\ $$   | $$   | $$      \n"
+" \\  $$$$/    | $$  | $$$$$$$$   | $$   | $$$$$   \n"
+"  >$$  $$    | $$  | $$__  $$   | $$   | $$__/   \n"
+" /$$/\\  $$   | $$  | $$  | $$   | $$   | $$      \n"
+"| $$  \\ $$   | $$  | $$  | $$   | $$   | $$$$$$$$\n"
+"|__/  |__/   |__/  |__/  |__/   |__/   |________/\n";
 
 
 const char ascii_xtate2[] =
-"    `YMM'   `MP'MMP\"\"MM\"\"YMM   db   MMP\"\"MM\"\"YMM `7MM\"\"\"YMM  \n"
-"      VMb.  ,P  P'   MM   `7  ;MM:  P'   MM   `7   MM    `7  \n"
-"       `MM.M'        MM      ,V^MM.      MM        MM   d    \n"
-"         MMb         MM     ,M  `MM      MM        MMmmMM    \n"
-"       ,M'`Mb.       MM     AbmmmqMA     MM        MM   Y  , \n"
-"      ,P   `MM.      MM    A'     VML    MM        MM     ,M \n"
-"    .MM:.  .:MMa.  .JMML..AMA.   .AMMA..JMML.    .JMMmmmmMMM \n";
+"`YMM'   `MP'MMP\"\"MM\"\"YMM   db   MMP\"\"MM\"\"YMM `7MM\"\"\"YMM  \n"
+"  VMb.  ,P  P'   MM   `7  ;MM:  P'   MM   `7   MM    `7  \n"
+"   `MM.M'        MM      ,V^MM.      MM        MM   d    \n"
+"     MMb         MM     ,M  `MM      MM        MMmmMM    \n"
+"   ,M'`Mb.       MM     AbmmmqMA     MM        MM   Y  , \n"
+"  ,P   `MM.      MM    A'     VML    MM        MM     ,M \n"
+".MM:.  .:MMa.  .JMML..AMA.   .AMMA..JMML.    .JMMmmmmMMM \n";
 
 static const unsigned short top_udp_ports[] = {
     161, /* SNMP - should be found on all network equipment */
@@ -1640,6 +1641,7 @@ static int SET_version(struct Xconf *xconf, const char *name, const char *value)
         XTATE_VERSION,
         XTATE_GITHUB
         );
+    printf("\n");
     printf("Compiled on: %s %s\n", __DATE__, __TIME__);
 
 #if defined(__x86_64) || defined(__x86_64__)
@@ -1712,6 +1714,7 @@ static int SET_version(struct Xconf *xconf, const char *name, const char *value)
     printf("Compiler: %s %s\n", compiler, compiler_version);
     printf("OS: %s\n", os);
     printf("CPU: %s (%u bits)\n", cpu, (unsigned)(sizeof(void*))*8);
+    printf("\n");
 
     return CONF_ERR;
 }
@@ -1724,20 +1727,12 @@ static int SET_usage(struct Xconf *xconf, const char *name, const char *value)
         return 0;
     }
 
-    printf("\n");
-    printf("Welcome to "XTATE_FIRST_UPPER_NAME"!\n");
-    printf("\n");
-    printf("usage: "XTATE_NAME" [options] [-range <IP|RANGE>... -p PORT[,PORT...]]\n");
-    printf("\n");
-    printf("original examples in xtate:\n");
-    printf("    "XTATE_NAME" -p 80,8000-8100 -range 10.0.0.0/8 --rate=10000\n");
-    printf("        scan some web ports on 10.x.x.x at 10kpps\n");
-    printf("\n");
+    xconf_print_usage();
 
     return CONF_ERR;
 }
 
-static int SET_help(struct Xconf *xconf, const char *name, const char *value)
+static int SET_print_help(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
     UNUSEDPARM(value);
@@ -1745,42 +1740,9 @@ static int SET_help(struct Xconf *xconf, const char *name, const char *value)
         return 0;
     }
 
-    printf("\n\n\n");
-    printf("%s", ascii_xtate1);
-    printf("\n                    "XTATE_GOD"\n\n");
+    xconf->op = Operation_PrintHelp;
 
-    printf("\nWelcome to "XTATE_FIRST_UPPER_NAME"!\n  -- A modular all-stack "
-        "network scanner running on a completely stateless mode for next-generation "
-        "Internet-scale surveys!\n\n");
-    printf("  Here are some detailed help text of all parameters of "XTATE_FIRST_UPPER_NAME". ");
-    printf("I hope these will help you a lot. ");
-    printf("\n  If any problem, please contact me on:\n        "XTATE_GITHUB".");
-    printf("\n\n\n");
-
-    unsigned count = 0;
-    // printf("---------------------------------------------------------------\n");
-    for (unsigned i=0; config_parameters[i].name; i++) {
-
-        if (!config_parameters[i].helps)
-            continue;
-
-        printf("  --%s", config_parameters[i].name);
-        for (unsigned j=0; config_parameters[i].alts[j]; j++) {
-            printf(", --%s", config_parameters[i].alts[j]);
-        }
-        printf("\n\n      %s\n\n\n", config_parameters[i].helps);
-        
-        count++;
-        // printf("---------------------------------------------------------------\n");
-    }
-
-    printf("\n\n\n");
-    printf("**********************************************************************\n");
-    printf(" Now Xtate has %d parameters in total, use them to unleash your power!\n", count);
-    printf("**********************************************************************\n");
-    printf("\n\n\n");
-
-    return CONF_ERR;
+    return CONF_OK;
 }
 
 static int SET_log_level(struct Xconf *xconf, const char *name, const char *value)
@@ -2162,7 +2124,7 @@ struct ConfigParameter config_parameters[] = {
     },
     {
         "help",
-        SET_help,
+        SET_print_help,
         F_BOOL,
         {"h", "?", 0},
         "Print the detailed help text of Xtate."
@@ -2249,21 +2211,80 @@ struct ConfigParameter config_parameters[] = {
     {"INTERFACE:", SET_nothing, 0, {0}, NULL},
 
     {
-        "adapter",                        SET_adapter,                 0,                {"if", "interface",0}},
+        "adapter",
+        SET_adapter,
+        0,
+        {"if", "interface", 0},
+        "Use the named raw network interface, such as \"eth0\" or \"dna1\". If "
+        "not specified, the first network interface found with a default gateway will be used."
+    },
     {
-        "source-ip",                      SET_source_ip,               0,                {"src-ip",0}},
+        "source-ip",
+        SET_source_ip,
+        0,
+        {"src-ip", 0},
+        "Send packets using this IP address. If not specified, then the first IP"
+        " address bound to the network interface will be used. Instead of a "
+        "single IP address, a range may be specified.\n"
+        "NOTE: The size of the range must be an even power of 2, such as "
+        "1, 2, 4, 8, 16, 1024 etc."
+    },
     {
-        "source-port",                    SET_source_port,             0,                {"src-port",0}},
+        "source-port",
+        SET_source_port,
+        0,
+        {"src-port", 0},
+        "Send packets using this port number as the source. If not specified, a"
+        " random port will be chosen in the range 40000 through 60000. This port"
+        " should be filtered by the host firewall (like iptables) to prevent the"
+        " host network stack from interfering with arriving packets. Instead of "
+        "a single port, a range can be specified, like 40000-40003.\n"
+        "NOTE: The size of the range must be an even power of 2, such as "
+        "the example above that has a total of 4 addresses."
+    },
     {
-        "source-mac",                     SET_source_mac,              0,                {"src-mac",0}},
+        "source-mac",
+        SET_source_mac,
+        0,
+        {"src-mac", 0},
+        "Send packets using this as the source MAC address. If not specified, "
+        "then the first MAC address bound to the network interface will be used."
+    },
     {
-        "router-ip",                      SET_router_ip,               0,                {0}},
+        "router-ip",
+        SET_router_ip,
+        0,
+        {0},
+        "Set an IP as router's address."
+    },
     {
-        "router-mac",                     SET_router_mac,              0,                {"gateway-mac", "router-mac-ipv4", "router-mac-ipv6",0}},
+        "router-mac",
+        SET_router_mac,
+        0,
+        {"gateway-mac", "router-mac-ipv4", "router-mac-ipv6", 0},
+        "Send packets to this MAC address as the destination. If not specified, "
+        "then the gateway address of the network interface will be get by ARP "
+        "and used.\n"
+        "NOTE: We could specify different router MAC address for IPv4 and "
+        "IPv6 by adding a suffix to the flag."
+    },
     {
-        "adapter-vlan",                   SET_adapter_vlan,            F_NUMABLE,        {"vlan",0}},
+        "adapter-vlan",
+        SET_adapter_vlan,
+        F_NUMABLE,
+        {"vlan", "vlan-id", 0},
+        "Send packets using this 802.1q VLAN ID."
+    },
     {
-        "lan-mode",                       SET_lan_mode,                F_BOOL,           {"local", "lan",0}},
+        "lan-mode",
+        SET_lan_mode,
+        F_BOOL,
+        {"local", "lan", 0},
+        "Set the router MAC address to a broadcast address(ff-ff-ff-ff-ff-ff). "
+        "This can make Xtate be able to scan in a local network.\n"
+        "NOTE: This flag must set while we do some layer-2 protocol scan "
+        "like ARP."
+    },
 
     {"OPERATION:", SET_nothing, 0, {0}, NULL},
 
@@ -2565,4 +2586,107 @@ int xconf_contains(const char *x, int argc, char **argv)
     }
 
     return 0;
+}
+
+void xconf_print_usage()
+{
+    printf("\n\n\n");
+    // printf("%s", ascii_xtate1);
+    print_with_indent(ascii_xtate2, 10, 80);
+    printf("\n                             "XTATE_GOD"\n\n");
+    printf("\n");
+
+    printf("\n");
+    printf("Welcome to "XTATE_FIRST_UPPER_NAME"!");
+    printf("\n");
+    print_with_indent("A modular all-stack network scanner running on a "
+        "completely stateless mode for next-generation Internet-scale surveys!",
+        2, 80);
+    printf("\n");
+    printf("\n");
+    printf("usage format:\n");
+    printf("  "XTATE_NAME" [options] [-range IPs -p PORTs [-scan SCANMODULE [-probe PROBEMODULE]]]\n");
+    printf("\n");
+    printf("original examples of "XTATE_NAME":\n");
+    printf("\n");
+    printf("  "XTATE_NAME" -p 80,8000-8100 -range 10.0.0.0/8 --rate=10000\n");
+    print_with_indent("scan some web ports on 10.x.x.x at 10kpps.\n", 6, 80);
+    printf("\n");
+    printf("  "XTATE_NAME" -p 80 -range 10.0.0.0/8 -scanmodule zbanner -probe getrequest\n");
+    print_with_indent("use ZBanner ScanModule to grab http banners with getrequest ProbeModule.\n", 6, 80);
+    printf("\n");
+    printf("  "XTATE_NAME" -p u:80 -range 10.0.0.0/8 -scanmodule udpprobe -probe echo -show fail\n");
+    print_with_indent("use UdpProbe ScanModule to scan UDP 80 port with echo ProbeModule and also show failed results.\n", 6, 80);
+    printf("\n");
+    printf("  "XTATE_NAME" -p s:38412 -range 10.0.0.0/8 -scanmodule sctpinit -show fail\n");
+    print_with_indent("use SctpInit ScanModule to scan SCTP 38412 port and also show failed results.\n", 6, 80);
+    printf("\n");
+    printf("  "XTATE_NAME" -range 10.0.0.0/8 -scanmodule icmpecho\n");
+    print_with_indent("use IcmpEcho ScanModule to do ping scan.\n", 6, 80);
+    printf("\n");
+    printf("  "XTATE_NAME" -range 192.168.0.1/24 -scanmodule arpreq -lan\n");
+    print_with_indent("do ARP scan with LAN mode in local network.\n", 6, 80);
+    printf("\n");
+    printf("  "XTATE_NAME" -list-scan\n");
+    print_with_indent("list all ScanModules with introductions.\n", 6, 80);
+    printf("\n");
+    printf("  "XTATE_NAME" -list-probe\n");
+    print_with_indent("list all ProbeModules with introductions.\n", 6, 80);
+    printf("\n");
+    printf("  "XTATE_NAME" -version\n");
+    print_with_indent("print version and compilation info.\n", 6, 80);
+    printf("\n");
+    printf("  "XTATE_NAME" -help\n");
+    print_with_indent("display detailed help text of all parameters.\n", 6, 80);
+    printf("\n");
+}
+
+void xconf_print_help()
+{
+    printf("\n\n\n");
+    // printf("%s", ascii_xtate1);
+    print_with_indent(ascii_xtate1, 15, 80);
+    printf("\n                               "XTATE_GOD"\n\n");
+    printf("\n");
+    print_with_indent("Welcome to "XTATE_FIRST_UPPER_NAME"!", 2, 80);
+    printf("\n");
+    print_with_indent("  A modular all-stack network scanner running on a "
+        "completely stateless mode for next-generation Internet-scale surveys!",
+        4, 80);
+    printf("\n");
+    printf("\n");
+    print_with_indent("Here are detailed help text of all parameters of "
+        XTATE_FIRST_UPPER_NAME". I hope these will help you a lot. If any "
+        "problem, please contact me on: \n    "XTATE_GITHUB, 2, 80);
+    printf("\n");
+    printf("\n");
+    printf(XPRINT_DASH_LINE);
+    printf("\n");
+    printf("\n");
+
+    unsigned count = 0;
+    for (unsigned i=0; config_parameters[i].name; i++) {
+
+        if (!config_parameters[i].helps)
+            continue;
+
+        printf("  --%s", config_parameters[i].name);
+        for (unsigned j=0; config_parameters[i].alts[j]; j++) {
+            printf(", --%s", config_parameters[i].alts[j]);
+        }
+        // printf("\n\n      %s\n\n\n", config_parameters[i].helps);
+        printf("\n\n");
+        print_with_indent(config_parameters[i].helps, 6, 80);
+        printf("\n\n");
+        printf(XPRINT_DASH_LINE);
+        printf("\n\n");
+        
+        count++;
+    }
+
+    printf("\n\n");
+    printf("   **************************************************************************\n");
+    printf("   * Now contains [%d] parameters in total, use them to unleash your power! *\n", count);
+    printf("   **************************************************************************\n");
+    printf("\n\n\n");
 }

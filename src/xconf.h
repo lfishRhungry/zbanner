@@ -40,6 +40,7 @@ enum Operation {
     Operation_EchoCidr = 11,        /* list all targets in CIDR */
     Operation_ListProbeModules,     /* list all probes */
     Operation_ListScanModules,      /* list all scan modules */
+    Operation_PrintHelp,            /* print help text for all parameters*/
 };
 
 struct source_t {
@@ -323,5 +324,8 @@ xconf_echo_cidr(struct Xconf *xconf, FILE *fp);
 void
 adapter_get_source_addresses(const struct Xconf *xconf, struct source_t *src);
 
+void xconf_print_usage();
+
+void xconf_print_help();
 
 #endif

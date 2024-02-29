@@ -699,6 +699,10 @@ int main(int argc, char *argv[])
     case Operation_ListScanModules:
         list_all_scan_modules();
         break;
+    
+    case Operation_PrintHelp:
+        xconf_print_help();
+        break;
     }
 
 
