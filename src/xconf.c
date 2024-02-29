@@ -2067,7 +2067,7 @@ struct ConfigParameter config_parameters[] = {
         SET_wait,
         F_NUMABLE,
         {"cooldown", 0},
-        "How many seconds should Xtate waiting and handling incoming packets "
+        "How many seconds should "XTATE_FIRST_UPPER_NAME" waiting and handling incoming packets "
         " after all transmit threads finished. Default is 10s."
         "Specifies the number of seconds after transmit is done to wait for "
         "receiving packets before exiting the program. The default is 10 "
@@ -2089,7 +2089,7 @@ struct ConfigParameter config_parameters[] = {
         SET_thread_count,
         F_NUMABLE,
         {"tx-count", "tx-num", 0},
-        "Specify the number of transmit threads. Xtate could has multiple transmit"
+        "Specify the number of transmit threads. "XTATE_FIRST_UPPER_NAME" could has multiple transmit"
         " threads but only one receive thread. Every thread will be lock on a CPU"
         "kernel if the number of all threads is no more than kernel's."
     },
@@ -2098,36 +2098,28 @@ struct ConfigParameter config_parameters[] = {
         SET_log_level,
         F_BOOL,
         {"dd", "ddd", "dddd", "ddddd", 0},
-        "Set the log level for Xtate. You can set \"-d\", \"-dd\", \"-ddd\" or "
-        "\"-v\", \"-vv\", \"-vvv\"and etc."
-    },
-    {
-        "v",
-        SET_log_level,
-        F_BOOL,
-        {"vv", "vvv", "vvvv", "vvvvv", 0},
-        NULL
+        "Set the log level. You can set \"-d\", \"-dd\", \"-ddd\" and etc."
     },
     {
         "version",
         SET_version,
         F_BOOL,
-        {0},
-        "Print the version info of Xtate."
+        {"v", 0},
+        "Print the version and compilation info."
     },
     {
         "usage",
         SET_usage,
         F_BOOL,
         {0},
-        "Print a simple usage of Xtate."
+        "Print basic usage with some examples."
     },
     {
         "help",
         SET_print_help,
         F_BOOL,
         {"h", "?", 0},
-        "Print the detailed help text of Xtate."
+        "Print the detailed help text of all parameters."
     },
 
     {"TARGET:", SET_nothing, 0, {0}, NULL},
@@ -2137,7 +2129,7 @@ struct ConfigParameter config_parameters[] = {
         SET_target_ip,
         0,
         {"range", "ranges", "dst-ip", "ip", 0},
-        "Specifies an IP address or range as target of Xtate. There are three valid"
+        "Specifies an IP address or range as target "XTATE_FIRST_UPPER_NAME". There are three valid"
         " formats. The first is a single IP address like 192.168.0.1 or "
         "2001:db8::1. The second is a range like 10.0.0.1-10.0.0.100. The third "
         "is a CIDR address, like 0.0.0.0/0 or 2001:db8::/90. At least one target"
@@ -2281,7 +2273,7 @@ struct ConfigParameter config_parameters[] = {
         F_BOOL,
         {"local", "lan", 0},
         "Set the router MAC address to a broadcast address(ff-ff-ff-ff-ff-ff). "
-        "This can make Xtate be able to scan in a local network.\n"
+        "This can make "XTATE_FIRST_UPPER_NAME" be able to scan in a local network.\n"
         "NOTE: This flag must set while we do some layer-2 protocol scan "
         "like ARP."
     },
