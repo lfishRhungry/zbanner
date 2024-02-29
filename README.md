@@ -1,6 +1,9 @@
 
 # XSTATE: God is Stateless
 
+Welcome to Xtate -- A modular all-stack network scanner running on a completely
+stateless mode for next-generation Internet-scale surveys!
+
 ## Main Usage
 
 ## Tips
@@ -9,8 +12,11 @@
 
 # Authors
 
-Xtate was was created by lfishRhungry:
+Xtate was created by lfishRhungry:
 - email: shineccy@aliyun.com
+
+Xtate was born from [Masscan](https://github.com/robertdavidgraham/masscan/tree/master).
+Thanks to Robert Graham for his greate code and rigorous style.
 
 # License
 
