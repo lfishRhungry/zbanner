@@ -405,7 +405,7 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
 
 #include <winsock2.h>
 #include <iphlpapi.h>
-#include "massip-parse.h"
+#include "../massip/massip-parse.h"
 
 #ifdef _MSC_VER
 #pragma comment(lib, "IPHLPAPI.lib")
