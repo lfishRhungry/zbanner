@@ -240,8 +240,13 @@ infinite:
             more = xconf->scan_module->transmit_cb(
                 entropy, &target, pkt_buffer, &pkt_len);
 
-            /* send packets (bypassing the kernal)*/
-            rawsock_send_packet(adapter, pkt_buffer, (unsigned)pkt_len, !batch_size);
+            if (pkt_len) {
+                /* send packets (bypassing the kernal)*/
+                rawsock_send_packet(adapter, pkt_buffer, (unsigned)pkt_len, !batch_size);
+                batch_size--;
+                packets_sent++;
+                status_sent_count++;
+            }
 
             if (more) {
                 more_idx++;
@@ -249,10 +254,6 @@ infinite:
                 i += increment; /* <------ increment by 1 normally, more with shards/nics */
                 more_idx = 0;
             }
-
-            batch_size--;
-            packets_sent++;
-            status_sent_count++;
 
         } /* end of batch */
 
