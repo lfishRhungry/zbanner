@@ -6,6 +6,7 @@
 
 extern struct ScanModule TcpSynScan;
 extern struct ScanModule IcmpEchoScan;
+extern struct ScanModule IcmpTimeScan;
 extern struct ScanModule ArpReqScan;
 extern struct ScanModule SctpInitScan;
 extern struct ScanModule ZBannerScan;
@@ -15,6 +16,7 @@ extern struct ScanModule UdpProbeScan;
 static struct ScanModule *scan_modules_list[] = {
     &TcpSynScan, /*default scan module*/
     &IcmpEchoScan,
+    &IcmpTimeScan,
     &ArpReqScan,
     &SctpInitScan,
     &ZBannerScan,
