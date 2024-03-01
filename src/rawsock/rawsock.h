@@ -42,7 +42,9 @@ rawsock_init_adapter(const char *adapter_name,
                      unsigned is_vlan,
                      unsigned vlan_id);
 
-void rawsock_set_filter(struct Adapter *adapter, const char *bpf_filter);
+void
+rawsock_set_filter(struct Adapter *adapter, const char *scan_filter,
+    const char *user_filter);
 
 
 /**

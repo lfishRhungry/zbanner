@@ -303,6 +303,15 @@ main_scan(struct Xconf *xconf)
     }
 
     /*
+     * BPF filter
+     * We set BPF filter for pcap at last to avoid the filter affect router-mac
+     * getting by ARP.
+     * And the filter string is combined from ProbeModule and user setting.
+     */
+    rawsock_set_filter(xconf->nic.adapter, xconf->scan_module->bpf_filter,
+        xconf->bpf_filter);
+
+    /*
     * trap <ctrl-c> to pause
     */
     signal(SIGINT, control_c_handler);

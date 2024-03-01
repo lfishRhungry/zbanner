@@ -144,6 +144,7 @@ struct ScanModule
     const enum ProbeType                        required_probe_type; /*set zero if not using probe*/
     /*useful params*/
     char                                       *args;
+    const char                                 *bpf_filter; /*set BPF filter for better performance*/
     struct ProbeModule                         *probe;
     /*for init*/
     scan_modules_global_init                    global_init_cb;
