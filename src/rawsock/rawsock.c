@@ -5,6 +5,7 @@
     basic raw sockets, bypassing libpcap for better performance.
 */
 #include "rawsock.h"
+#include "../version.h"
 #include "../templ/templ-init.h"
 #include "../util/logger.h"
 #include "../util/ptrace.h"
@@ -373,11 +374,11 @@ int rawsock_recv_packet(
         *usecs = (unsigned)hdr.ts.tv_usec;
 
     } else if (adapter->pcap) {
-        struct pcap_pkthdr hdr;
+        struct pcap_pkthdr *hdr;
 
-        *packet = PCAP.next(adapter->pcap, &hdr);
+        int captured = PCAP.next_ex(adapter->pcap, &hdr, packet);
 
-        if (*packet == NULL) {
+        if (captured!=1) {
             if (is_pcap_file) {
                 //pixie_time_set_offset(10*100000);
                 is_tx_done = 1;
@@ -386,9 +387,9 @@ int rawsock_recv_packet(
             return 1;
         }
 
-        *length = hdr.caplen;
-        *secs = (unsigned)hdr.ts.tv_sec;
-        *usecs = (unsigned)hdr.ts.tv_usec;
+        *length = hdr->caplen;
+        *secs = (unsigned)hdr->ts.tv_sec;
+        *usecs = (unsigned)hdr->ts.tv_usec;
     }
 
 
@@ -526,7 +527,7 @@ rawsock_ignore_transmits(struct Adapter *adapter, const char *ifname)
 
 /***************************************************************************
  ***************************************************************************/
-static void
+void
 rawsock_close_adapter(struct Adapter *adapter)
 {
     if (adapter->ring) {
@@ -595,7 +596,6 @@ rawsock_init_adapter(const char *adapter_name,
                      unsigned is_sendq,
                      unsigned is_packet_trace,
                      unsigned is_offline,
-                     const char *bpf_filter,
                      unsigned is_vlan,
                      unsigned vlan_id)
 {
@@ -604,7 +604,7 @@ rawsock_init_adapter(const char *adapter_name,
 
     /* BPF filter not supported on some platforms, so ignore this compiler
      * warning when unused */
-    UNUSEDPARM(bpf_filter);
+    // UNUSEDPARM(bpf_filter);
 
     adapter = CALLOC(1, sizeof(*adapter));
     adapter->is_packet_trace = is_packet_trace;
@@ -640,7 +640,7 @@ rawsock_init_adapter(const char *adapter_name,
      *  logging here.
      *----------------------------------------------------------------*/
     if(is_pfring && !is_pfring_dna(adapter_name)){ /*First ensure pfring dna adapter is available*/
-        fprintf(stderr,"No pfring adapter available. Please install pfring or run xtate without the --pfring option.\n");
+        fprintf(stderr,"No pfring adapter available. Please install pfring or run "XTATE_NAME" without the --pfring option.\n");
         return 0;
     }
 
@@ -672,7 +672,7 @@ rawsock_init_adapter(const char *adapter_name,
         /*
          * Housekeeping
          */
-        PFRING.set_application_name(adapter->ring, "xtate");
+        PFRING.set_application_name(adapter->ring, XTATE_NAME);
         PFRING.version(adapter->ring, &version);
         LOG(1, "pfring: version %d.%d.%d\n",
                 (version >> 16) & 0xFFFF,
@@ -728,7 +728,8 @@ rawsock_init_adapter(const char *adapter_name,
 
         /* This reserves resources, but doesn't actually open the 
          * adapter until we call pcap_activate */
-        adapter->pcap = PCAP.create(adapter_name, errbuf);
+        // adapter->pcap = PCAP.create(adapter_name, errbuf);
+        adapter->pcap = NULL;
         if (adapter->pcap == NULL) {
             adapter->pcap = PCAP.open_live(
                         adapter_name,           /* interface name */
@@ -835,12 +836,59 @@ pcap_error:
     }
     if (adapter->pcap == NULL) {
         if (strcmp(adapter_name, "vmnet1") == 0) {
-            LOG(0, " [hint] VMware on Macintosh doesn't support xtate\n");
+            LOG(0, " [hint] VMware on Macintosh doesn't support "XTATE_NAME"\n");
         }
         return 0;
     }
 
     return NULL;
+}
+
+void rawsock_set_filter(struct Adapter *adapter, const char *bpf_filter)
+{
+        if (adapter->pcap&&bpf_filter&&strlen(bpf_filter)) {
+            struct bpf_program filter;
+            // uint32_t net;
+            // uint32_t mask;
+            // err = PCAP.lookupnet(adapter_name, &net, &mask, errbuf);
+            // if (err) {
+            //     PCAP.perror(adapter->pcap, "if: pcap_lookupnet");
+            //     goto pcap_error;
+            // }
+
+            int err;
+
+            err = PCAP.compile(adapter->pcap, &filter, bpf_filter, 1, 0);
+            if (err) {
+                PCAP.perror(adapter->pcap, "if: pcap_compile");
+                LOG(0, "FAIL: compile bpf filter error.\n");
+                exit(1);
+            }
+
+            err = PCAP.setfilter(adapter->pcap, &filter);
+            if (err) {
+                PCAP.perror(adapter->pcap, "if: setfilter");
+                LOG(0, "FAIL: set bpf filter error.\n");
+                exit(1);
+            }
+        }
+
+
+}
+
+void rawsock_set_nonblock(struct Adapter *adapter)
+{
+    if (adapter->pcap) {
+        int err;
+        char errbuf[PCAP_ERRBUF_SIZE] = "pcap";
+
+        err = PCAP.setnonblock(adapter->pcap, 1, errbuf);
+        if (err) {
+            PCAP.perror(adapter->pcap, "if: pcap_setnonblock");
+            LOG(0, "FAIL: set nonblock error.\n");
+            exit(1);
+        }
+    }
 }
 
 
@@ -858,147 +906,3 @@ rawsock_is_adapter_names_equal(const char *lhs, const char *rhs)
         rhs += 12;
     return strcmp(lhs, rhs) == 0;
 }
-
-
-/***************************************************************************
- * Runs some tests when the "--debug if" option is given on the
- * command-line. This is useful to figure out why the interface you
- * are accessing doesn't work.
- ***************************************************************************/
-int
-rawsock_selftest_if(const char *ifname)
-{
-    int err;
-    ipv4address_t ipv4 = 0;
-    ipv6address_t ipv6;
-    ipv4address_t router_ipv4 = 0;
-    macaddress_t source_mac = {{0,0,0,0,0,0}};
-    struct Adapter *adapter;
-    char ifname2[246];
-    ipaddress_formatted_t fmt;
-
-    /*
-     * Get the interface
-     */
-    if (ifname == NULL || ifname[0] == 0) {
-        err = rawsock_get_default_interface(ifname2, sizeof(ifname2));
-        if (err) {
-            printf("[-] if = not found (err=%d)\n", err);
-            return -1;
-        }
-        ifname = ifname2;
-    }
-    printf("[+] if = %s\n", ifname);
-
-    /*
-     * Initialize the adapter.
-     */
-    adapter = rawsock_init_adapter(ifname, 0, 0, 0, 0, 0, 0, 0);
-    if (adapter == 0) {
-        printf("[-] pcap = failed\n");
-        return -1;
-    } else {
-        printf("[+] pcap = opened\n");
-    }
-
-    /* IPv4 address */
-    ipv4 = rawsock_get_adapter_ip(ifname);
-    if (ipv4 == 0) {
-        printf("[-] source-ipv4 = not found (err)\n");
-    } else {
-        fmt = ipv4address_fmt(ipv4);
-        printf("[+] source-ipv4 = %s\n", fmt.string);
-    }
-
-    /* IPv6 address */
-    ipv6 = rawsock_get_adapter_ipv6(ifname);
-    if (ipv6address_is_zero(ipv6)) {
-        printf("[-] source-ipv6 = not found\n");
-    } else {
-        fmt = ipv6address_fmt(ipv6);
-        printf("[+] source-ipv6 = [%s]\n", fmt.string);
-    }
-
-    /* MAC address */
-    err = rawsock_get_adapter_mac(ifname, source_mac.addr);
-    if (err) {
-        printf("[-] source-mac = not found (err=%d)\n", err);
-    } else {
-        fmt = macaddress_fmt(source_mac);
-        printf("[+] source-mac = %s\n", fmt.string);
-    }
-
-    switch (adapter->link_type) {
-    case 0:
-            printf("[+] router-ip = implicit\n");
-            printf("[+] router-mac = implicit\n");
-            break;
-    default:
-        /* IPv4 router IP address */
-        err = rawsock_get_default_gateway(ifname, &router_ipv4);
-        if (err) {
-            fprintf(stderr, "[-] router-ip = not found(err=%d)\n", err);
-        } else {
-            fmt = ipv4address_fmt(router_ipv4);
-            printf("[+] router-ip = %s\n", fmt.string);
-        }
-
-        /* IPv4 router MAC address */
-        {
-            macaddress_t router_mac = {{0,0,0,0,0,0}};
-            
-            stack_arp_resolve(
-                    adapter,
-                    ipv4,
-                    source_mac,
-                    router_ipv4,
-                    &router_mac);
-
-            if (macaddress_is_zero(router_mac)) {
-                printf("[-] router-mac-ipv4 = not found\n");
-            } else {
-                fmt = macaddress_fmt(router_mac);
-                printf("[+] router-mac-ipv4 = %s\n", fmt.string);
-            }
-        }
-        
-
-        /*
-         * IPv6 router MAC address.
-         * If it's not configured, then we need to send a (synchronous) query
-         * to the network in order to discover the location of routers on
-         * the local network
-         */
-        if (!ipv6address_is_zero(ipv6)) {
-            macaddress_t router_mac = {{0,0,0,0,0,0}};
-            
-            stack_ndpv6_resolve(
-                    adapter,
-                    ipv6,
-                    source_mac,
-                    &router_mac);
-
-            if (macaddress_is_zero(router_mac)) {
-                printf("[-] router-mac-ipv6 = not found\n");
-            } else {
-                fmt = macaddress_fmt(router_mac);
-                printf("[+] router-mac-ipv6 = %s\n", fmt.string);
-            }
-        }
-    }
-    
-    rawsock_close_adapter(adapter);
-    return 0;
-}
-
-
-
-/***************************************************************************
- ***************************************************************************/
-int
-rawsock_selftest()
-{
-
-    return 0;
-}
-

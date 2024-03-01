@@ -63,7 +63,6 @@ initialize_adapter(struct Xconf *xconf)
                                             xconf->is_sendq,
                                             xconf->nmap.packet_trace,
                                             xconf->is_offline,
-                                            (void*)xconf->bpf_filter,
                                             xconf->nic.is_vlan,
                                             xconf->nic.vlan_id);
     if (xconf->nic.adapter == 0) {
@@ -250,6 +249,18 @@ initialize_adapter(struct Xconf *xconf)
 
 
     }
+
+    /*
+     * BPF filter
+     * We set BPF filter for pcap at last to avoid the filter affect router-mac
+     * getting by ARP.
+     */
+    rawsock_set_filter(xconf->nic.adapter, xconf->bpf_filter);
+    
+    /*
+     * set NonBlock to avoid block of pcap recv when using bpf filter.
+     */
+    rawsock_set_nonblock(xconf->nic.adapter);
 
     xconf->nic.is_usable = (is_usable_ipv4 & is_usable_ipv6);
 

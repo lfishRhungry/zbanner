@@ -501,6 +501,8 @@ main_scan(struct Xconf *xconf)
     }
 
     free(tx_thread);
+
+    rawsock_close_adapter(xconf->nic.adapter);
     
     LOG(1, "[+] all threads have exited                    \n");
 
@@ -673,10 +675,6 @@ int main(int argc, char *argv[])
         /* List the network adapters we might want to use for scanning */
         rawsock_list_adapters();
         break;
-
-    case Operation_DebugIF:
-        rawsock_selftest_if(xconf->nic.ifname);
-        return 0;
 
     case Operation_ReadRange:
         readrange(xconf);

@@ -673,19 +673,6 @@ static int SET_thread_count(struct Xconf *xconf, const char *name, const char *v
     return CONF_OK;
 }
 
-static int SET_debug_interface(struct Xconf *xconf, const char *name, const char *value)
-{
-    if (xconf->echo) {
-        if (xconf->op==Operation_DebugIF || xconf->echo_all)
-            fprintf(xconf->echo, "debug-interface = %s\n",
-                xconf->op==Operation_DebugIF?"true":"false");
-       return 0;
-    }
-    if (parseBoolean(value))
-        xconf->op = Operation_DebugIF;
-    return CONF_OK;
-}
-
 static int SET_adapter(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
@@ -2288,8 +2275,6 @@ struct ConfigParameter config_parameters[] = {
         "readrange",                      SET_read_range,              F_BOOL,           {"readranges", 0}},
     {
         "listtarget",                     SET_list_target,             F_BOOL,           {"list-targets",0}},
-    {
-        "debug-if",                       SET_debug_interface,         F_BOOL,           {"debug-interface",0}},
 
     {"SCAN MODULES:", SET_nothing, 0, {0}, NULL},
 

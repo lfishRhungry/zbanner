@@ -10,14 +10,6 @@ struct TemplateSet;
 #include "../stack/stack-queue.h"
 
 
-/**
- * @return
- *      1 on failure
- *      0 on success
- */
-int rawsock_selftest(void);
-int rawsock_selftest_if(const char *ifname);
-
 void rawsock_init(void);
 
 /**
@@ -47,9 +39,10 @@ rawsock_init_adapter(const char *adapter_name,
                      unsigned is_sendq,
                      unsigned is_packet_trace,
                      unsigned is_offline,
-                     const char *bpf_filter,
                      unsigned is_vlan,
                      unsigned vlan_id);
+
+void rawsock_set_filter(struct Adapter *adapter, const char *bpf_filter);
 
 
 /**
@@ -153,5 +146,10 @@ int rawsock_recv_packet(
  */
 void rawsock_ignore_transmits(struct Adapter *adapter,
                               const char *ifname);
+
+void rawsock_set_nonblock(struct Adapter *adapter);
+
+void
+rawsock_close_adapter(struct Adapter *adapter);
 
 #endif

@@ -41,6 +41,17 @@ typedef struct pcap pcap_t;
 struct pcap_if;
 typedef struct pcap_if pcap_if_t;
 
+struct bpf_insn {
+    uint16_t code;
+    uint8_t  jt;
+    uint8_t  jf;
+    uint32_t k;
+};
+struct bpf_program {
+    uint32_t bf_len;
+    struct bpf_insn *bf_insns;
+};
+
 /* How many bytes to reserve for error messages. This is the number specified
  * in libpcap, smaller numbers can crash */
 enum {
@@ -131,6 +142,14 @@ typedef int (*PCAP_SET_RFMON)(pcap_t *p, int rfmon);
 typedef int (*PCAP_CAN_SET_RFMON)(pcap_t *p);
 typedef int (*PCAP_ACTIVATE)(pcap_t *p);
 
+typedef int (*PCAP_LOOKUPNET)(const char *device, uint32_t *netp, uint32_t *maskp, char *errbuf);
+typedef int (*PCAP_COMPILE)(pcap_t *p, struct bpf_program *fp, const char *str, int optimize, uint32_t netmask);
+typedef int (*PCAP_SETFILTER)(pcap_t *p, struct bpf_program *fp);
+typedef int (*PCAP_SETNONBLOCK)(pcap_t *p, int nonblock, char *errbuf);
+typedef int (*PCAP_NEXT_EX)(pcap_t *p, struct pcap_pkthdr **h, const unsigned char **pkt_data);
+
+#define PCAP_NETMASK_UNKNOWN 0xffffffff
+
 
 
 /*
@@ -198,6 +217,13 @@ struct PcapFunctions {
     PCAP_SET_RFMON           set_rfmon;
     PCAP_CAN_SET_RFMON       can_set_rfmon;
     PCAP_ACTIVATE            activate;
+
+    /* for bpf filter*/
+    PCAP_LOOKUPNET           lookupnet;
+    PCAP_COMPILE             compile;
+    PCAP_SETFILTER           setfilter;
+    PCAP_SETNONBLOCK         setnonblock;
+    PCAP_NEXT_EX             next_ex;
 
 };
 

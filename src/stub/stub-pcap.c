@@ -92,6 +92,10 @@ static int (*null_PCAP_SET_BUFFER_SIZE)(pcap_t *p, int buffer_size);
 static int (*null_PCAP_SET_RFMON)(pcap_t *p, int rfmon);
 static int (*null_PCAP_CAN_SET_RFMON)(pcap_t *p);
 static int (*null_PCAP_ACTIVATE)(pcap_t *p);
+static int (*null_PCAP_LOOKUPNET)(const char *device, uint32_t *netp, uint32_t *maskp, char *errbuf);
+static int (*null_PCAP_COMPILE)(pcap_t *p, struct bpf_program *fp, const char *str, int optimize, uint32_t netmask);
+static int (*null_PCAP_SETFILTER)(pcap_t *p, struct bpf_program *fp);
+static int (*null_PCAP_SETNONBLOCK)(pcap_t *p, int nonblock, char *errbuf);
 #else
 static pcap_t *null_PCAP_CREATE(const char *source, char *errbuf) {return 0;}
 static int null_PCAP_SET_SNAPLEN(pcap_t *p, int snaplen) {return 0;}
@@ -102,6 +106,10 @@ static int null_PCAP_SET_BUFFER_SIZE(pcap_t *p, int buffer_size) {return 0;}
 static int null_PCAP_SET_RFMON(pcap_t *p, int rfmon) {return 0;}
 static int null_PCAP_CAN_SET_RFMON(pcap_t *p) {return 0;}
 static int null_PCAP_ACTIVATE(pcap_t *p) {return 0;}
+static int null_PCAP_LOOKUPNET(const char *device, uint32_t *netp, uint32_t *maskp, char *errbuf) {return 0;}
+static int null_PCAP_COMPILE(pcap_t *p, struct bpf_program *fp, const char *str, int optimize, uint32_t netmask) {return 0;}
+static int null_PCAP_SETFILTER(pcap_t *p, struct bpf_program *fp) {return 0;}
+static int null_PCAP_SETNONBLOCK(pcap_t *p, int nonblock, char *errbuf) {return 0;}
 #endif
 
 static unsigned null_PCAP_DATALINK(void *hPcap)
@@ -231,6 +239,15 @@ static const unsigned char *null_PCAP_NEXT(pcap_t *p, struct pcap_pkthdr *h)
     return pcap_next(p, h);
 #endif
     my_null(3, p, h);
+    return 0;
+}
+static int null_PCAP_NEXT_EX(pcap_t *p, struct pcap_pkthdr **h,
+    const unsigned char **pkt_data)
+{
+#ifdef STATICPCAP
+    return pcap_next_ex(p, h, pkt_data);
+#endif
+    my_null(3, p, h, pkt_data);
     return 0;
 }
 static int null_PCAP_SETDIRECTION(pcap_t *p, pcap_direction_t d)
@@ -446,6 +463,12 @@ pl->func_err=0, pl->datalink = null_##PCAP_DATALINK;
     DOLINK(PCAP_SET_RFMON           , set_rfmon);
     DOLINK(PCAP_CAN_SET_RFMON       , can_set_rfmon);
     DOLINK(PCAP_ACTIVATE            , activate);
+
+    DOLINK(PCAP_COMPILE             , compile);
+    DOLINK(PCAP_SETFILTER           , setfilter);
+    DOLINK(PCAP_LOOKUPNET           , lookupnet);
+    DOLINK(PCAP_SETNONBLOCK         , setnonblock);
+    DOLINK(PCAP_NEXT_EX             , next_ex);
 
     
     if (!pl->func_err)
