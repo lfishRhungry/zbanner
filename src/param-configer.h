@@ -21,7 +21,7 @@ struct ConfigParameter {
     const char *name;
     SET_PARAMETER set;
     unsigned flags;
-    const char *alts[6];
+    const char *alts[8];
     const char *helps; /*set NULL if not normal prarameter*/
 };
 
