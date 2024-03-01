@@ -265,6 +265,7 @@ zbanner_handle(
 struct ScanModule ZBannerScan = {
     .name = "zbanner",
     .required_probe_type = ProbeType_TCP,
+    .bpf_filter = "tcp && (tcp[13] & 4 != 0 || tcp[13] & 16 != 0)", /*tcp with rst or ack*/
     .desc =
         "ZBannerScan tries to contruct TCP conn with target port and send data "
         "from specified ProbeModule. Data in first reponse packet will be handled"

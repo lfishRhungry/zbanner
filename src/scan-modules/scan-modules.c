@@ -53,6 +53,10 @@ void list_all_scan_modules()
         printf("\n");
         printf("  Required Probe Type: %s\n", get_probe_type_name(scan_modules_list[i]->required_probe_type));
         printf("\n");
+        printf("  BPF Filter:\n");
+        print_with_indent(scan_modules_list[i]->bpf_filter?scan_modules_list[i]->bpf_filter:"null", 6, 80);
+        printf("\n");
+        printf("\n");
         printf("  Description:\n");
         print_with_indent(scan_modules_list[i]->desc, 6, 80);
         printf("\n");

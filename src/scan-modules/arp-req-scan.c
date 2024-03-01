@@ -60,6 +60,7 @@ arpreq_handle(
 struct ScanModule ArpReqScan = {
     .name = "arpreq",
     .required_probe_type = 0,
+    .bpf_filter = "arp && arp[6:2]==2", /*arp reply*/
     .desc =
         "ArpReqScan sends an ARP Request packet to broadcast mac addr"
         "(all one) with target ipv4 addr we request. Expect an ARP Reply packet "

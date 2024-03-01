@@ -13,7 +13,7 @@ arp_create_by_template_ipv4(
     unsigned char *px, size_t sizeof_px)
 {
     if (tmpl->proto != Proto_ARP) {
-            fprintf(stderr, "icmp: need a Proto_ICMP_ping or Proto_ICMP_timestamp TemplatePacket.\n");
+            fprintf(stderr, "arp_create_by_template_ipv4: need a Proto_ARP TemplatePacket.\n");
             return 0;
     }
     unsigned r_len = sizeof_px;

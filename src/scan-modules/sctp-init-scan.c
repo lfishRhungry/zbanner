@@ -87,6 +87,7 @@ sctpinit_handle(
 struct ScanModule SctpInitScan = {
     .name = "sctpinit",
     .required_probe_type = 0,
+    .bpf_filter = "sctp && (sctp[12]==2 || sctp[12]==6)", /*sctp init or init ack*/
     .desc =
         "SctpInitScan sends an SCTP INIT packet(chunk) to target port. Expect an "
         "INIT ACK response to believe the port is open or an ABORT for closed in "
