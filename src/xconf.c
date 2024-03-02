@@ -312,7 +312,7 @@ static int SET_scan_module(struct Xconf *xconf, const char *name, const char *va
             if (xconf->scan_module)
                 fprintf(xconf->echo, "scan-module = %s\n", xconf->scan_module->name);
             else
-                fprintf(xconf->echo, "scan-module = \n");
+                fprintf(xconf->echo, "scan-module = TcpSyn\n");
         }
         return 0;
     }
@@ -363,7 +363,7 @@ static int SET_output_filename(struct Xconf *xconf, const char *name, const char
 static int SET_show(struct Xconf *xconf, const char *name, const char *value)
 {
     if (xconf->echo) {
-        if (xconf->output.is_show_failed || xconf->echo_all){
+        if (xconf->output.is_show_failed){
             fprintf(xconf->echo, "show = failed\n");
         }
         return 0;
@@ -2307,7 +2307,7 @@ struct ConfigParameter config_parameters[] = {
         "list-if",
         SET_listif,
         F_BOOL,
-        {"list-interface", "list-adapter", "list-interfaces", "list-adapters", 0},
+        {"list-interface", "list-adapter", 0},
         "Do not run, but instead print informations of all adapters in this machine."
     },
 
@@ -2427,21 +2427,60 @@ struct ConfigParameter config_parameters[] = {
     {"PACKET ATTRIBUTE:", SET_nothing, 0, {0}, NULL},
 
     {
-        "ttl",                            SET_ttl,                     F_NUMABLE,        {0}},
+        "ttl",
+        SET_ttl,
+        F_NUMABLE,
+        {0},
+        "Specifies the TTL of outgoing packets, defaults to 255."
+    },
     {
         "badsum",                         SET_badsum,                  F_BOOL,           {0}},
     {
-        "tcp-mss",                        SET_tcp_mss,                 F_NUMABLE,        {0}},
+        "tcp-init-window",
+        SET_tcp_init_window,
+        F_NUMABLE,
+        {"tcp-init-win", 0},
+        "Specifies what value of Window should TCP SYN packets use. The default "
+        "value of TCP Window for TCP SYN packets is 64240."
+    },
     {
-        "tcp-wscale",                     SET_tcp_wscale,              F_NUMABLE,        {0}},
+        "tcp-window",
+        SET_tcp_window,
+        F_NUMABLE,
+        {"tcp-win", 0},
+        "Specifies what value of Window should TCP packets(except for SYN) use. "
+        "The default value of TCP Window for TCP packets(except SYN) is 1024.\n"
+        "NOTE: This value could affects some ScanModules like ZBanner."
+    },
+    {
+        "tcp-wscale",
+        SET_tcp_wscale,
+        F_NUMABLE,
+        {0},
+        "Specifies whether or what value of TCP Window Scaling option should TCP"
+        " SYN packets use. e.g. --tcp-wscale true, --tcp-wscale 8. The default "
+        "template of TCP SYN packet does not use TCP Window Scaling option."
+    },
+    {
+        "tcp-mss",
+        SET_tcp_mss,
+        F_NUMABLE,
+        {0},
+        "Specifies whether or what value of TCP MMS(Maximum Segment Size) option"
+        " should TCP SYN packets use. e.g. --tcp-mss false, --tcp-mss 64000. The "
+        "default MMS value is 1460."
+    },
+    {
+        "tcp-sackok",
+        SET_tcp_sackok,
+        F_BOOL,
+        {"tcp-sack",0},
+        "Specifies whether should TCP SYN packets use TCP Selective Acknowledgement"
+        " option. e.g. --tcp-sackok true. The default template of TCP SYN packet"
+        " does not use TCP Selective Acknowledgement option."
+    },
     {
         "tcp-tsecho",                     SET_tcp_tsecho,              F_NUMABLE,        {0}},
-    {
-        "tcp-init-window",                SET_tcp_init_window,         F_NUMABLE,        {"tcp-init-win", 0}},
-    {
-        "tcp-window",                     SET_tcp_window,              F_NUMABLE,        {"tcp-win", 0}},
-    {
-        "tcp-sackok",                     SET_tcp_sackok,              F_BOOL,           {"tcp-sack",0}},
     {
         "min-packet",                     SET_min_packet,              0,                {"min-pkt",0}},
     {
