@@ -440,12 +440,12 @@ static int SET_list_probe_modules(struct Xconf *xconf, const char *name, const c
     return CONF_OK;
 }
 
-static int SET_iflist(struct Xconf *xconf, const char *name, const char *value)
+static int SET_listif(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->op==Operation_ReadRange || xconf->echo_all)
+        if (xconf->op==Operation_ListRange || xconf->echo_all)
             fprintf(xconf->echo, "iflist = %s\n",
                 xconf->op==Operation_ListAdapters?"true":"false");
         return 0;
@@ -462,9 +462,6 @@ static int SET_list_target(struct Xconf *xconf, const char *name, const char *va
     UNUSEDPARM(value);
 
     if (xconf->echo) {
-        if (xconf->op==Operation_ListTargets || xconf->echo_all)
-            fprintf(xconf->echo, "list-target = %s\n",
-                xconf->op==Operation_ListTargets?"true":"false");
         return 0;
     }
 
@@ -474,19 +471,16 @@ static int SET_list_target(struct Xconf *xconf, const char *name, const char *va
     return CONF_OK;
 }
 
-static int SET_read_range(struct Xconf *xconf, const char *name, const char *value)
+static int SET_list_range(struct Xconf *xconf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->op==Operation_ReadRange || xconf->echo_all)
-            fprintf(xconf->echo, "read-range = %s\n",
-                xconf->op==Operation_ReadRange?"true":"false");
         return 0;
     }
 
     if (parseBoolean(value))
-        xconf->op = Operation_ReadRange;
+        xconf->op = Operation_ListRange;
 
     return CONF_OK;
 }
@@ -1474,8 +1468,18 @@ static int SET_echo(struct Xconf *xconf, const char *name, const char *value)
         xconf->op = Operation_Echo;
         xconf->echo_all = 1;
     }
-    else if (EQUALS("echo-cidr", name) && parseBoolean(value))
-        xconf->op = Operation_EchoCidr;
+    
+    return CONF_OK;
+}
+
+static int SET_list_cidr(struct Xconf *xconf, const char *name, const char *value)
+{
+    if (xconf->echo) {
+        return 0;
+    }
+    
+    if (parseBoolean(value))
+        xconf->op = Operation_ListCidr;
     
     return CONF_OK;
 }
@@ -2054,8 +2058,8 @@ struct ConfigParameter config_parameters[] = {
         SET_wait,
         F_NUMABLE,
         {"cooldown", 0},
-        "How many seconds should "XTATE_FIRST_UPPER_NAME" waiting and handling incoming packets "
-        " after all transmit threads finished. Default is 10s."
+        "How many seconds should "XTATE_FIRST_UPPER_NAME" waiting and handling "
+        "incoming packets after all transmit threads finished. Default is 10s."
         "Specifies the number of seconds after transmit is done to wait for "
         "receiving packets before exiting the program. The default is 10 "
         "seconds. The string \"forever\" can be specified to never terminate."
@@ -2076,9 +2080,10 @@ struct ConfigParameter config_parameters[] = {
         SET_thread_count,
         F_NUMABLE,
         {"tx-count", "tx-num", 0},
-        "Specify the number of transmit threads. "XTATE_FIRST_UPPER_NAME" could has multiple transmit"
-        " threads but only one receive thread. Every thread will be lock on a CPU"
-        "kernel if the number of all threads is no more than kernel's."
+        "Specify the number of transmit threads. "XTATE_FIRST_UPPER_NAME" could"
+        " has multiple transmit threads but only one receive thread. Every "
+        "thread will be lock on a CPU kernel if the number of all threads is no"
+        " more than kernel's."
     },
     {
         "d",
@@ -2116,13 +2121,13 @@ struct ConfigParameter config_parameters[] = {
         SET_target_ip,
         0,
         {"range", "ranges", "dst-ip", "ip", 0},
-        "Specifies an IP address or range as target "XTATE_FIRST_UPPER_NAME". There are three valid"
-        " formats. The first is a single IP address like 192.168.0.1 or "
-        "2001:db8::1. The second is a range like 10.0.0.1-10.0.0.100. The third "
-        "is a CIDR address, like 0.0.0.0/0 or 2001:db8::/90. At least one target"
-        " must be specified. Multiple targets can be specified. This can be "
-        "specified as multiple options separated by a comma as a single option, "
-        "such as 10.0.0.0/8,192.168.0.1,2001:db8::1."
+        "Specifies an IP address or range as target "XTATE_FIRST_UPPER_NAME". "
+        "There are three valid formats. The first is a single IP address like "
+        "192.168.0.1 or 2001:db8::1. The second is a range like 10.0.0.1-10.0.0.100."
+        " The third is a CIDR address, like 0.0.0.0/0 or 2001:db8::/90. At least"
+        " one target must be specified. Multiple targets can be specified. This "
+        "can be specified as multiple options separated by a comma as a single "
+        "option, such as 10.0.0.0/8,192.168.0.1,2001:db8::1."
     },
     {
         "port",
@@ -2268,46 +2273,143 @@ struct ConfigParameter config_parameters[] = {
     {"OPERATION:", SET_nothing, 0, {0}, NULL},
 
     {
-        "echo",                           SET_echo,                    F_BOOL,           {"echo-all", "echo-cidr",0}},
+        "echo",
+        SET_echo,
+        F_BOOL,
+        {"echo-all", 0},
+        "Do not run, but instead print the current configuration. Use --echo to "
+        "dump configurations that are different from default value. Use --echo-all"
+        " to dump configurations with explicit value. The configurations can be "
+        "save to a file as config and then be used with the --conf option."
+    },
     {
-        "iflist",                         SET_iflist,                  F_BOOL,           {"list-interface", "list-adapter",0}},
+        "list-cidr",
+        SET_list_cidr,
+        F_BOOL,
+        {"cidr", 0},
+        "Do not run, but instead print all IP targets in CIDR format."
+    },
     {
-        "readrange",                      SET_read_range,              F_BOOL,           {"readranges", 0}},
+        "list-range",
+        SET_list_range,
+        F_BOOL,
+        {"list-ranges", 0},
+        "Do not run, but instead print all IP targets in ranges."
+    },
     {
-        "listtarget",                     SET_list_target,             F_BOOL,           {"list-targets",0}},
+        "list-target",
+        SET_list_target,
+        F_BOOL,
+        {"list-targets", 0},
+        "Do not run, but instead print every unique IP targets in random."
+    },
+    {
+        "list-if",
+        SET_listif,
+        F_BOOL,
+        {"list-interface", "list-adapter", "list-interfaces", "list-adapters", 0},
+        "Do not run, but instead print informations of all adapters in this machine."
+    },
 
     {"SCAN MODULES:", SET_nothing, 0, {0}, NULL},
 
     {
-        "scan-module",                    SET_scan_module,             0,                {"scan", 0}},
+        "scan-module",
+        SET_scan_module,
+        0,
+        {"scan", 0},
+        "Specifies a ScanModule to perform scanning. Use --list-scan to get "
+        "informations of all ScanModules.\nNOTE: A ScanModule must be used in "
+        "every time we scan. TcpSynModule will be default if we did not specify."
+    },
     {
-        "list-scan-modules",              SET_list_scan_modules,       F_BOOL,           {"list-scan-module", "list-scan", "list-scans",0}},
+        "list-scan-modules",
+        SET_list_scan_modules,
+        F_BOOL,
+        {"list-scan-module", "list-scan", "list-scans", 0},
+        "List informations of all ScanModules."
+    },
     {
-        "scan-module-args",               SET_scan_module_args,        0,                {"scan-module-arg", "scan-args", "scan-arg",0}},
+        "scan-module-args",
+        SET_scan_module_args,
+        0,
+        {"scan-module-arg", "scan-args", "scan-arg", 0},
+        "Specifies an argument for used ScanModule."
+    },
 
     {"PROBE MODULES:", SET_nothing, 0, {0}, NULL},
 
     {
-        "probe-module",                   SET_probe_module,            0,                {"probe", 0}},
+        "probe-module",
+        SET_probe_module,
+        0,
+        {"probe", 0},
+        "Specifies a ProbeModule for used ScanModule to perform scanning. Use "
+        "--list-probe to get informations of all ProbeModules.\nNOTE: ProbeModule"
+        " is not required for all ScanModules and different ScanModule expects "
+        "different type of ProbeModule."
+    },
     {
-        "list-probe-modules",             SET_list_probe_modules,      F_BOOL,           {"list-probe-module", "list-probe", "list-probes", 0}},
+        "list-probe-modules",
+        SET_list_probe_modules,
+        F_BOOL,
+        {"list-probe-module", "list-probe", "list-probes", 0},
+        "List informations of all ProbeModules."
+    },
     {
-        "probe-module-args",              SET_probe_module_args,       0,                {"probe-module-arg", "probe-args", "probe-arg", 0}},
+        "probe-module-args",
+        SET_probe_module_args,
+        0,
+        {"probe-module-arg", "probe-args", "probe-arg", 0},
+        "Specifies an argument for used ProbeModule."
+    },
 
     {"STATUS & OUTPUT:", SET_nothing, 0, {0}, NULL},
 
     {
-        "ndjson-status",                  SET_ndjson_status,           F_BOOL,           {"status-ndjson", 0}},
+        "ndjson-status",
+        SET_ndjson_status,
+        F_BOOL,
+        {"status-ndjson", 0},
+        "Print status information in NDJSON format while running."
+    },
     {
-        "pcap-filename",                  SET_pcap_filename,           0,                {"pcap",0}},
+        "pcap-filename",
+        SET_pcap_filename,
+        0,
+        {"pcap",0},
+        "Saves received packets (but not transmitted packets) to the "
+        "libpcap-format file."
+    },
     {
-        "show",                           SET_show,                    0,                {0}},
+        "show",
+        SET_show,
+        0,
+        {0},
+        "Tells which explicit result status to display, such as 'failed' for "
+        "those ports that respond with a RST on TCP."
+    },
     {
-        "interactive",                    SET_interactive,             F_BOOL,           {"interact", 0}},
+        "output-file",
+        SET_output_filename,
+        0,
+        {"output", "o", "output-filename", 0},
+        "Specifies the file which to save results to."
+    },
     {
-        "append-output",                  SET_append,                  F_BOOL,           {"output-append", "append",0}},
+        "append-output",
+        SET_append,
+        F_BOOL,
+        {"output-append", "append", 0},
+        "Causes output to append to the file, rather than overwriting the file."
+    },
     {
-        "output-file",                    SET_output_filename,         0,                {"output", "o", "output-filename",0}},
+        "interactive",
+        SET_interactive,
+        F_BOOL,
+        {"interact", 0},
+        "Also print the results to screen while specifying --output-file."
+    },
 
     {"PAYLOAD:", SET_nothing, 0, {0}, NULL},
 

@@ -142,9 +142,13 @@ struct ScanModule
     const char                                 *name;
     const char                                 *desc;
     const enum ProbeType                        required_probe_type; /*set zero if not using probe*/
-    /*useful params*/
+    /**
+     * Set BPF filter for better performance while using pcap to transmit.
+     * But We need to write correct valicate callback func for other transmit mode
+     */
+    const char                                 *bpf_filter; 
+    /*Some ScanModule may need arguments*/
     char                                       *args;
-    const char                                 *bpf_filter; /*set BPF filter for better performance*/
     struct ProbeModule                         *probe;
     /*for init*/
     scan_modules_global_init                    global_init_cb;

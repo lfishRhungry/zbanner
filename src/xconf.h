@@ -34,9 +34,9 @@ enum Operation {
     Operation_ListAdapters = 1,     /* list all usable interfaces */
     Operation_Scan = 3,             /* do scan */
     Operation_ListTargets = 5,      /* list all targets uniquely in random */
-    Operation_ReadRange = 7,        /* list all targets in range */
+    Operation_ListRange = 7,        /* list all targets in range */
     Operation_Echo = 9,             /* echo the config used now or all configs with --echo-all */
-    Operation_EchoCidr = 11,        /* list all targets in CIDR */
+    Operation_ListCidr = 11,        /* list all targets in CIDR */
     Operation_ListProbeModules,     /* list all probes */
     Operation_ListScanModules,      /* list all scan modules */
     Operation_PrintHelp,            /* print help text for all parameters*/
@@ -233,10 +233,8 @@ struct Xconf
         unsigned data_length; /* number of bytes to randomly append */
         unsigned ttl; /* starting IP TTL field */
         unsigned badsum; /* bad TCP/UDP/SCTP checksum */
-
         unsigned packet_trace:1; /* print transmit messages */
-        
-        char datadir[256];
+        char     datadir[256];
     } nmap;
 
     char pcap_filename[256];

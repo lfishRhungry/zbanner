@@ -40,8 +40,10 @@ void list_all_scan_modules()
     int len = (int)(sizeof(scan_modules_list)/sizeof(struct ScanModule *));
     
     printf("\n");
+    printf(XPRINT_STAR_LINE);
     printf("\n");
     printf("      Now contains [%d] ScanModules\n", len);
+    printf(XPRINT_STAR_LINE);
     printf("\n");
     printf("\n");
 
@@ -49,11 +51,11 @@ void list_all_scan_modules()
         printf(XPRINT_DASH_LINE);
         printf("\n");
         printf("\n");
-        printf("  ScanModule Name: %s\n", scan_modules_list[i]->name);
+        printf("  Name of ScanModule : %s\n", scan_modules_list[i]->name);
         printf("\n");
         printf("  Required Probe Type: %s\n", get_probe_type_name(scan_modules_list[i]->required_probe_type));
         printf("\n");
-        printf("  BPF Filter:\n");
+        printf("  Default BPF Filter :\n");
         print_with_indent(scan_modules_list[i]->bpf_filter?scan_modules_list[i]->bpf_filter:"null", 6, 80);
         printf("\n");
         printf("\n");

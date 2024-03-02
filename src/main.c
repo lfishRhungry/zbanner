@@ -685,7 +685,7 @@ int main(int argc, char *argv[])
         rawsock_list_adapters();
         break;
 
-    case Operation_ReadRange:
+    case Operation_ListRange:
         readrange(xconf);
         return 0;
 
@@ -694,7 +694,7 @@ int main(int argc, char *argv[])
         exit(0);
         break;
 
-    case Operation_EchoCidr:
+    case Operation_ListCidr:
         xconf_echo_cidr(xconf, stdout);
         exit(0);
         break;

@@ -67,8 +67,10 @@ void list_all_probe_modules()
     int len = (int)(sizeof(probe_modules_list)/sizeof(struct ProbeModule *));
     
     printf("\n");
+    printf(XPRINT_STAR_LINE);
     printf("\n");
     printf("      Now contains [%d] ProbeModules\n", len);
+    printf(XPRINT_STAR_LINE);
     printf("\n");
     printf("\n");
 
