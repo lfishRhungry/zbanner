@@ -2200,7 +2200,8 @@ struct ConfigParameter config_parameters[] = {
         0,
         {"if", "interface", 0},
         "Use the named raw network interface, such as \"eth0\" or \"dna1\". If "
-        "not specified, the first network interface found with a default gateway will be used."
+        "not specified, the first network interface found with a default gateway"
+        " will be used."
     },
     {
         "source-ip",
@@ -2411,19 +2412,6 @@ struct ConfigParameter config_parameters[] = {
         "Also print the results to screen while specifying --output-file."
     },
 
-    {"PAYLOAD:", SET_nothing, 0, {0}, NULL},
-
-    {
-        "nmap-datadir",                   SET_nmap_datadir,            0,                {"datadir",0}},
-    {
-        "nmap-datalength",                SET_nmap_data_length,        F_NUMABLE,        {"datalength",0}},
-    {
-        "nmap-payloads",                  SET_nmap_payloads,           0,                {"nmap-payload",0}},
-    {
-        "nmap-service-probes",            SET_nmap_service_probes,     0,                {"nmap-service-probe",0}},
-    {
-        "pcap-payloads",                  SET_pcap_payloads,           0,                {"pcap-payload",0}},
-
     {"PACKET ATTRIBUTE:", SET_nothing, 0, {0}, NULL},
 
     {
@@ -2433,8 +2421,6 @@ struct ConfigParameter config_parameters[] = {
         {0},
         "Specifies the TTL of outgoing packets, defaults to 255."
     },
-    {
-        "badsum",                         SET_badsum,                  F_BOOL,           {0}},
     {
         "tcp-init-window",
         SET_tcp_init_window,
@@ -2459,7 +2445,8 @@ struct ConfigParameter config_parameters[] = {
         {0},
         "Specifies whether or what value of TCP Window Scaling option should TCP"
         " SYN packets use. e.g. --tcp-wscale true, --tcp-wscale 8. The default "
-        "template of TCP SYN packet does not use TCP Window Scaling option."
+        "value of Window Scaling is 3 and not be used in template of TCP SYN "
+        "packet."
     },
     {
         "tcp-mss",
@@ -2480,9 +2467,15 @@ struct ConfigParameter config_parameters[] = {
         " does not use TCP Selective Acknowledgement option."
     },
     {
-        "tcp-tsecho",                     SET_tcp_tsecho,              F_NUMABLE,        {0}},
-    {
-        "min-packet",                     SET_min_packet,              0,                {"min-pkt",0}},
+        "tcp-tsecho",
+        SET_tcp_tsecho,
+        F_NUMABLE,
+        {0},
+        "Specifies whether or what value of timestamp in TCP Timestamp option"
+        " should TCP SYN packets use for timestamp echoing. e.g. --tcp-tsecho "
+        "true, --tcp-tsecho <value>. The default timestamp value is 0x12345678 "
+        " and is not be used in template of TCP SYN packet."
+    },
     {
         "packet-trace",
         SET_packet_trace,
@@ -2590,6 +2583,23 @@ struct ConfigParameter config_parameters[] = {
         "randomization. It's 14 rounds in default to give a better statistical "
         "distribution with a low impact on scan rate."
     },
+
+    {"PAYLOAD:", SET_nothing, 0, {0}, NULL},
+
+    {
+        "nmap-datadir",                   SET_nmap_datadir,            0,                {"datadir",0}},
+    {
+        "nmap-datalength",                SET_nmap_data_length,        F_NUMABLE,        {"datalength",0}},
+    {
+        "nmap-payloads",                  SET_nmap_payloads,           0,                {"nmap-payload",0}},
+    {
+        "nmap-service-probes",            SET_nmap_service_probes,     0,                {"nmap-service-probe",0}},
+    {
+        "pcap-payloads",                  SET_pcap_payloads,           0,                {"pcap-payload",0}},
+    {
+        "badsum",                         SET_badsum,                  F_BOOL,           {0}},
+    {
+        "min-packet",                     SET_min_packet,              0,                {"min-pkt",0}},
 
     /*Put it at last for better "help" output*/
     {"TARGET_OUTPUT:", SET_target_output, 0, {0}, NULL},
