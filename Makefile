@@ -2,7 +2,8 @@
 # MinGW environment. I can't figure out how to tell if it's
 # actually MingGW. FIXME TODO
 ifeq ($(OS),Windows_NT)
-    CC = gcc
+	CC = gcc
+	SHELL = cmd
 endif
 
 # Try to figure out the default compiler. I dont know the best
@@ -218,11 +219,19 @@ OBJ = $(addprefix tmp/, $(notdir $(addsuffix .o, $(basename $(SRC)))))
 bin/xtate: $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS) $(LIBS)
 
+ifeq ($(OS),Windows_NT)
+clean:
+	del /F tmp\*.o
+	del /F bin\xtate.exe
+else
 clean:
 	rm -f tmp/*.o
 	rm -f bin/xtate
+endif
 
+ifneq ($(OS),Windows_NT)
 install: bin/xtate
 	install $(INSTALL_DATA) bin/xtate $(DESTDIR)$(BINDIR)/xtate
+endif
 	
 default: bin/xtate
