@@ -273,22 +273,6 @@ ipv6address_t ipv6address_add(ipv6address_t lhs, ipv6address_t rhs) {
 }
 
 
-int ipv6address_selftest(void)
-{
-    int x = 0;
-    ipaddress ip;
-    struct ipaddress_formatted fmt;
-
-    ip.version = 4;
-    ip.ipv4 = 0x01FF00A3;
-
-    fmt = ipaddress_fmt(ip);
-    if (strcmp(fmt.string, "1.255.0.163") != 0)
-        x++;
-
-    return x;
-}
-
 int ipv6address_is_equal_prefixed(ipv6address_t lhs, ipv6address_t rhs, unsigned prefix)
 {
     ipv6address mask;

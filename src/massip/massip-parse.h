@@ -60,13 +60,5 @@ massip_parse_ipv6(const char *buf);
 ipv4address_t
 massip_parse_ipv4(const char *buf);
 
-
-/**
- * Do a simplistic unit test of the parser.
- * @return 0 on success, 1 on failure
- */
-int
-massip_parse_selftest(void);
-
 #endif
 

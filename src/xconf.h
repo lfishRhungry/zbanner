@@ -25,7 +25,6 @@ struct TemplateOptions;
 /**
  * This is the "operation" to be performed by xconf, which is almost always
  * to "scan" the network. However, there are some lesser operations to do
- * instead, like run a "regression self test", or "debug", or something else
  * instead of scanning. We parse the command-line in order to figure out the
  * proper operation
  */

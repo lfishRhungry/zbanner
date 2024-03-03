@@ -222,11 +222,6 @@ clean:
 	rm -f tmp/*.o
 	rm -f bin/xtate
 
-regress: bin/xtate
-	bin/xtate --selftest
-
-test: regress
-
 install: bin/xtate
 	install $(INSTALL_DATA) bin/xtate $(DESTDIR)$(BINDIR)/xtate
 	

@@ -57,23 +57,4 @@ blackrock_unshuffle(const struct BlackRock *br, uint64_t m);
 uint64_t
 blackrock2_unshuffle(const struct BlackRock *br, uint64_t m);
 
-
-/**
- * Do a regression test.
- * @return
- *      0 of the regression test succeeds or non-zero if it fails
- */
-int
-blackrock_selftest(void);
-int
-blackrock2_selftest(void);
-
-/**
- * Do a benchmark of this module regression test.
- */
-void
-blackrock_benchmark(unsigned rounds);
-void
-blackrock2_benchmark(unsigned rounds);
-
 #endif
