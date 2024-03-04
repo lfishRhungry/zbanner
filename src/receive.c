@@ -166,7 +166,7 @@ receive_thread(void *v)
         /*handle fast-timeout event*/
         if (xconf->is_fast_timeout) {
 
-            tm_event = ft_pop_event(&ft_handler, global_now);
+            tm_event = ft_pop_event(&ft_handler, time(0));
             while (tm_event) {
 
                 /*dedup timeout event and other packets together*/
@@ -176,7 +176,7 @@ receive_thread(void *v)
                         tm_event->ip_me,   tm_event->port_me,
                         tm_event->dedup_type)) {
                         free(tm_event);
-                        tm_event = NULL;
+                        tm_event = ft_pop_event(&ft_handler, time(0));
                         continue;
                     }
                 }
@@ -200,7 +200,7 @@ receive_thread(void *v)
                 }
 
                 free(tm_event);
-                tm_event = ft_pop_event(&ft_handler, global_now);
+                tm_event = ft_pop_event(&ft_handler, time(0));
             }
 
             *status_timeout_count = ft_event_count(&ft_handler);

@@ -56,6 +56,8 @@ void * ft_pop_event(struct FHandler *handler, time_t now)
 
 void ft_close_handler(struct FHandler *handler) {
     if (!handler->oldest) {
+        if (!handler->oldest->event)
+            free(handler->oldest->event);
         free(handler->oldest);
         handler->oldest = NULL;
     }
@@ -73,9 +75,9 @@ void ft_close_table(struct FTable *table)
     lfqueue_destroy(&table->queue_t);
 }
 
-size_t ft_event_count(struct FHandler *handler)
+uint64_t ft_event_count(struct FHandler *handler)
 {
-    size_t ret;
+    uint64_t ret;
     ret = lfqueue_size(handler->queue);
     if (handler->oldest)
         ret++;

@@ -269,6 +269,7 @@ infinite:
                     tm_event = NULL;
                 } else {
                     tm_event->need_timeout = 0;
+                    tm_event->dedup_type   = 0;
                 }
             }
 
