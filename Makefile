@@ -33,6 +33,7 @@ ifneq (, $(findstring musl, $(SYS)))
 LIBS = 
 else
 LIBS = -lm -lrt -ldl -lpthread
+DBLIBS = -lm -lrt -ldl -lpthread -g -rdynamic -no-pie
 endif
 INCLUDES =
 FLAGS2 = 
@@ -225,6 +226,13 @@ OBJ = $(addprefix tmp/, $(notdir $(addsuffix .o, $(basename $(SRC)))))
 bin/xtate: $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS) $(LIBS)
 
+bin/xtate_debug: $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS) $(DBLIBS)
+
+ifneq ($(OS),Windows_NT)
+debug: bin/xtate_debug
+endif
+
 ifeq ($(OS),Windows_NT)
 clean:
 	del /F tmp\*.o
@@ -233,6 +241,7 @@ else
 clean:
 	rm -f tmp/*.o
 	rm -f bin/xtate
+	rm -f bin/xtate_debug
 endif
 
 ifneq ($(OS),Windows_NT)
