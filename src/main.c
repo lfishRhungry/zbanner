@@ -520,6 +520,11 @@ main_scan(struct Xconf *xconf)
 
     free(tx_thread);
 
+    if (xconf->is_fast_timeout) {
+        ft_close_table(&ft_table);
+        xconf->ft_table = NULL;
+    }
+
     rawsock_close_adapter(xconf->nic.adapter);
     
     LOG(1, "[+] all threads have exited                    \n");
