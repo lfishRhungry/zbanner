@@ -231,7 +231,7 @@ dedup_is_duplicate_ipv6(struct DedupTable *dedup,
 
     /* We didn't find it, so add it to our list. This will push
      * older entries at this bucket off the list */
-    memmove(bucket, bucket+1, 3*sizeof(*bucket));
+    memmove(bucket+1, bucket, 3*sizeof(*bucket));
     bucket[0].ip_them.hi = ip_them.ipv6.hi;
     bucket[0].ip_them.lo = ip_them.ipv6.lo;
     bucket[0].port_them = (unsigned short)port_them;
@@ -314,7 +314,7 @@ dedup_is_duplicate_ipv4(struct DedupTable *dedup,
 
     /* We didn't find it, so add it to our list. This will push
      * older entries at this bucket off the list */
-    memmove(bucket, bucket+1, 3*sizeof(*bucket));
+    memmove(bucket+1, bucket, 3*sizeof(*bucket));
     bucket[0].ip_them = ip_them.ipv4;
     bucket[0].port_them = port_them;
     bucket[0].ip_me = ip_me.ipv4;
