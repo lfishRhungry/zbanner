@@ -163,7 +163,7 @@ receive_thread(void *v)
 
         struct ScanModule *scan_module = xconf->scan_module;
 
-        /*handle a fast-timeout event in every loop*/
+        /*handle a fast-timeout event in each loop*/
         if (xconf->is_fast_timeout) {
 
             tm_event = ft_pop_event(&ft_handler, time(0));
