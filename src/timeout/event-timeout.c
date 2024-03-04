@@ -23,13 +23,19 @@
     leading to a memory leak. I keep fixing this bug, then changing the
     code and causing the bug to come back again.
 */
-#include "event-timeout.h"
-#include "logger.h"
-#include "mas-malloc.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#include "event-timeout.h"
+#include "../util/logger.h"
+#include "../util/mas-malloc.h"
+
+#if defined(_MSC_VER)
+#undef inline
+#define inline _inline
+#endif
 
 
 
@@ -66,6 +72,40 @@ struct Timeouts {
      */
     struct TimeoutEntry *slots[1024*1024];
 };
+
+/***************************************************************************
+ ***************************************************************************/
+static inline bool
+timeout_is_unlinked(const struct TimeoutEntry *entry) {
+    if (entry->prev == 0 || entry->next == 0)
+        return true;
+    else
+        return false;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+static inline void
+timeout_unlink(struct TimeoutEntry *entry)
+{
+    if (entry->prev == 0 && entry->next == 0)
+        return;
+    *(entry->prev) = entry->next;
+    if (entry->next)
+        entry->next->prev = entry->prev;
+    entry->next = 0;
+    entry->prev = 0;
+    entry->timestamp = 0;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+static inline void
+timeout_init(struct TimeoutEntry *entry)
+{
+    entry->next = 0;
+    entry->prev = 0;
+}
 
 /***************************************************************************
  ***************************************************************************/

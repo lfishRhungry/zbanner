@@ -193,6 +193,11 @@ tmp/%.o: \
 	src/output/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
+tmp/%.o: \
+	src/timeout/%.c \
+	src/timeout/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 
 SRC = $(sort $(wildcard \
 	src/*.c \
@@ -212,6 +217,7 @@ SRC = $(sort $(wildcard \
 	src/probe-modules/lzr-probes/*.c \
 	src/scan-modules/*.c \
 	src/output/*.c \
+	src/timeout/*.c \
 	))
 OBJ = $(addprefix tmp/, $(notdir $(addsuffix .o, $(basename $(SRC))))) 
 

@@ -3,14 +3,10 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stddef.h> /* offsetof*/
-#include "bool.h" /* <stdbool.h> */
-#if defined(_MSC_VER)
-#undef inline
-#define inline _inline
-#endif
+
+#include "../util/bool.h" /* <stdbool.h> */
+
 struct Timeouts;
-
-
 
 
 /***************************************************************************
@@ -34,40 +30,6 @@ struct TimeoutEntry {
      * the original structure that contains it */
     unsigned offset;
 };
-
-/***************************************************************************
- ***************************************************************************/
-static inline bool
-timeout_is_unlinked(const struct TimeoutEntry *entry) {
-    if (entry->prev == 0 || entry->next == 0)
-        return true;
-    else
-        return false;
-}
-
-/***************************************************************************
- ***************************************************************************/
-static inline void
-timeout_unlink(struct TimeoutEntry *entry)
-{
-    if (entry->prev == 0 && entry->next == 0)
-        return;
-    *(entry->prev) = entry->next;
-    if (entry->next)
-        entry->next->prev = entry->prev;
-    entry->next = 0;
-    entry->prev = 0;
-    entry->timestamp = 0;
-}
-
-/***************************************************************************
- ***************************************************************************/
-static inline void
-timeout_init(struct TimeoutEntry *entry)
-{
-    entry->next = 0;
-    entry->prev = 0;
-}
 
 /**
  * Create a timeout subsystem.
