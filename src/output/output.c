@@ -60,10 +60,8 @@ output_result_to_stdout(
         count += fprintf(stdout, fmt_report, item->report);
     }
     
-    if (count < 90)
-            fprintf(stdout, "%.*s", (int)(89-count),
-                    "                                                  "
-                    "                                                  ");
+    if (count < 100)
+            fprintf(stdout, "%*s", (int)(99-count), "");
 
     fprintf(stdout, "\n");
     fflush(stdout);
