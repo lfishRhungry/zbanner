@@ -26,6 +26,11 @@ icmptime_transmit(
     *len = icmp_create_timestamp_packet(
         target->ip_them, target->ip_me,
         cookie, cookie, 255, px, PKT_BUF_LEN);
+    
+    /*add timeout*/
+    event->need_timeout = 1;
+    event->port_them    = 0;
+    event->port_me      = 0;
 
     return 0;
 }
@@ -70,10 +75,21 @@ icmptime_handle(
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "alive");
 }
 
+void icmptime_timeout(
+    uint64_t entropy,
+    struct ScanTimeoutEvent *event,
+    struct OutputItem *item,
+    struct stack_t *stack,
+    struct FHandler *handler)
+{
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "down");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+}
+
 struct ScanModule IcmpTimeScan = {
     .name = "icmptime",
     .required_probe_type = 0,
-    .support_timeout = 0,
+    .support_timeout = 1,
     .bpf_filter = "icmp && (icmp[0]==14 && icmp[1]==0)", /*icmp timestamp reply*/
     .desc =
         "IcmpTimeScan sends a ICMP Timestamp mesage to IPv4 target host. Expect an "
@@ -83,6 +99,6 @@ struct ScanModule IcmpTimeScan = {
     .transmit_cb            = &icmptime_transmit,
     .validate_cb            = &icmptime_validate,
     .handle_cb              = &icmptime_handle,
-    .timeout_cb             = &scan_no_timeout,
+    .timeout_cb             = &icmptime_timeout,
     .close_cb               = &scan_close_nothing,
 };

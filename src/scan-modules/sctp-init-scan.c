@@ -25,6 +25,9 @@ sctpinit_transmit(
     *len = sctp_create_packet(target->ip_them, target->port_them,
         target->ip_me, target->port_me,
         cookie, px, PKT_BUF_LEN);
+    
+    /*add timeout*/
+    event->need_timeout = 1;
 
     return 0;
 }
@@ -86,10 +89,21 @@ sctpinit_handle(
     }
 }
 
+void sctpinit_timeout(
+    uint64_t entropy,
+    struct ScanTimeoutEvent *event,
+    struct OutputItem *item,
+    struct stack_t *stack,
+    struct FHandler *handler)
+{
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+}
+
 struct ScanModule SctpInitScan = {
     .name = "sctpinit",
     .required_probe_type = 0,
-    .support_timeout = 0,
+    .support_timeout = 1,
     .bpf_filter = "sctp && (sctp[12]==2 || sctp[12]==6)", /*sctp init or init ack*/
     .desc =
         "SctpInitScan sends an SCTP INIT packet(chunk) to target port. Expect an "
@@ -100,6 +114,6 @@ struct ScanModule SctpInitScan = {
     .transmit_cb             = &sctpinit_transmit,
     .validate_cb             = &sctpinit_validate,
     .handle_cb               = &sctpinit_handle,
-    .timeout_cb              = &scan_no_timeout,
+    .timeout_cb              = &sctpinit_timeout,
     .close_cb                = &scan_close_nothing,
 };

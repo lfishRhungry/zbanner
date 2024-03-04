@@ -22,6 +22,11 @@ icmpecho_transmit(
     *len = icmp_create_echo_packet(
         target->ip_them, target->ip_me,
         cookie, cookie, 255, px, PKT_BUF_LEN);
+    
+    /*add timeout*/
+    event->need_timeout = 1;
+    event->port_them    = 0;
+    event->port_me      = 0;
 
     return 0;
 }
@@ -71,10 +76,21 @@ icmpecho_handle(
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "alive");
 }
 
+void icmpecho_timeout(
+    uint64_t entropy,
+    struct ScanTimeoutEvent *event,
+    struct OutputItem *item,
+    struct stack_t *stack,
+    struct FHandler *handler)
+{
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "down");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+}
+
 struct ScanModule IcmpEchoScan = {
     .name = "icmpecho",
     .required_probe_type = 0,
-    .support_timeout = 0,
+    .support_timeout = 1,
     .bpf_filter = "(icmp && (icmp[0]==0 && icmp[1]==0)) || (icmp6 && (icmp6[0]==129&&icmp6[1]==0))",
     .desc =
         "IcmpEchoScan sends a ICMP ECHO Request packet to target host. Expect an "
@@ -84,6 +100,6 @@ struct ScanModule IcmpEchoScan = {
     .transmit_cb            = &icmpecho_transmit,
     .validate_cb            = &icmpecho_validate,
     .handle_cb              = &icmpecho_handle,
-    .timeout_cb             = &scan_no_timeout,
+    .timeout_cb             = &icmpecho_timeout,
     .close_cb               = &scan_close_nothing,
 };

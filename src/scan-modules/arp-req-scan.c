@@ -19,6 +19,11 @@ arpreq_transmit(
     /*we do not need a cookie and actually cannot set it*/
     *len = arp_create_request_packet(
         target->ip_them, target->ip_me, px, PKT_BUF_LEN);
+    
+    /*add timeout*/
+    event->need_timeout = 1;
+    event->port_them    = 0;
+    event->port_me      = 0;
 
     return 0;
 }
@@ -59,10 +64,21 @@ arpreq_handle(
         recved->parsed.mac_src[4], recved->parsed.mac_src[5]);
 }
 
+void arpreq_timeout(
+    uint64_t entropy,
+    struct ScanTimeoutEvent *event,
+    struct OutputItem *item,
+    struct stack_t *stack,
+    struct FHandler *handler)
+{
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "down");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+}
+
 struct ScanModule ArpReqScan = {
     .name = "arpreq",
     .required_probe_type = 0,
-    .support_timeout = 0,
+    .support_timeout = 1,
     .bpf_filter = "arp && arp[6:2]==2", /*arp reply*/
     .desc =
         "ArpReqScan sends an ARP Request packet to broadcast mac addr"
@@ -81,6 +97,6 @@ struct ScanModule ArpReqScan = {
     .transmit_cb       = &arpreq_transmit,
     .validate_cb       = &arpreq_validate,
     .handle_cb         = &arpreq_handle,
-    .timeout_cb        = &scan_no_timeout,
+    .timeout_cb        = &arpreq_timeout,
     .close_cb          = &scan_close_nothing,
 };
