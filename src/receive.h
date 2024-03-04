@@ -18,6 +18,10 @@ struct RxThread {
 
     uint64_t *total_successed;
 
+    uint64_t *total_failed;
+
+    uint64_t *total_tm_event; /*unhandled fast-timeout event*/
+
     size_t thread_handle_recv;
 };
 

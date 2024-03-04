@@ -102,8 +102,14 @@ receive_thread(void *v)
 
     /* some status variables */
     uint64_t *status_successed_count = MALLOC(sizeof(uint64_t));
+    uint64_t *status_failed_count    = MALLOC(sizeof(uint64_t));
+    uint64_t *status_timeout_count   = MALLOC(sizeof(uint64_t));
     *status_successed_count = 0;
-    parms->total_successed = status_successed_count;
+    *status_failed_count    = 0;
+    *status_timeout_count   = 0;
+    parms->total_successed  = status_successed_count;
+    parms->total_failed     = status_failed_count;
+    parms->total_tm_event   = status_timeout_count;
 
     LOG(1, "[+] starting receive thread\n");
 
@@ -185,10 +191,19 @@ receive_thread(void *v)
                 scan_module->timeout_cb(entropy, tm_event, &item, stack, &ft_handler);
 
                 output_result(&output, &item);
+                
+                if (!item.no_output) {
+                    if (item.is_success)
+                        (*status_successed_count)++;
+                    else
+                        (*status_failed_count)++;
+                }
 
                 free(tm_event);
                 tm_event = ft_pop_event(&ft_handler, global_now);
             }
+
+            *status_timeout_count = ft_event_count(&ft_handler);
         }
 
         struct Received recved = {0};
@@ -275,8 +290,12 @@ receive_thread(void *v)
 
         output_result(&output, &item);
         
-        if (item.is_success)
-            (*status_successed_count)++;
+        if (!item.no_output) {
+            if (item.is_success)
+                (*status_successed_count)++;
+            else
+                (*status_failed_count)++;
+        }
 
     }
 

@@ -72,3 +72,12 @@ void ft_close_table(struct FTable *table)
     }
     lfqueue_destroy(&table->queue_t);
 }
+
+size_t ft_event_count(struct FHandler *handler)
+{
+    size_t ret;
+    ret = lfqueue_size(handler->queue);
+    if (handler->oldest)
+        ret++;
+    return ret;
+}

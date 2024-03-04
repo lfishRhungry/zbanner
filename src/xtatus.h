@@ -24,10 +24,17 @@ struct Xtatus
 };
 
 
-void xtatus_print(struct Xtatus *xtatus, uint64_t count,
-    uint64_t max_count, double pps,
-    uint64_t total_successed, uint64_t total_sent,
-    uint64_t exiting, bool json_status);
+void xtatus_print(
+    struct Xtatus *xtatus,
+    uint64_t count,
+    uint64_t max_count,
+    double pps,
+    uint64_t total_successed,
+    uint64_t total_failed,
+    uint64_t total_sent,
+    uint64_t total_tm_event,
+    uint64_t exiting,
+    bool json_status);
 void xtatus_finish(struct Xtatus *xtatus);
 void xtatus_start(struct Xtatus *xtatus);
 

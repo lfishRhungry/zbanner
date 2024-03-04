@@ -54,7 +54,7 @@ typedef void (*lfqueue_free_fn)(void*, void*);
 
 typedef struct {
 	lfqueue_cas_node_t *head, *tail, *root_free, *move_free;
-	volatile size_t size;
+	volatile uint64_t size;
 	volatile lfq_bool_t in_free_mode;
 	lfqueue_malloc_fn _malloc;
 	lfqueue_free_fn _free;
@@ -72,7 +72,7 @@ extern void* lfqueue_deq_must(lfqueue_t *lfqueue);
 extern void* lfqueue_single_deq_must(lfqueue_t *lfqueue);
 
 extern void lfqueue_destroy(lfqueue_t *lfqueue);
-extern size_t lfqueue_size(lfqueue_t *lfqueue);
+extern uint64_t lfqueue_size(lfqueue_t *lfqueue);
 extern void lfqueue_sleep(unsigned int milisec);
 
 

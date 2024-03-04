@@ -62,6 +62,11 @@ void ft_add_event(struct FHandler *handler, void *event);
 void * ft_pop_event(struct FHandler *handler, time_t now);
 
 /**
+ * Get event count(with the oldest one)
+*/
+size_t ft_event_count(struct FHandler *handler);
+
+/**
  * Clean up the fast-timeout table handler
 */
 void ft_close_handler(struct FHandler *handler);

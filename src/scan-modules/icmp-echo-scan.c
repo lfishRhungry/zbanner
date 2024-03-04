@@ -52,11 +52,15 @@ icmpecho_validate(
         &&get_icmp_code(&recved->parsed)==ICMPv4_CODE_ECHO_REPLY
         &&get_icmp_cookie(&recved->parsed, recved->packet)==cookie) {
         pre->go_dedup = 1;
+        pre->dedup_port_them = 0;
+        pre->dedup_port_me   = 0;
     } else if (recved->parsed.src_ip.version==6
         &&get_icmp_type(&recved->parsed)==ICMPv6_TYPE_ECHO_REPLY
         &&get_icmp_code(&recved->parsed)==ICMPv6_CODE_ECHO_REPLY
         &&get_icmp_cookie(&recved->parsed, recved->packet)==cookie) {
         pre->go_dedup = 1;
+        pre->dedup_port_them = 0;
+        pre->dedup_port_me   = 0;
     }
 }
 

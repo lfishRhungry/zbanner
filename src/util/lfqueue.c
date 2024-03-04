@@ -357,7 +357,7 @@ lfqueue_single_deq_must(lfqueue_t *lfqueue) {
 	return v;
 }
 
-size_t
+uint64_t
 lfqueue_size(lfqueue_t *lfqueue) {
 	return __LFQ_ADD_AND_FETCH(&lfqueue->size, 0);
 }

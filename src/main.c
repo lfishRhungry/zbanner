@@ -393,6 +393,8 @@ main_scan(struct Xconf *xconf)
         unsigned i;
         double rate              = 0;
         uint64_t total_successed = 0;
+        uint64_t total_failed    = 0;
+        uint64_t total_tm_event  = 0;
         uint64_t total_sent      = 0;
 
 
@@ -413,6 +415,12 @@ main_scan(struct Xconf *xconf)
         if (rx_thread->total_successed)
             total_successed = *rx_thread->total_successed;
 
+        if (rx_thread->total_failed)
+            total_failed = *rx_thread->total_failed;
+
+        if (rx_thread->total_tm_event)
+            total_tm_event = *rx_thread->total_tm_event;
+
         if (min_index >= range && !xconf->is_infinite) {
             /* Note: This is how we can tell the scan has ended */
             is_tx_done = 1;
@@ -423,7 +431,7 @@ main_scan(struct Xconf *xconf)
          * namely packets/second.
          */
         xtatus_print(&status, min_index, range, rate,
-            total_successed, total_sent,
+            total_successed, total_failed, total_sent, total_tm_event,
             0, xconf->is_status_ndjson);
 
         /* Sleep for almost a second */
@@ -455,6 +463,8 @@ main_scan(struct Xconf *xconf)
         unsigned i;
         double rate = 0;
         uint64_t total_successed = 0;
+        uint64_t total_failed    = 0;
+        uint64_t total_tm_event  = 0;
         uint64_t total_sent = 0;
 
 
@@ -475,8 +485,14 @@ main_scan(struct Xconf *xconf)
         if (rx_thread->total_successed)
             total_successed = *rx_thread->total_successed;
 
+        if (rx_thread->total_failed)
+            total_failed = *rx_thread->total_failed;
+
+        if (rx_thread->total_tm_event)
+            total_tm_event = *rx_thread->total_tm_event;
+
         xtatus_print(&status, min_index, range, rate,
-            total_successed, total_sent,
+            total_successed, total_failed, total_sent, total_tm_event,
             xconf->wait - (time(0) - now),
             xconf->is_status_ndjson);
 

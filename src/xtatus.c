@@ -29,7 +29,9 @@ xtatus_print(
     uint64_t max_count,
     double pps,
     uint64_t total_successed,
+    uint64_t total_failed,
     uint64_t total_sent,
+    uint64_t total_tm_event,
     uint64_t exiting,
     bool json_status)
 {
@@ -56,11 +58,12 @@ xtatus_print(
         "\"rate\":"
         "{"
             "\"kpps\":%.2f,"
-            "\"pps\":%4$.2f,"
+            "\"pps\":%.2f,"
             "\"sent ps\":%.0f,"
             "\"successed ps\":%.0f,"
         "},"
-        "\"sent\":%5$" PRIu64
+        "\"sent\":%," PRIu64
+        "\"tm_event\":%" PRIu64
     "}\n";
     
     /**
@@ -72,18 +75,20 @@ xtatus_print(
         "\"rate\":"
         "{"
             "\"kpps\":%.2f,"
-            "\"pps\":%5$.2f"
+            "\"pps\":%.2f"
         "},"
         "\"progress\":"
         "{"
             "\"percent\":%.2f,"
             "\"seconds\":%d,"
             "\"successed\":%" PRIu64 ","
+            "\"failed\":%" PRIu64 ","
+            "\"tm_event\":%" PRIu64 ","
             "\"transmit\":"
             "{"
-                "\"sent\":%6$" PRIu64 ","
-                "\"total\":%7$" PRIu64 ","
-                "\"remaining\":%8$" PRIu64
+                "\"sent\":%" PRIu64 ","
+                "\"total\":%" PRIu64 ","
+                "\"remaining\":%" PRIu64
             "}" 
         "}"
     "}\n";
@@ -98,7 +103,7 @@ xtatus_print(
         "\"rate\":"
         "{"
             "\"kpps\":%.2f,"
-            "\"pps\":%7$.2f"
+            "\"pps\":%.2f"
         "},"
         "\"progress\":"
         "{"
@@ -111,11 +116,13 @@ xtatus_print(
             "},"
             "\"transmit\":"
             "{"
-                "\"sent\":%8$" PRIu64 ","
-                "\"total\":%9$" PRIu64 ","
-                "\"remaining\":%10$" PRIu64
+                "\"sent\":%" PRIu64 ","
+                "\"total\":%" PRIu64 ","
+                "\"remaining\":%" PRIu64
             "}," 
-            "\"successed\":%6$" PRIu64 ","
+            "\"successed\":%" PRIu64 ","
+            "\"failed\":%" PRIu64 ","
+            "\"tm_event\":%" PRIu64
         "}"
     "}\n";
 
@@ -198,54 +205,89 @@ xtatus_print(
      */
 
     if (xtatus->is_infinite) {
-        if (json_status == 1)
+        if (json_status == 1) {
             fmt = json_fmt_infinite;
-        else
-            fmt = "rate:%6.2f-kpps, sent/s=%.0f, successed/s=%.0f                  \r";
-
-        fprintf(stderr,
-            fmt,
-                kpps,
-                sent_rate,
-                successed_rate,
-                pps,
-                count);
-    } else {
-        if (is_tx_done) {
-            if (json_status == 1)
-                fmt = json_fmt_waiting;
-            else
-                fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, successed=%" PRIu64 "       \r";
 
             fprintf(stderr,
                     fmt,
-                    pps/1000.0,
-                    percent_done,
-                    (int)exiting,
-                    total_successed,
+                    kpps,
                     pps,
+                    sent_rate,
+                    successed_rate,
                     count,
-                    max_count,
-                    max_count-count);
-            
+                    total_tm_event);
         } else {
-            if (json_status == 1)
-                fmt = json_fmt_running;
-            else
-                fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, successed=%" PRIu64 "     \r";
+            fmt = "rate:%6.2f-kpps, sent/s=%.0f, successed/s=%.0f , tm_event=%6$" PRIu64 "                \r";
 
             fprintf(stderr,
-                fmt,
-                pps/1000.0,
-                percent_done,
-                (unsigned)(time_remaining/60/60),
-                (unsigned)(time_remaining/60)%60,
-                (unsigned)(time_remaining)%60,
-                total_successed,
-                pps,
-                count,
-                max_count,
-                max_count-count);
+                    fmt,
+                    kpps,
+                    sent_rate,
+                    successed_rate,
+                    total_tm_event);
+        }
+    } else {
+        if (is_tx_done) {
+            if (json_status == 1) {
+                fmt = json_fmt_waiting;
+
+                fprintf(stderr,
+                        fmt,
+                        pps/1000.0,
+                        pps,
+                        percent_done,
+                        (int)exiting,
+                        total_successed,
+                        total_failed,
+                        total_tm_event,
+                        count,
+                        max_count,
+                        max_count-count);
+            } else {
+                fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, successed=%" PRIu64 ", failed=%" PRIu64 ", tm_event=%" PRIu64 "       \r";
+
+                fprintf(stderr,
+                        fmt,
+                        pps/1000.0,
+                        percent_done,
+                        (int)exiting,
+                        total_successed,
+                        total_failed,
+                        total_tm_event);
+            }
+            
+        } else {
+            if (json_status == 1) {
+                fmt = json_fmt_running;
+
+                fprintf(stderr,
+                    fmt,
+                    pps/1000.0,
+                    pps,
+                    percent_done,
+                    (unsigned)(time_remaining/60/60),
+                    (unsigned)(time_remaining/60)%60,
+                    (unsigned)(time_remaining)%60,
+                    count,
+                    max_count,
+                    max_count-count,
+                    total_successed,
+                    total_failed,
+                    total_tm_event);
+            } else {
+                fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, successed=%" PRIu64 ", failed=%" PRIu64 ", tm_event=%" PRIu64 "     \r";
+
+                fprintf(stderr,
+                    fmt,
+                    pps/1000.0,
+                    percent_done,
+                    (unsigned)(time_remaining/60/60),
+                    (unsigned)(time_remaining/60)%60,
+                    (unsigned)(time_remaining)%60,
+                    total_successed,
+                    total_failed,
+                    total_tm_event);
+            }
         }
     }
     fflush(stderr);

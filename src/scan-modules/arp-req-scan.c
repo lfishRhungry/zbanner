@@ -41,6 +41,8 @@ arpreq_validate(
         pre->go_record = 1;
     else return;
     
+    pre->dedup_port_them = 0;
+    pre->dedup_port_me   = 0;
     pre->go_dedup  = 1;
 }
 

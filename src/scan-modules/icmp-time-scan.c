@@ -56,6 +56,8 @@ icmptime_validate(
         &&get_icmp_code(&recved->parsed)==ICMPv4_CODE_TIMESTAMP_REPLY
         &&get_icmp_cookie(&recved->parsed, recved->packet)==cookie) {
         pre->go_dedup = 1;
+        pre->dedup_port_them = 0;
+        pre->dedup_port_me   = 0;
     }
 }
 
