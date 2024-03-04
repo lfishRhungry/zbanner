@@ -1,6 +1,5 @@
 #include "fast-timeout.h"
 #include "../util/mas-malloc.h"
-#include "../util/lfqueue.h"
 
 struct FEntry {
     /**
@@ -13,19 +12,6 @@ struct FEntry {
     void *event;
 };
 
-struct FHandler {
-    time_t            spec;
-    lfqueue_t        *queue;
-    struct FEntry    *oldest; /*oldest event poped from queue*/
-};
-
-struct FTable {
-    /**
-     * What time spec elapses before now should an event be timeout
-    */
-    time_t       spec;
-    lfqueue_t    queue_t;
-};
 
 void ft_init_table(struct FTable *table, time_t spec)
 {

@@ -12,6 +12,7 @@ static int
 icmptime_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
+    struct ScanTimeoutEvent *event,
     unsigned char *px, size_t *len)
 {
     /*icmp timestamp is just for ipv4*/
@@ -58,7 +59,8 @@ icmptime_handle(
     uint64_t entropy,
     struct Received *recved,
     struct OutputItem *item,
-    struct stack_t *stack)
+    struct stack_t *stack,
+    struct FHandler *handler)
 {
     item->port_them  = 0;
     item->port_me    = 0;
@@ -71,6 +73,7 @@ icmptime_handle(
 struct ScanModule IcmpTimeScan = {
     .name = "icmptime",
     .required_probe_type = 0,
+    .support_timeout = 0,
     .bpf_filter = "icmp && (icmp[0]==14 && icmp[1]==0)", /*icmp timestamp reply*/
     .desc =
         "IcmpTimeScan sends a ICMP Timestamp mesage to IPv4 target host. Expect an "
@@ -80,5 +83,6 @@ struct ScanModule IcmpTimeScan = {
     .transmit_cb            = &icmptime_transmit,
     .validate_cb            = &icmptime_validate,
     .handle_cb              = &icmptime_handle,
+    .timeout_cb             = &scan_no_timeout,
     .close_cb               = &scan_close_nothing,
 };

@@ -12,6 +12,7 @@ static int
 tcpsyn_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
+    struct ScanTimeoutEvent *event,
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
@@ -24,6 +25,9 @@ tcpsyn_transmit(
     *len = tcp_create_packet(
         target->ip_them, target->port_them, target->ip_me, target->port_me,
         cookie, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_LEN);
+    
+    /*add timeout*/
+    event->need_timeout = 1;
 
     return 0;
 }
@@ -70,7 +74,8 @@ tcpsyn_handle(
     uint64_t entropy,
     struct Received *recved,
     struct OutputItem *item,
-    struct stack_t *stack)
+    struct stack_t *stack,
+    struct FHandler *handler)
 {
 
     /*SYNACK*/
@@ -94,9 +99,21 @@ tcpsyn_handle(
     }
 }
 
+void tcpsyn_timeout(
+    uint64_t entropy,
+    struct ScanTimeoutEvent *event,
+    struct OutputItem *item,
+    struct stack_t *stack,
+    struct FHandler *handler)
+{
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+}
+
 struct ScanModule TcpSynScan = {
     .name = "tcpsyn",
     .required_probe_type = 0,
+    .support_timeout = 1,
     .bpf_filter = "tcp && (tcp[13] & 4 != 0 || tcp[13] == 18)", /*tcp rst or syn-ack*/
     .desc =
         "TcpSynScan sends a TCP SYN packet to target port. Expect a SYNACK "
@@ -107,5 +124,6 @@ struct ScanModule TcpSynScan = {
     .transmit_cb              = &tcpsyn_transmit,
     .validate_cb              = &tcpsyn_validate,
     .handle_cb                = &tcpsyn_handle,
+    .timeout_cb               = &tcpsyn_timeout,
     .close_cb                 = &scan_close_nothing,
 };

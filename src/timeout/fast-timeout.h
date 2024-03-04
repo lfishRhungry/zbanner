@@ -5,8 +5,21 @@
 #include <stdint.h>
 #include <time.h>
 
-struct FTable;
-struct FHandler;
+#include "../util/lfqueue.h"
+
+struct FHandler {
+    time_t            spec;
+    lfqueue_t        *queue;
+    struct FEntry    *oldest; /*oldest event poped from queue*/
+};
+
+struct FTable {
+    /**
+     * What time spec elapses before now should an event be timeout
+    */
+    time_t       spec;
+    lfqueue_t    queue_t;
+};
 
 /**
  * Create a fast-timeout table to manage timeout events

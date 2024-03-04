@@ -141,16 +141,17 @@ static int
 main_scan(struct Xconf *xconf)
 {
     /*We could have many tx threads but one rx thread*/
-    struct TxThread *tx_thread;
-    struct RxThread rx_thread[1];
-    struct TemplateSet tmplset;
-    uint64_t count_ips;
-    uint64_t count_ports;
-    uint64_t range;
-    unsigned index;
-    time_t now = time(0);
-    struct Xtatus status;
-    uint64_t min_index = UINT64_MAX;
+    struct TxThread    *tx_thread;
+    struct RxThread     rx_thread[1];
+    struct TemplateSet  tmplset;
+    struct FTable       ft_table;
+    uint64_t            count_ips;
+    uint64_t            count_ports;
+    uint64_t            range;
+    unsigned            index;
+    struct Xtatus       status;
+    uint64_t            min_index = UINT64_MAX;
+    time_t              now = time(0);
 
 
     memset(rx_thread, 0, sizeof(struct RxThread));
@@ -228,6 +229,14 @@ main_scan(struct Xconf *xconf)
     */
     xconf->stack = stack_create(xconf->nic.source_mac,
         &xconf->nic.src, xconf->stack_buf_count);
+    
+    /**
+     * create fast-timeout table
+    */
+    if (xconf->is_fast_timeout) {
+        ft_init_table(&ft_table, xconf->ft_spec);
+        xconf->ft_table = &ft_table;
+    }
 
     /*
         * Initialize the TCP packet template. The way this works is that
@@ -566,6 +575,7 @@ int main(int argc, char *argv[])
     xconf->payloads.udp         = payloads_udp_create();
     xconf->payloads.oproto      = payloads_oproto_create();
     xconf->dedup_win            = 1000000;
+    xconf->ft_spec              = 5;
     /*default entries count of callback queue and packet buffer queue*/
     /**
      * Default entries count of callback queue and packet buffer queue.

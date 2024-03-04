@@ -12,6 +12,7 @@ static int
 icmpecho_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
+    struct ScanTimeoutEvent *event,
     unsigned char *px, size_t *len)
 {
     /*we do not care target port*/
@@ -59,7 +60,8 @@ icmpecho_handle(
     uint64_t entropy,
     struct Received *recved,
     struct OutputItem *item,
-    struct stack_t *stack)
+    struct stack_t *stack,
+    struct FHandler *handler)
 {
     item->port_them  = 0;
     item->port_me    = 0;
@@ -72,6 +74,7 @@ icmpecho_handle(
 struct ScanModule IcmpEchoScan = {
     .name = "icmpecho",
     .required_probe_type = 0,
+    .support_timeout = 0,
     .bpf_filter = "(icmp && (icmp[0]==0 && icmp[1]==0)) || (icmp6 && (icmp6[0]==129&&icmp6[1]==0))",
     .desc =
         "IcmpEchoScan sends a ICMP ECHO Request packet to target host. Expect an "
@@ -81,5 +84,6 @@ struct ScanModule IcmpEchoScan = {
     .transmit_cb            = &icmpecho_transmit,
     .validate_cb            = &icmpecho_validate,
     .handle_cb              = &icmpecho_handle,
+    .timeout_cb             = &scan_no_timeout,
     .close_cb               = &scan_close_nothing,
 };

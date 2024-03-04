@@ -1414,6 +1414,40 @@ static int SET_offline(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
+static int SET_fast_timeout(struct Xconf *xconf, const char *name, const char *value)
+{
+    if (xconf->echo) {
+        if (xconf->is_fast_timeout || xconf->echo_all) {
+            if (xconf->is_fast_timeout) {
+                fprintf(xconf->echo, "timeout = %ld\n", xconf->ft_spec);
+            } else {
+                fprintf(xconf->echo, "timeout = false\n");
+            }
+        }
+        return 0;
+    }
+
+    if (isBoolean(value)) {
+        if (parseBoolean(value)) {
+            xconf->is_fast_timeout = 1;
+        }
+    } else if (isInteger(value)) {
+        int spec = parseInt(value);
+        if (spec <= 0) {
+            fprintf(stderr, "[-] %s: need a switch word or a positive number.\n", name);
+            return CONF_ERR;
+        }
+        xconf->is_fast_timeout = 1;
+        xconf->ft_spec = (time_t)spec;
+    } else
+        goto fail;
+
+    return CONF_OK;
+fail:
+    fprintf(stderr, "[-] %s: bad value: %s\n", name, value);
+    return CONF_ERR;
+}
+
 /* Specifies a 'libpcap' file where the received packets will be written.
  * This is useful while debugging so that we can see what exactly is
  * going on. It's also an alternate mode for getting output from this
@@ -2534,6 +2568,16 @@ struct ConfigParameter config_parameters[] = {
         "it's useful with --rate 100000000 in order to benchmark how fast "
         "transmit would work (assuming a zero-overhead driver). PF_RING is about"
         " 20% slower than the benchmark result from offline mode."
+    },
+    {
+        "timeout",
+        SET_fast_timeout,
+        F_NUMABLE,
+        {"use-timeout", 0},
+        "Specifies whether or how many timeouts(sec) should ScanModule use like"
+        " --timeout true, --timeout 15. Some ScanModules could use timeout "
+        "function of "XTATE_UPPER_NAME" to result some unresponsed targets and "
+        "do some operation."
     },
     {
         "no-dedup",

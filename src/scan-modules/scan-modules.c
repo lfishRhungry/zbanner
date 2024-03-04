@@ -55,6 +55,8 @@ void list_all_scan_modules()
         printf("\n");
         printf("  Required Probe Type: %s\n", get_probe_type_name(scan_modules_list[i]->required_probe_type));
         printf("\n");
+        printf("  Support Timeout    : %s\n", scan_modules_list[i]->support_timeout?"Yes\n":"No\n");
+        printf("\n");
         printf("  Default BPF Filter :\n");
         print_with_indent(scan_modules_list[i]->bpf_filter?scan_modules_list[i]->bpf_filter:"null", 6, 80);
         printf("\n");
@@ -110,4 +112,14 @@ int scan_response_nothing(
 void scan_close_nothing()
 {
     return;
+}
+
+void scan_no_timeout(
+    uint64_t entropy,
+    struct ScanTimeoutEvent *event,
+    struct OutputItem *item,
+    struct stack_t *stack,
+    struct FHandler *handler)
+{
+    item->no_output = 1;
 }

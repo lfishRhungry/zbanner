@@ -8,49 +8,51 @@
 #include <stdint.h>
 
 #include "xconf.h"
-#include "globals.h"       /* all the global variables in the program */
-#include "xtatus.h"        /* printf() regular status updates */
-#include "cookie.h"         /* for SYN-cookies on send */
+#include "globals.h"                            /* all the global variables in the program */
+#include "xtatus.h"                             /* printf() regular status updates */
+#include "cookie.h"                             /* for SYN-cookies on send */
 
 #include "output/output.h"
-#include "stub/stub-pcap.h"          /* dynamically load libpcap library */
-#include "smack/smack.h"              /* Aho-corasick state-machine pattern-matcher */
+#include "stub/stub-pcap.h"                     /* dynamically load libpcap library */
+#include "smack/smack.h"                        /* Aho-corasick state-machine pattern-matcher */
 #include "nmap-service/read-service-probes.h"
 
 #include "massip/massip-parse.h"
 #include "massip/massip-port.h"
 
-#include "templ/templ-init.h"          /* packet template, that we use to send */
-#include "templ/templ-payloads.h"     /* UDP packet payloads */
+#include "templ/templ-init.h"                   /* packet template, that we use to send */
+#include "templ/templ-payloads.h"               /* UDP packet payloads */
 
-#include "rawsock/rawsock.h"            /* API on top of Linux, Windows, Mac OS X*/
-#include "rawsock/rawsock-adapter.h"    /* Get Ethernet adapter configuration */
-#include "rawsock/rawsock-pcapfile.h"   /* for saving pcap files w/ raw packets */
+#include "rawsock/rawsock.h"                    /* API on top of Linux, Windows, Mac OS X*/
+#include "rawsock/rawsock-adapter.h"            /* Get Ethernet adapter configuration */
+#include "rawsock/rawsock-pcapfile.h"           /* for saving pcap files w/ raw packets */
 
-#include "stack/stack-ndpv6.h"        /* IPv6 Neighbor Discovery Protocol */
-#include "stack/stack-arpv4.h"        /* Handle ARP resolution and requests */
+#include "stack/stack-ndpv6.h"                  /* IPv6 Neighbor Discovery Protocol */
+#include "stack/stack-arpv4.h"                  /* Handle ARP resolution and requests */
 #include "stack/stack-queue.h"
 
-#include "pixie/pixie-timer.h"        /* portable time functions */
-#include "pixie/pixie-threads.h"      /* portable threads */
-#include "pixie/pixie-backtrace.h"    /* maybe print backtrace on crash */
+#include "pixie/pixie-timer.h"                  /* portable time functions */
+#include "pixie/pixie-threads.h"                /* portable threads */
+#include "pixie/pixie-backtrace.h"              /* maybe print backtrace on crash */
 
-#include "crypto/crypto-siphash24.h"   /* hash function, for hash tables */
-#include "crypto/crypto-blackrock.h"   /* the BlackRock shuffling func */
-#include "crypto/crypto-lcg.h"         /* the LCG randomization func */
-#include "crypto/crypto-base64.h"      /* base64 encode/decode */
+#include "crypto/crypto-siphash24.h"            /* hash function, for hash tables */
+#include "crypto/crypto-blackrock.h"            /* the BlackRock shuffling func */
+#include "crypto/crypto-lcg.h"                  /* the LCG randomization func */
+#include "crypto/crypto-base64.h"               /* base64 encode/decode */
 
-#include "util/throttle.h"      /* rate limit */
-#include "util/dedup.h"         /* ignore duplicate responses */
-#include "util/ptrace.h"        /* for nmap --packet-trace feature */
+#include "util/throttle.h"                      /* rate limit */
+#include "util/dedup.h"                         /* ignore duplicate responses */
+#include "util/ptrace.h"                        /* for nmap --packet-trace feature */
 #include "util/initadapter.h"
 #include "util/readrange.h"
 #include "util/listscan.h"
-#include "util/logger.h"             /* adjust with -v command-line opt */
-#include "util/rte-ring.h"           /* producer/consumer ring buffer */
+#include "util/logger.h"                        /* adjust with -v command-line opt */
+#include "util/rte-ring.h"                      /* producer/consumer ring buffer */
 #include "util/rstfilter.h"
 #include "util/mas-malloc.h"
 #include "util/checksum.h"
+
+#include "timeout/fast-timeout.h"
 
 
 /**
@@ -80,15 +82,17 @@
 void
 receive_thread(void *v)
 {
-    struct RxThread *parms          = (struct RxThread *)v;
-    const struct Xconf *xconf       = parms->xconf;
-    struct Output output            = xconf->output;
-    struct Adapter *adapter         = xconf->nic.adapter;
-    int data_link                   = stack_if_datalink(adapter);
-    struct DedupTable *dedup        = NULL;
-    struct PcapFile *pcapfile       = NULL;
-    uint64_t entropy                = xconf->seed;
-    struct stack_t *stack           = xconf->stack;
+    struct RxThread             *parms           = (struct RxThread *)v;
+    const struct Xconf          *xconf           = parms->xconf;
+    struct Output                output          = xconf->output;
+    struct Adapter              *adapter         = xconf->nic.adapter;
+    int                          data_link       = stack_if_datalink(adapter);
+    struct DedupTable           *dedup           = NULL;
+    struct PcapFile             *pcapfile        = NULL;
+    uint64_t                     entropy         = xconf->seed;
+    struct stack_t              *stack           = xconf->stack;
+    struct ScanTimeoutEvent     *tm_event        = NULL;
+    struct FHandler              ft_handler;
 
     
     
@@ -139,6 +143,10 @@ receive_thread(void *v)
         parms->done_receiving = 1;
         goto end;
     }
+    
+    if (xconf->is_fast_timeout) {
+        ft_init_handler(xconf->ft_table, &ft_handler);
+    }
 
     /*
      * Receive packets. This is where we catch any responses and print
@@ -146,7 +154,43 @@ receive_thread(void *v)
      */
     LOG(2, "[+] THREAD: recv: starting main loop\n");
     while (!is_rx_done) {
+
         struct ScanModule *scan_module = xconf->scan_module;
+
+        /*handle fast-timeout event*/
+        if (xconf->is_fast_timeout) {
+
+            tm_event = ft_pop_event(&ft_handler, global_now);
+            while (tm_event) {
+
+                /*dedup timeout event and other packets together*/
+                if (!xconf->is_nodedup) {
+                    if (dedup_is_duplicate(dedup,
+                        tm_event->ip_them, tm_event->port_them,
+                        tm_event->ip_me,   tm_event->port_me,
+                        tm_event->dedup_type)) {
+                        free(tm_event);
+                        tm_event = NULL;
+                        continue;
+                    }
+                }
+
+                struct OutputItem item = {
+                    .ip_them   = tm_event->ip_them,
+                    .ip_me     = tm_event->ip_me,
+                    .port_them = tm_event->port_them,
+                    .port_me   = tm_event->port_me,
+                };
+
+                scan_module->timeout_cb(entropy, tm_event, &item, stack, &ft_handler);
+
+                output_result(&output, &item);
+
+                free(tm_event);
+                tm_event = ft_pop_event(&ft_handler, global_now);
+            }
+        }
+
         struct Received recved = {0};
 
         int err = rawsock_recv_packet(adapter, &(recved.length),
@@ -224,11 +268,10 @@ receive_thread(void *v)
             .port_me   = port_me,
         };
 
-        // struct StackInTransmit sit = {
-        //     .stack = stack,
-        // };
-
-        scan_module->handle_cb(entropy, &recved, &item, stack);
+        if (xconf->is_fast_timeout)
+            scan_module->handle_cb(entropy, &recved, &item, stack, &ft_handler);
+        else
+            scan_module->handle_cb(entropy, &recved, &item, stack, NULL);
 
         output_result(&output, &item);
         
@@ -250,6 +293,8 @@ end:
         dedup_destroy(dedup);
     if (pcapfile)
         pcapfile_close(pcapfile);
+    if (xconf->is_fast_timeout)
+        ft_close_handler(&ft_handler);
 
     /*TODO: free stack packet buffers */
 

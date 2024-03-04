@@ -54,18 +54,20 @@
 void
 transmit_thread(void *v) /*aka. scanning_thread() */
 {
-    struct TxThread *parms           = (struct TxThread *)v;
-    const struct Xconf *xconf        = parms->xconf;
-    uint64_t rate                    = (uint64_t)xconf->max_rate;
-    uint64_t count_ipv4              = rangelist_count(&xconf->targets.ipv4);
-    uint64_t count_ipv6              = range6list_count(&xconf->targets.ipv6).lo;
-    struct Throttler *throttler      = parms->throttler;
-    struct Adapter *adapter          = xconf->nic.adapter;
-    uint64_t packets_sent            = 0;
-    unsigned increment               = xconf->shard.of * xconf->tx_thread_count;
-    uint64_t seed                    = xconf->seed;
-    uint64_t repeats                 = 0; /* --infinite repeats */
-    uint64_t entropy                 = xconf->seed;
+    struct TxThread            *parms          = (struct TxThread *)v;
+    const struct Xconf         *xconf          = parms->xconf;
+    uint64_t                    rate           = (uint64_t)xconf->max_rate;
+    uint64_t                    count_ipv4     = rangelist_count(&xconf->targets.ipv4);
+    uint64_t                    count_ipv6     = range6list_count(&xconf->targets.ipv6).lo;
+    struct Throttler           *throttler      = parms->throttler;
+    struct Adapter             *adapter        = xconf->nic.adapter;
+    uint64_t                    packets_sent   = 0;
+    unsigned                    increment      = xconf->shard.of * xconf->tx_thread_count;
+    uint64_t                    seed           = xconf->seed;
+    uint64_t                    repeats        = 0; /* --infinite repeats */
+    uint64_t                    entropy        = xconf->seed;
+    struct ScanTimeoutEvent    *tm_event       =  NULL;
+    struct FHandler             ft_handler;
     // struct TemplateSet tmplset = templ_copy(xconf->tmplset);
 
     /* Wait to make sure receive_thread is ready */
@@ -95,6 +97,10 @@ transmit_thread(void *v) /*aka. scanning_thread() */
      * we can have multiple. */
     struct source_t src;
     adapter_get_source_addresses(xconf, &src);
+
+    if (xconf->is_fast_timeout) {
+        ft_init_handler(xconf->ft_table, &ft_handler);
+    }
 
 
     /* "THROTTLER" rate-limits how fast we transmit, set with the
@@ -233,12 +239,22 @@ infinite:
             */
             target.proto = get_real_protocol_and_port(&(target.port_them));
 
+            /*if we don't use fast-timeout, don't malloc more memory*/
+            if (!tm_event) {
+                tm_event = CALLOC(1, sizeof(struct ScanTimeoutEvent));
+            }
+
+            tm_event->ip_them   = target.ip_them;
+            tm_event->ip_me     = target.ip_me;
+            tm_event->port_them = target.port_them;
+            tm_event->port_me   = target.port_me;
+
             unsigned char pkt_buffer[PKT_BUF_LEN];
             size_t pkt_len = 0;
 
             int more = 0;
             more = xconf->scan_module->transmit_cb(
-                entropy, &target, pkt_buffer, &pkt_len);
+                entropy, &target, tm_event, pkt_buffer, &pkt_len);
 
             if (pkt_len) {
                 /* send packets (bypassing the kernal)*/
@@ -246,6 +262,14 @@ infinite:
                 batch_size--;
                 packets_sent++;
                 status_sent_count++;
+
+                /*add timeout event*/
+                if (xconf->is_fast_timeout && tm_event->need_timeout) {
+                    ft_add_event(&ft_handler, tm_event);
+                    tm_event = NULL;
+                } else {
+                    tm_event->need_timeout = 0;
+                }
             }
 
             if (more) {
@@ -322,6 +346,10 @@ infinite:
             pixie_usleep(100);
         }
     }
+
+    /*clean up*/
+    if (xconf->is_fast_timeout)
+        ft_close_handler(&ft_handler);
 
     /* Thread is about to exit */
     parms->done_transmitting = 1;

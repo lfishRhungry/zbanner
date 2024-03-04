@@ -12,6 +12,7 @@ static int
 sctpinit_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
+    struct ScanTimeoutEvent *event,
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
@@ -70,7 +71,8 @@ sctpinit_handle(
     uint64_t entropy,
     struct Received *recved,
     struct OutputItem *item,
-    struct stack_t *stack)
+    struct stack_t *stack,
+    struct FHandler *handler)
 {
     if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
         SCTP_CHUNK_TYPE_INIT_ACK)) {
@@ -87,6 +89,7 @@ sctpinit_handle(
 struct ScanModule SctpInitScan = {
     .name = "sctpinit",
     .required_probe_type = 0,
+    .support_timeout = 0,
     .bpf_filter = "sctp && (sctp[12]==2 || sctp[12]==6)", /*sctp init or init ack*/
     .desc =
         "SctpInitScan sends an SCTP INIT packet(chunk) to target port. Expect an "
@@ -97,5 +100,6 @@ struct ScanModule SctpInitScan = {
     .transmit_cb             = &sctpinit_transmit,
     .validate_cb             = &sctpinit_validate,
     .handle_cb               = &sctpinit_handle,
+    .timeout_cb              = &scan_no_timeout,
     .close_cb                = &scan_close_nothing,
 };

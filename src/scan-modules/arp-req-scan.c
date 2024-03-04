@@ -13,6 +13,7 @@ static int
 arpreq_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
+    struct ScanTimeoutEvent *event,
     unsigned char *px, size_t *len)
 {
     /*we do not need a cookie and actually cannot set it*/
@@ -43,7 +44,8 @@ arpreq_handle(
     uint64_t entropy,
     struct Received *recved,
     struct OutputItem *item,
-    struct stack_t *stack)
+    struct stack_t *stack,
+    struct FHandler *handler)
 {
     item->port_them  = 0;
     item->port_me    = 0;
@@ -60,6 +62,7 @@ arpreq_handle(
 struct ScanModule ArpReqScan = {
     .name = "arpreq",
     .required_probe_type = 0,
+    .support_timeout = 0,
     .bpf_filter = "arp && arp[6:2]==2", /*arp reply*/
     .desc =
         "ArpReqScan sends an ARP Request packet to broadcast mac addr"
@@ -78,5 +81,6 @@ struct ScanModule ArpReqScan = {
     .transmit_cb       = &arpreq_transmit,
     .validate_cb       = &arpreq_validate,
     .handle_cb         = &arpreq_handle,
+    .timeout_cb        = &scan_no_timeout,
     .close_cb          = &scan_close_nothing,
 };

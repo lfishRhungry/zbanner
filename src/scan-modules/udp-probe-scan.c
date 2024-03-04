@@ -45,6 +45,7 @@ static int
 udpprobe_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
+    struct ScanTimeoutEvent *event,
     unsigned char *px, size_t *len)
 {
     /*we just handle udp target*/
@@ -141,7 +142,8 @@ udpprobe_handle(
     uint64_t entropy,
     struct Received *recved,
     struct OutputItem *item,
-    struct stack_t *stack)
+    struct stack_t *stack,
+    struct FHandler *handler)
 {
     if (recved->parsed.found == FOUND_UDP) {
         item->is_success = 1;
@@ -212,6 +214,7 @@ udpprobe_handle(
 struct ScanModule UdpProbeScan = {
     .name = "udpprobe",
     .required_probe_type = ProbeType_UDP,
+    .support_timeout = 0,
     .bpf_filter = "udp || (icmp && icmp[0]==3 && icmp[1]==3) || (icmp6 && icmp6[0]==1 && icmp6[1]==4)", /*udp and icmp port unreachable*/
     .desc =
         "UdpProbeScan sends a udp packet with ProbeModule data to target port "
@@ -225,5 +228,6 @@ struct ScanModule UdpProbeScan = {
     .transmit_cb                 = &udpprobe_transmit,
     .validate_cb                 = &udpprobe_validate,
     .handle_cb                   = &udpprobe_handle,
+    .timeout_cb                  = &scan_no_timeout,
     .close_cb                    = &scan_close_nothing,
 };

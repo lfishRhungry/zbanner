@@ -44,6 +44,7 @@ static int
 zbanner_transmit_packet(
     uint64_t entropy,
     struct ScanTarget *target,
+    struct ScanTimeoutEvent *event,
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
@@ -133,7 +134,8 @@ zbanner_handle(
     uint64_t entropy,
     struct Received *recved,
     struct OutputItem *item,
-    struct stack_t *stack)
+    struct stack_t *stack,
+    struct FHandler *handler)
 {
     unsigned seqno_me   = TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
     unsigned seqno_them = TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
@@ -265,6 +267,7 @@ zbanner_handle(
 struct ScanModule ZBannerScan = {
     .name = "zbanner",
     .required_probe_type = ProbeType_TCP,
+    .support_timeout = 0,
     .bpf_filter = "tcp && (tcp[13] & 4 != 0 || tcp[13] & 16 != 0)", /*tcp with rst or ack*/
     .desc =
         "ZBannerScan tries to contruct TCP conn with target port and send data "
@@ -287,5 +290,6 @@ struct ScanModule ZBannerScan = {
     .transmit_cb                  = &zbanner_transmit_packet,
     .validate_cb                  = &zbanner_validate,
     .handle_cb                    = &zbanner_handle,
+    .timeout_cb                   = &scan_no_timeout,
     .close_cb                     = &scan_close_nothing,
 };

@@ -8,6 +8,7 @@
 
 #include "util/mas-safefunc.h"
 #include "util/bool.h"
+#include "timeout/fast-timeout.h"
 #include "massip/massip-addr.h"
 #include "massip/massip.h"
 #include "massip/massip.h"
@@ -115,6 +116,7 @@ struct Xconf
      */
     unsigned dedup_win;
 
+
     /**
      * This stack contains:
      *     The callback queue (transmit queue) from rx threads to tx threads,
@@ -123,6 +125,12 @@ struct Xconf
     */
     struct stack_t *stack;
     unsigned stack_buf_count;
+
+    /**
+     * Use fast-timeout table to handle simple timeout events;
+    */
+    struct FTable *ft_table;
+    time_t ft_spec; /*timeout seconds*/
 
     /**
      * The target ranges of IPv4 addresses that are included in the scan.
@@ -170,7 +178,8 @@ struct Xconf
     unsigned is_offline:1;      /* --offline */
     unsigned is_nodedup:1;      /* --nodedup, don't deduplicate */
     unsigned is_gmt:1;          /* --gmt, all times in GMT */
-    unsigned is_infinite:1;     /* -infinite */
+    unsigned is_infinite:1;     /* --infinite */
+    unsigned is_fast_timeout:1; /* --fast-timeout, use ft for ScanModule*/
 
     /**
      * Wait forever for responses, instead of the default 10 seconds
