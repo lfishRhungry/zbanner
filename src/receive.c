@@ -163,44 +163,39 @@ receive_thread(void *v)
 
         struct ScanModule *scan_module = xconf->scan_module;
 
-        /*handle fast-timeout event*/
+        /*handle a fast-timeout event in every loop*/
         if (xconf->is_fast_timeout) {
 
             tm_event = ft_pop_event(&ft_handler, time(0));
-            while (tm_event) {
+            /*dedup timeout event and other packets together*/
+            if (tm_event) {
+                if ((!xconf->is_nodedup
+                    &&!dedup_is_duplicate(dedup,
+                    tm_event->ip_them, tm_event->port_them,
+                    tm_event->ip_me,   tm_event->port_me,
+                    tm_event->dedup_type))
+                    || xconf->is_nodedup) {
 
-                /*dedup timeout event and other packets together*/
-                if (!xconf->is_nodedup) {
-                    if (dedup_is_duplicate(dedup,
-                        tm_event->ip_them, tm_event->port_them,
-                        tm_event->ip_me,   tm_event->port_me,
-                        tm_event->dedup_type)) {
-                        free(tm_event);
-                        tm_event = ft_pop_event(&ft_handler, time(0));
-                        continue;
+                    struct OutputItem item = {
+                        .ip_them   = tm_event->ip_them,
+                        .ip_me     = tm_event->ip_me,
+                        .port_them = tm_event->port_them,
+                        .port_me   = tm_event->port_me,
+                    };
+
+                    scan_module->timeout_cb(entropy, tm_event, &item, stack, &ft_handler);
+
+                    output_result(&output, &item);
+                    
+                    if (!item.no_output) {
+                        if (item.is_success)
+                            (*status_successed_count)++;
+                        else
+                            (*status_failed_count)++;
                     }
                 }
-
-                struct OutputItem item = {
-                    .ip_them   = tm_event->ip_them,
-                    .ip_me     = tm_event->ip_me,
-                    .port_them = tm_event->port_them,
-                    .port_me   = tm_event->port_me,
-                };
-
-                scan_module->timeout_cb(entropy, tm_event, &item, stack, &ft_handler);
-
-                output_result(&output, &item);
-                
-                if (!item.no_output) {
-                    if (item.is_success)
-                        (*status_successed_count)++;
-                    else
-                        (*status_failed_count)++;
-                }
-
                 free(tm_event);
-                tm_event = ft_pop_event(&ft_handler, time(0));
+                tm_event = NULL;
             }
 
             *status_timeout_count = ft_event_count(&ft_handler);
