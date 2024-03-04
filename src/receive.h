@@ -30,10 +30,6 @@ struct RxThread {
  *
  * Asynchronous receive thread
  *
- * The transmit and receive threads run independently of each other. There
- * is no record what was transmitted. Instead, the transmit thread sets a
- * "SYN-cookie" in transmitted packets, which the receive thread will then
- * use to match up requests with responses.
  ***************************************************************************/
 void
 receive_thread(void *v);

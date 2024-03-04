@@ -35,10 +35,8 @@ struct TxThread {
 
 
 /***************************************************************************
- * This thread spews packets as fast as it can
  *
- *      THIS IS WHERE ALL THE EXCITEMENT HAPPENS!!!!
- *      90% of CPU cycles are in the function.
+ * Asynchronous transmit thread
  *
  ***************************************************************************/
 void
