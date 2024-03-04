@@ -2812,6 +2812,10 @@ void xconf_print_usage()
         2, 80);
     printf("\n");
     printf("\n");
+    printf("  Author : "XTATE_AUTHOR_NAME"\n");
+    printf("  Github : "XTATE_GITHUB"\n");
+    printf("  Contact: "XTATE_AUTHOR_MAIL"\n");
+    printf("\n");
     printf("usage format:\n");
     printf("  "XTATE_NAME" [options] [-range IPs -p PORTs [-scan SCANMODULE [-probe PROBEMODULE]]]\n");
     printf("\n");
@@ -2862,6 +2866,10 @@ void xconf_print_help()
         "completely stateless mode for next-generation Internet-scale surveys!",
         4, 80);
     printf("\n");
+    printf("\n");
+    printf("  Author : "XTATE_AUTHOR_NAME"\n");
+    printf("  Github : "XTATE_GITHUB"\n");
+    printf("  Contact: "XTATE_AUTHOR_MAIL"\n");
     printf("\n");
     print_with_indent("Here are detailed help text of all parameters of "
         XTATE_FIRST_UPPER_NAME". I hope these will help you a lot. If any "
