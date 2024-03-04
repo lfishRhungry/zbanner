@@ -58,11 +58,11 @@ void list_all_scan_modules()
         printf("  Support Timeout    : %s\n", scan_modules_list[i]->support_timeout?"Yes\n":"No\n");
         printf("\n");
         printf("  Default BPF Filter :\n");
-        print_with_indent(scan_modules_list[i]->bpf_filter?scan_modules_list[i]->bpf_filter:"null", 6, 80);
+        xprint(scan_modules_list[i]->bpf_filter?scan_modules_list[i]->bpf_filter:"null", 6, 80);
         printf("\n");
         printf("\n");
         printf("  Description:\n");
-        print_with_indent(scan_modules_list[i]->desc, 6, 80);
+        xprint(scan_modules_list[i]->desc, 6, 80);
         printf("\n");
     }
     printf(XPRINT_DASH_LINE);

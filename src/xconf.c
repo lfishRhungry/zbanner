@@ -2844,14 +2844,14 @@ void xconf_print_usage()
 {
     printf("\n\n\n");
     // printf("%s", ascii_xtate1);
-    print_with_indent(ascii_xtate2, 10, 80);
+    xprint_with_head(ascii_xtate2, 10, 80);
     printf("\n                             "XTATE_GOD"\n\n");
     printf("\n");
 
     printf("\n");
     printf("Welcome to "XTATE_FIRST_UPPER_NAME"!");
     printf("\n");
-    print_with_indent("A modular all-stack network scanner running on a "
+    xprint("A modular all-stack network scanner running on a "
         "completely stateless mode for next-generation Internet-scale surveys!",
         2, 80);
     printf("\n");
@@ -2866,34 +2866,34 @@ void xconf_print_usage()
     printf("original examples of "XTATE_NAME":\n");
     printf("\n");
     printf("  "XTATE_NAME" -p 80,8000-8100 -range 10.0.0.0/8 --rate=10000\n");
-    print_with_indent("scan some web ports on 10.x.x.x at 10kpps.\n", 6, 80);
+    xprint("use default TcpSyn ScanModule to scan web ports on 10.x.x.x at 10kpps.\n", 6, 80);
     printf("\n");
     printf("  "XTATE_NAME" -p 80 -range 10.0.0.0/8 -scanmodule zbanner -probe getrequest\n");
-    print_with_indent("use ZBanner ScanModule to grab http banners with getrequest ProbeModule.\n", 6, 80);
+    xprint("use ZBanner ScanModule to grab http banners with getrequest ProbeModule.\n", 6, 80);
     printf("\n");
     printf("  "XTATE_NAME" -p u:80 -range 10.0.0.0/8 -scanmodule udpprobe -probe echo -show fail\n");
-    print_with_indent("use UdpProbe ScanModule to scan UDP 80 port with echo ProbeModule and also show failed results.\n", 6, 80);
+    xprint("use UdpProbe ScanModule to scan UDP 80 port with echo ProbeModule and also show failed results.\n", 6, 80);
     printf("\n");
     printf("  "XTATE_NAME" -p s:38412 -range 10.0.0.0/8 -scanmodule sctpinit -show fail\n");
-    print_with_indent("use SctpInit ScanModule to scan SCTP 38412 port and also show failed results.\n", 6, 80);
+    xprint("use SctpInit ScanModule to scan SCTP 38412 port and also show failed results.\n", 6, 80);
     printf("\n");
     printf("  "XTATE_NAME" -range 10.0.0.0/8 -scanmodule icmpecho\n");
-    print_with_indent("use IcmpEcho ScanModule to do ping scan.\n", 6, 80);
+    xprint("use IcmpEcho ScanModule to do ping scan.\n", 6, 80);
     printf("\n");
     printf("  "XTATE_NAME" -range 192.168.0.1/24 -scanmodule arpreq -lan\n");
-    print_with_indent("do ARP scan with LAN mode in local network.\n", 6, 80);
+    xprint("do ARP scan with LAN mode in local network.\n", 6, 80);
     printf("\n");
     printf("  "XTATE_NAME" -list-scan\n");
-    print_with_indent("list all ScanModules with introductions.\n", 6, 80);
+    xprint("list all ScanModules with introductions.\n", 6, 80);
     printf("\n");
     printf("  "XTATE_NAME" -list-probe\n");
-    print_with_indent("list all ProbeModules with introductions.\n", 6, 80);
+    xprint("list all ProbeModules with introductions.\n", 6, 80);
     printf("\n");
     printf("  "XTATE_NAME" -version\n");
-    print_with_indent("print version and compilation info.\n", 6, 80);
+    xprint("print version and compilation info.\n", 6, 80);
     printf("\n");
     printf("  "XTATE_NAME" -help\n");
-    print_with_indent("display detailed help text of all parameters.\n", 6, 80);
+    xprint("display detailed help text of all parameters.\n", 6, 80);
     printf("\n");
 }
 
@@ -2901,12 +2901,12 @@ void xconf_print_help()
 {
     printf("\n\n\n");
     // printf("%s", ascii_xtate1);
-    print_with_indent(ascii_xtate1, 15, 80);
+    xprint_with_head(ascii_xtate1, 15, 80);
     printf("\n                               "XTATE_GOD"\n\n");
     printf("\n");
-    print_with_indent("Welcome to "XTATE_FIRST_UPPER_NAME"!", 2, 80);
+    xprint("Welcome to "XTATE_FIRST_UPPER_NAME"!", 2, 80);
     printf("\n");
-    print_with_indent("  A modular all-stack network scanner running on a "
+    xprint("A modular all-stack network scanner running on "
         "completely stateless mode for next-generation Internet-scale surveys!",
         4, 80);
     printf("\n");
@@ -2915,7 +2915,7 @@ void xconf_print_help()
     printf("  Github : "XTATE_GITHUB"\n");
     printf("  Contact: "XTATE_AUTHOR_MAIL"\n");
     printf("\n");
-    print_with_indent("Here are detailed help text of all parameters of "
+    xprint("Here are detailed help text of all parameters of "
         XTATE_FIRST_UPPER_NAME". I hope these will help you a lot. If any "
         "problem, please contact me on: \n    "XTATE_GITHUB, 2, 80);
     printf("\n");
@@ -2936,7 +2936,7 @@ void xconf_print_help()
         }
         // printf("\n\n      %s\n\n\n", config_parameters[i].helps);
         printf("\n\n");
-        print_with_indent(config_parameters[i].helps, 6, 80);
+        xprint(config_parameters[i].helps, 6, 80);
         printf("\n\n");
         printf(XPRINT_DASH_LINE);
         printf("\n\n");

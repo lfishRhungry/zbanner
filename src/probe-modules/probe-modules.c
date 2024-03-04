@@ -83,7 +83,7 @@ void list_all_probe_modules()
         printf("  ProbeModule Type: %s\n", get_probe_type_name(probe_modules_list[i]->type));
         printf("\n");
         printf("  Description:\n");
-        print_with_indent(probe_modules_list[i]->desc, 6, 80);
+        xprint(probe_modules_list[i]->desc, 6, 80);
         printf("\n");
     }
     printf(XPRINT_DASH_LINE);
