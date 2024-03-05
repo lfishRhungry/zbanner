@@ -86,12 +86,10 @@ transmit_thread(void *v) /*aka. scanning_thread() */
             pixie_cpu_set_affinity(cpu);
     }
 
-    /* export a pointer to this variable outside this threads so
-     * that the 'status' system can print the rate of syns we are
-     * sending */
-    uint64_t *status_sent_count = MALLOC(sizeof(uint64_t));
+    uint64_t *status_sent_count;
+    status_sent_count  = MALLOC(sizeof(uint64_t));
     *status_sent_count = 0;
-    parms->total_sent = status_sent_count;
+    parms->total_sent  = status_sent_count;
 
     /* Normally, we have just one source address. In special cases, though
      * we can have multiple. */
@@ -103,8 +101,6 @@ transmit_thread(void *v) /*aka. scanning_thread() */
     }
 
 
-    /* "THROTTLER" rate-limits how fast we transmit, set with the
-     * --max-rate parameter */
     throttler_start(throttler, xconf->max_rate/xconf->tx_thread_count);
 
 infinite:
@@ -123,10 +119,7 @@ infinite:
 
     /* Calculate the 'start' and 'end' of a scan. One reason to do this is
      * to support --shard, so that multiple machines can co-operate on
-     * the same scan. Another reason to do this is so that we can bleed
-     * a little bit past the end when we have --retries. Yet another
-     * thing to do here is deal with multiple network adapters, which
-     * is essentially the same logic as shards. */
+     * the same scan. */
     uint64_t start = xconf->resume.index
         + (xconf->shard.one-1) * xconf->tx_thread_count
         + parms->tx_index;
@@ -144,20 +137,10 @@ infinite:
     unsigned more_idx = 0;
     for (i=start; i<end; ) {
 
-        /*
-         * Do a batch of many packets at a time. That because per-packet
-         * throttling is expensive at 10-million pps, so we reduce the
-         * per-packet cost by doing batches. At slower rates, the batch
-         * size will always be one. (--max-rate)
-         */
         uint64_t batch_size = throttler_next_batch(throttler, packets_sent);
 
         /*
-         * Transmit packets from other thread, when doing --banners. This
-         * takes priority over sending SYN packets. If there is so much
-         * activity grabbing banners that we cannot transmit more SYN packets,
-         * then "batch_size" will get decremented to zero, and we won't be
-         * able to transmit SYN packets.
+         * Transmit packets from other thread in priority
          */
         stack_flush_packets(xconf->stack, adapter, &packets_sent, &batch_size);
 
@@ -174,16 +157,7 @@ infinite:
          */
 
         while (batch_size && i < end) {
-            /*
-             * RANDOMIZE THE TARGET:
-             *  This is kinda a tricky bit that picks a random IP and port
-             *  number in order to scan. We monotonically increment the
-             *  index 'i' from [0..range]. We then shuffle (randomly transmog)
-             *  that index into some other, but unique/1-to-1, number in the
-             *  same range. That way we visit all targets, but in a random
-             *  order. Then, once we've shuffled the index, we "pick" the
-             *  IP address and port that the index refers to.
-             */
+
             uint64_t xXx = i;
             if (rate > range) {
                 xXx %= range;
@@ -287,9 +261,7 @@ infinite:
          * <ctrl-c> to exit early */
         parms->my_index = i;
 
-        /* If the user pressed <ctrl-c>, then we need to exit. In case
-         * the user wants to --resume the scan later, we save the current
-         * state in a file */
+        /* If the user pressed <ctrl-c>, then we need to exit and save state.*/
         if (is_tx_done) {
             break;
         }
@@ -297,7 +269,6 @@ infinite:
 
     /*
      * --infinite
-     *  For load testing, go around and do this again
      */
     if (xconf->is_infinite && !is_tx_done) {
         seed++;
@@ -306,10 +277,7 @@ infinite:
     }
 
     /*
-     * Flush any untransmitted packets. High-speed mechanisms like Windows
-     * "sendq" and Linux's "PF_RING" queue packets and transmit many together,
-     * so there may be some packets that we've queued but not yet transmitted.
-     * This call makes sure they are transmitted.
+     * Makes sure all packets are transmitted while in sendq or PF_RING mode.
      */
     rawsock_flush(adapter);
 
@@ -318,30 +286,17 @@ infinite:
      */
     LOG(1, "[+] transmit thread #%u complete\n", parms->tx_index);
 
-    /*
-     * We are done transmitting. However, response packets will take several
-     * seconds to arrive. Therefore, sit in short loop waiting for those
-     * packets to arrive. Pressing <ctrl-c> a second time will exit this
-     * prematurely.
-     */
+    /*help rx thread to reponse*/
     while (!is_rx_done) {
         unsigned k;
         uint64_t batch_size;
 
         for (k=0; k<1000; k++) {
             
-            /*
-             * Only send a few packets at a time, throttled according to the max
-             * --max-rate set by the user
-             */
             batch_size = throttler_next_batch(throttler, packets_sent);
 
-
-            /* Transmit packets from the receive thread */
             stack_flush_packets(xconf->stack, adapter, &packets_sent, &batch_size);
 
-            /* Make sure they've actually been transmitted, not just queued up for
-             * transmit */
             rawsock_flush(adapter);
 
             pixie_usleep(100);
