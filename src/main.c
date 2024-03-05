@@ -465,7 +465,7 @@ main_scan(struct Xconf *xconf)
         uint64_t total_successed = 0;
         uint64_t total_failed    = 0;
         uint64_t total_tm_event  = 0;
-        uint64_t total_sent = 0;
+        uint64_t total_sent      = 0;
 
 
         /* Find the minimum index of all the threads */
