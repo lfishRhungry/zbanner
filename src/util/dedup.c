@@ -41,11 +41,11 @@ struct DedupEntry_IPv4
 
 struct DedupEntry_IPv6
 {
-    ipv6address ip_them;
-    ipv6address ip_me;
+    ipv6address    ip_them;
+    ipv6address    ip_me;
     unsigned short port_them;
     unsigned short port_me;
-    unsigned type; /*for more flexible dedup*/
+    unsigned       type; /*for more flexible dedup*/
 };
 
 struct DedupEntry
@@ -169,27 +169,27 @@ swap6(struct DedupEntry_IPv6 *lhs, struct DedupEntry_IPv6 *rhs)
 {
     lhs->ip_them.hi ^= rhs->ip_them.hi;
     lhs->ip_them.lo ^= rhs->ip_them.lo;
-    lhs->port_them ^= rhs->port_them;
-    lhs->ip_me.hi ^= rhs->ip_me.hi;
-    lhs->ip_me.lo ^= rhs->ip_me.lo;
-    lhs->port_me ^= rhs->port_me;
-    lhs->type ^= rhs->type;
+    lhs->port_them  ^= rhs->port_them;
+    lhs->ip_me.hi   ^= rhs->ip_me.hi;
+    lhs->ip_me.lo   ^= rhs->ip_me.lo;
+    lhs->port_me    ^= rhs->port_me;
+    lhs->type       ^= rhs->type;
 
     rhs->ip_them.hi ^= lhs->ip_them.hi;
     rhs->ip_them.lo ^= lhs->ip_them.lo;
-    rhs->port_them ^= lhs->port_them;
-    rhs->ip_me.hi ^= lhs->ip_me.hi;
-    rhs->ip_me.lo ^= lhs->ip_me.lo;
-    rhs->port_me ^= lhs->port_me;
-    rhs->type ^= lhs->type;
+    rhs->port_them  ^= lhs->port_them;
+    rhs->ip_me.hi   ^= lhs->ip_me.hi;
+    rhs->ip_me.lo   ^= lhs->ip_me.lo;
+    rhs->port_me    ^= lhs->port_me;
+    rhs->type       ^= lhs->type;
 
     lhs->ip_them.hi ^= rhs->ip_them.hi;
     lhs->ip_them.lo ^= rhs->ip_them.lo;
-    lhs->port_them ^= rhs->port_them;
-    lhs->ip_me.hi ^= rhs->ip_me.hi;
-    lhs->ip_me.lo ^= rhs->ip_me.lo;
-    lhs->port_me ^= rhs->port_me;
-    lhs->type ^= rhs->type;
+    lhs->port_them  ^= rhs->port_them;
+    lhs->ip_me.hi   ^= rhs->ip_me.hi;
+    lhs->ip_me.lo   ^= rhs->ip_me.lo;
+    lhs->port_me    ^= rhs->port_me;
+    lhs->type       ^= rhs->type;
 }
 
 /**
@@ -221,24 +221,34 @@ dedup_is_duplicate_ipv6(struct DedupTable *dedup,
         if (is_equal6(bucket[i].ip_them, ip_them.ipv6) && bucket[i].port_them == port_them
             && is_equal6(bucket[i].ip_me, ip_me.ipv6) && bucket[i].port_me == port_me
             && bucket[i].type == type) {
-            /* move to end of list so constant repeats get ignored */
+            /* move to head of list so constant repeats get attention */
             if (i > 0) {
-                swap6(&bucket[0], &bucket[i]);
+                // swap6(&bucket[0], &bucket[i]);
+                memmove(bucket+1, bucket, i*sizeof(*bucket));
+                bucket[0].ip_them.hi = ip_them.ipv6.hi;
+                bucket[0].ip_them.lo = ip_them.ipv6.lo;
+                bucket[0].port_them  = (unsigned short)port_them;
+                bucket[0].ip_me.hi   = ip_me.ipv6.hi;
+                bucket[0].ip_me.lo   = ip_me.ipv6.lo;
+                bucket[0].port_me    = (unsigned short)port_me;
+                bucket[0].type       = type;
             }
             return 1;
         }
     }
 
     /* We didn't find it, so add it to our list. This will push
-     * older entries at this bucket off the list */
+     * older entries at this bucket off the list
+     * NOTE the paramter order of memmove
+     */
     memmove(bucket+1, bucket, 3*sizeof(*bucket));
     bucket[0].ip_them.hi = ip_them.ipv6.hi;
     bucket[0].ip_them.lo = ip_them.ipv6.lo;
-    bucket[0].port_them = (unsigned short)port_them;
-    bucket[0].ip_me.hi = ip_me.ipv6.hi;
-    bucket[0].ip_me.lo = ip_me.ipv6.lo;
-    bucket[0].port_me = (unsigned short)port_me;
-    bucket[0].type = type;
+    bucket[0].port_them  = (unsigned short)port_them;
+    bucket[0].ip_me.hi   = ip_me.ipv6.hi;
+    bucket[0].ip_me.lo   = ip_me.ipv6.lo;
+    bucket[0].port_me    = (unsigned short)port_me;
+    bucket[0].type       = type;
 
     return 0;
 
@@ -259,6 +269,32 @@ dedup_hash_ipv4(ipaddress ip_them, unsigned port_them,
     hash = fnv1a_short(port_me, hash);
     hash = fnv1a_short(type, hash);
     return hash;
+}
+
+/**
+ * Swap two addresses in the table. This uses the classic XOR trick
+ * rather than using a swap variable.
+ */
+static inline void
+swap4(struct DedupEntry_IPv4 *lhs, struct DedupEntry_IPv4 *rhs)
+{
+    lhs->ip_them   ^= rhs->ip_them;
+    lhs->port_them ^= rhs->port_them;
+    lhs->ip_me     ^= rhs->ip_me;
+    lhs->port_me   ^= rhs->port_me;
+    lhs->type      ^= rhs->type;
+
+    rhs->ip_them   ^= lhs->ip_them;
+    rhs->port_them ^= lhs->port_them;
+    rhs->ip_me     ^= lhs->ip_me;
+    rhs->port_me   ^= lhs->port_me;
+    rhs->type      ^= lhs->type;
+
+    lhs->ip_them   ^= rhs->ip_them;
+    lhs->port_them ^= rhs->port_them;
+    lhs->ip_me     ^= rhs->ip_me;
+    lhs->port_me   ^= rhs->port_me;
+    lhs->type      ^= rhs->type;
 }
 
 /***************************************************************************
@@ -289,37 +325,30 @@ dedup_is_duplicate_ipv4(struct DedupTable *dedup,
         if (bucket[i].ip_them == ip_them.ipv4 && bucket[i].port_them == port_them
             && bucket[i].ip_me == ip_me.ipv4 && bucket[i].port_me == port_me
             && bucket[i].type == type) {
-            /* move to end of list so constant repeats get ignored */
+            /* move to head of list so constant repeats get attention */
             if (i > 0) {
-                bucket[i].ip_them ^= bucket[0].ip_them;
-                bucket[i].port_them ^= bucket[0].port_them;
-                bucket[i].ip_me ^= bucket[0].ip_me;
-                bucket[i].port_me ^= bucket[0].port_me;
-                bucket[i].type ^= bucket[0].type;
-
-                bucket[0].ip_them ^= bucket[i].ip_them;
-                bucket[0].port_them ^= bucket[i].port_them;
-                bucket[0].ip_me ^= bucket[i].ip_me;
-                bucket[0].port_me ^= bucket[i].port_me;
-                bucket[0].type ^= bucket[i].type;
-
-                bucket[i].ip_them ^= bucket[0].ip_them;
-                bucket[i].port_them ^= bucket[0].port_them;
-                bucket[i].ip_me ^= bucket[0].ip_me;
-                bucket[i].type ^= bucket[0].type;
+                // swap4(&bucket[0], &bucket[i]);
+                memmove(bucket+1, bucket, i*sizeof(*bucket));
+                bucket[0].ip_them   = ip_them.ipv4;
+                bucket[0].port_them = port_them;
+                bucket[0].ip_me     = ip_me.ipv4;
+                bucket[0].port_me   = port_me;
+                bucket[0].type      = type;
             }
             return 1;
         }
     }
 
     /* We didn't find it, so add it to our list. This will push
-     * older entries at this bucket off the list */
+     * older entries at this bucket off the list
+     * NOTE the paramter order of memmove
+     */
     memmove(bucket+1, bucket, 3*sizeof(*bucket));
-    bucket[0].ip_them = ip_them.ipv4;
+    bucket[0].ip_them   = ip_them.ipv4;
     bucket[0].port_them = port_them;
-    bucket[0].ip_me = ip_me.ipv4;
-    bucket[0].port_me = port_me;
-    bucket[0].type = type;
+    bucket[0].ip_me     = ip_me.ipv4;
+    bucket[0].port_me   = port_me;
+    bucket[0].type      = type;
 
     return 0;
 
