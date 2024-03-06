@@ -23,12 +23,6 @@ struct Adapter;
 struct TemplateSet;
 struct TemplateOptions;
 
-/**
- * This is the "operation" to be performed by xconf, which is almost always
- * to "scan" the network. However, there are some lesser operations to do
- * instead of scanning. We parse the command-line in order to figure out the
- * proper operation
- */
 enum Operation {
     Operation_Default = 0,          /* nothing specified, so print usage */
     Operation_ListAdapters = 1,     /* list all usable interfaces */
@@ -53,18 +47,11 @@ struct source_t {
 
 
 /**
- * This is the master configuration structure. It is created on startup
- * by reading the command-line and parsing configuration files.
- *
  * Once read in at the start, this structure doesn't change. The transmit
  * and receive threads have only a "const" pointer to this structure.
  */
 struct Xconf
 {
-    /**
-     * What this program is doing, which is normally "Operation_Scan", but
-     * which can be other things, like "Operation_SelfTest"
-     */
     enum Operation op;
     
     /**
@@ -132,40 +119,15 @@ struct Xconf
     struct FTable *ft_table;
     time_t ft_spec; /*timeout seconds*/
 
-    /**
-     * The target ranges of IPv4 addresses that are included in the scan.
-     * The user can specify anything here, and we'll resolve all overlaps
-     * and such, and sort the target ranges.
-     */
     struct MassIP targets;
-    
-    /**
-     * IPv4 addresses/ranges that are to be excluded from the scan. This takes
-     * precedence over any 'include' statement. What happens is this: after
-     * all the configuration has been read, we then apply the exclude/blacklist
-     * on top of the target/whitelist, leaving only a target/whitelist left.
-     * Thus, during the scan, we only choose from the target/whitelist and
-     * don't consult the exclude/blacklist.
-     */
     struct MassIP exclude;
 
 
-    /**
-     * Maximum rate, in packets-per-second (--rate parameter). This can be
-     * a fraction of a packet-per-second, or be as high as 30000000.0 (or
-     * more actually, but I've only tested to 30megapps).
-     */
     double max_rate;
 
-    /**
-     * application probe/request for stateless mode
-    */
     struct ProbeModule *probe_module;
     char *probe_module_args;
 
-    /**
-     * Choosed ScanModule
-    */
     struct ScanModule *scan_module;
     char *scan_module_args;
 
@@ -186,18 +148,11 @@ struct Xconf
      */
     unsigned wait;
 
-    /**
-     * --resume
-     * This structure contains options for pausing the scan (by exiting the
-     * program) and restarting it later.
-     */
     struct {
         /** --resume-index */
         uint64_t index;
-        
         /** --resume-count */
         uint64_t count;
-        
         /** Derives the --resume-index from the target ip:port */
         struct {
             unsigned ip;
@@ -205,36 +160,14 @@ struct Xconf
         } target;
     } resume;
 
-    /**
-     * --shard n/m
-     * This is used for distributing a scan across multiple "shards". Every
-     * shard in the scan must know the total number of shards, and must also
-     * know which of those shards is it's identity. Thus, shard 1/5 scans
-     * a different range than 2/5. These numbers start at 1, so it's
-     * 1/3 (#1 out of three), 2/3, and 3/3 (but not 0/3).
-     */
     struct {
         unsigned one;
         unsigned of;
     } shard;
 
-    /**
-     * A random seed for randomization if zero, otherwise we'll use
-     * the configured seed for repeatable tests.
-     */
     uint64_t seed;
 
-    /**
-     * The packet template set we are current using. We store a binary template
-     * for TCP, UDP, SCTP, ICMP, and so on. All the scans using that protocol
-     * are then scanned using that basic template. IP and TCP options can be
-     * added to the basic template without affecting any other component
-     * of the system.
-     */
     struct TemplateSet *pkt_template;
-
-    /** Packet template options, such as whether we should add a TCP MSS
-     * value, or remove it from the packet */
     struct TemplateOptions *templ_opts; /* e.g. --tcpmss */
     
     struct {

@@ -1,26 +1,3 @@
-/*
-
-    Filters duplicate responses
-
-    This is an asynchronous and "stateless" scanner that spews out probes
-    without having holding "state" for the probes. This means that when
-    a response comes back, we have no "state" to associate with it.
- 
-    This means when two responses come back, we still don't have any
-    "state" to remember that the first one came back. This will cause
-    us to report two results instead of one.
- 
-    We could create a large table holding a record for EVERY response
-    that we've seen. But this would require a lot of memory for large
-    scans.
- 
-    Instead, we remember a small hashtable of recent responses. This
-    takes advantage of the fact that multiple responses are likely
-    to be recent and eventually age out.
- 
-    We call this "deduplication" as it's simply removing duplicate
-    responses.
-*/
 #include "dedup.h"
 #include "mas-malloc.h"
 #include <stdlib.h>

@@ -11,7 +11,7 @@
  is filled sending RSTs and not doing something useful.
  
  The design is a simple non-deterministic algorithm. It hashes the
- IP/prot combo, then updates a counter at that bucket. When it reaches
+ IP/port combo, then updates a counter at that bucket. When it reaches
  its limit, it stops transmitting resets. However, it'll also slowly
  empty buckets, so can occasionally transmit a RST now and then.
  */

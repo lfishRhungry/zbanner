@@ -1,13 +1,3 @@
-/*
-    log messages to console, depending on verbose level
-
-    Use -d to get more verbose output. The more -v you add, the
-    more verbose the output becomes.
-
-    Details about the running of the program go to <stderr>.
-    Details about scan results go to <stdout>, so that they can easily
-    be redirected to a file.
-*/
 #include "logger.h"
 #include "mas-safefunc.h"
 #include <stdarg.h>

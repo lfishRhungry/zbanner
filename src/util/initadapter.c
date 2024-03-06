@@ -24,8 +24,8 @@ initialize_adapter(struct Xconf *xconf)
     char *ifname;
     char ifname2[256];
     unsigned adapter_ip = 0;
-    unsigned is_usable_ipv4 = !massip_has_ipv4_targets(&xconf->targets); /* I don't understand this line, seems opposite */
-    unsigned is_usable_ipv6 = !massip_has_ipv6_targets(&xconf->targets); /* I don't understand this line, seems opposite */
+    unsigned is_usable_ipv4 = !massip_has_ipv4_targets(&xconf->targets);
+    unsigned is_usable_ipv6 = !massip_has_ipv6_targets(&xconf->targets);
     ipaddress_formatted_t fmt;
 
     /*

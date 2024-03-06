@@ -6,7 +6,7 @@
     melt most networks. Therefore, we need to throttle or rate-limit
     how fast we go.
 
-    Since we are sending packet at a rate of 10-million-per-second, we
+    Since we are sending packet at a rate of 10-million-per-second,
     the calculations need to be done in a light-weight manner. For one
     thing, we can't do a system-call per packet.
 

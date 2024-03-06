@@ -1,13 +1,3 @@
-/*
-    prints "xtatus" message once per second to the commandline
-
-    The xtatus message indicates:
-    - the rate in packets-per-second
-    - %done
-    - estimated time remaining of the scan
-    - number of 'tcbs' (TCP control blocks) of active TCP connections
-
-*/
 #include "xtatus.h"
 #include "pixie/pixie-timer.h"
 #include "util/unusedparm.h"

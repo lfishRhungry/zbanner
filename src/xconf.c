@@ -1,17 +1,3 @@
-/*
-    Read in the configuration for XTATE.
-
-    Configuration parameters can be read either from the command-line
-    or a configuration file. Long parameters of the --xxxx variety have
-    the same name in both.
-
-    Most of the code in this module is for 'nmap' options we don't support.
-    That's because we support some 'nmap' options, and I wanted to give
-    more feedback for some of them why they don't work as expected, such
-    as reminding people that this is an asynchronous scanner.
-
-*/
-
 #include <ctype.h>
 #include <limits.h>
 

@@ -1,3 +1,10 @@
+/**
+ * This is a fast version of event-timeout. All expire time spec of events are
+ * the same. So we just use a linked list to save and just pop events from head
+ * instead of going around all the nodes.
+ * 
+ * TODO: Reduce num of system calls to time()
+*/
 #include "fast-timeout.h"
 #include "../util/mas-malloc.h"
 
