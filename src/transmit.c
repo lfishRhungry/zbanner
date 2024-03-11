@@ -116,16 +116,6 @@ infinite:
      */
     stack_flush_packets(xconf->stack, adapter, &packets_sent, &batch_size);
 
-    /*
-     * Transmit a bunch of packets. At any rate slower than 100,000
-     * packets/second, the 'batch_size' is likely to be 1. At higher
-     * rates, we can't afford to throttle on a per-packet basis and
-     * instead throttle on a per-batch basis. In other words, throttle
-     * based on 2-at-a-time, 3-at-time, and so on, with the batch
-     * size increasing as the packet rate increases. This gives us
-     * very precise packet-timing for low rates below 100,000 pps,
-     * while not incurring the overhead for high packet rates.
-     */
 
     while (batch_size && i < end) {
 

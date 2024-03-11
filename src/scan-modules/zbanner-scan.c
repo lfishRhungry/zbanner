@@ -58,7 +58,7 @@ zbanner_transmit_packet(
     *len = tcp_create_packet(
         target->ip_them, target->port_them, target->ip_me, src_port_start+target->index,
         seqno, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_LEN);
-    
+ 
     /*multi-probe Multi_Direct*/
     if (ZBannerScan.probe->multi_mode==Multi_Direct
         && target->index+1<ZBannerScan.probe->probe_num)
