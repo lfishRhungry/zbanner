@@ -285,14 +285,8 @@ dedup_is_duplicate_ipv4(struct DedupTable *dedup,
     struct DedupEntry_IPv4 *bucket;
     unsigned i;
 
-    /* THREAT: probably need to secure this hash, though the syn-cookies
-     * provides some protection */
-    // hash = (ip_them.ipv4 + port_them) ^ ((ip_me.ipv4) + (ip_them.ipv4>>16)) ^ (ip_them.ipv4>>24) ^ port_me;
-    hash = dedup_hash_ipv4(ip_them, port_them, ip_me, port_me, type);
-    hash &= dedup->entries_count-1;
-
-    /* Search in this bucket */
-    bucket = dedup->all_entries[hash].entries;
+    hash   = dedup_hash_ipv4(ip_them, port_them, ip_me, port_me, type);
+    bucket = dedup->all_entries[hash%dedup->entries_count].entries;
 
     /* If we find the entry in our table, move it to the front, so
      * that it won't be aged out as quickly. We keep prepending new
