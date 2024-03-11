@@ -22,7 +22,7 @@ struct ProbeTarget {
     unsigned port_them;
     unsigned port_me;
     unsigned cookie;
-    unsigned index;
+    unsigned index; /*use for identifying of multi probes per target in ProbeModule*/
 };
 
 /**

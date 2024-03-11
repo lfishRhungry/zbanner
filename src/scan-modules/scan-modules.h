@@ -44,7 +44,7 @@ struct ScanTarget {
     unsigned port_them;
     unsigned port_me;
     unsigned proto;
-    unsigned index;
+    unsigned index; /*use in tx thread for multi packets per target in ScanModule*/
 };
 
 struct ScanTimeoutEvent {
