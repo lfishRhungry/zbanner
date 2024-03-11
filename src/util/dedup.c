@@ -182,13 +182,8 @@ dedup_is_duplicate_ipv6(struct DedupTable *dedup,
     struct DedupEntry_IPv6 *bucket;
     unsigned i;
 
-    /* THREAT: probably need to secure this hash, though the syn-cookies
-     * provides some protection */
-    hash = dedup_hash_ipv6(ip_them, port_them, ip_me, port_me, type);
-    hash &= dedup->entries_count-1;
-
-    /* Search in this bucket */
-    bucket = dedup->all_entries[hash].entries6;
+    hash   = dedup_hash_ipv6(ip_them, port_them, ip_me, port_me, type);
+    bucket = dedup->all_entries[hash%dedup->entries_count].entries6;
 
     /* If we find the entry in our table, move it to the front, so
      * that it won't be aged out as quickly. We keep prepending new
