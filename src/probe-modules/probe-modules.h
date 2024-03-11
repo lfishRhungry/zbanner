@@ -96,8 +96,7 @@ typedef int
 (*probe_modules_handle_response)(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report, unsigned rpt_length
-);
+    char *report);
 
 /**
  * It happens before normal exit in mainscan function.
@@ -168,14 +167,14 @@ int
 probe_report_nothing(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report, unsigned rpt_length);
+    char *report);
 
 /*implemented `probe_modules_handle_reponse`*/
 int
 probe_just_report_banner(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report, unsigned rpt_length);
+    char *report);
 
 /*implemented `probe_modules_close`*/
 void probe_close_nothing();

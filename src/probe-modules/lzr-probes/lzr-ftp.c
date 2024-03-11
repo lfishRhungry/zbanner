@@ -10,10 +10,10 @@ static int
 lzr_ftp_handle_response(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report, unsigned rpt_length)
+    char *report)
 {
     if (safe_memismem(px, sizeof_px, "ftp", strlen("ftp"))) {
-        safe_strcpy(report, rpt_length, "ftp");
+        safe_strcpy(report, PROBE_REPORT_MAX_LEN, "ftp");
         return 0;
     }
 
@@ -24,7 +24,7 @@ lzr_ftp_handle_response(
         || strstr(tmp_str, "530")
         || strstr(tmp_str, "550")
         || strstr(tmp_str, "230")) {
-        safe_strcpy(report, rpt_length, "ftp");
+        safe_strcpy(report, PROBE_REPORT_MAX_LEN, "ftp");
     }
     return 0;
 }

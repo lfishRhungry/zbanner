@@ -47,7 +47,7 @@ static int
 lzr_http_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report, unsigned rpt_length)
+    char *report)
 {
     if (!safe_memmem(px, sizeof_px, "HTTPS", strlen("HTTPS"))
         &&
@@ -55,7 +55,7 @@ lzr_http_handle_reponse(
             || safe_memmem(px, sizeof_px, "html", strlen("html"))
             || safe_memmem(px, sizeof_px, "HTML", strlen("HTML"))
             || safe_memmem(px, sizeof_px, "<h1>", strlen("<h1>")))) {
-        safe_strcpy(report, rpt_length, "http");
+        safe_strcpy(report, PROBE_REPORT_MAX_LEN, "http");
     }
 
     return 0;

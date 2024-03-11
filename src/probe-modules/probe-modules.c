@@ -114,7 +114,7 @@ int
 probe_report_nothing(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report, unsigned rpt_length)
+    char *report)
 {
     return 0;
 }
@@ -123,12 +123,12 @@ int
 probe_just_report_banner(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report, unsigned rpt_length)
+    char *report)
 {
     if (sizeof_px > 0)
-        normalize_string(px, sizeof_px, report, rpt_length);
+        normalize_string(px, sizeof_px, report, PROBE_REPORT_MAX_LEN);
     else
-        safe_strcpy(report, rpt_length, "[banner timeout]");
+        safe_strcpy(report, PROBE_REPORT_MAX_LEN, "[banner timeout]");
 
     return 0;
 }

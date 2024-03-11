@@ -77,15 +77,14 @@ static int
 lzr_handle_response(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report, unsigned rpt_length)
+    char *report)
 {
     /**
      * I think STATELESS_BANNER_MAX_LEN is long enough.
+     * Some one has time to make it safe?
      * However I am tired while coding there.
-     * But its safe while I use safe copy funcs in every time.
     */
     char *buf_idx = report;
-    size_t remain_len = rpt_length;
     
     /**
      * strcat every lzr subprobes match result
@@ -95,21 +94,19 @@ lzr_handle_response(
     for (size_t i=0; i<sizeof(lzr_subprobes)/sizeof(struct ProbeModule*); i++) {
         lzr_subprobes[i]->handle_response_cb(
             target, px, sizeof_px,
-            buf_idx, remain_len
-        );
+            buf_idx);
 
         for (;buf_idx[0]!='\0';buf_idx++) {}
         /*identified in this turn*/
         if (buf_idx!=report && (buf_idx-1)[0]!='-') {
             buf_idx[0] = '-';
             buf_idx++;
-            remain_len = rpt_length - (buf_idx - report);
         }
     }
 
     if (buf_idx==report) {
         /*got nothing*/
-        safe_strcpy(report, rpt_length, "unknown");
+        safe_strcpy(report, PROBE_REPORT_MAX_LEN, "unknown");
     } else {
         /* remove last '-' */
         (buf_idx-1)[0] = '\0';

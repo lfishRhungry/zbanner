@@ -130,14 +130,14 @@ int
 jarm_handle_response(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report, unsigned rpt_length)
+    char *report)
 {
     /**
      * The min length for ALERT
      * eg. \x15\x03\x01\x00\x02\x02
      * */
     if (sizeof_px < 7) {
-        safe_strcpy(report, rpt_length, "Not TLS");
+        safe_strcpy(report, PROBE_REPORT_MAX_LEN, "Not TLS");
         return 0;
     }
 
@@ -147,13 +147,13 @@ jarm_handle_response(
         /*Validate the VERSION field*/
         if (px[1]==0x03) {
             if (px[2]==0x00 || px[2]==0x01 || px[2]==0x02 || px[2]==0x03) {
-                snprintf(report, rpt_length, "Got JARM[%d]", target->index);
+                snprintf(report, PROBE_REPORT_MAX_LEN, "Got JARM[%d]", target->index);
                 return 1;
             }
         }
     }
 
-    safe_strcpy(report, rpt_length, "Not TLS");
+    safe_strcpy(report, PROBE_REPORT_MAX_LEN, "Not TLS");
     return 0;
 }
 
