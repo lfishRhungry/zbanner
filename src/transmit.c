@@ -197,7 +197,7 @@ infinite:
 
         /*add timeout event*/
         if (xconf->is_fast_timeout && tm_event->need_timeout) {
-          ft_add_event(&ft_handler, tm_event);
+          ft_add_event(&ft_handler, tm_event, global_now);
           tm_event = NULL;
         } else {
           tm_event->need_timeout = 0;

@@ -194,7 +194,7 @@ zbanner_handle(
                 tm_event->need_timeout = 1;
                 tm_event->dedup_type   = 1; /*1 for banner*/
 
-                ft_add_event(handler, tm_event);
+                ft_add_event(handler, tm_event, global_now);
                 tm_event = NULL;
             }
 

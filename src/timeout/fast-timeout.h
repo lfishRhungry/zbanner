@@ -47,8 +47,9 @@ void ft_init_handler(struct FTable *table, struct FHandler *handler);
  * 
  * @param handler a handler of fast-timeout table.
  * @param event event that need to set timeout
+ * @param now must be time of now
 */
-void ft_add_event(struct FHandler *handler, void *event);
+void ft_add_event(struct FHandler *handler, void *event, time_t now);
 
 /**
  * Pop up an event meets timeout now.

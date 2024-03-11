@@ -33,11 +33,11 @@ void ft_init_handler(struct FTable *table, struct FHandler *handler)
     handler->oldest = NULL;
 }
 
-void ft_add_event(struct FHandler *handler, void *event)
+void ft_add_event(struct FHandler *handler, void *event, time_t now)
 {
     struct FEntry *entry = MALLOC(sizeof(struct FEntry));
-    entry->timestamp = time(0);
-    entry->event     = event;
+    entry->timestamp     = now;
+    entry->event         = event;
 
     lfqueue_enq(handler->queue, entry);
 }

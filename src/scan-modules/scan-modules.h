@@ -11,12 +11,13 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "../massip/massip-addr.h"
+#include "../globals.h"
 #include "../output/output.h"
-#include "../proto/proto-preprocess.h"
 #include "../stack/stack-queue.h"
-#include "../probe-modules/probe-modules.h"
+#include "../massip/massip-addr.h"
 #include "../timeout/fast-timeout.h"
+#include "../proto/proto-preprocess.h"
+#include "../probe-modules/probe-modules.h"
 
 
 #define SCAN_MODULE_DEFAULT_DEDUP_TYPE     0
