@@ -76,6 +76,7 @@ udpprobe_transmit(
     /*add timeout*/
     event->need_timeout = 1;
     event->dedup_type   = 0;
+    event->port_me      = src_port_start+target->index;
     
     /*for multi-probe*/
     if (UdpProbeScan.probe->multi_mode==Multi_Direct
@@ -96,6 +97,16 @@ udpprobe_validate(
         && recved->is_myip
         && recved->is_myport) {
         pre->go_record = 1;
+
+        /**
+         * UDP without data
+         * It's conflict with `handle_reponse_cb` of ProbeModule
+         * in semantic.
+         * But ProbeModule is no need to handle responsed packets
+         * without any data.
+         * So I think its OK and Just record it*/
+        if (!recved->parsed.app_length)
+            return;
 
         struct ProbeTarget ptarget = {
             .ip_them   = recved->parsed.src_ip,
