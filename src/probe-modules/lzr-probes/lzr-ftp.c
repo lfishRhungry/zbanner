@@ -12,6 +12,9 @@ lzr_ftp_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     char *report)
 {
+    if (sizeof_px==0)
+        return 0;
+    
     if (safe_memismem(px, sizeof_px, "ftp", strlen("ftp"))) {
         safe_strcpy(report, PROBE_REPORT_MAX_LEN, "ftp");
         return 0;

@@ -132,6 +132,11 @@ jarm_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     char *report)
 {
+    /*handle timeout*/
+    if (sizeof_px == 0) {
+        snprintf(report, PROBE_REPORT_MAX_LEN, "Timeout JARM[%d]", target->index);
+        return 0;
+    }
     /**
      * The min length for ALERT
      * eg. \x15\x03\x01\x00\x02\x02

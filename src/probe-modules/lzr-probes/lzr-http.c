@@ -49,6 +49,9 @@ lzr_http_handle_reponse(
     const unsigned char *px, unsigned sizeof_px,
     char *report)
 {
+    if (sizeof_px==0)
+        return 0;
+    
     if (!safe_memmem(px, sizeof_px, "HTTPS", strlen("HTTPS"))
         &&
         (safe_memmem(px, sizeof_px, "HTTP", strlen("HTTP"))

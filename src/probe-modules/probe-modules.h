@@ -114,7 +114,7 @@ enum ProbeType {
 enum MultiMode {
     Multi_Null = 0,
     Multi_Direct,         /*send multi_num probes(diff in index) when first connect.*/
-    Multi_IfOpen,         /*send multi_num probes(diff in index) if port is open.*/
+    Multi_IfOpen,         /*send multi_num probes(diff in index) if port is open. !Just for TCP*/
     Multi_AfterHandle,    /*send multi-num probes(diff in index) after first handled.*/
     Multi_DynamicNext,    /*send a specified probe(with index+1) after every time handled*/
 };

@@ -245,8 +245,7 @@ zbanner_handle(
 
         int is_multi = ZBannerScan.probe->handle_response_cb(&ptarget,
             &recved->packet[recved->parsed.app_offset],
-            recved->parsed.app_length,
-            item->report, OUTPUT_RPT_LEN);
+            recved->parsed.app_length, item->report);
 
         /*send rst to disconn*/
         struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
@@ -277,6 +276,8 @@ zbanner_handle(
 
                 stack_transmit_packetbuffer(stack, pkt_buffer);
             }
+
+            return;
         }
 
         /*multi-probe Multi_DynamicNext*/
@@ -320,8 +321,7 @@ zbanner_timeout(
     };
 
     int is_multi = ZBannerScan.probe->handle_response_cb(&ptarget,
-        NULL, 0,
-        item->report, OUTPUT_RPT_LEN);
+        NULL, 0, item->report);
 
     /*multi-probe Multi_AfterHandle*/
     if (ZBannerScan.probe->multi_mode==Multi_AfterHandle

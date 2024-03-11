@@ -73,6 +73,10 @@ udpprobe_transmit(
         target->ip_me, src_port_start+target->index,
         payload, payload_len, px, PKT_BUF_LEN);
     
+    /*add timeout*/
+    event->need_timeout = 1;
+    event->dedup_type   = 0;
+    
     /*for multi-probe*/
     if (UdpProbeScan.probe->multi_mode==Multi_Direct
         && target->index+1 < UdpProbeScan.probe->multi_num)
@@ -162,12 +166,10 @@ udpprobe_handle(
 
         int is_multi = UdpProbeScan.probe->handle_response_cb(&ptarget,
             &recved->packet[recved->parsed.app_offset],
-            recved->parsed.app_length,
-            item->report, OUTPUT_RPT_LEN);
+            recved->parsed.app_length, item->report);
 
-        /*for multi-probe Multi_IfOpen and Multi_AfterHandle*/
-        if ((UdpProbeScan.probe->multi_mode==Multi_IfOpen
-            ||(UdpProbeScan.probe->multi_mode==Multi_AfterHandle&&is_multi))
+        /*for multi-probe Multi_AfterHandle*/
+        if (UdpProbeScan.probe->multi_mode==Multi_AfterHandle&&is_multi
             && recved->parsed.port_dst==src_port_start
             && UdpProbeScan.probe->multi_num) {
 
@@ -196,8 +198,27 @@ udpprobe_handle(
                     payload, payload_len, pkt_buffer->px, PKT_BUF_LEN);
 
                 stack_transmit_packetbuffer(stack, pkt_buffer);
+
+                /*add timeout*/
+                if (handler) {
+                    struct ScanTimeoutEvent *tm_event =
+                        CALLOC(1, sizeof(struct ScanTimeoutEvent));
+
+                    tm_event->ip_them   = recved->parsed.src_ip;
+                    tm_event->ip_me     = recved->parsed.dst_ip;
+                    tm_event->port_them = recved->parsed.port_src;
+                    tm_event->port_me   = src_port_start+idx;
+
+                    tm_event->need_timeout = 1;
+                    tm_event->dedup_type   = 0;
+
+                    ft_add_event(handler, tm_event, global_now);
+                    tm_event = NULL;
+                }
         
             }
+
+            return;
         }
 
         /*for multi-probe Multi_DynamicNext*/
@@ -226,6 +247,25 @@ udpprobe_handle(
                 payload, payload_len, pkt_buffer->px, PKT_BUF_LEN);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);
+
+            /*add timeout*/
+            if (handler) {
+                struct ScanTimeoutEvent *tm_event =
+                    CALLOC(1, sizeof(struct ScanTimeoutEvent));
+
+                tm_event->ip_them   = recved->parsed.src_ip;
+                tm_event->ip_me     = recved->parsed.dst_ip;
+                tm_event->port_them = recved->parsed.port_src;
+                tm_event->port_me   = src_port_start+is_multi-1;
+
+                tm_event->need_timeout = 1;
+                tm_event->dedup_type   = 0;
+
+                ft_add_event(handler, tm_event, global_now);
+                tm_event = NULL;
+            }
+
+            return;
         }
     } else {
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
@@ -239,10 +279,138 @@ udpprobe_handle(
         }
 }
 
+static void
+udpprobe_timeout(
+    uint64_t entropy,
+    struct ScanTimeoutEvent *event,
+    struct OutputItem *item,
+    struct stack_t *stack,
+    struct FHandler *handler)
+{
+    /*all events is for banner*/
+
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no banner");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+
+    struct ProbeTarget ptarget = {
+        .ip_them   = event->ip_them,
+        .ip_me     = event->ip_me,
+        .port_them = event->port_them,
+        .port_me   = event->port_me,
+        .cookie    = get_cookie(event->ip_them, event->port_them,
+            event->ip_me, event->port_me, entropy),
+        .index     = event->port_me-src_port_start,
+    };
+
+    int is_multi = UdpProbeScan.probe->handle_response_cb(&ptarget,
+        NULL, 0, item->report);
+
+    /*for multi-probe Multi_AfterHandle*/
+    if (UdpProbeScan.probe->multi_mode==Multi_AfterHandle&&is_multi
+        && event->port_me==src_port_start
+        && UdpProbeScan.probe->multi_num) {
+
+        for (unsigned idx=1; idx<UdpProbeScan.probe->multi_num; idx++) {
+
+            struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+
+            struct ProbeTarget ptarget = {
+                .ip_them   = event->ip_them,
+                .ip_me     = event->ip_me,
+                .port_them = event->port_them,
+                .port_me   = src_port_start+idx,
+                .cookie    = get_cookie(event->ip_them, event->port_them,
+                    event->ip_me, src_port_start+idx, entropy),
+                .index     = idx,
+            };
+
+            unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
+            size_t payload_len = 0;
+
+            payload_len = UdpProbeScan.probe->make_payload_cb(&ptarget, payload);
+
+            pkt_buffer->length = udp_create_packet(
+                event->ip_them, event->port_them,
+                event->ip_me,   src_port_start+idx,
+                payload, payload_len, pkt_buffer->px, PKT_BUF_LEN);
+
+            stack_transmit_packetbuffer(stack, pkt_buffer);
+
+            /*add timeout*/
+            if (handler) {
+                struct ScanTimeoutEvent *tm_event =
+                    CALLOC(1, sizeof(struct ScanTimeoutEvent));
+
+                tm_event->ip_them   = event->ip_them;
+                tm_event->ip_me     = event->ip_me;
+                tm_event->port_them = event->port_them;
+                tm_event->port_me   = src_port_start+idx;
+
+                tm_event->need_timeout = 1;
+                tm_event->dedup_type   = 0;
+
+                ft_add_event(handler, tm_event, global_now);
+                tm_event = NULL;
+            }
+    
+        }
+
+        return;
+    }
+
+    /*for multi-probe Multi_DynamicNext*/
+    if (UdpProbeScan.probe->multi_mode==Multi_DynamicNext && is_multi) {
+
+        struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+
+        struct ProbeTarget ptarget = {
+            .ip_them   = event->ip_them,
+            .ip_me     = event->ip_me,
+            .port_them = event->port_them,
+            .port_me   = src_port_start+is_multi-1,
+            .cookie    = get_cookie(event->ip_them, event->port_them,
+                event->ip_me, src_port_start+is_multi-1, entropy),
+            .index     = is_multi-1,
+        };
+
+        unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
+        size_t payload_len = 0;
+
+        payload_len = UdpProbeScan.probe->make_payload_cb(&ptarget, payload);
+
+        pkt_buffer->length = udp_create_packet(
+            event->ip_them, event->port_them,
+            event->ip_me,   src_port_start+is_multi-1,
+            payload, payload_len, pkt_buffer->px, PKT_BUF_LEN);
+
+        stack_transmit_packetbuffer(stack, pkt_buffer);
+
+        /*add timeout*/
+        if (handler) {
+            struct ScanTimeoutEvent *tm_event =
+                CALLOC(1, sizeof(struct ScanTimeoutEvent));
+
+            tm_event->ip_them   = event->ip_them;
+            tm_event->ip_me     = event->ip_me;
+            tm_event->port_them = event->port_them;
+            tm_event->port_me   = src_port_start+is_multi-1;
+
+            tm_event->need_timeout = 1;
+            tm_event->dedup_type   = 0;
+
+            ft_add_event(handler, tm_event, global_now);
+            tm_event = NULL;
+        }
+
+        return;
+    }
+
+}
+
 struct ScanModule UdpProbeScan = {
     .name = "udpprobe",
     .required_probe_type = ProbeType_UDP,
-    .support_timeout = 0,
+    .support_timeout = 1,
     .bpf_filter = "udp || (icmp && icmp[0]==3 && icmp[1]==3) || (icmp6 && icmp6[0]==1 && icmp6[1]==4)", /*udp and icmp port unreachable*/
     .desc =
         "UdpProbeScan sends a udp packet with ProbeModule data to target port "
@@ -256,6 +424,6 @@ struct ScanModule UdpProbeScan = {
     .transmit_cb                 = &udpprobe_transmit,
     .validate_cb                 = &udpprobe_validate,
     .handle_cb                   = &udpprobe_handle,
-    .timeout_cb                  = &scan_no_timeout,
+    .timeout_cb                  = &udpprobe_timeout,
     .close_cb                    = &scan_close_nothing,
 };
