@@ -19,10 +19,10 @@ typedef int (*probe_modules_global_init)(const void *xconf);
 struct ProbeTarget {
     ipaddress ip_them;
     ipaddress ip_me;
-    unsigned port_them;
-    unsigned port_me;
-    unsigned cookie;
-    unsigned index; /*use for identifying of multi probes per target in ProbeModule*/
+    unsigned  port_them;
+    unsigned  port_me;
+    unsigned  cookie;
+    unsigned  index; /*use for identifying of multi probes per target in ProbeModule*/
 };
 
 /**

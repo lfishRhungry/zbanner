@@ -41,10 +41,10 @@ typedef int (*scan_modules_global_init)(const void *xconf);
 struct ScanTarget {
     ipaddress ip_them;
     ipaddress ip_me;
-    unsigned port_them;
-    unsigned port_me;
-    unsigned proto;
-    unsigned index; /*use in tx thread for multi packets per target in ScanModule*/
+    unsigned  port_them;
+    unsigned  port_me;
+    unsigned  proto;
+    unsigned  index; /*use in tx thread for multi packets per target in ScanModule*/
 };
 
 struct ScanTimeoutEvent {
@@ -91,14 +91,14 @@ struct Received {
 };
 
 struct PreHandle {
-    unsigned go_record:1; /*proceed to record or stop*/
-    unsigned go_dedup:1; /*proceed to dedup or stop*/
-    unsigned no_dedup:1; /*go on with(out) deduping*/
+    unsigned  go_record:1; /*proceed to record or stop*/
+    unsigned  go_dedup:1; /*proceed to dedup or stop*/
+    unsigned  no_dedup:1; /*go on with(out) deduping*/
     ipaddress dedup_ip_them;
-    unsigned dedup_port_them;
+    unsigned  dedup_port_them;
     ipaddress dedup_ip_me;
-    unsigned dedup_port_me;
-    unsigned dedup_type;
+    unsigned  dedup_port_me;
+    unsigned  dedup_type;
 };
 
 /**
