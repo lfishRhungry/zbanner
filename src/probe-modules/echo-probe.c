@@ -28,7 +28,7 @@ echo_validate_response(
     needle[2] = target->cookie >>  8;
     needle[3] = target->cookie >>  0;
 
-    if (safe_memmem(needle, 4, px, sizeof_px))
+    if (safe_memmem(px, sizeof_px, needle, 4))
         return 1;
 
     return 0;
