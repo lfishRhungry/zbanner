@@ -122,7 +122,7 @@ struct ProbeModule LzrProbe = {
     .name       = "lzr",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,
-    .probe_num  = 1,
+    .multi_num  = 1,
     .desc =
         "LZR Probe is an implement of service identification of LZR. It sends a "
         "specified LZR subprobe(handshake) and try to match with all LZR subprobes "

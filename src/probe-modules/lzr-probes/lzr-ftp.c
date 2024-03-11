@@ -33,7 +33,7 @@ struct ProbeModule LzrFtpProbe = {
     .name       = "lzr-ftp",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,
-    .probe_num  = 1,
+    .multi_num  = 1,
     .desc =
         "LzrFtp Probe sends no payload and identifies FTP service.\n",
     .global_init_cb                       = &probe_init_nothing,

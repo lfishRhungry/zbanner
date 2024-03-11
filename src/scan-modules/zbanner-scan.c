@@ -61,8 +61,11 @@ zbanner_transmit_packet(
  
     /*multi-probe Multi_Direct*/
     if (ZBannerScan.probe->multi_mode==Multi_Direct
-        && target->index+1<ZBannerScan.probe->probe_num)
+        && target->index+1<ZBannerScan.probe->multi_num)
         return 1;
+    
+    /*I think no need syn timeout for zbanner*/
+
     else return 0;
 }
 
@@ -178,11 +181,28 @@ zbanner_handle(
             
             stack_transmit_packetbuffer(stack, pkt_buffer);
 
+            /*add timeout*/
+            if (handler) {
+                struct ScanTimeoutEvent *tm_event =
+                    CALLOC(1, sizeof(struct ScanTimeoutEvent));
+
+                tm_event->ip_them   = recved->parsed.src_ip;
+                tm_event->ip_me     = recved->parsed.dst_ip;
+                tm_event->port_them = recved->parsed.port_src;
+                tm_event->port_me   = recved->parsed.port_dst;
+
+                tm_event->need_timeout = 1;
+                tm_event->dedup_type   = 1; /*1 for banner*/
+
+                ft_add_event(handler, tm_event);
+                tm_event = NULL;
+            }
+
             /*multi-probe Multi_IfOpen*/
             if (ZBannerScan.probe->multi_mode==Multi_IfOpen
                 && recved->parsed.port_dst==src_port_start) {
 
-                for (unsigned idx=1; idx<ZBannerScan.probe->probe_num; idx++) {
+                for (unsigned idx=1; idx<ZBannerScan.probe->multi_num; idx++) {
 
                     unsigned cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                         recved->parsed.dst_ip, src_port_start+idx, entropy);
@@ -196,7 +216,6 @@ zbanner_handle(
                         NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
 
                     stack_transmit_packetbuffer(stack, pkt_buffer);
-            
                 }
             }
         }
@@ -243,7 +262,7 @@ zbanner_handle(
         /*multi-probe Multi_AfterHandle*/
         if (ZBannerScan.probe->multi_mode==Multi_AfterHandle
             && is_multi && recved->parsed.port_dst==src_port_start) {
-            for (unsigned idx=1; idx<ZBannerScan.probe->probe_num; idx++) {
+            for (unsigned idx=1; idx<ZBannerScan.probe->multi_num; idx++) {
 
                 unsigned cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                     recved->parsed.dst_ip, src_port_start+idx, entropy);
@@ -257,9 +276,87 @@ zbanner_handle(
                     NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
 
                 stack_transmit_packetbuffer(stack, pkt_buffer);
-        
             }
         }
+
+        /*multi-probe Multi_DynamicNext*/
+        if (ZBannerScan.probe->multi_mode==Multi_DynamicNext && is_multi) {
+            unsigned cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
+                recved->parsed.dst_ip, src_port_start+is_multi-1, entropy);
+
+            struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+
+            pkt_buffer->length = tcp_create_packet(
+                recved->parsed.src_ip, recved->parsed.port_src,
+                recved->parsed.dst_ip, src_port_start+is_multi-1,
+                cookie, 0, TCP_FLAG_SYN,
+                NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+
+            stack_transmit_packetbuffer(stack, pkt_buffer);
+        }
+    }
+}
+
+static void
+zbanner_timeout(
+    uint64_t entropy,
+    struct ScanTimeoutEvent *event,
+    struct OutputItem *item,
+    struct stack_t *stack,
+    struct FHandler *handler)
+{
+    /*all events is for banner*/
+
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no banner");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+
+    struct ProbeTarget ptarget = {
+        .ip_them   = event->ip_them,
+        .ip_me     = event->ip_me,
+        .port_them = event->port_them,
+        .port_me   = event->port_me,
+        .cookie    = 0, /*zbanner can recognize reponse by itself*/
+        .index     = event->port_me-src_port_start,
+    };
+
+    int is_multi = ZBannerScan.probe->handle_response_cb(&ptarget,
+        NULL, 0,
+        item->report, OUTPUT_RPT_LEN);
+
+    /*multi-probe Multi_AfterHandle*/
+    if (ZBannerScan.probe->multi_mode==Multi_AfterHandle
+        && is_multi && event->port_me==src_port_start) {
+        for (unsigned idx=1; idx<ZBannerScan.probe->multi_num; idx++) {
+
+            unsigned cookie = get_cookie(event->ip_them, event->port_them,
+                event->ip_me, src_port_start+idx, entropy);
+
+            struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+
+            pkt_buffer->length = tcp_create_packet(
+                event->ip_them, event->port_them,
+                event->ip_me,   src_port_start+idx,
+                cookie, 0, TCP_FLAG_SYN,
+                NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+
+            stack_transmit_packetbuffer(stack, pkt_buffer);
+        }
+    }
+
+    /*multi-probe Multi_DynamicNext*/
+    if (ZBannerScan.probe->multi_mode==Multi_DynamicNext && is_multi) {
+        unsigned cookie = get_cookie(event->ip_them, event->port_them,
+            event->ip_me, src_port_start+is_multi-1, entropy);
+
+        struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+
+        pkt_buffer->length = tcp_create_packet(
+            event->ip_them, event->port_them,
+            event->ip_me,   src_port_start+is_multi-1,
+            cookie, 0, TCP_FLAG_SYN,
+            NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+
+        stack_transmit_packetbuffer(stack, pkt_buffer);
     }
 }
 
@@ -267,7 +364,7 @@ zbanner_handle(
 struct ScanModule ZBannerScan = {
     .name = "zbanner",
     .required_probe_type = ProbeType_TCP,
-    .support_timeout = 0,
+    .support_timeout = 1,
     .bpf_filter = "tcp && (tcp[13] & 4 != 0 || tcp[13] & 16 != 0)", /*tcp with rst or ack*/
     .desc =
         "ZBannerScan tries to contruct TCP conn with target port and send data "
@@ -275,7 +372,9 @@ struct ScanModule ZBannerScan = {
         " by specified ProbeModule.\n"
         "What important is the whole process was done in completely stateless. "
         "So ZBannerScan is very fast for large-scale probing like banner grabbing,"
-        " service identification and etc.\n\n"
+        " service identification and etc.\n"
+        "By the way, ZBanner support `timeout` just for banner response but not "
+        "for port openness(syn-ack).\n\n"
         "Must specify a ProbeModule for ZBannerScan like:\n"
         "    `--probe-module null`\n\n"
         "ZBannerScan will construct complete TCP conns. So must avoid Linux system "
@@ -290,6 +389,6 @@ struct ScanModule ZBannerScan = {
     .transmit_cb                  = &zbanner_transmit_packet,
     .validate_cb                  = &zbanner_validate,
     .handle_cb                    = &zbanner_handle,
-    .timeout_cb                   = &scan_no_timeout,
+    .timeout_cb                   = &zbanner_timeout,
     .close_cb                     = &scan_close_nothing,
 };

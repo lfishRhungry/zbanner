@@ -75,7 +75,7 @@ udpprobe_transmit(
     
     /*for multi-probe*/
     if (UdpProbeScan.probe->multi_mode==Multi_Direct
-        && target->index+1 < UdpProbeScan.probe->probe_num)
+        && target->index+1 < UdpProbeScan.probe->multi_num)
         return 1;
     else return 0;
     
@@ -169,9 +169,9 @@ udpprobe_handle(
         if ((UdpProbeScan.probe->multi_mode==Multi_IfOpen
             ||(UdpProbeScan.probe->multi_mode==Multi_AfterHandle&&is_multi))
             && recved->parsed.port_dst==src_port_start
-            && UdpProbeScan.probe->probe_num) {
+            && UdpProbeScan.probe->multi_num) {
 
-            for (unsigned idx=1; idx<UdpProbeScan.probe->probe_num; idx++) {
+            for (unsigned idx=1; idx<UdpProbeScan.probe->multi_num; idx++) {
 
                 struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
 
@@ -198,6 +198,34 @@ udpprobe_handle(
                 stack_transmit_packetbuffer(stack, pkt_buffer);
         
             }
+        }
+
+        /*for multi-probe Multi_DynamicNext*/
+        if (UdpProbeScan.probe->multi_mode==Multi_DynamicNext && is_multi) {
+
+            struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+
+            struct ProbeTarget ptarget = {
+                .ip_them   = recved->parsed.src_ip,
+                .ip_me     = recved->parsed.dst_ip,
+                .port_them = recved->parsed.port_src,
+                .port_me   = src_port_start+is_multi-1,
+                .cookie    = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
+                    recved->parsed.dst_ip, src_port_start+is_multi-1, entropy),
+                .index     = is_multi-1,
+            };
+
+            unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
+            size_t payload_len = 0;
+
+            payload_len = UdpProbeScan.probe->make_payload_cb(&ptarget, payload);
+
+            pkt_buffer->length = udp_create_packet(
+                recved->parsed.src_ip, recved->parsed.port_src,
+                recved->parsed.dst_ip, src_port_start+is_multi-1,
+                payload, payload_len, pkt_buffer->px, PKT_BUF_LEN);
+
+            stack_transmit_packetbuffer(stack, pkt_buffer);
         }
     } else {
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");

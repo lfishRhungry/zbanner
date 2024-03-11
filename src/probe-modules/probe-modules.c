@@ -125,7 +125,11 @@ probe_just_report_banner(
     const unsigned char *px, unsigned sizeof_px,
     char *report, unsigned rpt_length)
 {
-    normalize_string(px, sizeof_px, report, rpt_length);
+    if (sizeof_px > 0)
+        normalize_string(px, sizeof_px, report, rpt_length);
+    else
+        safe_strcpy(report, rpt_length, "[banner timeout]");
+
     return 0;
 }
 

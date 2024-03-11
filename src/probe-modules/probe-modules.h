@@ -87,7 +87,7 @@ typedef int
  * 
  * @param target info of a target
  * @param px response data
- * @param sizeof_px len of reponse
+ * @param sizeof_px len of reponse (it can be 0 for no response while timeouted)
  * @param report Report string.
  * @param rpt_length Length of report string buffer.
  * @return true for starting multi-probe in Multi_AfterHandle mode.
@@ -114,9 +114,10 @@ enum ProbeType {
 
 enum MultiMode {
     Multi_Null = 0,
-    Multi_Direct, /*send multi-probe when first connect.*/
-    Multi_IfOpen, /*send multi-probe if port is open.*/
-    Multi_AfterHandle, /*send multi-probe after handle.*/
+    Multi_Direct,         /*send multi_num probes(diff in index) when first connect.*/
+    Multi_IfOpen,         /*send multi_num probes(diff in index) if port is open.*/
+    Multi_AfterHandle,    /*send multi-num probes(diff in index) after first handled.*/
+    Multi_DynamicNext,    /*send a specified probe(with index+1) after every time handled*/
 };
 
 struct ProbeModule
@@ -126,7 +127,7 @@ struct ProbeModule
     const char                                 *desc;
     char                                       *args;
     enum MultiMode                              multi_mode;
-    unsigned                                    probe_num; /*for multi-probe*/
+    unsigned                                    multi_num;
     /*for init*/
     probe_modules_global_init                   global_init_cb;
     /*for payload*/

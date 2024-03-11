@@ -175,10 +175,10 @@ infinite:
         tm_event = CALLOC(1, sizeof(struct ScanTimeoutEvent));
       }
 
-      tm_event->ip_them = target.ip_them;
-      tm_event->ip_me = target.ip_me;
+      tm_event->ip_them   = target.ip_them;
+      tm_event->ip_me     = target.ip_me;
       tm_event->port_them = target.port_them;
-      tm_event->port_me = target.port_me;
+      tm_event->port_me   = target.port_me;
 
       unsigned char pkt_buffer[PKT_BUF_LEN];
       size_t pkt_len = 0;
@@ -201,7 +201,7 @@ infinite:
           tm_event = NULL;
         } else {
           tm_event->need_timeout = 0;
-          tm_event->dedup_type = 0;
+          tm_event->dedup_type   = 0;
         }
       }
 

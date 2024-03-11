@@ -26,7 +26,7 @@ struct ProbeModule GetRequestProbe = {
     .name       = "getrequest",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,
-    .probe_num  = 1,
+    .multi_num  = 1,
     .desc =
         "GetRequest Probe sends target port a simple HTTP Get request:\n"
         "    `GET / HTTP/1.0\\r\\n\\r\\n`\n"
