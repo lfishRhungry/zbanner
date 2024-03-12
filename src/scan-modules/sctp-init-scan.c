@@ -79,11 +79,12 @@ sctpinit_handle(
 {
     if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
         SCTP_CHUNK_TYPE_INIT_ACK)) {
-        item->is_success = 1;
+        item->level = Output_SUCCESS;
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "init-ack");
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
     } else if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
         SCTP_CHUNK_TYPE_ABORT)) {
+        item->level = Output_FAILURE;
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "abort");
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
     }
@@ -96,6 +97,7 @@ void sctpinit_timeout(
     struct stack_t *stack,
     struct FHandler *handler)
 {
+    item->level = Output_FAILURE;
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
 }

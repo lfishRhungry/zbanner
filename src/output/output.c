@@ -4,9 +4,17 @@
 #include "../pixie/pixie-file.h"
 #include "../util/logger.h"
 
-static char fmt_success_host[] = "%s on host: %-15s";
-static char fmt_port[] = " port: %-5u";
-static char fmt_classification[] = " \"%s\"";
+#define OUTPUT_COLOR_RED     "\x1b[31m"
+#define OUTPUT_COLOR_GREEN   "\x1b[32m"
+#define OUTPUT_COLOR_YELLOW  "\x1b[33m"
+#define OUTPUT_COLOR_BLUE    "\x1b[34m"
+#define OUTPUT_COLOR_MAGENTA "\x1b[35m"
+#define OUTPUT_COLOR_CYAN    "\x1b[36m"
+#define OUTPUT_COLOR_RESET   "\x1b[0m"
+
+static char fmt_host[]   = "%s host: %-15s";
+static char fmt_port[]   = " port: %-5u";
+static char fmt_cls []   = " \"%s\"";
 static char fmt_reason[] = " because of \"%s\"";
 static char fmt_report[] = ". Report: %s";
 
@@ -32,7 +40,9 @@ output_result_to_stdout(
     const struct Output *output,
     const struct OutputItem *item)
 {
-    if (!item->is_success && !output->is_show_failed)
+    if (item->level==Output_INFO && !output->is_show_info)
+        return;
+    if (item->level==Output_FAILURE && !output->is_show_failed)
         return;
 
     // ipaddress_formatted_t ip_me_fmt = ipaddress_fmt(item->ip_me);
@@ -40,21 +50,38 @@ output_result_to_stdout(
 
     unsigned count = 0;
 
-    count = fprintf(stdout, fmt_success_host,
-        item->is_success?"Success":"Failure",
-        ip_them_fmt.string);
+    switch (item->level)
+    {
+    case Output_SUCCESS:
+        count = fprintf(stdout, fmt_host,
+            OUTPUT_COLOR_GREEN"[+]", ip_them_fmt.string);
+        break;
+    case Output_FAILURE:
+        count = fprintf(stdout, fmt_host,
+            OUTPUT_COLOR_RED"[x]", ip_them_fmt.string);
+        break;
+    case Output_INFO:
+        count = fprintf(stdout, fmt_host,
+            OUTPUT_COLOR_CYAN"[-]", ip_them_fmt.string);
+        break;
+    default:
+        return;
+    }
+
     
     if (item->port_them) {
         count += fprintf(stdout, fmt_port, item->port_them);
     }
 
     if (item->classification[0]) {
-        count += fprintf(stdout, fmt_classification, item->classification);
+        count += fprintf(stdout, fmt_cls, item->classification);
     }
 
     if (item->reason[0]) {
         count += fprintf(stdout, fmt_reason, item->reason);
     }
+
+    fprintf(stdout, OUTPUT_COLOR_RESET);
 
     if (item->report[0]) {
         count += fprintf(stdout, fmt_report, item->report);
@@ -72,7 +99,9 @@ output_result_to_file(
     const struct Output *output,
     const struct OutputItem *item)
 {
-    if (!item->is_success && !output->is_show_failed)
+    if (item->level==Output_INFO && !output->is_show_info)
+        return;
+    if (item->level==Output_FAILURE && !output->is_show_failed)
         return;
     
     FILE *fp = output->output_file;
@@ -82,16 +111,27 @@ output_result_to_file(
 
     unsigned count = 0;
 
-    count = fprintf(fp, fmt_success_host,
-        item->is_success?"Success":"Failure",
-        ip_them_fmt.string);
+    switch (item->level)
+    {
+    case Output_SUCCESS:
+        count = fprintf(stdout, fmt_host, "[+]", ip_them_fmt.string);
+        break;
+    case Output_FAILURE:
+        count = fprintf(stdout, fmt_host, "[x]", ip_them_fmt.string);
+        break;
+    case Output_INFO:
+        count = fprintf(stdout, fmt_host, "[-]", ip_them_fmt.string);
+        break;
+    default:
+        return;
+    }
     
     if (item->port_them) {
         count += fprintf(fp, fmt_port, item->port_them);
     }
 
     if (item->classification[0]) {
-        count += fprintf(fp, fmt_classification, item->classification);
+        count += fprintf(fp, fmt_cls, item->classification);
     }
 
     if (item->reason[0]) {

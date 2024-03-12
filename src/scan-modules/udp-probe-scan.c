@@ -161,9 +161,6 @@ udpprobe_handle(
     struct FHandler *handler)
 {
     if (recved->parsed.found == FOUND_UDP) {
-        item->is_success = 1;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "udp reponse");
 
         struct ProbeTarget ptarget = {
             .ip_them   = recved->parsed.src_ip,
@@ -177,7 +174,7 @@ udpprobe_handle(
 
         int is_multi = UdpProbeScan.probe->handle_response_cb(&ptarget,
             &recved->packet[recved->parsed.app_offset],
-            recved->parsed.app_length, item->report);
+            recved->parsed.app_length, item);
 
         /*for multi-probe Multi_AfterHandle*/
         if (UdpProbeScan.probe->multi_mode==Multi_AfterHandle&&is_multi
@@ -300,9 +297,6 @@ udpprobe_timeout(
 {
     /*all events is for banner*/
 
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no banner");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
-
     struct ProbeTarget ptarget = {
         .ip_them   = event->ip_them,
         .ip_me     = event->ip_me,
@@ -314,7 +308,7 @@ udpprobe_timeout(
     };
 
     int is_multi = UdpProbeScan.probe->handle_response_cb(&ptarget,
-        NULL, 0, item->report);
+        NULL, 0, item);
 
     /*for multi-probe Multi_AfterHandle*/
     if (UdpProbeScan.probe->multi_mode==Multi_AfterHandle&&is_multi
@@ -363,7 +357,6 @@ udpprobe_timeout(
                 ft_add_event(handler, tm_event, global_now);
                 tm_event = NULL;
             }
-    
         }
 
         return;

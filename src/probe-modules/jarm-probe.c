@@ -130,11 +130,14 @@ int
 jarm_handle_response(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report)
+    struct OutputItem *item)
 {
     /*handle timeout*/
     if (sizeof_px == 0) {
-        snprintf(report, PROBE_REPORT_MAX_LEN, "Timeout JARM[%d]", target->index);
+        item->level = Output_FAILURE;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no jarm");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+        snprintf(item->report, OUTPUT_RPT_LEN, "JARM[%d]", target->index);
         return 0;
     }
     /**
@@ -142,23 +145,30 @@ jarm_handle_response(
      * eg. \x15\x03\x01\x00\x02\x02
      * */
     if (sizeof_px < 7) {
-        safe_strcpy(report, PROBE_REPORT_MAX_LEN, "Not TLS");
+        item->level = Output_FAILURE;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no jarm");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not tls");
         return 0;
     }
 
-    /*Just ALERT & HANDSHAKE are valid*/
+    /*Just ALERT or HANDSHAKE are valid*/
     if (px[0]==TLS_RECORD_CONTENT_TYPE_ALERT
         || px[0]==TLS_RECORD_CONTENT_TYPE_HANDSHAKE) {
         /*Validate the VERSION field*/
         if (px[1]==0x03) {
             if (px[2]==0x00 || px[2]==0x01 || px[2]==0x02 || px[2]==0x03) {
-                snprintf(report, PROBE_REPORT_MAX_LEN, "Got JARM[%d]", target->index);
+                item->level = Output_SUCCESS;
+                safe_strcpy(item->classification, OUTPUT_CLS_LEN, "jarmed");
+                safe_strcpy(item->reason, OUTPUT_RSN_LEN, "tls banner");
+                snprintf(item->report, OUTPUT_RPT_LEN, "JARM[%d]", target->index);
                 return 1;
             }
         }
     }
 
-    safe_strcpy(report, PROBE_REPORT_MAX_LEN, "Not TLS");
+    item->level = Output_FAILURE;
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no jarm");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not tls");
     return 0;
 }
 

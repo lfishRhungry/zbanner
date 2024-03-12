@@ -114,8 +114,18 @@ int
 probe_report_nothing(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report)
+    struct OutputItem *item)
 {
+    if (sizeof_px > 0) {
+        item->level = Output_SUCCESS;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "serving");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "banner exists");
+    } else {
+        item->level = Output_FAILURE;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no serving");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+    }
+
     return 0;
 }
 
@@ -123,12 +133,18 @@ int
 probe_just_report_banner(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report)
+    struct OutputItem *item)
 {
-    if (sizeof_px > 0)
-        normalize_string(px, sizeof_px, report, PROBE_REPORT_MAX_LEN);
-    else
-        safe_strcpy(report, PROBE_REPORT_MAX_LEN, "[banner timeout]");
+    if (sizeof_px > 0) {
+        item->level = Output_SUCCESS;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "serving");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "banner exists");
+        normalize_string(px, sizeof_px, item->report, OUTPUT_RPT_LEN);
+    } else {
+        item->level = Output_FAILURE;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no serving");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+    }
 
     return 0;
 }

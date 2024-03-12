@@ -146,7 +146,6 @@ zbanner_handle(
     /*SYNACK*/
     if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
         TCP_FLAG_SYN|TCP_FLAG_ACK)) {
-        item->is_success = 1;
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "syn-ack");
 
         uint16_t win_them =
@@ -228,11 +227,6 @@ zbanner_handle(
     }
     /*Banner*/
     else {
-        item->is_success = 1;
-        tcp_flags_to_string(
-            TCP_FLAGS(recved->packet, recved->parsed.transport_offset),
-            item->reason, OUTPUT_RSN_LEN);
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "serving");
 
         struct ProbeTarget ptarget = {
             .ip_them   = recved->parsed.src_ip,
@@ -245,7 +239,7 @@ zbanner_handle(
 
         int is_multi = ZBannerScan.probe->handle_response_cb(&ptarget,
             &recved->packet[recved->parsed.app_offset],
-            recved->parsed.app_length, item->report);
+            recved->parsed.app_length, item);
 
         /*send rst to disconn*/
         struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
@@ -308,9 +302,6 @@ zbanner_timeout(
 {
     /*all events is for banner*/
 
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no banner");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
-
     struct ProbeTarget ptarget = {
         .ip_them   = event->ip_them,
         .ip_me     = event->ip_me,
@@ -321,7 +312,7 @@ zbanner_timeout(
     };
 
     int is_multi = ZBannerScan.probe->handle_response_cb(&ptarget,
-        NULL, 0, item->report);
+        NULL, 0, item);
 
     /*multi-probe Multi_AfterHandle*/
     if (ZBannerScan.probe->multi_mode==Multi_AfterHandle

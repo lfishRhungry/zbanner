@@ -136,9 +136,9 @@ void receive_thread(void *v) {
           output_result(&output, &item);
 
           if (!item.no_output) {
-            if (item.is_success)
+            if (item.level==Output_SUCCESS)
               (*status_successed_count)++;
-            else
+            else if (item.level==Output_FAILURE)
               (*status_failed_count)++;
           }
         }
@@ -225,9 +225,9 @@ void receive_thread(void *v) {
     output_result(&output, &item);
 
     if (!item.no_output) {
-      if (item.is_success)
+      if (item.level==Output_SUCCESS)
         (*status_successed_count)++;
-      else
+      else if (item.level==Output_FAILURE)
         (*status_failed_count)++;
     }
   }

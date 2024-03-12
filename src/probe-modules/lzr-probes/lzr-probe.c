@@ -77,19 +77,21 @@ static int
 lzr_handle_response(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report)
+    struct OutputItem *item)
 {
     if (sizeof_px==0) {
-        safe_strcpy(report, PROBE_REPORT_MAX_LEN, "unknown");
+        item->level = Output_FAILURE;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
         return 0;
     }
     /**
-     * I think STATELESS_BANNER_MAX_LEN is long enough.
+     * I think it is long enough.
      * Some one has time to make it safe?
      * However I am tired while coding there.
     */
-    char *buf_idx = report;
-    
+    char *rpt_idx = item->report;
+
     /**
      * strcat every lzr subprobes match result
      * print results just like lzr:
@@ -97,23 +99,31 @@ lzr_handle_response(
     */
     for (size_t i=0; i<sizeof(lzr_subprobes)/sizeof(struct ProbeModule*); i++) {
         lzr_subprobes[i]->handle_response_cb(
-            target, px, sizeof_px,
-            buf_idx);
+            target, px, sizeof_px, item);
 
-        for (;buf_idx[0]!='\0';buf_idx++) {}
-        /*identified in this turn*/
-        if (buf_idx!=report && (buf_idx-1)[0]!='-') {
-            buf_idx[0] = '-';
-            buf_idx++;
+        if (item->level==Output_SUCCESS) {
+            safe_strcpy(rpt_idx,
+                OUTPUT_RPT_LEN-(rpt_idx-item->report), item->classification);
+
+            for (;*rpt_idx!='\0';rpt_idx++) {}
+
+            *rpt_idx = '-';
+            rpt_idx++;
         }
     }
 
-    if (buf_idx==report) {
+    if (rpt_idx==item->report) {
         /*got nothing*/
-        safe_strcpy(report, PROBE_REPORT_MAX_LEN, "unknown");
+        item->level = Output_FAILURE;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
     } else {
         /* remove last '-' */
-        (buf_idx-1)[0] = '\0';
+        *(rpt_idx-1) = '\0';
+
+        item->level = Output_SUCCESS;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "identified");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
     }
 
     return 0;

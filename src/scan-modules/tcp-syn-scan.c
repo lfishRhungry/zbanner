@@ -81,7 +81,7 @@ tcpsyn_handle(
     /*SYNACK*/
     if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
         TCP_FLAG_SYN|TCP_FLAG_ACK)) {
-        item->is_success = 1;
+        item->level = Output_SUCCESS;
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "syn-ack");
 
         uint16_t win_them =
@@ -94,6 +94,7 @@ tcpsyn_handle(
     }
     /*RST*/
     else {
+        item->level = Output_FAILURE;
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "rst");
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
     }
@@ -106,6 +107,7 @@ void tcpsyn_timeout(
     struct stack_t *stack,
     struct FHandler *handler)
 {
+    item->level = Output_FAILURE;
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
 }

@@ -1,12 +1,12 @@
 #include <stdlib.h>
 
 #include "../massip/massip-addr.h"
+#include "../output/output.h"
 
 #ifndef PROBE_MODULES_H
 #define PROBE_MODULES_H
 
 #define PROBE_PAYLOAD_MAX_LEN 2048
-#define PROBE_REPORT_MAX_LEN 2048
 
 
 /**
@@ -88,15 +88,14 @@ typedef int
  * @param target info of a target
  * @param px response data
  * @param sizeof_px len of reponse (it can be 0 for no response while timeouted)
- * @param report Report string.
- * @param rpt_length Length of report string buffer.
+ * @param item to define output content.
  * @return true for starting multi-probe in Multi_AfterHandle mode.
 */
 typedef int
 (*probe_modules_handle_response)(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report);
+    struct OutputItem *item);
 
 /**
  * It happens before normal exit in mainscan function.
@@ -167,14 +166,14 @@ int
 probe_report_nothing(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report);
+    struct OutputItem *item);
 
 /*implemented `probe_modules_handle_reponse`*/
 int
 probe_just_report_banner(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report);
+    struct OutputItem *item);
 
 /*implemented `probe_modules_close`*/
 void probe_close_nothing();

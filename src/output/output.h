@@ -17,11 +17,18 @@ struct Output{
     unsigned is_append:1;
     unsigned is_interactive:1;
     unsigned is_show_failed:1;
+    unsigned is_show_info:1;
+};
+
+enum OutputLevel{
+    Output_INFO = 0,
+    Output_FAILURE,
+    Output_SUCCESS,
 };
 
 struct OutputItem{
     unsigned no_output:1;
-    unsigned is_success:1;
+    enum OutputLevel level;
     time_t timestamp;
     ipaddress ip_them;
     unsigned port_them; /*no outputting if zero*/

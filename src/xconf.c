@@ -352,12 +352,17 @@ static int SET_show(struct Xconf *xconf, const char *name, const char *value)
         if (xconf->output.is_show_failed){
             fprintf(xconf->echo, "show = failed\n");
         }
+        if (xconf->output.is_show_info){
+            fprintf(xconf->echo, "show = info\n");
+        }
         return 0;
     }
 
     
     if (EQUALS("failed",value)||EQUALS("fail",value)) {
         xconf->output.is_show_failed = true;
+    } else if (EQUALS("info",value)||EQUALS("information",value)) {
+        xconf->output.is_show_info = true;
     } else {
         fprintf(stderr, "FAIL %s: no item named %s\n", name, value);
         return CONF_ERR;
@@ -2433,7 +2438,7 @@ struct ConfigParameter config_parameters[] = {
         0,
         {0},
         "Tells which explicit result status to display, such as 'failed' for "
-        "those ports that respond with a RST on TCP."
+        "those ports that respond with a RST on TCP or 'info' for informations."
     },
     {
         "output-file",

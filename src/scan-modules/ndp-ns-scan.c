@@ -77,7 +77,7 @@ ndpns_handle(
 {
     item->port_them  = 0;
     item->port_me    = 0;
-    item->is_success = 1;
+    item->level      = Output_SUCCESS;
 
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "ndp na");
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "alive");
@@ -110,6 +110,7 @@ void ndpns_timeout(
     struct stack_t *stack,
     struct FHandler *handler)
 {
+    item->level = Output_FAILURE;
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "down");
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
 }

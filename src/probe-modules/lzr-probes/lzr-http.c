@@ -47,10 +47,14 @@ static int
 lzr_http_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    char *report)
+    struct OutputItem *item)
 {
-    if (sizeof_px==0)
+    if (sizeof_px==0) {
+        item->level = Output_FAILURE;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not http");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
         return 0;
+    }
     
     if (!safe_memmem(px, sizeof_px, "HTTPS", strlen("HTTPS"))
         &&
@@ -58,8 +62,15 @@ lzr_http_handle_reponse(
             || safe_memmem(px, sizeof_px, "html", strlen("html"))
             || safe_memmem(px, sizeof_px, "HTML", strlen("HTML"))
             || safe_memmem(px, sizeof_px, "<h1>", strlen("<h1>")))) {
-        safe_strcpy(report, PROBE_REPORT_MAX_LEN, "http");
+        item->level = Output_SUCCESS;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "http");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+        return 0;
     }
+
+    item->level = Output_FAILURE;
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not http");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
 
     return 0;
 }
