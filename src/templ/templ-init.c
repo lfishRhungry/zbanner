@@ -467,10 +467,6 @@ template_set_target_ipv6(
             /* TODO: IPv6 */
         /* don't do any checksumming */
         break;
-    case Proto_Oproto:
-            /* TODO: IPv6 */
-        /* TODO: probably need to add checksums for certain protocols */
-        break;
     case Proto_Count:
         break;
     case Proto_TCP_SYN: {
@@ -691,9 +687,6 @@ template_set_target_ipv4(
         break;
     case Proto_ARP:
         /* don't do any checksumming */
-        break;
-    case Proto_Oproto:
-        /* TODO: probably need to add checksums for certain protocols */
         break;
     case Proto_Count:
         break;
@@ -1045,16 +1038,6 @@ template_packet_init(
                    data_link);
     templset->pkts[Proto_UDP].payloads = udp_payloads;
     templset->count++;
-    
-    /* [UDP oproto] */
-    _template_init(&templset->pkts[Proto_Oproto],
-                   source_mac, router_mac_ipv4, router_mac_ipv6,
-                   default_udp_template,
-                   sizeof(default_udp_template)-1,
-                   data_link);
-    templset->pkts[Proto_Oproto].payloads = oproto_payloads;
-    templset->count++;
-    
 
     /* [ICMP ping] */
     _template_init(&templset->pkts[Proto_ICMP_ping],

@@ -15,10 +15,6 @@ enum TemplateProtocol {
     Proto_ICMP_timestamp,
     Proto_ARP,
     Proto_NDP_ns,
-    Proto_Oproto,
-    //Proto_VulnCheck,
-    //Proto_IP,
-    //Proto_Custom,
     Proto_Count
 };
 /**
