@@ -2888,11 +2888,14 @@ void xconf_print_usage()
     printf("  "XTATE_NAME" -p s:38412 -range 10.0.0.0/8 -scanmodule sctpinit -show fail\n");
     xprint("use SctpInit ScanModule to scan SCTP 38412 port and also show failed results.\n", 6, 80);
     printf("\n");
-    printf("  "XTATE_NAME" -range 10.0.0.0/8 -scanmodule icmpecho\n");
-    xprint("use IcmpEcho ScanModule to do ping scan.\n", 6, 80);
+    printf("  "XTATE_NAME" -range 10.0.0.0/8 -scanmodule icmpecho -timeout 6\n");
+    xprint("use IcmpEcho ScanModule to do ping scan with a 6s timeout.\n", 6, 80);
     printf("\n");
     printf("  "XTATE_NAME" -range 192.168.0.1/24 -scanmodule arpreq -lan\n");
     xprint("do ARP scan with LAN mode in local network.\n", 6, 80);
+    printf("\n");
+    printf("  "XTATE_NAME" -range fe80::1/120 -scanmodule ndpna -src-ip fe80::2 -fake-router-mac\n");
+    xprint("do NDP NS scan with a link-local source IP in local network.\n", 6, 80);
     printf("\n");
     printf("  "XTATE_NAME" -list-scan\n");
     xprint("list all ScanModules with introductions.\n", 6, 80);
