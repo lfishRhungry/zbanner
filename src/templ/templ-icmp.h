@@ -52,6 +52,12 @@
 #define ICMPv6_TYPE_ECHO_REPLY                       129
 #define ICMPv6_CODE_ECHO_REPLY                       0
 
+#define ICMPv6_TYPE_NS                               135
+#define ICMPv6_CODE_NS                               0
+
+#define ICMPv6_TYPE_NA                               136
+#define ICMPv6_CODE_NA                               0
+
 /**
  * @param tmpl TemplatePacket of ICMP.
  * @param cookie we set cookie on `Identifier` and `Sequence Number` fields.

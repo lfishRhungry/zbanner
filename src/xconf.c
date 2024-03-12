@@ -1519,6 +1519,21 @@ static int SET_lan_mode(struct Xconf *xconf, const char *name, const char *value
     return CONF_OK;
 }
 
+static int SET_fake_router_mac(struct Xconf *xconf, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        return 0;
+    }
+    
+    if (parseBoolean(value)) {
+        SET_router_mac(xconf, "router-mac", "01-02-03-04-05-06");
+    }
+    
+    return CONF_OK;
+}
+
 static int SET_rate(struct Xconf *xconf, const char *name, const char *value)
 {
     double rate = 0.0;
@@ -2282,13 +2297,23 @@ struct ConfigParameter config_parameters[] = {
     },
     {
         "lan-mode",
-        SET_lan_mode,
+        SET_fake_router_mac,
         F_BOOL,
         {"local", "lan", 0},
         "Set the router MAC address to a broadcast address(ff-ff-ff-ff-ff-ff). "
         "This can make "XTATE_FIRST_UPPER_NAME" be able to scan in a local network.\n"
         "NOTE: This flag must set while we do some layer-2 protocol scan "
         "like ARP."
+    },
+    {
+        "fake-router-mac",
+        SET_lan_mode,
+        F_BOOL,
+        {"no-router-mac", 0},
+        "Set the router MAC address to a invalid address(01-02-03-04-05-06). "
+        "This can stop "XTATE_FIRST_UPPER_NAME" to resolve router MAC address."
+        "It's useful when the ScanModule will specify destination MAC address "
+        "dynamicly for different target. e.g. NdpNsScan.\n"
     },
 
     {"OPERATION:", SET_nothing, 0, {0}, NULL},

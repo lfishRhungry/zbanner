@@ -97,7 +97,7 @@ struct ScanModule IcmpEchoScan = {
     .support_timeout = 1,
     .bpf_filter = "(icmp && (icmp[0]==0 && icmp[1]==0)) || (icmp6 && (icmp6[0]==129&&icmp6[1]==0))",
     .desc =
-        "IcmpEchoScan sends a ICMP ECHO Request packet to target host. Expect an "
+        "IcmpEchoScan sends an ICMP ECHO Request packet to target host. Expect an "
         "ICMP ECHO Reply to believe the host is alive.\n",
 
     .global_init_cb         = &scan_init_nothing,

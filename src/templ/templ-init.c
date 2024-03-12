@@ -169,10 +169,10 @@ static unsigned char default_icmp_timestamp_template[] =
 "\x08\x00"      /* Ethernet type: IPv4 */
 "\x45"          /* IP type */
 "\x00"
-"\x00\x28"      /* total length = 84 bytes */
+"\x00\x28"      /* total length = 40 bytes */
 "\x00\x00"      /* identification */
 "\x00\x00"      /* fragmentation flags */
-"\xFF\x01"      /* TTL=255, proto=UDP */
+"\xFF\x01"      /* TTL=255, proto=ICMP */
 "\xFF\xFF"      /* checksum */
 "\0\0\0\0"      /* source address */
 "\0\0\0\0"      /* destination address */
@@ -201,6 +201,33 @@ static unsigned char default_arp_template[] =
 
     "\x00\x00\x00\x00\x00\x00"
     "\x00\x00\x00\x00"
+;
+
+
+static unsigned char default_ndp_ns_template[] =
+"\0\1\2\3\4\5"  /* Ethernet: destination */
+    "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
+"\x08\x00"      /* Ethernet type: IPv4 */
+"\x45"          /* IP type */
+"\x00"
+"\x00\x34"      /* total length = 54 bytes */
+"\x00\x00"      /* identification */
+"\x00\x00"      /* fragmentation flags */
+"\xFF\x01"      /* TTL=255, proto=UDP */
+"\xFF\xFF"      /* checksum */
+"\0\0\0\0"      /* source address */
+"\0\0\0\0"      /* destination address */
+
+"\x87\x00"  /* neighbor solicitation */
+"\x00\x00"  /* checksum */
+"\x00\x00\x00\x00" /*reserved*/
+"\x00\x00\x00\x00" /*Target address*/
+"\x00\x00\x00\x00"
+"\x00\x00\x00\x00"
+"\x00\x00\x00\x00"
+"\x01"     /*ICMPv6 Option Type: Source link-layer address*/
+"\x01"     /*Length for 8 bytes*/
+"\x00\x00\x00\x00\x00\x00" /*Link-layer address*/
 ;
 
 
@@ -425,6 +452,7 @@ template_set_target_ipv6(
         break;
     case Proto_ICMP_ping:
     case Proto_ICMP_timestamp:
+    case Proto_NDP_ns:
             /* TODO: IPv6 */
             seqno = (unsigned)get_cookie_ipv6(ip_them, port_them, ip_me, 0, entropy);
             px[offset_tcp+ 4] = (unsigned char)(seqno >> 24);
@@ -646,6 +674,7 @@ template_set_target_ipv4(
         break;
     case Proto_ICMP_ping:
     case Proto_ICMP_timestamp:
+    case Proto_NDP_ns:
             seqno = (unsigned)get_cookie_ipv4(ip_them, port_them, ip_me, 0, entropy);
             px[offset_tcp+ 4] = (unsigned char)(seqno >> 24);
             px[offset_tcp+ 5] = (unsigned char)(seqno >> 16);
@@ -889,6 +918,9 @@ _template_init(
                 case 13:
                     tmpl->proto = Proto_ICMP_timestamp;
                     break;
+                case 135:
+                    tmpl->proto = Proto_NDP_ns;
+                    break;
             }
             break;
         break;
@@ -1048,6 +1080,14 @@ template_packet_init(
                     data_link);
     templset->count++;
 
+
+    /* [NDP NS] */
+    _template_init( &templset->pkts[Proto_NDP_ns],
+                    source_mac, router_mac_ipv4, router_mac_ipv6,
+                    default_ndp_ns_template,
+                    sizeof(default_ndp_ns_template)-1,
+                    data_link);
+    templset->count++;
 }
 
 void template_set_tcp_syn_window_of_default(unsigned window)
