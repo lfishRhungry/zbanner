@@ -22,6 +22,10 @@ echo_validate_response(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px)
 {
+    if (sizeof_px==0) {
+        return 0;
+    }
+
     unsigned char needle[4];
     needle[0] = target->cookie >> 24;
     needle[1] = target->cookie >> 16;

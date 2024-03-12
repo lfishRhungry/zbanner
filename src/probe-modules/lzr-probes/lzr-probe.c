@@ -79,6 +79,10 @@ lzr_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     char *report)
 {
+    if (sizeof_px==0) {
+        safe_strcpy(report, PROBE_REPORT_MAX_LEN, "unknown");
+        return 0;
+    }
     /**
      * I think STATELESS_BANNER_MAX_LEN is long enough.
      * Some one has time to make it safe?

@@ -126,7 +126,7 @@ struct ProbeModule
     const char                                 *desc;
     char                                       *args;
     enum MultiMode                              multi_mode;
-    unsigned                                    multi_num;
+    unsigned                                    multi_num; /*useless for Multi_DynamicNext*/
     /*for init*/
     probe_modules_global_init                   global_init_cb;
     /*for payload*/
