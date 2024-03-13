@@ -12,7 +12,7 @@ struct ProbeModule NullProbe = {
     .desc =
         "NullProbe does not send any data to target port. It just wait banner "
         "from server. However, waiting is the cheapest thing while we are in "
-        "stateless mode.\n",
+        "stateless mode.",
     .global_init_cb                       = &probe_init_nothing,
     .make_payload_cb                      = &probe_make_no_payload,
     .get_payload_length_cb                = &probe_no_payload_length,

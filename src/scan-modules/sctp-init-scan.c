@@ -111,7 +111,7 @@ struct ScanModule SctpInitScan = {
     .desc =
         "SctpInitScan sends an SCTP INIT packet(chunk) to target port. Expect an "
         "INIT ACK response to believe the port is open or an ABORT for closed in "
-        "SCTP protocol.\n",
+        "SCTP protocol.",
 
     .global_init_cb          = &scan_init_nothing,
     .transmit_cb             = &sctpinit_transmit,

@@ -32,7 +32,7 @@ struct ProbeModule LzrWaitProbe = {
     .params     = NULL,
     .desc =
         "LzrWait Probe sends nothing and identifies no service. It is the default\n"
-        "subprobe of LzrProbe to help other subprobes to match services.\n",
+        "subprobe of LzrProbe to help other subprobes to match services.",
     .global_init_cb                         = &probe_init_nothing,
     .make_payload_cb                        = &probe_make_no_payload,
     .get_payload_length_cb                  = &probe_no_payload_length,

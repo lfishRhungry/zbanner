@@ -97,7 +97,7 @@ struct ScanModule IcmpTimeScan = {
     .bpf_filter          = "icmp && (icmp[0]==14 && icmp[1]==0)", /*icmp timestamp reply*/
     .desc =
         "IcmpTimeScan sends an ICMP Timestamp mesage to IPv4 target host. Expect an "
-        "ICMP Timestamp Reply to believe the host is alive.\n",
+        "ICMP Timestamp Reply to believe the host is alive.",
 
     .global_init_cb         = &scan_init_nothing,
     .transmit_cb            = &icmptime_transmit,

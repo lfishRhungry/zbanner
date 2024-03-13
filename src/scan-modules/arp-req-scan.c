@@ -95,7 +95,7 @@ struct ScanModule ArpReqScan = {
         "NOTE: ArpReqScan works in local area network only, so remember to use\n"
         "    `--lan-mode`\n"
         "or to set router mac like:\n"
-        "    `--router-mac ff-ff-ff-ff-ff-ff`.\n",
+        "    `--router-mac ff-ff-ff-ff-ff-ff`.",
 
     .global_init_cb    = &scan_init_nothing,
     .transmit_cb       = &arpreq_transmit,

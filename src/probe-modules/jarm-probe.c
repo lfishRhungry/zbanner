@@ -182,7 +182,7 @@ struct ProbeModule JarmProbe = {
         "Jarm Probe sends 10 various TLS ClientHello probes in total if the first "
         "response represents the target port is running TLS protocol. Results can "
         "be analyzed to get JARM fingerprint of the target TLS stack for different "
-        "purposes.\n",
+        "purposes.",
     .global_init_cb                        = &probe_init_nothing,
     .make_payload_cb                       = &jarm_make_payload,
     .get_payload_length_cb                 = &jarm_get_payload_length,

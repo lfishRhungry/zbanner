@@ -567,7 +567,7 @@ struct ScanModule ZBannerScan = {
         "Line number of added rule could be checked like:\n"
         "    `sudo iptables -L --line-numbers`\n"
         "Remove the rule by its line number if we do not need it:\n"
-        "    `sudo iptables -D OUTPUT <line-number>`\n",
+        "    `sudo iptables -D OUTPUT <line-number>`",
 
     .global_init_cb               = &zbanner_global_init,
     .transmit_cb                  = &zbanner_transmit_packet,

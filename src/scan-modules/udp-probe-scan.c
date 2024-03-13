@@ -424,7 +424,7 @@ struct ScanModule UdpProbeScan = {
         "unreachable message if closed. Responsed data will be processed and "
         "formed a report by ProbeModule.\n"
         "UdpProbeScan prefer the first reponse udp packet. But all packets to us "
-        "could be record to pcap file.\n",
+        "could be record to pcap file.",
 
     .global_init_cb              = &udpprobe_global_init,
     .transmit_cb                 = &udpprobe_transmit,

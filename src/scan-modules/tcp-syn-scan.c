@@ -121,7 +121,7 @@ struct ScanModule TcpSynScan = {
     .desc =
         "TcpSynScan sends a TCP SYN packet to target port. Expect a SYNACK "
         "response to believe the port is open or an RST for closed in TCP protocol.\n"
-        "TcpSynScan is the default ScanModule.\n",
+        "TcpSynScan is the default ScanModule.",
 
     .global_init_cb           = &scan_init_nothing,
     .transmit_cb              = &tcpsyn_transmit,

@@ -82,7 +82,7 @@ struct ProbeModule LzrHttpProbe = {
     .multi_num  = 1,
     .params     = NULL,
     .desc =
-        "LzrHttp Probe sends an HTTP GET request and identifies HTTP service.\n",
+        "LzrHttp Probe sends an HTTP GET request and identifies HTTP service.",
     .global_init_cb                          = &probe_init_nothing,
     .make_payload_cb                         = &lzr_http_make_payload,
     .get_payload_length_cb                   = &lzr_http_get_payload_length,

@@ -127,7 +127,7 @@ struct ScanModule NdpNsScan = {
         "Neighbor Advertisement to believe the host is alive.\n"
         "We must set an IPv6 link-local addressIPv6 as source IP. And it's better"
         "  to set `--fake-router-mac` to avoid "XTATE_FIRST_UPPER_NAME" to "
-        "resolve router MAC address for a non link-local IPv6 and warn us.\n",
+        "resolve router MAC address for a non link-local IPv6 and warn us.",
 
     .global_init_cb         = &ndpns_init,
     .transmit_cb            = &ndpns_transmit,

@@ -85,6 +85,23 @@ void list_all_probe_modules()
         printf("  Description:\n");
         xprint(probe_modules_list[i]->desc, 6, 80);
         printf("\n");
+        printf("\n");
+        if (probe_modules_list[i]->params) {
+            for (unsigned j=0; probe_modules_list[i]->params[j].name; j++) {
+
+                if (!probe_modules_list[i]->params[j].helps)
+                    continue;
+
+                printf("  --%s", probe_modules_list[i]->params[j].name);
+                for (unsigned k=0; probe_modules_list[i]->params[j].alts[k]; k++) {
+                    printf(", --%s", probe_modules_list[i]->params[j].alts[k]);
+                }
+                printf("\n");
+                xprint(probe_modules_list[i]->params[j].helps, 6, 80);
+                printf("\n\n");
+            }
+        }
+        printf("\n");
     }
     printf(XPRINT_DASH_LINE);
     printf("\n");

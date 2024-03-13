@@ -162,7 +162,7 @@ struct ProbeModule LzrProbe = {
     .desc =
         "LZR Probe is an implement of service identification of LZR. It sends a "
         "specified LZR handshake(subprobe) and try to match with all LZR handshakes "
-        "with `handle_reponse_cb`.\n",
+        "with `handle_reponse_cb`.",
     .global_init_cb                        = &lzr_global_init,
     .validate_response_cb                  = NULL,
     .handle_response_cb                    = &lzr_handle_response,
