@@ -8,12 +8,12 @@
 #endif
 
 /**
- * @param conf Xconf
+ * @param conf where parameters would be set
  * @param name param name
  * @param value param value
  * @return (CONF_OK, CONF_WARN, CONF_ERR) or 0 in echo mode.
 */
-typedef int (*SET_PARAMETER)(struct Xconf *conf, const char *name, const char *value);
+typedef int (*SET_PARAMETER)(void *conf, const char *name, const char *value);
 
 enum {CONF_OK, CONF_WARN, CONF_ERR};
 
@@ -102,11 +102,11 @@ is_singleton(const struct ConfigParameter *cp, const char *name);
     * Go through configured list of parameters
 */
 void
-set_one_parameter(struct Xconf *xconf, struct ConfigParameter *cp,
+set_one_parameter(void *conf, struct ConfigParameter *cp,
     const char *name, const char *value);
 
 void
-set_parameters_from_args(struct Xconf *xconf, struct ConfigParameter *cp,
+set_parameters_from_args(void *conf, struct ConfigParameter *cp,
     int argc, char **argv);
 
 /**
@@ -114,7 +114,7 @@ set_parameters_from_args(struct Xconf *xconf, struct ConfigParameter *cp,
  * @param string whole string contains all params
 */
 void
-set_parameters_from_string(struct Xconf *xconf, struct ConfigParameter *cp,
+set_parameters_from_string(void *conf, struct ConfigParameter *cp,
     char *string, unsigned str_len);
 
 /***************************************************************************

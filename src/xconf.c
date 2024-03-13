@@ -291,8 +291,9 @@ xconf_save_state(struct Xconf *xconf)
     fclose(fp);
 }
 
-static int SET_scan_module(struct Xconf *xconf, const char *name, const char *value)
+static int SET_scan_module(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->scan_module || xconf->echo_all){
             if (xconf->scan_module)
@@ -312,8 +313,9 @@ static int SET_scan_module(struct Xconf *xconf, const char *name, const char *va
     return CONF_OK;
 }
 
-static int SET_probe_module(struct Xconf *xconf, const char *name, const char *value)
+static int SET_probe_module(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->probe_module){
             fprintf(xconf->echo, "probe-module = %s\n", xconf->probe_module->name);
@@ -330,8 +332,9 @@ static int SET_probe_module(struct Xconf *xconf, const char *name, const char *v
     return CONF_OK;
 }
 
-static int SET_output_filename(struct Xconf *xconf, const char *name, const char *value)
+static int SET_output_filename(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->output.output_filename[0]){
             fprintf(xconf->echo, "output-file = %s\n",
@@ -346,8 +349,9 @@ static int SET_output_filename(struct Xconf *xconf, const char *name, const char
     return CONF_OK;
 }
 
-static int SET_show(struct Xconf *xconf, const char *name, const char *value)
+static int SET_show(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->output.is_show_failed){
             fprintf(xconf->echo, "show = failed\n");
@@ -371,8 +375,9 @@ static int SET_show(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_scan_module_args(struct Xconf *xconf, const char *name, const char *value)
+static int SET_scan_module_args(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->scan_module_args){
@@ -390,8 +395,9 @@ static int SET_scan_module_args(struct Xconf *xconf, const char *name, const cha
     return CONF_OK;
 }
 
-static int SET_probe_module_args(struct Xconf *xconf, const char *name, const char *value)
+static int SET_probe_module_args(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->probe_module_args){
@@ -409,8 +415,9 @@ static int SET_probe_module_args(struct Xconf *xconf, const char *name, const ch
     return CONF_OK;
 }
 
-static int SET_list_scan_modules(struct Xconf *xconf, const char *name, const char *value)
+static int SET_list_scan_modules(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -420,8 +427,9 @@ static int SET_list_scan_modules(struct Xconf *xconf, const char *name, const ch
     return CONF_OK;
 }
 
-static int SET_list_probe_modules(struct Xconf *xconf, const char *name, const char *value)
+static int SET_list_probe_modules(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -431,8 +439,9 @@ static int SET_list_probe_modules(struct Xconf *xconf, const char *name, const c
     return CONF_OK;
 }
 
-static int SET_listif(struct Xconf *xconf, const char *name, const char *value)
+static int SET_listif(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -447,8 +456,9 @@ static int SET_listif(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_list_target(struct Xconf *xconf, const char *name, const char *value)
+static int SET_list_target(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
 
@@ -462,8 +472,9 @@ static int SET_list_target(struct Xconf *xconf, const char *name, const char *va
     return CONF_OK;
 }
 
-static int SET_list_range(struct Xconf *xconf, const char *name, const char *value)
+static int SET_list_range(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -476,8 +487,9 @@ static int SET_list_range(struct Xconf *xconf, const char *name, const char *val
     return CONF_OK;
 }
 
-static int SET_pfring(struct Xconf *xconf, const char *name, const char *value)
+static int SET_pfring(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -491,8 +503,9 @@ static int SET_pfring(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_nodedup(struct Xconf *xconf, const char *name, const char *value)
+static int SET_nodedup(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->is_nodedup || xconf->echo_all) {
             fprintf(xconf->echo, "no-dedup = %s\n", xconf->is_nodedup?"true":"false");
@@ -505,8 +518,9 @@ static int SET_nodedup(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_badsum(struct Xconf *xconf, const char *name, const char *value)
+static int SET_badsum(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->nmap.badsum || xconf->echo_all)
             fprintf(xconf->echo, "badsum = %s\n", xconf->nmap.badsum?"true":"false");
@@ -518,8 +532,9 @@ static int SET_badsum(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_tcp_window(struct Xconf *xconf, const char *name, const char *value)
+static int SET_tcp_window(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->tcp_window!=0)
             fprintf(xconf->echo, "tcp-window = %u\n", xconf->tcp_window);
@@ -537,8 +552,9 @@ static int SET_tcp_window(struct Xconf *xconf, const char *name, const char *val
     return CONF_OK;
 }
 
-static int SET_tcp_init_window(struct Xconf *xconf, const char *name, const char *value)
+static int SET_tcp_init_window(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->tcp_init_window!=0)
             fprintf(xconf->echo, "tcp-init-window = %u\n", xconf->tcp_init_window);
@@ -556,8 +572,9 @@ static int SET_tcp_init_window(struct Xconf *xconf, const char *name, const char
     return CONF_OK;
 }
 
-static int SET_ttl(struct Xconf *xconf, const char *name, const char *value)
+static int SET_ttl(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->nmap.ttl!=0)
             fprintf(xconf->echo, "ttl = %u\n", xconf->nmap.ttl);
@@ -575,8 +592,9 @@ static int SET_ttl(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_dedup_win(struct Xconf *xconf, const char *name, const char *value)
+static int SET_dedup_win(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->dedup_win!=1000000 || xconf->echo_all)
             fprintf(xconf->echo, "dedup-win = %u\n", xconf->dedup_win);
@@ -593,8 +611,9 @@ static int SET_dedup_win(struct Xconf *xconf, const char *name, const char *valu
     return CONF_OK;
 }
 
-static int SET_stack_buf_count(struct Xconf *xconf, const char *name, const char *value)
+static int SET_stack_buf_count(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->stack_buf_count!=16384 || xconf->echo_all) {
@@ -620,8 +639,9 @@ static int SET_stack_buf_count(struct Xconf *xconf, const char *name, const char
     return CONF_OK;
 }
 
-static int SET_wait(struct Xconf *xconf, const char *name, const char *value)
+static int SET_wait(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->wait==INT_MAX)
             fprintf(xconf->echo, "wait = forever\n");
@@ -638,8 +658,9 @@ static int SET_wait(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_thread_count(struct Xconf *xconf, const char *name, const char *value)
+static int SET_thread_count(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->tx_thread_count!=1 || xconf->echo_all) {
             fprintf(xconf->echo, "transmit-thread-count = %u\n", xconf->tx_thread_count);
@@ -658,8 +679,9 @@ static int SET_thread_count(struct Xconf *xconf, const char *name, const char *v
     return CONF_OK;
 }
 
-static int SET_adapter(struct Xconf *xconf, const char *name, const char *value)
+static int SET_adapter(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->nic.ifname[0]) {
@@ -677,8 +699,9 @@ static int SET_adapter(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_source_ip(struct Xconf *xconf, const char *name, const char *value)
+static int SET_source_ip(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
 
@@ -747,8 +770,9 @@ static int SET_source_ip(struct Xconf *xconf, const char *name, const char *valu
     return CONF_OK;
 }
 
-static int SET_source_port(struct Xconf *xconf, const char *name, const char *value)
+static int SET_source_port(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->nic.src.port.first) {
             fprintf(xconf->echo, "source-port = %d", xconf->nic.src.port.first);
@@ -795,8 +819,9 @@ static int SET_source_port(struct Xconf *xconf, const char *name, const char *va
     return CONF_OK;
 }
 
-static int SET_target_output(struct Xconf *xconf, const char *name, const char *value)
+static int SET_target_output(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         /* Disable comma generation for the first element */
         unsigned i;
@@ -907,8 +932,9 @@ static int SET_target_output(struct Xconf *xconf, const char *name, const char *
     return CONF_OK;
 }
 
-static int SET_target_ip(struct Xconf *xconf, const char *name, const char *value)
+static int SET_target_ip(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
@@ -927,8 +953,9 @@ static int SET_target_ip(struct Xconf *xconf, const char *name, const char *valu
     return CONF_OK;
 }
 
-static int SET_adapter_vlan(struct Xconf *xconf, const char *name, const char *value)
+static int SET_adapter_vlan(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->nic.is_vlan) {
@@ -943,8 +970,9 @@ static int SET_adapter_vlan(struct Xconf *xconf, const char *name, const char *v
     return CONF_OK;
 }
 
-static int SET_target_port(struct Xconf *xconf, const char *name, const char *value)
+static int SET_target_port(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
@@ -967,8 +995,9 @@ static int SET_target_port(struct Xconf *xconf, const char *name, const char *va
     return CONF_OK;
 }
 
-static int SET_top_port(struct Xconf *xconf, const char *name, const char *value)
+static int SET_top_port(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
@@ -1006,8 +1035,9 @@ static int SET_top_port(struct Xconf *xconf, const char *name, const char *value
     return CONF_OK;
 }
 
-static int SET_exclude_ip(struct Xconf *xconf, const char *name, const char *value)
+static int SET_exclude_ip(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
@@ -1026,8 +1056,9 @@ static int SET_exclude_ip(struct Xconf *xconf, const char *name, const char *val
     return CONF_OK;
 }
 
-static int SET_exclude_port(struct Xconf *xconf, const char *name, const char *value)
+static int SET_exclude_port(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
@@ -1047,8 +1078,9 @@ static int SET_exclude_port(struct Xconf *xconf, const char *name, const char *v
     return CONF_OK;
 }
 
-static int SET_include_file(struct Xconf *xconf, const char *name, const char *value)
+static int SET_include_file(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
@@ -1068,8 +1100,9 @@ static int SET_include_file(struct Xconf *xconf, const char *name, const char *v
     return CONF_OK;
 }
 
-static int SET_exclude_file(struct Xconf *xconf, const char *name, const char *value)
+static int SET_exclude_file(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
@@ -1096,8 +1129,9 @@ static int SET_exclude_file(struct Xconf *xconf, const char *name, const char *v
     return CONF_OK;
 }
 
-static int SET_source_mac(struct Xconf *xconf, const char *name, const char *value)
+static int SET_source_mac(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->nic.my_mac_count) {
             ipaddress_formatted_t fmt = macaddress_fmt(xconf->nic.source_mac);
@@ -1139,8 +1173,9 @@ static int SET_source_mac(struct Xconf *xconf, const char *name, const char *val
     return CONF_OK;
 }
 
-static int SET_router_ip(struct Xconf *xconf, const char *name, const char *value)
+static int SET_router_ip(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->nic.router_ip) {
             ipaddress_formatted_t router_ip =
@@ -1168,8 +1203,9 @@ static int SET_router_ip(struct Xconf *xconf, const char *name, const char *valu
     return CONF_OK;
 }
 
-static int SET_router_mac(struct Xconf *xconf, const char *name, const char *value)
+static int SET_router_mac(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (!macaddress_is_zero(xconf->nic.router_mac_ipv4)) {
             ipaddress_formatted_t fmt =  macaddress_fmt(xconf->nic.router_mac_ipv4);
@@ -1205,8 +1241,9 @@ static int SET_router_mac(struct Xconf *xconf, const char *name, const char *val
 /**
  * read conf file and set params directly
 */
-static int SET_read_conf(struct Xconf *xconf, const char *name, const char *value)
+static int SET_read_conf(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         return 0;
     }
@@ -1254,8 +1291,9 @@ static int SET_read_conf(struct Xconf *xconf, const char *name, const char *valu
     return CONF_OK;
 }
 
-static int SET_packet_trace(struct Xconf *xconf, const char *name, const char *value)
+static int SET_packet_trace(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1268,8 +1306,9 @@ static int SET_packet_trace(struct Xconf *xconf, const char *name, const char *v
     return CONF_OK;
 }
 
-static int SET_ndjson_status(struct Xconf *xconf, const char *name, const char *value)
+static int SET_ndjson_status(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1281,8 +1320,9 @@ static int SET_ndjson_status(struct Xconf *xconf, const char *name, const char *
     return CONF_OK;
 }
 
-static int SET_append(struct Xconf *xconf, const char *name, const char *value)
+static int SET_append(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1295,8 +1335,9 @@ static int SET_append(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_interactive(struct Xconf *xconf, const char *name, const char *value)
+static int SET_interactive(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1309,8 +1350,9 @@ static int SET_interactive(struct Xconf *xconf, const char *name, const char *va
     return CONF_OK;
 }
 
-static int SET_min_packet(struct Xconf *xconf, const char *name, const char *value)
+static int SET_min_packet(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->min_packet_size != 60 || xconf->echo_all)
@@ -1321,8 +1363,9 @@ static int SET_min_packet(struct Xconf *xconf, const char *name, const char *val
     return CONF_OK;
 }
 
-static int SET_nmap_data_length(struct Xconf *xconf, const char *name, const char *value)
+static int SET_nmap_data_length(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     
     if (xconf->echo) {
@@ -1342,8 +1385,9 @@ static int SET_nmap_data_length(struct Xconf *xconf, const char *name, const cha
     return CONF_OK;
 }
 
-static int SET_nmap_datadir(struct Xconf *xconf, const char *name, const char *value)
+static int SET_nmap_datadir(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     
     if (xconf->echo) {
@@ -1357,8 +1401,9 @@ static int SET_nmap_datadir(struct Xconf *xconf, const char *name, const char *v
     return CONF_OK;
 }
 
-static int SET_nmap_payloads(struct Xconf *xconf, const char *name, const char *value)
+static int SET_nmap_payloads(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     
     if (xconf->echo) {
@@ -1374,8 +1419,9 @@ static int SET_nmap_payloads(struct Xconf *xconf, const char *name, const char *
     return CONF_OK;
 }
 
-static int SET_nmap_service_probes(struct Xconf *xconf, const char *name, const char *value)
+static int SET_nmap_service_probes(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     
     if (xconf->echo) {
@@ -1392,8 +1438,9 @@ static int SET_nmap_service_probes(struct Xconf *xconf, const char *name, const 
     return CONF_OK;
 }
 
-static int SET_offline(struct Xconf *xconf, const char *name, const char *value)
+static int SET_offline(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1405,8 +1452,9 @@ static int SET_offline(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_fast_timeout(struct Xconf *xconf, const char *name, const char *value)
+static int SET_fast_timeout(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->is_fast_timeout || xconf->echo_all) {
             if (xconf->is_fast_timeout) {
@@ -1445,8 +1493,9 @@ fail:
  * program. Instead of relying upon this program's determination of what
  * ports are open or closed, you can instead simply parse this capture
  * file yourself and make your own determination */
-static int SET_pcap_filename(struct Xconf *xconf, const char *name, const char *value)
+static int SET_pcap_filename(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->pcap_filename[0])
@@ -1463,8 +1512,9 @@ static int SET_pcap_filename(struct Xconf *xconf, const char *name, const char *
  * other options that can set payloads as well, like "--nmap-payloads" for reading
  * their custom payload file, as well as the various "hello" options for specifying
  * the string sent to the server once a TCP connection has been established. */
-static int SET_pcap_payloads(struct Xconf *xconf, const char *name, const char *value)
+static int SET_pcap_payloads(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if ((xconf->payloads.pcap_payloads_filename && xconf->payloads.pcap_payloads_filename[0]))
@@ -1481,8 +1531,9 @@ static int SET_pcap_payloads(struct Xconf *xconf, const char *name, const char *
     return CONF_OK;
 }
 
-static int SET_echo(struct Xconf *xconf, const char *name, const char *value)
+static int SET_echo(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         return 0;
     }
@@ -1497,8 +1548,9 @@ static int SET_echo(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_list_cidr(struct Xconf *xconf, const char *name, const char *value)
+static int SET_list_cidr(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         return 0;
     }
@@ -1509,8 +1561,9 @@ static int SET_list_cidr(struct Xconf *xconf, const char *name, const char *valu
     return CONF_OK;
 }
 
-static int SET_lan_mode(struct Xconf *xconf, const char *name, const char *value)
+static int SET_lan_mode(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1524,8 +1577,9 @@ static int SET_lan_mode(struct Xconf *xconf, const char *name, const char *value
     return CONF_OK;
 }
 
-static int SET_fake_router_mac(struct Xconf *xconf, const char *name, const char *value)
+static int SET_fake_router_mac(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1539,8 +1593,9 @@ static int SET_fake_router_mac(struct Xconf *xconf, const char *name, const char
     return CONF_OK;
 }
 
-static int SET_rate(struct Xconf *xconf, const char *name, const char *value)
+static int SET_rate(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     double rate = 0.0;
     double point = 10.0;
     unsigned i;
@@ -1585,8 +1640,9 @@ static int SET_rate(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_resume_count(struct Xconf *xconf, const char *name, const char *value)
+static int SET_resume_count(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->resume.count!=0) {
@@ -1598,8 +1654,9 @@ static int SET_resume_count(struct Xconf *xconf, const char *name, const char *v
     return CONF_OK;
 }
 
-static int SET_resume_index(struct Xconf *xconf, const char *name, const char *value)
+static int SET_resume_index(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->resume.index!=0) {
@@ -1612,8 +1669,9 @@ static int SET_resume_index(struct Xconf *xconf, const char *name, const char *v
 }
 
 
-static int SET_bpf_filter(struct Xconf *xconf, const char *name, const char *value)
+static int SET_bpf_filter(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->bpf_filter)
@@ -1631,8 +1689,9 @@ static int SET_bpf_filter(struct Xconf *xconf, const char *name, const char *val
 }
 
 
-static int SET_seed(struct Xconf *xconf, const char *name, const char *value)
+static int SET_seed(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         fprintf(xconf->echo, "seed = %" PRIu64 "\n", xconf->seed);
@@ -1645,8 +1704,9 @@ static int SET_seed(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_nothing(struct Xconf *xconf, const char *name, const char *value)
+static int SET_nothing(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
     if (xconf->echo) {
@@ -1655,8 +1715,9 @@ static int SET_nothing(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_version(struct Xconf *xconf, const char *name, const char *value)
+static int SET_version(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
     if (xconf->echo) {
@@ -1750,8 +1811,9 @@ static int SET_version(struct Xconf *xconf, const char *name, const char *value)
     return CONF_ERR;
 }
 
-static int SET_usage(struct Xconf *xconf, const char *name, const char *value)
+static int SET_usage(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
     if (xconf->echo) {
@@ -1763,8 +1825,9 @@ static int SET_usage(struct Xconf *xconf, const char *name, const char *value)
     return CONF_ERR;
 }
 
-static int SET_print_help(struct Xconf *xconf, const char *name, const char *value)
+static int SET_print_help(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
     if (xconf->echo) {
@@ -1776,8 +1839,9 @@ static int SET_print_help(struct Xconf *xconf, const char *name, const char *val
     return CONF_OK;
 }
 
-static int SET_log_level(struct Xconf *xconf, const char *name, const char *value)
+static int SET_log_level(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(value);
     if (xconf->echo) {
         int level = LOG_get_level();
@@ -1795,8 +1859,9 @@ static int SET_log_level(struct Xconf *xconf, const char *name, const char *valu
     return CONF_OK;
 }
 
-static int SET_shard(struct Xconf *xconf, const char *name, const char *value)
+static int SET_shard(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     unsigned one = 0;
     unsigned of = 0;
 
@@ -1828,8 +1893,9 @@ static int SET_shard(struct Xconf *xconf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_tcp_mss(struct Xconf *xconf, const char *name, const char *value)
+static int SET_tcp_mss(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     /* h/t @IvreRocks */
     static const unsigned default_mss = 1460;
 
@@ -1886,8 +1952,9 @@ fail:
     return CONF_ERR;
 }
 
-static int SET_tcp_wscale(struct Xconf *xconf, const char *name, const char *value)
+static int SET_tcp_wscale(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     static const unsigned default_value = 3;
 
     if (xconf->echo) {
@@ -1939,8 +2006,9 @@ fail:
     return CONF_ERR;
 }
 
-static int SET_tcp_tsecho(struct Xconf *xconf, const char *name, const char *value)
+static int SET_tcp_tsecho(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     static const unsigned default_value = 0x12345678;
 
     if (xconf->echo) {
@@ -1992,8 +2060,9 @@ fail:
     return CONF_ERR;
 }
 
-static int SET_tcp_sackok(struct Xconf *xconf, const char *name, const char *value)
+static int SET_tcp_sackok(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->templ_opts) {
             switch (xconf->templ_opts->tcp.is_sackok) {
@@ -2034,8 +2103,9 @@ fail:
     return CONF_ERR;
 }
 
-static int SET_blackrock_rounds(struct Xconf *xconf, const char *name, const char *value)
+static int SET_blackrock_rounds(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -2048,8 +2118,9 @@ static int SET_blackrock_rounds(struct Xconf *xconf, const char *name, const cha
     return CONF_OK;
 }
 
-static int SET_send_queue(struct Xconf *xconf, const char *name, const char *value)
+static int SET_send_queue(void *conf, const char *name, const char *value)
 {
+    struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {

@@ -398,21 +398,21 @@ is_singleton(const struct ConfigParameter *cp, const char *name)
     return 0;
 }
 
-void set_one_parameter(struct Xconf *xconf, struct ConfigParameter *cp,
+void set_one_parameter(void *conf, struct ConfigParameter *cp,
     const char *name, const char *value)
 {
     size_t i;
     
     for (i=0; cp[i].name; i++) {
         if (EQUALS(cp[i].name, name)) {
-            if (CONF_ERR == cp[i].set(xconf, name, value))
+            if (CONF_ERR == cp[i].set(conf, name, value))
                 exit(0);
             return;
         } else {
             size_t j;
             for (j=0; cp[i].alts[j]; j++) {
                 if (EQUALS(cp[i].alts[j], name)) {
-                    if (CONF_ERR == cp[i].set(xconf, name, value))
+                    if (CONF_ERR == cp[i].set(conf, name, value))
                         exit(0);
                     return;
                 }
@@ -425,7 +425,7 @@ void set_one_parameter(struct Xconf *xconf, struct ConfigParameter *cp,
 }
 
 void
-set_parameters_from_args(struct Xconf *xconf, struct ConfigParameter *cp,
+set_parameters_from_args(void *conf, struct ConfigParameter *cp,
     int argc, char **argv)
 {
     int i;
@@ -481,7 +481,7 @@ set_parameters_from_args(struct Xconf *xconf, struct ConfigParameter *cp,
                 memcpy(name2, argname, name_length);
                 name2[name_length] = '\0';
 
-                set_one_parameter(xconf, cp, name2, value);
+                set_one_parameter(conf, cp, name2, value);
             } else {
                 value = strchr(&argv[i][2], '=');
                 if (value == NULL)
@@ -511,7 +511,7 @@ set_parameters_from_args(struct Xconf *xconf, struct ConfigParameter *cp,
                 memcpy(name2, argname, name_length);
                 name2[name_length] = '\0';
 
-                set_one_parameter(xconf, cp, name2, value);
+                set_one_parameter(conf, cp, name2, value);
             }
             continue;
         }
@@ -529,7 +529,7 @@ set_parameters_from_args(struct Xconf *xconf, struct ConfigParameter *cp,
 }
 
 void
-set_parameters_from_string(struct Xconf *xconf, struct ConfigParameter *cp,
+set_parameters_from_string(void *conf, struct ConfigParameter *cp,
     char *string, unsigned str_len)
 {
     //COPY to avoid modifying of origin string.
@@ -558,7 +558,7 @@ set_parameters_from_string(struct Xconf *xconf, struct ConfigParameter *cp,
         }
     }
 
-    set_parameters_from_args(xconf, cp, argc, argv);
+    set_parameters_from_args(conf, cp, argc, argv);
 
     free(str);
 }
