@@ -3,20 +3,13 @@
 #include "output.h"
 #include "../pixie/pixie-file.h"
 #include "../util/logger.h"
-
-#define OUTPUT_COLOR_RED     "\x1b[31m"
-#define OUTPUT_COLOR_GREEN   "\x1b[32m"
-#define OUTPUT_COLOR_YELLOW  "\x1b[33m"
-#define OUTPUT_COLOR_BLUE    "\x1b[34m"
-#define OUTPUT_COLOR_MAGENTA "\x1b[35m"
-#define OUTPUT_COLOR_CYAN    "\x1b[36m"
-#define OUTPUT_COLOR_RESET   "\x1b[0m"
+#include "../util/xprint.h"
 
 static char fmt_host[]   = "%s host: %-15s";
 static char fmt_port[]   = " port: %-5u";
 static char fmt_cls []   = " \"%s\"";
 static char fmt_reason[] = " because of \"%s\"";
-static char fmt_report[] = "  "OUTPUT_COLOR_YELLOW"Report: %s";
+static char fmt_report[] = "  "XPRINT_CH_COLOR_YELLOW"Report: %s";
 
 void
 output_init(struct Output *output)
@@ -54,15 +47,15 @@ output_result_to_stdout(
     {
     case Output_SUCCESS:
         count = fprintf(stdout, fmt_host,
-            OUTPUT_COLOR_GREEN"[+]", ip_them_fmt.string);
+            XPRINT_CH_COLOR_GREEN"[+]", ip_them_fmt.string);
         break;
     case Output_FAILURE:
         count = fprintf(stdout, fmt_host,
-            OUTPUT_COLOR_RED"[x]", ip_them_fmt.string);
+            XPRINT_CH_COLOR_RED"[x]", ip_them_fmt.string);
         break;
     case Output_INFO:
         count = fprintf(stdout, fmt_host,
-            OUTPUT_COLOR_CYAN"[-]", ip_them_fmt.string);
+            XPRINT_CH_COLOR_CYAN"[-]", ip_them_fmt.string);
         break;
     default:
         return;
@@ -90,7 +83,7 @@ output_result_to_stdout(
     if (count < 100)
             fprintf(stdout, "%*s", (int)(99-count), "");
 
-    fprintf(stdout, OUTPUT_COLOR_RESET"\n");
+    fprintf(stdout, XPRINT_COLOR_RESET"\n");
     fflush(stdout);
 }
 

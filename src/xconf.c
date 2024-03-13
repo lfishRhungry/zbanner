@@ -2951,7 +2951,6 @@ int xconf_contains(const char *x, int argc, char **argv)
 void xconf_print_usage()
 {
     printf("\n\n\n");
-    // printf("%s", ascii_xtate1);
     xprint_with_head(ascii_xtate2, 10, 80);
     printf("\n                             "XTATE_GOD"\n\n");
     printf("\n");
