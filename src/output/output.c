@@ -16,7 +16,7 @@ static char fmt_host[]   = "%s host: %-15s";
 static char fmt_port[]   = " port: %-5u";
 static char fmt_cls []   = " \"%s\"";
 static char fmt_reason[] = " because of \"%s\"";
-static char fmt_report[] = ". Report: %s";
+static char fmt_report[] = "  "OUTPUT_COLOR_YELLOW"Report: %s";
 
 void
 output_init(struct Output *output)
@@ -81,7 +81,7 @@ output_result_to_stdout(
         count += fprintf(stdout, fmt_reason, item->reason);
     }
 
-    fprintf(stdout, OUTPUT_COLOR_RESET);
+    // fprintf(stdout, OUTPUT_COLOR_RESET);
 
     if (item->report[0]) {
         count += fprintf(stdout, fmt_report, item->report);
@@ -90,7 +90,7 @@ output_result_to_stdout(
     if (count < 100)
             fprintf(stdout, "%*s", (int)(99-count), "");
 
-    fprintf(stdout, "\n");
+    fprintf(stdout, OUTPUT_COLOR_RESET"\n");
     fflush(stdout);
 }
 
