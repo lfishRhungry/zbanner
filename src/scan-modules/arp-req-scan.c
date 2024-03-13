@@ -79,10 +79,11 @@ void arpreq_timeout(
 }
 
 struct ScanModule ArpReqScan = {
-    .name = "arpreq",
+    .name                = "arpreq",
     .required_probe_type = 0,
-    .support_timeout = 1,
-    .bpf_filter = "arp && arp[6:2]==2", /*arp reply*/
+    .support_timeout     = 1,
+    .params              = NULL,
+    .bpf_filter          = "arp && arp[6:2]==2", /*arp reply*/
     .desc =
         "ArpReqScan sends an ARP Request packet to broadcast mac addr"
         "(all one) with target ipv4 addr we request. Expect an ARP Reply packet "

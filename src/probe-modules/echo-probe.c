@@ -43,6 +43,7 @@ struct ProbeModule EchoProbe = {
     .type       = ProbeType_UDP,
     .multi_mode = Multi_Null,
     .multi_num  = 1,
+    .params     = NULL,
     .desc =
         "EchoProbe sends 4 bytes of random data to target udp port and expects "
         "response that contains our random data.\n"

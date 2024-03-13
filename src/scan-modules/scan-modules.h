@@ -12,6 +12,8 @@
 #include <ctype.h>
 
 #include "../globals.h"
+#include "../param-configer.h"
+#include "../util/unusedparm.h"
 #include "../output/output.h"
 #include "../stack/stack-queue.h"
 #include "../massip/massip-addr.h"
@@ -176,17 +178,13 @@ typedef void (*scan_modules_close)();
 struct ScanModule
 {
     const char                                 *name;
-    const char                                 *desc;
     const enum ProbeType                        required_probe_type; /*set zero if not using probe*/
     const unsigned                              support_timeout;
-    /**
-     * Set BPF filter for better performance while using pcap to transmit.
-     * But We need to write correct valicate callback func for other transmit mode
-     */
-    const char                                 *bpf_filter; 
-    /*Some ScanModule may need arguments*/
-    char                                       *args;
+    const char                                 *bpf_filter;          /*just for pcap*/
+    struct ConfigParameter                     *params;
     struct ProbeModule                         *probe;
+    const char                                 *desc;
+
     /*for init*/
     scan_modules_global_init                    global_init_cb;
     /*for transmit*/

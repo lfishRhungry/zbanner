@@ -2813,7 +2813,7 @@ load_database_files(struct Xconf *xconf)
 void
 xconf_command_line(struct Xconf *xconf, int argc, char *argv[])
 {
-    set_parameters_from_args(xconf, config_parameters, argc, argv);
+    set_parameters_from_args(xconf, config_parameters, argc-1, argv+1);
 
     if (xconf->shard.of > 1 && xconf->seed == 0) {
         fprintf(stderr, "[-] WARNING: --seed <num> is not specified\n    HINT: all shards must share the same seed\n");
@@ -2828,7 +2828,28 @@ xconf_command_line(struct Xconf *xconf, int argc, char *argv[])
 void
 xconf_echo(struct Xconf *xconf, FILE *fp)
 {
-    paramters_echo(xconf, fp, config_parameters);
+    unsigned i;
+    
+    /*
+     * Print all configuration parameters
+     */
+    xconf->echo = fp;
+
+    SET_PARAMETER tmp = NULL;
+    for (i=0; config_parameters[i].name; i++) {
+        /**
+         * We may use same `set` func more than one times back-to-back
+         * in config_paramiters.
+         * Do a dedup easily when echoing.
+        */
+        if (config_parameters[i].set == tmp)
+            continue;
+        tmp = config_parameters[i].set;
+
+        config_parameters[i].set(xconf, 0, 0);
+    }
+    xconf->echo = 0;
+    xconf->echo_all = 0;
 }
 
 

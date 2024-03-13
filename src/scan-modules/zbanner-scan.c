@@ -10,6 +10,89 @@
 
 extern struct ScanModule ZBannerScan; /*for internal x-ref*/
 
+struct ZBannerConf {
+    unsigned no_banner_timeout:1;     /*--no-banner-tm*/
+    unsigned is_port_timeout:1;       /*--port-tm*/
+    unsigned is_port_success:1;       /*--port-success*/
+    unsigned is_port_failure:1;       /*--port-fail*/
+};
+
+static struct ZBannerConf zbanner_conf = {0};
+
+static int SET_banner_timeout(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.no_banner_timeout = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static int SET_port_timeout(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.is_port_timeout = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static int SET_port_success(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.is_port_success = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static int SET_port_failure(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.is_port_failure = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static struct ConfigParameter zbanner_parameters[] = {
+    {
+        "no-banner-timeout",
+        SET_banner_timeout,
+        F_BOOL,
+        {"no-banner-tm", "no-timeout-banner","no-tm-banner", 0},
+        "Do not use timeout for banner grabbing while in timeout mode."
+    },
+    {
+        "port-timeout",
+        SET_port_timeout,
+        F_BOOL,
+        {"timeout-port", "port-tm", "tm-port", 0},
+        "Use timeout for port scanning(openness detection) while in timeout mode."
+    },
+    {
+        "port-success",
+        SET_port_success,
+        F_BOOL,
+        {"success-port", 0},
+        "Let port opening(contains zero syn-ack) results as success level."
+        "(Default is info level)"
+    },
+    {
+        "port-failure",
+        SET_port_failure,
+        F_BOOL,
+        {"failure-port", "port-fail", "fail-port", 0},
+        "Let port closed results as failure level.(Default is info level)"
+    },
+
+    {0}
+};
+
 /**
  *For calc the conn index.
  * NOTE: We use a trick of src-port to differenciate multi-probes to avoid
@@ -58,15 +141,19 @@ zbanner_transmit_packet(
     *len = tcp_create_packet(
         target->ip_them, target->port_them, target->ip_me, src_port_start+target->index,
         seqno, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_LEN);
+    
+    if (zbanner_conf.is_port_timeout) {
+        event->need_timeout = 1;
+        event->dedup_type   = 0;
+        event->port_me      = src_port_start+target->index;
+    }
  
     /*multi-probe Multi_Direct*/
     if (ZBannerScan.probe->multi_mode==Multi_Direct
         && target->index+1<ZBannerScan.probe->multi_num)
         return 1;
-    
-    /*I think no need syn timeout for zbanner*/
 
-    else return 0;
+    return 0;
 }
 
 static void
@@ -146,6 +233,12 @@ zbanner_handle(
     /*SYNACK*/
     if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
         TCP_FLAG_SYN|TCP_FLAG_ACK)) {
+
+        /*zerowin could be a kind of port open*/
+        if (zbanner_conf.is_port_success) {
+            item->level = Output_SUCCESS;
+        }
+
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "syn-ack");
 
         uint16_t win_them =
@@ -180,8 +273,8 @@ zbanner_handle(
             
             stack_transmit_packetbuffer(stack, pkt_buffer);
 
-            /*add timeout*/
-            if (handler) {
+            /*add timeout for banner*/
+            if (handler && !zbanner_conf.no_banner_timeout) {
                 struct ScanTimeoutEvent *tm_event =
                     CALLOC(1, sizeof(struct ScanTimeoutEvent));
 
@@ -215,6 +308,23 @@ zbanner_handle(
                         NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
 
                     stack_transmit_packetbuffer(stack, pkt_buffer);
+
+                    /*add timeout for port*/
+                    if (handler && zbanner_conf.is_port_timeout) {
+                        struct ScanTimeoutEvent *tm_event =
+                            CALLOC(1, sizeof(struct ScanTimeoutEvent));
+
+                        tm_event->ip_them   = recved->parsed.src_ip;
+                        tm_event->ip_me     = recved->parsed.dst_ip;
+                        tm_event->port_them = recved->parsed.port_src;
+                        tm_event->port_me   = src_port_start+idx;
+
+                        tm_event->need_timeout = 1;
+                        tm_event->dedup_type   = 0; /*0 for port*/
+
+                        ft_add_event(handler, tm_event, global_now);
+                        tm_event = NULL;
+                    }
                 }
             }
         }
@@ -222,8 +332,13 @@ zbanner_handle(
     /*RST*/
     else if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
         TCP_FLAG_RST)) {
+
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "rst");
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
+
+        if (zbanner_conf.is_port_failure) {
+            item->level = Output_FAILURE;
+        }
     }
     /*Banner*/
     else {
@@ -269,6 +384,23 @@ zbanner_handle(
                     NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
 
                 stack_transmit_packetbuffer(stack, pkt_buffer);
+
+                /*add timeout for port*/
+                if (handler && zbanner_conf.is_port_timeout) {
+                    struct ScanTimeoutEvent *tm_event =
+                        CALLOC(1, sizeof(struct ScanTimeoutEvent));
+
+                    tm_event->ip_them   = recved->parsed.src_ip;
+                    tm_event->ip_me     = recved->parsed.dst_ip;
+                    tm_event->port_them = recved->parsed.port_src;
+                    tm_event->port_me   = src_port_start+idx;
+
+                    tm_event->need_timeout = 1;
+                    tm_event->dedup_type   = 0; /*0 for port*/
+
+                    ft_add_event(handler, tm_event, global_now);
+                    tm_event = NULL;
+                }
             }
 
             return;
@@ -288,6 +420,23 @@ zbanner_handle(
                 NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);
+
+            /*add timeout for port*/
+            if (handler && zbanner_conf.is_port_timeout) {
+                struct ScanTimeoutEvent *tm_event =
+                    CALLOC(1, sizeof(struct ScanTimeoutEvent));
+
+                tm_event->ip_them   = recved->parsed.src_ip;
+                tm_event->ip_me     = recved->parsed.dst_ip;
+                tm_event->port_them = recved->parsed.port_src;
+                tm_event->port_me   = src_port_start+is_multi-1;
+
+                tm_event->need_timeout = 1;
+                tm_event->dedup_type   = 0; /*0 for port*/
+
+                ft_add_event(handler, tm_event, global_now);
+                tm_event = NULL;
+            }
         }
     }
 }
@@ -300,7 +449,17 @@ zbanner_timeout(
     struct stack_t *stack,
     struct FHandler *handler)
 {
-    /*all events is for banner*/
+    /*event for port*/
+    if (event->dedup_type==0) {
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
+        if (zbanner_conf.is_port_failure) {
+            item->level = Output_FAILURE;
+        }
+        return;
+    }
+
+    /*event for banner*/
 
     struct ProbeTarget ptarget = {
         .ip_them   = event->ip_them,
@@ -331,6 +490,23 @@ zbanner_timeout(
                 NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);
+
+            /*add timeout for port*/
+            if (handler && zbanner_conf.is_port_timeout) {
+                struct ScanTimeoutEvent *tm_event =
+                    CALLOC(1, sizeof(struct ScanTimeoutEvent));
+
+                tm_event->ip_them   = event->ip_them;
+                tm_event->ip_me     = event->ip_me;
+                tm_event->port_them = event->port_them;
+                tm_event->port_me   = src_port_start+idx;
+
+                tm_event->need_timeout = 1;
+                tm_event->dedup_type   = 0; /*0 for port*/
+
+                ft_add_event(handler, tm_event, global_now);
+                tm_event = NULL;
+            }
         }
     }
 
@@ -348,15 +524,32 @@ zbanner_timeout(
             NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
 
         stack_transmit_packetbuffer(stack, pkt_buffer);
+
+        /*add timeout for port*/
+        if (handler && zbanner_conf.is_port_timeout) {
+            struct ScanTimeoutEvent *tm_event =
+                CALLOC(1, sizeof(struct ScanTimeoutEvent));
+
+            tm_event->ip_them   = event->ip_them;
+            tm_event->ip_me     = event->ip_me;
+            tm_event->port_them = event->port_them;
+            tm_event->port_me   = src_port_start+is_multi-1;
+
+            tm_event->need_timeout = 1;
+            tm_event->dedup_type   = 0; /*0 for port*/
+
+            ft_add_event(handler, tm_event, global_now);
+            tm_event = NULL;
+        }
     }
 }
 
-
 struct ScanModule ZBannerScan = {
-    .name = "zbanner",
+    .name                = "zbanner",
     .required_probe_type = ProbeType_TCP,
-    .support_timeout = 1,
-    .bpf_filter = "tcp && (tcp[13] & 4 != 0 || tcp[13] & 16 != 0)", /*tcp with rst or ack*/
+    .support_timeout     = 1,
+    .bpf_filter          = "tcp && (tcp[13] & 4 != 0 || tcp[13] & 16 != 0)", /*tcp with rst or ack*/
+    .params              = zbanner_parameters,
     .desc =
         "ZBannerScan tries to contruct TCP conn with target port and send data "
         "from specified ProbeModule. Data in first reponse packet will be handled"

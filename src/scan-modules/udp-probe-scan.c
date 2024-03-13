@@ -412,10 +412,12 @@ udpprobe_timeout(
 }
 
 struct ScanModule UdpProbeScan = {
-    .name = "udpprobe",
+    .name                = "udpprobe",
     .required_probe_type = ProbeType_UDP,
-    .support_timeout = 1,
-    .bpf_filter = "udp || (icmp && icmp[0]==3 && icmp[1]==3) || (icmp6 && icmp6[0]==1 && icmp6[1]==4)", /*udp and icmp port unreachable*/
+    .support_timeout     = 1,
+    .params              = NULL,
+    .bpf_filter =
+        "udp || (icmp && icmp[0]==3 && icmp[1]==3) || (icmp6 && icmp6[0]==1 && icmp6[1]==4)", /*udp and icmp port unreachable*/
     .desc =
         "UdpProbeScan sends a udp packet with ProbeModule data to target port "
         "and expects a udp response to believe the port is open or an icmp port "

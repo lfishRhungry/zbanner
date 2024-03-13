@@ -8,6 +8,7 @@ struct ProbeModule NullProbe = {
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,
     .multi_num  = 1,
+    .params     = NULL,
     .desc =
         "NullProbe does not send any data to target port. It just wait banner "
         "from server. However, waiting is the cheapest thing while we are in "

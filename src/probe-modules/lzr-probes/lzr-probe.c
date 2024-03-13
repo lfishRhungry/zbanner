@@ -3,10 +3,10 @@
 #include "../probe-modules.h"
 #include "../../util/mas-safefunc.h"
 
-#define LZR_SUBPROBE_NAME_LEN 20
+#define LZR_HANDSHAKE_NAME_LEN 20
 
 /*
- * LZR Probe will use `handle_response_cb` of all subprobes listed here
+ * LZR Probe will use `handle_response_cb` of all subprobes(handshakes) listed here
  * to match the banner and identify its service automaticly.
  * 
  * Subprobes' names always start with 'lzr-', and could be used as a normal
@@ -27,16 +27,16 @@
 extern struct ProbeModule LzrWaitProbe;
 extern struct ProbeModule LzrHttpProbe;
 extern struct ProbeModule LzrFtpProbe;
-//! ADD NEW LZR SUBPROBES HERE
+//! ADD NEW LZR SUBPROBES(HANDSHAKES) HERE
 //! ALSO ADD TO stateless-probes.c IF NEEDED
 
 
 
-static struct ProbeModule *lzr_subprobes[] = {
+static struct ProbeModule *lzr_handshakes[] = {
     &LzrWaitProbe,
     &LzrHttpProbe,
     &LzrFtpProbe,
-    //! ADD NEW LZR SUBPROBES HERE
+    //! ADD NEW LZR SUBPROBES(HANDSHAKES) HERE
     //! ALSO ADD TO probe-modules.c IF NEEDED
 };
 
@@ -45,30 +45,54 @@ static struct ProbeModule *lzr_subprobes[] = {
 /*for x-refer*/
 extern struct ProbeModule LzrProbe;
 
-static struct ProbeModule *specified_subprobe;
+struct LzrConf {
+    struct ProbeModule *handshake;
+};
+
+static struct LzrConf lzr_conf = {0};
+
+static int SET_handshake(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    char subprobe_name[LZR_HANDSHAKE_NAME_LEN] = "lzr-";
+    memcpy(subprobe_name+strlen(subprobe_name), value, strlen(value));
+
+    lzr_conf.handshake = get_probe_module_by_name(subprobe_name);
+
+    if (lzr_conf.handshake == NULL) {
+        fprintf(stderr, "[-] Invalid name of handshake for lzr.\n");
+        return CONF_ERR;
+    }
+
+    return CONF_OK;
+}
+
+static struct ConfigParameter lzr_parameters[] = {
+    {
+        "handshake",
+        SET_handshake,
+        0,
+        {"subprobe", "handshakes", "subprobes", 0},
+        "Specifies a handshake(subprobe) to send probe."
+    },
+
+    {0}
+};
 
 static int
 lzr_global_init(const void * xconf)
 {
     /*Use LzrWait if no subprobe specified*/
-    if (!LzrProbe.args) {
-        specified_subprobe = &LzrWaitProbe;
-        fprintf(stderr, "[-] Use default LzrWait as subprobe of LzrProbe "
-            "because no subprobe was specified by --probe-module-args.\n");
-    } else {
-        char subprobe_name[LZR_SUBPROBE_NAME_LEN] = "lzr-";
-        memcpy(subprobe_name+strlen(subprobe_name), LzrProbe.args,
-            LZR_SUBPROBE_NAME_LEN-strlen(subprobe_name)-1);
-
-        specified_subprobe = get_probe_module_by_name(subprobe_name);
-        if (specified_subprobe == NULL) {
-            fprintf(stderr, "[-] Invalid name of subprobe for lzr.\n");
-            return 0;
-        }
+    if (!lzr_conf.handshake) {
+        lzr_conf.handshake = &LzrWaitProbe;
+        fprintf(stderr, "[-] Use default LzrWait as handshake of LzrProbe "
+            "because no handshake was specified by --handshake.\n");
     }
 
-    LzrProbe.make_payload_cb = specified_subprobe->make_payload_cb;
-    LzrProbe.get_payload_length_cb = specified_subprobe->get_payload_length_cb;
+    LzrProbe.make_payload_cb = lzr_conf.handshake->make_payload_cb;
+    LzrProbe.get_payload_length_cb = lzr_conf.handshake->get_payload_length_cb;
 
     return 1;
 }
@@ -97,8 +121,8 @@ lzr_handle_response(
      * print results just like lzr:
      *     pop3-smtp-http
     */
-    for (size_t i=0; i<sizeof(lzr_subprobes)/sizeof(struct ProbeModule*); i++) {
-        lzr_subprobes[i]->handle_response_cb(
+    for (size_t i=0; i<sizeof(lzr_handshakes)/sizeof(struct ProbeModule*); i++) {
+        lzr_handshakes[i]->handle_response_cb(
             target, px, sizeof_px, item);
 
         if (item->level==Output_SUCCESS) {
@@ -134,12 +158,11 @@ struct ProbeModule LzrProbe = {
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,
     .multi_num  = 1,
+    .params     = lzr_parameters,
     .desc =
         "LZR Probe is an implement of service identification of LZR. It sends a "
-        "specified LZR subprobe(handshake) and try to match with all LZR subprobes "
-        "with `handle_reponse_cb`.\n"
-        "Specify LZR subprobe by probe arguments:\n"
-        "    `--probe-module-args http`\n",
+        "specified LZR handshake(subprobe) and try to match with all LZR handshakes "
+        "with `handle_reponse_cb`.\n",
     .global_init_cb                        = &lzr_global_init,
     .validate_response_cb                  = NULL,
     .handle_response_cb                    = &lzr_handle_response,

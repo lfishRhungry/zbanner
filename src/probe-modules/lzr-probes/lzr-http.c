@@ -80,6 +80,7 @@ struct ProbeModule LzrHttpProbe = {
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,
     .multi_num  = 1,
+    .params     = NULL,
     .desc =
         "LzrHttp Probe sends an HTTP GET request and identifies HTTP service.\n",
     .global_init_cb                          = &probe_init_nothing,

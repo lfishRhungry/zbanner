@@ -177,6 +177,7 @@ struct ProbeModule JarmProbe = {
     .type       = ProbeType_TCP,
     .multi_mode = Multi_AfterHandle,
     .multi_num  = 10,
+    .params     = NULL,
     .desc =
         "Jarm Probe sends 10 various TLS ClientHello probes in total if the first "
         "response represents the target port is running TLS protocol. Results can "

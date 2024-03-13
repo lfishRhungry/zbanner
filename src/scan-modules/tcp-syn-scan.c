@@ -113,10 +113,11 @@ void tcpsyn_timeout(
 }
 
 struct ScanModule TcpSynScan = {
-    .name = "tcpsyn",
+    .name                = "tcpsyn",
     .required_probe_type = 0,
-    .support_timeout = 1,
-    .bpf_filter = "tcp && (tcp[13] & 4 != 0 || tcp[13] == 18)", /*tcp rst or syn-ack*/
+    .support_timeout     = 1,
+    .params              = NULL,
+    .bpf_filter          = "tcp && (tcp[13] & 4 != 0 || tcp[13] == 18)", /*tcp rst or syn-ack*/
     .desc =
         "TcpSynScan sends a TCP SYN packet to target port. Expect a SYNACK "
         "response to believe the port is open or an RST for closed in TCP protocol.\n"

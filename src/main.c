@@ -215,26 +215,32 @@ static int main_scan(struct Xconf *xconf) {
                "was specified.\n");
     }
 
-    xconf->scan_module->args = xconf->scan_module_args;
+    /*
+     * Config params & Do global init for ScanModule
+     */
     xconf->scan_module->probe = xconf->probe_module;
 
-    /*
-     * Do global init for ScanModule
-     */
+    if (xconf->scan_module_args
+        && xconf->scan_module->params) {
+        set_parameters_from_string(NULL,
+            xconf->scan_module->params, xconf->scan_module_args);
+    }
     if (!xconf->scan_module->global_init_cb(xconf)) {
         LOG(0, "FAIL: errors happened in global init of ScanModule.\n");
         exit(1);
     }
 
-    /*probemodule may not be set*/
-    if (xconf->probe_module) {
-        xconf->probe_module->args = xconf->probe_module_args;
-    }
-
     /*
-     * Do global init for probe
+     * Config params & Do global init for ProbeModule
      */
     if (xconf->probe_module) {
+
+        if (xconf->probe_module_args
+            && xconf->probe_module->params) {
+            set_parameters_from_string(NULL,
+                xconf->probe_module->params, xconf->probe_module_args);
+        }
+
         if (!xconf->probe_module->global_init_cb(xconf)) {
             LOG(0, "FAIL: errors in ProbeModule global initializing\n");
             exit(1);

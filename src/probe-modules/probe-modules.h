@@ -2,6 +2,8 @@
 
 #include "../massip/massip-addr.h"
 #include "../output/output.h"
+#include "../param-configer.h"
+#include "../util/unusedparm.h"
 
 #ifndef PROBE_MODULES_H
 #define PROBE_MODULES_H
@@ -122,10 +124,11 @@ struct ProbeModule
 {
     const char                                 *name;
     const enum ProbeType                        type;
-    const char                                 *desc;
-    char                                       *args;
     enum MultiMode                              multi_mode;
     unsigned                                    multi_num; /*useless for Multi_DynamicNext*/
+    const char                                 *desc;
+    struct ConfigParameter                     *params;
+
     /*for init*/
     probe_modules_global_init                   global_init_cb;
     /*for payload*/

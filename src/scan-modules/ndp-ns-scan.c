@@ -116,10 +116,11 @@ void ndpns_timeout(
 }
 
 struct ScanModule NdpNsScan = {
-    .name = "ndpns",
+    .name                = "ndpns",
     .required_probe_type = 0,
-    .support_timeout = 1,
-    .bpf_filter = "icmp6 && (icmp6[0]==136 && icmp6[1]==0)", /*ndp neighbor advertisement*/
+    .support_timeout     = 1,
+    .params              = NULL,
+    .bpf_filter          = "icmp6 && (icmp6[0]==136 && icmp6[1]==0)", /*ndp neighbor advertisement*/
     .desc =
         "NdpNsScan sends an NDP(ICMPv6) Neighbor Solicitation to IPv6 target "
         "host(actually `the solicited-node multicast address`). Expect an NDP"

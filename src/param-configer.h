@@ -1,7 +1,10 @@
 #ifndef PARAM_CONFIGER_H
 #define PARAM_CONFIGER_H
 
-#include "xconf.h"
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "massip/massip-addr.h"
 
 #ifndef min
 #define min(a,b) ((a)<(b)?(a):(b))
@@ -105,6 +108,9 @@ void
 set_one_parameter(void *conf, struct ConfigParameter *cp,
     const char *name, const char *value);
 
+/**
+ * argc and argv do not contain process file name
+*/
 void
 set_parameters_from_args(void *conf, struct ConfigParameter *cp,
     int argc, char **argv);
@@ -114,15 +120,6 @@ set_parameters_from_args(void *conf, struct ConfigParameter *cp,
  * @param string whole string contains all params
 */
 void
-set_parameters_from_string(void *conf, struct ConfigParameter *cp,
-    char *string, unsigned str_len);
-
-/***************************************************************************
- * Prints the current configuration to the command-line then exits.
- * Use#1: create a template file of all settable parameters.
- * Use#2: make sure your configuration was interpreted correctly.
- ***************************************************************************/
-void
-paramters_echo(struct Xconf *xconf, FILE *fp, struct ConfigParameter *cp);
+set_parameters_from_string(void *conf, struct ConfigParameter *cp, char *string);
 
 #endif

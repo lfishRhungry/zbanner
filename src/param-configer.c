@@ -4,6 +4,7 @@
 
 #include "param-configer.h"
 #include "util/mas-malloc.h"
+#include "util/mas-safefunc.h"
 
 uint64_t
 parseInt(const char *str)
@@ -431,7 +432,7 @@ set_parameters_from_args(void *conf, struct ConfigParameter *cp,
     int i;
     unsigned name_length;
 
-    for (i=1; i<argc; i++) {
+    for (i=0; i<argc; i++) {
 
         /*
          * -(-)name=value
@@ -529,63 +530,43 @@ set_parameters_from_args(void *conf, struct ConfigParameter *cp,
 }
 
 void
-set_parameters_from_string(void *conf, struct ConfigParameter *cp,
-    char *string, unsigned str_len)
+set_parameters_from_string(void *conf, struct ConfigParameter *cp, char *string)
 {
-    //COPY to avoid modifying of origin string.
-    char *str = (char *)MALLOC(str_len+1);
-    memcpy(str, string, str_len);
-    str[str_len] = '\0';
-    /**
-     * Just guess a count of params for convenient.
-     * Shortest param may be 2 len?
-    */
-    int argc = 0;
-    char *argv[str_len/2+1];
-    /**
-     * Just split string with SPACE, despite of QUOTE now.
-    */
-    char *p = str;
-    char *arg_start = p;
+    char * str = STRDUP(string);
+    size_t str_len = strlen(str);
 
-    for (unsigned i=0; i<str_len; i++) {
-        char *tmp = p+i;
-        if (tmp[0]==' ' && tmp-arg_start>1) {
-            argc++;
-            argv[argc-1] = arg_start;
-            tmp[0] = '\0';//make it a c style string
-            arg_start = tmp+1;
+    if (!str_len) return;
+
+    /**
+     * Count the number of arguments
+    */
+    int arg_count = 0;
+    char *p = str;
+    for (; p-str < str_len; p++) {
+        if (*p != ' ' && *p != '\0') {
+            arg_count++;
         }
+        for (; p-str < str_len && *p!=' ' && *p!='\0'; p++) {}
     }
 
-    set_parameters_from_args(conf, cp, argc, argv);
+    char** arg_vec = MALLOC(sizeof(char *)*arg_count);
+
+    p = str;
+    unsigned idx = 0;
+    for (; p-str < str_len; p++) {
+
+        if (*p!='\0' && *p!=' ') {
+            arg_vec[idx] = p;
+            idx++;
+        }
+        for (; p-str < str_len && *p!=' ' && *p!='\0'; p++) {}
+
+        if(*p==' ')
+            *p='\0';
+    }
+
+    set_parameters_from_args(conf, cp, arg_count, arg_vec);
 
     free(str);
-}
-
-void
-paramters_echo(struct Xconf *xconf, FILE *fp, struct ConfigParameter *cp)
-{
-    unsigned i;
-    
-    /*
-     * Print all configuration parameters
-     */
-    xconf->echo = fp;
-
-    SET_PARAMETER tmp = NULL;
-    for (i=0; cp[i].name; i++) {
-        /**
-         * We may use same `set` func more than one times back-to-back
-         * in config_paramiters.
-         * Do a dedup easily when echoing.
-        */
-        if (cp[i].set == tmp)
-            continue;
-        tmp = cp[i].set;
-
-        cp[i].set(xconf, 0, 0);
-    }
-    xconf->echo = 0;
-    xconf->echo_all = 0;
+    free(arg_vec);
 }

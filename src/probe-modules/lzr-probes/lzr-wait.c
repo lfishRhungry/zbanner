@@ -29,6 +29,7 @@ struct ProbeModule LzrWaitProbe = {
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,
     .multi_num  = 1,
+    .params     = NULL,
     .desc =
         "LzrWait Probe sends nothing and identifies no service. It is the default\n"
         "subprobe of LzrProbe to help other subprobes to match services.\n",
