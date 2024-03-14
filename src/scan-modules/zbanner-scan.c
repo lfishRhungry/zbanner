@@ -343,6 +343,17 @@ zbanner_handle(
     /*Banner*/
     else {
 
+        /*send rst first to disconn*/
+        struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+
+        pkt_buffer->length = tcp_create_packet(
+            recved->parsed.src_ip, recved->parsed.port_src,
+            recved->parsed.dst_ip, recved->parsed.port_dst,
+            seqno_me, seqno_them+1, TCP_FLAG_RST,
+            NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+
+        stack_transmit_packetbuffer(stack, pkt_buffer);
+
         struct ProbeTarget ptarget = {
             .ip_them   = recved->parsed.src_ip,
             .ip_me     = recved->parsed.dst_ip,
@@ -355,17 +366,6 @@ zbanner_handle(
         int is_multi = ZBannerScan.probe->handle_response_cb(&ptarget,
             &recved->packet[recved->parsed.app_offset],
             recved->parsed.app_length, item);
-
-        /*send rst to disconn*/
-        struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
-
-        pkt_buffer->length = tcp_create_packet(
-            recved->parsed.src_ip, recved->parsed.port_src,
-            recved->parsed.dst_ip, recved->parsed.port_dst,
-            seqno_me, seqno_them+1, TCP_FLAG_RST,
-            NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
-
-        stack_transmit_packetbuffer(stack, pkt_buffer);
 
         /*multi-probe Multi_AfterHandle*/
         if (ZBannerScan.probe->multi_mode==Multi_AfterHandle
