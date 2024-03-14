@@ -56,10 +56,10 @@ static int SET_handshake(void *conf, const char *name, const char *value)
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    char subprobe_name[LZR_HANDSHAKE_NAME_LEN] = "lzr-";
-    memcpy(subprobe_name+strlen(subprobe_name), value, strlen(value));
+    char handshake_name[LZR_HANDSHAKE_NAME_LEN] = "lzr-";
+    memcpy(handshake_name+strlen(handshake_name), value, strlen(value));
 
-    lzr_conf.handshake = get_probe_module_by_name(subprobe_name);
+    lzr_conf.handshake = get_probe_module_by_name(handshake_name);
 
     if (lzr_conf.handshake == NULL) {
         fprintf(stderr, "[-] Invalid name of handshake for lzr.\n");
@@ -87,7 +87,7 @@ lzr_global_init(const void * xconf)
     /*Use LzrWait if no subprobe specified*/
     if (!lzr_conf.handshake) {
         lzr_conf.handshake = &LzrWaitProbe;
-        fprintf(stderr, "[-] Use default LzrWait as handshake of LzrProbe "
+        fprintf(stderr, "[-] Use default LzrWait(wait) as handshake of LzrProbe "
             "because no handshake was specified by --handshake.\n");
     }
 
