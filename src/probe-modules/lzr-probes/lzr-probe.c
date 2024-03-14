@@ -27,20 +27,20 @@
 
 //! ADD NEW LZR SUBPROBES(HANDSHAKES) HERE
 //! ALSO ADD TO stateless-probes.c IF NEEDED
-extern struct ProbeModule LzrWaitProbe;
 extern struct ProbeModule LzrHttpProbe;
-extern struct ProbeModule LzrFtpProbe;
 extern struct ProbeModule LzrTlsProbe;
+extern struct ProbeModule LzrFtpProbe;
+extern struct ProbeModule LzrWaitProbe;
 
 
 
 //! ADD NEW LZR SUBPROBES(HANDSHAKES) HERE
 //! ALSO ADD TO probe-modules.c IF NEEDED
 static struct ProbeModule *lzr_handshakes[] = {
-    &LzrWaitProbe,
     &LzrHttpProbe,
-    &LzrFtpProbe,
     &LzrTlsProbe,
+    &LzrFtpProbe,
+    &LzrWaitProbe,
 };
 
 /******************************************************************/
@@ -52,9 +52,20 @@ struct LzrConf {
     struct ProbeModule **handshake;
     unsigned hs_count;
     unsigned force_all_handshakes:1;
+    unsigned force_all_match:1;
 };
 
 static struct LzrConf lzr_conf = {0};
+
+static int SET_force_all_match(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    lzr_conf.force_all_match = parseBoolean(value);
+
+    return CONF_OK;
+}
 
 static int SET_force_all_handshake(void *conf, const char *name, const char *value)
 {
@@ -128,10 +139,18 @@ static struct ConfigParameter lzr_parameters[] = {
         "splitted by comma like `--handshake http,tls`."
     },
     {
+        "force-all-match",
+        SET_force_all_match,
+        F_BOOL,
+        {"all-match", 0},
+        "Complete all matching process even if identified. This might get multi- "
+        "results."
+    },
+    {
         "force-all-handshakes",
         SET_force_all_handshake,
         F_BOOL,
-        {"force-all-handshake", "force-all", 0},
+        {"force-all-handshake", "all-handshake", "all-handshakes", 0},
         "Complete all specified handshakes even if identified. This could make "
         "weird count of results."
     },
@@ -221,6 +240,9 @@ lzr_handle_response(
 
             *rpt_idx = '-';
             rpt_idx++;
+
+            if (!lzr_conf.force_all_match)
+                break;
         }
     }
 

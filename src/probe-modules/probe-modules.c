@@ -18,10 +18,10 @@ extern struct ProbeModule EchoProbe;
 extern struct ProbeModule JarmProbe;
 /*for lzr probes*/
 extern struct ProbeModule LzrProbe;
-extern struct ProbeModule LzrWaitProbe;
 extern struct ProbeModule LzrHttpProbe;
-extern struct ProbeModule LzrFtpProbe;
 extern struct ProbeModule LzrTlsProbe;
+extern struct ProbeModule LzrFtpProbe;
+extern struct ProbeModule LzrWaitProbe;
 
 
 
@@ -33,9 +33,10 @@ static struct ProbeModule *probe_modules_list[] = {
     &JarmProbe,
     /*for lzr probes*/
     &LzrProbe,
-    &LzrWaitProbe,
     &LzrHttpProbe,
     &LzrTlsProbe,
+    &LzrFtpProbe,
+    &LzrWaitProbe,
 };
 
 
