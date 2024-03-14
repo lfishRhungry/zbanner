@@ -150,6 +150,15 @@ lzr_global_init(const void * xconf)
             "because no handshake was specified by --handshake.\n");
     }
 
+    /*do init for all handshakes*/
+    for (unsigned i=0; i<lzr_conf.hs_count; i++) {
+        if (!lzr_conf.handshake[i]->global_init_cb(xconf)) {
+            fprintf(stderr, "FAIL: Handshake [%s] initiating error in LzrProbe.\n",
+                lzr_conf.handshake[i]->name);
+            return 0;
+        }
+    }
+
     return 1;
 }
 
@@ -245,6 +254,11 @@ lzr_handle_response(
 
 void lzr_close()
 {
+    /*close for every handshake*/
+    /*do init for all handshakes*/
+    for (unsigned i=0; i<lzr_conf.hs_count; i++)
+        lzr_conf.handshake[i]->close_cb();
+ 
     free(lzr_conf.handshake);
 }
 
