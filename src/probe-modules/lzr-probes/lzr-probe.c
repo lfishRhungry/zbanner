@@ -12,8 +12,7 @@
  * to match the banner and identify its service automaticly.
  * 
  * Subprobes' names always start with 'lzr-', and could be used as a normal
- * ProbeModule. It reports what service it identified out and will report
- * nothong if no service identified.
+ * ProbeModule.
  * 
  * When they specified as subprobes in LZR probe with `--probe-args`, we should
  * omit the 'lzr-' prefix like 'lzr-http' -> 'http'.
@@ -22,24 +21,26 @@
  * for result reporting. It could reports more than one identified service type
  * or 'unknown' if nothing identified.
  * 
- * NOTE: While ProbeModule is as Subprobe of LZR, its init and close callback
- * funcs will never be called.
+ * NOTE: While ProbeModule is as Subprobe of LZR, its `params` will not be
+ * configured.
  */
 
+//! ADD NEW LZR SUBPROBES(HANDSHAKES) HERE
+//! ALSO ADD TO stateless-probes.c IF NEEDED
 extern struct ProbeModule LzrWaitProbe;
 extern struct ProbeModule LzrHttpProbe;
 extern struct ProbeModule LzrFtpProbe;
+extern struct ProbeModule LzrTlsProbe;
+
+
+
 //! ADD NEW LZR SUBPROBES(HANDSHAKES) HERE
-//! ALSO ADD TO stateless-probes.c IF NEEDED
-
-
-
+//! ALSO ADD TO probe-modules.c IF NEEDED
 static struct ProbeModule *lzr_handshakes[] = {
     &LzrWaitProbe,
     &LzrHttpProbe,
     &LzrFtpProbe,
-    //! ADD NEW LZR SUBPROBES(HANDSHAKES) HERE
-    //! ALSO ADD TO probe-modules.c IF NEEDED
+    &LzrTlsProbe,
 };
 
 /******************************************************************/

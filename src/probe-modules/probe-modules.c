@@ -11,28 +11,31 @@ This is an Application Probe(or Request) Plugin System
 
 
 
+//! ADD YOUR PROBE HERE
 extern struct ProbeModule NullProbe;
 extern struct ProbeModule GetRequestProbe;
+extern struct ProbeModule EchoProbe;
+extern struct ProbeModule JarmProbe;
+/*for lzr probes*/
 extern struct ProbeModule LzrProbe;
 extern struct ProbeModule LzrWaitProbe;
 extern struct ProbeModule LzrHttpProbe;
 extern struct ProbeModule LzrFtpProbe;
-extern struct ProbeModule EchoProbe;
-extern struct ProbeModule JarmProbe;
+extern struct ProbeModule LzrTlsProbe;
+
+
+
 //! ADD YOUR PROBE HERE
-
-
-
 static struct ProbeModule *probe_modules_list[] = {
     &NullProbe, /* its also the default probe*/
     &GetRequestProbe,
+    &EchoProbe,
+    &JarmProbe,
+    /*for lzr probes*/
     &LzrProbe,
     &LzrWaitProbe,
     &LzrHttpProbe,
-    &LzrFtpProbe,
-    &EchoProbe,
-    &JarmProbe,
-    //! ADD YOUR PROBE HERE
+    &LzrTlsProbe,
 };
 
 
