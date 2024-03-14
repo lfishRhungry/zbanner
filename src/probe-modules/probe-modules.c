@@ -21,6 +21,7 @@ extern struct ProbeModule LzrProbe;
 extern struct ProbeModule LzrHttpProbe;
 extern struct ProbeModule LzrTlsProbe;
 extern struct ProbeModule LzrFtpProbe;
+extern struct ProbeModule LzrAmqpProbe;
 extern struct ProbeModule LzrWaitProbe;
 
 
@@ -36,6 +37,7 @@ static struct ProbeModule *probe_modules_list[] = {
     &LzrHttpProbe,
     &LzrTlsProbe,
     &LzrFtpProbe,
+    &LzrAmqpProbe,
     &LzrWaitProbe,
 };
 
