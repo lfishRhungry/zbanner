@@ -123,7 +123,7 @@ struct ProbeModule LzrDnp3Probe = {
     .multi_num  = 1,
     .params     = NULL,
     .desc =
-        "LzrAmqp Probe sends an AMQP probe and identifies AMQP service.",
+        "LzrDnp3 Probe sends an DNP3 probe and identifies DNP3 service.",
     .global_init_cb                          = &probe_init_nothing,
     .make_payload_cb                         = &lzr_dnp3_make_payload,
     .get_payload_length_cb                   = &lzr_dnp3_get_payload_length,
