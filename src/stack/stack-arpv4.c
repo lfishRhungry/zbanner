@@ -17,7 +17,7 @@
 #include "stack-src.h"
 #include "stack-arpv4.h"
 #include "stack-queue.h"
-#include "../util/mas-safefunc.h"
+#include "../util/safe-string.h"
 #include "../util/logger.h"
 #include "../pixie/pixie-timer.h"
 #include "../proto/proto-preprocess.h"

@@ -5,8 +5,8 @@
 #include "../cookie.h"
 #include "../templ/templ-udp.h"
 #include "../templ/templ-icmp.h"
-#include "../util/mas-safefunc.h"
-#include "../util/mas-malloc.h"
+#include "../util/safe-string.h"
+#include "../util/fine-malloc.h"
 #include "../util/logger.h"
 
 extern struct ScanModule UdpProbeScan; /*for internal x-ref*/

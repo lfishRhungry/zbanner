@@ -11,8 +11,8 @@
 #include <errno.h>
 #include <string.h>
 
-#include "mas-safefunc.h"
-#include "mas-malloc.h"
+#include "safe-string.h"
+#include "fine-malloc.h"
 /**
  * Case-insensitive memcmp()
  */

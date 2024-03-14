@@ -24,7 +24,7 @@
 
 #include "util/dedup.h"
 #include "util/logger.h"
-#include "util/mas-malloc.h"
+#include "util/fine-malloc.h"
 #include "util/ptrace.h"
 #include "util/readrange.h"
 

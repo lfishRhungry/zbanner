@@ -1,7 +1,7 @@
 #include "ptrace.h"
 #include "../proto/proto-preprocess.h"
 #include "../pixie/pixie-timer.h"
-#include "mas-safefunc.h"
+#include "safe-string.h"
 
 
 /***************************************************************************

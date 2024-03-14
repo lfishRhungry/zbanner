@@ -25,7 +25,7 @@
 #include "crypto/crypto-blackrock.h"
 
 #include "util/logger.h"
-#include "util/mas-malloc.h"
+#include "util/fine-malloc.h"
 #include "util/readrange.h"
 #include "util/throttle.h"
 

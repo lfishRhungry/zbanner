@@ -17,7 +17,7 @@
 #include "../rawsock/rawsock-pcapfile.h"   /* for reading payloads from pcap files */
 #include "../proto/proto-preprocess.h"   /* parse packets */
 #include "../util/logger.h"
-#include "../util/mas-malloc.h"
+#include "../util/fine-malloc.h"
 #include "../massip/massip.h"
 
 #include <stdio.h>

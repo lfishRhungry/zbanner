@@ -5,8 +5,8 @@
     This works on both Linux and windows.
 */
 #include "rawsock.h"
-#include "../util/mas-safefunc.h"
-#include "../util/mas-malloc.h"
+#include "../util/safe-string.h"
+#include "../util/fine-malloc.h"
 #include "../util/logger.h"
 
 #if defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__sun__)

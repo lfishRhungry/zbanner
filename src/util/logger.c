@@ -1,5 +1,5 @@
 #include "logger.h"
-#include "mas-safefunc.h"
+#include "safe-string.h"
 #include <stdarg.h>
 #include <stdio.h>
 

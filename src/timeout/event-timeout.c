@@ -30,7 +30,7 @@
 
 #include "event-timeout.h"
 #include "../util/logger.h"
-#include "../util/mas-malloc.h"
+#include "../util/fine-malloc.h"
 
 #if defined(_MSC_VER)
 #undef inline

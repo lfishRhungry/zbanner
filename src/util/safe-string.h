@@ -1,5 +1,5 @@
 /*
-    safe "string" functions
+    This is an addition for safe "string" functions of Robert Graham
 
     This is for the "safe" clib functions, where things like "strcpy()" is
     replaced with a safer version of the function, like "safe_strcpy()".
@@ -12,8 +12,8 @@
  Reference:
  http://msdn.microsoft.com/en-us/library/bb288454.aspx
 */
-#ifndef MAS_SAFEFUNC_H
-#define MAS_SAFEFUNC_H
+#ifndef SAFE_STRING_H
+#define SAFE_STRING_H
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>

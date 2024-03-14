@@ -5,8 +5,8 @@
 #include "../cookie.h"
 #include "../version.h"
 #include "../templ/templ-ndp.h"
-#include "../util/mas-safefunc.h"
-#include "../util/mas-malloc.h"
+#include "../util/safe-string.h"
+#include "../util/fine-malloc.h"
 
 extern struct ScanModule NdpNsScan; /*for internal x-ref*/
 

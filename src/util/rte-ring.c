@@ -69,7 +69,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ***************************************************************************/
-#include "mas-safefunc.h"
+#include "safe-string.h"
 #include <errno.h>
 #include <signal.h>
 #include <stdarg.h>

@@ -30,7 +30,7 @@
 #include "util/initadapter.h"
 #include "util/listscan.h"
 #include "util/logger.h"
-#include "util/mas-malloc.h"
+#include "util/fine-malloc.h"
 #include "util/readrange.h"
 
 #if defined(WIN32)

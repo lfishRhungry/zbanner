@@ -13,8 +13,8 @@
 #include "massip-rangesv6.h"
 #include "../util/logger.h"
 #include "../util/bool.h"
-#include "../util/mas-malloc.h"
-#include "../util/mas-safefunc.h"
+#include "../util/fine-malloc.h"
+#include "../util/safe-string.h"
 #include "../util/unusedparm.h"
 
 #include <string.h>

@@ -2,7 +2,7 @@
 #include "pixie/pixie-timer.h"
 #include "util/unusedparm.h"
 #include "globals.h"
-#include "util/mas-safefunc.h"
+#include "util/safe-string.h"
 #include "util/bool.h"
 #include <stdio.h>
 

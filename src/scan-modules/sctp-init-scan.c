@@ -3,8 +3,8 @@
 #include "scan-modules.h"
 #include "../cookie.h"
 #include "../templ/templ-sctp.h"
-#include "../util/mas-safefunc.h"
-#include "../util/mas-malloc.h"
+#include "../util/safe-string.h"
+#include "../util/fine-malloc.h"
 
 extern struct ScanModule SctpInitScan; /*for internal x-ref*/
 

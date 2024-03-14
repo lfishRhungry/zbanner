@@ -3,8 +3,8 @@
 #include <string.h>
 
 #include "param-configer.h"
-#include "util/mas-malloc.h"
-#include "util/mas-safefunc.h"
+#include "util/fine-malloc.h"
+#include "util/safe-string.h"
 
 uint64_t
 parseInt(const char *str)

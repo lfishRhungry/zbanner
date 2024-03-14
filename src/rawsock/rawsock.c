@@ -9,7 +9,7 @@
 #include "../templ/templ-init.h"
 #include "../util/logger.h"
 #include "../util/ptrace.h"
-#include "../util/mas-safefunc.h"
+#include "../util/safe-string.h"
 #include "../stub/stub-pcap.h"
 #include "../stub/stub-pfring.h"
 #include "../pixie/pixie-timer.h"
@@ -19,7 +19,7 @@
 #include "../stack/stack-ndpv6.h"
 
 #include "../util/unusedparm.h"
-#include "../util/mas-malloc.h"
+#include "../util/fine-malloc.h"
 #include <assert.h>
 #include <ctype.h>
 

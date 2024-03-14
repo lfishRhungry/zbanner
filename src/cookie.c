@@ -1,6 +1,6 @@
 #include "cookie.h"
 #include "pixie/pixie-timer.h"
-#include "util/mas-safefunc.h"
+#include "util/safe-string.h"
 #include "crypto/crypto-siphash24.h"
 #include <assert.h>
 #include <time.h>

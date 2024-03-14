@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "probe-modules.h"
-#include "../util/mas-safefunc.h"
+#include "../util/safe-string.h"
 #include "../proto/proto-jarm.h"
 #include "../util/logger.h"
 

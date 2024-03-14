@@ -17,13 +17,13 @@
 #include "templ-payloads.h"
 #include "../massip/massip-port.h"
 #include "../proto/proto-preprocess.h"
-#include "../util/mas-safefunc.h"
+#include "../util/safe-string.h"
 #include "../pixie/pixie-timer.h"
 #include "../util/logger.h"
 #include "../cookie.h"
 #include "../util/unusedparm.h"
 #include "../util/checksum.h"
-#include "../util/mas-malloc.h"
+#include "../util/fine-malloc.h"
 #include "../stub/stub-pcap-dlt.h" /* data link types, like NULL, RAW, or ETHERNET */
 
 /* For adding some fixed tcp options*/

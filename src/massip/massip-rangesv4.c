@@ -30,7 +30,7 @@
 #include "massip-port.h"
 #include "../util/logger.h"
 #include "../util/bool.h"
-#include "../util/mas-malloc.h"
+#include "../util/fine-malloc.h"
 
 #include <assert.h>
 #include <ctype.h>

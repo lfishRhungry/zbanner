@@ -1,5 +1,5 @@
 #include "dedup.h"
-#include "mas-malloc.h"
+#include "fine-malloc.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>

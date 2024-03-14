@@ -5,8 +5,8 @@
     Also, defines a REALLOCARRAY() function that checks for integer
     overflow before trying to allocate memory.
 */
-#ifndef MAS_MALLOC_H
-#define MAS_MALLOC_H
+#ifndef FINE_MALLOC_H
+#define FINE_MALLOC_H
 #include <stdio.h>
 #include <stdlib.h>
 

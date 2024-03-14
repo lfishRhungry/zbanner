@@ -4,8 +4,8 @@
 #include "../xconf.h"
 #include "../cookie.h"
 #include "../templ/templ-tcp.h"
-#include "../util/mas-safefunc.h"
-#include "../util/mas-malloc.h"
+#include "../util/safe-string.h"
+#include "../util/fine-malloc.h"
 #include "../util/logger.h"
 
 extern struct ScanModule ZBannerScan; /*for internal x-ref*/

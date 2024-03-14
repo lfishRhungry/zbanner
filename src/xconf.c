@@ -10,10 +10,10 @@
 #include "templ/templ-payloads.h"
 #include "templ/templ-opts.h"
 
-#include "util/mas-safefunc.h"
+#include "util/safe-string.h"
 #include "util/logger.h"
 #include "util/unusedparm.h"
-#include "util/mas-malloc.h"
+#include "util/fine-malloc.h"
 #include "util/xprint.h"
 
 #include "massip/massip-addr.h"

@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "../probe-modules.h"
-#include "../../util/mas-safefunc.h"
+#include "../../util/safe-string.h"
 
 #define LZR_HANDSHAKE_NAME_LEN 20
 

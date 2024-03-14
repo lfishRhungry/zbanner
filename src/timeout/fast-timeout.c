@@ -6,7 +6,7 @@
  * TODO: Reduce num of system calls to time()
 */
 #include "fast-timeout.h"
-#include "../util/mas-malloc.h"
+#include "../util/fine-malloc.h"
 
 struct FEntry {
     /**

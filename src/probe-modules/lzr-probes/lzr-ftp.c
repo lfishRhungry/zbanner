@@ -1,7 +1,7 @@
 #include <string.h>
 
 #include "../probe-modules.h"
-#include "../../util/mas-safefunc.h"
+#include "../../util/safe-string.h"
 
 /*for internal x-ref*/
 extern struct ProbeModule LzrFtpProbe;
