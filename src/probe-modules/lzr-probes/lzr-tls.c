@@ -9,14 +9,40 @@
 extern struct ProbeModule LzrTlsProbe;
 
 static char lzr_tls_payload[] =
-"\x16\x03\x01\x00\x75\x01\x00\x00\x71\x03\x03"
-"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" /*random*/
-"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" /*random*/
-"\x00\x00\x1a\xc0\x2f\xc0\x2b\xc0\x11\xc0\x07\xc0\x13\xc0\x09\xc0"
-"\x14\xc0\x0a\x00\x05\x00\x2f\x00\x35\xc0\x12\x00\x0a\x01\x00\x00"
-"\x2e\x00\x05\x00\x05\x01\x00\x00\x00\x00\x00\x0a\x00\x08\x00\x06"
-"\x00\x17\x00\x18\x00\x19\x00\x0b\x00\x02\x01\x00\x00\x0d\x00\x0a"
-"\x00\x08\x04\x01\x04\x03\x02\x01\x02\x03\xff\x01\x00\x01\x00";
+"\x16"                                                     /*handshake*/
+"\x03\x01"                                                 /*TLSv1.0*/
+"\x00\x75"                                                 /*length 117*/
+"\x01"                                                     /*client hello*/
+"\x00\x00\x71"                                             /*length 113*/
+"\x03\x03"                                                 /*TLSv1.2*/
+"\x00\x00\x00\x00\x00\x00\x00\x00"                         /*random*/
+"\x00\x00\x00\x00\x00\x00\x00\x00"                         /*random*/
+"\x00\x00\x00\x00\x00\x00\x00\x00"                         /*random*/
+"\x00\x00\x00\x00\x00\x00\x00\x00"                         /*random*/
+"\x00"                                                     /*session ID length 0*/
+"\x00\x1a"                                                 /*cipher suites lenght 26*/
+"\xc0\x2f"                                                 /*cipher suite*/
+"\xc0\x2b"                                                 /*cipher suite*/
+"\xc0\x11"                                                 /*cipher suite*/
+"\xc0\x07"                                                 /*cipher suite*/
+"\xc0\x13"                                                 /*cipher suite*/
+"\xc0\x09"                                                 /*cipher suite*/
+"\xc0\x14"                                                 /*cipher suite*/
+"\xc0\x0a"                                                 /*cipher suite*/
+"\x00\x05"                                                 /*cipher suite*/
+"\x00\x2f"                                                 /*cipher suite*/
+"\x00\x35"                                                 /*cipher suite*/
+"\xc0\x12"                                                 /*cipher suite*/
+"\x00\x0a"                                                 /*cipher suite*/
+"\x01"                                                     /*compression methods length*/
+"\x00"                                                     /*compression methods*/
+"\x00\x2e"                                                 /*extension length 46*/
+"\x00\x05\x00\x05\x01\x00\x00\x00\x00"                     /*ext status request*/
+"\x00\x0a\x00\x08\x00\x06\x00\x17\x00\x18\x00\x19"         /*ext supported groups*/
+"\x00\x0b\x00\x02\x01\x00"                                 /*ext ec point formats*/
+"\x00\x0d\x00\x0a\x00\x08\x04\x01\x04\x03\x02\x01\x02\x03" /*ext signature algorithms*/
+"\xff\x01\x00\x01\x00"                                     /*ext renegotiation info*/
+;
 
 static int lzr_tls_global_init(const void *xconf)
 {
