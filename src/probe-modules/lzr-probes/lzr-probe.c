@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "../probe-modules.h"
+#include "../../version.h"
 #include "../../util/safe-string.h"
 #include "../../util/fine-malloc.h"
 
@@ -254,9 +255,12 @@ struct ProbeModule LzrProbe = {
     .multi_num  = 1,
     .params     = lzr_parameters,
     .desc =
-        "LZR Probe is an implement of service identification of LZR. It sends a "
-        "specified LZR handshake(subprobe) and try to match with all LZR handshakes "
-        "with `handle_reponse_cb`.",
+        "LzrProbe is an implementation of LZR service identifier of LZR in "
+        XTATE_FIRST_UPPER_NAME". It sends a serias specified LZR handshakes"
+        "(subprobes) until identified the service by matching responsed data "
+        "with all LZR handshakes.\n"
+        "I suggest you to specify `--timeout` parameter because LzrProbe performs"
+        " better by recognizing the status of non-responsing.",
     .global_init_cb                        = &lzr_global_init,
     .make_payload_cb                       = &lzr_make_payload,
     .get_payload_length_cb                 = &lzr_get_payload_length,
