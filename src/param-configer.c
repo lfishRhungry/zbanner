@@ -529,44 +529,34 @@ set_parameters_from_args(void *conf, struct ConfigParameter *cp,
     }
 }
 
-void
+int
 set_parameters_from_string(void *conf, struct ConfigParameter *cp, char *string)
 {
-    char * str = STRDUP(string);
-    size_t str_len = strlen(str);
-
-    if (!str_len) return;
-
-    /**
-     * Count the number of arguments
-    */
-    int arg_count = 0;
-    char *p = str;
-    for (; p-str < str_len; p++) {
-        if (*p != ' ' && *p != '\0') {
-            arg_count++;
-        }
-        for (; p-str < str_len && *p!=' ' && *p!='\0'; p++) {}
+    int     sub_argc;
+    char ** sub_argv;
+    
+    sub_argv = string_to_args(string, &sub_argc);
+    if (!sub_argv) {
+        return 1;
     }
 
-    char** arg_vec = MALLOC(sizeof(char *)*arg_count);
+    set_parameters_from_args(conf, cp, sub_argc, sub_argv);
+    free(sub_argv);
+    return 0;
+}
 
-    p = str;
-    unsigned idx = 0;
-    for (; p-str < str_len; p++) {
-
-        if (*p!='\0' && *p!=' ') {
-            arg_vec[idx] = p;
-            idx++;
-        }
-        for (; p-str < str_len && *p!=' ' && *p!='\0'; p++) {}
-
-        if(*p==' ')
-            *p='\0';
+int
+set_parameters_from_substring(void *conf, struct ConfigParameter *cp, char *substring)
+{
+    int     sub_argc;
+    char ** sub_argv;
+    
+    sub_argv = substring_to_args(substring, &sub_argc);
+    if (!sub_argv) {
+        return 1;
     }
 
-    set_parameters_from_args(conf, cp, arg_count, arg_vec);
-
-    free(str);
-    free(arg_vec);
+    set_parameters_from_args(conf, cp, sub_argc, sub_argv);
+    free(sub_argv);
+    return 0;
 }

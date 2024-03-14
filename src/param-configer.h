@@ -116,12 +116,25 @@ set_parameters_from_args(void *conf, struct ConfigParameter *cp,
     int argc, char **argv);
 
 /**
- * It is for params parsing of submodules.
- * I just apply simple parser for string to argc argv.
- * And it does not support quoted params now.
+ * Parse string and set parameters
+ * It can handle quotes(ignore single quotes)
+ * @param conf config to set params
+ * @param cp params
  * @param string whole string contains all params
+ * @return 0 if success
 */
-void
+int
 set_parameters_from_string(void *conf, struct ConfigParameter *cp, char *string);
+
+/**
+ * Parse string and set parameters
+ * It can handle single quotes(ignore quotes)
+ * @param conf config to set params
+ * @param cp params
+ * @param substring whole string contains all params
+ * @return 0 if success
+*/
+int
+set_parameters_from_substring(void *conf, struct ConfigParameter *cp, char *substring);
 
 #endif

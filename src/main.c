@@ -222,8 +222,11 @@ static int main_scan(struct Xconf *xconf) {
 
     if (xconf->scan_module_args
         && xconf->scan_module->params) {
-        set_parameters_from_string(NULL,
-            xconf->scan_module->params, xconf->scan_module_args);
+        if (set_parameters_from_substring(NULL,
+            xconf->scan_module->params, xconf->scan_module_args)) {
+            LOG(0, "FAIL: errors happened in sub param parsing of ScanModule.\n");
+            exit(1);
+        }
     }
     if (!xconf->scan_module->global_init_cb(xconf)) {
         LOG(0, "FAIL: errors happened in global init of ScanModule.\n");
@@ -237,8 +240,11 @@ static int main_scan(struct Xconf *xconf) {
 
         if (xconf->probe_module_args
             && xconf->probe_module->params) {
-            set_parameters_from_string(NULL,
-                xconf->probe_module->params, xconf->probe_module_args);
+            if (set_parameters_from_substring(NULL,
+                xconf->probe_module->params, xconf->probe_module_args)) {
+                LOG(0, "FAIL: errors happened in sub param parsing of ProbeModule.\n");
+                exit(1);
+            }
         }
 
         if (!xconf->probe_module->global_init_cb(xconf)) {

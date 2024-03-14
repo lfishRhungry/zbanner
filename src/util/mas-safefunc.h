@@ -138,4 +138,18 @@ void *
 safe_memismem (const void * haystack, size_t haystacklen,
     const void * needle, size_t needlelen);
 
+/**
+ * Transfer C string to argc argv.
+ * Could handle quotes(ignore single quotes).
+ * Argv should be freed.
+*/
+char** string_to_args(char *string, int *arg_count);
+
+/**
+ * Transfer C string to argc argv.
+ * just handle  single quotes(ignore double quotes).
+ * Argv should be freed.
+*/
+char** substring_to_args(char *substring, int *arg_count);
+
 #endif
