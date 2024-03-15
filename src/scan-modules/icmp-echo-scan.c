@@ -108,5 +108,6 @@ struct ScanModule IcmpEchoScan = {
     .validate_cb            = &icmpecho_validate,
     .handle_cb              = &icmpecho_handle,
     .timeout_cb             = &icmpecho_timeout,
+    .poll_cb                = &scan_poll_nothing,
     .close_cb               = &scan_close_nothing,
 };

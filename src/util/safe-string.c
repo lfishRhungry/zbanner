@@ -599,3 +599,43 @@ char** substring_to_args(char *substring, int *arg_count)
 
     return argv;
 }
+
+/***************************************************************************
+ ***************************************************************************/
+int
+name_equals(const char *lhs, const char *rhs)
+{
+    for (;;) {
+        while (*lhs == '-' || *lhs == '.' || *lhs == '_')
+            lhs++;
+        while (*rhs == '-' || *rhs == '.' || *rhs == '_')
+            rhs++;
+        if (*lhs == '\0' && *rhs == '[')
+            return 1; /*arrays*/
+        if (*rhs == '\0' && *lhs == '[')
+            return 1; /*arrays*/
+        if (tolower(*lhs & 0xFF) != tolower(*rhs & 0xFF))
+            return 0;
+        if (*lhs == '\0')
+            return 1;
+        lhs++;
+        rhs++;
+    }
+}
+
+/***************************************************************************
+ * When setting parameters, this will parse integers from the config
+ * parameter strings.
+ ***************************************************************************/
+uint64_t
+parseIntBytes(const void *vstr, size_t length)
+{
+    const char *str = (const char *)vstr;
+    uint64_t result = 0;
+    size_t i;
+
+    for (i=0; i<length; i++) {
+        result = result * 10 + (str[i] - '0');
+    }
+    return result;
+}

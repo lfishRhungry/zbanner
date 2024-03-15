@@ -16,6 +16,7 @@ extern struct ProbeModule NullProbe;
 extern struct ProbeModule GetRequestProbe;
 extern struct ProbeModule EchoProbe;
 extern struct ProbeModule JarmProbe;
+extern struct ProbeModule StateTestProbe;
 /*for lzr probes*/
 extern struct ProbeModule LzrProbe;
 extern struct ProbeModule LzrHttpProbe;
@@ -34,6 +35,7 @@ static struct ProbeModule *probe_modules_list[] = {
     &GetRequestProbe,
     &EchoProbe,
     &JarmProbe,
+    &StateTestProbe,
     /*for lzr probes*/
     &LzrProbe,
     &LzrHttpProbe,
@@ -67,6 +69,8 @@ get_probe_type_name(const enum ProbeType type)
             return "tcp";
         case ProbeType_UDP:
             return "udp";
+        case ProbeType_STATE:
+            return "state";
         default:
             return "";
     }

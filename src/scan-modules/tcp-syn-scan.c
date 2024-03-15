@@ -128,5 +128,6 @@ struct ScanModule TcpSynScan = {
     .validate_cb              = &tcpsyn_validate,
     .handle_cb                = &tcpsyn_handle,
     .timeout_cb               = &tcpsyn_timeout,
+    .poll_cb                  = &scan_poll_nothing,
     .close_cb                 = &scan_close_nothing,
 };

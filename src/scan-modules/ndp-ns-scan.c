@@ -134,5 +134,6 @@ struct ScanModule NdpNsScan = {
     .validate_cb            = &ndpns_validate,
     .handle_cb              = &ndpns_handle,
     .timeout_cb             = &ndpns_timeout,
+    .poll_cb                = &scan_poll_nothing,
     .close_cb               = &scan_close_nothing,
 };

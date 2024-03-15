@@ -10,6 +10,7 @@
 
 #define PROBE_PAYLOAD_MAX_LEN 2048
 
+typedef struct stack_handle_t stack_handle_t;
 
 /**
  * !Must be implemented.
@@ -99,6 +100,23 @@ typedef int
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item);
 
+struct ProbeState {
+    unsigned state;
+};
+
+enum ProbeHelloType {
+    SF__none = 0,
+    SF__close = 0x01, /* send FIN after the static Hello is sent*/
+    SF__nowait_hello = 0x02,    /* send our hello immediately, don't wait for their hello */
+};
+
+typedef void
+(*probe_modules_parse_response)(
+    stack_handle_t *socket,
+    const unsigned char *px,
+    unsigned sizeof_px
+);
+
 /**
  * It happens before normal exit in mainscan function.
  * !Must be implemented.
@@ -110,6 +128,7 @@ enum ProbeType {
     ProbeType_NULL = 0,
     ProbeType_TCP,
     ProbeType_UDP,
+    ProbeType_STATE,
 };
 
 enum MultiMode {
@@ -124,6 +143,7 @@ struct ProbeModule
 {
     const char                                 *name;
     const enum ProbeType                        type;
+    const enum ProbeHelloType                   hello;
     enum MultiMode                              multi_mode;
     unsigned                                    multi_num; /*useless for Multi_DynamicNext*/
     const char                                 *desc;
@@ -137,6 +157,8 @@ struct ProbeModule
     /*for response*/
     probe_modules_validate_response             validate_response_cb;
     probe_modules_handle_response               handle_response_cb;
+    /*for parse*/
+    probe_modules_parse_response                parse_response_cb;
     /*for close*/
     probe_modules_close                         close_cb;
 };

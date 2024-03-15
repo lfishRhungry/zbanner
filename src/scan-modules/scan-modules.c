@@ -12,6 +12,7 @@ extern struct ScanModule NdpNsScan;
 extern struct ScanModule SctpInitScan;
 extern struct ScanModule ZBannerScan;
 extern struct ScanModule UdpProbeScan;
+extern struct ScanModule TcpStateScan;
 //! REGIST YOUR SCAN MODULE HERE
 
 static struct ScanModule *scan_modules_list[] = {
@@ -23,6 +24,7 @@ static struct ScanModule *scan_modules_list[] = {
     &SctpInitScan,
     &ZBannerScan,
     &UdpProbeScan,
+    &TcpStateScan,
     //! REGIST YOUR SCAN MODULE HERE
 };
 
@@ -127,6 +129,8 @@ int scan_response_nothing(
     *r_length=0;
     return 0;
 }
+
+void scan_poll_nothing(){}
 
 void scan_close_nothing()
 {

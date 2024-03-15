@@ -118,5 +118,6 @@ struct ScanModule SctpInitScan = {
     .validate_cb             = &sctpinit_validate,
     .handle_cb               = &sctpinit_handle,
     .timeout_cb              = &sctpinit_timeout,
+    .poll_cb                 = &scan_poll_nothing,
     .close_cb                = &scan_close_nothing,
 };

@@ -126,6 +126,11 @@ void receive_thread(void *v) {
             *status_timeout_count = ft_event_count(&ft_handler);
         }
 
+        /**
+         * Do polling for scan module in each loop
+        */
+        scan_module->poll_cb();
+
         struct Received recved = {0};
 
         int err = rawsock_recv_packet(adapter, &(recved.length), &(recved.secs),

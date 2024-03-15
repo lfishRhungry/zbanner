@@ -152,4 +152,10 @@ char** string_to_args(char *string, int *arg_count);
 */
 char** substring_to_args(char *substring, int *arg_count);
 
+int
+name_equals(const char *lhs, const char *rhs);
+
+uint64_t
+parseIntBytes(const void *vstr, size_t length);
+
 #endif

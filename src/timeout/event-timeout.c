@@ -75,40 +75,6 @@ struct Timeouts {
 
 /***************************************************************************
  ***************************************************************************/
-static inline bool
-timeout_is_unlinked(const struct TimeoutEntry *entry) {
-    if (entry->prev == 0 || entry->next == 0)
-        return true;
-    else
-        return false;
-}
-
-/***************************************************************************
- ***************************************************************************/
-static inline void
-timeout_unlink(struct TimeoutEntry *entry)
-{
-    if (entry->prev == 0 && entry->next == 0)
-        return;
-    *(entry->prev) = entry->next;
-    if (entry->next)
-        entry->next->prev = entry->prev;
-    entry->next = 0;
-    entry->prev = 0;
-    entry->timestamp = 0;
-}
-
-/***************************************************************************
- ***************************************************************************/
-static inline void
-timeout_init(struct TimeoutEntry *entry)
-{
-    entry->next = 0;
-    entry->prev = 0;
-}
-
-/***************************************************************************
- ***************************************************************************/
 struct Timeouts *
 timeouts_create(uint64_t timestamp)
 {

@@ -431,5 +431,6 @@ struct ScanModule UdpProbeScan = {
     .validate_cb                 = &udpprobe_validate,
     .handle_cb                   = &udpprobe_handle,
     .timeout_cb                  = &udpprobe_timeout,
+    .poll_cb                     = &scan_poll_nothing,
     .close_cb                    = &scan_close_nothing,
 };

@@ -104,5 +104,6 @@ struct ScanModule IcmpTimeScan = {
     .validate_cb            = &icmptime_validate,
     .handle_cb              = &icmptime_handle,
     .timeout_cb             = &icmptime_timeout,
+    .poll_cb                = &scan_poll_nothing,
     .close_cb               = &scan_close_nothing,
 };

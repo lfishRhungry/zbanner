@@ -164,6 +164,8 @@ typedef void (*scan_modules_timeout)(
     struct stack_t *stack,
     struct FHandler *handler);
 
+typedef void (*scan_modules_poll)();
+
 
 /***************************************************************************
  * * callback functions for Close
@@ -194,6 +196,8 @@ struct ScanModule
     scan_modules_handle                         handle_cb;
     /*for timeout*/
     scan_modules_timeout                        timeout_cb;
+    /*for polling*/
+    scan_modules_poll                           poll_cb;
     /*for close*/
     scan_modules_close                          close_cb;
 };
@@ -208,6 +212,9 @@ Some useful implemented interfaces
 
 /*implemented `scan_modules_xxx_init`*/
 int scan_init_nothing(const void *params);
+
+/*implemented `scan_modules_poll`*/
+void scan_poll_nothing();
 
 /*implemented `scan_modules_close`*/
 void scan_close_nothing();

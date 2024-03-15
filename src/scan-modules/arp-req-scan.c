@@ -102,5 +102,6 @@ struct ScanModule ArpReqScan = {
     .validate_cb       = &arpreq_validate,
     .handle_cb         = &arpreq_handle,
     .timeout_cb        = &arpreq_timeout,
+    .poll_cb           = &scan_poll_nothing,
     .close_cb          = &scan_close_nothing,
 };

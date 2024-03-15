@@ -574,5 +574,6 @@ struct ScanModule ZBannerScan = {
     .validate_cb                  = &zbanner_validate,
     .handle_cb                    = &zbanner_handle,
     .timeout_cb                   = &zbanner_timeout,
+    .poll_cb                      = &scan_poll_nothing,
     .close_cb                     = &scan_close_nothing,
 };
