@@ -55,7 +55,7 @@ output_result_to_stdout(
         break;
     case Output_INFO:
         count = fprintf(stdout, fmt_host,
-            XPRINT_CH_COLOR_CYAN"[-]", ip_them_fmt.string);
+            XPRINT_CH_COLOR_CYAN"[*]", ip_them_fmt.string);
         break;
     default:
         return;
@@ -113,7 +113,7 @@ output_result_to_file(
         count = fprintf(stdout, fmt_host, "[x]", ip_them_fmt.string);
         break;
     case Output_INFO:
-        count = fprintf(stdout, fmt_host, "[-]", ip_them_fmt.string);
+        count = fprintf(stdout, fmt_host, "[*]", ip_them_fmt.string);
         break;
     default:
         return;
@@ -145,6 +145,12 @@ output_result(
 {
     if (item->no_output)
         return;
+    
+    if (item->level==Output_SUCCESS)
+        (*(output->total_successed))++;
+ 
+    if (item->level==Output_FAILURE)
+        (*(output->total_failed))++;
 
     if (output->output_file) {
         output_result_to_file(output, item);

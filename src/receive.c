@@ -34,7 +34,7 @@
 void receive_thread(void *v) {
     struct RxThread *parms            = (struct RxThread *)v;
     const struct Xconf *xconf         = parms->xconf;
-    struct Output output              = xconf->output;
+    struct Output *output             = (struct Output *)(&xconf->output);
     struct Adapter *adapter           = xconf->nic.adapter;
     int data_link                     = stack_if_datalink(adapter);
     struct DedupTable *dedup          = NULL;
@@ -54,10 +54,12 @@ void receive_thread(void *v) {
     parms->total_successed           = status_successed_count;
     parms->total_failed              = status_failed_count;
     parms->total_tm_event            = status_timeout_count;
+    output->total_successed           = status_successed_count; /*update in output*/
+    output->total_failed              = status_failed_count;    /*update in output*/
 
     LOG(1, "[+] starting receive thread\n");
 
-    output_init(&output);
+    output_init(output);
 
     /* Lock threads to the CPUs one by one.
      * Tx threads follow  the only one Rx thread.
@@ -110,14 +112,8 @@ void receive_thread(void *v) {
 
                     scan_module->timeout_cb(entropy, tm_event, &item, stack, &ft_handler);
 
-                    output_result(&output, &item);
+                    output_result(output, &item);
 
-                    if (!item.no_output) {
-                        if (item.level==Output_SUCCESS)
-                            (*status_successed_count)++;
-                        else if (item.level==Output_FAILURE)
-                            (*status_failed_count)++;
-                    }
                 }
                 free(tm_event);
                 tm_event = NULL;
@@ -204,14 +200,7 @@ void receive_thread(void *v) {
         else
             scan_module->handle_cb(entropy, &recved, &item, stack, NULL);
 
-        output_result(&output, &item);
-
-        if (!item.no_output) {
-            if (item.level==Output_SUCCESS)
-                (*status_successed_count)++;
-            else if (item.level==Output_FAILURE)
-                (*status_failed_count)++;
-        }
+        output_result(output, &item);
     }
 
     LOG(1, "[+] exiting receive thread                            \n");
@@ -220,7 +209,7 @@ void receive_thread(void *v) {
      * cleanup
      */
 end:
-    output_close(&output);
+    output_close(output);
 
     if (!xconf->is_nodedup)
         dedup_destroy(dedup);

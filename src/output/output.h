@@ -18,6 +18,8 @@ struct Output{
     unsigned is_interactive:1;
     unsigned is_show_failed:1;
     unsigned is_show_info:1;
+    uint64_t *total_successed;
+    uint64_t *total_failed;
 };
 
 enum OutputLevel{
