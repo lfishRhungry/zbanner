@@ -83,6 +83,146 @@
 #pragma warning(disable:4996)
 #endif
 
+
+struct TCP_Segment {
+    unsigned seqno;
+    unsigned char *buf;
+    size_t length;
+    enum TCP__flags flags;
+    bool is_fin; /* was fin sent */
+    struct TCP_Segment *next;
+};
+
+enum App_State{
+    App_Connect,
+    App_ReceiveHello,
+    App_ReceiveNext,
+    App_SendFirst,
+    App_SendNext,
+    App_Close,
+};
+
+enum Tcp_State{
+    STATE_SYN_SENT=0, /* must be zero */
+    //STATE_SYN_RECEIVED,
+    STATE_ESTABLISHED_SEND, /* our own special state, can only send */
+    STATE_ESTABLISHED_RECV, /* our own special state, can only receive */
+    STATE_CLOSE_WAIT,
+    STATE_LAST_ACK,
+    STATE_FIN_WAIT1_SEND,
+    STATE_FIN_WAIT1_RECV,
+    STATE_FIN_WAIT2,
+    STATE_CLOSING,
+    STATE_TIME_WAIT,
+};
+
+/***************************************************************************
+ * A "TCP control block" is what most operating-systems/network-stack
+ * calls the structure that corresponds to a TCP connection. It contains
+ * things like the IP addresses, port numbers, sequence numbers, timers,
+ * and other things.
+ ***************************************************************************/
+struct TCP_Control_Block
+{
+    ipaddress ip_me;
+    ipaddress ip_them;
+
+    unsigned short port_me;
+    unsigned short port_them;
+
+    uint32_t seqno_me;      /* next seqno I will use for transmit */
+    uint32_t seqno_them;    /* the next seqno I expect to receive */
+    uint32_t ackno_me;
+    uint32_t ackno_them;
+
+    uint32_t seqno_me_first;
+    uint32_t seqno_them_first;
+    
+    struct TCP_Control_Block *next;
+    struct TimeoutEntry timeout[1];
+
+    enum Tcp_State tcpstate;
+    unsigned char ttl;
+    unsigned char syns_sent; /* reconnect */
+    unsigned short mss; /* maximum segment size 1460 */
+    unsigned is_ipv6:1;
+    unsigned is_small_window:1; /* send with smaller window */
+    unsigned is_their_fin:1;
+
+    /** Set to true when the TCB is in-use/allocated, set to zero
+     * when it's about to be deleted soon */
+    unsigned is_active:1;
+    
+    /* If the payload we've sent was dynamically allocated with
+     * malloc() from the heap, in which case we'll have to free()
+     * it. (Most payloads are static memory) */
+    unsigned is_payload_dynamic:1;
+
+    enum App_State app_state;
+
+    struct TCP_Segment *segments;
+
+    /*
+    unsigned short payload_length;
+    const unsigned char *payload;
+    */
+    time_t when_created;
+
+    const struct ProbeModule *probe;
+
+    struct ProbeState probe_state;
+
+    unsigned packet_number;
+};
+
+struct TCP_ConnectionTable {
+    struct TCP_Control_Block **entries;
+    struct TCP_Control_Block *freed_list;
+    unsigned count;
+    unsigned mask;
+    unsigned timeout_connection;
+    unsigned timeout_hello;
+
+    uint64_t active_count;
+    uint64_t entropy;
+
+    struct Timeouts *timeouts;
+    struct TemplatePacket *pkt_template;
+    struct stack_t *stack;
+    struct Output *out;
+
+    /** This is for creating follow-up connections based on the first
+     * connection. Given an existing IP/port, it returns a different
+     * one for the new conenction. */
+    // struct {
+    //     const void *data;
+    //     void *(*cb)(const void *in_src, const ipaddress ip, unsigned port,
+    //                 ipaddress *next_ip, unsigned *next_port);
+    // } next_ip_port;
+};
+
+enum {
+    SOCKERR_NONE=0, /* no error */
+    SOCKERR_EBADF=10,  /* bad socket descriptor */
+};
+
+typedef struct stack_handle_t {
+    struct TCP_ConnectionTable *tcpcon;
+    struct TCP_Control_Block *tcb;
+    unsigned secs;
+    unsigned usecs;
+} stack_handle_t;
+
+enum DestroyReason {
+    Reason_Timeout = 1,
+    Reason_FIN = 2,
+    Reason_RST = 3,
+    Reason_Foo = 4,
+    Reason_Shutdown = 5,
+    Reason_StateDone = 6,
+
+};
+
 /***************************************************************************
  * DEBUG: when printing debug messages (-d option), this prints a string
  * for the given state.
@@ -300,16 +440,6 @@ _tcb_change_state_to(struct TCP_Control_Block *tcb, enum Tcp_State new_state) {
     LOGtcb(tcb, 2, "to {%s}\n", tcp_state_to_string(new_state));
     tcb->tcpstate = new_state;
 }
-
-enum DestroyReason {
-    Reason_Timeout = 1,
-    Reason_FIN = 2,
-    Reason_RST = 3,
-    Reason_Foo = 4,
-    Reason_Shutdown = 5,
-    Reason_StateDone = 6,
-
-};
 
 /***************************************************************************
  * Destroy a TCP connection entry. We have to unlink both from the
@@ -1750,7 +1880,7 @@ again:
                      * received in this period, then timeout will cause us
                      * to switch to sending
                      */
-                    if (probe != NULL && (probe->hello & SF__nowait_hello) != 0) {
+                    if ((probe->hello & Nowait_Hello) != 0) {
                         tcpapi_change_app_state(socket, App_SendFirst);
                         state = App_SendFirst;
                         goto again;
@@ -1804,7 +1934,17 @@ again:
                      * layer protocol parsers. This is where, in Sockets API, you
                      * might call the 'recv()' function.
                      */
-                    probe->parse_response_cb(socket, (const unsigned char *)payload, payload_length);
+                    struct ProbeTarget target = {
+                        .ip_them   = socket->tcb->ip_them,
+                        .ip_me     = socket->tcb->ip_me,
+                        .port_them = socket->tcb->port_them,
+                        .port_me   = socket->tcb->port_me,
+                        .cookie    = 0, /*state mode does not need cookie*/
+                        .index     = 0, /*does not support multi-probe now*/
+                    };
+                    probe->parse_response_cb(socket, &socket->tcb->probe_state,
+                        socket->tcpcon->out, &target,
+                        (const unsigned char *)payload, payload_length);
                     break;
                 case APP_CLOSE:
                     /* The other side has sent us a FIN, therefore, we need
@@ -1850,7 +1990,7 @@ again:
 
             /* If specified, then send a FIN right after the hello data.
                 * This will complete a reponse faster from the server. */
-            if ((probe->hello & SF__close) != 0)
+            if ((probe->hello & Hello_Close) != 0)
                 tcpapi_close(socket);
 
             tcpapi_change_app_state(socket, App_SendNext);

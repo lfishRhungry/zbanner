@@ -54,8 +54,8 @@ void receive_thread(void *v) {
     parms->total_successed           = status_successed_count;
     parms->total_failed              = status_failed_count;
     parms->total_tm_event            = status_timeout_count;
-    output->total_successed           = status_successed_count; /*update in output*/
-    output->total_failed              = status_failed_count;    /*update in output*/
+    output->total_successed          = status_successed_count; /*update in output*/
+    output->total_failed             = status_failed_count;    /*update in output*/
 
     LOG(1, "[+] starting receive thread\n");
 

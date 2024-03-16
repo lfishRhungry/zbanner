@@ -9,8 +9,6 @@
 #include "../timeout/event-timeout.h"
 #include "../probe-modules/probe-modules.h"
 
-enum TCP__flags;
-
 enum TCP__flags {
     TCP__static,/* it's static data, so the send function can point to it */
     TCP__copy,  /* the send function must copy the data */
@@ -18,125 +16,25 @@ enum TCP__flags {
     TCP__close_fin /* close connection */
 };
 
-struct TCP_Segment {
-    unsigned seqno;
-    unsigned char *buf;
-    size_t length;
-    enum TCP__flags flags;
-    bool is_fin; /* was fin sent */
-    struct TCP_Segment *next;
+enum TCP_What {
+    TCP_WHAT_TIMEOUT,
+    TCP_WHAT_SYNACK,
+    TCP_WHAT_RST,
+    TCP_WHAT_FIN,
+    TCP_WHAT_ACK,
+    TCP_WHAT_DATA,
+    TCP_WHAT_CLOSE
 };
 
-enum App_State{
-    App_Connect,
-    App_ReceiveHello,
-    App_ReceiveNext,
-    App_SendFirst,
-    App_SendNext,
-    App_Close,
+enum TCB_result {
+    TCB__okay,
+    TCB__destroyed
 };
 
-enum Tcp_State{
-    STATE_SYN_SENT=0, /* must be zero */
-    //STATE_SYN_RECEIVED,
-    STATE_ESTABLISHED_SEND, /* our own special state, can only send */
-    STATE_ESTABLISHED_RECV, /* our own special state, can only receive */
-    STATE_CLOSE_WAIT,
-    STATE_LAST_ACK,
-    STATE_FIN_WAIT1_SEND,
-    STATE_FIN_WAIT1_RECV,
-    STATE_FIN_WAIT2,
-    STATE_CLOSING,
-    STATE_TIME_WAIT,
-};
-
-/***************************************************************************
- * A "TCP control block" is what most operating-systems/network-stack
- * calls the structure that corresponds to a TCP connection. It contains
- * things like the IP addresses, port numbers, sequence numbers, timers,
- * and other things.
- ***************************************************************************/
-struct TCP_Control_Block
-{
-    ipaddress ip_me;
-    ipaddress ip_them;
-
-    unsigned short port_me;
-    unsigned short port_them;
-
-    uint32_t seqno_me;      /* next seqno I will use for transmit */
-    uint32_t seqno_them;    /* the next seqno I expect to receive */
-    uint32_t ackno_me;
-    uint32_t ackno_them;
-
-    uint32_t seqno_me_first;
-    uint32_t seqno_them_first;
-    
-    struct TCP_Control_Block *next;
-    struct TimeoutEntry timeout[1];
-
-    enum Tcp_State tcpstate;
-    unsigned char ttl;
-    unsigned char syns_sent; /* reconnect */
-    unsigned short mss; /* maximum segment size 1460 */
-    unsigned is_ipv6:1;
-    unsigned is_small_window:1; /* send with smaller window */
-    unsigned is_their_fin:1;
-
-    /** Set to true when the TCB is in-use/allocated, set to zero
-     * when it's about to be deleted soon */
-    unsigned is_active:1;
-    
-    /* If the payload we've sent was dynamically allocated with
-     * malloc() from the heap, in which case we'll have to free()
-     * it. (Most payloads are static memory) */
-    unsigned is_payload_dynamic:1;
-
-    enum App_State app_state;
-
-    struct TCP_Segment *segments;
-
-    /*
-    unsigned short payload_length;
-    const unsigned char *payload;
-    */
-    time_t when_created;
-
-    const struct ProbeModule *probe;
-
-    struct ProbeState probe_state;
-
-    unsigned packet_number;
-};
-
-
-
-struct TCP_ConnectionTable {
-    struct TCP_Control_Block **entries;
-    struct TCP_Control_Block *freed_list;
-    unsigned count;
-    unsigned mask;
-    unsigned timeout_connection;
-    unsigned timeout_hello;
-
-    uint64_t active_count;
-    uint64_t entropy;
-
-    struct Timeouts *timeouts;
-    struct TemplatePacket *pkt_template;
-    struct stack_t *stack;
-    struct Output *out;
-
-    /** This is for creating follow-up connections based on the first
-     * connection. Given an existing IP/port, it returns a different
-     * one for the new conenction. */
-    // struct {
-    //     const void *data;
-    //     void *(*cb)(const void *in_src, const ipaddress ip, unsigned port,
-    //                 ipaddress *next_ip, unsigned *next_port);
-    // } next_ip_port;
-};
-
+enum    App_State;
+struct  TCP_Control_Block;
+struct  TCP_ConnectionTable;
+typedef struct stack_handle_t stack_handle_t;
 
 
 /**
@@ -177,21 +75,6 @@ tcpcon_destroy_table(struct TCP_ConnectionTable *tcpcon);
 
 void
 tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usecs);
-
-enum TCP_What {
-    TCP_WHAT_TIMEOUT,
-    TCP_WHAT_SYNACK,
-    TCP_WHAT_RST,
-    TCP_WHAT_FIN,
-    TCP_WHAT_ACK,
-    TCP_WHAT_DATA,
-    TCP_WHAT_CLOSE
-};
-
-enum TCB_result {
-    TCB__okay,
-    TCB__destroyed
-};
 
 enum TCB_result
 stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *entry,
@@ -245,20 +128,6 @@ tcp_send_RST(
     unsigned port_them, unsigned port_me,
     unsigned seqno_them, unsigned seqno_me
 );
-
-
-enum {
-    SOCKERR_NONE=0, /* no error */
-    SOCKERR_EBADF=10,  /* bad socket descriptor */
-};
-
-typedef struct stack_handle_t {
-    struct TCP_ConnectionTable *tcpcon;
-    struct TCP_Control_Block *tcb;
-    unsigned secs;
-    unsigned usecs;
-} stack_handle_t;
-
 
 
 /**

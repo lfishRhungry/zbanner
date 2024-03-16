@@ -104,18 +104,14 @@ struct ProbeState {
     unsigned state;
 };
 
-enum ProbeHelloType {
-    SF__none = 0,
-    SF__close = 0x01, /* send FIN after the static Hello is sent*/
-    SF__nowait_hello = 0x02,    /* send our hello immediately, don't wait for their hello */
-};
-
 typedef void
 (*probe_modules_parse_response)(
     stack_handle_t *socket,
+    struct ProbeState *state,
+    struct Output *out,
+    struct ProbeTarget *target,
     const unsigned char *px,
-    unsigned sizeof_px
-);
+    unsigned sizeof_px);
 
 /**
  * It happens before normal exit in mainscan function.
@@ -139,13 +135,19 @@ enum MultiMode {
     Multi_DynamicNext,    /*send a specified probe(with index+1) after every time handled*/
 };
 
+enum HelloType {
+    Wait_Hello         = 0,    /* wait for a fixed time before sending hello*/
+    Hello_Close        = 0x01, /* send FIN after the static Hello is sent*/
+    Nowait_Hello       = 0x02, /* send our hello immediately, don't wait for their hello */
+};
+
 struct ProbeModule
 {
     const char                                 *name;
     const enum ProbeType                        type;
-    const enum ProbeHelloType                   hello;
-    enum MultiMode                              multi_mode;
-    unsigned                                    multi_num; /*useless for Multi_DynamicNext*/
+    const enum MultiMode                        multi_mode;
+    const unsigned                              multi_num;   /*useless for Multi_DynamicNext*/
+    const enum HelloType                        hello;       /*just for stateful scan*/
     const char                                 *desc;
     struct ConfigParameter                     *params;
 

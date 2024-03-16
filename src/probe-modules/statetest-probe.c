@@ -23,24 +23,28 @@ getrequest_make_payload(
 static void
 getrequest_parse_response(
     stack_handle_t *socket,
+    struct ProbeState *state,
+    struct Output *out,
+    struct ProbeTarget *target,
     const unsigned char *px,
     unsigned sizeof_px)
 {
-    // tcpapi_close(socket);
+    tcpapi_close(socket);
+
 
     struct OutputItem item = {
         .level = Output_SUCCESS,
-        .ip_them = socket->tcb->ip_them,
-        .ip_me = socket->tcb->ip_me,
-        .port_them = socket->tcb->port_them,
-        .port_me = socket->tcb->port_me,
+        .ip_them = target->ip_them,
+        .ip_me = target->ip_me,
+        .port_them = target->port_them,
+        .port_me = target->port_me,
     };
 
     safe_strcpy(item.classification, OUTPUT_CLS_LEN, "banner");
     safe_strcpy(item.reason, OUTPUT_RSN_LEN, "responsed");
     normalize_string(px, sizeof_px, item.report, OUTPUT_RPT_LEN);
 
-    output_result(socket->tcpcon->out, &item);
+    output_result(out, &item);
 }
 
 struct ProbeModule StateTestProbe = {
@@ -48,6 +52,7 @@ struct ProbeModule StateTestProbe = {
     .type       = ProbeType_STATE,
     .multi_mode = Multi_Null,
     .multi_num  = 1,
+    .hello      = Nowait_Hello,
     .params     = NULL,
     .desc =
         "GetRequest Probe sends target port a simple HTTP Get request:\n"
