@@ -14,6 +14,7 @@ typedef struct stack_handle_t stack_handle_t;
 
 /**
  * !Must be implemented.
+ * 
  * @param xconf main conf of xtate, use `void` to avoiding x-ref.
  * @return FALSE to exit process if init failed
 */
@@ -31,8 +32,8 @@ struct ProbeTarget {
 /**
  * Happens in Tx Thread or Rx Thread for different ScanModules.
  * 
- * Make correspond payload data for a target.
- * We could embed a cookie to payload for response validating.
+ * Make correspond hello payload data for a target.
+ * We could embed a cookie to payload for response validating in ProbeType_UDP.
  * 
  * 
  * !Must be implemented.
@@ -104,6 +105,22 @@ struct ProbeState {
     unsigned state;
 };
 
+
+/**
+ * 
+ * Interacting with target after receive data.
+ * 
+ * !Must be implemented for ProbeType_STATE.
+ * !Must be thread safe.
+ * 
+ * @param socket used for operating user-space TCP stack.
+ * @param state  state that probe setted.
+ * @param out    used for outputing results.
+ * @param target info of a target
+ * @param px response data
+ * @param sizeof_px len of reponse
+ * @return TRUE if the response is for us.
+*/
 typedef void
 (*probe_modules_parse_response)(
     stack_handle_t *socket,

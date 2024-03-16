@@ -29,8 +29,10 @@ getrequest_parse_response(
     const unsigned char *px,
     unsigned sizeof_px)
 {
-    tcpapi_close(socket);
+    if (state->state) return;
+    state->state = 1;
 
+    tcpapi_close(socket);
 
     struct OutputItem item = {
         .level = Output_SUCCESS,
