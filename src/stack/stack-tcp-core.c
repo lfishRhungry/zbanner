@@ -469,7 +469,7 @@ tcpcon_destroy_tcb(
      * At this point, we have the head of a linked list of TCBs. Now,
      * traverse that linked list until we find our TCB
      */
-    r_entry = &tcpcon->entries[index%tcpcon->mask];
+    r_entry = &tcpcon->entries[index & tcpcon->mask];
     while (*r_entry && *r_entry != tcb)
         r_entry = &(*r_entry)->next;
 
@@ -581,7 +581,7 @@ tcpcon_create_tcb(
     /* Lookup the location in the hash table where this tcb should be
      * placed */
     index = get_cookie(ip_me, port_me, ip_them, port_them, tcpcon->entropy);
-    tcb = tcpcon->entries[index%tcpcon->mask];
+    tcb = tcpcon->entries[index & tcpcon->mask];
     while (tcb && !TCB_EQUALS(tcb, &tmp)) {
         tcb = tcb->next;
     }
@@ -600,8 +600,8 @@ tcpcon_create_tcb(
     memset(tcb, 0, sizeof(*tcb));
 
     /* Add it to this spot in the hash table */
-    tcb->next = tcpcon->entries[index%tcpcon->mask];
-    tcpcon->entries[index%tcpcon->mask] = tcb;
+    tcb->next = tcpcon->entries[index & tcpcon->mask];
+    tcpcon->entries[index & tcpcon->mask] = tcb;
 
     /*
      * Initialize the entry
@@ -674,7 +674,7 @@ tcpcon_lookup_tcb(
 
     /* Hash to an entry in the table, then follow a linked list from
      * that point forward. */
-    tcb = tcpcon->entries[index%tcpcon->mask];
+    tcb = tcpcon->entries[index & tcpcon->mask];
     while (tcb && !TCB_EQUALS(tcb, &tmp)) {
         tcb = tcb->next;
     }

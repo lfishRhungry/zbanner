@@ -37,8 +37,8 @@ struct DedupEntry
  */
 struct DedupTable
 {
-    /*num of entries*/
-    unsigned entries_count;
+    /*num of entries(power of 2) - 1*/
+    unsigned mask;
     struct DedupEntry all_entries[0];
 };
 
@@ -91,10 +91,28 @@ dedup_create(unsigned dedup_win)
     unsigned entries_count =
         dedup_win/DEDUP_BUCKET_SIZE>0?dedup_win/DEDUP_BUCKET_SIZE:1;
 
+    /* Find nearest power of 2 to entry count */
+    {
+        size_t new_entry_count;
+        new_entry_count = 1;
+        while (new_entry_count < entries_count) {
+            new_entry_count *= 2;
+            if (new_entry_count == 0) {
+                new_entry_count = (1<<24);
+                break;
+            }
+        }
+        // if (new_entry_count > (1<<24))
+        //     new_entry_count = (1<<24);
+        // if (new_entry_count < (1<<10))
+        //     new_entry_count = (1<<10);
+        entries_count = new_entry_count;
+    }
+
     struct DedupTable *dedup;
     dedup = CALLOC(1,
         sizeof(struct DedupTable) + sizeof(struct DedupEntry) * entries_count);
-    dedup->entries_count = entries_count;
+    dedup->mask = entries_count - 1;
 
     return dedup;
 }
@@ -183,7 +201,7 @@ dedup_is_duplicate_ipv6(struct DedupTable *dedup,
     unsigned i;
 
     hash   = dedup_hash_ipv6(ip_them, port_them, ip_me, port_me, type);
-    bucket = dedup->all_entries[hash%dedup->entries_count].entries6;
+    bucket = dedup->all_entries[hash & dedup->mask].entries6;
 
     /* If we find the entry in our table, move it to the front, so
      * that it won't be aged out as quickly. We keep prepending new
@@ -281,7 +299,7 @@ dedup_is_duplicate_ipv4(struct DedupTable *dedup,
     unsigned i;
 
     hash   = dedup_hash_ipv4(ip_them, port_them, ip_me, port_me, type);
-    bucket = dedup->all_entries[hash%dedup->entries_count].entries;
+    bucket = dedup->all_entries[hash & dedup->mask].entries;
 
     /* If we find the entry in our table, move it to the front, so
      * that it won't be aged out as quickly. We keep prepending new

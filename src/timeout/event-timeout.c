@@ -61,7 +61,7 @@ struct Timeouts {
      */
     uint64_t outstanding_count;
 
-    unsigned slot_count;
+    unsigned mask;
 
     /**
      * The ring of entries.
@@ -86,7 +86,7 @@ timeouts_create(uint64_t timestamp)
      * the size of the ring dynamically adjustable depending upon
      * the speed of the scan.
      */
-    timeouts->slot_count = sizeof(timeouts->slots)/sizeof(timeouts->slots[0]);
+    timeouts->mask = sizeof(timeouts->slots)/sizeof(timeouts->slots[0]) - 1;
 
     /*
      * Set the index to the current time. Note that this timestamp is
@@ -126,7 +126,7 @@ timeouts_add(struct Timeouts *timeouts, struct TimeoutEntry *entry,
     entry->offset    = (unsigned)offset;
 
     /* Link it into it's new location */
-    index                  = timestamp % timeouts->slot_count;
+    index                  = timestamp & timeouts->mask;
     entry->next            = timeouts->slots[index];
     timeouts->slots[index] = entry;
     entry->prev            = &timeouts->slots[index];
@@ -148,7 +148,7 @@ timeouts_remove(struct Timeouts *timeouts, uint64_t timestamp)
     while (timeouts->current_index <= timestamp) {
 
         /* Start at the current slot */
-        entry = timeouts->slots[timeouts->current_index % timeouts->slot_count];
+        entry = timeouts->slots[timeouts->current_index & timeouts->mask];
 
         /* enumerate through the linked list until we find a used slot */
         while (entry && entry->timestamp > timestamp)
