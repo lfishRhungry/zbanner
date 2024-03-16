@@ -49,7 +49,7 @@
  ***************************************************************************/
 struct Timeouts {
     /**
-     * This index is a monotonically increasing number, modulus the mask.
+     * This index is a monotonically increasing number, modulus the slot_count.
      * Every time we check timeouts, we simply move it forward in time.
      */
     uint64_t current_index;
@@ -61,11 +61,7 @@ struct Timeouts {
      */
     uint64_t outstanding_count;
 
-    /**
-     * The number of slots is a power-of-2, so the mask is just this
-     * number minus 1
-     */
-    unsigned mask;
+    unsigned slot_count;
 
     /**
      * The ring of entries.
@@ -86,12 +82,11 @@ timeouts_create(uint64_t timestamp)
     timeouts = CALLOC(1, sizeof(*timeouts));
     
     /*
-     * We just mask off the low order bits to determine wrap. I'm using
-     * a variable here because one of these days I'm going to make
+     * We use a variable here because one of these days I'm going to make
      * the size of the ring dynamically adjustable depending upon
      * the speed of the scan.
      */
-    timeouts->mask = sizeof(timeouts->slots)/sizeof(timeouts->slots[0]) - 1;
+    timeouts->slot_count = sizeof(timeouts->slots)/sizeof(timeouts->slots[0]);
 
     /*
      * Set the index to the current time. Note that this timestamp is
@@ -128,13 +123,13 @@ timeouts_add(struct Timeouts *timeouts, struct TimeoutEntry *entry,
 
     /* Initialize the new entry */
     entry->timestamp = timestamp;
-    entry->offset = (unsigned)offset;
+    entry->offset    = (unsigned)offset;
 
     /* Link it into it's new location */
-    index = timestamp & timeouts->mask;
-    entry->next = timeouts->slots[index];
+    index                  = timestamp % timeouts->slot_count;
+    entry->next            = timeouts->slots[index];
     timeouts->slots[index] = entry;
-    entry->prev = &timeouts->slots[index];
+    entry->prev            = &timeouts->slots[index];
     if (entry->next)
         entry->next->prev = &entry->next;
 
@@ -153,7 +148,7 @@ timeouts_remove(struct Timeouts *timeouts, uint64_t timestamp)
     while (timeouts->current_index <= timestamp) {
 
         /* Start at the current slot */
-        entry = timeouts->slots[timeouts->current_index & timeouts->mask];
+        entry = timeouts->slots[timeouts->current_index % timeouts->slot_count];
 
         /* enumerate through the linked list until we find a used slot */
         while (entry && entry->timestamp > timestamp)
