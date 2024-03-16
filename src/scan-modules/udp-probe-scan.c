@@ -23,19 +23,6 @@ static unsigned src_port_start;
 static int
 udpprobe_global_init(const void *xconf)
 {
-    if (!UdpProbeScan.probe) {
-        LOG(0, "FAIL: UdpProbeScan needs a specified udp ProbeModule.\n");
-        LOG(0, "    Hint: specify ProbeModule like `--probe-module null`.\n");
-        return 0;
-    }
-
-    if (UdpProbeScan.probe->type != ProbeType_UDP) {
-        LOG(0, "FAIL: UdpProbeScan needs a udp type ProbeModule.\n");
-        LOG(0, "    Current ProbeModule %s is %s type.\n",
-            UdpProbeScan.probe->name, get_probe_type_name(UdpProbeScan.probe->type));
-        return 0;
-    }
-
     src_port_start = ((const struct Xconf *)xconf)->nic.src.port.first;
 
     return 1;

@@ -105,19 +105,6 @@ static unsigned src_port_start;
 static int
 zbanner_global_init(const void *xconf)
 {
-    if (!ZBannerScan.probe) {
-        LOG(0, "FAIL: ZBannerScan needs a specified tcp ProbeModule.\n");
-        LOG(0, "    Hint: specify ProbeModule like `--probe-module null`.\n");
-        return 0;
-    }
-
-    if (ZBannerScan.probe->type != ProbeType_TCP) {
-        LOG(0, "FAIL: ZBannerScan needs a tcp type ProbeModule.\n");
-        LOG(0, "    Current ProbeModule %s is %s type.\n",
-            ZBannerScan.probe->name, get_probe_type_name(ZBannerScan.probe->type));
-        return 0;
-    }
-
     src_port_start = ((const struct Xconf *)xconf)->nic.src.port.first;
 
     return 1;

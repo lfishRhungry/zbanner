@@ -19,19 +19,6 @@ static struct TCP_ConnectionTable *tcpcon = NULL;
 
 static int tcpstate_global_init(const void *conf)
 {
-    if (!TcpStateScan.probe) {
-        LOG(0, "FAIL: TcpStateScan needs a specified tcp ProbeModule.\n");
-        LOG(0, "    Hint: specify ProbeModule like `--probe-module null`.\n");
-        return 0;
-    }
-
-    if (TcpStateScan.probe->type != ProbeType_STATE) {
-        LOG(0, "FAIL: TcpStateScan needs a state type ProbeModule.\n");
-        LOG(0, "    Current ProbeModule %s is %s type.\n",
-            TcpStateScan.probe->name, get_probe_type_name(TcpStateScan.probe->type));
-        return 0;
-    }
-
     const struct Xconf *xconf = conf;
 
     rf = rstfilter_create(xconf->seed, 16384);

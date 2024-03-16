@@ -1903,11 +1903,9 @@ again:
                     /* We've got no response from the initial connection,
                      * so switch from them being responsible for communications
                      * to us being responsible, and start sending */
-                    if (probe) {
-                        tcpapi_change_app_state(socket, App_SendFirst);
-                        state = App_SendFirst;
-                        goto again;
-                    }
+                    tcpapi_change_app_state(socket, App_SendFirst);
+                    state = App_SendFirst;
+                    goto again;
                     break;
                 case APP_RECV_PAYLOAD:
                     /* We've receive some data from them, so wait for some more.

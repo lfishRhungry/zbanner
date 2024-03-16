@@ -215,6 +215,23 @@ static int main_scan(struct Xconf *xconf) {
                "was specified.\n");
     }
 
+    /*validate probe type*/
+    if (xconf->scan_module->required_probe_type==ProbeType_NULL) {
+        if (xconf->probe_module) {
+            LOG(0, "FAIL: ScanModule %s does not support any probe.\n",
+                xconf->scan_module->name);
+            exit(1);
+        }
+    } else {
+        if (!xconf->probe_module
+            || xconf->probe_module->type != xconf->scan_module->required_probe_type) {
+            LOG(0, "FAIL: ScanModule %s needs probe of %s type.\n",
+                xconf->scan_module->name,
+                get_probe_type_name(xconf->scan_module->required_probe_type));
+            exit(1);
+        }
+    }
+
     /*
      * Config params & Do global init for ScanModule
      */
