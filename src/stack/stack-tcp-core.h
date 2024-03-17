@@ -32,6 +32,7 @@ enum TCB_result {
 };
 
 enum    App_State;
+enum    App_Event;
 struct  TCP_Control_Block;
 struct  TCP_ConnectionTable;
 typedef struct stack_handle_t stack_handle_t;
@@ -57,8 +58,7 @@ tcpcon_create_table(size_t entry_count,
     struct TemplatePacket *pkt_template,
     struct Output *out,
     unsigned timeout,
-    uint64_t entropy
-    );
+    uint64_t entropy);
 
 /**
  * Gracefully destroy a TCP connection table. This is the last chance for any
@@ -110,8 +110,7 @@ tcpcon_create_tcb(
 
 
 void
-tcpcon_send_RST(
-                struct TCP_ConnectionTable *tcpcon,
+tcpcon_send_RST(struct TCP_ConnectionTable *tcpcon,
                 ipaddress ip_me, ipaddress ip_them,
                 unsigned port_me, unsigned port_them,
                 uint32_t seqno_them, uint32_t ackno_them);
@@ -126,18 +125,14 @@ tcp_send_RST(
     struct stack_t *stack,
     ipaddress ip_them, ipaddress ip_me,
     unsigned port_them, unsigned port_me,
-    unsigned seqno_them, unsigned seqno_me
-);
+    unsigned seqno_them, unsigned seqno_me);
 
 
 /**
  * Set a new default timeout.
  */
 int
-tcpapi_set_timeout(struct stack_handle_t *socket,
-                   unsigned secs,
-                   unsigned usecs
-                   );
+tcpapi_set_timeout(struct stack_handle_t *socket, unsigned secs, unsigned usecs);
 
 /**
  * Change from the "send" state to the "receive" state.
@@ -167,7 +162,7 @@ tcpapi_reconnect(struct stack_handle_t *old_socket,
  * to reset it, we need an access function.
  */
 unsigned
-tcpapi_change_app_state(struct stack_handle_t *socket, unsigned new_app_state);
+tcpapi_change_app_state(struct stack_handle_t *socket, enum App_State new_app_state);
 
 
 /** Perform the sockets half-close function (calling `close()`). This
@@ -179,21 +174,12 @@ tcpapi_change_app_state(struct stack_handle_t *socket, unsigned new_app_state);
 int
 tcpapi_close(struct stack_handle_t *socket);
 
-enum App_Event {
-    APP_CONNECTED,
-    APP_RECV_TIMEOUT,
-    APP_RECV_PAYLOAD,
-    APP_SENDING,
-    APP_SEND_SENT,
-    APP_CLOSE /*FIN received */
-};
-
 /**
  * This is the interface between the underlying custom TCP/IP stack and
  * the rest of masscan. SCRIPTING will eventually go in here.
  */
 unsigned
-application_event(  struct stack_handle_t *socket,
+application_event(struct stack_handle_t *socket,
                   enum App_State state, enum App_Event event,
                   const struct ProbeModule *probe,
                   const void *payload, size_t payload_length

@@ -116,6 +116,15 @@ enum Tcp_State{
     STATE_TIME_WAIT,
 };
 
+enum App_Event {
+    APP_CONNECTED,
+    APP_RECV_TIMEOUT,
+    APP_RECV_PAYLOAD,
+    APP_SENDING,
+    APP_SEND_SENT,
+    APP_CLOSE /*FIN received */
+};
+
 /***************************************************************************
  * A "TCP control block" is what most operating-systems/network-stack
  * calls the structure that corresponds to a TCP connection. It contains
@@ -1321,7 +1330,7 @@ tcpapi_reconnect(struct stack_handle_t *old_socket,
 }
 
 unsigned
-tcpapi_change_app_state(struct stack_handle_t *socket, unsigned new_app_state) {
+tcpapi_change_app_state(struct stack_handle_t *socket, enum App_State new_app_state) {
     struct TCP_Control_Block *tcb;
 
     if (socket == 0 || socket->tcb == 0)
