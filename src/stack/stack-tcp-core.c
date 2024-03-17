@@ -215,12 +215,12 @@ enum {
     SOCKERR_EBADF=10,  /* bad socket descriptor */
 };
 
-typedef struct stack_handle_t {
+struct stack_handle_t {
     struct TCP_ConnectionTable *tcpcon;
     struct TCP_Control_Block *tcb;
     unsigned secs;
     unsigned usecs;
-} stack_handle_t;
+};
 
 enum DestroyReason {
     Reason_Timeout = 1,
@@ -760,54 +760,6 @@ tcpcon_send_packet(
      * from a receive-thread. Therefore, instead of transmiting ourselves,
      * we hae to queue it up for later transmission. */
     stack_transmit_packetbuffer(tcpcon->stack, response);
-}
-
-/***************************************************************************
- ***************************************************************************/
-void
-tcp_send_RST(
-    struct TemplatePacket *templ,
-    struct stack_t *stack,
-    ipaddress ip_them, ipaddress ip_me,
-    unsigned port_them, unsigned port_me,
-    unsigned seqno_them, unsigned seqno_me
-)
-{
-    struct PacketBuffer *response = 0;
-    
-
-    /* Get a buffer for sending the response packet. This thread doesn't
-     * send the packet itself. Instead, it formats a packet, then hands
-     * that packet off to a transmit thread for later transmission. */
-    response = stack_get_packetbuffer(stack);
-    if (response == NULL) {
-        static int is_warning_printed = 0;
-        if (!is_warning_printed) {
-            LOG(0, "packet buffers empty (should be impossible)\n");
-            is_warning_printed = 1;
-        }
-        fflush(stdout);
-        pixie_usleep(100); /* no packet available */
-    }
-    if (response == NULL)
-        return;
-
-    response->length = tcp_create_by_template(
-        templ,
-        ip_them, port_them,
-        ip_me, port_me,
-        seqno_me, seqno_them,
-        0x04, /*RST*/
-        0, 0,
-        response->px, sizeof(response->px)
-        );
-
-
-    /* Put this buffer on the transmit queue. Remember: transmits happen
-     * from a transmit-thread only, and this function is being called
-     * from a receive-thread. Therefore, instead of transmitting ourselves,
-     * we have to queue it up for later transmission. */
-    stack_transmit_packetbuffer(stack, response);
 }
 
 
@@ -1862,7 +1814,7 @@ static const char *event_to_string(enum App_Event ev) {
     default: return "unknown";
     }
 }
-  
+ 
 unsigned
 application_event(struct stack_handle_t *socket,
                   enum App_State state, enum App_Event event,

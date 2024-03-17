@@ -22,7 +22,7 @@ getrequest_make_payload(
 
 static void
 getrequest_parse_response(
-    stack_handle_t *socket,
+    struct stack_handle_t *socket,
     struct ProbeState *state,
     struct Output *out,
     struct ProbeTarget *target,

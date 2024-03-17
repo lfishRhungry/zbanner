@@ -10,7 +10,7 @@
 
 #define PROBE_PAYLOAD_MAX_LEN 2048
 
-typedef struct stack_handle_t stack_handle_t;
+struct stack_handle_t;
 
 /**
  * !Must be implemented.
@@ -123,7 +123,7 @@ struct ProbeState {
 */
 typedef void
 (*probe_modules_parse_response)(
-    stack_handle_t *socket,
+    struct stack_handle_t *socket,
     struct ProbeState *state,
     struct Output *out,
     struct ProbeTarget *target,

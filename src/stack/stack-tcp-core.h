@@ -115,18 +115,6 @@ tcpcon_send_RST(struct TCP_ConnectionTable *tcpcon,
                 unsigned port_me, unsigned port_them,
                 uint32_t seqno_them, uint32_t ackno_them);
 
-/**
- * Send a reset packet back, even if we don't have a TCP connection
- * table
- */
-void
-tcp_send_RST(
-    struct TemplatePacket *templ,
-    struct stack_t *stack,
-    ipaddress ip_them, ipaddress ip_me,
-    unsigned port_them, unsigned port_me,
-    unsigned seqno_them, unsigned seqno_me);
-
 
 /**
  * Set a new default timeout.
@@ -182,7 +170,6 @@ unsigned
 application_event(struct stack_handle_t *socket,
                   enum App_State state, enum App_Event event,
                   const struct ProbeModule *probe,
-                  const void *payload, size_t payload_length
-                  );
+                  const void *payload, size_t payload_length);
 
 #endif
