@@ -65,6 +65,8 @@ struct ProbeModule StateTestProbe = {
     .get_payload_length_cb             = NULL,
     .validate_response_cb              = NULL,
     .handle_response_cb                = NULL,
+    .conn_init_cb                      = &probe_conn_init_nothing,
     .parse_response_cb                 = &getrequest_parse_response,
+    .conn_close_cb                     = &probe_conn_close_nothing,
     .close_cb                          = &probe_close_nothing,
 };

@@ -101,9 +101,21 @@ typedef int
     struct OutputItem *item);
 
 struct ProbeState {
-    unsigned state;
+    unsigned  state;
+    void     *data; /*diff from probes, managed by probe self*/
 };
 
+/**
+ * Do init for a connection
+ * 
+ * !Must be implemented for ProbeType STATE
+ * !Must be thread safe.
+ * 
+ * @param state probe state
+ * @param target target info
+*/
+typedef void
+(*probe_modules_conn_init)(struct ProbeState *state, struct ProbeTarget *target);
 
 /**
  * 
@@ -128,6 +140,18 @@ typedef void
     struct ProbeTarget *target,
     const unsigned char *px,
     unsigned sizeof_px);
+
+/**
+ * Do init for a connection
+ * 
+ * !Must be implemented for ProbeType STATE
+ * !Must be thread safe.
+ * 
+ * @param state probe state
+ * @param target target info
+*/
+typedef void
+(*probe_modules_conn_close)(struct ProbeState *state, struct ProbeTarget *target);
 
 /**
  * It happens before normal exit in mainscan function.
@@ -175,8 +199,10 @@ struct ProbeModule
     /*for response*/
     probe_modules_validate_response             validate_response_cb;
     probe_modules_handle_response               handle_response_cb;
-    /*for parse*/
+    /*for state*/
+    probe_modules_conn_init                     conn_init_cb;
     probe_modules_parse_response                parse_response_cb;
+    probe_modules_conn_close                    conn_close_cb;
     /*for close*/
     probe_modules_close                         close_cb;
 };
@@ -220,5 +246,9 @@ probe_just_report_banner(
 
 /*implemented `probe_modules_close`*/
 void probe_close_nothing();
+
+void probe_conn_init_nothing(struct ProbeState *state, struct ProbeTarget *target);
+
+void probe_conn_close_nothing(struct ProbeState *state, struct ProbeTarget *target);
 
 #endif

@@ -515,7 +515,16 @@ tcpcon_destroy_tcb(
 
     tcb->is_active = 0;
 
-
+    /*do connection close for probe*/
+    struct ProbeTarget target = {
+        .ip_them   = tcb->ip_them,
+        .port_them = tcb->port_them,
+        .ip_me     = tcb->ip_me,
+        .port_me   = tcb->port_me,
+        .cookie    = 0,         /*ProbeType State doesn't need cookie*/
+        .index     = 0,         /*doesn't support multi-probe now*/
+    };
+    tcb->probe->conn_init_cb(&tcb->probe_state, &target);
 
 
     (*r_entry) = tcb->next;
@@ -646,7 +655,16 @@ tcpcon_create_tcb(
 
     tcpcon->active_count++;
 
-    tcpcon_lookup_tcb(tcpcon, ip_me, ip_them, port_me, port_them);
+    /*do connection init for probe*/
+    struct ProbeTarget target = {
+        .ip_them   = ip_them,
+        .port_them = port_them,
+        .ip_me     = ip_me,
+        .port_me   = port_me,
+        .cookie    = 0,         /*ProbeType State doesn't need cookie*/
+        .index     = 0,         /*doesn't support multi-probe now*/
+    };
+    probe->conn_init_cb(&tcb->probe_state, &target);
 
     return tcb;
 }
