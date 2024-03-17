@@ -22,7 +22,7 @@ getrequest_make_payload(
 
 static void
 getrequest_parse_response(
-    struct stack_handle_t *socket,
+    struct DataPass *pass,
     struct ProbeState *state,
     struct Output *out,
     struct ProbeTarget *target,
@@ -32,7 +32,7 @@ getrequest_parse_response(
     if (state->state) return;
     state->state = 1;
 
-    tcpapi_close(socket);
+    pass->flag = PASS__close;
 
     struct OutputItem item = {
         .level = Output_SUCCESS,

@@ -1,16 +1,15 @@
+#ifndef PROBE_MODULES_H
+#define PROBE_MODULES_H
+
 #include <stdlib.h>
 
 #include "../massip/massip-addr.h"
 #include "../output/output.h"
 #include "../param-configer.h"
 #include "../util/unusedparm.h"
-
-#ifndef PROBE_MODULES_H
-#define PROBE_MODULES_H
+#include "../proto/proto-datapass.h"
 
 #define PROBE_PAYLOAD_MAX_LEN 2048
-
-struct stack_handle_t;
 
 /**
  * !Must be implemented.
@@ -113,7 +112,7 @@ struct ProbeState {
  * !Must be implemented for ProbeType_STATE.
  * !Must be thread safe.
  * 
- * @param socket used for operating user-space TCP stack.
+ * @param pass   used for pass data(for sending) to down-layer protocol.
  * @param state  state that probe setted.
  * @param out    used for outputing results.
  * @param target info of a target
@@ -123,7 +122,7 @@ struct ProbeState {
 */
 typedef void
 (*probe_modules_parse_response)(
-    struct stack_handle_t *socket,
+    struct DataPass *pass,
     struct ProbeState *state,
     struct Output *out,
     struct ProbeTarget *target,

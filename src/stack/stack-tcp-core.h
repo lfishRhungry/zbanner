@@ -6,15 +6,9 @@
 #include "../output/output.h"
 #include "../templ/templ-tcp.h"
 #include "../massip/massip-addr.h"
+#include "../proto/proto-datapass.h"
 #include "../timeout/event-timeout.h"
 #include "../probe-modules/probe-modules.h"
-
-enum TCP__flags {
-    TCP__static,/* it's static data, so the send function can point to it */
-    TCP__copy,  /* the send function must copy the data */
-    TCP__adopt,  /* the buffer was just allocated, so the send function can adopt the pointer */
-    TCP__close_fin /* close connection */
-};
 
 enum TCP_What {
     TCP_WHAT_TIMEOUT,
@@ -31,11 +25,12 @@ enum TCB_result {
     TCB__destroyed
 };
 
-enum    App_State;
-enum    App_Event;
-struct  TCP_Control_Block;
-struct  TCP_ConnectionTable;
-typedef struct stack_handle_t stack_handle_t;
+enum   App_State;
+enum   App_Event;
+struct TCP_Control_Block;
+struct TCP_ConnectionTable;
+struct stack_handle_t;
+
 
 
 /**
@@ -134,7 +129,7 @@ tcpapi_recv(struct stack_handle_t *socket);
 int
 tcpapi_send(struct stack_handle_t *socket,
             const void *buf, size_t length,
-            enum TCP__flags flags);
+            enum PassFlag flags);
 
 /**
  * Re-connect to the target, same IP and port, creating a new connection

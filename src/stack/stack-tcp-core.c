@@ -88,7 +88,7 @@ struct TCP_Segment {
     unsigned seqno;
     unsigned char *buf;
     size_t length;
-    enum TCP__flags flags;
+    enum PassFlag flags;
     bool is_fin; /* was fin sent */
     struct TCP_Segment *next;
 };
@@ -496,7 +496,7 @@ tcpcon_destroy_tcb(
         struct TCP_Segment *seg;
         seg = tcb->segments;
         tcb->segments = seg->next;
-        if (seg->flags == TCP__copy || seg->flags == TCP__adopt) {
+        if (seg->flags == PASS__copy || seg->flags == PASS__adopt) {
             free(seg->buf);
             seg->buf = 0;
         }
@@ -875,7 +875,7 @@ application_notify(struct TCP_ConnectionTable *tcpcon,
 static void 
 _tcb_seg_send(void *in_tcpcon, void *in_tcb, 
         const void *buf, size_t length, 
-        enum TCP__flags flags) {
+        enum PassFlag flags) {
 
     struct TCP_ConnectionTable *tcpcon = (struct TCP_ConnectionTable *)in_tcpcon;
     struct TCP_Control_Block *tcb = (struct TCP_Control_Block *)in_tcb;
@@ -883,7 +883,7 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     struct TCP_Segment **next;
     unsigned seqno = tcb->seqno_me;
     size_t length_more = 0;
-    bool is_fin = (flags == TCP__close_fin);
+    bool is_fin = (flags == PASS__close);
 
     if (length > tcb->mss) {
         length_more = length - tcb->mss;
@@ -900,7 +900,7 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
         if ((*next)->is_fin) {
             /* can't send past a FIN */
             LOGip(0, tcb->ip_them, tcb->port_them, "can't send past a FIN\n");
-            if (flags == TCP__adopt) {
+            if (flags == PASS__adopt) {
                 free((void*)buf); /* discard const */
                 buf = NULL;
             }
@@ -917,15 +917,15 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     seg->length = length;
     seg->flags = flags;
     switch (flags) {
-        case TCP__static:
-        case TCP__adopt:
+        case PASS__static:
+        case PASS__adopt:
             seg->buf = (void *)buf;
             break;
-        case TCP__copy:
+        case PASS__copy:
             seg->buf = malloc(length);
             memcpy(seg->buf, buf, length);
             break;
-        case TCP__close_fin:
+        case PASS__close:
             seg->buf = 0;
             break;
     }
@@ -952,8 +952,8 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     /* If the input buffer was too large to fit a single segment, then
      * split it up into multiple segments */
     if (length_more) {
-        if (flags == TCP__adopt)
-            flags = TCP__copy;
+        if (flags == PASS__adopt)
+            flags = PASS__copy;
 
         _tcb_seg_send(tcpcon, tcb,
                       (unsigned char*)buf + length, length_more,
@@ -1043,10 +1043,10 @@ handle_fin:
 
             /* free the old segment */
             switch (seg->flags) {
-                case TCP__static:
+                case PASS__static:
                     break;
-                case TCP__adopt:
-                case TCP__copy:
+                case PASS__adopt:
+                case PASS__copy:
                     if (seg->buf) {
                         free(seg->buf);
                         seg->buf = NULL;
@@ -1068,14 +1068,14 @@ handle_fin:
             LOGtcb(tcb, 1, "ACKed %u-bytes %s\n", length, seg->is_fin?"FIN":"");
 
             /* This segment needs to be reduced */
-            if (seg->flags == TCP__adopt || seg->flags == TCP__copy) {
+            if (seg->flags == PASS__adopt || seg->flags == PASS__copy) {
                 size_t new_length = seg->length - length;
                 unsigned char *buf = malloc(new_length);
                 memcpy(buf, seg->buf + length, new_length);
                 free(seg->buf);
                 seg->buf = buf;
                 seg->length -= length;
-                seg->flags = TCP__copy;
+                seg->flags = PASS__copy;
             } else {
                 seg->buf += length;
             }
@@ -1209,11 +1209,9 @@ tcpapi_set_timeout(struct stack_handle_t *socket,
     if (socket == NULL)
         return SOCKERR_EBADF;
 
-    timeouts_add(tcpcon->timeouts,
-             tcb->timeout,
+    timeouts_add(tcpcon->timeouts, tcb->timeout,
              offsetof(struct TCP_Control_Block, timeout),
-             TICKS_FROM_TV(socket->secs+secs, socket->usecs + usecs)
-             );
+             TICKS_FROM_TV(socket->secs+secs, socket->usecs + usecs));
     return 0;
 }
 
@@ -1246,7 +1244,7 @@ tcpapi_recv(struct stack_handle_t *socket) {
 int
 tcpapi_send(struct stack_handle_t *socket,
             const void *buf, size_t length,
-            enum TCP__flags flags) {
+            enum PassFlag flags) {
     struct TCP_Control_Block *tcb;
 
     if (socket == 0 || socket->tcb == 0)
@@ -1397,8 +1395,8 @@ _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
  *****************************************************************************/
 enum TCB_result
 stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
-              struct TCP_Control_Block *tcb,
-              enum TCP_What what, const unsigned char *payload, size_t payload_length,
+              struct TCP_Control_Block *tcb, enum TCP_What what,
+              const unsigned char *payload, size_t payload_length,
               unsigned secs, unsigned usecs,
               unsigned seqno_them, unsigned ackno_them)
 {
@@ -1516,7 +1514,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
         case STATE_ESTABLISHED_SEND:
             switch (what) {
                 case TCP_WHAT_CLOSE:
-                    _tcb_seg_send(tcpcon, tcb, 0, 0, TCP__close_fin);
+                    _tcb_seg_send(tcpcon, tcb, 0, 0, PASS__close);
                     _tcb_change_state_to(tcb, STATE_FIN_WAIT1_SEND);
                     break;
                 case TCP_WHAT_FIN:
@@ -1566,7 +1564,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
         case STATE_ESTABLISHED_RECV:
             switch (what) {
                 case TCP_WHAT_CLOSE:
-                    _tcb_seg_send(tcpcon, tcb, 0, 0, TCP__close_fin);
+                    _tcb_seg_send(tcpcon, tcb, 0, 0, PASS__close);
                     _tcb_change_state_to(tcb, STATE_FIN_WAIT1_RECV);
                     break;
                 case TCP_WHAT_FIN:
@@ -1751,7 +1749,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
             /* Waiting for app to call `close()` */
             switch (what) {
                 case TCP_WHAT_CLOSE:
-                    _tcb_seg_send(tcpcon, tcb, 0, 0, TCP__close_fin);
+                    _tcb_seg_send(tcpcon, tcb, 0, 0, PASS__close);
                     _tcb_change_state_to(tcb, STATE_LAST_ACK);
                     break;
                 case TCP_WHAT_TIMEOUT:
@@ -1901,9 +1899,18 @@ again:
                         .cookie    = 0, /*state mode does not need cookie*/
                         .index     = 0, /*does not support multi-probe now*/
                     };
-                    probe->parse_response_cb(socket, &socket->tcb->probe_state,
+                    struct DataPass pass = {0};
+                    probe->parse_response_cb(&pass, &socket->tcb->probe_state,
                         socket->tcpcon->out, &target,
                         (const unsigned char *)payload, payload_length);
+                    /*has data to send or just close*/
+                    if (pass.len) {
+                        /*it can help do close if needed*/
+                        tcpapi_send(socket, pass.payload, pass.len, pass.flag);
+                    } else if (pass.flag==PASS__close) {
+                        tcpapi_close(socket);
+                    }
+
                     break;
                 case APP_CLOSE:
                     /* The other side has sent us a FIN, therefore, we need
@@ -1945,7 +1952,7 @@ again:
             };
             unsigned char hello[PROBE_PAYLOAD_MAX_LEN];
             size_t hello_len = probe->make_payload_cb(&target, hello);
-            tcpapi_send(socket, hello, hello_len, TCP__copy);
+            tcpapi_send(socket, hello, hello_len, PASS__copy);
 
             /* If specified, then send a FIN right after the hello data.
                 * This will complete a reponse faster from the server. */
