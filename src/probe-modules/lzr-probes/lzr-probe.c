@@ -106,8 +106,6 @@ static int SET_handshake(void *conf, const char *name, const char *value)
         *p = '\0';
     }
 
-    printf("hs_count: %ld\n", hs_count);
-
     lzr_conf.hs_count  = hs_count;
     lzr_conf.handshake = MALLOC(sizeof(struct ProbeModule *)*hs_count);
     size_t hs_index = 0;

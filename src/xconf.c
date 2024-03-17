@@ -1458,7 +1458,7 @@ static int SET_fast_timeout(void *conf, const char *name, const char *value)
     if (xconf->echo) {
         if (xconf->is_fast_timeout || xconf->echo_all) {
             if (xconf->is_fast_timeout) {
-                fprintf(xconf->echo, "timeout = %ld\n", xconf->ft_spec);
+                fprintf(xconf->echo, "timeout = %"PRId64"\n", xconf->ft_spec);
             } else {
                 fprintf(xconf->echo, "timeout = false\n");
             }
