@@ -19,19 +19,17 @@
 #endif
 
 enum {
-  TLS_STATE_HANDSHAKE,
-  TLS_STATE_APP_HELLO,
-  TLS_STATE_APP_RECEIVE_NEXT,
-  TLS_STATE_APP_CLOSE,
-  TLS_STATE_UNKNOWN
+    TLS_STATE_HANDSHAKE,
+    TLS_STATE_APP_HELLO,
+    TLS_STATE_APP_RECEIVE_NEXT,
+    TLS_STATE_APP_CLOSE,
+    TLS_STATE_UNKNOWN
 };
 
 /*for internal x-ref*/
 extern struct ProbeModule TlsStateProbe;
 
 extern struct ProbeModule GetStateProbe;
-
-static struct ProbeModule *subprobe = &GetStateProbe;
 
 static SSL_CTX *ssl_ctx;
 
@@ -45,10 +43,71 @@ struct TlsState {
     size_t data_max_len;
 };
 
+struct TlsStateConf {
+    struct ProbeModule *subprobe;
+    char               *subprobe_args;
+};
+
+static struct TlsStateConf tlsstate_conf = {0};
+
+static int SET_subprobe(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tlsstate_conf.subprobe = get_probe_module_by_name(value);
+    if (!tlsstate_conf.subprobe) {
+        fprintf(stderr, "[-] Invalid name of subprobe: %s.\n", value);
+        return CONF_ERR;
+    }
+
+    return CONF_OK;
+}
+
+static int SET_subprobe_args(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    size_t len = strlen(value) + 1;
+    if (tlsstate_conf.subprobe_args)
+        free(tlsstate_conf.subprobe_args);
+    tlsstate_conf.subprobe_args = CALLOC(1, len);
+    memcpy(tlsstate_conf.subprobe_args, value, len);
+
+    return CONF_OK;
+}
+
+static struct ConfigParameter tlsstate_parameters[] = {
+    {
+        "subprobe",
+        SET_subprobe,
+        0,
+        {"sub-probe-module", 0},
+        "Specifies a ProbeModule as subprobe of TlsState Probe."
+    },
+    {
+        "subprobe-arg",
+        SET_subprobe_args,
+        0,
+        {"subprobe-args", 0},
+        "Specifies arguments for subprobe."
+    },
+
+    {0}
+};
+
 /*init public SSL_CTX*/
 static int
 tlsstate_global_init(const void *xconf)
 {
+    /*Use GetState if no subprobe specified*/
+    if (!tlsstate_conf.subprobe) {
+        tlsstate_conf.subprobe = &GetStateProbe;
+        fprintf(stderr, "[-] Use default GetState as subprobe of TlsState "
+            "because no subprobe was specified by --subprobe.\n");
+    }
+
     const SSL_METHOD *meth;
     SSL_CTX *ctx;
     int res;
@@ -105,8 +164,16 @@ tlsstate_global_init(const void *xconf)
     ssl_ctx = ctx;
     LOG(LEVEL_INFO, "SUCCESS init dynamic ssl\n");
 
+    if (tlsstate_conf.subprobe_args
+        && tlsstate_conf.subprobe->params) {
+        if (set_parameters_from_substring(NULL,
+            tlsstate_conf.subprobe->params, tlsstate_conf.subprobe_args)) {
+            LOG(0, "FAIL: errors happened in param parsing of subprobe of TlsState.\n");
+            exit(1);
+        }
+    }
     /*init for subprobe*/
-    return subprobe->global_init_cb(xconf);
+    return tlsstate_conf.subprobe->global_init_cb(xconf);
 
 error0:
     return 0;
@@ -114,7 +181,7 @@ error0:
 
 static void tlsstate_close()
 {
-    subprobe->close_cb();
+    tlsstate_conf.subprobe->close_cb();
 
     if (ssl_ctx) {
         SSL_CTX_free(ssl_ctx);
@@ -179,17 +246,17 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     SSL_set_bio(ssl, rbio, wbio);
 
     /*keep important struct in probe state*/
-    tls_state->handshake_state = TLS_ST_BEFORE; /*state for openssl*/
-    tls_state->ssl = ssl;
+    tls_state->ssl  = ssl;
     tls_state->rbio = rbio;
     tls_state->wbio = wbio;
     tls_state->data = data;
-    tls_state->data_max_len = data_max_len;
+    tls_state->data_max_len    = data_max_len;
+    tls_state->handshake_state = TLS_ST_BEFORE; /*state for openssl*/
  
     state->data = tls_state;
 
     /*do conn init for subprobe*/
-    subprobe->conn_init_cb(&tls_state->substate, target);
+    tlsstate_conf.subprobe->conn_init_cb(&tls_state->substate, target);
 
     return;
 
@@ -230,7 +297,7 @@ tlsstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
     struct TlsState *tls_state = state->data;
 
     /*do conn close for subprobe*/
-    subprobe->conn_close_cb(&tls_state->substate, target);
+    tlsstate_conf.subprobe->conn_close_cb(&tls_state->substate, target);
 
     if (tls_state->ssl) {
         SSL_free(tls_state->ssl);
@@ -497,7 +564,7 @@ tlsstate_parse_response(
         case TLS_STATE_APP_HELLO: {
 
             struct DataPass subpass = {0};
-            subprobe->make_hello_cb(&subpass, &tls_state->substate, target);
+            tlsstate_conf.subprobe->make_hello_cb(&subpass, &tls_state->substate, target);
 
             /*Just support this now*/
             assert(subpass.payload != NULL && subpass.len != 0);
@@ -572,8 +639,10 @@ tlsstate_parse_response(
 
                     struct DataPass subpass = {0};
 
-                    subprobe->parse_response_cb(&subpass, &tls_state->substate,
-                        out, target, tls_state->data, res);
+                    tlsstate_conf.subprobe->parse_response_cb(&subpass,
+                        &tls_state->substate,
+                        out, target,
+                        tls_state->data, res);
 
                     assert(subpass.payload == NULL && subpass.len == 0);
 
@@ -619,7 +688,7 @@ struct ProbeModule TlsStateProbe = {
     .multi_mode = Multi_Null,
     .multi_num  = 1,
     .hello_wait = 0,
-    .params     = NULL,
+    .params     = tlsstate_parameters,
     .desc =
         "TlsState Probe emulates SSL/TLS layer by OpenSSL BIO machanism. "
         "It is used with TcpState ScanModule to perform TLS probing based on our"
