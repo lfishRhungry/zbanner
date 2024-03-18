@@ -5,24 +5,24 @@
 #include "../util/safe-string.h"
 #include "../output/output.h"
 
-#define GETREQUEST_PAYLOAD "GET / HTTP/1.0\r\n\r\n"
+#define GET_STATE_PAYLOAD "GET / HTTP/1.0\r\n\r\n"
 
 /*for internal x-ref*/
-extern struct ProbeModule StateTestProbe;
+extern struct ProbeModule GetStateProbe;
 
 static void
-getrequest_make_hello(
+getstate_make_hello(
     struct DataPass *pass,
     struct ProbeState *state,
     struct ProbeTarget *target)
 {
     /*static data*/
-    pass->payload = (unsigned char *)GETREQUEST_PAYLOAD;
-    pass->len     = strlen(GETREQUEST_PAYLOAD);
+    pass->payload = (unsigned char *)GET_STATE_PAYLOAD;
+    pass->len     = strlen(GET_STATE_PAYLOAD);
 }
 
 static void
-getrequest_parse_response(
+getstate_parse_response(
     struct DataPass *pass,
     struct ProbeState *state,
     struct Output *out,
@@ -50,25 +50,27 @@ getrequest_parse_response(
     output_result(out, &item);
 }
 
-struct ProbeModule StateTestProbe = {
-    .name       = "state-test",
+struct ProbeModule GetStateProbe = {
+    .name       = "get-state",
     .type       = ProbeType_STATE,
     .multi_mode = Multi_Null,
     .multi_num  = 1,
-    .hello_wait = 3,
+    .hello_wait = 0,
     .params     = NULL,
     .desc =
-        "GetRequest Probe sends target port a simple HTTP Get request:\n"
+        "GetState Probe sends target port a simple HTTP HTTP Get request:\n"
         "    `GET / HTTP/1.0\\r\\n\\r\\n`\n"
-        "It could get a simple result from http server fastly.",
+        "And could get a simple result from http server fastly. GetState is the "
+        "state version of GetRequest Probe for testing ScanModules that needs a"
+        " probe of state type.",
     .global_init_cb                    = &probe_init_nothing,
     .make_payload_cb                   = NULL,
     .get_payload_length_cb             = NULL,
     .validate_response_cb              = NULL,
     .handle_response_cb                = NULL,
     .conn_init_cb                      = &probe_conn_init_nothing,
-    .make_hello_cb                     = &getrequest_make_hello,
-    .parse_response_cb                 = &getrequest_parse_response,
+    .make_hello_cb                     = &getstate_make_hello,
+    .parse_response_cb                 = &getstate_parse_response,
     .conn_close_cb                     = &probe_conn_close_nothing,
     .close_cb                          = &probe_close_nothing,
 };

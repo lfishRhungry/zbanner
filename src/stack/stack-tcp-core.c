@@ -1937,8 +1937,7 @@ again:
                      * Because our TCP API just handle one of each at a time.
                      * */
                     if (pass.len)
-                        tcpapi_send(socket, pass.payload, pass.len,
-                            pass.flag, 0);
+                        tcpapi_send(socket, pass.payload, pass.len, pass.flag, 0);
                     if (pass.close)
                         tcpapi_close(socket);
 

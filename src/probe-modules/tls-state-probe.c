@@ -29,9 +29,9 @@ enum {
 /*for internal x-ref*/
 extern struct ProbeModule TlsStateProbe;
 
-extern struct ProbeModule StateTestProbe;
+extern struct ProbeModule GetStateProbe;
 
-static struct ProbeModule *subprobe = &StateTestProbe;
+static struct ProbeModule *subprobe = &GetStateProbe;
 
 static SSL_CTX *ssl_ctx;
 
@@ -621,9 +621,10 @@ struct ProbeModule TlsStateProbe = {
     .hello_wait = 0,
     .params     = NULL,
     .desc =
-        "GetRequest Probe sends target port a simple HTTP Get request:\n"
-        "    `GET / HTTP/1.0\\r\\n\\r\\n`\n"
-        "It could get a simple result from http server fastly.",
+        "TlsState Probe emulates SSL/TLS layer by OpenSSL BIO machanism. "
+        "It is used with TcpState ScanModule to perform TLS probing based on our"
+        " user-spase TCP stack. TlsState is just a middle layer(probe), so we "
+        "should specify a subprobe for it.",
     .global_init_cb                    = &tlsstate_global_init,
     .make_payload_cb                   = NULL,
     .get_payload_length_cb             = NULL,
