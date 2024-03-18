@@ -118,6 +118,24 @@ typedef void
 (*probe_modules_conn_init)(struct ProbeState *state, struct ProbeTarget *target);
 
 /**
+ * Make correspond hello payload data for a target.
+ * 
+ * 
+ * !Must be implemented for ProbeType STATE
+ * !Must be thread safe.
+ * 
+ * @param state probe state
+ * @param target info of a target
+ * @param payload_buf buffer to fill with payload. (Length is PROBE_PAYLOAD_MAX_LEN)
+ * @return paylaod length.
+*/
+typedef void
+(*probe_modules_make_hello)(
+    struct DataPass *pass,
+    struct ProbeState *state,
+    struct ProbeTarget *target);
+
+/**
  * 
  * Interacting with target after receive data.
  * 
@@ -187,20 +205,21 @@ struct ProbeModule
     const enum ProbeType                        type;
     const enum MultiMode                        multi_mode;
     const unsigned                              multi_num;   /*useless for Multi_DynamicNext*/
-    const enum HelloType                        hello;       /*just for stateful scan*/
+    unsigned int                                hello_wait;  /*just for statefull scan*/
     const char                                 *desc;
     struct ConfigParameter                     *params;
 
     /*for init*/
     probe_modules_global_init                   global_init_cb;
-    /*for payload*/
+    /*for stateless payload*/
     probe_modules_make_payload                  make_payload_cb;
     probe_modules_get_payload_length            get_payload_length_cb;
-    /*for response*/
+    /*for stateless response*/
     probe_modules_validate_response             validate_response_cb;
     probe_modules_handle_response               handle_response_cb;
-    /*for state*/
+    /*for stateful process*/
     probe_modules_conn_init                     conn_init_cb;
+    probe_modules_make_hello                    make_hello_cb;
     probe_modules_parse_response                parse_response_cb;
     probe_modules_conn_close                    conn_close_cb;
     /*for close*/

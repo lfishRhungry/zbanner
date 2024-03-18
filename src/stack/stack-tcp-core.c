@@ -223,11 +223,11 @@ struct stack_handle_t {
 };
 
 enum DestroyReason {
-    Reason_Timeout = 1,
-    Reason_FIN = 2,
-    Reason_RST = 3,
-    Reason_Foo = 4,
-    Reason_Shutdown = 5,
+    Reason_Timeout   = 1,
+    Reason_FIN       = 2,
+    Reason_RST       = 3,
+    Reason_Foo       = 4,
+    Reason_Shutdown  = 5,
     Reason_StateDone = 6,
 
 };
@@ -888,12 +888,19 @@ application_notify(struct TCP_ConnectionTable *tcpcon,
 }
 
 
-/***************************************************************************
- ***************************************************************************/
+/**
+ * !cannot do sending data and closing at same time
+ * if set closing, we would ignore the data.
+*/
 static void 
 _tcb_seg_send(void *in_tcpcon, void *in_tcb, 
         const void *buf, size_t length, 
-        enum PassFlag flags) {
+        enum PassFlag flags, unsigned is_close) {
+    
+    /*just handle cloing if it set*/
+    if (is_close) {
+        length = 0;
+    }
 
     struct TCP_ConnectionTable *tcpcon = (struct TCP_ConnectionTable *)in_tcpcon;
     struct TCP_Control_Block *tcb = (struct TCP_Control_Block *)in_tcb;
@@ -901,7 +908,6 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     struct TCP_Segment **next;
     unsigned seqno = tcb->seqno_me;
     size_t length_more = 0;
-    bool is_fin = (flags == PASS__close);
 
     if (length > tcb->mss) {
         length_more = length - tcb->mss;
@@ -909,7 +915,7 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     }
 
 
-    if (length == 0 && !is_fin)
+    if (length == 0 && !is_close)
         return;
 
     /* Go to the end of the segment list */
@@ -934,36 +940,37 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     seg->seqno = seqno;
     seg->length = length;
     seg->flags = flags;
-    switch (flags) {
-        case PASS__static:
-        case PASS__adopt:
-            seg->buf = (void *)buf;
-            break;
-        case PASS__copy:
-            seg->buf = malloc(length);
-            memcpy(seg->buf, buf, length);
-            break;
-        case PASS__close:
-            seg->buf = 0;
-            break;
+
+    if (is_close || !length) {
+        seg->buf = NULL;
+    } else {
+        switch (flags) {
+            case PASS__static:
+            case PASS__adopt:
+                seg->buf = (void *)buf;
+                break;
+            case PASS__copy:
+                seg->buf = malloc(length);
+                memcpy(seg->buf, buf, length);
+                break;
+        }
     }
+
     if (length_more == 0)
-        seg->is_fin = is_fin;
+        seg->is_fin = is_close;
 
     if (!seg->is_fin && seg->length && tcb->tcpstate != STATE_ESTABLISHED_SEND)
         application_notify(tcpcon, tcb, APP_SENDING, seg->buf, seg->length, 0, 0);
 
-    LOGtcb(tcb, 0, "send = %u-bytes %s @ %u\n", length, is_fin?"FIN":"",
+    LOGtcb(tcb, 0, "send = %u-bytes %s @ %u\n", length, is_close?"FIN":"",
            seg->seqno-tcb->seqno_me_first);
-    
-
 
     /* If this is the head of the segment list, then transmit right away */
     if (tcb->segments == seg) {
-        LOGtcb(tcb, 0, "xmit = %u-bytes %s @ %u\n", length, is_fin?"FIN":"",
+        LOGtcb(tcb, 0, "xmit = %u-bytes %s @ %u\n", length, is_close?"FIN":"",
                seg->seqno-tcb->seqno_me_first);
-        tcpcon_send_packet(tcpcon, tcb, 0x18 | (is_fin?1:0), seg->buf, seg->length);
-        if (!is_fin)
+        tcpcon_send_packet(tcpcon, tcb, 0x18 | (is_close?1:0), seg->buf, seg->length);
+        if (!is_close)
             _tcb_change_state_to(tcb, STATE_ESTABLISHED_SEND);
     }
 
@@ -975,11 +982,8 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
 
         _tcb_seg_send(tcpcon, tcb,
                       (unsigned char*)buf + length, length_more,
-                      flags);
+                      flags, is_close);
     }
-
-    //tcb->established = App_SendNext;
-
 }
 
 /***************************************************************************
@@ -1262,7 +1266,7 @@ tcpapi_recv(struct stack_handle_t *socket) {
 int
 tcpapi_send(struct stack_handle_t *socket,
             const void *buf, size_t length,
-            enum PassFlag flags) {
+            enum PassFlag flags, unsigned is_close) {
     struct TCP_Control_Block *tcb;
 
     if (socket == 0 || socket->tcb == 0)
@@ -1274,7 +1278,11 @@ tcpapi_send(struct stack_handle_t *socket,
             _tcb_change_state_to(tcb, STATE_ESTABLISHED_SEND);
             /*follow through*/
         case STATE_ESTABLISHED_SEND:
-            _tcb_seg_send(socket->tcpcon, tcb, buf, length, flags);
+            if (is_close) {
+                _tcb_seg_send(socket->tcpcon, tcb, NULL, 0, flags, is_close);
+            } else {
+                _tcb_seg_send(socket->tcpcon, tcb, buf, length, flags, is_close);
+            }
             return 0;
         default:
             LOG(1, "TCP app attempted SEND in wrong state\n");
@@ -1532,7 +1540,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
         case STATE_ESTABLISHED_SEND:
             switch (what) {
                 case TCP_WHAT_CLOSE:
-                    _tcb_seg_send(tcpcon, tcb, 0, 0, PASS__close);
+                    _tcb_seg_send(tcpcon, tcb, 0, 0, 0, 1);
                     _tcb_change_state_to(tcb, STATE_FIN_WAIT1_SEND);
                     break;
                 case TCP_WHAT_FIN:
@@ -1582,7 +1590,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
         case STATE_ESTABLISHED_RECV:
             switch (what) {
                 case TCP_WHAT_CLOSE:
-                    _tcb_seg_send(tcpcon, tcb, 0, 0, PASS__close);
+                    _tcb_seg_send(tcpcon, tcb, 0, 0, 0, 1);
                     _tcb_change_state_to(tcb, STATE_FIN_WAIT1_RECV);
                     break;
                 case TCP_WHAT_FIN:
@@ -1767,7 +1775,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
             /* Waiting for app to call `close()` */
             switch (what) {
                 case TCP_WHAT_CLOSE:
-                    _tcb_seg_send(tcpcon, tcb, 0, 0, PASS__close);
+                    _tcb_seg_send(tcpcon, tcb, 0, 0, 0, 1);
                     _tcb_change_state_to(tcb, STATE_LAST_ACK);
                     break;
                 case TCP_WHAT_TIMEOUT:
@@ -1857,12 +1865,12 @@ again:
                      * received in this period, then timeout will cause us
                      * to switch to sending
                      */
-                    if ((probe->hello & Nowait_Hello) != 0) {
+                    if (probe->hello_wait <= 0) {
                         tcpapi_change_app_state(socket, App_SendFirst);
                         state = App_SendFirst;
                         goto again;
                     } else {
-                        tcpapi_set_timeout(socket, 2 /*tcpcon->timeout_hello*/, 0);
+                        tcpapi_set_timeout(socket, probe->hello_wait, 0);
                         tcpapi_recv(socket);
                         tcpapi_change_app_state(socket, App_ReceiveHello);
                     }
@@ -1917,17 +1925,22 @@ again:
                         .cookie    = 0, /*state mode does not need cookie*/
                         .index     = 0, /*does not support multi-probe now*/
                     };
+
                     struct DataPass pass = {0};
+
                     probe->parse_response_cb(&pass, &socket->tcb->probe_state,
                         socket->tcpcon->out, &target,
                         (const unsigned char *)payload, payload_length);
-                    /*has data to send or just close*/
-                    if (pass.len) {
-                        /*it can help do close if needed*/
-                        tcpapi_send(socket, pass.payload, pass.len, pass.flag);
-                    } else if (pass.flag==PASS__close) {
+
+                    /**
+                     * Split the semantic of DataPass into Sending Data & Closing.
+                     * Because our TCP API just handle one of each at a time.
+                     * */
+                    if (pass.len)
+                        tcpapi_send(socket, pass.payload, pass.len,
+                            pass.flag, 0);
+                    if (pass.close)
                         tcpapi_close(socket);
-                    }
 
                     break;
                 case APP_CLOSE:
@@ -1968,13 +1981,20 @@ again:
                 .cookie    = 0,          /*does not support cookie now*/
                 .index     = 0,          /*does not support index now*/
             };
-            unsigned char hello[PROBE_PAYLOAD_MAX_LEN];
-            size_t hello_len = probe->make_payload_cb(&target, hello);
-            tcpapi_send(socket, hello, hello_len, PASS__copy);
 
+            struct DataPass pass = {0};
+
+            probe->make_hello_cb(&pass, &socket->tcb->probe_state, &target);
+            
+            /**
+             * Split the semantic of DataPass into Sending Data & Closing.
+             * Because our TCP API just handle one of each at a time.
+             * */
+            if (pass.len)
+                tcpapi_send(socket, pass.payload, pass.len, PASS__copy, 0);
             /* If specified, then send a FIN right after the hello data.
                 * This will complete a reponse faster from the server. */
-            if ((probe->hello & Hello_Close) != 0)
+            if (pass.close)
                 tcpapi_close(socket);
 
             tcpapi_change_app_state(socket, App_SendNext);

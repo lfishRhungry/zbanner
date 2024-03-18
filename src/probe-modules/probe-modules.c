@@ -16,6 +16,7 @@ extern struct ProbeModule NullProbe;
 extern struct ProbeModule GetRequestProbe;
 extern struct ProbeModule EchoProbe;
 extern struct ProbeModule JarmProbe;
+extern struct ProbeModule TlsStateProbe;
 extern struct ProbeModule StateTestProbe;
 /*for lzr probes*/
 extern struct ProbeModule LzrProbe;
@@ -35,6 +36,7 @@ static struct ProbeModule *probe_modules_list[] = {
     &GetRequestProbe,
     &EchoProbe,
     &JarmProbe,
+    &TlsStateProbe,
     &StateTestProbe,
     /*for lzr probes*/
     &LzrProbe,

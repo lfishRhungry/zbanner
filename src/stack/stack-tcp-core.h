@@ -126,10 +126,14 @@ tcpapi_set_timeout(struct stack_handle_t *socket, unsigned secs, unsigned usecs)
 int
 tcpapi_recv(struct stack_handle_t *socket);
 
+/**
+ * !cannot do sending data and closing at same time
+ * if set closing, we would ignore the data.
+*/
 int
 tcpapi_send(struct stack_handle_t *socket,
             const void *buf, size_t length,
-            enum PassFlag flags);
+            enum PassFlag flags, unsigned is_close);
 
 /**
  * Re-connect to the target, same IP and port, creating a new connection

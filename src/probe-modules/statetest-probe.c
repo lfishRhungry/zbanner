@@ -3,7 +3,6 @@
 
 #include "probe-modules.h"
 #include "../util/safe-string.h"
-#include "../stack/stack-tcp-core.h"
 #include "../output/output.h"
 
 #define GETREQUEST_PAYLOAD "GET / HTTP/1.0\r\n\r\n"
@@ -11,13 +10,15 @@
 /*for internal x-ref*/
 extern struct ProbeModule StateTestProbe;
 
-static size_t
-getrequest_make_payload(
-    struct ProbeTarget *target,
-    unsigned char *payload_buf)
+static void
+getrequest_make_hello(
+    struct DataPass *pass,
+    struct ProbeState *state,
+    struct ProbeTarget *target)
 {
-    memcpy(payload_buf, GETREQUEST_PAYLOAD, strlen(GETREQUEST_PAYLOAD));
-    return strlen(GETREQUEST_PAYLOAD);
+    /*static data*/
+    pass->payload = (unsigned char *)GETREQUEST_PAYLOAD;
+    pass->len     = strlen(GETREQUEST_PAYLOAD);
 }
 
 static void
@@ -32,7 +33,7 @@ getrequest_parse_response(
     if (state->state) return;
     state->state = 1;
 
-    pass->flag = PASS__close;
+    pass->close = 1;
 
     struct OutputItem item = {
         .level = Output_SUCCESS,
@@ -54,18 +55,19 @@ struct ProbeModule StateTestProbe = {
     .type       = ProbeType_STATE,
     .multi_mode = Multi_Null,
     .multi_num  = 1,
-    .hello      = Nowait_Hello,
+    .hello_wait = 3,
     .params     = NULL,
     .desc =
         "GetRequest Probe sends target port a simple HTTP Get request:\n"
         "    `GET / HTTP/1.0\\r\\n\\r\\n`\n"
         "It could get a simple result from http server fastly.",
     .global_init_cb                    = &probe_init_nothing,
-    .make_payload_cb                   = &getrequest_make_payload,
+    .make_payload_cb                   = NULL,
     .get_payload_length_cb             = NULL,
     .validate_response_cb              = NULL,
     .handle_response_cb                = NULL,
     .conn_init_cb                      = &probe_conn_init_nothing,
+    .make_hello_cb                     = &getrequest_make_hello,
     .parse_response_cb                 = &getrequest_parse_response,
     .conn_close_cb                     = &probe_conn_close_nothing,
     .close_cb                          = &probe_close_nothing,
