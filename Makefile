@@ -32,8 +32,8 @@ ifneq (, $(findstring linux, $(SYS)))
 ifneq (, $(findstring musl, $(SYS)))
 LIBS = 
 else
-LIBS = -lm -lrt -ldl -lpthread
-DBLIBS = -lm -lrt -ldl -lpthread -g -rdynamic -no-pie
+LIBS = -lm -lrt -ldl -lpthread -lssl -lcrypto
+DBLIBS = -lm -lrt -ldl -lpthread -lssl -lcrypto -g -rdynamic -no-pie
 endif
 INCLUDES =
 FLAGS2 = 
@@ -58,7 +58,7 @@ endif
 # intended environment, so it make break in the future.
 ifneq (, $(findstring mingw, $(SYS)))
 INCLUDES = -Ivs10/include
-LIBS = -L vs10/lib -lIPHLPAPI -lWs2_32
+LIBS = -L vs10/lib -lIPHLPAPI -lWs2_32 -lssl -lcrypto
 #FLAGS2 = -march=i686
 endif
 
