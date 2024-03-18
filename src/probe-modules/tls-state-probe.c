@@ -13,6 +13,7 @@
 #include "../util/fine-malloc.h"
 #include "../output/output.h"
 #include "../util/logger.h"
+#include "../util/ssl-help.h"
 #include "../xconf.h"
 
 
@@ -46,6 +47,7 @@ struct TlsState {
     unsigned have_dump_version:1;
     unsigned have_dump_cipher:1;
     unsigned have_dump_cert:1;
+    unsigned have_dump_subject:1;
 };
 
 static void ssl_keylog_cb(const SSL *ssl, const char *line)
@@ -76,6 +78,7 @@ struct TlsStateConf {
     unsigned            dump_version:1;
     unsigned            dump_cipher:1;
     unsigned            dump_cert:1;
+    unsigned            dump_subject:1;
 };
 
 static struct TlsStateConf tlsstate_conf = {0};
@@ -148,6 +151,16 @@ static int SET_dump_cert(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
+static int SET_dump_subject(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tlsstate_conf.dump_subject = parseBoolean(value);
+
+    return CONF_OK;
+}
+
 static struct ConfigParameter tlsstate_parameters[] = {
     {
         "subprobe",
@@ -190,6 +203,13 @@ static struct ConfigParameter tlsstate_parameters[] = {
         F_BOOL,
         {"cert", 0},
         "Record X509 cert info of SSL/TLS server to results in base64 format."
+    },
+    {
+        "dump-subject",
+        SET_dump_subject,
+        F_BOOL,
+        {"subject", 0},
+        "Record X509 cert subject names of SSL/TLS server to results."
     },
 
     {0}
@@ -498,6 +518,132 @@ error1:
     return;
 }
 
+static int output_subject(struct Output *out,
+    struct ProbeTarget *target, SSL *ssl)
+{
+    int res;
+    char s_names[OUTPUT_RPT_LEN-1];
+    BIO *bio = NULL;
+    X509 *x509_cert = NULL;
+    X509_NAME *x509_subject_name = NULL;
+    STACK_OF(GENERAL_NAME) *x509_alt_names = NULL;
+
+    x509_cert = SSL_get_peer_certificate(ssl);
+    if (x509_cert == NULL) {
+        return 0;
+    }
+
+    bio = BIO_new(BIO_s_mem());
+    if (bio == NULL) {
+        LOG(LEVEL_WARNING, "[BANNER_NAMES]BIO_new failed\n");
+        X509_free(x509_cert);
+        return 0;
+    }
+
+    struct OutputItem item = {
+        .ip_them   = target->ip_them,
+        .port_them = target->port_them,
+        .ip_me     = target->ip_me,
+        .port_me   = target->port_me,
+        .level     = Output_INFO,
+    };
+
+    safe_strcpy(item.classification, OUTPUT_CLS_LEN, "tls subject");
+    safe_strcpy(item.reason, OUTPUT_RSN_LEN, "recorded");
+
+    x509_subject_name = X509_get_subject_name(x509_cert);
+    if (x509_subject_name != NULL) {
+        int i_name;
+        /*res = X509_NAME_print_ex(bio, x509_subject_name, 0, 0);
+        if(res != 1) {
+                LOG(LEVEL_WARNING, "[BANNER_NAMES]X509_get_subject_name failed with
+        error %d\n", res);
+        }*/
+        for (i_name = 0; i_name < X509_NAME_entry_count(x509_subject_name);
+             i_name++) {
+            X509_NAME_ENTRY *name_entry = NULL;
+            ASN1_OBJECT *fn = NULL;
+            ASN1_STRING *val = NULL;
+
+            name_entry = X509_NAME_get_entry(x509_subject_name, i_name);
+            if (name_entry == NULL) {
+                LOG(LEVEL_WARNING, "[BANNER_NAMES]X509_NAME_get_entry failed on %d\n",
+                    i_name);
+                continue;
+            }
+            fn = X509_NAME_ENTRY_get_object(name_entry);
+            if (fn == NULL) {
+                LOG(LEVEL_WARNING,
+                    "[BANNER_NAMES]X509_NAME_ENTRY_get_object failed on %d\n", i_name);
+                continue;
+            }
+            val = X509_NAME_ENTRY_get_data(name_entry);
+            if (val == NULL) {
+                LOG(LEVEL_WARNING,
+                    "[BANNER_NAMES]X509_NAME_ENTRY_get_data failed on %d\n", i_name);
+                continue;
+            }
+            if (NID_commonName == OBJ_obj2nid(fn)) {
+                BIO_printf(bio, ", ");
+                res = ASN1_STRING_print_ex(bio, val, 0);
+                if (res < 0) {
+                    LOG(LEVEL_WARNING,
+                        "[BANNER_NAMES]ASN1_STRING_print_ex failed with error %d on %d\n",
+                        res, i_name);
+                    BIO_printf(bio, "<can't get cn>");
+                }
+            }
+        }
+    } else {
+        LOG(LEVEL_WARNING, "[BANNER_NAMES]X509_get_subject_name failed\n");
+    }
+
+    x509_alt_names =
+        X509_get_ext_d2i(x509_cert, NID_subject_alt_name, NULL, NULL);
+    if (x509_alt_names != NULL) {
+        int i_name = 0;
+        for (i_name = 0; i_name < sk_GENERAL_NAME_num(x509_alt_names); i_name++) {
+            GENERAL_NAME *x509_alt_name;
+
+            x509_alt_name = sk_GENERAL_NAME_value(x509_alt_names, i_name);
+            if (x509_alt_name == NULL) {
+                LOG(LEVEL_WARNING, "[BANNER_NAMES]sk_GENERAL_NAME_value failed on %d\n",
+                    i_name);
+                continue;
+            }
+            BIO_printf(bio, ", ");
+            res = GENERAL_NAME_simple_print(bio, x509_alt_name);
+            if (res < 0) {
+                LOG(LEVEL_DEBUG,
+                    "[BANNER_NAMES]GENERAL_NAME_simple_print failed with error %d on "
+                    "%d\n",
+                    res, i_name);
+                BIO_printf(bio, "<can't get alt>");
+            }
+        }
+        sk_GENERAL_NAME_pop_free(x509_alt_names, GENERAL_NAME_free);
+    }
+
+    while (true) {
+        res = BIO_read(bio, s_names, sizeof(s_names));
+        if (res > 0) {
+            memcpy(item.report, s_names, (size_t)res);
+            output_result(out, &item);
+            memset(item.report, 0, (size_t)res);
+        } else if (res == 0 || res == -1) {
+            break;
+        } else {
+            LOG(LEVEL_WARNING, "[BANNER_NAMES]BIO_read failed with error: %d\n", res);
+            break;
+        }
+    }
+
+    // error2:
+    BIO_free(bio);
+    X509_free(x509_cert);
+    return 1;
+}
+
 static int output_cert(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
@@ -754,6 +900,12 @@ tlsstate_parse_response(
             if (tlsstate_conf.dump_cert && !tls_state->have_dump_cert) {
                 if (output_cert(out, target, tls_state->ssl))
                     tls_state->have_dump_cert = 1;
+            }
+
+            /*output X.509 subject info*/
+            if (tlsstate_conf.dump_subject && !tls_state->have_dump_subject) {
+                if (output_subject(out, target, tls_state->ssl))
+                    tls_state->have_dump_subject = 1;
             }
 
             //finished handshake
