@@ -45,6 +45,7 @@ struct TlsState {
     size_t data_max_len;
     unsigned have_dump_version:1;
     unsigned have_dump_cipher:1;
+    unsigned have_dump_cert:1;
 };
 
 static void ssl_keylog_cb(const SSL *ssl, const char *line)
@@ -74,6 +75,7 @@ struct TlsStateConf {
     unsigned            ssl_keylog:1;
     unsigned            dump_version:1;
     unsigned            dump_cipher:1;
+    unsigned            dump_cert:1;
 };
 
 static struct TlsStateConf tlsstate_conf = {0};
@@ -136,6 +138,16 @@ static int SET_dump_cipher(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
+static int SET_dump_cert(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tlsstate_conf.dump_cert = parseBoolean(value);
+
+    return CONF_OK;
+}
+
 static struct ConfigParameter tlsstate_parameters[] = {
     {
         "subprobe",
@@ -171,6 +183,13 @@ static struct ConfigParameter tlsstate_parameters[] = {
         F_BOOL,
         {"cipher", 0},
         "Record cipher suites of SSL/TLS connection to results."
+    },
+    {
+        "dump-cert",
+        SET_dump_cert,
+        F_BOOL,
+        {"cert", 0},
+        "Record X509 cert info of SSL/TLS server to results in base64 format."
     },
 
     {0}
@@ -479,7 +498,98 @@ error1:
     return;
 }
 
-static void output_cipher(struct Output *out,
+static int output_cert(struct Output *out,
+    struct ProbeTarget *target, SSL *ssl)
+{
+    STACK_OF(X509) * sk_x509_certs;
+    int i_cert;
+    int res;
+    char s_base64[OUTPUT_RPT_LEN-1];
+
+    sk_x509_certs = SSL_get_peer_cert_chain(ssl);
+    if (sk_x509_certs == NULL) {
+        return 0;
+    }
+
+    struct OutputItem item = {
+        .ip_them   = target->ip_them,
+        .port_them = target->port_them,
+        .ip_me     = target->ip_me,
+        .port_me   = target->port_me,
+        .level     = Output_INFO,
+    };
+
+    safe_strcpy(item.classification, OUTPUT_CLS_LEN, "tls cert");
+    safe_strcpy(item.reason, OUTPUT_RSN_LEN, "recorded");
+
+    for (i_cert = 0; i_cert < sk_X509_num(sk_x509_certs); i_cert++) {
+        X509 *x509_cert = NULL;
+        BIO *bio_base64 = NULL;
+        BIO *bio_mem = NULL;
+
+        x509_cert = sk_X509_value(sk_x509_certs, i_cert);
+        if (x509_cert == NULL) {
+            LOG(LEVEL_WARNING, "[BANNER_CERTS]sk_X509_value failed on %d\n", i_cert);
+            continue;
+        }
+
+        bio_base64 = BIO_new(BIO_f_base64());
+        if (bio_base64 == NULL) {
+            LOG(LEVEL_WARNING, "[BANNER_CERTS]BIO_new(base64) failed on %d\n",
+                i_cert);
+            continue;
+        }
+        BIO_set_flags(bio_base64, BIO_FLAGS_BASE64_NO_NL);
+
+        bio_mem = BIO_new(BIO_s_mem());
+        if (bio_mem == NULL) {
+            LOG(LEVEL_WARNING, "[BANNER_CERTS]BIO_new(bio_mem) failed on %d\n",
+                i_cert);
+            BIO_free(bio_base64);
+            continue;
+        }
+        bio_base64 = BIO_push(bio_base64, bio_mem);
+
+        res = i2d_X509_bio(bio_base64, x509_cert);
+        if (res != 1) {
+            LOG(LEVEL_WARNING,
+                "[BANNER_CERTS]i2d_X509_bio failed with error %d on %d\n", res,
+                i_cert);
+            BIO_free(bio_mem);
+            BIO_free(bio_base64);
+            continue;
+        }
+        res = BIO_flush(bio_base64);
+        if (res != 1) {
+            LOG(LEVEL_WARNING, "[BANNER_CERTS]BIO_flush failed with error %d on %d\n",
+                res, i_cert);
+            BIO_free(bio_mem);
+            BIO_free(bio_base64);
+            continue;
+        }
+
+        while (true) {
+            res = BIO_read(bio_mem, s_base64, sizeof(s_base64));
+            if (res > 0) {
+                memcpy(item.report, s_base64, (size_t)res);
+                output_result(out, &item);
+                memset(item.report, 0, (size_t)res);
+            } else if (res == 0 || res == -1) {
+                break;
+            } else {
+                LOG(LEVEL_WARNING, "[BANNER_CERTS]BIO_read failed with error: %d\n",
+                    res);
+                break;
+            }
+        }
+        BIO_free(bio_mem);
+        BIO_free(bio_base64);
+    }
+
+    return 1;
+}
+
+static int output_cipher(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     const SSL_CIPHER *ssl_cipher;
@@ -489,7 +599,7 @@ static void output_cipher(struct Output *out,
     if (ssl_cipher == NULL) {
         ssl_cipher = SSL_get_pending_cipher(ssl);
         if (ssl_cipher == NULL) {
-            return;
+            return 0;
         }
     }
 
@@ -508,9 +618,11 @@ static void output_cipher(struct Output *out,
     snprintf(item.report, OUTPUT_RPT_LEN, "cipher[0x%x]", cipher_suite);
 
     output_result(tls_out, &item);
+
+    return 1;
 }
 
-static void output_version(struct Output *out,
+static int output_version(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     int version = SSL_version(ssl);
@@ -547,6 +659,8 @@ static void output_version(struct Output *out,
     }
 
     output_result(tls_out, &item);
+
+    return 1;
 }
 
 static void
@@ -626,27 +740,21 @@ tlsstate_parse_response(
 
             /*output version*/
             if (tlsstate_conf.dump_version && !tls_state->have_dump_version) {
-                output_version(out, target, tls_state->ssl);
-                tls_state->have_dump_version = 1;
+                if (output_version(out, target, tls_state->ssl))
+                    tls_state->have_dump_version = 1;
             }
 
             /*output cipher suites*/
             if (tlsstate_conf.dump_cipher && !tls_state->have_dump_cipher) {
-                output_cipher(out, target, tls_state->ssl);
-                tls_state->have_dump_cipher = 1;
+                if (output_cipher(out, target, tls_state->ssl))
+                    tls_state->have_dump_cipher = 1;
             }
 
-            //!output X.509 info
-            // if (pstate->sub.ssl_dynamic.have_dump_cert == false &&
-            //     SSL_get_peer_cert_chain(tls_state->ssl) != NULL) {
-
-            //     if (banner1->is_capture_cert) {
-            //       BANNER_CERTS(banout, pstate->sub.ssl_dynamic.ssl);
-            //     }
-
-            //     BANNER_NAMES(banout, pstate->sub.ssl_dynamic.ssl);
-            //     pstate->sub.ssl_dynamic.have_dump_cert = true;
-            // }
+            /*output X.509 cert info*/
+            if (tlsstate_conf.dump_cert && !tls_state->have_dump_cert) {
+                if (output_cert(out, target, tls_state->ssl))
+                    tls_state->have_dump_cert = 1;
+            }
 
             //finished handshake
             if (res == 1) {
