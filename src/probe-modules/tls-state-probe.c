@@ -13,6 +13,7 @@
 #include "../util/fine-malloc.h"
 #include "../output/output.h"
 #include "../util/logger.h"
+#include "../xconf.h"
 
 
 #ifndef min
@@ -29,9 +30,9 @@ enum {
 
 /*for internal x-ref*/
 extern struct ProbeModule TlsStateProbe;
-
-extern struct ProbeModule GetStateProbe;
-
+/*save Output*/
+static struct Output *tls_out;
+/*public SSL obj for all conn*/
 static SSL_CTX *ssl_ctx;
 
 struct TlsState {
@@ -42,11 +43,35 @@ struct TlsState {
     BIO *wbio;
     unsigned char *data;
     size_t data_max_len;
+    unsigned have_dump_version:1;
 };
+
+static void ssl_keylog_cb(const SSL *ssl, const char *line)
+{
+    struct ProbeTarget *tgt = SSL_get_ex_data(ssl, 0);
+    if (!tgt)
+        return;
+
+    struct OutputItem item = {
+        .ip_them   = tgt->ip_them,
+        .port_them = tgt->port_them,
+        .ip_me     = tgt->ip_me,
+        .port_me   = tgt->port_me,
+        .level     = Output_INFO,
+    };
+
+    safe_strcpy(item.classification, OUTPUT_CLS_LEN, "ssl key log");
+    safe_strcpy(item.reason, OUTPUT_RSN_LEN, "recorded");
+    safe_strcpy(item.report, OUTPUT_RPT_LEN, line);
+
+    output_result(tls_out, &item);
+}
 
 struct TlsStateConf {
     struct ProbeModule *subprobe;
     char               *subprobe_args;
+    unsigned            ssl_keylog:1;
+    unsigned            dump_version:1;
 };
 
 static struct TlsStateConf tlsstate_conf = {0};
@@ -79,6 +104,26 @@ static int SET_subprobe_args(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
+static int SET_ssl_keylog(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tlsstate_conf.ssl_keylog = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static int SET_dump_version(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tlsstate_conf.dump_version = parseBoolean(value);
+
+    return CONF_OK;
+}
+
 static struct ConfigParameter tlsstate_parameters[] = {
     {
         "subprobe",
@@ -94,6 +139,20 @@ static struct ConfigParameter tlsstate_parameters[] = {
         {"subprobe-args", 0},
         "Specifies arguments for subprobe."
     },
+    {
+        "ssl-keylog",
+        SET_ssl_keylog,
+        F_BOOL,
+        {"key-log", 0},
+        "Record the SSL key log to result."
+    },
+    {
+        "dump-version",
+        SET_dump_version,
+        F_BOOL,
+        {"version", 0},
+        "Record SSL/TLS version to results."
+    },
 
     {0}
 };
@@ -102,12 +161,8 @@ static struct ConfigParameter tlsstate_parameters[] = {
 static int
 tlsstate_global_init(const void *xconf)
 {
-    /*Use GetState if no subprobe specified*/
-    if (!tlsstate_conf.subprobe) {
-        tlsstate_conf.subprobe = &GetStateProbe;
-        fprintf(stderr, "[-] Use default GetState as subprobe of TlsState "
-            "because no subprobe was specified by --subprobe.\n");
-    }
+    /*save `out`*/
+    tls_out = &((struct Xconf *)xconf)->output;
 
     const SSL_METHOD *meth;
     SSL_CTX *ctx;
@@ -156,11 +211,9 @@ tlsstate_global_init(const void *xconf)
      * set TLS key logging callback
      * typedef void (*SSL_CTX_keylog_cb_func)(const SSL *ssl, const char *line);
      * */
-    // if (banner1->is_capture_key) {
-    //     SSL_CTX_set_keylog_callback(ctx, ssl_keylog_callback);
-    // }
-
-    /*create self-defined state*/
+    if (tlsstate_conf.ssl_keylog) {
+        SSL_CTX_set_keylog_callback(ctx, ssl_keylog_cb);
+    }
 
     ssl_ctx = ctx;
     LOG(LEVEL_INFO, "SUCCESS init dynamic ssl\n");
@@ -196,6 +249,7 @@ static void tlsstate_close()
 static void
 tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
 {
+    int res;
     SSL *ssl;
     BIO *rbio, *wbio;
     unsigned char *data;
@@ -245,6 +299,21 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
  
     SSL_set_bio(ssl, rbio, wbio);
 
+
+    /*save `target` to SSL object*/
+    struct ProbeTarget *tgt = MALLOC(sizeof(struct ProbeTarget));
+    tgt->ip_them   = target->ip_them;
+    tgt->port_them = target->port_them;
+    tgt->ip_me     = target->ip_me;
+    tgt->port_me   = target->port_me;
+    tgt->cookie    = target->cookie;
+    tgt->index     = target->index;
+    res = SSL_set_ex_data(ssl, 0, tgt);
+    if (res != 1) {
+        LOG(LEVEL_WARNING, "SSL_set_ex_data banout error\n");
+        goto error6;
+    }
+
     /*keep important struct in probe state*/
     tls_state->ssl  = ssl;
     tls_state->rbio = rbio;
@@ -263,7 +332,8 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     // SSL_set_ex_data(ssl, 1, NULL);
 // error7:
     // SSL_set_ex_data(ssl, 0, NULL);
-// error6:
+error6:
+    free(tgt);
     SSL_free(ssl);
     wbio = NULL;
     rbio = NULL;
@@ -298,6 +368,9 @@ tlsstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
 
     /*do conn close for subprobe*/
     tlsstate_conf.subprobe->conn_close_cb(&tls_state->substate, target);
+
+    /*cleanup ex data in SSL obj*/
+    free(SSL_get_ex_data(tls_state->ssl, 0));
 
     if (tls_state->ssl) {
         SSL_free(tls_state->ssl);
@@ -387,6 +460,45 @@ error1:
     return;
 }
 
+static void output_version(struct Output *out,
+    struct ProbeTarget *target, SSL *ssl)
+{
+    int version = SSL_version(ssl);
+
+    struct OutputItem item = {
+        .ip_them   = target->ip_them,
+        .port_them = target->port_them,
+        .ip_me     = target->ip_me,
+        .port_me   = target->port_me,
+        .level     = Output_INFO,
+    };
+
+    safe_strcpy(item.classification, OUTPUT_CLS_LEN, "tls version");
+    safe_strcpy(item.reason, OUTPUT_RSN_LEN, "recorded");
+
+    switch (version) {
+    case SSL3_VERSION:
+        safe_strcpy(item.report, OUTPUT_RPT_LEN, "SSLv3.0");
+        break;
+    case TLS1_VERSION:
+        safe_strcpy(item.report, OUTPUT_RPT_LEN, "TLSv1.0");
+        break;
+    case TLS1_1_VERSION:
+        safe_strcpy(item.report, OUTPUT_RPT_LEN, "TLSv1.1");
+        break;
+    case TLS1_2_VERSION:
+        safe_strcpy(item.report, OUTPUT_RPT_LEN, "TLSv1.2");
+        break;
+    case TLS1_3_VERSION:
+        safe_strcpy(item.report, OUTPUT_RPT_LEN, "TLSv1.3");
+        break;
+    default:
+        safe_strcpy(item.report, OUTPUT_RPT_LEN, "Other");
+    }
+
+    output_result(tls_out, &item);
+}
+
 static void
 tlsstate_parse_response(
     struct DataPass *pass,
@@ -461,6 +573,12 @@ tlsstate_parse_response(
             }
 
             tls_state->handshake_state = SSL_get_state(tls_state->ssl);
+
+            /*output version*/
+            if (tlsstate_conf.dump_version && !tls_state->have_dump_version) {
+                output_version(out, target, tls_state->ssl);
+                tls_state->have_dump_version = 1;
+            }
 
             //!output version and cypher suites info
             // if (pstate->sub.ssl_dynamic.have_dump_version == false &&
