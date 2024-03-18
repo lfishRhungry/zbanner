@@ -8,6 +8,7 @@
 #include <openssl/x509v3.h>
 
 #include "probe-modules.h"
+#include "../pixie/pixie-timer.h"
 #include "../util/safe-string.h"
 #include "../util/fine-malloc.h"
 #include "../output/output.h"
@@ -195,11 +196,10 @@ static void tlsstate_close()
 static void
 tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
 {
-    struct TlsState *tls_state;
-    BIO *rbio, *wbio;
     SSL *ssl;
-    int res;
+    BIO *rbio, *wbio;
     unsigned char *data;
+    struct TlsState *tls_state;
     unsigned int data_max_len = 4096;
 
     LOG(LEVEL_INFO, "[ssl_transmit_hello] >>>\n");
@@ -261,9 +261,9 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     return;
 
     // SSL_set_ex_data(ssl, 1, NULL);
-error7:
+// error7:
     // SSL_set_ex_data(ssl, 0, NULL);
-error6:
+// error6:
     SSL_free(ssl);
     wbio = NULL;
     rbio = NULL;
@@ -431,19 +431,19 @@ tlsstate_parse_response(
             }
         }
 
-        // now_time = pixie_gettime() - now_time;
-        // if (length > 16384 || now_time > 1000000) {
-        //     LOGip(LEVEL_WARNING, &pstate->ip, pstate->port,
-        //           "[ssl_parse_record]len px: 0x%" PRIxPTR ", time: " PRIu64
-        //           " millis\n",
-        //           length, now_time * 1000);
-        //     LOG(LEVEL_WARNING, "[ssl_parse_record]offset: 0x%" PRIxPTR ", res = %d\n",
-        //         offset, res);
-        //     if (length > 3) {
-        //         LOG(LEVEL_WARNING, "[ssl_parse_record]dump: %02X %02X %02X %02X\n",
-        //             px[0], px[1], px[2], px[3]);
-        //     }
-        // }
+        now_time = pixie_gettime() - now_time;
+        if (sizeof_px > 16384 || now_time > 1000000) {
+            LOGip(LEVEL_WARNING, target->ip_them, target->port_them,
+                  "[ssl_parse_record]len px: 0x%" PRIxPTR ", time: " PRIu64
+                  " millis\n",
+                  sizeof_px, now_time * 1000);
+            LOG(LEVEL_WARNING, "[ssl_parse_record]offset: 0x%" PRIxPTR ", res = %d\n",
+                offset, res);
+            if (sizeof_px > 3) {
+                LOG(LEVEL_WARNING, "[ssl_parse_record]dump: %02X %02X %02X %02X\n",
+                    px[0], px[1], px[2], px[3]);
+            }
+        }
     }
 
     while (is_continue) {
