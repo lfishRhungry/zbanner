@@ -90,7 +90,7 @@ void icmptime_timeout(
 }
 
 struct ScanModule IcmpTimeScan = {
-    .name                = "icmptime",
+    .name                = "icmp-time",
     .required_probe_type = 0,
     .support_timeout     = 1,
     .params              = NULL,

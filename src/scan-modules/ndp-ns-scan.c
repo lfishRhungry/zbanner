@@ -116,7 +116,7 @@ void ndpns_timeout(
 }
 
 struct ScanModule NdpNsScan = {
-    .name                = "ndpns",
+    .name                = "ndp-ns",
     .required_probe_type = 0,
     .support_timeout     = 1,
     .params              = NULL,

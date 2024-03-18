@@ -103,7 +103,7 @@ void sctpinit_timeout(
 }
 
 struct ScanModule SctpInitScan = {
-    .name                = "sctpinit",
+    .name                = "sctp-init",
     .required_probe_type = 0,
     .support_timeout     = 1,
     .params              = NULL,

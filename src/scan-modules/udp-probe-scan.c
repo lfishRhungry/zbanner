@@ -399,7 +399,7 @@ udpprobe_timeout(
 }
 
 struct ScanModule UdpProbeScan = {
-    .name                = "udpprobe",
+    .name                = "udp-probe",
     .required_probe_type = ProbeType_UDP,
     .support_timeout     = 1,
     .params              = NULL,

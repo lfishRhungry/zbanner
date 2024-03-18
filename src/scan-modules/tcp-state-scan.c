@@ -189,7 +189,7 @@ void tcpstate_close()
 }
 
 struct ScanModule TcpStateScan = {
-    .name                = "tcpstate",
+    .name                = "tcp-state",
     .required_probe_type = ProbeType_STATE,
     .support_timeout     = 0,
     .bpf_filter          = "tcp",

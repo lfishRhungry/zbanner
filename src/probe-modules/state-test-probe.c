@@ -51,7 +51,7 @@ getrequest_parse_response(
 }
 
 struct ProbeModule StateTestProbe = {
-    .name       = "statetest",
+    .name       = "state-test",
     .type       = ProbeType_STATE,
     .multi_mode = Multi_Null,
     .multi_num  = 1,

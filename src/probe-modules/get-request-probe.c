@@ -23,7 +23,7 @@ getrequest_get_payload_length(struct ProbeTarget *target)
 }
 
 struct ProbeModule GetRequestProbe = {
-    .name       = "getrequest",
+    .name       = "get-request",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,
     .multi_num  = 1,

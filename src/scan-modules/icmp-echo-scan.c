@@ -93,7 +93,7 @@ void icmpecho_timeout(
 }
 
 struct ScanModule IcmpEchoScan = {
-    .name                = "icmpecho",
+    .name                = "icmp-echo",
     .required_probe_type = 0,
     .support_timeout     = 1,
     .params              = NULL,

@@ -614,7 +614,7 @@ tlsstate_parse_response(
 }
 
 struct ProbeModule TlsStateProbe = {
-    .name       = "tlsstate",
+    .name       = "tls-state",
     .type       = ProbeType_STATE,
     .multi_mode = Multi_Null,
     .multi_num  = 1,

@@ -79,7 +79,7 @@ void arpreq_timeout(
 }
 
 struct ScanModule ArpReqScan = {
-    .name                = "arpreq",
+    .name                = "arp-req",
     .required_probe_type = 0,
     .support_timeout     = 1,
     .params              = NULL,

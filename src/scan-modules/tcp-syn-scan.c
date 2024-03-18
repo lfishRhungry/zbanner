@@ -113,7 +113,7 @@ void tcpsyn_timeout(
 }
 
 struct ScanModule TcpSynScan = {
-    .name                = "tcpsyn",
+    .name                = "tcp-syn",
     .required_probe_type = 0,
     .support_timeout     = 1,
     .params              = NULL,
