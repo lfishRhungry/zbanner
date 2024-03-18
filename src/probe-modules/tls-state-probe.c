@@ -44,6 +44,7 @@ struct TlsState {
     unsigned char *data;
     size_t data_max_len;
     unsigned have_dump_version:1;
+    unsigned have_dump_cipher:1;
 };
 
 static void ssl_keylog_cb(const SSL *ssl, const char *line)
@@ -72,6 +73,7 @@ struct TlsStateConf {
     char               *subprobe_args;
     unsigned            ssl_keylog:1;
     unsigned            dump_version:1;
+    unsigned            dump_cipher:1;
 };
 
 static struct TlsStateConf tlsstate_conf = {0};
@@ -124,6 +126,16 @@ static int SET_dump_version(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
+static int SET_dump_cipher(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tlsstate_conf.dump_cipher = parseBoolean(value);
+
+    return CONF_OK;
+}
+
 static struct ConfigParameter tlsstate_parameters[] = {
     {
         "subprobe",
@@ -152,6 +164,13 @@ static struct ConfigParameter tlsstate_parameters[] = {
         F_BOOL,
         {"version", 0},
         "Record SSL/TLS version to results."
+    },
+    {
+        "dump-cipher",
+        SET_dump_cipher,
+        F_BOOL,
+        {"cipher", 0},
+        "Record cipher suites of SSL/TLS connection to results."
     },
 
     {0}
@@ -460,6 +479,37 @@ error1:
     return;
 }
 
+static void output_cipher(struct Output *out,
+    struct ProbeTarget *target, SSL *ssl)
+{
+    const SSL_CIPHER *ssl_cipher;
+    uint16_t cipher_suite;
+
+    ssl_cipher = SSL_get_current_cipher(ssl);
+    if (ssl_cipher == NULL) {
+        ssl_cipher = SSL_get_pending_cipher(ssl);
+        if (ssl_cipher == NULL) {
+            return;
+        }
+    }
+
+    struct OutputItem item = {
+        .ip_them   = target->ip_them,
+        .port_them = target->port_them,
+        .ip_me     = target->ip_me,
+        .port_me   = target->port_me,
+        .level     = Output_INFO,
+    };
+
+    safe_strcpy(item.classification, OUTPUT_CLS_LEN, "tls cipher");
+    safe_strcpy(item.reason, OUTPUT_RSN_LEN, "recorded");
+
+    cipher_suite = SSL_CIPHER_get_protocol_id(ssl_cipher);
+    snprintf(item.report, OUTPUT_RPT_LEN, "cipher[0x%x]", cipher_suite);
+
+    output_result(tls_out, &item);
+}
+
 static void output_version(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
@@ -580,18 +630,11 @@ tlsstate_parse_response(
                 tls_state->have_dump_version = 1;
             }
 
-            //!output version and cypher suites info
-            // if (pstate->sub.ssl_dynamic.have_dump_version == false &&
-            //     tls_state->handshake_state != TLS_ST_BEFORE &&
-            //     tls_state->handshake_state != TLS_ST_CW_CLNT_HELLO &&
-            //     (SSL_get_current_cipher(pstate->sub.ssl_dynamic.ssl) ||  /*crypto algo using by cur conn*/
-            //      SSL_get_pending_cipher(pstate->sub.ssl_dynamic.ssl))) { /*crypto algo would be used by cur conn*/
-
-            //     BANNER_VERSION(banout, pstate->sub.ssl_dynamic.ssl);
-            //     BANNER_CIPHER(banout, pstate->sub.ssl_dynamic.ssl);
-
-            //     pstate->sub.ssl_dynamic.have_dump_version = true;
-            // }
+            /*output cipher suites*/
+            if (tlsstate_conf.dump_cipher && !tls_state->have_dump_cipher) {
+                output_cipher(out, target, tls_state->ssl);
+                tls_state->have_dump_cipher = 1;
+            }
 
             //!output X.509 info
             // if (pstate->sub.ssl_dynamic.have_dump_cert == false &&
