@@ -119,7 +119,6 @@ enum App_Event {
     APP_WHAT_RECV_PAYLOAD,
     APP_WHAT_SENDING,
     APP_WHAT_SEND_SENT,
-    APP_WHAT_CLOSE /*FIN received */
 };
 
 /***************************************************************************
@@ -336,10 +335,10 @@ tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usec
          * deleted, but hasn't been inserted back into the timeout system,
          * then insert it here. */
         if (x != TCB__destroyed && timeout_is_unlinked(tcb->timeout)) {
-            timeouts_add(   tcpcon->timeouts,
-                            tcb->timeout,
-                            offsetof(struct TCP_Control_Block, timeout),
-                            TICKS_FROM_TV(secs+2, usecs));
+            timeouts_add(tcpcon->timeouts,
+                         tcb->timeout,
+                         offsetof(struct TCP_Control_Block, timeout),
+                         TICKS_FROM_TV(secs+2, usecs));
         }
     }
 }
@@ -1431,10 +1430,10 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
      */
     if (what == TCP_WHAT_FIN) {
         if (seqno_them == tcb->seqno_them - 1) {
-            /* Duplicate FIN, respond with ACK */
-            LOGtcb(tcb, 1, "duplicate FIN\n");
-            tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
-            return TCB__okay;
+            /* Duplicate FIN, respond with RST */
+            tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
+            tcpcon_destroy_tcb(tcpcon, tcb, Reason_Shutdown);
+            return TCB__destroyed;
         } else if (seqno_them != tcb->seqno_them) {
             /* out of order FIN, so drop it */
             LOGtcb(tcb, 1, "out-of-order FIN\n");
@@ -1506,12 +1505,14 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                 case TCP_WHAT_CLOSE:
                     tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
                     tcpcon_destroy_tcb(tcpcon, tcb, Reason_Shutdown);
+                    return TCB__destroyed;
                     break;
                 case TCP_WHAT_FIN:
                     if (seqno_them == tcb->seqno_them) {
                         /* I have ACKed all their data, so therefore process this */
                         tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
                         tcpcon_destroy_tcb(tcpcon, tcb, Reason_Shutdown);
+                        return TCB__destroyed;
                     } else {
                         /* I haven't received all their data, so ignore it until I do */
                         tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
@@ -1555,16 +1556,14 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                 case TCP_WHAT_CLOSE:
                     tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
                     tcpcon_destroy_tcb(tcpcon, tcb, Reason_Shutdown);
+                    return TCB__destroyed;
                     break;
                 case TCP_WHAT_FIN:
                     if (seqno_them == tcb->seqno_them) {
                         /* I have ACKed all their data, so therefore process this */
-                        _tcb_seg_recv(tcpcon, tcb, 0, 0, seqno_them, secs, usecs, true);
-                        _tcb_change_state_to(tcb, STATE_CLOSE_WAIT);
-                        //_tcb_send_ack(tcpcon, tcb);
-                        application_notify(tcpcon, tcb, APP_WHAT_CLOSE,
-                                0, payload_length, secs, usecs);
-
+                        tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
+                        tcpcon_destroy_tcb(tcpcon, tcb, Reason_Shutdown);
+                        return TCB__destroyed;
                     } else {
                         /* I haven't received all their data, so ignore it until I do */
                         tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
@@ -1605,8 +1604,9 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     }
                     break;
                 case TCP_WHAT_FIN:
-                    /* I've already acknowledged their FIN, but hey, do it again */
-                    tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
+                    tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
+                    tcpcon_destroy_tcb(tcpcon, tcb, Reason_Shutdown);
+                    return TCB__destroyed;
                     break;
                 case TCP_WHAT_CLOSE:
                     /* The application this machine has issued a second `tcpapi_close()` request.
@@ -1625,6 +1625,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
         case STATE_TIME_WAIT:
             switch (what) {
+                case TCP_WHAT_FIN:
                 case TCP_WHAT_TIMEOUT:
                     /* giving up */
                     if (tcb->tcpstate == STATE_TIME_WAIT) {
@@ -1633,18 +1634,6 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     }
                     break;
                 case TCP_WHAT_ACK:
-                    break;
-                case TCP_WHAT_FIN:
-                    /* Processing incoming FIN as an empty paylaod */
-                    _tcb_seg_recv(tcpcon, tcb, 0, 0, seqno_them, secs, usecs, true);
-
-                    _tcb_change_state_to(tcb, STATE_TIME_WAIT);
-
-                    timeouts_add(   tcpcon->timeouts,
-                                 tcb->timeout,
-                                 offsetof(struct TCP_Control_Block, timeout),
-                                 TICKS_FROM_TV(secs+5,usecs)
-                                 );
                     break;
                 case TCP_WHAT_SYNACK:
                 case TCP_WHAT_RST:
@@ -1669,9 +1658,8 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     _tcb_change_state_to(tcb, STATE_LAST_ACK);
                     break;
                 case TCP_WHAT_TIMEOUT:
-                    /* Remind the app that it's waiting for it to be closed */
-                    application_notify(tcpcon, tcb, APP_WHAT_CLOSE,
-                            0, payload_length, secs, usecs);
+                    tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
+                    tcpcon_destroy_tcb(tcpcon, tcb, Reason_Shutdown);
                     break;
                 default:
                     ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n",
@@ -1723,7 +1711,6 @@ static const char *event_to_string(enum App_Event ev) {
     case APP_WHAT_RECV_TIMEOUT: return "timeout";
     case APP_WHAT_RECV_PAYLOAD: return "payload";
     case APP_WHAT_SEND_SENT: return "sent";
-    case APP_WHAT_CLOSE: return "close";
     case APP_WHAT_SENDING: return "sending";
     default: return "unknown";
     }
@@ -1788,9 +1775,6 @@ again:
                     tcpapi_change_app_state(socket, APP_STATE_RECV_NEXT);
                     state = APP_STATE_RECV_NEXT;
                     goto again;
-                case APP_WHAT_CLOSE:
-                    tcpapi_close(socket);
-                    break;
                 default:
                     ERRMSG("TCP.app: unhandled event: state=%s event=%s\n",
                         app_state_to_string(state), event_to_string(event));
@@ -1831,11 +1815,6 @@ again:
                     if (pass.close)
                         tcpapi_close(socket);
 
-                    break;
-                case APP_WHAT_CLOSE:
-                    /* The other side has sent us a FIN, therefore, we need
-                     * to likewise close our end. */
-                    tcpapi_close(socket);
                     break;
                 case APP_WHAT_RECV_TIMEOUT:
                     break;
