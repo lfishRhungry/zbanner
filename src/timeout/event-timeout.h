@@ -122,7 +122,7 @@ timeouts_remove(struct Timeouts *timeouts, uint64_t timestamp_now);
  */
 #define TICKS_PER_SECOND (16384ULL)
 #define TICKS_FROM_SECS(secs) ((secs)*16384ULL)
-#define TICKS_FROM_USECS(usecs) ((usecs)/16384ULL)
+#define TICKS_FROM_USECS(usecs) ((usecs)/64ULL)
 #define TICKS_FROM_TV(secs,usecs) (TICKS_FROM_SECS(secs)+TICKS_FROM_USECS(usecs))
 
 #endif
