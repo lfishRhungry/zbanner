@@ -15,10 +15,8 @@ extern struct ScanModule TcpStateScan; /*for internal x-ref*/
 
 static struct TCP_ConnectionTable *tcpcon = NULL;
 
-static int tcpstate_global_init(const void *conf)
+static int tcpstate_global_init(const struct Xconf *xconf)
 {
-    const struct Xconf *xconf = conf;
-
     tcpcon = tcpcon_create_table(
         (size_t)(xconf->max_rate/5)/xconf->tx_thread_count,
         xconf->stack, &global_tmplset->pkts[Proto_TCP],

@@ -103,9 +103,9 @@ static struct ConfigParameter zbanner_parameters[] = {
 static unsigned src_port_start;
 
 static int
-zbanner_global_init(const void *xconf)
+zbanner_global_init(const struct Xconf *xconf)
 {
-    src_port_start = ((const struct Xconf *)xconf)->nic.src.port.first;
+    src_port_start = xconf->nic.src.port.first;
 
     return 1;
 }

@@ -103,7 +103,7 @@ struct ScanModule IcmpEchoScan = {
         "IcmpEchoScan sends an ICMP ECHO Request packet to target host. Expect an "
         "ICMP ECHO Reply to believe the host is alive.",
 
-    .global_init_cb         = &scan_init_nothing,
+    .global_init_cb         = &scan_global_init_nothing,
     .transmit_cb            = &icmpecho_transmit,
     .validate_cb            = &icmpecho_validate,
     .handle_cb              = &icmpecho_handle,

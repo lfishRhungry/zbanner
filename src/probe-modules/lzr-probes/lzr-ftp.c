@@ -54,7 +54,7 @@ struct ProbeModule LzrFtpProbe = {
     .params     = NULL,
     .desc =
         "LzrFtp Probe sends no payload and identifies FTP service.",
-    .global_init_cb                       = &probe_init_nothing,
+    .global_init_cb                       = &probe_global_init_nothing,
     .make_payload_cb                      = &probe_make_no_payload,
     .get_payload_length_cb                = &probe_no_payload_length,
     .validate_response_cb                 = NULL,

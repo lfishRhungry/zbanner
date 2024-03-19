@@ -32,7 +32,7 @@ enum {
 /*for internal x-ref*/
 extern struct ProbeModule TlsStateProbe;
 /*save Output*/
-static struct Output *tls_out;
+static const struct Output *tls_out;
 /*public SSL obj for all conn*/
 static SSL_CTX *ssl_ctx;
 
@@ -217,10 +217,10 @@ static struct ConfigParameter tlsstate_parameters[] = {
 
 /*init public SSL_CTX*/
 static int
-tlsstate_global_init(const void *xconf)
+tlsstate_global_init(const struct Xconf *xconf)
 {
     /*save `out`*/
-    tls_out = &((struct Xconf *)xconf)->output;
+    tls_out = &xconf->output;
 
     const SSL_METHOD *meth;
     SSL_CTX *ctx;

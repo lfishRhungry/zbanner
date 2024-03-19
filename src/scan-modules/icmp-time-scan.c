@@ -99,7 +99,7 @@ struct ScanModule IcmpTimeScan = {
         "IcmpTimeScan sends an ICMP Timestamp mesage to IPv4 target host. Expect an "
         "ICMP Timestamp Reply to believe the host is alive.",
 
-    .global_init_cb         = &scan_init_nothing,
+    .global_init_cb         = &scan_global_init_nothing,
     .transmit_cb            = &icmptime_transmit,
     .validate_cb            = &icmptime_validate,
     .handle_cb              = &icmptime_handle,

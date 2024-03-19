@@ -99,7 +99,7 @@ struct ProbeModule LzrFoxProbe = {
     .params     = NULL,
     .desc =
         "LzrFox Probe sends an FOX probe and identifies FOX service.",
-    .global_init_cb                          = &probe_init_nothing,
+    .global_init_cb                          = &probe_global_init_nothing,
     .make_payload_cb                         = &lzr_fox_make_payload,
     .get_payload_length_cb                   = &lzr_fox_get_payload_length,
     .validate_response_cb                    = NULL,

@@ -44,7 +44,7 @@ static char lzr_tls_payload[] =
 "\xff\x01\x00\x01\x00"                                     /*ext renegotiation info*/
 ;
 
-static int lzr_tls_global_init(const void *xconf)
+static int lzr_tls_global_init(const struct Xconf *xconf)
 {
     /*fill the random bytes in payload*/
     unsigned r;

@@ -63,7 +63,7 @@ struct ProbeModule GetStateProbe = {
         "And could get a simple result from http server fastly. GetState is the "
         "state version of GetRequest Probe for testing ScanModules that needs a"
         " probe of state type.",
-    .global_init_cb                    = &probe_init_nothing,
+    .global_init_cb                    = &probe_global_init_nothing,
     .make_payload_cb                   = NULL,
     .get_payload_length_cb             = NULL,
     .validate_response_cb              = NULL,

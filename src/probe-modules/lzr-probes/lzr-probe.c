@@ -163,7 +163,7 @@ static struct ConfigParameter lzr_parameters[] = {
 };
 
 static int
-lzr_global_init(const void * xconf)
+lzr_global_init(const struct Xconf *xconf)
 {
     /*Use LzrWait if no subprobe specified*/
     if (!lzr_conf.handshake) {

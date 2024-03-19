@@ -183,7 +183,7 @@ struct ProbeModule JarmProbe = {
         "response represents the target port is running TLS protocol. Results can "
         "be analyzed to get JARM fingerprint of the target TLS stack for different "
         "purposes.",
-    .global_init_cb                        = &probe_init_nothing,
+    .global_init_cb                        = &probe_global_init_nothing,
     .make_payload_cb                       = &jarm_make_payload,
     .get_payload_length_cb                 = &jarm_get_payload_length,
     .validate_response_cb                  = NULL,

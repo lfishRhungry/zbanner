@@ -9,6 +9,8 @@
 #include "../util/unusedparm.h"
 #include "../proto/proto-datapass.h"
 
+struct Xconf;
+
 #define PROBE_PAYLOAD_MAX_LEN 2048
 
 /**
@@ -17,7 +19,7 @@
  * @param xconf main conf of xtate, use `void` to avoiding x-ref.
  * @return FALSE to exit process if init failed
 */
-typedef int (*probe_modules_global_init)(const void *xconf);
+typedef int (*probe_modules_global_init)(const struct Xconf *xconf);
 
 struct ProbeTarget {
     ipaddress ip_them;
@@ -238,7 +240,7 @@ Some useful implemented interfaces
 ************************************************************************/
 
 /*implemented `probe_modules_xxx_init`*/
-int probe_init_nothing(const void *params);
+int probe_global_init_nothing(const struct Xconf *xconf);
 
 size_t
 probe_make_no_payload(

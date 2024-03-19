@@ -21,6 +21,7 @@
 #include "../proto/proto-preprocess.h"
 #include "../probe-modules/probe-modules.h"
 
+struct Xconf;
 
 #define SCAN_MODULE_DEFAULT_DEDUP_TYPE     0
 
@@ -34,7 +35,7 @@
  * @param xconf main conf of xtate, use `void` to avoiding x-ref.
  * @return false for initing failed and exit process.
 */
-typedef int (*scan_modules_global_init)(const void *xconf);
+typedef int (*scan_modules_global_init)(const struct Xconf *xconf);
 
 /***************************************************************************
  * * callback functions for Transmit
@@ -211,7 +212,7 @@ Some useful implemented interfaces
 ************************************************************************/
 
 /*implemented `scan_modules_xxx_init`*/
-int scan_init_nothing(const void *params);
+int scan_global_init_nothing(const struct Xconf *params);
 
 /*implemented `scan_modules_poll`*/
 void scan_poll_nothing();

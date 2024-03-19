@@ -12,9 +12,9 @@ extern struct ScanModule NdpNsScan; /*for internal x-ref*/
 
 static macaddress_t src_mac;
 
-int ndpns_init(const void *xconf)
+int ndpns_init(const struct Xconf *xconf)
 {
-    src_mac = ((const struct Xconf *)xconf)->nic.source_mac;
+    src_mac = xconf->nic.source_mac;
     return 1;
 }
 

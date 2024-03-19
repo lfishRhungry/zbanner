@@ -123,7 +123,7 @@ struct ScanModule TcpSynScan = {
         "response to believe the port is open or an RST for closed in TCP protocol.\n"
         "TcpSynScan is the default ScanModule.",
 
-    .global_init_cb           = &scan_init_nothing,
+    .global_init_cb           = &scan_global_init_nothing,
     .transmit_cb              = &tcpsyn_transmit,
     .validate_cb              = &tcpsyn_validate,
     .handle_cb                = &tcpsyn_handle,
