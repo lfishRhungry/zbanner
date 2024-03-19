@@ -100,9 +100,6 @@ enum Tcp_State{
     STATE_ESTABLISHED_RECV,   /* special state, our turn to receive */
     STATE_CLOSE_WAIT,
     STATE_LAST_ACK,
-    STATE_FIN_WAIT1_SEND,
-    STATE_FIN_WAIT1_RECV,
-    STATE_FIN_WAIT2,
     STATE_CLOSING,
     STATE_TIME_WAIT,
 };
@@ -244,9 +241,6 @@ tcp_state_to_string(enum Tcp_State state)
             //STATE_SYN_RECEIVED,
         case STATE_CLOSE_WAIT:      return "CLOSE-WAIT";
         case STATE_LAST_ACK:        return "LAST-ACK";
-        case STATE_FIN_WAIT1_SEND:  return "FIN-WAIT-1-SEND";
-        case STATE_FIN_WAIT1_RECV:  return "FIN-WAIT-1-RECV";
-        case STATE_FIN_WAIT2:       return "FIN-WAIT-2";
         case STATE_CLOSING:         return "CLOSING";
         case STATE_TIME_WAIT:       return "TIME-WAIT";
         case STATE_SYN_SENT:        return "SYN_SENT";
@@ -1241,12 +1235,6 @@ tcpapi_recv(struct stack_handle_t *socket) {
         case STATE_ESTABLISHED_SEND:
             _tcb_change_state_to(socket->tcb, STATE_ESTABLISHED_RECV);
             break;
-        case STATE_FIN_WAIT1_RECV:
-            _tcb_change_state_to(socket->tcb, STATE_FIN_WAIT1_RECV);
-            break;
-        case STATE_FIN_WAIT1_SEND:
-            _tcb_change_state_to(socket->tcb, STATE_FIN_WAIT1_RECV);
-            break;
     }
     return 0;
 }
@@ -1301,8 +1289,6 @@ tcpapi_change_app_state(struct stack_handle_t *socket, enum App_State new_app_st
         return SOCKERR_EBADF;
 
     tcb = socket->tcb;
-
-    //printf("%u --> %u\n", tcb->app_state, new_app_state);
 
     tcb->app_state = new_app_state;
     return new_app_state;
@@ -1518,15 +1504,14 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
         case STATE_ESTABLISHED_SEND:
             switch (what) {
                 case TCP_WHAT_CLOSE:
-                    _tcb_seg_send(tcpcon, tcb, 0, 0, 0, 1);
-                    _tcb_change_state_to(tcb, STATE_FIN_WAIT1_SEND);
+                    tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
+                    tcpcon_destroy_tcb(tcpcon, tcb, Reason_Shutdown);
                     break;
                 case TCP_WHAT_FIN:
                     if (seqno_them == tcb->seqno_them) {
                         /* I have ACKed all their data, so therefore process this */
-                        _tcb_seg_recv(tcpcon, tcb, 0, 0, seqno_them, secs, usecs, true);
-                        _tcb_change_state_to(tcb, STATE_FIN_WAIT1_SEND);
-                        tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
+                        tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
+                        tcpcon_destroy_tcb(tcpcon, tcb, Reason_Shutdown);
                     } else {
                         /* I haven't received all their data, so ignore it until I do */
                         tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
@@ -1568,10 +1553,8 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
         case STATE_ESTABLISHED_RECV:
             switch (what) {
                 case TCP_WHAT_CLOSE:
-                    _tcb_seg_send(tcpcon, tcb, 0, 0, 0, 1);
-                    // tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_FIN, 0, 0);
-                    
-                    _tcb_change_state_to(tcb, STATE_FIN_WAIT1_RECV);
+                    tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
+                    tcpcon_destroy_tcb(tcpcon, tcb, Reason_Shutdown);
                     break;
                 case TCP_WHAT_FIN:
                     if (seqno_them == tcb->seqno_them) {
@@ -1609,78 +1592,6 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
             }
             break;
 
-        /*
-         SYN-RCVD + FIN = FIN-WAIT-1
-         ESTAB + FIN = FIN-WAIT-1
-             +---------+
-             |  FIN    |
-             | WAIT-1  |
-             +---------+
-         FIN-WAIT-1 + FIN --> CLOSING
-         FIN-WAIT-1 + ACK-of-FIN --> FIN-WAIT-2
-        */
-        case STATE_FIN_WAIT1_SEND:
-            switch (what) {
-                case TCP_WHAT_FIN:
-                    /* Ignore their FIN while in the SENDing state. */
-                    break;
-                case TCP_WHAT_ACK:
-                    /* Apply the ack */
-                    if (_tcp_seg_acknowledge(tcb, ackno_them)) {
-
-                        /* Same a in ESTABLISHED_SEND, once they've acknowledged
-                         * all reception BEFORE THE FIN, then change the state */
-                        if (tcb->segments == NULL || tcb->segments->length == 0) {
-                            /* All the payload has been sent. Notify the application of this, so that they
-                             * can send more if the want, or switch to listening. */
-                            _tcb_change_state_to(tcb, STATE_FIN_WAIT1_RECV);
-                            application_notify(tcpcon, tcb, APP_WHAT_SEND_SENT, 0, 0, secs, usecs);
-                        }
-                    }
-                    break;
-                case TCP_WHAT_TIMEOUT:
-                    _tcb_seg_resend(tcpcon, tcb); /* also resends FINs */
-                    break;
-                case TCP_WHAT_DATA:
-                    /* Ignore any data received while in the SEND state */
-                    break;
-                default:
-                    ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
-                        tcp_state_to_string(tcb->tcpstate), what_to_string(what));
-                    break;
-            }
-            break;
-        case STATE_FIN_WAIT1_RECV:
-            switch (what) {
-                case TCP_WHAT_FIN:
-                    _tcb_seg_recv(tcpcon, tcb, 0, 0, seqno_them, secs, usecs, true);
-                    _tcb_change_state_to(tcb, STATE_CLOSING);
-                    tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
-                    application_notify(tcpcon, tcb, APP_WHAT_CLOSE, 0, 0, secs, usecs);
-                    break;
-                case TCP_WHAT_ACK:
-                    /* Apply the ack */
-                    if (_tcp_seg_acknowledge(tcb, ackno_them)) {
-                        if (_tcb_they_have_acked_my_fin(tcb)) {
-                            _tcb_change_state_to(tcb, STATE_FIN_WAIT2);
-                            application_notify(tcpcon, tcb, APP_WHAT_CLOSE, 0, 0, secs, usecs);
-                        }
-                    }
-                    break;
-                case TCP_WHAT_TIMEOUT:
-                    _tcb_seg_resend(tcpcon, tcb); /* also recv FIN */
-                    break;
-                case TCP_WHAT_DATA:
-                    _tcb_seg_recv(tcpcon, tcb, payload, payload_length, seqno_them, secs, usecs, false);
-                    break;
-                default:
-                    ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
-                        tcp_state_to_string(tcb->tcpstate), what_to_string(what));
-                    break;
-            }
-            break;
-
-
         case STATE_CLOSING:
             switch (what) {
                 case TCP_WHAT_TIMEOUT:
@@ -1712,7 +1623,6 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
             break;
 
 
-        case STATE_FIN_WAIT2:
         case STATE_TIME_WAIT:
             switch (what) {
                 case TCP_WHAT_TIMEOUT:
