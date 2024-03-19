@@ -983,7 +983,7 @@ tlsstate_parse_response(
             tlsstate_conf.subprobe->make_hello_cb(&subpass, &tls_state->substate, target);
 
             /*Maybe no hello and maybe just close*/
-            if (!subpass.payload || !subpass.payload) {
+            if (!subpass.payload || !subpass.len) {
                 pass->close = subpass.close;
                 state->state = TLS_STATE_APP_RECEIVE_NEXT;
                 return;
@@ -1050,24 +1050,109 @@ tlsstate_parse_response(
             }
         } break;
 
-        //!Pass data to subprobe to handle. Cannot send data again.
+        //!Pass data to subprobe. Cannot send data again. Just support close
         case TLS_STATE_APP_RECEIVE_NEXT:
+            size_t offset = 0;
             while (true) {
-                res = SSL_read(tls_state->ssl, tls_state->data,
-                    (unsigned int)tls_state->data_max_len);
-                if (res > 0) {
-                    LOG(LEVEL_INFO, "[ssl_parse_record]SSL_read: %d\n", res);
+                /*We have to read all data in the SSL buffer.*/
+                res = SSL_read(tls_state->ssl, tls_state->data + offset,
+                    tls_state->data_max_len - offset);
+                offset += res;
+                /*maybe more data, extend buffer to read*/
+                if (res==tls_state->data_max_len-offset) {
+                    unsigned char *tmp_data = NULL;
+                    tmp_data = (unsigned char *)REALLOC(
+                        tls_state->data,
+                        tls_state->data_max_len * 2);
+                    if (tmp_data == NULL) {
+                        LOG(LEVEL_WARNING,
+                            "[ssl_parse_record]SSL realoc memory error 0x%" PRIxPTR "\n",
+                            tls_state->data_max_len * 2);
+                        state->state = TLS_STATE_UNKNOWN;
+                        break;
+                    } else {
+                        tls_state->data = tmp_data;
+                        tls_state->data_max_len = tls_state->data_max_len * 2;
+                    }
+                    /*go on to read*/
+                    continue;
+                } else if (res > 0) {
+                    /*got all data from SSL buffer, give it to subprobe*/
+                    LOG(LEVEL_INFO, "[ssl_parse_record]SSL_read: %d\n", offset);
 
                     struct DataPass subpass = {0};
 
                     tlsstate_conf.subprobe->parse_response_cb(&subpass,
-                        &tls_state->substate,
-                        out, target,
-                        tls_state->data, res);
+                        &tls_state->substate, out, target, tls_state->data, offset);
 
-                    assert(subpass.payload == NULL && subpass.len == 0);
+                    /*Maybe no hello and maybe just close*/
+                    if (!subpass.payload || !subpass.len) {
+                        pass->close = subpass.close;
+                        state->state = TLS_STATE_APP_RECEIVE_NEXT;
+                        return;
+                    }
 
-                    continue;
+                    /*have data to send*/
+                    res = 1;
+
+                    if (subpass.payload != NULL && subpass.len != 0) {
+                        res = SSL_write(tls_state->ssl, subpass.payload, subpass.len);
+                    }
+
+                    if (res <= 0) {
+                        res_ex = SSL_get_error(tls_state->ssl, res);
+                        LOG(LEVEL_WARNING, "[ssl_parse_record]SSL_write error: %d %d\n", res,
+                            res_ex);
+                        state->state = TLS_STATE_UNKNOWN;
+                        break;
+                    } else {
+                        LOG(LEVEL_INFO, "[ssl_parse_record]SSL_write: %d\n", res);
+                        size_t offset = 0;
+                        while (true) {
+                            if (tls_state->data_max_len - offset <= 0) {
+                                unsigned char *tmp_data = NULL;
+                                tmp_data = (unsigned char *)REALLOC(
+                                    tls_state->data,
+                                    tls_state->data_max_len * 2);
+                                if (tmp_data == NULL) {
+                                    LOG(LEVEL_WARNING,
+                                        "[ssl_parse_record]SSL realoc memory error 0x%" PRIxPTR "\n",
+                                        tls_state->data_max_len * 2);
+                                    state->state = TLS_STATE_UNKNOWN;
+                                    break;
+                                } else {
+                                    tls_state->data = tmp_data;
+                                    tls_state->data_max_len = tls_state->data_max_len * 2;
+                                }
+                            }
+
+                            res = BIO_read(
+                                tls_state->wbio,
+                                tls_state->data + offset,
+                                (unsigned int)(tls_state->data_max_len - offset));
+                            if (res > 0) {
+                                LOG(LEVEL_INFO, "[ssl_parse_record]BIO_read: %d\n", res);
+                                offset += (size_t)res;
+                            } else if (res == 0 || res == -1) {
+                                LOG(LEVEL_DEBUG, "[ssl_parse_record]BIO_read: %d\n", res);
+                                break;
+                            } else {
+                                LOG(LEVEL_WARNING,
+                                    "[ssl_parse_record]BIO_read failed with error: %d\n", res);
+                                state->state = TLS_STATE_UNKNOWN;
+                                break;
+                            }
+                        }
+                        if (state->state != TLS_STATE_UNKNOWN) {
+                            state->state  = TLS_STATE_APP_RECEIVE_NEXT;
+                            pass->payload = tls_state->data;
+                            pass->len     = offset;
+                            pass->flag    = PASS__copy;
+                            pass->close   = subpass.close;
+                            is_continue   = 0;
+                            return;
+                        }
+                    }
                 } else {
                     res_ex = SSL_get_error(tls_state->ssl, res);
                     if (res_ex == SSL_ERROR_WANT_READ) {
