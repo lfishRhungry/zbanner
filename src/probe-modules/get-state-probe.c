@@ -10,6 +10,35 @@
 /*for internal x-ref*/
 extern struct ProbeModule GetStateProbe;
 
+struct GetStateConf {
+    unsigned get_whole_page:1;
+};
+
+static struct GetStateConf getstate_conf = {0};
+
+
+static int SET_whole_page(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    getstate_conf.get_whole_page = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static struct ConfigParameter getstate_parameters[] = {
+    {
+        "whole-page",
+        SET_whole_page,
+        F_BOOL,
+        {"whole", 0},
+        "Get the whole page before connection timeout, not just the banner."
+    },
+
+    {0}
+};
+
 static void
 getstate_make_hello(
     struct DataPass *pass,
@@ -30,10 +59,12 @@ getstate_parse_response(
     const unsigned char *px,
     unsigned sizeof_px)
 {
-    if (state->state) return;
-    state->state = 1;
+    if (!getstate_conf.get_whole_page) {
+        if (state->state) return;
+        state->state = 1;
 
-    pass->close = 1;
+        pass->close = 1;
+    }
 
     struct OutputItem item = {
         .level = Output_SUCCESS,
@@ -56,7 +87,7 @@ struct ProbeModule GetStateProbe = {
     .multi_mode = Multi_Null,
     .multi_num  = 1,
     .hello_wait = 0,
-    .params     = NULL,
+    .params     = getstate_parameters,
     .desc =
         "GetState Probe sends target port a simple HTTP HTTP Get request:\n"
         "    `GET / HTTP/1.0\\r\\n\\r\\n`\n"
