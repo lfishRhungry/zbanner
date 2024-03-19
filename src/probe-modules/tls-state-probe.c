@@ -447,6 +447,20 @@ tlsstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
     state->data = NULL;
 }
 
+static int extend_buffer(unsigned char **buf, size_t *buf_len)
+{
+    unsigned char *tmp_data = NULL;
+    tmp_data = REALLOC(*buf, *buf_len * 2);
+    if (tmp_data == NULL) {
+        LOG(LEVEL_WARNING, "SSL realoc memory error 0x%" PRIxPTR "\n",
+            *buf_len * 2);
+        return 0;
+    }
+    *buf = tmp_data;
+    *buf_len = *buf_len * 2;
+    return 1;
+}
+
 static void
 tlsstate_make_hello(
     struct DataPass *pass,
@@ -470,15 +484,8 @@ tlsstate_make_hello(
         while (true) {
             /*extend if buffer is not enough*/
             if (tls_state->data_max_len - offset <= 0) {
-                unsigned char *tmp_data = NULL;
-                tmp_data = REALLOC(tls_state->data, tls_state->data_max_len * 2);
-                if (tmp_data == NULL) {
-                    LOG(LEVEL_WARNING, "SSL realoc memory error 0x%" PRIxPTR "\n",
-                        tls_state->data_max_len * 2);
+                if (!extend_buffer(&tls_state->data, &tls_state->data_max_len))
                     goto error1;
-                }
-                tls_state->data = tmp_data;
-                tls_state->data_max_len = tls_state->data_max_len * 2;
             }
 
             /*get ClientHello here*/
@@ -925,19 +932,9 @@ tlsstate_parse_response(
 
                 while (true) {
                     if (tls_state->data_max_len - offset <= 0) {
-                        unsigned char *tmp_data = NULL;
-                        tmp_data = (unsigned char *)REALLOC(
-                            tls_state->data,
-                            tls_state->data_max_len * 2);
-                        if (tmp_data == NULL) {
-                          LOG(LEVEL_WARNING,
-                              "[ssl_parse_record]SSL realoc memory error 0x%" PRIxPTR "\n",
-                              tls_state->data_max_len * 2);
+                        if (!extend_buffer(&tls_state->data, &tls_state->data_max_len)) {
                           state->state = TLS_STATE_UNKNOWN;
                           break;
-                        } else {
-                          tls_state->data = tmp_data;
-                          tls_state->data_max_len = tls_state->data_max_len * 2;
                         }
                     }
 
@@ -1005,19 +1002,9 @@ tlsstate_parse_response(
                 size_t offset = 0;
                 while (true) {
                     if (tls_state->data_max_len - offset <= 0) {
-                        unsigned char *tmp_data = NULL;
-                        tmp_data = (unsigned char *)REALLOC(
-                            tls_state->data,
-                            tls_state->data_max_len * 2);
-                        if (tmp_data == NULL) {
-                            LOG(LEVEL_WARNING,
-                                "[ssl_parse_record]SSL realoc memory error 0x%" PRIxPTR "\n",
-                                tls_state->data_max_len * 2);
+                        if (!extend_buffer(&tls_state->data, &tls_state->data_max_len)) {
                             state->state = TLS_STATE_UNKNOWN;
                             break;
-                        } else {
-                            tls_state->data = tmp_data;
-                            tls_state->data_max_len = tls_state->data_max_len * 2;
                         }
                     }
 
@@ -1060,19 +1047,9 @@ tlsstate_parse_response(
                 offset += res;
                 /*maybe more data, extend buffer to read*/
                 if (res==tls_state->data_max_len-offset) {
-                    unsigned char *tmp_data = NULL;
-                    tmp_data = (unsigned char *)REALLOC(
-                        tls_state->data,
-                        tls_state->data_max_len * 2);
-                    if (tmp_data == NULL) {
-                        LOG(LEVEL_WARNING,
-                            "[ssl_parse_record]SSL realoc memory error 0x%" PRIxPTR "\n",
-                            tls_state->data_max_len * 2);
+                    if (!extend_buffer(&tls_state->data, &tls_state->data_max_len)) {
                         state->state = TLS_STATE_UNKNOWN;
                         break;
-                    } else {
-                        tls_state->data = tmp_data;
-                        tls_state->data_max_len = tls_state->data_max_len * 2;
                     }
                     /*go on to read*/
                     continue;
@@ -1110,19 +1087,9 @@ tlsstate_parse_response(
                         size_t offset = 0;
                         while (true) {
                             if (tls_state->data_max_len - offset <= 0) {
-                                unsigned char *tmp_data = NULL;
-                                tmp_data = (unsigned char *)REALLOC(
-                                    tls_state->data,
-                                    tls_state->data_max_len * 2);
-                                if (tmp_data == NULL) {
-                                    LOG(LEVEL_WARNING,
-                                        "[ssl_parse_record]SSL realoc memory error 0x%" PRIxPTR "\n",
-                                        tls_state->data_max_len * 2);
+                                if (!extend_buffer(&tls_state->data, &tls_state->data_max_len)) {
                                     state->state = TLS_STATE_UNKNOWN;
                                     break;
-                                } else {
-                                    tls_state->data = tmp_data;
-                                    tls_state->data_max_len = tls_state->data_max_len * 2;
                                 }
                             }
 
