@@ -95,13 +95,12 @@ struct TCP_Segment {
 
 enum Tcp_State{
     STATE_SYN_SENT = 0,       /* init state, must be zero */
-    STATE_ESTABLISHED_SEND,   /* special state, our turn to send */
-    STATE_ESTABLISHED_RECV,   /* special state, our turn to receive */
-    STATE_TIME_WAIT,
+    STATE_ESTABLISHED_SEND,   /* our turn to send */
+    STATE_ESTABLISHED_RECV,   /* our turn to receive */
 };
 
 enum App_State{
-    APP_STATE_CONNECT,
+    APP_STATE_CONNECT = 0,
     APP_STATE_RECV_HELLO,
     APP_STATE_RECV_NEXT,
     APP_STATE_SEND_FIRST,
@@ -211,7 +210,6 @@ tcp_state_to_string(enum Tcp_State state)
 {
     static char buf[64];
     switch (state) {
-        case STATE_TIME_WAIT:           return "TIME-WAIT";
         case STATE_SYN_SENT:            return "SYN_SENT";
         case STATE_ESTABLISHED_SEND:    return "ESTABLISHED_SEND";
         case STATE_ESTABLISHED_RECV:    return "ESTABLISHED_RECV";
@@ -1416,10 +1414,10 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_SYN, 0, 0);
                     break;
                 case TCP_WHAT_SYNACK:
-                    tcb->seqno_them = seqno_them;
+                    tcb->seqno_them       = seqno_them;
                     tcb->seqno_them_first = seqno_them - 1;
-                    tcb->seqno_me = ackno_them;
-                    tcb->seqno_me_first = ackno_them - 1;
+                    tcb->seqno_me         = ackno_them;
+                    tcb->seqno_me_first   = ackno_them - 1;
 
                     LOGtcb(tcb, 1, "%s connection established\n",
                            what_to_string(what));
@@ -1521,30 +1519,6 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                      * I see these fairly often from host 178.159.37.125.
                      * We are going to make them silent for now, but eventually, keep
                      * statistics about this sort of thing. */
-                    break;
-                default:
-                    ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
-                        tcp_state_to_string(tcb->tcpstate), what_to_string(what));
-                    break;
-            }
-            break;
-
-        case STATE_TIME_WAIT:
-            switch (what) {
-                case TCP_WHAT_RST:
-                case TCP_WHAT_FIN:
-                case TCP_WHAT_CLOSE:
-                case TCP_WHAT_TIMEOUT:
-                    /* giving up */
-                    if (tcb->tcpstate == STATE_TIME_WAIT) {
-                        tcpcon_destroy_tcb(tcpcon, tcb, Reason_Timeout);
-                        return TCB__destroyed;
-                    }
-                    break;
-                case TCP_WHAT_ACK:
-                    break;
-                case TCP_WHAT_SYNACK:
-                case TCP_WHAT_DATA:
                     break;
                 default:
                     ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
