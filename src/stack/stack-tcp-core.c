@@ -1574,7 +1574,9 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
         case STATE_TIME_WAIT:
             switch (what) {
+                case TCP_WHAT_RST:
                 case TCP_WHAT_FIN:
+                case TCP_WHAT_CLOSE:
                 case TCP_WHAT_TIMEOUT:
                     /* giving up */
                     if (tcb->tcpstate == STATE_TIME_WAIT) {
@@ -1585,13 +1587,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                 case TCP_WHAT_ACK:
                     break;
                 case TCP_WHAT_SYNACK:
-                case TCP_WHAT_RST:
                 case TCP_WHAT_DATA:
-                    break;
-                case TCP_WHAT_CLOSE:
-                    /* FIXME: to reach this state, we've already done a close.
-                     * FIXME: but this happens twice, because only have
-                     * FIXME: a single close function. */
                     break;
                 default:
                     ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
