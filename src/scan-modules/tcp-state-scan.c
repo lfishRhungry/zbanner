@@ -13,15 +13,11 @@
 
 extern struct ScanModule TcpStateScan; /*for internal x-ref*/
 
-static struct ResetFilter *rf = NULL;
-
 static struct TCP_ConnectionTable *tcpcon = NULL;
 
 static int tcpstate_global_init(const void *conf)
 {
     const struct Xconf *xconf = conf;
-
-    rf = rstfilter_create(xconf->seed, 16384);
 
     tcpcon = tcpcon_create_table(
         (size_t)(xconf->max_rate/5)/xconf->tx_thread_count,
@@ -134,8 +130,8 @@ tcpstate_handle(
                 seqno_them, seqno_me);
         }
 
-        /* If this is a FIN, handle that. Note that ACK +
-            * payload + FIN can come together */
+        /* If this is a FIN (also), handle that.
+        Note that ACK + payload + FIN can come together */
         if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
             TCP_FLAG_FIN)
             &&
@@ -152,28 +148,6 @@ tcpstate_handle(
             TCP_FLAG_RST)) {
             stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_RST, 0, 0,
                 recved->secs, recved->usecs, seqno_them, seqno_me);
-        }
-    } else if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
-        TCP_FLAG_FIN)) {
-
-        ipaddress_formatted_t fmt;
-        /*
-            * NO TCB!
-            *  This happens when we've sent a FIN, deleted our connection,
-            *  but the other side didn't get the packet.
-            */
-        fmt = ipaddress_fmt(ip_them);
-        LOG(LEVEL_DETAIL, "%s: received FIN but no TCB\n", fmt.string);
-        if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
-            TCP_FLAG_RST))
-            ; /* ignore if it's own TCP flag is set */
-        else {
-            int is_suppress;
-            
-            is_suppress = rstfilter_is_filter(rf, ip_me, port_me, ip_them, port_them);
-            if (!is_suppress)
-                tcpcon_send_RST(tcpcon, ip_me, ip_them,
-                    port_me, port_them, seqno_them, seqno_me);
         }
     }
 }
