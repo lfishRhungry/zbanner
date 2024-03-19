@@ -98,7 +98,6 @@ enum Tcp_State{
     STATE_ESTABLISHED_SEND,   /* special state, our turn to send */
     STATE_ESTABLISHED_RECV,   /* special state, our turn to receive */
     STATE_LAST_ACK,
-    STATE_CLOSING,
     STATE_TIME_WAIT,
 };
 
@@ -236,7 +235,6 @@ tcp_state_to_string(enum Tcp_State state)
     static char buf[64];
     switch (state) {
         case STATE_LAST_ACK:        return "LAST-ACK";
-        case STATE_CLOSING:         return "CLOSING";
         case STATE_TIME_WAIT:       return "TIME-WAIT";
         case STATE_SYN_SENT:        return "SYN_SENT";
         case STATE_ESTABLISHED_SEND:return "ESTABLISHED_SEND";
@@ -1299,18 +1297,6 @@ tcpapi_close(struct stack_handle_t *socket) {
     return 0;
 }
 
-
-
-static bool
-_tcb_they_have_acked_my_fin(struct TCP_Control_Block *tcb) {
-    if (tcb->segments && tcb->segments->is_fin && tcb->segments->length == 0) {
-        if (tcb->ackno_them >= tcb->segments->seqno + 1)
-            return true;
-        return false;
-    } else
-        return false;
-}
-
 static int
 _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
                   struct TCP_Control_Block *tcb,
@@ -1586,38 +1572,6 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     break;
             }
             break;
-
-        case STATE_CLOSING:
-            switch (what) {
-                case TCP_WHAT_TIMEOUT:
-                    tcpcon_destroy_tcb(tcpcon, tcb, Reason_Timeout);
-                    return TCB__destroyed;
-                case TCP_WHAT_ACK:
-                    _tcp_seg_acknowledge(tcb, ackno_them);
-                    if (_tcb_they_have_acked_my_fin(tcb)) {
-                        tcpcon_destroy_tcb(tcpcon, tcb, Reason_FIN);
-                        return TCB__destroyed;
-                    }
-                    break;
-                case TCP_WHAT_FIN:
-                    tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
-                    tcpcon_destroy_tcb(tcpcon, tcb, Reason_Shutdown);
-                    return TCB__destroyed;
-                    break;
-                case TCP_WHAT_CLOSE:
-                    /* The application this machine has issued a second `tcpapi_close()` request.
-                     * This represents a bug in the application process. One place where I see this
-                     * when scanning 193.109.9.122:992.
-                     * FIXME TODO */
-                    ; /* make this silent for now */
-                    break;
-                default:
-                    ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
-                        tcp_state_to_string(tcb->tcpstate), what_to_string(what));
-                    break;
-            }
-            break;
-
 
         case STATE_TIME_WAIT:
             switch (what) {
