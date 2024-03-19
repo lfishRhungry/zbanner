@@ -1206,20 +1206,6 @@ _do_reconnect(struct TCP_ConnectionTable *tcpcon,
     new_tcb->app_state = established;
 }
 
-static void
-_tcb_seg_close(void *in_tcpcon,
-              void *in_tcb,
-              unsigned secs, unsigned usecs) {
-    struct TCP_ConnectionTable *tcpcon = (struct TCP_ConnectionTable *)in_tcpcon;
-    struct TCP_Control_Block *tcb = (struct TCP_Control_Block *)in_tcb;
-
-    stack_incoming_tcp(tcpcon, tcb,
-                  TCP_WHAT_CLOSE,
-                  0, 0, 
-                  secs, usecs,
-                  tcb->seqno_them, tcb->ackno_them);
-}
-
 /***************************************************************************
  ***************************************************************************/
 int
