@@ -125,72 +125,50 @@ enum App_Event {
  ***************************************************************************/
 struct TCP_Control_Block
 {
-    ipaddress ip_me;
-    ipaddress ip_them;
+    ipaddress                    ip_me;
+    ipaddress                    ip_them;
+    unsigned short               port_me;
+    unsigned short               port_them;
+    uint32_t                     seqno_me;          /* next seqno I will use for transmit */
+    uint32_t                     seqno_them;        /* the next seqno I expect to receive */
+    uint32_t                     ackno_me;
+    uint32_t                     ackno_them;
+    uint32_t                     seqno_me_first;
+    uint32_t                     seqno_them_first;
 
-    unsigned short port_me;
-    unsigned short port_them;
+    struct TCP_Segment          *segments;
+    enum Tcp_State               tcpstate;
+    enum App_State               app_state;
+    unsigned char                ttl;
+    unsigned char                syns_sent;         /* reconnect */
+    unsigned short               mss;               /* maximum segment size 1460 */
+    time_t                       when_created;
+    unsigned                     is_small_window:1; /* send with smaller window */
+    unsigned                     is_their_fin:1;
+    unsigned                     is_active:1;       /*in-use/allocated or to be del soon*/
 
-    uint32_t seqno_me;      /* next seqno I will use for transmit */
-    uint32_t seqno_them;    /* the next seqno I expect to receive */
-    uint32_t ackno_me;
-    uint32_t ackno_them;
+    const struct ProbeModule    *probe;
+    struct ProbeState            probe_state;
 
-    uint32_t seqno_me_first;
-    uint32_t seqno_them_first;
-    
-    struct TCP_Control_Block *next;
-    struct TimeoutEntry timeout[1];
-
-    enum Tcp_State tcpstate;
-    unsigned char ttl;
-    unsigned char syns_sent; /* reconnect */
-    unsigned short mss; /* maximum segment size 1460 */
-    unsigned is_ipv6:1;
-    unsigned is_small_window:1; /* send with smaller window */
-    unsigned is_their_fin:1;
-
-    /** Set to true when the TCB is in-use/allocated, set to zero
-     * when it's about to be deleted soon */
-    unsigned is_active:1;
-    
-    /* If the payload we've sent was dynamically allocated with
-     * malloc() from the heap, in which case we'll have to free()
-     * it. (Most payloads are static memory) */
-    unsigned is_payload_dynamic:1;
-
-    enum App_State app_state;
-
-    struct TCP_Segment *segments;
-
-    /*
-    unsigned short payload_length;
-    const unsigned char *payload;
-    */
-    time_t when_created;
-
-    const struct ProbeModule *probe;
-
-    struct ProbeState probe_state;
-
-    unsigned packet_number;
+    struct TimeoutEntry          timeout[1];
+    struct TCP_Control_Block    *next;
 };
 
 struct TCP_ConnectionTable {
-    struct TCP_Control_Block **entries;
-    struct TCP_Control_Block *freed_list;
-    unsigned count;
-    unsigned mask;
-    unsigned timeout_connection;
-    unsigned timeout_hello;
+    struct TCP_Control_Block   **entries;
+    struct TCP_Control_Block    *freed_list;
 
-    uint64_t active_count;
-    uint64_t entropy;
+    unsigned                     timeout_conn;
+    unsigned                     count;
+    unsigned                     mask;
 
-    struct Timeouts *timeouts;
-    struct TemplatePacket *pkt_template;
-    struct stack_t *stack;
-    struct Output *out;
+    uint64_t                     active_count;
+    uint64_t                     entropy;
+
+    struct TemplatePacket       *pkt_template;
+    struct Timeouts             *timeouts;
+    struct stack_t              *stack;
+    struct Output               *out;
 
     /** This is for creating follow-up connections based on the first
      * connection. Given an existing IP/port, it returns a different
@@ -203,8 +181,8 @@ struct TCP_ConnectionTable {
 };
 
 enum {
-    SOCKERR_NONE=0, /* no error */
-    SOCKERR_EBADF=10,  /* bad socket descriptor */
+    SOCKERR_NONE  = 0,   /* no error */
+    SOCKERR_EBADF = 10,  /* bad socket descriptor */
 };
 
 struct stack_handle_t {
@@ -227,17 +205,18 @@ enum DestroyReason {
 /***************************************************************************
  * DEBUG: when printing debug messages (-d option), this prints a string
  * for the given state.
+ * !thread not safe
  ***************************************************************************/
 static const char *
 tcp_state_to_string(enum Tcp_State state)
 {
     static char buf[64];
     switch (state) {
-        case STATE_LAST_ACK:        return "LAST-ACK";
-        case STATE_TIME_WAIT:       return "TIME-WAIT";
-        case STATE_SYN_SENT:        return "SYN_SENT";
-        case STATE_ESTABLISHED_SEND:return "ESTABLISHED_SEND";
-        case STATE_ESTABLISHED_RECV:return "ESTABLISHED_RECV";
+        case STATE_LAST_ACK:            return "LAST-ACK";
+        case STATE_TIME_WAIT:           return "TIME-WAIT";
+        case STATE_SYN_SENT:            return "SYN_SENT";
+        case STATE_ESTABLISHED_SEND:    return "ESTABLISHED_SEND";
+        case STATE_ESTABLISHED_RECV:    return "ESTABLISHED_RECV";
 
         default:
             snprintf(buf, sizeof(buf), "%d", state);
@@ -341,23 +320,16 @@ tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usec
  * table.
  ***************************************************************************/
 struct TCP_ConnectionTable *
-tcpcon_create_table(    size_t entry_count,
-                        struct stack_t *stack,
-                        struct TemplatePacket *pkt_template,
-                        struct Output *out,
-                        unsigned connection_timeout,
-                        uint64_t entropy
-                        )
+tcpcon_create_table(size_t entry_count,
+    struct stack_t *stack,
+    struct TemplatePacket *pkt_template,
+    struct Output *out,
+    unsigned connection_timeout,
+    uint64_t entropy)
 {
     struct TCP_ConnectionTable *tcpcon;
 
-
     tcpcon = CALLOC(1, sizeof(*tcpcon));
-    tcpcon->timeout_connection = connection_timeout;
-    if (tcpcon->timeout_connection == 0)
-        tcpcon->timeout_connection = 30; /* half a minute before destroying tcb */
-    tcpcon->timeout_hello = 2;
-    tcpcon->entropy = entropy;
 
     /* Find nearest power of 2 to the tcb count, but don't go
      * over the number 16-million */
@@ -388,20 +360,17 @@ tcpcon_create_table(    size_t entry_count,
     }
     memset(tcpcon->entries, 0, entry_count * sizeof(*tcpcon->entries));
 
-
-    /* fill in the table structure */
-    tcpcon->count = (unsigned)entry_count;
-    tcpcon->mask = (unsigned)(entry_count-1);
-
-    /* create an event/timeouts structure */
-    tcpcon->timeouts = timeouts_create(TICKS_FROM_SECS(time(0)));
-
+    tcpcon->timeout_conn = connection_timeout;
+    if (tcpcon->timeout_conn == 0)
+        tcpcon->timeout_conn = 30; /* half a minute before destroying tcb */
 
     tcpcon->pkt_template = pkt_template;
-
-    tcpcon->stack = stack;
-    
-    tcpcon->out = out;
+    tcpcon->entropy      = entropy;
+    tcpcon->count        = (unsigned)entry_count;
+    tcpcon->mask         = (unsigned)(entry_count-1);
+    tcpcon->timeouts     = timeouts_create(TICKS_FROM_SECS(time(0)));
+    tcpcon->stack        = stack;
+    tcpcon->out          = out;
 
     return tcpcon;
 }
@@ -442,8 +411,7 @@ _tcb_change_state_to(struct TCP_Control_Block *tcb, enum Tcp_State new_state) {
  * Called from 
  ***************************************************************************/
 static void
-tcpcon_destroy_tcb(
-    struct TCP_ConnectionTable *tcpcon,
+tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
     struct TCP_Control_Block *tcb,
     enum DestroyReason reason)
 {
@@ -457,8 +425,8 @@ tcpcon_destroy_tcb(
      * have to do a lookup to find the head pointer in the table.
      */
     index = get_cookie(tcb->ip_me, tcb->port_me, 
-                    tcb->ip_them, tcb->port_them, 
-                    tcpcon->entropy);
+        tcb->ip_them, tcb->port_them, 
+        tcpcon->entropy);
     
     /*
      * At this point, we have the head of a linked list of TCBs. Now,
@@ -480,12 +448,14 @@ tcpcon_destroy_tcb(
      */
     while (tcb->segments) {
         struct TCP_Segment *seg;
-        seg = tcb->segments;
+        seg           = tcb->segments;
         tcb->segments = seg->next;
+
         if (seg->flags == PASS__copy || seg->flags == PASS__adopt) {
             free(seg->buf);
             seg->buf = 0;
         }
+
         free(seg);
     }
 
@@ -495,9 +465,9 @@ tcpcon_destroy_tcb(
     timeout_unlink(tcb->timeout);
 
     tcb->ip_them.ipv4 = (unsigned)~0;
-    tcb->port_them = (unsigned short)~0;
-    tcb->ip_me.ipv4 = (unsigned)~0;
-    tcb->port_me = (unsigned short)~0;
+    tcb->port_them    = (unsigned short)~0;
+    tcb->ip_me.ipv4   = (unsigned)~0;
+    tcb->port_me      = (unsigned short)~0;
 
     tcb->is_active = 0;
 
@@ -577,18 +547,20 @@ tcpcon_create_tcb(
 
     assert(ip_me.version != 0 && ip_them.version != 0);
 
-    tmp.ip_me = ip_me;
-    tmp.ip_them = ip_them;
-    tmp.port_me = (unsigned short)port_me;
+    tmp.ip_me     = ip_me;
+    tmp.ip_them   = ip_them;
+    tmp.port_me   = (unsigned short)port_me;
     tmp.port_them = (unsigned short)port_them;
 
     /* Lookup the location in the hash table where this tcb should be
      * placed */
     index = get_cookie(ip_me, port_me, ip_them, port_them, tcpcon->entropy);
-    tcb = tcpcon->entries[index & tcpcon->mask];
+    tcb   = tcpcon->entries[index & tcpcon->mask];
+
     while (tcb && !TCB_EQUALS(tcb, &tmp)) {
         tcb = tcb->next;
     }
+
     if (tcb != NULL) {
         /* If it already exists, just return the existing one */
         return tcb;
@@ -610,35 +582,33 @@ tcpcon_create_tcb(
     /*
      * Initialize the entry
      */
-    tcb->ip_me = ip_me;
-    tcb->ip_them = ip_them;
-    tcb->port_me = (unsigned short)port_me;
-    tcb->port_them = (unsigned short)port_them;
+    tcb->ip_me            = ip_me;
+    tcb->ip_them          = ip_them;
+    tcb->port_me          = (unsigned short)port_me;
+    tcb->port_them        = (unsigned short)port_them;
     tcb->seqno_them_first = seqno_them;
-    tcb->seqno_me_first = seqno_me;
-    tcb->seqno_me = seqno_me;
-    tcb->seqno_them = seqno_them;
-    tcb->ackno_me = seqno_them;
-    tcb->ackno_them = seqno_me;
-    tcb->when_created = global_now;
-    tcb->ttl = (unsigned char)ttl;
-    tcb->mss = 1400;
+    tcb->seqno_me_first   = seqno_me;
+    tcb->seqno_me         = seqno_me;
+    tcb->seqno_them       = seqno_them;
+    tcb->ackno_me         = seqno_them;
+    tcb->ackno_them       = seqno_me;
+    tcb->when_created     = global_now;
+    tcb->ttl              = (unsigned char)ttl;
+    tcb->mss              = 1400;
+    tcb->probe            = probe;
 
     /* Insert the TCB into the timeout. A TCB must always have a timeout
      * active. */
     timeout_init(tcb->timeout);
-    timeouts_add(tcpcon->timeouts,
-                 tcb->timeout,
-                 offsetof(struct TCP_Control_Block, timeout),
-                 TICKS_FROM_TV(secs+1,usecs)
-                 );
+    timeouts_add(tcpcon->timeouts, tcb->timeout,
+        offsetof(struct TCP_Control_Block, timeout),
+        TICKS_FROM_TV(secs+1,usecs));
 
-    tcb->probe = probe;
 
     /* The TCB is now allocated/in-use */
     assert(tcb->ip_me.version != 0 && tcb->ip_them.version != 0);
-    tcb->is_active = 1;
 
+    tcb->is_active = 1;
     tcpcon->active_count++;
 
     /*do connection init for probe*/
@@ -671,12 +641,12 @@ tcpcon_lookup_tcb(
     ipaddress_formatted_t fmt1;
     ipaddress_formatted_t fmt2;
 
-    tmp.ip_me = ip_me;
-    tmp.ip_them = ip_them;
-    tmp.port_me = (unsigned short)port_me;
+    tmp.ip_me     = ip_me;
+    tmp.ip_them   = ip_them;
+    tmp.port_me   = (unsigned short)port_me;
     tmp.port_them = (unsigned short)port_them;
-
-    index = get_cookie(ip_me, port_me, ip_them, port_them, tcpcon->entropy);
+    index         =
+        get_cookie(ip_me, port_me, ip_them, port_them, tcpcon->entropy);
 
     fmt1 = ipaddress_fmt(ip_me);
     fmt2 = ipaddress_fmt(ip_them);
@@ -707,12 +677,12 @@ tcpcon_send_packet(
     const unsigned char *payload, size_t payload_length)
 {
     struct PacketBuffer *response = 0;
-    unsigned is_syn = (tcp_flags == 0x02);
+    unsigned is_syn = (tcp_flags == TCP_FLAG_SYN);
     
     assert(tcb->ip_me.version != 0 && tcb->ip_them.version != 0);
 
     /* If sending an ACK, print a message */
-    if ((tcp_flags & 0x10) == 0x10) {
+    if ((tcp_flags & TCP_FLAG_ACK) == TCP_FLAG_ACK) {
         LOGtcb(tcb, 0, "xmit ACK ackingthem=%u\n", tcb->seqno_them-tcb->seqno_them_first);
     }
 
@@ -748,8 +718,7 @@ tcpcon_send_packet(
         tcb->ip_them, tcb->port_them,
         tcb->ip_me, tcb->port_me,
         tcb->seqno_me - is_syn, tcb->seqno_them,
-        tcp_flags,
-        payload, payload_length,
+        tcp_flags, payload, payload_length,
         response->px, sizeof(response->px)
         );
 
@@ -770,19 +739,20 @@ tcpcon_send_packet(
 /***************************************************************************
  * DEBUG: when printing debug messages (-d option), this prints a string
  * for the given state.
+ * !thread not safe
  ***************************************************************************/
 static const char *
 what_to_string(enum TCP_What state)
 {
     static char buf[64];
     switch (state) {
-        case TCP_WHAT_TIMEOUT: return "TIMEOUT";
-        case TCP_WHAT_SYNACK: return "SYNACK";
-        case TCP_WHAT_RST: return "RST";
-        case TCP_WHAT_FIN: return "FIN";
-        case TCP_WHAT_ACK: return "ACK";
-        case TCP_WHAT_DATA: return "DATA";
-        case TCP_WHAT_CLOSE: return "CLOSE";
+        case TCP_WHAT_TIMEOUT:  return "TIMEOUT";
+        case TCP_WHAT_SYNACK:   return "SYNACK";
+        case TCP_WHAT_RST:      return "RST";
+        case TCP_WHAT_FIN:      return "FIN";
+        case TCP_WHAT_ACK:      return "ACK";
+        case TCP_WHAT_DATA:     return "DATA";
+        case TCP_WHAT_CLOSE:    return "CLOSE";
         default:
             snprintf(buf, sizeof(buf), "%d", state);
             return buf;
@@ -806,8 +776,7 @@ LOGSEND(struct TCP_Control_Block *tcb, const char *what)
 
 
 void
-tcpcon_send_RST(
-                struct TCP_ConnectionTable *tcpcon,
+tcpcon_send_RST(struct TCP_ConnectionTable *tcpcon,
                 ipaddress ip_me, ipaddress ip_them,
                 unsigned port_me, unsigned port_them,
                 uint32_t seqno_them, uint32_t ackno_them)
@@ -816,12 +785,12 @@ tcpcon_send_RST(
     
     memset(&tcb, 0, sizeof(tcb));
     
-    tcb.ip_me = ip_me;
-    tcb.ip_them = ip_them;
-    tcb.port_me = (unsigned short)port_me;
-    tcb.port_them = (unsigned short)port_them;
-    tcb.seqno_me = ackno_them;
-    tcb.ackno_me = seqno_them + 1;
+    tcb.ip_me      = ip_me;
+    tcb.ip_them    = ip_them;
+    tcb.port_me    = (unsigned short)port_me;
+    tcb.port_them  = (unsigned short)port_them;
+    tcb.seqno_me   = ackno_them;
+    tcb.ackno_me   = seqno_them + 1;
     tcb.seqno_them = seqno_them + 1;
     tcb.ackno_them = ackno_them;
     
@@ -845,15 +814,13 @@ _tcb_seg_resend(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tc
         }
 
         if (seg->is_fin && seg->length == 0) {
-            tcpcon_send_packet(tcpcon, tcb,
-                                TCP_FLAG_FIN|TCP_FLAG_ACK,
+            tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_FIN|TCP_FLAG_ACK,
                                 0, /*FIN has no data */
                                 0 /*logically is 1 byte, but not payload byte */);
         } else {
             tcpcon_send_packet(tcpcon, tcb,
                                 TCP_FLAG_PSH | TCP_FLAG_ACK | (seg->is_fin?TCP_FLAG_FIN:0x00),
-                                seg->buf,
-                                seg->length);
+                                seg->buf, seg->length);
         }
     }
                         
@@ -1151,10 +1118,10 @@ _do_reconnect(struct TCP_ConnectionTable *tcpcon,
               enum App_State established) {
     struct TCP_Control_Block *new_tcb;
 
-    ipaddress ip_them = old_tcb->ip_them;
+    ipaddress ip_them  = old_tcb->ip_them;
     unsigned port_them = old_tcb->port_them;
-    ipaddress ip_me = old_tcb->ip_me;
-    unsigned port_me = old_tcb->port_me;
+    ipaddress ip_me    = old_tcb->ip_me;
+    unsigned port_me   = old_tcb->port_me;
     unsigned seqno;
 
 
@@ -1162,7 +1129,7 @@ _do_reconnect(struct TCP_ConnectionTable *tcpcon,
      * First, get another port number and potentially ip address
      */
     {
-        ipaddress prev_ip = ip_me;
+        ipaddress prev_ip  = ip_me;
         unsigned prev_port = port_me;
         _next_IP_port(tcpcon, &ip_me, &port_me);
 
@@ -1181,24 +1148,16 @@ _do_reconnect(struct TCP_ConnectionTable *tcpcon,
     /*
      * Now create a new TCB for this new connection
      */
-    new_tcb = tcpcon_create_tcb(
-                    tcpcon,
-                    ip_me, ip_them,
-                    port_me, port_them,
-                    seqno+1, 0,
-                    255,
-                    probe,
-                    secs, usecs);
+    new_tcb = tcpcon_create_tcb(tcpcon, ip_me, ip_them, port_me, port_them,
+        seqno+1, 0, 255, probe, secs, usecs);
+
     new_tcb->app_state = established;
 }
 
 /***************************************************************************
  ***************************************************************************/
 int
-tcpapi_set_timeout(struct stack_handle_t *socket,
-                        unsigned secs,
-                        unsigned usecs
-                        ) {
+tcpapi_set_timeout(struct stack_handle_t *socket, unsigned secs, unsigned usecs) {
     struct TCP_ConnectionTable *tcpcon = socket->tcpcon;
     struct TCP_Control_Block *tcb = socket->tcb;
 
@@ -1298,11 +1257,11 @@ tcpapi_close(struct stack_handle_t *socket) {
 
 static int
 _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
-                  struct TCP_Control_Block *tcb,
-                  const unsigned char *payload, size_t payload_length,
-                  unsigned seqno_them,
-                  unsigned secs, unsigned usecs,
-                  bool is_fin)
+    struct TCP_Control_Block *tcb,
+    const unsigned char *payload, size_t payload_length,
+    unsigned seqno_them,
+    unsigned secs, unsigned usecs,
+    bool is_fin)
 {
     /* Special case when packet contains only a FIN */
     if (payload_length == 0 && is_fin && (tcb->seqno_them - seqno_them) == 0) {
@@ -1339,7 +1298,7 @@ _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
     LOGtcb(tcb, 2, "received %u bytes\n", payload_length);
 
     tcb->seqno_them += payload_length + is_fin;
-    tcb->ackno_me += payload_length + is_fin;
+    tcb->ackno_me   += payload_length + is_fin;
 
     application_notify(tcpcon, tcb, APP_WHAT_RECV_PAYLOAD,
                        payload, payload_length, secs, usecs);
@@ -1393,8 +1352,8 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
             } else {
                 /* Otherwise shorten the payload */
                 payload_length += payload_offset;
-                payload -= payload_offset;
-                seqno_them -= payload_offset;
+                payload        -= payload_offset;
+                seqno_them     -= payload_offset;
                 assert(payload_length < 2000);
             }
         } else if (payload_offset > 0) {
@@ -1426,7 +1385,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
     /* Make sure no connection lasts longer than ~30 seconds */
     if (what == TCP_WHAT_TIMEOUT) {
-        if (tcb->when_created + tcpcon->timeout_connection < secs) {
+        if (tcb->when_created + tcpcon->timeout_conn < secs) {
             LOGip(LEVEL_DETAIL, tcb->ip_them, tcb->port_them,
                 "%s                \n",
                 "CONNECTION TIMEOUT---");
@@ -1624,31 +1583,30 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
 static const char *app_state_to_string(unsigned state) {
     switch (state) {
-    case APP_STATE_CONNECT: return "connect";
-    case APP_STATE_RECV_HELLO: return "wait-for-hello";
-    case APP_STATE_RECV_NEXT: return "receive";
-    case APP_STATE_SEND_FIRST: return "send-first";
-    case APP_STATE_SEND_NEXT: return "send";
+    case APP_STATE_CONNECT:       return "connect";
+    case APP_STATE_RECV_HELLO:    return "wait-for-hello";
+    case APP_STATE_RECV_NEXT:     return "receive";
+    case APP_STATE_SEND_FIRST:    return "send-first";
+    case APP_STATE_SEND_NEXT:     return "send";
     default: return "unknown";
     }
 }
 static const char *event_to_string(enum App_Event ev) {
     switch (ev) {
-    case APP_WHAT_CONNECTED: return "connected";
-    case APP_WHAT_RECV_TIMEOUT: return "timeout";
-    case APP_WHAT_RECV_PAYLOAD: return "payload";
-    case APP_WHAT_SEND_SENT: return "sent";
-    case APP_WHAT_SENDING: return "sending";
+    case APP_WHAT_CONNECTED:      return "connected";
+    case APP_WHAT_RECV_TIMEOUT:   return "timeout";
+    case APP_WHAT_RECV_PAYLOAD:   return "payload";
+    case APP_WHAT_SEND_SENT:      return "sent";
+    case APP_WHAT_SENDING:        return "sending";
     default: return "unknown";
     }
 }
  
 unsigned
 application_event(struct stack_handle_t *socket,
-                  enum App_State state, enum App_Event event,
-                  const struct ProbeModule *probe,
-                  const void *payload, size_t payload_length
-                  ) {
+    enum App_State state, enum App_Event event,
+    const struct ProbeModule *probe,
+    const void *payload, size_t payload_length) {
 
 again:
     switch (state) {
