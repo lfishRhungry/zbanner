@@ -93,15 +93,6 @@ struct TCP_Segment {
     struct TCP_Segment *next;
 };
 
-enum App_State{
-    App_Connect,
-    App_ReceiveHello,
-    App_ReceiveNext,
-    App_SendFirst,
-    App_SendNext,
-    App_Close,
-};
-
 enum Tcp_State{
     STATE_SYN_SENT=0, /* must be zero */
     //STATE_SYN_RECEIVED,
@@ -116,13 +107,22 @@ enum Tcp_State{
     STATE_TIME_WAIT,
 };
 
+enum App_State{
+    APP_STATE_CONNECT,
+    APP_STATE_RECV_HELLO,
+    APP_STATE_RECV_NEXT,
+    APP_STATE_SEND_FIRST,
+    APP_STATE_SEND_NEXT,
+    APP_STATE_CLOSE,
+};
+
 enum App_Event {
-    APP_CONNECTED,
-    APP_RECV_TIMEOUT,
-    APP_RECV_PAYLOAD,
-    APP_SENDING,
-    APP_SEND_SENT,
-    APP_CLOSE /*FIN received */
+    APP_WHAT_CONNECTED,
+    APP_WHAT_RECV_TIMEOUT,
+    APP_WHAT_RECV_PAYLOAD,
+    APP_WHAT_SENDING,
+    APP_WHAT_SEND_SENT,
+    APP_WHAT_CLOSE /*FIN received */
 };
 
 /***************************************************************************
@@ -960,7 +960,7 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
         seg->is_fin = is_close;
 
     if (!seg->is_fin && seg->length && tcb->tcpstate != STATE_ESTABLISHED_SEND)
-        application_notify(tcpcon, tcb, APP_SENDING, seg->buf, seg->length, 0, 0);
+        application_notify(tcpcon, tcb, APP_WHAT_SENDING, seg->buf, seg->length, 0, 0);
 
     LOGtcb(tcb, 0, "send = %u-bytes %s @ %u\n", length, is_close?"FIN":"",
            seg->seqno-tcb->seqno_me_first);
@@ -1397,7 +1397,7 @@ _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
     tcb->seqno_them += payload_length + is_fin;
     tcb->ackno_me += payload_length + is_fin;
 
-    application_notify(tcpcon, tcb, APP_RECV_PAYLOAD,
+    application_notify(tcpcon, tcb, APP_WHAT_RECV_PAYLOAD,
                        payload, payload_length, secs, usecs);
 
 
@@ -1526,7 +1526,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     /* Send "ACK" to acknowlege their "SYN-ACK" */
                     _tcb_send_ack(tcpcon, tcb);
                     _tcb_change_state_to(tcb, STATE_ESTABLISHED_RECV);
-                    application_notify(tcpcon, tcb, APP_CONNECTED, 0, 0, secs, usecs);
+                    application_notify(tcpcon, tcb, APP_WHAT_CONNECTED, 0, 0, secs, usecs);
                     break;
                 default:
                     ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
@@ -1564,7 +1564,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
                         /* All the payload has been sent. Notify the application of this, so that they
                          * can send more if the want, or switch to listening. */
-                        application_notify(tcpcon, tcb, APP_SEND_SENT, 0, 0, secs, usecs);
+                        application_notify(tcpcon, tcb, APP_WHAT_SEND_SENT, 0, 0, secs, usecs);
 
                     }
                     break;
@@ -1599,7 +1599,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                         _tcb_seg_recv(tcpcon, tcb, 0, 0, seqno_them, secs, usecs, true);
                         _tcb_change_state_to(tcb, STATE_CLOSE_WAIT);
                         //_tcb_send_ack(tcpcon, tcb);
-                        application_notify(tcpcon, tcb, APP_CLOSE,
+                        application_notify(tcpcon, tcb, APP_WHAT_CLOSE,
                                 0, payload_length, secs, usecs);
 
                     } else {
@@ -1611,7 +1611,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     _tcp_seg_acknowledge(tcb, ackno_them);
                     break;
                 case TCP_WHAT_TIMEOUT:
-                    application_notify(tcpcon, tcb, APP_RECV_TIMEOUT, 0, 0, secs, usecs);
+                    application_notify(tcpcon, tcb, APP_WHAT_RECV_TIMEOUT, 0, 0, secs, usecs);
                     break;
                 case TCP_WHAT_DATA:
                     _tcb_seg_recv(tcpcon, tcb, payload, payload_length, seqno_them, secs, usecs, false);
@@ -1654,7 +1654,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                             /* All the payload has been sent. Notify the application of this, so that they
                              * can send more if the want, or switch to listening. */
                             _tcb_change_state_to(tcb, STATE_FIN_WAIT1_RECV);
-                            application_notify(tcpcon, tcb, APP_SEND_SENT, 0, 0, secs, usecs);
+                            application_notify(tcpcon, tcb, APP_WHAT_SEND_SENT, 0, 0, secs, usecs);
                         }
                     }
                     break;
@@ -1676,14 +1676,14 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     _tcb_seg_recv(tcpcon, tcb, 0, 0, seqno_them, secs, usecs, true);
                     _tcb_change_state_to(tcb, STATE_CLOSING);
                     _tcb_send_ack(tcpcon, tcb);
-                    application_notify(tcpcon, tcb, APP_CLOSE, 0, 0, secs, usecs);
+                    application_notify(tcpcon, tcb, APP_WHAT_CLOSE, 0, 0, secs, usecs);
                     break;
                 case TCP_WHAT_ACK:
                     /* Apply the ack */
                     if (_tcp_seg_acknowledge(tcb, ackno_them)) {
                         if (_tcb_they_have_acked_my_fin(tcb)) {
                             _tcb_change_state_to(tcb, STATE_FIN_WAIT2);
-                            application_notify(tcpcon, tcb, APP_CLOSE, 0, 0, secs, usecs);
+                            application_notify(tcpcon, tcb, APP_WHAT_CLOSE, 0, 0, secs, usecs);
                         }
                     }
                     break;
@@ -1780,7 +1780,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     break;
                 case TCP_WHAT_TIMEOUT:
                     /* Remind the app that it's waiting for it to be closed */
-                    application_notify(tcpcon, tcb, APP_CLOSE,
+                    application_notify(tcpcon, tcb, APP_WHAT_CLOSE,
                             0, payload_length, secs, usecs);
                     break;
                 default:
@@ -1818,23 +1818,23 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
 static const char *app_state_to_string(unsigned state) {
     switch (state) {
-    case App_Connect: return "connect";
-    case App_ReceiveHello: return "wait-for-hello";
-    case App_ReceiveNext: return "receive";
-    case App_SendFirst: return "send-first";
-    case App_SendNext: return "send";
-    case App_Close: return "close";
+    case APP_STATE_CONNECT: return "connect";
+    case APP_STATE_RECV_HELLO: return "wait-for-hello";
+    case APP_STATE_RECV_NEXT: return "receive";
+    case APP_STATE_SEND_FIRST: return "send-first";
+    case APP_STATE_SEND_NEXT: return "send";
+    case APP_STATE_CLOSE: return "close";
     default: return "unknown";
     }
 }
 static const char *event_to_string(enum App_Event ev) {
     switch (ev) {
-    case APP_CONNECTED: return "connected";
-    case APP_RECV_TIMEOUT: return "timeout";
-    case APP_RECV_PAYLOAD: return "payload";
-    case APP_SEND_SENT: return "sent";
-    case APP_CLOSE: return "close";
-    case APP_SENDING: return "sending";
+    case APP_WHAT_CONNECTED: return "connected";
+    case APP_WHAT_RECV_TIMEOUT: return "timeout";
+    case APP_WHAT_RECV_PAYLOAD: return "payload";
+    case APP_WHAT_SEND_SENT: return "sent";
+    case APP_WHAT_CLOSE: return "close";
+    case APP_WHAT_SENDING: return "sending";
     default: return "unknown";
     }
 }
@@ -1848,15 +1848,15 @@ application_event(struct stack_handle_t *socket,
 
 again:
     switch (state) {
-        case App_Connect:
+        case APP_STATE_CONNECT:
             switch (event) {
-                case APP_CONNECTED:
+                case APP_WHAT_CONNECTED:
                     /* We have a receive a SYNACK here. If there are multiple handlers
                      * for this port, then attempt another connection using the
                      * other protocol handlers. For example, for SSL, we might want
                      * to try both TLSv1.0 and TLSv1.3 */
                     // if (stream && stream->next) {
-                    //     tcpapi_reconnect(socket, stream->next, App_Connect);
+                    //     tcpapi_reconnect(socket, stream->next, APP_STATE_CONNECT);
                     // }
 
                     /*
@@ -1866,13 +1866,13 @@ again:
                      * to switch to sending
                      */
                     if (probe->hello_wait <= 0) {
-                        tcpapi_change_app_state(socket, App_SendFirst);
-                        state = App_SendFirst;
+                        tcpapi_change_app_state(socket, APP_STATE_SEND_FIRST);
+                        state = APP_STATE_SEND_FIRST;
                         goto again;
                     } else {
                         tcpapi_set_timeout(socket, probe->hello_wait, 0);
                         tcpapi_recv(socket);
-                        tcpapi_change_app_state(socket, App_ReceiveHello);
+                        tcpapi_change_app_state(socket, APP_STATE_RECV_HELLO);
                     }
                     break;
                 default:
@@ -1882,23 +1882,23 @@ again:
             }
 
             break;
-        case App_ReceiveHello:
+        case APP_STATE_RECV_HELLO:
             switch (event) {
-                case APP_RECV_TIMEOUT:
+                case APP_WHAT_RECV_TIMEOUT:
                     /* We've got no response from the initial connection,
                      * so switch from them being responsible for communications
                      * to us being responsible, and start sending */
-                    tcpapi_change_app_state(socket, App_SendFirst);
-                    state = App_SendFirst;
+                    tcpapi_change_app_state(socket, APP_STATE_SEND_FIRST);
+                    state = APP_STATE_SEND_FIRST;
                     goto again;
                     break;
-                case APP_RECV_PAYLOAD:
+                case APP_WHAT_RECV_PAYLOAD:
                     /* We've receive some data from them, so wait for some more.
                      * This means we won't be transmitting anything to them. */
-                    tcpapi_change_app_state(socket, App_ReceiveNext);
-                    state = App_ReceiveNext;
+                    tcpapi_change_app_state(socket, APP_STATE_RECV_NEXT);
+                    state = APP_STATE_RECV_NEXT;
                     goto again;
-                case APP_CLOSE:
+                case APP_WHAT_CLOSE:
                     tcpapi_close(socket);
                     break;
                 default:
@@ -1908,9 +1908,9 @@ again:
             }
             break;
 
-        case App_ReceiveNext:
+        case APP_STATE_RECV_NEXT:
             switch (event) {
-                case APP_RECV_PAYLOAD:
+                case APP_WHAT_RECV_PAYLOAD:
                     /*
                      * This is an important part of the system, where the TCP
                      * stack passes incoming packet payloads off to the application
@@ -1942,19 +1942,19 @@ again:
                         tcpapi_close(socket);
 
                     break;
-                case APP_CLOSE:
+                case APP_WHAT_CLOSE:
                     /* The other side has sent us a FIN, therefore, we need
                      * to likewise close our end. */
                     tcpapi_close(socket);
                     break;
-                case APP_RECV_TIMEOUT:
+                case APP_WHAT_RECV_TIMEOUT:
                     break;
-                case APP_SENDING:
+                case APP_WHAT_SENDING:
                     /* A higher level protocol has started sending packets while processing
                      * a receive, therefore, change to the SEND state */
-                    tcpapi_change_app_state(socket, App_SendNext);
+                    tcpapi_change_app_state(socket, APP_STATE_SEND_NEXT);
                     break;
-                case APP_SEND_SENT:
+                case APP_WHAT_SEND_SENT:
                     /* FIXME */
                     break;
                 default:
@@ -1964,7 +1964,7 @@ again:
             }
             break;
 
-        case App_SendFirst:
+        case APP_STATE_SEND_FIRST:
             /*
              * We either have a CALLBACK that will handle the
              * sending/receiving of packets, or we will send a fixed
@@ -1996,17 +1996,17 @@ again:
             if (pass.close)
                 tcpapi_close(socket);
 
-            tcpapi_change_app_state(socket, App_SendNext);
+            tcpapi_change_app_state(socket, APP_STATE_SEND_NEXT);
             break;
-        case App_SendNext:
+        case APP_STATE_SEND_NEXT:
             switch (event) {
-                case APP_SEND_SENT:
+                case APP_WHAT_SEND_SENT:
                     /* We've got an acknowledgement that all our data
                      * was sent. Therefore, change the receive state */
                     tcpapi_recv(socket);
-                    tcpapi_change_app_state(socket, App_ReceiveNext);
+                    tcpapi_change_app_state(socket, APP_STATE_RECV_NEXT);
                     break;
-                case APP_SENDING:
+                case APP_WHAT_SENDING:
                     break;
                 default:
                     ERRMSG("TCP.app: unhandled event: state=%s event=%s\n",

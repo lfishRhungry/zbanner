@@ -25,7 +25,7 @@ enum {
     TLS_STATE_HANDSHAKE,
     TLS_STATE_APP_HELLO,
     TLS_STATE_APP_RECEIVE_NEXT,
-    TLS_STATE_APP_CLOSE,
+    TLS_STATE_APP_WHAT_CLOSE,
     TLS_STATE_UNKNOWN
 };
 
@@ -1073,7 +1073,7 @@ tlsstate_parse_response(
                     if (res_ex == SSL_ERROR_WANT_READ) {
                         is_continue = 0;
                     } else if (res_ex == SSL_ERROR_ZERO_RETURN) {
-                        state->state = TLS_STATE_APP_CLOSE;
+                        state->state = TLS_STATE_APP_WHAT_CLOSE;
                     } else {
                         if (res_ex != SSL_ERROR_SSL) {
                             LOG(LEVEL_WARNING, "[ssl_parse_record]SSL_read error: %d %d\n",
@@ -1086,7 +1086,7 @@ tlsstate_parse_response(
             }
             break;
 
-        case TLS_STATE_APP_CLOSE:
+        case TLS_STATE_APP_WHAT_CLOSE:
             pass->close = 1;
             is_continue = 0;
             state->state = TLS_STATE_UNKNOWN;
