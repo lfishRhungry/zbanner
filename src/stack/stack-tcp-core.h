@@ -83,8 +83,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block 
  * Lookup a connection record based on IP/ports.
  */
 struct TCP_Control_Block *
-tcpcon_lookup_tcb(
-    struct TCP_ConnectionTable *tcpcon,
+tcpcon_lookup_tcb(struct TCP_ConnectionTable *tcpcon,
     ipaddress ip_src, ipaddress ip_dst,
     unsigned port_src, unsigned port_dst);
 

@@ -594,7 +594,7 @@ tcpcon_create_tcb(
     tcb->probe            = probe;
 
     /* Insert the TCB into the timeout. A TCB must always have a timeout
-     * active. */
+     * active to insure to be deleted. */
     timeout_init(tcb->timeout);
     timeouts_add(tcpcon->timeouts, tcb->timeout,
         offsetof(struct TCP_Control_Block, timeout),
@@ -944,12 +944,6 @@ _tcp_seg_acknowledge(
     struct TCP_Control_Block *tcb,
     uint32_t ackno)
 {
-
-    /*LOG(LEVEL_DETAIL,  "%s - %u-sending, %u-reciving\n",
-            fmt.string,
-            tcb->seqno_me - ackno,
-            ackno - tcb->ackno_them
-            );*/
     /* Normal: just discard repeats */
     if (ackno == tcb->seqno_me) {
         return 0;
@@ -997,7 +991,9 @@ handle_fin:
         }
     }
 
-    /* Retire outstanding segments */
+    /*
+    !Retire outstanding segments
+    */
     {
         unsigned length = ackno - tcb->seqno_me;
         while (tcb->segments && length >= tcb->segments->length) {
@@ -1256,14 +1252,13 @@ _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
     struct TCP_Control_Block *tcb,
     const unsigned char *payload, size_t payload_length,
     unsigned seqno_them,
-    unsigned secs, unsigned usecs,
-    bool is_fin)
+    unsigned secs, unsigned usecs, bool is_fin)
 {
     /* Special case when packet contains only a FIN */
     if (payload_length == 0 && is_fin && (tcb->seqno_them - seqno_them) == 0) {
-        tcb->is_their_fin = 1;
-        tcb->seqno_them += 1;
-        tcb->ackno_me += 1;
+        tcb->is_their_fin  = 1;
+        tcb->seqno_them   += 1;
+        tcb->ackno_me     += 1;
         tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
         return 1;
     }
@@ -1420,11 +1415,15 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     tcb->seqno_me_first   = ackno_them - 1;
 
                     LOGtcb(tcb, 1, "%s connection established\n",
-                           what_to_string(what));
+                        what_to_string(what));
 
                     /* Send "ACK" to acknowlege their "SYN-ACK" */
                     tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
                     _tcb_change_state_to(tcb, STATE_ESTABLISHED_RECV);
+
+                    /**
+                     * this will make probe to send hello, and change TCB state
+                     * to STATE_ESTABLISHED SEND*/
                     application_notify(tcpcon, tcb, APP_WHAT_CONNECTED, 0, 0, secs, usecs);
                     break;
                 default:
@@ -1567,7 +1566,7 @@ again:
         case APP_STATE_CONNECT:
             switch (event) {
                 case APP_WHAT_CONNECTED:
-                    /* We have a receive a SYNACK here. If there are multiple handlers
+                    /* We have receive a SYNACK here. If there are multiple handlers
                      * for this port, then attempt another connection using the
                      * other protocol handlers. For example, for SSL, we might want
                      * to try both TLSv1.0 and TLSv1.3 */
@@ -1678,8 +1677,6 @@ again:
              * sending/receiving of packets, or we will send a fixed
              * "probe" string that will hopefull trigger a response.
              */
-            /* We just have a template to blindly copy some bytes onto the wire
-                * in order to trigger/probe for a response */
             struct ProbeTarget target = {
                 .ip_them   = socket->tcb->ip_them,
                 .port_them = socket->tcb->port_them,
