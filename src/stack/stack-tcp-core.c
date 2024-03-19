@@ -1327,10 +1327,8 @@ int
 tcpapi_close(struct stack_handle_t *socket) {
     if (socket == NULL || socket->tcb == NULL)
         return SOCKERR_EBADF;
-    _tcb_seg_close(socket->tcpcon,
-                   socket->tcb,
-                   socket->secs,
-                   socket->usecs);
+    tcpcon_send_packet(socket->tcpcon, socket->tcb, TCP_FLAG_RST, 0, 0);
+    tcpcon_destroy_tcb(socket->tcpcon, socket->tcb, Reason_Shutdown);
     return 0;
 }
 
