@@ -89,15 +89,15 @@ struct TCP_Segment {
     unsigned char *buf;
     size_t length;
     enum PassFlag flags;
-    bool is_fin; /* was fin sent */
+    bool is_fin;              /* was fin sent */
     struct TCP_Segment *next;
 };
 
 enum Tcp_State{
-    STATE_SYN_SENT = 0,     /* init state, must be zero */
+    STATE_SYN_SENT = 0,       /* init state, must be zero */
     //STATE_SYN_RECEIVED,
-    STATE_ESTABLISHED_SEND, /* special state, our turn to send */
-    STATE_ESTABLISHED_RECV, /* special state, our turn to receive */
+    STATE_ESTABLISHED_SEND,   /* special state, our turn to send */
+    STATE_ESTABLISHED_RECV,   /* special state, our turn to receive */
     STATE_CLOSE_WAIT,
     STATE_LAST_ACK,
     STATE_FIN_WAIT1_SEND,
@@ -897,7 +897,7 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
         const void *buf, size_t length, 
         enum PassFlag flags, unsigned is_close) {
     
-    /*just handle cloing if it set*/
+    /*just handle closing if it set*/
     if (is_close) {
         length = 0;
     }
@@ -922,7 +922,7 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     for (next = &tcb->segments; *next; next = &(*next)->next) {
         seqno = (unsigned)((*next)->seqno + (*next)->length);
         if ((*next)->is_fin) {
-            /* can't send past a FIN */
+            /* can't send after we have sent a FIN */
             LOGip(0, tcb->ip_them, tcb->port_them, "can't send past a FIN\n");
             if (flags == PASS__adopt) {
                 free((void*)buf); /* discard const */
@@ -933,13 +933,13 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     }
 
     /* Append this segment to the list */
-    seg = calloc(1, sizeof(*seg));
+    seg   = calloc(1, sizeof(*seg));
     *next = seg;
 
     /* Fill in this segment's members */
-    seg->seqno = seqno;
+    seg->seqno  = seqno;
     seg->length = length;
-    seg->flags = flags;
+    seg->flags  = flags;
 
     if (is_close || !length) {
         seg->buf = NULL;
