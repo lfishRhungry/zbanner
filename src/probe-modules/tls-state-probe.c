@@ -22,11 +22,11 @@
 #endif
 
 enum {
-    TLS_STATE_HANDSHAKE,
-    TLS_STATE_APP_HELLO,
+    TLS_STATE_HANDSHAKE = 0,     /*init state: still in handshaking*/
+    TLS_STATE_APP_HELLO,         /*our turn to say hello*/
     TLS_STATE_APP_RECEIVE_NEXT,
     TLS_STATE_APP_WHAT_CLOSE,
-    TLS_STATE_UNKNOWN
+    TLS_STATE_UNKNOWN,           /*unexpected state that need to close conn*/
 };
 
 /*for internal x-ref*/
@@ -553,12 +553,9 @@ static int output_subject(struct Output *out,
 
     x509_subject_name = X509_get_subject_name(x509_cert);
     if (x509_subject_name != NULL) {
+
         int i_name;
-        /*res = X509_NAME_print_ex(bio, x509_subject_name, 0, 0);
-        if(res != 1) {
-                LOG(LEVEL_WARNING, "[BANNER_NAMES]X509_get_subject_name failed with
-        error %d\n", res);
-        }*/
+
         for (i_name = 0; i_name < X509_NAME_entry_count(x509_subject_name);
              i_name++) {
             X509_NAME_ENTRY *name_entry = NULL;
@@ -818,7 +815,6 @@ tlsstate_parse_response(
     const unsigned char *px,
     unsigned sizeof_px)
 {
-    #if 1
     int res, res_ex;
     int is_continue;
     struct TlsState *tls_state = state->data;
@@ -968,7 +964,6 @@ tlsstate_parse_response(
                     pass->payload = tls_state->data;
                     pass->len     = offset;
                     pass->flag    = PASS__copy;
-                    is_continue = 0;
                     return;
                 }
 
@@ -987,8 +982,12 @@ tlsstate_parse_response(
             struct DataPass subpass = {0};
             tlsstate_conf.subprobe->make_hello_cb(&subpass, &tls_state->substate, target);
 
-            /*Just support this now*/
-            assert(subpass.payload != NULL && subpass.len != 0);
+            /*Maybe no hello and maybe just close*/
+            if (!subpass.payload || !subpass.payload) {
+                pass->close = subpass.close;
+                state->state = TLS_STATE_APP_RECEIVE_NEXT;
+                return;
+            }
 
             res = 1;
 
@@ -1044,7 +1043,8 @@ tlsstate_parse_response(
                     pass->payload = tls_state->data;
                     pass->len     = offset;
                     pass->flag    = PASS__copy;
-                    is_continue = 0;
+                    pass->close   = subpass.close;
+                    is_continue   = 0;
                     return;
                 }
             }
@@ -1099,8 +1099,6 @@ tlsstate_parse_response(
     }
 
     return;
-
-    #endif
 }
 
 struct ProbeModule TlsStateProbe = {
