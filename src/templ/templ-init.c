@@ -470,7 +470,7 @@ template_set_target_ipv6(
     case Proto_Count:
         break;
     case Proto_TCP_SYN: {
-        LOG(0, "template_set_target_ipv6: impossible protocol(Proto_TCP_SYN) for template.\n");
+        LOG(LEVEL_ERROR, "template_set_target_ipv6: impossible protocol(Proto_TCP_SYN) for template.\n");
         exit(1);
     }
     }
@@ -691,7 +691,7 @@ template_set_target_ipv4(
     case Proto_Count:
         break;
     case Proto_TCP_SYN: {
-        LOG(0, "template_set_target_ipv4: impossible protocol(Proto_TCP_SYN) for template.\n");
+        LOG(LEVEL_ERROR, "template_set_target_ipv4: impossible protocol(Proto_TCP_SYN) for template.\n");
         exit(1);
     }
     }
@@ -727,7 +727,7 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6, u
     /* Parse the existing IPv4 packet */
     x = preprocess_frame(tmpl->ipv4.packet, tmpl->ipv4.length, data_link_type, &parsed);
     if (!x || parsed.found == FOUND_NOTHING) {
-        LOG(0, "ERROR: bad packet template\n");
+        LOG(LEVEL_ERROR, "ERROR: bad packet template\n");
         exit(1);
     }
 
@@ -802,7 +802,7 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6, u
     /* Parse our newly construct IPv6 packet */
     x = preprocess_frame(buf, tmpl->ipv6.length, data_link_type, &parsed);
     if (!x || parsed.found == FOUND_NOTHING) {
-        LOG(0, "[-] FAILED: bad packet template\n");
+        LOG(LEVEL_ERROR, "[-] FAILED: bad packet template\n");
         exit(1);
     }
     tmpl->ipv6.offset_ip = parsed.ip_offset;
@@ -849,7 +849,7 @@ _template_init(
      */
     x = preprocess_frame(px, tmpl->ipv4.length, 1 /*enet*/, &parsed);
     if (!x || parsed.found == FOUND_NOTHING) {
-        LOG(0, "ERROR: bad packet template\n");
+        LOG(LEVEL_ERROR, "ERROR: bad packet template\n");
         exit(1);
     }
     tmpl->ipv4.offset_ip = parsed.ip_offset;
@@ -968,8 +968,8 @@ _template_init(
     } else if (data_link_type == PCAP_DLT_ETHERNET) {
     /* the default, do nothing */
     } else {
-    LOG(0, "[-] FAILED: bad packet template, unknown data link type\n");
-        LOG(0, "    [hint] xtate doesn't know how to format packets for this interface\n");
+    LOG(LEVEL_ERROR, "[-] FAILED: bad packet template, unknown data link type\n");
+        LOG(LEVEL_ERROR, "    [hint] xtate doesn't know how to format packets for this interface\n");
     exit(1);
     }
 

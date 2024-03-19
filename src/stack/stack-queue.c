@@ -21,7 +21,7 @@ stack_get_packetbuffer(struct stack_t *stack)
     }
 
     if (response == NULL) {
-        LOG(0, "FAIL: packet buffers empty. (IMPOSSIBLE)\n");
+        LOG(LEVEL_ERROR, "FAIL: packet buffers empty. (IMPOSSIBLE)\n");
         fflush(stdout);
         exit(1);
     }

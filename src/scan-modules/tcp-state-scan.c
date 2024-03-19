@@ -163,7 +163,7 @@ tcpstate_handle(
             *  but the other side didn't get the packet.
             */
         fmt = ipaddress_fmt(ip_them);
-        LOG(4, "%s: received FIN but no TCB\n", fmt.string);
+        LOG(LEVEL_DETAIL, "%s: received FIN but no TCB\n", fmt.string);
         if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
             TCP_FLAG_RST))
             ; /* ignore if it's own TCP flag is set */

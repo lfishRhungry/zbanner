@@ -48,10 +48,10 @@ rawsock_get_adapter_mac(const char *ifname, unsigned char *mac)
     /* Log helpful info about the interface type */
     switch (ifr.ifr_ifru.ifru_hwaddr.sa_family) {
     case 1:
-        LOG(1, "if:%s: type=ethernet(1)\n", ifname);
+        LOG(LEVEL_WARNING, "if:%s: type=ethernet(1)\n", ifname);
         break;
     default:
-        LOG(1, "if:%s: type=0x%04x\n", ifname, ifr.ifr_ifru.ifru_hwaddr.sa_family);
+        LOG(LEVEL_WARNING, "if:%s: type=0x%04x\n", ifname, ifr.ifr_ifru.ifru_hwaddr.sa_family);
     }
 
 
@@ -64,7 +64,7 @@ rawsock_get_adapter_mac(const char *ifname, unsigned char *mac)
      */
     if (memcmp(mac, "\0\0\0\0\0\0", 6) == 0
             && ifr.ifr_ifru.ifru_hwaddr.sa_family == 0xfffe) {
-        LOG(1, "%s: creating fake address\n", ifname);
+        LOG(LEVEL_WARNING, "%s: creating fake address\n", ifname);
         mac[5] = 1;
     }
 
@@ -192,7 +192,7 @@ rawsock_get_adapter_mac(const char *ifname, unsigned char *mac)
             break;
     }
     if (p == NULL) {
-        LOG(1, "if:%s: not found\n", ifname);
+        LOG(LEVEL_WARNING, "if:%s: not found\n", ifname);
         goto error; /* not found */
     }
 
@@ -207,7 +207,7 @@ rawsock_get_adapter_mac(const char *ifname, unsigned char *mac)
             len = link->sdl_alen;
         }
 
-        LOG(1, "[+] if(%s): family=%u, type=%u, len=%u\n",
+        LOG(LEVEL_WARNING, "[+] if(%s): family=%u, type=%u, len=%u\n",
                 ifname,
                 link->sdl_family,
                 link->sdl_type,

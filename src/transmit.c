@@ -48,7 +48,7 @@ void transmit_thread(void *v)
 
     /* Wait to make sure receive_thread is ready */
     pixie_usleep(1000000);
-    LOG(1, "[+] starting transmit thread #%u\n", parms->tx_index);
+    LOG(LEVEL_WARNING, "[+] starting transmit thread #%u\n", parms->tx_index);
 
     /* Lock threads to the CPUs one by one.
      * Tx threads follow  the only one Rx thread.
@@ -102,7 +102,7 @@ infinite:
     if (xconf->resume.count && end > start + xconf->resume.count)
         end = start + xconf->resume.count;
 
-    LOG(3, "THREAD: xmit: starting main loop: [%llu..%llu]\n", start, end);
+    LOG(LEVEL_DEBUG, "THREAD: xmit: starting main loop: [%llu..%llu]\n", start, end);
 
     uint64_t i;
     unsigned more_idx = 0;
@@ -236,7 +236,7 @@ infinite:
     /*
      * Wait until the receive thread realizes the scan is over
      */
-    LOG(1, "[+] transmit thread #%u complete\n", parms->tx_index);
+    LOG(LEVEL_WARNING, "[+] transmit thread #%u complete\n", parms->tx_index);
 
     /*help rx thread to reponse*/
     while (!is_rx_done) {
@@ -255,6 +255,6 @@ infinite:
         ft_close_handler(&ft_handler);
 
     parms->done_transmitting = 1;
-    LOG(1, "[+] exiting transmit thread #%u                    \n",
+    LOG(LEVEL_WARNING, "[+] exiting transmit thread #%u                    \n",
         parms->tx_index);
 }

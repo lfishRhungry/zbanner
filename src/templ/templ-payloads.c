@@ -694,7 +694,7 @@ payloads_read_pcap(const char *filename,
     struct PcapFile *pcap;
     unsigned count = 0;
 
-    LOG(2, "payloads:'%s': opening packet capture\n", filename);
+    LOG(LEVEL_INFO, "payloads:'%s': opening packet capture\n", filename);
 
     /* open packet-capture */
     pcap = pcapfile_openread(filename);
@@ -791,8 +791,8 @@ payloads_read_pcap(const char *filename,
 
     }
 
-    LOG(2, "payloads:'%s': imported %u unique payloads\n", filename, count);
-    LOG(2, "payloads:'%s': closed packet capture\n", filename);
+    LOG(LEVEL_INFO, "payloads:'%s': imported %u unique payloads\n", filename, count);
+    LOG(LEVEL_INFO, "payloads:'%s': closed packet capture\n", filename);
     pcapfile_close(pcap);
 }
 

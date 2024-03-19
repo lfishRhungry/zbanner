@@ -77,7 +77,7 @@ rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
         free(rtm);
         return errno;
     }
-    LOG(2, "[+] getif: got socket handle\n");
+    LOG(LEVEL_INFO, "[+] getif: got socket handle\n");
 
     /* Needs a timeout. Sometimes it'll hang indefinitely waiting for a 
      * response that will never arrive */
@@ -88,11 +88,11 @@ rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
 
         err = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
         if (err < 0)
-            LOG(0, "[-] SO_RCVTIMEO: %d %s\n", errno, strerror(errno));
+            LOG(LEVEL_ERROR, "[-] SO_RCVTIMEO: %d %s\n", errno, strerror(errno));
 
         err = setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout));
         if (err < 0)
-            LOG(0, "[-] SO_SNDTIMEO: %d %s\n", errno, strerror(errno));
+            LOG(LEVEL_ERROR, "[-] SO_SNDTIMEO: %d %s\n", errno, strerror(errno));
    }
 
     /*
@@ -121,7 +121,7 @@ rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
 
     err = write(fd, (char *)rtm, rtm->rtm_msglen);
     if (err <= 0) {
-        LOG(0, "[-] getif: write(): returned %d %s\n", errno, strerror(errno));
+        LOG(LEVEL_ERROR, "[-] getif: write(): returned %d %s\n", errno, strerror(errno));
         goto fail;
     }
 
@@ -131,11 +131,11 @@ rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
     for (;;) {
         err = read(fd, (char *)rtm, sizeof_buffer);
         if (err <= 0) {
-            LOG(0, "[-] getif: read(): returned %d %s\n", errno, strerror(errno));
+            LOG(LEVEL_ERROR, "[-] getif: read(): returned %d %s\n", errno, strerror(errno));
             goto fail;
         }
 
-        LOG(2, "[+] getif: got response, len=%d\n", err);
+        LOG(LEVEL_INFO, "[+] getif: got response, len=%d\n", err);
 
         if (rtm->rtm_seq != seq) {
             printf("seq: %u %u\n", rtm->rtm_seq, seq);
@@ -266,30 +266,30 @@ static int parseRoutes(struct nlmsghdr *nlHdr, struct route_info *rtInfo)
         switch (rtAttr->rta_type) {
         case RTA_OIF:
             if_indextoname(*(int *) RTA_DATA(rtAttr), rtInfo->ifName);
-            //LOG(4, "ifname=%s ", rtInfo->ifName);
+            //LOG(LEVEL_DETAIL, "ifname=%s ", rtInfo->ifName);
             break;
         case RTA_GATEWAY:
             rtInfo->gateWay.s_addr = *(u_int *)RTA_DATA(rtAttr);
-            //LOG(4, "gw=%u.%u.%u.%u ", FORMATADDR(rtInfo->gateWay.s_addr));
+            //LOG(LEVEL_DETAIL, "gw=%u.%u.%u.%u ", FORMATADDR(rtInfo->gateWay.s_addr));
             break;
         case RTA_PREFSRC:
             rtInfo->srcAddr.s_addr = *(u_int *)RTA_DATA(rtAttr);
-            //LOG(4, "src=%u.%u.%u.%u ", FORMATADDR(rtInfo->srcAddr.s_addr));
+            //LOG(LEVEL_DETAIL, "src=%u.%u.%u.%u ", FORMATADDR(rtInfo->srcAddr.s_addr));
             break;
         case RTA_DST:
             rtInfo->dstAddr .s_addr = *(u_int *)RTA_DATA(rtAttr);
-            //LOG(4, "dst=%u.%u.%u.%u ", FORMATADDR(rtInfo->dstAddr.s_addr));
+            //LOG(LEVEL_DETAIL, "dst=%u.%u.%u.%u ", FORMATADDR(rtInfo->dstAddr.s_addr));
             break;
         case RTA_PRIORITY:
             rtInfo->priority = *(int*)RTA_DATA(rtAttr);
-            //LOG(4, "priority=0x%08x ", rtInfo->priority);
+            //LOG(LEVEL_DETAIL, "priority=0x%08x ", rtInfo->priority);
             break;
         default:
-            //LOG(4, "rta_type=%d ", rtAttr->rta_type)
+            //LOG(LEVEL_DETAIL, "rta_type=%d ", rtAttr->rta_type)
             ;
         }
     }
-    //LOG(4, "\n");
+    //LOG(LEVEL_DETAIL, "\n");
 
     return 0;
 }
@@ -357,12 +357,12 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
 
         memset(rtInfo, 0, sizeof(struct route_info));
 
-        //LOG(3, "if: nlmsg_type=%d nlmsg_flags=0x%x\n", nlMsg->nlmsg_type, nlMsg->nlmsg_flags);
+        //LOG(LEVEL_DEBUG, "if: nlmsg_type=%d nlmsg_flags=0x%x\n", nlMsg->nlmsg_type, nlMsg->nlmsg_flags);
         err = parseRoutes(nlMsg, rtInfo);
         if (err != 0)
             continue;
 
-        LOG(3, "if: route: '%12s' dst=%u.%u.%u.%u src=%u.%u.%u.%u gw=%u.%u.%u.%u priority=%d\n",
+        LOG(LEVEL_DEBUG, "if: route: '%12s' dst=%u.%u.%u.%u src=%u.%u.%u.%u gw=%u.%u.%u.%u priority=%d\n",
                 rtInfo->ifName,
                 FORMATADDR(rtInfo->dstAddr.s_addr),
                 FORMATADDR(rtInfo->srcAddr.s_addr),

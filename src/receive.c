@@ -57,7 +57,7 @@ void receive_thread(void *v) {
     output->total_successed          = status_successed_count; /*update in output*/
     output->total_failed             = status_failed_count;    /*update in output*/
 
-    LOG(1, "[+] starting receive thread\n");
+    LOG(LEVEL_WARNING, "[+] starting receive thread\n");
 
     output_init(output);
 
@@ -86,7 +86,7 @@ void receive_thread(void *v) {
         ft_init_handler(xconf->ft_table, &ft_handler);
     }
 
-    LOG(2, "[+] THREAD: recv: starting main loop\n");
+    LOG(LEVEL_INFO, "[+] THREAD: recv: starting main loop\n");
     while (!is_rx_done) {
 
         struct ScanModule *scan_module = xconf->scan_module;
@@ -203,7 +203,7 @@ void receive_thread(void *v) {
         output_result(output, &item);
     }
 
-    LOG(1, "[+] exiting receive thread                            \n");
+    LOG(LEVEL_WARNING, "[+] exiting receive thread                            \n");
 
     /*
      * cleanup

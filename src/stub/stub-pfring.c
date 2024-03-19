@@ -37,13 +37,13 @@ PFRING_is_installed(void)
     while (fgets(line, sizeof(line), fp)) {
         if (memcmp(line, "pf_ring ", 8) == 0) {
             found = 1;
-            LOG(2, "pfring: found 'pf_ring' driver\n");
+            LOG(LEVEL_INFO, "pfring: found 'pf_ring' driver\n");
         }
         if (memcmp(line, "ixgbe ", 6) == 0) {
-            LOG(2, "pfring: found 'ixgbe' driver\n");
+            LOG(LEVEL_INFO, "pfring: found 'ixgbe' driver\n");
         }
         if (memcmp(line, "e1000e ", 8) == 0) {
-            LOG(2, "pfring: found 'e1000e' driver\n");
+            LOG(LEVEL_INFO, "pfring: found 'e1000e' driver\n");
         }
     }
     fclose(fp);
@@ -62,16 +62,16 @@ PFRING_init(void)
 #if defined(__linux__)
     void *h;
     int err = 0;
-    LOG(6, "pfring: initializing subsystem\n");
-    LOG(6, "pfring: looking for 'libpfring.so'\n");
+    LOG(LEVEL_DETAIL, "pfring: initializing subsystem\n");
+    LOG(LEVEL_DETAIL, "pfring: looking for 'libpfring.so'\n");
     h = dlopen("libpfring.so", RTLD_LAZY);
     if (h == NULL) {
-        LOG(2, "pfring: error: dlopen('libpfring.so'): %s\n", strerror(errno));
+        LOG(LEVEL_INFO, "pfring: error: dlopen('libpfring.so'): %s\n", strerror(errno));
         return 0;
     } else
-        LOG(2, "pfring: found 'libpfring.so'!\n");
+        LOG(LEVEL_INFO, "pfring: found 'libpfring.so'!\n");
 
-#define LOADSYM(name) if ((PFRING.name = dlsym(h, "pfring_"#name)) == 0) {LOG(2, "pfring_%s: not found in 'libpfring.so': %s\n", #name, strerror(errno));err=1;}
+#define LOADSYM(name) if ((PFRING.name = dlsym(h, "pfring_"#name)) == 0) {LOG(LEVEL_INFO, "pfring_%s: not found in 'libpfring.so': %s\n", #name, strerror(errno));err=1;}
     LOADSYM(open);
     LOADSYM(close);
     LOADSYM(enable_ring);
@@ -85,14 +85,14 @@ PFRING_init(void)
 
     if (err) {
         memset(&PFRING, 0, sizeof(PFRING));
-        LOG(2, "pfring: failed to load\n");
+        LOG(LEVEL_INFO, "pfring: failed to load\n");
     } else {
-        LOG(2, "pfring: successfully loaded PF_RING API\n");
+        LOG(LEVEL_INFO, "pfring: successfully loaded PF_RING API\n");
 
         if (!PFRING_is_installed()) {
-            LOG(0, "pfring: ERROR: 'pf_ring' driver module not found!!!!!\n");
+            LOG(LEVEL_ERROR, "pfring: ERROR: 'pf_ring' driver module not found!!!!!\n");
         } else
-            LOG(2, "pfring: found 'pf_ring' driver module\n");
+            LOG(LEVEL_INFO, "pfring: found 'pf_ring' driver module\n");
     }
 
 #endif

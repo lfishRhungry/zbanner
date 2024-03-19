@@ -483,7 +483,7 @@ tcpcon_destroy_tcb(
         r_entry = &(*r_entry)->next;
 
     if (*r_entry == NULL) {
-        LOG(1, "tcb: double free\n");
+        LOG(LEVEL_WARNING, "tcb: double free\n");
         return;
     }
 
@@ -694,7 +694,7 @@ tcpcon_lookup_tcb(
 
     fmt1 = ipaddress_fmt(ip_me);
     fmt2 = ipaddress_fmt(ip_them);
-    LOG(1, "tcb_hash(0x%08x) = %s %u %s %u\n", 
+    LOG(LEVEL_WARNING, "tcb_hash(0x%08x) = %s %u %s %u\n", 
         (unsigned)index,
         fmt1.string, port_me,
         fmt2.string, port_them);
@@ -737,7 +737,7 @@ tcpcon_send_packet(
     if (response == NULL) {
         static int is_warning_printed = 0;
         if (!is_warning_printed) {
-            LOG(0, "packet buffers empty (should be impossible)\n");
+            LOG(LEVEL_ERROR, "packet buffers empty (should be impossible)\n");
             is_warning_printed = 1;
         }
         fflush(stdout);
@@ -812,7 +812,7 @@ LOGSEND(struct TCP_Control_Block *tcb, const char *what)
 {
     if (tcb == NULL)
         return;
-    LOGip(5, tcb->ip_them, tcb->port_them, "=%s : --->> %s                  \n",
+    LOGip(LEVEL_DETAIL, tcb->ip_them, tcb->port_them, "=%s : --->> %s                  \n",
           tcp_state_to_string(tcb->tcpstate),
           what);
 }
@@ -994,7 +994,7 @@ _tcp_seg_acknowledge(
     uint32_t ackno)
 {
 
-    /*LOG(4,  "%s - %u-sending, %u-reciving\n",
+    /*LOG(LEVEL_DETAIL,  "%s - %u-sending, %u-reciving\n",
             fmt.string,
             tcb->seqno_me - ackno,
             ackno - tcb->ackno_them
@@ -1008,7 +1008,7 @@ _tcp_seg_acknowledge(
      * WRAPPING of 32-bit arithmetic happens here */
     if (ackno - tcb->seqno_me > 100000) {
         ipaddress_formatted_t fmt = ipaddress_fmt(tcb->ip_them);
-        LOG(4,  "%s - "
+        LOG(LEVEL_DETAIL,  "%s - "
                 "tcb: ackno from past: "
                 "old ackno = 0x%08x, this ackno = 0x%08x\n",
                 fmt.string,
@@ -1020,7 +1020,7 @@ _tcp_seg_acknowledge(
      * WRAPPING of 32-bit arithmetic happens here */
     if (tcb->seqno_me - ackno < 100000) {
         ipaddress_formatted_t fmt = ipaddress_fmt(tcb->ip_them);
-        LOG(0, "%s - "
+        LOG(LEVEL_ERROR, "%s - "
                 "tcb: ackno from future: "
                 "my seqno = 0x%08x, their ackno = 0x%08x\n",
                 fmt.string,
@@ -1285,7 +1285,7 @@ tcpapi_send(struct stack_handle_t *socket,
             }
             return 0;
         default:
-            LOG(1, "TCP app attempted SEND in wrong state\n");
+            LOG(LEVEL_WARNING, "TCP app attempted SEND in wrong state\n");
             return 1;
     }
 }
@@ -1483,7 +1483,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
     /* Make sure no connection lasts longer than ~30 seconds */
     if (what == TCP_WHAT_TIMEOUT) {
         if (tcb->when_created + tcpcon->timeout_connection < secs) {
-            LOGip(8, tcb->ip_them, tcb->port_them,
+            LOGip(LEVEL_DETAIL, tcb->ip_them, tcb->port_them,
                 "%s                \n",
                 "CONNECTION TIMEOUT---");
             LOGSEND(tcb, "peer(RST)");

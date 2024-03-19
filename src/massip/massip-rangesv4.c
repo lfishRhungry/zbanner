@@ -276,7 +276,7 @@ rangelist_sort(struct RangeList *targets)
     
     
     /* First, sort the list */
-    LOG(3, "[+] range:sort: sorting...\n");
+    LOG(LEVEL_DEBUG, "[+] range:sort: sorting...\n");
     qsort(  targets->list,              /* the array to sort */
             targets->count,             /* number of elements to sort */
             sizeof(targets->list[0]),   /* size of element */
@@ -287,18 +287,18 @@ rangelist_sort(struct RangeList *targets)
      * a new list from a sorted list, so we don't have to remove things in the
      * middle when collapsing overlapping entries together, which is painfully
      * slow. */
-    LOG(3, "[+] range:sort: combining...\n");
+    LOG(LEVEL_DEBUG, "[+] range:sort: combining...\n");
     for (i=0; i<targets->count; i++) {
         rangelist_add_range(&newlist, targets->list[i].begin, targets->list[i].end);
     }
     
-    LOG(3, "[+] range:sort: combined from %u elements to %u elements\n", original_count, newlist.count);
+    LOG(LEVEL_DEBUG, "[+] range:sort: combined from %u elements to %u elements\n", original_count, newlist.count);
     free(targets->list);
     targets->list = newlist.list;
     targets->count = newlist.count;
     newlist.list = 0;
 
-    LOG(2, "[+] range:sort: done...\n");
+    LOG(LEVEL_INFO, "[+] range:sort: done...\n");
 
     targets->is_sorted = 1;
 }
@@ -621,7 +621,7 @@ range_parse_ipv4(const char *line, unsigned *inout_offset, unsigned max)
         if (ip < result.begin) {
             result.begin = 0xFFFFFFFF;
             result.end = 0x00000000;
-            LOG(0, "err: ending addr %u.%u.%u.%u cannot come before starting addr %u.%u.%u.%u\n",
+            LOG(LEVEL_ERROR, "err: ending addr %u.%u.%u.%u cannot come before starting addr %u.%u.%u.%u\n",
                 ((ip>>24)&0xFF), ((ip>>16)&0xFF), ((ip>>8)&0xFF), ((ip>>0)&0xFF),
                 ((result.begin>>24)&0xFF), ((result.begin>>16)&0xFF), ((result.begin>>8)&0xFF), ((result.begin>>0)&0xFF)
                 );
@@ -1031,7 +1031,7 @@ rangelist_parse_ports(struct RangeList *ports, const char *string, unsigned *is_
                     proto_offset = Templ_ICMP_echo;
                     break;
                 default:
-                    LOG(0, "bad port character = %c\n", p[0]);
+                    LOG(LEVEL_ERROR, "bad port character = %c\n", p[0]);
                     *is_error = 1;
                     return p;
             }
@@ -1243,7 +1243,7 @@ ranges_selftest(void)
         return 1;
     
     memset(targets, 0, sizeof(targets[0]));
-#define ERROR() LOG(0, "selftest: failed %s:%u\n", __FILE__, __LINE__);
+#define ERROR() LOG(LEVEL_ERROR, "selftest: failed %s:%u\n", __FILE__, __LINE__);
 
     /* test for the /0 CIDR block, since we'll be using that a lot to scan the entire
      * Internet */
@@ -1264,21 +1264,21 @@ ranges_selftest(void)
 
     r = range_parse_ipv4("192.168.1.3", 0, 0);
     if (r.begin != 0xc0a80103 || r.end != 0xc0a80103) {
-        LOG(0, "r.begin = 0x%08x r.end = 0x%08x\n", r.begin, r.end);
+        LOG(LEVEL_ERROR, "r.begin = 0x%08x r.end = 0x%08x\n", r.begin, r.end);
         ERROR();
         return 1;
     }
 
     r = range_parse_ipv4("10.0.0.20-10.0.0.30", 0, 0);
     if (r.begin != 0x0A000000+20 || r.end != 0x0A000000+30) {
-        LOG(0,  "r.begin = 0x%08x r.end = 0x%08x\n", r.begin, r.end);
+        LOG(LEVEL_ERROR,  "r.begin = 0x%08x r.end = 0x%08x\n", r.begin, r.end);
         ERROR();
         return 1;
     }
 
     r = range_parse_ipv4("10.0.1.2/16", 0, 0);
     if (r.begin != 0x0A000000 || r.end != 0x0A00FFFF) {
-        LOG(0, "r.begin = 0x%08x r.end = 0x%08x\n", r.begin, r.end);
+        LOG(LEVEL_ERROR, "r.begin = 0x%08x r.end = 0x%08x\n", r.begin, r.end);
         ERROR();
         return 1;
     }
@@ -1291,12 +1291,12 @@ ranges_selftest(void)
     rangelist_sort(targets);
 
     if (targets->count != 1) {
-        LOG(0, "count = %u\n", targets->count);
+        LOG(LEVEL_ERROR, "count = %u\n", targets->count);
         ERROR();
         return 1;
     }
     if (targets->list[0].begin != 0x0a000000 || targets->list[0].end != 0x0a000100+30) {
-        LOG(0, "r.begin = 0x%08x r.end = 0x%08x\n", targets->list[0].begin, targets->list[0].end);
+        LOG(LEVEL_ERROR, "r.begin = 0x%08x r.end = 0x%08x\n", targets->list[0].begin, targets->list[0].end);
         ERROR();
         return 1;
     }

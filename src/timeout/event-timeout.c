@@ -117,7 +117,7 @@ timeouts_add(struct Timeouts *timeouts, struct TimeoutEntry *entry,
     timeout_unlink(entry);
 
     if (entry->prev) {
-        LOG(1, "***CHANGE %d-seconds\n", 
+        LOG(LEVEL_WARNING, "***CHANGE %d-seconds\n", 
                     (int)((timestamp-entry->timestamp)/TICKS_PER_SECOND));
     }
 

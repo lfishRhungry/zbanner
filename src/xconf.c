@@ -1016,13 +1016,13 @@ static int SET_top_port(void *conf, const char *name, const char *value)
 
     unsigned i;
     if (name[0]=='u') {
-        LOG(2, "[+] adding UDP top-ports = %u\n", maxports);
+        LOG(LEVEL_INFO, "[+] adding UDP top-ports = %u\n", maxports);
         for (i=0; i<maxports && i<max_udp_ports; i++)
             rangelist_add_range_udp(ports,
                                 top_udp_ports[i],
                                 top_udp_ports[i]);
     } else {
-        LOG(2, "[+] adding TCP top-ports = %u\n", maxports);
+        LOG(LEVEL_INFO, "[+] adding TCP top-ports = %u\n", maxports);
         for (i=0; i<maxports && i<max_tcp_ports; i++)
             rangelist_add_range_tcp(ports,
                                 top_tcp_ports[i],
@@ -1113,7 +1113,7 @@ static int SET_exclude_file(void *conf, const char *name, const char *value)
     int err;
     const char *filename = value;
 
-    // LOG(1, "EXCLUDING: %s\n", value);
+    // LOG(LEVEL_WARNING, "EXCLUDING: %s\n", value);
     err = massip_parse_file(&xconf->exclude, filename);
     if (err) {
         fprintf(stderr, "[-] FAIL: error reading from exclude file\n");

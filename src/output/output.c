@@ -18,9 +18,9 @@ output_init(struct Output *output)
         int err = pixie_fopen_shareable(
             &output->output_file, output->output_filename, output->is_append);
         if (err != 0 || output->output_file == NULL) {
-            LOG(0, "[-] output: could not open file %s for %s\n",
+            LOG(LEVEL_ERROR, "[-] output: could not open file %s for %s\n",
                 output->output_filename, output->is_append?"appending":"writing");
-            LOG(0, "            output results to stdout now.\n");
+            LOG(LEVEL_ERROR, "            output results to stdout now.\n");
             perror(output->output_filename);
             output->output_file = NULL;
         }

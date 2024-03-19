@@ -108,17 +108,17 @@ static int main_scan(struct Xconf *xconf) {
     count_ips = rangelist_count(&xconf->targets.ipv4) +
                 range6list_count(&xconf->targets.ipv6).lo;
     if (count_ips == 0) {
-        LOG(0, "FAIL: target IP address list empty\n");
-        LOG(0, " [hint] try something like \"--range 10.0.0.0/8\"\n");
-        LOG(0,
+        LOG(LEVEL_ERROR, "FAIL: target IP address list empty\n");
+        LOG(LEVEL_ERROR, " [hint] try something like \"--range 10.0.0.0/8\"\n");
+        LOG(LEVEL_ERROR,
             " [hint] try something like \"--range 192.168.0.100-192.168.0.200\"\n");
         return 1;
     }
     count_ports = rangelist_count(&xconf->targets.ports);
     if (count_ports == 0) {
-        LOG(0, "FAIL: no ports were specified\n");
-        LOG(0, " [hint] try something like \"-p80,8000-9000\"\n");
-        LOG(0, " [hint] try something like \"--ports 0-65535\"\n");
+        LOG(LEVEL_ERROR, "FAIL: no ports were specified\n");
+        LOG(LEVEL_ERROR, " [hint] try something like \"-p80,8000-9000\"\n");
+        LOG(LEVEL_ERROR, " [hint] try something like \"--ports 0-65535\"\n");
         return 1;
     }
     range = count_ips * count_ports;
@@ -128,10 +128,10 @@ static int main_scan(struct Xconf *xconf) {
      * user apply an exclude range
      */
     if (count_ips > 1000000000ULL && rangelist_count(&xconf->exclude.ipv4) == 0) {
-        LOG(0, "FAIL: range too big, need confirmation\n");
-        LOG(0, " [hint] to prevent accidents, at least one --exclude must be "
+        LOG(LEVEL_ERROR, "FAIL: range too big, need confirmation\n");
+        LOG(LEVEL_ERROR, " [hint] to prevent accidents, at least one --exclude must be "
                "specified\n");
-        LOG(0,
+        LOG(LEVEL_ERROR,
             " [hint] use \"--exclude 255.255.255.255\" as a simple confirmation\n");
         exit(1);
     }
@@ -150,9 +150,9 @@ static int main_scan(struct Xconf *xconf) {
     if (initialize_adapter(xconf) != 0)
         exit(1);
     if (!xconf->nic.is_usable) {
-        LOG(0, "FAIL: failed to detect IP of interface\n");
-        LOG(0, " [hint] did you spell the name correctly?\n");
-        LOG(0, " [hint] if it has no IP address, "
+        LOG(LEVEL_ERROR, "FAIL: failed to detect IP of interface\n");
+        LOG(LEVEL_ERROR, " [hint] did you spell the name correctly?\n");
+        LOG(LEVEL_ERROR, " [hint] if it has no IP address, "
                "manually set with \"--adapter-ip 192.168.100.5\"\n");
         exit(1);
     }
@@ -211,21 +211,21 @@ static int main_scan(struct Xconf *xconf) {
      */
     if (!xconf->scan_module) {
         xconf->scan_module = get_scan_module_by_name("tcpsyn");
-        LOG(0, "[-] Default ScanModule `tcpsyn` is chosen because no ScanModule "
+        LOG(LEVEL_ERROR, "[-] Default ScanModule `tcpsyn` is chosen because no ScanModule "
                "was specified.\n");
     }
 
     /*validate probe type*/
     if (xconf->scan_module->required_probe_type==ProbeType_NULL) {
         if (xconf->probe_module) {
-            LOG(0, "FAIL: ScanModule %s does not support any probe.\n",
+            LOG(LEVEL_ERROR, "FAIL: ScanModule %s does not support any probe.\n",
                 xconf->scan_module->name);
             exit(1);
         }
     } else {
         if (!xconf->probe_module
             || xconf->probe_module->type != xconf->scan_module->required_probe_type) {
-            LOG(0, "FAIL: ScanModule %s needs probe of %s type.\n",
+            LOG(LEVEL_ERROR, "FAIL: ScanModule %s needs probe of %s type.\n",
                 xconf->scan_module->name,
                 get_probe_type_name(xconf->scan_module->required_probe_type));
             exit(1);
@@ -241,12 +241,12 @@ static int main_scan(struct Xconf *xconf) {
         && xconf->scan_module->params) {
         if (set_parameters_from_substring(NULL,
             xconf->scan_module->params, xconf->scan_module_args)) {
-            LOG(0, "FAIL: errors happened in sub param parsing of ScanModule.\n");
+            LOG(LEVEL_ERROR, "FAIL: errors happened in sub param parsing of ScanModule.\n");
             exit(1);
         }
     }
     if (!xconf->scan_module->global_init_cb(xconf)) {
-        LOG(0, "FAIL: errors happened in global init of ScanModule.\n");
+        LOG(LEVEL_ERROR, "FAIL: errors happened in global init of ScanModule.\n");
         exit(1);
     }
 
@@ -259,13 +259,13 @@ static int main_scan(struct Xconf *xconf) {
             && xconf->probe_module->params) {
             if (set_parameters_from_substring(NULL,
                 xconf->probe_module->params, xconf->probe_module_args)) {
-                LOG(0, "FAIL: errors happened in sub param parsing of ProbeModule.\n");
+                LOG(LEVEL_ERROR, "FAIL: errors happened in sub param parsing of ProbeModule.\n");
                 exit(1);
             }
         }
 
         if (!xconf->probe_module->global_init_cb(xconf)) {
-            LOG(0, "FAIL: errors in ProbeModule global initializing\n");
+            LOG(LEVEL_ERROR, "FAIL: errors in ProbeModule global initializing\n");
             exit(1);
         }
     }
@@ -315,15 +315,15 @@ static int main_scan(struct Xconf *xconf) {
     now = time(0);
     safe_gmtime(&x, &now);
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S GMT", &x);
-    LOG(0,
+    LOG(LEVEL_ERROR,
         "Starting " XTATE_FIRST_UPPER_NAME " " XTATE_VERSION " (" XTATE_GITHUB
         ") at %s\n",
         buffer);
 
-    LOG(0, "Initiating ScanModule: %s\n", xconf->scan_module->name);
+    LOG(LEVEL_ERROR, "Initiating ScanModule: %s\n", xconf->scan_module->name);
     if (xconf->probe_module)
-        LOG(0, "Initiating ProbeModule: %s\n", xconf->probe_module->name);
-    LOG(0, "Scanning %u hosts [%u port%s/host]\n", (unsigned)count_ips,
+        LOG(LEVEL_ERROR, "Initiating ProbeModule: %s\n", xconf->probe_module->name);
+    LOG(LEVEL_ERROR, "Scanning %u hosts [%u port%s/host]\n", (unsigned)count_ips,
         (unsigned)count_ports, (count_ports == 1) ? "" : "s");
 
     /*
@@ -343,7 +343,7 @@ static int main_scan(struct Xconf *xconf) {
      * All controls are decided by global variable `is_tx_done`.
      */
     pixie_usleep(1000 * 100);
-    LOG(1, "[+] waiting for threads to finish\n");
+    LOG(LEVEL_WARNING, "[+] waiting for threads to finish\n");
     xtatus_start(&status);
     status.is_infinite = xconf->is_infinite;
     while (!is_tx_done) {
@@ -448,7 +448,7 @@ static int main_scan(struct Xconf *xconf) {
         if (time(0) - now >= xconf->wait /*no more waiting time*/
             || is_rx_done                /*too many <ctrl-c>*/
         ) {
-            LOG(1, "[+] tell threads to exit...                    \n");
+            LOG(LEVEL_WARNING, "[+] tell threads to exit...                    \n");
             is_rx_done = 1;
             break;
         }
@@ -486,7 +486,7 @@ static int main_scan(struct Xconf *xconf) {
 
     rawsock_close_adapter(xconf->nic.adapter);
 
-    LOG(1, "[+] all threads have exited                    \n");
+    LOG(LEVEL_WARNING, "[+] all threads have exited                    \n");
 
     return 0;
 }
@@ -559,7 +559,7 @@ int main(int argc, char *argv[]) {
     /* We need to do a separate "raw socket" initialization step. This is
      * for Windows and PF_RING. */
     if (pcap_init() != 0)
-        LOG(2, "libpcap: failed to load\n");
+        LOG(LEVEL_INFO, "libpcap: failed to load\n");
     rawsock_init();
 
     /*
@@ -622,25 +622,25 @@ int main(int argc, char *argv[]) {
             /* We check for an empty target list here first, before the excludes,
              * so that we can differentiate error messages after excludes, in case
              * the user specified addresses, but they were removed by excludes. */
-            LOG(0, "FAIL: target IP address list empty\n");
+            LOG(LEVEL_ERROR, "FAIL: target IP address list empty\n");
             if (has_target_addresses) {
-                LOG(0, " [hint] all addresses were removed by exclusion ranges\n");
+                LOG(LEVEL_ERROR, " [hint] all addresses were removed by exclusion ranges\n");
             } else {
-                LOG(0, " [hint] try something like \"--range 10.0.0.0/8\"\n");
-                LOG(0, " [hint] try something like \"--range "
+                LOG(LEVEL_ERROR, " [hint] try something like \"--range 10.0.0.0/8\"\n");
+                LOG(LEVEL_ERROR, " [hint] try something like \"--range "
                        "192.168.0.100-192.168.0.200\"\n");
             }
             exit(1);
         }
         if (rangelist_count(&xconf->targets.ports) == 0) {
             if (has_target_ports) {
-                LOG(0, " [hint] all ports were removed by exclusion ranges\n");
+                LOG(LEVEL_ERROR, " [hint] all ports were removed by exclusion ranges\n");
                 return 1;
             } else {
-                LOG(0, "NOTE: no ports were specified, use default port TCP:80 .\n");
-                LOG(0, " [hint] ignored if the ScanModule does not need port. (eg. "
+                LOG(LEVEL_ERROR, "NOTE: no ports were specified, use default port TCP:80 .\n");
+                LOG(LEVEL_ERROR, " [hint] ignored if the ScanModule does not need port. (eg. "
                        "icmp or arp)\n");
-                LOG(0, " [hint] or try something like \"-p 80,8000-9000\"\n");
+                LOG(LEVEL_ERROR, " [hint] or try something like \"-p 80,8000-9000\"\n");
                 massip_add_port_string(&xconf->targets, "80", 0);
             }
         }

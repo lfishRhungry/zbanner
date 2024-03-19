@@ -190,7 +190,7 @@ stack_arp_resolve(struct Adapter *adapter,
             /* It's taking too long, so notify the user */
             if (!is_delay_reported) {
                 ipaddress_formatted_t fmt = ipv4address_fmt(your_ipv4);
-                LOG(0, "[+] resolving router %s with ARP (may take some time)...\n", fmt.string);
+                LOG(LEVEL_ERROR, "[+] resolving router %s with ARP (may take some time)...\n", fmt.string);
                 is_delay_reported = 1;
             }
         }
@@ -199,7 +199,7 @@ stack_arp_resolve(struct Adapter *adapter,
          * status message */
         if (time(0) > start+1 && !is_arp_notice_given) {
             ipaddress_formatted_t fmt = ipv4address_fmt(your_ipv4);
-            LOG(0, "[+] arping local router %s\n", fmt.string);
+            LOG(LEVEL_ERROR, "[+] arping local router %s\n", fmt.string);
             is_arp_notice_given = 1;
         }
 
@@ -229,19 +229,19 @@ stack_arp_resolve(struct Adapter *adapter,
 
         /* Is this an ARP packet? */
         if (!response.is_valid) {
-            LOG(2, "[-] arp: etype=0x%04x, not ARP\n", px[12]*256 + px[13]);
+            LOG(LEVEL_INFO, "[-] arp: etype=0x%04x, not ARP\n", px[12]*256 + px[13]);
             continue;
         }
 
         /* Is this an ARP "reply"? */
         if (response.opcode != 2) {
-            LOG(2, "[-] arp: opcode=%u, not reply(2)\n", response.opcode);
+            LOG(LEVEL_INFO, "[-] arp: opcode=%u, not reply(2)\n", response.opcode);
             continue;
         }
 
         /* Is this response directed at us? */
         if (response.ip_dst != my_ipv4) {
-            LOG(2, "[-] arp: dst=%08x, not my ip 0x%08x\n", response.ip_dst, my_ipv4);
+            LOG(LEVEL_INFO, "[-] arp: dst=%08x, not my ip 0x%08x\n", response.ip_dst, my_ipv4);
             continue;
         }
         if (memcmp(response.mac_dst, my_mac_address.addr, 6) != 0)
@@ -251,7 +251,7 @@ stack_arp_resolve(struct Adapter *adapter,
         if (response.ip_src != your_ipv4) {
             ipaddress_formatted_t fmt1 = ipv4address_fmt(response.ip_src);
             ipaddress_formatted_t fmt2 = ipv4address_fmt(your_ipv4);
-            LOG(2, "[-] arp: target=%s, not desired %s\n", fmt1.string, fmt2.string);
+            LOG(LEVEL_INFO, "[-] arp: target=%s, not desired %s\n", fmt1.string, fmt2.string);
             continue;
         }
 
@@ -264,7 +264,7 @@ stack_arp_resolve(struct Adapter *adapter,
         {
             ipaddress_formatted_t fmt1 = ipv4address_fmt(response.ip_src);
             ipaddress_formatted_t fmt2 = macaddress_fmt(*your_mac_address);
-            LOG(1, "[+] arp: %s == %s\n", fmt1.string, fmt2.string);
+            LOG(LEVEL_WARNING, "[+] arp: %s == %s\n", fmt1.string, fmt2.string);
         }
         return 0;
     }
@@ -310,19 +310,19 @@ stack_arp_incoming_request( struct stack_t *stack,
 
     /* Is this an ARP packet? */
     if (!request.is_valid) {
-        LOG(2, "arp: etype=0x%04x, not ARP\n", px[12]*256 + px[13]);
+        LOG(LEVEL_INFO, "arp: etype=0x%04x, not ARP\n", px[12]*256 + px[13]);
         return -1;
     }
 
     /* Is this an ARP "request"? */
     if (request.opcode != 1) {
-        LOG(2, "arp: opcode=%u, not request(1)\n", request.opcode);
+        LOG(LEVEL_INFO, "arp: opcode=%u, not request(1)\n", request.opcode);
         return -1;
     }
 
     /* Is this response directed at us? */
     if (request.ip_dst != my_ip) {
-        LOG(2, "arp: dst=%08x, not my ip 0x%08x\n", request.ip_dst, my_ip);
+        LOG(LEVEL_INFO, "arp: dst=%08x, not my ip 0x%08x\n", request.ip_dst, my_ip);
         return -1;
     }
 
