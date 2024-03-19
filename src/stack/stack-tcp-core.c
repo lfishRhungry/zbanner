@@ -107,7 +107,6 @@ enum App_State{
     APP_STATE_RECV_NEXT,
     APP_STATE_SEND_FIRST,
     APP_STATE_SEND_NEXT,
-    APP_STATE_CLOSE,
 };
 
 enum App_Event {
@@ -1634,7 +1633,6 @@ static const char *app_state_to_string(unsigned state) {
     case APP_STATE_RECV_NEXT: return "receive";
     case APP_STATE_SEND_FIRST: return "send-first";
     case APP_STATE_SEND_NEXT: return "send";
-    case APP_STATE_CLOSE: return "close";
     default: return "unknown";
     }
 }
