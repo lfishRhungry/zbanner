@@ -634,8 +634,6 @@ tcpcon_lookup_tcb(
     unsigned index;
     struct TCP_Control_Block tmp;
     struct TCP_Control_Block *tcb;
-    ipaddress_formatted_t fmt1;
-    ipaddress_formatted_t fmt2;
 
     tmp.ip_me     = ip_me;
     tmp.ip_them   = ip_them;
