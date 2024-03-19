@@ -97,7 +97,6 @@ enum Tcp_State{
     STATE_SYN_SENT = 0,       /* init state, must be zero */
     STATE_ESTABLISHED_SEND,   /* special state, our turn to send */
     STATE_ESTABLISHED_RECV,   /* special state, our turn to receive */
-    STATE_LAST_ACK,
     STATE_TIME_WAIT,
 };
 
@@ -212,7 +211,6 @@ tcp_state_to_string(enum Tcp_State state)
 {
     static char buf[64];
     switch (state) {
-        case STATE_LAST_ACK:            return "LAST-ACK";
         case STATE_TIME_WAIT:           return "TIME-WAIT";
         case STATE_SYN_SENT:            return "SYN_SENT";
         case STATE_ESTABLISHED_SEND:    return "ESTABLISHED_SEND";
@@ -1554,25 +1552,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     break;
             }
             break;
-        case STATE_LAST_ACK:
-            switch (what) {
-            case TCP_WHAT_TIMEOUT:
-                /* They haven't acknowledged everything yet, so resend the last segment */
-                _tcb_seg_resend(tcpcon, tcb);
-                break;
-            case TCP_WHAT_ACK:
-                if (_tcp_seg_acknowledge(tcb, ackno_them)) {
-                    tcpcon_destroy_tcb(tcpcon, tcb, Reason_Shutdown);
-                    return TCB__destroyed;
-                }
-                break;
-            default:
-                ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
-                        tcp_state_to_string(tcb->tcpstate), what_to_string(what));
-                break;
-            }
-            break;
-            break;
+
         default:
             ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
                         tcp_state_to_string(tcb->tcpstate), what_to_string(what));
