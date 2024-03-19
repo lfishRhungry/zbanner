@@ -644,13 +644,6 @@ tcpcon_lookup_tcb(
     index         =
         get_cookie(ip_me, port_me, ip_them, port_them, tcpcon->entropy);
 
-    fmt1 = ipaddress_fmt(ip_me);
-    fmt2 = ipaddress_fmt(ip_them);
-    LOG(LEVEL_WARNING, "tcb_hash(0x%08x) = %s %u %s %u\n", 
-        (unsigned)index,
-        fmt1.string, port_me,
-        fmt2.string, port_them);
-
     /* Hash to an entry in the table, then follow a linked list from
      * that point forward. */
     tcb = tcpcon->entries[index & tcpcon->mask];
