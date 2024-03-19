@@ -95,10 +95,8 @@ struct TCP_Segment {
 
 enum Tcp_State{
     STATE_SYN_SENT = 0,       /* init state, must be zero */
-    //STATE_SYN_RECEIVED,
     STATE_ESTABLISHED_SEND,   /* special state, our turn to send */
     STATE_ESTABLISHED_RECV,   /* special state, our turn to receive */
-    STATE_CLOSE_WAIT,
     STATE_LAST_ACK,
     STATE_CLOSING,
     STATE_TIME_WAIT,
@@ -237,8 +235,6 @@ tcp_state_to_string(enum Tcp_State state)
 {
     static char buf[64];
     switch (state) {
-            //STATE_SYN_RECEIVED,
-        case STATE_CLOSE_WAIT:      return "CLOSE-WAIT";
         case STATE_LAST_ACK:        return "LAST-ACK";
         case STATE_CLOSING:         return "CLOSING";
         case STATE_TIME_WAIT:       return "TIME-WAIT";
@@ -1647,23 +1643,6 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                 default:
                     ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
                         tcp_state_to_string(tcb->tcpstate), what_to_string(what));
-                    break;
-            }
-            break;
-        case STATE_CLOSE_WAIT:
-            /* Waiting for app to call `close()` */
-            switch (what) {
-                case TCP_WHAT_CLOSE:
-                    _tcb_seg_send(tcpcon, tcb, 0, 0, 0, 1);
-                    _tcb_change_state_to(tcb, STATE_LAST_ACK);
-                    break;
-                case TCP_WHAT_TIMEOUT:
-                    tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
-                    tcpcon_destroy_tcb(tcpcon, tcb, Reason_Shutdown);
-                    break;
-                default:
-                    ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n",
-                            tcp_state_to_string(tcb->tcpstate), what_to_string(what));
                     break;
             }
             break;
