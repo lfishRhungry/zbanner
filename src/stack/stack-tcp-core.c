@@ -94,10 +94,10 @@ struct TCP_Segment {
 };
 
 enum Tcp_State{
-    STATE_SYN_SENT=0, /* must be zero */
+    STATE_SYN_SENT = 0,     /* init state, must be zero */
     //STATE_SYN_RECEIVED,
-    STATE_ESTABLISHED_SEND, /* our own special state, can only send */
-    STATE_ESTABLISHED_RECV, /* our own special state, can only receive */
+    STATE_ESTABLISHED_SEND, /* special state, our turn to send */
+    STATE_ESTABLISHED_RECV, /* special state, our turn to receive */
     STATE_CLOSE_WAIT,
     STATE_LAST_ACK,
     STATE_FIN_WAIT1_SEND,
@@ -840,7 +840,7 @@ tcpcon_send_RST(
     tcb.ackno_them = ackno_them;
     
     LOGSEND(&tcb, "send RST");
-    tcpcon_send_packet(tcpcon, &tcb, 0x04 /*RST*/, 0, 0);
+    tcpcon_send_packet(tcpcon, &tcb, TCP_FLAG_RST, 0, 0);
 }
 
 
@@ -860,12 +860,12 @@ _tcb_seg_resend(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tc
 
         if (seg->is_fin && seg->length == 0) {
             tcpcon_send_packet(tcpcon, tcb,
-                                0x11, /*FIN-ACK*/
+                                TCP_FLAG_FIN|TCP_FLAG_ACK,
                                 0, /*FIN has no data */
                                 0 /*logically is 1 byte, but not payload byte */);
         } else {
             tcpcon_send_packet(tcpcon, tcb,
-                                0x18 | (seg->is_fin?0x01:0x00),
+                                TCP_FLAG_PSH | TCP_FLAG_ACK | (seg->is_fin?TCP_FLAG_FIN:0x00),
                                 seg->buf,
                                 seg->length);
         }
@@ -969,7 +969,9 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     if (tcb->segments == seg) {
         LOGtcb(tcb, 0, "xmit = %u-bytes %s @ %u\n", length, is_close?"FIN":"",
                seg->seqno-tcb->seqno_me_first);
-        tcpcon_send_packet(tcpcon, tcb, 0x18 | (is_close?1:0), seg->buf, seg->length);
+        tcpcon_send_packet(tcpcon, tcb,
+            TCP_FLAG_PSH | TCP_FLAG_ACK | (is_close?TCP_FLAG_FIN:0),
+            seg->buf, seg->length);
         if (!is_close)
             _tcb_change_state_to(tcb, STATE_ESTABLISHED_SEND);
     }
@@ -1344,14 +1346,6 @@ _tcb_they_have_acked_my_fin(struct TCP_Control_Block *tcb) {
         return false;
 }
 
-
-static void
-_tcb_send_ack(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tcb) {
-        tcpcon_send_packet(tcpcon, tcb, 0x10, 0, 0);
-}
-
-
-
 static int
 _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
                   struct TCP_Control_Block *tcb,
@@ -1365,14 +1359,14 @@ _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
         tcb->is_their_fin = 1;
         tcb->seqno_them += 1;
         tcb->ackno_me += 1;
-        tcpcon_send_packet(tcpcon, tcb, 0x10/*ACK*/, 0, 0);
+        tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
         return 1;
     }
 
 
     if ((tcb->seqno_them - seqno_them) > payload_length)  {
         LOGSEND(tcb, "peer(ACK) [acknowledge payload 1]");
-        tcpcon_send_packet(tcpcon, tcb, 0x10 /*ACK*/, 0, 0);
+        tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
         return 1;
     }
 
@@ -1388,7 +1382,7 @@ _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
     }
 
     if (payload_length == 0) {
-        tcpcon_send_packet(tcpcon, tcb, 0x10/*ACK*/, 0, 0);
+        tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
         return 1;
     }
 
@@ -1406,7 +1400,7 @@ _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
         tcb->is_their_fin = true;
 
     /* Send ack for the data */
-    _tcb_send_ack(tcpcon, tcb);
+    tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
 
     return 0;
 }
@@ -1469,7 +1463,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
         if (seqno_them == tcb->seqno_them - 1) {
             /* Duplicate FIN, respond with ACK */
             LOGtcb(tcb, 1, "duplicate FIN\n");
-            _tcb_send_ack(tcpcon, tcb);
+            tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
             return TCB__okay;
         } else if (seqno_them != tcb->seqno_them) {
             /* out of order FIN, so drop it */
@@ -1487,7 +1481,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                 "%s                \n",
                 "CONNECTION TIMEOUT---");
             LOGSEND(tcb, "peer(RST)");
-            tcpcon_send_packet(tcpcon, tcb, 0x04 /*RST*/, 0, 0);
+            tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
             tcpcon_destroy_tcb(tcpcon, tcb, Reason_Timeout);
             return TCB__destroyed;
         }
@@ -1511,8 +1505,8 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                         * send another */
                     tcb->syns_sent++;
 
-                    /* Send a SYN */
-                    tcpcon_send_packet(tcpcon, tcb, 0x02 /*SYN*/, 0, 0);
+                    /* Send SYN again */
+                    tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_SYN, 0, 0);
                     break;
                 case TCP_WHAT_SYNACK:
                     tcb->seqno_them = seqno_them;
@@ -1524,7 +1518,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                            what_to_string(what));
 
                     /* Send "ACK" to acknowlege their "SYN-ACK" */
-                    _tcb_send_ack(tcpcon, tcb);
+                    tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
                     _tcb_change_state_to(tcb, STATE_ESTABLISHED_RECV);
                     application_notify(tcpcon, tcb, APP_WHAT_CONNECTED, 0, 0, secs, usecs);
                     break;
@@ -1548,10 +1542,10 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                         /* I have ACKed all their data, so therefore process this */
                         _tcb_seg_recv(tcpcon, tcb, 0, 0, seqno_them, secs, usecs, true);
                         _tcb_change_state_to(tcb, STATE_FIN_WAIT1_SEND);
-                        _tcb_send_ack(tcpcon, tcb);
+                        tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
                     } else {
                         /* I haven't received all their data, so ignore it until I do */
-                        _tcb_send_ack(tcpcon, tcb);
+                        tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
                     }
                     break;
                 case TCP_WHAT_ACK:
@@ -1591,6 +1585,8 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
             switch (what) {
                 case TCP_WHAT_CLOSE:
                     _tcb_seg_send(tcpcon, tcb, 0, 0, 0, 1);
+                    // tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_FIN, 0, 0);
+                    
                     _tcb_change_state_to(tcb, STATE_FIN_WAIT1_RECV);
                     break;
                 case TCP_WHAT_FIN:
@@ -1604,7 +1600,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
                     } else {
                         /* I haven't received all their data, so ignore it until I do */
-                        _tcb_send_ack(tcpcon, tcb);
+                        tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
                     }
                     break;
                 case TCP_WHAT_ACK:
@@ -1675,7 +1671,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                 case TCP_WHAT_FIN:
                     _tcb_seg_recv(tcpcon, tcb, 0, 0, seqno_them, secs, usecs, true);
                     _tcb_change_state_to(tcb, STATE_CLOSING);
-                    _tcb_send_ack(tcpcon, tcb);
+                    tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
                     application_notify(tcpcon, tcb, APP_WHAT_CLOSE, 0, 0, secs, usecs);
                     break;
                 case TCP_WHAT_ACK:
@@ -1715,7 +1711,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     break;
                 case TCP_WHAT_FIN:
                     /* I've already acknowledged their FIN, but hey, do it again */
-                    _tcb_send_ack(tcpcon, tcb);
+                    tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
                     break;
                 case TCP_WHAT_CLOSE:
                     /* The application this machine has issued a second `tcpapi_close()` request.

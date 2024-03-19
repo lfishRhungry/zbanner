@@ -11,13 +11,13 @@
 #include "../probe-modules/probe-modules.h"
 
 enum TCP_What {
-    TCP_WHAT_TIMEOUT,
-    TCP_WHAT_SYNACK,
-    TCP_WHAT_RST,
-    TCP_WHAT_FIN,
-    TCP_WHAT_ACK,
-    TCP_WHAT_DATA,
-    TCP_WHAT_CLOSE
+    TCP_WHAT_TIMEOUT, /*The connection time is expired*/
+    TCP_WHAT_SYNACK,  /*Received SYN-ACK*/
+    TCP_WHAT_RST,     /*Received RST*/
+    TCP_WHAT_FIN,     /*Received FIN*/
+    TCP_WHAT_ACK,     /*Received ACK (ignored data)*/
+    TCP_WHAT_DATA,    /*Received DATA (just focus data)*/
+    TCP_WHAT_CLOSE,   /*We want to close the connection*/
 };
 
 enum TCB_result {
