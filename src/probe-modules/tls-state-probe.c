@@ -25,8 +25,7 @@ enum {
     TLS_STATE_HANDSHAKE = 0,     /*init state: still in handshaking*/
     TLS_STATE_APP_HELLO,         /*our turn to say hello*/
     TLS_STATE_APP_RECEIVE_NEXT,
-    TLS_STATE_APP_WHAT_CLOSE,
-    TLS_STATE_UNKNOWN,           /*unexpected state that need to close conn*/
+    TLS_STATE_CLOSE,           /*unexpected state that need to close conn*/
 };
 
 /*for internal x-ref*/
@@ -49,27 +48,6 @@ struct TlsState {
     unsigned have_dump_cert:1;
     unsigned have_dump_subject:1;
 };
-
-static void ssl_keylog_cb(const SSL *ssl, const char *line)
-{
-    struct ProbeTarget *tgt = SSL_get_ex_data(ssl, 0);
-    if (!tgt)
-        return;
-
-    struct OutputItem item = {
-        .ip_them   = tgt->ip_them,
-        .port_them = tgt->port_them,
-        .ip_me     = tgt->ip_me,
-        .port_me   = tgt->port_me,
-        .level     = Output_INFO,
-    };
-
-    safe_strcpy(item.classification, OUTPUT_CLS_LEN, "ssl key log");
-    safe_strcpy(item.reason, OUTPUT_RSN_LEN, "recorded");
-    safe_strcpy(item.report, OUTPUT_RPT_LEN, line);
-
-    output_result(tls_out, &item);
-}
 
 struct TlsStateConf {
     struct ProbeModule *subprobe;
@@ -215,314 +193,47 @@ static struct ConfigParameter tlsstate_parameters[] = {
     {0}
 };
 
-/*init public SSL_CTX*/
-static int
-tlsstate_global_init(const struct Xconf *xconf)
+static void ssl_keylog_cb(const SSL *ssl, const char *line)
 {
-    /*save `out`*/
-    tls_out = &xconf->output;
+    struct ProbeTarget *tgt = SSL_get_ex_data(ssl, 0);
+    if (!tgt)
+        return;
 
-    const SSL_METHOD *meth;
-    SSL_CTX *ctx;
-    int res;
+    struct OutputItem item = {
+        .ip_them   = tgt->ip_them,
+        .port_them = tgt->port_them,
+        .ip_me     = tgt->ip_me,
+        .port_me   = tgt->port_me,
+        .level     = Output_INFO,
+    };
 
-    LOG(LEVEL_INFO, "[ssl_init] >>>\n");
+    safe_strcpy(item.classification, OUTPUT_CLS_LEN, "ssl key log");
+    safe_strcpy(item.reason, OUTPUT_RSN_LEN, "recorded");
+    safe_strcpy(item.report, OUTPUT_RPT_LEN, line);
 
-    /*support cryptographic algorithms from SSLv3.0 to TLSv1.3*/
-    meth = TLS_method();
-    if (meth == NULL) {
-        LOG(LEVEL_WARNING, "TLS_method error\n");
-        goto error0;
-    }
-
-    ctx = SSL_CTX_new(meth);
-    if (ctx == NULL) {
-        LOG(LEVEL_WARNING, "SSL_CTX_new error\n");
-        goto error0;
-    }
-
-    /*no verification for server*/
-    SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
-
-    /*support all versions*/
-    SSL_CTX_set_min_proto_version(ctx, 0);
-    SSL_CTX_set_max_proto_version(ctx, 0);
-
-    /*security level 0 means: everything is permitted*/
-    SSL_CTX_set_security_level(ctx, 0);
-
-    /*ciphersuites allowed in TLSv1.2 or older*/
-    res = SSL_CTX_set_cipher_list(ctx, "ALL:eNULL");
-    if (res != 1) {
-        LOG(LEVEL_WARNING, "SSL_CTX_set_cipher_list error %d\n", res);
-    }
-    /*ciphersuites allowed in TLSv1.3. (ALL & in order)*/
-    res = SSL_CTX_set_ciphersuites(
-        ctx, "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:"
-             "TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_CCM_SHA256:"
-             "TLS_AES_128_CCM_8_SHA256");
-    if (res != 1) {
-        LOG(LEVEL_WARNING, "SSL_CTX_set_ciphersuites error %d\n", res);
-    }
-
-    /**
-     * set TLS key logging callback
-     * typedef void (*SSL_CTX_keylog_cb_func)(const SSL *ssl, const char *line);
-     * */
-    if (tlsstate_conf.ssl_keylog) {
-        SSL_CTX_set_keylog_callback(ctx, ssl_keylog_cb);
-    }
-
-    ssl_ctx = ctx;
-    LOG(LEVEL_INFO, "SUCCESS init dynamic ssl\n");
-
-    if (tlsstate_conf.subprobe_args
-        && tlsstate_conf.subprobe->params) {
-        if (set_parameters_from_substring(NULL,
-            tlsstate_conf.subprobe->params, tlsstate_conf.subprobe_args)) {
-            LOG(LEVEL_ERROR, "FAIL: errors happened in param parsing of subprobe of TlsState.\n");
-            exit(1);
-        }
-    }
-    /*init for subprobe*/
-    return tlsstate_conf.subprobe->global_init_cb(xconf);
-
-error0:
-    return 0;
+    output_result(tls_out, &item);
 }
 
-static void tlsstate_close()
-{
-    tlsstate_conf.subprobe->close_cb();
+static void ssl_info_callback(const SSL *ssl, int where, int ret) {
+    if (where & SSL_CB_ALERT) {
+        struct ProbeTarget *tgt = SSL_get_ex_data(ssl, 0);
+        if (!tgt)
+            return;
 
-    if (ssl_ctx) {
-        SSL_CTX_free(ssl_ctx);
-        ssl_ctx = NULL;
+        struct OutputItem item = {
+            .ip_them   = tgt->ip_them,
+            .port_them = tgt->port_them,
+            .ip_me     = tgt->ip_me,
+            .port_me   = tgt->port_me,
+            .level     = Output_INFO,
+        };
+
+        safe_strcpy(item.classification, OUTPUT_CLS_LEN, "ssl info");
+        safe_strcpy(item.reason, OUTPUT_RSN_LEN, "recorded");
+        snprintf(item.report, OUTPUT_RPT_LEN, "[OpenSSL Alert 0x%04x]", ret);
+
+        output_result(tls_out, &item);
     }
-
-    return;
-}
-
-/*init SSL struct*/
-static void
-tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
-{
-    int res;
-    SSL *ssl;
-    BIO *rbio, *wbio;
-    unsigned char *data;
-    struct TlsState *tls_state;
-    unsigned int data_max_len = 4096;
-
-    LOG(LEVEL_INFO, "[ssl_transmit_hello] >>>\n");
-
-    if (ssl_ctx == NULL) {
-        goto error0;
-    }
-
-    /*buffer for BIO*/
-    data = (unsigned char *)malloc(data_max_len);
-    if (data == NULL) {
-        LOG(LEVEL_WARNING, "SSL alloc memory error 0x%X\n", data_max_len);
-        goto error1;
-    }
-
-    tls_state = CALLOC(1, sizeof(struct TlsState));
-    if (tls_state == NULL) {
-        LOG(LEVEL_WARNING, "SSL alloc memory error 0x%" PRIx64 "\n",
-            sizeof(struct TlsState));
-        goto error2;
-    }
-
-    rbio = BIO_new(BIO_s_mem());
-    if (rbio == NULL) {
-        LOG(LEVEL_WARNING, "BIO_new(read) error\n");
-        goto error3;
-    }
-
-    wbio = BIO_new(BIO_s_mem());
-    if (wbio == NULL) {
-        LOG(LEVEL_WARNING, "BIO_new(write) error\n");
-        goto error4;
-    }
-
-    ssl = SSL_new(ssl_ctx);
-    if (ssl == NULL) {
-        LOG(LEVEL_WARNING, "SSL_new error\n");
-        goto error5;
-    }
-
-    /*client mode*/
-    SSL_set_connect_state(ssl);
- 
-    SSL_set_bio(ssl, rbio, wbio);
-
-
-    /*save `target` to SSL object*/
-    struct ProbeTarget *tgt = MALLOC(sizeof(struct ProbeTarget));
-    tgt->ip_them   = target->ip_them;
-    tgt->port_them = target->port_them;
-    tgt->ip_me     = target->ip_me;
-    tgt->port_me   = target->port_me;
-    tgt->cookie    = target->cookie;
-    tgt->index     = target->index;
-    res = SSL_set_ex_data(ssl, 0, tgt);
-    if (res != 1) {
-        LOG(LEVEL_WARNING, "SSL_set_ex_data banout error\n");
-        goto error6;
-    }
-
-    /*keep important struct in probe state*/
-    tls_state->ssl  = ssl;
-    tls_state->rbio = rbio;
-    tls_state->wbio = wbio;
-    tls_state->data = data;
-    tls_state->data_max_len    = data_max_len;
-    tls_state->handshake_state = TLS_ST_BEFORE; /*state for openssl*/
- 
-    state->data = tls_state;
-
-    /*do conn init for subprobe*/
-    tlsstate_conf.subprobe->conn_init_cb(&tls_state->substate, target);
-
-    return;
-
-    // SSL_set_ex_data(ssl, 1, NULL);
-// error7:
-    // SSL_set_ex_data(ssl, 0, NULL);
-error6:
-    free(tgt);
-    SSL_free(ssl);
-    wbio = NULL;
-    rbio = NULL;
-error5:
-    if (wbio != NULL) {
-        BIO_free(wbio);
-        wbio = NULL;
-    }
-error4:
-    if (rbio != NULL) {
-        BIO_free(rbio);
-        rbio = NULL;
-    }
-error3:
-    free(state->data);
-error2:
-    free(data);
-error1:
-error0:
-
-    return;
-}
-
-static void
-tlsstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
-{
-    LOG(LEVEL_INFO, "[ssl_cleanup] >>>\n");
-
-    if (!state->data) return;
-
-    struct TlsState *tls_state = state->data;
-
-    /*do conn close for subprobe*/
-    tlsstate_conf.subprobe->conn_close_cb(&tls_state->substate, target);
-
-    /*cleanup ex data in SSL obj*/
-    free(SSL_get_ex_data(tls_state->ssl, 0));
-
-    if (tls_state->ssl) {
-        SSL_free(tls_state->ssl);
-        tls_state->ssl = NULL;
-        tls_state->rbio = NULL;
-        tls_state->wbio = NULL;
-    }
-
-    if (tls_state->data) {
-        free(tls_state->data);
-        tls_state->data = NULL;
-        tls_state->data_max_len = 0;
-    }
-
-    free(tls_state);
-    state->data = NULL;
-}
-
-static int extend_buffer(unsigned char **buf, size_t *buf_len)
-{
-    unsigned char *tmp_data = NULL;
-    tmp_data = REALLOC(*buf, *buf_len * 2);
-    if (tmp_data == NULL) {
-        LOG(LEVEL_WARNING, "SSL realoc memory error 0x%" PRIxPTR "\n",
-            *buf_len * 2);
-        return 0;
-    }
-    *buf = tmp_data;
-    *buf_len = *buf_len * 2;
-    return 1;
-}
-
-static void
-tlsstate_make_hello(
-    struct DataPass *pass,
-    struct ProbeState *state,
-    struct ProbeTarget *target)
-{
-    int res, res_ex;
-    size_t offset = 0;
-    struct TlsState *tls_state = state->data;
-
-    res = SSL_do_handshake(tls_state->ssl);
-    res_ex = SSL_ERROR_NONE;
-    if (res < 0) {
-        res_ex = SSL_get_error(tls_state->ssl, res);
-    }
-
-    if (res == 1) {
-        // if success, but its impossible
-    } else if (res < 0 && res_ex == SSL_ERROR_WANT_READ) {
-        offset = 0;
-        while (true) {
-            /*extend if buffer is not enough*/
-            if (tls_state->data_max_len - offset <= 0) {
-                if (!extend_buffer(&tls_state->data, &tls_state->data_max_len))
-                    goto error1;
-            }
-
-            /*get ClientHello here*/
-            res = BIO_read(tls_state->wbio,
-                           tls_state->data + offset,
-                           (int)(tls_state->data_max_len - offset));
-            if (res > 0) {
-                LOG(LEVEL_INFO, "[ssl_transmit_hello]BIO_read: %d\n", res);
-                offset += (size_t)res;
-            } else if (res == 0 || res == -1) {
-                LOG(LEVEL_INFO, "[ssl_transmit_hello]BIO_read: %d\n", res);
-                break;
-            } else {
-                LOG(LEVEL_WARNING,
-                    "[ssl_transmit_hello]BIO_read failed with error: %d\n", res);
-                goto error1;
-            }
-        }
-    } else {
-        LOG(LEVEL_WARNING, "SSL_do_handshake failed with error: %d, ex_error: %d\n",
-            res, res_ex);
-        goto error1;
-    }
-
-    /*save state for openssl*/
-    tls_state->handshake_state = SSL_get_state(tls_state->ssl);
-
-    /*telling to send ClientHello*/
-    pass->payload = tls_state->data;
-    pass->len     = offset;
-    pass->flag    = PASS__copy;
-    return;
-error1:
-    pass->payload = NULL;
-    pass->len     = 0;
-    pass->close   = 1;
-    return;
 }
 
 static int output_subject(struct Output *out,
@@ -813,6 +524,332 @@ static int output_version(struct Output *out,
     return 1;
 }
 
+/*init public SSL_CTX*/
+static int
+tlsstate_global_init(const struct Xconf *xconf)
+{
+    /*save `out`*/
+    tls_out = &xconf->output;
+
+    const SSL_METHOD *meth;
+    SSL_CTX *ctx;
+    int res;
+
+    LOG(LEVEL_INFO, "[ssl_init] >>>\n");
+
+    /*support cryptographic algorithms from SSLv3.0 to TLSv1.3*/
+    meth = TLS_method();
+    if (meth == NULL) {
+        LOG(LEVEL_WARNING, "TLS_method error\n");
+        LOGopenssl(LEVEL_WARNING);
+        goto error0;
+    }
+
+    ctx = SSL_CTX_new(meth);
+    if (ctx == NULL) {
+        LOG(LEVEL_WARNING, "SSL_CTX_new error\n");
+        LOGopenssl(LEVEL_WARNING);
+        goto error0;
+    }
+
+    /*no verification for server*/
+    SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
+
+    /*support all versions*/
+    SSL_CTX_set_min_proto_version(ctx, 0);
+    SSL_CTX_set_max_proto_version(ctx, 0);
+
+    /*security level 0 means: everything is permitted*/
+    SSL_CTX_set_security_level(ctx, 0);
+
+    /*ciphersuites allowed in TLSv1.2 or older*/
+    res = SSL_CTX_set_cipher_list(ctx, "ALL:eNULL");
+    if (res != 1) {
+        LOG(LEVEL_WARNING, "SSL_CTX_set_cipher_list error %d\n", res);
+    }
+    /*ciphersuites allowed in TLSv1.3. (ALL & in order)*/
+    res = SSL_CTX_set_ciphersuites(
+        ctx, "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:"
+             "TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_CCM_SHA256:"
+             "TLS_AES_128_CCM_8_SHA256");
+    if (res != 1) {
+        LOG(LEVEL_WARNING, "SSL_CTX_set_ciphersuites error %d\n", res);
+    }
+
+    /**
+     * set TLS key logging callback
+     * typedef void (*SSL_CTX_keylog_cb_func)(const SSL *ssl, const char *line);
+     * */
+    if (tlsstate_conf.ssl_keylog) {
+        SSL_CTX_set_keylog_callback(ctx, ssl_keylog_cb);
+    }
+
+    ssl_ctx = ctx;
+    LOG(LEVEL_INFO, "SUCCESS init dynamic ssl\n");
+
+    if (tlsstate_conf.subprobe_args
+        && tlsstate_conf.subprobe->params) {
+        if (set_parameters_from_substring(NULL,
+            tlsstate_conf.subprobe->params, tlsstate_conf.subprobe_args)) {
+            LOG(LEVEL_ERROR, "FAIL: errors happened in param parsing of subprobe of TlsState.\n");
+            exit(1);
+        }
+    }
+    /*init for subprobe*/
+    return tlsstate_conf.subprobe->global_init_cb(xconf);
+
+error0:
+    return 0;
+}
+
+static void tlsstate_close()
+{
+    tlsstate_conf.subprobe->close_cb();
+
+    if (ssl_ctx) {
+        SSL_CTX_free(ssl_ctx);
+        ssl_ctx = NULL;
+    }
+
+    return;
+}
+
+/*init SSL struct*/
+static void
+tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
+{
+    int res;
+    SSL *ssl;
+    BIO *rbio, *wbio;
+    unsigned char *data;
+    struct TlsState *tls_state;
+    unsigned int data_max_len = 4096;
+
+    LOG(LEVEL_INFO, "[ssl_transmit_hello] >>>\n");
+
+    if (ssl_ctx == NULL) {
+        goto error0;
+    }
+
+    /*buffer for BIO*/
+    data = (unsigned char *)malloc(data_max_len);
+    if (data == NULL) {
+        LOG(LEVEL_WARNING, "SSL alloc memory error 0x%X\n", data_max_len);
+        goto error1;
+    }
+
+    tls_state = CALLOC(1, sizeof(struct TlsState));
+    if (tls_state == NULL) {
+        LOG(LEVEL_WARNING, "SSL alloc memory error 0x%" PRIx64 "\n",
+            sizeof(struct TlsState));
+        goto error2;
+    }
+
+    rbio = BIO_new(BIO_s_mem());
+    if (rbio == NULL) {
+        LOG(LEVEL_WARNING, "BIO_new(read) error\n");
+        LOGopenssl(LEVEL_WARNING);
+        goto error3;
+    }
+
+    wbio = BIO_new(BIO_s_mem());
+    if (wbio == NULL) {
+        LOG(LEVEL_WARNING, "BIO_new(write) error\n");
+        LOGopenssl(LEVEL_WARNING);
+        goto error4;
+    }
+
+    ssl = SSL_new(ssl_ctx);
+    if (ssl == NULL) {
+        LOG(LEVEL_WARNING, "SSL_new error\n");
+        LOGopenssl(LEVEL_WARNING);
+        goto error5;
+    }
+
+    /*client mode*/
+    SSL_set_connect_state(ssl);
+    /*bind BIO interfaces and SSL obj*/
+    SSL_set_bio(ssl, rbio, wbio);
+
+    /*set info cb to print status changing, alert and errors*/
+    SSL_set_info_callback(ssl, ssl_info_callback);
+
+
+    /*save `target` to SSL object*/
+    struct ProbeTarget *tgt = MALLOC(sizeof(struct ProbeTarget));
+    tgt->ip_them   = target->ip_them;
+    tgt->port_them = target->port_them;
+    tgt->ip_me     = target->ip_me;
+    tgt->port_me   = target->port_me;
+    tgt->cookie    = target->cookie;
+    tgt->index     = target->index;
+    res = SSL_set_ex_data(ssl, 0, tgt);
+    if (res != 1) {
+        LOG(LEVEL_WARNING, "SSL_set_ex_data banout error\n");
+        goto error6;
+    }
+
+    /*keep important struct in probe state*/
+    tls_state->ssl  = ssl;
+    tls_state->rbio = rbio;
+    tls_state->wbio = wbio;
+    tls_state->data = data;
+    tls_state->data_max_len    = data_max_len;
+    tls_state->handshake_state = TLS_ST_BEFORE; /*state for openssl*/
+ 
+    state->data = tls_state;
+
+    /*do conn init for subprobe*/
+    tlsstate_conf.subprobe->conn_init_cb(&tls_state->substate, target);
+
+    return;
+
+    // SSL_set_ex_data(ssl, 1, NULL);
+// error7:
+    // SSL_set_ex_data(ssl, 0, NULL);
+error6:
+    free(tgt);
+    SSL_free(ssl);
+    wbio = NULL;
+    rbio = NULL;
+error5:
+    if (wbio != NULL) {
+        BIO_free(wbio);
+        wbio = NULL;
+    }
+error4:
+    if (rbio != NULL) {
+        BIO_free(rbio);
+        rbio = NULL;
+    }
+error3:
+    free(state->data);
+error2:
+    free(data);
+error1:
+error0:
+
+    return;
+}
+
+static void
+tlsstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
+{
+    LOG(LEVEL_INFO, "[ssl_cleanup] >>>\n");
+
+    if (!state->data) return;
+
+    struct TlsState *tls_state = state->data;
+
+    if (!tls_state) return;
+
+    /*do conn close for subprobe*/
+    tlsstate_conf.subprobe->conn_close_cb(&tls_state->substate, target);
+
+    if (tls_state->ssl) {
+        /*cleanup ex data in SSL obj*/
+        void *ex_data = SSL_get_ex_data(tls_state->ssl, 0);
+        if (ex_data) {
+            free(SSL_get_ex_data(tls_state->ssl, 0));
+            ex_data = NULL;
+        }
+
+        SSL_free(tls_state->ssl);
+        tls_state->ssl = NULL;
+        tls_state->rbio = NULL;
+        tls_state->wbio = NULL;
+    }
+
+    if (tls_state->data) {
+        free(tls_state->data);
+        tls_state->data = NULL;
+        tls_state->data_max_len = 0;
+    }
+
+    free(tls_state);
+    state->data = NULL;
+}
+
+static int extend_buffer(unsigned char **buf, size_t *buf_len)
+{
+    unsigned char *tmp_data = NULL;
+    tmp_data = REALLOC(*buf, *buf_len * 2);
+    if (tmp_data == NULL) {
+        LOG(LEVEL_WARNING, "SSL realoc memory error 0x%" PRIxPTR "\n",
+            *buf_len * 2);
+        return 0;
+    }
+    *buf = tmp_data;
+    *buf_len = *buf_len * 2;
+    return 1;
+}
+
+static void
+tlsstate_make_hello(
+    struct DataPass *pass,
+    struct ProbeState *state,
+    struct ProbeTarget *target)
+{
+    int res, res_ex;
+    size_t offset = 0;
+    struct TlsState *tls_state = state->data;
+
+    res = SSL_do_handshake(tls_state->ssl);
+    res_ex = SSL_ERROR_NONE;
+    if (res < 0) {
+        res_ex = SSL_get_error(tls_state->ssl, res);
+    }
+
+    if (res == 1) {
+        // if success, but its impossible
+    } else if (res < 0 && res_ex == SSL_ERROR_WANT_READ) {
+        offset = 0;
+        while (true) {
+            /*extend if buffer is not enough*/
+            if (tls_state->data_max_len - offset <= 0) {
+                if (!extend_buffer(&tls_state->data, &tls_state->data_max_len))
+                    goto error1;
+            }
+
+            /*get ClientHello here*/
+            res = BIO_read(tls_state->wbio,
+                           tls_state->data + offset,
+                           (int)(tls_state->data_max_len - offset));
+            if (res > 0) {
+                LOG(LEVEL_INFO, "[ssl_transmit_hello]BIO_read: %d\n", res);
+                offset += (size_t)res;
+            } else if (res == 0 || res == -1) {
+                LOG(LEVEL_INFO, "[ssl_transmit_hello]BIO_read: %d\n", res);
+                break;
+            } else {
+                LOG(LEVEL_WARNING,
+                    "[ssl_transmit_hello]BIO_read failed with error: %d\n", res);
+                LOGopenssl(LEVEL_WARNING);
+                goto error1;
+            }
+        }
+    } else {
+        LOG(LEVEL_WARNING, "SSL_do_handshake failed with error: %d, ex_error: %d\n",
+            res, res_ex);
+        LOGopenssl(LEVEL_WARNING);
+        goto error1;
+    }
+
+    /*save state for openssl*/
+    tls_state->handshake_state = SSL_get_state(tls_state->ssl);
+
+    /*telling to send ClientHello*/
+    pass->payload = tls_state->data;
+    pass->len     = offset;
+    pass->flag    = PASS__copy;
+    return;
+error1:
+    pass->payload = NULL;
+    pass->len     = 0;
+    pass->close   = 1;
+    return;
+}
+
 static void
 tlsstate_parse_response(
     struct DataPass *pass,
@@ -826,7 +863,7 @@ tlsstate_parse_response(
     int is_continue;
     struct TlsState *tls_state = state->data;
 
-    if (state->state == TLS_STATE_UNKNOWN) {
+    if (state->state == TLS_STATE_CLOSE) {
         is_continue = 0;
     } else {
         is_continue = 1;
@@ -923,7 +960,7 @@ tlsstate_parse_response(
                 } else {
                     LOG(LEVEL_WARNING, "Unknown handshake state %d\n",
                         tls_state->handshake_state);
-                    state->state = TLS_STATE_UNKNOWN;
+                    state->state = TLS_STATE_CLOSE;
                 }
 
             } else if (res < 0 && res_ex == SSL_ERROR_WANT_READ) { //go on handshake
@@ -933,7 +970,7 @@ tlsstate_parse_response(
                 while (true) {
                     if (tls_state->data_max_len - offset <= 0) {
                         if (!extend_buffer(&tls_state->data, &tls_state->data_max_len)) {
-                          state->state = TLS_STATE_UNKNOWN;
+                          state->state = TLS_STATE_CLOSE;
                           break;
                         }
                     }
@@ -952,12 +989,12 @@ tlsstate_parse_response(
                     } else {
                         LOG(LEVEL_WARNING,
                             "[ssl_parse_record]BIO_read failed with error: %d\n", res);
-                        state->state = TLS_STATE_UNKNOWN;
+                        state->state = TLS_STATE_CLOSE;
                         break;
                     }
                 }
 
-                if (state->state != TLS_STATE_UNKNOWN) {
+                if (state->state != TLS_STATE_CLOSE) {
                     pass->payload = tls_state->data;
                     pass->len     = offset;
                     pass->flag    = PASS__copy;
@@ -969,7 +1006,8 @@ tlsstate_parse_response(
                     "[ssl_parse_record]SSL_do_handshake failed with error: %d, "
                     "ex_error: %d\n",
                     res, res_ex);
-                state->state = TLS_STATE_UNKNOWN;
+                LOGopenssl(LEVEL_DEBUG);
+                state->state = TLS_STATE_CLOSE;
             }
             break;
 
@@ -990,20 +1028,23 @@ tlsstate_parse_response(
 
             if (subpass.payload != NULL && subpass.len != 0) {
                 res = SSL_write(tls_state->ssl, subpass.payload, subpass.len);
+                if (subpass.flag==PASS__adopt)
+                    free(subpass.payload);
             }
 
             if (res <= 0) {
                 res_ex = SSL_get_error(tls_state->ssl, res);
                 LOG(LEVEL_WARNING, "[ssl_parse_record]SSL_write error: %d %d\n", res,
                     res_ex);
-                state->state = TLS_STATE_UNKNOWN;
+                LOGopenssl(LEVEL_WARNING);
+                state->state = TLS_STATE_CLOSE;
             } else {
                 LOG(LEVEL_INFO, "[ssl_parse_record]SSL_write: %d\n", res);
                 size_t offset = 0;
                 while (true) {
                     if (tls_state->data_max_len - offset <= 0) {
                         if (!extend_buffer(&tls_state->data, &tls_state->data_max_len)) {
-                            state->state = TLS_STATE_UNKNOWN;
+                            state->state = TLS_STATE_CLOSE;
                             break;
                         }
                     }
@@ -1021,17 +1062,17 @@ tlsstate_parse_response(
                     } else {
                         LOG(LEVEL_WARNING,
                             "[ssl_parse_record]BIO_read failed with error: %d\n", res);
-                        state->state = TLS_STATE_UNKNOWN;
+                        LOGopenssl(LEVEL_WARNING);
+                        state->state = TLS_STATE_CLOSE;
                         break;
                     }
                 }
-                if (state->state != TLS_STATE_UNKNOWN) {
+                if (state->state != TLS_STATE_CLOSE) {
                     state->state  = TLS_STATE_APP_RECEIVE_NEXT;
                     pass->payload = tls_state->data;
                     pass->len     = offset;
                     pass->flag    = PASS__copy;
                     pass->close   = subpass.close;
-                    is_continue   = 0;
                     return;
                 }
             }
@@ -1048,7 +1089,7 @@ tlsstate_parse_response(
                 /*maybe more data, extend buffer to read*/
                 if (res==tls_state->data_max_len-offset) {
                     if (!extend_buffer(&tls_state->data, &tls_state->data_max_len)) {
-                        state->state = TLS_STATE_UNKNOWN;
+                        state->state = TLS_STATE_CLOSE;
                         break;
                     }
                     /*go on to read*/
@@ -1069,18 +1110,19 @@ tlsstate_parse_response(
                         return;
                     }
 
-                    /*have data to send*/
                     res = 1;
-
+                    /*have data to send, give it to SSL to encrypt*/
                     if (subpass.payload != NULL && subpass.len != 0) {
                         res = SSL_write(tls_state->ssl, subpass.payload, subpass.len);
+                        if (subpass.flag==PASS__adopt)
+                            free(subpass.payload);
                     }
 
                     if (res <= 0) {
                         res_ex = SSL_get_error(tls_state->ssl, res);
                         LOG(LEVEL_WARNING, "[ssl_parse_record]SSL_write error: %d %d\n", res,
                             res_ex);
-                        state->state = TLS_STATE_UNKNOWN;
+                        state->state = TLS_STATE_CLOSE;
                         break;
                     } else {
                         LOG(LEVEL_INFO, "[ssl_parse_record]SSL_write: %d\n", res);
@@ -1088,14 +1130,12 @@ tlsstate_parse_response(
                         while (true) {
                             if (tls_state->data_max_len - offset <= 0) {
                                 if (!extend_buffer(&tls_state->data, &tls_state->data_max_len)) {
-                                    state->state = TLS_STATE_UNKNOWN;
+                                    state->state = TLS_STATE_CLOSE;
                                     break;
                                 }
                             }
 
-                            res = BIO_read(
-                                tls_state->wbio,
-                                tls_state->data + offset,
+                            res = BIO_read(tls_state->wbio, tls_state->data + offset,
                                 (unsigned int)(tls_state->data_max_len - offset));
                             if (res > 0) {
                                 LOG(LEVEL_INFO, "[ssl_parse_record]BIO_read: %d\n", res);
@@ -1106,17 +1146,16 @@ tlsstate_parse_response(
                             } else {
                                 LOG(LEVEL_WARNING,
                                     "[ssl_parse_record]BIO_read failed with error: %d\n", res);
-                                state->state = TLS_STATE_UNKNOWN;
+                                state->state = TLS_STATE_CLOSE;
                                 break;
                             }
                         }
-                        if (state->state != TLS_STATE_UNKNOWN) {
+                        if (state->state != TLS_STATE_CLOSE) {
                             state->state  = TLS_STATE_APP_RECEIVE_NEXT;
                             pass->payload = tls_state->data;
                             pass->len     = offset;
                             pass->flag    = PASS__copy;
                             pass->close   = subpass.close;
-                            is_continue   = 0;
                             return;
                         }
                     }
@@ -1125,27 +1164,24 @@ tlsstate_parse_response(
                     if (res_ex == SSL_ERROR_WANT_READ) {
                         is_continue = 0;
                     } else if (res_ex == SSL_ERROR_ZERO_RETURN) {
-                        state->state = TLS_STATE_APP_WHAT_CLOSE;
+                        state->state = TLS_STATE_CLOSE;
                     } else {
                         if (res_ex != SSL_ERROR_SSL) {
                             LOG(LEVEL_WARNING, "[ssl_parse_record]SSL_read error: %d %d\n",
                                 res, res_ex);
+                            LOGopenssl(LEVEL_WARNING);
                         }
-                        state->state = TLS_STATE_UNKNOWN;
+                        state->state = TLS_STATE_CLOSE;
                     }
                     break;
                 }
             }
             break;
 
-        case TLS_STATE_APP_WHAT_CLOSE:
-            pass->close = 1;
-            is_continue = 0;
-            state->state = TLS_STATE_UNKNOWN;
-            break;
-
-        case TLS_STATE_UNKNOWN:
-            pass->close = 1;
+        case TLS_STATE_CLOSE:
+            pass->close   = 1;
+            pass->payload = NULL;
+            pass->len     = 0;
             return;
         }
     }
