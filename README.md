@@ -18,6 +18,7 @@ See `xtate --help`.
 
 Xtate was created by lfishRhungry:
 - email: shineccy@aliyun.com
+- email: chenchiyu14@nudt.edu.cn
 
 Xtate was born from [ZMap](https://github.com/zmap/zmap),
 [Masscan](https://github.com/robertdavidgraham/masscan/tree/master)
