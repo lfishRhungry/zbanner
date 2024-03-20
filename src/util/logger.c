@@ -3,6 +3,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include <openssl/err.h>
+
 static int global_debug_level = 0; /* yea! a global variable!! */
 
 void LOG_add_level(int x)
@@ -90,3 +92,23 @@ LOGip(int level, ipaddress ip, unsigned port, const char *fmt, ...)
     va_end(marker);
 }
 
+/***************************************************************************
+ ***************************************************************************/
+static int LOGopenssl_cb(const char *str, size_t len, void *bp) {
+  if (len > INT16_MAX) {
+    return -1;
+  }
+  fprintf(stderr, "%.*s", (int)len, str);
+  return 1;
+}
+
+int LOGopenssl(int level) {
+  int res = 0;
+  if (level <= global_debug_level) {
+    fprintf(stderr, "OpenSSL error:\n");
+    ERR_print_errors_cb(LOGopenssl_cb, NULL);
+    fprintf(stderr, "\n");
+    fflush(stderr);
+  }
+  return res;
+}
