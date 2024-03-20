@@ -524,6 +524,20 @@ static int output_version(struct Output *out,
     return 1;
 }
 
+static int extend_buffer(unsigned char **buf, size_t *buf_len)
+{
+    unsigned char *tmp_data = NULL;
+    tmp_data = REALLOC(*buf, *buf_len * 2);
+    if (tmp_data == NULL) {
+        LOG(LEVEL_WARNING, "SSL realoc memory error 0x%" PRIxPTR "\n",
+            *buf_len * 2);
+        return 0;
+    }
+    *buf = tmp_data;
+    *buf_len = *buf_len * 2;
+    return 1;
+}
+
 /*init public SSL_CTX*/
 static int
 tlsstate_global_init(const struct Xconf *xconf)
@@ -694,6 +708,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     tls_state->rbio = rbio;
     tls_state->wbio = wbio;
     tls_state->data = data;
+
     tls_state->data_max_len    = data_max_len;
     tls_state->handshake_state = TLS_ST_BEFORE; /*state for openssl*/
  
@@ -768,20 +783,6 @@ tlsstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
 
     free(tls_state);
     state->data = NULL;
-}
-
-static int extend_buffer(unsigned char **buf, size_t *buf_len)
-{
-    unsigned char *tmp_data = NULL;
-    tmp_data = REALLOC(*buf, *buf_len * 2);
-    if (tmp_data == NULL) {
-        LOG(LEVEL_WARNING, "SSL realoc memory error 0x%" PRIxPTR "\n",
-            *buf_len * 2);
-        return 0;
-    }
-    *buf = tmp_data;
-    *buf_len = *buf_len * 2;
-    return 1;
 }
 
 static void
