@@ -230,7 +230,8 @@ static void ssl_info_callback(const SSL *ssl, int where, int ret) {
 
         safe_strcpy(item.classification, OUTPUT_CLS_LEN, "ssl info");
         safe_strcpy(item.reason, OUTPUT_RSN_LEN, "recorded");
-        snprintf(item.report, OUTPUT_RPT_LEN, "[OpenSSL Alert 0x%04x]", ret);
+        snprintf(item.report, OUTPUT_RPT_LEN, "[OpenSSL Alert 0x%04x] %s: %s",
+            ret, SSL_alert_type_string_long(ret), SSL_alert_desc_string_long(ret));
 
         output_result(tls_out, &item);
     }
@@ -526,6 +527,7 @@ static int output_version(struct Output *out,
 
 static int extend_buffer(unsigned char **buf, size_t *buf_len)
 {
+    LOG(LEVEL_DEBUG, "[BUFFER extending...] >>>\n");
     unsigned char *tmp_data = NULL;
     tmp_data = REALLOC(*buf, *buf_len * 2);
     if (tmp_data == NULL) {
