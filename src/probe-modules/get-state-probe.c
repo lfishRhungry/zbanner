@@ -4,6 +4,7 @@
 #include "probe-modules.h"
 #include "../util/safe-string.h"
 #include "../output/output.h"
+#include "../util/logger.h"
 
 #define GET_STATE_PAYLOAD "GET / HTTP/1.0\r\n\r\n"
 
@@ -39,12 +40,36 @@ static struct ConfigParameter getstate_parameters[] = {
     {0}
 };
 
+static int getstate_global_init(const struct Xconf *xconf)
+{
+    LOG(LEVEL_WARNING, "[GetState Probe global initing] >>>\n");
+    return 1;
+}
+
+static void getstate_close()
+{
+    LOG(LEVEL_WARNING, "[GetState Probe closing] >>>\n");
+}
+
+static void
+getstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
+{
+    LOG(LEVEL_WARNING, "[GetState Probe conn initing] >>>\n");
+}
+
+static void
+getstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
+{
+    LOG(LEVEL_WARNING, "[GetState Probe conn closing] >>>\n");
+}
+
 static void
 getstate_make_hello(
     struct DataPass *pass,
     struct ProbeState *state,
     struct ProbeTarget *target)
 {
+    LOG(LEVEL_WARNING, "[GetState Probe making hello] >>>\n");
     /*static data*/
     pass->payload = (unsigned char *)GET_STATE_PAYLOAD;
     pass->len     = strlen(GET_STATE_PAYLOAD);
@@ -59,6 +84,7 @@ getstate_parse_response(
     const unsigned char *px,
     unsigned sizeof_px)
 {
+    LOG(LEVEL_WARNING, "[GetState Probe parsing response] >>>\n");
     if (!getstate_conf.get_whole_page) {
         if (state->state) return;
         state->state = 1;
@@ -94,14 +120,14 @@ struct ProbeModule GetStateProbe = {
         "And could get a simple result from http server fastly. GetState is the "
         "state version of GetRequest Probe for testing ScanModules that needs a"
         " probe of state type.",
-    .global_init_cb                    = &probe_global_init_nothing,
+    .global_init_cb                    = &getstate_global_init,
     .make_payload_cb                   = NULL,
     .get_payload_length_cb             = NULL,
     .validate_response_cb              = NULL,
     .handle_response_cb                = NULL,
-    .conn_init_cb                      = &probe_conn_init_nothing,
+    .conn_init_cb                      = &getstate_conn_init,
     .make_hello_cb                     = &getstate_make_hello,
     .parse_response_cb                 = &getstate_parse_response,
-    .conn_close_cb                     = &probe_conn_close_nothing,
-    .close_cb                          = &probe_close_nothing,
+    .conn_close_cb                     = &getstate_conn_close,
+    .close_cb                          = &getstate_close,
 };
