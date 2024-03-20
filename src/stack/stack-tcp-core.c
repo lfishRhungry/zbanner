@@ -476,7 +476,7 @@ tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
         .cookie    = 0,         /*ProbeType State doesn't need cookie*/
         .index     = 0,         /*doesn't support multi-probe now*/
     };
-    tcb->probe->conn_init_cb(&tcb->probe_state, &target);
+    tcb->probe->conn_close_cb(&tcb->probe_state, &target);
 
 
     (*r_entry) = tcb->next;
