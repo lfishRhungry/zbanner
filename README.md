@@ -4,19 +4,26 @@
 Welcome to Xtate -- A modular all-stack network scanner running on a completely
 stateless mode for next-generation Internet-scale surveys!
 
+BONUS: Xtate has stateful ScanModule to support stateful scanning now.
+
 ## Main Usage
 
-## Tips
+See `xtate --usage`.
 
-## TODOs
+## Helps
 
-# Authors
+See `xtate --help`.
+
+# Author
 
 Xtate was created by lfishRhungry:
 - email: shineccy@aliyun.com
 
-Xtate was born from [Masscan](https://github.com/robertdavidgraham/masscan/tree/master).
-Thanks to Robert Graham for his greate code and rigorous style.
+Xtate was born from [ZMap](https://github.com/zmap/zmap),
+[Masscan](https://github.com/robertdavidgraham/masscan/tree/master)
+and [Masscan-ng](https://github.com/bi-zone/masscan-ng).
+Thanks to Robert Graham, Zakir Durumeric and Konstantin Molodyakov
+for there greate code and rigorous style.
 
 # License
 
