@@ -15,12 +15,50 @@ extern struct ScanModule TcpStateScan; /*for internal x-ref*/
 
 static struct TCP_ConnectionTable *tcpcon = NULL;
 
+struct TcpStateConf {
+    unsigned conn_timeout;
+};
+
+static struct TcpStateConf tcpstate_conf = {0};
+
+static int SET_conn_timeout(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+
+    unsigned tm = parseInt(value);
+
+    if (tm <= 0) {
+        fprintf(stderr, "FAIL: %s must be positive.\n", name);
+        return CONF_ERR;
+    }
+
+    tcpstate_conf.conn_timeout = tm;
+
+    return CONF_OK;
+}
+
+static struct ConfigParameter tcpstate_parameters[] = {
+    {
+        "conn-timeout",
+        SET_conn_timeout,
+        F_NUMABLE,
+        {"conn-timeout", "timeout", "conn-tm", "tm", 0},
+        "Specifies the max existing time of each connection."
+    },
+
+    {0}
+};
+
 static int tcpstate_global_init(const struct Xconf *xconf)
 {
+    if (tcpstate_conf.conn_timeout <= 0)
+        tcpstate_conf.conn_timeout = 30;
+
     tcpcon = tcpcon_create_table(
         (size_t)(xconf->max_rate/5)/xconf->tx_thread_count,
         xconf->stack, &global_tmplset->pkts[Proto_TCP],
-        (struct Output *)(&xconf->output), 20, xconf->seed);
+        (struct Output *)(&xconf->output),
+        tcpstate_conf.conn_timeout, xconf->seed);
 
     return 1;
 }
@@ -165,7 +203,7 @@ struct ScanModule TcpStateScan = {
     .required_probe_type = ProbeType_STATE,
     .support_timeout     = 0,
     .bpf_filter          = "tcp",
-    .params              = NULL,
+    .params              = tcpstate_parameters,
     .desc =
         "TcpStateScan tries to contruct TCP conn with target port with a user-space"
         " TCP stack and do communication. Used ProbeModule could do more things "
