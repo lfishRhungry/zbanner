@@ -884,7 +884,8 @@ tlsstate_parse_response(
             LOG(LEVEL_INFO, "[ssl_parse_record]BIO_write: %d \n", res);
             if (res > 0) {
                 offset += (size_t)res;
-                continue;
+                if (sizeof_px - offset <= 0)
+                    break;
             } else {
                 LOG(LEVEL_WARNING,
                     "[ssl_parse_record]BIO_write failed with error: %d\n", res);
@@ -984,14 +985,14 @@ tlsstate_parse_response(
                         (unsigned int)(tls_state->data_max_len - offset));
 
                     if (res > 0) {
-                        LOG(LEVEL_INFO, "[ssl_parse_record]BIO_read: %d\n", res);
+                        LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_HANDSHAKE]BIO_read: %d\n", res);
                         offset += (size_t)res;
                     } else if (res == 0 || res == -1) {
-                        LOG(LEVEL_INFO, "[ssl_parse_record]BIO_read: %d\n", res);
+                        LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_HANDSHAKE]BIO_read: %d\n", res);
                         break;
                     } else {
                         LOG(LEVEL_WARNING,
-                            "[ssl_parse_record]BIO_read failed with error: %d\n", res);
+                            "[ssl_parse_record TLS_STATE_HANDSHAKE]BIO_read failed with error: %d\n", res);
                         state->state = TLS_STATE_CLOSE;
                         break;
                     }
@@ -1006,7 +1007,7 @@ tlsstate_parse_response(
 
             } else {  //cannot go on handshake
                 LOG(LEVEL_DEBUG,
-                    "[ssl_parse_record]SSL_do_handshake failed with error: %d, "
+                    "[ssl_parse_record TLS_STATE_HANDSHAKE]SSL_do_handshake failed with error: %d, "
                     "ex_error: %d\n",
                     res, res_ex);
                 LOGopenssl(LEVEL_DEBUG);
@@ -1037,12 +1038,12 @@ tlsstate_parse_response(
 
             if (res <= 0) {
                 res_ex = SSL_get_error(tls_state->ssl, res);
-                LOG(LEVEL_WARNING, "[ssl_parse_record]SSL_write error: %d %d\n", res,
+                LOG(LEVEL_WARNING, "[ssl_parse_record TLS_STATE_APP_HELLO]SSL_write error: %d %d\n", res,
                     res_ex);
                 LOGopenssl(LEVEL_WARNING);
                 state->state = TLS_STATE_CLOSE;
             } else {
-                LOG(LEVEL_INFO, "[ssl_parse_record]SSL_write: %d\n", res);
+                LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_APP_HELLO]SSL_write: %d\n", res);
                 size_t offset = 0;
                 while (true) {
                     if (tls_state->data_max_len - offset <= 0) {
@@ -1057,14 +1058,14 @@ tlsstate_parse_response(
                         tls_state->data + offset,
                         (unsigned int)(tls_state->data_max_len - offset));
                     if (res > 0) {
-                        LOG(LEVEL_INFO, "[ssl_parse_record]BIO_read: %d\n", res);
+                        LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_APP_HELLO]BIO_read: %d\n", res);
                         offset += (size_t)res;
                     } else if (res == 0 || res == -1) {
-                        LOG(LEVEL_DEBUG, "[ssl_parse_record]BIO_read: %d\n", res);
+                        LOG(LEVEL_DEBUG, "[ssl_parse_record TLS_STATE_APP_HELLO]BIO_read: %d\n", res);
                         break;
                     } else {
                         LOG(LEVEL_WARNING,
-                            "[ssl_parse_record]BIO_read failed with error: %d\n", res);
+                            "[ssl_parse_record TLS_STATE_APP_HELLO]BIO_read failed with error: %d\n", res);
                         LOGopenssl(LEVEL_WARNING);
                         state->state = TLS_STATE_CLOSE;
                         break;
@@ -1099,7 +1100,7 @@ tlsstate_parse_response(
                     continue;
                 } else if (res > 0) {
                     /*got all data from SSL buffer, give it to subprobe*/
-                    LOG(LEVEL_INFO, "[ssl_parse_record]SSL_read: %d\n", offset);
+                    LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]SSL_read: %d\n", offset);
 
                     struct DataPass subpass = {0};
 
@@ -1123,12 +1124,12 @@ tlsstate_parse_response(
 
                     if (res <= 0) {
                         res_ex = SSL_get_error(tls_state->ssl, res);
-                        LOG(LEVEL_WARNING, "[ssl_parse_record]SSL_write error: %d %d\n", res,
+                        LOG(LEVEL_WARNING, "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]SSL_write error: %d %d\n", res,
                             res_ex);
                         state->state = TLS_STATE_CLOSE;
                         break;
                     } else {
-                        LOG(LEVEL_INFO, "[ssl_parse_record]SSL_write: %d\n", res);
+                        LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]SSL_write: %d\n", res);
                         size_t offset = 0;
                         while (true) {
                             if (tls_state->data_max_len - offset <= 0) {
@@ -1141,14 +1142,14 @@ tlsstate_parse_response(
                             res = BIO_read(tls_state->wbio, tls_state->data + offset,
                                 (unsigned int)(tls_state->data_max_len - offset));
                             if (res > 0) {
-                                LOG(LEVEL_INFO, "[ssl_parse_record]BIO_read: %d\n", res);
+                                LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]BIO_read: %d\n", res);
                                 offset += (size_t)res;
                             } else if (res == 0 || res == -1) {
-                                LOG(LEVEL_DEBUG, "[ssl_parse_record]BIO_read: %d\n", res);
+                                LOG(LEVEL_DEBUG, "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]BIO_read: %d\n", res);
                                 break;
                             } else {
                                 LOG(LEVEL_WARNING,
-                                    "[ssl_parse_record]BIO_read failed with error: %d\n", res);
+                                    "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]BIO_read failed with error: %d\n", res);
                                 state->state = TLS_STATE_CLOSE;
                                 break;
                             }
@@ -1170,7 +1171,7 @@ tlsstate_parse_response(
                         state->state = TLS_STATE_CLOSE;
                     } else {
                         if (res_ex != SSL_ERROR_SSL) {
-                            LOG(LEVEL_WARNING, "[ssl_parse_record]SSL_read error: %d %d\n",
+                            LOG(LEVEL_WARNING, "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]SSL_read error: %d %d\n",
                                 res, res_ex);
                             LOGopenssl(LEVEL_WARNING);
                         }
