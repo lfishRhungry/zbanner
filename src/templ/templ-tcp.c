@@ -1706,27 +1706,27 @@ tcp_create_by_template(
          * Fill in the empty fields in the IP header and then re-calculate
          * the checksum.
          */
-        px[offset_ip+2] = (unsigned char)(ip_len>> 8);
-        px[offset_ip+3] = (unsigned char)(ip_len & 0xFF);
-        px[offset_ip+4] = (unsigned char)(ip_id >> 8);
-        px[offset_ip+5] = (unsigned char)(ip_id & 0xFF);
-        px[offset_ip+12] = (unsigned char)((ip_me.ipv4 >> 24) & 0xFF);
-        px[offset_ip+13] = (unsigned char)((ip_me.ipv4 >> 16) & 0xFF);
-        px[offset_ip+14] = (unsigned char)((ip_me.ipv4 >>  8) & 0xFF);
-        px[offset_ip+15] = (unsigned char)((ip_me.ipv4 >>  0) & 0xFF);
+        px[offset_ip+2 ] = (unsigned char)(ip_len >> 8);
+        px[offset_ip+3 ] = (unsigned char)(ip_len  & 0xFF);
+        px[offset_ip+4 ] = (unsigned char)(ip_id  >> 8);
+        px[offset_ip+5 ] = (unsigned char)(ip_id   & 0xFF);
+        px[offset_ip+12] = (unsigned char)((ip_me.ipv4   >> 24) & 0xFF);
+        px[offset_ip+13] = (unsigned char)((ip_me.ipv4   >> 16) & 0xFF);
+        px[offset_ip+14] = (unsigned char)((ip_me.ipv4   >>  8) & 0xFF);
+        px[offset_ip+15] = (unsigned char)((ip_me.ipv4   >>  0) & 0xFF);
         px[offset_ip+16] = (unsigned char)((ip_them.ipv4 >> 24) & 0xFF);
         px[offset_ip+17] = (unsigned char)((ip_them.ipv4 >> 16) & 0xFF);
         px[offset_ip+18] = (unsigned char)((ip_them.ipv4 >>  8) & 0xFF);
         px[offset_ip+19] = (unsigned char)((ip_them.ipv4 >>  0) & 0xFF);
 
-        xsum = tmpl->ipv4.checksum_ip;
+        xsum  = tmpl->ipv4.checksum_ip;
         xsum += (ip_id&0xFFFF);
         xsum += ip_me.ipv4;
         xsum += ip_them.ipv4;
         xsum += ip_len - old_len;
-        xsum = (xsum >> 16) + (xsum & 0xFFFF);
-        xsum = (xsum >> 16) + (xsum & 0xFFFF);
-        xsum = ~xsum;
+        xsum  = (xsum >> 16) + (xsum & 0xFFFF);
+        xsum  = (xsum >> 16) + (xsum & 0xFFFF);
+        xsum  = ~xsum;
 
         px[offset_ip+10] = (unsigned char)(xsum >> 8);
         px[offset_ip+11] = (unsigned char)(xsum & 0xFF);
