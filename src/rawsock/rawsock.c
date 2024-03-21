@@ -736,9 +736,9 @@ rawsock_init_adapter(const char *adapter_name,
 
         /* This reserves resources, but doesn't actually open the 
          * adapter until we call pcap_activate */
-        // adapter->pcap = PCAP.create(adapter_name, errbuf);
-        adapter->pcap = NULL;
+        adapter->pcap = PCAP.create(adapter_name, errbuf);
         if (adapter->pcap == NULL) {
+            /*If going to this way, pcap will be a little bit slower, very strange*/
             adapter->pcap = PCAP.open_live(
                         adapter_name,           /* interface name */
                         65536,                  /* max packet size */
