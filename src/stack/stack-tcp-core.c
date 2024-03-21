@@ -105,11 +105,11 @@ enum Tcp_State{
 };
 
 enum App_State{
-    APP_STATE_CONNECT = 0,
-    APP_STATE_RECV_HELLO,
-    APP_STATE_RECV_NEXT,
-    APP_STATE_SEND_FIRST,
-    APP_STATE_SEND_NEXT,
+    APP_STATE_CONNECT = 0,    /*init state*/
+    APP_STATE_RECV_HELLO,     /*wait for hello*/
+    APP_STATE_RECV_NEXT,      /*wait for payload*/
+    APP_STATE_SEND_FIRST,     /*our turn to say hello*/
+    APP_STATE_SEND_NEXT,      /*our turn to send payload*/
 };
 
 enum App_Event {
@@ -1295,9 +1295,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
  
 
     switch (tcb->tcpstate) {
-            /* TODO: validate any SYNACK is real before sending it here
-             * to the state-machine, by validating that it's acking
-             * something */
+
         case STATE_SYN_SENT:
             switch (what) {
                 case TCP_WHAT_TIMEOUT:
@@ -1466,14 +1464,6 @@ again:
         case APP_STATE_CONNECT:
             switch (event) {
                 case APP_WHAT_CONNECTED:
-                    /* We have receive a SYNACK here. If there are multiple handlers
-                     * for this port, then attempt another connection using the
-                     * other protocol handlers. For example, for SSL, we might want
-                     * to try both TLSv1.0 and TLSv1.3 */
-                    // if (stream && stream->next) {
-                    //     tcpapi_reconnect(socket, stream->next, APP_STATE_CONNECT);
-                    // }
-
                     /*
                      * By default, wait for the "hello timeout" period
                      * receiving any packets they send us. If nothing is
@@ -1523,12 +1513,7 @@ again:
         case APP_STATE_RECV_NEXT:
             switch (event) {
                 case APP_WHAT_RECV_PAYLOAD:
-                    /*
-                     * This is an important part of the system, where the TCP
-                     * stack passes incoming packet payloads off to the application
-                     * layer protocol parsers. This is where, in Sockets API, you
-                     * might call the 'recv()' function.
-                     */
+
                     struct ProbeTarget target = {
                         .ip_them   = socket->tcb->ip_them,
                         .ip_me     = socket->tcb->ip_me,
@@ -1572,11 +1557,7 @@ again:
             break;
 
         case APP_STATE_SEND_FIRST:
-            /*
-             * We either have a CALLBACK that will handle the
-             * sending/receiving of packets, or we will send a fixed
-             * "probe" string that will hopefull trigger a response.
-             */
+
             struct ProbeTarget target = {
                 .ip_them   = socket->tcb->ip_them,
                 .port_them = socket->tcb->port_them,
