@@ -130,7 +130,7 @@ stack_create(macaddress_t source_mac, struct stack_src_t *src, unsigned buf_coun
         int err;
 
         p = MALLOC(sizeof(*p));
-        err = rte_ring_mp_enqueue(stack->packet_buffers, p);
+        err = rte_ring_sp_enqueue(stack->packet_buffers, p);
         if (err) {
             /* I dunno why but I can't queue all 256 packets, just 255 */
             fprintf(stderr, "[-] packet_buffers: enqueue: error %d\n", err);
