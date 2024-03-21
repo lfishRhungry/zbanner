@@ -7,17 +7,23 @@
  * DataPass is a media of different protocol layer to pass data
  * and its control info.
  * DataPass makes nested protocol possible. e.g. TLS
+ * 
+ * the `is_dynamic` switch means we just pass 2 type of data:
+ * 1.static data: we can promise it unchanged for a while until we sending it.
+ * 2.dynamic data: we copy it to a MALLOC addr, and sender will free the point.
  * */
-enum PassFlag {
-    PASS__static = 0,    /* it's static data, so the send function can point to it */
-    PASS__copy   = 1,    /* the send function must copy the data */
-    PASS__adopt  = 2,    /* the buffer was just allocated, so the send function can adopt the pointer */
-};
 struct DataPass {
-  unsigned char *payload;
-  size_t         len;
-  enum PassFlag  flag:3;
-  unsigned       close:1;
+    unsigned char *payload;
+    size_t         len;
+    unsigned       is_dynamic:1;
+    unsigned       is_close:1;
 };
+
+/**
+ * Just a wrapper to set dynamic or static data.
+ * !set `is_close` by yourself
+*/
+void datapass_set_data(struct DataPass *pass, unsigned char *payload,
+    size_t payload_len, unsigned is_dynamic);
 
 #endif

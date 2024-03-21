@@ -88,8 +88,8 @@ struct TCP_Segment {
     unsigned seqno;
     unsigned char *buf;
     size_t length;
-    enum PassFlag flags;
-    bool is_fin;              /* was fin sent */
+    unsigned is_dynamic:1;
+    unsigned is_fin:1;              /* was fin sent */
     struct TCP_Segment *next;
 };
 
@@ -447,7 +447,7 @@ tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
         seg           = tcb->segments;
         tcb->segments = seg->next;
 
-        if (seg->flags == PASS__copy || seg->flags == PASS__adopt) {
+        if (seg->is_dynamic) {
             free(seg->buf);
             seg->buf = 0;
         }
@@ -835,7 +835,7 @@ application_notify(struct TCP_ConnectionTable *tcpcon,
 static void 
 _tcb_seg_send(void *in_tcpcon, void *in_tcb, 
         const void *buf, size_t length, 
-        enum PassFlag flags, unsigned is_close) {
+        unsigned is_dynamic, unsigned is_close) {
     
     /*just handle closing if it set*/
     if (is_close) {
@@ -864,7 +864,7 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
         if ((*next)->is_fin) {
             /* can't send after we have sent a FIN */
             LOGip(0, tcb->ip_them, tcb->port_them, "can't send past a FIN\n");
-            if (flags == PASS__adopt) {
+            if (is_dynamic) {
                 free((void*)buf); /* discard const */
                 buf = NULL;
             }
@@ -879,21 +879,12 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     /* Fill in this segment's members */
     seg->seqno  = seqno;
     seg->length = length;
-    seg->flags  = flags;
+    seg->is_dynamic  = is_dynamic;
 
     if (is_close || !length) {
         seg->buf = NULL;
     } else {
-        switch (flags) {
-            case PASS__static:
-            case PASS__adopt:
-                seg->buf = (void *)buf;
-                break;
-            case PASS__copy:
-                seg->buf = malloc(length);
-                memcpy(seg->buf, buf, length);
-                break;
-        }
+        seg->buf = (void *)buf;
     }
 
     if (length_more == 0)
@@ -919,12 +910,11 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     /* If the input buffer was too large to fit a single segment, then
      * split it up into multiple segments */
     if (length_more) {
-        if (flags == PASS__adopt)
-            flags = PASS__copy;
-
+        void *buf_more = MALLOC(length_more);
+        memcpy(buf_more, buf+length, length_more);
         _tcb_seg_send(tcpcon, tcb,
-                      (unsigned char*)buf + length, length_more,
-                      flags, is_close);
+                      buf_more, length_more,
+                      1, is_close);
     }
 }
 
@@ -1002,18 +992,9 @@ handle_fin:
             LOGtcb(tcb, 1, "ACKed %u-bytes\n", seg->length);
 
             /* free the old segment */
-            switch (seg->flags) {
-                case PASS__static:
-                    break;
-                case PASS__adopt:
-                case PASS__copy:
-                    if (seg->buf) {
-                        free(seg->buf);
-                        seg->buf = NULL;
-                    }
-                    break;
-                default:
-                    ;
+            if (seg->is_dynamic) {
+                free(seg->buf);
+                seg->buf = NULL;
             }
             free(seg);
             if (ackno == tcb->ackno_them)
@@ -1028,14 +1009,14 @@ handle_fin:
             LOGtcb(tcb, 1, "ACKed %u-bytes %s\n", length, seg->is_fin?"FIN":"");
 
             /* This segment needs to be reduced */
-            if (seg->flags == PASS__adopt || seg->flags == PASS__copy) {
+            if (seg->is_dynamic) {
                 size_t new_length = seg->length - length;
                 unsigned char *buf = malloc(new_length);
                 memcpy(buf, seg->buf + length, new_length);
                 free(seg->buf);
                 seg->buf = buf;
                 seg->length -= length;
-                seg->flags = PASS__copy;
+                seg->is_dynamic = 1;
             } else {
                 seg->buf += length;
             }
@@ -1176,7 +1157,7 @@ tcpapi_recv(struct stack_handle_t *socket) {
 int
 tcpapi_send(struct stack_handle_t *socket,
             const void *buf, size_t length,
-            enum PassFlag flags, unsigned is_close) {
+            unsigned is_dynamic, unsigned is_close) {
     struct TCP_Control_Block *tcb;
 
     if (socket == 0 || socket->tcb == 0)
@@ -1189,9 +1170,9 @@ tcpapi_send(struct stack_handle_t *socket,
             /*follow through*/
         case STATE_ESTABLISHED_SEND:
             if (is_close) {
-                _tcb_seg_send(socket->tcpcon, tcb, NULL, 0, flags, is_close);
+                _tcb_seg_send(socket->tcpcon, tcb, NULL, 0, is_dynamic, is_close);
             } else {
-                _tcb_seg_send(socket->tcpcon, tcb, buf, length, flags, is_close);
+                _tcb_seg_send(socket->tcpcon, tcb, buf, length, is_dynamic, is_close);
             }
             return 0;
         default:
@@ -1640,8 +1621,8 @@ again:
                      * Because our TCP API just handle one of each at a time.
                      * */
                     if (pass.len)
-                        tcpapi_send(socket, pass.payload, pass.len, pass.flag, 0);
-                    if (pass.close)
+                        tcpapi_send(socket, pass.payload, pass.len, pass.is_dynamic, 0);
+                    if (pass.is_close)
                         tcpapi_close(socket);
 
                     break;
@@ -1686,10 +1667,10 @@ again:
              * Because our TCP API just handle one of each at a time.
              * */
             if (pass.len)
-                tcpapi_send(socket, pass.payload, pass.len, PASS__copy, 0);
+                tcpapi_send(socket, pass.payload, pass.len, pass.is_dynamic, 0);
             /* If specified, then send a FIN right after the hello data.
                 * This will complete a reponse faster from the server. */
-            if (pass.close)
+            if (pass.is_close)
                 tcpapi_close(socket);
 
             tcpapi_change_app_state(socket, APP_STATE_SEND_NEXT);

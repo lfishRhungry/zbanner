@@ -842,14 +842,12 @@ tlsstate_make_hello(
     tls_state->handshake_state = SSL_get_state(tls_state->ssl);
 
     /*telling to send ClientHello*/
-    pass->payload = tls_state->data;
-    pass->len     = offset;
-    pass->flag    = PASS__copy;
+    datapass_set_data(pass, tls_state->data, offset, 1);
     return;
 error1:
     pass->payload = NULL;
     pass->len     = 0;
-    pass->close   = 1;
+    pass->is_close   = 1;
     return;
 }
 
@@ -892,7 +890,7 @@ tlsstate_parse_response(
                 /*close connection*/
                 pass->payload = NULL;
                 pass->len     = 0;
-                pass->close   = 1;
+                pass->is_close   = 1;
                 return;
             }
         }
@@ -999,9 +997,7 @@ tlsstate_parse_response(
                 }
 
                 if (state->state != TLS_STATE_CLOSE) {
-                    pass->payload = tls_state->data;
-                    pass->len     = offset;
-                    pass->flag    = PASS__copy;
+                    datapass_set_data(pass, tls_state->data, offset, 1);
                     return;
                 }
 
@@ -1023,7 +1019,7 @@ tlsstate_parse_response(
 
             /*Maybe no hello and maybe just close*/
             if (!subpass.payload || !subpass.len) {
-                pass->close = subpass.close;
+                pass->is_close = subpass.is_close;
                 state->state = TLS_STATE_APP_RECEIVE_NEXT;
                 return;
             }
@@ -1032,8 +1028,11 @@ tlsstate_parse_response(
 
             if (subpass.payload != NULL && subpass.len != 0) {
                 res = SSL_write(tls_state->ssl, subpass.payload, subpass.len);
-                if (subpass.flag==PASS__adopt)
+                if (subpass.is_dynamic) {
                     free(subpass.payload);
+                    subpass.payload = NULL;
+                    subpass.len     = 0;
+                }
             }
 
             if (res <= 0) {
@@ -1073,10 +1072,8 @@ tlsstate_parse_response(
                 }
                 if (state->state != TLS_STATE_CLOSE) {
                     state->state  = TLS_STATE_APP_RECEIVE_NEXT;
-                    pass->payload = tls_state->data;
-                    pass->len     = offset;
-                    pass->flag    = PASS__copy;
-                    pass->close   = subpass.close;
+                    datapass_set_data(pass, tls_state->data, offset, 1);
+                    pass->is_close   = subpass.is_close;
                     return;
                 }
             }
@@ -1109,7 +1106,7 @@ tlsstate_parse_response(
 
                     /*Maybe no hello and maybe just close*/
                     if (!subpass.payload || !subpass.len) {
-                        pass->close = subpass.close;
+                        pass->is_close = subpass.is_close;
                         state->state = TLS_STATE_APP_RECEIVE_NEXT;
                         return;
                     }
@@ -1118,8 +1115,11 @@ tlsstate_parse_response(
                     /*have data to send, give it to SSL to encrypt*/
                     if (subpass.payload != NULL && subpass.len != 0) {
                         res = SSL_write(tls_state->ssl, subpass.payload, subpass.len);
-                        if (subpass.flag==PASS__adopt)
+                        if (subpass.is_dynamic) {
                             free(subpass.payload);
+                            subpass.payload = NULL;
+                            subpass.len     = 0;
+                        }
                     }
 
                     if (res <= 0) {
@@ -1156,10 +1156,8 @@ tlsstate_parse_response(
                         }
                         if (state->state != TLS_STATE_CLOSE) {
                             state->state  = TLS_STATE_APP_RECEIVE_NEXT;
-                            pass->payload = tls_state->data;
-                            pass->len     = offset;
-                            pass->flag    = PASS__copy;
-                            pass->close   = subpass.close;
+                            datapass_set_data(pass, tls_state->data, offset, 1);
+                            pass->is_close   = subpass.is_close;
                             return;
                         }
                     }
@@ -1183,7 +1181,7 @@ tlsstate_parse_response(
             break;
 
         case TLS_STATE_CLOSE:
-            pass->close   = 1;
+            pass->is_close   = 1;
             pass->payload = NULL;
             pass->len     = 0;
             return;

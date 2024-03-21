@@ -70,9 +70,11 @@ getstate_make_hello(
     struct ProbeTarget *target)
 {
     LOG(LEVEL_WARNING, "[GetState Probe making hello] >>>\n");
-    /*static data*/
+    /*static data and don't close the conn*/
     pass->payload = (unsigned char *)GET_STATE_PAYLOAD;
     pass->len     = strlen(GET_STATE_PAYLOAD);
+    datapass_set_data(pass, (unsigned char *)GET_STATE_PAYLOAD,
+        strlen(GET_STATE_PAYLOAD), 0);
 }
 
 static void
@@ -88,8 +90,7 @@ getstate_parse_response(
     if (!getstate_conf.get_whole_page) {
         if (state->state) return;
         state->state = 1;
-
-        pass->close = 1;
+        pass->is_close = 1;
     }
 
     struct OutputItem item = {

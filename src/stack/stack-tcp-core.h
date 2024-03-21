@@ -132,7 +132,7 @@ tcpapi_recv(struct stack_handle_t *socket);
 int
 tcpapi_send(struct stack_handle_t *socket,
             const void *buf, size_t length,
-            enum PassFlag flags, unsigned is_close);
+            unsigned is_dynamic, unsigned is_close);
 
 /**
  * Re-connect to the target, same IP and port, creating a new connection
