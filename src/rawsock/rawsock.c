@@ -347,11 +347,11 @@ int rawsock_recv_packet(
     unsigned *usecs,
     const unsigned char **packet)
 {
-    
+    int err;
+ 
     if (adapter->ring) {
         /* This is for doing libpfring instead of libpcap */
         struct pfring_pkthdr hdr;
-        int err;
 
         again:
         err = PFRING.recv(adapter->ring,
@@ -376,9 +376,17 @@ int rawsock_recv_packet(
     } else if (adapter->pcap) {
         struct pcap_pkthdr *hdr;
 
-        int captured = PCAP.next_ex(adapter->pcap, &hdr, packet);
+        again_pcap:
 
-        if (captured!=1) {
+        err = PCAP.next_ex(adapter->pcap, &hdr, packet);
+
+        if (err == 0) {
+            if (is_tx_done)
+                return 1;
+            goto again_pcap;
+        }
+
+        if (err != 1) {
             if (is_pcap_file) {
                 //pixie_time_set_offset(10*100000);
                 is_tx_done = 1;
