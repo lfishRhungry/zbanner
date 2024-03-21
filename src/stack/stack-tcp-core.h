@@ -130,9 +130,9 @@ tcpapi_recv(struct stack_handle_t *socket);
  * if set closing, we would ignore the data.
 */
 int
-tcpapi_send(struct stack_handle_t *socket,
+tcpapi_send_data(struct stack_handle_t *socket,
             const void *buf, size_t length,
-            unsigned is_dynamic, unsigned is_close);
+            unsigned is_dynamic);
 
 /**
  * Re-connect to the target, same IP and port, creating a new connection

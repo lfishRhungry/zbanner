@@ -89,7 +89,6 @@ struct TCP_Segment {
     unsigned char *buf;
     size_t length;
     unsigned is_dynamic:1;
-    unsigned is_fin:1;              /* was fin sent */
     struct TCP_Segment *next;
 };
 
@@ -142,7 +141,6 @@ struct TCP_Control_Block
     unsigned short               mss;               /* maximum segment size 1460 */
     time_t                       when_created;
     unsigned                     is_small_window:1; /* send with smaller window */
-    unsigned                     is_their_fin:1;
     unsigned                     is_active:1;       /*in-use/allocated or to be del soon*/
 
     const struct ProbeModule    *probe;
@@ -590,7 +588,7 @@ tcpcon_create_tcb(
     tcb->ackno_them       = seqno_me;
     tcb->when_created     = global_now;
     tcb->ttl              = (unsigned char)ttl;
-    tcb->mss              = 1400;
+    tcb->mss              = 1460;
     tcb->probe            = probe;
 
     /* Insert the TCB into the timeout. A TCB must always have a timeout
@@ -795,20 +793,17 @@ _tcb_seg_resend(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tc
     struct TCP_Segment *seg = tcb->segments;
 
     if (seg) {
+        /*just handle packets with data*/
+        if (!seg->length || !seg->buf) return;
+
         if (tcb->seqno_me != seg->seqno) {
-            ERRMSG("SEQNO FAILURE diff=%d %s\n", tcb->seqno_me - seg->seqno, seg->is_fin?"FIN":"");
+            ERRMSG("SEQNO FAILURE diff=%d\n", tcb->seqno_me - seg->seqno);
             return;
         }
 
-        if (seg->is_fin && seg->length == 0) {
-            tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_FIN|TCP_FLAG_ACK,
-                                0, /*FIN has no data */
-                                0 /*logically is 1 byte, but not payload byte */);
-        } else {
-            tcpcon_send_packet(tcpcon, tcb,
-                                TCP_FLAG_PSH | TCP_FLAG_ACK | (seg->is_fin?TCP_FLAG_FIN:0x00),
-                                seg->buf, seg->length);
-        }
+        tcpcon_send_packet(tcpcon, tcb,
+                            TCP_FLAG_PSH | TCP_FLAG_ACK,
+                            seg->buf, seg->length);
     }
                         
 }
@@ -835,12 +830,9 @@ application_notify(struct TCP_ConnectionTable *tcpcon,
 static void 
 _tcb_seg_send(void *in_tcpcon, void *in_tcb, 
         const void *buf, size_t length, 
-        unsigned is_dynamic, unsigned is_close) {
+        unsigned is_dynamic) {
     
-    /*just handle closing if it set*/
-    if (is_close) {
-        length = 0;
-    }
+    if (!buf || !length) return;
 
     struct TCP_ConnectionTable *tcpcon = (struct TCP_ConnectionTable *)in_tcpcon;
     struct TCP_Control_Block *tcb = (struct TCP_Control_Block *)in_tcb;
@@ -854,22 +846,9 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
         length = tcb->mss;
     }
 
-
-    if (length == 0 && !is_close)
-        return;
-
     /* Go to the end of the segment list */
     for (next = &tcb->segments; *next; next = &(*next)->next) {
         seqno = (unsigned)((*next)->seqno + (*next)->length);
-        if ((*next)->is_fin) {
-            /* can't send after we have sent a FIN */
-            LOGip(0, tcb->ip_them, tcb->port_them, "can't send past a FIN\n");
-            if (is_dynamic) {
-                free((void*)buf); /* discard const */
-                buf = NULL;
-            }
-            return;
-        }
     }
 
     /* Append this segment to the list */
@@ -880,31 +859,17 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     seg->seqno  = seqno;
     seg->length = length;
     seg->is_dynamic  = is_dynamic;
+    seg->buf = (void *)buf;
 
-    if (is_close || !length) {
-        seg->buf = NULL;
-    } else {
-        seg->buf = (void *)buf;
-    }
-
-    if (length_more == 0)
-        seg->is_fin = is_close;
-
-    if (!seg->is_fin && seg->length && tcb->tcpstate != STATE_ESTABLISHED_SEND)
+    if (tcb->tcpstate != STATE_ESTABLISHED_SEND)
         application_notify(tcpcon, tcb, APP_WHAT_SENDING, seg->buf, seg->length, 0, 0);
 
-    LOGtcb(tcb, 0, "send = %u-bytes %s @ %u\n", length, is_close?"FIN":"",
-           seg->seqno-tcb->seqno_me_first);
 
     /* If this is the head of the segment list, then transmit right away */
     if (tcb->segments == seg) {
-        LOGtcb(tcb, 0, "xmit = %u-bytes %s @ %u\n", length, is_close?"FIN":"",
-               seg->seqno-tcb->seqno_me_first);
-        tcpcon_send_packet(tcpcon, tcb,
-            TCP_FLAG_PSH | TCP_FLAG_ACK | (is_close?TCP_FLAG_FIN:0),
+        tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_PSH | TCP_FLAG_ACK,
             seg->buf, seg->length);
-        if (!is_close)
-            _tcb_change_state_to(tcb, STATE_ESTABLISHED_SEND);
+        _tcb_change_state_to(tcb, STATE_ESTABLISHED_SEND);
     }
 
     /* If the input buffer was too large to fit a single segment, then
@@ -912,9 +877,7 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     if (length_more) {
         void *buf_more = MALLOC(length_more);
         memcpy(buf_more, buf+length, length_more);
-        _tcb_seg_send(tcpcon, tcb,
-                      buf_more, length_more,
-                      1, is_close);
+        _tcb_seg_send(tcpcon, tcb, buf_more, length_more, 1);
     }
 }
 
@@ -954,24 +917,6 @@ _tcp_seg_acknowledge(
         return 0;
     }
 
-    /* Handle FIN specially */
-handle_fin:
-    if (tcb->segments && tcb->segments->is_fin) {
-        struct TCP_Segment *seg = tcb->segments;
-
-        if (seg->seqno+1 == ackno) {
-            LOGtcb(tcb, 1, "ACKed FIN\n");
-            tcb->seqno_me += 1;
-            tcb->ackno_them += 1;
-            return 1;
-        } else if (seg->seqno == ackno) {
-            return 0;
-        } else {
-            LOGtcb(tcb, 1, "@@@@@BAD ACK of FIN@@@@\n", seg->length);
-            return 0;
-        }
-    }
-
     /*
     !Retire outstanding segments
     */
@@ -979,9 +924,6 @@ handle_fin:
         unsigned length = ackno - tcb->seqno_me;
         while (tcb->segments && length >= tcb->segments->length) {
             struct TCP_Segment *seg = tcb->segments;
-
-            if (seg->is_fin)
-                goto handle_fin;
 
             tcb->segments = seg->next;
 
@@ -1004,9 +946,9 @@ handle_fin:
         if (tcb->segments && length < tcb->segments->length) {
             struct TCP_Segment *seg = tcb->segments;
             
-            tcb->seqno_me += length + seg->is_fin;
-            tcb->ackno_them += length + seg->is_fin;
-            LOGtcb(tcb, 1, "ACKed %u-bytes %s\n", length, seg->is_fin?"FIN":"");
+            tcb->seqno_me += length;
+            tcb->ackno_them += length;
+            LOGtcb(tcb, 1, "ACKed %u-bytes\n", length);
 
             /* This segment needs to be reduced */
             if (seg->is_dynamic) {
@@ -1155,9 +1097,13 @@ tcpapi_recv(struct stack_handle_t *socket) {
 }
 
 int
-tcpapi_send(struct stack_handle_t *socket,
+tcpapi_send_data(struct stack_handle_t *socket,
             const void *buf, size_t length,
-            unsigned is_dynamic, unsigned is_close) {
+            unsigned is_dynamic) {
+
+    /*no data*/
+    if (!buf || !length) return 1;
+
     struct TCP_Control_Block *tcb;
 
     if (socket == 0 || socket->tcb == 0)
@@ -1169,11 +1115,7 @@ tcpapi_send(struct stack_handle_t *socket,
             _tcb_change_state_to(tcb, STATE_ESTABLISHED_SEND);
             /*follow through*/
         case STATE_ESTABLISHED_SEND:
-            if (is_close) {
-                _tcb_seg_send(socket->tcpcon, tcb, NULL, 0, is_dynamic, is_close);
-            } else {
-                _tcb_seg_send(socket->tcpcon, tcb, buf, length, is_dynamic, is_close);
-            }
+            _tcb_seg_send(socket->tcpcon, tcb, buf, length, is_dynamic);
             return 0;
         default:
             LOG(LEVEL_WARNING, "TCP app attempted SEND in wrong state\n");
@@ -1224,18 +1166,8 @@ _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
     struct TCP_Control_Block *tcb,
     const unsigned char *payload, size_t payload_length,
     unsigned seqno_them,
-    unsigned secs, unsigned usecs, bool is_fin)
+    unsigned secs, unsigned usecs)
 {
-    /* Special case when packet contains only a FIN */
-    if (payload_length == 0 && is_fin && (tcb->seqno_them - seqno_them) == 0) {
-        tcb->is_their_fin  = 1;
-        tcb->seqno_them   += 1;
-        tcb->ackno_me     += 1;
-        tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
-        return 1;
-    }
-
-
     if ((tcb->seqno_them - seqno_them) > payload_length)  {
         LOGSEND(tcb, "peer(ACK) [acknowledge payload 1]");
         tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
@@ -1248,11 +1180,6 @@ _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
         payload++;
     }
 
-    if (tcb->is_their_fin) {
-        /* payload cannot be received after a FIN */
-        return 1;
-    }
-
     if (payload_length == 0) {
         tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
         return 1;
@@ -1260,16 +1187,11 @@ _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
 
     LOGtcb(tcb, 2, "received %u bytes\n", payload_length);
 
-    tcb->seqno_them += payload_length + is_fin;
-    tcb->ackno_me   += payload_length + is_fin;
+    tcb->seqno_them += payload_length;
+    tcb->ackno_me   += payload_length;
 
     application_notify(tcpcon, tcb, APP_WHAT_RECV_PAYLOAD,
                        payload, payload_length, secs, usecs);
-
-
-
-    if (is_fin)
-        tcb->is_their_fin = true;
 
     /* Send ack for the data */
     tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
@@ -1483,7 +1405,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     application_notify(tcpcon, tcb, APP_WHAT_RECV_TIMEOUT, 0, 0, secs, usecs);
                     break;
                 case TCP_WHAT_DATA:
-                    _tcb_seg_recv(tcpcon, tcb, payload, payload_length, seqno_them, secs, usecs, false);
+                    _tcb_seg_recv(tcpcon, tcb, payload, payload_length, seqno_them, secs, usecs);
                     break;
                 case TCP_WHAT_SYNACK:
                     /* This happens when a delayed SYN-ACK arrives from the target.
@@ -1621,7 +1543,7 @@ again:
                      * Because our TCP API just handle one of each at a time.
                      * */
                     if (pass.len)
-                        tcpapi_send(socket, pass.payload, pass.len, pass.is_dynamic, 0);
+                        tcpapi_send_data(socket, pass.payload, pass.len, pass.is_dynamic);
                     if (pass.is_close)
                         tcpapi_close(socket);
 
@@ -1667,9 +1589,7 @@ again:
              * Because our TCP API just handle one of each at a time.
              * */
             if (pass.len)
-                tcpapi_send(socket, pass.payload, pass.len, pass.is_dynamic, 0);
-            /* If specified, then send a FIN right after the hello data.
-                * This will complete a reponse faster from the server. */
+                tcpapi_send_data(socket, pass.payload, pass.len, pass.is_dynamic);
             if (pass.is_close)
                 tcpapi_close(socket);
 
