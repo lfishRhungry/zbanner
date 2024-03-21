@@ -50,6 +50,12 @@
  *                              +---------+                   +---------+
  *
  */
+
+/**
+ * !BUT
+ * For code clean, scan fast and achieve our target, I improve(or downgrade)
+ * the TCP stack(FSM) to a simpler one.
+*/
 #include "stack-tcp-core.h"
 
 #include <assert.h>
@@ -122,32 +128,32 @@ enum App_Event {
  ***************************************************************************/
 struct TCP_Control_Block
 {
-    ipaddress                    ip_me;
-    ipaddress                    ip_them;
-    unsigned short               port_me;
-    unsigned short               port_them;
-    uint32_t                     seqno_me;          /* next seqno I will use for transmit */
-    uint32_t                     seqno_them;        /* the next seqno I expect to receive */
-    uint32_t                     ackno_me;
-    uint32_t                     ackno_them;
-    uint32_t                     seqno_me_first;
-    uint32_t                     seqno_them_first;
+    ipaddress                         ip_me;
+    ipaddress                         ip_them;
+    unsigned short                    port_me;
+    unsigned short                    port_them;
+    uint32_t                          seqno_me;          /* next seqno I will use for transmit */
+    uint32_t                          seqno_them;        /* the next seqno I expect to receive */
+    uint32_t                          ackno_me;
+    uint32_t                          ackno_them;
+    uint32_t                          seqno_me_first;
+    uint32_t                          seqno_them_first;
 
-    struct TCP_Segment          *segments;
-    enum Tcp_State               tcpstate;
-    enum App_State               app_state;
-    unsigned char                ttl;
-    unsigned char                syns_sent;         /* reconnect */
-    unsigned short               mss;               /* maximum segment size 1460 */
-    time_t                       when_created;
-    unsigned                     is_small_window:1; /* send with smaller window */
-    unsigned                     is_active:1;       /*in-use/allocated or to be del soon*/
+    struct TCP_Segment               *segments;
+    enum Tcp_State                    tcpstate;
+    enum App_State                    app_state;
+    unsigned char                     ttl;
+    unsigned char                     syns_sent;         /* reconnect */
+    unsigned short                    mss;               /* maximum segment size 1460 */
+    time_t                            when_created;
+    unsigned                          is_small_window:1; /* send with smaller window */
+    unsigned                          is_active:1;       /*in-use/allocated or to be del soon*/
 
-    const struct ProbeModule    *probe;
-    struct ProbeState            probe_state;
+    const struct ProbeModule         *probe;
+    struct ProbeState                 probe_state;
 
-    struct TimeoutEntry          timeout[1];
-    struct TCP_Control_Block    *next;
+    struct TimeoutEntry               timeout[1];
+    struct TCP_Control_Block         *next;
 };
 
 struct TCP_ConnectionTable {

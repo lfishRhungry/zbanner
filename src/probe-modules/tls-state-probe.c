@@ -1079,7 +1079,7 @@ tlsstate_parse_response(
             }
         } break;
 
-        //!Pass data to subprobe. Cannot send data again. Just support close
+        //!Pass data to subprobe and send data again and maybe close.
         case TLS_STATE_APP_RECEIVE_NEXT:
             size_t offset = 0;
             while (true) {
@@ -1181,6 +1181,7 @@ tlsstate_parse_response(
             break;
 
         case TLS_STATE_CLOSE:
+            printf("ssl close-------------------\n");
             pass->is_close   = 1;
             pass->payload = NULL;
             pass->len     = 0;
