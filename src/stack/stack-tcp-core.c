@@ -677,10 +677,8 @@ tcpcon_send_packet(
         LOGtcb(tcb, 0, "xmit ACK ackingthem=%u\n", tcb->seqno_them-tcb->seqno_them_first);
     }
 
-    /* Get a buffer for sending the response packet. This thread doesn't
-     * send the packet itself. Instead, it formats a packet, then hands
-     * that packet off to a transmit thread for later transmission. */
     response = stack_get_packetbuffer(tcpcon->stack);
+
     if (response == NULL) {
         static int is_warning_printed = 0;
         if (!is_warning_printed) {
@@ -697,13 +695,6 @@ tcpcon_send_packet(
     if (response == NULL)
         return;
 
-    /* Format the packet as requested. Note that there are really only
-     * four types of packets:
-     * 1. a SYN-ACK packet with no payload
-     * 2. an ACK packet with no payload
-     * 3. a RST packet with no payload
-     * 4. a PSH-ACK packet WITH PAYLOAD
-     */
     response->length = tcp_create_by_template(
         tcpcon->pkt_template,
         tcb->ip_them, tcb->port_them,
@@ -719,10 +710,6 @@ tcpcon_send_packet(
     if (tcb->is_small_window)
         tcp_set_window(response->px, response->length, 600);
     
-    /* Put this buffer on the transmit queue. Remember: transmits happen
-     * from a transmit-thread only, and this function is being called
-     * from a receive-thread. Therefore, instead of transmiting ourselves,
-     * we hae to queue it up for later transmission. */
     stack_transmit_packetbuffer(tcpcon->stack, response);
 }
 
@@ -1038,7 +1025,7 @@ _do_reconnect(struct TCP_ConnectionTable *tcpcon,
 
 
     /*
-     * First, get another port number and potentially ip address
+     * get another port number and potentially ip address
      */
     {
         ipaddress prev_ip  = ip_me;
@@ -1050,11 +1037,6 @@ _do_reconnect(struct TCP_ConnectionTable *tcpcon,
 
     }
 
-    /*
-     * Calculate the SYN cookie, the same algorithm as for when spewing
-     * SYN packets. However, since we'll probably be using a different
-     * port or IP address, it'll be different in practice.
-     */
     seqno = get_cookie(ip_them, port_them, ip_me, port_me, tcpcon->entropy);
 
     /*
@@ -1208,10 +1190,6 @@ _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
 /*****************************************************************************
  * Handles incoming events, like timeouts and packets, that cause a change
  * in the TCP control block "state".
- *
- * This is the part of the code that implements the famous TCP state-machine
- * you see drawn everywhere, where they have states like "TIME_WAIT". Only
- * we don't really have those states.
  *****************************************************************************/
 enum TCB_result
 stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
@@ -1225,15 +1203,6 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
      * Reject out-of-order payloads 
      */
     if (payload_length) {
-        /* Wrapping technique: If there is a gap between this
-         * packet and the last one, then it means there is a missing
-         * packet somewhere. In that case, this calculation will
-         * wrap and `payload_offset` will be some huge number in the future.
-         * If there is no gap, then this will be zero.
-         * If there's overlap between this packet and the previous, `payload_offset`
-         * will be a small number less than the `length` of this packet.
-         * If it's a retransmission, the numbers will be the same
-         */
         int payload_offset = seqno_them - tcb->seqno_them;
         if (payload_offset < 0) {
             /* This is a retrnasmission that we've already acknowledged */
