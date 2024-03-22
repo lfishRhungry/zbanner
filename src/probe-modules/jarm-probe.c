@@ -7,7 +7,7 @@
 
 static struct JarmConfig jc_list[] = {
     {
-        .version         = TLSv1_2,
+        .version         = TLS1_2_VERSION,
         .cipher_list     = CipherList_ALL,
         .cipher_order    = CipherOrder_FORWARD,
         .grease_use      = GreaseUse_NO,
@@ -16,7 +16,7 @@ static struct JarmConfig jc_list[] = {
         .ext_order       = ExtOrder_REVERSE,
     },
     {
-        .version         = TLSv1_2,
+        .version         = TLS1_2_VERSION,
         .cipher_list     = CipherList_ALL,
         .cipher_order    = CipherOrder_REVERSE,
         .grease_use      = GreaseUse_NO,
@@ -25,7 +25,7 @@ static struct JarmConfig jc_list[] = {
         .ext_order       = ExtOrder_FORWARD,
     },
     {
-        .version         = TLSv1_2,
+        .version         = TLS1_2_VERSION,
         .cipher_list     = CipherList_ALL,
         .cipher_order    = CipherOrder_TOP_HALF,
         .grease_use      = GreaseUse_NO,
@@ -34,7 +34,7 @@ static struct JarmConfig jc_list[] = {
         .ext_order       = ExtOrder_FORWARD,
     },
     {
-        .version         = TLSv1_2,
+        .version         = TLS1_2_VERSION,
         .cipher_list     = CipherList_ALL,
         .cipher_order    = CipherOrder_BOTTOM_HALF,
         .grease_use      = GreaseUse_NO,
@@ -43,7 +43,7 @@ static struct JarmConfig jc_list[] = {
         .ext_order       = ExtOrder_FORWARD,
     },
     {
-        .version         = TLSv1_2,
+        .version         = TLS1_2_VERSION,
         .cipher_list     = CipherList_ALL,
         .cipher_order    = CipherOrder_MIDDLE_OUT,
         .grease_use      = GreaseUse_YES,
@@ -52,7 +52,7 @@ static struct JarmConfig jc_list[] = {
         .ext_order       = ExtOrder_REVERSE,
     },
     {
-        .version         = TLSv1_1,
+        .version         = TLS1_1_VERSION,
         .cipher_list     = CipherList_ALL,
         .cipher_order    = CipherOrder_FORWARD,
         .grease_use      = GreaseUse_NO,
@@ -61,7 +61,7 @@ static struct JarmConfig jc_list[] = {
         .ext_order       = ExtOrder_FORWARD,
     },
     {
-        .version         = TLSv1_3,
+        .version         = TLS1_3_VERSION,
         .cipher_list     = CipherList_ALL,
         .cipher_order    = CipherOrder_FORWARD,
         .grease_use      = GreaseUse_NO,
@@ -70,7 +70,7 @@ static struct JarmConfig jc_list[] = {
         .ext_order       = ExtOrder_REVERSE,
     },
     {
-        .version         = TLSv1_3,
+        .version         = TLS1_3_VERSION,
         .cipher_list     = CipherList_ALL,
         .cipher_order    = CipherOrder_REVERSE,
         .grease_use      = GreaseUse_NO,
@@ -79,7 +79,7 @@ static struct JarmConfig jc_list[] = {
         .ext_order       = ExtOrder_FORWARD,
     },
     {
-        .version         = TLSv1_3,
+        .version         = TLS1_3_VERSION,
         .cipher_list     = CipherList_NO_1_3,
         .cipher_order    = CipherOrder_FORWARD,
         .grease_use      = GreaseUse_NO,
@@ -88,7 +88,7 @@ static struct JarmConfig jc_list[] = {
         .ext_order       = ExtOrder_FORWARD,
     },
     {
-        .version         = TLSv1_3,
+        .version         = TLS1_3_VERSION,
         .cipher_list     = CipherList_ALL,
         .cipher_order    = CipherOrder_MIDDLE_OUT,
         .grease_use      = GreaseUse_YES,

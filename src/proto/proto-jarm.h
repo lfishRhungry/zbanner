@@ -41,7 +41,7 @@ enum JarmSupportVersionsExtension {
 struct JarmConfig {
     char                                    *servername; /* end with zero */
     unsigned                                 dst_port;
-    enum TLS_Version                         version;
+    uint16_t                                 version;
     enum JarmCipherChoice                    cipher_list;
     enum JarmCipherOrder                     cipher_order;
     enum JarmGreaseUse                       grease_use;

@@ -27,9 +27,10 @@ size_t tls_load_ext_sni(unsigned char *px, const char *name)
     px[0]  = 0x00;
     px[1]  = 0x00;
 
-    memcpy(px, TLS_EXT_TYPE_SERVER_NAME, sizeof(TLS_EXT_TYPE_SERVER_NAME)-1);
-    px    += (sizeof(TLS_EXT_TYPE_SERVER_NAME)-1);
-    r_len += (sizeof(TLS_EXT_TYPE_SERVER_NAME)-1);
+    px[0]  = TLSEXT_TYPE_server_name >> 8 & 0xFF;
+    px[1]  = TLSEXT_TYPE_server_name >> 0 & 0xFF;
+    px    += 2;
+    r_len += 2;
 
     /*Extension Length*/
     px[0]  = ((name_len+5) >> 8) & 0xFF;
@@ -72,7 +73,8 @@ size_t tls_load_ext_alpn(unsigned char *px, const char **proto_list, unsigned pr
 {
     if (proto_count==0) return 0;
 
-    memcpy(px, TLS_EXT_APP_LAYER_PROTO_NEGOTIATION, sizeof(TLS_EXT_APP_LAYER_PROTO_NEGOTIATION)-1);
+    px[0] = TLSEXT_TYPE_application_layer_protocol_negotiation >> 8 & 0xFF;
+    px[1] = TLSEXT_TYPE_application_layer_protocol_negotiation >> 0 & 0xFF;
 
     unsigned char *proto_start = px + 6;
     size_t tmp_len;
