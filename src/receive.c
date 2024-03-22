@@ -94,7 +94,7 @@ void receive_thread(void *v) {
         /*handle a fast-timeout event in each loop*/
         if (xconf->is_fast_timeout) {
 
-            tm_event = ft_pop_event(&ft_handler, time(0));
+            tm_event = ft_pop_event(&ft_handler, global_now);
             /*dedup timeout event and other packets together*/
             if (tm_event) {
                 if ((!xconf->is_nodedup &&
