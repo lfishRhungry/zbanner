@@ -6,6 +6,8 @@
 #include <intrin.h>
 #endif
 
+#include "../util/bool.h"
+
 /**
  * Returns the number of CPUs in the system, including virtual CPUs.
  * On a single processor system, the number returned will be '1'.
@@ -22,6 +24,26 @@ size_t pixie_begin_thread(void (*worker_thread)(void*),
                           void *worker_data);
 
 void pixie_thread_join(size_t thread_handle);
+void pixie_set_thread_name(const char *name);
+
+/* barrier */
+void *pixie_create_barrier(unsigned total_threads);
+void pixie_wait_barrier(void *p_barrier);
+bool pixie_delete_barrier(void *p_barrier);
+
+/* rwlock */
+void *pixie_create_rwlock();
+void pixie_acquire_rwlock_read(void *p_rwlock);
+void pixie_release_rwlock_read(void *p_rwlock);
+void pixie_acquire_rwlock_write(void *p_rwlock);
+void pixie_release_rwlock_write(void *p_rwlock);
+bool pixie_delete_rwlock(void *p_rwlock);
+
+/* mutex */
+void *pixie_create_mutex();
+void pixie_acquire_mutex(void *p_mutex);
+void pixie_release_mutex(void *p_mutex);
+bool pixie_delete_mutex(void *p_mutex);
 
 void pixie_cpu_set_affinity(unsigned processor);
 void pixie_cpu_raise_priority(void);
