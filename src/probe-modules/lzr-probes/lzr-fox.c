@@ -75,18 +75,16 @@ lzr_fox_handle_reponse(
         return 0;
     }
 
-    for (unsigned i=0; i<sizeof_px && i<strlen(lzr_fox_prefix); i++) {
-        if (px[i]!=lzr_fox_prefix[i]) {
-            item->level = Output_FAILURE;
-            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not fox");
-            safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
-            return 0;
-        }
+    if (bytes_header(px, sizeof_px, lzr_fox_prefix, strlen(lzr_fox_prefix))) {
+        item->level = Output_SUCCESS;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "fox");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+        return 0;
     }
 
-    item->level = Output_SUCCESS;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "fox");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+    item->level = Output_FAILURE;
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not fox");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
 
     return 0;
 }
