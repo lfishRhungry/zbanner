@@ -230,231 +230,231 @@ void pixie_thread_join(size_t thread_handle)
 const DWORD MS_VC_EXCEPTION = 0x406D1388;
 #pragma pack(push, 8)
 typedef struct tagTHREADNAME_INFO {
-  DWORD dwType;     // Must be 0x1000.
-  LPCSTR szName;    // Pointer to name (in user addr space).
-  DWORD dwThreadID; // Thread ID (-1=caller thread).
-  DWORD dwFlags;    // Reserved for future use, must be zero.
+    DWORD dwType;     // Must be 0x1000.
+    LPCSTR szName;    // Pointer to name (in user addr space).
+    DWORD dwThreadID; // Thread ID (-1=caller thread).
+    DWORD dwFlags;    // Reserved for future use, must be zero.
 } THREADNAME_INFO;
 #pragma pack(pop)
 #endif
 
 void pixie_set_thread_name(const char *name) {
 #if defined(WIN32)
-  // https://docs.microsoft.com/ru-ru/visualstudio/debugger/how-to-set-a-thread-name-in-native-code
-  THREADNAME_INFO info;
-  DWORD thread_id;
-  HANDLE h_thread;
-  HRESULT hr;
-  wchar_t wz_name[128];
-  h_thread = GetCurrentThread();
-  thread_id = GetCurrentThreadId();
-  swprintf_s(wz_name, ARRAY_SIZE(wz_name), L"%hs", name);
-  hr = SetThreadDescription(GetCurrentThread(), wz_name);
-  if (FAILED(hr)) {
-    LOG(LEVEL_WARNING, "Set thread name %" PRIuPTR " %s. Error %ld\n",
-        (size_t)thread_id, name, hr);
-  }
+    // https://docs.microsoft.com/ru-ru/visualstudio/debugger/how-to-set-a-thread-name-in-native-code
+    THREADNAME_INFO info;
+    DWORD thread_id;
+    HANDLE h_thread;
+    HRESULT hr;
+    wchar_t wz_name[128];
+    h_thread = GetCurrentThread();
+    thread_id = GetCurrentThreadId();
+    swprintf_s(wz_name, ARRAY_SIZE(wz_name), L"%hs", name);
+    hr = SetThreadDescription(GetCurrentThread(), wz_name);
+    if (FAILED(hr)) {
+        LOG(LEVEL_WARNING, "Set thread name %" PRIuPTR " %s. Error %ld\n",
+            (size_t)thread_id, name, hr);
+    }
 
-  info.dwType = 0x1000;
-  info.szName = name;
-  info.dwThreadID = thread_id;
-  info.dwFlags = 0;
+    info.dwType = 0x1000;
+    info.szName = name;
+    info.dwThreadID = thread_id;
+    info.dwFlags = 0;
 #pragma warning(push)
 #pragma warning(disable : 6320 6322)
   __try {
-    RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR),
-                   (ULONG_PTR *)&info);
+      RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR),
+                     (ULONG_PTR *)&info);
   } __except (EXCEPTION_EXECUTE_HANDLER) {
   }
 #pragma warning(pop)
 
 #elif defined(__APPLE__)
-  int err;
-  pthread_t thread_handle = pthread_self();
-  err = pthread_setname_np(name);
-  if (err != 0) {
-    LOG(LEVEL_WARNING, "Set thread name %" PRIuPTR " %s. Error %d\n",
-        thread_handle, name, err);
-  }
+    int err;
+    pthread_t thread_handle = pthread_self();
+    err = pthread_setname_np(name);
+    if (err != 0) {
+        LOG(LEVEL_WARNING, "Set thread name %" PRIuPTR " %s. Error %d\n",
+            thread_handle, name, err);
+    }
 #else
-  int err;
-  pthread_t thread_handle = pthread_self();
-  err = pthread_setname_np(thread_handle, name);
-  if (err != 0) {
-    LOG(LEVEL_WARNING, "Set thread name %" PRIuPTR " %s. Error %d\n",
-        thread_handle, name, err);
-  }
+    int err;
+    pthread_t thread_handle = pthread_self();
+    err = pthread_setname_np(thread_handle, name);
+    if (err != 0) {
+        LOG(LEVEL_WARNING, "Set thread name %" PRIuPTR " %s. Error %d\n",
+            thread_handle, name, err);
+    }
 #endif
 }
 
 void *pixie_create_barrier(unsigned total_threads) {
 #if defined(WIN32)
-  BOOL is_succces;
-  LPSYNCHRONIZATION_BARRIER p_barrier;
-  p_barrier = calloc(1, sizeof(SYNCHRONIZATION_BARRIER));
-  if (p_barrier == NULL) {
-    return NULL;
-  }
-  is_succces = InitializeSynchronizationBarrier(p_barrier, total_threads, 0);
-  if (is_succces == FALSE) {
-    free(p_barrier);
-    p_barrier = NULL;
-  }
-  return p_barrier;
+    BOOL is_succces;
+    LPSYNCHRONIZATION_BARRIER p_barrier;
+    p_barrier = calloc(1, sizeof(SYNCHRONIZATION_BARRIER));
+    if (p_barrier == NULL) {
+        return NULL;
+    }
+    is_succces = InitializeSynchronizationBarrier(p_barrier, total_threads, 0);
+    if (is_succces == FALSE) {
+        free(p_barrier);
+        p_barrier = NULL;
+    }
+    return p_barrier;
 #else
-  int res;
-  pthread_barrier_t *p_barrier;
-  p_barrier = calloc(1, sizeof(pthread_barrier_t));
-  if (p_barrier == NULL) {
-    return NULL;
-  }
-  res = pthread_barrier_init(p_barrier, NULL, total_threads);
-  if (res != 0) {
-    free(p_barrier);
-    p_barrier = NULL;
-  }
-  return p_barrier;
+    int res;
+    pthread_barrier_t *p_barrier;
+    p_barrier = calloc(1, sizeof(pthread_barrier_t));
+    if (p_barrier == NULL) {
+        return NULL;
+    }
+    res = pthread_barrier_init(p_barrier, NULL, total_threads);
+    if (res != 0) {
+        free(p_barrier);
+        p_barrier = NULL;
+    }
+    return p_barrier;
 #endif
 }
 
 void pixie_wait_barrier(void *p_barrier) {
 #if defined(WIN32)
-  EnterSynchronizationBarrier(p_barrier,
-                              SYNCHRONIZATION_BARRIER_FLAGS_BLOCK_ONLY);
+    EnterSynchronizationBarrier(p_barrier,
+                                SYNCHRONIZATION_BARRIER_FLAGS_BLOCK_ONLY);
 #else
-  pthread_barrier_wait(p_barrier);
-  return;
+    pthread_barrier_wait(p_barrier);
+    return;
 #endif
 }
 
 bool pixie_delete_barrier(void *p_barrier) {
 #if defined(WIN32)
-  BOOL is_succces;
-  is_succces = DeleteSynchronizationBarrier(p_barrier);
-  free(p_barrier);
-  return (bool)is_succces;
+    BOOL is_succces;
+    is_succces = DeleteSynchronizationBarrier(p_barrier);
+    free(p_barrier);
+    return (bool)is_succces;
 #else
-  int res;
-  res = pthread_barrier_destroy(p_barrier);
-  free(p_barrier);
-  return res == 0;
+    int res;
+    res = pthread_barrier_destroy(p_barrier);
+    free(p_barrier);
+    return res == 0;
 #endif
 }
 
 void *pixie_create_rwlock() {
 #if defined(WIN32)
-  PSRWLOCK p_rwlock;
-  p_rwlock = calloc(1, sizeof(SRWLOCK));
-  if (p_rwlock == NULL) {
-    return NULL;
-  }
-  InitializeSRWLock(p_rwlock);
-  return p_rwlock;
+    PSRWLOCK p_rwlock;
+    p_rwlock = calloc(1, sizeof(SRWLOCK));
+    if (p_rwlock == NULL) {
+        return NULL;
+    }
+    InitializeSRWLock(p_rwlock);
+    return p_rwlock;
 #else
-  int res;
-  pthread_rwlock_t *p_rwlock;
-  p_rwlock = calloc(1, sizeof(pthread_rwlock_t));
-  if (p_rwlock == NULL) {
-    return NULL;
-  }
-  res = pthread_rwlock_init(p_rwlock, NULL);
-  if (res != 0) {
-    free(p_rwlock);
-    p_rwlock = NULL;
-  }
-  return p_rwlock;
+    int res;
+    pthread_rwlock_t *p_rwlock;
+    p_rwlock = calloc(1, sizeof(pthread_rwlock_t));
+    if (p_rwlock == NULL) {
+        return NULL;
+    }
+    res = pthread_rwlock_init(p_rwlock, NULL);
+    if (res != 0) {
+        free(p_rwlock);
+        p_rwlock = NULL;
+    }
+    return p_rwlock;
 #endif
 }
 
 void pixie_acquire_rwlock_read(void *p_rwlock) {
 #if defined(WIN32)
-  AcquireSRWLockShared(p_rwlock);
+    AcquireSRWLockShared(p_rwlock);
 #else
-  pthread_rwlock_rdlock(p_rwlock);
+    pthread_rwlock_rdlock(p_rwlock);
 #endif
 }
 
 void pixie_release_rwlock_read(void *p_rwlock) {
 #if defined(WIN32)
-  ReleaseSRWLockShared(p_rwlock);
+    ReleaseSRWLockShared(p_rwlock);
 #else
-  pthread_rwlock_unlock(p_rwlock);
+    pthread_rwlock_unlock(p_rwlock);
 #endif
 }
 
 void pixie_acquire_rwlock_write(void *p_rwlock) {
 #if defined(WIN32)
-  AcquireSRWLockExclusive(p_rwlock);
+    AcquireSRWLockExclusive(p_rwlock);
 #else
-  pthread_rwlock_wrlock(p_rwlock);
+    pthread_rwlock_wrlock(p_rwlock);
 #endif
 }
 
 void pixie_release_rwlock_write(void *p_rwlock) {
 #if defined(WIN32)
-  ReleaseSRWLockExclusive(p_rwlock);
+    ReleaseSRWLockExclusive(p_rwlock);
 #else
-  pthread_rwlock_unlock(p_rwlock);
+    pthread_rwlock_unlock(p_rwlock);
 #endif
 }
 
 bool pixie_delete_rwlock(void *p_rwlock) {
 #if defined(WIN32)
-  free(p_rwlock);
-  return true;
+    free(p_rwlock);
+    return true;
 #else
-  int res;
-  res = pthread_rwlock_destroy(p_rwlock);
-  free(p_rwlock);
-  return res == 0;
+    int res;
+    res = pthread_rwlock_destroy(p_rwlock);
+    free(p_rwlock);
+    return res == 0;
 #endif
 }
 
 void *pixie_create_mutex() {
 #if defined(WIN32)
-  HANDLE p_mutex;
-  p_mutex = CreateMutexW(NULL, FALSE, NULL);
-  return (void *)p_mutex;
+    HANDLE p_mutex;
+    p_mutex = CreateMutexW(NULL, FALSE, NULL);
+    return (void *)p_mutex;
 #else
-  int res;
-  pthread_mutex_t *p_mutex;
-  p_mutex = calloc(1, sizeof(pthread_mutex_t));
-  if (p_mutex == NULL) {
-    return NULL;
-  }
-  res = pthread_mutex_init(p_mutex, NULL);
-  if (res != 0) {
-    free(p_mutex);
-    p_mutex = NULL;
-  }
-  return p_mutex;
+    int res;
+    pthread_mutex_t *p_mutex;
+    p_mutex = calloc(1, sizeof(pthread_mutex_t));
+    if (p_mutex == NULL) {
+        return NULL;
+    }
+    res = pthread_mutex_init(p_mutex, NULL);
+    if (res != 0) {
+        free(p_mutex);
+        p_mutex = NULL;
+    }
+    return p_mutex;
 #endif
 }
 
 void pixie_acquire_mutex(void *p_mutex) {
 #if defined(WIN32)
-  WaitForSingleObject((HANDLE)p_mutex, INFINITE);
+    WaitForSingleObject((HANDLE)p_mutex, INFINITE);
 #else
-  pthread_mutex_lock(p_mutex);
+    pthread_mutex_lock(p_mutex);
 #endif
 }
 
 void pixie_release_mutex(void *p_mutex) {
 #if defined(WIN32)
-  ReleaseMutex((HANDLE)p_mutex);
+    ReleaseMutex((HANDLE)p_mutex);
 #else
-  pthread_mutex_unlock(p_mutex);
+    pthread_mutex_unlock(p_mutex);
 #endif
 }
 
 bool pixie_delete_mutex(void *p_mutex) {
 #if defined(WIN32)
-  CloseHandle((HANDLE)p_mutex);
-  return true;
+    CloseHandle((HANDLE)p_mutex);
+    return true;
 #else
-  int res;
-  res = pthread_mutex_destroy(p_mutex);
-  free(p_mutex);
-  return res == 0;
+    int res;
+    res = pthread_mutex_destroy(p_mutex);
+    free(p_mutex);
+    return res == 0;
 #endif
 }
