@@ -210,7 +210,7 @@ static int main_scan(struct Xconf *xconf) {
      * Wrong specification will be handled in SET_scan_module in xconf.c
      */
     if (!xconf->scan_module) {
-        xconf->scan_module = get_scan_module_by_name("tcpsyn");
+        xconf->scan_module = get_scan_module_by_name("tcp-syn");
         LOG(LEVEL_ERROR, "[-] Default ScanModule `tcpsyn` is chosen because no ScanModule "
                "was specified.\n");
     }
