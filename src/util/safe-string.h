@@ -139,6 +139,12 @@ safe_memismem (const void * haystack, size_t haystacklen,
     const void * needle, size_t needlelen);
 
 /**
+ * is byt the header of src
+*/
+int
+bytes_header(const void *src, size_t src_len, const void *byt, size_t byt_len);
+
+/**
  * Transfer C string to argc argv.
  * Could handle quotes(ignore single quotes).
  * Argv should be freed.
