@@ -59,7 +59,7 @@ sctpinit_validate(
 
     if (cookie != veri_tag)
         return;
-    
+
     if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
         SCTP_CHUNK_TYPE_INIT_ACK)) {
         pre->go_dedup = 1;
