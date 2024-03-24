@@ -29,6 +29,7 @@ extern struct ProbeModule LzrMqttProbe;
 extern struct ProbeModule LzrAmqpProbe;
 extern struct ProbeModule LzrMysqlProbe;
 extern struct ProbeModule LzrMongodbProbe;
+extern struct ProbeModule LzrRedisProbe;
 extern struct ProbeModule LzrPostgresProbe;
 extern struct ProbeModule LzrMssqlProbe;
 extern struct ProbeModule LzrOracleProbe;
@@ -68,6 +69,7 @@ static struct ProbeModule *probe_modules_list[] = {
     &LzrAmqpProbe,
     &LzrMysqlProbe,
     &LzrMongodbProbe,
+    &LzrRedisProbe,
     &LzrPostgresProbe,
     &LzrMssqlProbe,
     &LzrOracleProbe,
