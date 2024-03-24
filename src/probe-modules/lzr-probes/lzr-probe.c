@@ -33,6 +33,7 @@ extern struct ProbeModule LzrFtpProbe;
 extern struct ProbeModule LzrPop3Probe;
 extern struct ProbeModule LzrImapProbe;
 extern struct ProbeModule LzrSmtpProbe;
+extern struct ProbeModule LzrSshProbe;
 extern struct ProbeModule LzrSmbProbe;
 extern struct ProbeModule LzrMqttProbe;
 extern struct ProbeModule LzrAmqpProbe;
@@ -70,6 +71,7 @@ static struct ProbeModule *lzr_handshakes[] = {
     &LzrPop3Probe,
     &LzrImapProbe,
     &LzrSmtpProbe,
+    &LzrSshProbe,
     &LzrSmbProbe,
     &LzrAmqpProbe,
     &LzrMysqlProbe,
