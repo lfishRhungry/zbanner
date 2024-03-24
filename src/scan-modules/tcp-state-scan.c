@@ -15,6 +15,8 @@ extern struct ScanModule TcpStateScan; /*for internal x-ref*/
 
 static struct TCP_ConnectionTable *tcpcon = NULL;
 
+static uint64_t *tcb_count;
+
 struct TcpStateConf {
     unsigned conn_timeout;
 };
@@ -59,6 +61,8 @@ static int tcpstate_global_init(const struct Xconf *xconf)
         xconf->stack, &global_tmplset->pkts[Proto_TCP],
         (struct Output *)(&xconf->output),
         tcpstate_conf.conn_timeout, xconf->seed);
+    
+    tcb_count = &((struct Xconf *)xconf)->tcb_count;
 
     return 1;
 }
@@ -190,7 +194,10 @@ tcpstate_handle(
 
 void tcpstate_poll()
 {
+    /*update timeout events*/
     tcpcon_timeouts(tcpcon, (unsigned)time(0), 0);
+    /*update tcb count*/
+    (*tcb_count) = tcpcon_active_tcb(tcpcon);
 }
 
 void tcpstate_close()

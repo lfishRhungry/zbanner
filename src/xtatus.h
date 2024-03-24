@@ -33,6 +33,7 @@ void xtatus_print(
     uint64_t total_failed,
     uint64_t total_sent,
     uint64_t total_tm_event,
+    uint64_t total_tcb,
     uint64_t exiting,
     bool json_status);
 void xtatus_finish(struct Xtatus *xtatus);

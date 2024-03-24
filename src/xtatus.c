@@ -22,6 +22,7 @@ xtatus_print(
     uint64_t total_failed,
     uint64_t total_sent,
     uint64_t total_tm_event,
+    uint64_t total_tcb,
     uint64_t exiting,
     bool json_status)
 {
@@ -54,6 +55,7 @@ xtatus_print(
         "},"
         "\"sent\":%," PRIu64
         "\"tm_event\":%" PRIu64
+        "\"tcb\":%" PRIu64
     "}\n";
     
     /**
@@ -74,6 +76,7 @@ xtatus_print(
             "\"successed\":%" PRIu64 ","
             "\"failed\":%" PRIu64 ","
             "\"tm_event\":%" PRIu64 ","
+            "\"tcb\":%" PRIu64 ","
             "\"transmit\":"
             "{"
                 "\"sent\":%" PRIu64 ","
@@ -113,6 +116,7 @@ xtatus_print(
             "\"successed\":%" PRIu64 ","
             "\"failed\":%" PRIu64 ","
             "\"tm_event\":%" PRIu64
+            "\"tcb\":%" PRIu64
         "}"
     "}\n";
 
@@ -205,16 +209,18 @@ xtatus_print(
                     sent_rate,
                     successed_rate,
                     count,
-                    total_tm_event);
+                    total_tm_event,
+                    total_tcb);
         } else {
-            fmt = "rate:%6.2f-kpps, sent/s=%.0f, successed/s=%.0f , tm_event=%6$" PRIu64 "                \r";
+            fmt = "rate:%6.2f-kpps, sent/s=%.0f, successed/s=%.0f, tm_event=%6$" PRIu64 ", tcb=%6$" PRIu64 "                \r";
 
             fprintf(stderr,
                     fmt,
                     kpps,
                     sent_rate,
                     successed_rate,
-                    total_tm_event);
+                    total_tm_event,
+                    total_tcb);
         }
     } else {
         if (is_tx_done) {
@@ -230,11 +236,12 @@ xtatus_print(
                         total_successed,
                         total_failed,
                         total_tm_event,
+                        total_tcb,
                         count,
                         max_count,
                         max_count-count);
             } else {
-                fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, successed=%" PRIu64 ", failed=%" PRIu64 ", tm_event=%" PRIu64 "       \r";
+                fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, successed=%" PRIu64 ", failed=%" PRIu64 ", tm_event=%" PRIu64 ", tcb=%" PRIu64 "       \r";
 
                 fprintf(stderr,
                         fmt,
@@ -243,7 +250,8 @@ xtatus_print(
                         (int)exiting,
                         total_successed,
                         total_failed,
-                        total_tm_event);
+                        total_tm_event,
+                        total_tcb);
             }
             
         } else {
@@ -263,9 +271,10 @@ xtatus_print(
                     max_count-count,
                     total_successed,
                     total_failed,
-                    total_tm_event);
+                    total_tm_event,
+                    total_tcb);
             } else {
-                fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, successed=%" PRIu64 ", failed=%" PRIu64 ", tm_event=%" PRIu64 "     \r";
+                fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, successed=%" PRIu64 ", failed=%" PRIu64 ", tm_event=%" PRIu64 ", tcb=%" PRIu64 "     \r";
 
                 fprintf(stderr,
                     fmt,
@@ -276,7 +285,8 @@ xtatus_print(
                     (unsigned)(time_remaining)%60,
                     total_successed,
                     total_failed,
-                    total_tm_event);
+                    total_tm_event,
+                    total_tcb);
             }
         }
     }

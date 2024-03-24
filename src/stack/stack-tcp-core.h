@@ -102,6 +102,10 @@ tcpcon_create_tcb(
     const struct ProbeModule *probe,
     unsigned secs, unsigned usecs);
 
+/**
+ * get active tcb count
+*/
+uint64_t tcpcon_active_tcb(struct TCP_ConnectionTable *tcpcon);
 
 void
 tcpcon_send_RST(struct TCP_ConnectionTable *tcpcon,

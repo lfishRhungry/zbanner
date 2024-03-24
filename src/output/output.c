@@ -80,8 +80,8 @@ output_result_to_stdout(
         count += fprintf(stdout, fmt_report, item->report);
     }
     
-    if (count < 100)
-            fprintf(stdout, "%*s", (int)(99-count), "");
+    if (count < 120)
+            fprintf(stdout, "%*s", (int)(120-count), "");
 
     fprintf(stdout, XPRINT_COLOR_RESET"\n");
     fflush(stdout);

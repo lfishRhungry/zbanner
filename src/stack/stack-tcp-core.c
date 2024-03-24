@@ -204,6 +204,11 @@ enum DestroyReason {
 
 };
 
+uint64_t tcpcon_active_tcb(struct TCP_ConnectionTable *tcpcon)
+{
+    return tcpcon->active_count;
+}
+
 /***************************************************************************
  * DEBUG: when printing debug messages (-d option), this prints a string
  * for the given state.

@@ -193,6 +193,8 @@ struct Xconf
 
     char *bpf_filter;
 
+    uint64_t tcb_count; /*tcb count for tcp state scan*/
+
     /**
      * --tcp-init-window
     */

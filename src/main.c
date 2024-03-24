@@ -387,7 +387,7 @@ static int main_scan(struct Xconf *xconf) {
          * namely packets/second.
          */
         xtatus_print(&status, min_index, range, rate, total_successed, total_failed,
-                     total_sent, total_tm_event, 0, xconf->is_status_ndjson);
+            total_sent, total_tm_event, xconf->tcb_count, 0, xconf->is_status_ndjson);
 
         /* Sleep for almost a second */
         pixie_mssleep(750);
@@ -442,8 +442,8 @@ static int main_scan(struct Xconf *xconf) {
             total_tm_event = *rx_thread->total_tm_event;
 
         xtatus_print(&status, min_index, range, rate, total_successed, total_failed,
-                     total_sent, total_tm_event, xconf->wait - (time(0) - now),
-                     xconf->is_status_ndjson);
+            total_sent, total_tm_event, xconf->tcb_count, xconf->wait - (time(0) - now),
+            xconf->is_status_ndjson);
 
         if (time(0) - now >= xconf->wait /*no more waiting time*/
             || is_rx_done                /*too many <ctrl-c>*/
