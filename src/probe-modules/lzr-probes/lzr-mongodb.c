@@ -8,7 +8,6 @@
 /*for internal x-ref*/
 extern struct ProbeModule LzrMongodbProbe;
 
-//question: baidu.com
 static char lzr_mongodb_payload[] =
 ":\x00\x00\x00\x00\x00\x00\x00\x00"
 "\x00\x00\x00\xd4\x07\x00\x00\x00"

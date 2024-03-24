@@ -8,7 +8,6 @@
 /*for internal x-ref*/
 extern struct ProbeModule LzrModbusProbe;
 
-//question: baidu.com
 static char lzr_modbus_payload[] = {
     0x5a, 0x47, 0x00, 0x00, 0x00, 0x05, 0x00, 0x2b, 0x0e, 0x01, 0x00
 };

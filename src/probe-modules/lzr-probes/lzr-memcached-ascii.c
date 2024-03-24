@@ -8,7 +8,6 @@
 /*for internal x-ref*/
 extern struct ProbeModule LzrMemcachedAsciiProbe;
 
-//question: baidu.com
 static char lzr_mema_payload[] = "stats\r\n";
 
 static size_t

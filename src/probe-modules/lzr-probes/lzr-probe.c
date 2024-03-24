@@ -46,6 +46,8 @@ extern struct ProbeModule LzrMemcachedAsciiProbe;
 extern struct ProbeModule LzrMemcachedBinaryProbe;
 extern struct ProbeModule LzrIppProbe;
 extern struct ProbeModule LzrWaitProbe;
+extern struct ProbeModule LzrNewlinesProbe;
+extern struct ProbeModule LzrNewlines50Probe;
 
 
 
@@ -71,6 +73,8 @@ static struct ProbeModule *lzr_handshakes[] = {
     &LzrMemcachedBinaryProbe,
     &LzrIppProbe,
     &LzrWaitProbe,
+    &LzrNewlinesProbe,
+    &LzrNewlines50Probe,
 };
 
 /******************************************************************/

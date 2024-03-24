@@ -8,7 +8,6 @@
 /*for internal x-ref*/
 extern struct ProbeModule LzrK8sProbe;
 
-//question: baidu.com
 static char lzr_k8s_payload[] =
 "\x16"                                                     /*handshake*/
 "\x03\x01"                                                 /*TLSv1.0*/
