@@ -48,7 +48,14 @@ lzr_redis_handle_reponse(
         return 0;
     }
 
-    if (safe_memmem(px, sizeof_px, "PONG", strlen("-ERR unknown"))) {
+    if (safe_memmem(px, sizeof_px, "Redis", strlen("Redis"))) {
+        item->level = Output_SUCCESS;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "redis");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+        return 0;
+    }
+
+    if (safe_memmem(px, sizeof_px, "-ERR unknown", strlen("-ERR unknown"))) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "redis");
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
