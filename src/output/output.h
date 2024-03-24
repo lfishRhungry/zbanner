@@ -7,8 +7,8 @@
 
 #include "../massip/massip-addr.h"
 
-#define OUTPUT_RSN_LEN   20
-#define OUTPUT_CLS_LEN   20
+#define OUTPUT_RSN_LEN   30
+#define OUTPUT_CLS_LEN   30
 #define OUTPUT_RPT_LEN 2048
 
 struct Output{
