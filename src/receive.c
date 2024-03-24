@@ -195,10 +195,8 @@ void receive_thread(void *v) {
             .port_me   = port_me,
         };
 
-        if (xconf->is_fast_timeout)
-            scan_module->handle_cb(entropy, &recved, &item, stack, &ft_handler);
-        else
-            scan_module->handle_cb(entropy, &recved, &item, stack, NULL);
+        scan_module->handle_cb(entropy, &recved, &item, stack,
+            xconf->is_fast_timeout?(&ft_handler):NULL);
 
         output_result(output, &item);
     }
