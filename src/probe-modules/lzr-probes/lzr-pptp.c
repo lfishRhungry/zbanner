@@ -70,7 +70,7 @@ struct ProbeModule LzrPptpProbe = {
     .multi_num  = 1,
     .params     = NULL,
     .desc =
-        "LzrPptp Probe sends an PPTP probe and identifies PPTP service.",
+        "LzrPptp Probe sends a PPTP probe and identifies PPTP service.",
     .global_init_cb                          = &probe_global_init_nothing,
     .make_payload_cb                         = &lzr_pptp_make_payload,
     .get_payload_length_cb                   = &lzr_pptp_get_payload_length,
