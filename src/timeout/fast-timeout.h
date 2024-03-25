@@ -7,6 +7,9 @@
 
 #include "../util/lfqueue.h"
 
+/**
+ * I think its no need to add lock to FHandler because USER must only add event,
+ * Our only one Rx thread will pop event in every loop.*/
 struct FHandler {
     time_t            spec;
     lfqueue_t        *queue;

@@ -14,6 +14,7 @@
 struct Output{
     char output_filename[256];
     FILE *output_file;
+    void *mutex; /*avoid messing the output*/
     unsigned is_append:1;
     unsigned is_interactive:1;
     unsigned is_show_failed:1;

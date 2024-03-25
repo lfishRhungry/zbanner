@@ -2,6 +2,7 @@
 
 #include "output.h"
 #include "../pixie/pixie-file.h"
+#include "../pixie/pixie-threads.h"
 #include "../util/logger.h"
 #include "../util/xprint.h"
 
@@ -17,6 +18,7 @@ output_init(struct Output *output)
     if (output->output_filename[0]) {
         int err = pixie_fopen_shareable(
             &output->output_file, output->output_filename, output->is_append);
+
         if (err != 0 || output->output_file == NULL) {
             LOG(LEVEL_ERROR, "[-] output: could not open file %s for %s\n",
                 output->output_filename, output->is_append?"appending":"writing");
@@ -25,6 +27,8 @@ output_init(struct Output *output)
             output->output_file = NULL;
         }
     }
+
+    output->mutex = pixie_create_mutex();
 }
 
 /*Some special processes should be done when output to stdout for avoiding mess*/
@@ -145,7 +149,9 @@ output_result(
 {
     if (item->no_output)
         return;
-    
+
+    pixie_acquire_mutex(output->mutex);
+
     if (item->level==Output_SUCCESS)
         (*(output->total_successed))++;
  
@@ -160,6 +166,8 @@ output_result(
     } else {
         output_result_to_stdout(output, item);
     }
+
+    pixie_release_mutex(output->mutex);
 }
 
 void
@@ -168,5 +176,6 @@ output_close(struct Output *output)
     if (output->output_file) {
         fflush(output->output_file);
         fclose(output->output_file);
+        pixie_delete_mutex(output->mutex);
     }
 }
