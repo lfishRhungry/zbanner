@@ -18,6 +18,8 @@ struct Xtatus
     unsigned last_count;
 
     unsigned is_infinite:1;
+    unsigned print_tcb:1;
+    unsigned print_ft_event:1;
 
     uint64_t total_successed;
     uint64_t total_sent;

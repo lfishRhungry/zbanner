@@ -336,6 +336,14 @@ static int main_scan(struct Xconf *xconf) {
         parms->thread_handle_xmit = pixie_begin_thread(transmit_thread, 0, parms);
     }
 
+    /**
+     * set status outputing
+    */
+    xtatus_start(&status);
+    status.print_tcb      = xconf->scan_module->required_probe_type==ProbeType_STATE;
+    status.print_ft_event = xconf->is_fast_timeout;
+    status.is_infinite    = xconf->is_infinite;
+
     /*
      * Now wait for <ctrl-c> to be pressed OR for Tx Threads to exit.
      * Tx Threads can shutdown by themselves for finishing their tasks.
@@ -344,8 +352,6 @@ static int main_scan(struct Xconf *xconf) {
      */
     pixie_usleep(1000 * 100);
     LOG(LEVEL_WARNING, "[+] waiting for threads to finish\n");
-    xtatus_start(&status);
-    status.is_infinite = xconf->is_infinite;
     while (!is_tx_done) {
         unsigned i;
         double rate = 0;
