@@ -61,8 +61,6 @@ template_packet_init(
     macaddress_t source_mac,
     macaddress_t router_mac_ipv4,
     macaddress_t router_mac_ipv6,
-    struct PayloadsUDP *udp_payloads,
-    struct PayloadsUDP *oproto_payloads,
     int data_link,
     uint64_t entropy,
     const struct TemplateOptions *templ_opts);

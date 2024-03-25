@@ -18,7 +18,6 @@
 #include "massip/massip-parse.h"
 
 #include "templ/templ-init.h"
-#include "templ/templ-payloads.h"
 
 #include "rawsock/rawsock-adapter.h"
 #include "rawsock/rawsock.h"
@@ -136,13 +135,6 @@ static int main_scan(struct Xconf *xconf) {
         exit(1);
     }
 
-    /*
-     * trim the nmap UDP payloads down to only those ports we are using. This
-     * makes lookups faster at high packet rates.
-     */
-    payloads_udp_trim(xconf->payloads.udp, &xconf->targets);
-    payloads_oproto_trim(xconf->payloads.oproto, &xconf->targets);
-
 #ifdef __AFL_HAVE_MANUAL_CONTROL
   __AFL_INIT();
 #endif
@@ -194,9 +186,8 @@ static int main_scan(struct Xconf *xconf) {
     if (xconf->tcp_window)
         template_set_tcp_window_of_default(xconf->tcp_window);
 
-    template_packet_init(
-        xconf->tmplset, xconf->nic.source_mac, xconf->nic.router_mac_ipv4,
-        xconf->nic.router_mac_ipv6, xconf->payloads.udp, xconf->payloads.oproto,
+    template_packet_init(xconf->tmplset, xconf->nic.source_mac,
+        xconf->nic.router_mac_ipv4, xconf->nic.router_mac_ipv6,
         stack_if_datalink(xconf->nic.adapter), xconf->seed, xconf->templ_opts);
 
     if (xconf->nmap.ttl)
@@ -538,8 +529,6 @@ int main(int argc, char *argv[]) {
     xconf->shard.one = 1;
     xconf->shard.of = 1;
     xconf->min_packet_size = 60;
-    xconf->payloads.udp = payloads_udp_create();
-    xconf->payloads.oproto = payloads_oproto_create();
     xconf->dedup_win = 1000000;
     xconf->ft_spec = 5;
     /*default entries count of callback queue and packet buffer queue*/
@@ -556,11 +545,6 @@ int main(int argc, char *argv[]) {
     xconf_command_line(xconf, argc, argv);
     if (xconf->seed == 0)
         xconf->seed = get_one_entropy(); /* entropy for randomness */
-
-    /*
-     * Load database files like "nmap-payloads" and "nmap-service-probes"
-     */
-    load_database_files(xconf);
 
     /* We need to do a separate "raw socket" initialization step. This is
      * for Windows and PF_RING. */

@@ -172,9 +172,7 @@ struct Xconf
     struct TemplateOptions *templ_opts; /* e.g. --tcpmss */
     
     struct {
-        unsigned data_length;        /* number of bytes to randomly append */
         unsigned ttl;                /* starting IP TTL field */
-        unsigned badsum;             /* bad TCP/UDP/SCTP checksum */
         unsigned packet_trace:1;     /* print transmit messages */
         char     datadir[256];
     } nmap;
@@ -182,12 +180,7 @@ struct Xconf
     char pcap_filename[256];
 
     struct {
-        char *pcap_payloads_filename;
-        char *nmap_payloads_filename;
         char *nmap_service_probes_filename;
-    
-        struct PayloadsUDP *udp;
-        struct PayloadsUDP *oproto;
         struct NmapServiceProbeList *probes;
     } payloads;
     
@@ -222,14 +215,6 @@ struct Xconf
 
 void xconf_command_line(struct Xconf *xconf, int argc, char *argv[]);
 void xconf_save_state(struct Xconf *xconf);
-
-/**
- * Load databases, such as:
- *  - nmap-payloads
- *  - nmap-service-probes
- *  - pcap-payloads
- */
-void load_database_files(struct Xconf *xconf);
 
 /**
  * Pre-scan the command-line looking for options that may affect how

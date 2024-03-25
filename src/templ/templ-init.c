@@ -14,7 +14,6 @@
 #include "templ-init.h"
 #include "templ-tcp.h"
 #include "templ-opts.h"
-#include "templ-payloads.h"
 #include "../massip/massip-port.h"
 #include "../proto/proto-preprocess.h"
 #include "../util/safe-string.h"
@@ -230,53 +229,6 @@ static unsigned char default_ndp_ns_template[] =
 "\x00\x00\x00\x00\x00\x00" /*Link-layer address*/
 ;
 
-
-/***************************************************************************
- ***************************************************************************/
-static void
-udp_payload_fixup(struct TemplatePacket *tmpl, unsigned port, unsigned seqno)
-{
-    const unsigned char *px2 = 0;
-    unsigned length2 = 0;
-    unsigned source_port2 = 0x1000;
-    uint64_t xsum2 = 0;
-    //unsigned char *px = tmpl->packet;
-    SET_COOKIE set_cookie = 0;
-
-    UNUSEDPARM(seqno);
-
-    payloads_udp_lookup(tmpl->payloads,
-                    port,
-                    &px2,
-                    &length2,
-                    &source_port2,
-                    &xsum2,
-                    &set_cookie);
-
-    /* Copy over the payloads */
-    memcpy( tmpl->ipv4.packet + tmpl->ipv4.offset_app,
-            px2,
-            length2);
-    memcpy( tmpl->ipv6.packet + tmpl->ipv6.offset_app,
-            px2,
-            length2);
-
-    /* Change the cookie values */
-    if (set_cookie) {
-        set_cookie(
-                        tmpl->ipv4.packet + tmpl->ipv4.offset_app,
-                        length2,
-                        seqno);
-        set_cookie(
-                        tmpl->ipv6.packet + tmpl->ipv6.offset_app,
-                        length2,
-                        seqno);
-    }
-
-    tmpl->ipv4.length = tmpl->ipv4.offset_app + length2;
-    tmpl->ipv6.length = tmpl->ipv6.offset_app + length2;
-}
-
 void
 template_set_target_ipv6(
     struct TemplateSet *tmplset,
@@ -306,7 +258,6 @@ template_set_target_ipv6(
     else if (port_them < Templ_UDP + 65536) {
         tmpl = &tmplset->pkts[Proto_UDP];
         port_them &= 0xFFFF;
-        udp_payload_fixup(tmpl, port_them, seqno);
     } else if (port_them < Templ_SCTP + 65536) {
         tmpl = &tmplset->pkts[Proto_SCTP];
         port_them &= 0xFFFF;
@@ -512,7 +463,6 @@ template_set_target_ipv4(
     else if (port_them < Templ_UDP + 65536) {
         tmpl = &tmplset->pkts[Proto_UDP];
         port_them &= 0xFFFF;
-        udp_payload_fixup(tmpl, port_them, seqno);
     } else if (port_them < Templ_SCTP + 65536) {
         tmpl = &tmplset->pkts[Proto_SCTP];
         port_them &= 0xFFFF;
@@ -985,8 +935,6 @@ template_packet_init(
     macaddress_t source_mac,
     macaddress_t router_mac_ipv4,
     macaddress_t router_mac_ipv6,
-    struct PayloadsUDP *udp_payloads,
-    struct PayloadsUDP *oproto_payloads,
     int data_link,
     uint64_t entropy,
     const struct TemplateOptions *templ_opts)
@@ -1036,7 +984,6 @@ template_packet_init(
                    default_udp_template,
                    sizeof(default_udp_template)-1,
                    data_link);
-    templset->pkts[Proto_UDP].payloads = udp_payloads;
     templset->count++;
 
     /* [ICMP ping] */
@@ -1165,48 +1112,6 @@ template_packet_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan)
     tmpl_pkt->ipv4.offset_ip += 4;
     tmpl_pkt->ipv4.offset_tcp += 4;
     tmpl_pkt->ipv4.offset_app += 4;
-}
-
-
-
-/***************************************************************************
- ***************************************************************************/
-int
-template_selftest(void)
-{
-    struct TemplateSet tmplset[1];
-    int failures = 0;
-    struct TemplateOptions templ_opts = {{0}};
-
-    /* Test the module that edits TCP headers */
-    if (templ_tcp_selftest()) {
-        fprintf(stderr, "[-] templ-tcp-hdr: selftest failed\n");
-        return 1;
-    }
-
-
-    memset(tmplset, 0, sizeof(tmplset[0]));
-    template_packet_init(
-            tmplset,
-            macaddress_from_bytes("\x00\x11\x22\x33\x44\x55"),
-            macaddress_from_bytes("\x66\x55\x44\x33\x22\x11"),
-            macaddress_from_bytes("\x66\x55\x44\x33\x22\x11"),
-            0,  /* UDP payloads = empty */
-            0,  /* Oproto payloads = empty */
-            1,  /* Ethernet */
-            0,  /* no entropy */
-            &templ_opts
-            );
-    failures += tmplset->pkts[Proto_TCP].proto  != Proto_TCP;
-    failures += tmplset->pkts[Proto_UDP].proto  != Proto_UDP;
-    //failures += tmplset->pkts[Proto_SCTP].proto != Proto_SCTP;
-    failures += tmplset->pkts[Proto_ICMP_ping].proto != Proto_ICMP_ping;
-    //failures += tmplset->pkts[Proto_ICMP_timestamp].proto != Proto_ICMP_timestamp;
-    //failures += tmplset->pkts[Proto_ARP].proto  != Proto_ARP;
-
-    if (failures)
-        fprintf(stderr, "template: failed\n");
-    return failures;
 }
 
 unsigned

@@ -7,7 +7,6 @@
 #include "crypto/crypto-base64.h"
 #include "nmap-service/read-service-probes.h"
 
-#include "templ/templ-payloads.h"
 #include "templ/templ-opts.h"
 
 #include "util/safe-string.h"
@@ -514,20 +513,6 @@ static int SET_nodedup(void *conf, const char *name, const char *value)
     }
 
     xconf->is_nodedup = parseBoolean(value);
-
-    return CONF_OK;
-}
-
-static int SET_badsum(void *conf, const char *name, const char *value)
-{
-    struct Xconf *xconf = (struct Xconf *)conf;
-    if (xconf->echo) {
-        if (xconf->nmap.badsum || xconf->echo_all)
-            fprintf(xconf->echo, "badsum = %s\n", xconf->nmap.badsum?"true":"false");
-       return 0;
-    }
-
-    xconf->nmap.badsum = parseBoolean(value);
 
     return CONF_OK;
 }
@@ -1363,28 +1348,6 @@ static int SET_min_packet(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_nmap_data_length(void *conf, const char *name, const char *value)
-{
-    struct Xconf *xconf = (struct Xconf *)conf;
-    UNUSEDPARM(name);
-    
-    if (xconf->echo) {
-        if (xconf->nmap.data_length)
-            fprintf(xconf->echo, "nmap-data-length = %u\n", xconf->nmap.data_length);
-        return 0;
-    }
-    
-    unsigned x = parseInt(value);
-    if (x >= 1514 - 14 - 40) {
-        fprintf(stderr, "error: %s=<n>: expected number less than 1500\n", name);
-        return CONF_ERR;
-    } else {
-        xconf->nmap.data_length = x;
-    }
-
-    return CONF_OK;
-}
-
 static int SET_nmap_datadir(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
@@ -1397,24 +1360,6 @@ static int SET_nmap_datadir(void *conf, const char *name, const char *value)
     }
     
     safe_strcpy(xconf->nmap.datadir, sizeof(xconf->nmap.datadir), value);
-
-    return CONF_OK;
-}
-
-static int SET_nmap_payloads(void *conf, const char *name, const char *value)
-{
-    struct Xconf *xconf = (struct Xconf *)conf;
-    UNUSEDPARM(name);
-    
-    if (xconf->echo) {
-        if ((xconf->payloads.nmap_payloads_filename && xconf->payloads.nmap_payloads_filename[0]))
-            fprintf(xconf->echo, "nmap-payloads = %s\n", xconf->payloads.nmap_payloads_filename);
-        return 0;
-    }
-    
-    if (xconf->payloads.nmap_payloads_filename)
-        free(xconf->payloads.nmap_payloads_filename);
-    xconf->payloads.nmap_payloads_filename = strdup(value);
 
     return CONF_OK;
 }
@@ -1498,25 +1443,6 @@ static int SET_pcap_filename(void *conf, const char *name, const char *value)
     }
     if (value)
         safe_strcpy(xconf->pcap_filename, sizeof(xconf->pcap_filename), value);
-    return CONF_OK;
-}
-
-static int SET_pcap_payloads(void *conf, const char *name, const char *value)
-{
-    struct Xconf *xconf = (struct Xconf *)conf;
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if ((xconf->payloads.pcap_payloads_filename && xconf->payloads.pcap_payloads_filename[0]))
-            fprintf(xconf->echo, "pcap-payloads = %s\n", xconf->payloads.pcap_payloads_filename);
-        return 0;
-    }
-    
-    if (xconf->payloads.pcap_payloads_filename)
-        free(xconf->payloads.pcap_payloads_filename);
-    xconf->payloads.pcap_payloads_filename = strdup(value);
-    
-    /* file will be loaded in "load_database_files()" */
-    
     return CONF_OK;
 }
 
@@ -2709,15 +2635,7 @@ struct ConfigParameter config_parameters[] = {
     {
         "nmap-datadir",                   SET_nmap_datadir,            0,                {"datadir",0}},
     {
-        "nmap-datalength",                SET_nmap_data_length,        F_NUMABLE,        {"datalength",0}},
-    {
-        "nmap-payloads",                  SET_nmap_payloads,           0,                {"nmap-payload",0}},
-    {
         "nmap-service-probes",            SET_nmap_service_probes,     0,                {"nmap-service-probe",0}},
-    {
-        "pcap-payloads",                  SET_pcap_payloads,           0,                {"pcap-payload",0}},
-    {
-        "badsum",                         SET_badsum,                  F_BOOL,           {0}},
     {
         "min-packet",                     SET_min_packet,              0,                {"min-pkt",0}},
 
@@ -2737,60 +2655,6 @@ xconf_set_parameter(struct Xconf *xconf,
     set_one_parameter(xconf, config_parameters, name, value);
 }
 
-
-
-/***************************************************************************
- ***************************************************************************/
-void
-load_database_files(struct Xconf *xconf)
-{
-    const char *filename;
-    
-    /*
-     * "pcap-payloads"
-     */
-    filename = xconf->payloads.pcap_payloads_filename;
-    if (filename) {
-        if (xconf->payloads.udp == NULL)
-            xconf->payloads.udp = payloads_udp_create();
-        if (xconf->payloads.oproto == NULL)
-            xconf->payloads.oproto = payloads_udp_create();
-
-        payloads_read_pcap(filename, xconf->payloads.udp, xconf->payloads.oproto);
-    }
-
-    /*
-     * `--nmap-payloads`
-     */
-    filename = xconf->payloads.nmap_payloads_filename;
-    if (filename) {
-        FILE *fp;
-        
-        fp = fopen(filename, "rt");
-        if (fp == NULL) {
-            fprintf(stderr, "[-] FAIL: --nmap-payloads\n");
-            fprintf(stderr, "[-] %s:%s\n", filename, strerror(errno));
-        } else {
-            if (xconf->payloads.udp == NULL)
-                xconf->payloads.udp = payloads_udp_create();
-            
-            payloads_udp_readfile(fp, filename, xconf->payloads.udp);
-            
-            fclose(fp);
-        }
-    }
-    
-    /*
-     * "nmap-service-probes"
-     */
-    filename = xconf->payloads.nmap_service_probes_filename;
-    if (filename) {
-        if (xconf->payloads.probes)
-            nmapserviceprobes_free(xconf->payloads.probes);
-        
-        xconf->payloads.probes = nmapserviceprobes_read_file(filename);
-    }
-}
 
 /***************************************************************************
  * Read the configuration from the command-line.

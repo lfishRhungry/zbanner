@@ -12,7 +12,6 @@
 #include "massip/massip-parse.h"
 
 #include "templ/templ-init.h"
-#include "templ/templ-payloads.h"
 
 #include "rawsock/rawsock-adapter.h"
 #include "rawsock/rawsock.h"

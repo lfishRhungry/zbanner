@@ -44,7 +44,6 @@ struct TemplatePacket {
         unsigned ip_id;
     } ipv6;
     enum TemplateProtocol proto;
-    struct PayloadsUDP *payloads;
 };
 
 /**
