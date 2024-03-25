@@ -176,6 +176,7 @@ output_close(struct Output *output)
     if (output->output_file) {
         fflush(output->output_file);
         fclose(output->output_file);
-        pixie_delete_mutex(output->mutex);
     }
+
+    pixie_delete_mutex(output->mutex);
 }

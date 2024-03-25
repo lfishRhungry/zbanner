@@ -85,7 +85,7 @@ typedef int (*scan_modules_transmit)(
 
 struct Received {
     struct PreprocessedInfo parsed;
-    const unsigned char *packet;
+    unsigned char *packet;
     unsigned length;
     unsigned is_myip;
     unsigned is_myport;

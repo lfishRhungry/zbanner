@@ -8,6 +8,7 @@
 
 #include "globals.h"
 #include "xconf.h"
+#include "cookie.h"
 
 #include "output/output.h"
 
@@ -29,6 +30,105 @@
 #include "util/readrange.h"
 
 #include "timeout/fast-timeout.h"
+
+#define RECV_QUEUE_COUNT 65536
+
+struct RxRead {
+    uint64_t entropy;
+    struct rte_ring  *read_queue;
+    struct rte_ring **handle_queue;
+    unsigned recv_handle_num;
+    unsigned recv_handle_mask;
+};
+
+static void
+recv_read_thread(void *v)
+{
+    struct RxRead *parms = v;
+    while (!is_rx_done) {
+        int err = 1;
+        struct Received *recved = NULL;
+
+        err = rte_ring_sc_dequeue(parms->read_queue, (void**)&recved);
+        if (err != 0) {
+            /* Pause and wait for a buffer to become available */
+            pixie_usleep(100);
+            continue;
+        }
+
+        if (recved==NULL) {
+            LOG(LEVEL_ERROR, "FAIL: recv empty from recv read thread. (IMPOSSIBLE)\n");
+            fflush(stdout);
+            exit(1);
+        }
+
+        /**
+         * send packet to recv handle queue by its cookie
+        */
+
+        uint64_t cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
+            recved->parsed.dst_ip, recved->parsed.port_dst, parms->entropy);
+
+        for (err=1; err; ) {
+            err = rte_ring_sp_enqueue(
+                parms->handle_queue[cookie & parms->recv_handle_mask], recved);
+            if (err) {
+                fprintf(stderr, "[-] recv handle queue full from recv read thread.(should be impossible)\n");
+                pixie_usleep(1000);
+                exit(1);
+            }
+        }
+    }
+}
+
+struct RxHandle {
+    struct ScanModule *scan_module;
+    struct rte_ring *handle_queue;
+    struct FHandler *ft_handler;
+    struct stack_t  *stack;
+    struct Output   *out;
+
+    uint64_t entropy;
+    unsigned index;
+};
+
+static void
+recv_handle_thread(void *v)
+{
+    struct RxHandle *parms = v;
+    while (!is_rx_done) {
+        int err = 1;
+
+        struct Received *recved = NULL;
+
+        err = rte_ring_sc_dequeue(parms->handle_queue, (void**)&recved);
+        if (err != 0) {
+            pixie_usleep(100);
+            continue;
+        }
+
+        if (recved==NULL) {
+            LOG(LEVEL_ERROR, "FAIL: recv empty from recv handle thread. (IMPOSSIBLE)\n");
+            fflush(stdout);
+            exit(1);
+        }
+
+        struct OutputItem item = {
+            .ip_them   = recved->parsed.src_ip,
+            .ip_me     = recved->parsed.dst_ip,
+            .port_them = recved->parsed.port_src,
+            .port_me   = recved->parsed.port_dst,
+        };
+
+        parms->scan_module->handle_cb(parms->entropy, recved, &item,
+            parms->stack, parms->ft_handler);
+
+        output_result(parms->out, &item);
+
+        free(recved->packet);
+        free(recved);
+    }
+}
 
 
 void receive_thread(void *v) {
@@ -59,6 +159,13 @@ void receive_thread(void *v) {
 
     LOG(LEVEL_WARNING, "[+] starting receive thread\n");
 
+    if (xconf->is_offline) {
+        while (!is_rx_done)
+            pixie_usleep(10000);
+        parms->done_receiving = 1;
+        return;
+    }
+
     output_init(output);
 
     /* Lock threads to the CPUs one by one.
@@ -75,15 +182,46 @@ void receive_thread(void *v) {
     if (!xconf->is_nodedup)
         dedup = dedup_create(xconf->dedup_win);
 
-    if (xconf->is_offline) {
-        while (!is_rx_done)
-            pixie_usleep(10000);
-        parms->done_receiving = 1;
-        goto end;
-    }
-
     if (xconf->is_fast_timeout) {
         ft_init_handler(xconf->ft_table, &ft_handler);
+    }
+
+    /**
+     * init read and handle threads
+    */
+    unsigned hdl_num = 4;
+
+    struct rte_ring *handle_q[hdl_num];
+    struct rte_ring *read_q = rte_ring_create(RECV_QUEUE_COUNT,
+        RING_F_SP_ENQ|RING_F_SC_DEQ);
+    for (unsigned i=0; i<hdl_num; i++) {
+        handle_q[i] = rte_ring_create(RECV_QUEUE_COUNT,
+            RING_F_SP_ENQ|RING_F_SC_DEQ);
+    }
+
+    struct RxRead read_parms = {
+        .entropy = entropy,
+        .read_queue = read_q,
+        .handle_queue = handle_q,
+        .recv_handle_num = hdl_num,
+        .recv_handle_mask = hdl_num-1,
+    };
+
+    size_t reader = pixie_begin_thread(recv_read_thread, 0, &read_parms);
+
+    size_t handler[hdl_num];
+    struct RxHandle handle_parms[hdl_num];
+
+    for (unsigned i=0; i<hdl_num; i++) {
+        handle_parms[i].scan_module = xconf->scan_module;
+        handle_parms[i].handle_queue = handle_q[i];
+        handle_parms[i].ft_handler = xconf->is_fast_timeout?&ft_handler:NULL;
+        handle_parms[i].stack = stack;
+        handle_parms[i].out = output;
+        handle_parms[i].entropy = entropy;
+        handle_parms[i].index = i;
+
+        handler[i] = pixie_begin_thread(recv_handle_thread, 0, &handle_parms[i]);
     }
 
     LOG(LEVEL_INFO, "[+] THREAD: recv: starting main loop\n");
@@ -98,9 +236,10 @@ void receive_thread(void *v) {
             /*dedup timeout event and other packets together*/
             if (tm_event) {
                 if ((!xconf->is_nodedup &&
-                     !dedup_is_duplicate(dedup, tm_event->ip_them, tm_event->port_them,
-                                         tm_event->ip_me, tm_event->port_me,
-                                         tm_event->dedup_type))
+                     !dedup_is_duplicate(dedup,
+                        tm_event->ip_them, tm_event->port_them,
+                        tm_event->ip_me, tm_event->port_me,
+                        tm_event->dedup_type))
                     || xconf->is_nodedup) {
 
                     struct OutputItem item = {
@@ -110,7 +249,8 @@ void receive_thread(void *v) {
                         .port_me   = tm_event->port_me,
                     };
 
-                    scan_module->timeout_cb(entropy, tm_event, &item, stack, &ft_handler);
+                    scan_module->timeout_cb(entropy, tm_event, &item,
+                        stack, &ft_handler);
 
                     output_result(output, &item);
 
@@ -127,31 +267,47 @@ void receive_thread(void *v) {
         */
         scan_module->poll_cb();
 
-        struct Received recved = {0};
+        unsigned pkt_len, pkt_secs, pkt_usecs;
+        const unsigned char *pkt_data;
 
-        int err = rawsock_recv_packet(adapter, &(recved.length), &(recved.secs),
-                                      &(recved.usecs), &(recved.packet));
+        int err = rawsock_recv_packet(adapter, &pkt_len, &pkt_secs,
+                                      &pkt_usecs, &pkt_data);
         if (err != 0) {
             continue;
         }
-        if (recved.length > 1514)
+        if (pkt_len > 1514) {
             continue;
+        }
 
-        unsigned x = preprocess_frame(recved.packet, recved.length, data_link,
-                                      &recved.parsed);
-        if (!x)
+        /**
+         * recved will not be handle in this thread.
+         * and packet received from Adapters cannot exist too long.
+        */
+        struct Received *recved = CALLOC(1, sizeof(struct Received));
+        recved->packet = MALLOC(pkt_len);
+        memcpy(recved->packet, pkt_data, pkt_len);
+        recved->length = pkt_len;
+        recved->secs = pkt_secs;
+        recved->usecs = pkt_usecs;
+
+        unsigned x = preprocess_frame(recved->packet, recved->length, data_link,
+                                      &recved->parsed);
+        if (!x) {
+            free(recved->packet);
+            free(recved);
             continue; /* corrupt packet */
+        }
 
-        ipaddress ip_them   = recved.parsed.src_ip;
-        ipaddress ip_me     = recved.parsed.dst_ip;
-        unsigned  port_them = recved.parsed.port_src;
-        unsigned  port_me   = recved.parsed.port_dst;
+        ipaddress ip_them   = recved->parsed.src_ip;
+        ipaddress ip_me     = recved->parsed.dst_ip;
+        unsigned  port_them = recved->parsed.port_src;
+        unsigned  port_me   = recved->parsed.port_dst;
 
         assert(ip_me.version   != 0);
         assert(ip_them.version != 0);
 
-        recved.is_myip   = is_my_ip(stack->src, ip_me);
-        recved.is_myport = is_my_port(stack->src, port_me);
+        recved->is_myip   = is_my_ip(stack->src, ip_me);
+        recved->is_myport = is_my_port(stack->src, port_me);
 
         struct PreHandle pre = {
             .go_record       = 0,
@@ -163,42 +319,50 @@ void receive_thread(void *v) {
             .dedup_type      = SCAN_MODULE_DEFAULT_DEDUP_TYPE,
         };
 
-        scan_module->validate_cb(entropy, &recved, &pre);
+        scan_module->validate_cb(entropy, recved, &pre);
 
-        if (!pre.go_record)
+        if (!pre.go_record) {
+            free(recved->packet);
+            free(recved);
             continue;
+        }
 
         if (parms->xconf->packet_trace)
-            packet_trace(stdout, parms->pt_start, recved.packet, recved.length, 0);
+            packet_trace(stdout, parms->pt_start, recved->packet, recved->length, 0);
 
         /* Save raw packet in --pcap file */
         if (pcapfile) {
-            pcapfile_writeframe(pcapfile, recved.packet, recved.length, recved.length,
-                                recved.secs, recved.usecs);
+            pcapfile_writeframe(pcapfile, recved->packet, recved->length,
+                recved->length, recved->secs, recved->usecs);
         }
 
-        if (!pre.go_dedup)
+        if (!pre.go_dedup) {
+            free(recved->packet);
+            free(recved);
             continue;
+        }
 
         if (!xconf->is_nodedup && !pre.no_dedup) {
             if (dedup_is_duplicate(dedup, pre.dedup_ip_them, pre.dedup_port_them,
                                    pre.dedup_ip_me, pre.dedup_port_me,
                                    pre.dedup_type)) {
+                free(recved->packet);
+                free(recved);
                 continue;
             }
         }
 
-        struct OutputItem item = {
-            .ip_them   = ip_them,
-            .ip_me     = ip_me,
-            .port_them = port_them,
-            .port_me   = port_me,
-        };
-
-        scan_module->handle_cb(entropy, &recved, &item, stack,
-            xconf->is_fast_timeout?(&ft_handler):NULL);
-
-        output_result(output, &item);
+        /**
+         * give it to reader and to handlers
+        */
+        for (err=1; err; ) {
+            err = rte_ring_sp_enqueue(read_q, recved);
+            if (err) {
+                fprintf(stderr, "[-] recv handle queue full from rx thread(should be impossible)\n");
+                pixie_usleep(1000);
+                exit(1);
+            }
+        }
     }
 
     LOG(LEVEL_WARNING, "[+] exiting receive thread                            \n");
@@ -206,7 +370,12 @@ void receive_thread(void *v) {
     /*
      * cleanup
      */
-end:
+    /*stop reader and handlers*/
+    pixie_thread_join(reader);
+    for (unsigned i=0; i<hdl_num; i++) {
+        pixie_thread_join(handler[i]);
+    }
+
     output_close(output);
 
     if (!xconf->is_nodedup)
