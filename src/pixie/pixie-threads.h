@@ -28,29 +28,25 @@ void pixie_set_thread_name(const char *name);
 
 /* barrier */
 void *pixie_create_barrier(unsigned total_threads);
-void pixie_wait_barrier(void *p_barrier);
-bool pixie_delete_barrier(void *p_barrier);
+void  pixie_wait_barrier(void *p_barrier);
+bool  pixie_delete_barrier(void *p_barrier);
 
 /* rwlock */
 void *pixie_create_rwlock();
-void pixie_acquire_rwlock_read(void *p_rwlock);
-void pixie_release_rwlock_read(void *p_rwlock);
-void pixie_acquire_rwlock_write(void *p_rwlock);
-void pixie_release_rwlock_write(void *p_rwlock);
-bool pixie_delete_rwlock(void *p_rwlock);
+void  pixie_acquire_rwlock_read(void *p_rwlock);
+void  pixie_release_rwlock_read(void *p_rwlock);
+void  pixie_acquire_rwlock_write(void *p_rwlock);
+void  pixie_release_rwlock_write(void *p_rwlock);
+bool  pixie_delete_rwlock(void *p_rwlock);
 
 /* mutex */
 void *pixie_create_mutex();
-void pixie_acquire_mutex(void *p_mutex);
-void pixie_release_mutex(void *p_mutex);
-bool pixie_delete_mutex(void *p_mutex);
+void  pixie_acquire_mutex(void *p_mutex);
+void  pixie_release_mutex(void *p_mutex);
+bool  pixie_delete_mutex(void *p_mutex);
 
 void pixie_cpu_set_affinity(unsigned processor);
 void pixie_cpu_raise_priority(void);
-
-void pixie_locked_subtract_u32(unsigned *lhs, unsigned rhs);
-
-
 
 #if defined(_MSC_VER)
 #define pixie_locked_add_u32(dst, src) _InterlockedExchangeAdd((volatile long*)(dst), (src))
