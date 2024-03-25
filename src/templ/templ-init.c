@@ -1,12 +1,3 @@
-/*
-
-    Construct a TCP packet based upon a template.
-
-    The (eventual) idea of this module is to make this scanner extensible
-    by providing an arbitrary packet template. Thus, the of this module
-    is to take an existing packet template, parse it, then make
-    appropriate changes.
-*/
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -23,96 +14,96 @@
 #include "../util/unusedparm.h"
 #include "../util/checksum.h"
 #include "../util/fine-malloc.h"
-#include "../stub/stub-pcap-dlt.h" /* data link types, like NULL, RAW, or ETHERNET */
+#include "../stub/stub-pcap-dlt.h"
 
 /* For adding some fixed tcp options*/
 unsigned char default_tcp_syn_template[] =
-    "\0\1\2\3\4\5"  /* Ethernet: destination */
+    "\0\1\2\3\4\5"      /* Ethernet: destination */
     "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-    "\x08\x00"      /* Ethernet type: IPv4 */
+    "\x08\x00"          /* Ethernet type: IPv4 */
 
-    "\x45"          /* IP type */
+    "\x45"              /* IP type */
     "\x00"
-    "\x00\x2c"      /* total length = 44 bytes */
-    "\x00\x00"      /* identification */
-    "\x00\x00"      /* fragmentation flags */
-    "\xFF\x06"      /* TTL=255, proto=TCP */
-    "\xFF\xFF"      /* checksum */
-    "\0\0\0\0"      /* source address */
-    "\0\0\0\0"      /* destination address */
+    "\x00\x2c"          /* total length = 44 bytes */
+    "\x00\x00"          /* identification */
+    "\x00\x00"          /* fragmentation flags */
+    "\xFF\x06"          /* TTL=255, proto=TCP */
+    "\xFF\xFF"          /* checksum */
+    "\0\0\0\0"          /* source address */
+    "\0\0\0\0"          /* destination address */
 
-    "\0\0"          /* source port */
-    "\0\0"          /* destination port */
-    "\0\0\0\0"      /* sequence number */
-    "\0\0\0\0"      /* ACK number */
-    "\x60"          /* header length: the first 4bits 0110=6 -> 6*4=24bytes */
-    "\x02"          /* SYN */
-    "\xfa\xf0"      /* window 64240 (default ipv4 tcp win of my win11, and tcp win of win11 ipv6 is \xfd\x20->64800) */
-    "\xFF\xFF"      /* checksum */
-    "\x00\x00"      /* urgent pointer */
+    "\0\0"              /* source port */
+    "\0\0"              /* destination port */
+    "\0\0\0\0"          /* sequence number */
+    "\0\0\0\0"          /* ACK number */
+    "\x60"              /* header length: the first 4bits 0110=6 -> 6*4=24bytes */
+    "\x02"              /* SYN */
+    "\xfa\xf0"          /* window 64240 (default ipv4 tcp win of my win11, and tcp win of win11 ipv6 is \xfd\x20->64800) */
+    "\xFF\xFF"          /* checksum */
+    "\x00\x00"          /* urgent pointer */
     "\x02\x04\x05\xb4"  /* opt [mss 1460] */
 ;
 
 /* No options */
 unsigned char default_tcp_template[] =
-    "\0\1\2\3\4\5"  /* Ethernet: destination */
+    "\0\1\2\3\4\5"      /* Ethernet: destination */
     "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-    "\x08\x00"      /* Ethernet type: IPv4 */
+    "\x08\x00"          /* Ethernet type: IPv4 */
 
-    "\x45"          /* IP type */
+    "\x45"              /* IP type */
     "\x00"
-    "\x00\x28"      /* total length = 40 bytes */
-    "\x00\x00"      /* identification */
-    "\x00\x00"      /* fragmentation flags */
-    "\xFF\x06"      /* TTL=255, proto=TCP */
-    "\xFF\xFF"      /* checksum */
-    "\0\0\0\0"      /* source address */
-    "\0\0\0\0"      /* destination address */
+    "\x00\x28"          /* total length = 40 bytes */
+    "\x00\x00"          /* identification */
+    "\x00\x00"          /* fragmentation flags */
+    "\xFF\x06"          /* TTL=255, proto=TCP */
+    "\xFF\xFF"          /* checksum */
+    "\0\0\0\0"          /* source address */
+    "\0\0\0\0"          /* destination address */
 
-    "\0\0"          /* source port */
-    "\0\0"          /* destination port */
-    "\0\0\0\0"      /* sequence number */
-    "\0\0\0\0"      /* ACK number */
-    "\x50"          /* header length: the first 4bits 0101=5 -> 5*4=20bytes */
-    "\x02"          /* SYN */
-    "\x04\x01"      /* window fixed to 1024, too large could make troubles for zbanner*/
-    "\xFF\xFF"      /* checksum */
-    "\x00\x00"      /* urgent pointer */
+    "\0\0"              /* source port */
+    "\0\0"              /* destination port */
+    "\0\0\0\0"          /* sequence number */
+    "\0\0\0\0"          /* ACK number */
+    "\x50"              /* header length: the first 4bits 0101=5 -> 5*4=20bytes */
+    "\x02"              /* SYN */
+    "\x04\x01"          /* window fixed to 1024, too large could make troubles for zbanner*/
+    "\xFF\xFF"          /* checksum */
+    "\x00\x00"          /* urgent pointer */
 ;
 
 static unsigned char default_udp_template[] =
-    "\0\1\2\3\4\5"  /* Ethernet: destination */
+    "\0\1\2\3\4\5"      /* Ethernet: destination */
     "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-    "\x08\x00"      /* Ethernet type: IPv4 */
-    "\x45"          /* IP type */
+    "\x08\x00"          /* Ethernet type: IPv4 */
+    "\x45"              /* IP type */
     "\x00"
-    "\x00\x1c"      /* total length = 28 bytes */
-    "\x00\x00"      /* identification */
-    "\x00\x00"      /* fragmentation flags */
-    "\xFF\x11"      /* TTL=255, proto=UDP */
-    "\xFF\xFF"      /* checksum */
-    "\0\0\0\0"      /* source address */
-    "\0\0\0\0"      /* destination address */
+    "\x00\x1c"          /* total length = 28 bytes */
+    "\x00\x00"          /* identification */
+    "\x00\x00"          /* fragmentation flags */
+    "\xFF\x11"          /* TTL=255, proto=UDP */
+    "\xFF\xFF"          /* checksum */
+    "\0\0\0\0"          /* source address */
+    "\0\0\0\0"          /* destination address */
 
-    "\xfe\xdc"      /* source port */
-    "\x00\x00"      /* destination port */
-    "\x00\x08"      /* length */
-    "\x00\x00"      /* checksum */
+    "\xfe\xdc"          /* source port */
+    "\x00\x00"          /* destination port */
+    "\x00\x08"          /* length */
+    "\x00\x00"          /* checksum */
 ;
 
 static unsigned char default_sctp_template[] =
-    "\0\1\2\3\4\5"  /* Ethernet: destination */
+    "\0\1\2\3\4\5"      /* Ethernet: destination */
     "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-    "\x08\x00"      /* Ethernet type: IPv4 */
-    "\x45"          /* IP type */
+    "\x08\x00"          /* Ethernet type: IPv4 */
+    "\x45"              /* IP type */
     "\x00"
-    "\x00\x34"      /* total length = 52 bytes */
-    "\x00\x00"      /* identification */
-    "\x00\x00"      /* fragmentation flags */
-    "\xFF\x84"      /* TTL=255, proto = SCTP */
-    "\x00\x00"      /* checksum */
-    "\0\0\0\0"      /* source address */
-    "\0\0\0\0"      /* destination address */
+    "\x00\x34"          /* total length = 52 bytes */
+    "\x00\x00"          /* identification */
+    "\x00\x00"          /* fragmentation flags */
+    "\xFF\x84"          /* TTL=255, proto = SCTP */
+    "\x00\x00"          /* checksum */
+    "\0\0\0\0"          /* source address */
+    "\0\0\0\0"          /* destination address */
 
     "\x00\x00"          /* source port */
     "\x00\x00"          /* destination port */
@@ -130,25 +121,25 @@ static unsigned char default_sctp_template[] =
 
 
 static unsigned char default_icmp_ping_template[] =
-    "\0\1\2\3\4\5"  /* Ethernet: destination */
+    "\0\1\2\3\4\5"      /* Ethernet: destination */
     "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-    "\x08\x00"      /* Ethernet type: IPv4 */
-    "\x45"          /* IP type */
+    "\x08\x00"          /* Ethernet type: IPv4 */
+    "\x45"              /* IP type */
     "\x00"
-    "\x00\x4c"      /* total length = 76 bytes */
-    "\x00\x00"      /* identification */
-    "\x00\x00"      /* fragmentation flags */
-    "\xFF\x01"      /* TTL=255, proto=ICMP */
-    "\xFF\xFF"      /* checksum */
-    "\0\0\0\0"      /* source address */
-    "\0\0\0\0"      /* destination address */
+    "\x00\x4c"          /* total length = 76 bytes */
+    "\x00\x00"          /* identification */
+    "\x00\x00"          /* fragmentation flags */
+    "\xFF\x01"          /* TTL=255, proto=ICMP */
+    "\xFF\xFF"          /* checksum */
+    "\0\0\0\0"          /* source address */
+    "\0\0\0\0"          /* destination address */
 
-    "\x08\x00"      /* Ping Request */
-    "\x00\x00"      /* checksum */
+    "\x08\x00"          /* Ping Request */
+    "\x00\x00"          /* checksum */
 
-    "\x00\x00\x00\x00" /* ID, seqno */
+    "\x00\x00\x00\x00"  /* ID, seqno */
 
-    "\x08\x09\x0a\x0b" /* payload */
+    "\x08\x09\x0a\x0b"  /* payload */
     "\x0c\x0d\x0e\x0f"
     "\x10\x11\x12\x13"
     "\x14\x15\x16\x17"
@@ -163,23 +154,23 @@ static unsigned char default_icmp_ping_template[] =
 ;
 
 static unsigned char default_icmp_timestamp_template[] =
-"\0\1\2\3\4\5"  /* Ethernet: destination */
+"\0\1\2\3\4\5"          /* Ethernet: destination */
     "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-"\x08\x00"      /* Ethernet type: IPv4 */
-"\x45"          /* IP type */
+"\x08\x00"              /* Ethernet type: IPv4 */
+"\x45"                  /* IP type */
 "\x00"
-"\x00\x28"      /* total length = 40 bytes */
-"\x00\x00"      /* identification */
-"\x00\x00"      /* fragmentation flags */
-"\xFF\x01"      /* TTL=255, proto=ICMP */
-"\xFF\xFF"      /* checksum */
-"\0\0\0\0"      /* source address */
-"\0\0\0\0"      /* destination address */
+"\x00\x28"              /* total length = 40 bytes */
+"\x00\x00"              /* identification */
+"\x00\x00"              /* fragmentation flags */
+"\xFF\x01"              /* TTL=255, proto=ICMP */
+"\xFF\xFF"              /* checksum */
+"\0\0\0\0"              /* source address */
+"\0\0\0\0"              /* destination address */
 
-"\x0d\x00"  /* timestamp request */
-"\x00\x00"  /* checksum */
-"\x00\x00"  /* identifier */
-"\x00\x00"  /* sequence number */
+"\x0d\x00"              /* timestamp request */
+"\x00\x00"              /* checksum */
+"\x00\x00"              /* identifier */
+"\x00\x00"              /* sequence number */
 "\x00\x00\x00\x00"
 "\x00\x00\x00\x00"
 "\x00\x00\x00\x00"
@@ -187,13 +178,13 @@ static unsigned char default_icmp_timestamp_template[] =
 
 
 static unsigned char default_arp_template[] =
-    "\xff\xff\xff\xff\xff\xff"  /* Ethernet: destination */
-    "\x00\x00\x00\x00\x00\x00"  /* Ethernet: source */
-    "\x08\x06"      /* Ethernet type: ARP */
-    "\x00\x01" /* hardware = Ethernet */
-    "\x08\x00" /* protocol = IPv4 */
-    "\x06\x04" /* MAC length = 6, IPv4 length = 4 */
-    "\x00\x01" /* opcode = request */
+    "\xff\xff\xff\xff\xff\xff"    /* Ethernet: destination */
+    "\x00\x00\x00\x00\x00\x00"    /* Ethernet: source */
+    "\x08\x06"                    /* Ethernet type: ARP */
+    "\x00\x01"                    /* hardware = Ethernet */
+    "\x08\x00"                    /* protocol = IPv4 */
+    "\x06\x04"                    /* MAC length = 6, IPv4 length = 4 */
+    "\x00\x01"                    /* opcode = request */
 
     "\x00\x00\x00\x00\x00\x00"
     "\x00\x00\x00\x00"
@@ -204,29 +195,29 @@ static unsigned char default_arp_template[] =
 
 
 static unsigned char default_ndp_ns_template[] =
-"\0\1\2\3\4\5"  /* Ethernet: destination */
-    "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-"\x08\x00"      /* Ethernet type: IPv4 */
-"\x45"          /* IP type */
+"\0\1\2\3\4\5"                /* Ethernet: destination */
+    "\6\7\x8\x9\xa\xb"        /* Ethernet: source */
+"\x08\x00"                    /* Ethernet type: IPv4 */
+"\x45"                        /* IP type */
 "\x00"
-"\x00\x34"      /* total length = 54 bytes */
-"\x00\x00"      /* identification */
-"\x00\x00"      /* fragmentation flags */
-"\xFF\x01"      /* TTL=255, proto=UDP */
-"\xFF\xFF"      /* checksum */
-"\0\0\0\0"      /* source address */
-"\0\0\0\0"      /* destination address */
+"\x00\x34"                    /* total length = 54 bytes */
+"\x00\x00"                    /* identification */
+"\x00\x00"                    /* fragmentation flags */
+"\xFF\x01"                    /* TTL=255, proto=UDP */
+"\xFF\xFF"                    /* checksum */
+"\0\0\0\0"                    /* source address */
+"\0\0\0\0"                    /* destination address */
 
-"\x87\x00"  /* neighbor solicitation */
-"\x00\x00"  /* checksum */
-"\x00\x00\x00\x00" /*reserved*/
-"\x00\x00\x00\x00" /*Target address*/
+"\x87\x00"                    /* neighbor solicitation */
+"\x00\x00"                    /* checksum */
+"\x00\x00\x00\x00"            /*reserved*/
+"\x00\x00\x00\x00"            /*Target address*/
 "\x00\x00\x00\x00"
 "\x00\x00\x00\x00"
 "\x00\x00\x00\x00"
-"\x01"     /*ICMPv6 Option Type: Source link-layer address*/
-"\x01"     /*Length for 8 bytes*/
-"\x00\x00\x00\x00\x00\x00" /*Link-layer address*/
+"\x01"                        /*ICMPv6 Option Type: Source link-layer address*/
+"\x01"                        /*Length for 8 bytes*/
+"\x00\x00\x00\x00\x00\x00"    /*Link-layer address*/
 ;
 
 #if defined(WIN32) || defined(_WIN32)
@@ -240,7 +231,8 @@ static unsigned char default_ndp_ns_template[] =
  * the IPv4 header with the IPv6 header.
  ***************************************************************************/
 static void
-_template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6, unsigned data_link_type)
+_template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
+    unsigned data_link_type)
 {
     struct PreprocessedInfo parsed;
     unsigned x;
@@ -375,10 +367,6 @@ _template_init(
     memcpy(tmpl->ipv4.packet, packet_bytes, tmpl->ipv4.length);
     px = tmpl->ipv4.packet;
 
-    /*
-     * Parse the existing packet template. We support TCP, UDP, ICMP,
-     * and ARP packets.
-     */
     x = preprocess_frame(px, tmpl->ipv4.length, 1 /*enet*/, &parsed);
     if (!x || parsed.found == FOUND_NOTHING) {
         LOG(LEVEL_ERROR, "ERROR: bad packet template\n");

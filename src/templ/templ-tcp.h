@@ -38,19 +38,11 @@ templ_tcp_apply_options(unsigned char **inout_buf, size_t *inout_length,
                   const struct TemplateOptions *templ_opts);
 
 /**
- * Set's the TCP "window" field. The purpose is to cause the recipient
- * to fragment data on the response, thus evading IDS that triggers on
- * out going packets
+ * Set's the TCP "window" field in raw.
  */
 void
 tcp_set_window(unsigned char *px, size_t px_length, unsigned window);
 
-/**
- * Conduct a selftest of all the functions that manipulate the TCP
- * header template.
- */
-int
-templ_tcp_selftest(void);
 
 /**
  * Create a TCP packet containing a payload, based on the original
@@ -81,5 +73,24 @@ tcp_create_packet(
 /*Convert TCP flags into string*/
 void
 tcp_flags_to_string(unsigned flag, char *string, size_t str_len);
+
+unsigned
+tcp_get_mss(const unsigned char *buf, size_t length, bool *is_found);
+
+unsigned
+tcp_get_wscale(const unsigned char *buf, size_t length, bool *is_found);
+
+unsigned
+tcp_get_sackperm(const unsigned char *buf, size_t length, bool *is_found);
+
+/***************************************************************************
+ * Does a consistency check of the whole packet, including IP header,
+ * TCP header, and the options in the <options-list> field. This is used
+ * in the self-test feature after test cases, to make sure the packet
+ * hasn't bee corrupted.
+ ***************************************************************************/
+int
+tcp_consistancy_check(const unsigned char *buf, size_t length,
+    const void *payload, size_t payload_length);
 
 #endif

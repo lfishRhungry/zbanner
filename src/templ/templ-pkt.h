@@ -17,11 +17,7 @@ enum TemplateProtocol {
     Proto_NDP_ns,
     Proto_Count
 };
-/**
- * Describes a packet template. The scan packets we transmit are based on a
- * a template containing most of the data, and we fill in just the necessary
- * bits, like the destination IP address and port
- */
+
 struct TemplatePacket {
     struct {
         unsigned length;
@@ -46,11 +42,6 @@ struct TemplatePacket {
     enum TemplateProtocol proto;
 };
 
-/**
- * We can run multiple types of scans (TCP, UDP, etc.) at the same
- * time. Therefore, instead of one packet prototype for all scans, we have
- * a set of prototypes/templates.
- */
 struct TemplateSet
 {
     unsigned count;
