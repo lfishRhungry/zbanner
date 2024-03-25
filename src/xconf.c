@@ -1351,8 +1351,7 @@ static int SET_nmap_service_probes(void *conf, const char *name, const char *val
     if (xconf->nmap.service_probes_filename)
         free(xconf->nmap.service_probes_filename);
     xconf->nmap.service_probes_filename = strdup(value);
-    
-    
+
     return CONF_OK;
 }
 

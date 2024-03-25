@@ -96,9 +96,6 @@ nmapserviceprobes_read_file(const char *filename);
 void
 nmapserviceprobes_free(struct NmapServiceProbeList *service_probes);
 
-int
-nmapserviceprobes_selftest(void);
-
 /**
  * Print to a file for testing purposes
  */
