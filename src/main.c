@@ -190,8 +190,8 @@ static int main_scan(struct Xconf *xconf) {
         xconf->nic.router_mac_ipv4, xconf->nic.router_mac_ipv6,
         stack_if_datalink(xconf->nic.adapter), xconf->seed, xconf->templ_opts);
 
-    if (xconf->nmap.ttl)
-        template_set_ttl(xconf->tmplset, xconf->nmap.ttl);
+    if (xconf->packet_ttl)
+        template_set_ttl(xconf->tmplset, xconf->packet_ttl);
 
     if (xconf->nic.is_vlan)
         template_set_vlan(xconf->tmplset, xconf->nic.vlan_id);
@@ -528,7 +528,6 @@ int main(int argc, char *argv[]) {
     xconf->tx_thread_count = 1;
     xconf->shard.one = 1;
     xconf->shard.of = 1;
-    xconf->min_packet_size = 60;
     xconf->dedup_win = 1000000;
     xconf->ft_spec = 5;
     /*default entries count of callback queue and packet buffer queue*/

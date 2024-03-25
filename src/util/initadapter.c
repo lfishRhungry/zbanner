@@ -61,7 +61,7 @@ initialize_adapter(struct Xconf *xconf)
                                             ifname,
                                             xconf->is_pfring,
                                             xconf->is_sendq,
-                                            xconf->nmap.packet_trace,
+                                            xconf->packet_trace,
                                             xconf->is_offline,
                                             xconf->nic.is_vlan,
                                             xconf->nic.vlan_id);

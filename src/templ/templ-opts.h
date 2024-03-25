@@ -61,7 +61,7 @@ struct TemplateOptions {
 
         unsigned tos;
         unsigned ipid;
-        unsigned ttl;
+        unsigned packet_ttl;
 
     } ipv4;
 };

@@ -53,15 +53,6 @@ struct source_t {
  */
 struct Xconf
 {
-    enum Operation op;
-    
-    /**
-     * Temporary file to echo parameters to, used for saving configuration
-     * to a file
-     */
-    FILE *echo;
-    unsigned echo_all;
-
     /**
      * Just one network adapters that we'll use for scanning. Adapter
      * should have a set of IP source addresses, except in the case
@@ -82,73 +73,6 @@ struct Xconf
         unsigned is_usable:1;
     } nic;
 
-    /**
-     * Now we could set the number of transmit threads.
-     * NOTE: Always only one receiving thread.
-     * !Actually, more than one rx thread make deduptable invalid.
-     * !And rx thread cost much less than tx thread, one rx could serve many tx well.
-     * TODO: maybe some costy thing(eg. identification) could be done by other
-     * thread instead of rx or tx.
-     */
-    unsigned tx_thread_count;
-
-    /* This is used by ScanModule both in transmit and receive thread for
-     * formatting packets */
-    // struct TemplatePacket *tmpl_pkt;
-    struct TemplateSet *tmplset;
-
-    /**
-     * This is the number of entries in our table.
-     * More entries does a better job at the cost of using more memory.
-     * NOTE: Look into strustures to understand the memory cost.
-     */
-    unsigned dedup_win;
-
-
-    /**
-     * This stack contains:
-     *     The callback queue (transmit queue) from rx threads to tx threads,
-     *     The packet buffer queue for memory reusing.
-     * 
-    */
-    struct stack_t *stack;
-    unsigned stack_buf_count;
-
-    /**
-     * Use fast-timeout table to handle simple timeout events;
-    */
-    struct FTable *ft_table;
-    time_t ft_spec; /*timeout seconds*/
-
-    struct MassIP targets;
-    struct MassIP exclude;
-
-
-    double max_rate;
-
-    struct ProbeModule *probe_module;
-    char *probe_module_args;
-
-    struct ScanModule *scan_module;
-    char *scan_module_args;
-
-    struct Output output;
-    
-
-    unsigned is_status_ndjson:1;
-    unsigned is_pfring:1;           /* --pfring */
-    unsigned is_sendq:1;            /* --sendq */
-    unsigned is_offline:1;          /* --offline */
-    unsigned is_nodedup:1;          /* --nodedup, don't deduplicate */
-    unsigned is_gmt:1;              /* --gmt, all times in GMT */
-    unsigned is_infinite:1;         /* --infinite */
-    unsigned is_fast_timeout:1;     /* --fast-timeout, use ft for ScanModule*/
-
-    /**
-     * Wait forever for responses, instead of the default 10 seconds
-     */
-    unsigned wait;
-
     struct {
         /** --resume-index */
         uint64_t index;
@@ -165,50 +89,85 @@ struct Xconf
         unsigned one;
         unsigned of;
     } shard;
-
-    uint64_t seed;
-
-    struct TemplateSet *pkt_template;
-    struct TemplateOptions *templ_opts; /* e.g. --tcpmss */
     
+    /**
+     * Temporary file to echo parameters to, used for saving configuration
+     * to a file
+     */
+    FILE *echo;
+    unsigned echo_all;
+
+    /**
+     * This stack contains:
+     *     The callback queue (transmit queue) from rx threads to tx threads,
+     *     The packet buffer queue for memory reusing.
+     * 
+    */
+    struct stack_t *stack;
+    unsigned stack_buf_count;
+
+    /**
+     * set pcap BPF filter and save pcap file
+    */
+    char *bpf_filter;
+    char  pcap_filename[256];
+
+    /**
+     * template for packet making quickly.
+    */
+    struct TemplateSet     *tmplset;
+    struct TemplateOptions *templ_opts; /* e.g. --tcpmss */
+
+    /**
+     * Use fast-timeout table to handle simple timeout events;
+    */
+    struct FTable *ft_table;
+    time_t ft_spec;          /*timeout seconds*/
+
+    struct MassIP targets;
+    struct MassIP exclude;
+
+    struct ProbeModule *probe_module;
+    char *probe_module_args;
+
+    struct ScanModule *scan_module;
+    char *scan_module_args;
+
     struct {
-        unsigned ttl;                /* starting IP TTL field */
-        unsigned packet_trace:1;     /* print transmit messages */
-        char     datadir[256];
+        char *service_probes_filename;
+        struct NmapServiceProbeList *service_probes;
     } nmap;
 
-    char pcap_filename[256];
-
-    struct {
-        char *nmap_service_probes_filename;
-        struct NmapServiceProbeList *probes;
-    } payloads;
-    
-
-    char *bpf_filter;
-
-    uint64_t tcb_count;       /*tcb count for tcp state scan*/
-
     /**
-     * --tcp-init-window
-    */
-    unsigned tcp_init_window; /*window of the first syn or syn-ack packet*/
-
-    /**
-     * --tcp-window
-    */
-    unsigned tcp_window;      /*window of other packets*/
-
-    /**
-     * --min-packet
+     * Now we could set the number of transmit threads.
+     * NOTE: Always only one receiving thread.
+     * !Actually, more than one rx thread make deduptable invalid.
+     * !And rx thread cost much less than tx thread, one rx could serve many tx well.
+     * TODO: maybe some costy thing(eg. identification) could be done by other
+     * thread instead of rx or tx.
      */
-    unsigned min_packet_size;
+    unsigned tx_thread_count;
 
-    /**
-     * Number of rounds for randomization
-     * --blackrock-rounds
-     */
+    struct Output  output;          /*results outputing*/
+    enum Operation op;              /*operation of proc*/
+    uint64_t seed;
+    double   max_rate;
+    unsigned wait;                  /*default 10 seconds*/
+    unsigned dedup_win;             /*windows size of dedup table*/
     unsigned blackrock_rounds;
+    uint64_t tcb_count;             /*tcb count for tcp state scan*/
+    unsigned tcp_init_window;       /*window of the first syn or syn-ack packet*/
+    unsigned tcp_window;            /*window of other packets*/
+    unsigned packet_ttl;            /* starting IP TTL field */
+    unsigned packet_trace:1;        /* --packet-trace */
+    unsigned is_status_ndjson:1;    /* --nd-json*/
+    unsigned is_pfring:1;           /* --pfring */
+    unsigned is_sendq:1;            /* --sendq */
+    unsigned is_offline:1;          /* --offline */
+    unsigned is_nodedup:1;          /* --nodedup, don't deduplicate */
+    unsigned is_gmt:1;              /* --gmt, all times in GMT */
+    unsigned is_infinite:1;         /* --infinite */
+    unsigned is_fast_timeout:1;     /* --fast-timeout, use ft for ScanModule*/
 
 };
 

@@ -168,7 +168,7 @@ void receive_thread(void *v) {
         if (!pre.go_record)
             continue;
 
-        if (parms->xconf->nmap.packet_trace)
+        if (parms->xconf->packet_trace)
             packet_trace(stdout, parms->pt_start, recved.packet, recved.length, 0);
 
         /* Save raw packet in --pcap file */

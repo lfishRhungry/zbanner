@@ -557,12 +557,12 @@ static int SET_tcp_init_window(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_ttl(void *conf, const char *name, const char *value)
+static int SET_packet_ttl(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
-        if (xconf->nmap.ttl!=0)
-            fprintf(xconf->echo, "ttl = %u\n", xconf->nmap.ttl);
+        if (xconf->packet_ttl!=0)
+            fprintf(xconf->echo, "packet-ttl = %u\n", xconf->packet_ttl);
        return 0;
     }
 
@@ -571,7 +571,7 @@ static int SET_ttl(void *conf, const char *name, const char *value)
         fprintf(stderr, "error: %s=<n>: expected number less than 256\n", name);
         return CONF_ERR;
     } else {
-        xconf->nmap.ttl = x;
+        xconf->packet_ttl = x;
     }
 
     return CONF_OK;
@@ -1282,12 +1282,12 @@ static int SET_packet_trace(void *conf, const char *name, const char *value)
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->nmap.packet_trace || xconf->echo_all)
+        if (xconf->packet_trace || xconf->echo_all)
             fprintf(xconf->echo, "packet-trace = %s\n",
-                xconf->nmap.packet_trace?"true":"false");
+                xconf->packet_trace?"true":"false");
         return 0;
     }
-    xconf->nmap.packet_trace = parseBoolean(value);
+    xconf->packet_trace = parseBoolean(value);
     return CONF_OK;
 }
 
@@ -1335,49 +1335,22 @@ static int SET_interactive(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_min_packet(void *conf, const char *name, const char *value)
-{
-    struct Xconf *xconf = (struct Xconf *)conf;
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->min_packet_size != 60 || xconf->echo_all)
-            fprintf(xconf->echo, "min-packet = %u\n", xconf->min_packet_size);
-        return 0;
-    }
-    xconf->min_packet_size = (unsigned)parseInt(value);
-    return CONF_OK;
-}
-
-static int SET_nmap_datadir(void *conf, const char *name, const char *value)
-{
-    struct Xconf *xconf = (struct Xconf *)conf;
-    UNUSEDPARM(name);
-    
-    if (xconf->echo) {
-        if (xconf->nmap.datadir[0])
-            fprintf(xconf->echo, "nmap-datadir = %s\n", xconf->nmap.datadir);
-        return 0;
-    }
-    
-    safe_strcpy(xconf->nmap.datadir, sizeof(xconf->nmap.datadir), value);
-
-    return CONF_OK;
-}
-
 static int SET_nmap_service_probes(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     
     if (xconf->echo) {
-        if ((xconf->payloads.nmap_service_probes_filename && xconf->payloads.nmap_service_probes_filename[0]))
-            fprintf(xconf->echo, "nmap-service-probes = %s\n", xconf->payloads.nmap_service_probes_filename);
+        if ((xconf->nmap.service_probes_filename
+            && xconf->nmap.service_probes_filename[0]))
+            fprintf(xconf->echo, "nmap-service-probes = %s\n",
+                xconf->nmap.service_probes_filename);
         return 0;
     }
     
-    if (xconf->payloads.nmap_service_probes_filename)
-        free(xconf->payloads.nmap_service_probes_filename);
-    xconf->payloads.nmap_service_probes_filename = strdup(value);
+    if (xconf->nmap.service_probes_filename)
+        free(xconf->nmap.service_probes_filename);
+    xconf->nmap.service_probes_filename = strdup(value);
     
     
     return CONF_OK;
@@ -2451,10 +2424,10 @@ struct ConfigParameter config_parameters[] = {
     {"PACKET ATTRIBUTE:", SET_nothing, 0, {0}, NULL},
 
     {
-        "ttl",
-        SET_ttl,
+        "packet-ttl",
+        SET_packet_ttl,
         F_NUMABLE,
-        {0},
+        {"ttl", 0},
         "Specifies the TTL of outgoing packets, defaults to 255."
     },
     {
@@ -2633,11 +2606,7 @@ struct ConfigParameter config_parameters[] = {
     {"PAYLOAD:", SET_nothing, 0, {0}, NULL},
 
     {
-        "nmap-datadir",                   SET_nmap_datadir,            0,                {"datadir",0}},
-    {
         "nmap-service-probes",            SET_nmap_service_probes,     0,                {"nmap-service-probe",0}},
-    {
-        "min-packet",                     SET_min_packet,              0,                {"min-pkt",0}},
 
     /*Put it at last for better "help" output*/
     {"TARGET_OUTPUT:", SET_target_output, 0, {0}, NULL},

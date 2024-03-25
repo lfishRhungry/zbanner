@@ -6,7 +6,6 @@
 #include "../massip/massip-addr.h"
 #include "templ-pkt.h"
 
-struct PayloadsUDP;
 struct TemplateOptions;
 
 
