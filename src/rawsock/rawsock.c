@@ -404,59 +404,6 @@ int rawsock_recv_packet(
     return 0;
 }
 
-
-/***************************************************************************
- * Sends the TCP SYN probe packet.
- *
- * Step 1: format the packet
- * Step 2: send it in a portable manner
- ***************************************************************************/
-void
-rawsock_send_probe_ipv4(
-    struct Adapter *adapter,
-    ipv4address ip_them, unsigned port_them,
-    ipv4address ip_me, unsigned port_me,
-    unsigned seqno, unsigned flush,
-    struct TemplateSet *tmplset)
-{
-    unsigned char px[2048];
-    size_t packet_length;
-
-    /*
-     * Construct the destination packet
-     */
-    template_set_target_ipv4(tmplset, ip_them, port_them, ip_me, port_me, seqno,
-        px, sizeof(px), &packet_length);
-    
-    /*
-     * Send it
-     */
-    rawsock_send_packet(adapter, px, (unsigned)packet_length, flush);
-}
-
-void
-rawsock_send_probe_ipv6(
-    struct Adapter *adapter,
-    ipv6address ip_them, unsigned port_them,
-    ipv6address ip_me, unsigned port_me,
-    unsigned seqno, unsigned flush,
-    struct TemplateSet *tmplset)
-{
-    unsigned char px[2048];
-    size_t packet_length;
-
-    /*
-     * Construct the destination packet
-     */
-    template_set_target_ipv6(tmplset, ip_them, port_them, ip_me, port_me, seqno,
-        px, sizeof(px), &packet_length);
-    
-    /*
-     * Send it
-     */
-    rawsock_send_packet(adapter, px, (unsigned)packet_length, flush);
-}
-
 /***************************************************************************
  * Used on Windows: network adapters have horrible names, so therefore we
  * use numeric indexes instead. You can which adapter you are looking for

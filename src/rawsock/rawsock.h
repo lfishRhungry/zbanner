@@ -53,22 +53,6 @@ rawsock_set_filter(struct Adapter *adapter, const char *scan_filter,
  */
 void rawsock_list_adapters(void);
 
-void
-rawsock_send_probe_ipv4(
-    struct Adapter *adapter,
-    ipv4address ip_them, unsigned port_them,
-    ipv4address ip_me, unsigned port_me,
-    unsigned seqno, unsigned flush,
-    struct TemplateSet *tmplset);
-
-void
-rawsock_send_probe_ipv6(
-    struct Adapter *adapter,
-    ipv6address ip_them, unsigned port_them,
-    ipv6address ip_me, unsigned port_me,
-    unsigned seqno, unsigned flush,
-    struct TemplateSet *tmplset);
-
 /**
  * Queries the operating-system's network-stack in order to discover
  * the best IPv4 address to use inside our own custom network-stack.

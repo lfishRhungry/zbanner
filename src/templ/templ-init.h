@@ -9,13 +9,6 @@
 struct PayloadsUDP;
 struct TemplateOptions;
 
-/**
- * Does a regression test of this module.
- * @return
- *      1 on failure
- *      0 on success
- */
-int template_selftest(void);
 
 /**
  * transfer port from blackrock random algo to real port
@@ -64,51 +57,6 @@ template_packet_init(
     int data_link,
     uint64_t entropy,
     const struct TemplateOptions *templ_opts);
-
-/**
- * Sets the target/destination IP address of the packet, the destination port
- * number, and other bits of interest about the packet, such as a unique
- * sequence number. The template can contain things like IP or TCP options
- * with specific values. The program contains several built-in templates,
- * but they can also be read from a file.
- *
- * @param templset
- *      A template created by "template_packet_init()" and further modified
- *      by various configuration parameters.
- * @param ip
- *      The target/destination IPv4 address.
- * @param port
- *      The TCP port number, or port number from another protocol that will
- *      be shifted into the appropriate range. We actually build six base
- *      templates, one for each of these six protocols.
- *      [     0.. 65535] = TCP port number
- *      [ 65536..131071] = UDP port number
- *      [131072..196607] = SCTP port number
- *      [     196608   ] = ICMP
- *      [     196609   ] = ARP
- *      [     196610   ] = IP
- *      [      more    ] = custom
- * @param seqno
- *      On TCP, this will be the desired sequence number, which the caller
- *      will create from SYN-cookies. Other protocols may use this in a
- *      different manner. For example, if the UDP port is 161, then
- *      this will be the transaction ID of the SNMP request template.
- */
-void
-template_set_target_ipv4(
-    struct TemplateSet *templset,
-    ipv4address ip_them, unsigned port_them,
-    ipv4address ip_me, unsigned port_me,
-    unsigned seqno,
-    unsigned char *px, size_t sizeof_px, size_t *r_length);
-
-void
-template_set_target_ipv6(
-    struct TemplateSet *templset,
-    ipv6address ip_them, unsigned port_them,
-    ipv6address ip_me, unsigned port_me,
-    unsigned seqno,
-    unsigned char *px, size_t sizeof_px, size_t *r_length);
 
 
 /***************************************************************************
