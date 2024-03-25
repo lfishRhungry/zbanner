@@ -38,7 +38,9 @@ void xtatus_print(
     uint64_t total_tcb,
     uint64_t exiting,
     bool json_status);
+
 void xtatus_finish(struct Xtatus *xtatus);
+
 void xtatus_start(struct Xtatus *xtatus);
 
 

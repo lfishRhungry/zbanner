@@ -47,8 +47,9 @@ struct source_t {
 
 
 /**
- * Once read in at the start, this structure doesn't change. The transmit
- * and receive threads have only a "const" pointer to this structure.
+ * Once read in at the start, this structure doesn't change unless we know what
+ * is happenning.
+ * The transmit and receive threads have only a "const" pointer to this structure.
  */
 struct Xconf
 {
@@ -74,8 +75,8 @@ struct Xconf
         macaddress_t router_mac_ipv4;
         macaddress_t router_mac_ipv6;
         ipv4address_t router_ip;
-        int link_type; /* libpcap definitions */
-        unsigned char my_mac_count; /*is there a MAC address? */
+        int link_type;                 /* libpcap definitions */
+        unsigned char my_mac_count;    /*is there a MAC address? */
         unsigned vlan_id;
         unsigned is_vlan:1;
         unsigned is_usable:1;
@@ -135,13 +136,13 @@ struct Xconf
     
 
     unsigned is_status_ndjson:1;
-    unsigned is_pfring:1;       /* --pfring */
-    unsigned is_sendq:1;        /* --sendq */
-    unsigned is_offline:1;      /* --offline */
-    unsigned is_nodedup:1;      /* --nodedup, don't deduplicate */
-    unsigned is_gmt:1;          /* --gmt, all times in GMT */
-    unsigned is_infinite:1;     /* --infinite */
-    unsigned is_fast_timeout:1; /* --fast-timeout, use ft for ScanModule*/
+    unsigned is_pfring:1;           /* --pfring */
+    unsigned is_sendq:1;            /* --sendq */
+    unsigned is_offline:1;          /* --offline */
+    unsigned is_nodedup:1;          /* --nodedup, don't deduplicate */
+    unsigned is_gmt:1;              /* --gmt, all times in GMT */
+    unsigned is_infinite:1;         /* --infinite */
+    unsigned is_fast_timeout:1;     /* --fast-timeout, use ft for ScanModule*/
 
     /**
      * Wait forever for responses, instead of the default 10 seconds
@@ -171,10 +172,10 @@ struct Xconf
     struct TemplateOptions *templ_opts; /* e.g. --tcpmss */
     
     struct {
-        unsigned data_length; /* number of bytes to randomly append */
-        unsigned ttl; /* starting IP TTL field */
-        unsigned badsum; /* bad TCP/UDP/SCTP checksum */
-        unsigned packet_trace:1; /* print transmit messages */
+        unsigned data_length;        /* number of bytes to randomly append */
+        unsigned ttl;                /* starting IP TTL field */
+        unsigned badsum;             /* bad TCP/UDP/SCTP checksum */
+        unsigned packet_trace:1;     /* print transmit messages */
         char     datadir[256];
     } nmap;
 
@@ -193,7 +194,7 @@ struct Xconf
 
     char *bpf_filter;
 
-    uint64_t tcb_count; /*tcb count for tcp state scan*/
+    uint64_t tcb_count;       /*tcb count for tcp state scan*/
 
     /**
      * --tcp-init-window
@@ -203,7 +204,7 @@ struct Xconf
     /**
      * --tcp-window
     */
-    unsigned tcp_window; /*window of other packets*/
+    unsigned tcp_window;      /*window of other packets*/
 
     /**
      * --min-packet

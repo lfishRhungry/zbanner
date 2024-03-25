@@ -57,65 +57,65 @@ const char ascii_xtate2[] =
 ".MM:.  .:MMa.  .JMML..AMA.   .AMMA..JMML.    .JMMmmmmMMM \n";
 
 static const unsigned short top_udp_ports[] = {
-    161, /* SNMP - should be found on all network equipment */
-    135, /* MS-RPC - should be found on all modern Windows */
-    500, /* ISAKMP - for establishing IPsec tunnels */
-    137, /* NetBIOS-NameService - should be found on old Windows */
-    138, /* NetBIOS-Datagram - should be found on old Windows */
-    445, /* SMB datagram service */
-    67, /* DHCP */
-    53, /* DNS */
-    1900, /* UPnP - Microsoft-focused local discovery */
-    5353, /* mDNS - Apple-focused local discovery */
-    4500, /* nat-t-ike - IPsec NAT traversal */
-    514, /* syslog - all Unix machiens */
-    69, /* TFTP */
-    49152, /* first of modern ephemeral ports */
-    631, /* IPP - printing protocol for Linux */
-    123, /* NTP network time protocol */
-    1434, /* MS-SQL server*/
-    520, /* RIP - routers use this protocol sometimes */
-    7, /* Echo */
-    111, /* SunRPC portmapper */
-    2049, /* SunRPC NFS */
-    5683, /* COAP */
-    11211, /* memcached */
-    1701, /* L2TP */
-    27960, /* quaked amplifier */
-    1645, /* RADIUS */
-    1812, /* RADIUS */
-    1646, /* RADIUS */
-    1813, /* RADIUS */
-    3343, /* Microsoft Cluster Services */
-    2535, /* MADCAP rfc2730 TODO FIXME */
+    161,      /* SNMP - should be found on all network equipment */
+    135,      /* MS-RPC - should be found on all modern Windows */
+    500,      /* ISAKMP - for establishing IPsec tunnels */
+    137,      /* NetBIOS-NameService - should be found on old Windows */
+    138,      /* NetBIOS-Datagram - should be found on old Windows */
+    445,      /* SMB datagram service */
+    67,       /* DHCP */
+    53,       /* DNS */
+    1900,     /* UPnP - Microsoft-focused local discovery */
+    5353,     /* mDNS - Apple-focused local discovery */
+    4500,     /* nat-t-ike - IPsec NAT traversal */
+    514,      /* syslog - all Unix machiens */
+    69,       /* TFTP */
+    49152,    /* first of modern ephemeral ports */
+    631,      /* IPP - printing protocol for Linux */
+    123,      /* NTP network time protocol */
+    1434,     /* MS-SQL server*/
+    520,      /* RIP - routers use this protocol sometimes */
+    7,        /* Echo */
+    111,      /* SunRPC portmapper */
+    2049,     /* SunRPC NFS */
+    5683,     /* COAP */
+    11211,    /* memcached */
+    1701,     /* L2TP */
+    27960,    /* quaked amplifier */
+    1645,     /* RADIUS */
+    1812,     /* RADIUS */
+    1646,     /* RADIUS */
+    1813,     /* RADIUS */
+    3343,     /* Microsoft Cluster Services */
+    2535,     /* MADCAP rfc2730 TODO FIXME */
     
 };
 
 static const unsigned short top_tcp_ports[] = {
-    80, 443, 8080,   /* also web */
-    21, 990,     /* FTP, oldie but goodie */
-    22,     /* SSH, so much infrastructure */
-    23, 992,     /* Telnet, oldie but still around*/
-    24,     /* people put things here instead of TelnetSSH*/
+    80, 443, 8080,          /* also web */
+    21, 990,                /* FTP, oldie but goodie */
+    22,                     /* SSH, so much infrastructure */
+    23, 992,                /* Telnet, oldie but still around*/
+    24,                     /* people put things here instead of TelnetSSH*/
     25, 465, 587, 2525,     /* SMTP email*/
-    5800, 5900, 5901, /* VNC */
-    111,    /* SunRPC */
-    139, 445, /* Microsoft Windows networking */
-    135,    /* DCEPRC, more Microsoft Windows */
-    3389,   /* Microsoft Windows RDP */
-    88,     /* Kerberos, also Microsoft windows */
-    389, 636,    /* LDAP and MS Win */
-    1433,   /* MS SQL */
-    53,     /* DNS */
-    2083, 2096,   /* cPanel */
-    9050,   /* ToR */
-    8140,   /* Puppet */
-    11211,  /* memcached */
-    1098, 1099, /* Java RMI */
-    6000, 6001, /* XWindows */
-    5060, 5061, /* SIP - session initiation protocool */
-    554,    /* RTSP */
-    548,    /* AFP */
+    5800, 5900, 5901,       /* VNC */
+    111,                    /* SunRPC */
+    139, 445,               /* Microsoft Windows networking */
+    135,                    /* DCEPRC, more Microsoft Windows */
+    3389,                   /* Microsoft Windows RDP */
+    88,                     /* Kerberos, also Microsoft windows */
+    389, 636,               /* LDAP and MS Win */
+    1433,                   /* MS SQL */
+    53,                     /* DNS */
+    2083, 2096,             /* cPanel */
+    9050,                   /* ToR */
+    8140,                   /* Puppet */
+    11211,                  /* memcached */
+    1098, 1099,             /* Java RMI */
+    6000, 6001,             /* XWindows */
+    5060, 5061,             /* SIP - session initiation protocool */
+    554,                    /* RTSP */
+    548,                    /* AFP */
     
 
     1,3,4,6,7,9,13,17,19,20,26,30,32,33,37,42,43,49,70,
@@ -1487,12 +1487,6 @@ fail:
     return CONF_ERR;
 }
 
-/* Specifies a 'libpcap' file where the received packets will be written.
- * This is useful while debugging so that we can see what exactly is
- * going on. It's also an alternate mode for getting output from this
- * program. Instead of relying upon this program's determination of what
- * ports are open or closed, you can instead simply parse this capture
- * file yourself and make your own determination */
 static int SET_pcap_filename(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
@@ -1507,11 +1501,6 @@ static int SET_pcap_filename(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-/* Specifies a 'libpcap' file from which to read packet-payloads. The payloads found
- * in this file will serve as the template for spewing out custom packets. There are
- * other options that can set payloads as well, like "--nmap-payloads" for reading
- * their custom payload file, as well as the various "hello" options for specifying
- * the string sent to the server once a TCP connection has been established. */
 static int SET_pcap_payloads(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
@@ -2739,9 +2728,6 @@ struct ConfigParameter config_parameters[] = {
 };
 
 /***************************************************************************
- * Called either from the "command-line" parser when it sees a --param,
- * or from the "config-file" parser for normal options.
- * 
  * Exit process if CONF_ERR happens.
  ***************************************************************************/
 void

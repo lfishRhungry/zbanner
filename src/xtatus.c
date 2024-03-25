@@ -7,11 +7,6 @@
 #include <stdio.h>
 
 
-/***************************************************************************
- * Print a xtatus message about once-per-second to the command-line. This
- * algorithm is a little funky because checking the timestamp on EVERY
- * packet is slow.
- ***************************************************************************/
 void
 xtatus_print(
     struct Xtatus *xtatus,
@@ -38,11 +33,6 @@ xtatus_print(
     double kpps = pps / 1000;
     const char *fmt;
 
-    /* Support for --json-status; does not impact legacy/default output */
-    
-    /**
-     * {"state":"*","rate":{"kpps":24.99,"pps":24985.49,"synps": 27763,"ackps":4,"tcbps":4},"tcb": 33,"syn":246648}
-     */
     const char* json_fmt_infinite =
     "{"
         "\"state\":\"*\","
@@ -58,9 +48,6 @@ xtatus_print(
         "\"tcb\":%" PRIu64
     "}\n";
     
-    /**
-     * {"state":"waiting","rate":{"kpps":0.00,"pps":0.00},"progress":{"percent":21.87,"seconds":4,"found":56,"syn":{"sent": 341436,"total":1561528,"remaining":1220092}}}
-     */
     const char *json_fmt_waiting = 
     "{"
         "\"state\":\"waiting\","
@@ -86,10 +73,6 @@ xtatus_print(
         "}"
     "}\n";
 
-    /**
-     * {"state":"running","rate":{"kpps":24.92,"pps":24923.07},"progress":{"percent":9.77,"eta":{
-     *      "hours":0,"mins":0,"seconds":55},"syn":{"sent": 152510,"total": 1561528,"remaining": 1409018},"found": 27}}
-     */
     const char *json_fmt_running = 
     "{"
         "\"state\":\"running\","
