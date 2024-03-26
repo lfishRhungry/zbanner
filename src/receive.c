@@ -212,10 +212,10 @@ void receive_thread(void *v) {
     /**
      * init dispatch and handle threads
     */
-    dispatch_q = rte_ring_create(RECV_QUEUE_COUNT,
+    dispatch_q = rte_ring_create(xconf->dispatch_buf_count,
         RING_F_SP_ENQ|RING_F_SC_DEQ);
     for (unsigned i=0; i<handler_num; i++) {
-        handle_q[i] = rte_ring_create(RECV_QUEUE_COUNT,
+        handle_q[i] = rte_ring_create(xconf->dispatch_buf_count,
             RING_F_SP_ENQ|RING_F_SC_DEQ);
     }
 

@@ -586,8 +586,8 @@ static int SET_dedup_win(void *conf, const char *name, const char *value)
        return 0;
     }
 
-    if (parseInt(value)<=0) {
-        fprintf(stderr, "FAIL: %s: dedup-win must > 0.\n", name);
+    if (parseInt(value)<1024) {
+        fprintf(stderr, "FAIL: %s: dedup-win must >= 1024.\n", name);
         return CONF_ERR;
     }
 
@@ -608,8 +608,8 @@ static int SET_stack_buf_count(void *conf, const char *name, const char *value)
     }
 
     uint64_t v = parseInt(value);
-    if (v<=0) {
-        fprintf(stderr, "FAIL: %s: stack-buf-count must > 0.\n", value);
+    if (v<2048) {
+        fprintf(stderr, "FAIL: %s: stack-buf-count must >= 2048.\n", value);
         return CONF_ERR;
     } else if (!is_power_of_two(v)) {
         fprintf(stderr, "FAIL: %s: stack-buf-count must be power of 2.\n", value);
@@ -620,6 +620,34 @@ static int SET_stack_buf_count(void *conf, const char *name, const char *value)
     }
 
     xconf->stack_buf_count = v;
+
+    return CONF_OK;
+}
+
+static int SET_dispatch_buf_count(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    UNUSEDPARM(name);
+    if (xconf->echo) {
+        if (xconf->dispatch_buf_count!=16384 || xconf->echo_all) {
+            fprintf(xconf->echo, "dispatch-buf-count = %u\n", xconf->dispatch_buf_count);
+        }
+       return 0;
+    }
+
+    uint64_t v = parseInt(value);
+    if (v<2048) {
+        fprintf(stderr, "FAIL: %s: dispatch-buf-count must >= 2048.\n", value);
+        return CONF_ERR;
+    } else if (!is_power_of_two(v)) {
+        fprintf(stderr, "FAIL: %s: dispatch-buf-count must be power of 2.\n", value);
+        return CONF_ERR;
+    } else if (v>RTE_RING_SZ_MASK) {
+        fprintf(stderr, "FAIL: %s: dispatch-buf-count exceeded size limit.\n", value);
+        return CONF_ERR;
+    }
+
+    xconf->dispatch_buf_count = v;
 
     return CONF_OK;
 }
@@ -2610,9 +2638,19 @@ struct ConfigParameter config_parameters[] = {
         "stack-buf-count",
         SET_stack_buf_count,
         F_NUMABLE,
-        {"queue-buf-count", "packet-buf-count", 0},
+        {"tx-buf-count", 0},
         "Set the buffer size of packets queue(stack) from receive thread to transmit "
-        "thread. The value of packets queue must be power of 2."
+        "thread.\n"
+        "The value of packets queue must be power of 2. (Default 16384)"
+    },
+    {
+        "dispatch-buf-count",
+        SET_dispatch_buf_count,
+        F_NUMABLE,
+        {"rx-buf-count", 0},
+        "Set the buffer size of dispatch queue from receive thread to receive "
+        "handler threads.\n"
+        "The value of packets queue must be power of 2. (Default 16384)"
     },
     {
         "pfring",

@@ -518,16 +518,17 @@ int main(int argc, char *argv[]) {
 
     /* 14 rounds seem to give way better statistical distribution than 4 with a
     very low impact on scan rate */
-    xconf->blackrock_rounds          = 14;
-    xconf->tx_thread_count           = 1;
-    xconf->rx_handler_count          = 1;
-    xconf->stack_buf_count           = 16384;
-    xconf->max_rate                  = 100.0;
-    xconf->dedup_win                 = 1000000;
-    xconf->shard.one                 = 1;
-    xconf->shard.of                  = 1;
-    xconf->ft_spec                   = 5;
-    xconf->wait                      = 10;
+    xconf->blackrock_rounds                 = 14;
+    xconf->tx_thread_count                  = 1;
+    xconf->rx_handler_count                 = 1;
+    xconf->stack_buf_count                  = 16384;
+    xconf->dispatch_buf_count               = 16384;
+    xconf->max_rate                         = 100.0;
+    xconf->dedup_win                        = 1000000;
+    xconf->shard.one                        = 1;
+    xconf->shard.of                         = 1;
+    xconf->ft_spec                          = 5;
+    xconf->wait                             = 10;
 
     /*
      * Read in the configuration from the command-line. We are looking for

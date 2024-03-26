@@ -154,6 +154,7 @@ struct Xconf
     unsigned wait;                  /*default 10 seconds*/
     unsigned dedup_win;             /*windows size of dedup table*/
     unsigned blackrock_rounds;
+    unsigned dispatch_buf_count;    /* dispacth queue size in recv*/
     uint64_t tcb_count;             /*tcb count for tcp state scan*/
     unsigned tcp_init_window;       /*window of the first syn or syn-ack packet*/
     unsigned tcp_window;            /*window of other packets*/
