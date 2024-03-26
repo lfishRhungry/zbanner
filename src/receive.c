@@ -9,6 +9,7 @@
 #include "globals.h"
 #include "xconf.h"
 #include "cookie.h"
+#include "version.h"
 
 #include "output/output.h"
 
@@ -34,16 +35,19 @@
 #define RECV_QUEUE_COUNT 65536
 
 struct RxDispatch {
-    uint64_t entropy;
-    struct rte_ring  *dispatch_queue;
-    struct rte_ring **handle_queue;
-    unsigned recv_handle_num;
-    unsigned recv_handle_mask;
+    struct rte_ring      *dispatch_queue;
+    struct rte_ring     **handle_queue;
+    unsigned              recv_handle_num;
+    unsigned              recv_handle_mask;
+    uint64_t              entropy;
 };
 
 static void
 dispatch_thread(void *v)
 {
+    LOG(LEVEL_WARNING, "[+] starting dispatch thread\n");
+    pixie_set_thread_name(XTATE_NAME" dispatch thread");
+
     struct RxDispatch *parms = v;
     while (!is_rx_done) {
         int err = 1;
@@ -78,23 +82,31 @@ dispatch_thread(void *v)
             }
         }
     }
+
+    LOG(LEVEL_WARNING, "[+] exiting dispatch thread\n");
 }
 
 struct RxHandle {
-    struct ScanModule *scan_module;
-    struct rte_ring *handle_queue;
-    struct FHandler *ft_handler;
-    struct stack_t  *stack;
-    struct Output   *out;
-
-    uint64_t entropy;
-    unsigned index;
+    struct ScanModule    *scan_module;
+    struct rte_ring      *handle_queue;
+    struct FHandler      *ft_handler;
+    struct stack_t       *stack;
+    struct Output        *out;
+    uint64_t              entropy;
+    unsigned              index;
 };
 
 static void
 handle_thread(void *v)
 {
     struct RxHandle *parms = v;
+
+    LOG(LEVEL_WARNING, "[+] starting handle thread #%u\n", parms->index);
+
+    char th_name[30];
+    snprintf(th_name, sizeof(th_name), XTATE_NAME" handler #%u", parms->index);
+    pixie_set_thread_name(th_name);
+
     while (!is_rx_done) {
         int err = 1;
 
@@ -127,6 +139,9 @@ handle_thread(void *v)
         free(recved->packet);
         free(recved);
     }
+
+    LOG(LEVEL_WARNING, "[+] exiting handle thread #%u                    \n",
+        parms->index);
 }
 
 
@@ -151,19 +166,21 @@ void receive_thread(void *v) {
     struct FHandler                ft_handler;
 
     /* some status variables */
-    uint64_t *status_successed_count = MALLOC(sizeof(uint64_t));
-    uint64_t *status_failed_count    = MALLOC(sizeof(uint64_t));
-    uint64_t *status_timeout_count   = MALLOC(sizeof(uint64_t));
-    *status_successed_count          = 0;
-    *status_failed_count             = 0;
-    *status_timeout_count            = 0;
-    parms->total_successed           = status_successed_count;
-    parms->total_failed              = status_failed_count;
-    parms->total_tm_event            = status_timeout_count;
-    output->total_successed          = status_successed_count; /*update in output*/
-    output->total_failed             = status_failed_count;    /*update in output*/
+    uint64_t *status_successed_count        = MALLOC(sizeof(uint64_t));
+    uint64_t *status_failed_count           = MALLOC(sizeof(uint64_t));
+    uint64_t *status_timeout_count          = MALLOC(sizeof(uint64_t));
+    *status_successed_count                 = 0;
+    *status_failed_count                    = 0;
+    *status_timeout_count                   = 0;
+    parms->total_successed                  = status_successed_count;
+    parms->total_failed                     = status_failed_count;
+    parms->total_tm_event                   = status_timeout_count;
+    output->total_successed                 = status_successed_count; /*update in output*/
+    output->total_failed                    = status_failed_count;    /*update in output*/
 
     LOG(LEVEL_WARNING, "[+] starting receive thread\n");
+
+    pixie_set_thread_name(XTATE_NAME" receive");
 
     if (xconf->is_offline) {
         while (!is_rx_done)
@@ -202,23 +219,23 @@ void receive_thread(void *v) {
             RING_F_SP_ENQ|RING_F_SC_DEQ);
     }
 
-    dispatch_parms.entropy = entropy;
-    dispatch_parms.dispatch_queue = dispatch_q;
-    dispatch_parms.handle_queue = handle_q;
-    dispatch_parms.recv_handle_num = handler_num;
-    dispatch_parms.recv_handle_mask = handler_num-1;
+    dispatch_parms.entropy               = entropy;
+    dispatch_parms.handle_queue          = handle_q;
+    dispatch_parms.dispatch_queue        = dispatch_q;
+    dispatch_parms.recv_handle_num       = handler_num;
+    dispatch_parms.recv_handle_mask      = handler_num-1;
 
     dispatcher = pixie_begin_thread(dispatch_thread, 0, &dispatch_parms);
 
 
     for (unsigned i=0; i<handler_num; i++) {
-        handle_parms[i].scan_module = xconf->scan_module;
-        handle_parms[i].handle_queue = handle_q[i];
-        handle_parms[i].ft_handler = xconf->is_fast_timeout?&ft_handler:NULL;
-        handle_parms[i].stack = stack;
-        handle_parms[i].out = output;
-        handle_parms[i].entropy = entropy;
-        handle_parms[i].index = i;
+        handle_parms[i].scan_module     = xconf->scan_module;
+        handle_parms[i].handle_queue    = handle_q[i];
+        handle_parms[i].ft_handler      = xconf->is_fast_timeout?&ft_handler:NULL;
+        handle_parms[i].stack           = stack;
+        handle_parms[i].out             = output;
+        handle_parms[i].entropy         = entropy;
+        handle_parms[i].index           = i;
 
         handler[i] = pixie_begin_thread(handle_thread, 0, &handle_parms[i]);
     }

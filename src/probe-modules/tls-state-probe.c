@@ -772,7 +772,7 @@ tlsstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
         }
 
         SSL_free(tls_state->ssl);
-        tls_state->ssl = NULL;
+        tls_state->ssl  = NULL;
         tls_state->rbio = NULL;
         tls_state->wbio = NULL;
     }
@@ -845,9 +845,9 @@ tlsstate_make_hello(
     datapass_set_data(pass, tls_state->data, offset, 1);
     return;
 error1:
-    pass->payload = NULL;
-    pass->len     = 0;
-    pass->is_close   = 1;
+    pass->payload  = NULL;
+    pass->len      = 0;
+    pass->is_close = 1;
     return;
 }
 
@@ -1181,9 +1181,9 @@ tlsstate_parse_response(
             break;
 
         case TLS_STATE_CLOSE:
-            pass->is_close   = 1;
-            pass->payload = NULL;
-            pass->len     = 0;
+            pass->is_close = 1;
+            pass->len      = 0;
+            pass->payload  = NULL;
             return;
         }
     }

@@ -8,6 +8,7 @@
 #include "cookie.h"
 #include "globals.h"
 #include "xconf.h"
+#include "version.h"
 
 #include "massip/massip-parse.h"
 
@@ -30,24 +31,29 @@
 
 void transmit_thread(void *v)
 {
-    struct TxThread *parms            = (struct TxThread *)v;
-    const struct Xconf *xconf         = parms->xconf;
-    uint64_t rate                     = (uint64_t)xconf->max_rate;
-    uint64_t count_ipv4               = rangelist_count(&xconf->targets.ipv4);
-    uint64_t count_ipv6               = range6list_count(&xconf->targets.ipv6).lo;
-    struct Throttler *throttler       = parms->throttler;
-    struct Adapter *adapter           = xconf->nic.adapter;
-    uint64_t packets_sent             = 0;
-    unsigned increment                = xconf->shard.of * xconf->tx_thread_count;
-    uint64_t seed                     = xconf->seed;
-    uint64_t repeats                  = 0; /* --infinite repeats */
-    uint64_t entropy                  = xconf->seed;
-    struct ScanTimeoutEvent *tm_event = NULL;
-    struct FHandler ft_handler;
+    struct TxThread             *parms                    = (struct TxThread *)v;
+    const struct Xconf          *xconf                    = parms->xconf;
+    uint64_t                     rate                     = (uint64_t)xconf->max_rate;
+    uint64_t                     count_ipv4               = rangelist_count(&xconf->targets.ipv4);
+    uint64_t                     count_ipv6               = range6list_count(&xconf->targets.ipv6).lo;
+    struct Throttler            *throttler                = parms->throttler;
+    struct Adapter              *adapter                  = xconf->nic.adapter;
+    uint64_t                     packets_sent             = 0;
+    unsigned                     increment                = xconf->shard.of * xconf->tx_thread_count;
+    uint64_t                     seed                     = xconf->seed;
+    uint64_t                     repeats                  = 0; /* --infinite repeats */
+    uint64_t                     entropy                  = xconf->seed;
+    struct ScanTimeoutEvent     *tm_event                 = NULL;
+    struct FHandler              ft_handler;
+    uint64_t                    *status_sent_count;
 
     /* Wait to make sure receive_thread is ready */
     pixie_usleep(1000000);
     LOG(LEVEL_WARNING, "[+] starting transmit thread #%u\n", parms->tx_index);
+
+    char th_name[30];
+    snprintf(th_name, sizeof(th_name), XTATE_NAME" transmit #%u", parms->tx_index);
+    pixie_set_thread_name(th_name);
 
     /* Lock threads to the CPUs one by one.
      * Tx threads follow  the only one Rx thread.
@@ -61,10 +67,9 @@ void transmit_thread(void *v)
             pixie_cpu_set_affinity(cpu);
     }
 
-    uint64_t *status_sent_count;
-    status_sent_count  = MALLOC(sizeof(uint64_t));
-    *status_sent_count = 0;
-    parms->total_sent  = status_sent_count;
+    status_sent_count      = MALLOC(sizeof(uint64_t));
+    *status_sent_count     = 0;
+    parms->total_sent      = status_sent_count;
 
     /* Normally, we have just one source address. In special cases, though
      * we can have multiple. */
