@@ -155,6 +155,7 @@ void receive_thread(void *v) {
     struct PcapFile               *pcapfile                    = NULL;
     uint64_t                       entropy                     = xconf->seed;
     struct stack_t                *stack                       = xconf->stack;
+    struct ScanModule             *scan_module                 = xconf->scan_module;
     struct ScanTimeoutEvent       *tm_event                    = NULL;
     unsigned                       handler_num                 = xconf->rx_handler_count;
     struct RxHandle                handle_parms[handler_num];
@@ -164,6 +165,7 @@ void receive_thread(void *v) {
     size_t                         dispatcher;
     struct rte_ring               *dispatch_q;
     struct FHandler                ft_handler;
+    struct Received               *recved;
 
     /* some status variables */
     uint64_t *status_successed_count        = MALLOC(sizeof(uint64_t));
@@ -243,8 +245,6 @@ void receive_thread(void *v) {
     LOG(LEVEL_INFO, "[+] THREAD: recv: starting main loop\n");
     while (!is_rx_done) {
 
-        struct ScanModule *scan_module = xconf->scan_module;
-
         /*handle a fast-timeout event in each loop*/
         if (xconf->is_fast_timeout) {
 
@@ -299,12 +299,12 @@ void receive_thread(void *v) {
          * recved will not be handle in this thread.
          * and packet received from Adapters cannot exist too long.
         */
-        struct Received *recved = CALLOC(1, sizeof(struct Received));
-        recved->packet = MALLOC(pkt_len);
+        recved                = CALLOC(1, sizeof(struct Received));
+        recved->packet        = MALLOC(pkt_len);
+        recved->length        = pkt_len;
+        recved->secs          = pkt_secs;
+        recved->usecs         = pkt_usecs;
         memcpy(recved->packet, pkt_data, pkt_len);
-        recved->length = pkt_len;
-        recved->secs = pkt_secs;
-        recved->usecs = pkt_usecs;
 
         unsigned x = preprocess_frame(recved->packet, recved->length, data_link,
                                       &recved->parsed);
