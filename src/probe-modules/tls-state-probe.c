@@ -1181,7 +1181,6 @@ tlsstate_parse_response(
             break;
 
         case TLS_STATE_CLOSE:
-            printf("ssl close-------------------\n");
             pass->is_close   = 1;
             pass->payload = NULL;
             pass->len     = 0;
