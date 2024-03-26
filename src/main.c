@@ -86,17 +86,17 @@ static void control_c_handler(int x) {
 
 static int main_scan(struct Xconf *xconf) {
     /*We could have many tx threads but one rx thread*/
-    struct TxThread *tx_thread;
-    struct RxThread rx_thread[1];
-    struct TemplateSet tmplset;
-    struct FTable ft_table;
-    uint64_t count_ips;
-    uint64_t count_ports;
-    uint64_t range;
-    unsigned index;
-    struct Xtatus status;
-    uint64_t min_index = UINT64_MAX;
-    time_t now = time(0);
+    struct TxThread      *tx_thread;
+    struct RxThread       rx_thread[1];
+    struct TemplateSet    tmplset;
+    struct FTable         ft_table;
+    struct Xtatus         status;
+    uint64_t              count_ips;
+    uint64_t              count_ports;
+    uint64_t              range;
+    unsigned              index;
+    uint64_t              min_index             = UINT64_MAX;
+    time_t                now                   = time(0);
 
     memset(rx_thread, 0, sizeof(struct RxThread));
     tx_thread = CALLOC(xconf->tx_thread_count, sizeof(struct TxThread));
@@ -151,7 +151,7 @@ static int main_scan(struct Xconf *xconf) {
     if (xconf->nic.src.port.range == 0) {
         unsigned port = 40000 + now % 20000;
         xconf->nic.src.port.first = port;
-        xconf->nic.src.port.last = port + 16;
+        xconf->nic.src.port.last  = port + 16;
         xconf->nic.src.port.range = 16;
     }
 
@@ -275,19 +275,19 @@ static int main_scan(struct Xconf *xconf) {
      * Prepare for tx threads
      */
     for (index = 0; index < xconf->tx_thread_count; index++) {
-        struct TxThread *parms = &tx_thread[index];
-        parms->xconf = xconf;
-        parms->tx_index = index;
-        parms->my_index = xconf->resume.index;
-        parms->done_transmitting = 0;
-        parms->thread_handle_xmit = 0;
+        struct TxThread *parms          = &tx_thread[index];
+        parms->xconf                    = xconf;
+        parms->tx_index                 = index;
+        parms->my_index                 = xconf->resume.index;
+        parms->done_transmitting        = 0;
+        parms->thread_handle_xmit       = 0;
     }
     /*
      * Prepare for rx threads
      */
-    rx_thread->xconf = xconf;
-    rx_thread->done_receiving = 0;
-    rx_thread->thread_handle_recv = 0;
+    rx_thread->xconf                    = xconf;
+    rx_thread->done_receiving           = 0;
+    rx_thread->thread_handle_recv       = 0;
     /** needed for --packet-trace option so that we know when we started
      * the scan
      */
@@ -319,7 +319,7 @@ static int main_scan(struct Xconf *xconf) {
     rx_thread->thread_handle_recv =
         pixie_begin_thread(receive_thread, 0, rx_thread);
     for (index = 0; index < xconf->tx_thread_count; index++) {
-        struct TxThread *parms = &tx_thread[index];
+        struct TxThread *parms    = &tx_thread[index];
         parms->thread_handle_xmit = pixie_begin_thread(transmit_thread, 0, parms);
     }
 
@@ -327,9 +327,9 @@ static int main_scan(struct Xconf *xconf) {
      * set status outputing
     */
     xtatus_start(&status);
-    status.print_tcb      = xconf->scan_module->required_probe_type==ProbeType_STATE;
-    status.print_ft_event = xconf->is_fast_timeout;
-    status.is_infinite    = xconf->is_infinite;
+    status.print_tcb         = xconf->scan_module->required_probe_type==ProbeType_STATE;
+    status.print_ft_event    = xconf->is_fast_timeout;
+    status.is_infinite       = xconf->is_infinite;
 
     /*
      * Now wait for <ctrl-c> to be pressed OR for Tx Threads to exit.
@@ -340,12 +340,12 @@ static int main_scan(struct Xconf *xconf) {
     pixie_usleep(1000 * 100);
     LOG(LEVEL_WARNING, "[+] waiting for threads to finish\n");
     while (!is_tx_done) {
-        unsigned i;
-        double rate = 0;
-        uint64_t total_successed = 0;
-        uint64_t total_failed = 0;
-        uint64_t total_tm_event = 0;
-        uint64_t total_sent = 0;
+        unsigned       i;
+        double         rate                      = 0;
+        uint64_t       total_successed           = 0;
+        uint64_t       total_failed              = 0;
+        uint64_t       total_tm_event            = 0;
+        uint64_t       total_sent                = 0;
 
         /* Find the minimum index of all the threads */
         min_index = UINT64_MAX;
@@ -404,12 +404,12 @@ static int main_scan(struct Xconf *xconf) {
      */
     now = time(0);
     for (;;) {
-        unsigned i;
-        double rate = 0;
-        uint64_t total_successed = 0;
-        uint64_t total_failed = 0;
-        uint64_t total_tm_event = 0;
-        uint64_t total_sent = 0;
+        unsigned      i;
+        double        rate                        = 0;
+        uint64_t      total_successed             = 0;
+        uint64_t      total_failed                = 0;
+        uint64_t      total_tm_event              = 0;
+        uint64_t      total_sent                  = 0;
 
         /* Find the minimum index of all the threads */
         min_index = UINT64_MAX;
@@ -489,8 +489,8 @@ static int main_scan(struct Xconf *xconf) {
 int main(int argc, char *argv[]) {
     struct Xconf xconf[1];
     int has_target_addresses = 0;
-    int has_target_ports = 0;
-    usec_start = pixie_gettime();
+    int has_target_ports     = 0;
+    usec_start               = pixie_gettime();
 #if defined(WIN32)
   {
     WSADATA x;
