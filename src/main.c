@@ -314,7 +314,7 @@ static int main_scan(struct Xconf *xconf) {
         (unsigned)count_ports, (count_ports == 1) ? "" : "s");
 
     /*
-     * Start all the threads
+     * Start tx & rx threads
      */
     rx_thread->thread_handle_recv =
         pixie_begin_thread(receive_thread, 0, rx_thread);
@@ -342,6 +342,8 @@ static int main_scan(struct Xconf *xconf) {
     while (!is_tx_done) {
         unsigned       i;
         double         rate                      = 0;
+        double         tx_queue_ratio            = 0;
+        double         rx_queue_ratio            = 0;
         uint64_t       total_successed           = 0;
         uint64_t       total_failed              = 0;
         uint64_t       total_tm_event            = 0;
@@ -369,6 +371,21 @@ static int main_scan(struct Xconf *xconf) {
 
         if (rx_thread->total_tm_event)
             total_tm_event = *rx_thread->total_tm_event;
+        
+        if (rx_thread->handle_q && rx_thread->dispatch_q) {
+            double rx_free_entries = rte_ring_free_count(rx_thread->dispatch_q);
+            for (unsigned i=0; i<xconf->rx_handler_count; i++) {
+                rx_free_entries += rte_ring_free_count(rx_thread->handle_q[i]);
+            }
+            rx_queue_ratio =
+                1.0 - rx_free_entries/
+                (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count+1));
+        }
+
+        if (xconf->stack->transmit_queue) {
+            double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
+            tx_queue_ratio = 1.0 - tx_free_entries/(double)xconf->stack_buf_count;
+        }
 
         if (min_index >= range && !xconf->is_infinite) {
             /* Note: This is how we can tell the scan has ended */
@@ -379,8 +396,20 @@ static int main_scan(struct Xconf *xconf) {
          * update screen about once per second with statistics,
          * namely packets/second.
          */
-        xtatus_print(&status, min_index, range, rate, total_successed, total_failed,
-            total_sent, total_tm_event, xconf->tcb_count, 0, xconf->is_status_ndjson);
+        xtatus_print(
+            &status,
+            min_index,
+            range,
+            rate,
+            tx_queue_ratio,
+            rx_queue_ratio,
+            total_successed,
+            total_failed,
+            total_sent,
+            total_tm_event,
+            xconf->tcb_count,
+            0,
+            xconf->is_status_ndjson);
 
         /* Sleep for almost a second */
         pixie_mssleep(500);
@@ -406,6 +435,8 @@ static int main_scan(struct Xconf *xconf) {
     for (;;) {
         unsigned      i;
         double        rate                        = 0;
+        double        tx_queue_ratio              = 0;
+        double        rx_queue_ratio              = 0;
         uint64_t      total_successed             = 0;
         uint64_t      total_failed                = 0;
         uint64_t      total_tm_event              = 0;
@@ -433,9 +464,35 @@ static int main_scan(struct Xconf *xconf) {
 
         if (rx_thread->total_tm_event)
             total_tm_event = *rx_thread->total_tm_event;
+        
+        if (rx_thread->handle_q && rx_thread->dispatch_q) {
+            double rx_free_entries = rte_ring_free_count(rx_thread->dispatch_q);
+            for (unsigned i=0; i<xconf->rx_handler_count; i++) {
+                rx_free_entries += rte_ring_free_count(rx_thread->handle_q[i]);
+            }
+            rx_queue_ratio =
+                1.0 - rx_free_entries/
+                (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count+1));
+        }
 
-        xtatus_print(&status, min_index, range, rate, total_successed, total_failed,
-            total_sent, total_tm_event, xconf->tcb_count, xconf->wait - (time(0) - now),
+        if (xconf->stack->transmit_queue) {
+            double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
+            tx_queue_ratio = 1.0 - tx_free_entries/(double)xconf->stack_buf_count;
+        }
+
+        xtatus_print(
+            &status,
+            min_index,
+            range,
+            rate,
+            tx_queue_ratio,
+            rx_queue_ratio,
+            total_successed,
+            total_failed,
+            total_sent,
+            total_tm_event,
+            xconf->tcb_count,
+            xconf->wait - (time(0) - now),
             xconf->is_status_ndjson);
 
         if (time(0) - now >= xconf->wait /*no more waiting time*/

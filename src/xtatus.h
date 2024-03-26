@@ -29,6 +29,8 @@ void xtatus_print(
     uint64_t       count,
     uint64_t       max_count,
     double         pps,
+    double         tx_q_ratio,
+    double         rx_q_ratio,
     uint64_t       total_successed,
     uint64_t       total_failed,
     uint64_t       total_sent,

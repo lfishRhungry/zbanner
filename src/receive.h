@@ -22,6 +22,10 @@ struct RxThread {
 
     uint64_t *total_tm_event; /*unhandled fast-timeout event*/
 
+    struct rte_ring **handle_q;
+
+    struct rte_ring  *dispatch_q;
+
     size_t thread_handle_recv;
 };
 

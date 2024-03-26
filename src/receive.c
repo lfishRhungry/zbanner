@@ -170,12 +170,15 @@ void receive_thread(void *v) {
     uint64_t *status_successed_count        = MALLOC(sizeof(uint64_t));
     uint64_t *status_failed_count           = MALLOC(sizeof(uint64_t));
     uint64_t *status_timeout_count          = MALLOC(sizeof(uint64_t));
+
     *status_successed_count                 = 0;
     *status_failed_count                    = 0;
     *status_timeout_count                   = 0;
+
     parms->total_successed                  = status_successed_count;
     parms->total_failed                     = status_failed_count;
     parms->total_tm_event                   = status_timeout_count;
+
     output->total_successed                 = status_successed_count; /*update in output*/
     output->total_failed                    = status_failed_count;    /*update in output*/
 
@@ -219,6 +222,9 @@ void receive_thread(void *v) {
         handle_q[i] = rte_ring_create(xconf->dispatch_buf_count,
             RING_F_SP_ENQ|RING_F_SC_DEQ);
     }
+
+    parms->dispatch_q                       = dispatch_q;
+    parms->handle_q                         = handle_q;
 
     dispatch_parms.entropy               = entropy;
     dispatch_parms.handle_queue          = handle_q;
