@@ -10,28 +10,28 @@
 void
 xtatus_print(
     struct Xtatus *xtatus,
-    uint64_t count,
-    uint64_t max_count,
-    double pps,
-    uint64_t total_successed,
-    uint64_t total_failed,
-    uint64_t total_sent,
-    uint64_t total_tm_event,
-    uint64_t total_tcb,
-    uint64_t exiting,
-    bool json_status)
+    uint64_t       count,
+    uint64_t       max_count,
+    double         pps,
+    uint64_t       total_successed,
+    uint64_t       total_failed,
+    uint64_t       total_sent,
+    uint64_t       total_tm_event,
+    uint64_t       total_tcb,
+    uint64_t       exiting,
+    bool           json_status)
 {
-    double elapsed_time;
-    double rate;
-    double now;
-    double percent_done;
-    double time_remaining;
-    uint64_t current_successed = 0;
-    uint64_t current_sent = 0;
-    double successed_rate = 0.0;
-    double sent_rate = 0.0;
-    double kpps = pps / 1000;
-    const char *fmt;
+    const char         *fmt;
+    double              elapsed_time;
+    double              rate;
+    double              now;
+    double              percent_done;
+    double              time_remaining;
+    uint64_t            current_successed     = 0;
+    uint64_t            current_sent          = 0;
+    double              successed_rate        = 0.0;
+    double              sent_rate             = 0.0;
+    double              kpps                  = pps / 1000;
 
     const char* json_fmt_infinite =
     "{"
@@ -166,14 +166,14 @@ xtatus_print(
      * some other stats
      */
     if (total_successed) {
-        current_successed = total_successed - xtatus->total_successed;
+        current_successed       = total_successed - xtatus->total_successed;
         xtatus->total_successed = total_successed;
-        successed_rate = (1.0*current_successed)/elapsed_time;
+        successed_rate          = (1.0*current_successed)/elapsed_time;
     }
     if (total_sent) {
-        current_sent = total_sent - xtatus->total_sent;
-        xtatus->total_sent = total_sent;
-        sent_rate = (1.0*current_sent)/elapsed_time;
+        current_sent            = total_sent - xtatus->total_sent;
+        xtatus->total_sent      = total_sent;
+        sent_rate               = (1.0*current_sent)/elapsed_time;
     }
 
     /*
@@ -330,8 +330,7 @@ void
 xtatus_start(struct Xtatus *xtatus)
 {
     memset(xtatus, 0, sizeof(*xtatus));
-    xtatus->last.clock = clock();
-    xtatus->last.time = time(0);
-    xtatus->last.count = 0;
-    xtatus->timer = 0x1;
+    xtatus->last.clock    = clock();
+    xtatus->last.time     = time(0);
+    xtatus->last.count    = 0;
 }

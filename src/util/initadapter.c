@@ -21,12 +21,12 @@
 int
 initialize_adapter(struct Xconf *xconf)
 {
-    char *ifname;
-    char ifname2[256];
-    unsigned adapter_ip = 0;
-    unsigned is_usable_ipv4 = !massip_has_ipv4_targets(&xconf->targets);
-    unsigned is_usable_ipv6 = !massip_has_ipv6_targets(&xconf->targets);
-    ipaddress_formatted_t fmt;
+    ipaddress_formatted_t    fmt;
+    char                    *ifname;
+    char                     ifname2[256];
+    unsigned                 adapter_ip        = 0;
+    unsigned                 is_usable_ipv4    = !massip_has_ipv4_targets(&xconf->targets);
+    unsigned                 is_usable_ipv6    = !massip_has_ipv6_targets(&xconf->targets);
 
     /*
      * ADAPTER/NETWORK-INTERFACE
@@ -114,10 +114,10 @@ initialize_adapter(struct Xconf *xconf)
     if (massip_has_ipv4_targets(&xconf->targets)) {
         adapter_ip = xconf->nic.src.ipv4.first;
         if (adapter_ip == 0) {
-            adapter_ip = rawsock_get_adapter_ip(ifname);
-            xconf->nic.src.ipv4.first = adapter_ip;
-            xconf->nic.src.ipv4.last = adapter_ip;
-            xconf->nic.src.ipv4.range = 1;
+            adapter_ip                        = rawsock_get_adapter_ip(ifname);
+            xconf->nic.src.ipv4.first         = adapter_ip;
+            xconf->nic.src.ipv4.last          = adapter_ip;
+            xconf->nic.src.ipv4.range         = 1;
         }
         if (adapter_ip == 0) {
             /* We appear to have IPv4 targets, yet we cannot find an adapter
@@ -203,10 +203,10 @@ initialize_adapter(struct Xconf *xconf)
     if (massip_has_ipv6_targets(&xconf->targets)) {
         ipv6address adapter_ipv6 = xconf->nic.src.ipv6.first;
         if (ipv6address_is_zero(adapter_ipv6)) {
-            adapter_ipv6 = rawsock_get_adapter_ipv6(ifname);
-            xconf->nic.src.ipv6.first = adapter_ipv6;
-            xconf->nic.src.ipv6.last = adapter_ipv6;
-            xconf->nic.src.ipv6.range = 1;
+            adapter_ipv6                       = rawsock_get_adapter_ipv6(ifname);
+            xconf->nic.src.ipv6.first          = adapter_ipv6;
+            xconf->nic.src.ipv6.last           = adapter_ipv6;
+            xconf->nic.src.ipv6.range          = 1;
         }
         if (ipv6address_is_zero(adapter_ipv6)) {
             fprintf(stderr, "[-] FAIL: failed to detect IPv6 address of interface \"%s\"\n",
