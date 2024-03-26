@@ -195,7 +195,7 @@ xtatus_print(
                     total_tm_event,
                     total_tcb);
         } else {
-            fmt = "rate:%6.2f-kpps, sent/s=%.0f, successed/s=%.0f" PRIu64;
+            fmt = "rate:%6.2f-kpps, sent/s=%.0f, [+]/s=%.0f" PRIu64;
 
             fprintf(stderr,
                     fmt,
@@ -236,7 +236,7 @@ xtatus_print(
                         max_count,
                         max_count-count);
             } else {
-                fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, successed=%" PRIu64 ", failed=%" PRIu64;
+                fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, [+]=%" PRIu64 ", [x]=%" PRIu64;
 
                 fprintf(stderr,
                         fmt,
@@ -280,7 +280,7 @@ xtatus_print(
                     total_tm_event,
                     total_tcb);
             } else {
-                fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, successed=%" PRIu64 ", failed=%" PRIu64;
+                fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, [+]=%" PRIu64 ", [x]=%" PRIu64;
 
                 fprintf(stderr,
                     fmt,

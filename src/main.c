@@ -383,7 +383,7 @@ static int main_scan(struct Xconf *xconf) {
             total_sent, total_tm_event, xconf->tcb_count, 0, xconf->is_status_ndjson);
 
         /* Sleep for almost a second */
-        pixie_mssleep(750);
+        pixie_mssleep(500);
     }
 
     /*
