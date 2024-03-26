@@ -32,11 +32,10 @@
 
 #include "timeout/fast-timeout.h"
 
-#define RECV_QUEUE_COUNT 65536
 
 struct RxDispatch {
-    struct rte_ring      *dispatch_queue;
     struct rte_ring     **handle_queue;
+    struct rte_ring      *dispatch_queue;
     unsigned              recv_handle_num;
     unsigned              recv_handle_mask;
     uint64_t              entropy;
@@ -400,8 +399,6 @@ void receive_thread(void *v) {
         pcapfile_close(pcapfile);
     if (xconf->is_fast_timeout)
         ft_close_handler(&ft_handler);
-
-    /*TODO: free stack packet buffers */
 
     /* Thread is about to exit */
     parms->done_receiving = 1;
