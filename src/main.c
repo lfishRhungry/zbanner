@@ -135,10 +135,6 @@ static int main_scan(struct Xconf *xconf) {
         exit(1);
     }
 
-#ifdef __AFL_HAVE_MANUAL_CONTROL
-  __AFL_INIT();
-#endif
-
     if (initialize_adapter(xconf) != 0)
         exit(1);
     if (!xconf->nic.is_usable) {
@@ -522,20 +518,16 @@ int main(int argc, char *argv[]) {
 
     /* 14 rounds seem to give way better statistical distribution than 4 with a
     very low impact on scan rate */
-    xconf->blackrock_rounds = 14;
-    xconf->wait = 10;        /* how long to wait for responses when done */
-    xconf->max_rate = 100.0; /* max rate = hundred packets-per-second */
-    xconf->tx_thread_count = 1;
-    xconf->shard.one = 1;
-    xconf->shard.of = 1;
-    xconf->dedup_win = 1000000;
-    xconf->ft_spec = 5;
-    /*default entries count of callback queue and packet buffer queue*/
-    /**
-     * Default entries count of callback queue and packet buffer queue.
-     * Must be power of 2 and do not exceed the size limit of rte-ring.
-     */
-    xconf->stack_buf_count = 16384;
+    xconf->blackrock_rounds          = 14;
+    xconf->tx_thread_count           = 1;
+    xconf->rx_handler_count          = 1;
+    xconf->stack_buf_count           = 16384;
+    xconf->max_rate                  = 100.0;
+    xconf->dedup_win                 = 1000000;
+    xconf->shard.one                 = 1;
+    xconf->shard.of                  = 1;
+    xconf->ft_spec                   = 5;
+    xconf->wait                      = 10;
 
     /*
      * Read in the configuration from the command-line. We are looking for

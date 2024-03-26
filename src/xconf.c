@@ -643,12 +643,36 @@ static int SET_wait(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_thread_count(void *conf, const char *name, const char *value)
+static int SET_rx_handler_count(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    if (xconf->echo) {
+        if (xconf->rx_handler_count!=1 || xconf->echo_all) {
+            fprintf(xconf->echo, "rx-handler-count = %u\n", xconf->rx_handler_count);
+        }
+        return 0;
+    }
+
+    unsigned count = parseInt(value);
+    if (count<=0) {
+        fprintf(stderr, "FAIL: %s: receive handler thread count cannot be zero.\n", name);
+        return CONF_ERR;
+    } else if (!is_power_of_two(count)) {
+        fprintf(stderr, "FAIL: %s: receive handler thread count must be power of 2.\n", value);
+        return CONF_ERR;
+    }
+
+    xconf->rx_handler_count = count;
+
+    return CONF_OK;
+}
+
+static int SET_tx_thread_count(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->tx_thread_count!=1 || xconf->echo_all) {
-            fprintf(xconf->echo, "transmit-thread-count = %u\n", xconf->tx_thread_count);
+            fprintf(xconf->echo, "tx-thread-count = %u\n", xconf->tx_thread_count);
         }
         return 0;
     }
@@ -2074,14 +2098,25 @@ struct ConfigParameter config_parameters[] = {
         "with index 1, so that it doesn't overlap with the first example."
     },
     {
-        "tansmit-thread-count",
-        SET_thread_count,
+        "tx-thread-count",
+        SET_tx_thread_count,
         F_NUMABLE,
         {"tx-count", "tx-num", 0},
         "Specify the number of transmit threads. "XTATE_FIRST_UPPER_NAME" could"
         " has multiple transmit threads but only one receive thread. Every "
         "thread will be lock on a CPU kernel if the number of all threads is no"
         " more than kernel's."
+    },
+    {
+        "rx-handler-count",
+        SET_rx_handler_count,
+        F_NUMABLE,
+        {"rx-count", "rx-num", 0},
+        "Specify the number of receive handler threads. "XTATE_FIRST_UPPER_NAME" could"
+        " has multiple receive handler threads but only one receive thread. Every "
+        "handler thread will be dispatched recv packets by (dst_IP, dst_Port, "
+        "src_IP, src_Port) and executes the `handler_cb` of ScanModule.\n"
+        "The number of receive handler must be the power of 2. (Default 1)"
     },
     {
         "d",

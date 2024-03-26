@@ -89,6 +89,11 @@ struct Xconf
         unsigned one;
         unsigned of;
     } shard;
+
+    struct {
+        char *service_probes_filename;
+        struct NmapServiceProbeList *service_probes;
+    } nmap;
     
     /**
      * Temporary file to echo parameters to, used for saving configuration
@@ -133,20 +138,14 @@ struct Xconf
     struct ScanModule *scan_module;
     char *scan_module_args;
 
-    struct {
-        char *service_probes_filename;
-        struct NmapServiceProbeList *service_probes;
-    } nmap;
-
     /**
-     * Now we could set the number of transmit threads.
-     * NOTE: Always only one receiving thread.
-     * !Actually, more than one rx thread make deduptable invalid.
-     * !And rx thread cost much less than tx thread, one rx could serve many tx well.
-     * TODO: maybe some costy thing(eg. identification) could be done by other
-     * thread instead of rx or tx.
+     * We could set the number of transmit threads.
+     * NOTE: Always only one receiving thread for consistency of dedup, timeout....
+     * But, we have recv-handlers in multi threads to exec handle_cb of ScanModule.
+     * Now we could set the number of recv-handlers in the power of 2.
      */
     unsigned tx_thread_count;
+    unsigned rx_handler_count;
 
     struct Output  output;          /*results outputing*/
     enum Operation op;              /*operation of proc*/

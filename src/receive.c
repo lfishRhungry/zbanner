@@ -33,31 +33,30 @@
 
 #define RECV_QUEUE_COUNT 65536
 
-struct RxRead {
+struct RxDispatch {
     uint64_t entropy;
-    struct rte_ring  *read_queue;
+    struct rte_ring  *dispatch_queue;
     struct rte_ring **handle_queue;
     unsigned recv_handle_num;
     unsigned recv_handle_mask;
 };
 
 static void
-recv_read_thread(void *v)
+dispatch_thread(void *v)
 {
-    struct RxRead *parms = v;
+    struct RxDispatch *parms = v;
     while (!is_rx_done) {
         int err = 1;
         struct Received *recved = NULL;
 
-        err = rte_ring_sc_dequeue(parms->read_queue, (void**)&recved);
+        err = rte_ring_sc_dequeue(parms->dispatch_queue, (void**)&recved);
         if (err != 0) {
-            /* Pause and wait for a buffer to become available */
             pixie_usleep(100);
             continue;
         }
 
         if (recved==NULL) {
-            LOG(LEVEL_ERROR, "FAIL: recv empty from recv read thread. (IMPOSSIBLE)\n");
+            LOG(LEVEL_ERROR, "FAIL: recv empty from dispatch thread. (IMPOSSIBLE)\n");
             fflush(stdout);
             exit(1);
         }
@@ -70,12 +69,12 @@ recv_read_thread(void *v)
             recved->parsed.dst_ip, recved->parsed.port_dst, parms->entropy);
 
         for (err=1; err; ) {
+            unsigned i = cookie & parms->recv_handle_mask;
             err = rte_ring_sp_enqueue(
-                parms->handle_queue[cookie & parms->recv_handle_mask], recved);
+                parms->handle_queue[i], recved);
             if (err) {
-                fprintf(stderr, "[-] recv handle queue full from recv read thread.(should be impossible)\n");
+                fprintf(stderr, "[-] handle queue #%d full from dispatch thread.\n", i);
                 pixie_usleep(1000);
-                exit(1);
             }
         }
     }
@@ -93,7 +92,7 @@ struct RxHandle {
 };
 
 static void
-recv_handle_thread(void *v)
+handle_thread(void *v)
 {
     struct RxHandle *parms = v;
     while (!is_rx_done) {
@@ -108,7 +107,7 @@ recv_handle_thread(void *v)
         }
 
         if (recved==NULL) {
-            LOG(LEVEL_ERROR, "FAIL: recv empty from recv handle thread. (IMPOSSIBLE)\n");
+            LOG(LEVEL_ERROR, "FAIL: recv empty from handle thread. (IMPOSSIBLE)\n");
             fflush(stdout);
             exit(1);
         }
@@ -132,17 +131,24 @@ recv_handle_thread(void *v)
 
 
 void receive_thread(void *v) {
-    struct RxThread *parms            = (struct RxThread *)v;
-    const struct Xconf *xconf         = parms->xconf;
-    struct Output *output             = (struct Output *)(&xconf->output);
-    struct Adapter *adapter           = xconf->nic.adapter;
-    int data_link                     = stack_if_datalink(adapter);
-    struct DedupTable *dedup          = NULL;
-    struct PcapFile *pcapfile         = NULL;
-    uint64_t entropy                  = xconf->seed;
-    struct stack_t *stack             = xconf->stack;
-    struct ScanTimeoutEvent *tm_event = NULL;
-    struct FHandler ft_handler;
+    struct RxThread               *parms                       = (struct RxThread *)v;
+    const struct Xconf            *xconf                       = parms->xconf;
+    struct Output                 *output                      = (struct Output *)(&xconf->output);
+    struct Adapter                *adapter                     = xconf->nic.adapter;
+    int                            data_link                   = stack_if_datalink(adapter);
+    struct DedupTable             *dedup                       = NULL;
+    struct PcapFile               *pcapfile                    = NULL;
+    uint64_t                       entropy                     = xconf->seed;
+    struct stack_t                *stack                       = xconf->stack;
+    struct ScanTimeoutEvent       *tm_event                    = NULL;
+    unsigned                       handler_num                 = xconf->rx_handler_count;
+    struct RxHandle                handle_parms[handler_num];
+    size_t                         handler[handler_num];
+    struct rte_ring               *handle_q[handler_num];
+    struct RxDispatch              dispatch_parms;
+    size_t                         dispatcher;
+    struct rte_ring               *dispatch_q;
+    struct FHandler                ft_handler;
 
     /* some status variables */
     uint64_t *status_successed_count = MALLOC(sizeof(uint64_t));
@@ -187,32 +193,25 @@ void receive_thread(void *v) {
     }
 
     /**
-     * init read and handle threads
+     * init dispatch and handle threads
     */
-    unsigned hdl_num = 4;
-
-    struct rte_ring *handle_q[hdl_num];
-    struct rte_ring *read_q = rte_ring_create(RECV_QUEUE_COUNT,
+    dispatch_q = rte_ring_create(RECV_QUEUE_COUNT,
         RING_F_SP_ENQ|RING_F_SC_DEQ);
-    for (unsigned i=0; i<hdl_num; i++) {
+    for (unsigned i=0; i<handler_num; i++) {
         handle_q[i] = rte_ring_create(RECV_QUEUE_COUNT,
             RING_F_SP_ENQ|RING_F_SC_DEQ);
     }
 
-    struct RxRead read_parms = {
-        .entropy = entropy,
-        .read_queue = read_q,
-        .handle_queue = handle_q,
-        .recv_handle_num = hdl_num,
-        .recv_handle_mask = hdl_num-1,
-    };
+    dispatch_parms.entropy = entropy;
+    dispatch_parms.dispatch_queue = dispatch_q;
+    dispatch_parms.handle_queue = handle_q;
+    dispatch_parms.recv_handle_num = handler_num;
+    dispatch_parms.recv_handle_mask = handler_num-1;
 
-    size_t reader = pixie_begin_thread(recv_read_thread, 0, &read_parms);
+    dispatcher = pixie_begin_thread(dispatch_thread, 0, &dispatch_parms);
 
-    size_t handler[hdl_num];
-    struct RxHandle handle_parms[hdl_num];
 
-    for (unsigned i=0; i<hdl_num; i++) {
+    for (unsigned i=0; i<handler_num; i++) {
         handle_parms[i].scan_module = xconf->scan_module;
         handle_parms[i].handle_queue = handle_q[i];
         handle_parms[i].ft_handler = xconf->is_fast_timeout?&ft_handler:NULL;
@@ -221,7 +220,7 @@ void receive_thread(void *v) {
         handle_parms[i].entropy = entropy;
         handle_parms[i].index = i;
 
-        handler[i] = pixie_begin_thread(recv_handle_thread, 0, &handle_parms[i]);
+        handler[i] = pixie_begin_thread(handle_thread, 0, &handle_parms[i]);
     }
 
     LOG(LEVEL_INFO, "[+] THREAD: recv: starting main loop\n");
@@ -356,11 +355,11 @@ void receive_thread(void *v) {
          * give it to reader and to handlers
         */
         for (err=1; err; ) {
-            err = rte_ring_sp_enqueue(read_q, recved);
+            err = rte_ring_sp_enqueue(dispatch_q, recved);
             if (err) {
-                fprintf(stderr, "[-] recv handle queue full from rx thread(should be impossible)\n");
+                fprintf(stderr, "[-] dispatch queue full from rx thread with too fast rate.\n");
                 pixie_usleep(1000);
-                exit(1);
+                // exit(1);
             }
         }
     }
@@ -371,8 +370,8 @@ void receive_thread(void *v) {
      * cleanup
      */
     /*stop reader and handlers*/
-    pixie_thread_join(reader);
-    for (unsigned i=0; i<hdl_num; i++) {
+    pixie_thread_join(dispatcher);
+    for (unsigned i=0; i<handler_num; i++) {
         pixie_thread_join(handler[i]);
     }
 
