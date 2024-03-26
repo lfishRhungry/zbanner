@@ -2115,7 +2115,11 @@ struct ConfigParameter config_parameters[] = {
         "Specify the number of receive handler threads. "XTATE_FIRST_UPPER_NAME" could"
         " has multiple receive handler threads but only one receive thread. Every "
         "handler thread will be dispatched recv packets by (dst_IP, dst_Port, "
-        "src_IP, src_Port) and executes the `handler_cb` of ScanModule.\n"
+        "src_IP, src_Port) and executes the `handler_cb` of ScanModule. This is "
+        "for some necessary but slow action while ScanModule handling consecutive"
+        " communication (e.g. stateful TLS connection). If the action is irrespective"
+        " with consecutive communication (e.g. results processing), it is better"
+        " to use special thread-pool.\n"
         "The number of receive handler must be the power of 2. (Default 1)"
     },
     {
