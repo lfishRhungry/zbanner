@@ -63,6 +63,7 @@ icmptime_validate(
 
 static void
 icmptime_handle(
+    unsigned th_idx,
     uint64_t entropy,
     struct Received *recved,
     struct OutputItem *item,

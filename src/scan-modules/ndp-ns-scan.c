@@ -69,6 +69,7 @@ ndpns_validate(
 
 static void
 ndpns_handle(
+    unsigned th_idx,
     uint64_t entropy,
     struct Received *recved,
     struct OutputItem *item,

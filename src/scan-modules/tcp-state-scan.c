@@ -13,7 +13,12 @@
 
 extern struct ScanModule TcpStateScan; /*for internal x-ref*/
 
-static struct TCP_ConnectionTable *tcpcon = NULL;
+struct TCP_ConSet {
+    struct TCP_ConnectionTable **tcpcons;
+    unsigned count;
+};
+
+static struct TCP_ConSet tcpcon_set;
 
 static uint64_t *tcb_count;
 
@@ -55,13 +60,21 @@ static int tcpstate_global_init(const struct Xconf *xconf)
 {
     if (tcpstate_conf.conn_timeout <= 0)
         tcpstate_conf.conn_timeout = 30;
-
-    tcpcon = tcpcon_create_table(
-        (size_t)(xconf->max_rate/5)/xconf->tx_thread_count,
-        xconf->stack, &global_tmplset->pkts[Proto_TCP],
-        (struct Output *)(&xconf->output),
-        tcpstate_conf.conn_timeout, xconf->seed);
     
+    /*create rx_handler_count TCP tables for thread safe*/
+    tcpcon_set.count = xconf->rx_handler_count;
+    tcpcon_set.tcpcons    = 
+        MALLOC(tcpcon_set.count * sizeof(struct TCP_ConnectionTable *));
+
+    for (unsigned i=0; i<tcpcon_set.count; i++) {
+        size_t entry_count = (size_t)(xconf->max_rate/5)/xconf->rx_handler_count;
+        tcpcon_set.tcpcons[i] = tcpcon_create_table(
+            entry_count>=10?entry_count:10,
+            xconf->stack, &global_tmplset->pkts[Proto_TCP],
+            (struct Output *)(&xconf->output),
+            tcpstate_conf.conn_timeout, xconf->seed);
+    }
+ 
     tcb_count = &((struct Xconf *)xconf)->tcb_count;
 
     return 1;
@@ -121,6 +134,7 @@ tcpstate_validate(
 
 static void
 tcpstate_handle(
+    unsigned th_idx,
     uint64_t entropy,
     struct Received *recved,
     struct OutputItem *item,
@@ -138,6 +152,8 @@ tcpstate_handle(
     unsigned  seqno_them = TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
 
     struct TCP_Control_Block *tcb;
+
+    struct TCP_ConnectionTable *tcpcon = tcpcon_set.tcpcons[th_idx];
 
     /* does a TCB already exist for this connection? */
     tcb = tcpcon_lookup_tcb(tcpcon, ip_me, ip_them, port_me, port_them);
@@ -194,15 +210,25 @@ tcpstate_handle(
 
 void tcpstate_poll()
 {
-    /*update timeout events*/
-    tcpcon_timeouts(tcpcon, (unsigned)time(0), 0);
-    /*update tcb count*/
-    (*tcb_count) = tcpcon_active_tcb(tcpcon);
+    uint64_t tcb = 0;
+    /*update timeout events and tcb count*/
+    for (unsigned i=0; i<tcpcon_set.count; i++) {
+        tcpcon_timeouts(tcpcon_set.tcpcons[i], (unsigned)time(0), 0);
+        /*update tcb count*/
+        tcb += tcpcon_active_tcb(tcpcon_set.tcpcons[i]);
+    }
+
+    *(tcb_count) = tcb;
 }
 
 void tcpstate_close()
 {
-    tcpcon_destroy_table(tcpcon);
+    for (unsigned i=0; i<tcpcon_set.count; i++) {
+        tcpcon_destroy_table(tcpcon_set.tcpcons[i]);
+    }
+
+    free(tcpcon_set.tcpcons);
+    tcpcon_set.tcpcons = NULL;
 }
 
 struct ScanModule TcpStateScan = {

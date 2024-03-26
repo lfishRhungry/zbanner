@@ -131,6 +131,7 @@ typedef void (*scan_modules_validate)(
  * !Must be implemented.
  * !Must be thread safe.
  * 
+ * @param th_idx the index of receive handler thread.
  * @param entropy a rand seed (generated or user-specified).
  * @param recved info of received packet.
  * @param item some outputting results.
@@ -138,6 +139,7 @@ typedef void (*scan_modules_validate)(
  * @param handler handler of fast-timeout or NULL if not in use fast-timeout.
 */
 typedef void (*scan_modules_handle)(
+    unsigned th_idx,
     uint64_t entropy,
     struct Received *recved,
     struct OutputItem *item,

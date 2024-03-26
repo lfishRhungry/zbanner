@@ -107,7 +107,7 @@ handle_thread(void *v)
         }
 
         if (recved==NULL) {
-            LOG(LEVEL_ERROR, "FAIL: recv empty from handle thread. (IMPOSSIBLE)\n");
+            LOG(LEVEL_ERROR, "FAIL: recv empty from handle thread #%d. (IMPOSSIBLE)\n", parms->index);
             fflush(stdout);
             exit(1);
         }
@@ -119,7 +119,7 @@ handle_thread(void *v)
             .port_me   = recved->parsed.port_dst,
         };
 
-        parms->scan_module->handle_cb(parms->entropy, recved, &item,
+        parms->scan_module->handle_cb(parms->index, parms->entropy, recved, &item,
             parms->stack, parms->ft_handler);
 
         output_result(parms->out, &item);
