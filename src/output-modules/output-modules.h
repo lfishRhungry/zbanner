@@ -29,7 +29,6 @@ struct OutputItem {
     char                         reason[OUTPUT_RSN_LEN];         /*no outputting if start with zero*/
     char                         classification[OUTPUT_CLS_LEN]; /*no outputting if start with zero*/
     char                         report[OUTPUT_RPT_LEN];         /*no outputting if start with zero*/
-    time_t                       timestamp;
     unsigned                     no_output:1;
 };
 
