@@ -390,6 +390,8 @@ void receive_thread(void *v) {
         pcapfile_close(pcapfile);
     if (xconf->is_fast_timeout)
         ft_close_handler(&ft_handler);
+    
+    free(status_timeout_count);
 
     /* Thread is about to exit */
     parms->done_receiving = 1;
