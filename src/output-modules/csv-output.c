@@ -4,46 +4,63 @@
 #include "../util/safe-string.h"
 #include "../pixie/pixie-file.h"
 
-extern struct OutputModule NdjsonOutput; /*for internal x-ref*/
+extern struct OutputModule CsvOutput; /*for internal x-ref*/
 
 static FILE *file;
 
-static const char fmt_ndjson[] =
-"{"
-"\"time\":\"%s\","
-"\"level\":%u,"
-"\"ip_them\":\"%s\","
-"\"port_them\":%u,"
-"\"ip_me\":\"%s\","
-"\"port_me\":%u,"
-"\"classification\":\"%s\","
-"\"reason\":\"%s\","
-"\"report\":\"%s\""
-"}"
+static const char header_csv[] =
+"time,"
+"level,"
+"ip_them,"
+"port_them,"
+"ip_me,"
+"port_me,"
+"classification,"
+"reason,"
+"report"
+"\n"
+;
+
+static const char fmt_csv[] =
+"\"%s\","
+"%u,"
+"\"%s\","
+"%u,"
+"\"%s\","
+"%u,"
+"\"%s\","
+"\"%s\","
+"\"%s\""
 "\n"
 ;
 
 static char format_time[32];
 
 static int
-ndjson_init(const struct Output *out)
+csv_init(const struct Output *out)
 {
 
     int err = pixie_fopen_shareable(
         &file, out->output_filename, out->is_append);
 
     if (err != 0 || file == NULL) {
-        LOG(LEVEL_ERROR, "[-] NdjsonOutput: could not open file %s for %s.\n",
+        LOG(LEVEL_ERROR, "[-] CsvOutput: could not open file %s for %s.\n",
             out->output_filename, out->is_append?"appending":"writing");
         perror(out->output_filename);
         return -1;
+    }
+
+    err = fputs(header_csv, file);
+    
+    if (err<0) {
+        LOG(LEVEL_ERROR, "[-] CsvOutput: could not write header to file.\n");
     }
 
     return 1;
 }
 
 static void
-ndjson_result(const struct Output *out, const struct OutputItem *item)
+csv_result(const struct Output *out, const struct OutputItem *item)
 {
     if (item->level==Output_INFO && !out->is_show_info)
         return;
@@ -55,7 +72,7 @@ ndjson_result(const struct Output *out, const struct OutputItem *item)
 
     iso8601_time_str(format_time, sizeof(format_time), &item->timestamp);
 
-    int err = fprintf(file, fmt_ndjson,
+    int err = fprintf(file, fmt_csv,
         format_time,
         item->level,
         ip_them_fmt.string,
@@ -67,25 +84,25 @@ ndjson_result(const struct Output *out, const struct OutputItem *item)
         item->report);
     
     if (err<0) {
-        LOG(LEVEL_ERROR, "[-] NdjsonOutput: could not write result to file.\n");
+        LOG(LEVEL_ERROR, "[-] CsvOutput: could not write result to file.\n");
     }
 }
 
 static void
-ndjson_close(const struct Output *out)
+csv_close(const struct Output *out)
 {
     fflush(file);
     fclose(file);
 }
 
-struct OutputModule NdjsonOutput = {
-    .name               = "ndjson",
+struct OutputModule CsvOutput = {
+    .name               = "csv",
     .need_file          = 1,
     .params             = NULL,
-    .init_cb            = &ndjson_init,
-    .result_cb          = &ndjson_result,
-    .close_cb           = &ndjson_close,
+    .init_cb            = &csv_init,
+    .result_cb          = &csv_result,
+    .close_cb           = &csv_close,
     .desc               =
-        "NdjsonOutput save results in newline-delimited json(ndjson) format to "
+        "CsvOutput save results in Comma-seperated Values(csv) format to "
         "specified file.",
 };

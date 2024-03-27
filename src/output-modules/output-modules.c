@@ -12,11 +12,13 @@
 
 extern struct OutputModule TextOutput;
 extern struct OutputModule NdjsonOutput;
+extern struct OutputModule CsvOutput;
 //! REGIST YOUR OUTPUT MODULE HERE
 
 static struct OutputModule *output_modules_list[] = {
     &TextOutput,
     &NdjsonOutput,
+    &CsvOutput,
     //! REGIST YOUR OUTPUT MODULE HERE
 };
 
@@ -81,11 +83,11 @@ void list_all_output_modules()
 
 
 
-static char fmt_host[]   = "%s host: %-15s";
-static char fmt_port[]   = " port: %-5u";
-static char fmt_cls []   = " \"%s\"";
-static char fmt_reason[] = " because of \"%s\"";
-static char fmt_report[] = "  "XPRINT_CH_COLOR_YELLOW"Report: %s";
+static const char fmt_host[]   = "%s host: %-15s";
+static const char fmt_port[]   = " port: %-5u";
+static const char fmt_cls []   = " \"%s\"";
+static const char fmt_reason[] = " because of \"%s\"";
+static const char fmt_report[] = "  "XPRINT_CH_COLOR_YELLOW"Report: %s";
 
 int
 output_init(struct Output *output)

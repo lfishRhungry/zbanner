@@ -3,11 +3,11 @@
 #include "../util/logger.h"
 #include "../pixie/pixie-file.h"
 
-static char fmt_host[]   = "%s host: %-15s";
-static char fmt_port[]   = " port: %-5u";
-static char fmt_cls []   = " \"%s\"";
-static char fmt_reason[] = " because of \"%s\"";
-static char fmt_report[] = "  Report: %s";
+static const char fmt_host[]   = "%s host: %-15s";
+static const char fmt_port[]   = " port: %-5u";
+static const char fmt_cls []   = " \"%s\"";
+static const char fmt_reason[] = " because of \"%s\"";
+static const char fmt_report[] = "  Report: %s";
 
 extern struct OutputModule TextOutput; /*for internal x-ref*/
 
