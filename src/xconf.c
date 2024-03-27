@@ -2497,7 +2497,7 @@ struct ConfigParameter config_parameters[] = {
         "output-module",
         SET_output_module,
         0,
-        {"output", 0},
+        {"output", "out", 0},
         "Specifies an OutputModule for outputing results in special way. Use "
         "--list-output to get informations of all OutputModules. OutputModule"
         " is non-essential because "XTATE_FIRST_UPPER_NAME" output results to "
