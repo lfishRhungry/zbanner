@@ -11,10 +11,12 @@
 
 
 extern struct OutputModule ToFileOutput;
+extern struct OutputModule NdjsonOutput;
 //! REGIST YOUR OUTPUT MODULE HERE
 
 static struct OutputModule *output_modules_list[] = {
     &ToFileOutput,
+    &NdjsonOutput,
     //! REGIST YOUR OUTPUT MODULE HERE
 };
 

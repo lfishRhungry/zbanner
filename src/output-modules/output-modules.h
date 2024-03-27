@@ -15,9 +15,9 @@
 struct OutputModule;
 
 enum OutputLevel {
-    Output_INFO = 0,
-    Output_FAILURE,
-    Output_SUCCESS,
+    Output_INFO     = 0,
+    Output_FAILURE  = 1,
+    Output_SUCCESS  = 2,
 };
 
 struct OutputItem {

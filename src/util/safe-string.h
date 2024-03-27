@@ -164,4 +164,12 @@ name_equals(const char *lhs, const char *rhs);
 uint64_t
 parseIntBytes(const void *vstr, size_t length);
 
+/**
+ * @param format_time buffer to save time str at least 32 bytes.
+ * @param size size of format_time buffer
+ * @return number of bytes placed in format_time (excluding terminating null byte)
+*/
+int
+iso8601_time_str(char* format_time, size_t size, const time_t *time);
+
 #endif

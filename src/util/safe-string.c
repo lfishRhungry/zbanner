@@ -656,3 +656,8 @@ bytes_header(const void *src, size_t src_len, const void *byt, size_t byt_len)
 
     return equal;
 }
+
+int
+iso8601_time_str(char* format_time, size_t size, const time_t *time) {
+    return strftime(format_time, size, "%FT%TZ", gmtime(time));
+}
