@@ -21,7 +21,7 @@ tofile_init(const struct Output *out)
         &file, out->output_filename, out->is_append);
 
     if (err != 0 || file == NULL) {
-        LOG(LEVEL_ERROR, "[-] ToFileOutput: could not open file %s for %s\n",
+        LOG(LEVEL_ERROR, "[-] ToFileOutput: could not open file %s for %s.\n",
             out->output_filename, out->is_append?"appending":"writing");
         perror(out->output_filename);
         return -1;
@@ -40,40 +40,53 @@ tofile_result(const struct Output *out, const struct OutputItem *item)
     
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->ip_them);
 
-    unsigned count = 0;
+    int err = 0;
 
     switch (item->level)
     {
     case Output_SUCCESS:
-        count = fprintf(file, fmt_host, "[+]", ip_them_fmt.string);
+        err = fprintf(file, fmt_host, "[+]", ip_them_fmt.string);
         break;
     case Output_FAILURE:
-        count = fprintf(file, fmt_host, "[x]", ip_them_fmt.string);
+        err = fprintf(file, fmt_host, "[x]", ip_them_fmt.string);
         break;
     case Output_INFO:
-        count = fprintf(file, fmt_host, "[*]", ip_them_fmt.string);
+        err = fprintf(file, fmt_host, "[*]", ip_them_fmt.string);
         break;
     default:
         return;
     }
-    
+
+    if (err<0) goto error;
+
     if (item->port_them) {
-        count += fprintf(file, fmt_port, item->port_them);
+        err = fprintf(file, fmt_port, item->port_them);
+        if (err<0) goto error;
     }
 
     if (item->classification[0]) {
-        count += fprintf(file, fmt_cls, item->classification);
+        err = fprintf(file, fmt_cls, item->classification);
+        if (err<0) goto error;
     }
 
     if (item->reason[0]) {
-        count += fprintf(file, fmt_reason, item->reason);
+        err = fprintf(file, fmt_reason, item->reason);
+        if (err<0) goto error;
     }
 
     if (item->report[0]) {
-        count += fprintf(file, fmt_report, item->report);
+        err = fprintf(file, fmt_report, item->report);
+        if (err<0) goto error;
     }
 
-    fprintf(file, "\n");
+    err = fprintf(file, "\n");
+    if (err<0) goto error;
+
+    return;
+
+error:
+
+    LOG(LEVEL_ERROR, "[-] ToFileOutput: could not write result to file.\n");
 }
 
 static void

@@ -33,7 +33,7 @@ ndjson_init(const struct Output *out)
         &file, out->output_filename, out->is_append);
 
     if (err != 0 || file == NULL) {
-        LOG(LEVEL_ERROR, "[-] NdjsonOutput: could not open file %s for %s\n",
+        LOG(LEVEL_ERROR, "[-] NdjsonOutput: could not open file %s for %s.\n",
             out->output_filename, out->is_append?"appending":"writing");
         perror(out->output_filename);
         return -1;
@@ -55,7 +55,7 @@ ndjson_result(const struct Output *out, const struct OutputItem *item)
 
     iso8601_time_str(format_time, sizeof(format_time), &item->timestamp);
 
-    fprintf(file, fmt_ndjson,
+    int err = fprintf(file, fmt_ndjson,
         format_time,
         item->level,
         ip_them_fmt.string,
@@ -65,6 +65,10 @@ ndjson_result(const struct Output *out, const struct OutputItem *item)
         item->classification,
         item->reason,
         item->report);
+    
+    if (err<0) {
+        LOG(LEVEL_ERROR, "[-] NdjsonOutput: could not write result to file.\n");
+    }
 }
 
 static void
