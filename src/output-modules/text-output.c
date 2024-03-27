@@ -9,19 +9,19 @@ static char fmt_cls []   = " \"%s\"";
 static char fmt_reason[] = " because of \"%s\"";
 static char fmt_report[] = "  Report: %s";
 
-extern struct OutputModule ToFileOutput; /*for internal x-ref*/
+extern struct OutputModule TextOutput; /*for internal x-ref*/
 
 static FILE *file;
 
 static int
-tofile_init(const struct Output *out)
+text_init(const struct Output *out)
 {
 
     int err = pixie_fopen_shareable(
         &file, out->output_filename, out->is_append);
 
     if (err != 0 || file == NULL) {
-        LOG(LEVEL_ERROR, "[-] ToFileOutput: could not open file %s for %s.\n",
+        LOG(LEVEL_ERROR, "[-] TextOutput: could not open file %s for %s.\n",
             out->output_filename, out->is_append?"appending":"writing");
         perror(out->output_filename);
         return -1;
@@ -31,7 +31,7 @@ tofile_init(const struct Output *out)
 }
 
 static void
-tofile_result(const struct Output *out, const struct OutputItem *item)
+text_result(const struct Output *out, const struct OutputItem *item)
 {
     if (item->level==Output_INFO && !out->is_show_info)
         return;
@@ -86,23 +86,23 @@ tofile_result(const struct Output *out, const struct OutputItem *item)
 
 error:
 
-    LOG(LEVEL_ERROR, "[-] ToFileOutput: could not write result to file.\n");
+    LOG(LEVEL_ERROR, "[-] TextOutput: could not write result to file.\n");
 }
 
 static void
-tofile_close(const struct Output *out)
+text_close(const struct Output *out)
 {
     fflush(file);
     fclose(file);
 }
 
-struct OutputModule ToFileOutput = {
-    .name               = "to-file",
+struct OutputModule TextOutput = {
+    .name               = "text",
     .need_file          = 1,
     .params             = NULL,
-    .init_cb            = &tofile_init,
-    .result_cb          = &tofile_result,
-    .close_cb           = &tofile_close,
+    .init_cb            = &text_init,
+    .result_cb          = &text_result,
+    .close_cb           = &text_close,
     .desc               =
-        "ToFileOutput save results same as stdout to specified file without color.",
+        "TextOutput save results same as stdout to specified file without color.",
 };

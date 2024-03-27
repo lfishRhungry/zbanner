@@ -10,12 +10,12 @@
 #include "../util/fine-malloc.h"
 
 
-extern struct OutputModule ToFileOutput;
+extern struct OutputModule TextOutput;
 extern struct OutputModule NdjsonOutput;
 //! REGIST YOUR OUTPUT MODULE HERE
 
 static struct OutputModule *output_modules_list[] = {
-    &ToFileOutput,
+    &TextOutput,
     &NdjsonOutput,
     //! REGIST YOUR OUTPUT MODULE HERE
 };
