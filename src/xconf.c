@@ -2491,31 +2491,8 @@ struct ConfigParameter config_parameters[] = {
         "Specifies an argument for used ProbeModule."
     },
 
-    {"STATUS & OUTPUT:", SET_nothing, 0, {0}, NULL},
+    {"OUTPUT MODULES & STATUS:", SET_nothing, 0, {0}, NULL},
 
-    {
-        "ndjson-status",
-        SET_ndjson_status,
-        F_BOOL,
-        {"status-ndjson", 0},
-        "Print status information in NDJSON format while running."
-    },
-    {
-        "pcap-filename",
-        SET_pcap_filename,
-        0,
-        {"pcap",0},
-        "Saves received packets (but not transmitted packets) to the "
-        "libpcap-format file."
-    },
-    {
-        "show",
-        SET_show,
-        0,
-        {0},
-        "Tells which explicit result status to display, such as 'failed' for "
-        "those ports that respond with a RST on TCP or 'info' for informations."
-    },
     {
         "output-module",
         SET_output_module,
@@ -2539,7 +2516,7 @@ struct ConfigParameter config_parameters[] = {
         "output-module-args",
         SET_output_module_args,
         0,
-        {"output-module-arg", "output-args", "output-arg", 0},
+        {"output-module-arg", "output-arg", "out-arg", 0},
         "Specifies an argument for used OutputModule."
     },
     {
@@ -2563,6 +2540,29 @@ struct ConfigParameter config_parameters[] = {
         F_BOOL,
         {"interact", 0},
         "Also print the results to screen while specifying an OutputModule."
+    },
+    {
+        "show",
+        SET_show,
+        0,
+        {0},
+        "Tells which explicit result status to display, such as 'failed' for "
+        "those ports that respond with a RST on TCP or 'info' for informations."
+    },
+    {
+        "ndjson-status",
+        SET_ndjson_status,
+        F_BOOL,
+        {"status-ndjson", 0},
+        "Print status information in NDJSON format while running."
+    },
+    {
+        "pcap-filename",
+        SET_pcap_filename,
+        0,
+        {"pcap",0},
+        "Saves received packets (but not transmitted packets) to the "
+        "libpcap-format file."
     },
 
     {"PACKET ATTRIBUTE:", SET_nothing, 0, {0}, NULL},
