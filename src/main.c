@@ -69,7 +69,7 @@ static void control_c_handler(int x) {
         /*First time of <ctrl-c>*/
         fprintf(stderr,
                 "waiting several seconds to exit..."
-                "                                                            \n");
+                "                                                                           \n");
         fflush(stderr);
         control_c_pressed++;
         /*Make xtate change into waiting status*/
