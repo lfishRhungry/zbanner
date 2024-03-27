@@ -8,9 +8,9 @@
 #include "../param-configer.h"
 #include "../massip/massip-addr.h"
 
-#define OUTPUT_RSN_LEN   30
-#define OUTPUT_CLS_LEN   30
-#define OUTPUT_RPT_LEN 2048
+#define OUTPUT_RSN_LEN      30
+#define OUTPUT_CLS_LEN      30
+#define OUTPUT_RPT_LEN    2048
 
 struct OutputModule;
 
@@ -21,6 +21,7 @@ enum OutputLevel {
 };
 
 struct OutputItem {
+    time_t                       timestamp;
     enum OutputLevel             level;
     ipaddress                    ip_them;
     unsigned                     port_them;                      /*no outputting if zero*/
@@ -75,13 +76,14 @@ output_init(struct Output *output);
 void
 output_result(
     const struct Output *output,
-    const struct OutputItem *item);
+    struct OutputItem *item);
 
 /*destroy resources of output*/
 void
 output_close(struct Output *output);
 
-struct OutputModule *get_output_module_by_name(const char *name);
+struct OutputModule *
+get_output_module_by_name(const char *name);
 
 void list_all_output_modules();
 

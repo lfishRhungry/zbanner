@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "output-modules.h"
+#include "../globals.h"
 #include "../pixie/pixie-file.h"
 #include "../pixie/pixie-threads.h"
 #include "../util/logger.h"
@@ -186,10 +187,13 @@ output_result_to_stdout(
 void
 output_result(
     const struct Output *output,
-    const struct OutputItem *item)
+    struct OutputItem *item)
 {
     if (item->no_output)
         return;
+
+    if (!item->timestamp)
+        item->timestamp = global_now;
 
     if (item->level==Output_SUCCESS) {
         pixie_acquire_mutex(output->succ_mutex);

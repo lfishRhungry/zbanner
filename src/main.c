@@ -49,6 +49,10 @@
 unsigned volatile is_tx_done = 0;
 unsigned volatile is_rx_done = 0;
 
+/*
+ * We update a global time in xtatus.c for less syscall of time().
+ * Use this if you need cur time.
+ */
 time_t global_now;
 
 uint64_t usec_start;
