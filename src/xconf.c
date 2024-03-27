@@ -331,6 +331,25 @@ static int SET_probe_module(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
+static int SET_output_module(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    if (xconf->echo) {
+        if (xconf->output.output_module){
+            fprintf(xconf->echo, "output-module = %s\n", xconf->output.output_module->name);
+        }
+        return 0;
+    }
+
+    xconf->output.output_module = get_output_module_by_name(value);
+    if(!xconf->output.output_module){
+        fprintf(stderr, "FAIL %s: no such output module\n", value);
+        return CONF_ERR;
+    }
+
+    return CONF_OK;
+}
+
 static int SET_output_filename(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
@@ -414,6 +433,26 @@ static int SET_probe_module_args(void *conf, const char *name, const char *value
     return CONF_OK;
 }
 
+static int SET_output_module_args(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    UNUSEDPARM(name);
+    if (xconf->echo) {
+        if (xconf->output.output_args){
+            fprintf(xconf->echo, "output-module-args = %s\n", xconf->output.output_args);
+        }
+        return 0;
+    }
+
+    size_t len = strlen(value) + 1;
+    if (xconf->output.output_args)
+        free(xconf->output.output_args);
+    xconf->output.output_args = CALLOC(1, len);
+    memcpy(xconf->output.output_args, value, len);
+
+    return CONF_OK;
+}
+
 static int SET_list_scan_modules(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
@@ -435,6 +474,18 @@ static int SET_list_probe_modules(void *conf, const char *name, const char *valu
        return 0;
     }
     xconf->op = parseBoolean(value)?Operation_ListProbeModules:xconf->op;
+    return CONF_OK;
+}
+
+static int SET_list_output_modules(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+       return 0;
+    }
+    xconf->op = parseBoolean(value)?Operation_ListOutputModules:xconf->op;
     return CONF_OK;
 }
 
@@ -2466,25 +2517,52 @@ struct ConfigParameter config_parameters[] = {
         "those ports that respond with a RST on TCP or 'info' for informations."
     },
     {
+        "output-module",
+        SET_output_module,
+        0,
+        {"output", 0},
+        "Specifies an OutputModule for outputing results in special way. Use "
+        "--list-output to get informations of all OutputModules. OutputModule"
+        " is non-essential because "XTATE_FIRST_UPPER_NAME" output results to "
+        "stdout in default.\n"
+        "NOTE: "XTATE_FIRST_UPPER_NAME" won't output to stdout if we specified "
+        "an OutputModule unless we use `--interactive` switch."
+    },
+    {
+        "list-output-modules",
+        SET_list_output_modules,
+        F_BOOL,
+        {"list-output-module", "list-output", "list-out", 0},
+        "List informations of all OutputModules."
+    },
+    {
+        "output-module-args",
+        SET_output_module_args,
+        0,
+        {"output-module-arg", "output-args", "output-arg", 0},
+        "Specifies an argument for used OutputModule."
+    },
+    {
         "output-file",
         SET_output_filename,
         0,
-        {"output", "o", "output-filename", 0},
-        "Specifies the file which to save results to."
+        {"out-file", "o", 0},
+        "Specifies a file for OutputModule."
     },
     {
         "append-output",
         SET_append,
         F_BOOL,
         {"output-append", "append", 0},
-        "Causes output to append to the file, rather than overwriting the file."
+        "Causes output to append mode, rather than overwriting. OutputModules "
+        "have different performance with this switch."
     },
     {
         "interactive",
         SET_interactive,
         F_BOOL,
         {"interact", 0},
-        "Also print the results to screen while specifying --output-file."
+        "Also print the results to screen while specifying an OutputModule."
     },
 
     {"PACKET ATTRIBUTE:", SET_nothing, 0, {0}, NULL},

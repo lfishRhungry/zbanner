@@ -11,7 +11,7 @@
 #include "cookie.h"
 #include "version.h"
 
-#include "output/output.h"
+#include "output-modules/output-modules.h"
 
 #include "rawsock/rawsock-adapter.h"
 #include "rawsock/rawsock-pcapfile.h"
@@ -155,6 +155,7 @@ void receive_thread(void *v) {
     uint64_t                       entropy                     = xconf->seed;
     struct stack_t                *stack                       = xconf->stack;
     struct ScanModule             *scan_module                 = xconf->scan_module;
+    uint64_t                      *status_timeout_count        = MALLOC(sizeof(uint64_t));
     struct ScanTimeoutEvent       *tm_event                    = NULL;
     unsigned                       handler_num                 = xconf->rx_handler_count;
     struct RxHandle                handle_parms[handler_num];
@@ -167,20 +168,8 @@ void receive_thread(void *v) {
     struct Received               *recved;
 
     /* some status variables */
-    uint64_t *status_successed_count        = MALLOC(sizeof(uint64_t));
-    uint64_t *status_failed_count           = MALLOC(sizeof(uint64_t));
-    uint64_t *status_timeout_count          = MALLOC(sizeof(uint64_t));
-
-    *status_successed_count                 = 0;
-    *status_failed_count                    = 0;
-    *status_timeout_count                   = 0;
-
-    parms->total_successed                  = status_successed_count;
-    parms->total_failed                     = status_failed_count;
-    parms->total_tm_event                   = status_timeout_count;
-
-    output->total_successed                 = status_successed_count; /*update in output*/
-    output->total_failed                    = status_failed_count;    /*update in output*/
+    *status_timeout_count = 0;
+    parms->total_tm_event = status_timeout_count;
 
     LOG(LEVEL_WARNING, "[+] starting receive thread\n");
 
@@ -192,8 +181,6 @@ void receive_thread(void *v) {
         parms->done_receiving = 1;
         return;
     }
-
-    output_init(output);
 
     /* Lock threads to the CPUs one by one.
      * Tx threads follow  the only one Rx thread.
@@ -396,8 +383,6 @@ void receive_thread(void *v) {
     for (unsigned i=0; i<handler_num; i++) {
         pixie_thread_join(handler[i]);
     }
-
-    output_close(output);
 
     if (!xconf->is_nodedup)
         dedup_destroy(dedup);

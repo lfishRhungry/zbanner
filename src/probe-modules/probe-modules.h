@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "../massip/massip-addr.h"
-#include "../output/output.h"
+#include "../output-modules/output-modules.h"
 #include "../param-configer.h"
 #include "../util/unusedparm.h"
 #include "../proto/proto-datapass.h"

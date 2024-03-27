@@ -3,7 +3,7 @@
 
 #include "stack-queue.h"
 #include "../util/bool.h"
-#include "../output/output.h"
+#include "../output-modules/output-modules.h"
 #include "../templ/templ-tcp.h"
 #include "../massip/massip-addr.h"
 #include "../proto/proto-datapass.h"

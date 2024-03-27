@@ -190,8 +190,8 @@ tmp/%.o: \
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
-	src/output/%.c \
-	src/output/*.h
+	src/output-modules/%.c \
+	src/output-modules/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
@@ -222,7 +222,7 @@ SRC = $(sort $(wildcard \
 	src/probe-modules/*.c \
 	src/probe-modules/lzr-probes/*.c \
 	src/scan-modules/*.c \
-	src/output/*.c \
+	src/output-modules/*.c \
 	src/timeout/*.c \
 	src/thread-pool/*.c \
 	))

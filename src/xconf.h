@@ -14,7 +14,7 @@
 #include "massip/massip.h"
 #include "stack/stack-src.h"
 #include "stack/stack-queue.h"
-#include "output/output.h"
+#include "output-modules/output-modules.h"
 #include "probe-modules/probe-modules.h"
 #include "scan-modules/scan-modules.h"
 
@@ -31,8 +31,9 @@ enum Operation {
     Operation_ListRange = 7,        /* list all targets in range */
     Operation_Echo = 9,             /* echo the config used now or all configs with --echo-all */
     Operation_ListCidr = 11,        /* list all targets in CIDR */
-    Operation_ListProbeModules,     /* list all probes */
     Operation_ListScanModules,      /* list all scan modules */
+    Operation_ListProbeModules,     /* list all probes */
+    Operation_ListOutputModules,     /* list all probes */
     Operation_PrintHelp,            /* print help text for all parameters*/
 };
 

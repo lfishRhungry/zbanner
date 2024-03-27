@@ -258,6 +258,14 @@ static int main_scan(struct Xconf *xconf) {
     }
 
     /*
+     * Do init for OutputModule
+     */
+    if (!output_init(&xconf->output)) {
+        LOG(LEVEL_ERROR, "FAIL: errors in OutputModule initializing\n");
+        exit(1);
+    }
+
+    /*
      * BPF filter
      * We set BPF filter for pcap at last to avoid the filter affect router-mac
      * getting by ARP.
@@ -363,29 +371,20 @@ static int main_scan(struct Xconf *xconf) {
                 total_sent += *parms->total_sent;
         }
 
-        if (rx_thread->total_successed)
-            total_successed = *rx_thread->total_successed;
-
-        if (rx_thread->total_failed)
-            total_failed = *rx_thread->total_failed;
-
-        if (rx_thread->total_tm_event)
-            total_tm_event = *rx_thread->total_tm_event;
+        total_successed = *xconf->output.total_successed;
+        total_failed    = *xconf->output.total_failed;
+        total_tm_event  = *rx_thread->total_tm_event;
         
-        if (rx_thread->handle_q && rx_thread->dispatch_q) {
-            double rx_free_entries = rte_ring_free_count(rx_thread->dispatch_q);
-            for (unsigned i=0; i<xconf->rx_handler_count; i++) {
-                rx_free_entries += rte_ring_free_count(rx_thread->handle_q[i]);
-            }
-            rx_queue_ratio =
-                1.0 - rx_free_entries/
-                (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count+1));
+        double rx_free_entries = rte_ring_free_count(rx_thread->dispatch_q);
+        for (unsigned i=0; i<xconf->rx_handler_count; i++) {
+            rx_free_entries += rte_ring_free_count(rx_thread->handle_q[i]);
         }
+        rx_queue_ratio =
+            1.0 - rx_free_entries/
+            (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count+1));
 
-        if (xconf->stack->transmit_queue) {
-            double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
-            tx_queue_ratio = 1.0 - tx_free_entries/(double)xconf->stack_buf_count;
-        }
+        double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
+        tx_queue_ratio = 1.0 - tx_free_entries/(double)xconf->stack_buf_count;
 
         if (min_index >= range && !xconf->is_infinite) {
             /* Note: This is how we can tell the scan has ended */
@@ -456,29 +455,20 @@ static int main_scan(struct Xconf *xconf) {
                 total_sent += *parms->total_sent;
         }
 
-        if (rx_thread->total_successed)
-            total_successed = *rx_thread->total_successed;
-
-        if (rx_thread->total_failed)
-            total_failed = *rx_thread->total_failed;
-
-        if (rx_thread->total_tm_event)
-            total_tm_event = *rx_thread->total_tm_event;
+        total_successed = *xconf->output.total_successed;
+        total_failed    = *xconf->output.total_failed;
+        total_tm_event  = *rx_thread->total_tm_event;
         
-        if (rx_thread->handle_q && rx_thread->dispatch_q) {
-            double rx_free_entries = rte_ring_free_count(rx_thread->dispatch_q);
-            for (unsigned i=0; i<xconf->rx_handler_count; i++) {
-                rx_free_entries += rte_ring_free_count(rx_thread->handle_q[i]);
-            }
-            rx_queue_ratio =
-                1.0 - rx_free_entries/
-                (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count+1));
+        double rx_free_entries = rte_ring_free_count(rx_thread->dispatch_q);
+        for (unsigned i=0; i<xconf->rx_handler_count; i++) {
+            rx_free_entries += rte_ring_free_count(rx_thread->handle_q[i]);
         }
+        rx_queue_ratio =
+            1.0 - rx_free_entries/
+            (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count+1));
 
-        if (xconf->stack->transmit_queue) {
-            double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
-            tx_queue_ratio = 1.0 - tx_free_entries/(double)xconf->stack_buf_count;
-        }
+        double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
+        tx_queue_ratio = 1.0 - tx_free_entries/(double)xconf->stack_buf_count;
 
         xtatus_print(
             &status,
@@ -526,6 +516,8 @@ static int main_scan(struct Xconf *xconf) {
     if (xconf->probe_module) {
         xconf->probe_module->close_cb();
     }
+
+    output_close(&xconf->output);
 
     free(tx_thread);
 
@@ -709,12 +701,16 @@ int main(int argc, char *argv[]) {
         exit(0);
         break;
 
+    case Operation_ListScanModules:
+        list_all_scan_modules();
+        break;
+
     case Operation_ListProbeModules:
         list_all_probe_modules();
         break;
 
-    case Operation_ListScanModules:
-        list_all_scan_modules();
+    case Operation_ListOutputModules:
+        list_all_output_modules();
         break;
 
     case Operation_PrintHelp:

@@ -14,7 +14,7 @@
 #include "../globals.h"
 #include "../param-configer.h"
 #include "../util/unusedparm.h"
-#include "../output/output.h"
+#include "../output-modules/output-modules.h"
 #include "../stack/stack-queue.h"
 #include "../massip/massip-addr.h"
 #include "../timeout/fast-timeout.h"

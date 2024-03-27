@@ -11,7 +11,7 @@
 #include "../pixie/pixie-timer.h"
 #include "../util/safe-string.h"
 #include "../util/fine-malloc.h"
-#include "../output/output.h"
+#include "../output-modules/output-modules.h"
 #include "../util/logger.h"
 #include "../util/ssl-help.h"
 #include "../xconf.h"
