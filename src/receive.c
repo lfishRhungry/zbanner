@@ -155,7 +155,6 @@ void receive_thread(void *v) {
     uint64_t                       entropy                     = xconf->seed;
     struct stack_t                *stack                       = xconf->stack;
     struct ScanModule             *scan_module                 = xconf->scan_module;
-    uint64_t                      *status_timeout_count        = MALLOC(sizeof(uint64_t));
     struct ScanTimeoutEvent       *tm_event                    = NULL;
     unsigned                       handler_num                 = xconf->rx_handler_count;
     struct RxHandle                handle_parms[handler_num];
@@ -167,9 +166,6 @@ void receive_thread(void *v) {
     struct FHandler                ft_handler;
     struct Received               *recved;
 
-    /* some status variables */
-    *status_timeout_count = 0;
-    parms->total_tm_event = status_timeout_count;
 
     LOG(LEVEL_WARNING, "[+] starting receive thread\n");
 
@@ -267,7 +263,7 @@ void receive_thread(void *v) {
                 tm_event = NULL;
             }
 
-            *status_timeout_count = ft_event_count(&ft_handler);
+            parms->total_tm_event = ft_event_count(&ft_handler);
         }
 
         /**
@@ -390,8 +386,6 @@ void receive_thread(void *v) {
         pcapfile_close(pcapfile);
     if (xconf->is_fast_timeout)
         ft_close_handler(&ft_handler);
-    
-    free(status_timeout_count);
 
     /* Thread is about to exit */
     parms->done_receiving = 1;

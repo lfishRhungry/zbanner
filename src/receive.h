@@ -16,7 +16,7 @@ struct RxThread {
 
     double pt_start;
 
-    uint64_t *total_tm_event; /*unhandled fast-timeout event*/
+    uint64_t total_tm_event; /*unhandled fast-timeout event*/
 
     struct rte_ring **handle_q;
 

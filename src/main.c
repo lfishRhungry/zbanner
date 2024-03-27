@@ -375,9 +375,9 @@ static int main_scan(struct Xconf *xconf) {
                 total_sent += *parms->total_sent;
         }
 
-        total_successed = *xconf->output.total_successed;
-        total_failed    = *xconf->output.total_failed;
-        total_tm_event  = *rx_thread->total_tm_event;
+        total_successed = xconf->output.total_successed;
+        total_failed    = xconf->output.total_failed;
+        total_tm_event  = rx_thread->total_tm_event;
         
         double rx_free_entries = rte_ring_free_count(rx_thread->dispatch_q);
         for (unsigned i=0; i<xconf->rx_handler_count; i++) {
@@ -459,9 +459,9 @@ static int main_scan(struct Xconf *xconf) {
                 total_sent += *parms->total_sent;
         }
 
-        total_successed = *xconf->output.total_successed;
-        total_failed    = *xconf->output.total_failed;
-        total_tm_event  = *rx_thread->total_tm_event;
+        total_successed = xconf->output.total_successed;
+        total_failed    = xconf->output.total_failed;
+        total_tm_event  = rx_thread->total_tm_event;
         
         double rx_free_entries = rte_ring_free_count(rx_thread->dispatch_q);
         for (unsigned i=0; i<xconf->rx_handler_count; i++) {

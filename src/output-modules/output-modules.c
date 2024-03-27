@@ -112,12 +112,6 @@ output_init(struct Output *output)
         }
     }
 
-    output->total_successed = MALLOC(sizeof(uint64_t));
-    output->total_failed    = MALLOC(sizeof(uint64_t));
-
-    *(output->total_successed) = 0;
-    *(output->total_failed)    = 0;
-
     output->stdout_mutex = pixie_create_mutex();
     output->module_mutex = pixie_create_mutex();
     output->succ_mutex   = pixie_create_mutex();
@@ -187,23 +181,23 @@ output_result_to_stdout(
 void
 output_result(
     const struct Output *output,
-    struct OutputItem *item)
+    const struct OutputItem *item)
 {
     if (item->no_output)
         return;
 
     if (!item->timestamp)
-        item->timestamp = global_now;
+        ((struct OutputItem *)item)->timestamp = global_now;
 
     if (item->level==Output_SUCCESS) {
         pixie_acquire_mutex(output->succ_mutex);
-        (*(output->total_successed))++;
+        ((struct Output *)output)->total_successed++;
         pixie_release_mutex(output->succ_mutex);
     }
  
     if (item->level==Output_FAILURE) {
         pixie_acquire_mutex(output->fail_mutex);
-        (*(output->total_failed))++;
+        ((struct Output *)output)->total_failed++;
         pixie_release_mutex(output->fail_mutex);
     }
 
@@ -230,9 +224,6 @@ output_close(struct Output *output)
     if (output->output_module) {
         output->output_module->close_cb(output);
     }
-
-    free(output->total_successed);
-    free(output->total_failed);
 
     pixie_delete_mutex(output->stdout_mutex);
     pixie_delete_mutex(output->module_mutex);

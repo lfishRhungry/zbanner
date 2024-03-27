@@ -38,8 +38,8 @@ struct Output {
     char                        *output_args;
     char                         output_filename[256];
     FILE                        *output_file;
-    uint64_t                    *total_successed;
-    uint64_t                    *total_failed;
+    uint64_t                     total_successed;
+    uint64_t                     total_failed;
     void                        *succ_mutex;
     void                        *fail_mutex;
     void                        *module_mutex;
@@ -76,7 +76,7 @@ output_init(struct Output *output);
 void
 output_result(
     const struct Output *output,
-    struct OutputItem *item);
+    const struct OutputItem *item);
 
 /*destroy resources of output*/
 void
