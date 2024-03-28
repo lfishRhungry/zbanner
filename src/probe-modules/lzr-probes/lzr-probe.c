@@ -267,8 +267,12 @@ lzr_handle_response(
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
         snprintf(item->report, OUTPUT_RPT_LEN, "[handshake: %s]",
             lzr_conf.handshake[target->index]->name);
-        /*set all unmatching as failure*/
-        item->level = Output_FAILURE;
+        /**
+         * Set last unmatching as failure in normal mode.
+         * Or all unmatching as failure if force-all-handshakes
+         * */
+        if (target->index == lzr_conf.hs_count-1 || lzr_conf.force_all_handshakes)
+            item->level = Output_FAILURE;
         /*last handshake*/
         if (target->index != lzr_conf.hs_count-1) {
             return target->index+2;
@@ -312,8 +316,12 @@ lzr_handle_response(
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
         snprintf(item->report, OUTPUT_RPT_LEN, "[handshake: %s]",
             lzr_conf.handshake[target->index]->name);
-        /*set all unmatching as failure*/
-        item->level = Output_FAILURE;
+        /**
+         * Set last unmatching as failure in normal mode.
+         * Or all unmatching as failure if force-all-handshakes
+         * */
+        if (target->index == lzr_conf.hs_count-1 || lzr_conf.force_all_handshakes)
+            item->level = Output_FAILURE;
         /*last handshake*/
         if (target->index != lzr_conf.hs_count-1) {
             return target->index+2;
