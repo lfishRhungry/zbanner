@@ -153,7 +153,7 @@ static int main_scan(struct Xconf *xconf) {
      * Set the "source port" of everything we transmit.
      */
     if (xconf->nic.src.port.range == 0) {
-        unsigned port = 40000 + now % 20000;
+        unsigned port = 40000 + now % 5000;
         xconf->nic.src.port.first = port;
         xconf->nic.src.port.last  = port + 16;
         xconf->nic.src.port.range = 16;
