@@ -54,6 +54,7 @@ typedef size_t
  * 
  * !Must be implemented for ProbeType_TCP.
  * !Must be thread safe.
+ * !Must check index range in multi-probe
  * 
  * @param target info of a target
  * @return length of payload data
