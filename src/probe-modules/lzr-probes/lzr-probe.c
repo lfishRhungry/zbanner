@@ -247,13 +247,19 @@ lzr_make_payload(
     struct ProbeTarget *target,
     unsigned char *payload_buf)
 {
-    return lzr_conf.handshake[target->index]->make_payload_cb(target, payload_buf);
+    if (target->index < lzr_conf.hs_count)
+        return lzr_conf.handshake[target->index]->make_payload_cb(target, payload_buf);
+
+    return 0;
 }
 
 static size_t
 lzr_get_payload_length(struct ProbeTarget *target)
 {
-    return lzr_conf.handshake[target->index]->get_payload_length_cb(target);
+    if (target->index < lzr_conf.hs_count)
+        return lzr_conf.handshake[target->index]->get_payload_length_cb(target);
+
+    return 0;
 }
 
 static int

@@ -108,6 +108,9 @@ jarm_make_payload(
     struct ProbeTarget *target,
     unsigned char *payload_buf)
 {
+    if (target->index >= JarmProbe.multi_num)
+        return 0;
+
     struct JarmConfig jc = jc_list[target->index];
     jc.servername        = ipaddress_fmt(target->ip_them).string;
     jc.dst_port          = target->port_them;
@@ -118,6 +121,9 @@ jarm_make_payload(
 size_t
 jarm_get_payload_length(struct ProbeTarget *target)
 {
+    if (target->index >= JarmProbe.multi_num)
+        return 0;
+
     struct JarmConfig jc = jc_list[target->index];
     jc.servername        = ipaddress_fmt(target->ip_them).string;
     jc.dst_port          = target->port_them;
