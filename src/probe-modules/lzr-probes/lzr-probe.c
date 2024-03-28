@@ -247,10 +247,7 @@ lzr_make_payload(
     struct ProbeTarget *target,
     unsigned char *payload_buf)
 {
-    if (target->index < lzr_conf.hs_count)
-        return lzr_conf.handshake[target->index]->make_payload_cb(target, payload_buf);
-
-    return 0;
+    return lzr_conf.handshake[target->index]->make_payload_cb(target, payload_buf);
 }
 
 static size_t
