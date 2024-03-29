@@ -90,11 +90,6 @@ struct Xconf
         unsigned one;
         unsigned of;
     } shard;
-
-    struct {
-        char *service_probes_filename;
-        struct NmapServiceProbeList *service_probes;
-    } nmap;
     
     /**
      * Temporary file to echo parameters to, used for saving configuration

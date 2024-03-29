@@ -1,7 +1,9 @@
-#include "read-service-probes.h"
+#include "nmap-service.h"
 #include "../util/fine-malloc.h"
+#include "../util/safe-string.h"
 #include "../massip/massip-port.h"
 #include "../util/unusedparm.h"
+#include "../util/logger.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -251,11 +253,11 @@ parse_probe(struct NmapServiceProbeList *list, const char *line, size_t offset, 
      * our list
      */
     probe = CALLOC(1, sizeof(*probe));
-    if (list->count + 1 >= list->max) {
-        list->max = list->max * 2 + 1;
-        list->list = REALLOCARRAY(list->list, sizeof(list->list[0]), list->max);
+    if (list->count + 1 >= list->max_slot) {
+        list->max_slot = list->max_slot * 2 + 1;
+        list->probes = REALLOCARRAY(list->probes, sizeof(list->probes[0]), list->max_slot);
     }
-    list->list[list->count++] = probe;
+    list->probes[list->count++] = probe;
     
     /*
      * <protocol>
@@ -265,9 +267,9 @@ parse_probe(struct NmapServiceProbeList *list, const char *line, size_t offset, 
         goto parse_error;
     }
     if (memcmp(line+offset, "TCP", 3) == 0)
-        probe->protocol = 6;
+        probe->protocol = NMAP_IPPROTO_TCP;
     else if (memcmp(line+offset, "UDP", 3) == 0)
-        probe->protocol = 17;
+        probe->protocol = NMAP_IPPROTO_UDP;
     else {
         fprintf(stderr, "%s:%u:%u: unknown protocol\n", filename, line_number, (unsigned)offset);
         goto parse_error;
@@ -490,8 +492,7 @@ parse_match(struct NmapServiceProbeList *list, const char *line, size_t offset, 
         match->regex = MALLOC(regex_length  + 1);
         memcpy(match->regex, line+regex_offset, regex_length + 1);
         match->regex[regex_length] = '\0';
-        
-        
+
         /* Verify the regex options characters */
         while (offset<line_length && !isspace(line[offset])) {
             switch (line[offset]) {
@@ -710,7 +711,7 @@ parse_line(struct NmapServiceProbeList *list, const char *line)
         fprintf(stderr, "%s:%u:%u: 'directive only valid after a 'Probe'\n", filename, line_number, (unsigned)offset);
         return;
     }
-    probe = list->list[list->count-1];
+    probe = list->probes[list->count-1];
     
     switch ((int)type) {
         case SvcP_Ports:
@@ -789,7 +790,7 @@ nmapserviceprobes_new(const char *filename)
 /*****************************************************************************
  *****************************************************************************/
 struct NmapServiceProbeList *
-nmapserviceprobes_read_file(const char *filename)
+nmapservice_read_file(const char *filename)
 {
     FILE *fp;
     char line[32768];
@@ -1039,7 +1040,7 @@ nmapserviceprobes_print_hello(FILE *fp, const char *string, size_t length, int d
 /*****************************************************************************
  *****************************************************************************/
 void
-nmapserviceprobes_print(const struct NmapServiceProbeList *list, FILE *fp)
+nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp)
 {
     unsigned i;
     if (list == NULL)
@@ -1048,12 +1049,12 @@ nmapserviceprobes_print(const struct NmapServiceProbeList *list, FILE *fp)
     nmapserviceprobes_print_ports(&list->exclude, fp, "Exclude", ~0);
     
     for (i=0; i<list->count; i++) {
-        struct NmapServiceProbe *probe = list->list[i];
+        struct NmapServiceProbe *probe = list->probes[i];
         struct ServiceProbeMatch *match;
         
         /* print the first part of the probe */
         fprintf(fp, "Probe %s %s q",
-                (probe->protocol==6)?"TCP":"UDP",
+                (probe->protocol==NMAP_IPPROTO_TCP)?"TCP":"UDP",
                 probe->name);
         
         /* print the query/hello string */
@@ -1066,8 +1067,8 @@ nmapserviceprobes_print(const struct NmapServiceProbeList *list, FILE *fp)
             fprintf(fp, "totalwaitms %u\n", probe->totalwaitms);
         if (probe->tcpwrappedms)
             fprintf(fp, "tcpwrappedms %u\n", probe->tcpwrappedms);
-        nmapserviceprobes_print_ports(&probe->ports, fp, "ports", (probe->protocol==6)?Templ_TCP:Templ_UDP);
-        nmapserviceprobes_print_ports(&probe->sslports, fp, "sslports", (probe->protocol==6)?Templ_TCP:Templ_UDP);
+        nmapserviceprobes_print_ports(&probe->ports, fp, "ports", (probe->protocol==NMAP_IPPROTO_TCP)?Templ_TCP:Templ_UDP);
+        nmapserviceprobes_print_ports(&probe->sslports, fp, "sslports", (probe->protocol==NMAP_IPPROTO_TCP)?Templ_TCP:Templ_UDP);
         
         for (match=probe->match; match; match = match->next) {
             struct ServiceVersionInfo *vi;
@@ -1108,7 +1109,102 @@ nmapserviceprobes_print(const struct NmapServiceProbeList *list, FILE *fp)
 /*****************************************************************************
  *****************************************************************************/
 void
-nmapserviceprobes_free(struct NmapServiceProbeList *list)
+nmapservice_match_compile(struct NmapServiceProbeList * service_probes)
+{
+    struct ServiceProbeMatch *match;
+    const char *error;
+    int erroffset;
+
+    for (unsigned i=0; i<service_probes->count; i++) {
+        match = service_probes->probes[i]->match;
+        for (;match;match = match->next) {
+
+            if (match->compiled_re) continue;
+
+            match->compiled_re = pcre_compile(match->regex,
+                match->is_case_insensitive?PCRE_CASELESS:0 | match->is_include_newlines?PCRE_DOTALL:0,
+                &error,
+                &erroffset,
+                NULL);
+
+            if (!match->compiled_re) {
+                LOG(LEVEL_ERROR, "[-] regex compiled failed.\n");
+                continue;
+            }
+
+            match->compiled_extra = pcre_study(match->compiled_re, 0, &error);
+
+            if (!match->compiled_extra) {
+                LOG(LEVEL_INFO, "[-] regex studied nothing.\n");
+                pcre_free(match->compiled_re);
+                match->compiled_re = NULL;
+                continue;
+            }
+        }
+    }
+}
+
+/*****************************************************************************
+ *****************************************************************************/
+struct NmapServiceProbe *
+nmapservice_get_probe_by_name(struct NmapServiceProbeList *list,
+    const char *name, unsigned protocol)
+{
+    struct NmapServiceProbe *probe_res = NULL;
+
+    for (unsigned i=0; i<list->count; i++) {
+        if (list->probes[i]->protocol==protocol) {
+            if(0==strcmp(name, list->probes[i]->name)) {
+                probe_res = list->probes[i];
+                break;
+            }
+        }
+    }
+
+    return probe_res;
+}
+
+/*****************************************************************************
+ *****************************************************************************/
+void
+nmapservice_link_fallback(struct NmapServiceProbeList *list)
+{
+    for (unsigned i=1; i<list->count; i++) {
+        struct ServiceProbeFallback *fallback = NULL;
+        for (fallback = list->probes[i]->fallback; fallback; fallback=fallback->next) {
+            fallback->probe = nmapservice_get_probe_by_name(list,
+                fallback->name, list->probes[i]->protocol);
+        }
+    }
+}
+
+/*****************************************************************************
+ *****************************************************************************/
+void
+nmapservice_match_free(struct NmapServiceProbeList * service_probes)
+{
+    struct ServiceProbeMatch *match;
+
+    for (unsigned i=0; i<service_probes->count; i++) {
+        match = service_probes->probes[i]->match;
+        for (;match;match = match->next) {
+            if (match->compiled_re) {
+                pcre_free(match->compiled_re);
+                match->compiled_re = NULL;
+            }
+
+            if (match->compiled_extra) {
+                pcre_free_study(match->compiled_extra);
+                match->compiled_extra = NULL;
+            }
+        }
+    }
+}
+
+/*****************************************************************************
+ *****************************************************************************/
+void
+nmapservice_free(struct NmapServiceProbeList *list)
 {
     unsigned i;
     
@@ -1116,10 +1212,118 @@ nmapserviceprobes_free(struct NmapServiceProbeList *list)
         return;
     
     for (i=0; i<list->count; i++) {
-        nmapserviceprobes_free_record(list->list[i]);
+        nmapserviceprobes_free_record(list->probes[i]);
     }
     
-    if (list->list)
-        free(list->list);
+    if (list->probes)
+        free(list->probes);
     free(list);
+}
+
+unsigned
+nmapservice_next_probe_index(const struct NmapServiceProbeList *service_probes,
+    unsigned idx_now, unsigned port_them, unsigned rarity, unsigned protocol)
+{
+    unsigned next_probe = 0;
+
+    if (idx_now < service_probes->count-1) {
+        for (unsigned i=idx_now+1; i<service_probes->count; i++) {
+            /*validate protocol & rarity*/
+            if (service_probes->probes[i]->protocol==protocol
+                && service_probes->probes[i]->rarity <= rarity) {
+
+                /*if ignore the target port*/
+                if(port_them > 0
+                    && 0 >= rangelist_is_contains(
+                        &service_probes->probes[i]->ports, port_them)) {
+                    continue;
+                }
+
+                next_probe = i;
+                break;
+            }
+        }
+    }
+
+    return next_probe;
+}
+
+/**
+ * match service only in match list in specified probe.
+ * @return matched struct from service_probes or NULL if not matched.
+*/
+static struct ServiceProbeMatch *
+nmapservice_match_service_in_one_probe(const struct NmapServiceProbe *probe,
+    const unsigned char *payload, size_t payload_len)
+{
+    struct ServiceProbeMatch *match_res = NULL;
+    struct ServiceProbeMatch *m;
+    int ovector[3];
+    int reg_res;
+
+    for (m = probe->match;m;m = m->next) {
+
+        if (m->compiled_re) {
+            reg_res = pcre_exec(m->compiled_re,
+                m->compiled_extra,
+                (const char *)payload, (int)payload_len,
+                0, 0, ovector, sizeof(ovector)/sizeof(int));
+
+            /*matched one*/
+            if (reg_res > 0) {
+                match_res = m;
+                break;
+            }
+        }
+    }
+
+    return match_res;
+}
+
+struct ServiceProbeMatch *
+nmapservice_match_service(
+    const struct NmapServiceProbeList *service_probes,
+    unsigned probe_idx,
+    const unsigned char *payload,
+    size_t payload_len,
+    unsigned protocol)
+{
+    struct ServiceProbeMatch *match_res = NULL;
+
+    match_res = nmapservice_match_service_in_one_probe(
+        service_probes->probes[probe_idx], payload, payload_len);
+
+    if (match_res)
+        return match_res;
+
+    /*has fallback? try match all*/
+    if (service_probes->probes[probe_idx]->fallback) {
+
+        struct ServiceProbeFallback *fallback = NULL;
+
+        for (fallback=service_probes->probes[probe_idx]->fallback;
+            fallback;
+            fallback=fallback->next) {
+            /*fallback must have been linked*/
+            if (fallback->probe) {
+                match_res = nmapservice_match_service_in_one_probe(fallback->probe,
+                    payload, payload_len);
+                /*matched*/
+                if (match_res)
+                    break;
+            }
+        }
+    }
+
+    if (match_res)
+        return match_res;
+    
+    /*match with NULL probe at last if it's TCP and probe is not NULL*/
+    if (protocol==NMAP_IPPROTO_TCP && probe_idx!=0) {
+        match_res = nmapservice_match_service_in_one_probe(
+            service_probes->probes[0],
+            payload, payload_len);
+    }
+
+    return match_res;
 }

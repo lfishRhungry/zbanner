@@ -32,8 +32,8 @@ ifneq (, $(findstring linux, $(SYS)))
 ifneq (, $(findstring musl, $(SYS)))
 LIBS = 
 else
-LIBS = -lm -lrt -ldl -lpthread -lssl -lcrypto
-DBLIBS = -lm -lrt -ldl -lpthread -lssl -lcrypto -g -rdynamic -no-pie
+LIBS = -lm -lrt -ldl -lpthread -lssl -lcrypto -lpcre
+DBLIBS = -lm -lrt -ldl -lpthread -lssl -lcrypto -lpcre -g -rdynamic -no-pie
 endif
 INCLUDES =
 FLAGS2 = 
@@ -58,7 +58,7 @@ endif
 # intended environment, so it make break in the future.
 ifneq (, $(findstring mingw, $(SYS)))
 INCLUDES = -Ivs10/include
-LIBS = -L vs10/lib -lIPHLPAPI -lWs2_32 -lssl -lcrypto
+LIBS = -L vs10/lib -lIPHLPAPI -lWs2_32 -lssl -lcrypto -lpcre
 #FLAGS2 = -march=i686
 endif
 
@@ -170,8 +170,8 @@ tmp/%.o: \
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
-	src/nmap-service/%.c \
-	src/nmap-service/*.h
+	src/nmap/%.c \
+	src/nmap/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
@@ -218,7 +218,7 @@ SRC = $(sort $(wildcard \
 	src/templ/*.c \
 	src/util/*.c \
 	src/smack/*.c \
-	src/nmap-service/*.c \
+	src/nmap/*.c \
 	src/probe-modules/*.c \
 	src/probe-modules/lzr-probes/*.c \
 	src/scan-modules/*.c \

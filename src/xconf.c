@@ -1,11 +1,12 @@
 #include <ctype.h>
 #include <limits.h>
+#include <pcre.h>
 
 #include "xconf.h"
 #include "version.h"
 #include "param-configer.h"
 #include "crypto/crypto-base64.h"
-#include "nmap-service/read-service-probes.h"
+#include "nmap/nmap-service.h"
 
 #include "templ/templ-opts.h"
 
@@ -912,9 +913,8 @@ static int SET_target_output(void *conf, const char *name, const char *value)
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         /* Disable comma generation for the first element */
-        unsigned i;
+        unsigned i = 0;
         unsigned l = 0;
-        l = 0;
         for (i=0; i<xconf->targets.ports.count; i++) {
             struct Range range = xconf->targets.ports.list[i];
             do {
@@ -1435,26 +1435,6 @@ static int SET_interactive(void *conf, const char *name, const char *value)
         return 0;
     }
     xconf->output.is_interactive = parseBoolean(value);
-    return CONF_OK;
-}
-
-static int SET_nmap_service_probes(void *conf, const char *name, const char *value)
-{
-    struct Xconf *xconf = (struct Xconf *)conf;
-    UNUSEDPARM(name);
-    
-    if (xconf->echo) {
-        if ((xconf->nmap.service_probes_filename
-            && xconf->nmap.service_probes_filename[0]))
-            fprintf(xconf->echo, "nmap-service-probes = %s\n",
-                xconf->nmap.service_probes_filename);
-        return 0;
-    }
-    
-    if (xconf->nmap.service_probes_filename)
-        free(xconf->nmap.service_probes_filename);
-    xconf->nmap.service_probes_filename = strdup(value);
-
     return CONF_OK;
 }
 
@@ -2757,10 +2737,6 @@ struct ConfigParameter config_parameters[] = {
         "distribution with a low impact on scan rate."
     },
 
-    {"PAYLOAD:", SET_nothing, 0, {0}, NULL},
-
-    {
-        "nmap-service-probes",            SET_nmap_service_probes,     0,                {"nmap-service-probe",0}},
 
     /*Put it at last for better "help" output*/
     {"TARGET_OUTPUT:", SET_target_output, 0, {0}, NULL},
