@@ -30,6 +30,22 @@ static int SET_probe_file(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
+static int SET_rarity(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    unsigned rarity = parseBoolean(value);
+    if (rarity < 1 || rarity > 9) {
+        LOG(LEVEL_ERROR, "[-] NmapServiceProbe: rarity must be in range 1-9.\n");
+        return CONF_ERR;
+    }
+
+    nmapservice_conf.rarity = rarity;
+
+    return CONF_OK;
+}
+
 static struct ConfigParameter nmapservice_parameters[] = {
     {
         "probe-file",
@@ -37,6 +53,16 @@ static struct ConfigParameter nmapservice_parameters[] = {
         0,
         {"service-probe-file", "probes-file", 0},
         "Specifies nmap-service-probes file for probes loading."
+    },
+    {
+        "rarity",
+        SET_rarity,
+        0,
+        {"intensity", 0},
+        "Specifies the intensity of nmap version scan. The lower-numbered probes"
+        " are effective against a wide variety of common services, while the "
+        "higher-numbered ones are rarely useful. The intensity must be between 1"
+        " and 9. The default is 7."
     },
 
     {0}
@@ -73,8 +99,8 @@ nmapservice_global_init(const struct Xconf *xconf)
     LOG(LEVEL_INFO, "[hint] NmapServiceProbe: probe fallbacks linked.\n");
 
     if (nmapservice_conf.rarity == 0) {
-        nmapservice_conf.rarity = 6;
-        LOG(LEVEL_INFO, "[hint] NmapServiceProbe: no rarity specified, use default 6.\n");
+        nmapservice_conf.rarity = 7;
+        LOG(LEVEL_INFO, "[hint] NmapServiceProbe: no rarity specified, use default 7.\n");
     }
 
     return 1;
@@ -127,7 +153,8 @@ nmapservice_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    struct NmapServiceProbeList *probes = nmapservice_conf.service_probes;
+    struct NmapServiceProbeList *list = nmapservice_conf.service_probes;
+    unsigned next_probe = 0;
 
     /**
      * no response
@@ -137,12 +164,12 @@ nmapservice_handle_response(
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
         snprintf(item->report, OUTPUT_RPT_LEN, "[probe: %s]",
-            probes->probes[target->index]->name);
+            list->probes[target->index]->name);
 
         /**
          * We have to check whether it is the last available probe.
          * */
-        unsigned next_probe = nmapservice_next_probe_index(probes,
+        unsigned next_probe = nmapservice_next_probe_index(list,
             target->index, target->port_them,
             nmapservice_conf.rarity, NMAP_IPPROTO_TCP);
 
@@ -155,7 +182,7 @@ nmapservice_handle_response(
         }
     }
 
-    struct ServiceProbeMatch *match = nmapservice_match_service(probes,
+    struct ServiceProbeMatch *match = nmapservice_match_service(list,
         target->index, px, sizeof_px, NMAP_IPPROTO_TCP);
 
     if (match) {
@@ -164,22 +191,29 @@ nmapservice_handle_response(
         safe_strcpy(item->reason, OUTPUT_RSN_LEN,
             match->is_softmatch?"softmatch":"matched");
         snprintf(item->report, OUTPUT_RPT_LEN, "[probe: %s, service: %s]",
-            probes->probes[target->index]->name, match->service);
+            list->probes[target->index]->name, match->service);
 
         return 0;
     }
 
-    /**
-     * not matched.
-     * Nmap's logic will stop sending new probe.
-     * */
-    item->level = Output_FAILURE;
+    /*fail to match or softmatch, try to send next possible probe*/
+
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
     snprintf(item->report, OUTPUT_RPT_LEN, "[probe: %s]",
-        probes->probes[target->index]->name);
+        list->probes[target->index]->name);
 
-    return 0;
+    next_probe = nmapservice_next_probe_index(list,
+        target->index, target->port_them,
+        nmapservice_conf.rarity, NMAP_IPPROTO_TCP);
+
+    /*no more probe, treat it as failure*/
+    if (!next_probe) {
+        item->level = Output_FAILURE;
+        return 0;
+    }
+
+    return next_probe+1;
 }
 
 struct ProbeModule NmapServiceProbe = {
@@ -189,9 +223,12 @@ struct ProbeModule NmapServiceProbe = {
     .multi_num  = 1,
     .params     = nmapservice_parameters,
     .desc =
-        "GetRequest Probe sends target port a simple HTTP Get request:\n"
-        "    `GET / HTTP/1.0\\r\\n\\r\\n`\n"
-        "It could get a simple result from http server fastly.",
+        "NmapService Probe sends payloads from specified nmap-service-probes "
+        "file and identifies service and version of target port just like Nmap."
+        " NmapService is an emulation of Nmap's service identification. Use"
+        " `--probe-file` subswitch to set nmap-service-probes file to load. Use "
+        "timeout mode to handle no response correctly.\n"
+        "NOTE: No proper way to do complete matching after a softmatch now.",
     .global_init_cb                    = &nmapservice_global_init,
     .make_payload_cb                   = &nmapservice_make_payload,
     .get_payload_length_cb             = &nmapservice_get_payload_length,

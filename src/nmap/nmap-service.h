@@ -4,8 +4,10 @@
 #ifndef SERVICE_PROBES_H
 #define SERVICE_PROBES_H
 #include <stdio.h>
-#include <pcre.h>
 #include "../massip/massip-rangesv4.h"
+
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
 
 #define NMAP_IPPROTO_TCP    6
 #define NMAP_IPPROTO_UDP   17
@@ -66,10 +68,12 @@ struct ServiceProbeFallback {
 struct ServiceProbeMatch {
     struct ServiceProbeMatch           *next;
     char                               *service;
+
     char                               *regex;
     size_t                              regex_length;
-    pcre                               *compiled_re;
-    pcre_extra                         *compiled_extra;
+    pcre2_code                         *compiled_re;
+    pcre2_match_context                *match_ctx;
+
     struct ServiceVersionInfo          *versioninfo;
     unsigned                            is_case_insensitive:1;
     unsigned                            is_include_newlines:1;

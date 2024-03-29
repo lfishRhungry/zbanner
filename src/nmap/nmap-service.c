@@ -1112,8 +1112,8 @@ void
 nmapservice_match_compile(struct NmapServiceProbeList * service_probes)
 {
     struct ServiceProbeMatch *match;
-    const char *error;
-    int erroffset;
+    int pcre2_errcode;
+    PCRE2_SIZE pcre2_erroffset;
 
     for (unsigned i=0; i<service_probes->count; i++) {
         match = service_probes->probes[i]->match;
@@ -1121,10 +1121,12 @@ nmapservice_match_compile(struct NmapServiceProbeList * service_probes)
 
             if (match->compiled_re) continue;
 
-            match->compiled_re = pcre_compile(match->regex,
-                match->is_case_insensitive?PCRE_CASELESS:0 | match->is_include_newlines?PCRE_DOTALL:0,
-                &error,
-                &erroffset,
+            match->compiled_re = pcre2_compile(
+                (PCRE2_SPTR)match->regex,
+                PCRE2_ZERO_TERMINATED,
+                match->is_case_insensitive?PCRE2_CASELESS:0 | match->is_include_newlines?PCRE2_DOTALL:0,
+                &pcre2_errcode,
+                &pcre2_erroffset,
                 NULL);
 
             if (!match->compiled_re) {
@@ -1132,14 +1134,23 @@ nmapservice_match_compile(struct NmapServiceProbeList * service_probes)
                 continue;
             }
 
-            match->compiled_extra = pcre_study(match->compiled_re, 0, &error);
+            match->match_ctx = pcre2_match_context_create(NULL);
 
-            if (!match->compiled_extra) {
-                LOG(LEVEL_INFO, "[-] regex studied nothing.\n");
-                pcre_free(match->compiled_re);
-                match->compiled_re = NULL;
+            if (!match->match_ctx) {
+                LOG(LEVEL_ERROR, "[-] regex allocate match_ctx failed.\n");
                 continue;
             }
+
+            pcre2_set_match_limit(match->match_ctx, 100000);
+
+#ifdef pcre2_set_depth_limit
+            // Changed name in PCRE2 10.30. PCRE2 uses macro definitions for function
+            // names, so we don't have to add this to configure.ac.
+            pcre2_set_depth_limit(match->match_ctx, 10000);
+#else
+            pcre2_set_recursion_limit(match->match_ctx, 10000);
+#endif
+
         }
     }
 }
@@ -1189,13 +1200,13 @@ nmapservice_match_free(struct NmapServiceProbeList * service_probes)
         match = service_probes->probes[i]->match;
         for (;match;match = match->next) {
             if (match->compiled_re) {
-                pcre_free(match->compiled_re);
+                pcre2_code_free(match->compiled_re);
                 match->compiled_re = NULL;
-            }
 
-            if (match->compiled_extra) {
-                pcre_free_study(match->compiled_extra);
-                match->compiled_extra = NULL;
+                if (match->match_ctx) {
+                    pcre2_match_context_free(match->match_ctx);
+                    match->match_ctx = NULL;
+                }
             }
         }
     }
@@ -1256,24 +1267,35 @@ static struct ServiceProbeMatch *
 nmapservice_match_service_in_one_probe(const struct NmapServiceProbe *probe,
     const unsigned char *payload, size_t payload_len)
 {
-    struct ServiceProbeMatch *match_res = NULL;
+    struct ServiceProbeMatch *match_res  = NULL;
+    pcre2_match_data         *match_data = NULL;
     struct ServiceProbeMatch *m;
-    int ovector[3];
-    int reg_res;
+    int                       rc;
 
     for (m = probe->match;m;m = m->next) {
 
         if (m->compiled_re) {
-            reg_res = pcre_exec(m->compiled_re,
-                m->compiled_extra,
-                (const char *)payload, (int)payload_len,
-                0, 0, ovector, sizeof(ovector)/sizeof(int));
 
-            /*matched one*/
-            if (reg_res > 0) {
-                match_res = m;
+            match_data = pcre2_match_data_create_from_pattern(m->compiled_re,NULL);
+            if (!match_data) {
+                LOG(LEVEL_ERROR, "FAIL: cannot allocate match_data when matching in probe %s.\n", probe->name);
+                match_res = NULL;
                 break;
             }
+
+            rc = pcre2_match(m->compiled_re,
+                (PCRE2_SPTR8)payload, (int)payload_len,
+                0, 0, match_data, m->match_ctx);
+
+            /*matched one. ps: "offset is too small" means successful, too*/
+            if (rc >= 0) {
+                match_res = m;
+                pcre2_match_data_free(match_data);
+                match_data = NULL;
+                break;
+            }
+
+            pcre2_match_data_free(match_data);
         }
     }
 
@@ -1297,21 +1319,18 @@ nmapservice_match_service(
         return match_res;
 
     /*has fallback? try match all*/
-    if (service_probes->probes[probe_idx]->fallback) {
+    struct ServiceProbeFallback *fallback = NULL;
 
-        struct ServiceProbeFallback *fallback = NULL;
-
-        for (fallback=service_probes->probes[probe_idx]->fallback;
-            fallback;
-            fallback=fallback->next) {
-            /*fallback must have been linked*/
-            if (fallback->probe) {
-                match_res = nmapservice_match_service_in_one_probe(fallback->probe,
-                    payload, payload_len);
-                /*matched*/
-                if (match_res)
-                    break;
-            }
+    for (fallback=service_probes->probes[probe_idx]->fallback;
+        fallback;
+        fallback=fallback->next) {
+        /*fallback must have been linked*/
+        if (fallback->probe) {
+            match_res = nmapservice_match_service_in_one_probe(fallback->probe,
+                payload, payload_len);
+            /*matched*/
+            if (match_res)
+                break;
         }
     }
 
