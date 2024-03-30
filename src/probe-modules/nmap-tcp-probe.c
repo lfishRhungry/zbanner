@@ -190,8 +190,15 @@ nmaptcp_handle_response(
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "identified");
         safe_strcpy(item->reason, OUTPUT_RSN_LEN,
             match->is_softmatch?"softmatch":"matched");
-        snprintf(item->report, OUTPUT_RPT_LEN, "[probe: %s, service: %s, line: %u]",
-            list->probes[target->index]->name, match->service, match->line);
+        // int n = snprintf(item->report, OUTPUT_RPT_LEN, "[probe: %s, service: %s, line: %u",
+        //     list->probes[target->index]->name, match->service, match->line);
+        int n = snprintf(item->report, OUTPUT_RPT_LEN, "[service: %s, line: %u",
+            match->service, match->line);
+        if (match->versioninfo) {
+            n += snprintf(item->report+n, OUTPUT_RPT_LEN-n, ", info: %s", match->versioninfo->value);
+        }
+
+        snprintf(item->report+n, OUTPUT_RPT_LEN-n, "]");
 
         return 0;
     }
