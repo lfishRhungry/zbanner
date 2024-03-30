@@ -7,26 +7,26 @@
 #include "../nmap/nmap-service.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule NmapServiceProbe;
+extern struct ProbeModule NmapTcpProbe;
 
-struct NmapServiceConf {
+struct NmapTcpConf {
     struct NmapServiceProbeList *service_probes;
     char *                       probe_file;
     unsigned                     rarity;
 };
 
-static struct NmapServiceConf nmapservice_conf = {0};
+static struct NmapTcpConf nmaptcp_conf = {0};
 
 
 static int SET_probe_file(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
 
-    if (nmapservice_conf.probe_file) {
-        free(nmapservice_conf.probe_file);
+    if (nmaptcp_conf.probe_file) {
+        free(nmaptcp_conf.probe_file);
     }
 
-    nmapservice_conf.probe_file = STRDUP(value);
+    nmaptcp_conf.probe_file = STRDUP(value);
     return CONF_OK;
 }
 
@@ -37,11 +37,11 @@ static int SET_rarity(void *conf, const char *name, const char *value)
 
     unsigned rarity = parseBoolean(value);
     if (rarity < 1 || rarity > 9) {
-        LOG(LEVEL_ERROR, "[-] NmapServiceProbe: rarity must be in range 1-9.\n");
+        LOG(LEVEL_ERROR, "[-] NmapTcpProbe: rarity must be in range 1-9.\n");
         return CONF_ERR;
     }
 
-    nmapservice_conf.rarity = rarity;
+    nmaptcp_conf.rarity = rarity;
 
     return CONF_OK;
 }
@@ -69,76 +69,76 @@ static struct ConfigParameter nmapservice_parameters[] = {
 };
 
 static int
-nmapservice_global_init(const struct Xconf *xconf)
+nmaptcp_global_init(const struct Xconf *xconf)
 {
     /*Use LzrWait if no subprobe specified*/
-    if (!nmapservice_conf.probe_file) {
+    if (!nmaptcp_conf.probe_file) {
         LOG(LEVEL_ERROR, "[-] No nmap-service-probes file specified.\n");
         return 0;
     }
-    nmapservice_conf.service_probes =
-        nmapservice_read_file(nmapservice_conf.probe_file);
+    nmaptcp_conf.service_probes =
+        nmapservice_read_file(nmaptcp_conf.probe_file);
 
-    if (!nmapservice_conf.service_probes) {
-        LOG(LEVEL_ERROR, "[-] NmapServiceProbe: invalid nmap_service_probes file: %s\n",
-            nmapservice_conf.probe_file);
+    if (!nmaptcp_conf.service_probes) {
+        LOG(LEVEL_ERROR, "[-] NmapTcpProbe: invalid nmap_service_probes file: %s\n",
+            nmaptcp_conf.probe_file);
         return 0;
     }
 
-    if (!nmapservice_conf.service_probes->count) {
-        LOG(LEVEL_ERROR, "[-] NmapServiceProbe: no probe has been loaded from %s\n",
-            nmapservice_conf.probe_file);
-        nmapservice_free(nmapservice_conf.service_probes);
+    if (!nmaptcp_conf.service_probes->count) {
+        LOG(LEVEL_ERROR, "[-] NmapTcpProbe: no probe has been loaded from %s\n",
+            nmaptcp_conf.probe_file);
+        nmapservice_free(nmaptcp_conf.service_probes);
         return 0;
     }
 
-    nmapservice_match_compile(nmapservice_conf.service_probes);
-    LOG(LEVEL_INFO, "[hint] NmapServiceProbe: probes loaded and compiled.\n");
+    nmapservice_match_compile(nmaptcp_conf.service_probes);
+    LOG(LEVEL_INFO, "[hint] NmapTcpProbe: probes loaded and compiled.\n");
 
-    nmapservice_link_fallback(nmapservice_conf.service_probes);
-    LOG(LEVEL_INFO, "[hint] NmapServiceProbe: probe fallbacks linked.\n");
+    nmapservice_link_fallback(nmaptcp_conf.service_probes);
+    LOG(LEVEL_INFO, "[hint] NmapTcpProbe: probe fallbacks linked.\n");
 
-    if (nmapservice_conf.rarity == 0) {
-        nmapservice_conf.rarity = 7;
-        LOG(LEVEL_INFO, "[hint] NmapServiceProbe: no rarity specified, use default 7.\n");
+    if (nmaptcp_conf.rarity == 0) {
+        nmaptcp_conf.rarity = 7;
+        LOG(LEVEL_INFO, "[hint] NmapTcpProbe: no rarity specified, use default 7.\n");
     }
 
     return 1;
 }
 
 static void
-nmapservice_close()
+nmaptcp_close()
 {
-    if (nmapservice_conf.service_probes) {
-        nmapservice_match_free(nmapservice_conf.service_probes);
-        LOG(LEVEL_INFO, "[hint] NmapServiceProbe: probes compilation freed.\n");
+    if (nmaptcp_conf.service_probes) {
+        nmapservice_match_free(nmaptcp_conf.service_probes);
+        LOG(LEVEL_INFO, "[hint] NmapTcpProbe: probes compilation freed.\n");
 
-        nmapservice_free(nmapservice_conf.service_probes);
-        LOG(LEVEL_INFO, "[hint] NmapServiceProbe: probes freed.\n");
+        nmapservice_free(nmaptcp_conf.service_probes);
+        LOG(LEVEL_INFO, "[hint] NmapTcpProbe: probes freed.\n");
 
-        nmapservice_conf.service_probes = NULL;
+        nmaptcp_conf.service_probes = NULL;
     }
 }
 
 static size_t
-nmapservice_make_payload(
+nmaptcp_make_payload(
     struct ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf,
-        nmapservice_conf.service_probes->probes[target->index]->hellostring,
-        nmapservice_conf.service_probes->probes[target->index]->hellolength);
+        nmaptcp_conf.service_probes->probes[target->index]->hellostring,
+        nmaptcp_conf.service_probes->probes[target->index]->hellolength);
 
-    return nmapservice_conf.service_probes->probes[target->index]->hellolength;
+    return nmaptcp_conf.service_probes->probes[target->index]->hellolength;
 }
 
 static size_t
-nmapservice_get_payload_length(struct ProbeTarget *target)
+nmaptcp_get_payload_length(struct ProbeTarget *target)
 {
-    if (target->index >= nmapservice_conf.service_probes->count)
+    if (target->index >= nmaptcp_conf.service_probes->count)
         return 0;
 
-    return nmapservice_conf.service_probes->probes[target->index]->hellolength;
+    return nmaptcp_conf.service_probes->probes[target->index]->hellolength;
 }
 
 /**
@@ -148,12 +148,12 @@ nmapservice_get_payload_length(struct ProbeTarget *target)
  * as not from probe after softmatch.
 */
 int
-nmapservice_handle_response(
+nmaptcp_handle_response(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    struct NmapServiceProbeList *list = nmapservice_conf.service_probes;
+    struct NmapServiceProbeList *list = nmaptcp_conf.service_probes;
     unsigned next_probe = 0;
 
     /**
@@ -171,7 +171,7 @@ nmapservice_handle_response(
          * */
         unsigned next_probe = nmapservice_next_probe_index(list,
             target->index, target->port_them,
-            nmapservice_conf.rarity, NMAP_IPPROTO_TCP);
+            nmaptcp_conf.rarity, NMAP_IPPROTO_TCP);
 
         if (next_probe) {
             return next_probe+1;
@@ -190,8 +190,8 @@ nmapservice_handle_response(
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "identified");
         safe_strcpy(item->reason, OUTPUT_RSN_LEN,
             match->is_softmatch?"softmatch":"matched");
-        snprintf(item->report, OUTPUT_RPT_LEN, "[probe: %s, service: %s]",
-            list->probes[target->index]->name, match->service);
+        snprintf(item->report, OUTPUT_RPT_LEN, "[probe: %s, service: %s, line: %u]",
+            list->probes[target->index]->name, match->service, match->line);
 
         return 0;
     }
@@ -205,7 +205,7 @@ nmapservice_handle_response(
 
     next_probe = nmapservice_next_probe_index(list,
         target->index, target->port_them,
-        nmapservice_conf.rarity, NMAP_IPPROTO_TCP);
+        nmaptcp_conf.rarity, NMAP_IPPROTO_TCP);
 
     /*no more probe, treat it as failure*/
     if (!next_probe) {
@@ -216,23 +216,23 @@ nmapservice_handle_response(
     return next_probe+1;
 }
 
-struct ProbeModule NmapServiceProbe = {
-    .name       = "nmap-service",
+struct ProbeModule NmapTcpProbe = {
+    .name       = "nmap-tcp",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_DynamicNext,
     .multi_num  = 1,
     .params     = nmapservice_parameters,
     .desc =
-        "NmapService Probe sends payloads from specified nmap-service-probes "
-        "file and identifies service and version of target port just like Nmap."
+        "NmapTcp Probe sends payloads from specified nmap-service-probes "
+        "file and identifies service and version of target tcp port just like Nmap."
         " NmapService is an emulation of Nmap's service identification. Use"
-        " `--probe-file` subswitch to set nmap-service-probes file to load. Use "
+        " `--probe-file` subparam to set nmap-service-probes file to load. Use "
         "timeout mode to handle no response correctly.\n"
         "NOTE: No proper way to do complete matching after a softmatch now.",
-    .global_init_cb                    = &nmapservice_global_init,
-    .make_payload_cb                   = &nmapservice_make_payload,
-    .get_payload_length_cb             = &nmapservice_get_payload_length,
+    .global_init_cb                    = &nmaptcp_global_init,
+    .make_payload_cb                   = &nmaptcp_make_payload,
+    .get_payload_length_cb             = &nmaptcp_get_payload_length,
     .validate_response_cb              = NULL,
-    .handle_response_cb                = &nmapservice_handle_response,
-    .close_cb                          = &nmapservice_close,
+    .handle_response_cb                = &nmaptcp_handle_response,
+    .close_cb                          = &nmaptcp_close,
 };

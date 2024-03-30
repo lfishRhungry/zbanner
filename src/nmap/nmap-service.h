@@ -68,6 +68,7 @@ struct ServiceProbeFallback {
 struct ServiceProbeMatch {
     struct ServiceProbeMatch           *next;
     char                               *service;
+    unsigned                            line;
 
     char                               *regex;
     size_t                              regex_length;

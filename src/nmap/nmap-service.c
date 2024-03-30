@@ -450,6 +450,8 @@ parse_match(struct NmapServiceProbeList *list, const char *line, size_t offset, 
         fprintf(stderr, "%s:%u:%u: servicename is empty\n", filename, line_number, (unsigned)offset);
         goto parse_error;
     }
+
+    match->line = line_number;
     
     /*
      * <pattern>
@@ -1072,7 +1074,7 @@ nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp)
         
         for (match=probe->match; match; match = match->next) {
             struct ServiceVersionInfo *vi;
-            
+
             fprintf(fp, "match %s m", match->service);
             nmapserviceprobes_print_dstring(fp, match->regex, match->regex_length, '/');
             if (match->is_case_insensitive)
@@ -1080,7 +1082,7 @@ nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp)
             if (match->is_include_newlines)
                 fprintf(fp, "s");
             fprintf(fp, " ");
-            
+
             for (vi=match->versioninfo; vi; vi=vi->next) {
                 const char *tag;
                 switch (vi->type) {
