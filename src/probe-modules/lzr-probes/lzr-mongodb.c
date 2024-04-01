@@ -30,7 +30,7 @@ lzr_mongodb_get_payload_length(struct ProbeTarget *target)
     return sizeof(lzr_mongodb_payload)-1;
 }
 
-static int
+static unsigned
 lzr_mongodb_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

@@ -30,7 +30,7 @@ lzr_mssql_get_payload_length(struct ProbeTarget *target)
     return sizeof(lzr_mssql_payload)-1;
 }
 
-static int
+static unsigned
 lzr_mssql_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

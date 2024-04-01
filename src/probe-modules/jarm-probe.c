@@ -115,7 +115,7 @@ jarm_make_payload(
     return jarm_create_ch(&jc, payload_buf, PROBE_PAYLOAD_MAX_LEN);
 }
 
-size_t
+static size_t
 jarm_get_payload_length(struct ProbeTarget *target)
 {
     if (target->index >= JarmProbe.multi_num)
@@ -129,7 +129,7 @@ jarm_get_payload_length(struct ProbeTarget *target)
     return jarm_create_ch(&jc, buf, TLS_CLIENTHELLO_MAX_LEN);
 }
 
-int
+static unsigned
 jarm_handle_response(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

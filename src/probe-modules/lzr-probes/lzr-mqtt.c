@@ -29,7 +29,7 @@ lzr_mqtt_get_payload_length(struct ProbeTarget *target)
     return sizeof(lzr_mqtt_payload);
 }
 
-static int
+static unsigned
 lzr_mqtt_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

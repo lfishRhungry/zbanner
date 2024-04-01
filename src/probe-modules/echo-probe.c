@@ -17,7 +17,7 @@ echo_make_payload(
     return 4;
 }
 
-static int
+static unsigned
 echo_validate_response(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px)

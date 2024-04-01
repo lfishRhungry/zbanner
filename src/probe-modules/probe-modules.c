@@ -182,7 +182,7 @@ void list_all_probe_modules()
     printf("\n");
 }
 
-int probe_global_init_nothing(const struct Xconf *xconf)
+unsigned probe_global_init_nothing(const struct Xconf *xconf)
 {
     return 1;
 }
@@ -201,7 +201,7 @@ probe_no_payload_length(struct ProbeTarget *target)
     return 0;
 }
 
-int
+unsigned
 probe_report_nothing(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
@@ -220,7 +220,7 @@ probe_report_nothing(
     return 0;
 }
 
-int
+unsigned
 probe_just_report_banner(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

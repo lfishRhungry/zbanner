@@ -25,7 +25,7 @@ lzr_mema_get_payload_length(struct ProbeTarget *target)
     return strlen(lzr_mema_payload);
 }
 
-static int
+static unsigned
 lzr_mema_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

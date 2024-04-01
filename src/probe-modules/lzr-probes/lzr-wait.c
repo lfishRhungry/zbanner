@@ -4,7 +4,7 @@
 /*for internal x-ref*/
 extern struct ProbeModule LzrWaitProbe;
 
-static int
+static unsigned
 lzr_wait_handle_response(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

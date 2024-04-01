@@ -45,7 +45,7 @@ lzr_ipp_get_payload_length(struct ProbeTarget *target)
     return lzr_ipp_make_payload(target, tmp_str);
 }
 
-static int
+static unsigned
 lzr_ipp_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

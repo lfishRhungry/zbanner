@@ -28,7 +28,7 @@ lzr_siemens_get_payload_length(struct ProbeTarget *target)
     return sizeof(lzr_siemens_payload)-1;
 }
 
-static int
+static unsigned
 lzr_siemens_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

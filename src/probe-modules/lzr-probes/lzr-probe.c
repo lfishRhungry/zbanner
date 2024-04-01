@@ -218,7 +218,7 @@ static struct ConfigParameter lzr_parameters[] = {
     {0}
 };
 
-static int
+static unsigned
 lzr_global_init(const struct Xconf *xconf)
 {
     /*Use LzrWait if no subprobe specified*/
@@ -259,7 +259,7 @@ lzr_get_payload_length(struct ProbeTarget *target)
     return 0;
 }
 
-static int
+static unsigned
 lzr_handle_response(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

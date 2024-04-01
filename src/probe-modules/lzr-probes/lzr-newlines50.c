@@ -23,7 +23,7 @@ lzr_newlines50_get_payload_length(struct ProbeTarget *target)
     return strlen(lzr_newlines50_payload);
 }
 
-static int
+static unsigned
 lzr_newlines50_handle_response(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

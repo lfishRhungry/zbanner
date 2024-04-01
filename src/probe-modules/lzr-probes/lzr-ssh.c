@@ -27,7 +27,7 @@ lzr_ssh_get_payload_length(struct ProbeTarget *target)
     return strlen(lzr_ssh_payload);
 }
 
-static int
+static unsigned
 lzr_ssh_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

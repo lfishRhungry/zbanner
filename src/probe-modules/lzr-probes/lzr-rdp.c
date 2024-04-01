@@ -31,7 +31,7 @@ lzr_rdp_get_payload_length(struct ProbeTarget *target)
     return sizeof(lzr_rdp_payload)-1;
 }
 
-static int
+static unsigned
 lzr_rdp_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

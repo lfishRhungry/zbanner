@@ -25,7 +25,7 @@ enum {
     TLS_STATE_HANDSHAKE = 0,     /*init state: still in handshaking*/
     TLS_STATE_APP_HELLO,         /*our turn to say hello*/
     TLS_STATE_APP_RECEIVE_NEXT,
-    TLS_STATE_CLOSE,           /*unexpected state that need to close conn*/
+    TLS_STATE_CLOSE,             /*unexpected state that need to close conn*/
 };
 
 /*for internal x-ref*/
@@ -237,7 +237,7 @@ static void ssl_info_callback(const SSL *ssl, int where, int ret) {
     }
 }
 
-static int output_subject(struct Output *out,
+static unsigned output_subject(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     int res;
@@ -360,7 +360,7 @@ static int output_subject(struct Output *out,
     return 1;
 }
 
-static int output_cert(struct Output *out,
+static unsigned output_cert(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     STACK_OF(X509) * sk_x509_certs;
@@ -451,7 +451,7 @@ static int output_cert(struct Output *out,
     return 1;
 }
 
-static int output_cipher(struct Output *out,
+static unsigned output_cipher(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     const SSL_CIPHER *ssl_cipher;
@@ -484,7 +484,7 @@ static int output_cipher(struct Output *out,
     return 1;
 }
 
-static int output_version(struct Output *out,
+static unsigned output_version(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     int version = SSL_version(ssl);
@@ -525,7 +525,7 @@ static int output_version(struct Output *out,
     return 1;
 }
 
-static int extend_buffer(unsigned char **buf, size_t *buf_len)
+static unsigned extend_buffer(unsigned char **buf, size_t *buf_len)
 {
     LOG(LEVEL_DEBUG, "[BUFFER extending...] >>>\n");
     unsigned char *tmp_data = NULL;
@@ -541,7 +541,7 @@ static int extend_buffer(unsigned char **buf, size_t *buf_len)
 }
 
 /*init public SSL_CTX*/
-static int
+static unsigned
 tlsstate_global_init(const struct Xconf *xconf)
 {
     /*save `out`*/

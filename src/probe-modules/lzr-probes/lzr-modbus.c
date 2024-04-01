@@ -27,7 +27,7 @@ lzr_modbus_get_payload_length(struct ProbeTarget *target)
     return sizeof(lzr_modbus_payload);
 }
 
-static int
+static unsigned
 lzr_modbus_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

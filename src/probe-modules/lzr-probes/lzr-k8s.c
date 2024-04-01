@@ -45,7 +45,7 @@ static char lzr_k8s_payload[] =
 "\xff\x01\x00\x01\x00"                                     /*ext renegotiation info*/
 ;
 
-static int lzr_k8s_global_init(const struct Xconf *xconf)
+static unsigned lzr_k8s_global_init(const struct Xconf *xconf)
 {
     /*fill the random bytes in payload*/
     unsigned r;
@@ -78,7 +78,7 @@ lzr_k8s_get_payload_length(struct ProbeTarget *target)
     return sizeof(lzr_k8s_payload)-1;
 }
 
-static int
+static unsigned
 lzr_k8s_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

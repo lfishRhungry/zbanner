@@ -43,7 +43,7 @@ lzr_http_get_payload_length(struct ProbeTarget *target)
     return lzr_http_make_payload(target, tmp_str);
 }
 
-static int
+static unsigned
 lzr_http_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

@@ -9,7 +9,7 @@
 extern struct ProbeModule LzrImapProbe;
 
 
-static int
+static unsigned
 lzr_imap_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

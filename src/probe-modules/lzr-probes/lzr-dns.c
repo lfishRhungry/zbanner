@@ -59,7 +59,7 @@ lzr_dns_get_payload_length(struct ProbeTarget *target)
     return sizeof(lzr_dns_payload)-1;
 }
 
-static int
+static unsigned
 lzr_dns_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

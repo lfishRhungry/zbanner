@@ -40,7 +40,7 @@ static struct ConfigParameter getstate_parameters[] = {
     {0}
 };
 
-static int getstate_global_init(const struct Xconf *xconf)
+static unsigned getstate_global_init(const struct Xconf *xconf)
 {
     LOG(LEVEL_WARNING, "[GetState Probe global initing] >>>\n");
     return 1;

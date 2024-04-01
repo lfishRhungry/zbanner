@@ -27,7 +27,7 @@ lzr_redis_get_payload_length(struct ProbeTarget *target)
     return sizeof(lzr_redis_payload)-1;
 }
 
-static int
+static unsigned
 lzr_redis_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

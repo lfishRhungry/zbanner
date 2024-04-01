@@ -6,7 +6,7 @@
 /*for internal x-ref*/
 extern struct ProbeModule LzrTelnetProbe;
 
-static int
+static unsigned
 lzr_telnet_handle_response(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

@@ -28,7 +28,7 @@ lzr_memb_get_payload_length(struct ProbeTarget *target)
     return sizeof(lzr_memb_payload);
 }
 
-static int
+static unsigned
 lzr_memb_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

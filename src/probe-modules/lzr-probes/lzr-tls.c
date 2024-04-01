@@ -44,7 +44,7 @@ static char lzr_tls_payload[] =
 "\xff\x01\x00\x01\x00"                                     /*ext renegotiation info*/
 ;
 
-static int lzr_tls_global_init(const struct Xconf *xconf)
+static unsigned lzr_tls_global_init(const struct Xconf *xconf)
 {
     /*fill the random bytes in payload*/
     unsigned r;
@@ -77,7 +77,7 @@ lzr_tls_get_payload_length(struct ProbeTarget *target)
     return sizeof(lzr_tls_payload)-1;
 }
 
-static int
+static unsigned
 lzr_tls_handle_reponse(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

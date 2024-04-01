@@ -68,7 +68,7 @@ static struct ConfigParameter nmapservice_parameters[] = {
     {0}
 };
 
-static int
+static unsigned
 nmaptcp_global_init(const struct Xconf *xconf)
 {
     /*Use LzrWait if no subprobe specified*/
@@ -147,7 +147,7 @@ nmaptcp_get_payload_length(struct ProbeTarget *target)
  * So we don't support sending probe again after softmatch and treat all tm-event
  * as not from probe after softmatch.
 */
-int
+unsigned
 nmaptcp_handle_response(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,

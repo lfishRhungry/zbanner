@@ -19,7 +19,7 @@ struct Xconf;
  * @param xconf main conf of xtate, use `void` to avoiding x-ref.
  * @return FALSE to exit process if init failed
 */
-typedef int (*probe_modules_global_init)(const struct Xconf *xconf);
+typedef unsigned (*probe_modules_global_init)(const struct Xconf *xconf);
 
 struct ProbeTarget {
     ipaddress ip_them;
@@ -77,7 +77,7 @@ typedef size_t
  * @param sizeof_px len of reponse
  * @return TRUE if the response is for us.
 */
-typedef int
+typedef unsigned
 (*probe_modules_validate_response)(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px
@@ -97,7 +97,7 @@ typedef int
  * @param item to define output content.
  * @return true for starting multi-probe in Multi_AfterHandle mode.
 */
-typedef int
+typedef unsigned
 (*probe_modules_handle_response)(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
@@ -241,7 +241,7 @@ Some useful implemented interfaces
 ************************************************************************/
 
 /*implemented `probe_modules_xxx_init`*/
-int probe_global_init_nothing(const struct Xconf *xconf);
+unsigned probe_global_init_nothing(const struct Xconf *xconf);
 
 size_t
 probe_make_no_payload(
@@ -253,14 +253,14 @@ size_t
 probe_no_payload_length(struct ProbeTarget *target);
 
 /*implemented `probe_modules_handle_reponse`*/
-int
+unsigned
 probe_report_nothing(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item);
 
 /*implemented `probe_modules_handle_reponse`*/
-int
+unsigned
 probe_just_report_banner(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
