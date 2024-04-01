@@ -93,14 +93,14 @@ nmaptcp_global_init(const struct Xconf *xconf)
     }
 
     nmapservice_match_compile(nmaptcp_conf.service_probes);
-    LOG(LEVEL_INFO, "[hint] NmapTcpProbe: probes loaded and compiled.\n");
+    LOG(LEVEL_ERROR, "[hint] NmapTcpProbe: probes loaded and compiled.\n");
 
     nmapservice_link_fallback(nmaptcp_conf.service_probes);
-    LOG(LEVEL_INFO, "[hint] NmapTcpProbe: probe fallbacks linked.\n");
+    LOG(LEVEL_ERROR, "[hint] NmapTcpProbe: probe fallbacks linked.\n");
 
     if (nmaptcp_conf.rarity == 0) {
         nmaptcp_conf.rarity = 7;
-        LOG(LEVEL_INFO, "[hint] NmapTcpProbe: no rarity specified, use default 7.\n");
+        LOG(LEVEL_ERROR, "[hint] NmapTcpProbe: no rarity specified, use default 7.\n");
     }
 
     return 1;
@@ -143,7 +143,7 @@ nmaptcp_get_payload_length(struct ProbeTarget *target)
 
 /**
  * I don't have good way to identify whether the response is from probe
- * after softmatch.
+ * sended after softmatched.
  * So we don't support sending probe again after softmatch and treat all tm-event
  * as not from probe after softmatch.
 */
