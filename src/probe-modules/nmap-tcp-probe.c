@@ -118,6 +118,11 @@ nmaptcp_close()
 
         nmaptcp_conf.service_probes = NULL;
     }
+
+    if (nmaptcp_conf.probe_file) {
+        free(nmaptcp_conf.probe_file);
+        nmaptcp_conf.probe_file = NULL;
+    }
 }
 
 static size_t
@@ -194,7 +199,7 @@ nmaptcp_handle_response(
         //     list->probes[target->index]->name, match->service, match->line);
         int n = snprintf(item->report, OUTPUT_RPT_LEN, "[service: %s, line: %u",
             match->service, match->line);
-        if (match->versioninfo) {
+        if (!match->is_softmatch&&match->versioninfo) {
             n += snprintf(item->report+n, OUTPUT_RPT_LEN-n, ", info: %s", match->versioninfo->value);
         }
 
