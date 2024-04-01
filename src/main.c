@@ -43,9 +43,6 @@
 #include <unistd.h>
 #endif
 
-/*
- * yea I know globals suck
- */
 unsigned volatile is_tx_done = 0;
 unsigned volatile is_rx_done = 0;
 
@@ -89,7 +86,6 @@ static void control_c_handler(int x) {
 }
 
 static int main_scan(struct Xconf *xconf) {
-    /*We could have many tx threads but one rx thread*/
     struct TxThread      *tx_thread;
     struct RxThread       rx_thread[1];
     struct TemplateSet    tmplset;
@@ -161,7 +157,6 @@ static int main_scan(struct Xconf *xconf) {
 
     /*
      * create callback queue
-     * TODO: Maybe more queue?
      */
     xconf->stack = stack_create(xconf->nic.source_mac, &xconf->nic.src,
                                 xconf->stack_buf_count);
@@ -279,7 +274,7 @@ static int main_scan(struct Xconf *xconf) {
                        xconf->bpf_filter);
 
     /*
-     * trap <ctrl-c> to pause
+     * trap <ctrl-c>
      */
     signal(SIGINT, control_c_handler);
 
@@ -295,7 +290,7 @@ static int main_scan(struct Xconf *xconf) {
         parms->thread_handle_xmit       = 0;
     }
     /*
-     * Prepare for rx threads
+     * Prepare for rx thread
      */
     rx_thread->xconf                    = xconf;
     rx_thread->done_receiving           = 0;
