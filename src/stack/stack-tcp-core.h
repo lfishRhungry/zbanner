@@ -36,16 +36,6 @@ struct stack_handle_t;
 /**
  * Create a TCP connection table (to store TCP control blocks) with
  * the desired initial size.
- *
- * @param entry_count
- *      A hint about the desired initial size. This should be about twice
- *      the number of outstanding connections, so you should base this number
- *      on your transmit rate (the faster the transmit rate, the more
- *      outstanding connections you'll have). This function will automatically
- *      round this number up to the nearest power of 2, or round it down
- *      if it causes malloc() to not be able to allocate enough memory.
- * @param entropy
- *      Seed for syn-cookie randomization
  */
 struct TCP_ConnectionTable *
 tcpcon_create_table(size_t entry_count,
@@ -55,15 +45,6 @@ tcpcon_create_table(size_t entry_count,
     unsigned timeout,
     uint64_t entropy);
 
-/**
- * Gracefully destroy a TCP connection table. This is the last chance for any
- * partial banners (like HTTP server version) to be sent to the output. At the
- * end of a scan, you'll see a bunch of banners all at once due to this call.
- *
- * @param tcpcon
- *      A TCP connection table created with a matching call to
- *      'tcpcon_create_table()'.
- */
 void
 tcpcon_destroy_table(struct TCP_ConnectionTable *tcpcon);
 
@@ -130,8 +111,7 @@ int
 tcpapi_recv(struct stack_handle_t *socket);
 
 /**
- * !cannot do sending data and closing at same time
- * if set closing, we would ignore the data.
+ * just send data but not close
 */
 int
 tcpapi_send_data(struct stack_handle_t *socket,
@@ -147,26 +127,18 @@ tcpapi_reconnect(struct stack_handle_t *old_socket,
                  struct ProbeModule *new_probe,
                  enum App_State new_app_state);
 
-/**
- * The "app state" variable is stored opaquely in the `tcb` structure, so
- * to reset it, we need an access function.
- */
 unsigned
 tcpapi_change_app_state(struct stack_handle_t *socket, enum App_State new_app_state);
 
 
-/** Perform the sockets half-close function (calling `close()`). This
- * doesn't actually get rid of the socket, but only stops sending.
- * It sends a FIN packet to the other side, and transitions to the
- * TCP CLOSE-WAIT state.
- * The socket will continue to receive from the opposing side until they
- * give us a FIN packet. */
+/**
+ * Send RST and del TCB to close the conn quickly.
+*/
 int
 tcpapi_close(struct stack_handle_t *socket);
 
 /**
- * This is the interface between the underlying custom TCP/IP stack and
- * the rest of masscan. SCRIPTING will eventually go in here.
+ * Media between Probe and our simplified TCP stack
  */
 unsigned
 application_event(struct stack_handle_t *socket,
