@@ -20,7 +20,7 @@ extern struct ScanModule UdpProbeScan; /*for internal x-ref*/
 */
 static unsigned src_port_start;
 
-static int
+static unsigned
 udpprobe_global_init(const struct Xconf *xconf)
 {
     src_port_start = xconf->nic.src.port.first;
@@ -28,7 +28,7 @@ udpprobe_global_init(const struct Xconf *xconf)
     return 1;
 }
 
-static int
+static unsigned
 udpprobe_transmit(
     uint64_t entropy,
     struct ScanTarget *target,

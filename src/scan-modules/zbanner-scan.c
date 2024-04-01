@@ -102,7 +102,7 @@ static struct ConfigParameter zbanner_parameters[] = {
 */
 static unsigned src_port_start;
 
-static int
+static unsigned
 zbanner_global_init(const struct Xconf *xconf)
 {
     src_port_start = xconf->nic.src.port.first;
@@ -110,8 +110,8 @@ zbanner_global_init(const struct Xconf *xconf)
     return 1;
 }
 
-static int
-zbanner_transmit_packet(
+static unsigned
+zbanner_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
     struct ScanTimeoutEvent *event,
@@ -558,7 +558,7 @@ struct ScanModule ZBannerScan = {
         "    `sudo iptables -D OUTPUT <line-number>`",
 
     .global_init_cb               = &zbanner_global_init,
-    .transmit_cb                  = &zbanner_transmit_packet,
+    .transmit_cb                  = &zbanner_transmit,
     .validate_cb                  = &zbanner_validate,
     .handle_cb                    = &zbanner_handle,
     .timeout_cb                   = &zbanner_timeout,

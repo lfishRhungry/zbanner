@@ -8,7 +8,7 @@
 
 extern struct ScanModule IcmpTimeScan; /*for internal x-ref*/
 
-static int
+static unsigned
 icmptime_transmit(
     uint64_t entropy,
     struct ScanTarget *target,

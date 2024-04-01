@@ -91,7 +91,7 @@ void list_all_scan_modules()
     printf("\n");
 }
 
-int scan_global_init_nothing(const struct Xconf *params)
+unsigned scan_global_init_nothing(const struct Xconf *params)
 {
     return 1;
 }

@@ -8,7 +8,7 @@
 
 extern struct ScanModule IcmpEchoScan; /*for internal x-ref*/
 
-static int
+static unsigned
 icmpecho_transmit(
     uint64_t entropy,
     struct ScanTarget *target,

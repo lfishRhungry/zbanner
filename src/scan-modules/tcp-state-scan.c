@@ -56,14 +56,14 @@ static struct ConfigParameter tcpstate_parameters[] = {
     {0}
 };
 
-static int tcpstate_global_init(const struct Xconf *xconf)
+static unsigned tcpstate_global_init(const struct Xconf *xconf)
 {
     if (tcpstate_conf.conn_timeout <= 0)
         tcpstate_conf.conn_timeout = 30;
     
     /*create rx_handler_count TCP tables for thread safe*/
-    tcpcon_set.count = xconf->rx_handler_count;
-    tcpcon_set.tcpcons    = 
+    tcpcon_set.count   = xconf->rx_handler_count;
+    tcpcon_set.tcpcons = 
         MALLOC(tcpcon_set.count * sizeof(struct TCP_ConnectionTable *));
 
     for (unsigned i=0; i<tcpcon_set.count; i++) {
@@ -80,8 +80,8 @@ static int tcpstate_global_init(const struct Xconf *xconf)
     return 1;
 }
 
-static int
-tcpstate_transmit_packet(
+static unsigned
+tcpstate_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
     struct ScanTimeoutEvent *event,
@@ -256,7 +256,7 @@ struct ScanModule TcpStateScan = {
         "    `sudo iptables -D OUTPUT <line-number>`",
 
     .global_init_cb               = &tcpstate_global_init,
-    .transmit_cb                  = &tcpstate_transmit_packet,
+    .transmit_cb                  = &tcpstate_transmit,
     .validate_cb                  = &tcpstate_validate,
     .handle_cb                    = &tcpstate_handle,
     .timeout_cb                   = &scan_no_timeout,

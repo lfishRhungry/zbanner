@@ -8,7 +8,7 @@
 
 extern struct ScanModule SctpInitScan; /*for internal x-ref*/
 
-static int
+static unsigned
 sctpinit_transmit(
     uint64_t entropy,
     struct ScanTarget *target,

@@ -182,7 +182,7 @@ infinite:
             unsigned char pkt_buffer[PKT_BUF_LEN];
             size_t pkt_len = 0;
 
-            int more = 0;
+            unsigned more = 0;
             more = xconf->scan_module->transmit_cb(entropy, &target, tm_event,
                                                    pkt_buffer, &pkt_len);
 
