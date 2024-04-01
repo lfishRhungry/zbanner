@@ -25,7 +25,7 @@ static const char fmt_ndjson[] =
 
 static char format_time[32];
 
-static int
+static unsigned
 ndjson_init(const struct Output *out)
 {
 

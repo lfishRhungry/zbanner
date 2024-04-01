@@ -13,7 +13,7 @@ extern struct OutputModule TextOutput; /*for internal x-ref*/
 
 static FILE *file;
 
-static int
+static unsigned
 text_init(const struct Output *out)
 {
 

@@ -89,7 +89,7 @@ static const char fmt_cls []   = " \"%s\"";
 static const char fmt_reason[] = " because of \"%s\"";
 static const char fmt_report[] = "  "XPRINT_CH_COLOR_YELLOW"Report: %s";
 
-int
+unsigned
 output_init(struct Output *output)
 {
     if (output->output_module) {

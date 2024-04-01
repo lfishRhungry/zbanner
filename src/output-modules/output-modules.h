@@ -50,7 +50,7 @@ struct Output {
     unsigned                     is_show_info:1;
 };
 
-typedef int
+typedef unsigned
 (*output_modules_init)(const struct Output *out);
 
 typedef void
@@ -70,7 +70,7 @@ struct OutputModule {
 };
 
 /*prepare for outputing results*/
-int
+unsigned
 output_init(struct Output *output);
 
 void

@@ -36,7 +36,7 @@ static const char fmt_csv[] =
 
 static char format_time[32];
 
-static int
+static unsigned
 csv_init(const struct Output *out)
 {
 
