@@ -4,6 +4,7 @@
 #include "templ-ndp.h"
 #include "../globals.h"
 #include "../util/checksum.h"
+#include "../util/data-convert.h"
 
 /* ICMPv6 NDP Nerghbor Solicitation according to RFC4861
       0                   1                   2                   3
@@ -175,7 +176,7 @@ ndp_create_ns_by_template_ipv6(
     if (r_len > tmpl->ipv6.length)
         r_len = tmpl->ipv6.length;
     memcpy(px, tmpl->ipv6.packet, r_len);
-    offset_ip = tmpl->ipv6.offset_ip;
+    offset_ip  = tmpl->ipv6.offset_ip;
     offset_tcp = tmpl->ipv6.offset_tcp;
 
 /*
@@ -215,28 +216,12 @@ ndp_create_ns_by_template_ipv6(
      * the checksum.
      */
     payload_length = tmpl->ipv6.length - tmpl->ipv6.offset_ip - 40;
-    px[offset_ip+4] = (unsigned char)(payload_length>>8);
-    px[offset_ip+5] = (unsigned char)(payload_length>>0);
+    U16_TO_BE(px+offset_ip+4, payload_length);
 
     px[offset_ip+7] = (unsigned char)(ttl);
 
-    px[offset_ip+ 8] = (unsigned char)((ip_me.hi >> 56ULL) & 0xFF);
-    px[offset_ip+ 9] = (unsigned char)((ip_me.hi >> 48ULL) & 0xFF);
-    px[offset_ip+10] = (unsigned char)((ip_me.hi >> 40ULL) & 0xFF);
-    px[offset_ip+11] = (unsigned char)((ip_me.hi >> 32ULL) & 0xFF);
-    px[offset_ip+12] = (unsigned char)((ip_me.hi >> 24ULL) & 0xFF);
-    px[offset_ip+13] = (unsigned char)((ip_me.hi >> 16ULL) & 0xFF);
-    px[offset_ip+14] = (unsigned char)((ip_me.hi >>  8ULL) & 0xFF);
-    px[offset_ip+15] = (unsigned char)((ip_me.hi >>  0ULL) & 0xFF);
-
-    px[offset_ip+16] = (unsigned char)((ip_me.lo >> 56ULL) & 0xFF);
-    px[offset_ip+17] = (unsigned char)((ip_me.lo >> 48ULL) & 0xFF);
-    px[offset_ip+18] = (unsigned char)((ip_me.lo >> 40ULL) & 0xFF);
-    px[offset_ip+19] = (unsigned char)((ip_me.lo >> 32ULL) & 0xFF);
-    px[offset_ip+20] = (unsigned char)((ip_me.lo >> 24ULL) & 0xFF);
-    px[offset_ip+21] = (unsigned char)((ip_me.lo >> 16ULL) & 0xFF);
-    px[offset_ip+22] = (unsigned char)((ip_me.lo >>  8ULL) & 0xFF);
-    px[offset_ip+23] = (unsigned char)((ip_me.lo >>  0ULL) & 0xFF);
+    U64_TO_BE(px+offset_ip+ 8, ip_me.hi);
+    U64_TO_BE(px+offset_ip+16, ip_me.lo);
 
     /*set solicited-node addr*/
     px[offset_ip+24] = 0xFF;
@@ -258,23 +243,8 @@ ndp_create_ns_by_template_ipv6(
     px[offset_ip+39] = (unsigned char)((ip_them.lo >>  0ULL) & 0xFF);
 
     /*set Target Address in NDP*/
-    px[offset_tcp+8 ] = (unsigned char)((ip_them.hi >> 56ULL) & 0xFF);
-    px[offset_tcp+9 ] = (unsigned char)((ip_them.hi >> 48ULL) & 0xFF);
-    px[offset_tcp+10] = (unsigned char)((ip_them.hi >> 40ULL) & 0xFF);
-    px[offset_tcp+11] = (unsigned char)((ip_them.hi >> 32ULL) & 0xFF);
-    px[offset_tcp+12] = (unsigned char)((ip_them.hi >> 24ULL) & 0xFF);
-    px[offset_tcp+13] = (unsigned char)((ip_them.hi >> 16ULL) & 0xFF);
-    px[offset_tcp+14] = (unsigned char)((ip_them.hi >>  8ULL) & 0xFF);
-    px[offset_tcp+15] = (unsigned char)((ip_them.hi >>  0ULL) & 0xFF);
-
-    px[offset_tcp+16] = (unsigned char)((ip_them.lo >> 56ULL) & 0xFF);
-    px[offset_tcp+17] = (unsigned char)((ip_them.lo >> 48ULL) & 0xFF);
-    px[offset_tcp+18] = (unsigned char)((ip_them.lo >> 40ULL) & 0xFF);
-    px[offset_tcp+19] = (unsigned char)((ip_them.lo >> 32ULL) & 0xFF);
-    px[offset_tcp+20] = (unsigned char)((ip_them.lo >> 24ULL) & 0xFF);
-    px[offset_tcp+21] = (unsigned char)((ip_them.lo >> 16ULL) & 0xFF);
-    px[offset_tcp+22] = (unsigned char)((ip_them.lo >>  8ULL) & 0xFF);
-    px[offset_tcp+23] = (unsigned char)((ip_them.lo >>  0ULL) & 0xFF);
+    U64_TO_BE(px+offset_tcp+ 8, ip_them.hi);
+    U64_TO_BE(px+offset_tcp+16, ip_them.lo);
 
     /*set src link addr in NDP*/
     px[offset_tcp+26] = src_mac.addr[0];
@@ -309,24 +279,9 @@ ndp_create_ns_packet(
 unsigned ndp_is_solicited_advertise(ipv6address ip_them,
     const unsigned char *px, unsigned icmpv6_offset)
 {
-    if (px[icmpv6_offset+8 ] == (unsigned char)((ip_them.hi >> 56ULL) & 0xFF)
-        &&px[icmpv6_offset+9 ] == (unsigned char)((ip_them.hi >> 48ULL) & 0xFF)
-        &&px[icmpv6_offset+10] == (unsigned char)((ip_them.hi >> 40ULL) & 0xFF)
-        &&px[icmpv6_offset+11] == (unsigned char)((ip_them.hi >> 32ULL) & 0xFF)
-        &&px[icmpv6_offset+12] == (unsigned char)((ip_them.hi >> 24ULL) & 0xFF)
-        &&px[icmpv6_offset+13] == (unsigned char)((ip_them.hi >> 16ULL) & 0xFF)
-        &&px[icmpv6_offset+14] == (unsigned char)((ip_them.hi >>  8ULL) & 0xFF)
-        &&px[icmpv6_offset+15] == (unsigned char)((ip_them.hi >>  0ULL) & 0xFF)
-        &&px[icmpv6_offset+16] == (unsigned char)((ip_them.lo >> 56ULL) & 0xFF)
-        &&px[icmpv6_offset+17] == (unsigned char)((ip_them.lo >> 48ULL) & 0xFF)
-        &&px[icmpv6_offset+18] == (unsigned char)((ip_them.lo >> 40ULL) & 0xFF)
-        &&px[icmpv6_offset+19] == (unsigned char)((ip_them.lo >> 32ULL) & 0xFF)
-        &&px[icmpv6_offset+20] == (unsigned char)((ip_them.lo >> 24ULL) & 0xFF)
-        &&px[icmpv6_offset+21] == (unsigned char)((ip_them.lo >> 16ULL) & 0xFF)
-        &&px[icmpv6_offset+22] == (unsigned char)((ip_them.lo >>  8ULL) & 0xFF)
-        &&px[icmpv6_offset+23] == (unsigned char)((ip_them.lo >>  0ULL) & 0xFF)) {
+    if (U64_EQUAL_TO_BE(px+icmpv6_offset+8, ip_them.hi)
+        && U64_EQUAL_TO_BE(px+icmpv6_offset+16, ip_them.lo))
         return 1;
-    }
 
     return 0;
 }

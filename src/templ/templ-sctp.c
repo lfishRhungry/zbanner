@@ -99,6 +99,7 @@
 #include "../globals.h"
 #include "../util/logger.h"
 #include "../util/checksum.h"
+#include "../util/data-convert.h"
 #include "../proto/proto-preprocess.h"
 
 static size_t
@@ -121,7 +122,7 @@ sctp_create_by_template_ipv4(
     if (r_len > tmpl->ipv4.length)
         r_len = tmpl->ipv4.length;
     memcpy(px, tmpl->ipv4.packet, r_len);
-    offset_ip = tmpl->ipv4.offset_ip;
+    offset_ip  = tmpl->ipv4.offset_ip;
     offset_tcp = tmpl->ipv4.offset_tcp;
 
     /*
@@ -153,46 +154,28 @@ sctp_create_by_template_ipv4(
         px[offset_ip+2] = (unsigned char)(total_length>>8);
         px[offset_ip+3] = (unsigned char)(total_length>>0);
     }
-    px[offset_ip+4] = (unsigned char)(ip_id >> 8);
-    px[offset_ip+5] = (unsigned char)(ip_id & 0xFF);
-    px[offset_ip+12] = (unsigned char)((ip_me >> 24) & 0xFF);
-    px[offset_ip+13] = (unsigned char)((ip_me >> 16) & 0xFF);
-    px[offset_ip+14] = (unsigned char)((ip_me >>  8) & 0xFF);
-    px[offset_ip+15] = (unsigned char)((ip_me >>  0) & 0xFF);
-    px[offset_ip+16] = (unsigned char)((ip_them >> 24) & 0xFF);
-    px[offset_ip+17] = (unsigned char)((ip_them >> 16) & 0xFF);
-    px[offset_ip+18] = (unsigned char)((ip_them >>  8) & 0xFF);
-    px[offset_ip+19] = (unsigned char)((ip_them >>  0) & 0xFF);
-
+    U16_EQUAL_TO_BE(px+offset_ip+ 4, ip_id);
+    U32_EQUAL_TO_BE(px+offset_ip+12, ip_me);
+    U32_EQUAL_TO_BE(px+offset_ip+16, ip_them);
 
     px[offset_ip+10] = (unsigned char)(0);
     px[offset_ip+11] = (unsigned char)(0);
 
     xsum2 = (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.length);
 
-    px[offset_ip+10] = (unsigned char)(xsum2 >> 8);
-    px[offset_ip+11] = (unsigned char)(xsum2 & 0xFF);
+    U16_EQUAL_TO_BE(px+offset_ip+10, xsum2);
 
 
     /*
      * Now do the checksum for the higher layer protocols
      */
     xsum = 0;
-    px[offset_tcp+ 0] = (unsigned char)(port_me >> 8);
-    px[offset_tcp+ 1] = (unsigned char)(port_me & 0xFF);
-    px[offset_tcp+ 2] = (unsigned char)(port_them >> 8);
-    px[offset_tcp+ 3] = (unsigned char)(port_them & 0xFF);
-
-    px[offset_tcp+16] = (unsigned char)(init_tag >> 24);
-    px[offset_tcp+17] = (unsigned char)(init_tag >> 16);
-    px[offset_tcp+18] = (unsigned char)(init_tag >>  8);
-    px[offset_tcp+19] = (unsigned char)(init_tag >>  0);
+    U16_EQUAL_TO_BE(px+offset_tcp+ 0, port_me);
+    U16_EQUAL_TO_BE(px+offset_tcp+ 2, port_them);
+    U32_EQUAL_TO_BE(px+offset_tcp+16, init_tag);
 
     xsum = checksum_sctp(px + offset_tcp, tmpl->ipv4.length - offset_tcp);
-    px[offset_tcp+ 8] = (unsigned char)(xsum >>  24);
-    px[offset_tcp+ 9] = (unsigned char)(xsum >>  16);
-    px[offset_tcp+10] = (unsigned char)(xsum >>   8);
-    px[offset_tcp+11] = (unsigned char)(xsum >>   0);
+    U32_EQUAL_TO_BE(px+offset_tcp+ 8, xsum);
 
     return r_len;
 }
@@ -248,60 +231,21 @@ sctp_create_by_template_ipv6(
      * the checksum.
      */
     unsigned payload_length = tmpl->ipv6.length - tmpl->ipv6.offset_ip - 40;
-    px[offset_ip+4] = (unsigned char)(payload_length>>8);
-    px[offset_ip+5] = (unsigned char)(payload_length>>0);
-    px[offset_ip+ 8] = (unsigned char)((ip_me.hi >> 56ULL) & 0xFF);
-    px[offset_ip+ 9] = (unsigned char)((ip_me.hi >> 48ULL) & 0xFF);
-    px[offset_ip+10] = (unsigned char)((ip_me.hi >> 40ULL) & 0xFF);
-    px[offset_ip+11] = (unsigned char)((ip_me.hi >> 32ULL) & 0xFF);
-    px[offset_ip+12] = (unsigned char)((ip_me.hi >> 24ULL) & 0xFF);
-    px[offset_ip+13] = (unsigned char)((ip_me.hi >> 16ULL) & 0xFF);
-    px[offset_ip+14] = (unsigned char)((ip_me.hi >>  8ULL) & 0xFF);
-    px[offset_ip+15] = (unsigned char)((ip_me.hi >>  0ULL) & 0xFF);
+    U16_TO_BE(px+offset_ip+4, payload_length);
 
-    px[offset_ip+16] = (unsigned char)((ip_me.lo >> 56ULL) & 0xFF);
-    px[offset_ip+17] = (unsigned char)((ip_me.lo >> 48ULL) & 0xFF);
-    px[offset_ip+18] = (unsigned char)((ip_me.lo >> 40ULL) & 0xFF);
-    px[offset_ip+19] = (unsigned char)((ip_me.lo >> 32ULL) & 0xFF);
-    px[offset_ip+20] = (unsigned char)((ip_me.lo >> 24ULL) & 0xFF);
-    px[offset_ip+21] = (unsigned char)((ip_me.lo >> 16ULL) & 0xFF);
-    px[offset_ip+22] = (unsigned char)((ip_me.lo >>  8ULL) & 0xFF);
-    px[offset_ip+23] = (unsigned char)((ip_me.lo >>  0ULL) & 0xFF);
+    U64_TO_BE(px+offset_ip+ 8, ip_me.hi);
+    U64_TO_BE(px+offset_ip+16, ip_me.lo);
 
-    px[offset_ip+24] = (unsigned char)((ip_them.hi >> 56ULL) & 0xFF);
-    px[offset_ip+25] = (unsigned char)((ip_them.hi >> 48ULL) & 0xFF);
-    px[offset_ip+26] = (unsigned char)((ip_them.hi >> 40ULL) & 0xFF);
-    px[offset_ip+27] = (unsigned char)((ip_them.hi >> 32ULL) & 0xFF);
-    px[offset_ip+28] = (unsigned char)((ip_them.hi >> 24ULL) & 0xFF);
-    px[offset_ip+29] = (unsigned char)((ip_them.hi >> 16ULL) & 0xFF);
-    px[offset_ip+30] = (unsigned char)((ip_them.hi >>  8ULL) & 0xFF);
-    px[offset_ip+31] = (unsigned char)((ip_them.hi >>  0ULL) & 0xFF);
-
-    px[offset_ip+32] = (unsigned char)((ip_them.lo >> 56ULL) & 0xFF);
-    px[offset_ip+33] = (unsigned char)((ip_them.lo >> 48ULL) & 0xFF);
-    px[offset_ip+34] = (unsigned char)((ip_them.lo >> 40ULL) & 0xFF);
-    px[offset_ip+35] = (unsigned char)((ip_them.lo >> 32ULL) & 0xFF);
-    px[offset_ip+36] = (unsigned char)((ip_them.lo >> 24ULL) & 0xFF);
-    px[offset_ip+37] = (unsigned char)((ip_them.lo >> 16ULL) & 0xFF);
-    px[offset_ip+38] = (unsigned char)((ip_them.lo >>  8ULL) & 0xFF);
-    px[offset_ip+39] = (unsigned char)((ip_them.lo >>  0ULL) & 0xFF);
+    U64_TO_BE(px+offset_ip+24, ip_them.hi);
+    U64_TO_BE(px+offset_ip+32, ip_them.lo);
 
         /* TODO: IPv6 */
-    px[offset_tcp+ 0] = (unsigned char)(port_me >> 8);
-    px[offset_tcp+ 1] = (unsigned char)(port_me & 0xFF);
-    px[offset_tcp+ 2] = (unsigned char)(port_them >> 8);
-    px[offset_tcp+ 3] = (unsigned char)(port_them & 0xFF);
-
-    px[offset_tcp+16] = (unsigned char)(init_tag >> 24);
-    px[offset_tcp+17] = (unsigned char)(init_tag >> 16);
-    px[offset_tcp+18] = (unsigned char)(init_tag >>  8);
-    px[offset_tcp+19] = (unsigned char)(init_tag >>  0);
+    U16_TO_BE(px+offset_tcp+ 0, port_me);
+    U16_TO_BE(px+offset_tcp+ 2, port_them);
+    U32_TO_BE(px+offset_tcp+16, init_tag);
 
     xsum = checksum_sctp(px + offset_tcp, tmpl->ipv6.length - offset_tcp);
-    px[offset_tcp+ 8] = (unsigned char)(xsum >>  24);
-    px[offset_tcp+ 9] = (unsigned char)(xsum >>  16);
-    px[offset_tcp+10] = (unsigned char)(xsum >>   8);
-    px[offset_tcp+11] = (unsigned char)(xsum >>   0);
+    U32_TO_BE(px+offset_tcp+ 8, xsum);
 
     return r_len;
 }

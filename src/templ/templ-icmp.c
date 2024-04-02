@@ -286,7 +286,8 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
     unsigned *r_ip_proto)
 {
     const unsigned char *ip_header_in_icmp = transport_px + 8;
-    unsigned data_length_in_icmp = length - (ip_header_in_icmp - transport_px);
+    unsigned data_length_in_icmp           = length - (ip_header_in_icmp - transport_px);
+    unsigned ipv4_header_len;
 
     if (ip_header_in_icmp[0]>>4 == 0B0100) {
         /*ipv4*/
@@ -295,7 +296,7 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
 
         r_ip_me->ipv4   = BE_TO_U32(ip_header_in_icmp+12);
         r_ip_them->ipv4 = BE_TO_U32(ip_header_in_icmp+16);
-        
+
         if (ip_header_in_icmp[9]==6) {
             *r_ip_proto = Proto_TCP;
         } else if (ip_header_in_icmp[9]==17) {
@@ -304,8 +305,9 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
             return 0;
         }
 
-        ip_header_in_icmp   += (ip_header_in_icmp[0]&0xF)<<2;
-        data_length_in_icmp -= (ip_header_in_icmp[0]&0xF)<<2;
+        ipv4_header_len      = (ip_header_in_icmp[0]&0xF)<<2;
+        ip_header_in_icmp   += ipv4_header_len;
+        data_length_in_icmp -= ipv4_header_len;
 
         if (data_length_in_icmp < 4)
             return 0;

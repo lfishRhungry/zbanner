@@ -85,6 +85,7 @@ TCP pseudo header
 #include "../globals.h"
 #include "../util/logger.h"
 #include "../util/checksum.h"
+#include "../util/data-convert.h"
 #include "../proto/proto-preprocess.h"
 
 struct tcp_opt_t {
@@ -174,7 +175,7 @@ tcp_consistancy_check(const unsigned char *buf, size_t length,
     /* Validate TCP header options */
     {
         size_t offset = parsed.transport_offset;
-        size_t max = offset + _tcp_header_length(buf, offset);
+        size_t max    = offset + _tcp_header_length(buf, offset);
 
         /* Get the start of the <options> section of the header. This is defined
          * as 20 bytes into the TCP header. */
@@ -254,11 +255,11 @@ _find_tcp_header(const unsigned char *buf, size_t length) {
         goto fail;
     }
 
-    hdr.begin = parsed.transport_offset;
-    hdr.max = hdr.begin + _tcp_header_length(buf, hdr.begin);
-    hdr.ip_offset = parsed.ip_offset;
+    hdr.begin      = parsed.transport_offset;
+    hdr.max        = hdr.begin + _tcp_header_length(buf, hdr.begin);
+    hdr.ip_offset  = parsed.ip_offset;
     hdr.ip_version = (unsigned char)parsed.ip_version;
-    hdr.is_found = true;
+    hdr.is_found   = true;
     return hdr;
 
 fail:
@@ -366,8 +367,8 @@ tcp_find_opt(const unsigned char *buf, size_t length, unsigned in_kind) {
 
     /* We've found it! If we've passed all the checks above, we have
      * a well formatted field, so just return it. */
-    result.kind = in_kind;
-    result.buf = buf + offset + 2;
+    result.kind   = in_kind;
+    result.buf    = buf + offset + 2;
     result.length = buf[offset+1] - 2;
     if (offset + result.length >= hdr.max)
         goto fail;
@@ -398,11 +399,10 @@ _adjust_length(unsigned char *buf, size_t length, int adjustment, struct tcp_hdr
     switch (hdr.ip_version) {
         case 4: {
             unsigned total_length;
-            total_length = buf[ip_offset+2] << 8 | buf[ip_offset+3] << 0;
+            total_length  = BE_TO_U16(buf+ip_offset+2);
             total_length += adjustment;
-            buf[ip_offset+2] = (unsigned char)(total_length>>8);
-            buf[ip_offset+3] = (unsigned char)(total_length>>0);
-            total_length = buf[ip_offset+2] << 8 |buf[ip_offset+3] << 0;
+            U16_TO_BE(buf+ip_offset+2, total_length);
+            total_length  = BE_TO_U16(buf+ip_offset+2);
             if (total_length + 14 != length) {
                 fprintf(stderr, "[-] IP length mismatch\n");
             }
@@ -410,10 +410,9 @@ _adjust_length(unsigned char *buf, size_t length, int adjustment, struct tcp_hdr
         }
         case 6: {
             unsigned payload_length;
-            payload_length = buf[ip_offset+4] << 8 | buf[ip_offset+5] << 0;
+            payload_length  = BE_TO_U16(buf+ip_offset+4);
             payload_length += adjustment;
-            buf[ip_offset+4] = (unsigned char)(payload_length>>8);
-            buf[ip_offset+5] = (unsigned char)(payload_length>>0);
+            U16_TO_BE(buf+ip_offset+4, payload_length);
             break;
         }
     }
@@ -423,8 +422,7 @@ _adjust_length(unsigned char *buf, size_t length, int adjustment, struct tcp_hdr
         size_t hdr_length;
         size_t offset = hdr.begin + 12;
 
-        hdr_length = (buf[offset] >> 4) * 4;
-
+        hdr_length  = (buf[offset] >> 4) * 4;
         hdr_length += adjustment;
 
         if (hdr_length % 4 != 0) {
@@ -475,11 +473,11 @@ _add_padding(unsigned char **inout_buf, size_t *inout_length, size_t offset, uns
  ***************************************************************************/
 static bool
 _normalize_padding(unsigned char **inout_buf, size_t *inout_length) {
-    unsigned char *buf = *inout_buf;
-    size_t length = *inout_length;
-    struct tcp_hdr_t hdr;
-    size_t offset;
-    unsigned nop_count = 0;
+    unsigned char     *buf         = *inout_buf;
+    size_t             length      = *inout_length;
+    unsigned           nop_count   = 0;
+    size_t             offset;
+    struct tcp_hdr_t   hdr;
 
     /* find TCP header */
     hdr = _find_tcp_header(buf, length);
@@ -527,11 +525,11 @@ _normalize_padding(unsigned char **inout_buf, size_t *inout_length) {
     }
 
 success:
-    *inout_buf = buf;
+    *inout_buf    = buf;
     *inout_length = length;
     return true; /* success */
 fail:
-    *inout_buf = buf;
+    *inout_buf    = buf;
     *inout_length = length;
     return false; /* failure */
 
@@ -544,11 +542,11 @@ static bool
 tcp_remove_opt(
         unsigned char **inout_buf, size_t *inout_length, unsigned in_kind
                ) {
-    unsigned char *buf = *inout_buf;
-    size_t length = *inout_length;
-    struct tcp_hdr_t hdr;
-    size_t offset;
-    unsigned nop_count = 0;
+    unsigned char      *buf         = *inout_buf;
+    size_t              length      = *inout_length;
+    unsigned            nop_count   = 0;
+    size_t              offset;
+    struct tcp_hdr_t    hdr;
 
     /* find the TCP header */
     hdr = _find_tcp_header(buf, length);
@@ -562,7 +560,7 @@ tcp_remove_opt(
 
 
     {
-        unsigned opt_len = buf[offset+1];
+        unsigned opt_len       = buf[offset+1];
         unsigned remove_length = opt_len;
 
         if (offset + opt_len > hdr.max)
@@ -574,7 +572,7 @@ tcp_remove_opt(
             remove_length++;
 
         /* Remove any leading NOPs */
-        offset -= nop_count;
+        offset        -= nop_count;
         remove_length += nop_count;
 
         /* Remove the bytes from the current packet buffer.
@@ -589,7 +587,7 @@ tcp_remove_opt(
                         offset + remove_length,
                         length - (offset + remove_length));
         hdr.max -= remove_length;
-        length -= remove_length;
+        length  -= remove_length;
 
         //_HEXDUMP(buf, hdr, offset, "after removal");
 
@@ -599,7 +597,7 @@ tcp_remove_opt(
             unsigned add_length = (remove_length % 4);
             _add_padding(&buf, &length, hdr.max, add_length);
             remove_length -= add_length;
-            hdr.max += add_length;
+            hdr.max       += add_length;
         }
 
         //_HEXDUMP(buf, hdr, offset, "padding added");
@@ -613,12 +611,12 @@ tcp_remove_opt(
     }
 
 success:
-    *inout_buf = buf;
+    *inout_buf    = buf;
     *inout_length = length;
     return true;
 
 fail:
-    *inout_buf = buf;
+    *inout_buf    = buf;
     *inout_length = length;
     return false;
 }
@@ -633,15 +631,15 @@ _insert_field(unsigned char **inout_buf,
               const unsigned char *new_data,
               size_t new_length
               ) {
-    unsigned char *buf = *inout_buf;
-    size_t length = *inout_length;
-    int adjust = 0;
+    unsigned char *buf       = *inout_buf;
+    size_t         length    = *inout_length;
+    int            adjust    = 0;
 
     /* can theoreitcally be negative, but that's ok */
     adjust = (int)new_length - ((int)offset_end - (int)offset_begin);
     if (adjust > 0) {
         length += adjust;
-        buf = realloc(buf, length);
+        buf     = realloc(buf, length);
         safe_memmove(buf, length,
                         offset_begin + new_length,
                         offset_end,
@@ -653,7 +651,7 @@ _insert_field(unsigned char **inout_buf,
                         offset_end,
                         length - offset_end);
         length += adjust;
-        buf = realloc(buf, length);
+        buf     = realloc(buf, length);
     }
 
     /**/
@@ -769,8 +767,8 @@ _squeeze_padding(unsigned char *buf, size_t length, struct tcp_hdr_t hdr, unsign
         //_HEXDUMP(buf, hdr, offset + len - nop_count, "!!!!!");
 
         /* reset the <offset> to the end of this relocated field */
-        offset -= nop_count;
-        nop_count = 0;
+        offset    -= nop_count;
+        nop_count  = 0;
     }
 
     /* if we reach the end, then there were only NOPs at the end and no
@@ -793,12 +791,12 @@ tcp_add_opt(unsigned char **inout_buf,
             unsigned opt_kind,
             unsigned opt_length,
             const unsigned char *opt_data) {
-    unsigned char *buf = *inout_buf;
-    size_t length = *inout_length;
-    struct tcp_hdr_t hdr;
-    size_t offset;
-    unsigned nop_count = 0;
-    int adjust = 0;
+    unsigned char      *buf          = *inout_buf;
+    size_t              length       = *inout_length;
+    unsigned            nop_count    = 0;
+    int                 adjust       = 0;
+    size_t              offset;
+    struct tcp_hdr_t    hdr;
 
 
     /* Check for corruption:
@@ -820,13 +818,13 @@ tcp_add_opt(unsigned char **inout_buf,
     offset = _find_opt(buf, hdr, opt_kind, &nop_count);
 
     {
-        size_t old_begin;
-        size_t old_end;
         unsigned char new_field[64];
-        size_t new_length;
+        size_t        new_length;
+        size_t        old_begin;
+        size_t        old_end;
 
         /* Create a well-formatted field that will be inserted */
-        new_length = 1 + 1 + opt_length;
+        new_length   = 1 + 1 + opt_length;
         new_field[0] = (unsigned char)opt_kind;
         new_field[1] = (unsigned char)new_length;
         memcpy(new_field + 2, opt_data, opt_length);
@@ -839,7 +837,7 @@ tcp_add_opt(unsigned char **inout_buf,
             old_end = hdr.max; /* will insert start of padding */
         else if (buf[offset] == opt_kind) { /* will replace old field */
             size_t len = buf[offset + 1];
-            old_end = offset + len;
+            old_end    = offset + len;
         } else {
             fprintf(stderr, "[-] not possible i09670t\n");
             return false;
@@ -881,16 +879,16 @@ tcp_add_opt(unsigned char **inout_buf,
             if (hdr.max + added > hdr.begin + max_tcp_hdr) {
                 //unsigned total_padding = _calc_padding(buf, hdr);
                 old_begin = _squeeze_padding(buf, length, hdr, opt_kind);
-                old_end = hdr.max;
+                old_end   = hdr.max;
             }
         }
 
 
         /* Now insert the option field into packet. This may change the
          * sizeof the packet. The amount changed is indicated by 'adjust' */
-        adjust = _insert_field(&buf, &length,
-                               old_begin, old_end,
-                               new_field, new_length);
+        adjust   = _insert_field(&buf, &length,
+                                 old_begin, old_end,
+                                 new_field, new_length);
         hdr.max += adjust;
     }
 
@@ -909,7 +907,7 @@ tcp_add_opt(unsigned char **inout_buf,
             //_HEXDUMP(buf, hdr, hdr.max, "pad before");
             _add_padding(&buf, &length, hdr.max, add_length);
             hdr.max += add_length;
-            adjust += add_length;
+            adjust  += add_length;
 
             //_HEXDUMP(buf, hdr, hdr.max, "pad after");
         }
@@ -922,13 +920,13 @@ tcp_add_opt(unsigned char **inout_buf,
         _normalize_padding(&buf, &length);
     }
 
-    *inout_buf = buf;
+    *inout_buf    = buf;
     *inout_length = length;
     return true;
 
 fail:
     /* no changes were made */
-    *inout_buf = buf;
+    *inout_buf    = buf;
     *inout_length = length;
     return false;
 }
@@ -1025,8 +1023,7 @@ templ_tcp_apply_options(unsigned char **inout_buf, size_t *inout_length,
         tcp_remove_opt(&buf, &length, 2 /* mss */);
     } else if (templ_opts->tcp.is_mss == Add) {
         unsigned char field[2];
-        field[0] = (unsigned char)(templ_opts->tcp.mss>>8);
-        field[1] = (unsigned char)(templ_opts->tcp.mss>>0);
+        U16_TO_BE(field, templ_opts->tcp.mss);
         tcp_add_opt(&buf, &length, 2, 2, field);
     }
 
@@ -1054,15 +1051,12 @@ templ_tcp_apply_options(unsigned char **inout_buf, size_t *inout_length,
         tcp_remove_opt(&buf, &length, 8 /* ts */);
     } else if (templ_opts->tcp.is_tsecho == Add) {
         unsigned char field[10] = {0};
-        field[0] = (unsigned char)(templ_opts->tcp.tsecho>>24);
-        field[1] = (unsigned char)(templ_opts->tcp.tsecho>>16);
-        field[2] = (unsigned char)(templ_opts->tcp.tsecho>>8);
-        field[2] = (unsigned char)(templ_opts->tcp.tsecho>>0);
+        U32_TO_BE(field, templ_opts->tcp.tsecho);
         tcp_add_opt(&buf, &length, 8, 8, field);
     }
 
 
-    *inout_buf = buf;
+    *inout_buf    = buf;
     *inout_length = length;
 }
 
@@ -1073,9 +1067,9 @@ void
 tcp_set_window(unsigned char *px, size_t px_length, unsigned window)
 {
     struct PreprocessedInfo parsed;
-    unsigned x;
-    size_t offset;
-    unsigned xsum;
+    unsigned                x;
+    size_t                  offset;
+    unsigned                xsum;
 
     /* Parse the frame looking for the TCP header */
     x = preprocess_frame(px, (unsigned)px_length, 1 /*enet*/, &parsed);
@@ -1100,8 +1094,7 @@ tcp_set_window(unsigned char *px, size_t px_length, unsigned window)
     xsum = (~xsum)&0xFFFF;
 #endif
 
-    px[offset + 14] = (unsigned char)(window>>8);
-    px[offset + 15] = (unsigned char)(window>>0);
+    U16_TO_BE(px+offset+14, window);
     px[offset + 16] = (unsigned char)(0);
     px[offset + 17] = (unsigned char)(0);
 
@@ -1109,8 +1102,7 @@ tcp_set_window(unsigned char *px, size_t px_length, unsigned window)
     xsum = ~checksum_tcp(px, parsed.ip_offset, parsed.transport_offset,
         parsed.transport_length);
 
-    px[offset + 16] = (unsigned char)(xsum>>8);
-    px[offset + 17] = (unsigned char)(xsum>>0);
+    U16_TO_BE(px+offset+16, xsum);
 }
 
 size_t
@@ -1152,18 +1144,10 @@ tcp_create_by_template(
          * Fill in the empty fields in the IP header and then re-calculate
          * the checksum.
          */
-        px[offset_ip+2 ] = (unsigned char)(ip_len >> 8);
-        px[offset_ip+3 ] = (unsigned char)(ip_len  & 0xFF);
-        px[offset_ip+4 ] = (unsigned char)(ip_id  >> 8);
-        px[offset_ip+5 ] = (unsigned char)(ip_id   & 0xFF);
-        px[offset_ip+12] = (unsigned char)((ip_me.ipv4   >> 24) & 0xFF);
-        px[offset_ip+13] = (unsigned char)((ip_me.ipv4   >> 16) & 0xFF);
-        px[offset_ip+14] = (unsigned char)((ip_me.ipv4   >>  8) & 0xFF);
-        px[offset_ip+15] = (unsigned char)((ip_me.ipv4   >>  0) & 0xFF);
-        px[offset_ip+16] = (unsigned char)((ip_them.ipv4 >> 24) & 0xFF);
-        px[offset_ip+17] = (unsigned char)((ip_them.ipv4 >> 16) & 0xFF);
-        px[offset_ip+18] = (unsigned char)((ip_them.ipv4 >>  8) & 0xFF);
-        px[offset_ip+19] = (unsigned char)((ip_them.ipv4 >>  0) & 0xFF);
+        U16_TO_BE(px+offset_ip+ 2, ip_len);
+        U16_TO_BE(px+offset_ip+ 4, ip_id);
+        U32_TO_BE(px+offset_ip+12, ip_me.ipv4);
+        U32_TO_BE(px+offset_ip+16, ip_them.ipv4);
 
         xsum  = tmpl->ipv4.checksum_ip;
         xsum += (ip_id&0xFFFF);
@@ -1174,25 +1158,15 @@ tcp_create_by_template(
         xsum  = (xsum >> 16) + (xsum & 0xFFFF);
         xsum  = ~xsum;
 
-        px[offset_ip+10] = (unsigned char)(xsum >> 8);
-        px[offset_ip+11] = (unsigned char)(xsum & 0xFF);
+        U16_TO_BE(px+offset_ip+10, xsum);
 
         /*
          * now do the same for TCP
          */
-        px[offset_tcp+ 0] = (unsigned char)(port_me >> 8);
-        px[offset_tcp+ 1] = (unsigned char)(port_me & 0xFF);
-        px[offset_tcp+ 2] = (unsigned char)(port_them >> 8);
-        px[offset_tcp+ 3] = (unsigned char)(port_them & 0xFF);
-        px[offset_tcp+ 4] = (unsigned char)(seqno >> 24);
-        px[offset_tcp+ 5] = (unsigned char)(seqno >> 16);
-        px[offset_tcp+ 6] = (unsigned char)(seqno >>  8);
-        px[offset_tcp+ 7] = (unsigned char)(seqno >>  0);
-
-        px[offset_tcp+ 8] = (unsigned char)(ackno >> 24);
-        px[offset_tcp+ 9] = (unsigned char)(ackno >> 16);
-        px[offset_tcp+10] = (unsigned char)(ackno >>  8);
-        px[offset_tcp+11] = (unsigned char)(ackno >>  0);
+        U16_TO_BE(px+offset_tcp+ 0, port_me);
+        U16_TO_BE(px+offset_tcp+ 2, port_them);
+        U32_TO_BE(px+offset_tcp+ 4, seqno);
+        U32_TO_BE(px+offset_tcp+ 8, ackno);
 
         px[offset_tcp+13] = (unsigned char)flags;
 
@@ -1207,8 +1181,7 @@ tcp_create_by_template(
             new_length - tmpl->ipv4.offset_tcp);
         xsum = ~xsum;
 
-        px[offset_tcp+16] = (unsigned char)(xsum >>  8);
-        px[offset_tcp+17] = (unsigned char)(xsum >>  0);
+        U16_TO_BE(px+offset_tcp+16, xsum);
 
         if (new_length < 60) {
             memset(px+new_length, 0, 60-new_length);
@@ -1216,7 +1189,7 @@ tcp_create_by_template(
         }
         return new_length;
     } else {
-        unsigned offset_ip = tmpl->ipv6.offset_ip;
+        unsigned offset_ip  = tmpl->ipv6.offset_ip;
         unsigned offset_tcp = tmpl->ipv6.offset_tcp;
         unsigned offset_app = tmpl->ipv6.offset_app;
 
@@ -1237,79 +1210,35 @@ tcp_create_by_template(
          * and TCP headers, so the calculation isn't simply the length of the TCP portion */
         {
             size_t len = tmpl->ipv6.offset_app + payload_length - tmpl->ipv6.offset_ip - 40;
-            px[offset_ip + 4] = (unsigned char)(len>>8) & 0xFF;
-            px[offset_ip + 5] = (unsigned char)(len>>0) & 0xFF;
+            U16_TO_BE(px+offset_ip+ 4, len);
         }
 
         /* Copy over the IP addresses */
-        px[offset_ip+ 8] = (unsigned char)((ip_me.ipv6.hi >> 56ULL) & 0xFF);
-        px[offset_ip+ 9] = (unsigned char)((ip_me.ipv6.hi >> 48ULL) & 0xFF);
-        px[offset_ip+10] = (unsigned char)((ip_me.ipv6.hi >> 40ULL) & 0xFF);
-        px[offset_ip+11] = (unsigned char)((ip_me.ipv6.hi >> 32ULL) & 0xFF);
-        px[offset_ip+12] = (unsigned char)((ip_me.ipv6.hi >> 24ULL) & 0xFF);
-        px[offset_ip+13] = (unsigned char)((ip_me.ipv6.hi >> 16ULL) & 0xFF);
-        px[offset_ip+14] = (unsigned char)((ip_me.ipv6.hi >>  8ULL) & 0xFF);
-        px[offset_ip+15] = (unsigned char)((ip_me.ipv6.hi >>  0ULL) & 0xFF);
+        U64_TO_BE(px+offset_ip+ 8, ip_me.ipv6.hi);
+        U64_TO_BE(px+offset_ip+16, ip_me.ipv6.lo);
 
-        px[offset_ip+16] = (unsigned char)((ip_me.ipv6.lo >> 56ULL) & 0xFF);
-        px[offset_ip+17] = (unsigned char)((ip_me.ipv6.lo >> 48ULL) & 0xFF);
-        px[offset_ip+18] = (unsigned char)((ip_me.ipv6.lo >> 40ULL) & 0xFF);
-        px[offset_ip+19] = (unsigned char)((ip_me.ipv6.lo >> 32ULL) & 0xFF);
-        px[offset_ip+20] = (unsigned char)((ip_me.ipv6.lo >> 24ULL) & 0xFF);
-        px[offset_ip+21] = (unsigned char)((ip_me.ipv6.lo >> 16ULL) & 0xFF);
-        px[offset_ip+22] = (unsigned char)((ip_me.ipv6.lo >>  8ULL) & 0xFF);
-        px[offset_ip+23] = (unsigned char)((ip_me.ipv6.lo >>  0ULL) & 0xFF);
-
-        px[offset_ip+24] = (unsigned char)((ip_them.ipv6.hi >> 56ULL) & 0xFF);
-        px[offset_ip+25] = (unsigned char)((ip_them.ipv6.hi >> 48ULL) & 0xFF);
-        px[offset_ip+26] = (unsigned char)((ip_them.ipv6.hi >> 40ULL) & 0xFF);
-        px[offset_ip+27] = (unsigned char)((ip_them.ipv6.hi >> 32ULL) & 0xFF);
-        px[offset_ip+28] = (unsigned char)((ip_them.ipv6.hi >> 24ULL) & 0xFF);
-        px[offset_ip+29] = (unsigned char)((ip_them.ipv6.hi >> 16ULL) & 0xFF);
-        px[offset_ip+30] = (unsigned char)((ip_them.ipv6.hi >>  8ULL) & 0xFF);
-        px[offset_ip+31] = (unsigned char)((ip_them.ipv6.hi >>  0ULL) & 0xFF);
-
-        px[offset_ip+32] = (unsigned char)((ip_them.ipv6.lo >> 56ULL) & 0xFF);
-        px[offset_ip+33] = (unsigned char)((ip_them.ipv6.lo >> 48ULL) & 0xFF);
-        px[offset_ip+34] = (unsigned char)((ip_them.ipv6.lo >> 40ULL) & 0xFF);
-        px[offset_ip+35] = (unsigned char)((ip_them.ipv6.lo >> 32ULL) & 0xFF);
-        px[offset_ip+36] = (unsigned char)((ip_them.ipv6.lo >> 24ULL) & 0xFF);
-        px[offset_ip+37] = (unsigned char)((ip_them.ipv6.lo >> 16ULL) & 0xFF);
-        px[offset_ip+38] = (unsigned char)((ip_them.ipv6.lo >>  8ULL) & 0xFF);
-        px[offset_ip+39] = (unsigned char)((ip_them.ipv6.lo >>  0ULL) & 0xFF);
-
+        U64_TO_BE(px+offset_ip+24, ip_them.ipv6.hi);
+        U64_TO_BE(px+offset_ip+32, ip_them.ipv6.lo);
 
         /*
          * now do the same for TCP
          */
-        px[offset_tcp+ 0] = (unsigned char)(port_me >> 8);
-        px[offset_tcp+ 1] = (unsigned char)(port_me & 0xFF);
-        px[offset_tcp+ 2] = (unsigned char)(port_them >> 8);
-        px[offset_tcp+ 3] = (unsigned char)(port_them & 0xFF);
-        px[offset_tcp+ 4] = (unsigned char)(seqno >> 24);
-        px[offset_tcp+ 5] = (unsigned char)(seqno >> 16);
-        px[offset_tcp+ 6] = (unsigned char)(seqno >>  8);
-        px[offset_tcp+ 7] = (unsigned char)(seqno >>  0);
-
-        px[offset_tcp+ 8] = (unsigned char)(ackno >> 24);
-        px[offset_tcp+ 9] = (unsigned char)(ackno >> 16);
-        px[offset_tcp+10] = (unsigned char)(ackno >>  8);
-        px[offset_tcp+11] = (unsigned char)(ackno >>  0);
+        U16_TO_BE(px+offset_tcp+ 0, port_me);
+        U16_TO_BE(px+offset_tcp+ 2, port_them);
+        U32_TO_BE(px+offset_tcp+ 4, seqno);
+        U32_TO_BE(px+offset_tcp+ 8, ackno);
 
         px[offset_tcp+13] = (unsigned char)flags;
 
-        px[offset_tcp+14] = (unsigned char)(1200>>8);
-        px[offset_tcp+15] = (unsigned char)(1200 & 0xFF);
+        /*tcp window: we have set in the default template*/
+        // px[offset_tcp+14] = (unsigned char)(1200>>8);
+        // px[offset_tcp+15] = (unsigned char)(1200 & 0xFF);
 
         px[offset_tcp+16] = (unsigned char)(0 >>  8);
         px[offset_tcp+17] = (unsigned char)(0 >>  0);
 
         xsum = checksum_ipv6(px + offset_ip + 8, px + offset_ip + 24, 6, (offset_app - offset_tcp) + payload_length, px + offset_tcp);
-        px[offset_tcp+16] = (unsigned char)(xsum >>  8);
-        px[offset_tcp+17] = (unsigned char)(xsum >>  0);
-
-        px[offset_tcp+16] = (unsigned char)(xsum >>  8);
-        px[offset_tcp+17] = (unsigned char)(xsum >>  0);
+        U16_TO_BE(px+offset_tcp+16, xsum);
 
         return offset_app + payload_length;
     }
