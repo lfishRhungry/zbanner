@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "probe-modules.h"
+#include "../version.h"
 #include "../util/logger.h"
 #include "../util/fine-malloc.h"
 #include "../util/safe-string.h"
@@ -12,11 +13,35 @@ extern struct ProbeModule NmapTcpProbe;
 struct NmapTcpConf {
     struct NmapServiceProbeList *service_probes;
     char *                       probe_file;
+    char *                       softmatch;
     unsigned                     rarity;
+    unsigned                     no_port_limit:1;
 };
 
 static struct NmapTcpConf nmaptcp_conf = {0};
 
+
+static int SET_no_port_limit(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    nmaptcp_conf.no_port_limit = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static int SET_softmatch(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+
+    if (nmaptcp_conf.softmatch) {
+        free(nmaptcp_conf.softmatch);
+    }
+
+    nmaptcp_conf.softmatch = STRDUP(value);
+    return CONF_OK;
+}
 
 static int SET_probe_file(void *conf, const char *name, const char *value)
 {
@@ -63,6 +88,25 @@ static struct ConfigParameter nmapservice_parameters[] = {
         " are effective against a wide variety of common services, while the "
         "higher-numbered ones are rarely useful. The intensity must be between 1"
         " and 9. The default is 7."
+    },
+    {
+        "softmatch",
+        SET_softmatch,
+        0,
+        {0},
+        "Specifies what service has been softmatched for target ports before, so "
+        "NmapTcpProbe could use more accurate probes to reduce cost and just do "
+        "hard matching.\n"
+        "NOTE: This param exists because the strategy of Nmap services matching "
+        "cannot be implemented completely in stateless mode."
+    },
+    {
+        "no-port-limit",
+        SET_no_port_limit,
+        F_NUMABLE,
+        {0},
+        "Switch on this param to release limitation of port ranges in probes of "
+        "nmap-service-probes file."
     },
 
     {0}
@@ -123,6 +167,11 @@ nmaptcp_close()
         free(nmaptcp_conf.probe_file);
         nmaptcp_conf.probe_file = NULL;
     }
+
+    if (nmaptcp_conf.softmatch) {
+        free(nmaptcp_conf.softmatch);
+        nmaptcp_conf.softmatch = NULL;
+    }
 }
 
 static size_t
@@ -174,9 +223,10 @@ nmaptcp_handle_response(
         /**
          * We have to check whether it is the last available probe.
          * */
-        unsigned next_probe = nmapservice_next_probe_index(list,
-            target->index, target->port_them,
-            nmaptcp_conf.rarity, NMAP_IPPROTO_TCP);
+        unsigned next_probe = nmapservice_next_probe_index(list, target->index,
+            nmaptcp_conf.no_port_limit?0:target->port_them,
+            nmaptcp_conf.rarity, NMAP_IPPROTO_TCP,
+            nmaptcp_conf.softmatch);
 
         if (next_probe) {
             return next_probe+1;
@@ -188,36 +238,35 @@ nmaptcp_handle_response(
     }
 
     struct ServiceProbeMatch *match = nmapservice_match_service(list,
-        target->index, px, sizeof_px, NMAP_IPPROTO_TCP);
+        target->index, px, sizeof_px,
+        NMAP_IPPROTO_TCP, nmaptcp_conf.softmatch);
 
     if (match) {
         item->level = Output_SUCCESS;
+
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "identified");
         safe_strcpy(item->reason, OUTPUT_RSN_LEN,
             match->is_softmatch?"softmatch":"matched");
-        // int n = snprintf(item->report, OUTPUT_RPT_LEN, "[probe: %s, service: %s, line: %u",
-        //     list->probes[target->index]->name, match->service, match->line);
         int n = snprintf(item->report, OUTPUT_RPT_LEN, "[service: %s, line: %u",
             match->service, match->line);
         if (!match->is_softmatch&&match->versioninfo) {
             n += snprintf(item->report+n, OUTPUT_RPT_LEN-n, ", info: %s", match->versioninfo->value);
         }
-
         snprintf(item->report+n, OUTPUT_RPT_LEN-n, "]");
 
         return 0;
     }
-
-    /*fail to match or softmatch, try to send next possible probe*/
 
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
     snprintf(item->report, OUTPUT_RPT_LEN, "[probe: %s]",
         list->probes[target->index]->name);
 
-    next_probe = nmapservice_next_probe_index(list,
-        target->index, target->port_them,
-        nmaptcp_conf.rarity, NMAP_IPPROTO_TCP);
+    /*fail to match or in softmatch mode, try to send next possible probe*/
+    next_probe = nmapservice_next_probe_index(list, target->index,
+        nmaptcp_conf.no_port_limit?0:target->port_them,
+        nmaptcp_conf.rarity, NMAP_IPPROTO_TCP,
+        nmaptcp_conf.softmatch);
 
     /*no more probe, treat it as failure*/
     if (!next_probe) {
@@ -240,7 +289,14 @@ struct ProbeModule NmapTcpProbe = {
         " NmapService is an emulation of Nmap's service identification. Use"
         " `--probe-file` subparam to set nmap-service-probes file to load. Use "
         "timeout mode to handle no response correctly.\n"
-        "NOTE: No proper way to do complete matching after a softmatch now.",
+        "NOTE1: No proper way to do complete matching after a softmatch now. "
+        "Because we couldn't identify whether the response banner is from a probe"
+        " after softmatch or not. So specify what softmatch service have been "
+        "identified and scan these targets again to try to get accurate results.\n"
+        "NOTE2: Some hardmatch in nmap-service-probes file need banners from 2 "
+        "phases(from Hellowait and after probe sending) to match patterns. "
+        "NmapTcp Probe cannot do this type of hard matching because stateless "
+        "mechanism doesn't support \"Hello Wait\".",
     .global_init_cb                    = &nmaptcp_global_init,
     .make_payload_cb                   = &nmaptcp_make_payload,
     .get_payload_length_cb             = &nmaptcp_get_payload_length,

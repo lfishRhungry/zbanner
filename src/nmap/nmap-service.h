@@ -109,13 +109,13 @@ struct NmapServiceProbeList *
 nmapservice_read_file(const char *filename);
 
 void
-nmapservice_match_compile(struct NmapServiceProbeList * service_probes);
+nmapservice_match_compile(struct NmapServiceProbeList * list);
 
 void
 nmapservice_link_fallback(struct NmapServiceProbeList *list);
 
 void
-nmapservice_match_free(struct NmapServiceProbeList * service_probes);
+nmapservice_match_free(struct NmapServiceProbeList * list);
 
 void
 nmapservice_free(struct NmapServiceProbeList *service_probes);
@@ -127,16 +127,20 @@ void
 nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp);
 
 /**
- * @param service_probes loaded NmapServiceProbeList
+ * @param list loaded NmapServiceProbeList
  * @param idx_now index of probe have been used.
  * @param port_them port of target to match probe or 0 if ignoring port.
  * @param rarity rarity for filtering probe.
  * @param protocol NMAP_IPPROTO_TCP or NMAP_IPPROTO_UDP
+ * @param softmatch specify service name after softmatched
  * @return next available tcp probe index or 0 if no available
 */
 unsigned
-nmapservice_next_probe_index(const struct NmapServiceProbeList *service_probes,
-    unsigned idx_now, unsigned port_them, unsigned rarity, unsigned protocol);
+nmapservice_next_probe_index(
+    const struct NmapServiceProbeList *list,
+    unsigned idx_now, unsigned port_them,
+    unsigned rarity, unsigned protocol,
+    const char *softmatch);
 
 struct NmapServiceProbe *
 nmapservice_get_probe_by_name(struct NmapServiceProbeList *list,
@@ -144,16 +148,23 @@ nmapservice_get_probe_by_name(struct NmapServiceProbeList *list,
 
 /**
  * Match service from matches in specified probe with fallback and null match.
- * Match result could be a softmatch.
+ * Match result could be a softmatch if hardmatch isn't be specified.
+ * @param list nmap probe list
+ * @param probe_idx index of probe used to do matching
+ * @param payload data of payload
+ * @param payload_len len of data
+ * @param protocol NMAP_IPPROTO_TCP or NMAP_IPPROTO_UDP
+ * @param softmatch just do hardmatching for this softmatch service
  * @return matched struct from service_probes or NULL if not matched.
 */
 struct ServiceProbeMatch *
 nmapservice_match_service(
-    const struct NmapServiceProbeList *service_probes,
+    const struct NmapServiceProbeList *list,
     unsigned probe_idx,
     const unsigned char *payload,
     size_t payload_len,
-    unsigned protocol);
+    unsigned protocol,
+    const char *hardmatch);
 
 #endif
 

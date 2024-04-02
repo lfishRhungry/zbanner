@@ -1194,12 +1194,12 @@ nmapservice_link_fallback(struct NmapServiceProbeList *list)
 /*****************************************************************************
  *****************************************************************************/
 void
-nmapservice_match_free(struct NmapServiceProbeList * service_probes)
+nmapservice_match_free(struct NmapServiceProbeList * list)
 {
     struct ServiceProbeMatch *match;
 
-    for (unsigned i=0; i<service_probes->count; i++) {
-        match = service_probes->probes[i]->match;
+    for (unsigned i=0; i<list->count; i++) {
+        match = list->probes[i]->match;
         for (;match;match = match->next) {
             if (match->compiled_re) {
                 pcre2_code_free(match->compiled_re);
@@ -1233,22 +1233,48 @@ nmapservice_free(struct NmapServiceProbeList *list)
     free(list);
 }
 
+/**
+ * does probe has at least one hard match for this service?
+*/
+static unsigned
+has_hardmatch(const struct NmapServiceProbe *probe, const char *service)
+{
+    if (!probe->match) return 0;
+
+    struct ServiceProbeMatch *match;
+    for (match=probe->match;match;match=match->next) {
+        if (!match->is_softmatch && strcmp(match->service, service)==0) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 unsigned
-nmapservice_next_probe_index(const struct NmapServiceProbeList *service_probes,
-    unsigned idx_now, unsigned port_them, unsigned rarity, unsigned protocol)
+nmapservice_next_probe_index(
+    const struct NmapServiceProbeList *list,
+    unsigned idx_now, unsigned port_them,
+    unsigned rarity, unsigned protocol,
+    const char *softmatch)
 {
     unsigned next_probe = 0;
 
-    if (idx_now < service_probes->count-1) {
-        for (unsigned i=idx_now+1; i<service_probes->count; i++) {
+    if (idx_now < list->count-1) {
+        for (unsigned i=idx_now+1; i<list->count; i++) {
             /*validate protocol & rarity*/
-            if (service_probes->probes[i]->protocol==protocol
-                && service_probes->probes[i]->rarity <= rarity) {
+            if (list->probes[i]->protocol==protocol
+                && list->probes[i]->rarity <= rarity) {
 
-                /*if ignore the target port*/
+                /*port is in the range or ignored*/
                 if(port_them > 0
                     && 0 >= rangelist_is_contains(
-                        &service_probes->probes[i]->ports, port_them)) {
+                        &list->probes[i]->ports, port_them)) {
+                    continue;
+                }
+
+                /*if softmatch specified, we need specified hard match*/
+                if(softmatch && !has_hardmatch(list->probes[i], softmatch)) {
                     continue;
                 }
 
@@ -1262,12 +1288,18 @@ nmapservice_next_probe_index(const struct NmapServiceProbeList *service_probes,
 }
 
 /**
- * match service only in match list in specified probe.
+ * do matching in one probe
+ * @param probe probe used to match
+ * @param payload data of payload
+ * @param payload_len len of data
+ * @param softmatch just do hardmatching for this softmatch service
  * @return matched struct from service_probes or NULL if not matched.
 */
 static struct ServiceProbeMatch *
-nmapservice_match_service_in_one_probe(const struct NmapServiceProbe *probe,
-    const unsigned char *payload, size_t payload_len)
+match_service_in_one_probe(
+    const struct NmapServiceProbe *probe,
+    const unsigned char *payload, size_t payload_len,
+    const char *softmatch)
 {
     struct ServiceProbeMatch *match_res  = NULL;
     pcre2_match_data         *match_data = NULL;
@@ -1275,6 +1307,15 @@ nmapservice_match_service_in_one_probe(const struct NmapServiceProbe *probe,
     int                       rc;
 
     for (m = probe->match;m;m = m->next) {
+
+        if (softmatch && m->is_softmatch) continue;
+
+        if (softmatch && strcmp(softmatch, m->service)!=0) continue;
+
+        if (m->line==13002) {
+            printf("do match: %s\n", m->service);
+            printf("data: %s\n", payload);
+        }
 
         if (m->compiled_re) {
 
@@ -1306,30 +1347,29 @@ nmapservice_match_service_in_one_probe(const struct NmapServiceProbe *probe,
 
 struct ServiceProbeMatch *
 nmapservice_match_service(
-    const struct NmapServiceProbeList *service_probes,
+    const struct NmapServiceProbeList *list,
     unsigned probe_idx,
     const unsigned char *payload,
     size_t payload_len,
-    unsigned protocol)
+    unsigned protocol,
+    const char *softmatch)
 {
     struct ServiceProbeMatch *match_res = NULL;
 
-    match_res = nmapservice_match_service_in_one_probe(
-        service_probes->probes[probe_idx], payload, payload_len);
+    match_res = match_service_in_one_probe(
+        list->probes[probe_idx], payload, payload_len, softmatch);
 
     if (match_res)
         return match_res;
 
     /*has fallback? try match all*/
-    struct ServiceProbeFallback *fallback = NULL;
+    struct ServiceProbeFallback *fallback = list->probes[probe_idx]->fallback;
 
-    for (fallback=service_probes->probes[probe_idx]->fallback;
-        fallback;
-        fallback=fallback->next) {
+    for (;fallback;fallback=fallback->next) {
         /*fallback must have been linked*/
         if (fallback->probe) {
-            match_res = nmapservice_match_service_in_one_probe(fallback->probe,
-                payload, payload_len);
+            match_res = match_service_in_one_probe(fallback->probe,
+                payload, payload_len, softmatch);
             /*matched*/
             if (match_res)
                 break;
@@ -1341,9 +1381,9 @@ nmapservice_match_service(
     
     /*match with NULL probe at last if it's TCP and probe is not NULL*/
     if (protocol==NMAP_IPPROTO_TCP && probe_idx!=0) {
-        match_res = nmapservice_match_service_in_one_probe(
-            service_probes->probes[0],
-            payload, payload_len);
+        match_res = match_service_in_one_probe(
+            list->probes[0],
+            payload, payload_len, softmatch);
     }
 
     return match_res;
