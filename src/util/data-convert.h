@@ -108,7 +108,7 @@ void U64_TO_LE(unsigned char *px, uint64_t num)
  ********************************************************************/
 
 static inline
-unsigned U16_EQUAL_TO_BE(unsigned char *px, uint16_t num)
+unsigned U16_EQUAL_TO_BE(const unsigned char *px, uint16_t num)
 {
     if (
     px[0] == (unsigned char)((num >>  8) & 0xFF) &&
@@ -119,7 +119,7 @@ unsigned U16_EQUAL_TO_BE(unsigned char *px, uint16_t num)
 }
 
 static inline
-unsigned U32_EQUAL_TO_BE(unsigned char *px, uint32_t num)
+unsigned U32_EQUAL_TO_BE(const unsigned char *px, uint32_t num)
 {
     if (
     px[0] == (unsigned char)((num >> 24) & 0xFF) &&
@@ -132,7 +132,7 @@ unsigned U32_EQUAL_TO_BE(unsigned char *px, uint32_t num)
 }
 
 static inline
-unsigned U64_EQUAL_TO_BE(unsigned char *px, uint64_t num)
+unsigned U64_EQUAL_TO_BE(const unsigned char *px, uint64_t num)
 {
     if (
     px[0] == (unsigned char)((num >> 56) & 0xFF) &&
@@ -149,7 +149,7 @@ unsigned U64_EQUAL_TO_BE(unsigned char *px, uint64_t num)
 }
 
 static inline
-unsigned U16_EQUAL_TO_LE(unsigned char *px, uint16_t num)
+unsigned U16_EQUAL_TO_LE(const unsigned char *px, uint16_t num)
 {
     if (
     px[1] == (unsigned char)((num >>  8) & 0xFF) &&
@@ -160,7 +160,7 @@ unsigned U16_EQUAL_TO_LE(unsigned char *px, uint16_t num)
 }
 
 static inline
-unsigned U32_EQUAL_TO_LE(unsigned char *px, uint32_t num)
+unsigned U32_EQUAL_TO_LE(const unsigned char *px, uint32_t num)
 {
     if (
     px[3] == (unsigned char)((num >> 24) & 0xFF) &&
@@ -173,7 +173,7 @@ unsigned U32_EQUAL_TO_LE(unsigned char *px, uint32_t num)
 }
 
 static inline
-unsigned U64_EQUAL_TO_LE(unsigned char *px, uint64_t num)
+unsigned U64_EQUAL_TO_LE(const unsigned char *px, uint64_t num)
 {
     if (
     px[7] == (unsigned char)((num >> 56) & 0xFF) &&
