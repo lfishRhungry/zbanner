@@ -2931,7 +2931,7 @@ void xconf_print_usage()
     xprint("use UdpProbe ScanModule to scan UDP 80 port with echo ProbeModule and also show failed results.\n", 6, 80);
     printf("\n");
     printf("  "XTATE_NAME" -p s:38412 -range 10.0.0.0/8 -scanmodule sctp-init -show fail\n");
-    xprint("use SctpInit ScanModule to scan SCTP 38412 port and also show failed results.\n", 6, 80);
+    xprint("use SctpInit ScanModule to scan SCTP 38412(36412) port and also show failed results.\n", 6, 80);
     printf("\n");
     printf("  "XTATE_NAME" -range 10.0.0.0/8 -scanmodule icmp-echo -timeout 6\n");
     xprint("use IcmpEcho ScanModule to do ping scan with a 6s timeout.\n", 6, 80);
