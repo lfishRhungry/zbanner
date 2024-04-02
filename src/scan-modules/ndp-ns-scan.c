@@ -126,9 +126,17 @@ struct ScanModule NdpNsScan = {
         "NdpNsScan sends an NDP(ICMPv6) Neighbor Solicitation to IPv6 target "
         "host(actually `the solicited-node multicast address`). Expect an NDP"
         "Neighbor Advertisement to believe the host is alive.\n"
-        "We must set an IPv6 link-local addressIPv6 as source IP. And it's better"
+        "We must set an IPv6 link-local address as source IP. And it's better"
         "  to set `--fake-router-mac` to avoid "XTATE_FIRST_UPPER_NAME" to "
-        "resolve router MAC address for a non link-local IPv6 and warn us.",
+        "resolve router MAC address to a non link-local IPv6 and warn us.\n"
+        "HINT: Sometimes we want to check if target host is reachable with link-"
+        "local IPv6 address, we can use Ping tool to do this by specifying link-"
+        "local IPv6 address of target while setting our link-local IPv6 address "
+        "and interface explicitly.\n"
+        "Example on Linux:\n"
+        "      ping -6 <dst-IPv6-addr> -I <src-IPv6-addr>%<interface>\n"
+        "Example on Windows:\n"
+        "      ping -6 <dst-IPv6-addr> -S <src-IPv6-addr>%<interface-num>",
 
     .global_init_cb         = &ndpns_init,
     .transmit_cb            = &ndpns_transmit,
