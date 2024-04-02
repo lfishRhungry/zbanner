@@ -71,7 +71,7 @@
 #include "stack-queue.h"
 #include "stack-src.h"
 #include "../cookie.h"
-#include "../timeout/event-timeout.h"      /* for tracking future events */
+#include "../timeout/event-timeout.h"
 #include "../rawsock/rawsock.h"
 #include "../util/logger.h"
 #include "../templ/templ-tcp.h"
@@ -281,36 +281,22 @@ tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usec
         struct TCP_Control_Block *tcb;
         enum TCB_result x;
 
-        /*
-         * Get the next event that is older than the current time
-         */
         tcb = (struct TCP_Control_Block *)timeouts_remove(tcpcon->timeouts,
                                                           timestamp);
 
-        /*
-         * If everything up to the current time has already been processed,
-         * then exit this loop
-         */
         if (tcb == NULL)
             break;
 
-        /*
-         * Process this timeout
-         */
         x = stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_TIMEOUT,
             0, 0,
             secs, usecs,
             tcb->seqno_them,
             tcb->ackno_them);
 
-        /* If the TCB hasn't been destroyed, then we need to make sure
-         * there is a timeout associated with it. KLUDGE: here is the problem:
-         * there must ALWAYS be a 'timeout' associated with a TCB, otherwise,
-         * we'll lose track of it and leak memory. In theory, this should be
-         * automatically handled elsewhere, but I have bugs, and it's not,
-         * so I put some code here as a catch-all: if the TCB hasn't been
-         * deleted, but hasn't been inserted back into the timeout system,
-         * then insert it here. */
+        /**
+         * If the TCB hasn't been destroyed, then we need to make sure
+         * there is a timeout associated with it.
+         * */
         if (x != TCB__destroyed && timeout_is_unlinked(tcb->timeout)) {
             timeouts_add(tcpcon->timeouts,
                          tcb->timeout,
@@ -425,18 +411,10 @@ tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
     
     UNUSEDPARM(reason);
 
-    /*
-     * The TCB doesn't point to it's location in the table. Therefore, we
-     * have to do a lookup to find the head pointer in the table.
-     */
     index = get_cookie(tcb->ip_me, tcb->port_me, 
         tcb->ip_them, tcb->port_them, 
         tcpcon->entropy);
     
-    /*
-     * At this point, we have the head of a linked list of TCBs. Now,
-     * traverse that linked list until we find our TCB
-     */
     r_entry = &tcpcon->entries[index & tcpcon->mask];
     while (*r_entry && *r_entry != tcb)
         r_entry = &(*r_entry)->next;
@@ -448,9 +426,6 @@ tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
 
     LOGtcb(tcb, 2, "--DESTROYED--\n");
 
-    /*
-     * If there are any queued segments to transmit, then free them
-     */
     while (tcb->segments) {
         struct TCP_Segment *seg;
         seg           = tcb->segments;
@@ -482,8 +457,8 @@ tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
         .port_them = tcb->port_them,
         .ip_me     = tcb->ip_me,
         .port_me   = tcb->port_me,
-        .cookie    = 0,         /*ProbeType State doesn't need cookie*/
-        .index     = 0,         /*doesn't support multi-probe now*/
+        .cookie    = 0,               /*ProbeType State doesn't need cookie*/
+        .index     = 0,               /*doesn't support multi-probe now*/
     };
     tcb->probe->conn_close_cb(&tcb->probe_state, &target);
 
@@ -507,18 +482,11 @@ tcpcon_destroy_table(struct TCP_ConnectionTable *tcpcon)
     if (tcpcon == NULL)
         return;
 
-    /*
-     * Do a graceful destruction of all the entires. If they have banners,
-     * they will be sent to the output
-     */
     for (i=0; i<=tcpcon->mask; i++) {
         while (tcpcon->entries[i])
             tcpcon_destroy_tcb(tcpcon, tcpcon->entries[i], Reason_Shutdown);
     }
 
-    /*
-     * Now free the memory
-     */
     while (tcpcon->freed_list) {
         struct TCP_Control_Block *tcb = tcpcon->freed_list;
         tcpcon->freed_list = tcb->next;
@@ -557,8 +525,6 @@ tcpcon_create_tcb(
     tmp.port_me   = (unsigned short)port_me;
     tmp.port_them = (unsigned short)port_them;
 
-    /* Lookup the location in the hash table where this tcb should be
-     * placed */
     index = get_cookie(ip_me, port_me, ip_them, port_them, tcpcon->entropy);
     tcb   = tcpcon->entries[index & tcpcon->mask];
 
@@ -580,13 +546,9 @@ tcpcon_create_tcb(
     }
     memset(tcb, 0, sizeof(*tcb));
 
-    /* Add it to this spot in the hash table */
     tcb->next = tcpcon->entries[index & tcpcon->mask];
     tcpcon->entries[index & tcpcon->mask] = tcb;
 
-    /*
-     * Initialize the entry
-     */
     tcb->ip_me            = ip_me;
     tcb->ip_them          = ip_them;
     tcb->port_me          = (unsigned short)port_me;
@@ -651,8 +613,6 @@ tcpcon_lookup_tcb(
     index         =
         get_cookie(ip_me, port_me, ip_them, port_them, tcpcon->entropy);
 
-    /* Hash to an entry in the table, then follow a linked list from
-     * that point forward. */
     tcb = tcpcon->entries[index & tcpcon->mask];
     while (tcb && !TCB_EQUALS(tcb, &tmp)) {
         tcb = tcb->next;
@@ -832,12 +792,12 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     
     if (!buf || !length) return;
 
-    struct TCP_ConnectionTable *tcpcon = (struct TCP_ConnectionTable *)in_tcpcon;
-    struct TCP_Control_Block *tcb = (struct TCP_Control_Block *)in_tcb;
-    struct TCP_Segment *seg;
-    struct TCP_Segment **next;
-    unsigned seqno = tcb->seqno_me;
-    size_t length_more = 0;
+    struct TCP_ConnectionTable    *tcpcon        = (struct TCP_ConnectionTable *)in_tcpcon;
+    struct TCP_Control_Block      *tcb           = (struct TCP_Control_Block *)in_tcb;
+    unsigned                       seqno         = tcb->seqno_me;
+    size_t                         length_more   = 0;
+    struct TCP_Segment            *seg;
+    struct TCP_Segment           **next;
 
     if (length > tcb->mss) {
         length_more = length - tcb->mss;
@@ -853,7 +813,6 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     seg   = calloc(1, sizeof(*seg));
     *next = seg;
 
-    /* Fill in this segment's members */
     seg->seqno  = seqno;
     seg->length = length;
     seg->is_dynamic  = is_dynamic;
@@ -978,8 +937,6 @@ _next_IP_port(struct TCP_ConnectionTable *tcpcon,
     const struct stack_src_t *src = tcpcon->stack->src;
     unsigned index;
 
-    /* Get another source port, because we can't use the existing
-     * one for new connection */
     index = *port_me - src->port.first + 1;
     *port_me = src->port.first + index;
     if (*port_me >= src->port.last) {
@@ -1044,9 +1001,6 @@ _do_reconnect(struct TCP_ConnectionTable *tcpcon,
 
     seqno = get_cookie(ip_them, port_them, ip_me, port_me, tcpcon->entropy);
 
-    /*
-     * Now create a new TCB for this new connection
-     */
     new_tcb = tcpcon_create_tcb(tcpcon, ip_me, ip_them, port_me, port_them,
         seqno+1, 0, 255, probe, secs, usecs);
 

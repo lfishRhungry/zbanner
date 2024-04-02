@@ -33,10 +33,6 @@ struct stack_handle_t;
 
 
 
-/**
- * Create a TCP connection table (to store TCP control blocks) with
- * the desired initial size.
- */
 struct TCP_ConnectionTable *
 tcpcon_create_table(size_t entry_count,
     struct stack_t *stack,
@@ -60,9 +56,6 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block 
     unsigned seqno_them, unsigned ackno_them);
 
 
-/**
- * Lookup a connection record based on IP/ports.
- */
 struct TCP_Control_Block *
 tcpcon_lookup_tcb(struct TCP_ConnectionTable *tcpcon,
     ipaddress ip_src, ipaddress ip_dst,
