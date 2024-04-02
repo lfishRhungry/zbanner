@@ -76,16 +76,8 @@ timeouts_create(uint64_t timestamp)
 {
     struct Timeouts *timeouts;
 
-    /*
-     * Allocate memory and initialize it to zero
-     */
     timeouts = CALLOC(1, sizeof(*timeouts));
     
-    /*
-     * We use a variable here because one of these days I'm going to make
-     * the size of the ring dynamically adjustable depending upon
-     * the speed of the scan.
-     */
     timeouts->mask = sizeof(timeouts->slots)/sizeof(timeouts->slots[0]) - 1;
 
     /*
