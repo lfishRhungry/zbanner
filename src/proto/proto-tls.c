@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "proto-tls.h"
+#include "../util/data-convert.h"
 
 static const char *TlsGreaseList[] = {
    "\x0a\x0a", "\x1a\x1a", "\x2a\x2a", "\x3a\x3a",
@@ -12,7 +13,7 @@ static const char *TlsGreaseList[] = {
 uint16_t tls_get_a_grease(unsigned seed)
 {
     unsigned idx    = seed%(sizeof(TlsGreaseList)/sizeof(const char *));
-    uint16_t grease = TlsGreaseList[idx][0] << 8 | TlsGreaseList[idx][1];
+    uint16_t grease = BE_TO_U16(TlsGreaseList[idx]);
     return grease;
 }
 
@@ -27,20 +28,17 @@ size_t tls_load_ext_sni(unsigned char *px, const char *name)
     px[0]  = 0x00;
     px[1]  = 0x00;
 
-    px[0]  = TLSEXT_TYPE_server_name >> 8 & 0xFF;
-    px[1]  = TLSEXT_TYPE_server_name >> 0 & 0xFF;
+    U16_TO_BE(px, TLSEXT_TYPE_server_name);
     px    += 2;
     r_len += 2;
 
     /*Extension Length*/
-    px[0]  = ((name_len+5) >> 8) & 0xFF;
-    px[1]  = ((name_len+5) >> 0) & 0xFF;
+    U16_TO_BE(px, name_len+5);
     px    += 2;
     r_len += 2;
 
     /*ServerName List Length*/
-    px[0]  = ((name_len+3) >> 8) & 0xFF;
-    px[1]  = ((name_len+3) >> 0) & 0xFF;
+    U16_TO_BE(px, name_len+3);
     px    += 2;
     r_len += 2;
 
@@ -50,8 +48,7 @@ size_t tls_load_ext_sni(unsigned char *px, const char *name)
     r_len += 1;
 
     /*ServerName Length*/
-    px[0]  = ((name_len) >> 8) & 0xFF;
-    px[1]  = ((name_len) >> 0) & 0xFF;
+    U16_TO_BE(px, name_len);
     px    += 2;
     r_len += 2;
 
@@ -73,8 +70,7 @@ size_t tls_load_ext_alpn(unsigned char *px, const char **proto_list, unsigned pr
 {
     if (proto_count==0) return 0;
 
-    px[0] = TLSEXT_TYPE_application_layer_protocol_negotiation >> 8 & 0xFF;
-    px[1] = TLSEXT_TYPE_application_layer_protocol_negotiation >> 0 & 0xFF;
+    U16_TO_BE(px, TLSEXT_TYPE_application_layer_protocol_negotiation);
 
     unsigned char *proto_start = px + 6;
     size_t tmp_len;
@@ -87,10 +83,8 @@ size_t tls_load_ext_alpn(unsigned char *px, const char **proto_list, unsigned pr
     uint16_t alpn_len = proto_start - (px+6);
     uint16_t ext_len  = alpn_len + 2;
 
-    px[2] = (ext_len  >> 8) & 0xFF;
-    px[3] = (ext_len  >> 0) & 0xFF;
-    px[4] = (alpn_len >> 8) & 0xFF;
-    px[5] = (alpn_len >> 0) & 0xFF;
+    U16_TO_BE(px+2, ext_len);
+    U16_TO_BE(px+4, alpn_len);
 
     return ((size_t)ext_len) + 4;
 }
