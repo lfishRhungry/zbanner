@@ -10,6 +10,7 @@
 #include "../util/safe-string.h"
 #include "../pixie/pixie-timer.h"
 #include "../util/logger.h"
+#include "../util/data-convert.h"
 #include "../cookie.h"
 #include "../util/unusedparm.h"
 #include "../util/checksum.h"
@@ -235,12 +236,12 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
     unsigned data_link_type)
 {
     struct PreprocessedInfo parsed;
-    unsigned x;
     unsigned payload_length;
     unsigned offset_ip;
     unsigned offset_tcp;
     unsigned offset_tcp6;
     unsigned char *buf;
+    unsigned x;
 
     /* Zero out everything and start from scratch */
     if (tmpl->ipv6.packet) {
@@ -258,8 +259,8 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
     /* The "payload" in this case is everything past the IP header,
      * so TCP or UDP headers are inside the IP payload */
     payload_length = tmpl->ipv4.length - tmpl->ipv4.offset_tcp;
-    offset_ip = tmpl->ipv4.offset_ip;
-    offset_tcp = tmpl->ipv4.offset_tcp;
+    offset_ip      = tmpl->ipv4.offset_ip;
+    offset_tcp     = tmpl->ipv4.offset_tcp;
 
     /* Create a copy of the IPv4 packet */
     buf = MALLOC(tmpl->ipv4.length + 40);
@@ -306,8 +307,7 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
      * but in IPv6, it's everything after the header. In other words,
      * the size of an IPv6 packet is 40+payload_length, whereas in IPv4
      * it was total_length. */
-    buf[offset_ip + 4] = (unsigned char)(payload_length >> 8);
-    buf[offset_ip + 5] = (unsigned char)(payload_length >> 0);
+    U16_TO_BE(buf+offset_ip+4, payload_length);
 
     /* Set the "next header" field.
      * TODO: need to fix ICMP */
@@ -329,7 +329,7 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
         LOG(LEVEL_ERROR, "[-] FAILED: bad packet template\n");
         exit(1);
     }
-    tmpl->ipv6.offset_ip = parsed.ip_offset;
+    tmpl->ipv6.offset_ip  = parsed.ip_offset;
     tmpl->ipv6.offset_tcp = parsed.transport_offset;
     tmpl->ipv6.offset_app = parsed.app_offset;
 
@@ -372,7 +372,7 @@ _template_init(
         LOG(LEVEL_ERROR, "ERROR: bad packet template\n");
         exit(1);
     }
-    tmpl->ipv4.offset_ip = parsed.ip_offset;
+    tmpl->ipv4.offset_ip  = parsed.ip_offset;
     tmpl->ipv4.offset_tcp = parsed.transport_offset;
     tmpl->ipv4.offset_app = parsed.app_offset;
     if (parsed.found == FOUND_ARP) {
@@ -408,7 +408,7 @@ _template_init(
      * added later the packet, then calculate the checksum as if they were
      * zero. This makes recalculation of the checksum easier when we transmit
      */
-    memset(px + tmpl->ipv4.offset_ip + 4, 0, 2);  /* IP ID field */
+    memset(px + tmpl->ipv4.offset_ip +  4, 0, 2);  /* IP ID field */
     memset(px + tmpl->ipv4.offset_ip + 10, 0, 2); /* checksum */
     memset(px + tmpl->ipv4.offset_ip + 12, 0, 8); /* addresses */
     tmpl->ipv4.checksum_ip = checksum_ip_header( tmpl->ipv4.packet,
@@ -421,7 +421,7 @@ _template_init(
      */
     switch (parsed.ip_protocol) {
     case 1: /* ICMP */
-            tmpl->ipv4.offset_app = tmpl->ipv4.length;
+            tmpl->ipv4.offset_app   = tmpl->ipv4.length;
             tmpl->ipv4.checksum_tcp = checksum_icmp(tmpl->ipv4.packet,
                 tmpl->ipv4.offset_tcp, tmpl->ipv4.length-tmpl->ipv4.offset_tcp);
             switch (px[tmpl->ipv4.offset_tcp]) {
@@ -439,7 +439,7 @@ _template_init(
         break;
     case 6: /* TCP */
         /* zero out fields that'll be overwritten */
-        memset(px + tmpl->ipv4.offset_tcp + 0, 0, 8); /* destination port and seqno */
+        memset(px + tmpl->ipv4.offset_tcp +  0, 0, 8); /* destination port and seqno */
         memset(px + tmpl->ipv4.offset_tcp + 16, 0, 2); /* checksum */
         tmpl->ipv4.checksum_tcp = checksum_tcp(tmpl->ipv4.packet, tmpl->ipv4.offset_ip,
             tmpl->ipv4.offset_tcp, tmpl->ipv4.length-tmpl->ipv4.offset_tcp);
@@ -469,7 +469,7 @@ _template_init(
      */
     if (data_link_type == PCAP_DLT_NULL /* Null VPN tunnel */) {
         int linkproto = 2; /* AF_INET */
-        tmpl->ipv4.length -= tmpl->ipv4.offset_ip - sizeof(int);
+        tmpl->ipv4.length     -= tmpl->ipv4.offset_ip - sizeof(int);
         tmpl->ipv4.offset_tcp -= tmpl->ipv4.offset_ip - sizeof(int);
         tmpl->ipv4.offset_app -= tmpl->ipv4.offset_ip - sizeof(int);
         memmove(tmpl->ipv4.packet + sizeof(int),
@@ -478,7 +478,7 @@ _template_init(
         tmpl->ipv4.offset_ip = 4;
         memcpy(tmpl->ipv4.packet, &linkproto, sizeof(int));
     } else if (data_link_type == PCAP_DLT_RAW /* Raw IP */) {
-        tmpl->ipv4.length -= tmpl->ipv4.offset_ip;
+        tmpl->ipv4.length     -= tmpl->ipv4.offset_ip;
         tmpl->ipv4.offset_tcp -= tmpl->ipv4.offset_ip;
         tmpl->ipv4.offset_app -= tmpl->ipv4.offset_ip;
         memmove(tmpl->ipv4.packet,
@@ -592,14 +592,12 @@ template_packet_init(
 
 void template_set_tcp_syn_window_of_default(unsigned window)
 {
-    default_tcp_syn_template[48] = (unsigned char)(window>>8);
-    default_tcp_syn_template[49] = (unsigned char)(window>>0);
+    U16_TO_BE(default_tcp_syn_template+48, window);
 }
 
 void template_set_tcp_window_of_default(unsigned window)
 {
-    default_tcp_template[48] = (unsigned char)(window>>8);
-    default_tcp_template[49] = (unsigned char)(window>>0);
+    U16_TO_BE(default_tcp_template+48, window);
 }
 
 void
@@ -609,8 +607,8 @@ template_set_ttl(struct TemplateSet *tmplset, unsigned ttl)
 
     for (i=0; i<tmplset->count; i++) {
         struct TemplatePacket *tmpl = &tmplset->pkts[i];
-        unsigned char *px = tmpl->ipv4.packet;
-        unsigned offset = tmpl->ipv4.offset_ip;
+        unsigned char *px           = tmpl->ipv4.packet;
+        unsigned offset             = tmpl->ipv4.offset_ip;
 
         px[offset+8] = (unsigned char)(ttl);
         tmpl->ipv4.checksum_ip = checksum_ip_header(
@@ -647,13 +645,12 @@ template_set_vlan(struct TemplateSet *tmplset, unsigned vlan)
         
         px[12] = 0x81;
         px[13] = 0x00;
-        px[14] = (unsigned char)(vlan>>8);
-        px[15] = (unsigned char)(vlan>>0);
+        U16_TO_BE(px+14, vlan);
         
         tmpl->ipv4.packet = px;
         tmpl->ipv4.length += 4;
         
-        tmpl->ipv4.offset_ip += 4;
+        tmpl->ipv4.offset_ip  += 4;
         tmpl->ipv4.offset_tcp += 4;
         tmpl->ipv4.offset_app += 4;
     }
@@ -673,13 +670,12 @@ template_packet_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan)
     
     px[12] = 0x81;
     px[13] = 0x00;
-    px[14] = (unsigned char)(vlan>>8);
-    px[15] = (unsigned char)(vlan>>0);
+    U16_TO_BE(px+14, vlan);
     
     tmpl_pkt->ipv4.packet = px;
     tmpl_pkt->ipv4.length += 4;
     
-    tmpl_pkt->ipv4.offset_ip += 4;
+    tmpl_pkt->ipv4.offset_ip  += 4;
     tmpl_pkt->ipv4.offset_tcp += 4;
     tmpl_pkt->ipv4.offset_app += 4;
 }

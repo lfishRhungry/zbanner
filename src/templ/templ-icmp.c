@@ -4,6 +4,7 @@
 #include "templ-icmp.h"
 #include "../globals.h"
 #include "../util/checksum.h"
+#include "../util/data-convert.h"
 
 /* Generic ICMPv4 according to RFC792
     0                   1                   2                   3
@@ -78,7 +79,7 @@ icmp_create_by_template_ipv4(
     if (r_len > tmpl->ipv4.length)
         r_len = tmpl->ipv4.length;
     memcpy(px, tmpl->ipv4.packet, r_len);
-    offset_ip = tmpl->ipv4.offset_ip;
+    offset_ip  = tmpl->ipv4.offset_ip;
     offset_tcp = tmpl->ipv4.offset_tcp;
 
     /*
@@ -105,24 +106,16 @@ icmp_create_by_template_ipv4(
      * Fill in the empty fields in the IP header and then re-calculate
      * the checksum.
      */
-    {
-        unsigned total_length = tmpl->ipv4.length - tmpl->ipv4.offset_ip;
-        px[offset_ip+2] = (unsigned char)(total_length>>8);
-        px[offset_ip+3] = (unsigned char)(total_length>>0);
-    }
-    px[offset_ip+4] = (unsigned char)(ip_id >> 8);
-    px[offset_ip+5] = (unsigned char)(ip_id & 0xFF);
+
+    unsigned total_length = tmpl->ipv4.length - tmpl->ipv4.offset_ip;
+    U16_TO_BE(px+offset_ip+2, total_length);
+
+    U16_TO_BE(px+offset_ip+4, ip_id);
 
     px[offset_ip+8] = (unsigned char)(ttl);
 
-    px[offset_ip+12] = (unsigned char)((ip_me >> 24) & 0xFF);
-    px[offset_ip+13] = (unsigned char)((ip_me >> 16) & 0xFF);
-    px[offset_ip+14] = (unsigned char)((ip_me >>  8) & 0xFF);
-    px[offset_ip+15] = (unsigned char)((ip_me >>  0) & 0xFF);
-    px[offset_ip+16] = (unsigned char)((ip_them >> 24) & 0xFF);
-    px[offset_ip+17] = (unsigned char)((ip_them >> 16) & 0xFF);
-    px[offset_ip+18] = (unsigned char)((ip_them >>  8) & 0xFF);
-    px[offset_ip+19] = (unsigned char)((ip_them >>  0) & 0xFF);
+    U32_TO_BE(px+offset_ip+12, ip_me);
+    U32_TO_BE(px+offset_ip+16, ip_them);
 
 
     px[offset_ip+10] = (unsigned char)(0);
@@ -130,8 +123,7 @@ icmp_create_by_template_ipv4(
 
     xsum2 = (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.length);
 
-    px[offset_ip+10] = (unsigned char)(xsum2 >> 8);
-    px[offset_ip+11] = (unsigned char)(xsum2 & 0xFF);
+    U16_TO_BE(px+offset_ip+10, xsum2);
 
 
     /*
@@ -139,18 +131,15 @@ icmp_create_by_template_ipv4(
      */
     xsum = 0;
 
-    px[offset_tcp+ 4] = (unsigned char)(cookie >> 24);
-    px[offset_tcp+ 5] = (unsigned char)(cookie >> 16);
-    px[offset_tcp+ 6] = (unsigned char)(cookie >>  8);
-    px[offset_tcp+ 7] = (unsigned char)(cookie >>  0);
+    U32_TO_BE(px+offset_tcp+4, cookie);
+
     xsum = (uint64_t)tmpl->ipv4.checksum_tcp
             + (uint64_t)cookie;
     xsum = (xsum >> 16) + (xsum & 0xFFFF);
     xsum = (xsum >> 16) + (xsum & 0xFFFF);
     xsum = (xsum >> 16) + (xsum & 0xFFFF);
     xsum = ~xsum;
-    px[offset_tcp+2] = (unsigned char)(xsum >>  8);
-    px[offset_tcp+3] = (unsigned char)(xsum >>  0);
+    U16_TO_BE(px+offset_tcp+2, xsum);
 
     return r_len;
 }
@@ -173,7 +162,7 @@ icmp_create_by_template_ipv6(
     if (r_len > tmpl->ipv6.length)
         r_len = tmpl->ipv6.length;
     memcpy(px, tmpl->ipv6.packet, r_len);
-    offset_ip = tmpl->ipv6.offset_ip;
+    offset_ip  = tmpl->ipv6.offset_ip;
     offset_tcp = tmpl->ipv6.offset_tcp;
     //ip_id = ip_them ^ port_them ^ seqno;
 
@@ -206,58 +195,23 @@ icmp_create_by_template_ipv6(
      * the checksum.
      */
     payload_length = tmpl->ipv6.length - tmpl->ipv6.offset_ip - 40;
-    px[offset_ip+4] = (unsigned char)(payload_length>>8);
-    px[offset_ip+5] = (unsigned char)(payload_length>>0);
+    U16_TO_BE(px+offset_ip+4, payload_length);
 
     px[offset_ip+7] = (unsigned char)(ttl);
 
-    px[offset_ip+ 8] = (unsigned char)((ip_me.hi >> 56ULL) & 0xFF);
-    px[offset_ip+ 9] = (unsigned char)((ip_me.hi >> 48ULL) & 0xFF);
-    px[offset_ip+10] = (unsigned char)((ip_me.hi >> 40ULL) & 0xFF);
-    px[offset_ip+11] = (unsigned char)((ip_me.hi >> 32ULL) & 0xFF);
-    px[offset_ip+12] = (unsigned char)((ip_me.hi >> 24ULL) & 0xFF);
-    px[offset_ip+13] = (unsigned char)((ip_me.hi >> 16ULL) & 0xFF);
-    px[offset_ip+14] = (unsigned char)((ip_me.hi >>  8ULL) & 0xFF);
-    px[offset_ip+15] = (unsigned char)((ip_me.hi >>  0ULL) & 0xFF);
+    U64_TO_BE(px+offset_ip+ 8, ip_me.hi);
+    U64_TO_BE(px+offset_ip+16, ip_me.lo);
 
-    px[offset_ip+16] = (unsigned char)((ip_me.lo >> 56ULL) & 0xFF);
-    px[offset_ip+17] = (unsigned char)((ip_me.lo >> 48ULL) & 0xFF);
-    px[offset_ip+18] = (unsigned char)((ip_me.lo >> 40ULL) & 0xFF);
-    px[offset_ip+19] = (unsigned char)((ip_me.lo >> 32ULL) & 0xFF);
-    px[offset_ip+20] = (unsigned char)((ip_me.lo >> 24ULL) & 0xFF);
-    px[offset_ip+21] = (unsigned char)((ip_me.lo >> 16ULL) & 0xFF);
-    px[offset_ip+22] = (unsigned char)((ip_me.lo >>  8ULL) & 0xFF);
-    px[offset_ip+23] = (unsigned char)((ip_me.lo >>  0ULL) & 0xFF);
-
-    px[offset_ip+24] = (unsigned char)((ip_them.hi >> 56ULL) & 0xFF);
-    px[offset_ip+25] = (unsigned char)((ip_them.hi >> 48ULL) & 0xFF);
-    px[offset_ip+26] = (unsigned char)((ip_them.hi >> 40ULL) & 0xFF);
-    px[offset_ip+27] = (unsigned char)((ip_them.hi >> 32ULL) & 0xFF);
-    px[offset_ip+28] = (unsigned char)((ip_them.hi >> 24ULL) & 0xFF);
-    px[offset_ip+29] = (unsigned char)((ip_them.hi >> 16ULL) & 0xFF);
-    px[offset_ip+30] = (unsigned char)((ip_them.hi >>  8ULL) & 0xFF);
-    px[offset_ip+31] = (unsigned char)((ip_them.hi >>  0ULL) & 0xFF);
-
-    px[offset_ip+32] = (unsigned char)((ip_them.lo >> 56ULL) & 0xFF);
-    px[offset_ip+33] = (unsigned char)((ip_them.lo >> 48ULL) & 0xFF);
-    px[offset_ip+34] = (unsigned char)((ip_them.lo >> 40ULL) & 0xFF);
-    px[offset_ip+35] = (unsigned char)((ip_them.lo >> 32ULL) & 0xFF);
-    px[offset_ip+36] = (unsigned char)((ip_them.lo >> 24ULL) & 0xFF);
-    px[offset_ip+37] = (unsigned char)((ip_them.lo >> 16ULL) & 0xFF);
-    px[offset_ip+38] = (unsigned char)((ip_them.lo >>  8ULL) & 0xFF);
-    px[offset_ip+39] = (unsigned char)((ip_them.lo >>  0ULL) & 0xFF);
+    U64_TO_BE(px+offset_ip+24, ip_them.hi);
+    U64_TO_BE(px+offset_ip+32, ip_them.lo);
 
     /*
      * Now do the checksum for the higher layer protocols
      */
     /* TODO: IPv6 */
-    px[offset_tcp+ 4] = (unsigned char)(cookie >> 24);
-    px[offset_tcp+ 5] = (unsigned char)(cookie >> 16);
-    px[offset_tcp+ 6] = (unsigned char)(cookie >>  8);
-    px[offset_tcp+ 7] = (unsigned char)(cookie >>  0);
+    U32_TO_BE(px+offset_tcp+4, cookie);
     xsum = checksum_ipv6(px + offset_ip + 8, px + offset_ip + 24, 58,  tmpl->ipv6.length - offset_tcp, px + offset_tcp);
-    px[offset_tcp+2] = (unsigned char)(xsum >>  8);
-    px[offset_tcp+3] = (unsigned char)(xsum >>  0);
+    U16_TO_BE(px+offset_tcp+2, xsum);
 
     return r_len;
 }
@@ -310,11 +264,7 @@ icmp_create_timestamp_packet(
 unsigned
 get_icmp_cookie(const struct PreprocessedInfo *parsed,const unsigned char *px)
 {
-    unsigned cookie =  px[parsed->transport_offset+4]<<24
-                        | px[parsed->transport_offset+5]<<16
-                        | px[parsed->transport_offset+6]<<8
-                        | px[parsed->transport_offset+7]<<0;
-    return cookie;
+    return BE_TO_U32(px+parsed->transport_offset+4);
 }
 
 unsigned
@@ -341,16 +291,10 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
     if (ip_header_in_icmp[0]>>4 == 0B0100) {
         /*ipv4*/
         r_ip_them->version = 4;
-        r_ip_me->version = 4;
+        r_ip_me->version   = 4;
 
-        r_ip_me->ipv4 = ip_header_in_icmp[12]<<24
-            | ip_header_in_icmp[13]<<16
-            | ip_header_in_icmp[14]<<8
-            | ip_header_in_icmp[15];
-        r_ip_them->ipv4 = ip_header_in_icmp[16]<<24
-            | ip_header_in_icmp[17]<<16
-            | ip_header_in_icmp[18]<<8
-            | ip_header_in_icmp[19];
+        r_ip_me->ipv4   = BE_TO_U32(ip_header_in_icmp+12);
+        r_ip_them->ipv4 = BE_TO_U32(ip_header_in_icmp+16);
         
         if (ip_header_in_icmp[9]==6) {
             *r_ip_proto = Proto_TCP;
@@ -360,57 +304,24 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
             return 0;
         }
 
-        ip_header_in_icmp += (ip_header_in_icmp[0]&0xF)<<2;
+        ip_header_in_icmp   += (ip_header_in_icmp[0]&0xF)<<2;
         data_length_in_icmp -= (ip_header_in_icmp[0]&0xF)<<2;
 
         if (data_length_in_icmp < 4)
             return 0;
 
-        *r_port_me = ip_header_in_icmp[0]<<8 | ip_header_in_icmp[1];
-        *r_port_them = ip_header_in_icmp[2]<<8 | ip_header_in_icmp[3];
+        *r_port_me   = BE_TO_U16(ip_header_in_icmp);
+        *r_port_them = BE_TO_U16(ip_header_in_icmp+2);
 
     } else if (ip_header_in_icmp[0]>>4 == 0B0110) {
         /*ipv6*/
         r_ip_them->version = 6;
-        r_ip_me->version = 6;
+        r_ip_me->version   = 6;
 
-        r_ip_me->ipv6.hi = 0ULL
-                            | (uint64_t)ip_header_in_icmp[8] << 56ULL
-                            | (uint64_t)ip_header_in_icmp[9] << 48ULL
-                            | (uint64_t)ip_header_in_icmp[10] << 40ULL
-                            | (uint64_t)ip_header_in_icmp[11] << 32ULL
-                            | (uint64_t)ip_header_in_icmp[12] << 24ULL
-                            | (uint64_t)ip_header_in_icmp[13] << 16ULL
-                            | (uint64_t)ip_header_in_icmp[14] <<  8ULL
-                            | (uint64_t)ip_header_in_icmp[15] <<  0ULL;
-        r_ip_me->ipv6.lo = 0ULL
-                            | (uint64_t)ip_header_in_icmp[16] << 56ULL
-                            | (uint64_t)ip_header_in_icmp[17] << 48ULL
-                            | (uint64_t)ip_header_in_icmp[18] << 40ULL
-                            | (uint64_t)ip_header_in_icmp[19] << 32ULL
-                            | (uint64_t)ip_header_in_icmp[20] << 24ULL
-                            | (uint64_t)ip_header_in_icmp[21] << 16ULL
-                            | (uint64_t)ip_header_in_icmp[22] <<  8ULL
-                            | (uint64_t)ip_header_in_icmp[23] <<  0ULL;
-
-        r_ip_them->ipv6.hi = 0ULL
-                            | (uint64_t)ip_header_in_icmp[24] << 56ULL
-                            | (uint64_t)ip_header_in_icmp[25] << 48ULL
-                            | (uint64_t)ip_header_in_icmp[26] << 40ULL
-                            | (uint64_t)ip_header_in_icmp[27] << 32ULL
-                            | (uint64_t)ip_header_in_icmp[28] << 24ULL
-                            | (uint64_t)ip_header_in_icmp[29] << 16ULL
-                            | (uint64_t)ip_header_in_icmp[30] <<  8ULL
-                            | (uint64_t)ip_header_in_icmp[31] <<  0ULL;
-        r_ip_them->ipv6.lo = 0ULL
-                            | (uint64_t)ip_header_in_icmp[32] << 56ULL
-                            | (uint64_t)ip_header_in_icmp[33] << 48ULL
-                            | (uint64_t)ip_header_in_icmp[34] << 40ULL
-                            | (uint64_t)ip_header_in_icmp[35] << 32ULL
-                            | (uint64_t)ip_header_in_icmp[36] << 24ULL
-                            | (uint64_t)ip_header_in_icmp[37] << 16ULL
-                            | (uint64_t)ip_header_in_icmp[38] <<  8ULL
-                            | (uint64_t)ip_header_in_icmp[39] <<  0ULL;
+        r_ip_me->ipv6.hi     = BE_TO_U64(ip_header_in_icmp+ 8);
+        r_ip_me->ipv6.lo     = BE_TO_U64(ip_header_in_icmp+16);
+        r_ip_them->ipv6.hi   = BE_TO_U64(ip_header_in_icmp+24);
+        r_ip_them->ipv6.lo   = BE_TO_U64(ip_header_in_icmp+32);
 
         if (ip_header_in_icmp[6]==6) {
             *r_ip_proto = Proto_TCP;
@@ -421,14 +332,14 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
         }
 
         /*length of ipv6 header is fixed*/
-        ip_header_in_icmp += 40;
+        ip_header_in_icmp   += 40;
         data_length_in_icmp -= 40;
 
         if (data_length_in_icmp < 4)
             return 0;
 
-        *r_port_me = ip_header_in_icmp[0]<<8 | ip_header_in_icmp[1];
-        *r_port_them = ip_header_in_icmp[2]<<8 | ip_header_in_icmp[3];
+        *r_port_me   = BE_TO_U16(ip_header_in_icmp);
+        *r_port_them = BE_TO_U16(ip_header_in_icmp+2);
     }
 
     return 1;

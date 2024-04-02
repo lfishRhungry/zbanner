@@ -5,6 +5,7 @@
 #include "../globals.h"
 #include "../util/checksum.h"
 #include "../util/logger.h"
+#include "../util/data-convert.h"
 
 static size_t
 arp_create_by_template_ipv4(
@@ -22,14 +23,8 @@ arp_create_by_template_ipv4(
         r_len = tmpl->ipv4.length;
     memcpy(px, tmpl->ipv4.packet, r_len);
     px = px + tmpl->ipv4.offset_ip;
-    px[14] = (unsigned char)((ip_me >> 24) & 0xFF);
-    px[15] = (unsigned char)((ip_me >> 16) & 0xFF);
-    px[16] = (unsigned char)((ip_me >>  8) & 0xFF);
-    px[17] = (unsigned char)((ip_me >>  0) & 0xFF);
-    px[24] = (unsigned char)((ip_them >> 24) & 0xFF);
-    px[25] = (unsigned char)((ip_them >> 16) & 0xFF);
-    px[26] = (unsigned char)((ip_them >>  8) & 0xFF);
-    px[27] = (unsigned char)((ip_them >>  0) & 0xFF);
+    U32_TO_BE(px+14, ip_me);
+    U32_TO_BE(px+24, ip_them);
 
     return r_len;
 }
