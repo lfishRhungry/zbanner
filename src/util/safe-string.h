@@ -139,6 +139,18 @@ safe_memismem (const void * haystack, size_t haystacklen,
     const void * needle, size_t needlelen);
 
 /**
+ * Do a memmove() of a chunk of memory within a buffer with bounds checking.
+ */
+void
+safe_memmove(unsigned char *buf, size_t length, size_t to, size_t from, size_t chunklength);
+
+/**
+ * Do a memset() of a chunk of memory within a buffer with bounds checking
+ */
+void
+safe_memset(unsigned char *buf, size_t length, size_t offset, int c, size_t chunklength);
+
+/**
  * is byt the header of src
 */
 int

@@ -85,6 +85,7 @@ TCP pseudo header
 #include "../globals.h"
 #include "../util/logger.h"
 #include "../util/checksum.h"
+#include "../util/safe-string.h"
 #include "../util/data-convert.h"
 #include "../proto/proto-preprocess.h"
 
@@ -102,34 +103,6 @@ struct tcp_hdr_t {
     unsigned char ip_version;
     bool is_found;
 };
-
-/**
- * Do a memmove() of a chunk of memory within a buffer with bounds checking.
- */
-static void
-safe_memmove(unsigned char *buf, size_t length, size_t to, size_t from, size_t chunklength) {
-    if (chunklength + to > length) {
-        fprintf(stderr, "+"); fflush(stderr);
-        chunklength = length - to;
-    }
-    if (chunklength + from > length) {
-        fprintf(stderr, "-"); fflush(stderr);
-        chunklength = length - from;
-    }
-    memmove(buf + to, buf + from, chunklength);
-}
-
-/**
- * Do a memset() of a chunk of memory within a buffer with bounds checking
- */
-static void
-safe_memset(unsigned char *buf, size_t length, size_t offset, int c, size_t chunklength) {
-    if (chunklength + offset > length) {
-        chunklength = length - offset;
-        fprintf(stderr, "*"); fflush(stderr);
-    }
-    memset(buf + offset, c, chunklength);
-}
 
 /***************************************************************************
  * A quick macro to calculate the TCP header length, given a buffer
@@ -467,7 +440,7 @@ _add_padding(unsigned char **inout_buf, size_t *inout_length, size_t offset, uns
 }
 
 /***************************************************************************
- * Afte changes, there my be more padding bytes than necessary. This
+ * After changes, there may be more padding bytes than necessary. This
  * reduces the number to 3 or less. Also, it changes any trailing NOPs
  * to EOL bytes, since there are no more options after that point.
  ***************************************************************************/
