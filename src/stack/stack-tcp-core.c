@@ -152,7 +152,7 @@ struct TCP_Control_Block
     const struct ProbeModule         *probe;
     struct ProbeState                 probe_state;
 
-    struct TimeoutEntry               timeout[1];
+    struct TimeoutEntry               timeout[1];        /*only one for this TCB*/
     struct TCP_Control_Block         *next;
 };
 

@@ -77,6 +77,8 @@ timeouts_create(uint64_t timestamp_now);
 /**
  * Insert the timeout 'entry' into the future location in the timeout
  * ring, as determined by the timestamp.
+ * NOTE: It's not insert a new timeout but moving existing entry to future.
+ * 
  * @param timeouts
  *      A ring of timeouts, with each slot corresponding to a specific
  *      time in the future.
