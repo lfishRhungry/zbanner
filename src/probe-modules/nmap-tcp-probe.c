@@ -212,7 +212,6 @@ nmaptcp_handle_response(
 
     /**
      * no response
-     * We do not send probe after softmatch, So this is a normal no response.
      * */
     if (sizeof_px==0) {
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
