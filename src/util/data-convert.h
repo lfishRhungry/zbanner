@@ -7,6 +7,10 @@
 #define inline _inline
 #endif
 
+/*******************************************************************
+  convert big endian or little endian to unsigned
+ ********************************************************************/
+
 #define BE_TO_U16(px) (px)[0]<< 8| \
                       (px)[1]
 #define BE_TO_U32(px) (px)[0]<<24| \
@@ -36,6 +40,10 @@
                       (uint64_t)(px)[2]<<16| \
                       (uint64_t)(px)[1]<< 8| \
                       (uint64_t)(px)[0]
+
+/*******************************************************************
+  convert unsigned to big endian or little endian
+ ********************************************************************/
 
 static inline
 void U16_TO_BE(unsigned char *px, uint16_t num)
@@ -93,6 +101,92 @@ void U64_TO_LE(unsigned char *px, uint64_t num)
     px[2] = (unsigned char)((num >> 16) & 0xFF);
     px[1] = (unsigned char)((num >>  8) & 0xFF);
     px[0] = (unsigned char)((num >>  0) & 0xFF);
+}
+
+/*******************************************************************
+  is unsigned equal to big endian or little endian
+ ********************************************************************/
+
+static inline
+unsigned U16_EQUAL_TO_BE(unsigned char *px, uint16_t num)
+{
+    if (
+    px[0] == (unsigned char)((num >>  8) & 0xFF) &&
+    px[1] == (unsigned char)((num >>  0) & 0xFF)
+    )
+        return 1;
+    return 0;
+}
+
+static inline
+unsigned U32_EQUAL_TO_BE(unsigned char *px, uint32_t num)
+{
+    if (
+    px[0] == (unsigned char)((num >> 24) & 0xFF) &&
+    px[1] == (unsigned char)((num >> 16) & 0xFF) &&
+    px[2] == (unsigned char)((num >>  8) & 0xFF) &&
+    px[3] == (unsigned char)((num >>  0) & 0xFF)
+    )
+        return 1;
+    return 0;
+}
+
+static inline
+unsigned U64_EQUAL_TO_BE(unsigned char *px, uint64_t num)
+{
+    if (
+    px[0] == (unsigned char)((num >> 56) & 0xFF) &&
+    px[1] == (unsigned char)((num >> 48) & 0xFF) &&
+    px[2] == (unsigned char)((num >> 40) & 0xFF) &&
+    px[3] == (unsigned char)((num >> 32) & 0xFF) &&
+    px[4] == (unsigned char)((num >> 24) & 0xFF) &&
+    px[5] == (unsigned char)((num >> 16) & 0xFF) &&
+    px[6] == (unsigned char)((num >>  8) & 0xFF) &&
+    px[7] == (unsigned char)((num >>  0) & 0xFF)
+    )
+        return 1;
+    return 0;
+}
+
+static inline
+unsigned U16_EQUAL_TO_LE(unsigned char *px, uint16_t num)
+{
+    if (
+    px[1] == (unsigned char)((num >>  8) & 0xFF) &&
+    px[0] == (unsigned char)((num >>  0) & 0xFF)
+    )
+        return 1;
+    return 0;
+}
+
+static inline
+unsigned U32_EQUAL_TO_LE(unsigned char *px, uint32_t num)
+{
+    if (
+    px[3] == (unsigned char)((num >> 24) & 0xFF) &&
+    px[2] == (unsigned char)((num >> 16) & 0xFF) &&
+    px[1] == (unsigned char)((num >>  8) & 0xFF) &&
+    px[0] == (unsigned char)((num >>  0) & 0xFF)
+    )
+        return 1;
+    return 0;
+}
+
+static inline
+unsigned U64_EQUAL_TO_LE(unsigned char *px, uint64_t num)
+{
+    if (
+    px[7] == (unsigned char)((num >> 56) & 0xFF) &&
+    px[6] == (unsigned char)((num >> 48) & 0xFF) &&
+    px[5] == (unsigned char)((num >> 40) & 0xFF) &&
+    px[4] == (unsigned char)((num >> 32) & 0xFF) &&
+    px[3] == (unsigned char)((num >> 24) & 0xFF) &&
+    px[2] == (unsigned char)((num >> 16) & 0xFF) &&
+    px[1] == (unsigned char)((num >>  8) & 0xFF) &&
+    px[0] == (unsigned char)((num >>  0) & 0xFF)
+    )
+        return 1;
+    return 0;
 }
 
 #endif
