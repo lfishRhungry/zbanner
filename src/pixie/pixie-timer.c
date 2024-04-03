@@ -21,6 +21,8 @@
 #include <errno.h>
 #include <string.h>
 
+#include "../util-out/logger.h"
+
 #ifndef UNUSEDPARM
 #ifdef __GNUC__
 #define UNUSEDPARM(x)
