@@ -21,6 +21,8 @@
 #include <time.h>
 #include <stdint.h>
 
+#include "../util-misc/cross.h"
+
 #ifdef _MSC_VER
 #pragma warning(disable: 4996)
 #endif
