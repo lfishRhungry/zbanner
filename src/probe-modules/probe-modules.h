@@ -6,7 +6,7 @@
 #include "../massip/massip-addr.h"
 #include "../output-modules/output-modules.h"
 #include "../util-misc/param-configer.h"
-#include "../util-misc/unusedparm.h"
+#include "../util-misc/cross.h"
 #include "../proto/proto-datapass.h"
 
 struct Xconf;

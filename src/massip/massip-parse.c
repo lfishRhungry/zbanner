@@ -12,10 +12,9 @@
 #include "massip-rangesv4.h"
 #include "massip-rangesv6.h"
 #include "../util-out/logger.h"
-#include "../util-misc/bool.h"
+#include "../util-misc/cross.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
-#include "../util-misc/unusedparm.h"
 
 #include <string.h>
 

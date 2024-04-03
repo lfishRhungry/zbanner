@@ -14,12 +14,9 @@
 #include "../output-modules/output-modules.h"
 #include "../util-out/logger.h"
 #include "../util-misc/ssl-help.h"
+#include "../util-misc/cross.h"
 #include "../xconf.h"
 
-
-#ifndef min
-#define min(a,b) ((a)<(b)?(a):(b))
-#endif
 
 enum {
     TLS_STATE_HANDSHAKE = 0,     /*init state: still in handshaking*/

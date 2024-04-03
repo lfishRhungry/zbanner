@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stddef.h> /* offsetof*/
 
-#include "../util-misc/bool.h" /* <stdbool.h> */
+#include "../util-misc/cross.h"
 
 struct Timeouts;
 

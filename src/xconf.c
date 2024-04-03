@@ -12,7 +12,7 @@
 
 #include "util-data/safe-string.h"
 #include "util-out/logger.h"
-#include "util-misc/unusedparm.h"
+#include "util-misc/cross.h"
 #include "util-data/fine-malloc.h"
 #include "util-out/xprint.h"
 

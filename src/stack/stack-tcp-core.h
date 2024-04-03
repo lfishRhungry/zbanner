@@ -2,7 +2,7 @@
 #define STACK_TCP_CORE_H
 
 #include "stack-queue.h"
-#include "../util-misc/bool.h"
+#include "../util-misc/cross.h"
 #include "../output-modules/output-modules.h"
 #include "../templ/templ-tcp.h"
 #include "../massip/massip-addr.h"

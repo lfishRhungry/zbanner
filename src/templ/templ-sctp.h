@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "templ-pkt.h"
-#include "../util-misc/bool.h" /* <stdbool.h> */
+#include "../util-misc/cross.h"
 #include "../massip/massip-addr.h"
 
 #define SCTP_CHUNK_TYPE_DATA                0

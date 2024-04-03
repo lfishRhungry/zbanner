@@ -2,13 +2,10 @@
 #define PARAM_CONFIGER_H
 
 #include <stdint.h>
-#include <stdbool.h>
 
+#include "cross.h"
 #include "../massip/massip-addr.h"
 
-#ifndef min
-#define min(a,b) ((a)<(b)?(a):(b))
-#endif
 
 /**
  * @param conf where parameters would be set

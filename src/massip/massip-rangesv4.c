@@ -29,7 +29,7 @@
 #include "massip-rangesv4.h"
 #include "massip-port.h"
 #include "../util-out/logger.h"
-#include "../util-misc/bool.h"
+#include "../util-misc/cross.h"
 #include "../util-data/fine-malloc.h"
 
 #include <assert.h>

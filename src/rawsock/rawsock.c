@@ -18,7 +18,7 @@
 #include "../stack/stack-arpv4.h"
 #include "../stack/stack-ndpv6.h"
 
-#include "../util-misc/unusedparm.h"
+#include "../util-misc/cross.h"
 #include "../util-data/fine-malloc.h"
 #include <assert.h>
 #include <ctype.h>

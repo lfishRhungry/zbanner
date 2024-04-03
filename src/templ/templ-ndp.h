@@ -3,7 +3,7 @@
 
 #include "templ-pkt.h"
 #include "templ-icmp.h"
-#include "../util-misc/bool.h" /* <stdbool.h> */
+#include "../util-misc/cross.h"
 #include "../massip/massip-addr.h"
 #include "../proto/proto-preprocess.h"
 

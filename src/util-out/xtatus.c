@@ -1,9 +1,9 @@
 #include "xtatus.h"
 #include "../pixie/pixie-timer.h"
-#include "../util-misc/unusedparm.h"
+#include "../util-misc/cross.h"
 #include "../globals.h"
 #include "../util-data/safe-string.h"
-#include "../util-misc/bool.h"
+
 #include <stdio.h>
 
 

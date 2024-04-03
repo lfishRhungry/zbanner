@@ -2,7 +2,7 @@
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
 #include "../massip/massip-port.h"
-#include "../util-misc/unusedparm.h"
+#include "../util-misc/cross.h"
 #include "../util-out/logger.h"
 
 #include <ctype.h>

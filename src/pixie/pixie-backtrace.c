@@ -2,7 +2,7 @@
     When program crashes, print backtrace with line numbers
 */
 #include "pixie-backtrace.h"
-#include "../util-misc/unusedparm.h"
+#include "../util-misc/cross.h"
 #include "../version.h"
 #include <stdio.h>
 #include <string.h>
