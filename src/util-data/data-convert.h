@@ -3,9 +3,7 @@
 
 #include <stdint.h>
 
-#if defined(_MSC_VER)
-#define inline _inline
-#endif
+#include "../util-misc/cross.h"
 
 /*******************************************************************
   convert big endian or little endian to unsigned
@@ -108,18 +106,18 @@ void U64_TO_LE(unsigned char *px, uint64_t num)
  ********************************************************************/
 
 static inline
-unsigned U16_EQUAL_TO_BE(const unsigned char *px, uint16_t num)
+bool U16_EQUAL_TO_BE(const unsigned char *px, uint16_t num)
 {
     if (
     px[0] == (unsigned char)((num >>  8) & 0xFF) &&
     px[1] == (unsigned char)((num >>  0) & 0xFF)
     )
-        return 1;
-    return 0;
+        return true;
+    return false;
 }
 
 static inline
-unsigned U32_EQUAL_TO_BE(const unsigned char *px, uint32_t num)
+bool U32_EQUAL_TO_BE(const unsigned char *px, uint32_t num)
 {
     if (
     px[0] == (unsigned char)((num >> 24) & 0xFF) &&
@@ -127,12 +125,12 @@ unsigned U32_EQUAL_TO_BE(const unsigned char *px, uint32_t num)
     px[2] == (unsigned char)((num >>  8) & 0xFF) &&
     px[3] == (unsigned char)((num >>  0) & 0xFF)
     )
-        return 1;
-    return 0;
+        return true;
+    return false;
 }
 
 static inline
-unsigned U64_EQUAL_TO_BE(const unsigned char *px, uint64_t num)
+bool U64_EQUAL_TO_BE(const unsigned char *px, uint64_t num)
 {
     if (
     px[0] == (unsigned char)((num >> 56) & 0xFF) &&
@@ -144,23 +142,23 @@ unsigned U64_EQUAL_TO_BE(const unsigned char *px, uint64_t num)
     px[6] == (unsigned char)((num >>  8) & 0xFF) &&
     px[7] == (unsigned char)((num >>  0) & 0xFF)
     )
-        return 1;
-    return 0;
+        return true;
+    return false;
 }
 
 static inline
-unsigned U16_EQUAL_TO_LE(const unsigned char *px, uint16_t num)
+bool U16_EQUAL_TO_LE(const unsigned char *px, uint16_t num)
 {
     if (
     px[1] == (unsigned char)((num >>  8) & 0xFF) &&
     px[0] == (unsigned char)((num >>  0) & 0xFF)
     )
-        return 1;
-    return 0;
+        return true;
+    return false;
 }
 
 static inline
-unsigned U32_EQUAL_TO_LE(const unsigned char *px, uint32_t num)
+bool U32_EQUAL_TO_LE(const unsigned char *px, uint32_t num)
 {
     if (
     px[3] == (unsigned char)((num >> 24) & 0xFF) &&
@@ -168,12 +166,12 @@ unsigned U32_EQUAL_TO_LE(const unsigned char *px, uint32_t num)
     px[1] == (unsigned char)((num >>  8) & 0xFF) &&
     px[0] == (unsigned char)((num >>  0) & 0xFF)
     )
-        return 1;
-    return 0;
+        return true;
+    return false;
 }
 
 static inline
-unsigned U64_EQUAL_TO_LE(const unsigned char *px, uint64_t num)
+bool U64_EQUAL_TO_LE(const unsigned char *px, uint64_t num)
 {
     if (
     px[7] == (unsigned char)((num >> 56) & 0xFF) &&
@@ -185,8 +183,8 @@ unsigned U64_EQUAL_TO_LE(const unsigned char *px, uint64_t num)
     px[1] == (unsigned char)((num >>  8) & 0xFF) &&
     px[0] == (unsigned char)((num >>  0) & 0xFF)
     )
-        return 1;
-    return 0;
+        return true;
+    return false;
 }
 
 #endif

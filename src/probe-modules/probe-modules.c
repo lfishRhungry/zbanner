@@ -182,9 +182,9 @@ void list_all_probe_modules()
     printf("\n");
 }
 
-unsigned probe_global_init_nothing(const struct Xconf *xconf)
+bool probe_global_init_nothing(const struct Xconf *xconf)
 {
-    return 1;
+    return true;
 }
 
 size_t

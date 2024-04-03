@@ -218,7 +218,7 @@ static struct ConfigParameter lzr_parameters[] = {
     {0}
 };
 
-static unsigned
+static bool
 lzr_global_init(const struct Xconf *xconf)
 {
     /*Use LzrWait if no subprobe specified*/
@@ -235,11 +235,11 @@ lzr_global_init(const struct Xconf *xconf)
         if (!lzr_conf.handshake[i]->global_init_cb(xconf)) {
             fprintf(stderr, "FAIL: Handshake [%s] initiating error in LzrProbe.\n",
                 lzr_conf.handshake[i]->name);
-            return 0;
+            return false;
         }
     }
 
-    return 1;
+    return true;
 }
 
 static size_t

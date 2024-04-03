@@ -4,6 +4,7 @@
 #include "../probe-modules.h"
 #include "../../version.h"
 #include "../../util-data/safe-string.h"
+#include "../../util-data/data-convert.h"
 
 /*for internal x-ref*/
 extern struct ProbeModule LzrTlsProbe;
@@ -44,7 +45,7 @@ static char lzr_tls_payload[] =
 "\xff\x01\x00\x01\x00"                                     /*ext renegotiation info*/
 ;
 
-static unsigned lzr_tls_global_init(const struct Xconf *xconf)
+static bool lzr_tls_global_init(const struct Xconf *xconf)
 {
     /*fill the random bytes in payload*/
     unsigned r;
@@ -52,14 +53,11 @@ static unsigned lzr_tls_global_init(const struct Xconf *xconf)
     char *p = lzr_tls_payload + 11; /*Now it's Random in Handshake Protocol*/
     for (unsigned i=0; i<32/4; i++) {
         r    = rand();
-        p[0] = (r >> 24) & 0xFF;
-        p[1] = (r >> 16) & 0xFF;
-        p[2] = (r >>  8) & 0xFF;
-        p[3] = (r >>  0) & 0xFF;
+        U32_TO_BE((unsigned char *)p, r);
         p   += 4;
     }
 
-    return 1;
+    return true;
 }
 
 static size_t

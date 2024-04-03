@@ -112,13 +112,13 @@ static struct ConfigParameter nmapservice_parameters[] = {
     {0}
 };
 
-static unsigned
+static bool
 nmaptcp_global_init(const struct Xconf *xconf)
 {
     /*Use LzrWait if no subprobe specified*/
     if (!nmaptcp_conf.probe_file) {
         LOG(LEVEL_ERROR, "[-] No nmap-service-probes file specified.\n");
-        return 0;
+        return false;
     }
     nmaptcp_conf.service_probes =
         nmapservice_read_file(nmaptcp_conf.probe_file);
@@ -126,14 +126,14 @@ nmaptcp_global_init(const struct Xconf *xconf)
     if (!nmaptcp_conf.service_probes) {
         LOG(LEVEL_ERROR, "[-] NmapTcpProbe: invalid nmap_service_probes file: %s\n",
             nmaptcp_conf.probe_file);
-        return 0;
+        return false;
     }
 
     if (!nmaptcp_conf.service_probes->count) {
         LOG(LEVEL_ERROR, "[-] NmapTcpProbe: no probe has been loaded from %s\n",
             nmaptcp_conf.probe_file);
         nmapservice_free(nmaptcp_conf.service_probes);
-        return 0;
+        return false;
     }
 
     nmapservice_match_compile(nmaptcp_conf.service_probes);
@@ -147,7 +147,7 @@ nmaptcp_global_init(const struct Xconf *xconf)
         LOG(LEVEL_ERROR, "[hint] NmapTcpProbe: no rarity specified, use default 7.\n");
     }
 
-    return 1;
+    return true;
 }
 
 static void

@@ -17,13 +17,13 @@ echo_make_payload(
     return 4;
 }
 
-static unsigned
+static bool
 echo_validate_response(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px)
 {
     if (sizeof_px==0) {
-        return 0;
+        return false;
     }
 
     unsigned char needle[4];
@@ -33,9 +33,9 @@ echo_validate_response(
     needle[3] = target->cookie >>  0;
 
     if (safe_memmem(px, sizeof_px, needle, 4))
-        return 1;
+        return true;
 
-    return 0;
+    return false;
 }
 
 struct ProbeModule EchoProbe = {

@@ -102,15 +102,15 @@ static struct ConfigParameter zbanner_parameters[] = {
 */
 static unsigned src_port_start;
 
-static unsigned
+static bool
 zbanner_global_init(const struct Xconf *xconf)
 {
     src_port_start = xconf->nic.src.port.first;
 
-    return 1;
+    return true;
 }
 
-static unsigned
+static bool
 zbanner_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
@@ -119,7 +119,7 @@ zbanner_transmit(
 {
     /*we just handle tcp target*/
     if (target->proto != Proto_TCP)
-        return 0;
+        return false;
 
     /*`index` is unused now*/
     unsigned seqno = get_cookie(target->ip_them, target->port_them, target->ip_me,
@@ -138,9 +138,9 @@ zbanner_transmit(
     /*multi-probe Multi_Direct*/
     if (ZBannerScan.probe->multi_mode==Multi_Direct
         && target->index+1<ZBannerScan.probe->multi_num)
-        return 1;
+        return true;
 
-    return 0;
+    return false;
 }
 
 static void

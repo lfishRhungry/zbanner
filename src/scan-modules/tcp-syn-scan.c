@@ -8,7 +8,7 @@
 
 extern struct ScanModule TcpSynScan; /*for internal x-ref*/
 
-static unsigned
+static bool
 tcpsyn_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
@@ -17,7 +17,7 @@ tcpsyn_transmit(
 {
     /*we just handle tcp target*/
     if (target->proto != Proto_TCP)
-        return 0;
+        return false;
 
     unsigned cookie = get_cookie(target->ip_them, target->port_them,
         target->ip_me, target->port_me, entropy);
@@ -29,7 +29,7 @@ tcpsyn_transmit(
     /*add timeout*/
     event->need_timeout = 1;
 
-    return 0;
+    return false;
 }
 
 static void

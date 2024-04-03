@@ -8,7 +8,7 @@
 
 extern struct ScanModule IcmpTimeScan; /*for internal x-ref*/
 
-static unsigned
+static bool
 icmptime_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
@@ -32,7 +32,7 @@ icmptime_transmit(
     event->port_them    = 0;
     event->port_me      = 0;
 
-    return 0;
+    return false;
 }
 
 static void

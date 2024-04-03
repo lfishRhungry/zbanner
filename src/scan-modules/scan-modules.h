@@ -35,7 +35,7 @@ struct Xconf;
  * @param xconf main conf of xtate, use `void` to avoiding x-ref.
  * @return false for initing failed and exit process.
 */
-typedef unsigned (*scan_modules_global_init)(const struct Xconf *xconf);
+typedef bool (*scan_modules_global_init)(const struct Xconf *xconf);
 
 /***************************************************************************
  * * callback functions for Transmit
@@ -73,7 +73,7 @@ struct ScanTimeoutEvent {
  * @param len length of packet data.
  * @return true if need to transmit one more packet.
 */
-typedef unsigned (*scan_modules_transmit)(
+typedef bool (*scan_modules_transmit)(
     uint64_t entropy,
     struct ScanTarget *target,
     struct ScanTimeoutEvent *event,
@@ -214,7 +214,7 @@ Some useful implemented interfaces
 ************************************************************************/
 
 /*implemented `scan_modules_xxx_init`*/
-unsigned scan_global_init_nothing(const struct Xconf *params);
+bool scan_global_init_nothing(const struct Xconf *params);
 
 /*implemented `scan_modules_poll`*/
 void scan_poll_nothing();

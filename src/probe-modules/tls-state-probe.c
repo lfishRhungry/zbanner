@@ -234,7 +234,7 @@ static void ssl_info_callback(const SSL *ssl, int where, int ret) {
     }
 }
 
-static unsigned output_subject(struct Output *out,
+static bool output_subject(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     int res;
@@ -246,14 +246,14 @@ static unsigned output_subject(struct Output *out,
 
     x509_cert = SSL_get_peer_certificate(ssl);
     if (x509_cert == NULL) {
-        return 0;
+        return false;
     }
 
     bio = BIO_new(BIO_s_mem());
     if (bio == NULL) {
         LOG(LEVEL_WARNING, "[BANNER_NAMES]BIO_new failed\n");
         X509_free(x509_cert);
-        return 0;
+        return false;
     }
 
     struct OutputItem item = {
@@ -354,10 +354,10 @@ static unsigned output_subject(struct Output *out,
     // error2:
     BIO_free(bio);
     X509_free(x509_cert);
-    return 1;
+    return true;
 }
 
-static unsigned output_cert(struct Output *out,
+static bool output_cert(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     STACK_OF(X509) * sk_x509_certs;
@@ -367,7 +367,7 @@ static unsigned output_cert(struct Output *out,
 
     sk_x509_certs = SSL_get_peer_cert_chain(ssl);
     if (sk_x509_certs == NULL) {
-        return 0;
+        return false;
     }
 
     struct OutputItem item = {
@@ -445,10 +445,10 @@ static unsigned output_cert(struct Output *out,
         BIO_free(bio_base64);
     }
 
-    return 1;
+    return true;
 }
 
-static unsigned output_cipher(struct Output *out,
+static bool output_cipher(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     const SSL_CIPHER *ssl_cipher;
@@ -458,7 +458,7 @@ static unsigned output_cipher(struct Output *out,
     if (ssl_cipher == NULL) {
         ssl_cipher = SSL_get_pending_cipher(ssl);
         if (ssl_cipher == NULL) {
-            return 0;
+            return false;
         }
     }
 
@@ -478,10 +478,10 @@ static unsigned output_cipher(struct Output *out,
 
     output_result(tls_out, &item);
 
-    return 1;
+    return true;
 }
 
-static unsigned output_version(struct Output *out,
+static bool output_version(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     int version = SSL_version(ssl);
@@ -519,10 +519,10 @@ static unsigned output_version(struct Output *out,
 
     output_result(tls_out, &item);
 
-    return 1;
+    return true;
 }
 
-static unsigned extend_buffer(unsigned char **buf, size_t *buf_len)
+static bool extend_buffer(unsigned char **buf, size_t *buf_len)
 {
     LOG(LEVEL_DEBUG, "[BUFFER extending...] >>>\n");
     unsigned char *tmp_data = NULL;
@@ -530,15 +530,15 @@ static unsigned extend_buffer(unsigned char **buf, size_t *buf_len)
     if (tmp_data == NULL) {
         LOG(LEVEL_WARNING, "SSL realoc memory error 0x%" PRIxPTR "\n",
             *buf_len * 2);
-        return 0;
+        return false;
     }
     *buf = tmp_data;
     *buf_len = *buf_len * 2;
-    return 1;
+    return true;
 }
 
 /*init public SSL_CTX*/
-static unsigned
+static bool
 tlsstate_global_init(const struct Xconf *xconf)
 {
     /*save `out`*/
@@ -612,7 +612,7 @@ tlsstate_global_init(const struct Xconf *xconf)
     return tlsstate_conf.subprobe->global_init_cb(xconf);
 
 error0:
-    return 0;
+    return false;
 }
 
 static void tlsstate_close()

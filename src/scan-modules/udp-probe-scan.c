@@ -20,15 +20,15 @@ extern struct ScanModule UdpProbeScan; /*for internal x-ref*/
 */
 static unsigned src_port_start;
 
-static unsigned
+static bool
 udpprobe_global_init(const struct Xconf *xconf)
 {
     src_port_start = xconf->nic.src.port.first;
 
-    return 1;
+    return true;
 }
 
-static unsigned
+static bool
 udpprobe_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
@@ -37,7 +37,7 @@ udpprobe_transmit(
 {
     /*we just handle udp target*/
     if (target->proto != Proto_UDP)
-        return 0;
+        return false;
     
     unsigned cookie = get_cookie(target->ip_them, target->port_them,
         target->ip_me, src_port_start+target->index, entropy);
@@ -68,8 +68,8 @@ udpprobe_transmit(
     /*for multi-probe*/
     if (UdpProbeScan.probe->multi_mode==Multi_Direct
         && target->index+1 < UdpProbeScan.probe->multi_num)
-        return 1;
-    else return 0;
+        return true;
+    else return false;
     
 }
 

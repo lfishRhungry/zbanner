@@ -12,13 +12,13 @@ extern struct ScanModule NdpNsScan; /*for internal x-ref*/
 
 static macaddress_t src_mac;
 
-unsigned ndpns_init(const struct Xconf *xconf)
+bool ndpns_init(const struct Xconf *xconf)
 {
     src_mac = xconf->nic.source_mac;
-    return 1;
+    return true;
 }
 
-static unsigned
+static bool
 ndpns_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
@@ -27,7 +27,7 @@ ndpns_transmit(
 {
     /*ndp ns is just for ipv6*/
     if (target->ip_them.version!=6)
-        return 0; 
+        return false; 
 
     /*no cookie for NDP NS*/
 
@@ -40,7 +40,7 @@ ndpns_transmit(
     event->port_them    = 0;
     event->port_me      = 0;
 
-    return 0;
+    return false;
 }
 
 static void

@@ -56,7 +56,7 @@ static struct ConfigParameter tcpstate_parameters[] = {
     {0}
 };
 
-static unsigned tcpstate_global_init(const struct Xconf *xconf)
+static bool tcpstate_global_init(const struct Xconf *xconf)
 {
     if (tcpstate_conf.conn_timeout <= 0)
         tcpstate_conf.conn_timeout = 30;
@@ -77,10 +77,10 @@ static unsigned tcpstate_global_init(const struct Xconf *xconf)
  
     tcb_count = &((struct Xconf *)xconf)->tcb_count;
 
-    return 1;
+    return true;
 }
 
-static unsigned
+static bool
 tcpstate_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
@@ -89,7 +89,7 @@ tcpstate_transmit(
 {
     /*we just handle tcp target*/
     if (target->proto != Proto_TCP)
-        return 0;
+        return false;
 
     unsigned cookie = get_cookie(target->ip_them, target->port_them,
         target->ip_me, target->port_me, entropy);
@@ -98,7 +98,7 @@ tcpstate_transmit(
         target->ip_them, target->port_them, target->ip_me, target->port_me,
         cookie, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_LEN);
 
-    return 0;
+    return false;
 }
 
 static void

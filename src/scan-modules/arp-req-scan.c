@@ -9,7 +9,7 @@
 
 extern struct ScanModule ArpReqScan; /*for internal x-ref*/
 
-static unsigned
+static bool
 arpreq_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
@@ -25,7 +25,7 @@ arpreq_transmit(
     event->port_them    = 0;
     event->port_me      = 0;
 
-    return 0;
+    return false;
 }
 
 static void
