@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include <stdio.h>
 
-#include "../util-misc/param-configer.h"
+#include "../util-misc/configer.h"
 #include "../util-misc/cross.h"
 #include "../massip/massip-addr.h"
 
@@ -64,7 +64,7 @@ struct OutputModule {
     const char                               *name;
     const char                               *desc;
     unsigned                                  need_file:1;
-    struct ConfigParameter                   *params; 
+    struct ConfigParam                   *params; 
     output_modules_init                       init_cb;
     output_modules_result                     result_cb;
     output_modules_close                      close_cb;

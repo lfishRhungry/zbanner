@@ -58,7 +58,7 @@ struct TlsStateConf {
 
 static struct TlsStateConf tlsstate_conf = {0};
 
-static int SET_subprobe(void *conf, const char *name, const char *value)
+static enum Config_Res SET_subprobe(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -72,7 +72,7 @@ static int SET_subprobe(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_subprobe_args(void *conf, const char *name, const char *value)
+static enum Config_Res SET_subprobe_args(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -86,7 +86,7 @@ static int SET_subprobe_args(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_ssl_keylog(void *conf, const char *name, const char *value)
+static enum Config_Res SET_ssl_keylog(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -96,7 +96,7 @@ static int SET_ssl_keylog(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_dump_version(void *conf, const char *name, const char *value)
+static enum Config_Res SET_dump_version(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -106,7 +106,7 @@ static int SET_dump_version(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_dump_cipher(void *conf, const char *name, const char *value)
+static enum Config_Res SET_dump_cipher(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -116,7 +116,7 @@ static int SET_dump_cipher(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_dump_cert(void *conf, const char *name, const char *value)
+static enum Config_Res SET_dump_cert(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -126,7 +126,7 @@ static int SET_dump_cert(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_dump_subject(void *conf, const char *name, const char *value)
+static enum Config_Res SET_dump_subject(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -136,18 +136,18 @@ static int SET_dump_subject(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static struct ConfigParameter tlsstate_parameters[] = {
+static struct ConfigParam tlsstate_parameters[] = {
     {
         "subprobe",
         SET_subprobe,
-        0,
+        F_NONE,
         {"sub-probe-module", 0},
         "Specifies a ProbeModule as subprobe of TlsState Probe."
     },
     {
         "subprobe-arg",
         SET_subprobe_args,
-        0,
+        F_NONE,
         {"subprobe-args", 0},
         "Specifies arguments for subprobe."
     },

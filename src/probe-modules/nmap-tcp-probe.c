@@ -21,7 +21,7 @@ struct NmapTcpConf {
 static struct NmapTcpConf nmaptcp_conf = {0};
 
 
-static int SET_no_port_limit(void *conf, const char *name, const char *value)
+static enum Config_Res SET_no_port_limit(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -31,7 +31,7 @@ static int SET_no_port_limit(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_softmatch(void *conf, const char *name, const char *value)
+static enum Config_Res SET_softmatch(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
 
@@ -43,7 +43,7 @@ static int SET_softmatch(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_probe_file(void *conf, const char *name, const char *value)
+static enum Config_Res SET_probe_file(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
 
@@ -55,7 +55,7 @@ static int SET_probe_file(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_rarity(void *conf, const char *name, const char *value)
+static enum Config_Res SET_rarity(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -71,18 +71,18 @@ static int SET_rarity(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static struct ConfigParameter nmapservice_parameters[] = {
+static struct ConfigParam nmapservice_parameters[] = {
     {
         "probe-file",
         SET_probe_file,
-        0,
+        F_NONE,
         {"service-probe-file", "probes-file", 0},
         "Specifies nmap-service-probes file for probes loading."
     },
     {
         "rarity",
         SET_rarity,
-        0,
+        F_NONE,
         {"intensity", 0},
         "Specifies the intensity of nmap version scan. The lower-numbered probes"
         " are effective against a wide variety of common services, while the "
@@ -92,7 +92,7 @@ static struct ConfigParameter nmapservice_parameters[] = {
     {
         "softmatch",
         SET_softmatch,
-        0,
+        F_NONE,
         {0},
         "Specifies what service has been softmatched for target ports before, so "
         "NmapTcpProbe could use more accurate probes to reduce cost and just do "

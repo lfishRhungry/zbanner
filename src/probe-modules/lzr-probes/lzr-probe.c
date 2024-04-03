@@ -119,7 +119,7 @@ struct LzrConf {
 
 static struct LzrConf lzr_conf = {0};
 
-static int SET_force_all_match(void *conf, const char *name, const char *value)
+static enum Config_Res SET_force_all_match(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -129,7 +129,7 @@ static int SET_force_all_match(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_force_all_handshake(void *conf, const char *name, const char *value)
+static enum Config_Res SET_force_all_handshake(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -139,7 +139,7 @@ static int SET_force_all_handshake(void *conf, const char *name, const char *val
     return CONF_OK;
 }
 
-static int SET_handshake(void *conf, const char *name, const char *value)
+static enum Config_Res SET_handshake(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -189,11 +189,11 @@ static int SET_handshake(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static struct ConfigParameter lzr_parameters[] = {
+static struct ConfigParam lzr_parameters[] = {
     {
         "handshake",
         SET_handshake,
-        0,
+        F_NONE,
         {"subprobe", "handshakes", "subprobes", 0},
         "Specifies handshakes(subprobes) for probe sending. Handshake names are "
         "splitted by comma like `--handshake http,tls`."

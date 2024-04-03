@@ -28,7 +28,7 @@ struct TcpStateConf {
 
 static struct TcpStateConf tcpstate_conf = {0};
 
-static int SET_conn_timeout(void *conf, const char *name, const char *value)
+static enum Config_Res SET_conn_timeout(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
 
@@ -44,7 +44,7 @@ static int SET_conn_timeout(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static struct ConfigParameter tcpstate_parameters[] = {
+static struct ConfigParam tcpstate_parameters[] = {
     {
         "conn-timeout",
         SET_conn_timeout,

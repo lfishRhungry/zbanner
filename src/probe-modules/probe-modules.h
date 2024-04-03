@@ -5,7 +5,7 @@
 
 #include "../massip/massip-addr.h"
 #include "../output-modules/output-modules.h"
-#include "../util-misc/param-configer.h"
+#include "../util-misc/configer.h"
 #include "../util-misc/cross.h"
 #include "../proto/proto-datapass.h"
 
@@ -211,7 +211,7 @@ struct ProbeModule
     const unsigned                              multi_num;   /*useless for Multi_DynamicNext*/
     unsigned int                                hello_wait;  /*just for statefull scan*/
     const char                                 *desc;
-    struct ConfigParameter                     *params;
+    struct ConfigParam                     *params;
 
     /*for init*/
     probe_modules_global_init                   global_init_cb;

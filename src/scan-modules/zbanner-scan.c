@@ -19,7 +19,7 @@ struct ZBannerConf {
 
 static struct ZBannerConf zbanner_conf = {0};
 
-static int SET_banner_timeout(void *conf, const char *name, const char *value)
+static enum Config_Res SET_banner_timeout(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -29,7 +29,7 @@ static int SET_banner_timeout(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_port_timeout(void *conf, const char *name, const char *value)
+static enum Config_Res SET_port_timeout(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -39,7 +39,7 @@ static int SET_port_timeout(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_port_success(void *conf, const char *name, const char *value)
+static enum Config_Res SET_port_success(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -49,7 +49,7 @@ static int SET_port_success(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static int SET_port_failure(void *conf, const char *name, const char *value)
+static enum Config_Res SET_port_failure(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -59,7 +59,7 @@ static int SET_port_failure(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static struct ConfigParameter zbanner_parameters[] = {
+static struct ConfigParam zbanner_parameters[] = {
     {
         "no-banner-timeout",
         SET_banner_timeout,

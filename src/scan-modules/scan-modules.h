@@ -12,7 +12,7 @@
 #include <ctype.h>
 
 #include "../globals.h"
-#include "../util-misc/param-configer.h"
+#include "../util-misc/configer.h"
 #include "../util-misc/cross.h"
 #include "../output-modules/output-modules.h"
 #include "../stack/stack-queue.h"
@@ -186,7 +186,7 @@ struct ScanModule
     const enum ProbeType                        required_probe_type; /*set zero if not using probe*/
     const unsigned                              support_timeout;
     const char                                 *bpf_filter;          /*just for pcap*/
-    struct ConfigParameter                     *params;
+    struct ConfigParam                     *params;
     struct ProbeModule                         *probe;
     const char                                 *desc;
 

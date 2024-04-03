@@ -18,7 +18,7 @@ struct GetStateConf {
 static struct GetStateConf getstate_conf = {0};
 
 
-static int SET_whole_page(void *conf, const char *name, const char *value)
+static enum Config_Res SET_whole_page(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -28,7 +28,7 @@ static int SET_whole_page(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
-static struct ConfigParameter getstate_parameters[] = {
+static struct ConfigParam getstate_parameters[] = {
     {
         "whole-page",
         SET_whole_page,
