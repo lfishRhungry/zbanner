@@ -157,8 +157,8 @@ safe_memset(unsigned char *buf, size_t length, size_t offset, int c, size_t chun
 /**
  * is byt the header of src
 */
-int
-bytes_header(const void *src, size_t src_len, const void *byt, size_t byt_len);
+bool
+bytes_equals(const void *src, size_t src_len, const void *byt, size_t byt_len);
 
 /**
  * Transfer C string to argc argv.

@@ -48,7 +48,7 @@ lzr_ipmi_handle_reponse(
         return 0;
     }
 
-    if (bytes_header(px, sizeof_px, lzr_ipmi_pos_detect_unkn, sizeof(lzr_ipmi_pos_detect_unkn))) {
+    if (bytes_equals(px, sizeof_px, lzr_ipmi_pos_detect_unkn, sizeof(lzr_ipmi_pos_detect_unkn))) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "ipmi");
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");

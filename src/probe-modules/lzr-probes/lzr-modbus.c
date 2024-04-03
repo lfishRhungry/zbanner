@@ -41,7 +41,7 @@ lzr_modbus_handle_reponse(
     }
 
     if (sizeof_px >= 4
-        && bytes_header(px, sizeof_px,
+        && bytes_equals(px, sizeof_px,
             "\x5a\x47\x00\x00", sizeof( "\x5a\x47\x00\x00")-1)) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "modbus");

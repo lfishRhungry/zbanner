@@ -45,7 +45,7 @@ lzr_rdp_handle_reponse(
     }
 
     if (sizeof_px>=11
-        && bytes_header(px, sizeof_px, lzr_rdp_verify, sizeof(lzr_rdp_verify)-1)) {
+        && bytes_equals(px, sizeof_px, lzr_rdp_verify, sizeof(lzr_rdp_verify)-1)) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "rdp");
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");

@@ -586,8 +586,8 @@ extract_ext(const unsigned char *payload, size_t payload_len,
     
     if (payload[counter+47]==11)
         return snprintf(res_buf, res_max, "|");
-    else if (bytes_header(payload+counter+50, 3, "\x0e\xac\x0b", 3)>0
-        || bytes_header(payload+counter+82, 3, "\x0f\xf0\x0b", 3)>0)
+    else if (bytes_equals(payload+counter+50, 3, "\x0e\xac\x0b", 3)>0
+        || bytes_equals(payload+counter+82, 3, "\x0f\xf0\x0b", 3)>0)
         return snprintf(res_buf, res_max, "|");
     else if (counter+42 >= sh_len)
         return snprintf(res_buf, res_max, "|");

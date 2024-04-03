@@ -641,10 +641,10 @@ parseIntBytes(const void *vstr, size_t length)
     return result;
 }
 
-int
-bytes_header(const void *src, size_t src_len, const void *byt, size_t byt_len)
+bool
+bytes_equals(const void *src, size_t src_len, const void *byt, size_t byt_len)
 {
-    int equal = 0;
+    bool equal = false;
 
     for (size_t i=0;
         i<src_len && i<byt_len;
@@ -652,7 +652,7 @@ bytes_header(const void *src, size_t src_len, const void *byt, size_t byt_len)
         if (((unsigned char *)src)[i] != ((unsigned char *)byt)[i])
             break;
         if (i==byt_len-1)
-            equal = 1;
+            equal = true;
     }
 
     return equal;

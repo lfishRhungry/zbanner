@@ -75,7 +75,7 @@ lzr_fox_handle_reponse(
         return 0;
     }
 
-    if (bytes_header(px, sizeof_px, lzr_fox_prefix, strlen(lzr_fox_prefix))) {
+    if (bytes_equals(px, sizeof_px, lzr_fox_prefix, strlen(lzr_fox_prefix))) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "fox");
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
