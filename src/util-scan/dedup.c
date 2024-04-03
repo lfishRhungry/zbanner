@@ -1,9 +1,9 @@
 #include "dedup.h"
-#include "fine-malloc.h"
+#include "../util-data/fine-malloc.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "../cookie.h"
+#include "../massip/cookie.h"
 
 #define DEDUP_BUCKET_SIZE 4
 

@@ -2,9 +2,9 @@
 
 #include "probe-modules.h"
 #include "../version.h"
-#include "../util/logger.h"
-#include "../util/fine-malloc.h"
-#include "../util/safe-string.h"
+#include "../util-out/logger.h"
+#include "../util-data/fine-malloc.h"
+#include "../util-data/safe-string.h"
 #include "../nmap/nmap-service.h"
 
 /*for internal x-ref*/

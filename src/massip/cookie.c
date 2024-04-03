@@ -1,7 +1,8 @@
 #include "cookie.h"
-#include "pixie/pixie-timer.h"
-#include "util/safe-string.h"
-#include "crypto/crypto-siphash24.h"
+#include "../pixie/pixie-timer.h"
+#include "../util-data/safe-string.h"
+#include "../crypto/crypto-siphash24.h"
+
 #include <assert.h>
 #include <time.h>
 #include <stdarg.h>

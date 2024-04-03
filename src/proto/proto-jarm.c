@@ -3,7 +3,9 @@
 #include <time.h>
 
 #include "proto-jarm.h"
-#include "../util/logger.h"
+#include "../util-out/logger.h"
+#include "../util-data/safe-string.h"
+#include "../util-data/data-convert.h"
 
 static const char *JarmCipherSuitesAll[] = {
    "\x00\x16", "\x00\x33", "\x00\x67", "\xc0\x9e",

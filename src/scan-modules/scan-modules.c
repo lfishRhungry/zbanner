@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "scan-modules.h"
-#include "../util/xprint.h"
+#include "../util-out/xprint.h"
 
 extern struct ScanModule TcpSynScan;
 extern struct ScanModule IcmpEchoScan;

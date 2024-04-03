@@ -1,8 +1,8 @@
 #include "stack-queue.h"
 #include "../pixie/pixie-timer.h"
 #include "../rawsock/rawsock.h"
-#include "../util/fine-malloc.h"
-#include "../util/logger.h"
+#include "../util-data/fine-malloc.h"
+#include "../util-out/logger.h"
 #include <string.h>
 #include <stdio.h>
 

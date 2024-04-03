@@ -25,7 +25,7 @@
  static libpcap.a library.
  
 */
-#include "../util/logger.h"
+#include "../util-out/logger.h"
 
 #if defined(_MSC_VER)
 #pragma warning(disable:4115 4201)

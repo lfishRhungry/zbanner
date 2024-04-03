@@ -83,10 +83,10 @@ TCP pseudo header
 #include "templ-tcp.h"
 #include "templ-opts.h"
 #include "../globals.h"
-#include "../util/logger.h"
-#include "../util/checksum.h"
-#include "../util/safe-string.h"
-#include "../util/data-convert.h"
+#include "../util-out/logger.h"
+#include "../util-misc/checksum.h"
+#include "../util-data/safe-string.h"
+#include "../util-data/data-convert.h"
 #include "../proto/proto-preprocess.h"
 
 struct tcp_opt_t {

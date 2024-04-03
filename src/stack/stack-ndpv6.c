@@ -1,10 +1,10 @@
 #include "stack-ndpv6.h"
 #include "../proto/proto-preprocess.h"
 #include "stack-src.h"
-#include "../util/checksum.h"
+#include "../util-misc/checksum.h"
 #include "../rawsock/rawsock-adapter.h"
 #include "../rawsock/rawsock.h"
-#include "../util/logger.h"
+#include "../util-out/logger.h"
 #include <string.h>
 
 

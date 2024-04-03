@@ -2,11 +2,11 @@
 
 #include "scan-modules.h"
 #include "../xconf.h"
-#include "../cookie.h"
+#include "../massip/cookie.h"
 #include "../version.h"
 #include "../templ/templ-ndp.h"
-#include "../util/safe-string.h"
-#include "../util/fine-malloc.h"
+#include "../util-data/safe-string.h"
+#include "../util-data/fine-malloc.h"
 
 extern struct ScanModule NdpNsScan; /*for internal x-ref*/
 

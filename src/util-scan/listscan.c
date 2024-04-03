@@ -1,5 +1,5 @@
 #include "listscan.h"
-#include "logger.h"
+#include "../util-out/logger.h"
 #include "../crypto/crypto-blackrock.h"
 
 
@@ -10,7 +10,7 @@ listscan(struct Xconf *xconf)
     uint64_t range;
     uint64_t start;
     uint64_t end;
-    struct BlackRock blackrock;
+    struct   BlackRock blackrock;
     unsigned increment = xconf->shard.of;
     uint64_t seed = xconf->seed;
 

@@ -3,9 +3,9 @@
 
 #include "templ-arp.h"
 #include "../globals.h"
-#include "../util/checksum.h"
-#include "../util/logger.h"
-#include "../util/data-convert.h"
+#include "../util-misc/checksum.h"
+#include "../util-out/logger.h"
+#include "../util-data/data-convert.h"
 
 static size_t
 arp_create_by_template_ipv4(

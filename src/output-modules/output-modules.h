@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include <stdio.h>
 
-#include "../param-configer.h"
+#include "../util-misc/param-configer.h"
 #include "../massip/massip-addr.h"
 
 #define OUTPUT_RSN_LEN      30

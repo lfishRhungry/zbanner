@@ -4,17 +4,17 @@
 
 #include "xconf.h"
 #include "version.h"
-#include "param-configer.h"
+#include "util-misc/param-configer.h"
 #include "crypto/crypto-base64.h"
 #include "nmap/nmap-service.h"
 
 #include "templ/templ-opts.h"
 
-#include "util/safe-string.h"
-#include "util/logger.h"
-#include "util/unusedparm.h"
-#include "util/fine-malloc.h"
-#include "util/xprint.h"
+#include "util-data/safe-string.h"
+#include "util-out/logger.h"
+#include "util-misc/unusedparm.h"
+#include "util-data/fine-malloc.h"
+#include "util-out/xprint.h"
 
 #include "massip/massip-addr.h"
 #include "massip/massip.h"

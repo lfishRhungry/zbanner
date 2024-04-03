@@ -2,7 +2,7 @@
 #define XTATUS_H
 #include <stdint.h>
 #include <time.h>
-#include "util/bool.h"
+#include "../util-misc/bool.h"
 
 struct Xtatus
 {

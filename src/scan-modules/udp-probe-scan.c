@@ -2,12 +2,12 @@
 
 #include "scan-modules.h"
 #include "../xconf.h"
-#include "../cookie.h"
+#include "../massip/cookie.h"
 #include "../templ/templ-udp.h"
 #include "../templ/templ-icmp.h"
-#include "../util/safe-string.h"
-#include "../util/fine-malloc.h"
-#include "../util/logger.h"
+#include "../util-data/safe-string.h"
+#include "../util-data/fine-malloc.h"
+#include "../util-out/logger.h"
 
 extern struct ScanModule UdpProbeScan; /*for internal x-ref*/
 

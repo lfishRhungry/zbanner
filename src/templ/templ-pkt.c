@@ -1,7 +1,7 @@
 #include <string.h>
 
 #include "templ-pkt.h"
-#include "../util/fine-malloc.h"
+#include "../util-data/fine-malloc.h"
 
 
 /***************************************************************************

@@ -49,7 +49,7 @@
 */
 #include "crypto-blackrock.h"
 #include "../pixie/pixie-timer.h"
-#include "../util/fine-malloc.h"
+#include "../util-data/fine-malloc.h"
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>

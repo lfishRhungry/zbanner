@@ -29,8 +29,8 @@
 #include <time.h>
 
 #include "event-timeout.h"
-#include "../util/logger.h"
-#include "../util/fine-malloc.h"
+#include "../util-out/logger.h"
+#include "../util-data/fine-malloc.h"
 
 #if defined(_MSC_VER)
 #undef inline

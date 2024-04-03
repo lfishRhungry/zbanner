@@ -2,8 +2,8 @@
 #include <stdio.h>
 
 #include "probe-modules.h"
-#include "../util/safe-string.h"
-#include "../util/xprint.h"
+#include "../util-data/safe-string.h"
+#include "../util-out/xprint.h"
 
 /*
 This is an Application Probe(or Request) Plugin System

@@ -70,17 +70,17 @@
 
 #include "stack-queue.h"
 #include "stack-src.h"
-#include "../cookie.h"
+#include "../massip/cookie.h"
 #include "../timeout/event-timeout.h"
 #include "../rawsock/rawsock.h"
-#include "../util/logger.h"
+#include "../util-out/logger.h"
 #include "../templ/templ-tcp.h"
 #include "../pixie/pixie-timer.h"
-#include "../util/safe-string.h"
+#include "../util-data/safe-string.h"
 #include "../globals.h"
 #include "../crypto/crypto-base64.h"
-#include "../util/fine-malloc.h"
-#include "../util/errormsg.h"
+#include "../util-data/fine-malloc.h"
+#include "../util-out/errormsg.h"
 
 
 #ifdef _MSC_VER

@@ -5,7 +5,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "cookie.h"
+#include "massip/cookie.h"
 #include "globals.h"
 #include "xconf.h"
 #include "version.h"
@@ -24,10 +24,10 @@
 
 #include "crypto/crypto-blackrock.h"
 
-#include "util/logger.h"
-#include "util/fine-malloc.h"
-#include "util/readrange.h"
-#include "util/throttle.h"
+#include "util-out/logger.h"
+#include "util-data/fine-malloc.h"
+#include "util-scan/readrange.h"
+#include "util-scan/throttle.h"
 
 void transmit_thread(void *v)
 {

@@ -12,8 +12,8 @@
 #include <ctype.h>
 
 #include "../globals.h"
-#include "../param-configer.h"
-#include "../util/unusedparm.h"
+#include "../util-misc/param-configer.h"
+#include "../util-misc/unusedparm.h"
 #include "../output-modules/output-modules.h"
 #include "../stack/stack-queue.h"
 #include "../massip/massip-addr.h"

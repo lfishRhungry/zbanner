@@ -2,9 +2,9 @@
 #include <stdio.h>
 
 #include "probe-modules.h"
-#include "../util/safe-string.h"
+#include "../util-data/safe-string.h"
 #include "../output-modules/output-modules.h"
-#include "../util/logger.h"
+#include "../util-out/logger.h"
 
 #define GET_STATE_PAYLOAD "GET / HTTP/1.0\r\n\r\n"
 

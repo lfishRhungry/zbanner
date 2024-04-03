@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "massip/massip-addr.h"
+#include "../massip/massip-addr.h"
 
 #ifndef min
 #define min(a,b) ((a)<(b)?(a):(b))

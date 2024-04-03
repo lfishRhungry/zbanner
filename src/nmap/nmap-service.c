@@ -1,9 +1,9 @@
 #include "nmap-service.h"
-#include "../util/fine-malloc.h"
-#include "../util/safe-string.h"
+#include "../util-data/fine-malloc.h"
+#include "../util-data/safe-string.h"
 #include "../massip/massip-port.h"
-#include "../util/unusedparm.h"
-#include "../util/logger.h"
+#include "../util-misc/unusedparm.h"
+#include "../util-out/logger.h"
 
 #include <ctype.h>
 #include <stdio.h>

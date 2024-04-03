@@ -1,7 +1,7 @@
 #ifndef COOKIE_H
 #define COOKIE_H
 #include <stdint.h>
-#include "massip/massip-addr.h"
+#include "massip-addr.h"
 
 /**
  * Create a hash of the src/dst IP/port combination. This allows us to match

@@ -8,7 +8,7 @@
 
 #include "globals.h"
 #include "xconf.h"
-#include "cookie.h"
+#include "massip/cookie.h"
 #include "version.h"
 
 #include "output-modules/output-modules.h"
@@ -24,11 +24,11 @@
 #include "pixie/pixie-threads.h"
 #include "pixie/pixie-timer.h"
 
-#include "util/dedup.h"
-#include "util/logger.h"
-#include "util/fine-malloc.h"
-#include "util/ptrace.h"
-#include "util/readrange.h"
+#include "util-scan/dedup.h"
+#include "util-out/logger.h"
+#include "util-data/fine-malloc.h"
+#include "util-scan/ptrace.h"
+#include "util-scan/readrange.h"
 
 #include "timeout/fast-timeout.h"
 

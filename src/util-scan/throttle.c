@@ -17,8 +17,10 @@
     of the desired thousand packets/second.
 */
 #include "throttle.h"
+
 #include "../pixie/pixie-timer.h"
-#include "logger.h"
+#include "../util-out/logger.h"
+
 #include <string.h>
 #include <stdio.h>
 

@@ -2,8 +2,8 @@
 
 #include "../probe-modules.h"
 #include "../../version.h"
-#include "../../util/safe-string.h"
-#include "../../util/fine-malloc.h"
+#include "../../util-data/safe-string.h"
+#include "../../util-data/fine-malloc.h"
 
 #define LZR_HANDSHAKE_NAME_LEN 20
 

@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "templ-pkt.h"
-#include "../util/bool.h" /* <stdbool.h> */
+#include "../util-misc/bool.h" /* <stdbool.h> */
 #include "../massip/massip-addr.h"
 
 size_t

@@ -5,10 +5,10 @@
     This works on both Linux and windows.
 */
 #include "rawsock.h"
-#include "../util/safe-string.h"
-#include "../util/fine-malloc.h"
+#include "../util-data/safe-string.h"
+#include "../util-data/fine-malloc.h"
 #include "../massip/massip-parse.h"
-#include "../util/logger.h"
+#include "../util-out/logger.h"
 
 #if defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__sun__)
 #include <unistd.h>

@@ -3,8 +3,8 @@
 
 #include "templ-icmp.h"
 #include "../globals.h"
-#include "../util/checksum.h"
-#include "../util/data-convert.h"
+#include "../util-misc/checksum.h"
+#include "../util-data/data-convert.h"
 
 /* Generic ICMPv4 according to RFC792
     0                   1                   2                   3

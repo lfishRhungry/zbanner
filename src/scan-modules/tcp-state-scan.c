@@ -2,14 +2,14 @@
 #include <time.h>
 
 #include "scan-modules.h"
-#include "../cookie.h"
+#include "../massip/cookie.h"
 #include "../xconf.h"
 #include "../templ/templ-tcp.h"
 #include "../stack/stack-tcp-core.h"
-#include "../util/safe-string.h"
-#include "../util/fine-malloc.h"
-#include "../util/rstfilter.h"
-#include "../util/logger.h"
+#include "../util-data/safe-string.h"
+#include "../util-data/fine-malloc.h"
+#include "../util-scan/rstfilter.h"
+#include "../util-out/logger.h"
 
 extern struct ScanModule TcpStateScan; /*for internal x-ref*/
 

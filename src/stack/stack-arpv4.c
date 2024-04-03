@@ -17,11 +17,11 @@
 #include "stack-src.h"
 #include "stack-arpv4.h"
 #include "stack-queue.h"
-#include "../util/safe-string.h"
-#include "../util/logger.h"
+#include "../util-data/safe-string.h"
+#include "../util-out/logger.h"
 #include "../pixie/pixie-timer.h"
 #include "../proto/proto-preprocess.h"
-#include "../util/checksum.h"
+#include "../util-misc/checksum.h"
 
 #define VERIFY_REMAINING(n) if (offset+(n) > max) return;
 

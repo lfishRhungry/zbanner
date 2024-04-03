@@ -28,9 +28,9 @@
 */
 #include "massip-rangesv4.h"
 #include "massip-port.h"
-#include "../util/logger.h"
-#include "../util/bool.h"
-#include "../util/fine-malloc.h"
+#include "../util-out/logger.h"
+#include "../util-misc/bool.h"
+#include "../util-data/fine-malloc.h"
 
 #include <assert.h>
 #include <ctype.h>

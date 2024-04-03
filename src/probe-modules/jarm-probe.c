@@ -1,9 +1,9 @@
 #include <stdio.h>
 
 #include "probe-modules.h"
-#include "../util/safe-string.h"
+#include "../util-data/safe-string.h"
 #include "../proto/proto-jarm.h"
-#include "../util/logger.h"
+#include "../util-out/logger.h"
 
 static struct JarmConfig jc_list[] = {
     {

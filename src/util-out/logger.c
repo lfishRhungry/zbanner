@@ -1,5 +1,5 @@
 #include "logger.h"
-#include "safe-string.h"
+#include "../util-data/safe-string.h"
 #include <stdarg.h>
 #include <stdio.h>
 

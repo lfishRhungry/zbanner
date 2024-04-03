@@ -9,11 +9,11 @@
 
 #include "probe-modules.h"
 #include "../pixie/pixie-timer.h"
-#include "../util/safe-string.h"
-#include "../util/fine-malloc.h"
+#include "../util-data/safe-string.h"
+#include "../util-data/fine-malloc.h"
 #include "../output-modules/output-modules.h"
-#include "../util/logger.h"
-#include "../util/ssl-help.h"
+#include "../util-out/logger.h"
+#include "../util-misc/ssl-help.h"
 #include "../xconf.h"
 
 

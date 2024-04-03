@@ -1,10 +1,10 @@
 #include <stdlib.h>
 
 #include "scan-modules.h"
-#include "../cookie.h"
+#include "../massip/cookie.h"
 #include "../templ/templ-sctp.h"
-#include "../util/safe-string.h"
-#include "../util/fine-malloc.h"
+#include "../util-data/safe-string.h"
+#include "../util-data/fine-malloc.h"
 
 extern struct ScanModule SctpInitScan; /*for internal x-ref*/
 

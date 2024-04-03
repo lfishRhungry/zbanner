@@ -7,9 +7,9 @@
 #include "rawsock.h"
 #include "../version.h"
 #include "../templ/templ-init.h"
-#include "../util/logger.h"
-#include "../util/ptrace.h"
-#include "../util/safe-string.h"
+#include "../util-out/logger.h"
+#include "../util-scan/ptrace.h"
+#include "../util-data/safe-string.h"
 #include "../stub/stub-pcap.h"
 #include "../stub/stub-pfring.h"
 #include "../pixie/pixie-timer.h"
@@ -18,8 +18,8 @@
 #include "../stack/stack-arpv4.h"
 #include "../stack/stack-ndpv6.h"
 
-#include "../util/unusedparm.h"
-#include "../util/fine-malloc.h"
+#include "../util-misc/unusedparm.h"
+#include "../util-data/fine-malloc.h"
 #include <assert.h>
 #include <ctype.h>
 

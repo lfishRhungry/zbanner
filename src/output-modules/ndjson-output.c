@@ -1,7 +1,7 @@
 #include "output-modules.h"
 
-#include "../util/logger.h"
-#include "../util/safe-string.h"
+#include "../util-out/logger.h"
+#include "../util-data/safe-string.h"
 #include "../pixie/pixie-file.h"
 
 extern struct OutputModule NdjsonOutput; /*for internal x-ref*/

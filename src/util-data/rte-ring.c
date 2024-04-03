@@ -69,7 +69,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ***************************************************************************/
-#include "safe-string.h"
 #include <errno.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -77,9 +76,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "../pixie/pixie-threads.h"
-#include "../pixie/pixie-timer.h"
+#include <stdlib.h>
+#include <string.h>
 
 #if 0
 #include <rte_atomic.h>

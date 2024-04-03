@@ -1,5 +1,5 @@
 #include "probe-modules.h"
-#include "../util/safe-string.h"
+#include "../util-data/safe-string.h"
 
 /*for internal x-ref*/
 extern struct ProbeModule EchoProbe;

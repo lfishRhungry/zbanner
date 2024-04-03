@@ -160,8 +160,23 @@ tmp/%.o: \
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
-	src/util/%.c \
-	src/util/*.h
+	src/util-misc/%.c \
+	src/util-misc/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/util-scan/%.c \
+	src/util-scan/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/util-data/%.c \
+	src/util-data/*.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+tmp/%.o: \
+	src/util-out/%.c \
+	src/util-out/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
@@ -216,7 +231,10 @@ SRC = $(sort $(wildcard \
 	src/stack/*.c \
 	src/stub/*.c \
 	src/templ/*.c \
-	src/util/*.c \
+	src/util-misc/*.c \
+	src/util-scan/*.c \
+	src/util-data/*.c \
+	src/util-out/*.c \
 	src/smack/*.c \
 	src/nmap/*.c \
 	src/probe-modules/*.c \

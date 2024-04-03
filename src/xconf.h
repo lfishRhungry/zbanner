@@ -6,8 +6,8 @@
 #include <stdint.h>
 #include <time.h>
 
-#include "util/safe-string.h"
-#include "util/bool.h"
+#include "util-data/safe-string.h"
+#include "util-misc/bool.h"
 #include "timeout/fast-timeout.h"
 #include "massip/massip-addr.h"
 #include "massip/massip.h"

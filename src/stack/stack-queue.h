@@ -1,6 +1,6 @@
 #ifndef PACKET_QUEUE_H
 #define PACKET_QUEUE_H
-#include "../util/rte-ring.h"
+#include "../util-data/rte-ring.h"
 #include "../massip/massip-addr.h"
 #include <limits.h>
 

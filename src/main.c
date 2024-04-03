@@ -5,13 +5,13 @@
 #include <string.h>
 #include <time.h>
 
-#include "cookie.h"
+#include "massip/cookie.h"
 #include "globals.h"
 #include "receive.h"
 #include "transmit.h"
 #include "version.h"
 #include "xconf.h"
-#include "xtatus.h"
+#include "util-out/xtatus.h"
 
 #include "stub/stub-pcap.h"
 
@@ -26,11 +26,11 @@
 #include "pixie/pixie-threads.h"
 #include "pixie/pixie-timer.h"
 
-#include "util/initadapter.h"
-#include "util/listscan.h"
-#include "util/logger.h"
-#include "util/fine-malloc.h"
-#include "util/readrange.h"
+#include "util-scan/initadapter.h"
+#include "util-scan/listscan.h"
+#include "util-out/logger.h"
+#include "util-data/fine-malloc.h"
+#include "util-scan/readrange.h"
 
 #if defined(WIN32)
 #include <WinSock.h>

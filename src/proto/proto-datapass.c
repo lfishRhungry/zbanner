@@ -1,6 +1,6 @@
 #include "proto-datapass.h"
 
-#include "../util/fine-malloc.h"
+#include "../util-data/fine-malloc.h"
 
 #include <string.h>
 

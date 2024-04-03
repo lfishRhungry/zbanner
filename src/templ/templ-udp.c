@@ -34,9 +34,9 @@
 
 #include "templ-udp.h"
 #include "../globals.h"
-#include "../util/logger.h"
-#include "../util/checksum.h"
-#include "../util/data-convert.h"
+#include "../util-out/logger.h"
+#include "../util-misc/checksum.h"
+#include "../util-data/data-convert.h"
 #include "../proto/proto-preprocess.h"
 
 static size_t

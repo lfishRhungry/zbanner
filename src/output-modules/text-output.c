@@ -1,6 +1,6 @@
 #include "output-modules.h"
 
-#include "../util/logger.h"
+#include "../util-out/logger.h"
 #include "../pixie/pixie-file.h"
 
 static const char fmt_host[]   = "%s host: %-15s";

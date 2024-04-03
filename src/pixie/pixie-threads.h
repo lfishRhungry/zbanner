@@ -6,7 +6,7 @@
 #include <intrin.h>
 #endif
 
-#include "../util/bool.h"
+#include "../util-misc/bool.h"
 
 /**
  * Returns the number of CPUs in the system, including virtual CPUs.

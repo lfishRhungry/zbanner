@@ -2,7 +2,7 @@
 #define TRANSMIT_H
 
 #include "xconf.h"
-#include "util/throttle.h"
+#include "util-scan/throttle.h"
 
 /***************************************************************************
  * Correspond to a transmit thread.

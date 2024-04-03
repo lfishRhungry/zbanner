@@ -3,8 +3,8 @@
 
 #include "templ-ndp.h"
 #include "../globals.h"
-#include "../util/checksum.h"
-#include "../util/data-convert.h"
+#include "../util-misc/checksum.h"
+#include "../util-data/data-convert.h"
 
 /* ICMPv6 NDP Nerghbor Solicitation according to RFC4861
       0                   1                   2                   3

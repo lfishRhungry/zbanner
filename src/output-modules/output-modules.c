@@ -5,9 +5,9 @@
 #include "../globals.h"
 #include "../pixie/pixie-file.h"
 #include "../pixie/pixie-threads.h"
-#include "../util/logger.h"
-#include "../util/xprint.h"
-#include "../util/fine-malloc.h"
+#include "../util-out/logger.h"
+#include "../util-out/xprint.h"
+#include "../util-data/fine-malloc.h"
 
 
 extern struct OutputModule TextOutput;

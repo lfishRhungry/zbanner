@@ -2,7 +2,7 @@
 #define TEMPL_ARP_H
 
 #include "templ-pkt.h"
-#include "../util/bool.h" /* <stdbool.h> */
+#include "../util-misc/bool.h" /* <stdbool.h> */
 #include "../massip/massip-addr.h"
 #include "../proto/proto-preprocess.h"
 

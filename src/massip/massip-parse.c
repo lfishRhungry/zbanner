@@ -11,11 +11,11 @@
 #include "massip-parse.h"
 #include "massip-rangesv4.h"
 #include "massip-rangesv6.h"
-#include "../util/logger.h"
-#include "../util/bool.h"
-#include "../util/fine-malloc.h"
-#include "../util/safe-string.h"
-#include "../util/unusedparm.h"
+#include "../util-out/logger.h"
+#include "../util-misc/bool.h"
+#include "../util-data/fine-malloc.h"
+#include "../util-data/safe-string.h"
+#include "../util-misc/unusedparm.h"
 
 #include <string.h>
 
