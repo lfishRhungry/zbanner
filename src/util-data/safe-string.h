@@ -25,6 +25,10 @@
 #pragma warning(disable: 4996)
 #endif
 
+#if defined(WIN32)
+#define strncasecmp _strnicmp
+#endif
+
 #undef strcpy
 #define strcpy      STRCPY_FUNCTION_IS_BAD
 

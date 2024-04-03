@@ -12,6 +12,11 @@ typedef enum { false = 0, true = 1 } bool;
 #include <stdbool.h>
 #endif
 
+// strncasecmp
+#if defined(WIN32)
+#define strncasecmp _strnicmp
+#endif
+
 // MAX MIN
 #if defined(__GNUC__)
 #define max(a, b)                                                              \
