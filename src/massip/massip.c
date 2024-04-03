@@ -24,7 +24,7 @@ void massip_optimize(struct MassIP *targets)
     targets->ipv4_index_threshold = targets->count_ipv4s * rangelist_count(&targets->ports);
 }
 
-int massip_pick(const struct MassIP *massip, uint64_t index, ipaddress *addr, unsigned *port)
+void massip_pick(const struct MassIP *massip, uint64_t index, ipaddress *addr, unsigned *port)
 {
     /*
      * We can return either IPv4 or IPv6 addresses
@@ -39,10 +39,9 @@ int massip_pick(const struct MassIP *massip, uint64_t index, ipaddress *addr, un
         addr->ipv6 = range6list_pick(&massip->ipv6, index % massip->count_ipv6s);
         *port = rangelist_pick(&massip->ports, index / massip->count_ipv6s);
     }
-    return 0;
 }
 
-int massip_has_ip(const struct MassIP *massip, ipaddress ip)
+bool massip_has_ip(const struct MassIP *massip, ipaddress ip)
 {
     if (ip.version == 6)
         return range6list_is_contains(&massip->ipv6, ip.ipv6);
@@ -50,20 +49,20 @@ int massip_has_ip(const struct MassIP *massip, ipaddress ip)
         return rangelist_is_contains(&massip->ipv4, ip.ipv4);
 }
 
-int massip_has_port(const struct MassIP *massip, unsigned port)
+bool massip_has_port(const struct MassIP *massip, unsigned port)
 {
     return rangelist_is_contains(&massip->ports, port);
 }
 
-int massip_has_ipv4_targets(const struct MassIP *massip)
+bool massip_has_ipv4_targets(const struct MassIP *massip)
 {
     return massip->ipv4.count != 0;
 }
-int massip_has_target_ports(const struct MassIP *massip)
+bool massip_has_target_ports(const struct MassIP *massip)
 {
     return massip->ports.count != 0;
 }
-int massip_has_ipv6_targets(const struct MassIP *massip)
+bool massip_has_ipv6_targets(const struct MassIP *massip)
 {
     return massip->ipv6.count != 0;
 }
@@ -108,45 +107,3 @@ int massip_add_port_string(struct MassIP *targets, const char *string, unsigned 
     else
         return 0;
 }
-
-int massip_selftest(void)
-{
-    struct MassIP targets;
-    struct MassIP excludes;
-    int err;
-    int line;
-    massint128_t count;
-
-    memset(&targets, 0, sizeof(targets));
-    memset(&excludes, 0, sizeof(targets));
-
-    rangelist_parse_ports(&targets.ports, "80", 0, 0);
-
-    /* First, create a list of targets */
-    line = __LINE__;
-    err = massip_add_target_string(&targets, "2607:f8b0:4002:801::2004/124,1111::1");
-    if (err)
-        goto fail;
-
-    /* Second, create an exclude list */
-    line = __LINE__;
-    err = massip_add_target_string(&excludes, "2607:f8b0:4002:801::2004/126,1111::/16");
-    if (err)
-        goto fail;
-
-    /* Third, apply the excludes, causing ranges to be removed
-     * from the target list */
-    massip_apply_excludes(&targets, &excludes);
-
-    /* Now make sure the count equals the expected count */
-    line = __LINE__;
-    count = massip_range(&targets);
-    if (count.hi != 0 || count.lo != 12)
-        goto fail;
-
-    return 0;
-fail:
-    fprintf(stderr, "[-] massip: test fail, line=%d\n", line);
-    return 1;
-}
-

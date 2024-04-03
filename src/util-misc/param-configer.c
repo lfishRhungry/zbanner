@@ -274,7 +274,7 @@ parse_mac_address(const char *text, macaddress_t *mac)
     return 0;
 }
 
-int
+bool
 is_power_of_two(uint64_t x)
 {
     while ((x&1) == 0)
@@ -282,7 +282,7 @@ is_power_of_two(uint64_t x)
     return x == 1;
 }
 
-int
+bool
 EQUALS(const char *lhs, const char *rhs)
 {
     for (;;) {
@@ -291,17 +291,17 @@ EQUALS(const char *lhs, const char *rhs)
         while (*rhs == '-' || *rhs == '.' || *rhs == '_')
             rhs++;
         if (*lhs == '\0' && *rhs == '[')
-            return 1; /*arrays*/
+            return true; /*arrays*/
         if (tolower(*lhs & 0xFF) != tolower(*rhs & 0xFF))
-            return 0;
+            return false;
         if (*lhs == '\0')
-            return 1;
+            return true;
         lhs++;
         rhs++;
     }
 }
 
-int
+bool
 EQUALSx(const char *lhs, const char *rhs, size_t rhs_length)
 {
     for (;;) {
@@ -310,15 +310,15 @@ EQUALSx(const char *lhs, const char *rhs, size_t rhs_length)
         while (*rhs == '-' || *rhs == '.' || *rhs == '_')
             rhs++;
         if (*lhs == '\0' && *rhs == '[')
-            return 1; /*arrays*/
+            return true; /*arrays*/
         if (tolower(*lhs & 0xFF) != tolower(*rhs & 0xFF))
-            return 0;
+            return false;
         if (*lhs == '\0')
-            return 1;
+            return true;
         lhs++;
         rhs++;
         if (--rhs_length == 0)
-            return 1;
+            return true;
     }
 }
 
@@ -342,18 +342,18 @@ ARRAY(const char *rhs)
     return (unsigned)parseInt(p);
 }
 
-int
+bool
 isInteger(const char *value)
 {
     size_t i;
     
     if (value == NULL)
-        return 0;
+        return false;
     
     for (i=0; value[i]; i++)
         if (!isdigit(value[i]&0xFF))
-            return 0;
-    return 1;
+            return false;
+    return true;
 }
 
 bool
@@ -380,7 +380,7 @@ is_numable(const struct ConfigParameter *cp, const char *name)
  * Command-line parsing code assumes every --parm is followed by a value.
  * This is a list of the parameters that don't follow the default.
  ***************************************************************************/
-int
+bool
 is_singleton(const struct ConfigParameter *cp, const char *name)
 {
     for (size_t i=0; cp[i].name; i++) {
@@ -396,7 +396,7 @@ is_singleton(const struct ConfigParameter *cp, const char *name)
         }
     }
     
-    return 0;
+    return false;
 }
 
 void set_one_parameter(void *conf, struct ConfigParameter *cp,

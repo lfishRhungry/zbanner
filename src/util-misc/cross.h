@@ -1,4 +1,12 @@
-#ifndef MISC_H
+#ifndef CROSS_H
+#define CROSS_H
+
+/**
+ * nonstandard extension used : nameless struct/union
+*/
+#if defined(_MSC_VER)
+#pragma warning(disable: 4201)
+#endif
 
 // inline
 #if defined(_MSC_VER)

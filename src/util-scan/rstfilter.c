@@ -59,7 +59,7 @@ rstfilter_destroy(struct ResetFilter *rf)
     free(rf);
 }
 
-int
+bool
 rstfilter_is_filter(struct ResetFilter *rf,
                     ipaddress src_ip, unsigned src_port,
                     ipaddress dst_ip, unsigned dst_port)
@@ -69,7 +69,7 @@ rstfilter_is_filter(struct ResetFilter *rf,
     uint64_t key[2];
     size_t index;
     unsigned char *p;
-    int result = 0;
+    bool result = false;
     
     /*
      * Setup the input
@@ -104,12 +104,12 @@ rstfilter_is_filter(struct ResetFilter *rf,
     p = &rf->buckets[index/2];
     if (index & 1) {
         if ((*p & 0x0F) == 0x0F)
-            result = 1; /* filter out */
+            result = true; /* filter out */
         else
             *p = (*p) + 0x01;
     } else {
         if ((*p & 0xF0) == 0xF0)
-            result = 1; /* filter out */
+            result = true; /* filter out */
         else
             *p = (*p) + 0x10;
     }

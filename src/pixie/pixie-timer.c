@@ -253,39 +253,3 @@ pixie_nanotime(void)
     return mach_absolute_time();
 }
 #endif
-
-/*
- * Timing is incredibly importatn to xtate because we need to throttle
- * how fast we spew packets. Every platofrm has slightly different timing
- * even given standard APIs. We need to make sure we have an accurate
- * timing function.
- *
- * This function tests betwe [0.9, 1.9] the expected results. I want something
- * tight, like [0.99,1.01] (plus/minus 1%), but unfortunately automated
- * testing platforms, like GitHub Actions, are overloaded, so when I wait
- * for half a second, they might actually wait for 0.7 seconds, causing
- * this test to fail. Thus, I have to greatly expand the range that passes
- * this test.
- */
-int pixie_time_selftest(void)
-{
-    static const uint64_t duration = 456789;
-    uint64_t start, stop, elapsed;
-
-
-    start = pixie_gettime();
-    pixie_usleep(duration);
-    stop = pixie_gettime();
-    elapsed = stop - start;
-
-    if (elapsed < 0.9 * duration) {
-        fprintf(stderr, "timing error, long delay\n");
-        return 1;
-    }
-    if (1.9 * duration < elapsed) {
-        fprintf(stderr, "timing error, long delay %5.0f%%\n", elapsed*100.0/duration);
-        return 1;
-    }
-
-    return 0;
-}

@@ -56,7 +56,7 @@ static struct Range INVALID_RANGE = {2,1};
  * really use it in any performance critical code, so it's okay
  * as a linear search.
  ***************************************************************************/
-int
+bool
 rangelist_is_contains(const struct RangeList *targets, unsigned addr)
 {
     unsigned i;
@@ -64,9 +64,9 @@ rangelist_is_contains(const struct RangeList *targets, unsigned addr)
         struct Range *range = &targets->list[i];
 
         if (range->begin <= addr && addr <= range->end)
-            return 1;
+            return true;
     }
-    return 0;
+    return false;
 }
 
 /***************************************************************************
@@ -133,54 +133,6 @@ range_is_cidr(const struct Range range, unsigned *prefix_bits) {
 }
 
 /***************************************************************************
- * Selftest for the above function.
- ***************************************************************************/
-static int
-selftest_range_first_cidr(void) {
-    static struct {
-        struct Range in;
-        struct Range out;
-        unsigned prefix_bits;
-    } tests[] = {
-        {{0x00000000, 0xffffffff}, {0x00000000, 0xffffffff}, 0},
-        {{0x00000001, 0xffffffff}, {0x00000001, 0x00000001}, 32},
-        {{0xffffffff, 0xffffffff}, {0xffffffff, 0xffffffff}, 32},
-        {{0xfffffffe, 0xfffffffe}, {0xfffffffe, 0xfffffffe}, 32},
-        {{0x0A000000, 0x0A0000Ff}, {0x0A000000, 0x0A0000ff}, 24},
-        {{0x0A0000ff, 0x0A0000Ff}, {0x0A0000ff, 0x0A0000ff}, 32},
-        {{0x0A000000, 0x0A0000Ff}, {0x0A000000, 0x0A0000Ff}, 24},
-        {{0x0A000001, 0x0A0000Fe}, {0x0A000001, 0x0A000001}, 32},
-        {{0x0A000008, 0x0A0000Fe}, {0x0A000008, 0x0A00000f}, 29},
-        {{0x0A000080, 0x0A0000Fe}, {0x0A000080, 0x0A0000bf}, 26},
-        {{0x0A0000c0, 0x0A0000Fe}, {0x0A0000c0, 0x0A0000df}, 27},
-        {{0x0A0000c1, 0x0A0000Fe}, {0x0A0000c1, 0x0A0000c1}, 32},
-        {{0x0A0000fe, 0x0A0000Fe}, {0x0A0000fe, 0x0A0000fe}, 32},
-        {{0,0}, {0,0}}
-    };
-    size_t i;
-
-    for (i=0; tests[i].in.end != 0; i++) {
-        unsigned prefix_bits = 0xFFFFFFFF;
-        struct Range out = range_first_cidr(tests[i].in, &prefix_bits);
-        if (out.begin != tests[i].out.begin
-            || out.end != tests[i].out.end
-            || prefix_bits != tests[i].prefix_bits) {
-            fprintf(stderr, "[%u] 0x%08x->0x%08x  /%u   0x%08x->0x%08x /%u\n",
-                    (unsigned)i,
-                    out.begin,
-                    out.end,
-                    prefix_bits,
-                    tests[i].out.begin,
-                    tests[i].out.end,
-                    tests[i].prefix_bits);
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-/***************************************************************************
  * Test if two ranges overlap.
  * FIXME: I need to change this so that it (a) doesn't trigger on invalid
  * ranges (those where begin>end) and (b) use a simpler algorithm
@@ -237,18 +189,6 @@ range_compare(const void *lhs, const void *rhs)
         return 1;
     else
         return 0;
-}
-
-/***************************************************************************
- ***************************************************************************/
-static void
-rangelist_remove_at(struct RangeList *targets, size_t index)
-{
-    memmove(&targets->list[index],
-            &targets->list[index+1],
-            (targets->count - index) * sizeof(targets->list[index])
-            );
-    targets->count--;
 }
 
 
@@ -385,80 +325,6 @@ rangelist_merge(struct RangeList *list1, const struct RangeList *list2)
         rangelist_add_range(list1, list2->list[i].begin, list2->list[i].end);
     }
     rangelist_sort(list1);
-}
-
-/***************************************************************************
- * This searches a range list and removes that range of IP addresses, if
- * they exist. Since the input range can overlap multiple entries, then
- * more than one entry can be removed, or truncated. Since the range
- * can be in the middle of an entry in the list, it can actually increase
- * the list size by one, as that entry is split into two entries.
- * DEPRECATED: this function is deprecated, and will be removed at some
- * point. It's only remaining in order to serve as a regression test for
- * its replacement.
- ***************************************************************************/
-static void
-rangelist_remove_range(struct RangeList *targets, unsigned begin, unsigned end)
-{
-    unsigned i;
-    struct Range x;
-
-    x.begin = begin;
-    x.end = end;
-
-    /* See if the range overlaps any exist range already in the
-     * list */
-    for (i = 0; i < targets->count; i++) {
-        if (!range_is_overlap(targets->list[i], x))
-            continue;
-
-        /* If the removal-range wholly covers the range, delete
-         * it completely */
-        if (begin <= targets->list[i].begin && end >= targets->list[i].end) {
-            rangelist_remove_at(targets, i);
-            i--;
-            continue;
-        }
-
-        /* If the removal-range bisects the target-rage, truncate
-         * the lower end and add a new high-end */
-        if (begin > targets->list[i].begin && end < targets->list[i].end) {
-            struct Range newrange;
-
-            newrange.begin = end+1;
-            newrange.end = targets->list[i].end;
-
-
-            targets->list[i].end = begin-1;
-
-            rangelist_add_range(targets, newrange.begin, newrange.end);
-            i--;
-            continue;
-        }
-
-        /* If overlap on the lower side */
-        if (end >= targets->list[i].begin && end < targets->list[i].end) {
-            targets->list[i].begin = end+1;
-        }
-
-        /* If overlap on the upper side */
-        if (begin > targets->list[i].begin && begin <= targets->list[i].end) {
-             targets->list[i].end = begin-1;
-        }
-
-        //assert(!"impossible");
-    }
-}
-
-static void
-rangelist_add_range2(struct RangeList *targets, struct Range range)
-{
-    rangelist_add_range(targets, range.begin, range.end);
-}
-static void
-rangelist_remove_range2(struct RangeList *targets, struct Range range)
-{
-    rangelist_remove_range(targets, range.begin, range.end);
 }
 
 
@@ -636,28 +502,6 @@ end:
 }
 
 
-/***************************************************************************
- * This is the old algorithm for applying exclude ranges, very slow
- * for large lists. We keep it around for verifying correctness of the
- * new replacement algorithm.
- ***************************************************************************/
-static void
-rangelist_exclude2(  struct RangeList *targets,
-                  const struct RangeList *excludes)
-{
-    unsigned i;
-    
-    for (i=0; i<excludes->count; i++) {
-        struct Range range = excludes->list[i];
-        rangelist_remove_range(targets, range.begin, range.end);
-    }
-    
-    /* Since chopping up large ranges can split ranges, this can
-     * grow the list so we need to re-sort it */
-    rangelist_sort(targets);
-
-}
-
 /**
  * Applies the (presumably overlapping) exclude range to the target. This can have
  * four outcomes:
@@ -715,7 +559,7 @@ range_apply_exclude(const struct Range exclude, struct Range *target, struct Ran
 
 /***************************************************************************
  ***************************************************************************/
-int
+bool
 range_is_valid(struct Range range)
 {
     return range.begin <= range.end;
@@ -909,82 +753,6 @@ rangelist_optimize(struct RangeList *targets)
 }
 
 
-
-/***************************************************************************
- * Provide my own rand() simply to avoid static-analysis warning me that
- * 'rand()' is unrandom, when in fact we want the non-random properties of
- * rand() for regression testing.
- ***************************************************************************/
-static unsigned
-r_rand(unsigned *seed)
-{
-    static const unsigned a = 214013;
-    static const unsigned c = 2531011;
-
-    *seed = (*seed) * a + c;
-    return (*seed)>>16 & 0x7fff;
-}
-
-/***************************************************************************
- ***************************************************************************/
-static int
-regress_pick2()
-{
-    unsigned i;
-    unsigned seed = 0;
-
-    /*
-     * Run 100 randomized regression tests
-     */
-    for (i=0; i<100; i++) {
-        unsigned j;
-        unsigned num_targets;
-        unsigned begin = 0;
-        unsigned end;
-        struct RangeList targets[1] = {{0}};
-        struct RangeList duplicate[1] = {{0}};
-        unsigned range;
-
-
-        /* Create a new target list */
-        memset(targets, 0, sizeof(targets[0]));
-
-        /* fill the target list with random ranges */
-        num_targets = r_rand(&seed)%5 + 1;
-        for (j=0; j<num_targets; j++) {
-            begin += r_rand(&seed)%10;
-            end = begin + r_rand(&seed)%10;
-
-            rangelist_add_range(targets, begin, end);
-        }
-        rangelist_sort(targets);
-        range = (unsigned)rangelist_count(targets);
-
-        /* Optimize for faster 'picking' addresses from an index */
-        rangelist_optimize(targets);
-
-        /* Duplicate the targetlist using the picker */
-        memset(duplicate, 0, sizeof(duplicate[0]));
-        for (j=0; j<range; j++) {
-            unsigned x;
-
-            x = rangelist_pick(targets, j);
-            rangelist_add_range(duplicate, x, x);
-        }
-        rangelist_sort(duplicate);
-
-        /* at this point, the two range lists should be identical */
-        REGRESS(targets->count == duplicate->count);
-        REGRESS(memcmp(targets->list, duplicate->list, targets->count*sizeof(targets->list[0])) == 0);
-
-        rangelist_remove_all(targets);
-        rangelist_remove_all(duplicate);
-    }
-
-    return 0;
-}
-
-
 /***************************************************************************
  * This returns a character pointer where parsing ends so that it can
  * handle multiple stuff on the same line
@@ -1087,303 +855,4 @@ rangelist_parse_ports(struct RangeList *ports, const char *string, unsigned *is_
     }
 
     return p;
-}
-
-
-
-/***************************************************************************
- * Deterministic random number generator for repeatable tests.
- ***************************************************************************/
-static unsigned
-lcgrand(unsigned *state)
-{
-    *state = 1103515245 * (*state) + 12345;
-    return *state;
-}
-
-/***************************************************************************
- * Create an exact duplicate range.
- ***************************************************************************/
-static void
-rangelist_copy(struct RangeList *dst, const struct RangeList *src)
-{
-    free(dst->list);
-    free(dst->picker);
-    memset(dst, 0, sizeof(*dst));
-    dst->list = CALLOC(src->count, sizeof(src->list[0]));
-    memcpy(dst->list, src->list, src->count * sizeof(src->list[0]));
-    dst->count = src->count;
-    dst->max = dst->count;
-    dst->is_sorted = src->is_sorted;
-}
-
-/***************************************************************************
- * Test if two ranges are exact duplicates
- * @return true if equal, false if not equal
- ***************************************************************************/
-static bool
-rangelist_is_equal(const struct RangeList *lhs, const struct RangeList *rhs)
-{
-    unsigned i;
-    
-    if (lhs->count != rhs->count)
-        return false;
-    for (i=0; i<lhs->count; i++) {
-        if (lhs->list[i].begin != rhs->list[i].begin) {
-            return false;
-        }
-        if (lhs->list[i].end != rhs->list[i].end) {
-            return false;
-        }
-    }
-    
-    return true;
-}
-
-/***************************************************************************
- * The old way of excluding addresses assume unsorted lists, so had to
- * search the entire exclude list for each included address, which is
- * O(n * m), and fails when we have millions of excludes and includes,
- * because it takes forever to apply.
- * This was revamped with a new version that sorts both lists first,
- * the applies the excludes sequentially in an O(n + m) operation.
- * This selftest simply creates random lists and runs the new code
- * against the old code, and make sure the results match.
- ***************************************************************************/
-static int
-exclude_selftest(void)
-{
-    unsigned seed = 0;
-    struct RangeList includes1 = {0};
-    struct RangeList includes2 = {0};
-    struct RangeList excludes = {0};
-    unsigned addr = 0;
-    size_t i;
-    
-    /* In my initial tests, simply using 10 as the count seems to
-     * catch all the combinations. On the other hand, 100,000 takes
-     * a long time to complete, because it's O(n2) quadratic time.
-     * Therefore, I pick a thousand as a compromise, likely to catch
-     * any possibility, yet fast enough to complete quickly even on
-     * a Raspberry Pi */
-    static const unsigned MAXCOUNT = 1000;
-    
-    /* Fill the include list. This is designed to make short ranges
-     * that are a short distance apart. We'll do the same for the
-     * same for the excludes, using a different random seed. This
-     * should create two lists that have lots and lots of overlapping
-     * and non-overlapping ranges.
-     */
-    seed = 0;
-    addr = 0;
-    for (i=0; i<MAXCOUNT; i++) {
-        unsigned begin;
-        unsigned end;
-        
-        addr += lcgrand(&seed) & 0xF;
-        begin = addr;
-        addr += lcgrand(&seed) & 0xF;
-        end = addr;
-        
-        rangelist_add_range(&includes1, begin, end);
-    }
-    rangelist_sort(&includes1);
-    
-    /* Fill the exclude list, using the same algorithm as above for
-     * includes, but now with a different seed. This creates lots of
-     * conflicts. */
-    seed = 1;
-    addr = 0;
-    for (i=0; i<MAXCOUNT; i++) {
-        unsigned begin;
-        unsigned end;
-        
-        addr += lcgrand(&seed) & 0xF;
-        begin = addr;
-        addr += lcgrand(&seed) & 0xF;
-        end = addr;
-        
-        rangelist_add_range(&excludes, begin, end);
-    }
-    rangelist_sort(&excludes);
-    
-    /* Now create a copy of the include list, because we want to
-     * apply excludes using two different algorithms to see if the
-     * results match */
-    rangelist_copy(&includes2, &includes1);
-    if (!rangelist_is_equal(&includes1, &includes2))
-        return 1;
-
-    
-    /* Now apply the exclude algorithms, both new and old, to
-     * the include lists. */
-    rangelist_exclude(&includes1, &excludes);
-    rangelist_exclude2(&includes2, &excludes);
-    if (!rangelist_is_equal(&includes1, &includes2))
-        return 1; /* fail */
-    
-    /* If we reach this point, the selftest has succeeded */
-    return 0;
-
-}
-
-/***************************************************************************
- * Called during "make test" to run a regression test over this module.
- ***************************************************************************/
-int
-ranges_selftest(void)
-{
-    struct Range r;
-    struct RangeList targets[1] = {{0}};
-
-    REGRESS(regress_pick2() == 0);
-
-    /* Do a separate test of the 'exclude' feature */
-    if (exclude_selftest())
-        return 1;
-    
-    memset(targets, 0, sizeof(targets[0]));
-#define ERROR() LOG(LEVEL_ERROR, "selftest: failed %s:%u\n", __FILE__, __LINE__);
-
-    /* test for the /0 CIDR block, since we'll be using that a lot to scan the entire
-     * Internet */
-    r = range_parse_ipv4("0.0.0.0/0", 0, 0);
-    REGRESS(r.begin == 0 && r.end == 0xFFFFFFFF);
-
-    r = range_parse_ipv4("0.0.0./0", 0, 0);
-    REGRESS(r.begin > r.end);
-
-    r = range_parse_ipv4("75.748.86.91", 0, 0);
-    REGRESS(r.begin > r.end);
-
-    r = range_parse_ipv4("23.75.345.200", 0, 0);
-    REGRESS(r.begin > r.end);
-
-    r = range_parse_ipv4("192.1083.0.1", 0, 0);
-    REGRESS(r.begin > r.end);
-
-    r = range_parse_ipv4("192.168.1.3", 0, 0);
-    if (r.begin != 0xc0a80103 || r.end != 0xc0a80103) {
-        LOG(LEVEL_ERROR, "r.begin = 0x%08x r.end = 0x%08x\n", r.begin, r.end);
-        ERROR();
-        return 1;
-    }
-
-    r = range_parse_ipv4("10.0.0.20-10.0.0.30", 0, 0);
-    if (r.begin != 0x0A000000+20 || r.end != 0x0A000000+30) {
-        LOG(LEVEL_ERROR,  "r.begin = 0x%08x r.end = 0x%08x\n", r.begin, r.end);
-        ERROR();
-        return 1;
-    }
-
-    r = range_parse_ipv4("10.0.1.2/16", 0, 0);
-    if (r.begin != 0x0A000000 || r.end != 0x0A00FFFF) {
-        LOG(LEVEL_ERROR, "r.begin = 0x%08x r.end = 0x%08x\n", r.begin, r.end);
-        ERROR();
-        return 1;
-    }
-
-
-    rangelist_add_range2(targets, range_parse_ipv4("10.0.0.0/24", 0, 0));
-    rangelist_add_range2(targets, range_parse_ipv4("10.0.1.10-10.0.1.19", 0, 0));
-    rangelist_add_range2(targets, range_parse_ipv4("10.0.1.20-10.0.1.30", 0, 0));
-    rangelist_add_range2(targets, range_parse_ipv4("10.0.0.0-10.0.1.12", 0, 0));
-    rangelist_sort(targets);
-
-    if (targets->count != 1) {
-        LOG(LEVEL_ERROR, "count = %u\n", targets->count);
-        ERROR();
-        return 1;
-    }
-    if (targets->list[0].begin != 0x0a000000 || targets->list[0].end != 0x0a000100+30) {
-        LOG(LEVEL_ERROR, "r.begin = 0x%08x r.end = 0x%08x\n", targets->list[0].begin, targets->list[0].end);
-        ERROR();
-        return 1;
-    }
-
-    rangelist_remove_all(targets);
-
-    /*
-     * Test removal
-     */
-    memset(targets, 0, sizeof(targets[0]));
-
-    rangelist_add_range2(targets, range_parse_ipv4("10.0.0.0/8", 0, 0));
-    rangelist_sort(targets);
-
-    /* These removals shouldn't change anything */
-    rangelist_remove_range2(targets, range_parse_ipv4("9.255.255.255", 0, 0));
-    rangelist_remove_range2(targets, range_parse_ipv4("11.0.0.0/16", 0, 0));
-    rangelist_remove_range2(targets, range_parse_ipv4("192.168.0.0/16", 0, 0));
-    rangelist_sort(targets);
-
-    if (targets->count != 1
-        || targets->list->begin != 0x0a000000
-        || targets->list->end != 0x0aFFFFFF) {
-        ERROR();
-        return 1;
-    }
-
-    /* These removals should remove a bit from the edges */
-    rangelist_remove_range2(targets, range_parse_ipv4("1.0.0.0-10.0.0.0", 0, 0));
-    rangelist_remove_range2(targets, range_parse_ipv4("10.255.255.255-11.0.0.0", 0, 0));
-    rangelist_sort(targets);
-    if (targets->count != 1
-        || targets->list->begin != 0x0a000001
-        || targets->list->end != 0x0aFFFFFE) {
-        ERROR();
-        return 1;
-    }
-
-
-    /* remove things from the middle */
-    rangelist_remove_range2(targets, range_parse_ipv4("10.10.0.0/16", 0, 0));
-    rangelist_remove_range2(targets, range_parse_ipv4("10.20.0.0/16", 0, 0));
-    rangelist_sort(targets);
-    if (targets->count != 3) {
-        ERROR();
-        return 1;
-    }
-
-    rangelist_remove_range2(targets, range_parse_ipv4("10.12.0.0/16", 0, 0));
-    rangelist_sort(targets);
-    if (targets->count != 4) {
-        ERROR();
-        return 1;
-    }
-
-    rangelist_remove_range2(targets, range_parse_ipv4("10.10.10.10-10.12.12.12", 0, 0));
-    rangelist_sort(targets);
-    if (targets->count != 3) {
-        ERROR();
-        return 1;
-    }
-    rangelist_remove_all(targets);
-
-    /* test ports */
-    {
-        unsigned is_error = 0;
-        memset(targets, 0, sizeof(targets[0]));
-
-        rangelist_parse_ports(targets, "80,1000-2000,1234,4444", &is_error, 0);
-        rangelist_sort(targets);
-        if (targets->count != 3 || is_error) {
-            ERROR();
-            return 1;
-        }
-
-        if (targets->list[0].begin != 80 || targets->list[0].end != 80 ||
-            targets->list[1].begin != 1000 || targets->list[1].end != 2000 ||
-            targets->list[2].begin != 4444 || targets->list[2].end != 4444) {
-            ERROR();
-            return 1;
-        }
-    }
-
-    if (selftest_range_first_cidr() != 0) {
-        ERROR();
-        return 1;
-    }
-
-    return 0;
 }

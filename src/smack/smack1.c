@@ -104,6 +104,7 @@
 #include "smack.h"
 #include "smackqueue.h"
 #include "../util-out/logger.h"
+#include "../util-misc/cross.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -542,16 +543,16 @@ smack_destroy(struct SMACK *smack)
  * already exists in the old list, in which case it won't copy a duplicate
  * from the new list.
  ****************************************************************************/
-static unsigned
+static bool
 id_already_exists(const size_t *ids, unsigned count, size_t new_id)
 {
     unsigned i;
 
     for (i=0; i<count; i++) {
         if (ids[i] == new_id)
-            return 1;
+            return true;
     }
-    return 0;
+    return false;
 }
 
 /****************************************************************************
@@ -1594,210 +1595,4 @@ smack_search_next_end(  struct SMACK *  smack,
     
     *current_state = row | (current_matches<<24);
     return id;
-}
-
-/*****************************************************************************
- * Provide my own rand() simply to avoid static-analysis warning me that
- * 'rand()' is unrandom, when in fact we want the non-random properties of
- * rand() for regression testing.
- *****************************************************************************/
-static unsigned
-r_rand(unsigned *seed)
-{
-    static const unsigned a = 214013;
-    static const unsigned c = 2531011;
-    
-    *seed = (*seed) * a + c;
-    return (*seed)>>16 & 0x7fff;
-}
-
-/****************************************************************************
- ****************************************************************************/
-int
-smack_benchmark(void)
-{
-    char *buf;
-    unsigned seed = 0;
-    static unsigned BUF_SIZE = 1024*1024;
-    static uint64_t ITERATIONS = 30;
-    unsigned i;
-    struct SMACK *s;
-    uint64_t start, stop;
-    uint64_t result = 0;
-    uint64_t cycle1, cycle2;
-
-    printf("-- smack-1 -- \n");
-    
-    s = smack_create("benchmark1", 1);
-
-    /* Fill a buffer full of junk */
-    buf = (char*)malloc(BUF_SIZE);
-    if (buf == NULL) {
-        fprintf(stderr, "%s: out of memory error\n", "smack");
-        exit(1);
-    }          
-    for (i=0; i<BUF_SIZE; i++)
-        buf[i] = (char)r_rand(&seed)&0x7F;
-
-
-    /* Create 20 patterns */
-    for (i=0; i<20; i++) {
-        unsigned pattern_length = r_rand(&seed)%3 + r_rand(&seed)%4 + 4;
-        char pattern[20];
-        unsigned j;
-
-        for (j=0; j<pattern_length; j++)
-            pattern[j] = (char)(r_rand(&seed)&0x7F) | 0x80;
-        
-        smack_add_pattern(s, pattern, pattern_length, i, 0);
-    }
-
-    smack_compile(s);
-
-    start = pixie_nanotime();
-    cycle1 = __rdtsc();
-    for (i=0; i<ITERATIONS; i++) {
-        unsigned state = 0;
-        unsigned offset = 0;
-
-        while (offset < BUF_SIZE)
-            result += smack_search_next(s, &state, buf, &offset, BUF_SIZE);
-    }
-    cycle2 = __rdtsc();
-    stop = pixie_nanotime();
-
-    if (result) {
-        double elapsed = ((double)(stop - start))/(1000000000.0);
-        double rate = (BUF_SIZE*ITERATIONS*8ULL)/elapsed;
-        double cycles = (BUF_SIZE*ITERATIONS*1.0)/(1.0*(cycle2-cycle1));
-
-        rate /= 1000000.0;
-
-        printf("bits/second = %5.3f-million\n", rate);
-        printf("clocks/byte = %5.3f\n", (1.0/cycles));
-        printf("clockrate = %5.3f-GHz\n", ((cycle2-cycle1)*1.0/elapsed)/1000000000.0);
-
-        
-    }
-
-    free(buf);
-    return 0;
-}
-
-/****************************************************************************
- ****************************************************************************/
-int
-smack_selftest(void)
-{
-    struct SMACK *s;
-    const char *patterns[] = {
-        "GET",      "PUT",      "POST",     "OPTIONS",
-        "HEAD",     "DELETE",   "TRACE",    "CONNECT",
-        "PROPFIND", "PROPPATCH","MKCOL",    "MKWORKSPACE",
-        "MOVE",     "LOCK",     "UNLOCK",   "VERSION-CONTROL",
-        "REPORT",   "CHECKOUT", "CHECKIN",  "UNCHECKOUT",
-        "COPY",     "UPDATE",   "LABEL",    "BASELINE-CONTROL",
-        "MERGE",    "SEARCH",   "ACL",      "ORDERPATCH",
-        "PATCH",    "MKACTIVITY", 0};
-    unsigned i;
-    const char *text = "ahpropfindhf;orderpatchposearchmoversion-controlockasldhf";
-    unsigned text_length = (unsigned)strlen(text);
-    size_t id, id2;
-    unsigned state = 0;
-    static const size_t END_TEST_THINGY1 = 9001;
-    static const size_t END_TEST_THINGY2 = 9002;
-
-    LOG(LEVEL_WARNING, "[ ] smack: selftest started\n");
-
-    /*
-     * using SMACK is 5 steps:
-     * #1 create an instance at program startup
-     * #2 add patterns to it
-     * #3 compile the patterns
-     * #4 do your searches while running the program
-     * #5 destroy the instance at program exit
-     */
-    s = smack_create("test1", 1);
-
-    for (i=0; patterns[i]; i++)
-        smack_add_pattern(s, patterns[i], (unsigned)strlen(patterns[i]), i, 0);
-
-    /* additional pattern for testing the end condition */
-    smack_add_pattern(s, "dhf",  3, END_TEST_THINGY1, SMACK_ANCHOR_END);
-    smack_add_pattern(s, "ldhf", 4, END_TEST_THINGY2, SMACK_ANCHOR_END);
-
-    smack_compile(s);
-
-    i = 0;
-#define TEST(pat, offset, str) if (pat != id || offset != i) return 1 + fprintf(stderr, "smack: fail %s\n", str)
-    id = smack_search_next(s,&state,text, &i,text_length);
-    TEST(  8,  10, "PROPFIND");
-    id = smack_search_next(s,&state,text, &i,text_length);
-    TEST( 28,  23, "PATCH");
-    id = smack_search_next(s,&state,text, &i,text_length);
-    TEST( 27,  23, "ORDERPATCH");
-    id = smack_search_next(s,&state,text, &i,text_length);
-    TEST( 25,  31, "SEARCH");
-    id = smack_search_next(s,&state,text, &i,text_length);
-    TEST( 12,  35, "MOVE");
-    id = smack_search_next(s,&state,text, &i,text_length);
-    TEST( 15,  48, "VERSION-CONTROL");
-    id = smack_search_next(s,&state,text, &i,text_length);
-    TEST( 13,  51, "LOCK");
-
-    /* SMACK_ANCHOR_END test
-     * The next patterns we should find are at the end of the string
-     * ("dhf" and "ldhf"). However, simply doing a search with "next"
-     * won't find them, because when we call this function call, we
-     * can't know that we've reached the end of input yet. We have
-     * to explicitly make a "search end" call before they are found */
-    id = smack_search_next(s,&state,text, &i,text_length);
-    if (id != SMACK_NOT_FOUND) {
-        /* At this point, we should no more patterns, and reach the end
-         * of the string */
-        fprintf(stderr, "[-] smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
-        return 1;
-    }
-    
-    /* SMACK_ANCHOR_END search end test
-     * We've reached the end of input, so now we tell this to the module.
-     * The only purpose for calling this is if we have "ANCHOR_END"
-     * patterns that won't match until we tell the system we've
-     * reached the end of input. */
-    id = smack_search_next_end(s, &state);
-    if (id != END_TEST_THINGY1 && id != END_TEST_THINGY2) {
-        /* We didn't find one of the two end-patterns we were looking for, so fail */
-        fprintf(stderr, "[-] smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
-        return 1;
-    }
-    
-    /* We have TWO end patterns that will match. We need to make sure the
-     * second also was triggered, and that it's different from the first.
-     * Note that this text is agnostic which of the two ending patterns
-     * is found first. The order is undefined, and may change in future
-     * versions. */
-    id2 = smack_search_next_end(s, &state);
-    if (id2 != END_TEST_THINGY1 && id2 != END_TEST_THINGY2) {
-        fprintf(stderr, "[-] smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
-        return 1;
-    } else if (id2 == id) {
-        /* The two ending patterns should give two different results */
-        fprintf(stderr, "[-] smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
-        return 1;
-    }
-    
-    /* We have only two ending patterns, so if we try for a third, we'll get
-     * a NOT FOUND */
-    id2 = smack_search_next_end(s, &state);
-    if (id2 != SMACK_NOT_FOUND) {
-        fprintf(stderr, "[-] smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
-        return 1;
-    }
-
-
-    smack_destroy(s);
-
-    
-    LOG(LEVEL_WARNING, "[+] smack: success!\n");
-    return 0;
 }

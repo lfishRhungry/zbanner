@@ -48,7 +48,7 @@ rstfilter_destroy(struct ResetFilter *rf);
  * @return 1 if we should filter out the offending packet and ignore it,
  *          or else 0 if we shouldn't ignore it.
  */
-int
+bool
 rstfilter_is_filter(struct ResetFilter *rf, ipaddress src_ip, unsigned src_port, ipaddress dst_ip, unsigned dst_port);
 
 #endif

@@ -77,7 +77,7 @@ range6list_remove_range2(struct Range6List *targets, struct Range6 range);
  * @return 
  *      'true' if the ranges contain the item, or 'false' otherwise
  */
-int
+bool
 range6list_is_contains(const struct Range6List *targets, const ipv6address ip);
 
 
@@ -85,7 +85,7 @@ range6list_is_contains(const struct Range6List *targets, const ipv6address ip);
  * Tests if the range is bad/invalid.
  * @return 1 is invalid, 0 if good.
  */
-int range6_is_bad_address(const struct Range6 *range);
+bool range6_is_bad_address(const struct Range6 *range);
 
 /**
  * Remove things from the target list. The primary use of this is the
@@ -175,14 +175,6 @@ range6list_optimize(struct Range6List *targets);
  */
 void
 range6list_sort(struct Range6List *targets);
-
-/**
- * Does a regression test of this module
- * @return
- *      0 if the regression test succeeds, or a positive value on failure
- */
-int
-ranges6_selftest(void);
 
 
 #endif

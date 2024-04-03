@@ -96,39 +96,6 @@ bool scan_global_init_nothing(const struct Xconf *params)
     return true;
 }
 
-int scan_filter_nothing(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    unsigned is_myip, unsigned is_myport)
-{
-    return 1;
-}
-
-int scan_valid_all(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px)
-{
-    return 1;
-}
-
-int scan_no_dedup(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    ipaddress *ip_them, unsigned *port_them,
-    ipaddress *ip_me, unsigned *port_me, unsigned *type)
-{
-    return 0;
-}
-
-int scan_response_nothing(
-    struct PreprocessedInfo *parsed, uint64_t entropy,
-    const unsigned char *px, unsigned sizeof_px,
-    unsigned char *r_px, unsigned sizeof_r_px,
-    size_t *r_length, unsigned index)
-{
-    *r_length=0;
-    return 0;
-}
 
 void scan_poll_nothing(){}
 

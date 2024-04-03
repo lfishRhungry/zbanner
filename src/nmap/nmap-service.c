@@ -1236,7 +1236,7 @@ nmapservice_free(struct NmapServiceProbeList *list)
 /**
  * does probe has at least one hard match for this service?
 */
-static unsigned
+static bool
 has_hardmatch(const struct NmapServiceProbe *probe, const char *service)
 {
     if (!probe->match) return 0;
@@ -1244,11 +1244,11 @@ has_hardmatch(const struct NmapServiceProbe *probe, const char *service)
     struct ServiceProbeMatch *match;
     for (match=probe->match;match;match=match->next) {
         if (!match->is_softmatch && strcmp(match->service, service)==0) {
-            return 1;
+            return true;
         }
     }
 
-    return 0;
+    return false;
 }
 
 unsigned

@@ -11,13 +11,7 @@
 #define MASSIP_ADDR_H
 #include <stdint.h>
 #include <stddef.h>
-
-#if defined(_MSC_VER) && !defined(inline)
-#define inline __inline
-#endif
-#if defined(_MSC_VER)
-#pragma warning(disable: 4201)
-#endif
+#include "../util-misc/cross.h"
 
 /**
  * An IPv6 address is represented as two 64-bit integers instead of a single
@@ -68,45 +62,45 @@ struct ipaddress {
 typedef struct ipaddress ipaddress;
 
 /** @return true if the IPv6 address is zero [::] */
-static inline int ipv6address_is_zero(ipv6address_t a) {
+static inline bool ipv6address_is_zero(ipv6address_t a) {
     return a.hi == 0 && a.lo == 0;
 }
 #define massint128_is_zero ipv6address_is_zero
 
 /** The IPv6 address [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]
  * is invalid */
-static inline int ipv6address_is_invalid(ipv6address_t a) {
+static inline bool ipv6address_is_invalid(ipv6address_t a) {
     return a.hi == ~0ULL && a.lo == ~0ULL;
 }
 
 
 /** Compare two IPv6 addresses */
-static inline int ipv6address_is_equal(ipv6address_t a, ipv6address_t b) {
+static inline bool ipv6address_is_equal(ipv6address_t a, ipv6address_t b) {
     return a.hi == b.hi && a.lo == b.lo;
 }
 
-static inline int ipaddress_is_equal(ipaddress a, ipaddress b) {
+static inline bool ipaddress_is_equal(ipaddress a, ipaddress b) {
     if (a.version != b.version)
-        return 0;
+        return false;
     if (a.version == 4) {
         return a.ipv4 == b.ipv4;
     } else if (a.version == 6) {
         return ipv6address_is_equal(a.ipv6, b.ipv6);
     } else
-        return 0;
+        return false;
 }
 
 /** Compare two IPv6 addresses, to see which one comes frist. This is used
  * in sorting the addresses
  * @return true if a < b, false otherwise */
-static inline int ipv6address_is_lessthan(ipv6address_t a, ipv6address_t b) {
+static inline bool ipv6address_is_lessthan(ipv6address_t a, ipv6address_t b) {
     return (a.hi == b.hi)?(a.lo < b.lo):(a.hi < b.hi);
 }
 
 /**
  * Mask the lower bits of each address and test if the upper bits are equal
  */
-int ipv6address_is_equal_prefixed(ipv6address_t lhs, ipv6address_t rhs, unsigned prefix);
+bool ipv6address_is_equal_prefixed(ipv6address_t lhs, ipv6address_t rhs, unsigned prefix);
 
 ipv6address_t ipv6address_add_uint64(ipv6address_t lhs, uint64_t rhs);
 ipv6address_t ipv6address_subtract(ipv6address_t lhs, ipv6address_t rhs);
@@ -155,7 +149,7 @@ static inline macaddress_t macaddress_from_bytes(const void *vbuf)
 }
 
 /** Test if the Ethernet MAC address is all zeroes */
-static inline int macaddress_is_zero(macaddress_t mac)
+static inline bool macaddress_is_zero(macaddress_t mac)
 {
     return mac.addr[0] == 0
     && mac.addr[1] == 0
@@ -166,7 +160,7 @@ static inline int macaddress_is_zero(macaddress_t mac)
 }
 
 /** Compare two Ethernet MAC addresses to see if they are equal */
-static inline int macaddress_is_equal(macaddress_t lhs, macaddress_t rhs)
+static inline bool macaddress_is_equal(macaddress_t lhs, macaddress_t rhs)
 {
     return lhs.addr[0] == rhs.addr[0]
     && lhs.addr[1] == rhs.addr[1]

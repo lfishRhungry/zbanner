@@ -175,7 +175,7 @@ void xconf_save_state(struct Xconf *xconf);
  * Pre-scan the command-line looking for options that may affect how
  * previous options are handled. This is a bit of a kludge, really.
  */
-int xconf_contains(const char *x, int argc, char **argv);
+bool xconf_contains(const char *x, int argc, char **argv);
 
 /**
  * Called to set a <name=value> pair.

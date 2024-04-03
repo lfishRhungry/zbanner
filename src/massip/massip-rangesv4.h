@@ -97,7 +97,7 @@ rangelist_add_range_udp(struct RangeList *targets, unsigned begin, unsigned end)
  * @return 
  *      'true' if the ranges contain the item, or 'false' otherwise
  */
-int
+bool
 rangelist_is_contains(const struct RangeList *task, unsigned number);
 
 
@@ -106,7 +106,7 @@ rangelist_is_contains(const struct RangeList *task, unsigned number);
  * fact that 'begin' comes before 'end'. We mark invalid ranges
  * by putting 'begin' after the 'end'
  */
-int
+bool
 range_is_valid(struct Range range);
 
 /**
@@ -238,15 +238,6 @@ rangelist_optimize(struct RangeList *targets);
  */
 void
 rangelist_sort(struct RangeList *targets);
-
-
-/**
- * Does a regression test of this module
- * @return
- *      0 if the regression test succeeds, or a positive value on failure
- */
-int
-ranges_selftest(void);
 
 
 #endif

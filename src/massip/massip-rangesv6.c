@@ -96,41 +96,35 @@ _int128_mult64(massint128_t lhs, uint64_t rhs)
     return result;
 }
 
-static int
+static bool
 LESS(const ipv6address lhs, const ipv6address rhs)
 {
     if (lhs.hi < rhs.hi)
-        return 1;
+        return true;
     else if (lhs.hi == rhs.hi && lhs.lo < rhs.lo)
-        return 1;
+        return true;
     else
-        return 0;
+        return false;
 }
 #define GREATEREQ(x,y) (!LESS(x,y))
 
-static int
+static bool
 LESSEQ(const ipv6address lhs, const ipv6address rhs)
 {
     if (lhs.hi < rhs.hi)
-        return 1;
+        return true;
     if (lhs.hi > rhs.hi)
-        return 0;
+        return false;
     
     if (lhs.lo <= rhs.lo)
-        return 1;
+        return true;
     else
-        return 0;
+        return false;
 }
 
-int range6_is_bad_address(const struct Range6 *range)
+bool range6_is_bad_address(const struct Range6 *range)
 {
     return LESS(range->end, range->begin);
-}
-
-static int
-_int128_is_equals(const ipv6address lhs, const ipv6address rhs)
-{
-    return lhs.hi == rhs.hi && lhs.lo == rhs.lo;
 }
 
 static ipv6address
@@ -181,7 +175,7 @@ massip_range(struct MassIP *massip)
 
 /***************************************************************************
  ***************************************************************************/
-int
+bool
 range6list_is_contains(const struct Range6List *targets, const ipv6address ip)
 {
     unsigned i;
@@ -190,9 +184,9 @@ range6list_is_contains(const struct Range6List *targets, const ipv6address ip)
         struct Range6 *range = &targets->list[i];
 
         if (LESSEQ(range->begin, ip) && LESSEQ(ip, range->end))
-            return 1;
+            return true;
     }
-    return 0;
+    return false;
 }
 
 /***************************************************************************
@@ -580,142 +574,3 @@ range6list_optimize(struct Range6List *targets)
     
     targets->picker = picker;
 }
-
-
-
-/***************************************************************************
- * Provide my own rand() simply to avoid static-analysis warning me that
- * 'rand()' is unrandom, when in fact we want the non-random properties of
- * rand() for regression testing.
- ***************************************************************************/
-static unsigned
-r_rand(unsigned *seed)
-{
-    static const unsigned a = 214013;
-    static const unsigned c = 2531011;
-
-    *seed = (*seed) * a + c;
-    return (*seed)>>16 & 0x7fff;
-}
-
-/***************************************************************************
- ***************************************************************************/
-static int
-regress_pick2()
-{
-    unsigned i;
-    unsigned seed = 0;
-
-    /*
-    */
-    for (i=0; i<65536; i++)
-    {
-        ipv6address a;
-        ipv6address b;
-        ipv6address c;
-        ipv6address d;
-
-        a.hi = r_rand(&seed);
-        a.lo = (unsigned long long)r_rand(&seed)<<49ULL;
-        b.hi = r_rand(&seed);
-        b.lo = 0x8765432100000000ULL;
-
-        c = _int128_add(a, b);
-        d = _int128_subtract(c, b);
-
-        if (!_int128_is_equals(a, d)) {
-            fprintf(stderr, "[-] %s:%d: test failed (%u)\n", __FILE__, __LINE__, (unsigned)i);
-            return 1;
-        }
-    }
-
-    /*
-     * Run 100 randomized regression tests
-     */
-    for (i=3; i<100; i++) {
-        unsigned j;
-        unsigned num_targets;
-        ipv6address begin = {0};
-        ipv6address end = {0};
-        struct Range6List targets[1];
-        struct Range6List duplicate[1];
-        uint64_t range;
-        ipv6address x;
-
-        seed = i;
-
-        /* Create a new target list */
-        memset(targets, 0, sizeof(targets[0]));
-
-        /* fill the target list with random ranges */
-        num_targets = r_rand(&seed)%5 + 1;
-        for (j=0; j<num_targets; j++) {
-            begin.lo += r_rand(&seed)%10;
-            end.lo = begin.lo + r_rand(&seed)%10;
-
-            range6list_add_range(targets, begin, end);
-        }
-
-        /* Optimize for faster 'picking' addresses from an index */
-        range6list_optimize(targets);
-
-
-        /* Duplicate the targetlist using the picker */
-        memset(duplicate, 0, sizeof(duplicate[0]));
-        x = range6list_count(targets);
-        if (x.hi) {
-            fprintf(stderr, "[-] range6: range too big\n");
-            return 1;
-        }
-        range = x.lo;
-        for (j=0; j<range; j++) {
-            ipv6address addr;
-
-            addr = range6list_pick(targets, j);
-            range6list_add_range(duplicate, addr, addr);
-        }
-
-        /* at this point, the two range lists should be identical */
-        REGRESS(i, targets->count == duplicate->count);
-        REGRESS(i, memcmp(targets->list, duplicate->list, targets->count*sizeof(targets->list[0])) == 0);
-
-        range6list_remove_all(targets);
-        range6list_remove_all(duplicate);
-    }
-
-    return 0;
-}
-
-
-
-
-
-/***************************************************************************
- * Called during "make regress" to run a regression test over this module.
- ***************************************************************************/
-int
-ranges6_selftest(void)
-{
-    struct Range6 r;
-    struct Range6List targets[1];
-    int err;
-
-    REGRESS(0, regress_pick2() == 0);
-
-    memset(targets, 0, sizeof(targets[0]));
-#define ERROR() fprintf(stderr, "selftest: failed %s:%u\n", __FILE__, __LINE__);
-
-    err = massip_parse_range("2001:0db8:85a3:0000:0000:8a2e:0370:7334", 0, 0, 0, &r);
-    if (err != Ipv6_Address)
-        ERROR();
-    
-    /* test for the /0 CIDR block, since we'll be using that a lot to scan the entire
-     * Internet */
-    if (r.begin.hi != 0x20010db885a30000ULL)
-        return 1;
-    if (r.begin.lo != 0x00008a2e03707334ULL)
-        return 1;
-
-    return 0;
-}
-

@@ -26,9 +26,9 @@ struct stack_src_t
     } ipv6;
 };
 
-int is_myself(const struct stack_src_t *src, ipaddress ip, unsigned port);
-int is_my_ip(const struct stack_src_t *src, ipaddress ip);
-int is_my_port(const struct stack_src_t *src, unsigned port);
+bool is_myself(const struct stack_src_t *src, ipaddress ip, unsigned port);
+bool is_my_ip(const struct stack_src_t *src, ipaddress ip);
+bool is_my_port(const struct stack_src_t *src, unsigned port);
 
 
 

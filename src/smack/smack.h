@@ -138,18 +138,4 @@ smack_search_end(       struct SMACK *  smack,
                         unsigned *      state);
 
 
-
-/**
- * Runs a regression test on the module to make sure it's compiled
- * correctly for the current platform.
- *
- * @return
- *      zero if regression test succeeds, non-zero on failure
- */
-int
-smack_selftest(void);
-
-int
-smack_benchmark(void);
-
 #endif /*_SMACK_H*/

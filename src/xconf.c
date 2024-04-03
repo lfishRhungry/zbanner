@@ -2885,16 +2885,16 @@ xconf_echo_cidr(struct Xconf *xconf, FILE *fp)
 
 /***************************************************************************
  ***************************************************************************/
-int xconf_contains(const char *x, int argc, char **argv)
+bool xconf_contains(const char *x, int argc, char **argv)
 {
     int i;
 
     for (i=0; i<argc; i++) {
         if (strcmp(argv[i], x) == 0)
-            return 1;
+            return true;
     }
 
-    return 0;
+    return false;
 }
 
 void xconf_print_usage()

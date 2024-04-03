@@ -113,7 +113,7 @@ _tcp_header_length(const unsigned char *buf, size_t offset) {
     return (buf[offset + 12] >> 4) * 4;
 }
 
-int
+bool
 tcp_consistancy_check(const unsigned char *buf, size_t length,
     const void *payload, size_t payload_length)
 {
@@ -198,9 +198,9 @@ tcp_consistancy_check(const unsigned char *buf, size_t length,
     if (memcmp(buf + parsed.app_offset, payload, payload_length) != 0)
         goto fail;
 
-    return 0;
+    return false;
 fail:
-    return 1;
+    return true;
 }
 
 /***************************************************************************

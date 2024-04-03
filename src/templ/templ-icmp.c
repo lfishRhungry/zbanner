@@ -279,7 +279,7 @@ get_icmp_code(const struct PreprocessedInfo *parsed) {
 
 /***************************************************************************
  ***************************************************************************/
-int
+bool
 parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
     ipaddress *r_ip_them, unsigned *r_port_them,
     ipaddress *r_ip_me, unsigned *r_port_me,
@@ -302,7 +302,7 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
         } else if (ip_header_in_icmp[9]==17) {
             *r_ip_proto = Proto_UDP;
         } else {
-            return 0;
+            return false;
         }
 
         ipv4_header_len      = (ip_header_in_icmp[0]&0xF)<<2;
@@ -310,7 +310,7 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
         data_length_in_icmp -= ipv4_header_len;
 
         if (data_length_in_icmp < 4)
-            return 0;
+            return false;
 
         *r_port_me   = BE_TO_U16(ip_header_in_icmp);
         *r_port_them = BE_TO_U16(ip_header_in_icmp+2);
@@ -330,7 +330,7 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
         } else if (ip_header_in_icmp[6]==17) {
             *r_ip_proto = Proto_UDP;
         } else {
-            return 0;
+            return false;
         }
 
         /*length of ipv6 header is fixed*/
@@ -338,13 +338,13 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
         data_length_in_icmp -= 40;
 
         if (data_length_in_icmp < 4)
-            return 0;
+            return false;
 
         *r_port_me   = BE_TO_U16(ip_header_in_icmp);
         *r_port_them = BE_TO_U16(ip_header_in_icmp+2);
     }
 
-    return 1;
+    return true;
 }
 
 /***************************************************************************

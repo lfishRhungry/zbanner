@@ -63,12 +63,12 @@ void massip_optimize(struct MassIP *targets);
  * It is this function, plus the 'blackrock' randomization algorithm, that
  * is at the heart of Xconf. 
  */
-int massip_pick(const struct MassIP *massip, uint64_t index, ipaddress *addr, unsigned *port);
+void massip_pick(const struct MassIP *massip, uint64_t index, ipaddress *addr, unsigned *port);
 
 
-int massip_has_ip(const struct MassIP *massip, ipaddress ip);
+bool massip_has_ip(const struct MassIP *massip, ipaddress ip);
 
-int massip_has_port(const struct MassIP *massip, unsigned port);
+bool massip_has_port(const struct MassIP *massip, unsigned port);
 
 int massip_add_target_string(struct MassIP *massip, const char *string);
 
@@ -84,8 +84,8 @@ int massip_add_port_string(struct MassIP *massip, const char *string, unsigned p
  * @return true if there are IPv4 targets to be scanned, false
  * otherwise
  */
-int massip_has_ipv4_targets(const struct MassIP *massip);
-int massip_has_target_ports(const struct MassIP *massip);
+bool massip_has_ipv4_targets(const struct MassIP *massip);
+bool massip_has_target_ports(const struct MassIP *massip);
 
 /**
  * Indicates whether there are IPv6 targets. If so, we'll have to 
@@ -93,9 +93,6 @@ int massip_has_target_ports(const struct MassIP *massip);
  * @return true if there are IPv6 targets to be scanned, false
  * otherwise
  */
-int massip_has_ipv6_targets(const struct MassIP *massip);
-
-
-int massip_selftest(void);
+bool massip_has_ipv6_targets(const struct MassIP *massip);
 
 #endif

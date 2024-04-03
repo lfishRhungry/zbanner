@@ -273,13 +273,13 @@ ipv6address_t ipv6address_add(ipv6address_t lhs, ipv6address_t rhs) {
 }
 
 
-int ipv6address_is_equal_prefixed(ipv6address_t lhs, ipv6address_t rhs, unsigned prefix)
+bool ipv6address_is_equal_prefixed(ipv6address_t lhs, ipv6address_t rhs, unsigned prefix)
 {
     ipv6address mask;
     
     /* If the prefix is bad, then the answer is 'no'. */
     if (prefix > 128) {
-        return 0;
+        return false;
     }
 
     /* Create the mask from the prefix */

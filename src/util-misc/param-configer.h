@@ -63,7 +63,7 @@ hexval(char c);
 int
 parse_mac_address(const char *text, macaddress_t *mac);
 
-int
+bool
 is_power_of_two(uint64_t x);
 
 /***************************************************************************
@@ -73,10 +73,10 @@ is_power_of_two(uint64_t x);
  * "--exclude-file"? I don't know if it's got that dash. Screw it,
  * I'll just make the code so it don't care.
  ***************************************************************************/
-int
+bool
 EQUALS(const char *lhs, const char *rhs);
 
-int
+bool
 EQUALSx(const char *lhs, const char *rhs, size_t rhs_length);
 
 unsigned
@@ -85,7 +85,7 @@ INDEX_OF(const char *str, char c);
 unsigned
 ARRAY(const char *rhs);
 
-int
+bool
 isInteger(const char *value);
 
 bool
@@ -95,7 +95,7 @@ is_numable(const struct ConfigParameter *cp, const char *name);
  * Command-line parsing code assumes every --parm is followed by a value.
  * This is a list of the parameters that don't follow the default.
  ***************************************************************************/
-int
+bool
 is_singleton(const struct ConfigParameter *cp, const char *name);
 
 /*
