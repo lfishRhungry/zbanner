@@ -198,7 +198,7 @@ pixie_gettime(void)
     x = clock_gettime(CLOCK_MONOTONIC, &tv);
 #endif
     if (x != 0) {
-        printf("clock_gettime() err %d\n", errno);
+        LOG(LEVEL_ERROR, "clock_gettime() err %d\n", errno);
     }
 
     return tv.tv_sec * 1000000 + tv.tv_nsec/1000;
@@ -215,7 +215,7 @@ pixie_nanotime(void)
     x = clock_gettime(CLOCK_MONOTONIC, &tv);
 #endif
     if (x != 0) {
-        printf("clock_gettime() err %d\n", errno);
+        LOG(LEVEL_ERROR, "clock_gettime() err %d\n", errno);
     }
 
     return tv.tv_sec * 1000000000 + tv.tv_nsec;

@@ -17,7 +17,7 @@
 
 #define BUCKET_COUNT 16
 
-#define REGRESS(i,x) if (!(x)) return (fprintf(stderr, "[-] %u: regression failed %s:%d\n", (unsigned)i, __FILE__, __LINE__)|1)
+#define REGRESS(i,x) if (!(x)) return (LOG(LEVEL_ERROR, "[-] %u: regression failed %s:%d\n", (unsigned)i, __FILE__, __LINE__)|1)
 #ifndef false
 #define false 0
 #endif
@@ -513,7 +513,7 @@ range6list_pick(const struct Range6List *targets, uint64_t index)
     const size_t *picker = targets->picker;
 
     if (picker == NULL) {
-        fprintf(stderr, "[-] ipv6 picker is null\n");
+        LOG(LEVEL_ERROR, "[-] ipv6 picker is null\n");
         exit(1);
     }
 

@@ -208,8 +208,8 @@ rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
             //hexdump(sdl, sdl->sdl_len);
             //printf("%.*s\n", sdl->sdl_nlen, sdl->sdl_data);
             if (memcmp(ifname, sdl->sdl_data, sdl->sdl_nlen) != 0) {
-                fprintf(stderr, "ERROR: ROUTE DOESN'T MATCH INTERFACE\n");
-                fprintf(stderr, "YOU'LL HAVE TO SET --router-mac MANUALLY\n");
+                LOG(LEVEL_ERROR, "ERROR: ROUTE DOESN'T MATCH INTERFACE\n");
+                LOG(LEVEL_ERROR, "YOU'LL HAVE TO SET --router-mac MANUALLY\n");
                 exit(1);
             }
         }
@@ -353,7 +353,7 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
      */
     fd = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_ROUTE);
     if (fd < 0) {
-        fprintf(stderr, "%s:%d: socket(NETLINK_ROUTE): %d\n",
+        LOG(LEVEL_ERROR, "%s:%d: socket(NETLINK_ROUTE): %d\n",
             __FILE__, __LINE__, errno);
         return errno;
     }
@@ -374,7 +374,7 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
      * send first request to kernel
      */
     if (send(fd, nlMsg, nlMsg->nlmsg_len, 0) < 0) {
-        fprintf(stderr, "%s:%d: send(NETLINK_ROUTE): %d\n",
+        LOG(LEVEL_ERROR, "%s:%d: send(NETLINK_ROUTE): %d\n",
             __FILE__, __LINE__, errno);
         return errno;
     }
@@ -384,7 +384,7 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
      */
     len = read_netlink(fd, msgBuf, sizeof(msgBuf), msgSeq, getpid());
     if (len <= 0) {
-        fprintf(stderr, "%s:%d: read_netlink: %d\n",
+        LOG(LEVEL_ERROR, "%s:%d: read_netlink: %d\n",
             __FILE__, __LINE__, errno);
         return errno;
     }
@@ -459,7 +459,7 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
      */
     pAdapterInfo = (IP_ADAPTER_INFO *)malloc(sizeof (IP_ADAPTER_INFO));
     if (pAdapterInfo == NULL) {
-        fprintf(stderr, "Error allocating memory needed to call GetAdaptersinfo\n");
+        LOG(LEVEL_ERROR, "Error allocating memory needed to call GetAdaptersinfo\n");
         return EFAULT;
     }
 
@@ -473,13 +473,13 @@ again:
         free(pAdapterInfo);
         pAdapterInfo = (IP_ADAPTER_INFO *)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL) {
-            fprintf(stderr, "Error allocating memory needed to call GetAdaptersinfo\n");
+            LOG(LEVEL_ERROR, "Error allocating memory needed to call GetAdaptersinfo\n");
             return EFAULT;
         }
         goto again;
     }
     if (err != NO_ERROR) {
-        fprintf(stderr, "GetAdaptersInfo failed with error: %u\n", 
+        LOG(LEVEL_ERROR, "GetAdaptersInfo failed with error: %u\n", 
                             (unsigned)err);
         return EFAULT;
     }

@@ -65,7 +65,7 @@ static enum Config_Res SET_subprobe(void *conf, const char *name, const char *va
 
     tlsstate_conf.subprobe = get_probe_module_by_name(value);
     if (!tlsstate_conf.subprobe) {
-        fprintf(stderr, "[-] Invalid name of subprobe: %s.\n", value);
+        LOG(LEVEL_ERROR, "[-] Invalid name of subprobe: %s.\n", value);
         return CONF_ERR;
     }
 

@@ -5,6 +5,7 @@
 #include "templ-init.h"
 #include "templ-tcp.h"
 #include "templ-opts.h"
+#include "../version.h"
 #include "../massip/massip-port.h"
 #include "../proto/proto-preprocess.h"
 #include "../util-data/safe-string.h"
@@ -489,7 +490,7 @@ _template_init(
     /* the default, do nothing */
     } else {
     LOG(LEVEL_ERROR, "[-] FAILED: bad packet template, unknown data link type\n");
-        LOG(LEVEL_ERROR, "    [hint] xtate doesn't know how to format packets for this interface\n");
+        LOG(LEVEL_ERROR, "    [hint] "XTATE_FIRST_UPPER_NAME" doesn't know how to format packets for this interface\n");
     exit(1);
     }
 

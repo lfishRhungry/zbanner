@@ -259,7 +259,7 @@ _extract_router_advertisement(
                     ipaddress_formatted_t fmt1 = ipv6address_fmt(my_ipv6);
                     ipaddress_formatted_t fmt2 = ipv6address_fmt(prefix);
                     
-                    LOG(LEVEL_ERROR, "[-] WARNING: our source-ip is %s, but router prefix announces %s/%u\n",
+                    LOG(LEVEL_HINT, "[-] WARNING: our source-ip is %s, but router prefix announces %s/%u\n",
                             fmt1.string, fmt2.string, prefix_len);
                     is_same_prefix = 0;
                 }
@@ -441,7 +441,7 @@ stack_ndpv6_resolve(struct Adapter *adapter,
 
             /* It's taking too long, so notify the user */
             if (!is_delay_reported) {
-                fprintf(stderr, "[ ] resolving IPv6 router MAC address (may take some time)...\n");
+                LOG(LEVEL_HINT, "[ ] resolving IPv6 router MAC address (may take some time)...\n");
                 is_delay_reported = 1;
             }
         }
@@ -449,7 +449,7 @@ stack_ndpv6_resolve(struct Adapter *adapter,
         /* If we aren't getting a response back to our ARP, then print a
          * status message */
         if (time(0) > start+1 && !is_arp_notice_given) {
-            fprintf(stderr, "[ ] resolving local IPv6 router\n");
+            LOG(LEVEL_HINT, "[ ] resolving local IPv6 router\n");
             is_arp_notice_given = 1;
         }
 

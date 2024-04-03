@@ -2,11 +2,12 @@
 #define LOGGER_H
 #include "../massip/massip-addr.h"
 
-#define LEVEL_ERROR   0
-#define LEVEL_WARNING 1
-#define LEVEL_INFO    2
-#define LEVEL_DEBUG   3
-#define LEVEL_DETAIL  4
+#define LEVEL_HINT      (-1)
+#define LEVEL_ERROR     ( 0)
+#define LEVEL_WARNING   ( 1)
+#define LEVEL_INFO      ( 2)
+#define LEVEL_DEBUG     ( 3)
+#define LEVEL_DETAIL    ( 4)
 
 void LOG(int level, const char *fmt, ...);
 void LOGip(int level, ipaddress ip, unsigned port, const char *fmt, ...);

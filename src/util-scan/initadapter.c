@@ -91,9 +91,9 @@ initialize_adapter(struct Xconf *xconf)
             }
             /* If still zero, then print error message */
             if (macaddress_is_zero(xconf->nic.source_mac)) {
-                fprintf(stderr, "[-] FAIL: failed to detect MAC address of interface:"
+                LOG(LEVEL_ERROR, "[-] FAIL: failed to detect MAC address of interface:"
                         " \"%s\"\n", ifname);
-                fprintf(stderr, " [hint] try something like "
+                LOG(LEVEL_ERROR, " [hint] try something like "
                         "\"--source-mac 00-11-22-33-44-55\"\n");
                 return -1;
             }
@@ -209,10 +209,10 @@ initialize_adapter(struct Xconf *xconf)
             xconf->nic.src.ipv6.range          = 1;
         }
         if (ipv6address_is_zero(adapter_ipv6)) {
-            fprintf(stderr, "[-] FAIL: failed to detect IPv6 address of interface \"%s\"\n",
+            LOG(LEVEL_ERROR, "[-] FAIL: failed to detect IPv6 address of interface \"%s\"\n",
                             ifname);
-            fprintf(stderr, "    [hint] did you spell the name correctly?\n");
-            fprintf(stderr, "    [hint] if it has no IP address, manually set with something like "
+            LOG(LEVEL_ERROR, "    [hint] did you spell the name correctly?\n");
+            LOG(LEVEL_ERROR, "    [hint] if it has no IP address, manually set with something like "
                             "\"--source-ip 2001:3b8::1234\"\n");
             return -1;
         }

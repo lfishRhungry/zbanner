@@ -42,7 +42,7 @@ pixie_cpu_raise_priority(void)
 DWORD_PTR result;
     result = SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
     if (result == 0) {
-        fprintf(stderr, "set_priority: returned error win32:%u\n", (unsigned)GetLastError());
+        LOG(LEVEL_ERROR, "set_priority: returned error win32:%u\n", (unsigned)GetLastError());
     }
 #elif defined(__linux__) && defined(__GNUC__)
     pthread_t thread = pthread_self();
@@ -80,7 +80,7 @@ pixie_cpu_set_affinity(unsigned processor)
     //printf("mask(%u) = 0x%08x\n", processor, mask);
     result = SetThreadAffinityMask(GetCurrentThread(), mask);
     if (result == 0) {
-        fprintf(stderr, "set_affinity: returned error win32:%u\n", (unsigned)GetLastError());
+        LOG(LEVEL_ERROR, "set_affinity: returned error win32:%u\n", (unsigned)GetLastError());
     }
 #elif defined(__linux__) && defined(__GNUC__) && !defined(__TERMUX__)
     int x;
@@ -94,7 +94,7 @@ pixie_cpu_set_affinity(unsigned processor)
 
     x = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
     if (x != 0) {
-        fprintf(stderr, "set_affinity: returned error linux:%d\n", errno);
+        LOG(LEVEL_ERROR, "set_affinity: returned error linux:%d\n", errno);
     }
 #elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
     /* FIXME: add code here */
@@ -122,7 +122,7 @@ pixie_cpu_get_count(void)
 
     x = GetProcessAffinityMask(GetCurrentProcess(), &process_mask, &system_mask);
     if (x == 0) {
-        printf("GetProcessAffinityMask() returned error %u\n", (unsigned)GetLastError());
+        LOG(LEVEL_ERROR, "GetProcessAffinityMask() returned error %u\n", (unsigned)GetLastError());
         return 1;
     }
     for (i=0; i<32; i++) {

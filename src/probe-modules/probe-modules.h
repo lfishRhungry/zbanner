@@ -7,6 +7,7 @@
 #include "../output-modules/output-modules.h"
 #include "../util-misc/configer.h"
 #include "../util-misc/cross.h"
+#include "../util-out/logger.h"
 #include "../proto/proto-datapass.h"
 
 struct Xconf;

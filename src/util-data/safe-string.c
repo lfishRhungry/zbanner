@@ -13,6 +13,7 @@
 
 #include "safe-string.h"
 #include "fine-malloc.h"
+#include "../util-out/logger.h"
 /**
  * Case-insensitive memcmp()
  */
@@ -254,7 +255,7 @@ char** string_to_args(char *string, int *arg_count)
     int    qcount, bcount;
 
     if(!arg_count || *string==0) {
-        fprintf(stderr, "FAIL: string_to_args has invalid parameter.\n");
+        LOG(LEVEL_ERROR, "FAIL: string_to_args has invalid parameter.\n");
         return NULL;
     }
 
@@ -434,7 +435,7 @@ char** substring_to_args(char *substring, int *arg_count)
     int    qcount, bcount;
 
     if(!arg_count || *substring==0) {
-        fprintf(stderr, "FAIL: string_to_args has invalid parameter.\n");
+        LOG(LEVEL_ERROR, "FAIL: string_to_args has invalid parameter.\n");
         return NULL;
     }
 
@@ -665,11 +666,11 @@ iso8601_time_str(char* format_time, size_t size, const time_t *time) {
 void
 safe_memmove(unsigned char *buf, size_t length, size_t to, size_t from, size_t chunklength) {
     if (chunklength + to > length) {
-        // fprintf(stderr, "+"); fflush(stderr);
+        // LOG(LEVEL_ERROR, "+"); fflush(stderr);
         chunklength = length - to;
     }
     if (chunklength + from > length) {
-        // fprintf(stderr, "-"); fflush(stderr);
+        // LOG(LEVEL_ERROR, "-"); fflush(stderr);
         chunklength = length - from;
     }
     memmove(buf + to, buf + from, chunklength);
@@ -682,7 +683,7 @@ void
 safe_memset(unsigned char *buf, size_t length, size_t offset, int c, size_t chunklength) {
     if (chunklength + offset > length) {
         chunklength = length - offset;
-        // fprintf(stderr, "*"); fflush(stderr);
+        // LOG(LEVEL_ERROR, "*"); fflush(stderr);
     }
     memset(buf + offset, c, chunklength);
 }

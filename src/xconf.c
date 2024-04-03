@@ -276,12 +276,12 @@ xconf_save_state(struct Xconf *xconf)
     safe_strcpy(filename, sizeof(filename), "paused.conf");
     fprintf(stderr, "                                   "
                     "                                   \r");
-    fprintf(stderr, "saving resume file to: %s\n", filename);
+    LOG(LEVEL_HINT, "saving resume file to: %s\n", filename);
 
     fp = fopen(filename, "wt");
     if (fp == NULL) {
-        fprintf(stderr, "[-] FAIL: saving resume file\n");
-        fprintf(stderr, "[-] %s: %s\n", filename, strerror(errno));
+        LOG(LEVEL_ERROR, "[-] FAIL: saving resume file\n");
+        LOG(LEVEL_ERROR, "[-] %s: %s\n", filename, strerror(errno));
         return;
     }
 
@@ -306,7 +306,7 @@ static enum Config_Res SET_scan_module(void *conf, const char *name, const char 
 
     xconf->scan_module = get_scan_module_by_name(value);
     if(!xconf->scan_module){
-        fprintf(stderr, "FAIL %s: no such scan module named %s\n", name, value);
+        LOG(LEVEL_ERROR, "FAIL %s: no such scan module named %s\n", name, value);
         return CONF_ERR;
     }
 
@@ -325,7 +325,7 @@ static enum Config_Res SET_probe_module(void *conf, const char *name, const char
 
     xconf->probe_module = get_probe_module_by_name(value);
     if(!xconf->probe_module){
-        fprintf(stderr, "FAIL %s: no such probe module\n", value);
+        LOG(LEVEL_ERROR, "FAIL %s: no such probe module\n", value);
         return CONF_ERR;
     }
 
@@ -344,7 +344,7 @@ static enum Config_Res SET_output_module(void *conf, const char *name, const cha
 
     xconf->output.output_module = get_output_module_by_name(value);
     if(!xconf->output.output_module){
-        fprintf(stderr, "FAIL %s: no such output module\n", value);
+        LOG(LEVEL_ERROR, "FAIL %s: no such output module\n", value);
         return CONF_ERR;
     }
 
@@ -387,7 +387,7 @@ static enum Config_Res SET_show(void *conf, const char *name, const char *value)
     } else if (EQUALS("info",value)||EQUALS("information",value)) {
         xconf->output.is_show_info = true;
     } else {
-        fprintf(stderr, "FAIL %s: no item named %s\n", name, value);
+        LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
         return CONF_ERR;
     }
 
@@ -580,7 +580,7 @@ static enum Config_Res SET_tcp_window(void *conf, const char *name, const char *
 
     unsigned x = parseInt(value);
     if (x > 65535) {
-        fprintf(stderr, "error: %s=<n>: expected number less than 65535\n", name);
+        LOG(LEVEL_ERROR, "error: %s=<n>: expected number less than 65535\n", name);
         return CONF_ERR;
     } else {
         xconf->tcp_window = x;
@@ -600,7 +600,7 @@ static enum Config_Res SET_tcp_init_window(void *conf, const char *name, const c
 
     unsigned x = parseInt(value);
     if (x > 65535) {
-        fprintf(stderr, "error: %s=<n>: expected number less than 65535\n", name);
+        LOG(LEVEL_ERROR, "error: %s=<n>: expected number less than 65535\n", name);
         return CONF_ERR;
     } else {
         xconf->tcp_init_window = x;
@@ -620,7 +620,7 @@ static enum Config_Res SET_packet_ttl(void *conf, const char *name, const char *
 
     unsigned x = parseInt(value);
     if (x >= 256) {
-        fprintf(stderr, "error: %s=<n>: expected number less than 256\n", name);
+        LOG(LEVEL_ERROR, "error: %s=<n>: expected number less than 256\n", name);
         return CONF_ERR;
     } else {
         xconf->packet_ttl = x;
@@ -639,7 +639,7 @@ static enum Config_Res SET_dedup_win(void *conf, const char *name, const char *v
     }
 
     if (parseInt(value)<1024) {
-        fprintf(stderr, "FAIL: %s: dedup-win must >= 1024.\n", name);
+        LOG(LEVEL_ERROR, "FAIL: %s: dedup-win must >= 1024.\n", name);
         return CONF_ERR;
     }
 
@@ -661,13 +661,13 @@ static enum Config_Res SET_stack_buf_count(void *conf, const char *name, const c
 
     uint64_t v = parseInt(value);
     if (v<2048) {
-        fprintf(stderr, "FAIL: %s: stack-buf-count must >= 2048.\n", value);
+        LOG(LEVEL_ERROR, "FAIL: %s: stack-buf-count must >= 2048.\n", value);
         return CONF_ERR;
     } else if (!is_power_of_two(v)) {
-        fprintf(stderr, "FAIL: %s: stack-buf-count must be power of 2.\n", value);
+        LOG(LEVEL_ERROR, "FAIL: %s: stack-buf-count must be power of 2.\n", value);
         return CONF_ERR;
     } else if (v>RTE_RING_SZ_MASK) {
-        fprintf(stderr, "FAIL: %s: stack-buf-count exceeded size limit.\n", value);
+        LOG(LEVEL_ERROR, "FAIL: %s: stack-buf-count exceeded size limit.\n", value);
         return CONF_ERR;
     }
 
@@ -689,13 +689,13 @@ static enum Config_Res SET_dispatch_buf_count(void *conf, const char *name, cons
 
     uint64_t v = parseInt(value);
     if (v<2048) {
-        fprintf(stderr, "FAIL: %s: dispatch-buf-count must >= 2048.\n", value);
+        LOG(LEVEL_ERROR, "FAIL: %s: dispatch-buf-count must >= 2048.\n", value);
         return CONF_ERR;
     } else if (!is_power_of_two(v)) {
-        fprintf(stderr, "FAIL: %s: dispatch-buf-count must be power of 2.\n", value);
+        LOG(LEVEL_ERROR, "FAIL: %s: dispatch-buf-count must be power of 2.\n", value);
         return CONF_ERR;
     } else if (v>RTE_RING_SZ_MASK) {
-        fprintf(stderr, "FAIL: %s: dispatch-buf-count exceeded size limit.\n", value);
+        LOG(LEVEL_ERROR, "FAIL: %s: dispatch-buf-count exceeded size limit.\n", value);
         return CONF_ERR;
     }
 
@@ -735,10 +735,10 @@ static enum Config_Res SET_rx_handler_count(void *conf, const char *name, const 
 
     unsigned count = parseInt(value);
     if (count<=0) {
-        fprintf(stderr, "FAIL: %s: receive handler thread count cannot be zero.\n", name);
+        LOG(LEVEL_ERROR, "FAIL: %s: receive handler thread count cannot be zero.\n", name);
         return CONF_ERR;
     } else if (!is_power_of_two(count)) {
-        fprintf(stderr, "FAIL: %s: receive handler thread count must be power of 2.\n", value);
+        LOG(LEVEL_ERROR, "FAIL: %s: receive handler thread count must be power of 2.\n", value);
         return CONF_ERR;
     }
 
@@ -759,7 +759,7 @@ static enum Config_Res SET_tx_thread_count(void *conf, const char *name, const c
 
     unsigned count = parseInt(value);
     if (count==0) {
-        fprintf(stderr, "FAIL: %s: transmit thread count cannot be zero.\n", name);
+        LOG(LEVEL_ERROR, "FAIL: %s: transmit thread count cannot be zero.\n", name);
         return CONF_ERR;
     }
 
@@ -780,7 +780,7 @@ static enum Config_Res SET_adapter(void *conf, const char *name, const char *val
     }
 
     if (xconf->nic.ifname[0]) {
-        fprintf(stderr, "CONF: overwriting \"adapter=%s\"\n", xconf->nic.ifname);
+        LOG(LEVEL_HINT, "CONF: overwriting \"adapter=%s\"\n", xconf->nic.ifname);
     }
     snprintf(  xconf->nic.ifname, sizeof(xconf->nic.ifname),
         "%s", value);
@@ -835,7 +835,7 @@ static enum Config_Res SET_source_ip(void *conf, const char *name, const char *v
             /* If more than one IP address given, make the range is
                 * an even power of two (1, 2, 4, 8, 16, ...) */
             if (!is_power_of_two((uint64_t)range.end - range.begin + 1)) {
-                fprintf(stderr, "FAIL: range must be even power of two: %s=%s\n",
+                LOG(LEVEL_ERROR, "FAIL: range must be even power of two: %s=%s\n",
                     name, value);
                 return CONF_ERR;
             }
@@ -850,9 +850,9 @@ static enum Config_Res SET_source_ip(void *conf, const char *name, const char *v
             xconf->nic.src.ipv6.range = 1; /* TODO: add support for more than one source */
             break;
         default:
-            fprintf(stderr, "FAIL: bad source IP address: %s=%s\n",
+            LOG(LEVEL_ERROR, "FAIL: bad source IP address: %s=%s\n",
                 name, value);
-            fprintf(stderr, "hint   addresses look like \"192.168.1.23\" or \"2001:db8:1::1ce9\".\n");
+            LOG(LEVEL_ERROR, "hint   addresses look like \"192.168.1.23\" or \"2001:db8:1::1ce9\".\n");
             return CONF_ERR;
     }
 
@@ -883,20 +883,20 @@ static enum Config_Res SET_source_port(void *conf, const char *name, const char 
 
     /* Check if there was an error in parsing */
     if (is_error) {
-        fprintf(stderr, "FAIL: bad source port specification: %s\n", name);
+        LOG(LEVEL_ERROR, "FAIL: bad source port specification: %s\n", name);
         return CONF_ERR;
     }
 
     /* Only allow one range of ports */
     if (ports.count != 1) {
-        fprintf(stderr, "FAIL: only one '%s' range may be specified, found %u ranges\n",
+        LOG(LEVEL_ERROR, "FAIL: only one '%s' range may be specified, found %u ranges\n",
             name, ports.count);
         return CONF_ERR;
     }
 
     /* verify range is even power of 2 (1, 2, 4, 8, 16, ...) */
     if (!is_power_of_two(ports.list[0].end - ports.list[0].begin + 1)) {
-        fprintf(stderr, "FAIL: source port range must be even power of two: %s=%s\n",
+        LOG(LEVEL_ERROR, "FAIL: source port range must be even power of two: %s=%s\n",
             name, value);
         return CONF_ERR;
     }
@@ -1031,7 +1031,7 @@ static enum Config_Res SET_target_ip(void *conf, const char *name, const char *v
     int err;
     err = massip_add_target_string(&xconf->targets, value);
     if (err) {
-        fprintf(stderr, "ERROR: bad IP address/range: %s\n", value);
+        LOG(LEVEL_ERROR, "ERROR: bad IP address/range: %s\n", value);
         return CONF_ERR;
     }
 
@@ -1072,8 +1072,8 @@ static enum Config_Res SET_target_port(void *conf, const char *name, const char 
     rangelist_parse_ports(&xconf->targets.ports, value, &is_error, 0);
 
     if (is_error || err) {
-        fprintf(stderr, "[-] FAIL: bad target port: %s\n", value);
-        fprintf(stderr, "    Hint: a port is a number [0..65535]\n");
+        LOG(LEVEL_ERROR, "[-] FAIL: bad target port: %s\n", value);
+        LOG(LEVEL_ERROR, "    Hint: a port is a number [0..65535]\n");
         return CONF_ERR;
     }
 
@@ -1094,7 +1094,7 @@ static enum Config_Res SET_top_port(void *conf, const char *name, const char *va
     unsigned maxports = parseInt(value);
 
     if (!maxports) {
-        fprintf(stderr, "[-] FAIL %s: value of top-port must > 0.\n", name);
+        LOG(LEVEL_ERROR, "[-] FAIL %s: value of top-port must > 0.\n", name);
         return CONF_ERR;
     }
 
@@ -1134,7 +1134,7 @@ static enum Config_Res SET_exclude_ip(void *conf, const char *name, const char *
     int err;
     err = massip_add_target_string(&xconf->exclude, value);
     if (err) {
-        fprintf(stderr, "ERROR: bad exclude address/range: %s\n", value);
+        LOG(LEVEL_ERROR, "ERROR: bad exclude address/range: %s\n", value);
         return CONF_ERR;
     }
 
@@ -1156,8 +1156,8 @@ static enum Config_Res SET_exclude_port(void *conf, const char *name, const char
 
     err = massip_add_port_string(&xconf->exclude, value, defaultrange);
     if (err) {
-        fprintf(stderr, "[-] FAIL: bad exclude port: %s\n", value);
-        fprintf(stderr, "    Hint: a port is a number [0..65535]\n");
+        LOG(LEVEL_ERROR, "[-] FAIL: bad exclude port: %s\n", value);
+        LOG(LEVEL_ERROR, "    Hint: a port is a number [0..65535]\n");
         return CONF_ERR;
     }
     if (xconf->op == 0)
@@ -1179,7 +1179,7 @@ static enum Config_Res SET_include_file(void *conf, const char *name, const char
 
     err = massip_parse_file(&xconf->targets, filename);
     if (err) {
-        fprintf(stderr, "[-] FAIL: error reading from include file\n");
+        LOG(LEVEL_ERROR, "[-] FAIL: error reading from include file\n");
         return CONF_ERR;
     }
     if (xconf->op == 0)
@@ -1204,14 +1204,14 @@ static enum Config_Res SET_exclude_file(void *conf, const char *name, const char
     // LOG(LEVEL_WARNING, "EXCLUDING: %s\n", value);
     err = massip_parse_file(&xconf->exclude, filename);
     if (err) {
-        fprintf(stderr, "[-] FAIL: error reading from exclude file\n");
+        LOG(LEVEL_ERROR, "[-] FAIL: error reading from exclude file\n");
         return CONF_ERR;
     }
     /* Detect if this file has made any change, otherwise don't print
         * a message */
     count2 = xconf->exclude.ipv4.count;
     if (count2 - count1)
-        fprintf(stderr, "%s: excluding %u ranges from file\n",
+        LOG(LEVEL_HINT, "%s: excluding %u ranges from file\n",
             value, count2 - count1);
     
     return CONF_OK;
@@ -1234,7 +1234,7 @@ static enum Config_Res SET_source_mac(void *conf, const char *name, const char *
 
     err = parse_mac_address(value, &source_mac);
     if (err) {
-        fprintf(stderr, "[-] CONF: bad MAC address: %s = %s\n",
+        LOG(LEVEL_ERROR, "[-] CONF: bad MAC address: %s = %s\n",
             name, value);
         return CONF_ERR;
     }
@@ -1250,7 +1250,7 @@ static enum Config_Res SET_source_mac(void *conf, const char *name, const char *
     if (xconf->nic.my_mac_count != 0) {
         ipaddress_formatted_t fmt1 = macaddress_fmt(xconf->nic.source_mac);
         ipaddress_formatted_t fmt2 = macaddress_fmt(source_mac);
-        fprintf(stderr, "[-] WARNING: overwriting MAC address, was %s, now %s\n",
+        LOG(LEVEL_HINT, "[-] WARNING: overwriting MAC address, was %s, now %s\n",
             fmt1.string,
             fmt2.string);
     }
@@ -1281,8 +1281,8 @@ static enum Config_Res SET_router_ip(void *conf, const char *name, const char *v
 
     /* Check for bad format */
     if (range.begin != range.end) {
-        fprintf(stderr, "FAIL: bad source IPv4 address: %s=%s\n", name, value);
-        fprintf(stderr, "hint   addresses look like \"19.168.1.23\"\n");
+        LOG(LEVEL_ERROR, "FAIL: bad source IPv4 address: %s=%s\n", name, value);
+        LOG(LEVEL_ERROR, "hint   addresses look like \"19.168.1.23\"\n");
         return CONF_ERR;
     }
 
@@ -1311,7 +1311,7 @@ static enum Config_Res SET_router_mac(void *conf, const char *name, const char *
     int err;
     err = parse_mac_address(value, &router_mac);
     if (err) {
-        fprintf(stderr, "[-] CONF: bad MAC address: %s = %s\n", name, value);
+        LOG(LEVEL_ERROR, "[-] CONF: bad MAC address: %s = %s\n", name, value);
         return CONF_ERR;
     }
     if (EQUALS("router-mac-ipv4", name))
@@ -1344,12 +1344,12 @@ static enum Config_Res SET_read_conf(void *conf, const char *name, const char *v
         char dir[512];
         char *x;
         
-        fprintf(stderr, "[-] FAIL: reading configuration file\n");
-        fprintf(stderr, "[-] %s: %s\n", value, strerror(errno));
+        LOG(LEVEL_ERROR, "[-] FAIL: reading configuration file\n");
+        LOG(LEVEL_ERROR, "[-] %s: %s\n", value, strerror(errno));
 
         x = getcwd(dir, sizeof(dir));
         if (x)
-            fprintf(stderr, "[-] cwd = %s\n", dir);
+            LOG(LEVEL_ERROR, "[-] cwd = %s\n", dir);
         return CONF_ERR;
     }
 
@@ -1473,7 +1473,7 @@ static enum Config_Res SET_fast_timeout(void *conf, const char *name, const char
     } else if (isInteger(value)) {
         int spec = parseInt(value);
         if (spec <= 0) {
-            fprintf(stderr, "[-] %s: need a switch word or a positive number.\n", name);
+            LOG(LEVEL_ERROR, "[-] %s: need a switch word or a positive number.\n", name);
             return CONF_ERR;
         }
         xconf->is_fast_timeout = 1;
@@ -1483,7 +1483,7 @@ static enum Config_Res SET_fast_timeout(void *conf, const char *name, const char
 
     return CONF_OK;
 fail:
-    fprintf(stderr, "[-] %s: bad value: %s\n", name, value);
+    LOG(LEVEL_ERROR, "[-] %s: bad value: %s\n", name, value);
     return CONF_ERR;
 }
 
@@ -1585,7 +1585,7 @@ static enum Config_Res SET_rate(void *conf, const char *name, const char *value)
     for (i=0; value[i] && value[i] != '.'; i++) {
         char c = value[i];
         if (c < '0' || '9' < c) {
-            fprintf(stderr, "CONF: non-digit in rate spec: %s=%s\n", name, value);
+            LOG(LEVEL_ERROR, "CONF: non-digit in rate spec: %s=%s\n", name, value);
             return CONF_ERR;
         }
         rate = rate * 10.0 + (c - '0');
@@ -1596,7 +1596,7 @@ static enum Config_Res SET_rate(void *conf, const char *name, const char *value)
         while (value[i]) {
             char c = value[i];
             if (c < '0' || '9' < c) {
-                fprintf(stderr, "CONF: non-digit in rate spec: %s=%s\n",
+                LOG(LEVEL_ERROR, "CONF: non-digit in rate spec: %s=%s\n",
                         name, value);
                 return CONF_ERR;
             }
@@ -1849,13 +1849,13 @@ static enum Config_Res SET_shard(void *conf, const char *name, const char *value
         of = of*10 + (*(value++)) - '0';
     
     if (one < 1) {
-        fprintf(stderr, "FAIL: shard index can't be zero\n");
-        fprintf(stderr, "hint   it goes like 1/4 2/4 3/4 4/4\n");
+        LOG(LEVEL_ERROR, "FAIL: shard index can't be zero\n");
+        LOG(LEVEL_ERROR, "hint   it goes like 1/4 2/4 3/4 4/4\n");
         return CONF_ERR;
     }
     if (one > of) {
-        fprintf(stderr, "FAIL: shard spec is wrong\n");
-        fprintf(stderr, "hint   it goes like 1/4 2/4 3/4 4/4\n");
+        LOG(LEVEL_ERROR, "FAIL: shard spec is wrong\n");
+        LOG(LEVEL_ERROR, "hint   it goes like 1/4 2/4 3/4 4/4\n");
         return CONF_ERR;
     }
     xconf->shard.one = one;
@@ -1918,7 +1918,7 @@ static enum Config_Res SET_tcp_mss(void *conf, const char *name, const char *val
 
     return CONF_OK;
 fail:
-    fprintf(stderr, "[-] %s: bad value: %s\n", name, value);
+    LOG(LEVEL_ERROR, "[-] %s: bad value: %s\n", name, value);
     return CONF_ERR;
 }
 
@@ -1972,7 +1972,7 @@ static enum Config_Res SET_tcp_wscale(void *conf, const char *name, const char *
 
     return CONF_OK;
 fail:
-    fprintf(stderr, "[-] %s: bad value: %s\n", name, value);
+    LOG(LEVEL_ERROR, "[-] %s: bad value: %s\n", name, value);
     return CONF_ERR;
 }
 
@@ -2026,7 +2026,7 @@ static enum Config_Res SET_tcp_tsecho(void *conf, const char *name, const char *
 
     return CONF_OK;
 fail:
-    fprintf(stderr, "[-] %s: bad value: %s\n", name, value);
+    LOG(LEVEL_ERROR, "[-] %s: bad value: %s\n", name, value);
     return CONF_ERR;
 }
 
@@ -2069,7 +2069,7 @@ static enum Config_Res SET_tcp_sackok(void *conf, const char *name, const char *
 
     return CONF_OK;
 fail:
-    fprintf(stderr, "[-] %s: bad value: %s\n", name, value);
+    LOG(LEVEL_ERROR, "[-] %s: bad value: %s\n", name, value);
     return CONF_ERR;
 }
 
@@ -2765,7 +2765,7 @@ xconf_command_line(struct Xconf *xconf, int argc, char *argv[])
     set_parameters_from_args(xconf, config_parameters, argc-1, argv+1);
 
     if (xconf->shard.of > 1 && xconf->seed == 0) {
-        fprintf(stderr, "[-] WARNING: --seed <num> is not specified\n    HINT: all shards must share the same seed\n");
+        LOG(LEVEL_ERROR, "[-] WARNING: --seed <num> is not specified\n    HINT: all shards must share the same seed\n");
     }
 }
 

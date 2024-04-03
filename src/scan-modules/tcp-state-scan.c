@@ -35,7 +35,7 @@ static enum Config_Res SET_conn_timeout(void *conf, const char *name, const char
     unsigned tm = parseInt(value);
 
     if (tm <= 0) {
-        fprintf(stderr, "FAIL: %s must be positive.\n", name);
+        LOG(LEVEL_ERROR, "FAIL: %s must be positive.\n", name);
         return CONF_ERR;
     }
 

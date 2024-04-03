@@ -350,11 +350,11 @@ int pcap_init(void)
         if (pl->is_printing_debug)
         switch (GetLastError()) {
             case ERROR_MOD_NOT_FOUND:
-                fprintf(stderr, "%s: not found\n", "Packet.dll");
-                fprintf(stderr, "  HINT: you must install either WinPcap or Npcap\n");
+                LOG(LEVEL_ERROR, "%s: not found\n", "Packet.dll");
+                LOG(LEVEL_ERROR, "  HINT: you must install either WinPcap or Npcap\n");
                 return -1;
             default:
-                fprintf(stderr, "%s: couldn't load %d\n", "Packet.dll", (int)GetLastError());
+                LOG(LEVEL_ERROR, "%s: couldn't load %d\n", "Packet.dll", (int)GetLastError());
                 return -1;
         }
     }
@@ -365,7 +365,7 @@ int pcap_init(void)
         hLibpcap = LoadLibraryA("wpcap.dll");
     if (hLibpcap == NULL) {
         if (pl->is_printing_debug)
-            fprintf(stderr, "%s: couldn't load %d\n", "wpcap.dll", (int)GetLastError());
+            LOG(LEVEL_ERROR, "%s: couldn't load %d\n", "wpcap.dll", (int)GetLastError());
         return -1;
     }
     

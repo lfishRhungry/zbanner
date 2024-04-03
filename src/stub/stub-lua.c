@@ -1,6 +1,8 @@
 #define LUAAPI
 #include "stub-lua.h"
 
+#include "../util-out/logger.h"
+
 #ifdef _MSC_VER
 #pragma warning(disable: 4133 4113 4047)
 #endif
@@ -61,19 +63,19 @@ int stublua_init(void)
         }
         
         if (lib == NULL) {
-            fprintf(stderr, "liblua: failed to load Lua shared library\n");
-            fprintf(stderr, "    HINT: you must install Lua library\n");
+            LOG(LEVEL_ERROR, "liblua: failed to load Lua shared library\n");
+            LOG(LEVEL_ERROR, "    HINT: you must install Lua library\n");
         }
     }
 
 #if defined(WIN32)
 #define DOLINK(name) \
     name = (void (*)())GetProcAddress(lib, #name); \
-    if (name == NULL) fprintf(stderr, "liblua: %s: failed\n", #name);
+    if (name == NULL) LOG(LEVEL_ERROR, "liblua: %s: failed\n", #name);
 #else
 #define DOLINK(name) \
     name = dlsym(lib, #name); \
-    if (name == NULL) fprintf(stderr, "liblua: %s: failed\n", #name);
+    if (name == NULL) LOG(LEVEL_ERROR, "liblua: %s: failed\n", #name);
 #endif
     
     DOLINK(lua_version);

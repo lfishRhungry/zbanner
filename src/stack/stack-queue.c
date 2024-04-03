@@ -35,7 +35,7 @@ stack_transmit_packetbuffer(struct stack_t *stack, struct PacketBuffer *response
     for (err=1; err; ) {
         err = rte_ring_mp_enqueue(stack->transmit_queue, response);
         if (err) {
-            fprintf(stderr, "[-] transmit queue full (should be impossible)\n");
+            LOG(LEVEL_ERROR, "[-] transmit queue full (should be impossible)\n");
             pixie_usleep(1000);
         }
     }
@@ -87,7 +87,7 @@ stack_flush_packets(
         for (err=1; err; ) {
             err = rte_ring_mp_enqueue(stack->packet_buffers, p);
             if (err) {
-                fprintf(stderr, "[-] transmit queue full (should be impossible)\n");
+                LOG(LEVEL_ERROR, "[-] transmit queue full (should be impossible)\n");
                 pixie_usleep(10000);
             }
         }
@@ -125,7 +125,7 @@ stack_create(macaddress_t source_mac, struct stack_src_t *src, unsigned buf_coun
         err = rte_ring_sp_enqueue(stack->packet_buffers, p);
         if (err) {
             /* I dunno why but I can't queue all 256 packets, just 255 */
-            fprintf(stderr, "[-] packet_buffers: enqueue: error %d\n", err);
+            LOG(LEVEL_ERROR, "[-] packet_buffers: enqueue: error %d\n", err);
         }
     }
 

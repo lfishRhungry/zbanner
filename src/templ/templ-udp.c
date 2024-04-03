@@ -206,7 +206,7 @@ udp_create_by_template(
     unsigned char *px, size_t sizeof_px)
 {
     if (tmpl->proto != Proto_UDP) {
-            fprintf(stderr, "udp_create_by_template: need a Proto_UDP TemplatePacket.\n");
+            LOG(LEVEL_ERROR, "udp_create_by_template: need a Proto_UDP TemplatePacket.\n");
             return 0;
     }
 

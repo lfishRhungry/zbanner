@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include "../util-out/logger.h"
+
 enum TemplateProtocol {
     Proto_TCP,
     Proto_TCP_SYN, /*convenient to set options for packets with syn flag*/

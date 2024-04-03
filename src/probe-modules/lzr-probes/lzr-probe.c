@@ -147,7 +147,7 @@ static enum Config_Res SET_handshake(void *conf, const char *name, const char *v
     char  *str     = STRDUP(value);
     size_t str_len = strlen(str);
     if (str_len == 0) {
-        fprintf(stderr, "[-] Invalid name of handshake for lzr.\n");
+        LOG(LEVEL_ERROR, "[-] Invalid name of handshake for lzr.\n");
         return CONF_ERR;
     }
 
@@ -174,7 +174,7 @@ static enum Config_Res SET_handshake(void *conf, const char *name, const char *v
             lzr_conf.handshake[hs_index] = get_probe_module_by_name(hs_name);
 
             if (lzr_conf.handshake[hs_index] == NULL) {
-                fprintf(stderr, "[-] Invalid name of handshake for lzr.\n");
+                LOG(LEVEL_ERROR, "[-] Invalid name of handshake for lzr.\n");
                 free(str);
                 return CONF_ERR;
             }
@@ -226,14 +226,14 @@ lzr_global_init(const struct Xconf *xconf)
         lzr_conf.handshake    = MALLOC(sizeof(struct ProbeModule *));
         lzr_conf.handshake[0] = &LzrHttpProbe;
         lzr_conf.hs_count     = 1;
-        fprintf(stderr, "[-] Use default LzrHttpProbe(http) as handshake of LzrProbe "
+        LOG(LEVEL_HINT, "[-] Use default LzrHttpProbe(http) as handshake of LzrProbe "
             "because no handshake was specified by --handshake.\n");
     }
 
     /*do init for all handshakes*/
     for (unsigned i=0; i<lzr_conf.hs_count; i++) {
         if (!lzr_conf.handshake[i]->global_init_cb(xconf)) {
-            fprintf(stderr, "FAIL: Handshake [%s] initiating error in LzrProbe.\n",
+            LOG(LEVEL_ERROR, "FAIL: Handshake [%s] initiating error in LzrProbe.\n",
                 lzr_conf.handshake[i]->name);
             return false;
         }

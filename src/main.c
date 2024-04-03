@@ -314,10 +314,10 @@ static int main_scan(struct Xconf *xconf) {
         ") at %s\n",
         buffer);
 
-    LOG(LEVEL_ERROR, "Initiating ScanModule: %s\n", xconf->scan_module->name);
+    LOG(LEVEL_HINT, "Initiating ScanModule: %s\n", xconf->scan_module->name);
     if (xconf->probe_module)
-        LOG(LEVEL_ERROR, "Initiating ProbeModule: %s\n", xconf->probe_module->name);
-    LOG(LEVEL_ERROR, "Scanning %u hosts [%u port%s/host]\n", (unsigned)count_ips,
+        LOG(LEVEL_HINT, "Initiating ProbeModule: %s\n", xconf->probe_module->name);
+    LOG(LEVEL_HINT, "Scanning %u hosts [%u port%s/host]\n", (unsigned)count_ips,
         (unsigned)count_ports, (count_ports == 1) ? "" : "s");
 
     /*
@@ -623,13 +623,13 @@ int main(int argc, char *argv[]) {
      * to a simple 63-bit scan.
      */
     if (massint128_bitcount(massip_range(&xconf->targets)) > 63) {
-        fprintf(stderr,
+        LOG(LEVEL_ERROR,
                 "[-] FAIL: scan range too large, max is 63-bits, requested is %u "
                 "bits\n",
                 massint128_bitcount(massip_range(&xconf->targets)));
-        fprintf(stderr, "    Hint: scan range is number of IP addresses times "
+        LOG(LEVEL_ERROR, "    Hint: scan range is number of IP addresses times "
                         "number of ports\n");
-        fprintf(stderr, "    Hint: IPv6 subnet must be at least /66 \n");
+        LOG(LEVEL_ERROR, "    Hint: IPv6 subnet must be at least /66 \n");
         exit(1);
     }
 
@@ -667,10 +667,10 @@ int main(int argc, char *argv[]) {
                 LOG(LEVEL_ERROR, " [hint] all ports were removed by exclusion ranges\n");
                 return 1;
             } else {
-                LOG(LEVEL_ERROR, "NOTE: no ports were specified, use default port TCP:80 .\n");
-                LOG(LEVEL_ERROR, " [hint] ignored if the ScanModule does not need port. (eg. "
+                LOG(LEVEL_HINT, "NOTE: no ports were specified, use default port TCP:80 .\n");
+                LOG(LEVEL_HINT, " [hint] ignored if the ScanModule does not need port. (eg. "
                        "icmp or arp)\n");
-                LOG(LEVEL_ERROR, " [hint] or try something like \"-p 80,8000-9000\"\n");
+                LOG(LEVEL_HINT, " [hint] or try something like \"-p 80,8000-9000\"\n");
                 massip_add_port_string(&xconf->targets, "80", 0);
             }
         }

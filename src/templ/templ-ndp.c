@@ -161,7 +161,7 @@ ndp_create_ns_by_template_ipv6(
     uint8_t ttl, unsigned char *px, size_t sizeof_px)
 {
     if (tmpl->proto != Proto_NDP_ns) {
-            fprintf(stderr, "ndp_create_by_template_ipv6: need a Proto_NDP_ns TemplatePacket.\n");
+            LOG(LEVEL_ERROR, "ndp_create_by_template_ipv6: need a Proto_NDP_ns TemplatePacket.\n");
             return 0;
     }
 

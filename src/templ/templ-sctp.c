@@ -259,7 +259,7 @@ sctp_create_by_template(
     unsigned char *px, size_t sizeof_px)
 {
     if (tmpl->proto != Proto_SCTP) {
-            fprintf(stderr, "sctp_create_by_template: need a Proto_SCTP TemplatePacket.\n");
+            LOG(LEVEL_ERROR, "sctp_create_by_template: need a Proto_SCTP TemplatePacket.\n");
             return 0;
     }
 

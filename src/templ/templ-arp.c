@@ -14,7 +14,7 @@ arp_create_by_template_ipv4(
     unsigned char *px, size_t sizeof_px)
 {
     if (tmpl->proto != Proto_ARP) {
-            fprintf(stderr, "arp_create_by_template_ipv4: need a Proto_ARP TemplatePacket.\n");
+            LOG(LEVEL_ERROR, "arp_create_by_template_ipv4: need a Proto_ARP TemplatePacket.\n");
             return 0;
     }
     unsigned r_len = sizeof_px;
@@ -36,7 +36,7 @@ arp_create_by_template(
     unsigned char *px, size_t sizeof_px)
 {
     if (tmpl->proto != Proto_ARP) {
-            fprintf(stderr, "arp_create_by_template: need a Proto_ARP TemplatePacket.\n");
+            LOG(LEVEL_ERROR, "arp_create_by_template: need a Proto_ARP TemplatePacket.\n");
             return 0;
     }
     

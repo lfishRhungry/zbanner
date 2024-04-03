@@ -5,6 +5,7 @@
 #include "configer.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
+#include "../util-out/logger.h"
 
 uint64_t
 parseInt(const char *str)
@@ -172,11 +173,11 @@ parseTime(const char *value)
         num *= 24*60*60*7;
         break;
     default:
-        fprintf(stderr, "--rotate-offset: unknown character\n");
+        LOG(LEVEL_ERROR, "--rotate-offset: unknown character\n");
         exit(1);
     }
     if (num >= 24*60*60) {
-        fprintf(stderr, "--rotate-offset: value is greater than 1 day\n");
+        LOG(LEVEL_ERROR, "--rotate-offset: value is greater than 1 day\n");
         exit(1);
     }
     if (is_negative)
@@ -223,7 +224,7 @@ parseSize(const char *value)
         num *=  1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL;
         break;
     default:
-        fprintf(stderr, "--rotate-size: unknown character\n");
+        LOG(LEVEL_ERROR, "--rotate-size: unknown character\n");
         exit(1);
     }
     return num;
@@ -421,7 +422,7 @@ void set_one_parameter(void *conf, struct ConfigParam *cp,
         }
     }
 
-    fprintf(stderr, "CONF: unknown config option: %s=%s\n", name, value);
+    LOG(LEVEL_ERROR, "CONF: unknown config option: %s=%s\n", name, value);
     exit(1);
 }
 
@@ -476,7 +477,7 @@ set_parameters_from_args(void *conf, struct ConfigParam *cp,
 
                 /* create a copy of the name */
                 if (name_length > sizeof(name2) - 1) {
-                    fprintf(stderr, "%.*s: name too long\n", name_length, argname);
+                    LOG(LEVEL_ERROR, "%.*s: name too long\n", name_length, argname);
                     name_length = sizeof(name2) - 1;
                 }
                 memcpy(name2, argname, name_length);
@@ -499,13 +500,13 @@ set_parameters_from_args(void *conf, struct ConfigParam *cp,
                 }
 
                 if (i >= argc) {
-                    fprintf(stderr, "%.*s: empty parameter\n", name_length, argname);
+                    LOG(LEVEL_ERROR, "%.*s: empty parameter\n", name_length, argname);
                     // break;
                     exit(1);
                 }
 
                 if (name_length > sizeof(name2) - 1) {
-                    fprintf(stderr, "%.*s: name too long\n", name_length, argname);
+                    LOG(LEVEL_ERROR, "%.*s: name too long\n", name_length, argname);
                     name_length = sizeof(name2) - 1;
                 }
 
@@ -518,7 +519,7 @@ set_parameters_from_args(void *conf, struct ConfigParam *cp,
         }
 
         if (!isdigit(argv[i][0]) && argv[i][0] != ':' && argv[i][0] != '[') {
-            fprintf(stderr, "FAIL: unknown command-line parameter \"%s\"\n", argv[i]);
+            LOG(LEVEL_ERROR, "FAIL: unknown command-line parameter \"%s\"\n", argv[i]);
             exit(1);
         }
 

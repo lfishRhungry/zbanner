@@ -30,6 +30,7 @@
 #include <sys/stat.h>
 #include "rawsock-pcapfile.h"
 #include "../util-misc/cross.h"
+#include "../util-out/logger.h"
 
 /****************************************************************************
  * <PORTABILITY BLOCK>
@@ -291,12 +292,12 @@ int pcapfile_readframe(
     bytes_read = fread(header, 1, 16, capfile->fp);
     if (bytes_read < 16) {
         if (bytes_read <= 0) {
-            //fprintf(stderr, "%s: failed to read header\n", capfile->filename);
+            //LOG(LEVEL_ERROR, "%s: failed to read header\n", capfile->filename);
             //perror(capfile->filename);
         } else if (bytes_read == 0)
             ; /* normal end-of-file */
         else
-            fprintf(stderr, "%s: premature end-of-file\n", capfile->filename);
+            LOG(LEVEL_ERROR, "%s: premature end-of-file\n", capfile->filename);
         return 0;
     }
     capfile->bytes_read += bytes_read;
@@ -353,7 +354,7 @@ int pcapfile_readframe(
          * packet.*/
         position = ftell_x(capfile->fp);
         if (position == -1) {
-            fprintf(stderr, "%s:%lld: could not resolve file corruption (ftell)\n",
+            LOG(LEVEL_ERROR, "%s:%lld: could not resolve file corruption (ftell)\n",
                 capfile->filename, capfile->frame_number);
             perror(capfile->filename);
             fseek_x(capfile->fp, 0, SEEK_END);
@@ -363,7 +364,7 @@ int pcapfile_readframe(
         /* Print an error message indicating corruption was found. Note
          * that if corruption happens past 4-gigs on a 32-bit system, this
          * will print an inaccurate number */
-        fprintf(stderr, "%s:%lld: corruption found at 0x%08" PRIx64 " (%" PRId64 ")\n",
+        LOG(LEVEL_ERROR, "%s:%lld: corruption found at 0x%08" PRIx64 " (%" PRId64 ")\n",
             capfile->filename,
             capfile->frame_number,
             position,
@@ -379,10 +380,10 @@ int pcapfile_readframe(
         /* If we reach the end without finding a good frame, then stop */
         if (bytes_read == 0) {
             if (bytes_read <= 0) {
-                fprintf(stderr, "%s: error at end of file\n", capfile->filename);
+                LOG(LEVEL_ERROR, "%s: error at end of file\n", capfile->filename);
                 perror(capfile->filename);
             } else
-                fprintf(stderr, "%s: premature end of file\n", capfile->filename);
+                LOG(LEVEL_ERROR, "%s: premature end of file\n", capfile->filename);
             return 0;
         }
         capfile->bytes_read += bytes_read;
@@ -406,7 +407,7 @@ int pcapfile_readframe(
              * known-good spot */
             position = position + i;
             if (fseek_x(capfile->fp, position, SEEK_SET) != 0) {
-                fprintf(stderr, "%s: could not resolve file corruption (seek forward)\n", capfile->filename);
+                LOG(LEVEL_ERROR, "%s: could not resolve file corruption (seek forward)\n", capfile->filename);
                 perror(capfile->filename);
                 fseek_x(capfile->fp, 0, SEEK_END);
                 return 0;
@@ -472,7 +473,7 @@ int pcapfile_readframe(
              * help people figure out where in the file the corruption
              * happened, so they can figure out why it was corrupt.*/
             position = ftell_x(capfile->fp);
-            fprintf(stderr, "%s:%lld: good packet found at 0x%08" PRIx64 " (%" PRId64 ")\n",
+            LOG(LEVEL_ERROR, "%s:%lld: good packet found at 0x%08" PRIx64 " (%" PRId64 ")\n",
                 capfile->filename,
                 capfile->frame_number,
                 position,
@@ -486,7 +487,7 @@ int pcapfile_readframe(
 
         /* If we get to this point, we are totally hosed and the corruption
          * is more severe than a few packets. */
-        printf("No valid packet found in chunk\n");
+        LOG(LEVEL_ERROR, "No valid packet found in chunk\n");
     }
 
     /*
@@ -495,12 +496,12 @@ int pcapfile_readframe(
     bytes_read = fread(buf, 1, *r_captured_length, capfile->fp);
     if (bytes_read < *r_captured_length) {
         if (bytes_read <= 0) {
-            fprintf(stderr, "%s: could not read packet data, frame #%lld\n",
+            LOG(LEVEL_ERROR, "%s: could not read packet data, frame #%lld\n",
                 capfile->filename,
                     (long long)capfile->frame_number);
             perror(capfile->filename);
         } else
-            fprintf(stderr, "%s: premature end of file\n", capfile->filename);
+            LOG(LEVEL_ERROR, "%s: premature end of file\n", capfile->filename);
         return 0;
     }
     capfile->bytes_read += bytes_read;
@@ -542,7 +543,7 @@ struct PcapFile *pcapfile_openread(const char *capfilename)
      */
     fp = fopen(capfilename, "rb");
     if (fp == NULL) {
-        fprintf(stderr, "%s: could not open capture file\n", capfilename);
+        LOG(LEVEL_ERROR, "%s: could not open capture file\n", capfilename);
         perror(capfilename);
         return 0;
     }
@@ -562,10 +563,10 @@ struct PcapFile *pcapfile_openread(const char *capfilename)
     bytes_read = fread(buf, 1, 24, fp);
     if (bytes_read < 24) {
         if (bytes_read <= 0) {
-            fprintf(stderr, "%s: could not read PCAP header\n", capfilename);
+            LOG(LEVEL_ERROR, "%s: could not read PCAP header\n", capfilename);
             perror(capfilename);
         } else
-            fprintf(stderr, "%s: file too short\n", capfilename);
+            LOG(LEVEL_ERROR, "%s: file too short\n", capfilename);
         fclose(fp);
         return 0;
     }
@@ -580,7 +581,7 @@ struct PcapFile *pcapfile_openread(const char *capfilename)
     case 0xa1b2c3d4:   byte_order = CAPFILE_BIGENDIAN; break;
     case 0xd4c3b2a1:   byte_order = CAPFILE_LITTLEENDIAN; break;
     default:
-        fprintf(stderr, "%s: unknown byte-order in cap file\n", capfilename);
+        LOG(LEVEL_ERROR, "%s: unknown byte-order in cap file\n", capfilename);
         byte_order = CAPFILE_ENDIANUNKNOWN; break;
     }
 
@@ -591,7 +592,7 @@ struct PcapFile *pcapfile_openread(const char *capfilename)
         unsigned minor = PCAP16(byte_order, buf+6);
 
         if (major != 2 || minor != 4)
-            fprintf(stderr, "%s: unknown version %d.%d\n", capfilename, major, minor);
+            LOG(LEVEL_ERROR, "%s: unknown version %d.%d\n", capfilename, major, minor);
     }
 
     /* Protocol (ethernet, wifi, etc.) */
@@ -605,7 +606,7 @@ struct PcapFile *pcapfile_openread(const char *capfilename)
     case 119:   /* Prism II headers (also used for things like Atheros madwifi) */
         break;
     default:
-        fprintf(stderr, "%s: unknown cap file linktype = %d (expected Ethernet or wifi)\n", capfilename, linktype);
+        LOG(LEVEL_ERROR, "%s: unknown cap file linktype = %d (expected Ethernet or wifi)\n", capfilename, linktype);
         fclose(fp);
         return 0;
         break;
@@ -619,7 +620,7 @@ struct PcapFile *pcapfile_openread(const char *capfilename)
 
         loc = ftell(fp);
         if (loc == -1) {
-            fprintf(stderr, "%s: ftell failed (file system error? seen with VMware HGFS bug)\n", capfilename);
+            LOG(LEVEL_ERROR, "%s: ftell failed (file system error? seen with VMware HGFS bug)\n", capfilename);
             perror(capfilename);
             fclose(fp);
             return 0;
@@ -632,7 +633,7 @@ struct PcapFile *pcapfile_openread(const char *capfilename)
         }
 
         if (fseek(fp, loc, SEEK_SET) != 0) {
-            fprintf(stderr, "%s: fseek failed (file system error?)\n", capfilename);
+            LOG(LEVEL_ERROR, "%s: fseek failed (file system error?)\n", capfilename);
             perror(capfilename);
             fclose(fp);
             return 0;
@@ -681,14 +682,14 @@ struct PcapFile *pcapfile_openwrite(const char *capfilename, unsigned linktype)
 
     fp = fopen(capfilename, "wb");
     if (fp == NULL) {
-        fprintf(stderr, "Could not open capture file\n");
+        LOG(LEVEL_ERROR, "Could not open capture file\n");
         perror(capfilename);
         return 0;
     }
 
 
     if (fwrite(buf, 1, 24, fp) != 24) {
-        fprintf(stderr, "Could not write capture file header\n");
+        LOG(LEVEL_ERROR, "Could not write capture file header\n");
         perror(capfilename);
         fclose(fp);
         return 0;
@@ -734,14 +735,14 @@ struct PcapFile *pcapfile_openappend(const char *capfilename, unsigned linktype)
         return pcapfile_openwrite(capfilename, linktype);
     }
     if (fp == NULL) {
-        fprintf(stderr, "Could not open capture file to append frame\n");
+        LOG(LEVEL_ERROR, "Could not open capture file to append frame\n");
         perror(capfilename);
         return pcapfile_openappend(capfilename, linktype);
     }
 
     /* Read in the header to discover link type and byte order */
     if (fread(buf, 1, 24, fp) != 24) {
-        fprintf(stderr, "Error reading capture file header\n");
+        LOG(LEVEL_ERROR, "Error reading capture file header\n");
         perror(capfilename);
         fclose(fp);
         return pcapfile_openappend(capfilename, linktype);
@@ -752,7 +753,7 @@ struct PcapFile *pcapfile_openappend(const char *capfilename, unsigned linktype)
      * are corrupt at the end (which happens when the program crashes),
      * so we may end up writing these frames in a way that cannot be read. */
     if (fseek(fp, 0, SEEK_END) != 0) {
-        fprintf(stderr, "Could not seek to end of capture file\n");
+        LOG(LEVEL_ERROR, "Could not seek to end of capture file\n");
         perror(capfilename);
         fclose(fp);
         return 0;
@@ -764,7 +765,7 @@ struct PcapFile *pcapfile_openappend(const char *capfilename, unsigned linktype)
     case 0xa1b2c3d4:   byte_order = CAPFILE_BIGENDIAN; break;
     case 0xd4c3b2a1:   byte_order = CAPFILE_LITTLEENDIAN; break;
     default:
-        fprintf(stderr, "%s: unknown byte-order in cap file\n", capfilename);
+        LOG(LEVEL_ERROR, "%s: unknown byte-order in cap file\n", capfilename);
         fclose(fp);
         return pcapfile_openappend(capfilename, linktype);
     }
@@ -776,7 +777,7 @@ struct PcapFile *pcapfile_openappend(const char *capfilename, unsigned linktype)
         unsigned minor = PCAP16(byte_order, buf+6);
 
         if (major != 2 || minor != 4)
-            fprintf(stderr, "%s: unknown version %u.%u\n", capfilename, major, minor);
+            LOG(LEVEL_ERROR, "%s: unknown version %u.%u\n", capfilename, major, minor);
     }
 
     /* Protocol */
@@ -799,7 +800,7 @@ struct PcapFile *pcapfile_openappend(const char *capfilename, unsigned linktype)
             /* Oops, we have a problem, it looks like the filename already
              * has the previous linktype in its name for some reason. At this
              * unlikely point, we just give up */
-            fprintf(stderr, "Giving up on appending %u-type frames onto a %u-type file\n",
+            LOG(LEVEL_ERROR, "Giving up on appending %u-type frames onto a %u-type file\n",
                     linktype, file_linktype);
             return 0;
         }
@@ -916,7 +917,7 @@ void pcapfile_writeframe(
     }
 
     if (fwrite(header, 1, 16, capfile->fp) != 16) {
-        fprintf(stderr, "%s:%lld: could not write packet header\n",
+        LOG(LEVEL_ERROR, "%s:%lld: could not write packet header\n",
             capfile->filename, capfile->frame_number);
         perror(capfile->filename);
         fclose(capfile->fp);
@@ -924,7 +925,7 @@ void pcapfile_writeframe(
     }
 
     if (fwrite(buffer, 1, buffer_size, capfile->fp) != buffer_size) {
-        fprintf(stderr, "%s:%lld: could not write packet contents\n",
+        LOG(LEVEL_ERROR, "%s:%lld: could not write packet contents\n",
             capfile->filename, capfile->frame_number);
         perror(capfile->filename);
         fclose(capfile->fp);

@@ -770,7 +770,7 @@ massip_parse_file(struct MassIP *massip, const char *filename)
     /* Kludge: should never happen, should fix this when reading in
      * config, not this deep in the code. */
     if (filename == 0 || filename[0] == '\0') {
-        fprintf(stderr, "[-] missing filename for ranges\n");
+        LOG(LEVEL_ERROR, "[-] missing filename for ranges\n");
         exit(1);
     }
 
@@ -783,8 +783,8 @@ massip_parse_file(struct MassIP *massip, const char *filename)
     } else {
         fp = fopen(filename, "rb");
         if (fp == NULL) {
-            fprintf(stderr, "[-] FAIL: parsing IP addresses\n");
-            fprintf(stderr, "[-] %s: %s\n", filename, strerror(errno));
+            LOG(LEVEL_ERROR, "[-] FAIL: parsing IP addresses\n");
+            LOG(LEVEL_ERROR, "[-] %s: %s\n", filename, strerror(errno));
             exit(1);
         }
     }
@@ -818,13 +818,13 @@ massip_parse_file(struct MassIP *massip, const char *filename)
                 if (offset < count) {
                     /* We reached this somehow in the middle of the buffer, but
                      * this return is only possible at the end of the buffer */
-                    fprintf(stderr, "[-] rangeparse_next(): unknown coding failure\n");
+                    LOG(LEVEL_ERROR, "[-] rangeparse_next(): unknown coding failure\n");
                 }
                 break;
             case Found_Error:
             default:
                 _parser_err(p, &line_number, &char_number);
-                fprintf(stderr, "[-] %s:%llu:%llu: invalid IP address on line #%llu\n", filename, line_number, char_number, line_number);
+                LOG(LEVEL_ERROR, "[-] %s:%llu:%llu: invalid IP address on line #%llu\n", filename, line_number, char_number, line_number);
                 is_error = true;
                 count = offset;
                 break;
@@ -861,7 +861,7 @@ massip_parse_file(struct MassIP *massip, const char *filename)
         case Found_Error:
         default:
             _parser_err(p, &line_number, &char_number);
-            fprintf(stderr, "[-] %s:%llu:%llu: invalid IP address on line #%llu\n", filename, line_number, char_number, line_number);
+            LOG(LEVEL_ERROR, "[-] %s:%llu:%llu: invalid IP address on line #%llu\n", filename, line_number, char_number, line_number);
             is_error = true;
             break;
         case Found_IPv4:
@@ -911,12 +911,12 @@ again:
             if (offset < count) {
                 /* We reached this somehow in the middle of the buffer, but
                  * this return is only possible at the end of the buffer */
-                fprintf(stderr, "[-] _parser_next(): unknown coding failure\n");
+                LOG(LEVEL_ERROR, "[-] _parser_next(): unknown coding failure\n");
                 goto fail;
             } else {
                 err = _parser_next(p, "\n", 0, 1, &begin, &end);
                 if (err == Still_Working) {
-                    fprintf(stderr, "[-] _parser_next(): unknown coding failure\n");
+                    LOG(LEVEL_ERROR, "[-] _parser_next(): unknown coding failure\n");
                     goto fail;
                 } else {
                     goto again;
@@ -958,12 +958,12 @@ again:
             if (offset < count) {
                 /* We reached this somehow in the middle of the buffer, but
                  * this return is only possible at the end of the buffer */
-                fprintf(stderr, "[-] _parser_next(): unknown coding failure\n");
+                LOG(LEVEL_ERROR, "[-] _parser_next(): unknown coding failure\n");
                 goto fail;
             } else {
                 err = _parser_next(p, "\n", 0, 1, &begin, &end);
                 if (err == Still_Working) {
-                    fprintf(stderr, "[-] _parser_next(): unknown coding failure\n");
+                    LOG(LEVEL_ERROR, "[-] _parser_next(): unknown coding failure\n");
                     goto fail;
                 } else {
                     goto again;
@@ -1013,12 +1013,12 @@ again:
             if (*offset < count) {
                 /* We reached this somehow in the middle of the buffer, but
                  * this return is only possible at the end of the buffer */
-                fprintf(stderr, "[-] _parser_next(): unknown coding failure\n");
+                LOG(LEVEL_ERROR, "[-] _parser_next(): unknown coding failure\n");
                 return Bad_Address;
             } else {
                 err = _parser_next(p, "\n", 0, 1, &begin, &end);
                 if (err == Still_Working) {
-                    fprintf(stderr, "[-] _parser_next(): unknown coding failure\n");
+                    LOG(LEVEL_ERROR, "[-] _parser_next(): unknown coding failure\n");
                     return Bad_Address;
                 } else {
                     goto again;

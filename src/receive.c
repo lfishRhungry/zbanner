@@ -76,7 +76,7 @@ dispatch_thread(void *v)
             err = rte_ring_sp_enqueue(
                 parms->handle_queue[i], recved);
             if (err) {
-                fprintf(stderr, "[-] handle queue #%d full from dispatch thread.\n", i);
+                LOG(LEVEL_ERROR, "[-] handle queue #%d full from dispatch thread.\n", i);
                 pixie_usleep(1000);
             }
         }
@@ -362,7 +362,7 @@ void receive_thread(void *v) {
         for (err=1; err; ) {
             err = rte_ring_sp_enqueue(dispatch_q, recved);
             if (err) {
-                fprintf(stderr, "[-] dispatch queue full from rx thread with too fast rate.\n");
+                LOG(LEVEL_ERROR, "[-] dispatch queue full from rx thread with too fast rate.\n");
                 pixie_usleep(1000);
                 // exit(1);
             }

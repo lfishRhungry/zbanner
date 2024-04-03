@@ -311,7 +311,7 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
      */
     fd = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_ROUTE);
     if (fd < 0) {
-        fprintf(stderr, "%s:%d: socket(NETLINK_ROUTE): %d\n",
+        LOG(LEVEL_ERROR, "%s:%d: socket(NETLINK_ROUTE): %d\n",
             __FILE__, __LINE__, errno);
         return errno;
     }
@@ -322,17 +322,17 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
     memset(msgBuf, 0, sizeof(msgBuf));
     nlMsg = (struct nlmsghdr *)msgBuf;
 
-    nlMsg->nlmsg_len = NLMSG_LENGTH(sizeof(struct rtmsg));
-    nlMsg->nlmsg_type = RTM_GETROUTE;
+    nlMsg->nlmsg_len   = NLMSG_LENGTH(sizeof(struct rtmsg));
+    nlMsg->nlmsg_type  = RTM_GETROUTE;
     nlMsg->nlmsg_flags = NLM_F_DUMP | NLM_F_REQUEST;
-    nlMsg->nlmsg_seq = msgSeq++;
-    nlMsg->nlmsg_pid = getpid();
+    nlMsg->nlmsg_seq   = msgSeq++;
+    nlMsg->nlmsg_pid   = getpid();
 
     /*
      * send first request to kernel
      */
     if (send(fd, nlMsg, nlMsg->nlmsg_len, 0) < 0) {
-        fprintf(stderr, "%s:%d: send(NETLINK_ROUTE): %d\n",
+        LOG(LEVEL_ERROR, "%s:%d: send(NETLINK_ROUTE): %d\n",
             __FILE__, __LINE__, errno);
         return errno;
     }
@@ -342,7 +342,7 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
      */
     len = read_netlink(fd, msgBuf, sizeof(msgBuf), msgSeq, getpid());
     if (len <= 0) {
-        fprintf(stderr, "%s:%d: read_netlink: %d\n",
+        LOG(LEVEL_ERROR, "%s:%d: read_netlink: %d\n",
             __FILE__, __LINE__, errno);
         return errno;
     }
@@ -425,7 +425,7 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
      */
     pAdapterInfo = (IP_ADAPTER_INFO *)malloc(sizeof (IP_ADAPTER_INFO));
     if (pAdapterInfo == NULL) {
-        fprintf(stderr, "Error allocating memory needed to call GetAdaptersinfo\n");
+        LOG(LEVEL_ERROR, "Error allocating memory needed to call GetAdaptersinfo\n");
         return EFAULT;
     }
 
@@ -439,13 +439,13 @@ again:
         free(pAdapterInfo);
         pAdapterInfo = (IP_ADAPTER_INFO *)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL) {
-            fprintf(stderr, "Error allocating memory needed to call GetAdaptersinfo\n");
+            LOG(LEVEL_ERROR, "Error allocating memory needed to call GetAdaptersinfo\n");
             return EFAULT;
         }
         goto again;
     }
     if (err != NO_ERROR) {
-        fprintf(stderr, "GetAdaptersInfo failed with error: %u\n", (unsigned)err);
+        LOG(LEVEL_ERROR, "GetAdaptersInfo failed with error: %u\n", (unsigned)err);
         return EFAULT;
     }
 

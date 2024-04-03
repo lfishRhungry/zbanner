@@ -404,7 +404,7 @@ smack_create(const char *name, unsigned nocase)
 
     smack = (struct SMACK *)malloc(sizeof (struct SMACK));
     if (smack == NULL) {
-        fprintf(stderr, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
         exit(1);
     }
     memset (smack, 0, sizeof (struct SMACK));
@@ -412,7 +412,7 @@ smack_create(const char *name, unsigned nocase)
     smack->is_nocase = nocase;
     smack->name = (char*)malloc(strlen(name)+1);
     if (smack->name == NULL) {
-        fprintf(stderr, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
         exit(1);
     }
     memcpy(smack->name, name, strlen(name)+1);
@@ -429,7 +429,7 @@ create_intermediate_table(struct SMACK *smack, unsigned size)
 
     x = (struct SmackRow *)malloc(sizeof(*x) * size);
     if (x == NULL) {
-        fprintf(stderr, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
         exit(1);
     }
     memset(x, 0, sizeof(*x) * size);
@@ -457,7 +457,7 @@ create_matches_table(struct SMACK *smack, unsigned size)
 
     x = (struct SmackMatches *)malloc(sizeof(*x) * size);
     if (x == NULL) {
-        fprintf(stderr, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
         exit(1);
     }
     memset(x, 0, sizeof(*x) * size);
@@ -574,7 +574,7 @@ smack_copy_matches(
     /* Allocate space for both lists */
     total_ids = (size_t *)malloc((old_count + new_count)*sizeof(*total_ids));
     if (total_ids == NULL) {
-        fprintf(stderr, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
         exit(1);
     }
 
@@ -666,7 +666,7 @@ make_copy_of_pattern(   const unsigned char *pattern,
     /* allocate space */
     result = (unsigned char *)malloc(pattern_length+1);
     if (result == NULL) {
-        fprintf(stderr, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
         exit(1);
     }
 
@@ -708,7 +708,7 @@ smack_add_pattern(
      */
     pat = (struct SmackPattern *)malloc(sizeof (struct SmackPattern));
     if (pat == NULL) {
-        fprintf(stderr, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
         exit(1);
     }
     pat->pattern_length = pattern_length;
@@ -745,7 +745,7 @@ smack_add_pattern(
         new_max = smack->m_pattern_max * 2 + 1;
         new_list = (struct SmackPattern **)malloc(sizeof(*new_list)*new_max);
         if (new_list == NULL) {
-            fprintf(stderr, "%s: out of memory error\n", "smack");
+            LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
             exit(1);
         }
 
@@ -778,7 +778,7 @@ DEBUG_set_name(struct SMACK *smack, const void *pattern,
 {
     char *name = (char*)malloc(length+1);
     if (name == NULL) {
-        fprintf(stderr, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
         exit(1);
     }
     memcpy(name, pattern, length);
@@ -1014,7 +1014,7 @@ smack_stage4_make_final_table(struct SMACK *smack)
      */
     table = malloc(sizeof(transition_t) * row_count * column_count);
     if (table == NULL) {
-        fprintf(stderr, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
         exit(1);
     }
     memset(table, 0, sizeof(transition_t) * row_count * column_count);

@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "../util-out/logger.h"
+
 #define MAXNUM ((size_t)1 << (sizeof(size_t)*4))
 
 /***************************************************************************
@@ -13,14 +15,14 @@ REALLOCARRAY(void *p, size_t count, size_t size)
 {
     if (count >= MAXNUM || size >= MAXNUM) {
         if (size != 0 && count >= SIZE_MAX/size) {
-            fprintf(stderr, "[-] alloc too large, aborting\n");
+            LOG(LEVEL_ERROR, "[-] alloc too large, aborting\n");
             abort();
         }
     }
 
     p = realloc(p, count * size);
     if (p == NULL && count * size != 0) {
-        fprintf(stderr, "[-] out of memory, aborting\n");
+        LOG(LEVEL_ERROR, "[-] out of memory, aborting\n");
         abort();
     }
     
@@ -36,14 +38,14 @@ CALLOC(size_t count, size_t size)
     
     if (count >= MAXNUM || size >= MAXNUM) {
         if (size != 0 && count >= SIZE_MAX/size) {
-            fprintf(stderr, "[-] alloc too large, aborting\n");
+            LOG(LEVEL_ERROR, "[-] alloc too large, aborting\n");
             abort();
         }
     }
     
     p = calloc(count, size);
     if (p == NULL && count * size != 0) {
-        fprintf(stderr, "[-] out of memory, aborting\n");
+        LOG(LEVEL_ERROR, "[-] out of memory, aborting\n");
         abort();
     }
     
@@ -72,7 +74,7 @@ MALLOC(size_t size)
     
     /* Abort the program if we've run out of memory */
     if (p == NULL) {
-        fprintf(stderr, "[-] out of memory, aborting\n");
+        LOG(LEVEL_ERROR, "[-] out of memory, aborting\n");
         abort();
     }
     
@@ -89,7 +91,7 @@ REALLOC(void *p, size_t size)
     p = realloc(p, size);
     
     if (p == NULL) {
-        fprintf(stderr, "[-] out of memory, aborting\n");
+        LOG(LEVEL_ERROR, "[-] out of memory, aborting\n");
         abort();
     }
     
@@ -108,7 +110,7 @@ STRDUP(const char *str)
 #endif
     
     if (p == NULL && str != NULL) {
-        fprintf(stderr, "[-] out of memory, aborting\n");
+        LOG(LEVEL_ERROR, "[-] out of memory, aborting\n");
         abort();
     }
     

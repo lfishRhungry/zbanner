@@ -126,7 +126,7 @@ tcp_consistancy_check(const unsigned char *buf, size_t length,
                                   1 /*enet*/,
                                   &parsed);
     if (!is_success || parsed.found != FOUND_TCP) {
-        fprintf(stderr, "[-] check: TCP header not found\n");
+        LOG(LEVEL_ERROR, "[-] check: TCP header not found\n");
         goto fail;
     }
 
@@ -134,14 +134,14 @@ tcp_consistancy_check(const unsigned char *buf, size_t length,
     switch (parsed.ip_version) {
         case 4:
             if (parsed.ip_length + 14 != length) {
-                fprintf(stderr, "[-] check: IP length bad\n");
+                LOG(LEVEL_ERROR, "[-] check: IP length bad\n");
                 goto fail;
             }
             break;
         case 6:
             break;
         default:
-            fprintf(stderr, "[-] check: IPv?\n");
+            LOG(LEVEL_ERROR, "[-] check: IPv?\n");
             goto fail;
     }
 
@@ -364,7 +364,7 @@ _adjust_length(unsigned char *buf, size_t length, int adjustment, struct tcp_hdr
     /* The adjustment should already have been aligned on an even 4 byte
      * boundary */
     if ((adjustment & 0x3) != 0) {
-        fprintf(stderr, "[-] templ.tcp: impossible alignment error\n");
+        LOG(LEVEL_ERROR, "[-] templ.tcp: impossible alignment error\n");
         return;
     }
 
@@ -377,7 +377,7 @@ _adjust_length(unsigned char *buf, size_t length, int adjustment, struct tcp_hdr
             U16_TO_BE(buf+ip_offset+2, total_length);
             total_length  = BE_TO_U16(buf+ip_offset+2);
             if (total_length + 14 != length) {
-                fprintf(stderr, "[-] IP length mismatch\n");
+                LOG(LEVEL_ERROR, "[-] IP length mismatch\n");
             }
             break;
         }
@@ -399,14 +399,14 @@ _adjust_length(unsigned char *buf, size_t length, int adjustment, struct tcp_hdr
         hdr_length += adjustment;
 
         if (hdr_length % 4 != 0) {
-            fprintf(stderr, "[-] templ.tcp corruptoin\n");
+            LOG(LEVEL_ERROR, "[-] templ.tcp corruptoin\n");
         }
 
         buf[offset] = (unsigned char)((buf[offset] & 0x0F) | ((hdr_length/4) << 4));
 
         hdr_length = (buf[offset] >> 4) * 4;
         if (hdr.begin + hdr_length > length) {
-            fprintf(stderr, "[-] templ.tcp corruptoin\n");
+            LOG(LEVEL_ERROR, "[-] templ.tcp corruptoin\n");
         }
     }
 }
@@ -777,7 +777,7 @@ tcp_add_opt(unsigned char **inout_buf,
      * rest of the header takes up 20 bytes. The [kind,length] takes up
      * another 2 bytes. Thus, the max option length is 38 bytes */
     if (opt_length > 38) {
-        fprintf(stderr, "[-] templ.tcp.add_opt: opt_len too large\n");
+        LOG(LEVEL_ERROR, "[-] templ.tcp.add_opt: opt_len too large\n");
         goto fail;
     }
 
@@ -812,7 +812,7 @@ tcp_add_opt(unsigned char **inout_buf,
             size_t len = buf[offset + 1];
             old_end    = offset + len;
         } else {
-            fprintf(stderr, "[-] not possible i09670t\n");
+            LOG(LEVEL_ERROR, "[-] not possible i09670t\n");
             return false;
         }
 
@@ -1089,7 +1089,7 @@ tcp_create_by_template(
         unsigned char *px, size_t px_length)
 {
     if (tmpl->proto != Proto_TCP) {
-            fprintf(stderr, "tcp_create_by_template: need a Proto_TCP TemplatePacket.\n");
+            LOG(LEVEL_ERROR, "tcp_create_by_template: need a Proto_TCP TemplatePacket.\n");
             return 0;
     }
 
@@ -1105,7 +1105,7 @@ tcp_create_by_template(
         unsigned old_len;
 
         if (new_length > px_length) {
-            fprintf(stderr, "tcp: err generating packet: too much payload\n");
+            LOG(LEVEL_ERROR, "tcp: err generating packet: too much payload\n");
             return 0;
         }
 
@@ -1168,7 +1168,7 @@ tcp_create_by_template(
 
         /* Make sure the new packet won't exceed buffer size */
         if (offset_app + payload_length > px_length) {
-            fprintf(stderr, "tcp: err generating packet: too much payload\n");
+            LOG(LEVEL_ERROR, "tcp: err generating packet: too much payload\n");
             return 0;
         }
 

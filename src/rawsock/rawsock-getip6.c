@@ -13,6 +13,7 @@
 */
 #include "rawsock.h"
 #include "../util-data/safe-string.h"
+#include "../util-out/logger.h"
 #include "../massip/massip-parse.h"
 
 /*****************************************************************************
@@ -47,7 +48,7 @@ rawsock_get_adapter_ipv6(const char *ifname)
     /* Fetch the list of addresses */
     err = getifaddrs(&list);
     if (err == -1) {
-        fprintf(stderr, "[-] getifaddrs(): %s\n", strerror(errno));
+        LOG(LEVEL_ERROR, "[-] getifaddrs(): %s\n", strerror(errno));
         return result;
     }
 
@@ -121,13 +122,13 @@ again:
         free(adapters);
         adapters = malloc(sizeof_addrs);
         if (adapters == NULL) {
-            fprintf(stderr, "GetAdaptersAddresses():malloc(): failed: out of memory\n");
+            LOG(LEVEL_ERROR, "GetAdaptersAddresses():malloc(): failed: out of memory\n");
             return result;
         }
         goto again;
     }
     if (err != NO_ERROR) {
-        fprintf(stderr, "GetAdaptersAddresses(): failed: %u\n", (unsigned)err);
+        LOG(LEVEL_ERROR, "GetAdaptersAddresses(): failed: %u\n", (unsigned)err);
         return result;
     }
 
@@ -143,7 +144,7 @@ again:
      * If our adapter isn't found, print an error.
      */
     if (adapters == NULL) {
-        fprintf(stderr, "GetAdaptersInfo: adapter not found: %s\n", ifname);
+        LOG(LEVEL_ERROR, "GetAdaptersInfo: adapter not found: %s\n", ifname);
         goto end;
     }
 
@@ -223,7 +224,7 @@ rawsock_get_adapter_ipv6(const char *ifname)
     /* Fetch the list of addresses */
     err = getifaddrs(&list);
     if (err == -1) {
-        fprintf(stderr, "[-] getifaddrs(): %s\n", strerror(errno));
+        LOG(LEVEL_ERROR, "[-] getifaddrs(): %s\n", strerror(errno));
         return result;
     }
 

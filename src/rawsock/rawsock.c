@@ -69,7 +69,7 @@ int pcap_setdirection(pcap_t *pcap, pcap_direction_t direction)
     if (real_setdirection == 0) {
         void* h = LoadLibraryA("wpcap.dll");
         if (h == NULL) {
-            fprintf(stderr, "couldn't load wpcap.dll: %u\n", 
+            LOG(LEVEL_ERROR, "couldn't load wpcap.dll: %u\n", 
                                 (unsigned)GetLastError());
             return -1;
         }
@@ -77,7 +77,7 @@ int pcap_setdirection(pcap_t *pcap, pcap_direction_t direction)
         real_setdirection = (int (*)(pcap_t*,pcap_direction_t))
                             GetProcAddress(h, "pcap_setdirection");
         if (real_setdirection == 0) {
-            fprintf(stderr, "couldn't find pcap_setdirection(): %u\n", 
+            LOG(LEVEL_ERROR, "couldn't find pcap_setdirection(): %u\n", 
                                 (unsigned)GetLastError());
             return -1;
         }
@@ -208,20 +208,20 @@ rawsock_list_adapters(void)
         i=0;
         
         if (alldevs == NULL) {
-            fprintf(stderr, "ERR:libpcap: no adapters found, are you sure you are root?\n");
+            LOG(LEVEL_ERROR, "ERR:libpcap: no adapters found, are you sure you are root?\n");
         }
         /* Print the list */
         for(d=alldevs; d; d=PCAP.dev_next(d)) {
-            fprintf(stderr, " %d  %s \t", i++, PCAP.dev_name(d));
+            fprintf(stdout, " %d  %s \t", i++, PCAP.dev_name(d));
             if (PCAP.dev_description(d))
-                fprintf(stderr, "(%s)\n", PCAP.dev_description(d));
+                fprintf(stdout, "(%s)\n", PCAP.dev_description(d));
             else
-                fprintf(stderr, "(No description available)\n");
+                fprintf(stdout, "(No description available)\n");
         }
-        fprintf(stderr,"\n");
+        fprintf(stdout,"\n");
         PCAP.freealldevs(alldevs);
     } else {
-        fprintf(stderr, "%s\n", errbuf);
+        LOG(LEVEL_ERROR, "%s\n", errbuf);
     }
 }
 
@@ -239,7 +239,7 @@ adapter_from_index(unsigned index)
         const pcap_if_t *d;
 
         if (alldevs == NULL) {
-            fprintf(stderr, "ERR:libpcap: no adapters found, are you sure you are root?\n");
+            LOG(LEVEL_ERROR, "ERR:libpcap: no adapters found, are you sure you are root?\n");
         }
         /* Print the list */
         for(d=alldevs; d; d=PCAP.dev_next(d)) {
@@ -580,7 +580,7 @@ rawsock_init_adapter(const char *adapter_name,
 
         new_adapter_name = adapter_from_index(atoi(adapter_name));
         if (new_adapter_name == 0) {
-            fprintf(stderr, "pcap_open_live(%s) error: bad index\n",
+            LOG(LEVEL_ERROR, "pcap_open_live(%s) error: bad index\n",
                     adapter_name);
             return 0;
         } else
@@ -595,7 +595,7 @@ rawsock_init_adapter(const char *adapter_name,
      *  logging here.
      *----------------------------------------------------------------*/
     if(is_pfring && !is_pfring_dna(adapter_name)){ /*First ensure pfring dna adapter is available*/
-        fprintf(stderr,"No pfring adapter available. Please install pfring or run "XTATE_NAME" without the --pfring option.\n");
+        LOG(LEVEL_ERROR,"No pfring adapter available. Please install pfring or run "XTATE_NAME" without the --pfring option.\n");
         return 0;
     }
 
@@ -637,7 +637,7 @@ rawsock_init_adapter(const char *adapter_name,
         LOG(LEVEL_INFO, "pfring:'%s': setting direction\n", adapter_name);
         err = PFRING.set_direction(adapter->ring, rx_only_direction);
         if (err) {
-            fprintf(stderr, "pfring:'%s': setdirection = %d\n",
+            LOG(LEVEL_ERROR, "pfring:'%s': setdirection = %d\n",
                     adapter_name, err);
         } else
             LOG(LEVEL_INFO, "pfring:'%s': direction success\n", adapter_name);

@@ -107,7 +107,7 @@ rawsock_get_adapter_mac(const char *ifname, unsigned char *mac)
      */
     pAdapterInfo = (IP_ADAPTER_INFO *)malloc(sizeof (IP_ADAPTER_INFO));
     if (pAdapterInfo == NULL) {
-        fprintf(stderr, "Error allocating memory needed to call GetAdaptersinfo\n");
+        LOG(LEVEL_ERROR, "Error allocating memory needed to call GetAdaptersinfo\n");
         return EFAULT;
     }
 
@@ -121,13 +121,13 @@ again:
         free(pAdapterInfo);
         pAdapterInfo = (IP_ADAPTER_INFO *)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL) {
-            fprintf(stderr, "Error allocating memory needed to call GetAdaptersinfo\n");
+            LOG(LEVEL_ERROR, "Error allocating memory needed to call GetAdaptersinfo\n");
             return EFAULT;
         }
         goto again;
     }
     if (err != NO_ERROR) {
-        fprintf(stderr, "if: GetAdaptersInfo failed with error: %u\n", (unsigned)err);
+        LOG(LEVEL_ERROR, "if: GetAdaptersInfo failed with error: %u\n", (unsigned)err);
         return EFAULT;
     }
 

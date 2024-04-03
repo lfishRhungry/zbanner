@@ -45,7 +45,7 @@
 
 #define BUCKET_COUNT 16
 
-#define REGRESS(x) if (!(x)) return (fprintf(stderr, "regression failed %s:%d\n", __FILE__, __LINE__)|1)
+#define REGRESS(x) if (!(x)) return (LOG(LEVEL_ERROR, "regression failed %s:%d\n", __FILE__, __LINE__)|1)
 
 /* An invalid range, where begin comes after the end */
 static struct Range INVALID_RANGE = {2,1};

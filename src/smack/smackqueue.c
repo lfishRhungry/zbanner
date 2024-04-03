@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../util-out/logger.h"
+
 /****************************************************************************
  * Build a queue so that we can do a breadth-first enumeration of the
  * sub-patterns
@@ -24,7 +26,7 @@ queue_create(void)
     struct Queue *queue;
     queue = (struct Queue *)malloc(sizeof(*queue));
     if (queue == NULL) {
-        fprintf(stderr, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
         exit(1);
     }
     memset(queue, 0, sizeof(*queue));
@@ -48,7 +50,7 @@ enqueue(struct Queue *queue, unsigned data)
 
     element = (struct QueueElement *)malloc(sizeof (struct QueueElement));
     if (element == NULL) {
-        fprintf(stderr, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
         exit(1);
     }
 

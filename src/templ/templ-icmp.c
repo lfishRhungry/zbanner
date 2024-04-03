@@ -225,7 +225,7 @@ icmp_create_by_template(
 {
     if (tmpl->proto != Proto_ICMP_ping
         && tmpl->proto != Proto_ICMP_timestamp) {
-            fprintf(stderr, "icmp_create_by_template: need a Proto_ICMP_ping or Proto_ICMP_timestamp TemplatePacket.\n");
+            LOG(LEVEL_ERROR, "icmp_create_by_template: need a Proto_ICMP_ping or Proto_ICMP_timestamp TemplatePacket.\n");
             return 0;
     }
 
