@@ -87,48 +87,48 @@ isBoolean(const char *str) {
     }
 }
 
-unsigned
+bool
 parseBoolean(const char *str)
 {
     if (str == NULL || str[0] == 0)
-        return 1;
+        return true;
     if (isdigit(str[0])) {
         if (strtoul(str,0,0) == 0)
-            return 0;
+            return false;
         else
-            return 1;
+            return true;
     }
     switch (str[0]) {
     case 'e': /* enable */
     case 'E':
-        return 1;
+        return true;
     case 'd': /* disable */
     case 'D':
-        return 0;
+        return false;
 
     case 't': /* true */
     case 'T':
-        return 1;
+        return true;
     case 'f': /* false */
     case 'F':
-        return 0;
+        return false;
 
     case 'o': /* on or off */
     case 'O':
         if (str[1] == 'f' || str[1] == 'F')
-            return 0;
+            return false;
         else
-            return 1;
+            return true;
         break;
 
     case 'Y': /* yes */
     case 'y':
-        return 1;
+        return true;
     case 'n': /* no */
     case 'N':
-        return 0;
+        return false;
     }
-    return 1;
+    return true;
 }
 
 uint64_t

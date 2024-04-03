@@ -33,7 +33,7 @@ parseInt(const char *str);
 bool
 isBoolean(const char *str);
 
-unsigned
+bool
 parseBoolean(const char *str);
 
 /***************************************************************************
