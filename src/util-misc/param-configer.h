@@ -6,6 +6,9 @@
 #include "cross.h"
 #include "../massip/massip-addr.h"
 
+enum {CONF_OK, CONF_WARN, CONF_ERR};
+
+enum {F_NONE, F_BOOL=1, F_NUMABLE=2};
 
 /**
  * @param conf where parameters would be set
@@ -15,7 +18,6 @@
 */
 typedef int (*SET_PARAMETER)(void *conf, const char *name, const char *value);
 
-enum {CONF_OK, CONF_WARN, CONF_ERR};
 
 struct ConfigParameter {
     const char *name;
@@ -24,8 +26,6 @@ struct ConfigParameter {
     const char *alts[8];
     const char *helps; /*set NULL if not normal prarameter*/
 };
-
-enum {F_NONE, F_BOOL=1, F_NUMABLE=2};
 
 uint64_t
 parseInt(const char *str);
