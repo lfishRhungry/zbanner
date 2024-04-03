@@ -173,11 +173,11 @@ parseTime(const char *value)
         num *= 24*60*60*7;
         break;
     default:
-        LOG(LEVEL_ERROR, "--rotate-offset: unknown character\n");
+        LOG(LEVEL_ERROR, "unknown character\n");
         exit(1);
     }
     if (num >= 24*60*60) {
-        LOG(LEVEL_ERROR, "--rotate-offset: value is greater than 1 day\n");
+        LOG(LEVEL_ERROR, "value is greater than 1 day\n");
         exit(1);
     }
     if (is_negative)
@@ -224,7 +224,7 @@ parseSize(const char *value)
         num *=  1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL;
         break;
     default:
-        LOG(LEVEL_ERROR, "--rotate-size: unknown character\n");
+        LOG(LEVEL_ERROR, "unknown character\n");
         exit(1);
     }
     return num;

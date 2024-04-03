@@ -1,5 +1,5 @@
-#ifndef PARAM_CONFIGER_H
-#define PARAM_CONFIGER_H
+#ifndef CONFIGER_H
+#define CONFIGER_H
 
 #include <stdint.h>
 
