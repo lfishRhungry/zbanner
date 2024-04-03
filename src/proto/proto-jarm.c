@@ -570,10 +570,16 @@ size_t jarm_create_ch(struct JarmConfig *jc, unsigned char *buf, unsigned buf_le
     }
 }
 
+
 static size_t
 extract_ext(const unsigned char *payload, size_t payload_len,
     char *res_buf, size_t res_max)
 {
+
+#define CHECK_IDX(idx) if((idx)>=(payload_len)) return snprintf(res_buf, res_max, "|");
+
+    CHECK_IDX(47+2)
+
     size_t   res_len  = 0;
     unsigned counter  = payload[43];
     unsigned count    = counter+49;
@@ -581,9 +587,8 @@ extract_ext(const unsigned char *payload, size_t payload_len,
     unsigned length   = BE_TO_U16(payload+47);
     unsigned maximum  = length+(count-1);
 
-    if (payload_len <= counter+85)
-        return snprintf(res_buf, res_max, "|");
-    
+    CHECK_IDX(counter+82+3)
+
     if (payload[counter+47]==11)
         return snprintf(res_buf, res_max, "|");
     else if (bytes_equals(payload+counter+50, 3, "\x0e\xac\x0b", 3)>0
@@ -591,33 +596,99 @@ extract_ext(const unsigned char *payload, size_t payload_len,
         return snprintf(res_buf, res_max, "|");
     else if (counter+42 >= sh_len)
         return snprintf(res_buf, res_max, "|");
+    
+    unsigned char *type;
+    unsigned ext_length;
 
-    return 0;
+    /* to get alpn selection*/
+    while (count<maximum) {
+
+        CHECK_IDX(count+2+2)
+
+        type       = (unsigned char *)payload+count;
+        ext_length = BE_TO_U16(payload+count+2);
+
+
+        if (ext_length==0) {
+            count += 4;
+        } else {
+
+            CHECK_IDX(count+4+ext_length)
+
+            if (bytes_equals(type, 2, "\x00\x10", 2)) {
+                memcpy(res_buf+res_len, payload+count+4+3, ext_length-3);
+                res_len += (ext_length-3);
+            }
+
+            count += (ext_length+4);
+        }
+    }
+
+    res_buf[res_len] = '|';
+    res_len++;
+
+    count    = counter+49;
+    /* to get formating hyphens*/
+    while (count<maximum) {
+
+        CHECK_IDX(count+2+2)
+
+        type       = (unsigned char *)payload+count;
+        ext_length = BE_TO_U16(payload+count+2);
+
+        res_len += snprintf(res_buf+res_len, res_max-res_len, "%02x%02x", type[0], type[1]);
+
+        res_buf[res_len] = '-';
+        res_len++;
+
+        if (ext_length==0) {
+            count += 4;
+        } else {
+            count += (ext_length+4);
+        }
+    }
+
+    res_buf[res_len-1] = '\0';
+    res_len--;
+
+    return res_len;
+
+#undef CHECK_IDX
 
 }
 
 size_t jarm_decipher_one(const unsigned char *payload, size_t payload_len,
     char *res_buf, size_t res_max)
 {
+
+#define CHECK_IDX(idx) if((idx)>=(payload_len)) return snprintf(res_buf, res_max, "|||");
+
     size_t res_len = 0;
 
-    if (payload_len>43 && payload[0]==22 && payload[5]==2) {
+    CHECK_IDX(5)
+
+    if (payload[0]==22 && payload[5]==2) {
+
+        CHECK_IDX(43)
 
         unsigned counter = payload[43];
 
-        if (payload_len>counter+45) {
-            /*Selected cipher*/
-            res_len += snprintf(res_buf+res_len, res_max-res_len, "%02x%02x|",
-                payload[counter+44], payload[counter+45]);
-            /*Version info*/
-            res_len += snprintf(res_buf+res_len, res_max-res_len, "%02x%02x|",
-                payload[9], payload[10]);
-            /*Extract extensions*/
-            res_len += extract_ext(payload, payload_len, res_buf+res_len, res_max-res_len);
+        CHECK_IDX(counter+45)
 
-            return res_len;
-        }
+        /*Selected cipher*/
+        res_len += snprintf(res_buf+res_len, res_max-res_len, "%02x%02x|",
+            payload[counter+44], payload[counter+45]);
+        /*Version info*/
+        res_len += snprintf(res_buf+res_len, res_max-res_len, "%02x%02x|",
+            payload[9], payload[10]);
+        /*Extract extensions*/
+        res_len += extract_ext(payload, payload_len, res_buf+res_len, res_max-res_len);
+
+        return res_len;
     }
 
     return snprintf(res_buf, res_max, "|||");
+
+#undef CHECK_IDX
+
 }
