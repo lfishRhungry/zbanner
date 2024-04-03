@@ -13,7 +13,7 @@ extern struct OutputModule TextOutput; /*for internal x-ref*/
 
 static FILE *file;
 
-static unsigned
+static bool
 text_init(const struct Output *out)
 {
 
@@ -24,10 +24,10 @@ text_init(const struct Output *out)
         LOG(LEVEL_ERROR, "[-] TextOutput: could not open file %s for %s.\n",
             out->output_filename, out->is_append?"appending":"writing");
         perror(out->output_filename);
-        return -1;
+        return false;
     }
 
-    return 1;
+    return true;
 }
 
 static void

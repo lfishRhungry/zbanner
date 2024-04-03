@@ -26,7 +26,7 @@ ndp_create_ns_packet(
  * Check if an NA is for solicitation by checking the target IP in IP header is
  * equal to target ip in ICMPv6
 */
-unsigned ndp_is_solicited_advertise(ipv6address ip_them,
+bool ndp_is_solicited_advertise(ipv6address ip_them,
     const unsigned char *px, unsigned icmpv6_offset);
 
 

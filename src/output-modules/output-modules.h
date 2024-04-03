@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #include "../util-misc/param-configer.h"
+#include "../util-misc/cross.h"
 #include "../massip/massip-addr.h"
 
 #define OUTPUT_RSN_LEN      30
@@ -50,7 +51,7 @@ struct Output {
     unsigned                     is_show_info:1;
 };
 
-typedef unsigned
+typedef bool
 (*output_modules_init)(const struct Output *out);
 
 typedef void
@@ -62,7 +63,7 @@ typedef void
 struct OutputModule {
     const char                               *name;
     const char                               *desc;
-    unsigned                                  need_file;
+    unsigned                                  need_file:1;
     struct ConfigParameter                   *params; 
     output_modules_init                       init_cb;
     output_modules_result                     result_cb;
@@ -70,7 +71,7 @@ struct OutputModule {
 };
 
 /*prepare for outputing results*/
-unsigned
+bool
 output_init(struct Output *output);
 
 void

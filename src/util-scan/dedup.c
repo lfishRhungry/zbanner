@@ -191,7 +191,7 @@ swap6(struct DedupEntry_IPv6 *lhs, struct DedupEntry_IPv6 *rhs)
  * This implements the same algorithm as for IPv4 addresses, but for
  * IPv6 addresses instead.
  */
-static unsigned
+static bool
 dedup_is_duplicate_ipv6(struct DedupTable *dedup,
                    ipaddress ip_them, unsigned port_them,
                    ipaddress ip_me, unsigned port_me, unsigned type)
@@ -223,7 +223,7 @@ dedup_is_duplicate_ipv6(struct DedupTable *dedup,
                 bucket[0].port_me    = (unsigned short)port_me;
                 bucket[0].type       = type;
             }
-            return 1;
+            return true;
         }
     }
 
@@ -240,7 +240,7 @@ dedup_is_duplicate_ipv6(struct DedupTable *dedup,
     bucket[0].port_me    = (unsigned short)port_me;
     bucket[0].type       = type;
 
-    return 0;
+    return false;
 
 }
 
@@ -289,7 +289,7 @@ swap4(struct DedupEntry_IPv4 *lhs, struct DedupEntry_IPv4 *rhs)
 
 /***************************************************************************
  ***************************************************************************/
-static unsigned
+static bool
 dedup_is_duplicate_ipv4(struct DedupTable *dedup,
                    ipaddress ip_them, unsigned port_them,
                    ipaddress ip_me, unsigned port_me, unsigned type)
@@ -319,7 +319,7 @@ dedup_is_duplicate_ipv4(struct DedupTable *dedup,
                 bucket[0].port_me   = port_me;
                 bucket[0].type      = type;
             }
-            return 1;
+            return true;
         }
     }
 
@@ -334,13 +334,13 @@ dedup_is_duplicate_ipv4(struct DedupTable *dedup,
     bucket[0].port_me   = port_me;
     bucket[0].type      = type;
 
-    return 0;
+    return false;
 
 }
 
 /***************************************************************************
  ***************************************************************************/
-unsigned
+bool
 dedup_is_duplicate(struct DedupTable *dedup,
                    ipaddress ip_them, unsigned port_them,
                    ipaddress ip_me, unsigned port_me, unsigned type)

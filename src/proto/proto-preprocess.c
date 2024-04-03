@@ -48,7 +48,7 @@
 
 /****************************************************************************
  ****************************************************************************/
-unsigned
+bool
 preprocess_frame(const unsigned char *px, unsigned length, unsigned link_type,
                  struct PreprocessedInfo *info)
 {
@@ -99,13 +99,13 @@ parse_ipv4:
         flags = px[offset+6]&0xE0;
         fragment_offset = (ex16be(px+offset+6) & 0x3FFF) << 3;
         if (fragment_offset != 0 || (flags & 0x20))
-            return 0; /* fragmented */
+            return false; /* fragmented */
 
         /* Check for total-length */
         total_length = ex16be(px+offset+2);
         VERIFY_REMAINING(total_length, FOUND_IPV4);
         if (total_length < header_length)
-            return 0; /* weird corruption */
+            return false; /* weird corruption */
         length = offset + total_length; /* reduce the max length */
 
 
@@ -128,7 +128,7 @@ parse_ipv4:
         info->ip_protocol = px[offset+9];
         info->ip_length   = total_length;
         if (info->ip_version != 4)
-            return 0;
+            return false;
 
         /* next protocol */
         offset += header_length;
@@ -143,7 +143,7 @@ parse_ipv4:
         case 132: goto parse_sctp;
         default:
                 VERIFY_REMAINING(0, FOUND_OPROTO);
-                return 0; /* TODO: should add more protocols, like ICMP */
+                return false; /* TODO: should add more protocols, like ICMP */
         }
     }
 
@@ -159,7 +159,7 @@ parse_tcp:
         info->app_length = length - info->app_offset;
         //assert(info->app_length < 2000);
 
-        return 1;
+        return true;
     }
 
 parse_udp:
@@ -173,7 +173,7 @@ parse_udp:
         info->app_length = length - info->app_offset;
         assert(info->app_length < 2000);
 
-        return 1;
+        return true;
     }
 
 parse_icmp:
@@ -181,7 +181,7 @@ parse_icmp:
         VERIFY_REMAINING(4, FOUND_ICMP);
         info->port_src = px[offset+0];
         info->port_dst = px[offset+1];
-        return 1;
+        return true;
     }
 
 parse_igmp:
@@ -189,7 +189,7 @@ parse_igmp:
         VERIFY_REMAINING(4, FOUND_IGMP);
         info->port_src = 0;
         info->port_dst = px[offset+0];
-        return 1;
+        return true;
     }
 
 parse_sctp:
@@ -200,7 +200,7 @@ parse_sctp:
         info->app_offset = offset + 12;
         info->app_length = length - info->app_offset;
         assert(info->app_length < 2000);
-        return 1;
+        return true;
     }
 
 parse_ipv6:
@@ -212,7 +212,7 @@ parse_ipv6:
 
         /* Check version */
         if ((px[offset]>>4) != 6)
-            return 0; /* not IPv4 or corrupt */
+            return false; /* not IPv4 or corrupt */
 
         /* Payload length */
         payload_length = ex16be(px+offset+4);
@@ -281,10 +281,10 @@ parse_ipv6_next:
         case 58: goto parse_icmpv6;
         case 132: goto parse_sctp;
         case 0x2c: /* IPv6 fragment */
-            return 0;
+            return false;
         default:
             //printf("***** test me ******\n");
-            return 0; /* TODO: should add more protocols, like ICMP */
+            return false; /* TODO: should add more protocols, like ICMP */
         }
     }
 
@@ -320,7 +320,7 @@ parse_icmpv6:
             info->found = FOUND_NDPv6;
         }
     }
-    return 1;
+    return true;
 
 parse_vlan8021q:
     VERIFY_REMAINING(4, FOUND_8021Q);
@@ -343,7 +343,7 @@ parse_vlanmpls:
     if (px[offset-4+2]&1) {
         goto parse_ipv4;
     } else
-        return 0;
+        return false;
 
 
 
@@ -376,7 +376,7 @@ wifi_data:
 
 
         if ((px[offset+1]&0x04) != 0 || (px[offset+22]&0xF) != 0)
-            return 0;
+            return false;
 
         offset += 24;
         if (flag == 0x88) {
@@ -392,11 +392,11 @@ parse_wifi:
     case 0x08:
     case 0x88: /* QoS data */
         if (px[1] & 0x40)
-            return 0;
+            return false;
         goto wifi_data;
         break;
     default:
-        return 0;
+        return false;
     }
 
 parse_radiotap_header:
@@ -415,7 +415,7 @@ parse_radiotap_header:
 
         VERIFY_REMAINING(8, FOUND_RADIOTAP);
         if (px[offset] != 0)
-            return 0;
+            return false;
         header_length = ex16le(px+offset+2);
         features = ex32le(px+offset+4);
 
@@ -453,10 +453,10 @@ parse_prism_header:
         VERIFY_REMAINING(8, FOUND_PRISM);
 
         if (ex32le(px+offset+0) != 0x00000044)
-            return 0;
+            return false;
         header_length = ex32le(px+offset+4);
         if (header_length > 0xFFFFF)
-            return 0;
+            return false;
         VERIFY_REMAINING(header_length, FOUND_PRISM);
         offset += header_length;
         goto parse_wifi;
@@ -470,7 +470,7 @@ parse_llc:
 
         switch (ex24be(px+offset)) {
         case 0x0000aa: offset += 2; goto parse_llc;
-        default: return 0;
+        default: return false;
         case 0xaaaa03: break;
         }
 
@@ -484,7 +484,7 @@ parse_llc:
 
         switch (oui){
         case 0x000000: goto parse_ethertype;
-        default: return 0;
+        default: return false;
         }
 
     }
@@ -496,7 +496,7 @@ parse_ethertype:
     case 0x86dd: goto parse_ipv6;
     case 0x8100: goto parse_vlan8021q;
     case 0x8847: goto parse_vlanmpls;
-    default: return 0;
+    default: return false;
     }
 
 parse_linktype:
@@ -520,19 +520,19 @@ parse_linktype:
                 case 0x0000001e:
                     goto parse_ipv6;
             }
-            return 0;
+            return false;
         case 1:     goto parse_ethernet;
         case 12:
             switch (px[offset]>>4) {
         case 4: goto parse_ipv4;
                 case 6: goto parse_ipv6;
             }
-            return 0;
+            return false;
         case 0x69:  goto parse_wifi;
         case 113:   goto parse_linux_sll; /* LINKTYPE_LINUX_SLL DLT_LINUX_SLL */
         case 119:   goto parse_prism_header;
         case 127:   goto parse_radiotap_header;
-        default:    return 0;
+        default:    return false;
     }
     
 parse_linux_sll:
@@ -614,7 +614,7 @@ parse_arp:
                             | px[offset + 2*hardware_length + protocol_length + 3] << 0;
         
         info->found_offset = info->ip_offset;
-        return 1;
+        return true;
     }
 
 }

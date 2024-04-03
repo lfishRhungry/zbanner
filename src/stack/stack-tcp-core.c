@@ -768,7 +768,7 @@ _tcb_seg_resend(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tc
 
 /***************************************************************************
  ***************************************************************************/
-static unsigned
+static void
 application_notify(struct TCP_ConnectionTable *tcpcon,
                    struct TCP_Control_Block *tcb,
                    enum App_Event event, const void *payload, size_t payload_length,
@@ -776,7 +776,7 @@ application_notify(struct TCP_ConnectionTable *tcpcon,
 {
     struct stack_handle_t socket = {tcpcon, tcb, secs, usecs};
 
-    return application_event(&socket, tcb->app_state, event, tcb->probe,
+    application_event(&socket, tcb->app_state, event, tcb->probe,
         payload, payload_length);
 }
 
@@ -1381,7 +1381,7 @@ static const char *event_to_string(enum App_Event ev) {
     }
 }
  
-unsigned
+void
 application_event(struct stack_handle_t *socket,
     enum App_State state, enum App_Event event,
     const struct ProbeModule *probe,
@@ -1531,5 +1531,4 @@ again:
                 app_state_to_string(state), event_to_string(event));
             break;
     }
-    return 0;
 }

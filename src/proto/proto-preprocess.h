@@ -2,6 +2,7 @@
 #ifndef PREPROCESS_H
 #define PREPROCESS_H
 #include "../massip/massip-addr.h"
+#include "../util-misc/cross.h"
 
 
 enum {
@@ -58,7 +59,7 @@ struct PreprocessedInfo {
 /**
  * @return 1 if useful stuff found, 0 otherwise
  */
-unsigned
+bool
 preprocess_frame(const unsigned char *px, unsigned length, unsigned link_type, struct PreprocessedInfo *info);
 
 #endif

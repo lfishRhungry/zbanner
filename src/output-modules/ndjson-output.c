@@ -25,7 +25,7 @@ static const char fmt_ndjson[] =
 
 static char format_time[32];
 
-static unsigned
+static bool
 ndjson_init(const struct Output *out)
 {
 
@@ -36,10 +36,10 @@ ndjson_init(const struct Output *out)
         LOG(LEVEL_ERROR, "[-] NdjsonOutput: could not open file %s for %s.\n",
             out->output_filename, out->is_append?"appending":"writing");
         perror(out->output_filename);
-        return -1;
+        return false;
     }
 
-    return 1;
+    return true;
 }
 
 static void

@@ -36,7 +36,7 @@ static const char fmt_csv[] =
 
 static char format_time[32];
 
-static unsigned
+static bool
 csv_init(const struct Output *out)
 {
 
@@ -47,7 +47,7 @@ csv_init(const struct Output *out)
         LOG(LEVEL_ERROR, "[-] CsvOutput: could not open file %s for %s.\n",
             out->output_filename, out->is_append?"appending":"writing");
         perror(out->output_filename);
-        return -1;
+        return false;
     }
 
     err = fputs(header_csv, file);
@@ -56,7 +56,7 @@ csv_init(const struct Output *out)
         LOG(LEVEL_ERROR, "[-] CsvOutput: could not write header to file.\n");
     }
 
-    return 1;
+    return true;
 }
 
 static void

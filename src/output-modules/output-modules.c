@@ -89,7 +89,7 @@ static const char fmt_cls []   = " \"%s\"";
 static const char fmt_reason[] = " because of \"%s\"";
 static const char fmt_report[] = "  "XPRINT_CH_COLOR_YELLOW"Report: %s";
 
-unsigned
+bool
 output_init(struct Output *output)
 {
     if (output->output_module) {
@@ -98,21 +98,21 @@ output_init(struct Output *output)
             LOG(LEVEL_ERROR,
                 "[-] OutputModule %s need to specify output file name by `--output-file`.\n",
                 output->output_module->name);
-            return -1;
+            return false;
         }
 
         if (output->output_module->params) {
             if (set_parameters_from_substring(NULL,
                 output->output_module->params, output->output_args)) {
                 LOG(LEVEL_ERROR, "FAIL: errors happened in sub param parsing of OutputModule.\n");
-                return -1;
+                return false;
             }
         }
 
         if (!output->output_module->init_cb(output)) {
             LOG(LEVEL_ERROR, "[-] FAIL: errors happened in %s initing.\n",
                 output->output_module->name);
-            return -1;
+            return false;
         }
     }
 
@@ -121,7 +121,7 @@ output_init(struct Output *output)
     output->succ_mutex   = pixie_create_mutex();
     output->fail_mutex   = pixie_create_mutex();
 
-    return 1;
+    return true;
 }
 
 /*Some special processes should be done when output to stdout for avoiding mess*/

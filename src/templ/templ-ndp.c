@@ -276,12 +276,12 @@ ndp_create_ns_packet(
         ip_them.ipv6, ip_me.ipv6, src_mac, ttl, px, sizeof_px);
 }
 
-unsigned ndp_is_solicited_advertise(ipv6address ip_them,
+bool ndp_is_solicited_advertise(ipv6address ip_them,
     const unsigned char *px, unsigned icmpv6_offset)
 {
     if (U64_EQUAL_TO_BE(px+icmpv6_offset+8, ip_them.hi)
         && U64_EQUAL_TO_BE(px+icmpv6_offset+16, ip_them.lo))
-        return 1;
+        return true;
 
-    return 0;
+    return false;
 }
