@@ -59,12 +59,12 @@ struct JarmConfig {
 */
 size_t jarm_create_ch(struct JarmConfig *jc, unsigned char *buf, unsigned buf_len);
 
+
 /**
- * Just get length of clienthello for the JarmConfig.
- * It is used for ProbeModule building and reduced one time of memory copy.
- * @param jc config of jarm.
- * @return length of CH probe or 0 if error happened.
+ * Decpher ServerHello in JARM format.
+ * We should insure the payload is a valid ServerHello.(include ALERT)
 */
-// size_t jarm_get_ch_length(struct JarmConfig *jc);
+size_t jarm_decipher_one(const unsigned char *payload, size_t payload_len,
+    char *res_buf, size_t res_max);
 
 #endif

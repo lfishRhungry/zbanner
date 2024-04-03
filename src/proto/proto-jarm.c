@@ -132,8 +132,7 @@ static size_t jarm_load_ext_supported_versions(struct JarmConfig *jc, unsigned c
     size_t r_len = 0;
 
     /*extension type*/
-    px[0] = TLSEXT_TYPE_supported_versions >> 8 & 0xFF;
-    px[1] = TLSEXT_TYPE_supported_versions >> 0 & 0xFF;
+    U16_TO_BE(px, TLSEXT_TYPE_supported_versions);
     r_len += 2;
 
     unsigned char *ver_start = px + 5;
@@ -141,8 +140,7 @@ static size_t jarm_load_ext_supported_versions(struct JarmConfig *jc, unsigned c
     if (jc->grease_use==GreaseUse_YES) {
         uint16_t grease;
         grease        = tls_get_a_grease(rand());
-        ver_start[0]  = (grease >> 8) & 0xFF;
-        ver_start[1]  = (grease >> 0) & 0xFF;
+        U16_TO_BE(ver_start, grease);
         ver_start    += 2;
         r_len        += 2;
     }
@@ -197,8 +195,7 @@ static size_t jarm_load_ext_supported_versions(struct JarmConfig *jc, unsigned c
     /*extension length*/
     uint16_t ext_len;
     ext_len = sv_len + 1;
-    px[2]   = (ext_len >> 8) & 0xFF;
-    px[3]   = (ext_len >> 0) & 0xFF;
+    U16_TO_BE(px+2, ext_len);
     r_len  += 2;
     
     return r_len;
@@ -210,8 +207,7 @@ static size_t jarm_load_ext_key_share(struct JarmConfig *jc, unsigned char *px)
     unsigned char *ks_ext = px + 6;
 
     /*extension type*/
-    px[0] = TLSEXT_TYPE_key_share >> 8 & 0xFF;
-    px[1] = TLSEXT_TYPE_key_share >> 0 & 0xFF;
+    U16_TO_BE(px, TLSEXT_TYPE_key_share);
     r_len += 2;
 
     /*jarm insert grease to head in key share extension*/
@@ -219,8 +215,7 @@ static size_t jarm_load_ext_key_share(struct JarmConfig *jc, unsigned char *px)
         /*Group: GREASE*/
         uint16_t grease;
         grease     = tls_get_a_grease(rand());
-        ks_ext[0]  = (grease >> 8) & 0xFF;
-        ks_ext[1]  = (grease >> 0) & 0xFF;
+        U16_TO_BE(ks_ext, grease);
         /*Key Exchange Length & Key Exchange*/
         memcpy(ks_ext+2, "\x00\x01\x00", sizeof( "\x00\x01\x00")-1);
         ks_ext += 5;
@@ -238,22 +233,17 @@ static size_t jarm_load_ext_key_share(struct JarmConfig *jc, unsigned char *px)
     /*32 bytes random value as Key Exchange*/
     for (unsigned i=0; i<32/4; i++) {
         int r      = rand();
-        ks_ext[0]  = (r >> 24) & 0xFF;
-        ks_ext[1]  = (r >> 16) & 0xFF;
-        ks_ext[2]  = (r >>  8) & 0xFF;
-        ks_ext[3]  = (r >>  0) & 0xFF;
+        U32_TO_BE(ks_ext, r);
         ks_ext    += 4;
         r_len     += 4;
     }
     /*client key share length*/
     uint16_t cks_len = ks_ext - (px+6);
-    px[4]  = (cks_len >> 8) & 0xFF;
-    px[5]  = (cks_len >> 0) & 0xFF;
+    U16_TO_BE(px+4, cks_len);
     r_len += 2;
     /*key share extension length*/
     uint16_t ext_len = cks_len + 2;
-    px[2]  = (ext_len >> 8) & 0xFF;
-    px[3]  = (ext_len >> 0) & 0xFF;
+    U16_TO_BE(px+2, ext_len);
     r_len += 2;
 
     return r_len;
@@ -277,10 +267,9 @@ static size_t jarm_load_extensions(struct JarmConfig *jc, unsigned char *px)
     if (jc->grease_use==GreaseUse_YES) {
         uint16_t grease;
         grease        = tls_get_a_grease(rand());
-        ext_start[0]  = (grease >> 8) & 0xFF;
-        ext_start[1]  = (grease >> 0) & 0xFF;
-        ext_start[2]  = 0x00;
-        ext_start[3]  = 0x00;
+        U16_TO_BE(ext_start, grease);
+        ext_start[2] = 0;
+        ext_start[3] = 0;
         ext_start    += 4;
     }
     
@@ -295,8 +284,7 @@ static size_t jarm_load_extensions(struct JarmConfig *jc, unsigned char *px)
     tmp_len    = tls_load_ext_sni(ext_start, jc->servername);
     ext_start += tmp_len;
  
-    ext_start[0] = TLSEXT_TYPE_extended_master_secret >> 8 & 0xFF;
-    ext_start[1] = TLSEXT_TYPE_extended_master_secret >> 0 & 0xFF;
+    U16_TO_BE(ext_start, TLSEXT_TYPE_extended_master_secret);
     ext_start   += 2;
     memcpy(ext_start, JARM_EXT_EXTENDED_MASTER_SECRET, sizeof(JARM_EXT_EXTENDED_MASTER_SECRET)-1);
     ext_start += (sizeof(JARM_EXT_EXTENDED_MASTER_SECRET)-1);
@@ -307,26 +295,22 @@ static size_t jarm_load_extensions(struct JarmConfig *jc, unsigned char *px)
     memcpy(ext_start, JARM_EXT_MAX_FRAGMENT_LENGTH, sizeof(JARM_EXT_MAX_FRAGMENT_LENGTH)-1);
     ext_start += (sizeof(JARM_EXT_MAX_FRAGMENT_LENGTH)-1);
  
-    ext_start[0] = TLSEXT_TYPE_renegotiate >> 8 & 0xFF;
-    ext_start[1] = TLSEXT_TYPE_renegotiate >> 0 & 0xFF;
+    U16_TO_BE(ext_start, TLSEXT_TYPE_renegotiate);
     ext_start   += 2;
     memcpy(ext_start, JARM_EXT_RENEGOTIATION_INFO, sizeof(JARM_EXT_RENEGOTIATION_INFO)-1);
     ext_start += (sizeof(JARM_EXT_RENEGOTIATION_INFO)-1);
  
-    ext_start[0] = TLSEXT_TYPE_supported_groups >> 8 & 0xFF;
-    ext_start[1] = TLSEXT_TYPE_supported_groups >> 0 & 0xFF;
+    U16_TO_BE(ext_start, TLSEXT_TYPE_supported_groups);
     ext_start   += 2;
     memcpy(ext_start, JARM_EXT_SUPPORTED_GROUPS, sizeof(JARM_EXT_SUPPORTED_GROUPS)-1);
     ext_start += (sizeof(JARM_EXT_SUPPORTED_GROUPS)-1);
  
-    ext_start[0] = TLSEXT_TYPE_ec_point_formats >> 8 & 0xFF;
-    ext_start[1] = TLSEXT_TYPE_ec_point_formats >> 0 & 0xFF;
+    U16_TO_BE(ext_start, TLSEXT_TYPE_ec_point_formats);
     ext_start   += 2;
     memcpy(ext_start, JARM_EXT_EC_POINT_FORMATS, sizeof(JARM_EXT_EC_POINT_FORMATS)-1);
     ext_start += (sizeof(JARM_EXT_EC_POINT_FORMATS)-1);
  
-    ext_start[0] = TLSEXT_TYPE_session_ticket >> 8 & 0xFF;
-    ext_start[1] = TLSEXT_TYPE_session_ticket >> 0 & 0xFF;
+    U16_TO_BE(ext_start, TLSEXT_TYPE_session_ticket);
     ext_start   += 2;
     memcpy(ext_start, JARM_EXT_SESSION_TICKET, sizeof(JARM_EXT_SESSION_TICKET)-1);
     ext_start += (sizeof(JARM_EXT_SESSION_TICKET)-1);
@@ -346,8 +330,7 @@ static size_t jarm_load_extensions(struct JarmConfig *jc, unsigned char *px)
     }
     ext_start += tmp_len;
  
-    ext_start[0] = TLSEXT_TYPE_signature_algorithms >> 8 & 0xFF;
-    ext_start[1] = TLSEXT_TYPE_signature_algorithms >> 0 & 0xFF;
+    U16_TO_BE(ext_start, TLSEXT_TYPE_signature_algorithms);
     ext_start   += 2;
     memcpy(ext_start, JARM_EXT_SIGNATURE_ALGORITHMS, sizeof(JARM_EXT_SIGNATURE_ALGORITHMS)-1);
     ext_start += (sizeof(JARM_EXT_SIGNATURE_ALGORITHMS)-1);
@@ -355,8 +338,7 @@ static size_t jarm_load_extensions(struct JarmConfig *jc, unsigned char *px)
     tmp_len    = jarm_load_ext_key_share(jc, ext_start);
     ext_start += tmp_len;
  
-    ext_start[0] = TLSEXT_TYPE_psk_kex_modes >> 8 & 0xFF;
-    ext_start[1] = TLSEXT_TYPE_psk_kex_modes >> 0 & 0xFF;
+    U16_TO_BE(ext_start, TLSEXT_TYPE_psk_kex_modes);
     ext_start   += 2;
     memcpy(ext_start, JARM_EXT_PSK_KEY_EXCHANGE_MODES, sizeof(JARM_EXT_PSK_KEY_EXCHANGE_MODES)-1);
     ext_start += (sizeof(JARM_EXT_PSK_KEY_EXCHANGE_MODES)-1);
@@ -369,8 +351,7 @@ static size_t jarm_load_extensions(struct JarmConfig *jc, unsigned char *px)
     /*all extension length*/
     uint16_t ext_len;
     ext_len = ext_start - (px+2);
-    px[0]   = (ext_len >> 8) & 0xFF;
-    px[1]   = (ext_len >> 0) & 0xFF;
+    U16_TO_BE(px, ext_len);
     
     return (size_t)(ext_start-px);
 }
@@ -395,8 +376,7 @@ static size_t jarm_cipherlist_mung(struct JarmConfig *jc, unsigned char *px,
     if (jc->grease_use==GreaseUse_YES) {
         uint16_t grease;
         grease = tls_get_a_grease(rand());
-        px[0]  = (grease >> 8) & 0xFF;
-        px[1]  = (grease >> 0) & 0xFF;
+        U16_TO_BE(px, grease);
         px    += 2;
         r_len += 2;
     }
@@ -497,8 +477,7 @@ static size_t jarm_load_cipherlist(struct JarmConfig *jc, unsigned char *px)
     /*load raw cipher suites list*/
     r_len = jarm_cipherlist_mung(jc, px+2, cs_list, cs_count);
     /*fill Length of cipher suites*/
-    px[0]  = (r_len >> 8) & 0xFF;
-    px[1]  = (r_len >> 0) & 0xFF;
+    U16_TO_BE(px, r_len);
 
     /*total length*/
     return r_len+2;
@@ -519,31 +498,21 @@ size_t jarm_create_ch(struct JarmConfig *jc, unsigned char *buf, unsigned buf_le
     /*Version about*/
     if (jc->version == SSL3_VERSION) {
         /*Version in Record layer header*/
-        (px+1)[0] = SSL3_VERSION >> 8 & 0xFF;
-        (px+1)[1] = SSL3_VERSION >> 0 & 0xFF;
+        U16_TO_BE(px+1, SSL3_VERSION);
         /*Version in Handshake protocol*/
-        (px+9)[0] = SSL3_VERSION >> 8 & 0xFF;
-        (px+9)[1] = SSL3_VERSION >> 0 & 0xFF;
+        U16_TO_BE(px+9, SSL3_VERSION);
     } else if (jc->version == TLS1_VERSION) {
-        (px+1)[0] = TLS1_VERSION >> 8 & 0xFF;
-        (px+1)[1] = TLS1_VERSION >> 0 & 0xFF;
-        (px+9)[0] = TLS1_VERSION >> 8 & 0xFF;
-        (px+9)[1] = TLS1_VERSION >> 0 & 0xFF;
+        U16_TO_BE(px+1, TLS1_VERSION);
+        U16_TO_BE(px+9, TLS1_VERSION);
     } else if (jc->version == TLS1_1_VERSION) {
-        (px+1)[0] = TLS1_1_VERSION >> 8 & 0xFF;
-        (px+1)[1] = TLS1_1_VERSION >> 0 & 0xFF;
-        (px+9)[0] = TLS1_1_VERSION >> 8 & 0xFF;
-        (px+9)[1] = TLS1_1_VERSION >> 0 & 0xFF;
+        U16_TO_BE(px+1, TLS1_1_VERSION);
+        U16_TO_BE(px+9, TLS1_1_VERSION);
     } else if (jc->version == TLS1_2_VERSION) {
-        (px+1)[0] = TLS1_2_VERSION >> 8 & 0xFF;
-        (px+1)[1] = TLS1_2_VERSION >> 0 & 0xFF;
-        (px+9)[0] = TLS1_2_VERSION >> 8 & 0xFF;
-        (px+9)[1] = TLS1_2_VERSION >> 0 & 0xFF;
+        U16_TO_BE(px+1, TLS1_2_VERSION);
+        U16_TO_BE(px+9, TLS1_2_VERSION);
     } else if (jc->version == TLS1_3_VERSION) {
-        (px+1)[0] = TLS1_VERSION   >> 8 & 0xFF;
-        (px+1)[1] = TLS1_VERSION   >> 0 & 0xFF;
-        (px+9)[0] = TLS1_2_VERSION >> 8 & 0xFF;
-        (px+9)[1] = TLS1_2_VERSION >> 0 & 0xFF;
+        U16_TO_BE(px+1, TLS1_VERSION);
+        U16_TO_BE(px+9, TLS1_2_VERSION);
     }
 
     /*handshake type: clienthello*/
@@ -555,10 +524,7 @@ size_t jarm_create_ch(struct JarmConfig *jc, unsigned char *buf, unsigned buf_le
     /*32 bytes of Random*/
     for (unsigned i=0; i<32/4; i++) {
         r    = rand();
-        p[0] = (r >> 24) & 0xFF;
-        p[1] = (r >> 16) & 0xFF;
-        p[2] = (r >>  8) & 0xFF;
-        p[3] = (r >>  0) & 0xFF;
+        U32_TO_BE(p, r);
         p   += 4;
     }
 
@@ -568,10 +534,7 @@ size_t jarm_create_ch(struct JarmConfig *jc, unsigned char *buf, unsigned buf_le
     /*32 bytes of Session ID*/
     for (unsigned i=0; i<32/4; i++) {
         r    = rand();
-        p[0] = (r >> 24) & 0xFF;
-        p[1] = (r >> 16) & 0xFF;
-        p[2] = (r >>  8) & 0xFF;
-        p[3] = (r >>  0) & 0xFF;
+        U32_TO_BE(p, r);
         p   += 4;
     }
 
@@ -592,13 +555,11 @@ size_t jarm_create_ch(struct JarmConfig *jc, unsigned char *buf, unsigned buf_le
     uint16_t in_len;
     in_len = p - (px+9);
     px[6]  = 0x00;
-    px[7]  = (in_len >> 8) & 0xFF;
-    px[8]  = (in_len >> 0) & 0xFF;
+    U16_TO_BE(px+7, in_len);
     /*set outter length*/
     uint16_t out_len;
     out_len = in_len + 4;
-    px[3]   = (out_len >> 8) & 0xFF;
-    px[4]   = (out_len >> 0) & 0xFF;
+    U16_TO_BE(px+3, out_len);
 
     size_t r_len = p - px;
     if ((unsigned)r_len > buf_len) {
@@ -607,4 +568,56 @@ size_t jarm_create_ch(struct JarmConfig *jc, unsigned char *buf, unsigned buf_le
         memcpy(buf, px, r_len);
         return r_len;
     }
+}
+
+static size_t
+extract_ext(const unsigned char *payload, size_t payload_len,
+    char *res_buf, size_t res_max)
+{
+    size_t   res_len  = 0;
+    unsigned counter  = payload[43];
+    unsigned count    = counter+49;
+    unsigned sh_len   = BE_TO_U16(payload+3);
+    unsigned length   = BE_TO_U16(payload+47);
+    unsigned maximum  = length+(count-1);
+
+    if (payload_len <= counter+85)
+        return snprintf(res_buf, res_max, "|");
+    
+    if (payload[counter+47]==11)
+        return snprintf(res_buf, res_max, "|");
+    else if (bytes_header(payload+counter+50, 3, "\x0e\xac\x0b", 3)>0
+        || bytes_header(payload+counter+82, 3, "\x0f\xf0\x0b", 3)>0)
+        return snprintf(res_buf, res_max, "|");
+    else if (counter+42 >= sh_len)
+        return snprintf(res_buf, res_max, "|");
+
+    return 0;
+
+}
+
+size_t jarm_decipher_one(const unsigned char *payload, size_t payload_len,
+    char *res_buf, size_t res_max)
+{
+    size_t res_len = 0;
+
+    if (payload_len>43 && payload[0]==22 && payload[5]==2) {
+
+        unsigned counter = payload[43];
+
+        if (payload_len>counter+45) {
+            /*Selected cipher*/
+            res_len += snprintf(res_buf+res_len, res_max-res_len, "%02x%02x|",
+                payload[counter+44], payload[counter+45]);
+            /*Version info*/
+            res_len += snprintf(res_buf+res_len, res_max-res_len, "%02x%02x|",
+                payload[9], payload[10]);
+            /*Extract extensions*/
+            res_len += extract_ext(payload, payload_len, res_buf+res_len, res_max-res_len);
+
+            return res_len;
+        }
+    }
+
+    return snprintf(res_buf, res_max, "|||");
 }

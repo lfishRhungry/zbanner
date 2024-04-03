@@ -163,7 +163,8 @@ jarm_handle_response(
                 item->level = Output_SUCCESS;
                 safe_strcpy(item->classification, OUTPUT_CLS_LEN, "jarmed");
                 safe_strcpy(item->reason, OUTPUT_RSN_LEN, "tls banner");
-                snprintf(item->report, OUTPUT_RPT_LEN, "JARM[%d]", target->index);
+                int r = snprintf(item->report, OUTPUT_RPT_LEN, "JARM[%02d] ", target->index);
+                jarm_decipher_one(px, sizeof_px, item->report+r, OUTPUT_RPT_LEN-r);
                 return 1;
             }
         }
