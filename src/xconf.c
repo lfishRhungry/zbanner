@@ -2471,7 +2471,7 @@ struct ConfigParam config_parameters[] = {
         "Specifies an argument for used ProbeModule."
     },
 
-    {"OUTPUT MODULES & STATUS:", SET_nothing, 0, {0}, NULL},
+    {"OUTPUT MODULES:", SET_nothing, 0, {0}, NULL},
 
     {
         "output-module",
@@ -2521,28 +2521,25 @@ struct ConfigParam config_parameters[] = {
         {"interact", 0},
         "Also print the results to screen while specifying an OutputModule."
     },
+
+    {"XTATUS:", SET_nothing, 0, {0}, NULL},
+
     {
         "show",
         SET_show,
         F_NONE,
         {0},
-        "Tells which explicit result status to display, such as 'failed' for "
-        "those ports that respond with a RST on TCP or 'info' for informations."
+        "Tells which type of status should be displayed explicitly, such as:\n"
+        "'failed' for those ports that respond with a RST on TCP.\n"
+        "'info' for type of information or hint."
     },
     {
         "ndjson-status",
         SET_ndjson_status,
         F_BOOL,
         {"status-ndjson", 0},
-        "Print status information in NDJSON format while running."
-    },
-    {
-        "pcap-filename",
-        SET_pcap_filename,
-        F_NONE,
-        {"pcap",0},
-        "Saves received packets (but not transmitted packets) to the "
-        "libpcap-format file."
+        "Print status information in NDJSON format(Newline Delimited JSON) while"
+        " running."
     },
 
     {"PACKET ATTRIBUTE:", SET_nothing, 0, {0}, NULL},
@@ -2658,15 +2655,12 @@ struct ConfigParam config_parameters[] = {
         "instances, though the --shards option might be better."
     },
     {
-        "offline",
-        SET_offline,
-        F_BOOL,
-        {"dry-run", 0},
-        "Do not actually transmit packets. This is useful with a low rate and "
-        "--packet-trace to look at what packets might've been transmitted. Or, "
-        "it's useful with --rate 100000000 in order to benchmark how fast "
-        "transmit would work (assuming a zero-overhead driver). PF_RING is about"
-        " 20% slower than the benchmark result from offline mode."
+        "pcap-filename",
+        SET_pcap_filename,
+        F_NONE,
+        {"pcap",0},
+        "Saves received packets (but not transmitted packets) to the "
+        "libpcap-format file."
     },
     {
         "timeout",
@@ -2726,6 +2720,17 @@ struct ConfigParam config_parameters[] = {
         "Use sendqueue feature of Npcap/Winpcap on Windows to transmit packets. "
         "The transmit rate on Windows is really slow, like 40-kpps. The speed "
         "can be increased by using the sendqueue feature to roughly 300-kpps."
+    },
+    {
+        "offline",
+        SET_offline,
+        F_BOOL,
+        {"dry-run", 0},
+        "Do not actually transmit packets. This is useful with a low rate and "
+        "--packet-trace to look at what packets might've been transmitted. Or, "
+        "it's useful with --rate 100000000 in order to benchmark how fast "
+        "transmit would work (assuming a zero-overhead driver). PF_RING is about"
+        " 20% slower than the benchmark result from offline mode."
     },
     {
         "blackrock-rounds",
