@@ -309,15 +309,18 @@ static int main_scan(struct Xconf *xconf) {
     now = time(0);
     safe_gmtime(&x, &now);
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S GMT", &x);
-    LOG(LEVEL_ERROR,
-        "Starting " XTATE_FIRST_UPPER_NAME " " XTATE_VERSION " (" XTATE_GITHUB
+    LOG(LEVEL_HINT,
+        "\nStarting " XTATE_FIRST_UPPER_NAME " " XTATE_VERSION " (" XTATE_GITHUB
         ") at %s\n",
         buffer);
 
-    LOG(LEVEL_HINT, "Initiating ScanModule: %s\n", xconf->scan_module->name);
+    LOG(LEVEL_HINT, "ScanModule  : %s\n", xconf->scan_module->name);
     if (xconf->probe_module)
-        LOG(LEVEL_HINT, "Initiating ProbeModule: %s\n", xconf->probe_module->name);
-    LOG(LEVEL_HINT, "Scanning %u hosts [%u port%s/host]\n", (unsigned)count_ips,
+        LOG(LEVEL_HINT, "ProbeModule : %s\n", xconf->probe_module->name);
+    if (xconf->output.output_module)
+        LOG(LEVEL_HINT, "OutputModule: %s\n", xconf->output.output_module->name);
+
+    LOG(LEVEL_HINT, "Scanning %u hosts [%u port%s/host]\n\n", (unsigned)count_ips,
         (unsigned)count_ports, (count_ports == 1) ? "" : "s");
 
     /*
