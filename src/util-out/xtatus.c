@@ -145,7 +145,7 @@ xtatus_print(
      * Smooth the number by averaging over the last 8 seconds
      */
      xtatus->last_rates[xtatus->last_count++ & 0x7] = rate;
-     rate =     xtatus->last_rates[0]
+     rate =       xtatus->last_rates[0]
                 + xtatus->last_rates[1]
                 + xtatus->last_rates[2]
                 + xtatus->last_rates[3]
@@ -174,14 +174,14 @@ xtatus_print(
      * some other stats
      */
     if (total_successed) {
-        current_successed       = total_successed - xtatus->total_successed;
-        xtatus->total_successed = total_successed;
-        successed_rate          = (1.0*current_successed)/elapsed_time;
+        current_successed           = total_successed - xtatus->total_successed;
+        xtatus->total_successed     = total_successed;
+        successed_rate              = (1.0*current_successed)/elapsed_time;
     }
     if (total_sent) {
-        current_sent            = total_sent - xtatus->total_sent;
-        xtatus->total_sent      = total_sent;
-        sent_rate               = (1.0*current_sent)/elapsed_time;
+        current_sent                = total_sent - xtatus->total_sent;
+        xtatus->total_sent          = total_sent;
+        sent_rate                   = (1.0*current_sent)/elapsed_time;
     }
 
     /*
