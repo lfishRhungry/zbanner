@@ -12,7 +12,7 @@ static const char *TlsGreaseList[] = {
 
 uint16_t tls_get_a_grease(unsigned seed)
 {
-    unsigned idx    = seed%(sizeof(TlsGreaseList)/sizeof(const char *));
+    unsigned idx    = seed%(ARRAY_SIZE(TlsGreaseList));
     uint16_t grease = BE_TO_U16(TlsGreaseList[idx]);
     return grease;
 }

@@ -27,7 +27,7 @@ static struct OutputModule *output_modules_list[] = {
 
 struct OutputModule *get_output_module_by_name(const char *name)
 {
-    int len = (int)(sizeof(output_modules_list)/sizeof(struct OutputModule *));
+    int len = (int)ARRAY_SIZE(output_modules_list);
     for (int i = 0; i < len; i++) {
         if (!strcmp(output_modules_list[i]->name, name)) {
             return output_modules_list[i];
@@ -38,7 +38,7 @@ struct OutputModule *get_output_module_by_name(const char *name)
 
 void list_all_output_modules()
 {
-    int len = (int)(sizeof(output_modules_list)/sizeof(struct OutputModule *));
+    int len = (int)ARRAY_SIZE(output_modules_list);
     
     printf("\n");
     printf(XPRINT_STAR_LINE);

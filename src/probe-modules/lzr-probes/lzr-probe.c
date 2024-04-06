@@ -295,7 +295,7 @@ lzr_handle_response(
      * print results just like lzr:
      *     pop3-smtp-http
     */
-    for (size_t i=0; i<sizeof(lzr_handshakes)/sizeof(struct ProbeModule*); i++) {
+    for (size_t i=0; i<ARRAY_SIZE(lzr_handshakes); i++) {
         lzr_handshakes[i]->handle_response_cb(
             target, px, sizeof_px, item);
 

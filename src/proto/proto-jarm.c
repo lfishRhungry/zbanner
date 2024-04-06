@@ -148,7 +148,7 @@ static size_t jarm_load_ext_supported_versions(struct JarmConfig *jc, unsigned c
     if (jc->support_ver_ext==SupportVerExt_1_2_SUPPORT
         &&jc->ext_order==ExtOrder_FORWARD) {
         for (unsigned i=0;
-            i<(sizeof(JarmSupportedVersionList_1_2_FORWORD)/sizeof(uint16_t));
+            i<ARRAY_SIZE(JarmSupportedVersionList_1_2_FORWORD);
             i++) {
             ver_start[0] = JarmSupportedVersionList_1_2_FORWORD[i] >> 8 & 0xFF;
             ver_start[1] = JarmSupportedVersionList_1_2_FORWORD[i] >> 0 & 0xFF;
@@ -158,7 +158,7 @@ static size_t jarm_load_ext_supported_versions(struct JarmConfig *jc, unsigned c
     } else if (jc->support_ver_ext==SupportVerExt_1_2_SUPPORT
         &&jc->ext_order==ExtOrder_REVERSE) {
         for (unsigned i=0;
-            i<(sizeof(JarmSupportedVersionList_1_2_REVERSE)/sizeof(uint16_t));
+            i<ARRAY_SIZE(JarmSupportedVersionList_1_2_REVERSE);
             i++) {
             ver_start[0] = JarmSupportedVersionList_1_2_REVERSE[i] >> 8 & 0xFF;
             ver_start[1] = JarmSupportedVersionList_1_2_REVERSE[i] >> 0 & 0xFF;
@@ -168,7 +168,7 @@ static size_t jarm_load_ext_supported_versions(struct JarmConfig *jc, unsigned c
     } else if (jc->support_ver_ext==SupportVerExt_1_3_SUPPORT
         &&jc->ext_order==ExtOrder_FORWARD) {
         for (unsigned i=0;
-            i<(sizeof(JarmSupportedVersionList_1_3_FORWARD)/sizeof(uint16_t));
+            i<ARRAY_SIZE(JarmSupportedVersionList_1_3_FORWARD);
             i++) {
             ver_start[0] = JarmSupportedVersionList_1_3_FORWARD[i] >> 8 & 0xFF;
             ver_start[1] = JarmSupportedVersionList_1_3_FORWARD[i] >> 0 & 0xFF;
@@ -178,7 +178,7 @@ static size_t jarm_load_ext_supported_versions(struct JarmConfig *jc, unsigned c
     } else if (jc->support_ver_ext==SupportVerExt_1_3_SUPPORT
         &&jc->ext_order==ExtOrder_REVERSE) {
         for (unsigned i=0;
-            i<(sizeof(JarmSupportedVersionList_1_3_REVERSE)/sizeof(uint16_t));
+            i<ARRAY_SIZE(JarmSupportedVersionList_1_3_REVERSE);
             i++) {
             ver_start[0] = JarmSupportedVersionList_1_3_REVERSE[i] >> 8 & 0xFF;
             ver_start[1] = JarmSupportedVersionList_1_3_REVERSE[i] >> 0 & 0xFF;
@@ -317,16 +317,16 @@ static size_t jarm_load_extensions(struct JarmConfig *jc, unsigned char *px)
 
     if (jc->ext_order == ExtOrder_FORWARD && jc->alpn_use == AlpnUse_ALL) {
         tmp_len = tls_load_ext_alpn(ext_start, JarmAlpnForwardList,
-            sizeof(JarmAlpnForwardList)/sizeof(const char *));
+            ARRAY_SIZE(JarmAlpnForwardList));
     } else if (jc->ext_order == ExtOrder_REVERSE && jc->alpn_use == AlpnUse_ALL) {
         tmp_len = tls_load_ext_alpn(ext_start, JarmAlpnReverseList,
-            sizeof(JarmAlpnReverseList)/sizeof(const char *));
+            ARRAY_SIZE(JarmAlpnReverseList));
     } else if (jc->ext_order == ExtOrder_FORWARD && jc->alpn_use == AlpnUse_RARE) {
         tmp_len = tls_load_ext_alpn(ext_start, JarmAlpnForwardListRare,
-            sizeof(JarmAlpnForwardListRare)/sizeof(const char *));
+            ARRAY_SIZE(JarmAlpnForwardListRare));
     } else if (jc->ext_order == ExtOrder_REVERSE && jc->alpn_use == AlpnUse_RARE) {
         tmp_len = tls_load_ext_alpn(ext_start, JarmAlpnReverseListRare,
-            sizeof(JarmAlpnReverseListRare)/sizeof(const char *));
+            ARRAY_SIZE(JarmAlpnReverseListRare));
     }
     ext_start += tmp_len;
  
@@ -468,10 +468,10 @@ static size_t jarm_load_cipherlist(struct JarmConfig *jc, unsigned char *px)
 
     if (jc->cipher_list == CipherList_ALL) {
         cs_list  = JarmCipherSuitesAll;
-        cs_count = sizeof(JarmCipherSuitesAll)/sizeof(const char *);
+        cs_count = ARRAY_SIZE(JarmCipherSuitesAll);
     } else {
         cs_list  = JarmCipherSuites_Without_1_3;
-        cs_count = sizeof(JarmCipherSuites_Without_1_3)/sizeof(const char *);
+        cs_count = ARRAY_SIZE(JarmCipherSuites_Without_1_3);
     }
 
     /*load raw cipher suites list*/

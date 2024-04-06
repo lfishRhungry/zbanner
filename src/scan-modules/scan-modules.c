@@ -30,7 +30,7 @@ static struct ScanModule *scan_modules_list[] = {
 
 struct ScanModule *get_scan_module_by_name(const char *name)
 {
-    int len = (int)(sizeof(scan_modules_list)/sizeof(struct ScanModule *));
+    int len = (int)(ARRAY_SIZE(scan_modules_list));
     for (int i = 0; i < len; i++) {
         if (!strcmp(scan_modules_list[i]->name, name)) {
             return scan_modules_list[i];
@@ -41,8 +41,8 @@ struct ScanModule *get_scan_module_by_name(const char *name)
 
 void list_all_scan_modules()
 {
-    int len = (int)(sizeof(scan_modules_list)/sizeof(struct ScanModule *));
-    
+    int len = (int)(ARRAY_SIZE(scan_modules_list));
+
     printf("\n");
     printf(XPRINT_STAR_LINE);
     printf("\n");

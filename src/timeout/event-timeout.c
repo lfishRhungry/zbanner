@@ -76,9 +76,8 @@ timeouts_create(uint64_t timestamp)
 {
     struct Timeouts *timeouts;
 
-    timeouts = CALLOC(1, sizeof(*timeouts));
-    
-    timeouts->mask = sizeof(timeouts->slots)/sizeof(timeouts->slots[0]) - 1;
+    timeouts       = CALLOC(1, sizeof(*timeouts));
+    timeouts->mask = ARRAY_SIZE(timeouts->slots)-1;
 
     /*
      * Set the index to the current time. Note that this timestamp is

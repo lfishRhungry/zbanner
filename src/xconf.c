@@ -1099,8 +1099,8 @@ static enum Config_Res SET_top_port(void *conf, const char *name, const char *va
     }
 
     struct RangeList *ports = &xconf->targets.ports;
-    static const unsigned max_tcp_ports = sizeof(top_tcp_ports)/sizeof(top_tcp_ports[0]);
-    static const unsigned max_udp_ports = sizeof(top_udp_ports)/sizeof(top_udp_ports[0]);
+    static const unsigned max_tcp_ports = ARRAY_SIZE(top_tcp_ports);
+    static const unsigned max_udp_ports = ARRAY_SIZE(top_udp_ports);
 
     unsigned i;
     if (name[0]=='u') {

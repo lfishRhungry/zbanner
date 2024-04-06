@@ -110,7 +110,7 @@ static struct ProbeModule *probe_modules_list[] = {
 
 struct ProbeModule *get_probe_module_by_name(const char *name)
 {
-    int len = (int)(sizeof(probe_modules_list)/sizeof(struct ProbeModule *));
+    int len = (int)ARRAY_SIZE(probe_modules_list);
     for (int i = 0; i < len; i++) {
         if (!strcmp(probe_modules_list[i]->name, name)) {
             return probe_modules_list[i];
@@ -138,7 +138,7 @@ get_probe_type_name(const enum ProbeType type)
 
 void list_all_probe_modules()
 {
-    int len = (int)(sizeof(probe_modules_list)/sizeof(struct ProbeModule *));
+    int len = (int)ARRAY_SIZE(probe_modules_list);
     
     printf("\n");
     printf(XPRINT_STAR_LINE);
