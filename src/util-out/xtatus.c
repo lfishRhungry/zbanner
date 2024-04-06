@@ -49,8 +49,8 @@ xtatus_print(
         "\"sent\":%" PRIu64 ","
         "\"tm_event\":%" PRIu64 ","
         "\"tcb\":%" PRIu64 ","
-        "\"tx_q\":%.2f%%,"
-        "\"rx_q\":%.2f%%"
+        "\"txq\":%.2f%%,"
+        "\"rxq\":%.2f%%"
     "}\n";
     
     const char *json_fmt_waiting = 
@@ -70,8 +70,8 @@ xtatus_print(
             "\"info\":%" PRIu64 ","
             "\"tm_event\":%" PRIu64 ","
             "\"tcb\":%" PRIu64 ","
-            "\"tx_q\":%.2f%%,"
-            "\"rx_q\":%.2f%%,"
+            "\"txq\":%.2f%%,"
+            "\"rxq\":%.2f%%,"
             "\"transmit\":"
             "{"
                 "\"sent\":%" PRIu64 ","
@@ -109,8 +109,8 @@ xtatus_print(
             "\"info\":%" PRIu64 ","
             "\"tm_event\":%" PRIu64
             "\"tcb\":%" PRIu64 ","
-            "\"tx_q\":%.2f%%,"
-            "\"rx_q\":%.2f%%"
+            "\"txq\":%.2f%%,"
+            "\"rxq\":%.2f%%"
         "}"
     "}\n";
 
@@ -158,8 +158,6 @@ xtatus_print(
                 + xtatus->last_rates[7]
                 ;
     rate /= 8;
-    /*if (rate == 0)
-        return;*/
 
     /*
      * Calculate "percent-done", which is just the total number of
@@ -229,7 +227,7 @@ xtatus_print(
             }
 
             if (xtatus->print_queue) {
-                fmt = ", %5.2f%%-tx_q, %5.2f%%-rx_q";
+                fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
                 fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
             }
 
@@ -287,7 +285,7 @@ xtatus_print(
                 }
 
                 if (xtatus->print_queue) {
-                    fmt = ", %5.2f%%-tx_q, %5.2f%%-rx_q";
+                    fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
                     fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
                 }
 
@@ -348,7 +346,7 @@ xtatus_print(
                 }
 
                 if (xtatus->print_queue) {
-                    fmt = ", %5.2f%%-tx_q, %5.2f%%-rx_q";
+                    fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
                     fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
                 }
 
