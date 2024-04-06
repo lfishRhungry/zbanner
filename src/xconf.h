@@ -24,26 +24,26 @@ struct TemplateSet;
 struct TemplateOptions;
 
 enum Operation {
-    Operation_Default = 0,          /* nothing specified, so print usage */
-    Operation_ListAdapters = 1,     /* list all usable interfaces */
-    Operation_Scan = 3,             /* do scan */
-    Operation_ListTargets = 5,      /* list all targets uniquely in random */
-    Operation_ListRange = 7,        /* list all targets in range */
-    Operation_Echo = 9,             /* echo the config used now or all configs with --echo-all */
-    Operation_ListCidr = 11,        /* list all targets in CIDR */
-    Operation_ListScanModules,      /* list all scan modules */
-    Operation_ListProbeModules,     /* list all probes */
-    Operation_ListOutputModules,     /* list all probes */
-    Operation_PrintHelp,            /* print help text for all parameters*/
+    Operation_Default              =  0,     /* nothing specified, so print usage */
+    Operation_ListAdapters         =  1,     /* list all usable interfaces */
+    Operation_Scan                 =  3,     /* do scan */
+    Operation_ListTargets          =  5,     /* list all targets uniquely in random */
+    Operation_ListRange            =  7,     /* list all targets in range */
+    Operation_Echo                 =  9,     /* echo the config used now or all configs with --echo-all */
+    Operation_ListCidr             = 11,     /* list all targets in CIDR */
+    Operation_ListScanModules,               /* list all scan modules */
+    Operation_ListProbeModules,              /* list all probes */
+    Operation_ListOutputModules,             /* list all probes */
+    Operation_PrintHelp,                     /* print help text for all parameters*/
 };
 
 struct source_t {
-    unsigned ipv4;
-    unsigned ipv4_mask;
-    unsigned port;
-    unsigned port_mask;
-    ipv6address ipv6;
-    ipv6address ipv6_mask;
+    unsigned         ipv4;
+    unsigned         ipv4_mask;
+    unsigned         port;
+    unsigned         port_mask;
+    ipv6address      ipv6;
+    ipv6address      ipv6_mask;
 };
 
 
@@ -60,18 +60,18 @@ struct Xconf
      * of PF_RING dnaX:Y adapters.
      */
     struct {
-        char ifname[256];
-        struct Adapter *adapter;
-        struct stack_src_t src;
-        macaddress_t source_mac;
-        macaddress_t router_mac_ipv4;
-        macaddress_t router_mac_ipv6;
-        ipv4address_t router_ip;
-        int link_type;                 /* libpcap definitions */
-        unsigned char my_mac_count;    /*is there a MAC address? */
-        unsigned vlan_id;
-        unsigned is_vlan:1;
-        unsigned is_usable:1;
+        char                     ifname[256];
+        struct Adapter          *adapter;
+        struct stack_src_t       src;
+        macaddress_t             source_mac;
+        macaddress_t             router_mac_ipv4;
+        macaddress_t             router_mac_ipv6;
+        ipv4address_t            router_ip;
+        int                      link_type;       /* libpcap definitions */
+        unsigned char            my_mac_count;    /*is there a MAC address? */
+        unsigned                 vlan_id;
+        unsigned                 is_vlan:1;
+        unsigned                 is_usable:1;
     } nic;
 
     struct {
@@ -95,8 +95,8 @@ struct Xconf
      * Temporary file to echo parameters to, used for saving configuration
      * to a file
      */
-    FILE *echo;
-    unsigned echo_all;
+    FILE      *echo;
+    unsigned   echo_all;
 
     /**
      * This stack contains:
@@ -116,14 +116,14 @@ struct Xconf
     /**
      * template for packet making quickly.
     */
-    struct TemplateSet     *tmplset;
-    struct TemplateOptions *templ_opts; /* e.g. --tcpmss */
+    struct TemplateSet       *tmplset;
+    struct TemplateOptions   *templ_opts; /* e.g. --tcpmss */
 
     /**
      * Use fast-timeout table to handle simple timeout events;
     */
-    struct FTable *ft_table;
-    time_t ft_spec;          /*timeout seconds*/
+    struct FTable    *ft_table;
+    time_t            ft_spec;          /*timeout seconds*/
 
     struct MassIP targets;
     struct MassIP exclude;
