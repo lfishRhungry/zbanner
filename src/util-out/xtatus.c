@@ -17,6 +17,7 @@ xtatus_print(
     double         rx_q_ratio,
     uint64_t       total_successed,
     uint64_t       total_failed,
+    uint64_t       total_info,
     uint64_t       total_sent,
     uint64_t       total_tm_event,
     uint64_t       total_tcb,
@@ -66,6 +67,7 @@ xtatus_print(
             "\"seconds\":%d,"
             "\"successed\":%" PRIu64 ","
             "\"failed\":%" PRIu64 ","
+            "\"info\":%" PRIu64 ","
             "\"tm_event\":%" PRIu64 ","
             "\"tcb\":%" PRIu64 ","
             "\"tx_q\":%.2f%%,"
@@ -104,6 +106,7 @@ xtatus_print(
             "}," 
             "\"successed\":%" PRIu64 ","
             "\"failed\":%" PRIu64 ","
+            "\"info\":%" PRIu64 ","
             "\"tm_event\":%" PRIu64
             "\"tcb\":%" PRIu64 ","
             "\"tx_q\":%.2f%%,"
@@ -205,7 +208,7 @@ xtatus_print(
                     tx_q_ratio,
                     rx_q_ratio);
         } else {
-            fmt = "rate:%6.2f-kpps, sent/s=%.0f, %5.2f%%-tx_q, %5.2f%%-rx_q, [+]/s=%.0f" PRIu64;
+            fmt = "rate:%6.2f-kpps, sent/s=%.0f, [+]/s=%.0f" PRIu64;
 
             fprintf(stderr,
                     fmt,
@@ -225,6 +228,11 @@ xtatus_print(
                 fprintf(stderr, fmt, total_tcb);
             }
 
+            if (xtatus->print_queue) {
+                fmt = ", %5.2f%%-tx_q, %5.2f%%-rx_q";
+                fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
+            }
+
             fprintf(stderr, "                \r");
         
         }
@@ -242,6 +250,7 @@ xtatus_print(
                         (int)exiting,
                         total_successed,
                         total_failed,
+                        total_info,
                         total_tm_event,
                         total_tcb,
                         tx_q_ratio,
@@ -250,7 +259,7 @@ xtatus_print(
                         max_count,
                         max_count-count);
             } else {
-                fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, %5.2f%%-tx_q, %5.2f%%-rx_q, [+]=%" PRIu64 ", [x]=%" PRIu64;
+                fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, [+]=%" PRIu64 ", [x]=%" PRIu64;
 
                 fprintf(stderr,
                         fmt,
@@ -262,6 +271,11 @@ xtatus_print(
                         total_successed,
                         total_failed);
 
+                if (xtatus->print_info_num) {
+                    fmt = ", [*]=%" PRIu64;
+                    fprintf(stderr, fmt, total_info);
+                }
+
                 if (xtatus->print_ft_event) {
                     fmt = ", tm_event=%" PRIu64;
                     fprintf(stderr, fmt, total_tm_event);
@@ -270,6 +284,11 @@ xtatus_print(
                 if (xtatus->print_tcb) {
                     fmt = ", tcb=%" PRIu64;
                     fprintf(stderr, fmt, total_tcb);
+                }
+
+                if (xtatus->print_queue) {
+                    fmt = ", %5.2f%%-tx_q, %5.2f%%-rx_q";
+                    fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
                 }
 
                 fprintf(stderr, "       \r");
@@ -293,12 +312,13 @@ xtatus_print(
                     max_count-count,
                     total_successed,
                     total_failed,
+                    total_info,
                     total_tm_event,
                     total_tcb,
                     tx_q_ratio,
                     rx_q_ratio);
             } else {
-                fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, %5.2f%%-tx_q, %5.2f%%-rx_q, [+]=%" PRIu64 ", [x]=%" PRIu64;
+                fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, [+]=%" PRIu64 ", [x]=%" PRIu64;
 
                 fprintf(stderr,
                     fmt,
@@ -312,6 +332,11 @@ xtatus_print(
                     total_successed,
                     total_failed);
 
+                if (xtatus->print_info_num) {
+                    fmt = ", [*]=%" PRIu64;
+                    fprintf(stderr, fmt, total_info);
+                }
+
                 if (xtatus->print_ft_event) {
                     fmt = ", tm_event=%" PRIu64;
                     fprintf(stderr, fmt, total_tm_event);
@@ -320,6 +345,11 @@ xtatus_print(
                 if (xtatus->print_tcb) {
                     fmt = ", tcb=%" PRIu64;
                     fprintf(stderr, fmt, total_tcb);
+                }
+
+                if (xtatus->print_queue) {
+                    fmt = ", %5.2f%%-tx_q, %5.2f%%-rx_q";
+                    fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
                 }
 
                 fprintf(stderr, "       \r");

@@ -120,6 +120,7 @@ output_init(struct Output *output)
     output->module_mutex = pixie_create_mutex();
     output->succ_mutex   = pixie_create_mutex();
     output->fail_mutex   = pixie_create_mutex();
+    output->info_mutex   = pixie_create_mutex();
 
     return true;
 }
@@ -204,6 +205,12 @@ output_result(
         ((struct Output *)output)->total_failed++;
         pixie_release_mutex(output->fail_mutex);
     }
+ 
+    if (item->level==Output_INFO) {
+        pixie_acquire_mutex(output->info_mutex);
+        ((struct Output *)output)->total_info++;
+        pixie_release_mutex(output->info_mutex);
+    }
 
     if (output->output_module) {
         pixie_acquire_mutex(output->module_mutex);
@@ -233,4 +240,5 @@ output_close(struct Output *output)
     pixie_delete_mutex(output->module_mutex);
     pixie_delete_mutex(output->succ_mutex);
     pixie_delete_mutex(output->fail_mutex);
+    pixie_delete_mutex(output->info_mutex);
 }

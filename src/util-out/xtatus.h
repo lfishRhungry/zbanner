@@ -16,6 +16,8 @@ struct Xtatus
     unsigned last_count;
 
     unsigned is_infinite:1;
+    unsigned print_queue:1;
+    unsigned print_info_num:1;
     unsigned print_tcb:1;
     unsigned print_ft_event:1;
 
@@ -33,6 +35,7 @@ void xtatus_print(
     double         rx_q_ratio,
     uint64_t       total_successed,
     uint64_t       total_failed,
+    uint64_t       total_info,
     uint64_t       total_sent,
     uint64_t       total_tm_event,
     uint64_t       total_tcb,

@@ -157,6 +157,8 @@ struct Xconf
     unsigned          packet_ttl;            /* starting IP TTL field */
     unsigned          packet_trace:1;        /* --packet-trace */
     unsigned          is_status_ndjson:1;    /* --status-ndjson*/
+    unsigned          is_status_queue:1;     /* --print-status queue*/
+    unsigned          is_status_info_num:1;  /* --print-status info-num*/
     unsigned          is_pfring:1;           /* --pfring */
     unsigned          is_sendq:1;            /* --sendq */
     unsigned          is_offline:1;          /* --offline */

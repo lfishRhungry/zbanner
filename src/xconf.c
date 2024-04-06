@@ -368,15 +368,15 @@ static enum Config_Res SET_output_filename(void *conf, const char *name, const c
     return CONF_OK;
 }
 
-static enum Config_Res SET_show(void *conf, const char *name, const char *value)
+static enum Config_Res SET_show_output(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->output.is_show_failed){
-            fprintf(xconf->echo, "show = failed\n");
+            fprintf(xconf->echo, "show-output = failed\n");
         }
         if (xconf->output.is_show_info){
-            fprintf(xconf->echo, "show = info\n");
+            fprintf(xconf->echo, "show-output = info\n");
         }
         return 0;
     }
@@ -386,6 +386,32 @@ static enum Config_Res SET_show(void *conf, const char *name, const char *value)
         xconf->output.is_show_failed = true;
     } else if (EQUALS("info",value)||EQUALS("information",value)) {
         xconf->output.is_show_info = true;
+    } else {
+        LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
+        return CONF_ERR;
+    }
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_print_status(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    if (xconf->echo) {
+        if (xconf->is_status_queue){
+            fprintf(xconf->echo, "print-status = queue\n");
+        }
+        if (xconf->is_status_info_num){
+            fprintf(xconf->echo, "print-status = info-num\n");
+        }
+        return 0;
+    }
+
+    
+    if (EQUALS("queue",value)) {
+        xconf->is_status_queue = true;
+    } else if (EQUALS("info-num",value) || EQUALS("info",value)) {
+        xconf->is_status_info_num = true;
     } else {
         LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
         return CONF_ERR;
@@ -2521,17 +2547,26 @@ struct ConfigParam config_parameters[] = {
         {"interact", 0},
         "Also print the results to screen while specifying an OutputModule."
     },
+    {
+        "show-output",
+        SET_show_output,
+        F_NONE,
+        {"show-out", "show", 0},
+        "Tells which type of results should be showed explicitly, such as:\n"
+        "'failed' for those ports that respond with a RST on TCP.\n"
+        "'info' for type of information or hint."
+    },
 
     {"XTATUS:", SET_nothing, 0, {0}, NULL},
 
     {
-        "show",
-        SET_show,
+        "print-status",
+        SET_print_status,
         F_NONE,
-        {0},
-        "Tells which type of status should be displayed explicitly, such as:\n"
-        "'failed' for those ports that respond with a RST on TCP.\n"
-        "'info' for type of information or hint."
+        {"print-st", "print", 0},
+        "Tells which type of status should be printed explicitly, such as:\n"
+        "'queue' for real-time capacity of transmit queue and receive queues.\n"
+        "'info-num' for count of information type results."
     },
     {
         "ndjson-status",

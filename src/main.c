@@ -339,6 +339,8 @@ static int main_scan(struct Xconf *xconf) {
     xtatus_start(&status);
     status.print_tcb         = xconf->scan_module->required_probe_type==ProbeType_STATE;
     status.print_ft_event    = xconf->is_fast_timeout;
+    status.print_queue       = xconf->is_status_queue;
+    status.print_info_num    = xconf->is_status_info_num;
     status.is_infinite       = xconf->is_infinite;
 
     /*
@@ -356,6 +358,7 @@ static int main_scan(struct Xconf *xconf) {
         double         rx_queue_ratio            = 0;
         uint64_t       total_successed           = 0;
         uint64_t       total_failed              = 0;
+        uint64_t       total_info                = 0;
         uint64_t       total_tm_event            = 0;
         uint64_t       total_sent                = 0;
 
@@ -375,6 +378,7 @@ static int main_scan(struct Xconf *xconf) {
 
         total_successed = xconf->output.total_successed;
         total_failed    = xconf->output.total_failed;
+        total_info      = xconf->output.total_failed;
         total_tm_event  = rx_thread->total_tm_event;
         
         double rx_free_entries = rte_ring_free_count(rx_thread->dispatch_q);
@@ -406,6 +410,7 @@ static int main_scan(struct Xconf *xconf) {
             rx_queue_ratio,
             total_successed,
             total_failed,
+            total_info,
             total_sent,
             total_tm_event,
             xconf->tcb_count,
@@ -440,6 +445,7 @@ static int main_scan(struct Xconf *xconf) {
         double        rx_queue_ratio              = 0;
         uint64_t      total_successed             = 0;
         uint64_t      total_failed                = 0;
+        uint64_t      total_info                  = 0;
         uint64_t      total_tm_event              = 0;
         uint64_t      total_sent                  = 0;
 
@@ -459,6 +465,7 @@ static int main_scan(struct Xconf *xconf) {
 
         total_successed = xconf->output.total_successed;
         total_failed    = xconf->output.total_failed;
+        total_info      = xconf->output.total_failed;
         total_tm_event  = rx_thread->total_tm_event;
         
         double rx_free_entries = rte_ring_free_count(rx_thread->dispatch_q);
@@ -481,6 +488,7 @@ static int main_scan(struct Xconf *xconf) {
             rx_queue_ratio,
             total_successed,
             total_failed,
+            total_info,
             total_sent,
             total_tm_event,
             xconf->tcb_count,
