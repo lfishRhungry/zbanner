@@ -75,6 +75,18 @@ _append_ipv6(stream_t *out, const unsigned char *ipv6)
     }
 }
 
+size_t ipv6_byte2str(const unsigned char *bytes, char *buf, size_t buf_len)
+{
+    stream_t s;
+    /* Call the formatting function */
+    s.buf = buf;
+    s.offset = 0;
+    s.length = buf_len;
+    _append_ipv6(&s, bytes);
+
+    return s.offset;
+}
+
 struct ipaddress_formatted ipv6address_fmt(ipv6address a)
 {
     struct ipaddress_formatted out;
@@ -138,6 +150,24 @@ _append_hex2(stream_t *out, unsigned long long n)
     
     _append_char(out, hex[(n>>4)&0xF]);
     _append_char(out, hex[(n>>0)&0xF]);
+}
+
+size_t ipv4_byte2str(const unsigned char *bytes, char *buf, size_t buf_len)
+{
+    stream_t s;
+    /* Call the formatting function */
+    s.buf = buf;
+    s.offset = 0;
+    s.length = buf_len;
+    _append_decimal(&s, buf[0]);
+    _append_char(&s, '.');
+    _append_decimal(&s, buf[1]);
+    _append_char(&s, '.');
+    _append_decimal(&s, buf[2]);
+    _append_char(&s, '.');
+    _append_decimal(&s, buf[3]);
+
+    return s.offset;
 }
 
 struct ipaddress_formatted ipv4address_fmt(ipv4address ip)

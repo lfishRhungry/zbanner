@@ -177,6 +177,9 @@ typedef struct ipaddress_formatted {
     char string[48];
 } ipaddress_formatted_t;
 
+size_t ipv6_byte2str(const unsigned char *bytes, char *buf, size_t buf_len);
+size_t ipv4_byte2str(const unsigned char *bytes, char *buf, size_t buf_len);
+
 struct ipaddress_formatted ipv6address_fmt(ipv6address a);
 struct ipaddress_formatted ipv4address_fmt(ipv4address a);
 struct ipaddress_formatted ipaddress_fmt(ipaddress a);
