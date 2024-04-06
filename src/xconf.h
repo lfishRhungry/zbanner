@@ -143,27 +143,27 @@ struct Xconf
     unsigned tx_thread_count;
     unsigned rx_handler_count;
 
-    struct Output  output;          /*results outputing*/
-    enum Operation op;              /*operation of proc*/
-    uint64_t seed;
-    double   max_rate;
-    unsigned wait;                  /*default 10 seconds*/
-    unsigned dedup_win;             /*windows size of dedup table*/
-    unsigned blackrock_rounds;
-    unsigned dispatch_buf_count;    /* dispacth queue size in recv*/
-    uint64_t tcb_count;             /*tcb count for tcp state scan*/
-    unsigned tcp_init_window;       /*window of the first syn or syn-ack packet*/
-    unsigned tcp_window;            /*window of other packets*/
-    unsigned packet_ttl;            /* starting IP TTL field */
-    unsigned packet_trace:1;        /* --packet-trace */
-    unsigned is_status_ndjson:1;    /* --nd-json*/
-    unsigned is_pfring:1;           /* --pfring */
-    unsigned is_sendq:1;            /* --sendq */
-    unsigned is_offline:1;          /* --offline */
-    unsigned is_nodedup:1;          /* --nodedup, don't deduplicate */
-    unsigned is_gmt:1;              /* --gmt, all times in GMT */
-    unsigned is_infinite:1;         /* --infinite */
-    unsigned is_fast_timeout:1;     /* --fast-timeout, use ft for ScanModule*/
+    struct Output     output;                /*results outputing*/
+    enum Operation    op;                    /*operation of proc*/
+    uint64_t          seed;
+    double            max_rate;
+    unsigned          wait;                  /*default 10 seconds*/
+    unsigned          dedup_win;             /*windows size of dedup table*/
+    unsigned          blackrock_rounds;
+    unsigned          dispatch_buf_count;    /* dispacth queue size in recv*/
+    uint64_t          tcb_count;             /*tcb count for tcp state scan*/
+    unsigned          tcp_init_window;       /*window of the first syn or syn-ack packet*/
+    unsigned          tcp_window;            /*window of other packets*/
+    unsigned          packet_ttl;            /* starting IP TTL field */
+    unsigned          packet_trace:1;        /* --packet-trace */
+    unsigned          is_status_ndjson:1;    /* --status-ndjson*/
+    unsigned          is_pfring:1;           /* --pfring */
+    unsigned          is_sendq:1;            /* --sendq */
+    unsigned          is_offline:1;          /* --offline */
+    unsigned          is_nodedup:1;          /* --nodedup, don't deduplicate */
+    unsigned          is_gmt:1;              /* --gmt, all times in GMT */
+    unsigned          is_infinite:1;         /* --infinite */
+    unsigned          is_fast_timeout:1;     /* --fast-timeout, use ft for ScanModule*/
 
 };
 
