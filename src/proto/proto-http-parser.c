@@ -37,7 +37,7 @@
 #include <x86intrin.h>
 #endif
 #endif
-#include "proto-http.h"
+#include "proto-http-parser.h"
 
 #if __GNUC__ >= 3
 #define likely(x) __builtin_expect(!!(x), 1)
