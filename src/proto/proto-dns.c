@@ -8,6 +8,9 @@
 
 static char *hexchars = "0123456789abcdef";
 
+const size_t DNS_PACKET_MINIMUM_SIZE = 17; // as we handle them
+// 12 bytes header + 1 byte question name + 2 bytes question class + 2 bytes question type
+
 dns_record_type dns_str_to_record_type(const char *str)
 {
     // Performance is important here because we may want to use this when reading

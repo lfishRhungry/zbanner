@@ -117,9 +117,6 @@ typedef enum
     DNS_OPCODE_UPDATE       = 5
 } dns_opcode;
 
-const size_t DNS_PACKET_MINIMUM_SIZE = 17; // as we handle them
-// 12 bytes header + 1 byte question name + 2 bytes question class + 2 bytes question type
-
 typedef struct
 {
     uint16_t       id;
