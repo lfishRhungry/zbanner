@@ -1,9 +1,10 @@
 /**
  * This DNS resolver are born from
  * MASSDNS: https://github.com/blechschmidt/massdns
- * I do some key changes to adapt to xtate.
- * eg. make it be thread safe
  * 
+ * I do some key changes to adapt to xtate.
+ * e.g. make it be thread safe.
+ * and fix some bugs e.g. memcpy/memmove
  * 
  * Modified: lfishRhungry 2024
 */
@@ -167,17 +168,18 @@ typedef struct
     uint16_t          length;
     union
     {
-        uint8_t      *raw;
-        dns_name_t    name;
-        ipaddress     addr;
+        uint8_t          *raw;
+        dns_name_t        name;
+        struct in_addr    in_addr;
+        struct in6_addr   in6_addr;
     } data;
 } dns_record_t;
 
 typedef struct
 {
-    dns_record_t      ans[0x100];
+    dns_record_t      ans [0x100];
     dns_record_t      auth[0x100];
-    dns_record_t      add[0x100];
+    dns_record_t      add [0x100];
 } dns_filtered_body_t;
 
 typedef struct
@@ -259,7 +261,7 @@ void dns_send_reply(uint8_t *buffer, size_t len, int fd, struct sockaddr_storage
 
 bool dns_create_reply(uint8_t *buffer, size_t *len, char *name, dns_record_type type, uint16_t id, dns_rcode code);
 
-bool dns_print_readable(char **buf, size_t buflen, const uint8_t *source, size_t len, bool is_name);
+size_t dns_print_readable(char **buf, size_t buflen, const uint8_t *source, size_t len, bool is_name);
 
 /**
  * @param buf_len could be 0xFF*4
@@ -271,7 +273,7 @@ void dns_question2str(dns_question_t *question, char *buf, size_t len);
 /**
  * @param buf_len could be 0xFFFF0
 */
-void dns_raw_record_data2str(dns_record_t *record,
+size_t dns_raw_record_data2str(dns_record_t *record,
     uint8_t *begin, uint8_t *end, bool put_quotes,
     char *buf, size_t buf_len);
 

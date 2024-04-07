@@ -10,9 +10,20 @@ extern struct ProbeModule DnsProbe;
 struct DnsConf {
     char *req_name;
     dns_record_type req_type;
+    unsigned print_all_ans:1;
 };
 
 static struct DnsConf dns_conf = {0};
+
+static enum Config_Res SET_print_all_answer(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    dns_conf.print_all_ans = parseBoolean(value);
+
+    return CONF_OK;
+}
 
 static enum Config_Res SET_req_name(void *conf, const char *name, const char *value)
 {
@@ -66,6 +77,13 @@ static struct ConfigParam dns_parameters[] = {
         F_NONE,
         {"type", 0},
         "Specifies dns request type like 'A', 'AAAA'."
+    },
+    {
+        "all-answer",
+        SET_print_all_answer,
+        F_BOOL,
+        {"all-ans", 0},
+        "Print all answer records instead of only the first in default."
     },
 
     {0}
@@ -123,7 +141,7 @@ dns_handle_response(
 {
     if (sizeof_px==0) {
         item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no reply");
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
         return 0;
     }
@@ -141,16 +159,37 @@ dns_handle_response(
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "dns reply");
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "valid dns");
 
+    dns_record_t *rec;
+    int offset = 0;
+
     if (dns_pkt.head.header.ans_count > 0) {
-        dns_record_t rec = dns_pkt.body.ans[0];
-        int offset = 0;
+
+        offset += snprintf(item->report+offset, OUTPUT_RPT_LEN-offset, "[");
+
+        rec = &dns_pkt.body.ans[0];
+
         offset += snprintf(item->report+offset, OUTPUT_RPT_LEN-offset,
-            dns_record_type2str(rec.type));
+            dns_record_type2str(rec->type));
         offset += snprintf(item->report+offset, OUTPUT_RPT_LEN-offset,
             " ");
-        dns_raw_record_data2str(&rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
+        offset += dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
             true, item->report+offset, OUTPUT_RPT_LEN-offset);
     }
+
+    if (dns_pkt.head.header.ans_count>1 && dns_conf.print_all_ans) {
+        for (uint16_t i=0; i<dns_pkt.head.header.ans_count; i++) {
+            offset += snprintf(item->report+offset, OUTPUT_RPT_LEN-offset, ", ");
+            rec = &dns_pkt.body.ans[i];
+            offset += snprintf(item->report+offset, OUTPUT_RPT_LEN-offset,
+                dns_record_type2str(rec->type));
+            offset += snprintf(item->report+offset, OUTPUT_RPT_LEN-offset,
+                " ");
+            offset += dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
+                true, item->report+offset, OUTPUT_RPT_LEN-offset);
+        }
+    }
+
+    offset += snprintf(item->report+offset, OUTPUT_RPT_LEN-offset, "]");
 
     return 0;
 }
@@ -171,7 +210,8 @@ struct ProbeModule DnsProbe = {
     .params     = dns_parameters,
     .desc =
         "DnsProbe sends a dns request specified by user to target udp port and "
-        "expects a dns reply.",
+        "expects a dns reply. DnsProbe will print the first answer in the reply"
+        " in default. You can use `--all-answer` switch to print all answers.",
     .global_init_cb                 = &dns_global_init,
     .make_payload_cb                = &dns_make_payload,
     .get_payload_length_cb          = NULL,
