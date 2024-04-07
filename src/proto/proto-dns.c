@@ -577,8 +577,6 @@ static inline void dns_buffer_set_id(uint8_t *buf, uint16_t id)
 
 char *dns_class2str(dns_class cls)
 {
-    static char numbuf[16];
-
     switch(cls)
     {
         case DNS_CLS_IN:
@@ -592,15 +590,12 @@ char *dns_class2str(dns_class cls)
         case DNS_CLS_QCLASS_ANY:
             return "QANY";
         default:
-            snprintf(numbuf, sizeof(numbuf), "%" PRIu16, (uint16_t)cls);
-            return numbuf;
+            return "UNKNOWN";
     }
 }
 
 char *dns_opcode2str(dns_opcode opcode)
 {
-    static char numbuf[16];
-
     switch(opcode)
     {
         case DNS_OPCODE_QUERY:
@@ -614,15 +609,12 @@ char *dns_opcode2str(dns_opcode opcode)
         case DNS_OPCODE_UPDATE:
             return "UPDATE";
         default:
-            snprintf(numbuf, sizeof(numbuf), "%" PRIu16, (uint16_t)opcode);
-            return numbuf;
+            return "UNKNOWN";
     }
 }
 
 char *dns_rcode2str(dns_rcode rcode)
 {
-    static char numbuf[16];
-
     switch (rcode)
     {
         case DNS_RCODE_NOERROR:
@@ -662,15 +654,12 @@ char *dns_rcode2str(dns_rcode rcode)
         case DNS_RCODE_BADCOOKIE:
             return "BADCOOKIE";
         default:
-            snprintf(numbuf, sizeof(numbuf), "%" PRIu16, (uint16_t)rcode);
-            return numbuf;
+            return "UNKNOWN";
     }
 }
 
 char *dns_record_type2str(dns_record_type type)
 {
-    static char numbuf[16];
-
     switch (type)
     {
         case DNS_REC_A:
@@ -760,8 +749,7 @@ char *dns_record_type2str(dns_record_type type)
         case DNS_REC_HTTPS:
             return "HTTPS";
         default:
-            snprintf(numbuf, sizeof(numbuf), "%" PRIu16, (uint16_t)type);
-            return numbuf;
+            return "UNKNOWN";
     }
 }
 
@@ -1173,31 +1161,30 @@ bool dns_print_readable(char **buf, size_t buflen, const uint8_t *source, size_t
     return true;
 }
 
-char* dns_name2str(dns_name_t *name)
+void dns_name2str(dns_name_t *name, char *buf, size_t buf_len)
 {
-    static char buf[0xFF * 4];
-
-    char *ptr = buf;
-    dns_print_readable(&ptr, sizeof(buf), name->name, name->length, true);
-    return buf;
+    dns_print_readable(&buf, buf_len, name->name, name->length, true);
 }
 
 void dns_question2str(dns_question_t *question, char *buf, size_t len)
 {
+    char sub_buf[0xFF*4];
+    dns_name2str(&question->name, sub_buf, 0xFF*4);
     snprintf(buf, len, "%s %s %s",
-             dns_name2str(&question->name),
+             sub_buf,
              dns_class2str((dns_class)question->class),
              dns_record_type2str(question->type));
 }
 
-char* dns_raw_record_data2str(dns_record_t *record, uint8_t *begin, uint8_t *end, bool put_quotes)
+void dns_raw_record_data2str(dns_record_t *record,
+    uint8_t *begin, uint8_t *end, bool put_quotes,
+    char *buf, size_t buf_len)
 {
-    static char buf[0xFFFF0];
     static dns_name_t name;
     int written;
 
     char *ptr = buf;
-    char *buf_end = buf + sizeof(buf);
+    char *buf_end = buf + buf_len;
 
     switch(record->type)
     {
@@ -1281,14 +1268,14 @@ char* dns_raw_record_data2str(dns_record_t *record, uint8_t *begin, uint8_t *end
             {
                 goto raw;
             }
-            ipv4_byte2str(record->data.raw, buf, ARRAY_SIZE(buf));
+            ipv4_byte2str(record->data.raw, buf, buf_len);
             break;
         case DNS_REC_AAAA:
             if(record->length != 16)
             {
                 goto raw;
             }
-            ipv6_byte2str(record->data.raw, buf, ARRAY_SIZE(buf));
+            ipv6_byte2str(record->data.raw, buf, buf_len);
             break;
         case DNS_REC_CAA:
             if(record->length < 2 || record->data.raw[1] < 1 || record->data.raw[1] > 15
@@ -1299,7 +1286,7 @@ char* dns_raw_record_data2str(dns_record_t *record, uint8_t *begin, uint8_t *end
             written = sprintf(ptr, "%" PRIu8 " ", (uint8_t)(record->data.raw[0] >> 7));
             if(written < 0)
             {
-                return buf;
+                return;
             }
             ptr += written;
             dns_print_readable(&ptr, buf_end - ptr, record->data.raw + 2, record->data.raw[1], false);
@@ -1321,7 +1308,7 @@ char* dns_raw_record_data2str(dns_record_t *record, uint8_t *begin, uint8_t *end
             written = snprintf(ptr, buf_end - ptr, "%" PRIu16 " %" PRIu16 " %" PRIu16 " ", prio, weight, port);
             if(written < 0)
             {
-                return buf;
+                return;
             }
             ptr += written;
             parse_name(begin, record->data.raw + 6, end, name.name, &name.length, NULL);
@@ -1337,7 +1324,7 @@ char* dns_raw_record_data2str(dns_record_t *record, uint8_t *begin, uint8_t *end
                                record->data.raw[0], record->data.raw[1], record->data.raw[2]);
             if(written < 0)
             {
-                return buf;
+                return;
             }
             ptr += written;
 
@@ -1353,7 +1340,7 @@ char* dns_raw_record_data2str(dns_record_t *record, uint8_t *begin, uint8_t *end
             dns_print_readable(&ptr, sizeof(buf), record->data.raw, record->length, false);
             *ptr = 0;
     }
-    return buf;
+    return;
 }
 
 dns_section_t dns_get_section(uint16_t index, dns_header_t *header)
@@ -1419,8 +1406,8 @@ bool dns_in_zone(dns_name_t *name, dns_name_t *zone)
 
 void dns_print_packet(FILE *f, dns_pkt_t *packet, uint8_t *begin, size_t len, uint8_t *next)
 {
-    static char buf[0xFFFF];
-    static dns_record_t rec;
+    char buf[0xFFFF];
+    dns_record_t rec;
 
     fprintf(f,
              ";; ->>HEADER<<- opcode: %s, status: %s, id: %"PRIu16"\n"
@@ -1447,6 +1434,8 @@ void dns_print_packet(FILE *f, dns_pkt_t *packet, uint8_t *begin, size_t len, ui
 
     uint16_t i = 0;
     dns_section_t section = DNS_SECTION_QUESTION;
+    char sub_buf1[0xFF*4];
+    char sub_buf2[0xFFFF0];
     while(dns_parse_record_raw(begin, next, begin + len, &next, &rec))
     {
         dns_section_t new_section = dns_get_section(i++, &packet->head.header);
@@ -1455,13 +1444,15 @@ void dns_print_packet(FILE *f, dns_pkt_t *packet, uint8_t *begin, size_t len, ui
             fprintf(f, "\n;; %s SECTION:\n", dns_section2str(new_section));
             section = new_section;
         }
+        dns_name2str(&rec.name, sub_buf1, 0xFF*4);
+        dns_raw_record_data2str(&rec, begin, begin + len, true, sub_buf2, 0xFFFF0);
         fprintf(f,
                 "%s %" PRIu32 " %s %s %s\n",
-                dns_name2str(&rec.name),
+                sub_buf1,
                 rec.ttl,
                 dns_class2str((dns_class)rec.class),
                 dns_record_type2str((dns_record_type) rec.type),
-                dns_raw_record_data2str(&rec, begin, begin + len, true));
+                sub_buf2);
     }
     fprintf(f, "\n\n");
 }

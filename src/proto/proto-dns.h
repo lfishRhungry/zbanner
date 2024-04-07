@@ -1,7 +1,8 @@
 /**
  * This DNS resolver are born from
  * MASSDNS: https://github.com/blechschmidt/massdns
- * I do some changes to adapt to xtate
+ * I do some key changes to adapt to xtate.
+ * eg. make it be thread safe
  * 
  * 
  * Modified: lfishRhungry 2024
@@ -260,11 +261,19 @@ bool dns_create_reply(uint8_t *buffer, size_t *len, char *name, dns_record_type 
 
 bool dns_print_readable(char **buf, size_t buflen, const uint8_t *source, size_t len, bool is_name);
 
-char* dns_name2str(dns_name_t *name);
+/**
+ * @param buf_len could be 0xFF*4
+*/
+void dns_name2str(dns_name_t *name, char *buf, size_t buf_len);
 
 void dns_question2str(dns_question_t *question, char *buf, size_t len);
 
-char* dns_raw_record_data2str(dns_record_t *record, uint8_t *begin, uint8_t *end, bool put_quotes);
+/**
+ * @param buf_len could be 0xFFFF0
+*/
+void dns_raw_record_data2str(dns_record_t *record,
+    uint8_t *begin, uint8_t *end, bool put_quotes,
+    char *buf, size_t buf_len);
 
 dns_section_t dns_get_section(uint16_t index, dns_header_t *header);
 

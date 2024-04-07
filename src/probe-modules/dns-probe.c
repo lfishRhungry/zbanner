@@ -148,8 +148,8 @@ dns_handle_response(
             dns_record_type2str(rec.type));
         offset += snprintf(item->report+offset, OUTPUT_RPT_LEN-offset,
             " ");
-        offset += snprintf(item->report+offset, OUTPUT_RPT_LEN-offset,
-            dns_raw_record_data2str(&rec, (uint8_t *)px, (uint8_t *)px+sizeof_px, true));
+        dns_raw_record_data2str(&rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
+            true, item->report+offset, OUTPUT_RPT_LEN-offset);
     }
 
     return 0;
