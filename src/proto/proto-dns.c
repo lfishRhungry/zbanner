@@ -5,7 +5,6 @@
 
 #include "../massip/massip-parse.h"
 #include "../util-data/data-convert.h"
-#include "../pixie/pixie-sockets.h"
 
 static char *hexchars = "0123456789abcdef";
 
@@ -763,7 +762,7 @@ char *dns_record_type2str(dns_record_type type)
     }
 }
 
-size_t dns_str2namebuf(const char *name, uint8_t *buffer)
+int dns_str2namebuf(const char *name, uint8_t *buffer)
 {
     static uint8_t *bufname;
     static uint8_t *lenptr;
@@ -845,11 +844,11 @@ uint16_t dns_question_create_from_name(uint8_t *buffer, dns_name_t *name, dns_re
 }
 
 // Requires a buffer of at least 272 bytes to be supplied
-static size_t dns_question_create(uint8_t *buffer, char *name, dns_record_type type, uint16_t id)
+static int dns_question_create(uint8_t *buffer, char *name, dns_record_type type, uint16_t id)
 {
     static uint8_t *aftername;
 
-    size_t name_len = dns_str2namebuf(name, buffer + 12);
+    int name_len = dns_str2namebuf(name, buffer + 12);
     if(name_len < 0)
     {
         return -1;
@@ -862,6 +861,22 @@ static size_t dns_question_create(uint8_t *buffer, char *name, dns_record_type t
     *((uint16_t *) (aftername + 2)) = htons(DNS_CLS_IN);
     *((uint16_t *) (buffer + 4)) = htons(0x0001);
     return aftername + 4 - buffer;
+}
+
+bool dns_send_question(uint8_t *buffer, char *name, dns_record_type type, uint16_t id, int fd, struct sockaddr_storage *addr)
+{
+    int result = dns_question_create(buffer, name, type, id);
+    if (result < DNS_PACKET_MINIMUM_SIZE)
+    {
+        return false;
+    }
+    sendto(fd,
+           buffer,
+           (size_t) result,
+           0,
+           (struct sockaddr *) addr,
+           addr->ss_family == PF_INET ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6));
+    return true;
 }
 
 bool dns_parse_question(uint8_t *buf, size_t len, dns_head_t *head, uint8_t **body_begin)
@@ -1082,9 +1097,19 @@ void dns_buf_set_rcode(uint8_t *buf, uint8_t code)
     buf[3] |= code;
 }
 
+void dns_send_reply(uint8_t *buffer, size_t len, int fd, struct sockaddr_storage *addr)
+{
+    sendto(fd,
+           buffer,
+           len,
+           0,
+           (struct sockaddr *) addr,
+           addr->ss_family == PF_INET ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6));
+}
+
 bool dns_create_reply(uint8_t *buffer, size_t *len, char *name, dns_record_type type, uint16_t id, dns_rcode code)
 {
-    size_t result = dns_question_create(buffer, name, type, id);
+    int result = dns_question_create(buffer, name, type, id);
     if (result < DNS_PACKET_MINIMUM_SIZE)
     {
         return false;

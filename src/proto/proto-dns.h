@@ -15,6 +15,7 @@
 
 #include "../massip/massip-addr.h"
 #include "../util-misc/cross.h"
+#include "../pixie/pixie-sockets.h"
 
 typedef enum
 {
@@ -216,13 +217,15 @@ char *dns_rcode2str(dns_rcode rcode);
 
 char *dns_record_type2str(dns_record_type type);
 
-size_t dns_str2namebuf(const char *name, uint8_t *buffer);
+int dns_str2namebuf(const char *name, uint8_t *buffer);
 
 uint16_t dns_question_size(dns_name_t *name);
 
 uint16_t dns_question_create_from_name(uint8_t *buffer, dns_name_t *name, dns_record_type type, uint16_t id);
 
 bool dns_parse_question(uint8_t *buf, size_t len, dns_head_t *head, uint8_t **body_begin);
+
+bool dns_send_question(uint8_t *buffer, char *name, dns_record_type type, uint16_t id, int fd, struct sockaddr_storage *addr);
 
 /**
  * Check whether two DNS names are equal (case-insensitive).
@@ -249,6 +252,8 @@ void dns_buf_set_rd(uint8_t *buf, bool value);
 
 void dns_buf_set_rcode(uint8_t *buf, uint8_t code);
 
+void dns_send_reply(uint8_t *buffer, size_t len, int fd, struct sockaddr_storage *addr);
+
 bool dns_create_reply(uint8_t *buffer, size_t *len, char *name, dns_record_type type, uint16_t id, dns_rcode code);
 
 bool dns_print_readable(char **buf, size_t buflen, const uint8_t *source, size_t len, bool is_name);
@@ -273,4 +278,5 @@ uint8_t dns_ip_octet2label(uint8_t *dst, uint8_t octet);
 
 bool dns_ip2ptr(const char *qname, dns_name_t *name);
 
-#endif //MASSRESOLVER_DNS_H
+
+#endif
