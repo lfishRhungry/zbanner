@@ -844,7 +844,7 @@ uint16_t dns_question_create_from_name(uint8_t *buffer, dns_name_t *name, dns_re
 }
 
 // Requires a buffer of at least 272 bytes to be supplied
-static int dns_question_create(uint8_t *buffer, char *name, dns_record_type type, uint16_t id)
+int dns_question_create(uint8_t *buffer, char *name, dns_record_type type, uint16_t id)
 {
     static uint8_t *aftername;
 
