@@ -22,6 +22,9 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
+ * 
+ * 
+ * Modified: lfishRhungry 2024
  */
 
 #ifndef PROTO_HTTP_H
@@ -29,9 +32,6 @@
 
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* contains name and value of a header (name == NULL if is a continuing line
  * of a multiline header */
