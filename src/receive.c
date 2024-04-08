@@ -155,7 +155,7 @@ void receive_thread(void *v) {
     uint64_t                       entropy                     = xconf->seed;
     struct stack_t                *stack                       = xconf->stack;
     struct ScanModule             *scan_module                 = xconf->scan_module;
-    struct ScanTmEvent       *tm_event                    = NULL;
+    struct ScanTmEvent            *tm_event                    = NULL;
     unsigned                       handler_num                 = xconf->rx_handler_count;
     struct RxHandle                handle_parms[handler_num];
     size_t                         handler[handler_num];

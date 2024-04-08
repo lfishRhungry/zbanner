@@ -14,13 +14,22 @@ struct Xconf;
 
 #define PROBE_PAYLOAD_MAX_LEN 2048
 
+
+/***************************************************************************
+ * * callback functions for Init
+****************************************************************************/
+
 /**
  * !Must be implemented.
  * 
- * @param xconf main conf of xtate, use `void` to avoiding x-ref.
+ * @param xconf main conf of xtate
  * @return FALSE to exit process if init failed
 */
 typedef bool (*probe_modules_global_init)(const struct Xconf *xconf);
+
+/***************************************************************************
+ * * callback functions for probe(hello) payload making in Non-STATE type
+****************************************************************************/
 
 struct ProbeTarget {
     ipaddress ip_them;
@@ -28,14 +37,14 @@ struct ProbeTarget {
     unsigned  port_them;
     unsigned  port_me;
     unsigned  cookie;
-    unsigned  index; /*use for identifying of multi probes per target in ProbeModule*/
+    unsigned  index;     /*use for identifying of multi probes per target*/
 };
 
 /**
  * Happens in Tx Thread or Rx Thread for different ScanModules.
  * 
- * Make correspond hello payload data for a target.
- * We could embed a cookie to payload for response validating in ProbeType_UDP.
+ * Make hello payload data for a target.
+ * We could embed a cookie to payload for response validating in ProbeType_UDP mode.
  * 
  * 
  * !Must be implemented.
@@ -52,16 +61,21 @@ typedef size_t
 
 /**
  * Happens in Tx Thread or Rx Thread for different ScanModules.
+ * This func would be called even if xtate won't send the payload.
  * 
  * !Must be implemented for ProbeType_TCP.
- * !Must be thread safe.
  * !Must check index range in multi-probe
+ * !Must be thread safe.
  * 
  * @param target info of a target
  * @return length of payload data
 */
 typedef size_t
 (*probe_modules_get_payload_length)(struct ProbeTarget *target);
+
+/***************************************************************************
+ * * callback functions for response processing in Non-STATE type
+****************************************************************************/
 
 /**
  * Happens in Rx Thread
@@ -86,10 +100,9 @@ typedef bool
 
 /**
  * Happens in Rx Thread,
- * Decide the classification and report of the reponse
- * and whether it is successed.
+ * Decide the results for the response
  * 
- * !Must be implemented.
+ * !Must be implemented in Non-STATE type.
  * !Must be thread safe.
  * 
  * @param target info of a target
@@ -105,9 +118,13 @@ typedef unsigned
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item);
 
+/***************************************************************************
+ * * callback functions for ProbeType_STATE only
+****************************************************************************/
+
 struct ProbeState {
     unsigned  state;
-    void     *data; /*diff from probes, managed by probe self*/
+    void     *data;  /*defined by probe itself in need*/
 };
 
 /**
@@ -124,7 +141,6 @@ typedef void
 
 /**
  * Make correspond hello payload data for a target.
- * 
  * 
  * !Must be implemented for ProbeType STATE
  * !Must be thread safe.
@@ -176,6 +192,10 @@ typedef void
 typedef void
 (*probe_modules_conn_close)(struct ProbeState *state, struct ProbeTarget *target);
 
+/***************************************************************************
+ * * callback functions for Close
+****************************************************************************/
+
 /**
  * It happens before normal exit in mainscan function.
  * !Must be implemented.
@@ -212,7 +232,7 @@ struct ProbeModule
     const unsigned                              multi_num;   /*useless for Multi_DynamicNext*/
     unsigned int                                hello_wait;  /*just for statefull scan*/
     const char                                 *desc;
-    struct ConfigParam                     *params;
+    struct ConfigParam                         *params;
 
     /*for init*/
     probe_modules_global_init                   global_init_cb;

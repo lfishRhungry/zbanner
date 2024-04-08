@@ -31,8 +31,10 @@ struct Xconf;
 
 /**
  * Do some initialization here if you have to.
+ * 
  * !Must be implemented.
- * @param xconf main conf of xtate, use `void` to avoiding x-ref.
+ * 
+ * @param xconf main conf of xtate
  * @return false for initing failed and exit process.
 */
 typedef bool (*scan_modules_global_init)(const struct Xconf *xconf);
@@ -50,6 +52,7 @@ struct ScanTarget {
     unsigned  index; /*use in tx thread for multi packets per target in ScanModule*/
 };
 
+/*a timeout event for scanning*/
 struct ScanTmEvent {
     ipaddress ip_them;
     ipaddress ip_me;
@@ -68,9 +71,9 @@ struct ScanTmEvent {
  * 
  * @param entropy a rand seed (generated or user-specified).
  * @param target info of target.
- * @param event fill the info of timeout event to it.
- * @param px packet buffer to transmit. (Length is PKT_BUF_LEN)
- * @param len length of packet data.
+ * @param event fill it if we need to add a timeout event.
+ * @param px packet buffer to transmit. (Max Length is PKT_BUF_LEN)
+ * @param len length of packet data we filled.
  * @return true if need to transmit one more packet.
 */
 typedef bool (*scan_modules_transmit)(
@@ -93,10 +96,11 @@ struct Received {
     unsigned usecs;
 };
 
+/*How we do prehandling for a packet*/
 struct PreHandle {
-    unsigned  go_record:1; /*proceed to record or stop*/
-    unsigned  go_dedup:1; /*proceed to dedup or stop*/
-    unsigned  no_dedup:1; /*go on with(out) deduping*/
+    unsigned  go_record:1;       /*proceed to record or stop*/
+    unsigned  go_dedup:1;        /*proceed to dedup or stop*/
+    unsigned  no_dedup:1;        /*go on with(out) deduping*/
     ipaddress dedup_ip_them;
     unsigned  dedup_port_them;
     ipaddress dedup_ip_me;
@@ -106,16 +110,16 @@ struct PreHandle {
 
 /**
  * !First Step Happens in Rx Thread.
- * Do following things for a received packet:
- *  1. Record or stop.
- *  2. Is and How to dedup or stop.
+ * Do following things for a received packet in orders:
+ *  1. Record or drop.
+ *  2. Is and How to dedup or drop.
  * 
  * !Must be implemented.
  * !Must be thread safe.
  * 
  * @param entropy a rand seed (generated or user-specified).
  * @param recved info of received packet.
- * @param pre some preHandle results.
+ * @param pre some preHandle decisions we have to make.
 */
 typedef void (*scan_modules_validate)(
     uint64_t entropy,
@@ -134,9 +138,9 @@ typedef void (*scan_modules_validate)(
  * @param th_idx the index of receive handler thread.
  * @param entropy a rand seed (generated or user-specified).
  * @param recved info of received packet.
- * @param item some outputting results.
- * @param stack packet buffer queue stack for preparing transmitting.
- * @param handler handler of fast-timeout or NULL if not in use fast-timeout.
+ * @param item results we have to fill to output.
+ * @param stack packet buffer queue stack for preparing transmitting by us.
+ * @param handler handler of fast-timeout to add tm-event by us or NULL if not in use fast-timeout.
 */
 typedef void (*scan_modules_handle)(
     unsigned th_idx,
@@ -146,19 +150,22 @@ typedef void (*scan_modules_handle)(
     struct stack_t *stack,
     struct FHandler *handler);
 
+/***************************************************************************
+ * * callback functions for Timeout
+****************************************************************************/
+
 /**
  * !Happens in Rx Thread.
  * Handle fast-timeout event if we use fast-timeout.
- * This func will be called only if we use fast-timeout.
+ * This func will be called only if a fast timeout event need to
+ * be handled while using fast-timeout.
  * 
- * !Must be implemented.
- * !Must be thread safe.
  * 
  * @param entropy a rand seed (generated or user-specified).
  * @param event timeout event;
- * @param item some outputting results.
- * @param stack packet buffer queue stack for preparing transmitting.
- * @param handler handler of fast-timeout or NULL if not in use fast-timeout.
+ * @param item results we have to fill to output.
+ * @param stack packet buffer queue stack for preparing transmitting by us.
+ * @param handler handler of fast-timeout to add tm-event by us or NULL if not in use fast-timeout.
 */
 typedef void (*scan_modules_timeout)(
     uint64_t entropy,
@@ -167,6 +174,15 @@ typedef void (*scan_modules_timeout)(
     struct stack_t *stack,
     struct FHandler *handler);
 
+/***************************************************************************
+ * * callback functions for Polling
+****************************************************************************/
+
+/**
+ * Some internal status of ScanModules should be update in real time.
+ * This func would be called in every loop of packet receiving just like
+ * in real time.
+*/
 typedef void (*scan_modules_poll)();
 
 
@@ -176,6 +192,7 @@ typedef void (*scan_modules_poll)();
 
 /**
  * It happens before normal exit in mainscan function.
+ * And we could do some clean-ups.
 */
 typedef void (*scan_modules_close)();
 
@@ -186,7 +203,7 @@ struct ScanModule
     const enum ProbeType                        required_probe_type; /*set zero if not using probe*/
     const unsigned                              support_timeout;
     const char                                 *bpf_filter;          /*just for pcap*/
-    struct ConfigParam                     *params;
+    struct ConfigParam                         *params;
     struct ProbeModule                         *probe;
     const char                                 *desc;
 
