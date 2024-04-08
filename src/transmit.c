@@ -43,7 +43,7 @@ void transmit_thread(void *v)
     uint64_t                     seed                     = xconf->seed;
     uint64_t                     repeats                  = 0; /* --infinite repeats */
     uint64_t                     entropy                  = xconf->seed;
-    struct ScanTimeoutEvent     *tm_event                 = NULL;
+    struct ScanTmEvent     *tm_event                 = NULL;
     struct FHandler              ft_handler;
     uint64_t                    *status_sent_count;
 
@@ -171,7 +171,7 @@ infinite:
 
             /*if we don't use fast-timeout, don't malloc more memory*/
             if (!tm_event) {
-                tm_event = CALLOC(1, sizeof(struct ScanTimeoutEvent));
+                tm_event = CALLOC(1, sizeof(struct ScanTmEvent));
             }
 
             tm_event->ip_them   = target.ip_them;

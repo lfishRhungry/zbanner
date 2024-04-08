@@ -13,7 +13,7 @@ static bool
 arpreq_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
-    struct ScanTimeoutEvent *event,
+    struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
     /*we do not need a cookie and actually cannot set it*/
@@ -69,7 +69,7 @@ arpreq_handle(
 
 void arpreq_timeout(
     uint64_t entropy,
-    struct ScanTimeoutEvent *event,
+    struct ScanTmEvent *event,
     struct OutputItem *item,
     struct stack_t *stack,
     struct FHandler *handler)

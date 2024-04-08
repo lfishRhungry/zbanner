@@ -32,7 +32,7 @@ static bool
 udp_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
-    struct ScanTimeoutEvent *event,
+    struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
     /*we just handle udp target*/
@@ -197,8 +197,8 @@ udp_handle(
 
                 /*add timeout*/
                 if (handler) {
-                    struct ScanTimeoutEvent *tm_event =
-                        CALLOC(1, sizeof(struct ScanTimeoutEvent));
+                    struct ScanTmEvent *tm_event =
+                        CALLOC(1, sizeof(struct ScanTmEvent));
 
                     tm_event->ip_them   = recved->parsed.src_ip;
                     tm_event->ip_me     = recved->parsed.dst_ip;
@@ -246,8 +246,8 @@ udp_handle(
 
             /*add timeout*/
             if (handler) {
-                struct ScanTimeoutEvent *tm_event =
-                    CALLOC(1, sizeof(struct ScanTimeoutEvent));
+                struct ScanTmEvent *tm_event =
+                    CALLOC(1, sizeof(struct ScanTmEvent));
 
                 tm_event->ip_them   = recved->parsed.src_ip;
                 tm_event->ip_me     = recved->parsed.dst_ip;
@@ -278,7 +278,7 @@ udp_handle(
 static void
 udp_timeout(
     uint64_t entropy,
-    struct ScanTimeoutEvent *event,
+    struct ScanTmEvent *event,
     struct OutputItem *item,
     struct stack_t *stack,
     struct FHandler *handler)
@@ -331,8 +331,8 @@ udp_timeout(
 
             /*add timeout*/
             if (handler) {
-                struct ScanTimeoutEvent *tm_event =
-                    CALLOC(1, sizeof(struct ScanTimeoutEvent));
+                struct ScanTmEvent *tm_event =
+                    CALLOC(1, sizeof(struct ScanTmEvent));
 
                 tm_event->ip_them   = event->ip_them;
                 tm_event->ip_me     = event->ip_me;
@@ -379,8 +379,8 @@ udp_timeout(
 
         /*add timeout*/
         if (handler) {
-            struct ScanTimeoutEvent *tm_event =
-                CALLOC(1, sizeof(struct ScanTimeoutEvent));
+            struct ScanTmEvent *tm_event =
+                CALLOC(1, sizeof(struct ScanTmEvent));
 
             tm_event->ip_them   = event->ip_them;
             tm_event->ip_me     = event->ip_me;

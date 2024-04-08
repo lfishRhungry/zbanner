@@ -106,7 +106,7 @@ void scan_close_nothing()
 
 void scan_no_timeout(
     uint64_t entropy,
-    struct ScanTimeoutEvent *event,
+    struct ScanTmEvent *event,
     struct OutputItem *item,
     struct stack_t *stack,
     struct FHandler *handler)

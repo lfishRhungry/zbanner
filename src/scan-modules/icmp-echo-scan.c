@@ -12,7 +12,7 @@ static bool
 icmpecho_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
-    struct ScanTimeoutEvent *event,
+    struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
     /*we do not care target port*/
@@ -83,7 +83,7 @@ icmpecho_handle(
 
 void icmpecho_timeout(
     uint64_t entropy,
-    struct ScanTimeoutEvent *event,
+    struct ScanTmEvent *event,
     struct OutputItem *item,
     struct stack_t *stack,
     struct FHandler *handler)

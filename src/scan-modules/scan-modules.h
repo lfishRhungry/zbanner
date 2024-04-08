@@ -50,7 +50,7 @@ struct ScanTarget {
     unsigned  index; /*use in tx thread for multi packets per target in ScanModule*/
 };
 
-struct ScanTimeoutEvent {
+struct ScanTmEvent {
     ipaddress ip_them;
     ipaddress ip_me;
     unsigned  port_them;
@@ -76,7 +76,7 @@ struct ScanTimeoutEvent {
 typedef bool (*scan_modules_transmit)(
     uint64_t entropy,
     struct ScanTarget *target,
-    struct ScanTimeoutEvent *event,
+    struct ScanTmEvent *event,
     unsigned char *px, size_t *len);
 
 /***************************************************************************
@@ -162,7 +162,7 @@ typedef void (*scan_modules_handle)(
 */
 typedef void (*scan_modules_timeout)(
     uint64_t entropy,
-    struct ScanTimeoutEvent *event,
+    struct ScanTmEvent *event,
     struct OutputItem *item,
     struct stack_t *stack,
     struct FHandler *handler);
@@ -224,7 +224,7 @@ void scan_close_nothing();
 
 void scan_no_timeout(
     uint64_t entropy,
-    struct ScanTimeoutEvent *event,
+    struct ScanTmEvent *event,
     struct OutputItem *item,
     struct stack_t *stack,
     struct FHandler *handler);

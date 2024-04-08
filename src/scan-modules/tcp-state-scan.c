@@ -84,7 +84,7 @@ static bool
 tcpstate_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
-    struct ScanTimeoutEvent *event,
+    struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/

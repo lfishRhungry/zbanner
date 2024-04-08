@@ -12,7 +12,7 @@ static bool
 icmptime_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
-    struct ScanTimeoutEvent *event,
+    struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
     /*icmp timestamp is just for ipv4*/
@@ -80,7 +80,7 @@ icmptime_handle(
 
 void icmptime_timeout(
     uint64_t entropy,
-    struct ScanTimeoutEvent *event,
+    struct ScanTmEvent *event,
     struct OutputItem *item,
     struct stack_t *stack,
     struct FHandler *handler)
