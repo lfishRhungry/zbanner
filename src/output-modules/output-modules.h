@@ -99,4 +99,14 @@ get_output_module_by_name(const char *name);
 
 void list_all_output_modules();
 
+/************************************************************************
+Some useful implemented interfaces
+************************************************************************/
+
+bool output_init_nothing(const struct Output *output);
+
+void output_result_nothing(const struct Output *out, const struct OutputItem *item);
+
+void output_close_nothing(const struct Output *out);
+
 #endif

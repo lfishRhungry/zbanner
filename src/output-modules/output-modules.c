@@ -13,12 +13,14 @@
 extern struct OutputModule TextOutput;
 extern struct OutputModule NdjsonOutput;
 extern struct OutputModule CsvOutput;
+extern struct OutputModule NullOutput;
 //! REGIST YOUR OUTPUT MODULE HERE
 
 static struct OutputModule *output_modules_list[] = {
     &TextOutput,
     &NdjsonOutput,
     &CsvOutput,
+    &NullOutput,
     //! REGIST YOUR OUTPUT MODULE HERE
 };
 
@@ -242,3 +244,12 @@ output_close(struct Output *output)
     pixie_delete_mutex(output->fail_mutex);
     pixie_delete_mutex(output->info_mutex);
 }
+
+bool output_init_nothing(const struct Output *output)
+{
+    return true;
+}
+
+void output_result_nothing(const struct Output *out, const struct OutputItem *item) {}
+
+void output_close_nothing(const struct Output *out) {}
