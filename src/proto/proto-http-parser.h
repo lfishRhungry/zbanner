@@ -58,7 +58,10 @@ int ph_parse_response(const char *_buf, size_t len,
     size_t last_len);
 
 /* ditto */
-int ph_parse_headers(const char *buf, size_t len, struct ph_header *headers, size_t *num_headers, size_t last_len);
+int ph_parse_headers(const char *buf, size_t len,
+    struct ph_header *headers,
+    size_t *num_headers,
+    size_t last_len);
 
 /* should be zero-filled before start */
 struct ph_chunked_decoder {

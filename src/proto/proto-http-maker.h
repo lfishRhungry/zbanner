@@ -5,15 +5,6 @@
 
 #include "../version.h"
 
-static const char
-default_http_hello[] =
-"GET / HTTP/1.0\r\n"
-"User-Agent: "XTATE_WITH_VERSION" "XTATE_GITHUB"\r\n"
-"Accept: */*\r\n"
-//"Connection: Keep-Alive\r\n"
-//"Content-Length: 0\r\n"
-"\r\n";
-
 enum http_field_action {
     http_field_replace,
     http_field_add,
@@ -27,6 +18,10 @@ enum http_field_action {
  * Called during configuration when processing a command-line option
  * like "--http-field <name=value>" to add/change a field in the HTTP 
  * header.
+ * NOTE: *inout_header must be a malloced memory
+ * 
+ * @return
+ *   the new length of the header (expanded or shrunk)
  */
 size_t
 http_change_field(
@@ -49,8 +44,8 @@ enum http_req_field {
  * Called during configuration when processing a command-line option
  * like "--http-url /foo.html". This replaces whatever the existing
  * URL is into the new one. 
- * @param item
- *      0=method, 1=url, 2=version
+ * NOTE: *inout_header must be a malloced memory
+ * 
  * @return
  *   the new length of the header (expanded or shrunk)
  */

@@ -13,7 +13,7 @@ This is an Application Probe(or Request) Plugin System
 
 //! ADD YOUR PROBE HERE
 extern struct ProbeModule NullProbe;
-extern struct ProbeModule GetRequestProbe;
+extern struct ProbeModule HttpProbe;
 extern struct ProbeModule EchoProbe;
 extern struct ProbeModule JarmProbe;
 extern struct ProbeModule GetStateProbe;
@@ -63,7 +63,7 @@ extern struct ProbeModule LzrNewlines50Probe;
 //! ADD YOUR PROBE HERE
 static struct ProbeModule *probe_modules_list[] = {
     &NullProbe, /* its also the default probe*/
-    &GetRequestProbe,
+    &HttpProbe,
     &EchoProbe,
     &JarmProbe,
     &GetStateProbe,
