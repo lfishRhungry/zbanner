@@ -211,7 +211,11 @@ struct ProbeModule DnsProbe = {
     .desc =
         "DnsProbe sends a dns request specified by user to target udp port and "
         "expects a dns reply. DnsProbe will print the first answer in the reply"
-        " in default. You can use `--all-answer` switch to print all answers.",
+        " in default. You can use `--all-answer` switch to print all answers.\n"
+        "NOTE: If we have not added iptables rules to ban the outwards ICMP Port"
+        " Unreachable sending, dns response retransmission will happen and waste"
+        " resource both on scanner and targets. And an interesting thing will "
+        "happen--every retransmited dns reply carries a different answer.",
     .global_init_cb                 = &dns_global_init,
     .make_payload_cb                = &dns_make_payload,
     .get_payload_length_cb          = NULL,

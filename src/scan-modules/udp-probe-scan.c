@@ -412,7 +412,12 @@ struct ScanModule UdpProbeScan = {
         "unreachable message if closed. Responsed data will be processed and "
         "formed a report by ProbeModule.\n"
         "UdpProbeScan prefer the first reponse udp packet. But all packets to us "
-        "could be record to pcap file.",
+        "could be record to pcap file.\n"
+        "NOTE: Our host may send an ICMP Port Unreachable message to target after"
+        " received udp response because we send udp packets bypassing the protocol"
+        " stack of OS. Sometimes it can cause problems or needless retransmission"
+        " from server side. We could add iptables rules to ban this or observe "
+        "some strange things.",
 
     .global_init_cb              = &udpprobe_global_init,
     .transmit_cb                 = &udpprobe_transmit,
