@@ -8,14 +8,14 @@
 extern struct ProbeModule LzrHttpProbe;
 
 static char lzr_http_fmt_ipv4[] = "GET / HTTP/1.1\r\n"
-    "Host: %s:%u\r\n"
+    "Host: %s\r\n"
     "User-Agent: Mozilla/5.0 "XTATE_WITH_VERSION"\r\n"
     "Accept: */*\r\n"
     "Accept-Encoding: gzip\r\n"
     "\r\n";
 
 static char lzr_http_fmt_ipv6[] = "GET / HTTP/1.1\r\n"
-    "Host: [%s:%u]\r\n"
+    "Host: [%s]\r\n"
     "User-Agent: Mozilla/5.0 "XTATE_WITH_VERSION"\r\n"
     "Accept: */*\r\n"
     "Accept-Encoding: gzip\r\n"
@@ -29,11 +29,11 @@ lzr_http_make_payload(
     if (target->ip_them.version==4)
         return snprintf((char *)payload_buf,
             PROBE_PAYLOAD_MAX_LEN, lzr_http_fmt_ipv4,
-            ipaddress_fmt(target->ip_them).string, target->port_them);
+            ipaddress_fmt(target->ip_them).string);
     else
         return snprintf((char *)payload_buf,
             PROBE_PAYLOAD_MAX_LEN, lzr_http_fmt_ipv6,
-            ipaddress_fmt(target->ip_them).string, target->port_them);
+            ipaddress_fmt(target->ip_them).string);
 }
 
 static size_t
