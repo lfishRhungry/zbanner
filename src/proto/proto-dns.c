@@ -576,7 +576,7 @@ static inline void dns_buffer_set_id(uint8_t *buf, uint16_t id)
     *((uint16_t *) buf) = htons(id);
 }
 
-char *dns_class2str(dns_class cls)
+const char *dns_class2str(dns_class cls)
 {
     switch(cls)
     {
@@ -595,7 +595,7 @@ char *dns_class2str(dns_class cls)
     }
 }
 
-char *dns_opcode2str(dns_opcode opcode)
+const char *dns_opcode2str(dns_opcode opcode)
 {
     switch(opcode)
     {
@@ -614,7 +614,7 @@ char *dns_opcode2str(dns_opcode opcode)
     }
 }
 
-char *dns_rcode2str(dns_rcode rcode)
+const char *dns_rcode2str(dns_rcode rcode)
 {
     switch (rcode)
     {
@@ -659,7 +659,7 @@ char *dns_rcode2str(dns_rcode rcode)
     }
 }
 
-char *dns_record_type2str(dns_record_type type)
+const char *dns_record_type2str(dns_record_type type)
 {
     switch (type)
     {
@@ -883,22 +883,22 @@ bool dns_parse_question(uint8_t *buf, size_t len, dns_head_t *head, uint8_t **bo
         return false;
     }
 
-    head->header.id = ntohs((*(uint16_t *) buf));
-    head->header.qr = (bool) (buf[2] & 0x80);
-    head->header.opcode = (uint8_t) ((buf[2] & (0x78)) >> 3);
-    head->header.aa = (bool) (buf[2] & 0x04);
-    head->header.tc = (bool) (buf[2] & 0x02);
-    head->header.rd = (bool) (buf[2] & 0x01);
-    head->header.ra = (bool) (buf[3] & 0x80);
-    head->header.z = (bool) (buf[4] & 0x40);
-    head->header.ad = (bool) (buf[3] & 0x20);
-    head->header.cd = (bool) (buf[3] & 0x10);
-    head->header.rcode = (uint8_t) (buf[3] & 0x0F);
+    head->header.id            = ntohs((*(uint16_t *) buf));
+    head->header.qr            = (bool) (buf[2] & 0x80);
+    head->header.opcode        = (uint8_t) ((buf[2] & (0x78)) >> 3);
+    head->header.aa            = (bool) (buf[2] & 0x04);
+    head->header.tc            = (bool) (buf[2] & 0x02);
+    head->header.rd            = (bool) (buf[2] & 0x01);
+    head->header.ra            = (bool) (buf[3] & 0x80);
+    head->header.z             = (bool) (buf[4] & 0x40);
+    head->header.ad            = (bool) (buf[3] & 0x20);
+    head->header.cd            = (bool) (buf[3] & 0x10);
+    head->header.rcode         = (uint8_t) (buf[3] & 0x0F);
+    head->header.ans_count     = ntohs((*(uint16_t *) (buf + 6)));
+    head->header.auth_count    = ntohs((*(uint16_t *) (buf + 8)));
+    head->header.add_count     = ntohs((*(uint16_t *) (buf + 10)));
+    head->header.q_count       = ntohs((*(uint16_t *) (buf + 4)));
 
-    head->header.ans_count = ntohs((*(uint16_t *) (buf + 6)));
-    head->header.auth_count = ntohs((*(uint16_t *) (buf + 8)));
-    head->header.add_count = ntohs((*(uint16_t *) (buf + 10)));
-    head->header.q_count = ntohs((*(uint16_t *) (buf + 4)));
     if (head->header.q_count != 1)
     {
         return false;

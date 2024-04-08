@@ -212,20 +212,17 @@ uint64_t tcpcon_active_tcb(struct TCP_ConnectionTable *tcpcon)
 /***************************************************************************
  * DEBUG: when printing debug messages (-d option), this prints a string
  * for the given state.
- * !thread not safe
  ***************************************************************************/
 static const char *
 tcp_state_to_string(enum Tcp_State state)
 {
-    static char buf[64];
     switch (state) {
         case STATE_SYN_SENT:            return "SYN_SENT";
         case STATE_ESTABLISHED_SEND:    return "ESTABLISHED_SEND";
         case STATE_ESTABLISHED_RECV:    return "ESTABLISHED_RECV";
 
         default:
-            snprintf(buf, sizeof(buf), "%d", state);
-            return buf;
+            return "UNKN_STATE";
     }
 }
 
@@ -682,12 +679,10 @@ tcpcon_send_packet(
 /***************************************************************************
  * DEBUG: when printing debug messages (-d option), this prints a string
  * for the given state.
- * !thread not safe
  ***************************************************************************/
 static const char *
 what_to_string(enum TCP_What state)
 {
-    static char buf[64];
     switch (state) {
         case TCP_WHAT_TIMEOUT:  return "TIMEOUT";
         case TCP_WHAT_SYNACK:   return "SYNACK";
@@ -697,8 +692,7 @@ what_to_string(enum TCP_What state)
         case TCP_WHAT_DATA:     return "DATA";
         case TCP_WHAT_CLOSE:    return "CLOSE";
         default:
-            snprintf(buf, sizeof(buf), "%d", state);
-            return buf;
+            return "UNKN_WHAT";
     }
 }
 

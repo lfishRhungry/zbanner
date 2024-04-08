@@ -212,13 +212,13 @@ dns_record_type dns_str_to_record_type(const char *str);
 
 bool dns_str2rcode(char *str, dns_rcode *code);
 
-char *dns_class2str(dns_class cls);
+const char *dns_class2str(dns_class cls);
 
-char *dns_opcode2str(dns_opcode opcode);
+const char *dns_opcode2str(dns_opcode opcode);
 
-char *dns_rcode2str(dns_rcode rcode);
+const char *dns_rcode2str(dns_rcode rcode);
 
-char *dns_record_type2str(dns_record_type type);
+const char *dns_record_type2str(dns_record_type type);
 
 int dns_str2namebuf(const char *name, uint8_t *buffer);
 
