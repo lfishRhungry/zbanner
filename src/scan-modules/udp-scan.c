@@ -9,7 +9,7 @@
 #include "../util-data/fine-malloc.h"
 #include "../util-out/logger.h"
 
-extern struct ScanModule UdpProbeScan; /*for internal x-ref*/
+extern struct ScanModule UdpScan; /*for internal x-ref*/
 
 /**
  *For calc the conn index.
@@ -21,7 +21,7 @@ extern struct ScanModule UdpProbeScan; /*for internal x-ref*/
 static unsigned src_port_start;
 
 static bool
-udpprobe_global_init(const struct Xconf *xconf)
+udp_global_init(const struct Xconf *xconf)
 {
     src_port_start = xconf->nic.src.port.first;
 
@@ -29,7 +29,7 @@ udpprobe_global_init(const struct Xconf *xconf)
 }
 
 static bool
-udpprobe_transmit(
+udp_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
     struct ScanTimeoutEvent *event,
@@ -54,7 +54,7 @@ udpprobe_transmit(
     unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
     size_t payload_len = 0;
 
-    payload_len = UdpProbeScan.probe->make_payload_cb(&ptarget, payload);
+    payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
 
     *len = udp_create_packet(target->ip_them, target->port_them,
         target->ip_me, src_port_start+target->index,
@@ -66,15 +66,15 @@ udpprobe_transmit(
     event->port_me      = src_port_start+target->index;
     
     /*for multi-probe*/
-    if (UdpProbeScan.probe->multi_mode==Multi_Direct
-        && target->index+1 < UdpProbeScan.probe->multi_num)
+    if (UdpScan.probe->multi_mode==Multi_Direct
+        && target->index+1 < UdpScan.probe->multi_num)
         return true;
     else return false;
     
 }
 
 static void
-udpprobe_validate(
+udp_validate(
     uint64_t entropy,
     struct Received *recved,
     struct PreHandle *pre)
@@ -105,7 +105,7 @@ udpprobe_validate(
             .index     = recved->parsed.port_dst-src_port_start,
         };
 
-        if (UdpProbeScan.probe->validate_response_cb(&ptarget,
+        if (UdpScan.probe->validate_response_cb(&ptarget,
             &recved->packet[recved->parsed.app_offset],
             recved->parsed.app_length))
             pre->go_dedup = 1;
@@ -140,7 +140,7 @@ udpprobe_validate(
 }
 
 static void
-udpprobe_handle(
+udp_handle(
     unsigned th_idx,
     uint64_t entropy,
     struct Received *recved,
@@ -160,16 +160,16 @@ udpprobe_handle(
             .index     = recved->parsed.port_dst-src_port_start,
         };
 
-        int is_multi = UdpProbeScan.probe->handle_response_cb(&ptarget,
+        int is_multi = UdpScan.probe->handle_response_cb(&ptarget,
             &recved->packet[recved->parsed.app_offset],
             recved->parsed.app_length, item);
 
         /*for multi-probe Multi_AfterHandle*/
-        if (UdpProbeScan.probe->multi_mode==Multi_AfterHandle&&is_multi
+        if (UdpScan.probe->multi_mode==Multi_AfterHandle&&is_multi
             && recved->parsed.port_dst==src_port_start
-            && UdpProbeScan.probe->multi_num) {
+            && UdpScan.probe->multi_num) {
 
-            for (unsigned idx=1; idx<UdpProbeScan.probe->multi_num; idx++) {
+            for (unsigned idx=1; idx<UdpScan.probe->multi_num; idx++) {
 
                 struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
 
@@ -186,7 +186,7 @@ udpprobe_handle(
                 unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
                 size_t payload_len = 0;
 
-                payload_len = UdpProbeScan.probe->make_payload_cb(&ptarget, payload);
+                payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
 
                 pkt_buffer->length = udp_create_packet(
                     recved->parsed.src_ip, recved->parsed.port_src,
@@ -218,7 +218,7 @@ udpprobe_handle(
         }
 
         /*for multi-probe Multi_DynamicNext*/
-        if (UdpProbeScan.probe->multi_mode==Multi_DynamicNext && is_multi) {
+        if (UdpScan.probe->multi_mode==Multi_DynamicNext && is_multi) {
 
             struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
 
@@ -235,7 +235,7 @@ udpprobe_handle(
             unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
             size_t payload_len = 0;
 
-            payload_len = UdpProbeScan.probe->make_payload_cb(&ptarget, payload);
+            payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
 
             pkt_buffer->length = udp_create_packet(
                 recved->parsed.src_ip, recved->parsed.port_src,
@@ -276,7 +276,7 @@ udpprobe_handle(
 }
 
 static void
-udpprobe_timeout(
+udp_timeout(
     uint64_t entropy,
     struct ScanTimeoutEvent *event,
     struct OutputItem *item,
@@ -295,15 +295,15 @@ udpprobe_timeout(
         .index     = event->port_me-src_port_start,
     };
 
-    int is_multi = UdpProbeScan.probe->handle_response_cb(&ptarget,
+    int is_multi = UdpScan.probe->handle_response_cb(&ptarget,
         NULL, 0, item);
 
     /*for multi-probe Multi_AfterHandle*/
-    if (UdpProbeScan.probe->multi_mode==Multi_AfterHandle&&is_multi
+    if (UdpScan.probe->multi_mode==Multi_AfterHandle&&is_multi
         && event->port_me==src_port_start
-        && UdpProbeScan.probe->multi_num) {
+        && UdpScan.probe->multi_num) {
 
-        for (unsigned idx=1; idx<UdpProbeScan.probe->multi_num; idx++) {
+        for (unsigned idx=1; idx<UdpScan.probe->multi_num; idx++) {
 
             struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
 
@@ -320,7 +320,7 @@ udpprobe_timeout(
             unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
             size_t payload_len = 0;
 
-            payload_len = UdpProbeScan.probe->make_payload_cb(&ptarget, payload);
+            payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
 
             pkt_buffer->length = udp_create_packet(
                 event->ip_them, event->port_them,
@@ -351,7 +351,7 @@ udpprobe_timeout(
     }
 
     /*for multi-probe Multi_DynamicNext*/
-    if (UdpProbeScan.probe->multi_mode==Multi_DynamicNext && is_multi) {
+    if (UdpScan.probe->multi_mode==Multi_DynamicNext && is_multi) {
 
         struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
 
@@ -368,7 +368,7 @@ udpprobe_timeout(
         unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
         size_t payload_len = 0;
 
-        payload_len = UdpProbeScan.probe->make_payload_cb(&ptarget, payload);
+        payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
 
         pkt_buffer->length = udp_create_packet(
             event->ip_them, event->port_them,
@@ -399,19 +399,19 @@ udpprobe_timeout(
 
 }
 
-struct ScanModule UdpProbeScan = {
-    .name                = "udp-probe",
+struct ScanModule UdpScan = {
+    .name                = "udp",
     .required_probe_type = ProbeType_UDP,
     .support_timeout     = 1,
     .params              = NULL,
     .bpf_filter =
         "udp || (icmp && icmp[0]==3 && icmp[1]==3) || (icmp6 && icmp6[0]==1 && icmp6[1]==4)", /*udp and icmp port unreachable*/
     .desc =
-        "UdpProbeScan sends a udp packet with ProbeModule data to target port "
+        "UdpScan sends a udp packet with ProbeModule data to target port "
         "and expects a udp response to believe the port is open or an icmp port "
         "unreachable message if closed. Responsed data will be processed and "
         "formed a report by ProbeModule.\n"
-        "UdpProbeScan prefer the first reponse udp packet. But all packets to us "
+        "UdpScan prefer the first reponse udp packet. But all packets to us "
         "could be record to pcap file.\n"
         "NOTE: Our host may send an ICMP Port Unreachable message to target after"
         " received udp response because we send udp packets bypassing the protocol"
@@ -419,11 +419,11 @@ struct ScanModule UdpProbeScan = {
         " from server side. We could add iptables rules to ban this or observe "
         "some strange things.",
 
-    .global_init_cb              = &udpprobe_global_init,
-    .transmit_cb                 = &udpprobe_transmit,
-    .validate_cb                 = &udpprobe_validate,
-    .handle_cb                   = &udpprobe_handle,
-    .timeout_cb                  = &udpprobe_timeout,
+    .global_init_cb              = &udp_global_init,
+    .transmit_cb                 = &udp_transmit,
+    .validate_cb                 = &udp_validate,
+    .handle_cb                   = &udp_handle,
+    .timeout_cb                  = &udp_timeout,
     .poll_cb                     = &scan_poll_nothing,
     .close_cb                    = &scan_close_nothing,
 };

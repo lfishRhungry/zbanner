@@ -11,7 +11,7 @@ extern struct ScanModule ArpReqScan;
 extern struct ScanModule NdpNsScan;
 extern struct ScanModule SctpInitScan;
 extern struct ScanModule ZBannerScan;
-extern struct ScanModule UdpProbeScan;
+extern struct ScanModule UdpScan;
 extern struct ScanModule TcpStateScan;
 //! REGIST YOUR SCAN MODULE HERE
 
@@ -23,7 +23,7 @@ static struct ScanModule *scan_modules_list[] = {
     &NdpNsScan,
     &SctpInitScan,
     &ZBannerScan,
-    &UdpProbeScan,
+    &UdpScan,
     &TcpStateScan,
     //! REGIST YOUR SCAN MODULE HERE
 };
