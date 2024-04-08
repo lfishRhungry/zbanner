@@ -25,12 +25,12 @@ struct OutputItem {
     time_t                       timestamp;
     enum OutputLevel             level;
     ipaddress                    ip_them;
-    unsigned                     port_them;                      /*no outputting if zero*/
+    unsigned                     port_them;                        /*no outputting if zero*/
     ipaddress                    ip_me;
-    unsigned                     port_me;                        /*no outputting if zero*/
-    char                         reason[OUTPUT_RSN_LEN];         /*no outputting if start with zero*/
-    char                         classification[OUTPUT_CLS_LEN]; /*no outputting if start with zero*/
-    char                         report[OUTPUT_RPT_LEN];         /*no outputting if start with zero*/
+    unsigned                     port_me;                          /*no outputting if zero*/
+    char                         reason[OUTPUT_RSN_LEN];           /*no outputting if start with zero*/
+    char                         classification[OUTPUT_CLS_LEN];   /*no outputting if start with zero*/
+    char                         report[OUTPUT_RPT_LEN];           /*no outputting if start with zero*/
     unsigned                     no_output:1;
 };
 
@@ -53,12 +53,21 @@ struct Output {
     unsigned                     is_show_info:1;
 };
 
+/**
+ * Do init for outputing
+*/
 typedef bool
 (*output_modules_init)(const struct Output *out);
 
+/**
+ * Output one result
+*/
 typedef void
 (*output_modules_result)(const struct Output *out, const struct OutputItem *item);
 
+/**
+ * Do close for outputing
+*/
 typedef void
 (*output_modules_close)(const struct Output *out);
 
