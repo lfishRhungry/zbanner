@@ -726,6 +726,10 @@ int main(int argc, char *argv[]) {
     case Operation_PrintHelp:
         xconf_print_help();
         break;
+
+    case Operation_PrintIntro:
+        xconf_print_intro();
+        break;
     }
 
     return 0;

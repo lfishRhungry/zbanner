@@ -44,7 +44,8 @@ const char ascii_xtate1[] =
 "  >$$  $$    | $$  | $$__  $$   | $$   | $$__/   \n"
 " /$$/\\  $$   | $$  | $$  | $$   | $$   | $$      \n"
 "| $$  \\ $$   | $$  | $$  | $$   | $$   | $$$$$$$$\n"
-"|__/  |__/   |__/  |__/  |__/   |__/   |________/\n";
+"|__/  |__/   |__/  |__/  |__/   |__/   |________/\n"
+;
 
 
 const char ascii_xtate2[] =
@@ -54,7 +55,76 @@ const char ascii_xtate2[] =
 "     MMb         MM     ,M  `MM      MM        MMmmMM    \n"
 "   ,M'`Mb.       MM     AbmmmqMA     MM        MM   Y  , \n"
 "  ,P   `MM.      MM    A'     VML    MM        MM     ,M \n"
-".MM:.  .:MMa.  .JMML..AMA.   .AMMA..JMML.    .JMMmmmmMMM \n";
+".MM:.  .:MMa.  .JMML..AMA.   .AMMA..JMML.    .JMMmmmmMMM \n"
+;
+
+const char work_flow[] =
+"+--------------------------------------------------------------------------------------------------+\n"
+"|                                                                                                  |\n"
+"|                                                                                                  |\n"
+"|                                 Tx Threads                                         Tx Threads    |\n"
+"|     New Targets Generation     ------------->        ScanModule Transmit          ----------->   |\n"
+"|   +-------------------------+                   +----------------------------+                   |\n"
+"|   | 1.Address Randomization |  ------------->   | (ProbeModule Hello Making) |    ----------->   |\n"
+"|   | 2.Scan Rate Control     |                   | (Timeout Event Creating)   |                   |\n"
+"|   +-------------------------+  ------------->   +----------------------------+    ----------->   |\n"
+"|                                                                                                  |\n"
+"|                                                                                ^                 |\n"
+"|                                                                                |                 |\n"
+"|       Packets need to be send   +-----------------------+  Send in priority    |                 |\n"
+"|   +---------------------------->| Pakcets Sending Queue +----------------------+                 |\n"
+"|   |                             +-----------------------+                                        |\n"
+"|   |                                                                                              |\n"
+"|   |                                                                                              |\n"
+"|   |          ScanModule Handling                                                                 |\n"
+"|   |   +------------------------------+   Handle Threads   ScanModule Validation                  |\n"
+"|   |   |  1.ProbeModule Validation    |   <-------------  +---------------------+                 |\n"
+"|   |   |  2.ProbeModule Parsing       |                   | 1.Record            |    Rx  Thread   |\n"
+"|   |   |  3.OutputModule save results |   <-------------  | 2.Deduplication     |  <-----------   |\n"
+"|   |   |  4.More packets to send      |                   | 3.Timeout handling  |                 |\n"
+"|   +---+    (ProbeModule Hello Making)|   <-------------  +---------------------+                 |\n"
+"|       +------------------------------+                                                           |\n"
+"|                                                                                                  |\n"
+"+--------------------------------------------------------------------------------------------------+\n"
+;
+
+const char scan_probe_module_rela[] =
+"+-----------------------------------------------------------------------+\n"
+"|   Free supporting for new scan strategies and protocols through       |\n"
+"|   flexible ScanModules and ProbeModules creating and combination      |\n"
+"|                                                                       |\n"
+"|                                                                       |\n"
+"|      +--------------------+           +-------------------------+     |\n"
+"|      |  Application Layer +---------->|                         |     |\n"
+"|      +--------------------+           |     ProbeModules        |     |\n"
+"|                                       |                         |     |\n"
+"|      +--------------------+           |       e.g. HTTP         |     |\n"
+"|      | Presentation Layer +---------->|            DNS          |     |\n"
+"|      +--------------------+           |            Netbios      |     |\n"
+"|                                       |            TLS          |     |\n"
+"|      +--------------------+           |                         |     |\n"
+"|      |   Session Layer    +---------->|                         |     |\n"
+"|      +--------------------+           +-------------------------+     |\n"
+"|                                                                       |\n"
+"|      +--------------------+           +-------------------------+     |\n"
+"|      |   Transport Layer  +---------->|                         |     |\n"
+"|      +--------------------+           |      ScanModules        |     |\n"
+"|                                       |                         |     |\n"
+"|      +--------------------+           |       e.g. TCP          |     |\n"
+"|      |   Network Layer    +---------->|            UDP          |     |\n"
+"|      +--------------------+           |            ICMP         |     |\n"
+"|                                       |            NDP          |     |\n"
+"|      +--------------------+           |            ARP          |     |\n"
+"|      |   Data-link Layer  +---------->|                         |     |\n"
+"|      +--------------------+           +-------------------------+     |\n"
+"|                                                                       |\n"
+"|      +--------------------+                                           |\n"
+"|      |   Physical Layer   +---------->     Stop kidding!!!            |\n"
+"|      +--------------------+                                           |\n"
+"|                                                                       |\n"
+"|                                                                       |\n"
+"+-----------------------------------------------------------------------+\n"
+;
 
 static const unsigned short top_udp_ports[] = {
     161,      /* SNMP - should be found on all network equipment */
@@ -1821,6 +1891,20 @@ static enum Config_Res SET_usage(void *conf, const char *name, const char *value
     return CONF_ERR;
 }
 
+static enum Config_Res SET_print_intro(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    UNUSEDPARM(name);
+    UNUSEDPARM(value);
+    if (xconf->echo) {
+        return 0;
+    }
+
+    xconf->op = Operation_PrintIntro;
+
+    return CONF_OK;
+}
+
 static enum Config_Res SET_print_help(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
@@ -2234,6 +2318,13 @@ struct ConfigParam config_parameters[] = {
         F_BOOL,
         {"h", "?", 0},
         "Print the detailed help text of all parameters."
+    },
+    {
+        "introduction",
+        SET_print_intro,
+        F_BOOL,
+        {"intro", 0},
+        "Print the introduction of work flow."
     },
 
     {"TARGET:", SET_nothing, 0, {0}, NULL},
@@ -2935,6 +3026,35 @@ bool xconf_contains(const char *x, int argc, char **argv)
     }
 
     return false;
+}
+
+void xconf_print_intro()
+{
+    printf("\n");
+    printf("Welcome to "XTATE_FIRST_UPPER_NAME"!");
+    printf("\n");
+    xprint("A modular all-stack network scanner running on a "
+        "completely stateless mode for next-generation Internet-scale surveys!",
+        2, 80);
+    printf("\n");
+    printf("\n");
+    printf("  Author : "XTATE_AUTHOR_NAME"\n");
+    printf("  Github : "XTATE_GITHUB"\n");
+    printf("  Contact: "XTATE_AUTHOR_MAIL"\n");
+    printf("\n");
+    printf("\n");
+    printf("\n");
+    printf("This is how "XTATE_FIRST_UPPER_NAME" working internally:\n");
+    printf("\n");
+    printf(work_flow);
+    printf("\n");
+    printf("\n");
+    printf("\n");
+    printf("This is what ScanModules and ProbeModules mean:\n");
+    printf("\n");
+    printf(scan_probe_module_rela);
+    printf("\n");
+    printf("\n");
 }
 
 void xconf_print_usage()

@@ -35,6 +35,7 @@ enum Operation {
     Operation_ListProbeModules,              /* list all probes */
     Operation_ListOutputModules,             /* list all probes */
     Operation_PrintHelp,                     /* print help text for all parameters*/
+    Operation_PrintIntro,                    /* print introduction text of work flow*/
 };
 
 struct source_t {
@@ -206,6 +207,8 @@ xconf_echo_cidr(struct Xconf *xconf, FILE *fp);
  ***************************************************************************/
 void
 adapter_get_source_addresses(const struct Xconf *xconf, struct source_t *src);
+
+void xconf_print_intro();
 
 void xconf_print_usage();
 

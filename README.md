@@ -6,7 +6,11 @@ stateless mode for next-generation Internet-scale surveys!
 
 BONUS: Xtate has stateful ScanModule to support stateful scanning now.
 
-## Main Usage
+## Intro
+
+See `xtate --intro`.
+
+## Usage
 
 See `xtate --usage`.
 
@@ -20,11 +24,11 @@ Xtate was created by lfishRhungry:
 - email: shineccy@aliyun.com
 - email: chenchiyu14@nudt.edu.cn
 
-Xtate was born from [ZMap](https://github.com/zmap/zmap),
+Xtate referenced and was born from [ZMap](https://github.com/zmap/zmap),
 [Masscan](https://github.com/robertdavidgraham/masscan/tree/master)
 and [Masscan-ng](https://github.com/bi-zone/masscan-ng).
 Thanks to Robert Graham, Zakir Durumeric and Konstantin Molodyakov
-for there greate code and rigorous style.
+for their greate code and rigorous style.
 
 # License
 
