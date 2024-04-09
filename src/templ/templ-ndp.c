@@ -160,8 +160,8 @@ ndp_create_ns_by_template_ipv6(
     ipv6address ip_them, ipv6address ip_me, macaddress_t src_mac,
     uint8_t ttl, unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->proto != Proto_NDP_ns) {
-            LOG(LEVEL_ERROR, "ndp_create_by_template_ipv6: need a Proto_NDP_ns TemplatePacket.\n");
+    if (tmpl->proto != Proto_NDP_NS) {
+            LOG(LEVEL_ERROR, "ndp_create_by_template_ipv6: need a Proto_NDP_NS TemplatePacket.\n");
             return 0;
     }
 
@@ -272,7 +272,7 @@ ndp_create_ns_packet(
     /*just for IPv6*/
     if (ip_them.version == 4) return 0;
 
-    return ndp_create_ns_by_template_ipv6(&global_tmplset->pkts[Proto_NDP_ns],
+    return ndp_create_ns_by_template_ipv6(&global_tmplset->pkts[Proto_NDP_NS],
         ip_them.ipv6, ip_me.ipv6, src_mac, ttl, px, sizeof_px);
 }
 

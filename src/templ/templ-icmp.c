@@ -223,9 +223,9 @@ icmp_create_by_template(
     unsigned cookie, uint16_t ip_id, uint8_t ttl,
     unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->proto != Proto_ICMP_ping
-        && tmpl->proto != Proto_ICMP_timestamp) {
-            LOG(LEVEL_ERROR, "icmp_create_by_template: need a Proto_ICMP_ping or Proto_ICMP_timestamp TemplatePacket.\n");
+    if (tmpl->proto != Proto_ICMP_ECHO
+        && tmpl->proto != Proto_ICMP_TS) {
+            LOG(LEVEL_ERROR, "icmp_create_by_template: need a Proto_ICMP_ECHO or Proto_ICMP_TS TemplatePacket.\n");
             return 0;
     }
 
@@ -247,7 +247,7 @@ icmp_create_echo_packet(
     unsigned cookie, uint16_t ip_id, uint8_t ttl,
     unsigned char *px, size_t sizeof_px)
 {
-    return icmp_create_by_template(&global_tmplset->pkts[Proto_ICMP_ping],
+    return icmp_create_by_template(&global_tmplset->pkts[Proto_ICMP_ECHO],
         ip_them, ip_me, cookie, ip_id, ttl, px, sizeof_px);
 }
 
@@ -257,7 +257,7 @@ icmp_create_timestamp_packet(
     unsigned cookie, uint16_t ip_id, uint8_t ttl,
     unsigned char *px, size_t sizeof_px)
 {
-    return icmp_create_by_template(&global_tmplset->pkts[Proto_ICMP_timestamp],
+    return icmp_create_by_template(&global_tmplset->pkts[Proto_ICMP_TS],
         ip_them, ip_me, cookie, ip_id, ttl, px, sizeof_px);
 }
 

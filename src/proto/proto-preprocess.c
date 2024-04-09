@@ -87,7 +87,7 @@ parse_ipv4:
 
         /* Check version */
         if ((px[offset]>>4) != 4)
-            return 0; /* not IPv4 or corrupt */
+            return false; /* not IPv4 or corrupt */
 
         /* Check header length */
         header_length = (px[offset] & 0x0F) * 4;

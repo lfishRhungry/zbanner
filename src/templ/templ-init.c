@@ -427,13 +427,13 @@ _template_init(
                 tmpl->ipv4.offset_tcp, tmpl->ipv4.length-tmpl->ipv4.offset_tcp);
             switch (px[tmpl->ipv4.offset_tcp]) {
                 case 8:
-                    tmpl->proto = Proto_ICMP_ping;
+                    tmpl->proto = Proto_ICMP_ECHO;
                     break;
                 case 13:
-                    tmpl->proto = Proto_ICMP_timestamp;
+                    tmpl->proto = Proto_ICMP_TS;
                     break;
                 case 135:
-                    tmpl->proto = Proto_NDP_ns;
+                    tmpl->proto = Proto_NDP_NS;
                     break;
             }
             break;
@@ -490,7 +490,7 @@ _template_init(
     /* the default, do nothing */
     } else {
     LOG(LEVEL_ERROR, "[-] FAILED: bad packet template, unknown data link type\n");
-        LOG(LEVEL_ERROR, "    [hint] "XTATE_FIRST_UPPER_NAME" doesn't know how to format packets for this interface\n");
+    LOG(LEVEL_ERROR, "    [hint] "XTATE_FIRST_UPPER_NAME" doesn't know how to format packets for this interface\n");
     exit(1);
     }
 
@@ -558,7 +558,7 @@ template_packet_init(
     templset->count++;
 
     /* [ICMP ping] */
-    _template_init(&templset->pkts[Proto_ICMP_ping],
+    _template_init(&templset->pkts[Proto_ICMP_ECHO],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    default_icmp_ping_template,
                    sizeof(default_icmp_ping_template)-1,
@@ -566,7 +566,7 @@ template_packet_init(
     templset->count++;
 
     /* [ICMP timestamp] */
-    _template_init(&templset->pkts[Proto_ICMP_timestamp],
+    _template_init(&templset->pkts[Proto_ICMP_TS],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    default_icmp_timestamp_template,
                    sizeof(default_icmp_timestamp_template)-1,
@@ -583,7 +583,7 @@ template_packet_init(
 
 
     /* [NDP NS] */
-    _template_init( &templset->pkts[Proto_NDP_ns],
+    _template_init( &templset->pkts[Proto_NDP_NS],
                     source_mac, router_mac_ipv4, router_mac_ipv6,
                     default_ndp_ns_template,
                     sizeof(default_ndp_ns_template)-1,
@@ -693,9 +693,9 @@ get_real_protocol_and_port(unsigned *port)
         *port &= 0xFFFF;
         return Proto_SCTP;
     } else if (*port == Templ_ICMP_echo) {
-        return Proto_ICMP_ping;
+        return Proto_ICMP_ECHO;
     } else if (*port == Templ_ICMP_timestamp) {
-        return Proto_ICMP_timestamp;
+        return Proto_ICMP_TS;
     } else if (*port == Templ_ARP) {
         return Proto_ARP;
     } else {

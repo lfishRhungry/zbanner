@@ -53,9 +53,6 @@ initialize_adapter(struct Xconf *xconf)
 
     /*
      * START ADAPTER
-     *
-     * Once we've figured out which adapter to use, we now need to
-     * turn it on.
      */
     xconf->nic.adapter = rawsock_init_adapter(
                                             ifname,
@@ -106,10 +103,6 @@ initialize_adapter(struct Xconf *xconf)
 
     /*
      * IPv4 ADDRESS
-     *
-     * We need to figure out that IP address to send packets from. This
-     * is done by querying the adapter (or configured by user). If the
-     * adapter doesn't have one, then the user must configure one.
      */
     if (massip_has_ipv4_targets(&xconf->targets)) {
         adapter_ip = xconf->nic.src.ipv4.first;
@@ -140,13 +133,6 @@ initialize_adapter(struct Xconf *xconf)
         
         /*
          * ROUTER MAC ADDRESS
-         *
-         * NOTE: this is one of the least understood aspects of the code. We must
-         * send packets to the local router, which means the MAC address (not
-         * IP address) of the router.
-         *
-         * Note: in order to ARP the router, we need to first enable the libpcap
-         * code above.
          */
         if (xconf->is_offline) {
             /* If we are doing offline benchmarking/testing, then create
@@ -195,10 +181,6 @@ initialize_adapter(struct Xconf *xconf)
 
     /*
      * IPv6 ADDRESS
-     *
-     * We need to figure out that IPv6 address to send packets from. This
-     * is done by querying the adapter (or configured by user). If the
-     * adapter doesn't have one, then the user must configure one.
      */
     if (massip_has_ipv6_targets(&xconf->targets)) {
         ipv6address adapter_ipv6 = xconf->nic.src.ipv6.first;

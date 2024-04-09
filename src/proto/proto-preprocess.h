@@ -57,7 +57,7 @@ struct PreprocessedInfo {
 };
 
 /**
- * @return 1 if useful stuff found, 0 otherwise
+ * @return true if useful stuff found, false otherwise
  */
 bool
 preprocess_frame(const unsigned char *px, unsigned length, unsigned link_type, struct PreprocessedInfo *info);
