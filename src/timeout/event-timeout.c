@@ -31,11 +31,7 @@
 #include "event-timeout.h"
 #include "../util-out/logger.h"
 #include "../util-data/fine-malloc.h"
-
-#if defined(_MSC_VER)
-#undef inline
-#define inline _inline
-#endif
+#include "../util-misc/cross.h"
 
 
 

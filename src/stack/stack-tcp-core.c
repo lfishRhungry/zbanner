@@ -1386,12 +1386,6 @@ again:
         case APP_STATE_CONNECT:
             switch (event) {
                 case APP_WHAT_CONNECTED:
-                    /*
-                     * By default, wait for the "hello timeout" period
-                     * receiving any packets they send us. If nothing is
-                     * received in this period, then timeout will cause us
-                     * to switch to sending
-                     */
                     if (probe->hello_wait <= 0) {
                         tcpapi_change_app_state(socket, APP_STATE_SEND_FIRST);
                         state = APP_STATE_SEND_FIRST;
