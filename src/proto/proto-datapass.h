@@ -10,7 +10,8 @@
  * 
  * the `is_dynamic` switch means we just pass 2 type of data:
  * 1.static data: we can promise it unchanged for a while until we sending it.
- * 2.dynamic data: we copy it to a MALLOC addr, and sender will free the point.
+ * 2.dynamic data: we copy it to a MALLOC addr, and who got the datapass will
+ * free it for responsibility.
  * */
 struct DataPass {
     unsigned char *payload;
