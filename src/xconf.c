@@ -2489,7 +2489,7 @@ struct ConfigParam config_parameters[] = {
     },
     {
         "lan-mode",
-        SET_fake_router_mac,
+        SET_lan_mode,
         F_BOOL,
         {"local", "lan", 0},
         "Set the router MAC address to a broadcast address(ff-ff-ff-ff-ff-ff). "
@@ -2499,13 +2499,15 @@ struct ConfigParam config_parameters[] = {
     },
     {
         "fake-router-mac",
-        SET_lan_mode,
+        SET_fake_router_mac,
         F_BOOL,
         {"no-router-mac", 0},
         "Set the router MAC address to a invalid address(01-02-03-04-05-06). "
         "This can stop "XTATE_FIRST_UPPER_NAME" to resolve router MAC address."
         "It's useful when the ScanModule will specify destination MAC address "
         "dynamicly for different target. e.g. NdpNsScan.\n"
+        "HINT: If we want to test the highest sending rate and not bother anyone"
+        ", this param would be helpful with `--infinite`."
     },
 
     {"OPERATION:", SET_nothing, 0, {0}, NULL},
@@ -2862,17 +2864,6 @@ struct ConfigParam config_parameters[] = {
         "can be increased by using the sendqueue feature to roughly 300-kpps."
     },
     {
-        "infinite",
-        SET_infinite,
-        F_BOOL,
-        {0},
-        "Do not actually transmit packets. This is useful with a low rate and "
-        "--packet-trace to look at what packets might've been transmitted. Or, "
-        "it's useful with --rate 100000000 in order to benchmark how fast "
-        "transmit would work (assuming a zero-overhead driver). PF_RING is about"
-        " 20% slower than the benchmark result from offline mode."
-    },
-    {
         "offline",
         SET_offline,
         F_BOOL,
@@ -2882,6 +2873,18 @@ struct ConfigParam config_parameters[] = {
         "it's useful with --rate 100000000 in order to benchmark how fast "
         "transmit would work (assuming a zero-overhead driver). PF_RING is about"
         " 20% slower than the benchmark result from offline mode."
+    },
+    {
+        "infinite",
+        SET_infinite,
+        F_BOOL,
+        {0},
+        "Scan the target again and again. Not stop until we hit <Ctrl-C>. This "
+        "is useful for us to test the some performance of "XTATE_FIRST_UPPER_NAME
+        ". The seed will update in every loop while setting infinite mode.\n"
+        "HINT: If we just want to test the highest sending rate, try to set an "
+        "invalid router mac like `--router-mac 11:22:33:44:55:66` or use `--fake"
+        "-router-mac` to send packets in local network."
     },
     {
         "blackrock-rounds",
