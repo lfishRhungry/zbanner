@@ -568,8 +568,10 @@ rawsock_init_adapter(const char *adapter_name,
     adapter->is_vlan = is_vlan;
     adapter->vlan_id = vlan_id;
     
-    if (is_offline)
+    if (is_offline) {
+        adapter->link_type = 1;
         return adapter;
+    }
 
     /*----------------------------------------------------------------
      * PORTABILITY: WINDOWS

@@ -164,7 +164,6 @@ struct Xconf
     unsigned          is_sendq:1;            /* --sendq */
     unsigned          is_offline:1;          /* --offline */
     unsigned          is_nodedup:1;          /* --nodedup, don't deduplicate */
-    unsigned          is_gmt:1;              /* --gmt, all times in GMT */
     unsigned          is_infinite:1;         /* --infinite */
     unsigned          is_fast_timeout:1;     /* --fast-timeout, use ft for ScanModule*/
 

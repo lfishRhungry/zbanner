@@ -330,11 +330,10 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
         LOG(LEVEL_ERROR, "[-] FAILED: bad packet template\n");
         exit(1);
     }
+
     tmpl->ipv6.offset_ip  = parsed.ip_offset;
     tmpl->ipv6.offset_tcp = parsed.transport_offset;
     tmpl->ipv6.offset_app = parsed.app_offset;
-
-
 }
 
 /***************************************************************************
@@ -525,16 +524,12 @@ template_packet_init(
     templset->count++;
 
     /* [TCP] */
-    length = sizeof(default_tcp_template) - 1;
-    buf = MALLOC(length);
-    memcpy(buf, default_tcp_template, length);
     _template_init(&templset->pkts[Proto_TCP],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
-                   buf,
-                   length,
+                   default_tcp_template,
+                   sizeof(default_tcp_template)-1,
                    data_link);
     templset->count++;
-    free(buf);
 
     /* [TCP SYN] */
     length = sizeof(default_tcp_syn_template) - 1;
