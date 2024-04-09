@@ -302,7 +302,7 @@ static struct ConfigParam http_parameters[] = {
         "version",
         SET_version,
         F_NONE,
-        {0},
+        {"ver", 0},
         "Replaces the existing `HTTP/1.0` version field in http request line."
     },
     {
@@ -324,7 +324,7 @@ static struct ConfigParam http_parameters[] = {
         "user-agent",
         SET_user_agent,
         F_NONE,
-        {0},
+        {"ua", 0},
         "Replaces existing `User-Agent` field in http request header.(highly "
         "recommended)"
     },
@@ -619,11 +619,12 @@ struct ProbeModule HttpProbe = {
     .multi_num  = 1,
     .params     = http_parameters,
     .desc =
-        "HttpProbe sends target port a user-defined HTTP request based on:\n\n"
+        "HttpProbe sends target port a user-defined HTTP request and save the "
+        "response. Default HTTP request is based on:\n\n"
         "      `GET / HTTP/1.0`\n"
         "      `User-Agent: "XTATE_WITH_VERSION" "XTATE_GITHUB"`\n"
         "      `Accept: */*`\n\n"
-        "We can use various probe args to change the default request.",
+        "And we can use various args to change the default request.",
     .global_init_cb                    = &http_global_init,
     .make_payload_cb                   = &http_make_payload,
     .get_payload_length_cb             = &http_get_payload_length,
