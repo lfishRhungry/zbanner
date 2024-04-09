@@ -698,3 +698,41 @@ get_real_protocol_and_port(unsigned *port)
     }
 
 }
+
+
+/***************************************************************************
+ ***************************************************************************/
+int template_selftest()
+{
+    struct TemplateSet tmplset[1];
+    int failures = 0;
+    struct TemplateOptions templ_opts = {{0}};
+
+    /* Test the module that edits TCP headers */
+    if (templ_tcp_selftest()) {
+        LOG(LEVEL_ERROR, "[-] templ-tcp: selftest failed\n");
+        return 1;
+    }
+
+
+    memset(tmplset, 0, sizeof(tmplset[0]));
+    template_packet_init(
+            tmplset,
+            macaddress_from_bytes("\x00\x11\x22\x33\x44\x55"),
+            macaddress_from_bytes("\x66\x55\x44\x33\x22\x11"),
+            macaddress_from_bytes("\x66\x55\x44\x33\x22\x11"),
+            1,  /* Ethernet */
+            0,  /* no entropy */
+            &templ_opts
+            );
+    failures += tmplset->pkts[Proto_TCP].proto  != Proto_TCP;
+    failures += tmplset->pkts[Proto_UDP].proto  != Proto_UDP;
+    //failures += tmplset->pkts[Proto_SCTP].proto != Proto_SCTP;
+    failures += tmplset->pkts[Proto_ICMP_ECHO].proto != Proto_ICMP_ECHO;
+    //failures += tmplset->pkts[Proto_ICMP_timestamp].proto != Proto_ICMP_timestamp;
+    //failures += tmplset->pkts[Proto_ARP].proto  != Proto_ARP;
+
+    if (failures)
+        LOG(LEVEL_ERROR, "template: failed\n");
+    return failures;
+}

@@ -104,6 +104,53 @@ struct tcp_hdr_t {
     bool is_found;
 };
 
+
+/***************************************************************************
+ * A typical hexdump function, but dumps specifically the <options-list>
+ * section of a TCP header. An added feature is that it marks the byte
+ * at "offset". This makes debugging easier, so I can see the <options-list>
+ * as I'm stepping through code. You'll see this commented-out throughout
+ * the code.
+ ***************************************************************************/
+static void
+_HEXDUMP(const void *v, struct tcp_hdr_t hdr, size_t offset, const char *name)
+{
+    const unsigned char *p = ((const unsigned char *)v) + hdr.begin + 20;
+    size_t i;
+    size_t len = hdr.max - hdr.begin + 8 - 20;
+
+    LOG(LEVEL_HINT, "%s:\n", name);
+    offset -= hdr.begin + 20;
+
+    for (i=0; i<len; i += 16) {
+        size_t j;
+
+        for (j=i; j<i+16 && j<len; j++) {
+            char c = ' ';
+            if (j == offset)
+                c = '>';
+            if (j + 1 == offset)
+                c = '<';
+            LOG(LEVEL_HINT, "%02x%c", p[j], c);
+        }
+        for (;j<i+16; j++)
+            LOG(LEVEL_HINT, "   ");
+        LOG(LEVEL_HINT, "  ");
+        for (j=i; j<i+16 && j<len; j++) {
+            char c = p[j];
+
+            if (j == offset)
+                c = '#';
+
+            if (isprint(c&0xff) && !isspace(c&0xff))
+                LOG(LEVEL_HINT, "%c", c);
+            else
+                LOG(LEVEL_HINT, ".");
+        }
+        LOG(LEVEL_HINT, "\n");
+    }
+}
+
 /***************************************************************************
  * A quick macro to calculate the TCP header length, given a buffer
  * and an offset to the start of the TCP header.
@@ -113,8 +160,14 @@ _tcp_header_length(const unsigned char *buf, size_t offset) {
     return (buf[offset + 12] >> 4) * 4;
 }
 
-bool
-tcp_consistancy_check(const unsigned char *buf, size_t length,
+/***************************************************************************
+ * Does a consistency check of the whole packet, including IP header,
+ * TCP header, and the options in the <options-list> field. This is used
+ * in the self-test feature after test cases, to make sure the packet
+ * hasn't bee corrupted.
+ ***************************************************************************/
+static bool
+_consistancy_check(const unsigned char *buf, size_t length,
     const void *payload, size_t payload_length)
 {
     struct PreprocessedInfo parsed;
@@ -273,6 +326,20 @@ _opt_next(struct tcp_hdr_t hdr, size_t offset, const unsigned char *buf) {
         else
             return offset + len;
     }
+}
+
+
+/***************************************************************************
+ ***************************************************************************/
+static void
+_HEXDUMPopt(const unsigned char *buf, size_t length, const char *name) {
+    struct tcp_hdr_t hdr;
+
+    hdr = _find_tcp_header(buf, length);
+    if (!hdr.is_found) {
+        LOG(LEVEL_ERROR, "[-] templ.tcp.hdr: failure\n");
+    }
+    _HEXDUMP(buf, hdr, _opt_begin(hdr), name);
 }
 
 
@@ -1257,4 +1324,494 @@ tcp_flags_to_string(unsigned flag, char *string, size_t str_len)
             snprintf(string, str_len, "none");
         else
             string[strlen(string)-1] = '\0';
+}
+
+
+/***************************************************************************
+ * Used during selftests in order to create a known options field as the
+ * starting before before changing it somehow, followed by using
+ * _compare_options() to test whether the change succeeded.
+ ***************************************************************************/
+static bool
+_replace_options(unsigned char **inout_buf, size_t *inout_length,
+                        const char *new_options, size_t new_length) {
+    unsigned char *buf = *inout_buf;
+    size_t length = *inout_length;
+    struct tcp_hdr_t hdr;
+    size_t offset;
+    size_t old_length;
+    char newnew_options[40] = {0};
+    int adjust = 0;
+
+    /* Maximum length of the options field is 40 bytes */
+    if (new_length > 40)
+        goto fail;
+
+    /* Pad new options to 4 byte boundary */
+    memcpy(newnew_options, new_options, new_length);
+    while (new_length % 4)
+        new_length++;
+
+    /* find TCP header */
+    hdr = _find_tcp_header(buf, length);
+    if (!hdr.is_found)
+        goto fail;
+
+    /* Find start of options field */
+    offset = _opt_begin(hdr);
+    old_length = hdr.max - offset;
+
+    /* Either increase or decrease the old length appropriately */
+    //_HEXDUMPopt(buf, length, "resize before");
+    adjust = (int)(new_length - old_length);
+    if (adjust > 0) {
+        length += adjust;
+        buf = realloc(buf, length);
+        safe_memmove(buf, length,
+                        hdr.max + adjust,
+                        hdr.max,
+                        (length - adjust) - hdr.max);
+    }
+    if (adjust < 0) {
+        safe_memmove(   buf, length,
+                        hdr.max + adjust,
+                        hdr.max,
+                        length - hdr.max);
+        length += adjust;
+        buf = realloc(buf, length);
+    }
+
+    
+    /* Now that we've resized the options field, overright
+     * it with then new field */
+    memcpy(buf + offset, newnew_options, new_length);
+
+    /* fix the IP and TCP length fields */
+    _adjust_length(buf, length, adjust, hdr);
+
+    //_HEXDUMPopt(buf, length, "resize after");
+
+
+    *inout_buf = buf;
+    *inout_length = length;
+    return true;
+fail:
+    *inout_buf = buf;
+    *inout_length = length;
+    return false;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+enum {
+    TST_NONE,
+    TST_PADDING,
+    TST_ADD,
+    TST_REMOVE,
+};
+
+/***************************************************************************
+ * This structure specifies test cases for the sefltest function. Each
+ * test has a pre-condition <options-list>, and option to add/remove, and
+ * a post-condition <options-list> that should match the result.
+ ***************************************************************************/
+struct mytests_t {
+    struct {
+        const char *options;
+        size_t length;
+    } pre;
+    struct {
+        int opcode;
+        const char *data;
+        size_t length;
+    } test;
+    struct {
+        const char *options;
+        size_t length;
+    } post;
+};
+
+/***************************************************************************
+ * The following tests add/remove options to a test packet. The goal of
+ * these tests is code-coverage of all the conditions above, testing
+ * all the boundary cases. Every code path that produces success is tested,
+ * plus many code paths that produce failures.
+ ***************************************************************************/
+static struct mytests_t
+tests[] = {
+    /* A lot of these tests use 2-byte (\4\2) and 3-byte (\3\3\3) options.
+     * The "\4\2" is "SACK permitted, kind=4, len=2, with no extra data.
+     * The "\3\3\3" is "Window Scale, kind=3, len=3, data=3.
+     * The "\2\4\5\6" is "Max Segment Size", kind=2, len=4, data=0x0506
+     */
+
+    /* Attempt removal of an option that doesn't exist. This is not
+     * a failure, but a success, though nothing is changed*/
+
+    {   {"\3\3\3\0", 4},
+        {TST_REMOVE, "\x08", 1},
+        {"\3\3\3\0", 4}
+    },
+
+
+    /* Test removal of an option. This will also involve removing
+     the now unnecessary padding */
+    {   {"\3\3\3\1\1\1\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00", 16},
+        {TST_REMOVE, "\x08", 1},
+        {"\3\3\3\0", 4}
+    },
+
+    /* Test when trying to add a big option that won't fit unless we get
+     * rid of all the padding */
+    {   {   "\x02\x04\x05\xb4"
+            "\x01\x03\x03\x06"
+            "\x01\x01\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
+            "\x04\x02\x00\x00"
+            "\0\0\0\0",
+            28},
+        {   TST_ADD,
+            "\7\x14" "AAAAAAAAAAAAAAAAAAAA",
+            20
+        },
+        {   "\x02\x04\x05\xb4"
+            "\x03\x03\x06"
+            "\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
+            "\x04\x02"
+            "\7\x14" "AAAAAAAAAAAAAAAAAA"
+            "\0",
+            40
+        }
+    },
+
+    /* same as a bove, but field exists*/
+    {{  "\x02\x04\x05\xb4"
+        "\x01\x03\x03\x06"
+        "\x01\x01\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
+        "\7\4\1\1"
+        "\x04\x02\x00\x00",
+        28},
+        {   TST_ADD,
+            "\7\x14" "AAAAAAAAAAAAAAAAAAAA",
+            20
+        },
+        {   "\x02\x04\x05\xb4"
+            "\x03\x03\x06"
+            "\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
+            "\x04\x02"
+            "\7\x14" "AAAAAAAAAAAAAAAAAA"
+            "\0",
+            40
+        }
+    },
+    
+    /* Add a new value to full packet  */
+    {{"\3\3\3", 3}, {TST_ADD, "\4\2", 2}, {"\3\3\3\4\2\0\0\0", 8}},
+
+    /* Change a 3 byte to 5 byte in middle of packet  */
+    {{"\1\7\3\3\1\1\4\2", 8}, {TST_ADD, "\7\5\5\5\5", 5}, {"\7\5\5\5\5\1\4\2", 8}},
+
+    /* Change 3 to 4 byte at start */
+    {{"\7\3\3\1\2\4\5\6", 8}, {TST_ADD, "\7\4\4\4", 4}, {"\7\4\4\4\2\4\5\6", 8}},
+
+    /* Change a 2-byte option */
+    {{"\4\2", 2}, {TST_ADD, "\4\2", 2}, {"\4\2\0\0", 4}},
+
+    /* Change a 3-byte option */
+    {{"\3\3\2", 3}, {TST_ADD, "\3\3\3", 3}, {"\3\3\3\0", 4}},
+
+    /* Change a 4-byte option */
+    {{"\2\4\1\1", 4}, {TST_ADD, "\2\4\5\6", 4}, {"\2\4\5\6", 4}},
+
+    /* Add a 2-byte option to empty packet*/
+    {{"", 0}, {TST_ADD, "\4\2", 2}, {"\4\2\0\0", 4}},
+
+    /* Add a 3-byte option to empty packet*/
+    {{"", 0}, {TST_ADD, "\3\3\3", 3}, {"\3\3\3\0", 4}},
+
+    /* Add a 4-byte option to empty packet*/
+    {{"", 0}, {TST_ADD, "\2\4\5\6", 4}, {"\2\4\5\6", 4}},
+
+    /* Empty packet: padding normalization should make no changes */
+    {{"", 0}, {TST_PADDING,0,0}, {"", 0}},
+
+    /* Empty packet plus 4 bytes of padding, should be removed */
+    {{"\0", 1}, {TST_PADDING,0,0}, {"", 0}},
+
+    /* 8 bytes of padding, should only remove all of them */
+    {{"\0\0\0\0\0\0\0\0", 8}, {TST_PADDING,0,0}, {"", 0}},
+
+    /* some padding is nops, should remove all  */
+    {{"\1\1\0\0\0\0\0\0", 8}, {TST_PADDING,0,0}, {"", 0}},
+
+    /* any trailing NOPs should be converted to EOLs  */
+    {{"\3\3\3\1\0\0\0\0", 8}, {TST_PADDING,0,0}, {"\3\3\3\0", 4}},
+
+    /* only NOPs should still be removed */
+    {{"\3\3\3\1\1\1\1\1", 8}, {TST_PADDING,0,0}, {"\3\3\3\0", 4}},
+
+    {{0}}
+};
+
+
+/***************************************************************************
+ * This function runs through the tests in the [tests] array above. It
+ * first creates a packet accoding to a pre-condition that may have
+ * options already. We then call a function to manipulate the packet,
+ * such as adding/changing an option. We then verify that that the
+ * <option-list> field now matches the post-condition. Along the way,
+ * we look for any errors are consistency failures.
+ ***************************************************************************/
+static int
+_selftests_run(void) {
+    static unsigned char templ[] =
+    "\0\1\2\3\4\5"  /* Ethernet: destination */
+    "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
+    "\x08\x00"      /* Ethernet type: IPv4 */
+    "\x45"          /* IP type */
+    "\x00"
+    "\x00\x48"      /* total length = 64 bytes */
+    "\x00\x00"      /* identification */
+    "\x00\x00"      /* fragmentation flags */
+    "\xFF\x06"      /* TTL=255, proto=TCP */
+    "\xFF\xFF"      /* checksum */
+    "\0\0\0\0"      /* source address */
+    "\0\0\0\0"      /* destination address */
+
+    "\0\0"          /* source port */
+    "\0\0"          /* destination port */
+    "\0\0\0\0"      /* sequence number */
+    "\0\0\0\0"      /* ACK number */
+    "\xB0"          /* header length */
+    "\x02"          /* SYN */
+    "\x04\x01"      /* window fixed to 1024 */
+    "\xFF\xFF"      /* checksum */
+    "\x00\x00"      /* urgent pointer */
+
+    "\x02\x04\x05\xb4"
+    "\x01\x03\x03\x06"
+    "\x01\x01\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
+    "\x04\x02\x00\x00"
+    "DeadBeef"
+    ;
+    size_t i;
+
+    /* execute all tests */
+    for (i=0; tests[i].pre.options; i++) {
+        unsigned char *buf;
+        size_t length = sizeof(templ) - 1;
+        bool success;
+        struct tcp_hdr_t hdr;
+        const unsigned char *field;
+        size_t field_length;
+
+
+        LOG(LEVEL_WARNING, "[+] templ-tcp: run #%u\n", (unsigned)i);
+
+        /* Each tests creates its own copy of the test packet, which it
+         * will then alter according to the pre-conditions. */
+        buf = malloc(length);
+        memcpy(buf, templ, length);
+
+        /* Set the pre-condition <option-list> field by replacing what
+         * was there with a completely new field */
+        success = _replace_options(&buf, &length,
+                         tests[i].pre.options, tests[i].pre.length);
+        if (!success)
+            goto fail; /* this should never happen */
+        if (_consistancy_check(buf, length, "DeadBeef", 8))
+            goto fail; /* this shoiuld never happen*/
+
+
+        //_HEXDUMPopt(buf, length, "[PRE]");
+
+        /*
+         * Run the desired test
+         */
+        switch (tests[i].test.opcode) {
+            case TST_PADDING:
+                /* We are testing the "normalize padding" function. This
+                 * is called after ever 'add' or 'remove' to make sure that
+                 * the padding at the end is consistent. Mostly, it means
+                 * that when we remove a field, we'll probably have excess
+                 * padding at the end, which needs to be trimmed to the
+                 * minimum amount of padding */
+                success = _normalize_padding(&buf, &length);
+                if (!success)
+                    goto fail;
+                break;
+            case TST_ADD:
+                /* We are testing `tcp_add_opt()` function, which is called
+                 * to either 'add' or 'change' an existing option. */
+                field = (const unsigned char*)tests[i].test.data;
+                field_length = tests[i].test.length;
+                if (field_length < 2)
+                    goto fail;
+                else {
+                    unsigned opt_kind = field[0];
+                    unsigned opt_length = field[1];
+                    const unsigned char *opt_data = field + 2;
+
+                    if (field_length != opt_length)
+                        goto fail;
+
+                    /* skip the KIND and LENGTH fields, justa DATA length */
+                    opt_length -= 2;
+
+                    success = tcp_add_opt(&buf, &length,
+                                          opt_kind,
+                                          opt_length,
+                                          opt_data);
+                    if (!success)
+                        goto fail;
+                }
+                break;
+            case TST_REMOVE:
+                /* We are testing `tcp_add_opt()` function, which is called
+                 * to either 'add' or 'change' an existing option. */
+                field = (const unsigned char*)tests[i].test.data;
+                field_length = tests[i].test.length;
+                if (field_length != 1)
+                    goto fail;
+                else {
+                    unsigned opt_kind = field[0];
+
+                    success = tcp_remove_opt(&buf, &length,
+                                          opt_kind);
+
+                    if (!success)
+                        goto fail;
+                }
+                break;
+            default:
+                return 1; /* fail */
+        }
+
+        //_HEXDUMPopt(buf, length, "[POST]");
+
+        if (_consistancy_check(buf, length, "DeadBeef", 8))
+            goto fail;
+
+        /*
+         * Make sure output matches expected results
+         */
+        {
+            size_t offset;
+            int err;
+            size_t post_length;
+
+            /* Find the <options-list> field */
+            hdr = _find_tcp_header(buf, length);
+            if (!hdr.is_found)
+                goto fail;
+            offset = _opt_begin(hdr);
+
+            /* Make sure the length matches the expected length */
+            post_length = hdr.max - offset;
+            if (tests[i].post.length != post_length)
+                goto fail;
+
+            /* makre sure the contents of the field match expected */
+            err = memcmp(tests[i].post.options, buf+offset, (hdr.max-offset));
+            if (err) {
+                _HEXDUMPopt(buf, length, "[-] failed expectations");
+                goto fail;
+            }
+        }
+
+        free(buf);
+    }
+
+    return 0; /* success */
+fail:
+    LOG(LEVEL_ERROR, "[-] templ.tcp.selftest failed, test #%u\n",
+            (unsigned)i);
+    return 1;
+};
+
+/***************************************************************************
+ * These self-tests manipulate a TCP header, adding and removing <option>
+ * fields in various scenarios. We expose the `tcp_add_option()` function
+ * to the end-user via the command-line, so we have to anticipate that
+ * the option they want added is going to be corrupt. For example, the
+ * end-user might try to add an option that overflows the <option-list>
+ * field, which is rather small (only 40 bytes long).
+ ***************************************************************************/
+int templ_tcp_selftest()
+{
+
+    static unsigned char templ[] =
+    "\0\1\2\3\4\5"  /* Ethernet: destination */
+    "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
+    "\x08\x00"      /* Ethernet type: IPv4 */
+    "\x45"          /* IP type */
+    "\x00"
+    "\x00\x48"      /* total length = 64 bytes */
+    "\x00\x00"      /* identification */
+    "\x00\x00"      /* fragmentation flags */
+    "\xFF\x06"      /* TTL=255, proto=TCP */
+    "\xFF\xFF"      /* checksum */
+    "\0\0\0\0"      /* source address */
+    "\0\0\0\0"      /* destination address */
+
+    "\0\0"          /* source port */
+    "\0\0"          /* destination port */
+    "\0\0\0\0"      /* sequence number */
+    "\0\0\0\0"      /* ACK number */
+    "\xB0"          /* header length */
+    "\x02"          /* SYN */
+    "\x04\x01"      /* window fixed to 1024 */
+    "\xFF\xFF"      /* checksum */
+    "\x00\x00"      /* urgent pointer */
+
+    "\x02\x04\x05\xb4"
+    "\x01\x03\x03\x06"
+    "\x01\x01\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
+    "\x04\x02\x00\x00"
+    "DeadBeef"
+    ;
+    size_t length = sizeof(templ) - 1;
+    unsigned char *buf;
+
+    /* Execute planned selftests */
+    if (_selftests_run())
+        return 1;
+
+    /* We need to make an allocated copy of the buffer, because the
+     * size may change from `realloc()` */
+    buf = malloc(length);
+    memcpy(buf, templ, length);
+
+    /*
+     * Make sure we start wtih an un-corrupted test packet
+     */
+    if (_consistancy_check(buf, length, "DeadBeef", 8))
+        goto fail;
+
+    if (1460 != tcp_get_mss(buf, length, 0))
+        goto fail;
+    if (6 != tcp_get_wscale(buf, length, 0))
+        goto fail;
+    if (0 != tcp_get_sackperm(buf, length, 0))
+        goto fail;
+
+    tcp_add_opt(&buf, &length, 2, 2, (const unsigned char*)"\x12\x34");
+    if (0x1234 != tcp_get_mss(buf, length, 0))
+        goto fail;
+    if (_consistancy_check(buf, length, "DeadBeef", 8))
+        goto fail;
+
+    tcp_remove_opt(&buf, &length, 3);
+    if (0x1234 != tcp_get_mss(buf, length, 0))
+        goto fail;
+    if (0xFFFFffff != tcp_get_wscale(buf, length, 0))
+        goto fail;
+    if (_consistancy_check(buf, length, "DeadBeef", 8))
+        goto fail;
+
+
+    free(buf);
+    return 0; /* success */
+fail:
+    free(buf);
+    return 1; /* failure */
 }

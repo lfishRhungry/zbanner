@@ -334,3 +334,19 @@ bool ipv6address_is_equal_prefixed(ipv6address_t lhs, ipv6address_t rhs, unsigne
     /* Now do a normal compare */
     return ipv6address_is_equal(lhs, rhs);
 }
+
+int ipv6address_selftest()
+{
+    int x = 0;
+    ipaddress ip;
+    struct ipaddress_formatted fmt;
+
+    ip.version = 4;
+    ip.ipv4 = 0x01FF00A3;
+
+    fmt = ipaddress_fmt(ip);
+    if (strcmp(fmt.string, "1.255.0.163") != 0)
+        x++;
+
+    return x;
+}

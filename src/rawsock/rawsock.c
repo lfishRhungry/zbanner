@@ -900,3 +900,128 @@ rawsock_is_adapter_names_equal(const char *lhs, const char *rhs)
         rhs += 12;
     return strcmp(lhs, rhs) == 0;
 }
+
+int rawsock_selftest_if(const char *ifname)
+{
+    int err;
+    ipv4address_t ipv4 = 0;
+    ipv6address_t ipv6;
+    ipv4address_t router_ipv4 = 0;
+    macaddress_t source_mac = {{0,0,0,0,0,0}};
+    struct Adapter *adapter;
+    char ifname2[246];
+    ipaddress_formatted_t fmt;
+
+    /*
+     * Get the interface
+     */
+    if (ifname == NULL || ifname[0] == 0) {
+        err = rawsock_get_default_interface(ifname2, sizeof(ifname2));
+        if (err) {
+            LOG(LEVEL_ERROR, "[-] if = not found (err=%d)\n", err);
+            return -1;
+        }
+        ifname = ifname2;
+    }
+    LOG(LEVEL_HINT, "[+] if = %s\n", ifname);
+
+    /*
+     * Initialize the adapter.
+     */
+    adapter = rawsock_init_adapter(ifname, 0, 0, 0, 0, 0, 0);
+    if (adapter == 0) {
+        LOG(LEVEL_ERROR, "[-] pcap = failed\n");
+        return -1;
+    } else {
+        LOG(LEVEL_HINT, "[+] pcap = opened\n");
+    }
+
+    /* IPv4 address */
+    ipv4 = rawsock_get_adapter_ip(ifname);
+    if (ipv4 == 0) {
+        LOG(LEVEL_ERROR, "[-] source-ipv4 = not found (err)\n");
+    } else {
+        fmt = ipv4address_fmt(ipv4);
+        LOG(LEVEL_HINT, "[+] source-ipv4 = %s\n", fmt.string);
+    }
+
+    /* IPv6 address */
+    ipv6 = rawsock_get_adapter_ipv6(ifname);
+    if (ipv6address_is_zero(ipv6)) {
+        LOG(LEVEL_ERROR, "[-] source-ipv6 = not found\n");
+    } else {
+        fmt = ipv6address_fmt(ipv6);
+        LOG(LEVEL_HINT, "[+] source-ipv6 = [%s]\n", fmt.string);
+    }
+
+    /* MAC address */
+    err = rawsock_get_adapter_mac(ifname, source_mac.addr);
+    if (err) {
+        LOG(LEVEL_ERROR, "[-] source-mac = not found (err=%d)\n", err);
+    } else {
+        fmt = macaddress_fmt(source_mac);
+        LOG(LEVEL_HINT, "[+] source-mac = %s\n", fmt.string);
+    }
+
+    switch (adapter->link_type) {
+    case 0:
+            LOG(LEVEL_HINT, "[+] router-ip = implicit\n");
+            LOG(LEVEL_HINT, "[+] router-mac = implicit\n");
+            break;
+    default:
+        /* IPv4 router IP address */
+        err = rawsock_get_default_gateway(ifname, &router_ipv4);
+        if (err) {
+            LOG(LEVEL_ERROR, "[-] router-ip = not found(err=%d)\n", err);
+        } else {
+            fmt = ipv4address_fmt(router_ipv4);
+            LOG(LEVEL_HINT, "[+] router-ip = %s\n", fmt.string);
+        }
+
+        /* IPv4 router MAC address */
+        {
+            macaddress_t router_mac = {{0,0,0,0,0,0}};
+            
+            stack_arp_resolve(
+                    adapter,
+                    ipv4,
+                    source_mac,
+                    router_ipv4,
+                    &router_mac);
+
+            if (macaddress_is_zero(router_mac)) {
+                LOG(LEVEL_ERROR, "[-] router-mac-ipv4 = not found\n");
+            } else {
+                fmt = macaddress_fmt(router_mac);
+                LOG(LEVEL_HINT, "[+] router-mac-ipv4 = %s\n", fmt.string);
+            }
+        }
+        
+
+        /*
+         * IPv6 router MAC address.
+         * If it's not configured, then we need to send a (synchronous) query
+         * to the network in order to discover the location of routers on
+         * the local network
+         */
+        if (!ipv6address_is_zero(ipv6)) {
+            macaddress_t router_mac = {{0,0,0,0,0,0}};
+            
+            stack_ndpv6_resolve(
+                    adapter,
+                    ipv6,
+                    source_mac,
+                    &router_mac);
+
+            if (macaddress_is_zero(router_mac)) {
+                LOG(LEVEL_ERROR, "[-] router-mac-ipv6 = not found\n");
+            } else {
+                fmt = macaddress_fmt(router_mac);
+                LOG(LEVEL_HINT, "[+] router-mac-ipv6 = %s\n", fmt.string);
+            }
+        }
+    }
+    
+    rawsock_close_adapter(adapter);
+    return 0;
+}

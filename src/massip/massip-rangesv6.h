@@ -176,5 +176,6 @@ range6list_optimize(struct Range6List *targets);
 void
 range6list_sort(struct Range6List *targets);
 
+int ranges6_selftest();
 
 #endif

@@ -239,5 +239,6 @@ rangelist_optimize(struct RangeList *targets);
 void
 rangelist_sort(struct RangeList *targets);
 
+int ranges_selftest(void);
 
 #endif

@@ -255,3 +255,26 @@ pixie_nanotime(void)
     return mach_absolute_time();
 }
 #endif
+
+int pixie_time_selftest()
+{
+    static const uint64_t duration = 456789;
+    uint64_t start, stop, elapsed;
+
+
+    start = pixie_gettime();
+    pixie_usleep(duration);
+    stop = pixie_gettime();
+    elapsed = stop - start;
+
+    if (elapsed < 0.99 * duration) {
+        LOG(LEVEL_ERROR, "timing error, long delay\n");
+        return 1;
+    }
+    if (1.01 * duration < elapsed) {
+        LOG(LEVEL_ERROR, "timing error, long delay %5.0f%%\n", elapsed*100.0/duration);
+        return 1;
+    }
+
+    return 0;
+}

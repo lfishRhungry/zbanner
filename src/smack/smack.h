@@ -137,5 +137,8 @@ smack_search_end(       struct SMACK *  smack,
                         void *          cb_data,
                         unsigned *      state);
 
+int smack_benchmark();
+
+int smack_selftest();
 
 #endif /*_SMACK_H*/

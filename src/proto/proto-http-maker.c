@@ -6,6 +6,7 @@
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
 #include "../util-misc/cross.h"
+#include "../util-out/logger.h"
 
 /**
  * We might have an incomplete HTTP request header. Thus, as we insert
@@ -351,4 +352,164 @@ http_change_field(unsigned char **inout_header, size_t header_length,
     memcpy(&hdr[offset + name_length + 2 + value_length], "\r\n", 2);
 
     return header_length;
+}
+
+
+/***************************************************************************
+ ***************************************************************************/
+int proto_http_maker_selftest()
+{
+    size_t i;
+    static const struct {const char *from; const char *to;} urlsamples[] = {
+        {"", "GET /foo.html"},
+        {"GET / HTTP/1.0\r\n\r\n", "GET /foo.html HTTP/1.0\r\n\r\n"},
+        {"GET  /longerthan HTTP/1.0\r\n\r\n", "GET  /foo.html HTTP/1.0\r\n\r\n"},
+        {0,0}
+    };
+    static const struct {const char *from; const char *to;} methodsamples[] = {
+        {"", "POST"},
+        {"GET / HTTP/1.0\r\n\r\n", "POST / HTTP/1.0\r\n\r\n"},
+        {"O  /  HTTP/1.0\r\n\r\n", "POST  /  HTTP/1.0\r\n\r\n"},
+        {0,0}
+    };
+    static const struct {const char *from; const char *to;} versionsamples[] = {
+        {"", "GET / HTTP/1.1"},
+        {"GET / FOO\r\n\r\n", "GET / HTTP/1.1\r\n\r\n"},
+        {"GET  /  XXXXXXXXXXXX\r\n\r\n", "GET  /  HTTP/1.1\r\n\r\n"},
+        {0,0}
+    };
+    static const struct {const char *from; const char *to;} fieldsamples[] = {
+        {"GET / HTTP/1.0\r\nfoobar: a\r\nHost: xyz\r\n\r\n", "GET / HTTP/1.0\r\nfoobar: a\r\nHost: xyz\r\nfoo: bar\r\n\r\n"},
+        {"GET / HTTP/1.0\r\nfoo:abc\r\nHost: xyz\r\n\r\n", "GET / HTTP/1.0\r\nfoo: bar\r\nHost: xyz\r\n\r\n"},
+        {"GET / HTTP/1.0\r\nfoo: abcdef\r\nHost: xyz\r\n\r\n", "GET / HTTP/1.0\r\nfoo: bar\r\nHost: xyz\r\n\r\n"},
+        {"GET / HTTP/1.0\r\nfoo: a\r\nHost: xyz\r\n\r\n", "GET / HTTP/1.0\r\nfoo: bar\r\nHost: xyz\r\n\r\n"},
+        {"GET / HTTP/1.0\r\nHost: xyz\r\n\r\n", "GET / HTTP/1.0\r\nHost: xyz\r\nfoo: bar\r\n\r\n"},
+        {0,0}
+    };
+    static const struct {const char *from; const char *to;} removesamples[] = {
+        {"GET / HTTP/1.0\r\nfoo: a\r\nHost: xyz\r\n\r\n",  "GET / HTTP/1.0\r\nHost: xyz\r\n\r\n"},
+        {"GET / HTTP/1.0\r\nfooa: a\r\nHost: xyz\r\n\r\n", "GET / HTTP/1.0\r\nfooa: a\r\nHost: xyz\r\n\r\n"},
+        {0,0}
+    };
+    static const struct {const char *from; const char *to;} payloadsamples[] = {
+        {"",  "GET / HTTP/1.0\r\n\r\nfoo"},
+        {"GET / HTTP/1.0\r\nHost: xyz\r\n\r\nbar", "GET / HTTP/1.0\r\nHost: xyz\r\n\r\nfoo"},
+        {0,0}
+    };
+
+    /* Test replacing URL */
+    for (i=0; urlsamples[i].from; i++) {
+        unsigned char *x = (unsigned char*)STRDUP(urlsamples[i].from);
+        size_t len1 = strlen((const char *)x);
+        size_t len2;
+        size_t len3 = strlen(urlsamples[i].to);
+        
+        /* Replace whatever URL is in the header with this new one */
+        len2 = http_change_requestline(&x, len1, "/foo.html", ~(size_t)0, 1);
+
+        if (len2 != len3 && memcmp(urlsamples[i].to, x, len3) != 0) {
+            LOG(LEVEL_ERROR, "[-] HTTP.selftest: config URL sample #%u\n", (unsigned)i);
+            return 1;
+        }
+    }
+
+    /* Test replacing method */
+    for (i=0; methodsamples[i].from; i++) {
+        unsigned char *x = (unsigned char*)STRDUP(methodsamples[i].from);
+        size_t len1 = strlen((const char *)x);
+        size_t len2;
+        size_t len3 = strlen(methodsamples[i].to);
+        
+        len2 = http_change_requestline(&x, len1, "POST", ~(size_t)0, 0);
+
+        if (len2 != len3 && memcmp(methodsamples[i].to, x, len3) != 0) {
+            LOG(LEVEL_ERROR, "[-] HTTP.selftest: config method sample #%u\n", (unsigned)i);
+            return 1;
+        }
+    }
+
+    /* Test replacing version */
+    for (i=0; versionsamples[i].from; i++) {
+        unsigned char *x = (unsigned char*)STRDUP(versionsamples[i].from);
+        size_t len1 = strlen((const char *)x);
+        size_t len2;
+        size_t len3 = strlen(versionsamples[i].to);
+        
+        len2 = http_change_requestline(&x, len1, "HTTP/1.1", ~(size_t)0, 2);
+
+        if (len2 != len3 && memcmp(versionsamples[i].to, x, len3) != 0) {
+            LOG(LEVEL_ERROR, "[-] HTTP.selftest: config version sample #%u\n", (unsigned)i);
+            return 1;
+        }
+    }
+
+    /* Test payload */
+    for (i=0; payloadsamples[i].from; i++) {
+        unsigned char *x = (unsigned char*)STRDUP(payloadsamples[i].from);
+        size_t len1 = strlen((const char *)x);
+        size_t len2;
+        size_t len3 = strlen(payloadsamples[i].to);
+        
+        len2 = http_change_requestline(&x, len1, "foo", ~(size_t)0, 3);
+
+        if (len2 != len3 && memcmp(payloadsamples[i].to, x, len3) != 0) {
+            LOG(LEVEL_ERROR, "[-] HTTP.selftest: config payload sample #%u\n", (unsigned)i);
+            return 1;
+        }
+    }
+
+    /* Test adding fields */
+    for (i=0; fieldsamples[i].from; i++) {
+        unsigned char *x;
+        size_t len1 = strlen((const char *)fieldsamples[i].from);
+        size_t len2;
+        size_t len3 = strlen(fieldsamples[i].to);
+        
+        /* Replace whatever URL is in the header with this new one */
+        x = (unsigned char*)STRDUP(fieldsamples[i].from);
+        len2 = http_change_field(&x, len1, "foo", (const unsigned char *)"bar", ~(size_t)0, http_field_replace);
+        if (len2 != len3 || memcmp(fieldsamples[i].to, x, len3) != 0) {
+            LOG(LEVEL_ERROR, "[-] HTTP.selftest: config header field sample #%u\n", (unsigned)i);
+            return 1;
+        }
+        free(x);
+
+        /* Same test as above, but when name specified with a colon */
+        x = (unsigned char*)STRDUP(fieldsamples[i].from);
+        len2 = http_change_field(&x, len1, "foo:", (const unsigned char *)"bar", ~(size_t)0, http_field_replace);
+        if (len2 != len3 || memcmp(fieldsamples[i].to, x, len3) != 0) {
+            LOG(LEVEL_ERROR, "[-] HTTP.selftest: config header field sample #%u\n", (unsigned)i);
+            return 1;
+        }
+        free(x);
+
+        /* Same test as above, but with name having additional space */
+        x = (unsigned char*)STRDUP(fieldsamples[i].from);
+        len2 = http_change_field(&x, len1, "foo : : ", (const unsigned char *)"bar", ~(size_t)0, http_field_replace);
+        if (len2 != len3 || memcmp(fieldsamples[i].to, x, len3) != 0) {
+            LOG(LEVEL_ERROR, "[-] HTTP.selftest: config header field sample #%u\n", (unsigned)i);
+            return 1;
+        }
+        free(x);
+
+    }
+
+    /* Removing fields */
+    for (i=0; removesamples[i].from; i++) {
+        unsigned char *x = (unsigned char*)STRDUP(removesamples[i].from);
+        size_t len1 = strlen((const char *)x);
+        size_t len2;
+        size_t len3 = strlen(removesamples[i].to);
+        
+        /* Replace whatever URL is in the header with this new one */
+        len2 = http_change_field(&x, len1, "foo", (const unsigned char *)"bar", ~(size_t)0, http_field_remove);
+
+        if (len2 != len3 || memcmp(removesamples[i].to, x, len3) != 0) {
+            fprintf(stderr, "[-] HTTP.selftest: config remove field sample #%u\n", (unsigned)i);
+            return 1;
+        }
+        free(x);
+    }
+
+    return 0;
 }

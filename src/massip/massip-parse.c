@@ -53,6 +53,14 @@ _parser_init(struct massip_parser *p)
 /***************************************************************************
  ***************************************************************************/
 static void
+_parser_destroy(struct massip_parser *p)
+{
+    UNUSEDPARM(p);
+}
+
+/***************************************************************************
+ ***************************************************************************/
+static void
 _parser_err(struct massip_parser *p, unsigned long long *line_number, unsigned long long *charindex)
 {
     *line_number = p->line_number;
@@ -753,6 +761,60 @@ _parser_next(struct massip_parser *p, const char *buf, size_t *r_offset, size_t 
     return result;
 }
 
+
+/***************************************************************************
+ * Test errors. We should get exactly which line-number and which character
+ * in the line caused the error
+ ***************************************************************************/
+static int
+rangefile_test_error(const char *buf, unsigned long long in_line_number, unsigned long long in_char_number, unsigned which_test)
+{
+    size_t length = strlen(buf);
+    size_t offset = 0;
+    struct massip_parser p[1];
+    unsigned out_begin = 0xa3a3a3a3;
+    unsigned out_end  = 0xa3a3a3a3;
+    unsigned long long out_line_number;
+    unsigned long long out_char_number;
+    int x;
+
+    /* test the entire buffer */
+    _parser_init(p);
+    x = _parser_next(p, buf, &offset, length, &out_begin, &out_end);
+    if (x != Found_Error)
+        goto fail;
+    _parser_err(p, &out_line_number, &out_char_number);
+    if (in_line_number != out_line_number || in_char_number != out_char_number)
+        goto fail;
+
+    /* test one byte at a time */
+    _parser_destroy(p);
+    _parser_init(p);
+    offset = 0;
+    out_begin = 0xa3a3a3a3;
+    out_end  = 0xa3a3a3a3;
+    
+    x = 0;
+    while (offset < length) {
+        x = _parser_next(p, buf, &offset, offset+1, &out_begin, &out_end);
+        if (x == Found_Error)
+            break;
+    }
+    if (x != Found_Error)
+        goto fail;
+    _parser_err(p, &out_line_number, &out_char_number);
+
+    if (in_line_number != out_line_number || in_char_number != out_char_number)
+        goto fail;
+
+    _parser_destroy(p);
+    return 0;
+fail:
+    _parser_destroy(p);
+    LOG(LEVEL_ERROR, "[-] rangefile test fail, line=%u\n", which_test);
+    return 1;
+}
+
 /***************************************************************************
  ***************************************************************************/
 int
@@ -1036,4 +1098,211 @@ again:
             _parser_get_ipv6(p, &ipv6->begin, &ipv6->end);
             return Ipv6_Address;
     }
+}
+
+
+/**
+ * This tests  parsing when addresses/ranges are specified on the command-line
+ * or configuration files, rather than the other test-cases which test parsing
+ * when the IP addresses are specified in a file. The thing we are looking for
+ * here is specifically when users separate addresses with things like
+ * commas and spaces.
+ */
+static int
+selftest_massip_parse_range(void)
+{
+    struct testcases {
+        const char *line;
+        union {
+            struct Range ipv4;
+            struct Range6 ipv6;
+        } list[4];
+    } cases[] = {
+        {"0.0.1.0/24,0.0.3.0-0.0.4.0", {{{0x100,0x1ff}}, {{0x300,0x400}}}},
+        {"0.0.1.0-0.0.1.255,0.0.3.0-0.0.4.0", {{{0x100,0x1ff}}, {{0x300,0x400}}}},
+        {"0.0.1.0/24 0.0.3.0-0.0.4.0", {{{0x100,0x1ff}}, {{0x300,0x400}}}},
+        {0}
+    };
+    size_t i;
+    
+    for (i=0; cases[i].line; i++) {
+        size_t length = strlen(cases[i].line);
+        size_t offset = 0;
+        size_t j = 0;
+        struct Range6 range6;
+        struct Range range4;
+        
+        while (offset < length) {
+            int x;
+            x = massip_parse_range(cases[i].line, &offset, length, &range4, &range6);
+            switch (x) {
+                default:
+                case Bad_Address:
+                    LOG(LEVEL_ERROR, "[-] selftest_massip_parse_range[%u] fail\n", (unsigned)i);
+                    return 1;
+                case Ipv4_Address:
+                    if (cases[i].list[j].ipv4.begin != range4.begin
+                        || cases[i].list[j].ipv4.end != range4.end) {
+                        LOG(LEVEL_ERROR, "[-] %u.%u.%u.%u - %u.%u.%u.%u\n",
+                                (unsigned char)(range4.begin>>24),
+                                (unsigned char)(range4.begin>>16),
+                                (unsigned char)(range4.begin>> 8),
+                                (unsigned char)(range4.begin>> 0),
+                                (unsigned char)(range4.end>>24),
+                                (unsigned char)(range4.end>>16),
+                                (unsigned char)(range4.end>> 8),
+                                (unsigned char)(range4.end>> 0)
+                                );
+                        LOG(LEVEL_ERROR, "[-] selftest_massip_parse_range[%u] fail\n", (unsigned)i);
+                        return 1;
+                    }
+                    break;
+            }
+            j++;
+        }
+        
+        /* Make sure we have found all the expected cases */
+        if (cases[i].list[j].ipv4.begin != 0) {
+            LOG(LEVEL_ERROR, "[-] selftest_massip_parse_range[%u] fail\n", (unsigned)i);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+/***************************************************************************
+ ***************************************************************************/
+static int
+rangefile6_test_buffer(struct massip_parser *parser,
+                       const char *buf,
+                       ipv6address expected_begin,
+                       ipv6address expected_end)
+{
+    size_t length = strlen(buf);
+    size_t offset = 0;
+    ipv6address found_begin = {1,2};
+    ipv6address found_end = {1,2};
+    unsigned tmp1, tmp2;
+    int err;
+    
+    /* test the entire buffer */
+    err = _parser_next(parser, buf, &offset, length, &tmp1, &tmp2);
+    if (err == Still_Working)
+        err = _parser_next(parser, "\n", 0, 1, &tmp1, &tmp2);
+    switch (err) {
+    case Found_IPv6:
+        /* Extract the resulting IPv6 address from the state structure */
+        _parser_get_ipv6(parser, &found_begin, &found_end);
+    
+        /* Test to see if the parsed address equals the expected address */
+        if (!ipv6address_is_equal(found_begin, expected_begin)) {
+            ipaddress_formatted_t fmt1 = ipv6address_fmt(found_begin);
+            ipaddress_formatted_t fmt2 = ipv6address_fmt(expected_begin);
+            LOG(LEVEL_ERROR, "[-] begin mismatch: found=[%s], expected=[%s]\n", fmt1.string, fmt2.string);
+            goto fail;
+        }
+        if (!ipv6address_is_equal(found_end, expected_end)) {
+            ipaddress_formatted_t fmt1 = ipv6address_fmt(found_end);
+            ipaddress_formatted_t fmt2 = ipv6address_fmt(expected_end);
+            LOG(LEVEL_ERROR, "[-] end mismatch: found=[%s], expected=[%s]\n", fmt1.string, fmt2.string);
+            goto fail;
+        }
+        break;
+    case Found_IPv4:
+        if (expected_begin.hi != 0 || expected_end.hi != 0)
+            goto fail;
+        if (tmp1 != expected_begin.lo || tmp2 != expected_end.lo)
+            goto fail;
+        break;
+    case Still_Working:
+        /* Found a partial address, which is a normal result in the 
+         * real world at buffer boundaries, but which is an error
+         * here */
+        goto fail;
+    case Found_Error:
+    default:
+        goto fail;
+    }
+
+    return 0; /* success */
+fail:
+    return 1; /* failure */
+}
+
+/***************************************************************************
+ * List of test cases. Each test case contains three parts:
+ * - the string representation of an address, as read from a file, meaning
+ *   that it can contain additional things like comment strings
+ * - the first address of a range, which in the case of IPv6 addresses
+ *   will be two 64-bit numbers, but an IPv4 address have a high-order
+ *   number set to zero and the low-order number set to the IPv4 address
+ * - the second address of a range, which in the case of individual
+ *   addresses, will be equal to the first number
+ ***************************************************************************/
+struct {
+    const char *string;
+    ipv6address begin;
+    ipv6address end;
+} test_cases[] = {
+    {"[1::1]/126", {0x0001000000000000ULL, 0ULL}, {0x0001000000000000ULL, 3ULL}},
+    {"1::1/126", {0x0001000000000000ULL, 0ULL}, {0x0001000000000000ULL, 3ULL}},
+    {"[1::1]-[2::3]", {0x0001000000000000ULL, 1ULL}, {0x0002000000000000ULL, 3ULL}},
+    {"1::1-2::3", {0x0001000000000000ULL, 1ULL}, {0x0002000000000000ULL, 3ULL}},
+    {"[1234:5678:9abc:def0:0fed:cba9:8765:4321]", {0x123456789abcdef0ULL, 0x0fedcba987654321ULL}, {0x123456789abcdef0ULL, 0x0fedcba987654321ULL}},
+    {"22ab::1", {0x22ab000000000000ULL, 1ULL}, {0x22ab000000000000ULL, 1ULL}},
+    {"240e:33c:2:c080:d08:d0e:b53:e74e", {0x240e033c0002c080ULL, 0x0d080d0e0b53e74eULL}, {0x240e033c0002c080ULL, 0x0d080d0e0b53e74eULL}},
+    {"2a03:90c0:105::9", {0x2a0390c001050000ULL, 9ULL}, {0x2a0390c001050000ULL, 9ULL}},
+    {"2a03:9060:0:400::2", {0x2a03906000000400ULL, 2ULL}, {0x2a03906000000400ULL, 2ULL}},
+    {"2c0f:ff00:0:a:face:b00c:0:a7", {0x2c0fff000000000aULL, 0xfaceb00c000000a7ULL}, {0x2c0fff000000000aULL, 0xfaceb00c000000a7ULL}},
+    {"2a01:5b40:0:4a01:0:e21d:789f:59b1", {0x2a015b4000004a01ULL, 0x0000e21d789f59b1ULL}, {0x2a015b4000004a01ULL, 0x0000e21d789f59b1ULL}},
+    {"2001:1200:10::1", {0x2001120000100000ULL, 1ULL}, {0x2001120000100000ULL, 1ULL}},
+    {"fec0:0:0:ffff::1", {0xfec000000000ffffULL, 1ULL}, {0xfec000000000ffffULL, 1ULL}},
+    {"1234:5678:9abc:def0:0fed:cba9:8765:4321", {0x123456789abcdef0ULL, 0x0fedcba987654321ULL}, {0x123456789abcdef0ULL, 0x0fedcba987654321ULL}},
+    {"[1111:2222:3333:4444:5555:6666:7777:8888]", {0x1111222233334444ULL, 0x5555666677778888ULL}, {0x1111222233334444ULL, 0x5555666677778888ULL}},
+    {"1::1", {0x0001000000000000ULL, 1ULL}, {0x0001000000000000ULL, 1ULL}},
+    {"1.2.3.4", {0, 0x01020304}, {0, 0x01020304}},
+    {"#test\n  97.86.162.161" "\x96" "97.86.162.175\n", {0, 0x6156a2a1}, {0, 0x6156a2af}},
+    {"1.2.3.4/24\n", {0, 0x01020300}, {0, 0x010203ff}},
+    {" 1.2.3.4-1.2.3.5\n", {0, 0x01020304}, {0, 0x01020305}},
+    {0,{0,0},{0,0}}
+};
+
+int massip_parse_selftest()
+{
+    int x = 0;
+    size_t i;
+    struct massip_parser parser[1];
+
+    
+    /* Run through the test cases, stopping at the first failure */
+    _parser_init(parser);
+    for (i=0; test_cases[i].string; i++) {
+        x += rangefile6_test_buffer(parser,
+                                    test_cases[i].string, 
+                                    test_cases[i].begin,
+                                    test_cases[i].end);
+        if (x) {
+            LOG(LEVEL_ERROR, "[-] failed: %u: %s\n", (unsigned)i, test_cases[i].string);
+            break;
+        }
+    }
+    _parser_destroy(parser);
+
+    
+    /* First, do the single line test */
+    x += selftest_massip_parse_range();
+    if (x)
+        return x;
+    
+
+    x += rangefile_test_error("#bad ipv4\n 257.1.1.1\n", 2, 5, __LINE__);
+    x += rangefile_test_error("#bad ipv4\n 1.257.1.1.1\n", 2, 6, __LINE__);
+    x += rangefile_test_error("#bad ipv4\n 1.10.257.1.1.1\n", 2, 9, __LINE__);
+    x += rangefile_test_error("#bad ipv4\n 1.10.255.256.1.1.1\n", 2, 13, __LINE__);
+    x += rangefile_test_error("#bad ipv4\n 1.1.1.1.1\n", 2, 9, __LINE__);
+
+    if (x)
+       LOG(LEVEL_ERROR, "[-] rangefile_selftest: fail\n");
+    return x;
 }

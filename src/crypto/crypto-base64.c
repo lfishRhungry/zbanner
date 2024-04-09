@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "../util-out/logger.h"
+
 /*****************************************************************************
  *****************************************************************************/
 size_t
@@ -157,4 +159,69 @@ base64_decode(void *vdst, size_t sizeof_dst,
     if (d<sizeof_dst)
         dst[d] = '\0';
     return d;
+}
+
+
+/*****************************************************************************
+ * Provide my own rand() simply to avoid static-analysis warning me that
+ * 'rand()' is unrandom, when in fact we want the non-random properties of
+ * rand() for regression testing.
+ *****************************************************************************/
+static unsigned
+r_rand(unsigned *seed)
+{
+    static const unsigned a = 214013;
+    static const unsigned c = 2531011;
+    
+    *seed = (*seed) * a + c;
+    return (*seed)>>16 & 0x7fff;
+}
+
+/*****************************************************************************
+ *****************************************************************************/
+int base64_selftest()
+{
+    char buf[100];
+    char buf2[100];
+    char buf3[100];
+    size_t buf_len;
+    size_t buf2_len;
+    unsigned i;
+    unsigned seed = (unsigned)time(0);
+
+    buf_len = base64_encode(buf, sizeof(buf), "hello", 5);
+    buf2_len = base64_decode(buf2, sizeof(buf2), buf, buf_len);
+    if (buf2_len != 5 && memcmp(buf2, "hello", 5) != 0) {
+        LOG(LEVEL_ERROR, "base64: selftest failed\n");
+        return 1;
+    }
+
+    /*
+     * Generate a bunch of random strings, encode them, then decode them,
+     * making sure the final result matches the original string
+     */
+    for (i=0; i<100; i++) {
+        unsigned j;
+        size_t buf3_len;
+
+        /* create a string of random bytes */
+        buf_len = r_rand(&seed) % 50;
+        for (j=0; j<buf_len; j++) {
+            buf[j] = (char)r_rand(&seed);
+        }
+
+        /* encode it */
+        buf2_len = base64_encode(buf2, sizeof(buf2), buf, buf_len);
+
+        /* decode it back again */
+        buf3_len = base64_decode(buf3, sizeof(buf3), buf2, buf2_len);
+
+        /* now make sure result equals original */
+        if (buf3_len != buf_len && memcmp(buf3, buf, buf_len) != 0) {
+            LOG(LEVEL_ERROR, "base64: selftest failed\n");
+            return 1;
+        }
+    }
+
+    return 0;
 }

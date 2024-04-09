@@ -5,6 +5,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "../util-out/logger.h"
+
 void massip_apply_excludes(struct MassIP *targets, struct MassIP *exclude)
 {
     rangelist_exclude(&targets->ipv4, &exclude->ipv4);
@@ -106,4 +108,46 @@ int massip_add_port_string(struct MassIP *targets, const char *string, unsigned 
         return 1;
     else
         return 0;
+}
+
+
+int massip_selftest()
+{
+    struct MassIP targets;
+    struct MassIP excludes;
+    int err;
+    int line;
+    massint128_t count;
+
+    memset(&targets, 0, sizeof(targets));
+    memset(&excludes, 0, sizeof(targets));
+
+    rangelist_parse_ports(&targets.ports, "80", 0, 0);
+
+    /* First, create a list of targets */
+    line = __LINE__;
+    err = massip_add_target_string(&targets, "2607:f8b0:4002:801::2004/124,1111::1");
+    if (err)
+        goto fail;
+
+    /* Second, create an exclude list */
+    line = __LINE__;
+    err = massip_add_target_string(&excludes, "2607:f8b0:4002:801::2004/126,1111::/16");
+    if (err)
+        goto fail;
+
+    /* Third, apply the excludes, causing ranges to be removed
+     * from the target list */
+    massip_apply_excludes(&targets, &excludes);
+
+    /* Now make sure the count equals the expected count */
+    line = __LINE__;
+    count = massip_range(&targets);
+    if (count.hi != 0 || count.lo != 12)
+        goto fail;
+
+    return 0;
+fail:
+    LOG(LEVEL_ERROR, "[-] massip: test fail, line=%d\n", line);
+    return 1;
 }

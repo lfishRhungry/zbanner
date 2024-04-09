@@ -187,4 +187,6 @@ struct ipaddress_formatted macaddress_fmt(macaddress_t a);
 
 unsigned massint128_bitcount(massint128_t num);
 
+int ipv6address_selftest();
+
 #endif

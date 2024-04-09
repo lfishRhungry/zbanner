@@ -95,4 +95,6 @@ bool massip_has_target_ports(const struct MassIP *massip);
  */
 bool massip_has_ipv6_targets(const struct MassIP *massip);
 
+int massip_selftest();
+
 #endif

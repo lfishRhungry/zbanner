@@ -60,5 +60,7 @@ massip_parse_ipv6(const char *buf);
 ipv4address_t
 massip_parse_ipv4(const char *buf);
 
+int massip_parse_selftest();
+
 #endif
 

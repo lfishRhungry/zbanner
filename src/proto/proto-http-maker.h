@@ -57,5 +57,7 @@ http_change_requestline(
     size_t url_length,
     enum http_req_field item);
 
+int proto_http_maker_selftest();
+
 #endif
 

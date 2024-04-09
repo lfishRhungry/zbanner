@@ -166,5 +166,7 @@ nmapservice_match_service(
     unsigned protocol,
     const char *hardmatch);
 
+int nmapservice_selftest();
+
 #endif
 

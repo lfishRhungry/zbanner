@@ -83,14 +83,6 @@ tcp_get_wscale(const unsigned char *buf, size_t length, bool *is_found);
 unsigned
 tcp_get_sackperm(const unsigned char *buf, size_t length, bool *is_found);
 
-/***************************************************************************
- * Does a consistency check of the whole packet, including IP header,
- * TCP header, and the options in the <options-list> field. This is used
- * in the self-test feature after test cases, to make sure the packet
- * hasn't bee corrupted.
- ***************************************************************************/
-bool
-tcp_consistancy_check(const unsigned char *buf, size_t length,
-    const void *payload, size_t payload_length);
+int templ_tcp_selftest();
 
 #endif

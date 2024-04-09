@@ -734,6 +734,18 @@ int main(int argc, char *argv[]) {
     case Operation_PrintIntro:
         xconf_print_intro();
         break;
+
+    case Operation_DebugIF:
+        rawsock_selftest_if(xconf->nic.ifname);
+        break;
+
+    case Operation_Benchmark:
+        xconf_benchmark(xconf->blackrock_rounds);
+        break;
+
+    case Operation_Selftest:
+        xconf_selftest();
+        break;
     }
 
     return 0;

@@ -14,4 +14,6 @@ dedup_is_duplicate(struct DedupTable *dedup,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me, unsigned type);
 
+int dedup_selftest();
+
 #endif

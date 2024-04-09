@@ -64,4 +64,6 @@ checksum_tcp(const unsigned char *px, unsigned offset_ip,
 unsigned
 checksum_sctp(const void *vbuffer, size_t length);
 
+int checksum_selftest();
+
 #endif

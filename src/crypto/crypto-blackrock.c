@@ -50,6 +50,7 @@
 #include "crypto-blackrock.h"
 #include "../pixie/pixie-timer.h"
 #include "../util-data/fine-malloc.h"
+#include "../util-out/logger.h"
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
@@ -288,4 +289,131 @@ blackrock_unshuffle(const struct BlackRock *br, uint64_t m)
         c = UNENCRYPT(br->rounds, br->a, br->b,  c, br->seed);
 
     return c;
+}
+
+
+/***************************************************************************
+ * This function called only during selftest/regression-test.
+ ***************************************************************************/
+static unsigned
+blackrock_verify(struct BlackRock *br, uint64_t max)
+{
+    unsigned char *list;
+    uint64_t i;
+    unsigned is_success = 1;
+    uint64_t range = br->range;
+
+    /* Allocate a list of 1-byte counters */
+    list = CALLOC(1, (size_t)((range<max)?range:max));
+    
+    /* For all numbers in the range, verify increment the counter for
+     * the output. */
+    for (i=0; i<range; i++) {
+        uint64_t x = blackrock_shuffle(br, i);
+        if (x < max)
+            list[x]++;
+    }
+
+    /* Now check the output to make sure that every counter is set exactly
+     * to the value of '1'. */
+    for (i=0; i<max && i<range; i++) {
+        if (list[i] != 1)
+            is_success = 0;
+    }
+
+    free(list);
+
+    return is_success;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+void blackrock_benchmark(unsigned rounds)
+{
+    struct BlackRock br;
+    uint64_t range = 0x012356789123ULL;
+    uint64_t i;
+    uint64_t result = 0;
+    uint64_t start, stop;
+    static const uint64_t ITERATIONS = 5000000ULL;
+
+    LOG(LEVEL_HINT, "-- blackrock-1 -- \n");
+    LOG(LEVEL_HINT, "rounds = %u\n", rounds);
+    blackrock_init(&br, range, 1, rounds);
+
+    /*
+     * Time the algorithm
+     */
+    start = pixie_nanotime();
+    for (i=0; i<ITERATIONS; i++) {
+        result += blackrock_shuffle(&br, i);
+    }
+    stop = pixie_nanotime();
+
+    /*
+     * Print the results
+     */
+    if (result) {
+        double elapsed = ((double)(stop - start))/(1000000000.0);
+        double rate = ITERATIONS/elapsed;
+
+        rate /= 1000000.0;
+
+        LOG(LEVEL_HINT, "iterations/second = %5.3f-million\n", rate);
+
+    }
+
+    printf("\n");
+
+}
+
+/***************************************************************************
+ ***************************************************************************/
+int blackrock_selftest()
+{
+    uint64_t i;
+    uint64_t range;
+
+    /* @marshray
+     * Basic test of decryption. I take the index, encrypt it, then decrypt it,
+     * which means I should get the original index back again. Only, it's not
+     * working. The decryption fails. The reason it's failing is obvious -- I'm
+     * just not seeing it though. The error is probably in the 'UNENCRYPT()'
+     * function above.
+     */
+    {
+        struct BlackRock br;
+        
+        blackrock_init(&br, 1000, 0, 4);
+
+        for (i=0; i<10; i++) {
+            uint64_t result, result2;
+            result = blackrock_shuffle(&br, i);
+            result2 = blackrock_unshuffle(&br, result);
+            if (i != result2)
+                return 1; /*fail*/
+        }
+
+    }
+
+
+    range = 3015 * 3;
+
+    for (i=0; i<5; i++) {
+        struct BlackRock br;
+        int is_success;
+
+        range += 10 + i;
+        range *= 2;
+
+        blackrock_init(&br, range, time(0), 4);
+
+        is_success = blackrock_verify(&br, range);
+        if (!is_success) {
+            LOG(LEVEL_ERROR, "BLACKROCK: randomization failed\n");
+            return 1; /*fail*/
+        }
+    }
+
+    return 0; /*success*/
 }

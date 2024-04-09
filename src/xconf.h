@@ -26,9 +26,12 @@ struct TemplateOptions;
 enum Operation {
     Operation_Default              =  0,     /* nothing specified, so print usage */
     Operation_ListAdapters         =  1,     /* list all usable interfaces */
+    Operation_Selftest             =  2,     /* do global regression test*/
     Operation_Scan                 =  3,     /* do scan */
+    Operation_DebugIF              =  4,     /* do special selftest to interface for debugging*/
     Operation_ListTargets          =  5,     /* list all targets uniquely in random */
     Operation_ListRange            =  7,     /* list all targets in range */
+    Operation_Benchmark            =  8,     /* do global benchmark for key units */
     Operation_Echo                 =  9,     /* echo the config used now or all configs with --echo-all */
     Operation_ListCidr             = 11,     /* list all targets in CIDR */
     Operation_ListScanModules,               /* list all scan modules */
@@ -212,5 +215,9 @@ void xconf_print_intro();
 void xconf_print_usage();
 
 void xconf_print_help();
+
+void xconf_selftest();
+
+void xconf_benchmark(unsigned blackrock_rounds);
 
 #endif

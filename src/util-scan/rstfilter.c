@@ -3,6 +3,7 @@
 #include "rstfilter.h"
 #include "../crypto/crypto-siphash24.h"
 #include "../util-data/fine-malloc.h"
+#include "../util-out/logger.h"
 
 struct ResetFilter
 {
@@ -131,4 +132,56 @@ rstfilter_is_filter(struct ResetFilter *rf,
     }
 
     return result;
+}
+
+
+int rstfilter_selftest()
+{
+    struct ResetFilter *rf;
+    size_t i;
+    unsigned count_filtered = 0;
+    unsigned count_passed = 0;
+
+    ipaddress src;
+    ipaddress dst;
+
+    src.version = 4;
+    src.ipv4 = 1;
+    dst.version = 4;
+    dst.ipv4 = 3;
+
+    rf = rstfilter_create(time(0), 64);
+    
+    /* Verify the first 15 packets pass the filter */
+    for (i=0; i<15; i++) {
+        int x;
+
+        x = rstfilter_is_filter(rf, src, 2, dst, 4);
+        if (x) {
+            LOG(LEVEL_ERROR, "[-] rstfilter failed, line=%u\n", __LINE__);
+            return 1;
+        }
+    }
+    
+    /* Now run 10000 more times */
+    for (i=0; i<1000; i++) {
+        int x;
+        x = rstfilter_is_filter(rf, src, 2, dst, 4);
+        count_filtered += x;
+        count_passed += !x;
+    }
+    
+    /* SOME must have passed, due to us emptying random buckets */
+    if (count_passed == 0) {
+        LOG(LEVEL_ERROR, "[-] rstfilter failed, line=%u\n", __LINE__);
+        return 1;
+    }
+    
+    /* However, while some pass, the vast majority should be filtered */
+    if (count_passed > count_filtered/10) {
+        LOG(LEVEL_ERROR, "[-] rstfilter failed, line=%u\n", __LINE__);
+        return 1;
+    }
+    //printf("filtered=%u passed=%u\n", count_filtered, count_passed);
+    return 0;
 }

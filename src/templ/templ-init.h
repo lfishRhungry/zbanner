@@ -88,4 +88,6 @@ void template_set_vlan(struct TemplateSet *tmplset, unsigned vlan);
  ***************************************************************************/
 void template_packet_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan);
 
+int template_selftest();
+
 #endif

@@ -7,6 +7,7 @@
 #include "crypto-primegen.h" /* DJB's prime factoring code */
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
+#include "../util-out/logger.h"
 
 #include <math.h>  /* for 'sqrt()', may need -lm for gcc */
 #include <stdint.h>
@@ -356,4 +357,34 @@ lcg_calculate_constants(uint64_t m, uint64_t *out_a, uint64_t *inout_c, int is_d
 
     *out_a = a;
     *inout_c = c;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+int lcg_selftest()
+{
+    unsigned i;
+    int is_success = 0;
+    uint64_t m, a, c;
+
+
+    m = 3015 * 3;
+
+    for (i=0; i<5; i++) {
+        a = 0;
+        c = 0;
+
+        m += 10 + i;
+
+        lcg_calculate_constants(m, &a, &c, 0);
+
+        is_success = lcg_verify(a, c, m, m);
+
+        if (!is_success) {
+            LOG(LEVEL_ERROR, "LCG: randomization failed\n");
+            return 1; /*fail*/
+        }
+    }
+
+    return 0; /*success*/
 }

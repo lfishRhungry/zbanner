@@ -57,4 +57,12 @@ blackrock_unshuffle(const struct BlackRock *br, uint64_t m);
 uint64_t
 blackrock2_unshuffle(const struct BlackRock *br, uint64_t m);
 
+void blackrock_benchmark(unsigned rounds);
+
+int blackrock_selftest();
+
+void blackrock2_benchmark(unsigned rounds);
+
+int blackrock2_selftest();
+
 #endif

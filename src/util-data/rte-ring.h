@@ -1128,4 +1128,6 @@ rte_ring_dequeue_burst(struct rte_ring *r, void **obj_table, unsigned n)
 }
 #endif
 
+int rte_ring_selftest();
+
 #endif /* _RTE_RING_H_ */

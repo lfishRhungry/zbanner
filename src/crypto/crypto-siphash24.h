@@ -5,5 +5,7 @@
 uint64_t
 siphash24(const void *in, size_t inlen, const uint64_t key[2]);
 
+int siphash24_selftest();
+
 #endif
 

@@ -51,5 +51,7 @@ rstfilter_destroy(struct ResetFilter *rf);
 bool
 rstfilter_is_filter(struct ResetFilter *rf, ipaddress src_ip, unsigned src_port, ipaddress dst_ip, unsigned dst_port);
 
+int rstfilter_selftest();
+
 #endif
 

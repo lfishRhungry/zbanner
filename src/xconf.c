@@ -4,23 +4,37 @@
 
 #include "xconf.h"
 #include "version.h"
-#include "util-misc/configer.h"
-#include "crypto/crypto-base64.h"
+#include "smack/smack.h"
 #include "nmap/nmap-service.h"
 
+#include "templ/templ-init.h"
 #include "templ/templ-opts.h"
 
+#include "crypto/crypto-base64.h"
+#include "crypto/crypto-blackrock.h"
+#include "crypto/crypto-siphash24.h"
+#include "crypto/crypto-lcg.h"
+
+#include "util-scan/dedup.h"
+#include "util-scan/rstfilter.h"
 #include "util-data/safe-string.h"
+#include "util-data/fine-malloc.h"
+#include "util-data/data-chain.h"
+#include "util-out/xprint.h"
 #include "util-out/logger.h"
 #include "util-misc/cross.h"
-#include "util-data/fine-malloc.h"
-#include "util-out/xprint.h"
+#include "util-misc/checksum.h"
+#include "util-misc/configer.h"
 
-#include "massip/massip-addr.h"
 #include "massip/massip.h"
+#include "massip/massip-addr.h"
 #include "massip/massip-addr.h"
 #include "massip/massip-parse.h"
 #include "massip/massip-port.h"
+
+#include "proto/proto-http-maker.h"
+
+#include "pixie/pixie-timer.h"
 
 #ifdef WIN32
 #include <direct.h>
@@ -1628,6 +1642,45 @@ static enum Config_Res SET_echo(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
+static enum Config_Res SET_debugif(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+    
+    if (parseBoolean(value))
+        xconf->op = Operation_DebugIF;
+    
+    return CONF_OK;
+}
+
+static enum Config_Res SET_benchmark(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+    
+    if (parseBoolean(value))
+        xconf->op = Operation_Benchmark;
+    
+    return CONF_OK;
+}
+
+static enum Config_Res SET_selftest(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+    
+    if (parseBoolean(value))
+        xconf->op = Operation_Selftest;
+    
+    return CONF_OK;
+}
+
 static enum Config_Res SET_list_cidr(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
@@ -2523,6 +2576,28 @@ struct ConfigParam config_parameters[] = {
         "save to a file as config and then be used with the --conf option."
     },
     {
+        "debug-if",
+        SET_debugif,
+        F_BOOL,
+        {0},
+        "Run special selftest for code about interface. This is useful to figure"
+        " out why the interface doesn't work."
+    },
+    {
+        "benchmark",
+        SET_benchmark,
+        F_BOOL,
+        {"bench", 0},
+        "Run a global benchmark for key units."
+    },
+    {
+        "selftest",
+        SET_selftest,
+        F_BOOL,
+        {"regress", "regression", 0},
+        "Run a global regression test to check if new changes in code healthy."
+    },
+    {
         "list-cidr",
         SET_list_cidr,
         F_BOOL,
@@ -3202,4 +3277,79 @@ void xconf_print_help()
     printf("   * Now contains [%d] parameters in total, use them to unleash your power! *\n", count);
     printf("   **************************************************************************\n");
     printf("\n\n\n");
+}
+
+void xconf_benchmark(unsigned blackrock_rounds)
+{
+    LOG(LEVEL_HINT, "=== benchmarking (%u-bits) ===\n\n", (unsigned)sizeof(void*)*8);
+    blackrock_benchmark(blackrock_rounds);
+    blackrock2_benchmark(blackrock_rounds);
+    smack_benchmark();
+}
+
+/***************************************************************************
+ ***************************************************************************/
+static int xconf_self_selftest()
+{
+    char test[] = " test 1 ";
+
+    trim(test, sizeof(test));
+    if (strcmp(test, "test 1") != 0) {
+        goto failure;
+    }
+
+
+    /* */
+    {
+        int argc = 6;
+        char *argv[] = { "foo", "bar", "-ddd", "--readscan", "xxx", "--something" };
+    
+        if (xconf_contains("--nothing", argc, argv))
+            goto failure;
+
+        if (!xconf_contains("--readscan", argc, argv))
+            goto failure;
+    }
+
+    return 0;
+failure:
+    LOG(LEVEL_ERROR, "[+] selftest failure: config subsystem\n");
+    return 1;
+}
+
+void xconf_selftest()
+{
+    LOG(LEVEL_HINT, "Regression test: start...\n");
+
+    int x = 0;
+
+    //!Add new regression test here
+    {
+        x += massip_selftest();
+        x += massip_parse_selftest();
+        x += ipv6address_selftest();
+        x += ranges_selftest();
+        x += ranges6_selftest();
+        x += dedup_selftest();
+        x += checksum_selftest();
+        x += smack_selftest();
+        x += blackrock_selftest();
+        x += blackrock2_selftest();
+        x += nmapservice_selftest();
+        x += siphash24_selftest();
+        x += lcg_selftest();
+        x += pixie_time_selftest();
+        x += rte_ring_selftest();
+        x += xconf_self_selftest();
+        x += rstfilter_selftest();
+        x += base64_selftest();
+        x += datachain_selftest();
+        x += proto_http_maker_selftest();
+        x += template_selftest();
+    }
+
+    if (x!=0)
+        LOG(LEVEL_ERROR, "Regression test: failed :(\n");
+    else
+        LOG(LEVEL_HINT, "Regression test: success!\n");
 }

@@ -138,4 +138,6 @@ void rawsock_set_nonblock(struct Adapter *adapter);
 void
 rawsock_close_adapter(struct Adapter *adapter);
 
+int rawsock_selftest_if(const char *ifname);
+
 #endif
