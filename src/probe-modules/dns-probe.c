@@ -190,7 +190,8 @@ dns_handle_response(
         }
     }
 
-    offset += snprintf(item->report+offset, OUTPUT_RPT_LEN-offset, "]");
+    if (item->report[0]!='\0')
+        offset += snprintf(item->report+offset, OUTPUT_RPT_LEN-offset, "]");
 
     return 0;
 }
