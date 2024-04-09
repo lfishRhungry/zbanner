@@ -41,9 +41,9 @@ void transmit_thread(void *v)
     uint64_t                     packets_sent             = 0;
     unsigned                     increment                = xconf->shard.of * xconf->tx_thread_count;
     uint64_t                     seed                     = xconf->seed;
-    uint64_t                     repeats                  = 0; /* --infinite repeats */
+    uint64_t                     repeats                  = 0;       /* --infinite repeats */
     uint64_t                     entropy                  = xconf->seed;
-    struct ScanTmEvent     *tm_event                 = NULL;
+    struct ScanTmEvent          *tm_event                 = NULL;
     struct FHandler              ft_handler;
     uint64_t                    *status_sent_count;
 

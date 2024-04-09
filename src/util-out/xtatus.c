@@ -38,7 +38,26 @@ xtatus_print(
 
     const char* json_fmt_infinite =
     "{"
-        "\"state\":\"*\","
+        "\"state\":\"infinite\","
+        "\"rate\":"
+        "{"
+            "\"kpps\":%.2f,"
+            "\"pps\":%.2f,"
+            "\"sent ps\":%.0f,"
+            "\"successed ps\":%.0f,"
+        "},"
+        "\"sent\":%" PRIu64 ","
+        "\"tm_event\":%" PRIu64 ","
+        "\"tcb\":%" PRIu64 ","
+        "\"txq\":%.2f%%,"
+        "\"rxq\":%.2f%%"
+    "}\n";
+
+    /*waiting state for infinite*/
+    const char* json_fmt_exiting =
+    "{"
+        "\"state\":\"exiting\","
+        "\"seconds\":%d,"
         "\"rate\":"
         "{"
             "\"kpps\":%.2f,"
@@ -191,48 +210,96 @@ xtatus_print(
      */
 
     if (xtatus->is_infinite) {
-        if (json_status == 1) {
-            fmt = json_fmt_infinite;
+        if (is_tx_done) {
+            if (json_status == 1) {
+                fmt = json_fmt_exiting;
 
-            fprintf(stderr,
-                    fmt,
-                    kpps,
-                    pps,
-                    sent_rate,
-                    successed_rate,
-                    count,
-                    total_tm_event,
-                    total_tcb,
-                    tx_q_ratio,
-                    rx_q_ratio);
-        } else {
-            fmt = "rate:%6.2f-kpps, sent/s=%.0f, [+]/s=%.0f" PRIu64;
+                fprintf(stderr,
+                        fmt,
+                        (int)exiting,
+                        kpps,
+                        pps,
+                        sent_rate,
+                        successed_rate,
+                        count,
+                        total_tm_event,
+                        total_tcb,
+                        tx_q_ratio,
+                        rx_q_ratio);
+            } else {
+                fmt = "rate:%6.2f-kpps, waiting %d-secs, sent/s=%.0f, [+]/s=%.0f";
 
-            fprintf(stderr,
-                    fmt,
-                    kpps,
-                    sent_rate,
-                    tx_q_ratio,
-                    rx_q_ratio,
-                    successed_rate);
+                fprintf(stderr,
+                        fmt,
+                        kpps,
+                        (int)exiting,
+                        sent_rate,
+                        tx_q_ratio,
+                        rx_q_ratio,
+                        successed_rate);
 
-            if (xtatus->print_ft_event) {
-                fmt = ", tm_event=%6$" PRIu64;
-                fprintf(stderr, fmt, total_tm_event);
-            }
+                if (xtatus->print_ft_event) {
+                    fmt = ", tm_event=%6$" PRIu64;
+                    fprintf(stderr, fmt, total_tm_event);
+                }
 
-            if (xtatus->print_tcb) {
-                fmt = ", tcb=%6$" PRIu64;
-                fprintf(stderr, fmt, total_tcb);
-            }
+                if (xtatus->print_tcb) {
+                    fmt = ", tcb=%6$" PRIu64;
+                    fprintf(stderr, fmt, total_tcb);
+                }
 
-            if (xtatus->print_queue) {
-                fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
-                fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
-            }
+                if (xtatus->print_queue) {
+                    fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
+                    fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
+                }
 
-            fprintf(stderr, "                \r");
+                fprintf(stderr, "                \r");
         
+            }
+        } else {
+            if (json_status == 1) {
+                fmt = json_fmt_infinite;
+
+                fprintf(stderr,
+                        fmt,
+                        kpps,
+                        pps,
+                        sent_rate,
+                        successed_rate,
+                        count,
+                        total_tm_event,
+                        total_tcb,
+                        tx_q_ratio,
+                        rx_q_ratio);
+            } else {
+                fmt = "rate:%6.2f-kpps, sent/s=%.0f, [+]/s=%.0f";
+
+                fprintf(stderr,
+                        fmt,
+                        kpps,
+                        sent_rate,
+                        tx_q_ratio,
+                        rx_q_ratio,
+                        successed_rate);
+
+                if (xtatus->print_ft_event) {
+                    fmt = ", tm_event=%6$" PRIu64;
+                    fprintf(stderr, fmt, total_tm_event);
+                }
+
+                if (xtatus->print_tcb) {
+                    fmt = ", tcb=%6$" PRIu64;
+                    fprintf(stderr, fmt, total_tcb);
+                }
+
+                if (xtatus->print_queue) {
+                    fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
+                    fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
+                }
+
+                fprintf(stderr, "                \r");
+        
+            }
         }
 
     } else {

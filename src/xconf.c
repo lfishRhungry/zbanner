@@ -1548,6 +1548,20 @@ static enum Config_Res SET_offline(void *conf, const char *name, const char *val
     return CONF_OK;
 }
 
+static enum Config_Res SET_infinite(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->is_infinite || xconf->echo_all)
+            fprintf(xconf->echo, "infinite = %s\n", xconf->is_infinite?"true":"false");
+        return 0;
+    }
+    xconf->is_infinite = parseBoolean(value);
+    return CONF_OK;
+}
+
 static enum Config_Res SET_fast_timeout(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
@@ -2846,6 +2860,17 @@ struct ConfigParam config_parameters[] = {
         "Use sendqueue feature of Npcap/Winpcap on Windows to transmit packets. "
         "The transmit rate on Windows is really slow, like 40-kpps. The speed "
         "can be increased by using the sendqueue feature to roughly 300-kpps."
+    },
+    {
+        "infinite",
+        SET_infinite,
+        F_BOOL,
+        {0},
+        "Do not actually transmit packets. This is useful with a low rate and "
+        "--packet-trace to look at what packets might've been transmitted. Or, "
+        "it's useful with --rate 100000000 in order to benchmark how fast "
+        "transmit would work (assuming a zero-overhead driver). PF_RING is about"
+        " 20% slower than the benchmark result from offline mode."
     },
     {
         "offline",
