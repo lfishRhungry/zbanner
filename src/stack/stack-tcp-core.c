@@ -1278,7 +1278,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
                     if (tcb->segments == NULL || tcb->segments->length == 0) {
                         /* We've finished sending everything, so switch our application state
-                         * back to sending */
+                         * back to recv */
                         _tcb_change_state_to(tcb, STATE_ESTABLISHED_RECV);
 
                         /* All the payload has been sent. Notify the application of this, so that they
