@@ -212,7 +212,7 @@ enum ProbeType {
 
 enum MultiMode {
     Multi_Null = 0,
-    Multi_Direct,         /*send multi_num probes(diff in index) when first connect.*/
+    Multi_Direct,         /*send multi_num probes(diff in index) from very beginning even don't know openness.*/
     Multi_IfOpen,         /*send multi_num probes(diff in index) if port is open. !Just for TCP*/
     Multi_AfterHandle,    /*send multi-num probes(diff in index) after first handled.*/
     Multi_DynamicNext,    /*send a specified probe(with index+1) after every time handled*/
@@ -230,7 +230,7 @@ struct ProbeModule
     const enum ProbeType                        type;
     const enum MultiMode                        multi_mode;
     const unsigned                              multi_num;   /*useless for Multi_DynamicNext*/
-    unsigned int                                hello_wait;  /*just for statefull scan*/
+    unsigned                                    hello_wait;  /*just for statefull scan*/
     const char                                 *desc;
     struct ConfigParam                         *params;
 
