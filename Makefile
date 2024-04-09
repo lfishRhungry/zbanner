@@ -272,5 +272,10 @@ ifneq ($(OS),Windows_NT)
 install: bin/xtate
 	install $(INSTALL_DATA) bin/xtate $(DESTDIR)$(BINDIR)/xtate
 endif
+
+regress: bin/xtate
+	bin/xtate --selftest
+
+test: regress
 	
 default: bin/xtate
