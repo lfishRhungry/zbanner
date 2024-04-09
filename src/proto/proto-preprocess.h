@@ -23,8 +23,8 @@ enum {
     FOUND_PRISM,
     FOUND_LLC,
     FOUND_ARP,
-    FOUND_SLL, /* Linux SLL */
-    FOUND_OPROTO, /* some other IP protocol */
+    FOUND_SLL,            /* Linux SLL */
+    FOUND_OPROTO,         /* some other IP protocol */
     FOUND_IGMP,
     FOUND_NDPv6,
 };
