@@ -2348,7 +2348,7 @@ struct ConfigParam config_parameters[] = {
         "incoming packets after all transmit threads finished. Default is 10s."
         "Specifies the number of seconds after transmit is done to wait for "
         "receiving packets before exiting the program. The default is 10 "
-        "seconds. The string \"forever\" can be specified to never terminate."
+        "seconds."
     },
     {
         "forever",
