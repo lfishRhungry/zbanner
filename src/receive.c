@@ -233,7 +233,7 @@ void receive_thread(void *v) {
     LOG(LEVEL_INFO, "[+] THREAD: recv: starting main loop\n");
     while (!is_rx_done) {
 
-        /*handle a fast-timeout event in each loop*/
+        /*handle one fast-timeout event in each loop to avoid blocking*/
         if (xconf->is_fast_timeout) {
 
             tm_event = ft_pop_event(&ft_handler, global_now);
