@@ -162,6 +162,7 @@ struct TCP_ConnectionTable {
     unsigned                     timeout_conn;
     unsigned                     count;
     unsigned                     mask;
+    unsigned                     src_port_start;
 
     uint64_t                     active_count;
     uint64_t                     entropy;
@@ -171,15 +172,6 @@ struct TCP_ConnectionTable {
     struct Timeouts             *timeouts;
     struct stack_t              *stack;
     struct Output               *out;
-
-    /** This is for creating follow-up connections based on the first
-     * connection. Given an existing IP/port, it returns a different
-     * one for the new conenction. */
-    // struct {
-    //     const void *data;
-    //     void *(*cb)(const void *in_src, const ipaddress ip, unsigned port,
-    //                 ipaddress *next_ip, unsigned *next_port);
-    // } next_ip_port;
 };
 
 enum {
@@ -353,14 +345,15 @@ tcpcon_create_table(size_t entry_count,
     if (tcpcon->timeout_conn == 0)
         tcpcon->timeout_conn = 30; /* half a minute before destroying tcb */
 
-    tcpcon->tcp_template = tcp_template;
-    tcpcon->syn_template = syn_template;
-    tcpcon->entropy      = entropy;
-    tcpcon->count        = (unsigned)entry_count;
-    tcpcon->mask         = (unsigned)(entry_count-1);
-    tcpcon->timeouts     = timeouts_create(TICKS_FROM_SECS(time(0)));
-    tcpcon->stack        = stack;
-    tcpcon->out          = out;
+    tcpcon->tcp_template         = tcp_template;
+    tcpcon->syn_template         = syn_template;
+    tcpcon->entropy              = entropy;
+    tcpcon->count                = (unsigned)entry_count;
+    tcpcon->mask                 = (unsigned)(entry_count-1);
+    tcpcon->timeouts             = timeouts_create(TICKS_FROM_SECS(time(0)));
+    tcpcon->stack                = stack;
+    tcpcon->out                  = out;
+    tcpcon->src_port_start       = stack->src->port.first;
 
     return tcpcon;
 }
@@ -457,7 +450,7 @@ tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
         .ip_me     = tcb->ip_me,
         .port_me   = tcb->port_me,
         .cookie    = 0,               /*ProbeType State doesn't need cookie*/
-        .index     = 0,               /*doesn't support multi-probe now*/
+        .index     = tcb->port_me-tcpcon->src_port_start,
     };
     tcb->probe->conn_close_cb(&tcb->probe_state, &target);
 
@@ -583,8 +576,8 @@ tcpcon_create_tcb(
         .port_them = port_them,
         .ip_me     = ip_me,
         .port_me   = port_me,
-        .cookie    = index,
-        .index     = 0,         /*doesn't support multi-probe now*/
+        .cookie    = 0,               /*ProbeType State doesn't need cookie*/
+        .index     = port_me-tcpcon->src_port_start,
     };
     probe->conn_init_cb(&tcb->probe_state, &target);
 
@@ -650,7 +643,7 @@ tcpcon_send_packet(
             is_warning_printed = 1;
         }
         fflush(stdout);
-        
+
         /* FIXME: I'm no sure the best way to handle this.
          * This would result from a bug in the code,
          * but I'm not sure what should be done in response */
@@ -660,52 +653,11 @@ tcpcon_send_packet(
         return;
 
     response->length = tcp_create_by_template(
-        tcpcon->tcp_template,
+        is_syn?tcpcon->syn_template:tcpcon->tcp_template,
         tcb->ip_them, tcb->port_them,
         tcb->ip_me, tcb->port_me,
         tcb->seqno_me - is_syn, tcb->seqno_them,
         tcp_flags, payload, payload_length,
-        response->px, sizeof(response->px)
-        );
-    
-    stack_transmit_packetbuffer(tcpcon->stack, response);
-}
-
-/***************************************************************************
- ***************************************************************************/
-static void
-tcpcon_send_SYN(
-    struct TCP_ConnectionTable *tcpcon,
-    struct TCP_Control_Block *tcb)
-{
-    struct PacketBuffer *response = 0;
-    
-    assert(tcb->ip_me.version != 0 && tcb->ip_them.version != 0);
-
-    response = stack_get_packetbuffer(tcpcon->stack);
-
-    if (response == NULL) {
-        static int is_warning_printed = 0;
-        if (!is_warning_printed) {
-            LOG(LEVEL_ERROR, "packet buffers empty (should be impossible)\n");
-            is_warning_printed = 1;
-        }
-        fflush(stdout);
-        
-        /* FIXME: I'm no sure the best way to handle this.
-         * This would result from a bug in the code,
-         * but I'm not sure what should be done in response */
-        pixie_usleep(100); /* no packet available */
-    }
-    if (response == NULL)
-        return;
-
-    response->length = tcp_create_by_template(
-        tcpcon->syn_template,
-        tcb->ip_them, tcb->port_them,
-        tcb->ip_me, tcb->port_me,
-        tcb->seqno_me - 1, tcb->seqno_them,
-        TCP_FLAG_SYN, NULL, 0,
         response->px, sizeof(response->px)
         );
     
@@ -734,42 +686,48 @@ what_to_string(enum TCP_What state)
 }
 
 
-/***************************************************************************
- ***************************************************************************/
-
+/**
+ * This function could be used without TCB.
+ * So we could start any conn from any TCP Conn Table.
+*/
 static void
-LOGSEND(struct TCP_Control_Block *tcb, const char *what)
-{
-    if (tcb == NULL)
-        return;
-    LOGip(LEVEL_DETAIL, tcb->ip_them, tcb->port_them, "=%s : --->> %s                  \n",
-          tcp_state_to_string(tcb->tcpstate),
-          what);
-}
-
-
-
-void
-tcpcon_send_RST(struct TCP_ConnectionTable *tcpcon,
+tcpcon_send_raw_SYN(struct TCP_ConnectionTable *tcpcon,
                 ipaddress ip_me, ipaddress ip_them,
                 unsigned port_me, unsigned port_them,
-                uint32_t seqno_them, uint32_t ackno_them)
+                uint32_t seqno_me)
 {
-    struct TCP_Control_Block tcb;
+    struct PacketBuffer *response = 0;
     
-    memset(&tcb, 0, sizeof(tcb));
-    
-    tcb.ip_me      = ip_me;
-    tcb.ip_them    = ip_them;
-    tcb.port_me    = (unsigned short)port_me;
-    tcb.port_them  = (unsigned short)port_them;
-    tcb.seqno_me   = ackno_them;
-    tcb.ackno_me   = seqno_them + 1;
-    tcb.seqno_them = seqno_them + 1;
-    tcb.ackno_them = ackno_them;
-    
-    LOGSEND(&tcb, "send RST");
-    tcpcon_send_packet(tcpcon, &tcb, TCP_FLAG_RST, 0, 0);
+    assert(ip_me.version != 0 && ip_them.version != 0);
+
+    response = stack_get_packetbuffer(tcpcon->stack);
+
+    if (response == NULL) {
+        static int is_warning_printed = 0;
+        if (!is_warning_printed) {
+            LOG(LEVEL_ERROR, "packet buffers empty (should be impossible)\n");
+            is_warning_printed = 1;
+        }
+        fflush(stdout);
+        
+        /* FIXME: I'm no sure the best way to handle this.
+         * This would result from a bug in the code,
+         * but I'm not sure what should be done in response */
+        pixie_usleep(100); /* no packet available */
+    }
+    if (response == NULL)
+        return;
+
+    response->length = tcp_create_by_template(
+        tcpcon->syn_template,
+        ip_them, port_them,
+        ip_me, port_me,
+        seqno_me, 0,
+        TCP_FLAG_SYN, NULL, 0,
+        response->px, sizeof(response->px)
+        );
+
+    stack_transmit_packetbuffer(tcpcon->stack, response);
 }
 
 
@@ -958,86 +916,6 @@ _tcp_seg_acknowledge(
     return 1;
 }
 
-
-/***************************************************************************
- ***************************************************************************/
-static void
-_next_IP_port(struct TCP_ConnectionTable *tcpcon,
-              ipaddress *ip_me,
-              unsigned *port_me) {
-    const struct stack_src_t *src = tcpcon->stack->src;
-    unsigned index;
-
-    index = *port_me - src->port.first + 1;
-    *port_me = src->port.first + index;
-    if (*port_me >= src->port.last) {
-        *port_me = src->port.first;
-
-        /* We've wrapped the ports, so therefore choose another source
-         * IP address as well. */
-        switch (ip_me->version) {
-            case 4:
-                index = ip_me->ipv4 - src->ipv4.first + 1;
-                ip_me->ipv4 = src->ipv4.first + index;
-                if (ip_me->ipv4 >= src->ipv4.last)
-                    ip_me->ipv4 = src->ipv4.first;
-                break;
-            case 6: {
-                /* TODO: this code is untested, yolo */
-                ipv6address_t diff;
-
-                diff = ipv6address_subtract(ip_me->ipv6, src->ipv6.first);
-                diff = ipv6address_add_uint64(diff, 1);
-                ip_me->ipv6 = ipv6address_add(src->ipv6.first, diff);
-                if (ipv6address_is_lessthan(src->ipv6.last, ip_me->ipv6))
-                    ip_me->ipv6 = src->ipv6.first;
-                break;
-            }
-            default:
-                break;
-        }
-    }
-
-}
-
-/***************************************************************************
- ***************************************************************************/
-static void
-_do_reconnect(struct TCP_ConnectionTable *tcpcon,
-              const struct TCP_Control_Block *old_tcb,
-              const struct ProbeModule *probe,
-              unsigned secs, unsigned usecs,
-              enum App_State established) {
-    struct TCP_Control_Block *new_tcb;
-
-    ipaddress ip_them  = old_tcb->ip_them;
-    unsigned port_them = old_tcb->port_them;
-    ipaddress ip_me    = old_tcb->ip_me;
-    unsigned port_me   = old_tcb->port_me;
-    unsigned seqno;
-
-
-    /*
-     * get another port number and potentially ip address
-     */
-    {
-        ipaddress prev_ip  = ip_me;
-        unsigned prev_port = port_me;
-        _next_IP_port(tcpcon, &ip_me, &port_me);
-
-        if (ipaddress_is_equal(ip_me, prev_ip) && port_me == prev_port)
-            ERRMSG("There must be multiple source ports/addresses for reconnection\n");
-
-    }
-
-    seqno = get_cookie(ip_them, port_them, ip_me, port_me, tcpcon->entropy);
-
-    new_tcb = tcpcon_create_tcb(tcpcon, ip_me, ip_them, port_me, port_them,
-        seqno+1, 0, 255, probe, secs, usecs);
-
-    new_tcb->app_state = established;
-}
-
 /***************************************************************************
  ***************************************************************************/
 int
@@ -1101,21 +979,6 @@ tcpapi_send_data(struct stack_handle_t *socket,
     }
 }
 
-int
-tcpapi_reconnect(struct stack_handle_t *old_socket,
-               struct ProbeModule *new_probe,
-               enum App_State new_app_state) {
-    if (old_socket == 0 || old_socket->tcb == 0)
-        return SOCKERR_EBADF;
-
-    _do_reconnect(old_socket->tcpcon,
-                  old_socket->tcb,
-                  new_probe,
-                  old_socket->secs, old_socket->usecs,
-                  new_app_state);
-    return 0;
-}
-
 unsigned
 tcpapi_change_app_state(struct stack_handle_t *socket, enum App_State new_app_state) {
     struct TCP_Control_Block *tcb;
@@ -1137,6 +1000,20 @@ tcpapi_close(struct stack_handle_t *socket) {
     tcpcon_send_packet(socket->tcpcon, socket->tcb, TCP_FLAG_RST, 0, 0);
     tcpcon_destroy_tcb(socket->tcpcon, socket->tcb, Reason_Shutdown);
     return 0;
+}
+
+
+/***************************************************************************
+ ***************************************************************************/
+
+static void
+LOGSEND(struct TCP_Control_Block *tcb, const char *what)
+{
+    if (tcb == NULL)
+        return;
+    LOGip(5, tcb->ip_them, tcb->port_them, "=%s : --->> %s                  \n",
+          tcp_state_to_string(tcb->tcpstate),
+          what);
 }
 
 static int
@@ -1251,19 +1128,16 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
         tcpcon_destroy_tcb(tcpcon, tcb, Reason_RST);
         return TCB__destroyed;
     }
- 
+
 
     switch (tcb->tcpstate) {
 
         case STATE_SYN_SENT:
             switch (what) {
                 case TCP_WHAT_TIMEOUT:
-                    /* We've sent a SYN, but didn't get SYN-ACK, so
-                        * send another */
+                    /* We've sent a SYN, but didn't get SYN-ACK, so send another */
+                    tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_SYN, NULL, 0);
                     tcb->syns_sent++;
-
-                    /* Send SYN again */
-                    tcpcon_send_SYN(tcpcon, tcb);
                     break;
                 case TCP_WHAT_SYNACK:
                     tcb->seqno_them       = seqno_them;
@@ -1473,7 +1347,7 @@ again:
                         .port_them = socket->tcb->port_them,
                         .port_me   = socket->tcb->port_me,
                         .cookie    = 0, /*state mode does not need cookie*/
-                        .index     = 0, /*does not support multi-probe now*/
+                        .index     = socket->tcb->port_me-socket->tcpcon->src_port_start,
                     };
 
                     struct DataPass pass = {0};
@@ -1517,7 +1391,7 @@ again:
                 .ip_me     = socket->tcb->ip_me,
                 .port_me   = socket->tcb->port_me,
                 .cookie    = 0,          /*does not support cookie now*/
-                .index     = 0,          /*does not support index now*/
+                .index     = socket->tcb->port_me-socket->tcpcon->src_port_start,
             };
 
             struct DataPass pass = {0};

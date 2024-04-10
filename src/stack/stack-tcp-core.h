@@ -82,15 +82,9 @@ tcpcon_create_tcb(
 */
 uint64_t tcpcon_active_tcb(struct TCP_ConnectionTable *tcpcon);
 
-void
-tcpcon_send_RST(struct TCP_ConnectionTable *tcpcon,
-                ipaddress ip_me, ipaddress ip_them,
-                unsigned port_me, unsigned port_them,
-                uint32_t seqno_them, uint32_t ackno_them);
 
-
-int
-tcpapi_set_timeout(struct stack_handle_t *socket, unsigned secs, unsigned usecs);
+int tcpapi_set_timeout(struct stack_handle_t *socket,
+    unsigned secs, unsigned usecs);
 
 /**
  * Change from the "send" state to the "receive" state.
@@ -98,25 +92,14 @@ tcpapi_set_timeout(struct stack_handle_t *socket, unsigned secs, unsigned usecs)
  * This is none-blocking, an event will be triggered
  * later that has the data.
  */
-int
-tcpapi_recv(struct stack_handle_t *socket);
+int tcpapi_recv(struct stack_handle_t *socket);
 
 /**
  * just send data but not close
 */
-int
-tcpapi_send_data(struct stack_handle_t *socket,
-            const void *buf, size_t length,
-            unsigned is_dynamic);
+int tcpapi_send_data(struct stack_handle_t *socket, const void *buf,
+    size_t length, unsigned is_dynamic);
 
-/**
- * Re-connect to the target, same IP and port, creating a new connection
- * from a different port on this side.
- */
-int
-tcpapi_reconnect(struct stack_handle_t *old_socket,
-                 struct ProbeModule *new_probe,
-                 enum App_State new_app_state);
 
 unsigned
 tcpapi_change_app_state(struct stack_handle_t *socket, enum App_State new_app_state);
@@ -125,16 +108,15 @@ tcpapi_change_app_state(struct stack_handle_t *socket, enum App_State new_app_st
 /**
  * Send RST and del TCB to close the conn quickly.
 */
-int
-tcpapi_close(struct stack_handle_t *socket);
+int tcpapi_close(struct stack_handle_t *socket);
 
 /**
  * Media between Probe and our simplified TCP stack
  */
 void
 application_event(struct stack_handle_t *socket,
-                  enum App_State state, enum App_Event event,
-                  const struct ProbeModule *probe,
-                  const void *payload, size_t payload_length);
+    enum App_State state, enum App_Event event,
+    const struct ProbeModule *probe,
+    const void *payload, size_t payload_length);
 
 #endif
