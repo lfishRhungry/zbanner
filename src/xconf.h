@@ -18,6 +18,23 @@
 #include "probe-modules/probe-modules.h"
 #include "scan-modules/scan-modules.h"
 
+/**
+ * some default config
+*/
+/* 14 rounds seem to give way better statistical distribution than 4 with a
+very low impact on scan rate */
+#define XCONF_DFT_BLACKROCK_ROUND              14
+#define XCONF_DFT_TX_THD_COUNT                  1
+#define XCONF_DFT_RX_HDL_COUNT                  1
+#define XCONF_DFT_STACK_BUF_COUNT           16384
+#define XCONF_DFT_DISPATCH_BUF_COUNT        16384
+#define XCONF_DFT_MAX_RATE                  100.0
+#define XCONF_DFT_DEDUP_WIN               1000000
+#define XCONF_DFT_FT_SPEC                       5
+#define XCONF_DFT_SHARD_ONE                     1
+#define XCONF_DFT_SHARD_OF                      1
+#define XCONF_DFT_WAIT                         10
+
 
 struct Adapter;
 struct TemplateSet;
@@ -71,7 +88,7 @@ struct Xconf
         macaddress_t             router_mac_ipv4;
         macaddress_t             router_mac_ipv6;
         ipv4address_t            router_ip;
-        int                      link_type;       /* libpcap definitions */
+        int                      link_type;
         unsigned char            my_mac_count;    /*is there a MAC address? */
         unsigned                 vlan_id;
         unsigned                 is_vlan:1;
@@ -79,9 +96,7 @@ struct Xconf
     } nic;
 
     struct {
-        /** --resume-index */
         uint64_t index;
-        /** --resume-count */
         uint64_t count;
         /** Derives the --resume-index from the target ip:port */
         struct {
@@ -102,18 +117,9 @@ struct Xconf
     FILE      *echo;
     unsigned   echo_all;
 
-    /**
-     * This stack contains:
-     *     The callback queue (transmit queue) from rx threads to tx threads,
-     *     The packet buffer queue for memory reusing.
-     * 
-    */
     struct stack_t *stack;
     unsigned stack_buf_count;
 
-    /**
-     * set pcap BPF filter and save pcap file
-    */
     char *bpf_filter;
     char  pcap_filename[256];
 
@@ -121,7 +127,7 @@ struct Xconf
      * template for packet making quickly.
     */
     struct TemplateSet       *tmplset;
-    struct TemplateOptions   *templ_opts; /* e.g. --tcpmss */
+    struct TemplateOptions   *templ_opts;
 
     /**
      * Use fast-timeout table to handle simple timeout events;
@@ -140,41 +146,44 @@ struct Xconf
 
     /**
      * We could set the number of transmit threads.
-     * NOTE: Always only one receiving thread for consistency of dedup, timeout....
+     * NOTE: Always only one receiving thread for consistency of dedup, timeout
+     * and packets recording....
      * But, we have recv-handlers in multi threads to exec handle_cb of ScanModule.
      * Now we could set the number of recv-handlers in the power of 2.
      */
     unsigned tx_thread_count;
     unsigned rx_handler_count;
 
-    struct Output     output;                /*results outputing*/
-    enum Operation    op;                    /*operation of proc*/
+    struct Output     output;
+    enum Operation    op;
     uint64_t          seed;
     double            max_rate;
-    unsigned          wait;                  /*default 10 seconds*/
-    unsigned          dedup_win;             /*windows size of dedup table*/
+    unsigned          wait;
+    unsigned          dedup_win;
     unsigned          blackrock_rounds;
-    unsigned          dispatch_buf_count;    /* dispacth queue size in recv*/
-    uint64_t          tcb_count;             /*tcb count for tcp state scan*/
-    unsigned          tcp_init_window;       /*window of the first syn or syn-ack packet*/
-    unsigned          tcp_window;            /*window of other packets*/
-    unsigned          packet_ttl;            /* starting IP TTL field */
-    unsigned          packet_trace:1;        /* --packet-trace */
-    unsigned          is_status_ndjson:1;    /* --status-ndjson*/
-    unsigned          is_status_queue:1;     /* --print-status queue*/
-    unsigned          is_status_info_num:1;  /* --print-status info-num*/
-    unsigned          is_pfring:1;           /* --pfring */
-    unsigned          is_sendq:1;            /* --sendq */
-    unsigned          is_offline:1;          /* --offline */
-    unsigned          is_nodedup:1;          /* --nodedup, don't deduplicate */
-    unsigned          is_infinite:1;         /* --infinite */
-    unsigned          is_fast_timeout:1;     /* --fast-timeout, use ft for ScanModule*/
-    unsigned          is_bypass_os:1;     /* --bypass, completely bypass OS protocol stack*/
+    unsigned          dispatch_buf_count;
+    uint64_t          tcb_count;
+    unsigned          tcp_init_window;
+    unsigned          tcp_window;
+    unsigned          packet_ttl;
+    unsigned          packet_trace:1;
+    unsigned          repeat;
+    unsigned          is_status_ndjson:1;
+    unsigned          is_status_queue:1;
+    unsigned          is_status_info_num:1;
+    unsigned          is_pfring:1;
+    unsigned          is_sendq:1;
+    unsigned          is_offline:1;
+    unsigned          is_nodedup:1;
+    unsigned          is_infinite:1;
+    unsigned          is_fast_timeout:1;
+    unsigned          is_bypass_os:1;
 
 };
 
 
 void xconf_command_line(struct Xconf *xconf, int argc, char *argv[]);
+
 void xconf_save_state(struct Xconf *xconf);
 
 /**
@@ -186,30 +195,19 @@ bool xconf_contains(const char *x, int argc, char **argv);
 /**
  * Called to set a <name=value> pair.
  */
-void
-xconf_set_parameter(struct Xconf *xconf,
-                      const char *name, const char *value);
+void xconf_set_parameter(struct Xconf *xconf,
+    const char *name, const char *value);
 
 /**
  * Echoes the settings to the command-line. By default, echoes only
  * non-default values. With "echo-all", everything is echoed.
  */
-void
-xconf_echo(struct Xconf *xconf, FILE *fp);
+void xconf_echo(struct Xconf *xconf, FILE *fp);
 
 /**
  * Echoes the list of CIDR ranges to scan.
  */
-void
-xconf_echo_cidr(struct Xconf *xconf, FILE *fp);
-
-
-/***************************************************************************
- * We support a range of source IP/port. This function converts that
- * range into useful variables we can use to pick things form that range.
- ***************************************************************************/
-void
-adapter_get_source_addresses(const struct Xconf *xconf, struct source_t *src);
+void xconf_echo_cidr(struct Xconf *xconf, FILE *fp);
 
 void xconf_print_intro();
 

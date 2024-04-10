@@ -29,6 +29,25 @@
 #include "util-scan/readrange.h"
 #include "util-scan/throttle.h"
 
+static void
+adapter_get_source_addresses(const struct Xconf *xconf, struct source_t *src)
+{
+    const struct stack_src_t *ifsrc = &xconf->nic.src;
+    static ipv6address mask = {~0ULL, ~0ULL};
+
+    src->ipv4 = ifsrc->ipv4.first;
+    src->ipv4_mask = ifsrc->ipv4.last - ifsrc->ipv4.first;
+
+    src->port = ifsrc->port.first;
+    src->port_mask = ifsrc->port.last - ifsrc->port.first;
+
+    src->ipv6 = ifsrc->ipv6.first;
+
+    /* TODO: currently supports only a single address. This needs to
+     * be fixed to support a list of addresses */
+    src->ipv6_mask = mask;
+}
+
 void transmit_thread(void *v)
 {
     struct TxThread             *parms                    = (struct TxThread *)v;
@@ -41,7 +60,7 @@ void transmit_thread(void *v)
     uint64_t                     packets_sent             = 0;
     unsigned                     increment                = xconf->shard.of * xconf->tx_thread_count;
     uint64_t                     seed                     = xconf->seed;
-    uint64_t                     repeats                  = 0;       /* --infinite repeats */
+    uint64_t                     repeats                  = 0;
     uint64_t                     entropy                  = xconf->seed;
     struct ScanTmEvent          *tm_event                 = NULL;
     struct FHandler              ft_handler;
@@ -226,11 +245,14 @@ infinite:
     /*
      * --infinite
      */
-    if (xconf->is_infinite && !is_tx_done) {
+    if (xconf->is_infinite && !is_tx_done && repeats<xconf->repeat) {
         seed++;
         repeats++;
         goto infinite;
     }
+
+    /*to insure is_tx_done*/
+    pixie_locked_add_u32(&is_tx_done, 1);
 
     /*
      * Makes sure all packets are transmitted while in sendq or PF_RING mode.

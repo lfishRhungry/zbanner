@@ -281,29 +281,6 @@ static const unsigned short top_tcp_ports[] = {
     57797,58080,60020,60443,61532,61900,62078,63331,64623,64680,65000,
     65129,65389};
 
-
-/***************************************************************************
- ***************************************************************************/
-void
-adapter_get_source_addresses(const struct Xconf *xconf, struct source_t *src)
-{
-    const struct stack_src_t *ifsrc = &xconf->nic.src;
-    static ipv6address mask = {~0ULL, ~0ULL};
-
-    src->ipv4 = ifsrc->ipv4.first;
-    src->ipv4_mask = ifsrc->ipv4.last - ifsrc->ipv4.first;
-
-    src->port = ifsrc->port.first;
-    src->port_mask = ifsrc->port.last - ifsrc->port.first;
-
-    src->ipv6 = ifsrc->ipv6.first;
-
-    /* TODO: currently supports only a single address. This needs to
-     * be fixed to support a list of addresses */
-    src->ipv6_mask = mask;
-}
-
-
 /***************************************************************************
  ***************************************************************************/
 static unsigned
@@ -744,7 +721,7 @@ static enum Config_Res SET_dedup_win(void *conf, const char *name, const char *v
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
-        if (xconf->dedup_win!=1000000 || xconf->echo_all)
+        if (xconf->dedup_win!=XCONF_DFT_DEDUP_WIN || xconf->echo_all)
             fprintf(xconf->echo, "dedup-win = %u\n", xconf->dedup_win);
        return 0;
     }
@@ -764,7 +741,7 @@ static enum Config_Res SET_stack_buf_count(void *conf, const char *name, const c
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->stack_buf_count!=16384 || xconf->echo_all) {
+        if (xconf->stack_buf_count!=XCONF_DFT_STACK_BUF_COUNT || xconf->echo_all) {
             fprintf(xconf->echo, "stack-buf-count = %u\n", xconf->stack_buf_count);
         }
        return 0;
@@ -792,7 +769,7 @@ static enum Config_Res SET_dispatch_buf_count(void *conf, const char *name, cons
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->dispatch_buf_count!=16384 || xconf->echo_all) {
+        if (xconf->dispatch_buf_count!=XCONF_DFT_DISPATCH_BUF_COUNT || xconf->echo_all) {
             fprintf(xconf->echo, "dispatch-buf-count = %u\n", xconf->dispatch_buf_count);
         }
        return 0;
@@ -819,10 +796,12 @@ static enum Config_Res SET_wait(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
-        if (xconf->wait==INT_MAX)
-            fprintf(xconf->echo, "wait = forever\n");
-        else
-            fprintf(xconf->echo, "wait = %u\n", xconf->wait);
+        if (xconf->wait!=XCONF_DFT_WAIT || xconf->echo_all) {
+            if (xconf->wait==INT_MAX)
+                fprintf(xconf->echo, "wait = forever\n");
+            else
+                fprintf(xconf->echo, "wait = %u\n", xconf->wait);
+        }
         return 0;
     }
 
@@ -838,7 +817,7 @@ static enum Config_Res SET_rx_handler_count(void *conf, const char *name, const 
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
-        if (xconf->rx_handler_count!=1 || xconf->echo_all) {
+        if (xconf->rx_handler_count>1 || xconf->echo_all) {
             fprintf(xconf->echo, "rx-handler-count = %u\n", xconf->rx_handler_count);
         }
         return 0;
@@ -862,7 +841,7 @@ static enum Config_Res SET_tx_thread_count(void *conf, const char *name, const c
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
-        if (xconf->tx_thread_count!=1 || xconf->echo_all) {
+        if (xconf->tx_thread_count>1 || xconf->echo_all) {
             fprintf(xconf->echo, "tx-thread-count = %u\n", xconf->tx_thread_count);
         }
         return 0;
@@ -2266,13 +2245,34 @@ fail:
     return CONF_ERR;
 }
 
+static enum Config_Res SET_repeat(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->repeat || xconf->echo_all)
+            fprintf(xconf->echo, "repeat = %u\n", xconf->repeat);
+        return 0;
+    }
+
+    xconf->repeat = (unsigned)parseInt(value);
+    if (xconf->repeat) {
+        xconf->is_infinite = 1;
+    } else {
+        LOG(LEVEL_ERROR, "FAIL: repeat must > 0.\n");
+        return CONF_ERR;
+    }
+    return CONF_OK;
+}
+
 static enum Config_Res SET_blackrock_rounds(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->blackrock_rounds!=14 || xconf->echo_all)
+        if (xconf->blackrock_rounds!=XCONF_DFT_BLACKROCK_ROUND || xconf->echo_all)
             fprintf(xconf->echo, "blackrock-rounds = %u\n", xconf->blackrock_rounds);
         return 0;
     }
@@ -2589,7 +2589,8 @@ struct ConfigParam config_parameters[] = {
         "& NDP request for our new IP as if we are real member of the local "
         "subnet.\n"
         "NOTE: There's no need to set some firewall rules for Linux while we are"
-        " in bypassing mode."
+        " in bypassing mode. And we can't use the feature of OS protocol stack "
+        "like responsing TCP RST or ICMP Port Unreachable."
     },
 
     {"OPERATION:", SET_nothing, 0, {0}, NULL},
@@ -2989,6 +2990,15 @@ struct ConfigParam config_parameters[] = {
         "HINT: If we just want to test the highest sending rate, try to set an "
         "invalid router mac like `--router-mac 11:22:33:44:55:66` or use `--fake"
         "-router-mac` to send packets in local network."
+    },
+    {
+        "repeat",
+        SET_repeat,
+        F_NUMABLE,
+        {"repeats", 0},
+        "How many times "XTATE_FIRST_UPPER_NAME" should repeat for all targets."
+        " It also means the hit count for every target + 1. So default is 0.\n"
+        "NOTE: It will set `--infinite` automaticly."
     },
     {
         "blackrock-rounds",

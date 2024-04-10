@@ -5,19 +5,17 @@
 #include <string.h>
 #include <time.h>
 
-#include "massip/cookie.h"
 #include "globals.h"
 #include "receive.h"
 #include "transmit.h"
 #include "version.h"
 #include "xconf.h"
-#include "util-out/xtatus.h"
 
 #include "stub/stub-pcap.h"
-
-#include "massip/massip-parse.h"
-
 #include "templ/templ-init.h"
+
+#include "massip/cookie.h"
+#include "massip/massip-parse.h"
 
 #include "rawsock/rawsock-adapter.h"
 #include "rawsock/rawsock.h"
@@ -28,7 +26,10 @@
 
 #include "util-scan/initadapter.h"
 #include "util-scan/listscan.h"
+
 #include "util-out/logger.h"
+#include "util-out/xtatus.h"
+
 #include "util-data/fine-malloc.h"
 #include "util-scan/readrange.h"
 
@@ -70,17 +71,17 @@ static void control_c_handler(int x) {
         fflush(stderr);
         control_c_pressed++;
         /*Make xtate change into waiting status*/
-        is_tx_done = 1;
+        pixie_locked_add_u32(&is_tx_done, 1);
     } else {
         if (is_rx_done) {
             /*Rx thread is being exiting after being told `is_rx_done`*/
             fprintf(stderr, "\nERROR: Rx Thread is still running\n");
-            if (is_rx_done++ > 1)
+            if (is_rx_done > 1)
                 exit(1);
         } else {
             /*Second time of <ctrl-c>*/
             /*tell Rx thread to exit*/
-            is_rx_done = 1;
+            pixie_locked_add_u32(&is_rx_done, 1);
         }
     }
 }
@@ -427,7 +428,7 @@ static int main_scan(struct Xconf *xconf) {
      * If we haven't completed the scan, then save the resume
      * information.
      */
-    if (min_index < count_ips * count_ports) {
+    if (min_index < count_ips * count_ports && !xconf->is_infinite) {
         xconf->resume.index = min_index;
         xconf_save_state(xconf);
     }
@@ -578,20 +579,17 @@ int main(int argc, char *argv[]) {
     memset(xconf, 0, sizeof(*xconf));
 
     //=================================================Define default params
-
-    /* 14 rounds seem to give way better statistical distribution than 4 with a
-    very low impact on scan rate */
-    xconf->blackrock_rounds                 = 14;
-    xconf->tx_thread_count                  = 1;
-    xconf->rx_handler_count                 = 1;
-    xconf->stack_buf_count                  = 16384;
-    xconf->dispatch_buf_count               = 16384;
-    xconf->max_rate                         = 100.0;
-    xconf->dedup_win                        = 1000000;
-    xconf->shard.one                        = 1;
-    xconf->shard.of                         = 1;
-    xconf->ft_spec                          = 5;
-    xconf->wait                             = 10;
+    xconf->blackrock_rounds                 = XCONF_DFT_BLACKROCK_ROUND;
+    xconf->tx_thread_count                  = XCONF_DFT_TX_THD_COUNT;
+    xconf->rx_handler_count                 = XCONF_DFT_RX_HDL_COUNT;
+    xconf->stack_buf_count                  = XCONF_DFT_STACK_BUF_COUNT;
+    xconf->dispatch_buf_count               = XCONF_DFT_DISPATCH_BUF_COUNT;
+    xconf->max_rate                         = XCONF_DFT_MAX_RATE;
+    xconf->dedup_win                        = XCONF_DFT_DEDUP_WIN;
+    xconf->shard.one                        = XCONF_DFT_SHARD_ONE;
+    xconf->shard.of                         = XCONF_DFT_SHARD_OF;
+    xconf->ft_spec                          = XCONF_DFT_FT_SPEC;
+    xconf->wait                             = XCONF_DFT_WAIT;
 
     /*
      * Read in the configuration from the command-line. We are looking for

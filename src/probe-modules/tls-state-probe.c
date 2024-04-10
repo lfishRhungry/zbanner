@@ -17,6 +17,7 @@
 #include "../util-misc/cross.h"
 #include "../xconf.h"
 
+#define TLS_BIO_MEM_LIMIT 16384
 
 enum {
     TLS_STATE_HANDSHAKE = 0,     /*init state: still in handshaking*/
@@ -875,7 +876,7 @@ tlsstate_parse_response(
 
         while (offset < sizeof_px) {
             res = BIO_write(tls_state->rbio, px + offset,
-                            (unsigned int)min(16384, sizeof_px - offset));
+                            (unsigned int)min(TLS_BIO_MEM_LIMIT, sizeof_px - offset));
             LOG(LEVEL_INFO, "[ssl_parse_record]BIO_write: %d \n", res);
             if (res > 0) {
                 offset += (size_t)res;
@@ -893,7 +894,7 @@ tlsstate_parse_response(
         }
 
         now_time = pixie_gettime() - now_time;
-        if (sizeof_px > 16384 || now_time > 1000000) {
+        if (sizeof_px > TLS_BIO_MEM_LIMIT || now_time > 1000000) {
             LOGip(LEVEL_WARNING, target->ip_them, target->port_them,
                   "[ssl_parse_record]len px: 0x%" PRIxPTR ", time: " PRIu64
                   " millis\n",
