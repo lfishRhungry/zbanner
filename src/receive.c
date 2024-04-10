@@ -50,7 +50,7 @@ dispatch_thread(void *v)
     pixie_set_thread_name(XTATE_NAME" dispatch thread");
 
     struct RxDispatch *parms = v;
-    while (!is_rx_done) {
+    while (!time_to_finish_rx) {
         int err = 1;
         struct Received *recved = NULL;
 
@@ -108,7 +108,7 @@ handle_thread(void *v)
     snprintf(th_name, sizeof(th_name), XTATE_NAME" handler #%u", parms->index);
     pixie_set_thread_name(th_name);
 
-    while (!is_rx_done) {
+    while (!time_to_finish_rx) {
         int err = 1;
 
         struct Received *recved = NULL;
@@ -174,7 +174,7 @@ void receive_thread(void *v) {
     pixie_set_thread_name(XTATE_NAME" receive");
 
     if (xconf->is_offline) {
-        while (!is_rx_done)
+        while (!time_to_finish_rx)
             pixie_usleep(10000);
         parms->done_receiving = 1;
         return;
@@ -233,7 +233,7 @@ void receive_thread(void *v) {
     }
 
     LOG(LEVEL_INFO, "[+] THREAD: recv: starting main loop\n");
-    while (!is_rx_done) {
+    while (!time_to_finish_rx) {
 
         /*handle one fast-timeout event in each loop to avoid blocking*/
         if (xconf->is_fast_timeout) {

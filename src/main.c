@@ -44,11 +44,16 @@
 #include <unistd.h>
 #endif
 
-unsigned volatile is_tx_done = 0;
-unsigned volatile is_rx_done = 0;
+/*
+ * Use to hint Tx & Rx threads.
+ * Should not be modified by Tx or Rx thread themselves but by
+ * `mainscan` or `control_c_handler`
+*/
+unsigned volatile time_to_finish_tx = 0;
+unsigned volatile time_to_finish_rx = 0;
 
 /*
- * We update a global time in xtatus.c for less syscall of time().
+ * We update a global time in xtatus.c for less syscall.
  * Use this if you need cur time.
  */
 time_t global_now;
@@ -57,31 +62,35 @@ uint64_t usec_start;
 
 /**
  * This is for some wrappered functions that use TemplateSet to create packets.
- * Do not modify it unless you know what u are doing.
+ * !Do not modify it unless u know what u are doing.
  */
 struct TemplateSet *global_tmplset;
 
 static void control_c_handler(int x) {
+
     static unsigned control_c_pressed = 0;
+
     if (control_c_pressed == 0) {
-        /*First time of <ctrl-c>*/
         fprintf(stderr,
                 "waiting several seconds to exit..."
                 "                                                                           \n");
         fflush(stderr);
-        control_c_pressed++;
-        /*Make xtate change into waiting status*/
-        pixie_locked_add_u32(&is_tx_done, 1);
+        /*First time of <ctrl-c>, tell Tx to stop*/
+        control_c_pressed = 1;
+        time_to_finish_tx = 1;
     } else {
-        if (is_rx_done) {
-            /*Rx thread is being exiting after being told `is_rx_done`*/
+        if (time_to_finish_rx) {
+            /*Not first time of <ctrl-c> */
+            /*and Rx is exiting, we just warn*/
             fprintf(stderr, "\nERROR: Rx Thread is still running\n");
-            if (is_rx_done > 1)
+            /*Exit many <ctrl-c>*/
+            if (time_to_finish_rx++ > 1)
                 exit(1);
         } else {
-            /*Second time of <ctrl-c>*/
-            /*tell Rx thread to exit*/
-            pixie_locked_add_u32(&is_rx_done, 1);
+            /*Not first time of <ctrl-c> */
+            /*and we are waiting now*/
+            /*tell Rx to exit*/
+            time_to_finish_rx       = 1;
         }
     }
 }
@@ -349,11 +358,11 @@ static int main_scan(struct Xconf *xconf) {
      * Now wait for <ctrl-c> to be pressed OR for Tx Threads to exit.
      * Tx Threads can shutdown by themselves for finishing their tasks.
      * We also can use <ctrl-c> to make them exit early.
-     * All controls are decided by global variable `is_tx_done`.
+     * All controls are decided by global variable `time_to_finish_tx`.
      */
     pixie_usleep(1000 * 100);
     LOG(LEVEL_WARNING, "[+] waiting for threads to finish\n");
-    while (!is_tx_done) {
+    while (!time_to_finish_tx) {
         unsigned       i;
         double         rate                      = 0;
         double         tx_queue_ratio            = 0;
@@ -400,9 +409,13 @@ static int main_scan(struct Xconf *xconf) {
         double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
         tx_queue_ratio = 1.0 - tx_free_entries/(double)xconf->stack_buf_count;
 
-        if (min_index >= range && !xconf->is_infinite) {
-            /* Note: This is how we can tell the scan has ended */
-            is_tx_done = 1;
+        /* Note: This is how we tell the Tx has ended */
+        if (xconf->is_infinite) {
+            if (xconf->repeat && min_repeat>=xconf->repeat)
+                time_to_finish_tx = 1;
+        } else {
+            if (min_index >= range)
+                time_to_finish_tx = 1;
         }
 
         xtatus_print(
@@ -426,16 +439,6 @@ static int main_scan(struct Xconf *xconf) {
         pixie_mssleep(500);
     }
 
-    /**
-     * Update min_index to newest, important.
-     * */
-    min_index = UINT64_MAX;
-    for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
-        struct TxThread *parms = &tx_thread[i];
-        if (min_index > parms->my_index)
-            min_index = parms->my_index;
-    }
-
     /*
      * If we haven't completed the scan, then save the resume
      * information.
@@ -447,10 +450,10 @@ static int main_scan(struct Xconf *xconf) {
 
     /*
      * Now Tx Threads have breaked out the main loop of sending because of
-     * `is_tx_done` and go into loop of `stack_flush_packets` before `is_rx_done`.
-     * Rx Thread exits just by our setting of `is_rx_done` according to time
+     * `time_to_finish_tx` and go into loop of `stack_flush_packets` before `time_to_finish_rx`.
+     * Rx Thread exits just by our setting of `time_to_finish_rx` according to time
      * waiting.
-     * So `is_rx_done` is the important signal both for Tx/Rx Thread to exit.
+     * So `time_to_finish_rx` is the important signal both for Tx/Rx Thread to exit.
      */
     now = time(0);
     for (;;) {
@@ -517,11 +520,10 @@ static int main_scan(struct Xconf *xconf) {
             xconf->wait - (time(0) - now),
             xconf->is_status_ndjson);
 
-        if (time(0) - now >= xconf->wait /*no more waiting time*/
-            || is_rx_done                /*too many <ctrl-c>*/
-        ) {
+        /*no more waiting or too many <ctrl-c>*/
+        if (time(0) - now >= xconf->wait || time_to_finish_rx) {
             LOG(LEVEL_WARNING, "[+] tell threads to exit...                    \n");
-            is_rx_done = 1;
+            time_to_finish_rx = 1;
             break;
         }
 

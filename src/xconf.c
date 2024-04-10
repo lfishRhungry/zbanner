@@ -792,23 +792,35 @@ static enum Config_Res SET_dispatch_buf_count(void *conf, const char *name, cons
     return CONF_OK;
 }
 
+static enum Config_Res SET_forever(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(name);
+    UNUSEDPARM(value);
+
+    struct Xconf *xconf = (struct Xconf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+
+    xconf->wait =  INT_MAX;
+
+    return CONF_OK;
+}
+
 static enum Config_Res SET_wait(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->wait!=XCONF_DFT_WAIT || xconf->echo_all) {
             if (xconf->wait==INT_MAX)
-                fprintf(xconf->echo, "wait = forever\n");
+                fprintf(xconf->echo, "forever = true\n");
             else
                 fprintf(xconf->echo, "wait = %u\n", xconf->wait);
         }
         return 0;
     }
 
-    if (EQUALS("forever", value))
-        xconf->wait =  INT_MAX;
-    else
-        xconf->wait = (unsigned)parseInt(value);
+    xconf->wait = (unsigned)parseInt(value);
 
     return CONF_OK;
 }
@@ -2337,6 +2349,13 @@ struct ConfigParam config_parameters[] = {
         "Specifies the number of seconds after transmit is done to wait for "
         "receiving packets before exiting the program. The default is 10 "
         "seconds. The string \"forever\" can be specified to never terminate."
+    },
+    {
+        "forever",
+        SET_forever,
+        F_BOOL,
+        {0},
+        "Set `--wait` to a large enough time."
     },
     {
         "shard",

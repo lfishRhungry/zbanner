@@ -3,8 +3,8 @@
 #include <time.h>
 
 extern time_t                     global_now;
-extern unsigned volatile          is_tx_done;
-extern unsigned volatile          is_rx_done;
+extern unsigned volatile          time_to_finish_tx;
+extern unsigned volatile          time_to_finish_rx;
 extern struct TemplateSet        *global_tmplset;
 
 

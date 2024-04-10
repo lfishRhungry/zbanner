@@ -236,22 +236,24 @@ infinite:
         parms->my_index = i;
 
         /* If the user pressed <ctrl-c>, then we need to exit and save state.*/
-        if (is_tx_done) {
+        if (time_to_finish_tx) {
             break;
         }
     }
 
     /*
-     * --infinite or --repeat
+     * --infinite and --repeat
+     * Set repeat as condition to avoid more packets sending.
      */
-    if (xconf->is_infinite && !is_tx_done && parms->my_repeat<xconf->repeat) {
-        seed++;
-        parms->my_repeat++;
-        goto infinite;
+    if (xconf->is_infinite && !time_to_finish_tx) {
+        if ((xconf->repeat && parms->my_repeat<xconf->repeat)
+            || !xconf->repeat) {
+            /*update seed and my_repeat while going again*/
+            seed++;
+            parms->my_repeat++;
+            goto infinite;
+        }
     }
-
-    /*to insure is_tx_done*/
-    pixie_locked_add_u32(&is_tx_done, 1);
 
     /*
      * Makes sure all packets are transmitted while in sendq or PF_RING mode.
@@ -264,7 +266,7 @@ infinite:
     LOG(LEVEL_WARNING, "[+] transmit thread #%u complete\n", parms->tx_index);
 
     /*help rx thread to reponse*/
-    while (!is_rx_done) {
+    while (!time_to_finish_rx) {
         unsigned k;
         uint64_t batch_size;
 

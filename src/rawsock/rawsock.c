@@ -362,7 +362,7 @@ int rawsock_recv_packet(
                         );
         if (err == PF_RING_ERROR_NO_PKT_AVAILABLE || hdr.caplen == 0) {
             PFRING.poll(adapter->ring, 1);
-            if (is_tx_done)
+            if (time_to_finish_tx)
                 return 1;
             goto again;
         }
@@ -381,7 +381,7 @@ int rawsock_recv_packet(
         err = PCAP.next_ex(adapter->pcap, &hdr, packet);
 
         if (err == 0) {
-            if (is_tx_done)
+            if (time_to_finish_tx)
                 return 1;
             goto again_pcap;
         }
@@ -389,8 +389,8 @@ int rawsock_recv_packet(
         if (err != 1) {
             if (is_pcap_file) {
                 //pixie_time_set_offset(10*100000);
-                is_tx_done = 1;
-                is_rx_done = 1;
+                time_to_finish_tx = 1;
+                time_to_finish_rx = 1;
             }
             return 1;
         }

@@ -212,7 +212,7 @@ xtatus_print(
      */
 
     if (xtatus->is_infinite) {
-        if (is_tx_done) {
+        if (time_to_finish_tx) {
             if (json_status == 1) {
                 fmt = json_fmt_exiting;
 
@@ -303,7 +303,7 @@ xtatus_print(
         }
 
     } else {
-        if (is_tx_done) {
+        if (time_to_finish_tx) {
             if (json_status == 1) {
                 fmt = json_fmt_waiting;
 
