@@ -8,14 +8,8 @@
  * Correspond to a transmit thread.
  ***************************************************************************/
 struct TxThread {
-    /** This points to the central configuration. Note that it's 'const',
-     * meaning that the thread cannot change the contents. That'd be
-     * unsafe */
     const struct Xconf *xconf;
 
-    /**
-     * The index of the tx/rx thread
-     */
     unsigned tx_index;
 
     /**
@@ -23,6 +17,8 @@ struct TxThread {
      * other threads, to tell them how far we've gotten.
      */
     volatile uint64_t my_index;
+
+    volatile uint64_t my_repeat;
 
     unsigned done_transmitting;
 

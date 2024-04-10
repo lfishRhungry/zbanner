@@ -60,7 +60,6 @@ void transmit_thread(void *v)
     uint64_t                     packets_sent             = 0;
     unsigned                     increment                = xconf->shard.of * xconf->tx_thread_count;
     uint64_t                     seed                     = xconf->seed;
-    uint64_t                     repeats                  = 0;
     uint64_t                     entropy                  = xconf->seed;
     struct ScanTmEvent          *tm_event                 = NULL;
     struct FHandler              ft_handler;
@@ -175,7 +174,7 @@ infinite:
 
             if (src.port_mask > 1) {
                 uint64_t ck = get_cookie_ipv4(
-                    (unsigned)(i + repeats), (unsigned)((i + repeats) >> 32),
+                    (unsigned)(i + parms->my_repeat), (unsigned)((i + parms->my_repeat) >> 32),
                     (unsigned)xXx, (unsigned)(xXx >> 32), entropy);
                 target.port_me = src.port + (ck & src.port_mask);
             } else {
@@ -245,9 +244,9 @@ infinite:
     /*
      * --infinite or --repeat
      */
-    if (xconf->is_infinite && !is_tx_done && repeats<xconf->repeat) {
+    if (xconf->is_infinite && !is_tx_done && parms->my_repeat<xconf->repeat) {
         seed++;
-        repeats++;
+        parms->my_repeat++;
         goto infinite;
     }
 

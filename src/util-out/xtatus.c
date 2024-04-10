@@ -12,6 +12,7 @@ xtatus_print(
     struct Xtatus *xtatus,
     uint64_t       count,
     uint64_t       max_count,
+    uint64_t       repeat,
     double         pps,
     double         tx_q_ratio,
     double         rx_q_ratio,
@@ -47,6 +48,7 @@ xtatus_print(
             "\"successed ps\":%.0f,"
         "},"
         "\"sent\":%" PRIu64 ","
+        "\"repeat\":%" PRIu64 ","
         "\"tm_event\":%" PRIu64 ","
         "\"tcb\":%" PRIu64 ","
         "\"txq\":%.2f%%,"
@@ -234,8 +236,6 @@ xtatus_print(
                         kpps,
                         (int)exiting,
                         sent_rate,
-                        tx_q_ratio,
-                        rx_q_ratio,
                         successed_rate);
 
                 if (xtatus->print_ft_event) {
@@ -267,19 +267,19 @@ xtatus_print(
                         sent_rate,
                         successed_rate,
                         count,
+                        repeat,
                         total_tm_event,
                         total_tcb,
                         tx_q_ratio,
                         rx_q_ratio);
             } else {
-                fmt = "rate:%6.2f-kpps, sent/s=%.0f, [+]/s=%.0f";
+                fmt = "rate:%6.2f-kpps, round=%" PRIu64 ", sent/s=%.0f, [+]/s=%.0f";
 
                 fprintf(stderr,
                         fmt,
                         kpps,
+                        repeat,
                         sent_rate,
-                        tx_q_ratio,
-                        rx_q_ratio,
                         successed_rate);
 
                 if (xtatus->print_ft_event) {
@@ -331,8 +331,6 @@ xtatus_print(
                         pps/1000.0,
                         percent_done,
                         (int)exiting,
-                        tx_q_ratio,
-                        rx_q_ratio,
                         total_successed,
                         total_failed);
 
@@ -392,8 +390,6 @@ xtatus_print(
                     (unsigned)(time_remaining/60/60),
                     (unsigned)(time_remaining/60)%60,
                     (unsigned)(time_remaining)%60,
-                    tx_q_ratio,
-                    rx_q_ratio,
                     total_successed,
                     total_failed);
 

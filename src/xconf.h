@@ -157,6 +157,7 @@ struct Xconf
     struct Output     output;
     enum Operation    op;
     uint64_t          seed;
+    uint64_t          repeat;
     double            max_rate;
     unsigned          wait;
     unsigned          dedup_win;
@@ -167,7 +168,6 @@ struct Xconf
     unsigned          tcp_window;
     unsigned          packet_ttl;
     unsigned          packet_trace:1;
-    unsigned          repeat;
     unsigned          is_status_ndjson:1;
     unsigned          is_status_queue:1;
     unsigned          is_status_info_num:1;

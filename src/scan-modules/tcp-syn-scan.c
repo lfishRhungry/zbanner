@@ -161,7 +161,7 @@ struct ScanModule TcpSynScan = {
     .name                = "tcp-syn",
     .required_probe_type = 0,
     .support_timeout     = 1,
-    .params              = NULL,
+    .params              = tcpsyn_parameters,
     .bpf_filter          = "tcp && (tcp[13] & 4 != 0 || tcp[13] == 18)", /*tcp rst or syn-ack*/
     .desc =
         "TcpSynScan sends a TCP SYN packet to target port. Expect a SYNACK "

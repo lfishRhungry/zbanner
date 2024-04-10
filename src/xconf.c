@@ -2252,7 +2252,7 @@ static enum Config_Res SET_repeat(void *conf, const char *name, const char *valu
 
     if (xconf->echo) {
         if (xconf->repeat || xconf->echo_all)
-            fprintf(xconf->echo, "repeat = %u\n", xconf->repeat);
+            fprintf(xconf->echo, "repeat = %"PRIu64"\n", xconf->repeat);
         return 0;
     }
 
@@ -2989,7 +2989,8 @@ struct ConfigParam config_parameters[] = {
         ". The seed will update in every loop while setting infinite mode.\n"
         "HINT: If we just want to test the highest sending rate, try to set an "
         "invalid router mac like `--router-mac 11:22:33:44:55:66` or use `--fake"
-        "-router-mac` to send packets in local network."
+        "-router-mac` to send packets in local network.\n"
+        "NOTE: We should be careful to the deduplication in the infinite mode."
     },
     {
         "repeat",
@@ -2997,8 +2998,9 @@ struct ConfigParam config_parameters[] = {
         F_NUMABLE,
         {"repeats", 0},
         "How many times "XTATE_FIRST_UPPER_NAME" should repeat for all targets."
-        " It also means the hit count for every target + 1. So default is 0.\n"
-        "NOTE: It will set `--infinite` automaticly."
+        " It also means the hit count for every target + 1. So default is 0."
+        " `--infinite` will be automatically set when we use repeat.\n"
+        "NOTE: We should be careful to the deduplication in the repeat mode."
     },
     {
         "blackrock-rounds",

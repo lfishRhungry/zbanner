@@ -30,6 +30,7 @@ void xtatus_print(
     struct Xtatus *xtatus,
     uint64_t       count,
     uint64_t       max_count,
+    uint64_t       repeat,
     double         pps,
     double         tx_q_ratio,
     double         rx_q_ratio,

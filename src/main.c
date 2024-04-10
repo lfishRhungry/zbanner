@@ -97,6 +97,7 @@ static int main_scan(struct Xconf *xconf) {
     uint64_t              range;
     unsigned              index;
     uint64_t              min_index             = UINT64_MAX;
+    uint64_t              min_repeat            = UINT64_MAX;
     time_t                now                   = time(0);
 
     memset(rx_thread, 0, sizeof(struct RxThread));
@@ -363,13 +364,17 @@ static int main_scan(struct Xconf *xconf) {
         uint64_t       total_tm_event            = 0;
         uint64_t       total_sent                = 0;
 
-        /* Find the minimum index of all the threads */
-        min_index = UINT64_MAX;
+        /* Find the minimum index and repeat of all the threads */
+        min_index  = UINT64_MAX;
+        min_repeat = UINT64_MAX;
         for (i = 0; i < xconf->tx_thread_count; i++) {
             struct TxThread *parms = &tx_thread[i];
 
             if (min_index > parms->my_index)
                 min_index = parms->my_index;
+
+            if (min_repeat > parms->my_repeat)
+                min_repeat = parms->my_repeat;
 
             rate += parms->throttler->current_rate;
 
@@ -400,14 +405,11 @@ static int main_scan(struct Xconf *xconf) {
             is_tx_done = 1;
         }
 
-        /*
-         * update screen about once per second with statistics,
-         * namely packets/second.
-         */
         xtatus_print(
             &status,
             min_index,
             range,
+            min_repeat,
             rate,
             tx_queue_ratio,
             rx_queue_ratio,
@@ -424,11 +426,21 @@ static int main_scan(struct Xconf *xconf) {
         pixie_mssleep(500);
     }
 
+    /**
+     * Update min_index to newest, important.
+     * */
+    min_index = UINT64_MAX;
+    for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
+        struct TxThread *parms = &tx_thread[i];
+        if (min_index > parms->my_index)
+            min_index = parms->my_index;
+    }
+
     /*
      * If we haven't completed the scan, then save the resume
      * information.
      */
-    if (min_index < count_ips * count_ports && !xconf->is_infinite) {
+    if (min_index < range && !xconf->is_infinite) {
         xconf->resume.index = min_index;
         xconf_save_state(xconf);
     }
@@ -452,13 +464,17 @@ static int main_scan(struct Xconf *xconf) {
         uint64_t      total_tm_event              = 0;
         uint64_t      total_sent                  = 0;
 
-        /* Find the minimum index of all the threads */
-        min_index = UINT64_MAX;
+        /* Find the minimum index and repeat of all the threads */
+        min_index  = UINT64_MAX;
+        min_repeat = UINT64_MAX;
         for (i = 0; i < xconf->tx_thread_count; i++) {
             struct TxThread *parms = &tx_thread[i];
 
             if (min_index > parms->my_index)
                 min_index = parms->my_index;
+
+            if (min_repeat > parms->my_repeat)
+                min_repeat = parms->my_repeat;
 
             rate += parms->throttler->current_rate;
 
@@ -488,6 +504,7 @@ static int main_scan(struct Xconf *xconf) {
             &status,
             min_index,
             range,
+            min_repeat,
             rate,
             tx_queue_ratio,
             rx_queue_ratio,
