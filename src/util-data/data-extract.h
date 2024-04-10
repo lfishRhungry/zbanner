@@ -1,5 +1,5 @@
-#ifndef EXTRACT_H
-#define EXTRACT_H
+#ifndef DATA_EXTRACT_H
+#define DATA_EXTRACT_H
 #include <stdio.h>
 
 struct ebuf_t {
