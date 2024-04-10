@@ -243,7 +243,7 @@ infinite:
     }
 
     /*
-     * --infinite
+     * --infinite or --repeat
      */
     if (xconf->is_infinite && !is_tx_done && repeats<xconf->repeat) {
         seed++;

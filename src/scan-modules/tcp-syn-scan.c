@@ -8,6 +8,35 @@
 
 extern struct ScanModule TcpSynScan; /*for internal x-ref*/
 
+struct TcpSynConf {
+    unsigned send_rst:1;
+};
+
+static struct TcpSynConf tcpsyn_conf = {0};
+
+static enum Config_Res SET_send_rst(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.send_rst = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static struct ConfigParam tcpsyn_parameters[] = {
+    {
+        "send-rst",
+        SET_send_rst,
+        F_BOOL,
+        {"rst", 0},
+        "Actively send an RST if got a SYN-ACK. This is useful when we are in "
+        "bypassing mode or working on Windows."
+    },
+
+    {0}
+};
+
 static bool
 tcpsyn_transmit(
     uint64_t entropy,
@@ -91,6 +120,21 @@ tcpsyn_handle(
             safe_strcpy(item->classification, OUTPUT_CLS_LEN, "zerowin");
         } else {
             safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
+        }
+
+        if (tcpsyn_conf.send_rst) {
+            unsigned seqno_me   = TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
+            unsigned seqno_them = TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
+
+            struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+
+            pkt_buffer->length = tcp_create_packet(
+                recved->parsed.src_ip, recved->parsed.port_src,
+                recved->parsed.dst_ip, recved->parsed.port_dst,
+                seqno_me, seqno_them+1, TCP_FLAG_RST,
+                NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+
+            stack_transmit_packetbuffer(stack, pkt_buffer);
         }
     }
     /*RST*/
