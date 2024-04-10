@@ -11,7 +11,7 @@
 #define NDP_NA_FLAG_SOLICITED 0B01000000
 #define NDP_NA_FLAG_OVERRIDE  0B00100000
 
-#define NDP_NA_FLAGS(px,i) (px[(i)+4])
+#define NDP_NA_FLAGS(px,i) ((px)[(i)+4])
 
 #define NDP_NA_HAS_FLAG(px,i,flag) ((NDP_NA_FLAGS((px),(i)) & (flag)) == (flag))
 

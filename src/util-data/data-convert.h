@@ -11,6 +11,9 @@
 
 #define BE_TO_U16(px)   ((px)[0]<< 8| \
                          (px)[1])
+#define BE_TO_U24(px)   ((px)[0]<<16| \
+                         (px)[1]<< 8| \
+                         (px)[2])
 #define BE_TO_U32(px)   ((px)[0]<<24| \
                          (px)[1]<<16| \
                          (px)[2]<< 8| \
@@ -25,6 +28,9 @@
                          (uint64_t)(px)[7])
 
 #define LE_TO_U16(px)   ((px)[1]<< 8| \
+                         (px)[0])
+#define LE_TO_U24(px)   ((px)[2]<<16| \
+                         (px)[1]<< 8| \
                          (px)[0])
 #define LE_TO_U32(px)   ((px)[3]<<24| \
                          (px)[2]<<16| \

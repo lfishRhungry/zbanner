@@ -11,32 +11,10 @@
 
  ****************************************************************************/
 #include "proto-preprocess.h"
+#include "../util-data/data-convert.h"
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-
-#define ex32be(px)  (   *((unsigned char*)(px)+0)<<24 \
-                    |   *((unsigned char*)(px)+1)<<16 \
-                    |   *((unsigned char*)(px)+2)<< 8 \
-                    |   *((unsigned char*)(px)+3)<< 0 )
-#define ex32le(px)  (   *((unsigned char*)(px)+0)<< 0 \
-                    |   *((unsigned char*)(px)+1)<< 8 \
-                    |   *((unsigned char*)(px)+2)<<16 \
-                    |   *((unsigned char*)(px)+3)<<24 )
-#define ex16be(px)  (   *((unsigned char*)(px)+0)<< 8 \
-                    |   *((unsigned char*)(px)+1)<< 0 )
-#define ex16le(px)  (   *((unsigned char*)(px)+0)<< 0 \
-                    |   *((unsigned char*)(px)+1)<< 8 )
-
-#define ex24be(px)  (   *((unsigned char*)(px)+0)<<16 \
-                    |   *((unsigned char*)(px)+1)<< 8 \
-                    |   *((unsigned char*)(px)+2)<< 0 )
-#define ex24le(px)  (   *((unsigned char*)(px)+0)<< 0 \
-                    |   *((unsigned char*)(px)+1)<< 8 \
-                    |   *((unsigned char*)(px)+2)<<16 )
-
-#define ex64be(px)  ( (((uint64_t)ex32be(px))<<32L) + ((uint64_t)ex32be((px)+4)) )
-#define ex64le(px)  ( ((uint64_t)ex32be(px)) + (((uint64_t)ex32be((px)+4))<<32L) )
 
 /**
  *  Call this frequently while parsing through the headers to make sure that
@@ -56,8 +34,8 @@ preprocess_frame(const unsigned char *px, unsigned length, unsigned link_type,
     unsigned ethertype = 0;
 
     info->transport_offset = 0;
-    info->found = FOUND_NOTHING;
-    info->found_offset = 0;
+    info->found            = FOUND_NOTHING;
+    info->found_offset     = 0;
 
     /* If not standard Ethernet, go do something else */
     if (link_type != 1)
@@ -68,7 +46,7 @@ parse_ethernet:
 
     info->mac_dst = px+offset+0;
     info->mac_src = px+offset+6;
-    ethertype = ex16be(px+offset+12);
+    ethertype = BE_TO_U16(px+offset+12);
     offset += 14;
     if (ethertype < 2000)
         goto parse_llc;
@@ -97,12 +75,12 @@ parse_ipv4:
 
         /* Check for fragmentation */
         flags = px[offset+6]&0xE0;
-        fragment_offset = (ex16be(px+offset+6) & 0x3FFF) << 3;
+        fragment_offset = (BE_TO_U16(px+offset+6) & 0x3FFF) << 3;
         if (fragment_offset != 0 || (flags & 0x20))
             return false; /* fragmented */
 
         /* Check for total-length */
-        total_length = ex16be(px+offset+2);
+        total_length = BE_TO_U16(px+offset+2);
         VERIFY_REMAINING(total_length, FOUND_IPV4);
         if (total_length < header_length)
             return false; /* weird corruption */
@@ -110,23 +88,18 @@ parse_ipv4:
 
 
         /* Save off pseudo header for checksum calculation */
-        info->ip_version  = (px[offset]>>4)&0xF;
-        info->_ip_src     = px+offset+12;
-        info->_ip_dst     = px+offset+16;
-        info->src_ip.ipv4 = px[offset+12] << 24
-                            | px[offset+13] << 16
-                            | px[offset+14] << 8
-                            | px[offset+15] << 0;
+        info->ip_version     = (px[offset]>>4)&0xF;
+        info->_ip_src        = px+offset+12;
+        info->_ip_dst        = px+offset+16;
+        info->src_ip.ipv4    = BE_TO_U32(px+offset+12);
         info->src_ip.version = 4;
-        info->dst_ip.ipv4    = px[offset+16] << 24
-                               | px[offset+17] << 16
-                               | px[offset+18] << 8
-                               | px[offset+19] << 0;
+        info->dst_ip.ipv4    = BE_TO_U32(px+offset+16);
         info->dst_ip.version = 4;
         
         info->ip_ttl      = px[offset+8];
         info->ip_protocol = px[offset+9];
         info->ip_length   = total_length;
+
         if (info->ip_version != 4)
             return false;
 
@@ -153,8 +126,8 @@ parse_tcp:
         VERIFY_REMAINING(20, FOUND_TCP);
         tcp_length = px[offset + 12]>>2;
         VERIFY_REMAINING(tcp_length, FOUND_TCP);
-        info->port_src = ex16be(px+offset+0);
-        info->port_dst = ex16be(px+offset+2);
+        info->port_src   = BE_TO_U16(px+offset+0);
+        info->port_dst   = BE_TO_U16(px+offset+2);
         info->app_offset = offset + tcp_length;
         info->app_length = length - info->app_offset;
         //assert(info->app_length < 2000);
@@ -166,8 +139,8 @@ parse_udp:
     {
         VERIFY_REMAINING(8, FOUND_UDP);
         
-        info->port_src = ex16be(px+offset+0);
-        info->port_dst = ex16be(px+offset+2);
+        info->port_src = BE_TO_U16(px+offset+0);
+        info->port_dst = BE_TO_U16(px+offset+2);
         offset += 8;
         info->app_offset = offset;
         info->app_length = length - info->app_offset;
@@ -195,8 +168,8 @@ parse_igmp:
 parse_sctp:
     {
         VERIFY_REMAINING(12, FOUND_SCTP);
-        info->port_src = ex16be(px+offset+0);
-        info->port_dst = ex16be(px+offset+2);
+        info->port_src = BE_TO_U16(px+offset+0);
+        info->port_dst = BE_TO_U16(px+offset+2);
         info->app_offset = offset + 12;
         info->app_length = length - info->app_offset;
         assert(info->app_length < 2000);
@@ -215,7 +188,7 @@ parse_ipv6:
             return false; /* not IPv4 or corrupt */
 
         /* Payload length */
-        payload_length = ex16be(px+offset+4);
+        payload_length = BE_TO_U16(px+offset+4);
         VERIFY_REMAINING(40+payload_length, FOUND_IPV6);
         if (length > offset + 40 + payload_length)
             length = offset + 40 + payload_length;
@@ -227,46 +200,12 @@ parse_ipv6:
         info->ip_protocol = px[offset+6];
 
         info->src_ip.version = 6;
-        info->src_ip.ipv6.hi = 0ULL
-                            | (uint64_t)px[offset +  8] << 56ULL
-                            | (uint64_t)px[offset +  9] << 48ULL
-                            | (uint64_t)px[offset + 10] << 40ULL
-                            | (uint64_t)px[offset + 11] << 32ULL
-                            | (uint64_t)px[offset + 12] << 24ULL
-                            | (uint64_t)px[offset + 13] << 16ULL
-                            | (uint64_t)px[offset + 14] <<  8ULL
-                            | (uint64_t)px[offset + 15] <<  0ULL;
-        info->src_ip.ipv6.lo = 0ULL
-                            | (uint64_t)px[offset + 16] << 56ULL
-                            | (uint64_t)px[offset + 17] << 48ULL
-                            | (uint64_t)px[offset + 18] << 40ULL
-                            | (uint64_t)px[offset + 19] << 32ULL
-                            | (uint64_t)px[offset + 20] << 24ULL
-                            | (uint64_t)px[offset + 21] << 16ULL
-                            | (uint64_t)px[offset + 22] <<  8ULL
-                            | (uint64_t)px[offset + 23] <<  0ULL;
+        info->src_ip.ipv6.hi = BE_TO_U64(px+offset+ 8);
+        info->src_ip.ipv6.lo = BE_TO_U64(px+offset+16);
 
         info->dst_ip.version = 6;
-        info->dst_ip.ipv6.hi = 0ULL
-                            | (uint64_t)px[offset + 24] << 56ULL
-                            | (uint64_t)px[offset + 25] << 48ULL
-                            | (uint64_t)px[offset + 26] << 40ULL
-                            | (uint64_t)px[offset + 27] << 32ULL
-                            | (uint64_t)px[offset + 28] << 24ULL
-                            | (uint64_t)px[offset + 29] << 16ULL
-                            | (uint64_t)px[offset + 30] <<  8ULL
-                            | (uint64_t)px[offset + 31] <<  0ULL;
-        info->dst_ip.ipv6.lo = 0ULL
-                            | (uint64_t)px[offset + 32] << 56ULL
-                            | (uint64_t)px[offset + 33] << 48ULL
-                            | (uint64_t)px[offset + 34] << 40ULL
-                            | (uint64_t)px[offset + 35] << 32ULL
-                            | (uint64_t)px[offset + 36] << 24ULL
-                            | (uint64_t)px[offset + 37] << 16ULL
-                            | (uint64_t)px[offset + 38] <<  8ULL
-                            | (uint64_t)px[offset + 39] <<  0ULL;
-
-
+        info->dst_ip.ipv6.hi = BE_TO_U64(px+offset+24);
+        info->dst_ip.ipv6.lo = BE_TO_U64(px+offset+32);
 
         /* next protocol */
         offset += 40;
@@ -324,7 +263,7 @@ parse_icmpv6:
 
 parse_vlan8021q:
     VERIFY_REMAINING(4, FOUND_8021Q);
-    ethertype = ex16be(px+offset+2);
+    ethertype = BE_TO_U16(px+offset+2);
     offset += 4;
     goto parse_ethertype;
 
@@ -416,16 +355,16 @@ parse_radiotap_header:
         VERIFY_REMAINING(8, FOUND_RADIOTAP);
         if (px[offset] != 0)
             return false;
-        header_length = ex16le(px+offset+2);
-        features = ex32le(px+offset+4);
+        header_length = LE_TO_U16(px+offset+2);
+        features      = LE_TO_U32(px+offset+4);
 
         VERIFY_REMAINING(header_length, FOUND_RADIOTAP);
 
         /* If FCS is present at the end of the packet, then change
          * the length to remove it */
         if (features & 0x4000) {
-            unsigned fcs_header = ex32le(px+offset+header_length-4);
-            unsigned fcs_frame = ex32le(px+length-4);
+            unsigned fcs_header = LE_TO_U32(px+offset+header_length-4);
+            unsigned fcs_frame  = LE_TO_U32(px+length-4);
             if (fcs_header == fcs_frame)
                 length -= 4;
             VERIFY_REMAINING(header_length, FOUND_RADIOTAP);
@@ -452,9 +391,9 @@ parse_prism_header:
         unsigned header_length;
         VERIFY_REMAINING(8, FOUND_PRISM);
 
-        if (ex32le(px+offset+0) != 0x00000044)
+        if (LE_TO_U32(px+offset+0) != 0x00000044)
             return false;
-        header_length = ex32le(px+offset+4);
+        header_length = LE_TO_U32(px+offset+4);
         if (header_length > 0xFFFFF)
             return false;
         VERIFY_REMAINING(header_length, FOUND_PRISM);
@@ -468,7 +407,7 @@ parse_llc:
 
         VERIFY_REMAINING(3, FOUND_LLC);
 
-        switch (ex24be(px+offset)) {
+        switch (BE_TO_U24(px+offset)) {
         case 0x0000aa: offset += 2; goto parse_llc;
         default: return false;
         case 0xaaaa03: break;
@@ -478,9 +417,9 @@ parse_llc:
 
         VERIFY_REMAINING(5, FOUND_LLC);
 
-        oui = ex24be(px+offset);
-        ethertype = ex16be(px+offset+3);
-        offset += 5;
+        oui        = BE_TO_U24(px+offset);
+        ethertype  = BE_TO_U16(px+offset+3);
+        offset    += 5;
 
         switch (oui){
         case 0x000000: goto parse_ethertype;
@@ -506,7 +445,7 @@ parse_linktype:
     switch (link_type) {
         case 0:
             offset += 4;
-            switch (ex32be(px)) {
+            switch (BE_TO_U32(px)) {
                 case 0x02000000:
                 case 0x00000002:
                     goto parse_ipv4;
@@ -566,11 +505,11 @@ parse_linux_sll:
         
         VERIFY_REMAINING(16, FOUND_SLL);
         
-        sll.packet_type = ex16be(px+offset+0);
-        sll.arp_type = ex16be(px+offset+2);
-        sll.addr_length = ex16be(px+offset+4);
+        sll.packet_type = BE_TO_U16(px+offset+0);
+        sll.arp_type    = BE_TO_U16(px+offset+2);
+        sll.addr_length = BE_TO_U16(px+offset+4);
         memcpy(sll.mac_address, px+offset+6, 8);
-        sll.ethertype = ex16be(px+offset+14);
+        sll.ethertype = BE_TO_U16(px+offset+14);
    
         offset += 16;
         
@@ -603,17 +542,10 @@ parse_arp:
         info->_ip_dst = px + offset + 2*hardware_length + protocol_length;
 
         info->src_ip.version = 4;
-        info->src_ip.ipv4 = px[offset + hardware_length + 0] << 24
-                            | px[offset + hardware_length + 1] << 16
-                            | px[offset + hardware_length + 2] << 8
-                            | px[offset + hardware_length + 3] << 0;
+        info->src_ip.ipv4    = BE_TO_U32(px+offset+hardware_length);
         info->dst_ip.version = 4;
-        info->dst_ip.ipv4 = px[offset + 2*hardware_length + protocol_length + 0] << 24
-                            | px[offset + 2*hardware_length + protocol_length + 1] << 16
-                            | px[offset + 2*hardware_length + protocol_length + 2] << 8
-                            | px[offset + 2*hardware_length + protocol_length + 3] << 0;
-        
-        info->found_offset = info->ip_offset;
+        info->dst_ip.ipv4    = BE_TO_U32(px+offset+2*hardware_length+protocol_length);
+        info->found_offset   = info->ip_offset;
         return true;
     }
 
