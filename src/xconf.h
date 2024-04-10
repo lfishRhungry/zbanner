@@ -169,6 +169,7 @@ struct Xconf
     unsigned          is_nodedup:1;          /* --nodedup, don't deduplicate */
     unsigned          is_infinite:1;         /* --infinite */
     unsigned          is_fast_timeout:1;     /* --fast-timeout, use ft for ScanModule*/
+    unsigned          is_bypass_os:1;     /* --bypass, completely bypass OS protocol stack*/
 
 };
 

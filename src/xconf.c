@@ -1710,6 +1710,23 @@ static enum Config_Res SET_lan_mode(void *conf, const char *name, const char *va
     return CONF_OK;
 }
 
+static enum Config_Res SET_bypass_os(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->is_bypass_os || xconf->echo_all)
+            fprintf(xconf->echo, "bypass-os = %s",
+                xconf->is_bypass_os?"true":"false");
+        return 0;
+    }
+    
+    xconf->is_bypass_os = parseBoolean(value);
+    
+    return CONF_OK;
+}
+
 static enum Config_Res SET_fake_router_mac(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
@@ -2561,6 +2578,19 @@ struct ConfigParam config_parameters[] = {
         "dynamicly for different target. e.g. NdpNsScan.\n"
         "HINT: If we want to test the highest sending rate and not bother anyone"
         ", this param would be helpful with `--infinite`."
+    },
+    {
+        "bypass-os",
+        SET_bypass_os,
+        F_BOOL,
+        {"bypass", 0},
+        "Completely bypass the OS protocol stack. This means we can set a proper"
+        " `--src-ip`(in the local subnet) and `--src-mac` different from the OS "
+        "to scan. Because "XTATE_FIRST_UPPER_NAME" will do reponse to special ARP "
+        "& NDP request for our new IP as if we are real member of the local "
+        "subnet.\n"
+        "NOTE: There's no need to set some firewall rules for Linux while we are"
+        " in bypassing mode."
     },
 
     {"OPERATION:", SET_nothing, 0, {0}, NULL},

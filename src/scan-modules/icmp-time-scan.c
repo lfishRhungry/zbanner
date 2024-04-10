@@ -49,11 +49,11 @@ icmptime_validate(
     else return;
     
     ipaddress ip_them = recved->parsed.src_ip;
-    ipaddress ip_me = recved->parsed.dst_ip;
-    unsigned cookie = get_cookie(ip_them, 0, ip_me, 0, entropy);
+    ipaddress ip_me   = recved->parsed.dst_ip;
+    unsigned cookie   = get_cookie(ip_them, 0, ip_me, 0, entropy);
 
-    if (get_icmp_type(&recved->parsed)==ICMPv4_TYPE_TIMESTAMP_REPLY
-        &&get_icmp_code(&recved->parsed)==ICMPv4_CODE_TIMESTAMP_REPLY
+    if (recved->parsed.icmp_type==ICMPv4_TYPE_TIMESTAMP_REPLY
+        &&recved->parsed.icmp_code==ICMPv4_CODE_TIMESTAMP_REPLY
         &&get_icmp_cookie(&recved->parsed, recved->packet)==cookie) {
         pre->go_dedup = 1;
         pre->dedup_port_them = 0;

@@ -179,8 +179,8 @@ parse_udp:
 parse_icmp:
     {
         VERIFY_REMAINING(4, FOUND_ICMP);
-        info->port_src = px[offset+0];
-        info->port_dst = px[offset+1];
+        info->icmp_type = px[offset+0];
+        info->icmp_code = px[offset+1];
         return true;
     }
 
@@ -313,8 +313,8 @@ parse_icmpv6:
         icmp_type = px[offset+0];
         icmp_code = px[offset+1];
 
-        info->port_src = icmp_type;
-        info->port_dst = icmp_code;
+        info->icmp_type = icmp_type;
+        info->icmp_code = icmp_code;
 
         if (133 <= icmp_type && icmp_type <= 136) {
             info->found = FOUND_NDPv6;
@@ -593,7 +593,7 @@ parse_arp:
         hardware_length = px[offset+4];
         protocol_length = px[offset+5];
         opcode = px[offset+6]<<8 | px[offset+7];
-        info->opcode = opcode;
+        info->arp_opcode  = opcode;
         info->ip_protocol = opcode;
         offset += 8;
 

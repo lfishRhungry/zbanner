@@ -118,12 +118,12 @@ udp_validate(
         return;
 
     if (recved->parsed.dst_ip.version == 4
-        && get_icmp_type(&recved->parsed)==ICMPv4_TYPE_ERR
-        && get_icmp_code(&recved->parsed)==ICMPv4_CODE_ERR_PORT_UNREACHABLE) {
+        && recved->parsed.icmp_type==ICMPv4_TYPE_ERR
+        && recved->parsed.icmp_code==ICMPv4_CODE_ERR_PORT_UNREACHABLE) {
 
     } else if (recved->parsed.dst_ip.version == 6
-        && get_icmp_type(&recved->parsed)==ICMPv6_TYPE_ERR
-        && get_icmp_code(&recved->parsed)==ICMPv6_CODE_ERR_PORT_UNREACHABLE) {
+        && recved->parsed.icmp_type==ICMPv6_TYPE_ERR
+        && recved->parsed.icmp_code==ICMPv6_CODE_ERR_PORT_UNREACHABLE) {
 
     } else return;
 

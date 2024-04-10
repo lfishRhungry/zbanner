@@ -8,10 +8,8 @@
 
 #include "globals.h"
 #include "xconf.h"
-#include "massip/cookie.h"
 #include "version.h"
-
-#include "output-modules/output-modules.h"
+#include "massip/cookie.h"
 
 #include "rawsock/rawsock-adapter.h"
 #include "rawsock/rawsock-pcapfile.h"
@@ -24,6 +22,9 @@
 #include "pixie/pixie-threads.h"
 #include "pixie/pixie-timer.h"
 
+#include "templ/templ-icmp.h"
+#include "templ/templ-arp.h"
+
 #include "util-scan/dedup.h"
 #include "util-out/logger.h"
 #include "util-data/fine-malloc.h"
@@ -31,6 +32,7 @@
 #include "util-scan/readrange.h"
 
 #include "timeout/fast-timeout.h"
+#include "output-modules/output-modules.h"
 
 
 struct RxDispatch {
@@ -209,11 +211,11 @@ void receive_thread(void *v) {
     parms->dispatch_q                       = dispatch_q;
     parms->handle_q                         = handle_q;
 
-    dispatch_parms.entropy               = entropy;
-    dispatch_parms.handle_queue          = handle_q;
-    dispatch_parms.dispatch_queue        = dispatch_q;
-    dispatch_parms.recv_handle_num       = handler_num;
-    dispatch_parms.recv_handle_mask      = handler_num-1;
+    dispatch_parms.entropy                  = entropy;
+    dispatch_parms.handle_queue             = handle_q;
+    dispatch_parms.dispatch_queue           = dispatch_q;
+    dispatch_parms.recv_handle_num          = handler_num;
+    dispatch_parms.recv_handle_mask         = handler_num-1;
 
     dispatcher = pixie_begin_thread(dispatch_thread, 0, &dispatch_parms);
 
@@ -312,6 +314,41 @@ void receive_thread(void *v) {
 
         recved->is_myip   = is_my_ip(stack->src, ip_me);
         recved->is_myport = is_my_port(stack->src, port_me);
+
+        /**
+         * Do response for special arp&ndp packets while bypassing OS protocol
+         * stack to announce our existing.
+        */
+        if (xconf->is_bypass_os) {
+            /*NDP Neighbor Solicitations to a multicast address */
+            if (!recved->is_myip && is_ipv6_multicast(ip_me)
+                && recved->parsed.found==FOUND_NDPv6
+                && recved->parsed.icmp_type==ICMPv6_TYPE_NS) {
+                stack_ndpv6_incoming_request(stack, &recved->parsed,
+                    recved->packet, recved->length);
+            }
+
+            if (recved->is_myip) {
+                if (recved->parsed.found==FOUND_NDPv6
+                    &&recved->parsed.icmp_type==ICMPv6_TYPE_NS) {
+                    /* When responses come back from our scans, the router will send us
+                     * these packets. We need to respond to them, so that the router
+                     * can then forward the packets to us. If we don't respond, we'll
+                     * get no responses. */
+                    stack_ndpv6_incoming_request(stack, &recved->parsed,
+                        recved->packet, recved->length);
+                }
+                if (recved->parsed.found==FOUND_ARP
+                    &&recved->parsed.arp_opcode==ARP_OPCODE_REQUEST) {
+                    /* This function will transmit a "reply" to somebody's ARP request
+                     * for our IP address (as part of our user-mode TCP/IP).
+                     * Since we completely bypass the TCP/IP stack, we  have to handle ARPs
+                     * ourself, or the router will lose track of us.*/
+                     stack_arp_incoming_request(stack, ip_me.ipv4,
+                        stack->source_mac, recved->packet, recved->length);
+                }
+            }
+        }
 
         struct PreHandle pre = {
             .go_record       = 0,

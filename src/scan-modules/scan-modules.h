@@ -90,10 +90,10 @@ struct Received {
     struct PreprocessedInfo parsed;
     unsigned char *packet;
     unsigned length;
-    unsigned is_myip;
-    unsigned is_myport;
     unsigned secs;
     unsigned usecs;
+    bool is_myip;
+    bool is_myport;
 };
 
 /*How we do prehandling for a packet*/

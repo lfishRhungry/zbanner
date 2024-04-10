@@ -1,10 +1,13 @@
 #include "stack-ndpv6.h"
-#include "../proto/proto-preprocess.h"
 #include "stack-src.h"
-#include "../util-misc/checksum.h"
+#include "../proto/proto-preprocess.h"
+#include "../templ/templ-icmp.h"
 #include "../rawsock/rawsock-adapter.h"
 #include "../rawsock/rawsock.h"
+#include "../util-misc/checksum.h"
 #include "../util-out/logger.h"
+
+
 #include <string.h>
 
 
@@ -109,7 +112,7 @@ stack_ndpv6_incoming_request(struct stack_t *stack, struct PreprocessedInfo *par
     size_t offset_icmpv6 = parsed->transport_offset;
     
     /* Verify it's a "Neighbor Solitication" opcode */
-    if (parsed->opcode != 135)
+    if (parsed->icmp_type != ICMPv6_TYPE_NS)
         return -1;
 
     /* Make sure there's at least a full header */
@@ -154,8 +157,8 @@ stack_ndpv6_incoming_request(struct stack_t *stack, struct PreprocessedInfo *par
     memcpy(buf2 + 6, target_mac.addr, 6);
     
     /* Format the response */
-    _append(buf2, &offset, max, 136); /* type */
-    _append(buf2, &offset, max, 0); /* code */
+    _append(buf2, &offset, max, ICMPv6_TYPE_NA); /* type */
+    _append(buf2, &offset, max, ICMPv6_CODE_NA); /* code */
     _append(buf2, &offset, max, 0); /*checksum[hi] */
     _append(buf2, &offset, max, 0); /*checksum[lo] */
     _append(buf2, &offset, max, 0x60); /* flags*/ 
@@ -484,4 +487,11 @@ stack_ndpv6_resolve(struct Adapter *adapter,
     }
 
     return 1;
+}
+
+bool is_ipv6_multicast(ipaddress ip_me)
+{
+    /* If this is an IPv6 multicast packet, one sent to the IPv6
+     * address with a prefix of FF02::/16 */
+    return ip_me.version == 6 && (ip_me.ipv6.hi>>48ULL) == 0xFF02;
 }

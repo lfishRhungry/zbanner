@@ -44,19 +44,19 @@ icmpecho_validate(
     else return;
     
     ipaddress ip_them = recved->parsed.src_ip;
-    ipaddress ip_me = recved->parsed.dst_ip;
-    unsigned cookie = get_cookie(ip_them, 0, ip_me, 0, entropy);
+    ipaddress ip_me   = recved->parsed.dst_ip;
+    unsigned cookie   = get_cookie(ip_them, 0, ip_me, 0, entropy);
 
     if (recved->parsed.src_ip.version==4
-        &&get_icmp_type(&recved->parsed)==ICMPv4_TYPE_ECHO_REPLY
-        &&get_icmp_code(&recved->parsed)==ICMPv4_CODE_ECHO_REPLY
+        &&recved->parsed.icmp_type==ICMPv4_TYPE_ECHO_REPLY
+        &&recved->parsed.icmp_code==ICMPv4_CODE_ECHO_REPLY
         &&get_icmp_cookie(&recved->parsed, recved->packet)==cookie) {
         pre->go_dedup = 1;
         pre->dedup_port_them = 0;
         pre->dedup_port_me   = 0;
     } else if (recved->parsed.src_ip.version==6
-        &&get_icmp_type(&recved->parsed)==ICMPv6_TYPE_ECHO_REPLY
-        &&get_icmp_code(&recved->parsed)==ICMPv6_CODE_ECHO_REPLY
+        &&recved->parsed.icmp_type==ICMPv6_TYPE_ECHO_REPLY
+        &&recved->parsed.icmp_code==ICMPv6_CODE_ECHO_REPLY
         &&get_icmp_cookie(&recved->parsed, recved->packet)==cookie) {
         pre->go_dedup = 1;
         pre->dedup_port_them = 0;

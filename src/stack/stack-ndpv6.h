@@ -36,5 +36,7 @@ stack_ndpv6_resolve(struct Adapter *adapter,
     macaddress_t my_mac_address,
     macaddress_t *your_mac_address);
 
+bool is_ipv6_multicast(ipaddress ip_me);
+
 #endif
 

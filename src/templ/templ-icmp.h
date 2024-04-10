@@ -52,6 +52,12 @@
 #define ICMPv6_TYPE_ECHO_REPLY                       129
 #define ICMPv6_CODE_ECHO_REPLY                       0
 
+#define ICMPv6_TYPE_RS                               133
+#define ICMPv6_CODE_RS                               0
+
+#define ICMPv6_TYPE_RA                               134
+#define ICMPv6_CODE_RA                               0
+
 #define ICMPv6_TYPE_NS                               135
 #define ICMPv6_CODE_NS                               0
 
@@ -103,12 +109,6 @@ icmp_create_timestamp_packet(
 */
 unsigned
 get_icmp_cookie(const struct PreprocessedInfo *parsed,const unsigned char *px);
-
-unsigned
-get_icmp_type(const struct PreprocessedInfo *parsed);
-
-unsigned
-get_icmp_code(const struct PreprocessedInfo *parsed);
 
 /**
  * @return TRUE if parse successfully

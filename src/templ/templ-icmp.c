@@ -267,16 +267,6 @@ get_icmp_cookie(const struct PreprocessedInfo *parsed,const unsigned char *px)
     return BE_TO_U32(px+parsed->transport_offset+4);
 }
 
-unsigned
-get_icmp_type(const struct PreprocessedInfo *parsed) {
-    return parsed->port_src;
-}
-
-unsigned
-get_icmp_code(const struct PreprocessedInfo *parsed) {
-    return parsed->port_dst;
-}
-
 /***************************************************************************
  ***************************************************************************/
 bool

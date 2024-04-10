@@ -37,7 +37,7 @@ arpreq_validate(
     /*do not care about any other types of arp packet.*/
     if (recved->parsed.found == FOUND_ARP
         && recved->is_myip
-        && recved->parsed.opcode == ARP_OPCODE_REPLY)
+        && recved->parsed.arp_opcode == ARP_OPCODE_REPLY)
         pre->go_record = 1;
     else return;
     

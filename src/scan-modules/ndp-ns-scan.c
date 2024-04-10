@@ -57,8 +57,8 @@ ndpns_validate(
     else return;
 
     /*validate both for ICMPv6 type, code and is it for solicitation*/
-    if (get_icmp_type(&recved->parsed)==ICMPv6_TYPE_NA
-        &&get_icmp_code(&recved->parsed)==ICMPv6_CODE_NA
+    if (recved->parsed.icmp_type==ICMPv6_TYPE_NA
+        &&recved->parsed.icmp_code==ICMPv6_CODE_NA
         && ndp_is_solicited_advertise(recved->parsed.src_ip.ipv6,
             recved->packet, recved->parsed.transport_offset)) {
         pre->go_dedup = 1;
