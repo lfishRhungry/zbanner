@@ -9,6 +9,7 @@
 
 #include "templ/templ-init.h"
 #include "templ/templ-opts.h"
+#include "templ/templ-tcp.h"
 
 #include "crypto/crypto-base64.h"
 #include "crypto/crypto-blackrock.h"
@@ -2060,8 +2061,6 @@ static enum Config_Res SET_shard(void *conf, const char *name, const char *value
 static enum Config_Res SET_tcp_mss(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
-    /* h/t @IvreRocks */
-    static const unsigned default_mss = 1460;
 
     if (xconf->echo) {
         if (xconf->templ_opts) {
@@ -2069,7 +2068,7 @@ static enum Config_Res SET_tcp_mss(void *conf, const char *name, const char *val
                 case Default:
                     break;
                 case Add:
-                    if (xconf->templ_opts->tcp.mss == default_mss)
+                    if (xconf->templ_opts->tcp.mss == TCP_DEFAULT_MSS)
                         fprintf(xconf->echo, "tcp-mss = %s\n", "enable");
                     else
                         fprintf(xconf->echo, "tcp-mss = %u\n",
@@ -2091,13 +2090,13 @@ static enum Config_Res SET_tcp_mss(void *conf, const char *name, const char *val
     if (value == 0 || value[0] == '\0') {
         /* no following parameter, so interpret this to mean "enable" */
         xconf->templ_opts->tcp.is_mss = Add;
-        xconf->templ_opts->tcp.mss = default_mss; /* 1460 */
+        xconf->templ_opts->tcp.mss = TCP_DEFAULT_MSS;
     } else if (isBoolean(value)) {
         /* looking for "enable" or "disable", but any boolean works,
          * like "true/false" or "off/on" */
         if (parseBoolean(value)) {
             xconf->templ_opts->tcp.is_mss = Add;
-            xconf->templ_opts->tcp.mss = default_mss; /* 1460 */
+            xconf->templ_opts->tcp.mss = TCP_DEFAULT_MSS;
         } else
             xconf->templ_opts->tcp.is_mss = Remove;
     } else if (isInteger(value)) {

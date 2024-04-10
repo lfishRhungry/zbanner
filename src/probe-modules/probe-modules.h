@@ -123,7 +123,7 @@ typedef unsigned
 ****************************************************************************/
 
 struct ProbeState {
-    unsigned  state;
+    uint8_t  state;  /*impossible to exceed the state limitation*/
     void     *data;  /*defined by probe itself in need*/
 };
 
@@ -133,7 +133,7 @@ struct ProbeState {
  * !Must be implemented for ProbeType STATE
  * !Must be thread safe.
  * 
- * @param state probe state
+ * @param state  probe state
  * @param target target info
 */
 typedef void

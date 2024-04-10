@@ -71,6 +71,7 @@ static bool tcpstate_global_init(const struct Xconf *xconf)
         tcpcon_set.tcpcons[i] = tcpcon_create_table(
             entry_count>=10?entry_count:10,
             xconf->stack, &global_tmplset->pkts[Proto_TCP],
+            &global_tmplset->pkts[Proto_TCP_SYN],
             (struct Output *)(&xconf->output),
             tcpstate_conf.conn_timeout, xconf->seed);
     }

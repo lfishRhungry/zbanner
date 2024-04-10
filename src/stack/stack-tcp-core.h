@@ -36,7 +36,8 @@ struct stack_handle_t;
 struct TCP_ConnectionTable *
 tcpcon_create_table(size_t entry_count,
     struct stack_t *stack,
-    struct TemplatePacket *pkt_template,
+    struct TemplatePacket *tcp_template,
+    struct TemplatePacket *syn_template,
     struct Output *out,
     unsigned timeout,
     uint64_t entropy);
@@ -88,9 +89,6 @@ tcpcon_send_RST(struct TCP_ConnectionTable *tcpcon,
                 uint32_t seqno_them, uint32_t ackno_them);
 
 
-/**
- * Set a new default timeout.
- */
 int
 tcpapi_set_timeout(struct stack_handle_t *socket, unsigned secs, unsigned usecs);
 

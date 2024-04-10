@@ -25,6 +25,8 @@ struct TemplateOptions;
 
 #define TCP_HAS_FLAG(px,i,flag) ((TCP_FLAGS((px),(i)) & (flag)) == (flag))
 
+#define TCP_DEFAULT_MSS 1460
+
 
 /**
  * Called during configuration, to apply all the various changes the

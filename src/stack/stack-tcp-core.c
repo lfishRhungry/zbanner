@@ -146,7 +146,6 @@ struct TCP_Control_Block
     unsigned char                     syns_sent;         /* reconnect */
     unsigned short                    mss;               /* maximum segment size 1460 */
     time_t                            when_created;
-    unsigned                          is_small_window:1; /* send with smaller window */
     unsigned                          is_active:1;       /*in-use/allocated or to be del soon*/
 
     const struct ProbeModule         *probe;
@@ -167,7 +166,8 @@ struct TCP_ConnectionTable {
     uint64_t                     active_count;
     uint64_t                     entropy;
 
-    struct TemplatePacket       *pkt_template;
+    struct TemplatePacket       *tcp_template;
+    struct TemplatePacket       *syn_template;
     struct Timeouts             *timeouts;
     struct stack_t              *stack;
     struct Output               *out;
@@ -310,7 +310,8 @@ tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usec
 struct TCP_ConnectionTable *
 tcpcon_create_table(size_t entry_count,
     struct stack_t *stack,
-    struct TemplatePacket *pkt_template,
+    struct TemplatePacket *tcp_template,
+    struct TemplatePacket *syn_template,
     struct Output *out,
     unsigned connection_timeout,
     uint64_t entropy)
@@ -352,7 +353,8 @@ tcpcon_create_table(size_t entry_count,
     if (tcpcon->timeout_conn == 0)
         tcpcon->timeout_conn = 30; /* half a minute before destroying tcb */
 
-    tcpcon->pkt_template = pkt_template;
+    tcpcon->tcp_template = tcp_template;
+    tcpcon->syn_template = syn_template;
     tcpcon->entropy      = entropy;
     tcpcon->count        = (unsigned)entry_count;
     tcpcon->mask         = (unsigned)(entry_count-1);
@@ -558,7 +560,7 @@ tcpcon_create_tcb(
     tcb->ackno_them       = seqno_me;
     tcb->when_created     = global_now;
     tcb->ttl              = (unsigned char)ttl;
-    tcb->mss              = 1460;
+    tcb->mss              = TCP_DEFAULT_MSS;
     tcb->probe            = probe;
 
     /* Insert the TCB into the timeout. A TCB must always have a timeout
@@ -581,7 +583,7 @@ tcpcon_create_tcb(
         .port_them = port_them,
         .ip_me     = ip_me,
         .port_me   = port_me,
-        .cookie    = 0,         /*ProbeType State doesn't need cookie*/
+        .cookie    = index,
         .index     = 0,         /*doesn't support multi-probe now*/
     };
     probe->conn_init_cb(&tcb->probe_state, &target);
@@ -658,19 +660,54 @@ tcpcon_send_packet(
         return;
 
     response->length = tcp_create_by_template(
-        tcpcon->pkt_template,
+        tcpcon->tcp_template,
         tcb->ip_them, tcb->port_them,
         tcb->ip_me, tcb->port_me,
         tcb->seqno_me - is_syn, tcb->seqno_them,
         tcp_flags, payload, payload_length,
         response->px, sizeof(response->px)
         );
+    
+    stack_transmit_packetbuffer(tcpcon->stack, response);
+}
 
-    /*
-     * KLUDGE:
-     */
-    if (tcb->is_small_window)
-        tcp_set_window(response->px, response->length, 600);
+/***************************************************************************
+ ***************************************************************************/
+static void
+tcpcon_send_SYN(
+    struct TCP_ConnectionTable *tcpcon,
+    struct TCP_Control_Block *tcb)
+{
+    struct PacketBuffer *response = 0;
+    
+    assert(tcb->ip_me.version != 0 && tcb->ip_them.version != 0);
+
+    response = stack_get_packetbuffer(tcpcon->stack);
+
+    if (response == NULL) {
+        static int is_warning_printed = 0;
+        if (!is_warning_printed) {
+            LOG(LEVEL_ERROR, "packet buffers empty (should be impossible)\n");
+            is_warning_printed = 1;
+        }
+        fflush(stdout);
+        
+        /* FIXME: I'm no sure the best way to handle this.
+         * This would result from a bug in the code,
+         * but I'm not sure what should be done in response */
+        pixie_usleep(100); /* no packet available */
+    }
+    if (response == NULL)
+        return;
+
+    response->length = tcp_create_by_template(
+        tcpcon->syn_template,
+        tcb->ip_them, tcb->port_them,
+        tcb->ip_me, tcb->port_me,
+        tcb->seqno_me - 1, tcb->seqno_them,
+        TCP_FLAG_SYN, NULL, 0,
+        response->px, sizeof(response->px)
+        );
     
     stack_transmit_packetbuffer(tcpcon->stack, response);
 }
@@ -1226,7 +1263,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     tcb->syns_sent++;
 
                     /* Send SYN again */
-                    tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_SYN, 0, 0);
+                    tcpcon_send_SYN(tcpcon, tcb);
                     break;
                 case TCP_WHAT_SYNACK:
                     tcb->seqno_them       = seqno_them;
