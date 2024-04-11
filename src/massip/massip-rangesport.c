@@ -1,3 +1,4 @@
+#include "massip.h"
 #include "massip-rangesport.h"
 #include "massip-rangesv4.h"
 
@@ -5,6 +6,7 @@
 
 #include <ctype.h>
 #include <stdlib.h>
+#include <string.h>
 
 /** Use this when adding TCP ports, to avoid the comoplication of how
  * ports are stored */
@@ -102,6 +104,7 @@ rangelist_parse_ports(struct RangeList *ports, const char *string, unsigned *is_
 
         /* Check for out-of-range */
         if (port > MASSIP_PORT_SPEC || end > MASSIP_PORT_SPEC || end < port) {
+            LOG(LEVEL_ERROR, "[-] FAIL: bad port range: %s\n", string);
             *is_error = 2;
             return p;
         }
@@ -139,4 +142,38 @@ get_actual_proto_port(unsigned *raw_port)
     } else {
         return 0;
     }
+}
+
+int rangesport_selftest()
+{
+    struct MassIP targets;
+    memset(&targets, 0, sizeof(targets));
+
+    unsigned err;
+    int line;
+
+    /*Positive Samples*/
+    line = __LINE__;
+    err = 0;
+    rangelist_parse_ports(&targets.ports, "8080,-80,100-120", &err, 0);
+    if (err)
+        goto fail;
+
+    line = __LINE__;
+    err = 0;
+    rangelist_parse_ports(&targets.ports, "t:120,u:33-66", &err, 0);
+    if (err)
+        goto fail;
+
+    line = __LINE__;
+    err = 0;
+    rangelist_parse_ports(&targets.ports, "22,s:8080-9090,o:9090-10000", &err, 0);
+    if (err)
+        goto fail;
+    
+    return 0;
+
+fail:
+    LOG(LEVEL_ERROR, "[-] rangesport: test fail, line=%d\n", line);
+    return 1;
 }

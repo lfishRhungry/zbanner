@@ -70,4 +70,6 @@ rangelist_parse_ports(struct RangeList *ports,
 enum PortProto
 get_actual_proto_port(unsigned *raw_port);
 
+int rangesport_selftest();
+
 #endif

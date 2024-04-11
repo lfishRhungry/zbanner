@@ -1165,13 +1165,11 @@ static enum Config_Res SET_target_port(void *conf, const char *name, const char 
     }
     
     unsigned is_error = 0;
-    int err = 0;
 
     rangelist_parse_ports(&xconf->targets.ports, value, &is_error, 0);
 
-    if (is_error || err) {
-        LOG(LEVEL_ERROR, "[-] FAIL: bad target port: %s\n", value);
-        LOG(LEVEL_ERROR, "    Hint: a port is a number [0..65535]\n");
+    if (is_error) {
+        LOG(LEVEL_ERROR, "FAIL: error to set target port.\n");
         return CONF_ERR;
     }
 
@@ -3388,6 +3386,7 @@ void xconf_selftest()
         x += ipv6address_selftest();
         x += ranges_selftest();
         x += ranges6_selftest();
+        x += rangesport_selftest();
         x += dedup_selftest();
         x += checksum_selftest();
         x += smack_selftest();
