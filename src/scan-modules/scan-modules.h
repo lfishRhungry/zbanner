@@ -17,7 +17,7 @@
 #include "../output-modules/output-modules.h"
 #include "../stack/stack-queue.h"
 #include "../massip/massip-addr.h"
-#include "../massip/massip-port.h"
+#include "../massip/massip-rangesport.h"
 #include "../timeout/fast-timeout.h"
 #include "../proto/proto-preprocess.h"
 #include "../probe-modules/probe-modules.h"

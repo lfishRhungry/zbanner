@@ -2,6 +2,7 @@
 #include "massip-parse.h"
 #include "massip-rangesv4.h"
 #include "massip-rangesv6.h"
+#include "massip-rangesport.h"
 #include <string.h>
 #include <ctype.h>
 

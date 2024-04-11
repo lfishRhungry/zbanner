@@ -6,7 +6,7 @@
 #include "templ-tcp.h"
 #include "templ-opts.h"
 #include "../version.h"
-#include "../massip/massip-port.h"
+#include "../massip/massip-rangesport.h"
 #include "../proto/proto-preprocess.h"
 #include "../util-data/safe-string.h"
 #include "../pixie/pixie-timer.h"

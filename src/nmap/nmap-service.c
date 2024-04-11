@@ -1,7 +1,7 @@
 #include "nmap-service.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
-#include "../massip/massip-port.h"
+#include "../massip/massip-rangesport.h"
 #include "../util-misc/cross.h"
 #include "../util-out/logger.h"
 
