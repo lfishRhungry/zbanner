@@ -60,7 +60,7 @@ void transmit_thread(void *v)
     struct Adapter              *adapter                  = xconf->nic.adapter;
     uint64_t                     packets_sent             = 0;
     unsigned                     increment                = xconf->shard.of * xconf->tx_thread_count;
-    uint64_t                     seed                     = xconf->seed;
+    uint64_t                     dynamic_seed                     = xconf->seed;
     uint64_t                     entropy                  = xconf->seed;
     struct ScanTmEvent          *tm_event                 = NULL;
     struct FHandler              ft_handler;
@@ -113,7 +113,7 @@ infinite:
     uint64_t range_ipv6 = count_ipv6 * rangelist_count(&xconf->targets.ports);
 
     struct BlackRock blackrock;
-    blackrock_init(&blackrock, range, seed, xconf->blackrock_rounds);
+    blackrock_init(&blackrock, range, dynamic_seed, xconf->blackrock_rounds);
 
     /* Calculate the 'start' and 'end' of a scan. One reason to do this is
      * to support --shard, so that multiple machines can co-operate on
@@ -253,8 +253,8 @@ infinite:
     if (xconf->is_infinite && !time_to_finish_tx) {
         if ((xconf->repeat && parms->my_repeat<xconf->repeat)
             || !xconf->repeat) {
-            /*update seed and my_repeat while going again*/
-            seed++;
+            /*update dynamic_seed and my_repeat while going again*/
+            dynamic_seed++;
             parms->my_repeat++;
             goto infinite;
         }
