@@ -169,9 +169,10 @@ typedef void
  * @param target info of a target
  * @param px response data
  * @param sizeof_px len of reponse
- * @return TRUE if the response is for us.
+ * @return true for starting multi-probe in Multi_AfterHandle mode
+ * or num=index+1 to set next probe in Multi_DynamicNext mode.
 */
-typedef void
+typedef unsigned
 (*probe_modules_parse_response)(
     struct DataPass *pass,
     struct ProbeState *state,
@@ -229,7 +230,7 @@ struct ProbeModule
     const char                                 *name;
     const enum ProbeType                        type;
     const enum MultiMode                        multi_mode;
-    const unsigned                              multi_num;   /*useless for Multi_DynamicNext*/
+    const unsigned                              multi_num;   /*useless for Multi_DynamicNext or Multi_Null*/
     unsigned                                    hello_wait;  /*just for statefull scan*/
     const char                                 *desc;
     struct ConfigParam                         *params;

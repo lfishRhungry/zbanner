@@ -175,7 +175,8 @@ infinite:
 
             if (src.port_mask > 1) {
                 uint64_t ck = get_cookie_ipv4(
-                    (unsigned)(i + parms->my_repeat), (unsigned)((i + parms->my_repeat) >> 32),
+                    (unsigned)(i + parms->my_repeat),
+                    (unsigned)((i + parms->my_repeat) >> 32),
                     (unsigned)xXx, (unsigned)(xXx >> 32), entropy);
                 target.port_me = src.port + (ck & src.port_mask);
             } else {
@@ -188,7 +189,7 @@ infinite:
              */
             target.proto = get_actual_proto_port(&(target.port_them));
 
-            /*if we don't use fast-timeout, don't malloc more memory*/
+            /*if we don't use fast-timeout, do not malloc more memory*/
             if (!tm_event) {
                 tm_event = CALLOC(1, sizeof(struct ScanTmEvent));
             }
@@ -202,13 +203,16 @@ infinite:
             size_t pkt_len = 0;
 
             unsigned more = 0;
-            more = xconf->scan_module->transmit_cb(entropy, &target, tm_event,
-                                                   pkt_buffer, &pkt_len);
+            more = xconf->scan_module->transmit_cb(
+                entropy, &target, tm_event, pkt_buffer, &pkt_len);
 
+            /*
+             * send packet actually
+             */
             if (pkt_len) {
-                /* send packets (bypassing the kernal)*/
-                rawsock_send_packet(adapter, pkt_buffer, (unsigned)pkt_len,
-                                    !batch_size);
+                rawsock_send_packet(
+                    adapter, pkt_buffer, (unsigned)pkt_len, !batch_size);
+
                 batch_size--;
                 packets_sent++;
                 status_sent_count++;
@@ -267,16 +271,11 @@ infinite:
     LOG(LEVEL_WARNING, "[+] transmit thread #%u complete\n", parms->tx_index);
 
     /*help rx thread to reponse*/
+    uint64_t batch_size;
     while (!time_to_finish_rx) {
-        unsigned k;
-        uint64_t batch_size;
-
-        for (k = 0; k < 1000; k++) {
-            batch_size = throttler_next_batch(throttler, packets_sent);
-            stack_flush_packets(xconf->stack, adapter, &packets_sent, &batch_size);
-            rawsock_flush(adapter);
-            pixie_usleep(100);
-        }
+        batch_size = throttler_next_batch(throttler, packets_sent);
+        stack_flush_packets(xconf->stack, adapter, &packets_sent, &batch_size);
+        rawsock_flush(adapter);
     }
 
     if (xconf->is_fast_timeout)

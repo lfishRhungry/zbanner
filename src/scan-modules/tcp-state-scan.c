@@ -114,8 +114,13 @@ tcpstate_transmit(
         target->ip_me, src_port_start+target->index, entropy);
 
     *len = tcp_create_packet(
-        target->ip_them, target->port_them, target->ip_me, target->port_me,
+        target->ip_them, target->port_them, target->ip_me, src_port_start+target->index,
         cookie, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_LEN);
+ 
+    /*multi-probe Multi_Direct*/
+    if (TcpStateScan.probe->multi_mode==Multi_Direct
+        && target->index+1<TcpStateScan.probe->multi_num)
+        return true;
 
     return false;
 }
@@ -187,6 +192,28 @@ tcpstate_handle(
         }
         stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_SYNACK, 0, 0,
             recved->secs, recved->usecs, seqno_them+1, seqno_me);
+        
+        /*multi-probe Multi_IfOpen and filter zerowin*/
+        if (TcpStateScan.probe->multi_mode==Multi_IfOpen
+            && recved->parsed.port_dst==src_port_start
+            &&TCP_WIN(recved->packet, recved->parsed.transport_offset)) {
+
+            for (unsigned idx=1; idx<TcpStateScan.probe->multi_num; idx++) {
+
+                unsigned cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
+                    recved->parsed.dst_ip, src_port_start+idx, entropy);
+
+                struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+
+                pkt_buffer->length = tcp_create_packet(
+                    recved->parsed.src_ip, recved->parsed.port_src,
+                    recved->parsed.dst_ip, src_port_start+idx,
+                    cookie, 0, TCP_FLAG_SYN,
+                    NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+
+                stack_transmit_packetbuffer(stack, pkt_buffer);
+            }
+        }
 
     } else if (tcb) {
         /* If this is an ACK, then handle that first */

@@ -121,7 +121,6 @@ zbanner_transmit(
     if (target->proto != Port_TCP)
         return false;
 
-    /*`index` is unused now*/
     unsigned seqno = get_cookie(target->ip_them, target->port_them, target->ip_me,
         src_port_start+target->index, entropy);
 
@@ -351,7 +350,7 @@ zbanner_handle(
             .index     = recved->parsed.port_dst-src_port_start,
         };
 
-        int is_multi = ZBannerScan.probe->handle_response_cb(&ptarget,
+        unsigned is_multi = ZBannerScan.probe->handle_response_cb(&ptarget,
             &recved->packet[recved->parsed.app_offset],
             recved->parsed.app_length, item);
 
@@ -458,7 +457,7 @@ zbanner_timeout(
         .index     = event->port_me-src_port_start,
     };
 
-    int is_multi = ZBannerScan.probe->handle_response_cb(&ptarget,
+    unsigned is_multi = ZBannerScan.probe->handle_response_cb(&ptarget,
         NULL, 0, item);
 
     /*multi-probe Multi_AfterHandle*/

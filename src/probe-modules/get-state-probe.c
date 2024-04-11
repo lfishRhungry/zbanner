@@ -77,7 +77,7 @@ getstate_make_hello(
         strlen(GET_STATE_PAYLOAD), 0);
 }
 
-static void
+static unsigned
 getstate_parse_response(
     struct DataPass *pass,
     struct ProbeState *state,
@@ -88,7 +88,7 @@ getstate_parse_response(
 {
     LOG(LEVEL_WARNING, "[GetState Probe parsing response] >>>\n");
     if (!getstate_conf.get_whole_page) {
-        if (state->state) return;
+        if (state->state) return 0;
         state->state = 1;
         pass->is_close = 1;
     }
@@ -106,6 +106,8 @@ getstate_parse_response(
     normalize_string(px, sizeof_px, item.report, OUTPUT_RPT_LEN);
 
     output_result(out, &item);
+
+    return 0;
 }
 
 struct ProbeModule GetStateProbe = {

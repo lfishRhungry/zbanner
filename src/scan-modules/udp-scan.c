@@ -160,7 +160,7 @@ udp_handle(
             .index     = recved->parsed.port_dst-src_port_start,
         };
 
-        int is_multi = UdpScan.probe->handle_response_cb(&ptarget,
+        unsigned is_multi = UdpScan.probe->handle_response_cb(&ptarget,
             &recved->packet[recved->parsed.app_offset],
             recved->parsed.app_length, item);
 
@@ -295,7 +295,7 @@ udp_timeout(
         .index     = event->port_me-src_port_start,
     };
 
-    int is_multi = UdpScan.probe->handle_response_cb(&ptarget,
+    unsigned is_multi = UdpScan.probe->handle_response_cb(&ptarget,
         NULL, 0, item);
 
     /*for multi-probe Multi_AfterHandle*/
