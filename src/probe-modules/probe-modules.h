@@ -219,12 +219,6 @@ enum MultiMode {
     Multi_DynamicNext,    /*send a specified probe(with index+1) after every time handled*/
 };
 
-enum HelloType {
-    Wait_Hello         = 0,    /* wait for a fixed time before sending hello*/
-    Hello_Close        = 0x01, /* send FIN after the static Hello is sent*/
-    Nowait_Hello       = 0x02, /* send our hello immediately, don't wait for their hello */
-};
-
 struct ProbeModule
 {
     const char                                 *name;
