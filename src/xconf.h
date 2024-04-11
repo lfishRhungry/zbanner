@@ -23,17 +23,18 @@
 */
 /* 14 rounds seem to give way better statistical distribution than 4 with a
 very low impact on scan rate */
-#define XCONF_DFT_BLACKROCK_ROUND              14
-#define XCONF_DFT_TX_THD_COUNT                  1
-#define XCONF_DFT_RX_HDL_COUNT                  1
-#define XCONF_DFT_STACK_BUF_COUNT           16384
-#define XCONF_DFT_DISPATCH_BUF_COUNT        16384
-#define XCONF_DFT_MAX_RATE                  100.0
-#define XCONF_DFT_DEDUP_WIN               1000000
-#define XCONF_DFT_FT_SPEC                       5
-#define XCONF_DFT_SHARD_ONE                     1
-#define XCONF_DFT_SHARD_OF                      1
-#define XCONF_DFT_WAIT                         10
+#define XCONF_DFT_BLACKROCK_ROUND                  14
+#define XCONF_DFT_TX_THD_COUNT                      1
+#define XCONF_DFT_RX_HDL_COUNT                      1
+#define XCONF_DFT_STACK_BUF_COUNT               16384
+#define XCONF_DFT_DISPATCH_BUF_COUNT            16384
+#define XCONF_DFT_MAX_RATE                      100.0
+#define XCONF_DFT_DEDUP_WIN                   1000000
+#define XCONF_DFT_FT_SPEC                           5
+#define XCONF_DFT_SHARD_ONE                         1
+#define XCONF_DFT_SHARD_OF                          1
+#define XCONF_DFT_WAIT                             10
+#define XCONF_DFT_PORT_RANGE                      256
 
 
 struct Adapter;

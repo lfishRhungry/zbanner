@@ -162,8 +162,8 @@ static int main_scan(struct Xconf *xconf) {
     if (xconf->nic.src.port.range == 0) {
         unsigned port = 40000 + now % 20000;
         xconf->nic.src.port.first = port;
-        xconf->nic.src.port.last  = port + 256;
-        xconf->nic.src.port.range = 256;
+        xconf->nic.src.port.last  = port + XCONF_DFT_PORT_RANGE;
+        xconf->nic.src.port.range = xconf->nic.src.port.last-xconf->nic.src.port.first;
     }
 
     /*
