@@ -12,7 +12,7 @@
 #include "../pixie/pixie-timer.h"
 #include "../util-out/logger.h"
 #include "../util-data/data-convert.h"
-#include "../massip/cookie.h"
+#include "../massip/massip-cookie.h"
 #include "../util-misc/cross.h"
 #include "../util-misc/checksum.h"
 #include "../util-data/fine-malloc.h"

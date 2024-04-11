@@ -5,7 +5,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "massip/cookie.h"
+#include "massip/massip-cookie.h"
 #include "globals.h"
 #include "xconf.h"
 #include "version.h"

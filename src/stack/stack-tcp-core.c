@@ -70,7 +70,7 @@
 
 #include "stack-queue.h"
 #include "stack-src.h"
-#include "../massip/cookie.h"
+#include "../massip/massip-cookie.h"
 #include "../timeout/event-timeout.h"
 #include "../rawsock/rawsock.h"
 #include "../util-out/logger.h"

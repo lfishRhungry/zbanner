@@ -14,7 +14,7 @@
 #include "stub/stub-pcap.h"
 #include "templ/templ-init.h"
 
-#include "massip/cookie.h"
+#include "massip/massip-cookie.h"
 #include "massip/massip-parse.h"
 
 #include "rawsock/rawsock-adapter.h"

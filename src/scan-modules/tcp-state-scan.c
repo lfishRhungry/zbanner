@@ -2,7 +2,7 @@
 #include <time.h>
 
 #include "scan-modules.h"
-#include "../massip/cookie.h"
+#include "../massip/massip-cookie.h"
 #include "../xconf.h"
 #include "../templ/templ-tcp.h"
 #include "../stack/stack-tcp-core.h"

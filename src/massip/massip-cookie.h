@@ -1,5 +1,5 @@
-#ifndef COOKIE_H
-#define COOKIE_H
+#ifndef MASSIP_COOKIE_H
+#define MASSIP_COOKIE_H
 #include <stdint.h>
 #include "massip-addr.h"
 

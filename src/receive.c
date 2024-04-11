@@ -9,7 +9,7 @@
 #include "globals.h"
 #include "xconf.h"
 #include "version.h"
-#include "massip/cookie.h"
+#include "massip/massip-cookie.h"
 
 #include "rawsock/rawsock-adapter.h"
 #include "rawsock/rawsock-pcapfile.h"

@@ -1,5 +1,5 @@
 #include "dedup.h"
-#include "../massip/cookie.h"
+#include "../massip/massip-cookie.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-out/logger.h"
 

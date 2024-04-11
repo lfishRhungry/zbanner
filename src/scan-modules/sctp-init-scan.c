@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 #include "scan-modules.h"
-#include "../massip/cookie.h"
+#include "../massip/massip-cookie.h"
 #include "../templ/templ-sctp.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"

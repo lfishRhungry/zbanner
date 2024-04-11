@@ -2,7 +2,7 @@
 
 #include "scan-modules.h"
 #include "../xconf.h"
-#include "../massip/cookie.h"
+#include "../massip/massip-cookie.h"
 #include "../templ/templ-udp.h"
 #include "../templ/templ-icmp.h"
 #include "../util-data/safe-string.h"
