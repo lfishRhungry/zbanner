@@ -11,6 +11,7 @@
 #include "version.h"
 
 #include "massip/massip-parse.h"
+#include "massip/massip-port.h"
 
 #include "templ/templ-init.h"
 
@@ -185,7 +186,7 @@ infinite:
              * Due to our port store method.
              * I think it is flexible.
              */
-            target.proto = get_real_protocol_and_port(&(target.port_them));
+            target.proto = get_actual_proto_port(&(target.port_them));
 
             /*if we don't use fast-timeout, don't malloc more memory*/
             if (!tm_event) {

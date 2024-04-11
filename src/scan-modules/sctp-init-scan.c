@@ -16,7 +16,7 @@ sctpinit_transmit(
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
-    if (target->proto != Proto_SCTP)
+    if (target->proto != Port_SCTP)
         return false;
 
     unsigned cookie = get_cookie(target->ip_them, target->port_them,

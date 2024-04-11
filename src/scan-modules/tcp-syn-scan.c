@@ -45,7 +45,7 @@ tcpsyn_transmit(
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
-    if (target->proto != Proto_TCP)
+    if (target->proto != Port_TCP)
         return false;
 
     unsigned cookie = get_cookie(target->ip_them, target->port_them,

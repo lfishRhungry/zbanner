@@ -1028,28 +1028,24 @@ static enum Config_Res SET_target_output(void *conf, const char *name, const cha
                     fprintf(xconf->echo, "port = ");
                 }
                 l = 1;
-                if (rrange.begin >= Templ_ICMP_echo) {
-                    rrange.begin -= Templ_ICMP_echo;
-                    rrange.end -= Templ_ICMP_echo;
-                    fprintf(xconf->echo,"I:");
+                if (rrange.begin >= Range_Oproto) {
+                    rrange.begin -= Range_Oproto;
+                    rrange.end -= Range_Oproto;
+                    fprintf(xconf->echo,"O:");
                     done = 1;
-                } else if (rrange.begin >= Templ_SCTP) {
-                    rrange.begin -= Templ_SCTP;
-                    rrange.end -= Templ_SCTP;
+                } else if (rrange.begin >= Range_SCTP) {
+                    rrange.begin -= Range_SCTP;
+                    rrange.end -= Range_SCTP;
                     fprintf(xconf->echo,"S:");
-                    range.begin = Templ_ICMP_echo;
-                } else if (rrange.begin >= Templ_UDP) {
-                    rrange.begin -= Templ_UDP;
-                    rrange.end -= Templ_UDP;
+                    range.begin = Range_Oproto;
+                } else if (rrange.begin >= Range_UDP) {
+                    rrange.begin -= Range_UDP;
+                    rrange.end -= Range_UDP;
                     fprintf(xconf->echo,"U:");
-                    range.begin = Templ_SCTP;
-                } else if (Templ_Oproto_first <= rrange.begin && rrange.begin <= Templ_Oproto_last) {
-                    rrange.begin -= Templ_Oproto_first;
-                    rrange.end -= Templ_Oproto_first;
-                    fprintf(xconf->echo, "O:");
-                    range.begin = Templ_Oproto_first;
+                    range.begin = Range_SCTP;
                 } else
-                    range.begin = Templ_UDP;
+                    range.begin = Range_UDP;
+
                 rrange.end = min(rrange.end, 65535);
                 if (rrange.begin == rrange.end)
                     fprintf(xconf->echo, "%u", rrange.begin);
@@ -2453,7 +2449,9 @@ struct ConfigParam config_parameters[] = {
         "like -p 80. A range of ports can be specified, like -p 20-25. A list of"
         " ports/ranges can be specified, like -p 80,20-25. UDP ports can be"
         " specified, like --ports U:161,u:1024-1100. SCTP ports can be specified"
-        " like --ports S:36412,s:38412, too."
+        " like --ports S:36412,s:38412, too.\n"
+        "NOTE: We also support `--ports O:16` to present non-port number in range"
+        " [0..65535] for some ScanModules."
     },
     {
         "top-port",

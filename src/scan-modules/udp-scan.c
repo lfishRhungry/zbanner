@@ -15,7 +15,7 @@ extern struct ScanModule UdpScan; /*for internal x-ref*/
  *For calc the conn index.
  * NOTE: We use a trick of src-port to differenciate multi-probes to avoid
  * mutual interference of connections.
- * Be careful to the source port range and probe num. Source port range is 16 in
+ * Be careful to the source port range and probe num. Source port range is 256 in
  * default and can be set with flag `--source-port`.
 */
 static unsigned src_port_start;
@@ -36,7 +36,7 @@ udp_transmit(
     unsigned char *px, size_t *len)
 {
     /*we just handle udp target*/
-    if (target->proto != Proto_UDP)
+    if (target->proto != Port_UDP)
         return false;
     
     unsigned cookie = get_cookie(target->ip_them, target->port_them,
@@ -133,7 +133,7 @@ udp_validate(
         recved->parsed.transport_length,
         &pre->dedup_ip_them, &pre->dedup_port_them,
         &pre->dedup_ip_me, &pre->dedup_port_me, &proto);
-    if (proto==Proto_UDP) {
+    if (proto==Tmpl_Type_UDP) {
         pre->go_record = 1;
         pre->go_dedup = 1;
     }

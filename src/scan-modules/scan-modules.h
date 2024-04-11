@@ -17,6 +17,7 @@
 #include "../output-modules/output-modules.h"
 #include "../stack/stack-queue.h"
 #include "../massip/massip-addr.h"
+#include "../massip/massip-port.h"
 #include "../timeout/fast-timeout.h"
 #include "../proto/proto-preprocess.h"
 #include "../probe-modules/probe-modules.h"
@@ -48,8 +49,8 @@ struct ScanTarget {
     ipaddress ip_me;
     unsigned  port_them;
     unsigned  port_me;
-    unsigned  proto;
     unsigned  index; /*use in tx thread for multi packets per target in ScanModule*/
+    enum PortProto proto;
 };
 
 /*a timeout event for scanning*/

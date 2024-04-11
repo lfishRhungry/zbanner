@@ -223,9 +223,9 @@ icmp_create_by_template(
     unsigned cookie, uint16_t ip_id, uint8_t ttl,
     unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->proto != Proto_ICMP_ECHO
-        && tmpl->proto != Proto_ICMP_TS) {
-            LOG(LEVEL_ERROR, "icmp_create_by_template: need a Proto_ICMP_ECHO or Proto_ICMP_TS TemplatePacket.\n");
+    if (tmpl->proto != Tmpl_Type_ICMP_ECHO
+        && tmpl->proto != Tmpl_Type_ICMP_TS) {
+            LOG(LEVEL_ERROR, "icmp_create_by_template: need a Tmpl_Type_ICMP_ECHO or Tmpl_Type_ICMP_TS TemplatePacket.\n");
             return 0;
     }
 
@@ -247,7 +247,7 @@ icmp_create_echo_packet(
     unsigned cookie, uint16_t ip_id, uint8_t ttl,
     unsigned char *px, size_t sizeof_px)
 {
-    return icmp_create_by_template(&global_tmplset->pkts[Proto_ICMP_ECHO],
+    return icmp_create_by_template(&global_tmplset->pkts[Tmpl_Type_ICMP_ECHO],
         ip_them, ip_me, cookie, ip_id, ttl, px, sizeof_px);
 }
 
@@ -257,7 +257,7 @@ icmp_create_timestamp_packet(
     unsigned cookie, uint16_t ip_id, uint8_t ttl,
     unsigned char *px, size_t sizeof_px)
 {
-    return icmp_create_by_template(&global_tmplset->pkts[Proto_ICMP_TS],
+    return icmp_create_by_template(&global_tmplset->pkts[Tmpl_Type_ICMP_TS],
         ip_them, ip_me, cookie, ip_id, ttl, px, sizeof_px);
 }
 
@@ -288,9 +288,9 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
         r_ip_them->ipv4 = BE_TO_U32(ip_header_in_icmp+16);
 
         if (ip_header_in_icmp[9]==6) {
-            *r_ip_proto = Proto_TCP;
+            *r_ip_proto = Tmpl_Type_TCP;
         } else if (ip_header_in_icmp[9]==17) {
-            *r_ip_proto = Proto_UDP;
+            *r_ip_proto = Tmpl_Type_UDP;
         } else {
             return false;
         }
@@ -316,9 +316,9 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
         r_ip_them->ipv6.lo   = BE_TO_U64(ip_header_in_icmp+32);
 
         if (ip_header_in_icmp[6]==6) {
-            *r_ip_proto = Proto_TCP;
+            *r_ip_proto = Tmpl_Type_TCP;
         } else if (ip_header_in_icmp[6]==17) {
-            *r_ip_proto = Proto_UDP;
+            *r_ip_proto = Tmpl_Type_UDP;
         } else {
             return false;
         }
@@ -347,17 +347,17 @@ get_icmp_port_unreachable_proto(const unsigned char *transport_px, unsigned leng
     if (ip_header_in_icmp[0]>>4 == 0B0100) {
         
         if (ip_header_in_icmp[9]==6) {
-            return Proto_TCP;
+            return Tmpl_Type_TCP;
         } else if (ip_header_in_icmp[9]==17) {
-            return Proto_UDP;
+            return Tmpl_Type_UDP;
         }
 
     } else if (ip_header_in_icmp[0]>>4 == 0B0110) {
 
         if (ip_header_in_icmp[6]==6) {
-            return Proto_TCP;
+            return Tmpl_Type_TCP;
         } else if (ip_header_in_icmp[6]==17) {
-            return Proto_UDP;
+            return Tmpl_Type_UDP;
         }
     }
 

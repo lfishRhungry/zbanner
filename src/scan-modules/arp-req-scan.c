@@ -16,6 +16,10 @@ arpreq_transmit(
     struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
+    /*arp is just for ipv4*/
+    if (target->ip_them.version!=4)
+        return false; 
+
     /*we do not need a cookie and actually cannot set it*/
     *len = arp_create_request_packet(
         target->ip_them, target->ip_me, px, PKT_BUF_LEN);

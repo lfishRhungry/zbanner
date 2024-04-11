@@ -874,7 +874,8 @@ nmapserviceprobes_free_record(struct NmapServiceProbe *probe)
 /*****************************************************************************
  *****************************************************************************/
 static void
-nmapserviceprobes_print_ports(const struct RangeList *ranges, FILE *fp, const char *prefix, int default_proto)
+nmapserviceprobes_print_ports(const struct RangeList *ranges,
+    FILE *fp, const char *prefix, enum PortProto default_proto)
 {
     unsigned i;
     
@@ -887,16 +888,25 @@ nmapserviceprobes_print_ports(const struct RangeList *ranges, FILE *fp, const ch
     
     /* print all ports */
     for (i=0; i<ranges->count; i++) {
-        int proto;
+        enum PortProto proto;
         int begin = ranges->list[i].begin;
         int end = ranges->list[i].end;
         
-        if (Templ_TCP <= begin && begin < Templ_UDP)
-            proto = Templ_TCP;
-        else if (Templ_UDP <= begin && begin < Templ_SCTP)
-            proto = Templ_UDP;
-        else
-            proto = Templ_SCTP;
+        if (Range_TCP <= begin && begin < Range_UDP) {
+            proto  = Port_TCP;
+            begin -= Range_TCP;
+            end   -= Range_TCP;
+        }
+        else if (Range_UDP <= begin && begin < Range_SCTP) {
+            proto  = Port_UDP;
+            begin -= Range_UDP;
+            end   -= Range_UDP;
+        }
+        else {
+            proto  = Port_SCTP;
+            begin -= Range_SCTP;
+            end   -= Range_SCTP;
+        }
         
         /* If UDP, shift down */
         begin -= proto;
@@ -910,12 +920,10 @@ nmapserviceprobes_print_ports(const struct RangeList *ranges, FILE *fp, const ch
         if (default_proto != proto) {
             default_proto = proto;
             switch (proto) {
-                case Templ_TCP: fprintf(fp, "T:"); break;
-                case Templ_UDP: fprintf(fp, "U:"); break;
-                case Templ_SCTP: fprintf(fp, "S"); break;
-                case Templ_ICMP_echo: fprintf(fp, "e");  break;
-                case Templ_ICMP_timestamp: fprintf(fp, "t");  break;
-                case Templ_ARP: fprintf(fp, "A"); break;
+                case Port_TCP:    fprintf(fp, "T:"); break;
+                case Port_UDP:    fprintf(fp, "U:"); break;
+                case Port_SCTP:   fprintf(fp, "S:"); break;
+                case Port_Oproto: fprintf(fp, "O:"); break;
             }
         }
         fprintf(fp, "%u", begin);
@@ -1069,8 +1077,8 @@ nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp)
             fprintf(fp, "totalwaitms %u\n", probe->totalwaitms);
         if (probe->tcpwrappedms)
             fprintf(fp, "tcpwrappedms %u\n", probe->tcpwrappedms);
-        nmapserviceprobes_print_ports(&probe->ports, fp, "ports", (probe->protocol==NMAP_IPPROTO_TCP)?Templ_TCP:Templ_UDP);
-        nmapserviceprobes_print_ports(&probe->sslports, fp, "sslports", (probe->protocol==NMAP_IPPROTO_TCP)?Templ_TCP:Templ_UDP);
+        nmapserviceprobes_print_ports(&probe->ports, fp, "ports", (probe->protocol==NMAP_IPPROTO_TCP)?Port_TCP:Port_UDP);
+        nmapserviceprobes_print_ports(&probe->sslports, fp, "sslports", (probe->protocol==NMAP_IPPROTO_TCP)?Port_TCP:Port_UDP);
         
         for (match=probe->match; match; match = match->next) {
             struct ServiceVersionInfo *vi;

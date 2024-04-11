@@ -258,8 +258,8 @@ sctp_create_by_template(
     unsigned init_tag,
     unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->proto != Proto_SCTP) {
-            LOG(LEVEL_ERROR, "sctp_create_by_template: need a Proto_SCTP TemplatePacket.\n");
+    if (tmpl->proto != Tmpl_Type_SCTP) {
+            LOG(LEVEL_ERROR, "sctp_create_by_template: need a Tmpl_Type_SCTP TemplatePacket.\n");
             return 0;
     }
 
@@ -288,7 +288,7 @@ sctp_create_packet(
     unsigned init_tag,
     unsigned char *px, size_t sizeof_px)
 {
-    return sctp_create_by_template(&global_tmplset->pkts[Proto_SCTP],
+    return sctp_create_by_template(&global_tmplset->pkts[Tmpl_Type_SCTP],
         ip_them, port_them, ip_me, port_me,
         init_tag, px, sizeof_px);
 }

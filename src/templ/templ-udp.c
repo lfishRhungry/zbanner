@@ -205,8 +205,8 @@ udp_create_by_template(
     unsigned char *payload, size_t payload_length,
     unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->proto != Proto_UDP) {
-            LOG(LEVEL_ERROR, "udp_create_by_template: need a Proto_UDP TemplatePacket.\n");
+    if (tmpl->proto != Tmpl_Type_UDP) {
+            LOG(LEVEL_ERROR, "udp_create_by_template: need a Tmpl_Type_UDP TemplatePacket.\n");
             return 0;
     }
 
@@ -233,7 +233,7 @@ udp_create_packet(
     unsigned char *payload, size_t payload_length,
     unsigned char *px, size_t sizeof_px)
 {
-    return udp_create_by_template(&global_tmplset->pkts[Proto_UDP],
+    return udp_create_by_template(&global_tmplset->pkts[Tmpl_Type_UDP],
         ip_them, port_them, ip_me, port_me,
         payload, payload_length, px, sizeof_px);
 }

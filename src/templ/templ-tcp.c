@@ -1155,8 +1155,8 @@ tcp_create_by_template(
         const unsigned char *payload, size_t payload_length,
         unsigned char *px, size_t px_length)
 {
-    if (tmpl->proto != Proto_TCP) {
-            LOG(LEVEL_ERROR, "tcp_create_by_template: need a Proto_TCP TemplatePacket.\n");
+    if (tmpl->proto != Tmpl_Type_TCP) {
+            LOG(LEVEL_ERROR, "tcp_create_by_template: need a Tmpl_Type_TCP TemplatePacket.\n");
             return 0;
     }
 
@@ -1295,12 +1295,12 @@ tcp_create_packet(
 {
     /*use different template for tcp with syn flags to apply some options*/
     if ((flags&TCP_FLAG_SYN)==TCP_FLAG_SYN) {
-        return tcp_create_by_template(&global_tmplset->pkts[Proto_TCP_SYN],
+        return tcp_create_by_template(&global_tmplset->pkts[Tmpl_Type_TCP_SYN],
             ip_them, port_them, ip_me, port_me,
             seqno, ackno, flags,
             payload, payload_length, px, px_length);
     } else {
-        return tcp_create_by_template(&global_tmplset->pkts[Proto_TCP],
+        return tcp_create_by_template(&global_tmplset->pkts[Tmpl_Type_TCP],
             ip_them, port_them, ip_me, port_me,
             seqno, ackno, flags,
             payload, payload_length, px, px_length);

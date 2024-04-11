@@ -348,8 +348,8 @@ rangelist_add_range(struct RangeList *targets, unsigned begin, unsigned end)
 void
 rangelist_add_range_tcp(struct RangeList *targets, unsigned begin, unsigned end) {
     rangelist_add_range(targets,
-                            Templ_TCP + begin,
-                            Templ_TCP + end);
+                            Range_TCP + begin,
+                            Range_TCP + end);
 }
 
 /** Use this when adding UDP ports, to avoid the comoplication of how
@@ -357,8 +357,8 @@ rangelist_add_range_tcp(struct RangeList *targets, unsigned begin, unsigned end)
 void
 rangelist_add_range_udp(struct RangeList *targets, unsigned begin, unsigned end) {
     rangelist_add_range(targets,
-                            Templ_UDP + begin,
-                            Templ_UDP + end);
+                            Range_UDP + begin,
+                            Range_UDP + end);
 }
 
 
@@ -1019,16 +1019,13 @@ rangelist_parse_ports(struct RangeList *ports, const char *string, unsigned *is_
                     proto_offset = 0;
                     break;
                 case 'U': case 'u':
-                    proto_offset = Templ_UDP;
+                    proto_offset = Range_UDP;
                     break;
                 case 'S': case 's':
-                    proto_offset = Templ_SCTP;
+                    proto_offset = Range_SCTP;
                     break;
                 case 'O': case 'o':
-                    proto_offset = Templ_Oproto_first;
-                    break;
-                case 'I': case 'i':
-                    proto_offset = Templ_ICMP_echo;
+                    proto_offset = Range_Oproto;
                     break;
                 default:
                     LOG(LEVEL_ERROR, "bad port character = %c\n", p[0]);
@@ -1057,7 +1054,7 @@ rangelist_parse_ports(struct RangeList *ports, const char *string, unsigned *is_
             p++;
             if (!isdigit(*p)) {
                 /* nmap style range spec meaning end with 65535 */
-                end = (proto_offset == Templ_Oproto_first) ? 0xFF : 0xFFFF;
+                end = MASSIP_PORT_RANGE;
             } else {
                 end = (unsigned)strtoul(p, &p, 0);
             }
@@ -1065,10 +1062,7 @@ rangelist_parse_ports(struct RangeList *ports, const char *string, unsigned *is_
             end = port;
 
         /* Check for out-of-range */
-        if (port > 0xFF && proto_offset == Templ_Oproto_first) {
-            *is_error = 2;
-            return p;
-        } else if (port > 0xFFFF || end > 0xFFFF || end < port) {
+        if (port > MASSIP_PORT_RANGE || end > MASSIP_PORT_RANGE || end < port) {
             *is_error = 2;
             return p;
         }

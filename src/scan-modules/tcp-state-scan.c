@@ -29,6 +29,14 @@ struct TCP_ConSet {
 static struct TCP_ConSet tcpcon_set;
 
 static uint64_t *tcb_count;
+/**
+ *For calc the conn index.
+ * NOTE: We use a trick of src-port to differenciate multi-probes to avoid
+ * mutual interference of connections.
+ * Be careful to the source port range and probe num. Source port range is 256 in
+ * default and can be set with flag `--source-port`.
+*/
+static unsigned src_port_start;
 
 struct TcpStateConf {
     unsigned conn_timeout;
@@ -78,13 +86,15 @@ static bool tcpstate_global_init(const struct Xconf *xconf)
         size_t entry_count = (size_t)(xconf->max_rate/5)/xconf->rx_handler_count;
         tcpcon_set.tcpcons[i] = tcpcon_create_table(
             entry_count>=10?entry_count:10,
-            xconf->stack, &global_tmplset->pkts[Proto_TCP],
-            &global_tmplset->pkts[Proto_TCP_SYN],
+            xconf->stack, &global_tmplset->pkts[Tmpl_Type_TCP],
+            &global_tmplset->pkts[Tmpl_Type_TCP_SYN],
             (struct Output *)(&xconf->output),
             tcpstate_conf.conn_timeout, xconf->seed);
     }
  
     tcb_count = &((struct Xconf *)xconf)->tcb_count;
+
+    src_port_start = xconf->nic.src.port.first;
 
     return true;
 }
@@ -97,11 +107,11 @@ tcpstate_transmit(
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
-    if (target->proto != Proto_TCP)
+    if (target->proto != Port_TCP)
         return false;
 
     unsigned cookie = get_cookie(target->ip_them, target->port_them,
-        target->ip_me, target->port_me, entropy);
+        target->ip_me, src_port_start+target->index, entropy);
 
     *len = tcp_create_packet(
         target->ip_them, target->port_them, target->ip_me, target->port_me,

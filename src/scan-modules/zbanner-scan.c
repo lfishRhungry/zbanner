@@ -97,7 +97,7 @@ static struct ConfigParam zbanner_parameters[] = {
  *For calc the conn index.
  * NOTE: We use a trick of src-port to differenciate multi-probes to avoid
  * mutual interference of connections.
- * Be careful to the source port range and probe num. Source port range is 16 in
+ * Be careful to the source port range and probe num. Source port range is 256 in
  * default and can be set with flag `--source-port`.
 */
 static unsigned src_port_start;
@@ -118,7 +118,7 @@ zbanner_transmit(
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
-    if (target->proto != Proto_TCP)
+    if (target->proto != Port_TCP)
         return false;
 
     /*`index` is unused now*/

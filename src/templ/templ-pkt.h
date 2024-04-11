@@ -8,16 +8,16 @@
 
 #include "../util-out/logger.h"
 
-enum TemplateProtocol {
-    Proto_TCP,
-    Proto_TCP_SYN,   /*convenient to set options for packets with syn flag*/
-    Proto_UDP,
-    Proto_SCTP,
-    Proto_ICMP_ECHO,
-    Proto_ICMP_TS,
-    Proto_ARP,
-    Proto_NDP_NS,
-    Proto_Count
+enum TemplateType {
+    Tmpl_Type_TCP,
+    Tmpl_Type_TCP_SYN,   /*convenient to set options for packets with syn flag*/
+    Tmpl_Type_UDP,
+    Tmpl_Type_SCTP,
+    Tmpl_Type_ICMP_ECHO,
+    Tmpl_Type_ICMP_TS,
+    Tmpl_Type_ARP,
+    Tmpl_Type_NDP_NS,
+    Tmpl_Type_Count
 };
 
 struct TemplatePacket {
@@ -41,14 +41,14 @@ struct TemplatePacket {
         unsigned checksum_tcp;
         unsigned ip_id;
     } ipv6;
-    enum TemplateProtocol proto;
+    enum TemplateType proto;
 };
 
 struct TemplateSet
 {
     unsigned count;
     uint64_t entropy;
-    struct TemplatePacket pkts[Proto_Count];
+    struct TemplatePacket pkts[Tmpl_Type_Count];
 };
 
 struct TemplateSet templ_copy(const struct TemplateSet *templset);

@@ -120,7 +120,7 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
     unsigned *r_ip_proto);
 
 /**
- * @return Proto_TCP or Proto_UDP or 0 for nothing.
+ * @return Tmpl_Type_TCP or Tmpl_Type_UDP or 0 for nothing.
 */
 unsigned
 get_icmp_port_unreachable_proto(const unsigned char *transport_px, unsigned length);

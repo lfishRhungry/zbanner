@@ -397,7 +397,7 @@ _template_init(
      */
     if (parsed.found == FOUND_ARP) {
         memcpy((char*)parsed._ip_src - 6, source_mac.addr, 6);
-        tmpl->proto = Proto_ARP;
+        tmpl->proto = Tmpl_Type_ARP;
         return;
     }
 
@@ -426,13 +426,13 @@ _template_init(
                 tmpl->ipv4.offset_tcp, tmpl->ipv4.length-tmpl->ipv4.offset_tcp);
             switch (px[tmpl->ipv4.offset_tcp]) {
                 case 8:
-                    tmpl->proto = Proto_ICMP_ECHO;
+                    tmpl->proto = Tmpl_Type_ICMP_ECHO;
                     break;
                 case 13:
-                    tmpl->proto = Proto_ICMP_TS;
+                    tmpl->proto = Tmpl_Type_ICMP_TS;
                     break;
                 case 135:
-                    tmpl->proto = Proto_NDP_NS;
+                    tmpl->proto = Tmpl_Type_NDP_NS;
                     break;
             }
             break;
@@ -443,20 +443,20 @@ _template_init(
         memset(px + tmpl->ipv4.offset_tcp + 16, 0, 2); /* checksum */
         tmpl->ipv4.checksum_tcp = checksum_tcp(tmpl->ipv4.packet, tmpl->ipv4.offset_ip,
             tmpl->ipv4.offset_tcp, tmpl->ipv4.length-tmpl->ipv4.offset_tcp);
-        tmpl->proto = Proto_TCP;
+        tmpl->proto = Tmpl_Type_TCP;
         break;
     case 17: /* UDP */
         memset(px + tmpl->ipv4.offset_tcp + 6, 0, 2); /* checksum */
         tmpl->ipv4.checksum_tcp = checksum_udp(tmpl->ipv4.packet,
             tmpl->ipv4.offset_ip, tmpl->ipv4.offset_tcp,
             tmpl->ipv4.length-tmpl->ipv4.offset_tcp);
-        tmpl->proto = Proto_UDP;
+        tmpl->proto = Tmpl_Type_UDP;
         break;
     case 132: /* SCTP */
         tmpl->ipv4.checksum_tcp = checksum_sctp(
                                     tmpl->ipv4.packet + tmpl->ipv4.offset_tcp,
                                     tmpl->ipv4.length - tmpl->ipv4.offset_tcp);
-        tmpl->proto = Proto_SCTP;
+        tmpl->proto = Tmpl_Type_SCTP;
         break;
     }
 
@@ -516,7 +516,7 @@ template_packet_init(
 
 
     /* [SCTP] */
-    _template_init(&templset->pkts[Proto_SCTP],
+    _template_init(&templset->pkts[Tmpl_Type_SCTP],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    default_sctp_template,
                    sizeof(default_sctp_template)-1,
@@ -524,7 +524,7 @@ template_packet_init(
     templset->count++;
 
     /* [TCP] */
-    _template_init(&templset->pkts[Proto_TCP],
+    _template_init(&templset->pkts[Tmpl_Type_TCP],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    default_tcp_template,
                    sizeof(default_tcp_template)-1,
@@ -536,7 +536,7 @@ template_packet_init(
     buf = MALLOC(length);
     memcpy(buf, default_tcp_syn_template, length);
     templ_tcp_apply_options(&buf, &length, templ_opts); /*set options for syn*/
-    _template_init(&templset->pkts[Proto_TCP_SYN],
+    _template_init(&templset->pkts[Tmpl_Type_TCP_SYN],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    buf,
                    length,
@@ -545,7 +545,7 @@ template_packet_init(
     free(buf);
 
     /* [UDP] */
-    _template_init(&templset->pkts[Proto_UDP],
+    _template_init(&templset->pkts[Tmpl_Type_UDP],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    default_udp_template,
                    sizeof(default_udp_template)-1,
@@ -553,7 +553,7 @@ template_packet_init(
     templset->count++;
 
     /* [ICMP ping] */
-    _template_init(&templset->pkts[Proto_ICMP_ECHO],
+    _template_init(&templset->pkts[Tmpl_Type_ICMP_ECHO],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    default_icmp_ping_template,
                    sizeof(default_icmp_ping_template)-1,
@@ -561,7 +561,7 @@ template_packet_init(
     templset->count++;
 
     /* [ICMP timestamp] */
-    _template_init(&templset->pkts[Proto_ICMP_TS],
+    _template_init(&templset->pkts[Tmpl_Type_ICMP_TS],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    default_icmp_timestamp_template,
                    sizeof(default_icmp_timestamp_template)-1,
@@ -569,7 +569,7 @@ template_packet_init(
     templset->count++;
 
     /* [ARP] */
-    _template_init( &templset->pkts[Proto_ARP],
+    _template_init( &templset->pkts[Tmpl_Type_ARP],
                     source_mac, router_mac_ipv4, router_mac_ipv6,
                     default_arp_template,
                     sizeof(default_arp_template)-1,
@@ -578,7 +578,7 @@ template_packet_init(
 
 
     /* [NDP NS] */
-    _template_init( &templset->pkts[Proto_NDP_NS],
+    _template_init( &templset->pkts[Tmpl_Type_NDP_NS],
                     source_mac, router_mac_ipv4, router_mac_ipv6,
                     default_ndp_ns_template,
                     sizeof(default_ndp_ns_template)-1,
@@ -676,29 +676,6 @@ template_packet_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan)
     tmpl_pkt->ipv4.offset_app += 4;
 }
 
-unsigned
-get_real_protocol_and_port(unsigned *port)
-{
-    if (*port < Templ_TCP + 65536)
-        return Proto_TCP;
-    else if (*port < Templ_UDP + 65536) {
-        *port &= 0xFFFF;
-        return Proto_UDP;
-    } else if (*port < Templ_SCTP + 65536) {
-        *port &= 0xFFFF;
-        return Proto_SCTP;
-    } else if (*port == Templ_ICMP_echo) {
-        return Proto_ICMP_ECHO;
-    } else if (*port == Templ_ICMP_timestamp) {
-        return Proto_ICMP_TS;
-    } else if (*port == Templ_ARP) {
-        return Proto_ARP;
-    } else {
-        return 0;
-    }
-
-}
-
 
 /***************************************************************************
  ***************************************************************************/
@@ -725,12 +702,12 @@ int template_selftest()
             0,  /* no entropy */
             &templ_opts
             );
-    failures += tmplset->pkts[Proto_TCP].proto  != Proto_TCP;
-    failures += tmplset->pkts[Proto_UDP].proto  != Proto_UDP;
-    //failures += tmplset->pkts[Proto_SCTP].proto != Proto_SCTP;
-    failures += tmplset->pkts[Proto_ICMP_ECHO].proto != Proto_ICMP_ECHO;
+    failures += tmplset->pkts[Tmpl_Type_TCP].proto  != Tmpl_Type_TCP;
+    failures += tmplset->pkts[Tmpl_Type_UDP].proto  != Tmpl_Type_UDP;
+    //failures += tmplset->pkts[Tmpl_Type_SCTP].proto != Tmpl_Type_SCTP;
+    failures += tmplset->pkts[Tmpl_Type_ICMP_ECHO].proto != Tmpl_Type_ICMP_ECHO;
     //failures += tmplset->pkts[Proto_ICMP_timestamp].proto != Proto_ICMP_timestamp;
-    //failures += tmplset->pkts[Proto_ARP].proto  != Proto_ARP;
+    //failures += tmplset->pkts[Tmpl_Type_ARP].proto  != Tmpl_Type_ARP;
 
     if (failures)
         LOG(LEVEL_ERROR, "template: failed\n");
