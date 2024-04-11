@@ -609,6 +609,19 @@ tlsstate_global_init(const struct Xconf *xconf)
             exit(1);
         }
     }
+
+    /**
+     * multi-probe Multi_Direct
+     * Well...ugly but works.
+     * */
+    if (tlsstate_conf.subprobe->multi_mode==Multi_Direct) {
+        enum MultiMode *mode = (enum MultiMode *)&TlsStateProbe.multi_mode;
+        unsigned *num        = (unsigned *)&TlsStateProbe.multi_num;
+        *mode = Multi_Direct;
+        *num  = tlsstate_conf.subprobe->multi_num;
+    }
+
+
     /*init for subprobe*/
     return tlsstate_conf.subprobe->global_init_cb(xconf);
 
@@ -849,7 +862,7 @@ error1:
     return;
 }
 
-static void
+static unsigned
 tlsstate_parse_response(
     struct DataPass *pass,
     struct ProbeState *state,
@@ -889,7 +902,7 @@ tlsstate_parse_response(
                 pass->payload = NULL;
                 pass->len     = 0;
                 pass->is_close   = 1;
-                return;
+                return 0;
             }
         }
 
@@ -996,7 +1009,7 @@ tlsstate_parse_response(
 
                 if (state->state != TLS_STATE_CLOSE) {
                     datapass_set_data(pass, tls_state->data, offset, 1);
-                    return;
+                    return 0;
                 }
 
             } else {  //cannot go on handshake
@@ -1019,7 +1032,7 @@ tlsstate_parse_response(
             if (!subpass.payload || !subpass.len) {
                 pass->is_close = subpass.is_close;
                 state->state = TLS_STATE_APP_RECEIVE_NEXT;
-                return;
+                return 0;
             }
 
             res = 1;
@@ -1072,7 +1085,7 @@ tlsstate_parse_response(
                     state->state  = TLS_STATE_APP_RECEIVE_NEXT;
                     datapass_set_data(pass, tls_state->data, offset, 1);
                     pass->is_close   = subpass.is_close;
-                    return;
+                    return 0;
                 }
             }
         } break;
@@ -1106,7 +1119,7 @@ tlsstate_parse_response(
                     if (!subpass.payload || !subpass.len) {
                         pass->is_close = subpass.is_close;
                         state->state = TLS_STATE_APP_RECEIVE_NEXT;
-                        return;
+                        return 0;
                     }
 
                     res = 1;
@@ -1156,7 +1169,7 @@ tlsstate_parse_response(
                             state->state  = TLS_STATE_APP_RECEIVE_NEXT;
                             datapass_set_data(pass, tls_state->data, offset, 1);
                             pass->is_close   = subpass.is_close;
-                            return;
+                            return 0;
                         }
                     }
                 } else {
@@ -1182,11 +1195,11 @@ tlsstate_parse_response(
             pass->is_close = 1;
             pass->len      = 0;
             pass->payload  = NULL;
-            return;
+            return 0;
         }
     }
 
-    return;
+    return 0;
 }
 
 struct ProbeModule TlsStateProbe = {
