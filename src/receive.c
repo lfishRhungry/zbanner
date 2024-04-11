@@ -176,7 +176,7 @@ void receive_thread(void *v) {
     if (xconf->is_offline) {
         while (!time_to_finish_rx)
             pixie_usleep(10000);
-        parms->done_receiving = 1;
+        parms->done_receiving = true;
         return;
     }
 
@@ -425,5 +425,5 @@ void receive_thread(void *v) {
         ft_close_handler(&ft_handler);
 
     /* Thread is about to exit */
-    parms->done_receiving = 1;
+    parms->done_receiving = true;
 }

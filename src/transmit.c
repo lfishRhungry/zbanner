@@ -281,7 +281,7 @@ infinite:
     if (xconf->is_fast_timeout)
         ft_close_handler(&ft_handler);
 
-    parms->done_transmitting = 1;
+    parms->done_transmitting = true;
     LOG(LEVEL_WARNING, "[+] exiting transmit thread #%u                    \n",
         parms->tx_index);
 }

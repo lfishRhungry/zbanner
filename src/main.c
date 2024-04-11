@@ -297,14 +297,14 @@ static int main_scan(struct Xconf *xconf) {
         parms->xconf                    = xconf;
         parms->tx_index                 = index;
         parms->my_index                 = xconf->resume.index;
-        parms->done_transmitting        = 0;
+        parms->done_transmitting        = false;
         parms->thread_handle_xmit       = 0;
     }
     /*
      * Prepare for rx thread
      */
     rx_thread->xconf                    = xconf;
-    rx_thread->done_receiving           = 0;
+    rx_thread->done_receiving           = false;
     rx_thread->thread_handle_recv       = 0;
     /** needed for --packet-trace option so that we know when we started
      * the scan

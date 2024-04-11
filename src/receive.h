@@ -12,7 +12,7 @@ struct RxThread {
      * unsafe */
     const struct Xconf *xconf;
 
-    unsigned done_receiving;
+    bool done_receiving;
 
     double pt_start;
 

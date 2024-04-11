@@ -20,7 +20,7 @@ struct TxThread {
 
     volatile uint64_t my_repeat;
 
-    unsigned done_transmitting;
+    bool done_transmitting;
 
     struct Throttler throttler[1];
 
