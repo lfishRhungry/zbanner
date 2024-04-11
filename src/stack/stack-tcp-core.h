@@ -46,6 +46,14 @@ void
 tcpcon_destroy_table(struct TCP_ConnectionTable *tcpcon);
 
 
+/**
+ * Handle timeout event  for now time.
+ * Logically, we need wall time here.
+ * 
+ * @param tcpcon tcp conn table
+ * @param secs now time secs
+ * @param usecs now time usecs
+*/
 void
 tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usecs);
 

@@ -21,7 +21,14 @@ struct Throttler
 };
 
 
-uint64_t throttler_next_batch(struct Throttler *throttler, uint64_t count);
-void throttler_start(struct Throttler *status, double max_rate);
+void 
+throttler_start(struct Throttler *status, double max_rate);
+
+/**
+ * @param throttler throttler that has been started
+ * @param count how many packets we have sent
+*/
+uint64_t
+throttler_next_batch(struct Throttler *throttler, uint64_t packet_count);
 
 #endif
