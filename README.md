@@ -1,9 +1,8 @@
+![state_poster](screenshots/poster.jpg)
 
-# XSTATE: God is Stateless
+# XTATE: God is Stateless
 
-Welcome to Xtate -- A modular all-stack network scanner running on a completely stateless mode for next-generation Internet-scale surveys!
-
-BONUS: Xtate has stateful ScanModule to support stateful scanning now.
+Welcome to Xtate -- A modular all-stack network scanner for next-generation internet surveys!
 
 ## Dependencies
 

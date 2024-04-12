@@ -5,6 +5,7 @@
  * Useful predefinition for xtate
 */
 #define XTATE_GOD                 "God is Stateless"
+#define XTATE_FOR                 "A modular all-stack network scanner for next-generation internet surveys!"
 #define XTATE_NAME                "xtate"
 #define XTATE_UPPER_NAME          "XTATE"
 #define XTATE_FIRST_UPPER_NAME    "Xtate"

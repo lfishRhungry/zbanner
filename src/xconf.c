@@ -3192,9 +3192,7 @@ void xconf_print_intro()
     printf("\n");
     printf("Welcome to "XTATE_FIRST_UPPER_NAME"!");
     printf("\n");
-    xprint("A modular all-stack network scanner running on a "
-        "completely stateless mode for next-generation Internet-scale surveys!",
-        2, 80);
+    xprint(XTATE_FOR, 2, 80);
     printf("\n");
     printf("\n");
     printf("  Author : "XTATE_AUTHOR_NAME"\n");
@@ -3226,9 +3224,7 @@ void xconf_print_usage()
     printf("\n");
     printf("Welcome to "XTATE_FIRST_UPPER_NAME"!");
     printf("\n");
-    xprint("A modular all-stack network scanner running on a "
-        "completely stateless mode for next-generation Internet-scale surveys!",
-        2, 80);
+    xprint(XTATE_FOR, 2, 80);
     printf("\n");
     printf("\n");
     printf("  Author : "XTATE_AUTHOR_NAME"\n");
@@ -3290,9 +3286,7 @@ void xconf_print_help()
     printf("\n");
     xprint("Welcome to "XTATE_FIRST_UPPER_NAME"!", 2, 80);
     printf("\n");
-    xprint("A modular all-stack network scanner running on "
-        "completely stateless mode for next-generation Internet-scale surveys!",
-        4, 80);
+    xprint(XTATE_FOR, 4, 80);
     printf("\n");
     printf("\n");
     printf("  Author : "XTATE_AUTHOR_NAME"\n");
@@ -3301,7 +3295,7 @@ void xconf_print_help()
     printf("\n");
     xprint("Here are detailed help text of all parameters of "
         XTATE_FIRST_UPPER_NAME". I hope these will help you a lot. If any "
-        "problem, please contact me on: \n    "XTATE_GITHUB, 2, 80);
+        "problem or advice, please contact me.\n", 2, 80);
     printf("\n");
     printf("\n");
     printf(XPRINT_DASH_LINE);
