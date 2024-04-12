@@ -1,6 +1,6 @@
 ![state_poster](screenshots/poster.jpg)
 
-# XTATE: God is Stateless
+# XTATE
 
 Welcome to Xtate -- A modular all-stack network scanner for next-generation internet surveys!
 
