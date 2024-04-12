@@ -284,11 +284,15 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
     
     switch (data_link_type) {
         case PCAP_DLT_NULL: /* Null VPN tunnel */
-            /* FIXME: insert platform dependent value here */
-            *(int*)buf = AF_INET6;
+            /**
+             * !FIXME: insert platform dependent value here
+             * */
+            /* Depending on operating system, these can have
+             different values: 24, 28, or 30 */
+            *(int*)buf = 24;
             break;
-    case PCAP_DLT_RAW: /* Raw (nothing before IP header) */
-        break;
+        case PCAP_DLT_RAW: /* Raw (nothing before IP header) */
+            break;
         case PCAP_DLT_ETHERNET: /* Ethernet */
             /* Reset the destination MAC address to be the IPv6 router
              * instead of the IPv4 router, which sometimes are different */
@@ -299,7 +303,6 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
             buf[13] = 0xdd;
             break;
     }
-    
 
     /* IP.version = 6 */
     buf[offset_ip + 0] = 0x60; 
@@ -468,7 +471,10 @@ _template_init(
      * for the right way, so we'll do it this way now.
      */
     if (data_link_type == PCAP_DLT_NULL /* Null VPN tunnel */) {
-        int linkproto = 2; /* AF_INET */
+        /**
+         * !FIXME: How to set this cross-platform
+        */
+        int linkproto = 2;
         tmpl->ipv4.length     -= tmpl->ipv4.offset_ip - sizeof(int);
         tmpl->ipv4.offset_tcp -= tmpl->ipv4.offset_ip - sizeof(int);
         tmpl->ipv4.offset_app -= tmpl->ipv4.offset_ip - sizeof(int);
@@ -575,7 +581,6 @@ template_packet_init(
                     sizeof(default_arp_template)-1,
                     data_link);
     templset->count++;
-
 
     /* [NDP NS] */
     _template_init( &templset->pkts[Tmpl_Type_NDP_NS],

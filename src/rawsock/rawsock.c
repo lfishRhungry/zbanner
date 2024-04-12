@@ -557,19 +557,14 @@ rawsock_init_adapter(const char *adapter_name,
     struct Adapter *adapter;
     char errbuf[PCAP_ERRBUF_SIZE] = "pcap";
 
-    /* BPF filter not supported on some platforms, so ignore this compiler
-     * warning when unused */
-    // UNUSEDPARM(bpf_filter);
-
     adapter = CALLOC(1, sizeof(*adapter));
     adapter->is_packet_trace = is_packet_trace;
     adapter->pt_start = 1.0 * pixie_gettime() / 1000000.0;
 
     adapter->is_vlan = is_vlan;
     adapter->vlan_id = vlan_id;
-    
+
     if (is_offline) {
-        adapter->link_type = 1;
         return adapter;
     }
 

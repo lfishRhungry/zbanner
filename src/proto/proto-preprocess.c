@@ -445,6 +445,7 @@ parse_linktype:
     switch (link_type) {
         case 0:
             offset += 4;
+            /*This can be different in LE or BE, too*/
             switch (BE_TO_U32(px)) {
                 case 0x02000000:
                 case 0x00000002:
@@ -467,7 +468,7 @@ parse_linktype:
                 case 6: goto parse_ipv6;
             }
             return false;
-        case 0x69:  goto parse_wifi;
+        case 105:   goto parse_wifi;
         case 113:   goto parse_linux_sll; /* LINKTYPE_LINUX_SLL DLT_LINUX_SLL */
         case 119:   goto parse_prism_header;
         case 127:   goto parse_radiotap_header;
