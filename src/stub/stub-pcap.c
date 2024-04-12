@@ -1,7 +1,9 @@
 /* Copyright (c) 2007 by Errata Security, All Rights Reserved
  * Copyright (c) 2017 by Robert David Graham
  * Programmer(s): Robert David Graham [rdg]
+ * Modified 2024: lfishRhungry
  */
+
 /*
     LIBPCAP INTERFACE
  
