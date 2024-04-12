@@ -12,8 +12,14 @@ extern struct ScanModule NdpNsScan; /*for internal x-ref*/
 
 static macaddress_t src_mac;
 
-bool ndpns_init(const struct Xconf *xconf)
+static bool
+ndpns_global_init(const struct Xconf *xconf)
 {
+    if (xconf->nic.link_type!=1) {
+        LOG(LEVEL_ERROR, "[-] NdpNsScan cannot work on non-ethernet link type.\n");
+        return false;
+    }
+
     src_mac = xconf->nic.source_mac;
     return true;
 }
@@ -138,7 +144,7 @@ struct ScanModule NdpNsScan = {
         "Example on Windows:\n"
         "      ping -6 <dst-IPv6-addr> -S <src-IPv6-addr>%<interface-num>",
 
-    .global_init_cb         = &ndpns_init,
+    .global_init_cb         = &ndpns_global_init,
     .transmit_cb            = &ndpns_transmit,
     .validate_cb            = &ndpns_validate,
     .handle_cb              = &ndpns_handle,

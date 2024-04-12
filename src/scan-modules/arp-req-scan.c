@@ -2,12 +2,24 @@
 #include <string.h>
 
 #include "scan-modules.h"
+#include "../xconf.h"
 #include "../massip/massip-cookie.h"
 #include "../templ/templ-arp.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
 
 extern struct ScanModule ArpReqScan; /*for internal x-ref*/
+
+static bool
+arpreq_global_init(const struct Xconf *xconf)
+{
+    if (xconf->nic.link_type!=1) {
+        LOG(LEVEL_ERROR, "[-] ArpReqScan cannot work on non-ethernet link type.\n");
+        return false;
+    }
+
+    return true;
+}
 
 static bool
 arpreq_transmit(
@@ -102,7 +114,7 @@ struct ScanModule ArpReqScan = {
         "or to set router mac like:\n"
         "    `--router-mac ff-ff-ff-ff-ff-ff`.",
 
-    .global_init_cb    = &scan_global_init_nothing,
+    .global_init_cb    = &arpreq_global_init,
     .transmit_cb       = &arpreq_transmit,
     .validate_cb       = &arpreq_validate,
     .handle_cb         = &arpreq_handle,
