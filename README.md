@@ -4,7 +4,7 @@
 
 Welcome to Xtate -- A modular all-stack network scanner for next-generation internet surveys!
 
-## Dependencies
+## Build
 
 Xtate could be build through CMake both on Linux and Windows because of cross-platform source code but with some dependencies:
 
@@ -23,9 +23,7 @@ sudo apt install libpcre2-dev libssl-dev liblua5.X-dev libpcap-dev
 
 And can also be installed in some ways on Windows.
 
-## Build
-
-With dependencies installed we can build xtate both release and debug version by executing `build.sh` on Linux or `build.bat` on Windows.
+With dependencies installed we can build xtate both release and debug version by CMake or executing `build.sh` on Linux.
 
 ## Intro
 
