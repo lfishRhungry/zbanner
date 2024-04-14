@@ -16,11 +16,11 @@
 #define LUA_PROBE_VAR_MULTINUM          "MultiNum"
 #define LUA_PROBE_VAR_ProbeDesc         "ProbeDesc"
 
-#define LUA_PROBE_FUNC_GLOBAL_INIT      "global_init"
-#define LUA_PROBE_FUNC_MAKE_PAYLOAD     "make_payload"
-#define LUA_PROBE_FUNC_GET_PAYLOAD_LEN  "get_payload_length"
-#define LUA_PROBE_FUNC_HANDLE_RESPONSE  "handle_response"
-#define LUA_PROBE_FUNC_CLOSE            "close"
+#define LUA_PROBE_FUNC_GLOBAL_INIT      "Global_init"
+#define LUA_PROBE_FUNC_MAKE_PAYLOAD     "Make_payload"
+#define LUA_PROBE_FUNC_GET_PAYLOAD_LEN  "Get_payload_length"
+#define LUA_PROBE_FUNC_HANDLE_RESPONSE  "Handle_response"
+#define LUA_PROBE_FUNC_CLOSE            "Close"
 
 /*for internal x-ref*/
 extern struct ProbeModule LuaTcpProbe;
@@ -58,7 +58,7 @@ static struct ConfigParam luatcp_parameters[] = {
     {0}
 };
 
-bool check_func_exist(const char *func)
+static bool check_func_exist(const char *func)
 {
     lua_getglobal(luatcp_conf.Ltx, func);
     if (lua_isfunction(luatcp_conf.Ltx, -1)==0) {
@@ -141,6 +141,8 @@ luatcp_global_init(const struct Xconf *xconf)
         return false;
     }
     LOG(LEVEL_HINT, "[LuaTcpProbe] "LUA_PROBE_VAR_PROBENAME": %s.\n", lua_tostring(luatcp_conf.Ltx, -1));
+    lua_pop(luatcp_conf.Ltx, 1);
+
     /*probe type*/
     lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_VAR_PROBETYPE);
     if (lua_isstring(luatcp_conf.Ltx, -1)==0) {
@@ -166,12 +168,6 @@ luatcp_global_init(const struct Xconf *xconf)
     /**
      * Check callback funcs
     */
-    if (!check_func_exist(LUA_PROBE_FUNC_GLOBAL_INIT)) {
-        lua_close(luatcp_conf.Ltx);
-        lua_close(luatcp_conf.Lrx);
-        free(luatcp_conf.script);
-        return false;
-    }
     if (!check_func_exist(LUA_PROBE_FUNC_MAKE_PAYLOAD)) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
@@ -190,11 +186,19 @@ luatcp_global_init(const struct Xconf *xconf)
         free(luatcp_conf.script);
         return false;
     }
-    if (!check_func_exist(LUA_PROBE_FUNC_CLOSE)) {
-        lua_close(luatcp_conf.Ltx);
-        lua_close(luatcp_conf.Lrx);
-        free(luatcp_conf.script);
-        return false;
+
+    lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_FUNC_GLOBAL_INIT);
+    if (lua_isfunction(luatcp_conf.Ltx, -1)) {
+        if (lua_pcall(luatcp_conf.Ltx, 0, 1, 0) != LUA_OK) {
+            LOG(LEVEL_ERROR, "[-]LuaTcpProbe: func `"LUA_PROBE_FUNC_GLOBAL_INIT"` error in %s: %s\n",
+                luatcp_conf.script, lua_tostring(luatcp_conf.Ltx, -1));
+        }
+        int ret = lua_toboolean(luatcp_conf.Ltx, -1);
+        if (ret<=0) {
+            LOG(LEVEL_ERROR, "[-]LuaTcpProbe: func `"LUA_PROBE_FUNC_GLOBAL_INIT"` failed in %s\n",
+                luatcp_conf.script);
+            return false;
+        }
     }
 
     return true;
@@ -202,6 +206,14 @@ luatcp_global_init(const struct Xconf *xconf)
 
 void luatcp_close()
 {
+    lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_FUNC_CLOSE);
+    if (lua_isfunction(luatcp_conf.Ltx, -1)) {
+        if (lua_pcall(luatcp_conf.Ltx, 0, 0, 0) != LUA_OK) {
+            LOG(LEVEL_ERROR, "[-]LuaTcpProbe: func `"LUA_PROBE_FUNC_CLOSE"` error in %s: %s\n",
+                luatcp_conf.script, lua_tostring(luatcp_conf.Ltx, -1));
+        }
+    }
+
     if (luatcp_conf.Ltx) {
         lua_close(luatcp_conf.Ltx);
     }
