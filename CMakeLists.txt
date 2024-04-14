@@ -10,7 +10,11 @@ endif ()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     set(exe_name "xtate_debug")
-else (${CMAKE_BUILD_TYPE} STREQUAL "Release")
+    if (UNIX)
+        set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 -rdynamic -ggdb -no-pie")
+        message("Debug mode:${CMAKE_C_FLAGS_DEBUG}")
+    endif ()
+else ()
     set(exe_name "xtate")
 endif ()
 
@@ -28,6 +32,10 @@ target_link_libraries(${exe_name} OpenSSL::Crypto OpenSSL::SSL)
 # set(PCRE2_USE_STATIC_LIBS ON)
 find_package(PCRE2 REQUIRED CONFIG COMPONENTS 8BIT)
 target_link_libraries(${exe_name} PCRE2::8BIT)
+
+# lua5.3
+find_package(Lua 5.3 REQUIRED)
+target_link_libraries(${exe_name} ${LUA_LIBRARIES})
 
 # math
 target_link_libraries(${exe_name} m)
