@@ -23,17 +23,21 @@ add_executable(${exe_name})
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS src/*.c src/*.h)
 target_sources(${exe_name} PUBLIC ${sources})
 
+# find_package(Threads REQUIRED)
+# target_link_libraries(${exe_name} Threads::Threads)
+
 # openssl
 # set(OPENSSL_USE_STATIC_LIBS TRUE)
 find_package(OpenSSL REQUIRED)
 target_link_libraries(${exe_name} OpenSSL::Crypto OpenSSL::SSL)
 
 # pcre2
-# set(PCRE2_USE_STATIC_LIBS ON)
+# set(PCRE2_USE_STATIC_LIBS TRUE)
 find_package(PCRE2 REQUIRED CONFIG COMPONENTS 8BIT)
 target_link_libraries(${exe_name} PCRE2::8BIT)
 
 # lua5.3
+# set(LUA_USE_STATIC_LIBS TRUE)
 find_package(Lua 5.3 REQUIRED)
 target_link_libraries(${exe_name} ${LUA_LIBRARIES})
 
