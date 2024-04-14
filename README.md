@@ -6,20 +6,22 @@ Welcome to Xtate -- A modular all-stack network scanner for next-generation inte
 
 ## Dependencies
 
-Xtate could be build with CMake both on Linux and Windows because of cross-platform source code but with some dependencies:
+Xtate could be build through CMake both on Linux and Windows because of cross-platform source code but with some dependencies:
 
-- OpenSSL>=3.0
-- PCRE2(8bits)
+- OpenSSL>=3.0 (dependent while compiling)
+- PCRE2 8bits (dependent while compiling)
+- lua>=5.3
+- libpcap(Linux)
+- winpcap/npcap(Windows)
+- PFRING driver(optional on Linux)
 
 They can be installed easily on Ubuntu22 by:
 
 ```
-sudo apt install libpcre2-dev libssl-dev
+sudo apt install libpcre2-dev libssl-dev liblua5.X-0 libpcap-dev
 ```
 
 And can also be installed in some ways on Windows.
-
-NOTE: Xtate will load lua and pcap(winpcap, npcap and libpcap) libraries dynamicly while running. These are tricks from Masscan. So we should install lua to use some modules written in lua. As for pcap, just close the README and stop scanning if not installed.
 
 ## Build
 
