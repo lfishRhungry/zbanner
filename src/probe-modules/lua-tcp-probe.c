@@ -4,10 +4,23 @@
 #include "../xconf.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
+#include "../util-misc/cross.h"
 
 #include <lua5.3/lua.h>
 #include <lua5.3/lualib.h>
 #include <lua5.3/lauxlib.h>
+
+#define LUA_PROBE_VAR_PROBENAME         "ProbeName"
+#define LUA_PROBE_VAR_PROBETYPE         "ProbeType"
+#define LUA_PROBE_VAR_MULTIMODE         "MultiMode"
+#define LUA_PROBE_VAR_MULTINUM          "MultiNum"
+#define LUA_PROBE_VAR_ProbeDesc         "ProbeDesc"
+
+#define LUA_PROBE_FUNC_GLOBAL_INIT      "global_init"
+#define LUA_PROBE_FUNC_MAKE_PAYLOAD     "make_payload"
+#define LUA_PROBE_FUNC_GET_PAYLOAD_LEN  "get_payload_length"
+#define LUA_PROBE_FUNC_HANDLE_RESPONSE  "handle_response"
+#define LUA_PROBE_FUNC_CLOSE            "close"
 
 /*for internal x-ref*/
 extern struct ProbeModule LuaTcpProbe;
@@ -44,6 +57,18 @@ static struct ConfigParam luatcp_parameters[] = {
 
     {0}
 };
+
+bool check_func_exist(const char *func)
+{
+    lua_getglobal(luatcp_conf.Ltx, func);
+    if (lua_isfunction(luatcp_conf.Ltx, -1)==0) {
+        LOG(LEVEL_ERROR, "[-]LuaTcpProbe: no `%s` func in script %s.\n",
+            func, luatcp_conf.script);
+        return false;
+    }
+    lua_pop(luatcp_conf.Ltx, 1);
+    return true;
+}
 
 static bool
 luatcp_global_init(const struct Xconf *xconf)
@@ -102,20 +127,70 @@ luatcp_global_init(const struct Xconf *xconf)
         return false;
     }
 
-    /*check probe type*/
-    lua_getglobal(luatcp_conf.Ltx, "probe_type");
+    /**
+     *Sync config
+    */
+    /*probe name*/
+    lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_VAR_PROBENAME);
     if (lua_isstring(luatcp_conf.Ltx, -1)==0) {
-        LOG(LEVEL_ERROR, "[-]LuaTcpProbe: no probe type setting in script %s.\n",
+        LOG(LEVEL_ERROR, "[-]LuaTcpProbe: no `"LUA_PROBE_VAR_PROBENAME"` setting in script %s.\n",
             luatcp_conf.script);
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
         free(luatcp_conf.script);
         return false;
     }
-
+    LOG(LEVEL_HINT, "[LuaTcpProbe] "LUA_PROBE_VAR_PROBENAME": %s.\n", lua_tostring(luatcp_conf.Ltx, -1));
+    /*probe type*/
+    lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_VAR_PROBETYPE);
+    if (lua_isstring(luatcp_conf.Ltx, -1)==0) {
+        LOG(LEVEL_ERROR, "[-]LuaTcpProbe: no `"LUA_PROBE_VAR_PROBETYPE"` setting in script %s.\n",
+            luatcp_conf.script);
+        lua_close(luatcp_conf.Ltx);
+        lua_close(luatcp_conf.Lrx);
+        free(luatcp_conf.script);
+        return false;
+    }
     if (strcmp(lua_tostring(luatcp_conf.Ltx, -1), "tcp")!=0) {
-        LOG(LEVEL_ERROR, "[-]LuaTcpProbe: need a tcp probe type instead of %s type in %s.\n",
+        LOG(LEVEL_ERROR, "[-]LuaTcpProbe: need a tcp `"LUA_PROBE_VAR_PROBETYPE"` instead of %s type in %s.\n",
             lua_tostring(luatcp_conf.Ltx, -1), luatcp_conf.script);
+        lua_close(luatcp_conf.Ltx);
+        lua_close(luatcp_conf.Lrx);
+        free(luatcp_conf.script);
+        return false;
+    }
+    /*multi mode*/
+    /*multi num*/
+    /*probe desc*/
+
+    /**
+     * Check callback funcs
+    */
+    if (!check_func_exist(LUA_PROBE_FUNC_GLOBAL_INIT)) {
+        lua_close(luatcp_conf.Ltx);
+        lua_close(luatcp_conf.Lrx);
+        free(luatcp_conf.script);
+        return false;
+    }
+    if (!check_func_exist(LUA_PROBE_FUNC_MAKE_PAYLOAD)) {
+        lua_close(luatcp_conf.Ltx);
+        lua_close(luatcp_conf.Lrx);
+        free(luatcp_conf.script);
+        return false;
+    }
+    if (!check_func_exist(LUA_PROBE_FUNC_GET_PAYLOAD_LEN)) {
+        lua_close(luatcp_conf.Ltx);
+        lua_close(luatcp_conf.Lrx);
+        free(luatcp_conf.script);
+        return false;
+    }
+    if (!check_func_exist(LUA_PROBE_FUNC_HANDLE_RESPONSE)) {
+        lua_close(luatcp_conf.Ltx);
+        lua_close(luatcp_conf.Lrx);
+        free(luatcp_conf.script);
+        return false;
+    }
+    if (!check_func_exist(LUA_PROBE_FUNC_CLOSE)) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
         free(luatcp_conf.script);
