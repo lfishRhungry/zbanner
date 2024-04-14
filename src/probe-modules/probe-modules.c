@@ -20,6 +20,7 @@ extern struct ProbeModule GetStateProbe;
 extern struct ProbeModule TlsStateProbe;
 extern struct ProbeModule NmapTcpProbe;
 extern struct ProbeModule DnsProbe;
+extern struct ProbeModule LuaTcpProbe;
 /*for lzr probes*/
 extern struct ProbeModule LzrProbe;
 extern struct ProbeModule LzrHttpProbe;
@@ -70,6 +71,7 @@ static struct ProbeModule *probe_modules_list[] = {
     &TlsStateProbe,
     &NmapTcpProbe,
     &DnsProbe,
+    &LuaTcpProbe,
     /*for lzr probes*/
     &LzrProbe,
     &LzrHttpProbe,
