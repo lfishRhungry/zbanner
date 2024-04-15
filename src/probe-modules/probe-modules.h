@@ -205,10 +205,10 @@ typedef void (*probe_modules_close)();
 
 /*a probe belongs to one type*/
 enum ProbeType {
-    ProbeType_NULL = 0,
-    ProbeType_TCP,
-    ProbeType_UDP,
-    ProbeType_STATE,
+    ProbeType_NULL     = 0,
+    ProbeType_TCP      = 0B1,
+    ProbeType_UDP      = 0B10,
+    ProbeType_STATE    = 0B100,
 };
 
 enum MultiMode {
@@ -250,6 +250,9 @@ struct ProbeModule *get_probe_module_by_name(const char *name);
 
 const char *
 get_probe_type_name(const enum ProbeType type);
+
+int
+probe_type_to_string(unsigned type, char *string, size_t str_len);
 
 void list_all_probe_modules();
 

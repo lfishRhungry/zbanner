@@ -140,6 +140,26 @@ get_probe_type_name(const enum ProbeType type)
     }
 }
 
+int probe_type_to_string(unsigned type, char *string, size_t str_len)
+{
+    int ret = 0;
+
+    ret = snprintf(string, str_len, "%s%s%s",
+            (type&ProbeType_TCP)?"tcp|":"",
+            (type&ProbeType_UDP)?"udp|":"",
+            (type&ProbeType_STATE)?"state|":""
+            );
+    if (string[0] == '\0') {
+        ret = snprintf(string, str_len, "no probe");
+    }
+    else {
+        string[strlen(string)-1] = '\0';
+        ret--;
+    }
+
+    return ret;
+}
+
 void list_all_probe_modules()
 {
     int len = (int)ARRAY_SIZE(probe_modules_list);
