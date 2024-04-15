@@ -27,8 +27,8 @@ extern struct ProbeModule LuaTcpProbe;
 
 struct LuaTcpConf {
     char *script;
-    lua_State *Ltx; /*for tx thread, init and close*/
-    lua_State *Lrx; /*for rx thread*/
+    lua_State *Ltx; /*for funcs: init, make_payload and close*/
+    lua_State *Lrx; /*for funcs: get_payload_length and handle_response*/
 };
 
 static struct LuaTcpConf luatcp_conf = {0};
@@ -119,8 +119,17 @@ luatcp_global_init(const struct Xconf *xconf)
     LOG(LEVEL_WARNING, "LuaTcpProbe running script: %s\n", luatcp_conf.script);
     x = lua_pcall(luatcp_conf.Ltx, 0, 0, 0);
     if (x != LUA_OK) {
-        LOG(LEVEL_ERROR, "[-]LuaTcpProbe: error running: %s: %s\n",
+        LOG(LEVEL_ERROR, "[-]LuaTcpProbe: error running %s: %s for Tx\n",
             luatcp_conf.script, lua_tostring(luatcp_conf.Ltx, -1));
+        lua_close(luatcp_conf.Ltx);
+        lua_close(luatcp_conf.Lrx);
+        free(luatcp_conf.script);
+        return false;
+    }
+    x = lua_pcall(luatcp_conf.Lrx, 0, 0, 0);
+    if (x != LUA_OK) {
+        LOG(LEVEL_ERROR, "[-]LuaTcpProbe: error running %s: %s for Rx\n",
+            luatcp_conf.script, lua_tostring(luatcp_conf.Lrx, -1));
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
         free(luatcp_conf.script);
@@ -140,7 +149,7 @@ luatcp_global_init(const struct Xconf *xconf)
         free(luatcp_conf.script);
         return false;
     }
-    LOG(LEVEL_HINT, "[LuaTcpProbe] "LUA_PROBE_VAR_PROBENAME": %s.\n", lua_tostring(luatcp_conf.Ltx, -1));
+    LOG(LEVEL_INFO, "[LuaTcpProbe] "LUA_PROBE_VAR_PROBENAME": %s.\n", lua_tostring(luatcp_conf.Ltx, -1));
     lua_pop(luatcp_conf.Ltx, 1);
 
     /*probe type*/
@@ -166,7 +175,7 @@ luatcp_global_init(const struct Xconf *xconf)
     /*probe desc*/
 
     /**
-     * Check callback funcs
+     * Check tcp type callback funcs
     */
     if (!check_func_exist(LUA_PROBE_FUNC_MAKE_PAYLOAD)) {
         lua_close(luatcp_conf.Ltx);
@@ -187,6 +196,9 @@ luatcp_global_init(const struct Xconf *xconf)
         return false;
     }
 
+    /**
+     * exec global init
+    */
     lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_FUNC_GLOBAL_INIT);
     if (lua_isfunction(luatcp_conf.Ltx, -1)) {
         if (lua_pcall(luatcp_conf.Ltx, 0, 1, 0) != LUA_OK) {
@@ -201,7 +213,142 @@ luatcp_global_init(const struct Xconf *xconf)
         }
     }
 
+    lua_settop(luatcp_conf.Ltx, 0);
     return true;
+}
+
+static size_t
+luatcp_make_payload(
+    struct ProbeTarget *target,
+    unsigned char *payload_buf)
+{
+    const char *ret;
+    size_t ret_len;
+
+    lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_FUNC_MAKE_PAYLOAD);
+    lua_pushstring(luatcp_conf.Ltx, ipaddress_fmt(target->ip_them).string);
+    lua_pushinteger(luatcp_conf.Ltx, target->port_them);
+    lua_pushstring(luatcp_conf.Ltx, ipaddress_fmt(target->ip_me).string);
+    lua_pushinteger(luatcp_conf.Ltx, target->port_me);
+    lua_pushinteger(luatcp_conf.Ltx, target->index);
+
+    if (lua_pcall(luatcp_conf.Ltx, 5, 1, 0) != LUA_OK) {
+        LOG(LEVEL_ERROR, "[-]LuaTcpProbe: func `"LUA_PROBE_FUNC_MAKE_PAYLOAD"` execute error in %s: %s\n",
+            luatcp_conf.script, lua_tostring(luatcp_conf.Ltx, -1));
+        lua_settop(luatcp_conf.Ltx, 0);
+        return 0;
+    }
+
+    if (lua_isstring(luatcp_conf.Ltx, -1)==0) {
+        LOG(LEVEL_ERROR, "LuaTcpProbe: func `"LUA_PROBE_FUNC_MAKE_PAYLOAD"` return error in script %s.\n",
+            luatcp_conf.script);
+        lua_settop(luatcp_conf.Ltx, 0);
+        return 0;
+    }
+
+    ret = lua_tolstring(luatcp_conf.Ltx, -1, &ret_len);
+    memcpy(payload_buf, ret, ret_len);
+    lua_settop(luatcp_conf.Ltx, 0);
+    return ret_len;
+}
+
+static size_t
+luatcp_get_payload_length(struct ProbeTarget *target)
+{
+    int ret_len;
+
+    lua_getglobal(luatcp_conf.Lrx, LUA_PROBE_FUNC_GET_PAYLOAD_LEN);
+    lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->ip_them).string);
+    lua_pushinteger(luatcp_conf.Lrx, target->port_them);
+    lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->ip_me).string);
+    lua_pushinteger(luatcp_conf.Lrx, target->port_me);
+    lua_pushinteger(luatcp_conf.Lrx, target->index);
+
+    if (lua_pcall(luatcp_conf.Lrx, 5, 1, 0) != LUA_OK) {
+        LOG(LEVEL_ERROR, "[-]LuaTcpProbe: func `"LUA_PROBE_FUNC_GET_PAYLOAD_LEN"` execute error in %s: %s\n",
+            luatcp_conf.script, lua_tostring(luatcp_conf.Lrx, -1));
+        lua_settop(luatcp_conf.Lrx, 0);
+        return 0;
+    }
+
+    if (lua_isinteger(luatcp_conf.Lrx, -1)==0) {
+        LOG(LEVEL_ERROR, "LuaTcpProbe: func `"LUA_PROBE_FUNC_GET_PAYLOAD_LEN"` return error in script %s.\n",
+            luatcp_conf.script);
+        lua_settop(luatcp_conf.Lrx, 0);
+        return 0;
+    }
+
+    ret_len = lua_tointeger(luatcp_conf.Lrx, -1);
+    lua_settop(luatcp_conf.Lrx, 0);
+
+    return ret_len;
+}
+
+static unsigned
+luatcp_handle_response(
+    struct ProbeTarget *target,
+    const unsigned char *px, unsigned sizeof_px,
+    struct OutputItem *item)
+{
+    const char *ret;
+    size_t ret_len;
+
+    lua_getglobal(luatcp_conf.Lrx, LUA_PROBE_FUNC_HANDLE_RESPONSE);
+    lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->ip_them).string);
+    lua_pushinteger(luatcp_conf.Lrx, target->port_them);
+    lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->ip_me).string);
+    lua_pushinteger(luatcp_conf.Lrx, target->port_me);
+    lua_pushinteger(luatcp_conf.Lrx, target->index);
+    lua_pushlstring(luatcp_conf.Lrx, px, sizeof_px);
+
+    if (lua_pcall(luatcp_conf.Lrx, 6, 4, 0) != LUA_OK) {
+        LOG(LEVEL_ERROR, "[-]LuaTcpProbe: func `"LUA_PROBE_FUNC_HANDLE_RESPONSE"` execute error in %s: %s\n",
+            luatcp_conf.script, lua_tostring(luatcp_conf.Lrx, -1));
+        lua_settop(luatcp_conf.Lrx, 0);
+        return 0;
+    }
+
+    if (lua_isboolean(luatcp_conf.Lrx, -4)==0) {
+        LOG(LEVEL_ERROR, "LuaTcpProbe: func `"LUA_PROBE_FUNC_HANDLE_RESPONSE"` return error in script %s.\n",
+            luatcp_conf.script);
+        lua_settop(luatcp_conf.Lrx, 0);
+        return 0;
+    }
+    if (lua_toboolean(luatcp_conf.Lrx, -4)>0) {
+        item->level = Output_SUCCESS;
+    } else {
+        item->level = Output_FAILURE;
+    }
+
+    if (lua_isstring(luatcp_conf.Lrx, -3)==0) {
+        LOG(LEVEL_ERROR, "LuaTcpProbe: func `"LUA_PROBE_FUNC_HANDLE_RESPONSE"` return error in script %s.\n",
+            luatcp_conf.script);
+        lua_settop(luatcp_conf.Lrx, 0);
+        return 0;
+    }
+    ret = lua_tolstring(luatcp_conf.Lrx, -3, &ret_len);
+    memcpy(item->classification, ret, ret_len);
+
+    if (lua_isstring(luatcp_conf.Lrx, -2)==0) {
+        LOG(LEVEL_ERROR, "LuaTcpProbe: func `"LUA_PROBE_FUNC_HANDLE_RESPONSE"` return error in script %s.\n",
+            luatcp_conf.script);
+        lua_settop(luatcp_conf.Lrx, 0);
+        return 0;
+    }
+    ret = lua_tolstring(luatcp_conf.Lrx, -2, &ret_len);
+    memcpy(item->reason, ret, ret_len);
+
+    if (lua_isstring(luatcp_conf.Lrx, -1)==0) {
+        LOG(LEVEL_ERROR, "LuaTcpProbe: func `"LUA_PROBE_FUNC_HANDLE_RESPONSE"` return error in script %s.\n",
+            luatcp_conf.script);
+        lua_settop(luatcp_conf.Lrx, 0);
+        return 0;
+    }
+    ret = lua_tolstring(luatcp_conf.Lrx, -1, &ret_len);
+    memcpy(item->report, ret, ret_len);
+
+    lua_settop(luatcp_conf.Lrx, 0);
+    return 0;
 }
 
 void luatcp_close()
@@ -234,9 +381,9 @@ struct ProbeModule LuaTcpProbe = {
     .desc =
         "LuaTcpProbe could set a valid Lua script as tcp type probe.",
     .global_init_cb                        = &luatcp_global_init,
-    .make_payload_cb                       = &probe_make_no_payload,
-    .get_payload_length_cb                 = &probe_no_payload_length,
+    .make_payload_cb                       = &luatcp_make_payload,
+    .get_payload_length_cb                 = &luatcp_get_payload_length,
     .validate_response_cb                  = NULL,
-    .handle_response_cb                    = &probe_just_report_banner,
-    .close_cb                              = &probe_close_nothing,
+    .handle_response_cb                    = &luatcp_handle_response,
+    .close_cb                              = &luatcp_close,
 };
