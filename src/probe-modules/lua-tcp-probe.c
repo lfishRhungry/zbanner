@@ -6,9 +6,9 @@
 #include "../util-data/safe-string.h"
 #include "../util-misc/cross.h"
 
-#include <lua5.3/lua.h>
-#include <lua5.3/lualib.h>
-#include <lua5.3/lauxlib.h>
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
 
 #define LUA_PROBE_VAR_PROBENAME         "ProbeName"
 #define LUA_PROBE_VAR_PROBETYPE         "ProbeType"

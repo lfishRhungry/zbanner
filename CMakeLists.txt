@@ -38,8 +38,11 @@ target_link_libraries(${exe_name} PCRE2::8BIT)
 
 # lua5.3
 # set(LUA_USE_STATIC_LIBS TRUE)
-find_package(Lua 5.3 REQUIRED)
+find_package(Lua REQUIRED)
+target_include_directories(${exe_name} PRIVATE ${LUA_INCLUDE_DIR})
 target_link_libraries(${exe_name} ${LUA_LIBRARIES})
 
 # math
-target_link_libraries(${exe_name} m)
+if (UNIX)
+    target_link_libraries(${exe_name} m)
+endif ()

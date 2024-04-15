@@ -10,7 +10,7 @@ Xtate could be build through CMake both on Linux and Windows because of cross-pl
 
 - OpenSSL>=3.0 (dependent while compiling)
 - PCRE2 8bits (dependent while compiling)
-- lua5.3
+- lua>=5.3
 - libpcap(Linux)
 - winpcap/npcap(Windows)
 - PFRING driver(optional on Linux)

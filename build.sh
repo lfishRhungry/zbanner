@@ -1,17 +1,18 @@
+rm -rf ./build/*
+rm -rf ./build/*
 cd ./build
-rm -rf ./*
 
-mkdir release
-mkdir debug
+if [[ "$1" = "debug" ]];then
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+else
+cmake ..
+fi
 
-cd ./debug
-cmake -DCMAKE_BUILD_TYPE=Debug ../..
 make -j8
+cd ..
 
-cd ../release
-cmake ../..
-make -j8
-
-cd ../..
-cp ./build/release/xtate ./bin/
-cp ./build/debug/xtate_debug ./bin/
+if [[ "$1" = "debug" ]];then
+cp ./build/xtate_debug ./bin/
+else
+cp ./build/xtate ./bin/
+fi
