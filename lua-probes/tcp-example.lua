@@ -1,7 +1,7 @@
 --Configs
 ProbeName = "tcp-example"
-ProbeType = "tcp"
-MultiMode = nil
+ProbeType = "tcp"         -- tcp, udp or state
+MultiMode = "null"        -- null, direct, if_open, after_handle or dynamic_next
 MultiNum  = 1
 ProbeDesc = [[
     "This is an example lua script for tcp type probe. It sends http simple get "
@@ -43,13 +43,14 @@ end
 -- @int port_me port of us
 -- @int index index of expected hello probe
 -- @response string reponsed data (0 if it is timeout)
+-- @return integer positive for starting after_handle or index +1 to set next probe in dynamic_next
 -- @return boolean result if a successful response
 -- @return string classification of result
 -- @return string reason of classification
 -- @return string report of response (empty ret value if no report)
 function Handle_response(ip_them, port_them, ip_me, port_me, index, response)
     if #response==0 then
-        return false, "no service", "timeout", ""
+        return 0, false, "no service", "timeout", ""
     end
 
     if not string.find(response, "HTTPS") and
@@ -57,8 +58,8 @@ function Handle_response(ip_them, port_them, ip_me, port_me, index, response)
         or string.find(response, "html")
         or string.find(response, "HTML")
         or string.find(response, "<h1>")) then
-        return true, "identified", "matched", "http service"
+        return 0, true, "identified", "matched", "http service"
     end
 
-    return false, "unknown", "not matched", "not http"
+    return 0, false, "unknown", "not matched", "not http"
 end
