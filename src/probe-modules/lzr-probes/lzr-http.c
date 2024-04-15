@@ -82,11 +82,7 @@ struct ProbeModule LzrHttpProbe = {
     .multi_num  = 1,
     .params     = NULL,
     .desc =
-        "LuaTcpProbe let a specifies proper lua script as a tcp type probe. It "
-        "will save a lot of time for us to write simple probes or test ideas. "
-        "The example script(tcp-example.lua) could be found at lua-probes dir.\n"
-        "NOTE: This is a experimental function and does not support more than "
-        "one tx thread or rx-handle thread.",
+        "LzrHttp Probe sends an HTTP GET request and identifies HTTP service.",
     .global_init_cb                          = &probe_global_init_nothing,
     .make_payload_cb                         = &lzr_http_make_payload,
     .get_payload_length_cb                   = &lzr_http_get_payload_length,

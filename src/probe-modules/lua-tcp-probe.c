@@ -195,6 +195,12 @@ luatcp_global_init(const struct Xconf *xconf)
         free(luatcp_conf.script);
         return false;
     }
+    if (!check_func_exist(LUA_PROBE_FUNC_CLOSE)) {
+        lua_close(luatcp_conf.Ltx);
+        lua_close(luatcp_conf.Lrx);
+        free(luatcp_conf.script);
+        return false;
+    }
 
     /**
      * exec global init
@@ -354,11 +360,9 @@ luatcp_handle_response(
 void luatcp_close()
 {
     lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_FUNC_CLOSE);
-    if (lua_isfunction(luatcp_conf.Ltx, -1)) {
-        if (lua_pcall(luatcp_conf.Ltx, 0, 0, 0) != LUA_OK) {
-            LOG(LEVEL_ERROR, "[-]LuaTcpProbe: func `"LUA_PROBE_FUNC_CLOSE"` error in %s: %s\n",
-                luatcp_conf.script, lua_tostring(luatcp_conf.Ltx, -1));
-        }
+    if (lua_pcall(luatcp_conf.Ltx, 0, 0, 0) != LUA_OK) {
+        LOG(LEVEL_ERROR, "[-]LuaTcpProbe: func `"LUA_PROBE_FUNC_CLOSE"` error in %s: %s\n",
+            luatcp_conf.script, lua_tostring(luatcp_conf.Ltx, -1));
     }
 
     if (luatcp_conf.Ltx) {
@@ -379,7 +383,25 @@ struct ProbeModule LuaTcpProbe = {
     .multi_num  = 1,
     .params     = luatcp_parameters,
     .desc =
-        "LuaTcpProbe could set a valid Lua script as tcp type probe.",
+        "LuaTcpProbe let a specifies proper lua script as a tcp type probe. It "
+        "will save a lot of time for us to write simple probes or test ideas. "
+        "The example script(tcp-example.lua) could be found at lua-probes dir."
+        " In a nutshell, we should set some global variables as probe config "
+        "include:\n"
+        "`"LUA_PROBE_VAR_PROBENAME"`\n"
+        "`"LUA_PROBE_VAR_PROBETYPE"`\n"
+        "`"LUA_PROBE_VAR_MULTIMODE"`\n"
+        "`"LUA_PROBE_VAR_MULTINUM"`\n"
+        "`"LUA_PROBE_VAR_ProbeDesc"`\n"
+        "And set some global functions for calling back include:\n"
+        "`"LUA_PROBE_FUNC_GLOBAL_INIT"`\n"
+        "`"LUA_PROBE_FUNC_MAKE_PAYLOAD"`\n"
+        "`"LUA_PROBE_FUNC_GET_PAYLOAD_LEN"`\n"
+        "`"LUA_PROBE_FUNC_HANDLE_RESPONSE"`\n"
+        "`"LUA_PROBE_FUNC_CLOSE"`\n"
+        "NOTE: This is an experimental function and does not support more than "
+        "one tx thread or rx-handle thread. Even though, we had 2 essential thread"
+        " so be careful to thread-safe problems.",
     .global_init_cb                        = &luatcp_global_init,
     .make_payload_cb                       = &luatcp_make_payload,
     .get_payload_length_cb                 = &luatcp_get_payload_length,
