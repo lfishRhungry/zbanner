@@ -14,7 +14,7 @@
 #define LUA_PROBE_VAR_PROBETYPE         "ProbeType"
 #define LUA_PROBE_VAR_MULTIMODE         "MultiMode"
 #define LUA_PROBE_VAR_MULTINUM          "MultiNum"
-#define LUA_PROBE_VAR_ProbeDesc         "ProbeDesc"
+#define LUA_PROBE_VAR_PROBEDESC         "ProbeDesc"
 
 #define LUA_PROBE_FUNC_GLOBAL_INIT      "Global_init"
 #define LUA_PROBE_FUNC_MAKE_PAYLOAD     "Make_payload"
@@ -392,7 +392,7 @@ struct ProbeModule LuaTcpProbe = {
         "`"LUA_PROBE_VAR_PROBETYPE"`\n"
         "`"LUA_PROBE_VAR_MULTIMODE"`\n"
         "`"LUA_PROBE_VAR_MULTINUM"`\n"
-        "`"LUA_PROBE_VAR_ProbeDesc"`\n"
+        "`"LUA_PROBE_VAR_PROBEDESC"`\n"
         "And set some global functions for calling back include:\n"
         "`"LUA_PROBE_FUNC_GLOBAL_INIT"`\n"
         "`"LUA_PROBE_FUNC_MAKE_PAYLOAD"`\n"
