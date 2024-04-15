@@ -8,14 +8,9 @@ ProbeDesc = [[
     "request and identifies http service."
 ]]
 
+
 local hello_string = "GET / HTTP/1.0\r\n\r\n"
 
---- Called from initing
--- @return boolean if initing successed
-function Global_init()
-    print("============Start testing lua script probe...")
-    return true
-end
 
 --- To make hello data
 -- @string ip_them ip of target
@@ -28,6 +23,7 @@ function Make_payload(ip_them, port_them, ip_me, port_me, index)
     return hello_string
 end
 
+
 --- To get hello data length
 -- @string ip_them ip of target
 -- @int port_them port of target
@@ -38,6 +34,7 @@ end
 function Get_payload_length(ip_them, port_them, ip_me, port_me, index)
     return #hello_string
 end
+
 
 --- To handle reponse data
 -- @string ip_them ip of target
@@ -55,8 +52,6 @@ function Handle_response(ip_them, port_them, ip_me, port_me, index, response)
         return false, "no service", "timeout", ""
     end
 
-    local successed = false
-
     if not string.find(response, "HTTPS") and
         (string.find(response, "HTTP")
         or string.find(response, "html")
@@ -66,8 +61,4 @@ function Handle_response(ip_them, port_them, ip_me, port_me, index, response)
     end
 
     return false, "unknown", "not matched", "not http"
-end
-
-function Close()
-    print("============Finish lua script probe test...")
 end

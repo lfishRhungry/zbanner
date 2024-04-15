@@ -16,19 +16,36 @@
 #define LUA_PROBE_VAR_MULTINUM              "MultiNum"
 #define LUA_PROBE_VAR_PROBEDESC             "ProbeDesc"
 
-#define LUA_PROBE_FUNC_GLOBAL_INIT          "Global_init"
 #define LUA_PROBE_FUNC_MAKE_PAYLOAD         "Make_payload"
 #define LUA_PROBE_FUNC_GET_PAYLOAD_LEN      "Get_payload_length"
 #define LUA_PROBE_FUNC_HANDLE_RESPONSE      "Handle_response"
-#define LUA_PROBE_FUNC_CLOSE                "Close"
 
 /*for internal x-ref*/
 extern struct ProbeModule LuaTcpProbe;
 
 struct LuaTcpConf {
     char *script;
-    lua_State *Ltx; /*funcs: init, make_payload and close*/
-    lua_State *Lrx; /*funcs: get_payload_length and handle_response*/
+    /**
+     * Until now, I have no better way to solve multi-thread problem across Lua
+     * and Xtate. So it's good to design a good workflow for Lua probe.
+     * 
+     * For tcp type probe, there're 3 funcs correspond to 3 essential threads at
+     * least:
+     * Tx: make_payload
+     * Rx: get_payload_length
+     * Rx(handler): handler_response
+     * 
+     * So I brutely limit the multi-thread of Xtate and create 3 Lua VM for those
+     * callback funcs. It's effective and causes that 3 funcs should be thread-
+     * seperate.
+     * 
+     * Well, we can't ask lua probe do everything like a real probe module, right?
+     * 
+     * TODO: Maybe one thread for one Lua VM to support full multi-thread of Xtate.
+    */
+    lua_State *Ltx;            /*for make_payload*/
+    lua_State *Lrx;            /*for get_payload_length*/
+    lua_State *Lhx;            /*for handle_response*/
 };
 
 static struct LuaTcpConf luatcp_conf = {0};
@@ -58,6 +75,9 @@ static struct ConfigParam luatcp_parameters[] = {
     {0}
 };
 
+/**
+ * Simply check funcs in Ltx
+*/
 static bool check_func_exist(const char *func)
 {
     lua_getglobal(luatcp_conf.Ltx, func);
@@ -89,8 +109,10 @@ luatcp_global_init(const struct Xconf *xconf)
     /* Create Lua VM */
     luatcp_conf.Ltx = luaL_newstate();
     luatcp_conf.Lrx = luaL_newstate();
+    luatcp_conf.Lhx = luaL_newstate();
     luaL_openlibs(luatcp_conf.Ltx);
     luaL_openlibs(luatcp_conf.Lrx);
+    luaL_openlibs(luatcp_conf.Lhx);
 
     /* Load the script. This will verify the syntax.*/
     x = luaL_loadfile(luatcp_conf.Ltx, luatcp_conf.script);
@@ -99,15 +121,27 @@ luatcp_global_init(const struct Xconf *xconf)
             luatcp_conf.script, lua_tostring(luatcp_conf.Ltx, -1));
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
+        lua_close(luatcp_conf.Lhx);
         free(luatcp_conf.script);
         return false;
     }
     x = luaL_loadfile(luatcp_conf.Lrx, luatcp_conf.script);
     if (x != LUA_OK) {
         LOG(LEVEL_ERROR, "FAIL: %s error loading: %s: %s for Rx\n", "SCRIPTING:",
-            luatcp_conf.script, lua_tostring(luatcp_conf.Ltx, -1));
+            luatcp_conf.script, lua_tostring(luatcp_conf.Lrx, -1));
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
+        lua_close(luatcp_conf.Lhx);
+        free(luatcp_conf.script);
+        return false;
+    }
+    x = luaL_loadfile(luatcp_conf.Lhx, luatcp_conf.script);
+    if (x != LUA_OK) {
+        LOG(LEVEL_ERROR, "FAIL: %s error loading: %s: %s for Handler\n", "SCRIPTING:",
+            luatcp_conf.script, lua_tostring(luatcp_conf.Lhx, -1));
+        lua_close(luatcp_conf.Ltx);
+        lua_close(luatcp_conf.Lrx);
+        lua_close(luatcp_conf.Lhx);
         free(luatcp_conf.script);
         return false;
     }
@@ -123,6 +157,7 @@ luatcp_global_init(const struct Xconf *xconf)
             luatcp_conf.script, lua_tostring(luatcp_conf.Ltx, -1));
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
+        lua_close(luatcp_conf.Lhx);
         free(luatcp_conf.script);
         return false;
     }
@@ -132,6 +167,17 @@ luatcp_global_init(const struct Xconf *xconf)
             luatcp_conf.script, lua_tostring(luatcp_conf.Lrx, -1));
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
+        lua_close(luatcp_conf.Lhx);
+        free(luatcp_conf.script);
+        return false;
+    }
+    x = lua_pcall(luatcp_conf.Lhx, 0, 0, 0);
+    if (x != LUA_OK) {
+        LOG(LEVEL_ERROR, "[-]LuaTcpProbe: error running %s: %s for Handler\n",
+            luatcp_conf.script, lua_tostring(luatcp_conf.Lhx, -1));
+        lua_close(luatcp_conf.Ltx);
+        lua_close(luatcp_conf.Lrx);
+        lua_close(luatcp_conf.Lhx);
         free(luatcp_conf.script);
         return false;
     }
@@ -146,6 +192,7 @@ luatcp_global_init(const struct Xconf *xconf)
             luatcp_conf.script);
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
+        lua_close(luatcp_conf.Lhx);
         free(luatcp_conf.script);
         return false;
     }
@@ -159,6 +206,7 @@ luatcp_global_init(const struct Xconf *xconf)
             luatcp_conf.script);
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
+        lua_close(luatcp_conf.Lhx);
         free(luatcp_conf.script);
         return false;
     }
@@ -167,6 +215,7 @@ luatcp_global_init(const struct Xconf *xconf)
             lua_tostring(luatcp_conf.Ltx, -1), luatcp_conf.script);
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
+        lua_close(luatcp_conf.Lhx);
         free(luatcp_conf.script);
         return false;
     }
@@ -181,43 +230,23 @@ luatcp_global_init(const struct Xconf *xconf)
     if (!check_func_exist(LUA_PROBE_FUNC_MAKE_PAYLOAD)) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
+        lua_close(luatcp_conf.Lhx);
         free(luatcp_conf.script);
         return false;
     }
     if (!check_func_exist(LUA_PROBE_FUNC_GET_PAYLOAD_LEN)) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
+        lua_close(luatcp_conf.Lhx);
         free(luatcp_conf.script);
         return false;
     }
     if (!check_func_exist(LUA_PROBE_FUNC_HANDLE_RESPONSE)) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
+        lua_close(luatcp_conf.Lhx);
         free(luatcp_conf.script);
         return false;
-    }
-    if (!check_func_exist(LUA_PROBE_FUNC_CLOSE)) {
-        lua_close(luatcp_conf.Ltx);
-        lua_close(luatcp_conf.Lrx);
-        free(luatcp_conf.script);
-        return false;
-    }
-
-    /**
-     * exec global init
-    */
-    lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_FUNC_GLOBAL_INIT);
-    if (lua_isfunction(luatcp_conf.Ltx, -1)) {
-        if (lua_pcall(luatcp_conf.Ltx, 0, 1, 0) != LUA_OK) {
-            LOG(LEVEL_ERROR, "[-]LuaTcpProbe: func `"LUA_PROBE_FUNC_GLOBAL_INIT"` error in %s: %s\n",
-                luatcp_conf.script, lua_tostring(luatcp_conf.Ltx, -1));
-        }
-        int ret = lua_toboolean(luatcp_conf.Ltx, -1);
-        if (ret<=0) {
-            LOG(LEVEL_ERROR, "[-]LuaTcpProbe: func `"LUA_PROBE_FUNC_GLOBAL_INIT"` failed in %s\n",
-                luatcp_conf.script);
-            return false;
-        }
     }
 
     lua_settop(luatcp_conf.Ltx, 0);
@@ -264,29 +293,29 @@ luatcp_get_payload_length(struct ProbeTarget *target)
 {
     int ret_len;
 
-    lua_getglobal(luatcp_conf.Lrx, LUA_PROBE_FUNC_GET_PAYLOAD_LEN);
-    lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->ip_them).string);
-    lua_pushinteger(luatcp_conf.Lrx, target->port_them);
-    lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->ip_me).string);
-    lua_pushinteger(luatcp_conf.Lrx, target->port_me);
-    lua_pushinteger(luatcp_conf.Lrx, target->index);
+    lua_getglobal(luatcp_conf.Lhx, LUA_PROBE_FUNC_GET_PAYLOAD_LEN);
+    lua_pushstring(luatcp_conf.Lhx, ipaddress_fmt(target->ip_them).string);
+    lua_pushinteger(luatcp_conf.Lhx, target->port_them);
+    lua_pushstring(luatcp_conf.Lhx, ipaddress_fmt(target->ip_me).string);
+    lua_pushinteger(luatcp_conf.Lhx, target->port_me);
+    lua_pushinteger(luatcp_conf.Lhx, target->index);
 
-    if (lua_pcall(luatcp_conf.Lrx, 5, 1, 0) != LUA_OK) {
+    if (lua_pcall(luatcp_conf.Lhx, 5, 1, 0) != LUA_OK) {
         LOG(LEVEL_ERROR, "[-]LuaTcpProbe: func `"LUA_PROBE_FUNC_GET_PAYLOAD_LEN"` execute error in %s: %s\n",
-            luatcp_conf.script, lua_tostring(luatcp_conf.Lrx, -1));
-        lua_settop(luatcp_conf.Lrx, 0);
+            luatcp_conf.script, lua_tostring(luatcp_conf.Lhx, -1));
+        lua_settop(luatcp_conf.Lhx, 0);
         return 0;
     }
 
-    if (lua_isinteger(luatcp_conf.Lrx, -1)==0) {
+    if (lua_isinteger(luatcp_conf.Lhx, -1)==0) {
         LOG(LEVEL_ERROR, "LuaTcpProbe: func `"LUA_PROBE_FUNC_GET_PAYLOAD_LEN"` return error in script %s.\n",
             luatcp_conf.script);
-        lua_settop(luatcp_conf.Lrx, 0);
+        lua_settop(luatcp_conf.Lhx, 0);
         return 0;
     }
 
-    ret_len = lua_tointeger(luatcp_conf.Lrx, -1);
-    lua_settop(luatcp_conf.Lrx, 0);
+    ret_len = lua_tointeger(luatcp_conf.Lhx, -1);
+    lua_settop(luatcp_conf.Lhx, 0);
 
     return ret_len;
 }
@@ -360,17 +389,14 @@ luatcp_handle_response(
 
 void luatcp_close()
 {
-    lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_FUNC_CLOSE);
-    if (lua_pcall(luatcp_conf.Ltx, 0, 0, 0) != LUA_OK) {
-        LOG(LEVEL_ERROR, "[-]LuaTcpProbe: func `"LUA_PROBE_FUNC_CLOSE"` error in %s: %s\n",
-            luatcp_conf.script, lua_tostring(luatcp_conf.Ltx, -1));
-    }
-
     if (luatcp_conf.Ltx) {
         lua_close(luatcp_conf.Ltx);
     }
     if (luatcp_conf.Lrx) {
         lua_close(luatcp_conf.Lrx);
+    }
+    if (luatcp_conf.Lhx) {
+        lua_close(luatcp_conf.Lhx);
     }
     if (luatcp_conf.script)
         free(luatcp_conf.script);
@@ -394,16 +420,14 @@ struct ProbeModule LuaTcpProbe = {
         "`"LUA_PROBE_VAR_MULTIMODE"`\n"
         "`"LUA_PROBE_VAR_MULTINUM"`\n"
         "`"LUA_PROBE_VAR_PROBEDESC"`\n"
-        "And set some global functions for calling back include:\n"
-        "`"LUA_PROBE_FUNC_GLOBAL_INIT"`\n"
+        "And implement 3 global functions for calling back include:\n"
         "`"LUA_PROBE_FUNC_MAKE_PAYLOAD"`\n"
         "`"LUA_PROBE_FUNC_GET_PAYLOAD_LEN"`\n"
         "`"LUA_PROBE_FUNC_HANDLE_RESPONSE"`\n"
-        "`"LUA_PROBE_FUNC_CLOSE"`\n"
         "NOTE: This is an experimental function and does not support more than "
-        "one tx thread or rx-handle thread well. It is better to implement "
-        "functions seperately or partial seperately. However, we had 2 essential"
-        " thread so be careful to thread-safe problems.",
+        "one tx thread or rx-handle thread well. Even through, it is mandatory "
+        "to implement functions thread-seperately. However, we had 3 essential"
+        " threads at least and should be careful to thread-safe problems.",
     .global_init_cb                        = &luatcp_global_init,
     .make_payload_cb                       = &luatcp_make_payload,
     .get_payload_length_cb                 = &luatcp_get_payload_length,
