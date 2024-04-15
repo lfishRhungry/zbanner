@@ -237,7 +237,7 @@ probe_just_report_banner(
         normalize_string(px, sizeof_px, item->report, OUTPUT_RPT_LEN);
     } else {
         item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no serving");
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no service");
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
     }
 
