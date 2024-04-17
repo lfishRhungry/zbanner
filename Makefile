@@ -31,10 +31,8 @@ INSTALL_DATA := -pDm755
 ifneq (, $(findstring linux, $(SYS)))
 ifneq (, $(findstring musl, $(SYS)))
 LIBS =  -lssl -lcrypto -lpcre2-8 -llua5.3
-DBLIBS = -lssl -lcrypto -lpcre2-8 -llua5.3 -g -rdynamic -no-pie
 else
 LIBS = -lm -lrt -ldl -lpthread -lssl -lcrypto -lpcre2-8 -llua5.3
-DBLIBS = -lm -lrt -ldl -lpthread -lssl -lcrypto -lpcre2-8 -llua5.3 -g -rdynamic -no-pie
 endif
 INCLUDES = -I/usr/include/lua5.3
 FLAGS2 = 
@@ -55,7 +53,6 @@ endif
 # OpenBSD
 ifneq (, $(findstring openbsd, $(SYS)))
 LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8 -llua5.3
-DBLIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8 -llua5.3 -g -rdynamic -no-pie
 INCLUDES = -I. -I/usr/include/lua5.3
 FLAGS2 = 
 endif
@@ -63,7 +60,6 @@ endif
 # FreeBSD
 ifneq (, $(findstring freebsd, $(SYS)))
 LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8 -llua5.3
-DBLIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8 -llua5.3 -g -rdynamic -no-pie
 INCLUDES = -I. -I/usr/include/lua5.3
 FLAGS2 =
 endif
@@ -71,14 +67,14 @@ endif
 # NetBSD
 ifneq (, $(findstring netbsd, $(SYS)))
 LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8 -llua5.3
-DBLIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8 -llua5.3 -g -rdynamic -no-pie
 INCLUDES = -I. -I/usr/include/lua5.3
 FLAGS2 =
 endif
 
 
 DEFINES = 
-CFLAGS = -g -ggdb $(FLAGS2) $(INCLUDES) $(DEFINES) -Wall -O2
+bin/xtate: CFLAGS = $(FLAGS2) $(INCLUDES) $(DEFINES) -Wall -O3
+bin/xtate_debug: CFLAGS = -g -ggdb $(FLAGS2) $(INCLUDES) $(DEFINES) -Wall -O2 -rdynamic -no-pie
 .SUFFIXES: .c .cpp
 
 all: bin/xtate
@@ -234,7 +230,7 @@ bin/xtate: $(OBJ)
 	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS) $(LIBS)
 
 bin/xtate_debug: $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS) $(DBLIBS)
+	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS) $(LIBS)
 
 ifneq ($(OS),Windows_NT)
 debug: bin/xtate_debug
