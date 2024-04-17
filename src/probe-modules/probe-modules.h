@@ -293,4 +293,8 @@ void probe_conn_init_nothing(struct ProbeState *state, struct ProbeTarget *targe
 
 void probe_conn_close_nothing(struct ProbeState *state, struct ProbeTarget *target);
 
+bool probe_all_valid(
+    struct ProbeTarget *target,
+    const unsigned char *px, unsigned sizeof_px);
+
 #endif

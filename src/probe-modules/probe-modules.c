@@ -21,6 +21,7 @@ extern struct ProbeModule TlsStateProbe;
 extern struct ProbeModule NmapTcpProbe;
 extern struct ProbeModule DnsProbe;
 extern struct ProbeModule LuaTcpProbe;
+extern struct ProbeModule SnmpProbe;
 /*for lzr probes*/
 extern struct ProbeModule LzrProbe;
 extern struct ProbeModule LzrHttpProbe;
@@ -72,6 +73,7 @@ static struct ProbeModule *probe_modules_list[] = {
     &NmapTcpProbe,
     &DnsProbe,
     &LuaTcpProbe,
+    &SnmpProbe,
     /*for lzr probes*/
     &LzrProbe,
     &LzrHttpProbe,
@@ -277,4 +279,12 @@ void probe_conn_init_nothing(struct ProbeState *state, struct ProbeTarget *targe
 void probe_conn_close_nothing(struct ProbeState *state, struct ProbeTarget *target)
 {
     return;
+}
+
+
+bool probe_all_valid(
+    struct ProbeTarget *target,
+    const unsigned char *px, unsigned sizeof_px)
+{
+    return true;
 }

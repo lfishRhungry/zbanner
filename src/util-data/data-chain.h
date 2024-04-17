@@ -32,7 +32,7 @@ struct DataChain {
  * memory, such sets it to zero.
  */
 void
-datachain_init(struct DataChain *banout);
+datachain_init(struct DataChain *dach);
 
 /**
  * Release any memory. If the list contains only one short
@@ -40,60 +40,60 @@ datachain_init(struct DataChain *banout);
  * freed.
  */
 void
-datachain_release(struct DataChain *banout);
+datachain_release(struct DataChain *dach);
 
 /**
  * Just appends a newline '\n' character. In the future, this may do something
  * more interesting, which is why it's a separate function.
  */
 void
-datachain_newline(struct DataChain *banout, unsigned proto);
+datachain_newline(struct DataChain *dach, unsigned proto);
 
 /**
  * End the data of the current.
  */
 void
-datachain_end(struct DataChain *banout, unsigned proto);
+datachain_end(struct DataChain *dach, unsigned proto);
 
 /**
  * Append text onto the data. If this exceeds the buffer, then the
  * buffer will be expanded.
  */
 void
-datachain_append(struct DataChain *banout, unsigned proto, const void *px, size_t length);
+datachain_append(struct DataChain *dach, unsigned proto, const void *px, size_t length);
 #define AUTO_LEN ((size_t)~0)
 
 void
-datachain_printf(struct DataChain *banout, unsigned proto, const char *fmt, ...);
+datachain_printf(struct DataChain *dach, unsigned proto, const char *fmt, ...);
 
 /**
  * Append a single character to the data.
  */
 void
-datachain_append_char(struct DataChain *banout, unsigned proto, int c);
+datachain_append_char(struct DataChain *dach, unsigned proto, int c);
 
 /**
  * Append an integer, with hex digits, with the specified number of
  * digits
  */
 void
-datachain_append_hexint(struct DataChain *banout, unsigned proto, unsigned long long number, int digits);
+datachain_append_hexint(struct DataChain *dach, unsigned proto, unsigned long long number, int digits);
 
 void
-datachain_append_unicode(struct DataChain *banout, unsigned proto, unsigned c);
+datachain_append_unicode(struct DataChain *dach, unsigned proto, unsigned c);
 
 /**
  * Select a specific string (of the specified type).
  */
 const unsigned char *
-datachain_string(const struct DataChain *banout, unsigned proto);
+datachain_string(const struct DataChain *dach, unsigned proto);
 
 /**
  * Get the length of a specific string of the specified type.
  * This is the matching function to datachain_string.
  */
 unsigned
-datachain_string_length(const struct DataChain *banout, unsigned proto);
+datachain_string_length(const struct DataChain *dach, unsigned proto);
 
 
 /**
@@ -110,7 +110,7 @@ datachain_init_base64(struct DataChainB64 *base64);
  * fragment
  */
 void
-datachain_append_base64(struct DataChain *banout, unsigned proto,
+datachain_append_base64(struct DataChain *dach, unsigned proto,
     const void *px, size_t length,
     struct DataChainB64 *base64);
 
@@ -119,7 +119,7 @@ datachain_append_base64(struct DataChain *banout, unsigned proto,
  * end if necessary
  */
 void
-datachain_finalize_base64(struct DataChain *banout, unsigned proto,
+datachain_finalize_base64(struct DataChain *dach, unsigned proto,
                        struct DataChainB64 *base64);
 
 /**
@@ -128,11 +128,11 @@ datachain_finalize_base64(struct DataChain *banout, unsigned proto,
  * expected data.
  */
 unsigned
-datachain_is_equal(const struct DataChain *banout, unsigned proto,
+datachain_is_equal(const struct DataChain *dach, unsigned proto,
                 const char *string);
 
 unsigned
-datachain_is_contains(const struct DataChain *banout, unsigned proto,
+datachain_is_contains(const struct DataChain *dach, unsigned proto,
                 const char *string);
 
 /**
