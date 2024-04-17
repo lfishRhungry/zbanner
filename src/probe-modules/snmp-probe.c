@@ -1,4 +1,5 @@
 #include "probe-modules.h"
+#include "../xconf.h"
 #include "../smack/smack.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
@@ -514,6 +515,11 @@ convert_oid(unsigned char *dst, size_t sizeof_dst, const char *src)
 static bool
 snmp_global_init(const struct Xconf *xconf)
 {
+    if (xconf->rx_handler_count>1) {
+        LOG(LEVEL_ERROR, "[-]SnmpProbe does not support multi rx-handler threads.\n");
+        return false;
+    }
+
     unsigned i;
 
     /* We use an Aho-Corasick pattern matcher for this. Not necessarily
