@@ -101,7 +101,7 @@ void transmit_thread(void *v)
 
     throttler_start(throttler, xconf->max_rate / xconf->tx_thread_count);
 
-infinite:
+infinite:;
 
     /* Create the shuffler/randomizer. This creates the 'range' variable,
      * which is simply the number of IP addresses times the number of

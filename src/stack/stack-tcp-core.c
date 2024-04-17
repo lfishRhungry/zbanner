@@ -1339,7 +1339,7 @@ again:
 
         case APP_STATE_RECV_NEXT:
             switch (event) {
-                case APP_WHAT_RECV_PAYLOAD:
+                case APP_WHAT_RECV_PAYLOAD: {
 
                     struct ProbeTarget target = {
                         .ip_them   = socket->tcb->ip_them,
@@ -1408,6 +1408,7 @@ again:
                     }
 
                     break;
+                }
                 case APP_WHAT_RECV_TIMEOUT:
                     break;
                 case APP_WHAT_SENDING:
@@ -1425,7 +1426,7 @@ again:
             }
             break;
 
-        case APP_STATE_SEND_FIRST:
+        case APP_STATE_SEND_FIRST: {
 
             struct ProbeTarget target = {
                 .ip_them   = socket->tcb->ip_them,
@@ -1451,6 +1452,7 @@ again:
 
             tcpapi_change_app_state(socket, APP_STATE_SEND_NEXT);
             break;
+        }
         case APP_STATE_SEND_NEXT:
             switch (event) {
                 case APP_WHAT_SEND_SENT:

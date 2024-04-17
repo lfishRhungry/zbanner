@@ -1091,7 +1091,7 @@ tlsstate_parse_response(
         } break;
 
         //!Pass data to subprobe and send data again and maybe close.
-        case TLS_STATE_APP_RECEIVE_NEXT:
+        case TLS_STATE_APP_RECEIVE_NEXT: {
             size_t offset = 0;
             while (true) {
                 /*We have to read all data in the SSL buffer.*/
@@ -1190,6 +1190,7 @@ tlsstate_parse_response(
                 }
             }
             break;
+        }
 
         case TLS_STATE_CLOSE:
             pass->is_close = 1;
