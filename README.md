@@ -18,12 +18,14 @@ Xtate could be build through CMake both on Linux and Windows because of cross-pl
 They can be installed easily on Ubuntu22 by:
 
 ```
-sudo apt install libpcre2-dev libssl-dev liblua5.X-dev libpcap-dev
+sudo apt install libpcre2-dev libpcre3-dev libssl-dev liblua5.X-dev libpcap-dev
 ```
 
 And can also be installed in some ways on Windows.
 
 With dependencies installed we can build xtate both release and debug version by CMake or executing `build.sh` on Linux.
+
+For old version of Ubuntu(maybe 20), use `Makefile` is a good idea.(I'm failed to be a CMake professor...)
 
 ## Intro
 
