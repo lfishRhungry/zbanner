@@ -4,8 +4,8 @@ ProbeType = "udp"         -- tcp, udp or state
 MultiMode = "null"        -- null, direct, if_open, after_handle or dynamic_next
 MultiNum  = 1
 ProbeDesc = [[
-    "This is an example lua script for udp type probe. It sends http simple get "
-    "request and identifies http service."
+    "This is an example lua script for udp type probe. It sends a TXT version "
+    "bind request and identifies dns service."
 ]]
 
 
@@ -79,13 +79,13 @@ function Handle_response(ip_them, port_them, ip_me, port_me, index, response)
         return 0, false, "no service", "timeout", ""
     end
 
-    if not string.find(response, "HTTPS") and
-        (string.find(response, "HTTP")
-        or string.find(response, "html")
-        or string.find(response, "HTML")
-        or string.find(response, "<h1>")) then
-        return 0, true, "identified", "matched", "http service"
-    end
+    -- if not string.find(response, "HTTPS") and
+    --     (string.find(response, "HTTP")
+    --     or string.find(response, "html")
+    --     or string.find(response, "HTML")
+    --     or string.find(response, "<h1>")) then
+    --     return 0, true, "identified", "matched", "http service"
+    -- end
 
-    return 0, false, "unknown", "not matched", "not http"
+    return 0, true, "identified", "matched", "dns"
 end

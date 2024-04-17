@@ -25,7 +25,7 @@
 #define LUA_PROBE_MULTI_DYNAMICNEXT         "dynamic_next"
 
 #define LUA_PROBE_FUNC_MAKE_PAYLOAD         "Make_payload"
-#define LUA_PROBE_FUNC_VALIDATE_RESPONSE    "Validate_reponse"
+#define LUA_PROBE_FUNC_VALIDATE_RESPONSE    "Validate_response"
 #define LUA_PROBE_FUNC_HANDLE_RESPONSE      "Handle_response"
 
 /*for internal x-ref*/
@@ -117,8 +117,8 @@ static bool sync_probe_config()
             luaudp_conf.script);
         return false;
     }
-    if (strcmp(lua_tostring(luaudp_conf.Ltx, -1), "tcp")!=0) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": need a tcp `"LUA_PROBE_VAR_PROBETYPE"` instead of %s type in %s.\n",
+    if (strcmp(lua_tostring(luaudp_conf.Ltx, -1), "udp")!=0) {
+        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": need a udp `"LUA_PROBE_VAR_PROBETYPE"` instead of %s type in %s.\n",
             lua_tostring(luaudp_conf.Ltx, -1), luaudp_conf.script);
         return false;
     }
@@ -356,8 +356,8 @@ luaudp_validate_response(struct ProbeTarget *target,
     lua_pushstring(luaudp_conf.Lhx, ipaddress_fmt(target->ip_me).string);
     lua_pushinteger(luaudp_conf.Lhx, target->port_me);
     lua_pushinteger(luaudp_conf.Lhx, target->index);
-    lua_pushinteger(luaudp_conf.Ltx, target->cookie);
-    lua_pushlstring(luaudp_conf.Lrx, (const char *)px, sizeof_px);
+    lua_pushinteger(luaudp_conf.Lhx, target->cookie);
+    lua_pushlstring(luaudp_conf.Lhx, (const char *)px, sizeof_px);
 
     if (lua_pcall(luaudp_conf.Lhx, 7, 1, 0) != LUA_OK) {
         LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_VALIDATE_RESPONSE"` execute error in %s: %s\n",
