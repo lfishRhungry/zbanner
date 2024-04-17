@@ -233,9 +233,10 @@ struct ProbeModule
     probe_modules_global_init                   global_init_cb;
     /*for stateless payload*/
     probe_modules_make_payload                  make_payload_cb;
+    /*for stateless validate*/
     probe_modules_get_payload_length            get_payload_length_cb;
-    /*for stateless response*/
     probe_modules_validate_response             validate_response_cb;
+    /*for stateless response*/
     probe_modules_handle_response               handle_response_cb;
     /*for stateful process*/
     probe_modules_conn_init                     conn_init_cb;
