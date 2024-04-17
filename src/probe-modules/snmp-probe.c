@@ -13,8 +13,8 @@ extern struct ProbeModule SnmpProbe;
 static const unsigned char default_snmp_req[]=
 "\x30" "\x39"
 "\x02\x01\x00"                                     /* version */
-"\x04\x06" "public"                                /* community = public */
-"\xa0" "\x2c"                                      /* type = GET */
+"\x04\x06public"                                   /* community = public */
+"\xa0\x2c"                                         /* type = GET */
 "\x02\x04\x00\x00\x00\x00"                         /* transaction id = ???? */
 "\x02\x01\x00"                                     /* error = 0 */
 "\x02\x01\x00"                                     /* error index = 0 */
