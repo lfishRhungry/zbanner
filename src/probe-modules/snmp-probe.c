@@ -567,6 +567,8 @@ snmp_handle_response(
     struct OutputItem *item)
 {
     if (px==0) {
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
         return 0;
     }
 
