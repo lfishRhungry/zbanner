@@ -110,6 +110,7 @@ dns_make_payload(
     struct ProbeTarget *target,
     unsigned char *payload_buf)
 {
+    memset(payload_buf, 0, PROBE_PAYLOAD_MAX_LEN);
     int res_len = dns_question_create(payload_buf,
         dns_conf.req_name, dns_conf.req_type, target->cookie & 0xFFFF);
 
