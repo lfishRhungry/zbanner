@@ -595,8 +595,9 @@ struct ProbeModule SnmpProbe = {
     .params     = NULL,
     .desc =
         "SnmpProbe sends an snmp(v1) request with community `public` and expects"
-        " sysName and sysDesc of target.\n"
-        "NOTE: The default snmp(over udp) port is 161.",
+        " sysName and sysDesc of target. The default snmp(over udp) port is 161.\n"
+        "NOTE: SnmpProbe is used to obtain the most basic info on snmp instead of"
+        " identifying the snmp protocol.",
     .global_init_cb                 = &snmp_global_init,
     .make_payload_cb                = &snmp_make_payload,
     .get_payload_length_cb          = NULL,
