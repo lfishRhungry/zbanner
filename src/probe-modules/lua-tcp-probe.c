@@ -188,7 +188,6 @@ luatcp_global_init(const struct Xconf *xconf)
         return false;
     }
 
-    int version;
     int x;
 
     /* Create Lua VM */
@@ -390,7 +389,7 @@ luatcp_handle_response(
     lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->ip_me).string);
     lua_pushinteger(luatcp_conf.Lrx, target->port_me);
     lua_pushinteger(luatcp_conf.Lrx, target->index);
-    lua_pushlstring(luatcp_conf.Lrx, px, sizeof_px);
+    lua_pushlstring(luatcp_conf.Lrx, (const char *)px, sizeof_px);
 
     if (lua_pcall(luatcp_conf.Lrx, 6, 5, 0) != LUA_OK) {
         LOG(LEVEL_ERROR, "[-]LuaTcpProbe: func `"LUA_PROBE_FUNC_HANDLE_RESPONSE"` execute error in %s: %s\n",
