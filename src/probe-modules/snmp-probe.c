@@ -6,13 +6,13 @@
 #include "../util-data/data-convert.h"
 #include "../util-data/data-chain.h"
 
-#define PROTO_SNMP 0
+#define SNMP_DACH_TYPE 0
 
 /*for internal x-ref*/
 extern struct ProbeModule SnmpProbe;
 
 static const unsigned char default_snmp_req[]=
-"\x30" "\x39"
+"\x30\x39"
 "\x02\x01\x00"                                     /* version */
 "\x04\x06public"                                   /* community = public */
 "\xa0\x2c"                                         /* type = GET */
@@ -182,7 +182,7 @@ next_id(const unsigned char *oid, unsigned *offset, uint64_t oid_length)
 /****************************************************************************
  ****************************************************************************/
 static void
-snmp_banner_oid(const unsigned char *oid, size_t oid_length, struct DataChain *dc)
+snmp_banner_oid(const unsigned char *oid, size_t oid_length, struct DataChain *dach)
 {
     unsigned i;
     size_t id;
@@ -208,7 +208,7 @@ snmp_banner_oid(const unsigned char *oid, size_t oid_length, struct DataChain *d
     /* Do the string */
     if (found_id != SMACK_NOT_FOUND) {
         const char *str = mib[found_id].name;
-        datachain_append(dc, PROTO_SNMP, str, strlen(str));
+        datachain_append(dach, SNMP_DACH_TYPE, str, strlen(str));
     }
 
     /* Do remaining OIDs */
@@ -220,7 +220,7 @@ snmp_banner_oid(const unsigned char *oid, size_t oid_length, struct DataChain *d
             break;
 
         snprintf(foo, sizeof(foo), ".%" PRIu64 "", x);
-        datachain_append(dc, PROTO_SNMP, foo, strlen(foo));
+        datachain_append(dach, SNMP_DACH_TYPE, foo, strlen(foo));
     }
 }
 
@@ -230,17 +230,17 @@ static void
 snmp_banner(const unsigned char *oid, size_t oid_length,
             uint64_t var_tag,
             const unsigned char *var, size_t var_length,
-            struct DataChain *dc)
+            struct DataChain *dach)
 {
     size_t i;
 
-    datachain_append_char(dc, PROTO_SNMP, '[');
+    datachain_append_char(dach, SNMP_DACH_TYPE, '[');
 
     /* print the OID */
-    snmp_banner_oid(oid, oid_length, dc);
+    snmp_banner_oid(oid, oid_length, dach);
 
-    datachain_append_char(dc, PROTO_SNMP, ':');
-    datachain_append_char(dc, PROTO_SNMP, ' ');
+    datachain_append_char(dach, SNMP_DACH_TYPE, ':');
+    datachain_append_char(dach, SNMP_DACH_TYPE, ' ');
 
     switch (var_tag) {
     case 2:
@@ -250,21 +250,21 @@ snmp_banner(const unsigned char *oid, size_t oid_length,
             for (i=0; i<var_length; i++)
                 result = result<<8 | var[i];
             snprintf(foo, sizeof(foo), "%" PRIu64 "", result);
-            datachain_append(dc, PROTO_SNMP, foo, strlen(foo));
+            datachain_append(dach, SNMP_DACH_TYPE, foo, strlen(foo));
         }
         break;
     case 6:
         snmp_banner_oid(var, var_length,
-                        dc);
+                        dach);
         break;
     case 4:
     default:
         /* TODO: this needs to be normalized */
-        datachain_append(dc, PROTO_SNMP, var, var_length);
+        datachain_append(dach, SNMP_DACH_TYPE, var, var_length);
         break;
     }
 
-    datachain_append_char(dc, PROTO_SNMP, ']');
+    datachain_append_char(dach, SNMP_DACH_TYPE, ']');
 }
 
 /****************************************************************************
@@ -274,7 +274,7 @@ snmp_banner(const unsigned char *oid, size_t oid_length,
  * newer SNMP.
  ****************************************************************************/
 static void
-snmp_parse(const unsigned char *px, uint64_t length, struct DataChain *dc,
+snmp_parse(const unsigned char *px, uint64_t length, struct DataChain *dach,
     unsigned *request_id)
 {
     uint64_t offset=0;
@@ -366,7 +366,7 @@ snmp_parse(const unsigned char *px, uint64_t length, struct DataChain *dc,
             if (var_tag == 5)
                 continue; /* null */
 
-            snmp_banner(oid, (size_t)oid_length, var_tag, var, (size_t)var_length, dc);
+            snmp_banner(oid, (size_t)oid_length, var_tag, var, (size_t)var_length, dach);
         }
     }
 }
@@ -573,11 +573,11 @@ snmp_handle_response(
     }
 
     unsigned request_id = 0;
-    struct DataChain dc[1];
+    struct DataChain dach[1];
 
     /* Parse the SNMP packet */
-    datachain_init(dc);
-    snmp_parse(px, sizeof_px, dc, &request_id);
+    datachain_init(dach);
+    snmp_parse(px, sizeof_px, dach, &request_id);
 
     if ((target->cookie&0x7FFFffff) != request_id) {
         item->no_output = 1;
@@ -587,10 +587,10 @@ snmp_handle_response(
     item->level = Output_SUCCESS;
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "snmp");
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
-    normalize_string(datachain_string(dc, PROTO_SNMP),
-        datachain_string_length(dc, PROTO_SNMP), item->report, OUTPUT_RPT_LEN);
+    normalize_string(datachain_string(dach, SNMP_DACH_TYPE),
+        datachain_string_length(dach, SNMP_DACH_TYPE), item->report, OUTPUT_RPT_LEN);
 
-    datachain_release(dc);
+    datachain_release(dach);
 
     return 0;
 }
