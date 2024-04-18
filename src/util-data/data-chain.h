@@ -10,14 +10,10 @@ struct DataChainB64
 };
 
 /**
- * A structure for tracking one or more data memories from a target.
- * There can be multiple type of information from a target, such
- * as SSL certificates, or HTTP headers separate from HTML
- * content, and so on. This will be exploited more in the future
- * for extracting multiple bits of information from the same
- * port, but giving them different labels. This will also be
- * used for doing optional stuff, such as grabbing the entire
- * default webpage when connecting to port 80.
+ * A structure for tracking one or more type of data memories
+ * comes from BannerOutput of masscan. I stripped it because
+ * we have need data tracking not only for banner but other
+ * situation.
  */
 struct DataChain {
     struct DataChain    *next;
