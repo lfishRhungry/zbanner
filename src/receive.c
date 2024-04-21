@@ -181,7 +181,7 @@ void receive_thread(void *v) {
     }
 
     /* Lock threads to the CPUs one by one.
-     * Tx threads follow  the only one Rx thread.
+     * Tx threads follow the only one Rx thread.
      */
     if (pixie_cpu_get_count() > 1) {
         pixie_cpu_set_affinity(0);

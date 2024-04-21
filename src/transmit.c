@@ -108,8 +108,8 @@ infinite:;
      * ports.
      * IPv6: low index will pick addresses from the IPv6 ranges, and high
      * indexes will pick addresses from the IPv4 ranges. */
-    uint64_t range = count_ipv4 * rangelist_count(&xconf->targets.ports) +
-                     count_ipv6 * rangelist_count(&xconf->targets.ports);
+    uint64_t range      = count_ipv4 * rangelist_count(&xconf->targets.ports) +
+                          count_ipv6 * rangelist_count(&xconf->targets.ports);
     uint64_t range_ipv6 = count_ipv6 * rangelist_count(&xconf->targets.ports);
 
     struct BlackRock blackrock;
