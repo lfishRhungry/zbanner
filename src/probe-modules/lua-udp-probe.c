@@ -10,7 +10,8 @@
 #include "lualib.h"
 #include "lauxlib.h"
 
-#define LUA_PROBE_NAME "LuaUdpProbe"
+#define LUA_PROBE_NAME    "LuaUdpProbe"
+#define LUA_PROBE_EG      "udp-example.lua"
 
 #define LUA_PROBE_VAR_PROBENAME             "ProbeName"
 #define LUA_PROBE_VAR_PROBETYPE             "ProbeType"
@@ -485,9 +486,9 @@ struct ProbeModule LuaUdpProbe = {
     .multi_num  = 1,
     .params     = luaudp_parameters,
     .desc =
-        "LuaUdpProbe let a specifies proper lua script as a udp type probe. It "
+        LUA_PROBE_NAME" let a specifies proper lua script as a udp type probe. It "
         "will save a lot of time for us to write simple probes or test ideas. "
-        "The example script(udp-example.lua) could be found at lua-probes dir."
+        "The example script("LUA_PROBE_EG") could be found at lua-probes dir."
         " In a nutshell, we should set some global variables as probe config "
         "include:\n"
         "`"LUA_PROBE_VAR_PROBENAME"`\n"
