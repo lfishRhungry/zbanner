@@ -11,6 +11,7 @@
 #include "lauxlib.h"
 
 #define LUA_PROBE_NAME    "LuaUdpProbe"
+#define LUA_PROBE_TYPE    "udp"
 #define LUA_PROBE_EG      "udp-example.lua"
 
 #define LUA_PROBE_VAR_PROBENAME             "ProbeName"
@@ -118,8 +119,8 @@ static bool sync_probe_config()
             luaudp_conf.script);
         return false;
     }
-    if (strcmp(lua_tostring(luaudp_conf.Ltx, -1), "udp")!=0) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": need a udp `"LUA_PROBE_VAR_PROBETYPE"` instead of %s type in %s.\n",
+    if (strcmp(lua_tostring(luaudp_conf.Ltx, -1), LUA_PROBE_TYPE)!=0) {
+        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": need a "LUA_PROBE_TYPE" `"LUA_PROBE_VAR_PROBETYPE"` instead of %s type in %s.\n",
             lua_tostring(luaudp_conf.Ltx, -1), luaudp_conf.script);
         return false;
     }
@@ -351,31 +352,31 @@ luaudp_validate_response(struct ProbeTarget *target,
 {
     bool ret;
 
-    lua_getglobal(luaudp_conf.Lhx, LUA_PROBE_FUNC_VALIDATE_RESPONSE);
-    lua_pushstring(luaudp_conf.Lhx, ipaddress_fmt(target->ip_them).string);
-    lua_pushinteger(luaudp_conf.Lhx, target->port_them);
-    lua_pushstring(luaudp_conf.Lhx, ipaddress_fmt(target->ip_me).string);
-    lua_pushinteger(luaudp_conf.Lhx, target->port_me);
-    lua_pushinteger(luaudp_conf.Lhx, target->index);
-    lua_pushinteger(luaudp_conf.Lhx, target->cookie);
-    lua_pushlstring(luaudp_conf.Lhx, (const char *)px, sizeof_px);
+    lua_getglobal(luaudp_conf.Lrx, LUA_PROBE_FUNC_VALIDATE_RESPONSE);
+    lua_pushstring(luaudp_conf.Lrx, ipaddress_fmt(target->ip_them).string);
+    lua_pushinteger(luaudp_conf.Lrx, target->port_them);
+    lua_pushstring(luaudp_conf.Lrx, ipaddress_fmt(target->ip_me).string);
+    lua_pushinteger(luaudp_conf.Lrx, target->port_me);
+    lua_pushinteger(luaudp_conf.Lrx, target->index);
+    lua_pushinteger(luaudp_conf.Lrx, target->cookie);
+    lua_pushlstring(luaudp_conf.Lrx, (const char *)px, sizeof_px);
 
-    if (lua_pcall(luaudp_conf.Lhx, 7, 1, 0) != LUA_OK) {
+    if (lua_pcall(luaudp_conf.Lrx, 7, 1, 0) != LUA_OK) {
         LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_VALIDATE_RESPONSE"` execute error in %s: %s\n",
-            luaudp_conf.script, lua_tostring(luaudp_conf.Lhx, -1));
-        lua_settop(luaudp_conf.Lhx, 0);
+            luaudp_conf.script, lua_tostring(luaudp_conf.Lrx, -1));
+        lua_settop(luaudp_conf.Lrx, 0);
         return false;
     }
 
-    if (lua_isboolean(luaudp_conf.Lhx, -1)==0) {
+    if (lua_isboolean(luaudp_conf.Lrx, -1)==0) {
         LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_VALIDATE_RESPONSE"` return error in script %s.\n",
             luaudp_conf.script);
-        lua_settop(luaudp_conf.Lhx, 0);
+        lua_settop(luaudp_conf.Lrx, 0);
         return false;
     }
 
-    ret = lua_toboolean(luaudp_conf.Lhx, -1);
-    lua_settop(luaudp_conf.Lhx, 0);
+    ret = lua_toboolean(luaudp_conf.Lrx, -1);
+    lua_settop(luaudp_conf.Lrx, 0);
 
     return ret;
 }
@@ -390,76 +391,76 @@ luaudp_handle_response(
     size_t ret_len;
     unsigned ret = 0;
 
-    lua_getglobal(luaudp_conf.Lrx, LUA_PROBE_FUNC_HANDLE_RESPONSE);
-    lua_pushstring(luaudp_conf.Lrx, ipaddress_fmt(target->ip_them).string);
-    lua_pushinteger(luaudp_conf.Lrx, target->port_them);
-    lua_pushstring(luaudp_conf.Lrx, ipaddress_fmt(target->ip_me).string);
-    lua_pushinteger(luaudp_conf.Lrx, target->port_me);
-    lua_pushinteger(luaudp_conf.Lrx, target->index);
-    lua_pushlstring(luaudp_conf.Lrx, (const char *)px, sizeof_px);
+    lua_getglobal(luaudp_conf.Lhx, LUA_PROBE_FUNC_HANDLE_RESPONSE);
+    lua_pushstring(luaudp_conf.Lhx, ipaddress_fmt(target->ip_them).string);
+    lua_pushinteger(luaudp_conf.Lhx, target->port_them);
+    lua_pushstring(luaudp_conf.Lhx, ipaddress_fmt(target->ip_me).string);
+    lua_pushinteger(luaudp_conf.Lhx, target->port_me);
+    lua_pushinteger(luaudp_conf.Lhx, target->index);
+    lua_pushlstring(luaudp_conf.Lhx, (const char *)px, sizeof_px);
 
-    if (lua_pcall(luaudp_conf.Lrx, 6, 5, 0) != LUA_OK) {
+    if (lua_pcall(luaudp_conf.Lhx, 6, 5, 0) != LUA_OK) {
         LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_HANDLE_RESPONSE"` execute error in %s: %s\n",
-            luaudp_conf.script, lua_tostring(luaudp_conf.Lrx, -1));
-        lua_settop(luaudp_conf.Lrx, 0);
+            luaudp_conf.script, lua_tostring(luaudp_conf.Lhx, -1));
+        lua_settop(luaudp_conf.Lhx, 0);
         return 0;
     }
 
-    if (lua_isinteger(luaudp_conf.Lrx, -5)==0) {
+    if (lua_isinteger(luaudp_conf.Lhx, -5)==0) {
         LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_HANDLE_RESPONSE"` return error in script %s.\n",
             luaudp_conf.script);
-        lua_settop(luaudp_conf.Lrx, 0);
+        lua_settop(luaudp_conf.Lhx, 0);
         return 0;
     }
-    if (lua_tointeger(luaudp_conf.Lrx, -5)>0) {
-        ret = lua_tointeger(luaudp_conf.Lrx, -5);
-    } else if (lua_tointeger(luaudp_conf.Lrx, -5)<0){
+    if (lua_tointeger(luaudp_conf.Lhx, -5)>0) {
+        ret = lua_tointeger(luaudp_conf.Lhx, -5);
+    } else if (lua_tointeger(luaudp_conf.Lhx, -5)<0){
         LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_HANDLE_RESPONSE"` return error in script %s.\n",
             luaudp_conf.script);
-        lua_settop(luaudp_conf.Lrx, 0);
+        lua_settop(luaudp_conf.Lhx, 0);
         return 0;
     }
 
-    if (lua_isboolean(luaudp_conf.Lrx, -4)==0) {
+    if (lua_isboolean(luaudp_conf.Lhx, -4)==0) {
         LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_HANDLE_RESPONSE"` return error in script %s.\n",
             luaudp_conf.script);
-        lua_settop(luaudp_conf.Lrx, 0);
+        lua_settop(luaudp_conf.Lhx, 0);
         return 0;
     }
-    if (lua_toboolean(luaudp_conf.Lrx, -4)>0) {
+    if (lua_toboolean(luaudp_conf.Lhx, -4)>0) {
         item->level = Output_SUCCESS;
     } else {
         item->level = Output_FAILURE;
     }
 
-    if (lua_isstring(luaudp_conf.Lrx, -3)==0) {
+    if (lua_isstring(luaudp_conf.Lhx, -3)==0) {
         LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_HANDLE_RESPONSE"` return error in script %s.\n",
             luaudp_conf.script);
-        lua_settop(luaudp_conf.Lrx, 0);
+        lua_settop(luaudp_conf.Lhx, 0);
         return 0;
     }
-    lua_ret = lua_tolstring(luaudp_conf.Lrx, -3, &ret_len);
+    lua_ret = lua_tolstring(luaudp_conf.Lhx, -3, &ret_len);
     memcpy(item->classification, lua_ret, ret_len);
 
-    if (lua_isstring(luaudp_conf.Lrx, -2)==0) {
+    if (lua_isstring(luaudp_conf.Lhx, -2)==0) {
         LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_HANDLE_RESPONSE"` return error in script %s.\n",
             luaudp_conf.script);
-        lua_settop(luaudp_conf.Lrx, 0);
+        lua_settop(luaudp_conf.Lhx, 0);
         return 0;
     }
-    lua_ret = lua_tolstring(luaudp_conf.Lrx, -2, &ret_len);
+    lua_ret = lua_tolstring(luaudp_conf.Lhx, -2, &ret_len);
     memcpy(item->reason, lua_ret, ret_len);
 
-    if (lua_isstring(luaudp_conf.Lrx, -1)==0) {
+    if (lua_isstring(luaudp_conf.Lhx, -1)==0) {
         LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_HANDLE_RESPONSE"` return error in script %s.\n",
             luaudp_conf.script);
-        lua_settop(luaudp_conf.Lrx, 0);
+        lua_settop(luaudp_conf.Lhx, 0);
         return 0;
     }
-    lua_ret = lua_tolstring(luaudp_conf.Lrx, -1, &ret_len);
+    lua_ret = lua_tolstring(luaudp_conf.Lhx, -1, &ret_len);
     memcpy(item->report, lua_ret, ret_len);
 
-    lua_settop(luaudp_conf.Lrx, 0);
+    lua_settop(luaudp_conf.Lhx, 0);
     return ret;
 }
 
@@ -486,7 +487,7 @@ struct ProbeModule LuaUdpProbe = {
     .multi_num  = 1,
     .params     = luaudp_parameters,
     .desc =
-        LUA_PROBE_NAME" let a specifies proper lua script as a udp type probe. It "
+        LUA_PROBE_NAME" let a specifies proper lua script as a "LUA_PROBE_TYPE" type probe. It "
         "will save a lot of time for us to write simple probes or test ideas. "
         "The example script("LUA_PROBE_EG") could be found at lua-probes dir."
         " In a nutshell, we should set some global variables as probe config "
