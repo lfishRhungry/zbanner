@@ -199,8 +199,7 @@ static bool
 hello_global_init(const struct Xconf *xconf)
 {
     if (hello_conf.hello==NULL || hello_conf.hello_len==0) {
-        LOG(LEVEL_ERROR, "[-]HelloProbe: No hello data specified.\n");
-        return false;
+        LOG(LEVEL_ERROR, "[-]HelloProbe: No hello data specified, just wait response.\n");
     }
 
     return true;
@@ -211,6 +210,10 @@ hello_make_payload(
     struct ProbeTarget *target,
     unsigned char *payload_buf)
 {
+    if (hello_conf.hello==NULL || hello_conf.hello_len==0) {
+        return 0;
+    }
+
     memcpy(payload_buf, hello_conf.hello, hello_conf.hello_len);
     return hello_conf.hello_len;
 }
@@ -307,7 +310,8 @@ struct ProbeModule HelloProbe = {
     .params     = hello_parameters,
     .desc =
         "HelloProbe use static content set by user as hello data and reports "
-        "banner. It is used to test POC immediatly.",
+        "banner. It is used to test POC immediatly.\n"
+        "NOTE: If no hello data was specified, HelloProbe would just wait response.",
     .global_init_cb                    = &hello_global_init,
     .make_payload_cb                   = &hello_make_payload,
     .get_payload_length_cb             = &hello_get_payload_length,
