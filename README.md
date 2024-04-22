@@ -8,7 +8,7 @@ Welcome to Xtate -- A modular all-stack network scanner for next-generation inte
 
 Xtate could be build through CMake both on Linux and Windows because of cross-platform source code but with some dependencies:
 
-- OpenSSL (dependent while compiling)
+- OpenSSL>=1.1.1 (dependent while compiling)
 - PCRE2 8bits (dependent while compiling)
 - lua5.3
 - libpcap(Linux)
@@ -25,7 +25,7 @@ And can also be installed in some ways on Windows.
 
 With dependencies installed we can build xtate both release and debug version by CMake or executing `build.sh` on Linux.
 
-For old version of Ubuntu(maybe 20), use `Makefile` is a good idea.(I'm failed to be a CMake professor...)
+For other OS or version of Linux(maybe Ubuntu20), use or try to modify `Makefile` is a good idea.(I'm failed to be a CMake professor...)
 
 ## Intro
 
