@@ -1804,6 +1804,20 @@ static enum Config_Res SET_resume_index(void *conf, const char *name, const char
     return CONF_OK;
 }
 
+static enum Config_Res SET_no_bpf(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->is_no_bpf || xconf->echo_all)
+            fprintf(xconf->echo, "no-bpf-filter = %s\n",
+                xconf->is_no_bpf?"true":"false");
+        return 0;
+    }
+    xconf->is_no_bpf = parseBoolean(value);
+    return CONF_OK;
+}
 
 static enum Config_Res SET_bpf_filter(void *conf, const char *name, const char *value)
 {
@@ -2886,6 +2900,15 @@ struct ConfigParam config_parameters[] = {
         " mode. NOTE: Every ScanModule has its own BPF filter and we can observe"
         " them with --list-scan. The BPF filter we set with --bpf-filter will "
         "constrain the packets we receive with ScanModules'."
+    },
+    {
+        "no-bpf-filter",
+        SET_no_bpf,
+        F_BOOL,
+        {"no-bpf", 0},
+        "Do not compile any BPF filter from ScanModules or users. Some machines"
+        " does not support part or all of BPF filters and this switch makes "
+        XTATE_UPPER_NAME" working again."
     },
 
     {"MISC:", SET_nothing, 0, {0}, NULL},

@@ -281,8 +281,10 @@ static int main_scan(struct Xconf *xconf) {
      * getting by ARP.
      * And the filter string is combined from ProbeModule and user setting.
      */
-    rawsock_set_filter(xconf->nic.adapter, xconf->scan_module->bpf_filter,
-                       xconf->bpf_filter);
+    if (!xconf->is_no_bpf) {
+        rawsock_set_filter(xconf->nic.adapter, xconf->scan_module->bpf_filter,
+                           xconf->bpf_filter);
+    }
 
     /*
      * trap <ctrl-c>

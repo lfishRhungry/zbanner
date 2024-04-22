@@ -179,6 +179,7 @@ struct Xconf
     unsigned          is_infinite:1;
     unsigned          is_fast_timeout:1;
     unsigned          is_bypass_os:1;
+    unsigned          is_no_bpf:1;
 
 };
 
