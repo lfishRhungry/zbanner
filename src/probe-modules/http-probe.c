@@ -1,9 +1,13 @@
 #include <string.h>
 
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
+
 #include "probe-modules.h"
 #include "../proto/proto-http-maker.h"
 #include "../proto/proto-http-parser.h"
 #include "../util-data/fine-malloc.h"
+#include "../util-data/safe-string.h"
 
 static const char
 default_http_header[] =
@@ -73,11 +77,89 @@ struct HttpConf {
     } remove[16];
     size_t remove_count;
 
+    char                   *regex;
+    size_t                  regex_len;
+    pcre2_code             *compiled_re;
+    pcre2_match_context    *match_ctx;
+    unsigned                re_case_insensitive:1;
+    unsigned                re_include_newlines:1;
     /*dynamic set ip:port as Host field*/
     unsigned dynamic_host:1;
 };
 
 static struct HttpConf http_conf = {0};
+
+static enum Config_Res SET_newlines(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    http_conf.re_include_newlines = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_insensitive(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    http_conf.re_case_insensitive = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_regex(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    if (http_conf.compiled_re)
+        pcre2_code_free(http_conf.compiled_re);
+    if (http_conf.match_ctx)
+        pcre2_match_context_free(http_conf.match_ctx);
+
+    http_conf.regex_len = strlen(value);
+    if (http_conf.regex_len==0) {
+        LOG(LEVEL_ERROR, "FAIL: Invalid regex.\n");
+        return CONF_ERR;
+    }
+
+    int pcre2_errcode;
+    PCRE2_SIZE pcre2_erroffset;
+    http_conf.regex = STRDUP(value);
+    http_conf.compiled_re = pcre2_compile(
+        (PCRE2_SPTR)http_conf.regex,
+        PCRE2_ZERO_TERMINATED,
+        http_conf.re_case_insensitive?PCRE2_CASELESS:0 | http_conf.re_include_newlines?PCRE2_DOTALL:0,
+        &pcre2_errcode,
+        &pcre2_erroffset,
+        NULL);
+    
+    if (!http_conf.compiled_re) {
+        LOG(LEVEL_ERROR, "[-]Regex compiled failed.\n");
+        return CONF_ERR;
+    }
+
+    http_conf.match_ctx = pcre2_match_context_create(NULL);
+    if (!http_conf.match_ctx) {
+        LOG(LEVEL_ERROR, "[-]Regex allocates match_ctx failed.\n");
+        return CONF_ERR;
+    }
+
+    pcre2_set_match_limit(http_conf.match_ctx, 100000);
+
+#ifdef pcre2_set_depth_limit
+            // Changed name in PCRE2 10.30. PCRE2 uses macro definitions for function
+            // names, so we don't have to add this to configure.ac.
+            pcre2_set_depth_limit(http_conf.match_ctx, 10000);
+#else
+            pcre2_set_recursion_limit(http_conf.match_ctx, 10000);
+#endif
+
+
+    return CONF_OK;
+}
 
 static enum Config_Res SET_method(void *conf, const char *name, const char *value)
 {
@@ -368,6 +450,28 @@ static struct ConfigParam http_parameters[] = {
         "Removes the first field from the header that matches. We may need "
         "multiple times for fields like `Cookie` that can exist multiple times."
     },
+    {
+        "regex",
+        SET_regex,
+        F_NONE,
+        {0},
+        "Specifies a regex and sets matched response data as successed instead of"
+        " reporting all results."
+    },
+    {
+        "case-insensitive",
+        SET_insensitive,
+        F_BOOL,
+        {"insensitive", 0},
+        "Whether the specified regex is case-insensitive or not."
+    },
+    {
+        "include-newlines",
+        SET_newlines,
+        F_BOOL,
+        {"include-newline", "newline", "newlines", 0},
+        "Whether the specified regex contains newlines."
+    },
 
     {0}
 };
@@ -612,6 +716,78 @@ http_get_payload_length(struct ProbeTarget *target)
     return http_conf.req4_len;
 }
 
+static unsigned
+http_handle_response(
+    struct ProbeTarget *target,
+    const unsigned char *px, unsigned sizeof_px,
+    struct OutputItem *item)
+{
+    if (sizeof_px==0) {
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no service");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+        item->level = Output_FAILURE;
+        return 0;
+    }
+
+    if (http_conf.compiled_re) {
+        pcre2_match_data *match_data;
+        int rc;
+
+        match_data = pcre2_match_data_create_from_pattern(http_conf.compiled_re, NULL);
+        if (!match_data) {
+            LOG(LEVEL_ERROR, "FAIL: cannot allocate match_data when matching.\n");
+            item->no_output = 1;
+            return 0;
+        }
+
+        rc = pcre2_match(http_conf.compiled_re,
+            (PCRE2_SPTR8)px, (int)sizeof_px,
+            0, 0, match_data, http_conf.match_ctx);
+
+        /*matched one. ps: "offset is too small" means successful, too*/
+        if (rc >= 0) {
+            item->level = Output_SUCCESS;
+            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "success");
+            safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+            normalize_string(px, sizeof_px, item->report, OUTPUT_RPT_LEN);
+        } else {
+            item->level = Output_FAILURE;
+            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "fail");
+            safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
+            normalize_string(px, sizeof_px, item->report, OUTPUT_RPT_LEN);
+        }
+        pcre2_match_data_free(match_data);
+    } else {
+        item->level = Output_SUCCESS;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "serving");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "banner exists");
+        normalize_string(px, sizeof_px, item->report, OUTPUT_RPT_LEN);
+    }
+
+    return 0;
+}
+
+static void
+http_close()
+{
+    if (http_conf.regex) {
+        free(http_conf.regex);
+        http_conf.regex = NULL;
+    }
+    http_conf.regex_len = 0;
+
+    if (http_conf.compiled_re) {
+        pcre2_code_free(http_conf.compiled_re);
+        http_conf.compiled_re = NULL;
+    }
+
+    if (http_conf.match_ctx) {
+        pcre2_match_context_free(http_conf.match_ctx);
+        http_conf.match_ctx = NULL;
+    }
+
+}
+
 struct ProbeModule HttpProbe = {
     .name       = "http",
     .type       = ProbeType_TCP,
@@ -629,6 +805,6 @@ struct ProbeModule HttpProbe = {
     .make_payload_cb                   = &http_make_payload,
     .get_payload_length_cb             = &http_get_payload_length,
     .validate_response_cb              = NULL,
-    .handle_response_cb                = &probe_just_report_banner,
-    .close_cb                          = &probe_close_nothing,
+    .handle_response_cb                = &http_handle_response,
+    .close_cb                          = &http_close,
 };
