@@ -105,6 +105,25 @@ static enum Config_Res SET_hello_string(void *conf, const char *name, const char
 
     hello_conf.hello_len = strlen(value);
     if (hello_conf.hello_len==0) {
+        LOG(LEVEL_ERROR, "FAIL: Invalid hello string.\n");
+        return CONF_ERR;
+    }
+    hello_conf.hello = MALLOC(hello_conf.hello_len);
+    memcpy(hello_conf.hello, value, hello_conf.hello_len);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_hello_base64(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    if (hello_conf.hello)
+        free(hello_conf.hello);
+
+    hello_conf.hello_len = strlen(value);
+    if (hello_conf.hello_len==0) {
         LOG(LEVEL_ERROR, "FAIL: Invalid hello string in base64 format.\n");
         return CONF_ERR;
     }
@@ -157,7 +176,16 @@ static struct ConfigParam hello_parameters[] = {
         SET_hello_string,
         F_NONE,
         {0},
+        "Specifies a string and set it as hello data after decoded."
+        " This will overwrite hello data set by other parameters."
+    },
+    {
+        "base64-string",
+        SET_hello_base64,
+        F_NONE,
+        {"base64", 0},
         "Specifies a string in base64 format and set it as hello data after decoded."
+        " This will overwrite hello data set by other parameters."
     },
     {
         "file",
@@ -165,6 +193,7 @@ static struct ConfigParam hello_parameters[] = {
         F_NONE,
         {0},
         "Specifies a file and set the content of file as hello data."
+        " This will overwrite hello data set by other parameters."
     },
     {
         "regex",
