@@ -32,9 +32,9 @@ ifneq (, $(findstring linux, $(SYS)))
 ifneq (, $(findstring musl, $(SYS)))
 LIBS =  -lssl -lcrypto -lpcre2-8 -llua5.3
 else
-LIBS = -lm -lrt -ldl -lpthread -lssl -lcrypto -lpcre2-8 -llua5.3
+LIBS = -lm -lrt -ldl -lpthread -lssl -lcrypto -lpcre2-8
 endif
-INCLUDES = -I/usr/include/lua5.3
+INCLUDES = 
 FLAGS2 = 
 endif
 
@@ -46,28 +46,28 @@ endif
 # intended environment, so it make break in the future.
 ifneq (, $(findstring mingw, $(SYS)))
 INCLUDES = -Ivs10/include
-LIBS = -L vs10/lib -lIPHLPAPI -lWs2_32 -lssl -lcrypto -lpcre2-8 -llua5.3
+LIBS = -L vs10/lib -lIPHLPAPI -lWs2_32 -lssl -lcrypto -lpcre2-8
 #FLAGS2 = -march=i686
 endif
 
 # OpenBSD
 ifneq (, $(findstring openbsd, $(SYS)))
-LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8 -llua5.3
-INCLUDES = -I. -I/usr/include/lua5.3
+LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8
+INCLUDES = -I. 
 FLAGS2 = 
 endif
 
 # FreeBSD
 ifneq (, $(findstring freebsd, $(SYS)))
-LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8 -llua5.3
-INCLUDES = -I. -I/usr/include/lua5.3
+LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8
+INCLUDES = -I. 
 FLAGS2 =
 endif
 
 # NetBSD
 ifneq (, $(findstring netbsd, $(SYS)))
-LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8 -llua5.3
-INCLUDES = -I. -I/usr/include/lua5.3
+LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8
+INCLUDES = -I. 
 FLAGS2 =
 endif
 

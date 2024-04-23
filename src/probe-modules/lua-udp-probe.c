@@ -6,9 +6,7 @@
 #include "../util-data/safe-string.h"
 #include "../util-misc/cross.h"
 
-#include "lua.h"
-#include "lualib.h"
-#include "lauxlib.h"
+#include "../stub/stub-lua.h"
 
 #define LUA_PROBE_NAME    "LuaUdpProbe"
 #define LUA_PROBE_TYPE    "udp"
@@ -190,6 +188,15 @@ luaudp_global_init(const struct Xconf *xconf)
     if (xconf->tx_thread_count!=1 || xconf->rx_handler_count!=1) {
         LOG(LEVEL_ERROR, "[-] "LUA_PROBE_NAME" doesn't support multi-tx-threads or multi-handle-threads now.\n");
         return false;
+    }
+
+    /* Dynamically link the library*/
+    stublua_init();
+    int version = (int)*lua_version(0);
+    LOG(LEVEL_HINT, "[-]Found Lua version = %d\n", version);
+    if (version != 503 && version != 502) {
+        LOG(LEVEL_ERROR, "Fail: Unable to load Lua library of this version.\n");
+        return CONF_ERR;
     }
 
     int x;
