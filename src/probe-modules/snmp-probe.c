@@ -254,8 +254,7 @@ snmp_banner(const unsigned char *oid, size_t oid_length,
         }
         break;
     case 6:
-        snmp_banner_oid(var, var_length,
-                        dach);
+        snmp_banner_oid(var, var_length, dach);
         break;
     case 4:
     default:
