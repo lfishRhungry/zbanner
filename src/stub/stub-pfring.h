@@ -1,5 +1,5 @@
-#ifndef RAWSOCK_PFRING_H
-#define RAWSOCK_PFRING_H
+#ifndef STUB_PFRING_H
+#define STUB_PFRING_H
 #include <stdint.h>
 #include <time.h>
 

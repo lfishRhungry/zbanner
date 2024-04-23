@@ -29,29 +29,29 @@ typedef struct luaL_Reg {
     lua_CFunction func;
 } luaL_Reg;
 
-#define LUA_MULTRET    (-1)
-#define LUAI_MAXSTACK        1000000
-#define LUA_REGISTRYINDEX    (-LUAI_MAXSTACK - 1000)
+#define LUA_MULTRET                (-1)
+#define LUAI_MAXSTACK              1000000
+#define LUA_REGISTRYINDEX          (-LUAI_MAXSTACK - 1000)
 
-#define LUA_OK          0
-#define LUA_YIELD       1
-#define LUA_ERRRUN      2
-#define LUA_ERRSYNTAX   3
-#define LUA_ERRMEM      4
-#define LUA_ERRGCMM     5
-#define LUA_ERRERR      6
+#define LUA_OK                     0
+#define LUA_YIELD                  1
+#define LUA_ERRRUN                 2
+#define LUA_ERRSYNTAX              3
+#define LUA_ERRMEM                 4
+#define LUA_ERRGCMM                5
+#define LUA_ERRERR                 6
 
-#define LUA_TNONE           (-1)
-#define LUA_TNIL            0
-#define LUA_TBOOLEAN        1
-#define LUA_TLIGHTUSERDATA  2
-#define LUA_TNUMBER         3
-#define LUA_TSTRING         4
-#define LUA_TTABLE          5
-#define LUA_TFUNCTION       6
-#define LUA_TUSERDATA       7
-#define LUA_TTHREAD         8
-#define LUA_NUMTAGS         9
+#define LUA_TNONE                  (-1)
+#define LUA_TNIL                   0
+#define LUA_TBOOLEAN               1
+#define LUA_TLIGHTUSERDATA         2
+#define LUA_TNUMBER                3
+#define LUA_TSTRING                4
+#define LUA_TTABLE                 5
+#define LUA_TFUNCTION              6
+#define LUA_TUSERDATA              7
+#define LUA_TTHREAD                8
+#define LUA_NUMTAGS                9
 
 
 #define lua_isfunction(L,n)         (lua_type(L, (n)) == LUA_TFUNCTION)
