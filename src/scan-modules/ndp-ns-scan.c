@@ -12,6 +12,34 @@ extern struct ScanModule NdpNsScan; /*for internal x-ref*/
 
 static macaddress_t src_mac;
 
+struct NdpNsConf {
+    unsigned record_ttl:1;
+};
+
+static struct NdpNsConf ndpns_conf = {0};
+
+static enum Config_Res SET_record_ttl(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    ndpns_conf.record_ttl = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static struct ConfigParam ndpns_parameters[] = {
+    {
+        "record-ttl",
+        SET_record_ttl,
+        F_BOOL,
+        {"ttl", 0},
+        "Records Hop Limit for IPv6 in NDP NA of ICMPv6."
+    },
+
+    {0}
+};
+
 static bool
 ndpns_global_init(const struct Xconf *xconf)
 {
@@ -88,10 +116,11 @@ ndpns_handle(
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "ndp na");
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "alive");
 
+    int rpt_tmp = 0;
     /*check whether from router
       and extract mac addr from ICMPv6 Option: Target link-layer address*/
     if (NDP_NA_HAS_FLAG(recved->packet, recved->parsed.transport_offset, NDP_NA_FLAG_ROUTER)) {
-        snprintf(item->report, OUTPUT_RPT_LEN, "%02X:%02X:%02X:%02X:%02X:%02X from router",
+        rpt_tmp += snprintf(item->report, OUTPUT_RPT_LEN, "%02X:%02X:%02X:%02X:%02X:%02X from router",
             recved->packet[recved->parsed.transport_offset+26],
             recved->packet[recved->parsed.transport_offset+27],
             recved->packet[recved->parsed.transport_offset+28],
@@ -99,7 +128,7 @@ ndpns_handle(
             recved->packet[recved->parsed.transport_offset+30],
             recved->packet[recved->parsed.transport_offset+31]);
     } else {
-        snprintf(item->report, OUTPUT_RPT_LEN, "%02X:%02X:%02X:%02X:%02X:%02X",
+        rpt_tmp += snprintf(item->report, OUTPUT_RPT_LEN, "%02X:%02X:%02X:%02X:%02X:%02X",
             recved->packet[recved->parsed.transport_offset+26],
             recved->packet[recved->parsed.transport_offset+27],
             recved->packet[recved->parsed.transport_offset+28],
@@ -107,6 +136,10 @@ ndpns_handle(
             recved->packet[recved->parsed.transport_offset+30],
             recved->packet[recved->parsed.transport_offset+31]);
     }
+
+    if (ndpns_conf.record_ttl)
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+            "[ttl=%d]", recved->parsed.ip_ttl);
 }
 
 void ndpns_timeout(
@@ -125,7 +158,7 @@ struct ScanModule NdpNsScan = {
     .name                = "ndp-ns",
     .required_probe_type = 0,
     .support_timeout     = 1,
-    .params              = NULL,
+    .params              = ndpns_parameters,
     .bpf_filter          = "icmp6 && (icmp6[0]==136 && icmp6[1]==0)", /*ndp neighbor advertisement*/
     .desc =
         "NdpNsScan sends an NDP(ICMPv6) Neighbor Solicitation to IPv6 target "

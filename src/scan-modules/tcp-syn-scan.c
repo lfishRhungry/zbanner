@@ -79,7 +79,7 @@ static struct ConfigParam tcpsyn_parameters[] = {
         SET_record_ipid,
         F_BOOL,
         {"ipid", 0},
-        "Records IPID SYN-ACK or RST just for IPv4."
+        "Records IPID of SYN-ACK or RST just for IPv4."
     },
     {
         "record-win",

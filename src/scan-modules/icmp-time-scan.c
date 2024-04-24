@@ -8,6 +8,52 @@
 
 extern struct ScanModule IcmpTimeScan; /*for internal x-ref*/
 
+struct IcmpTimeConf {
+    unsigned record_ttl:1;
+    unsigned record_ipid:1;
+};
+
+static struct IcmpTimeConf icmptime_conf = {0};
+
+static enum Config_Res SET_record_ttl(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    icmptime_conf.record_ttl = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_record_ipid(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    icmptime_conf.record_ipid = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static struct ConfigParam icmptime_parameters[] = {
+    {
+        "record-ttl",
+        SET_record_ttl,
+        F_BOOL,
+        {"ttl", 0},
+        "Records TTL for IPv4 or Hop Limit for IPv6 in ICMP Echo Reply."
+    },
+    {
+        "record-ipid",
+        SET_record_ipid,
+        F_BOOL,
+        {"ipid", 0},
+        "Records IPID of ICMP Echo Reply just for IPv4."
+    },
+
+    {0}
+};
+
 static bool
 icmptime_transmit(
     uint64_t entropy,
@@ -75,6 +121,15 @@ icmptime_handle(
 
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timestamp reply");
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "alive");
+
+    int rpt_tmp = 0;
+
+    if (icmptime_conf.record_ttl)
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+            "[ttl=%d]", recved->parsed.ip_ttl);
+    if (icmptime_conf.record_ipid && recved->parsed.src_ip.version==4)
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+            "[ipid=%d]", recved->parsed.ip_v4_id);
 }
 
 void icmptime_timeout(
@@ -93,7 +148,7 @@ struct ScanModule IcmpTimeScan = {
     .name                = "icmp-time",
     .required_probe_type = 0,
     .support_timeout     = 1,
-    .params              = NULL,
+    .params              = icmptime_parameters,
     .bpf_filter          = "icmp && (icmp[0]==14 && icmp[1]==0)", /*icmp timestamp reply*/
     .desc =
         "IcmpTimeScan sends an ICMP Timestamp mesage to IPv4 target host. Expect an "

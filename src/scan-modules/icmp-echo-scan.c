@@ -8,6 +8,52 @@
 
 extern struct ScanModule IcmpEchoScan; /*for internal x-ref*/
 
+struct IcmpEchoConf {
+    unsigned record_ttl:1;
+    unsigned record_ipid:1;
+};
+
+static struct IcmpEchoConf icmpecho_conf = {0};
+
+static enum Config_Res SET_record_ttl(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    icmpecho_conf.record_ttl = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_record_ipid(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    icmpecho_conf.record_ipid = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static struct ConfigParam icmpecho_parameters[] = {
+    {
+        "record-ttl",
+        SET_record_ttl,
+        F_BOOL,
+        {"ttl", 0},
+        "Records TTL for IPv4 in ICMP Timestamp."
+    },
+    {
+        "record-ipid",
+        SET_record_ipid,
+        F_BOOL,
+        {"ipid", 0},
+        "Records IPID of ICMP Timestamp for IPv4."
+    },
+
+    {0}
+};
+
 static bool
 icmpecho_transmit(
     uint64_t entropy,
@@ -77,6 +123,15 @@ icmpecho_handle(
 
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "echo reply");
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "alive");
+
+    int rpt_tmp = 0;
+
+    if (icmpecho_conf.record_ttl)
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+            "[ttl=%d]", recved->parsed.ip_ttl);
+    if (icmpecho_conf.record_ipid && recved->parsed.src_ip.version==4)
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+            "[ipid=%d]", recved->parsed.ip_v4_id);
 }
 
 void icmpecho_timeout(
@@ -95,7 +150,7 @@ struct ScanModule IcmpEchoScan = {
     .name                = "icmp-echo",
     .required_probe_type = 0,
     .support_timeout     = 1,
-    .params              = NULL,
+    .params              = icmpecho_parameters,
     .bpf_filter =
         "(icmp && (icmp[0]==0 && icmp[1]==0)) || (icmp6 && (icmp6[0]==129&&icmp6[1]==0))",
     .desc =
