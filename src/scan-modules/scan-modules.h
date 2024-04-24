@@ -45,12 +45,12 @@ typedef bool (*scan_modules_global_init)(const struct Xconf *xconf);
 ****************************************************************************/
 
 struct ScanTarget {
+    enum PortProto proto;
     ipaddress ip_them;
     ipaddress ip_me;
     unsigned  port_them;
     unsigned  port_me;
     unsigned  index; /*use in tx thread for multi packets per target in ScanModule*/
-    enum PortProto proto;
 };
 
 /*a timeout event for scanning*/
@@ -60,7 +60,7 @@ struct ScanTmEvent {
     unsigned  port_them;
     unsigned  port_me;
     unsigned  dedup_type;
-    unsigned  need_timeout;
+    unsigned  need_timeout:1;
 };
 
 /**
@@ -93,18 +93,18 @@ struct Received {
     unsigned length;
     unsigned secs;
     unsigned usecs;
-    bool is_myip;
-    bool is_myport;
+    unsigned is_myip:1;
+    unsigned is_myport:1;
 };
 
 /*How we do prehandling for a packet*/
 struct PreHandle {
-    unsigned  go_record:1;       /*proceed to record or stop*/
-    unsigned  go_dedup:1;        /*proceed to dedup or stop*/
-    unsigned  no_dedup:1;        /*go on with(out) deduping*/
     ipaddress dedup_ip_them;
     unsigned  dedup_port_them;
     unsigned  dedup_type;
+    unsigned  go_record:1;       /*proceed to record or stop*/
+    unsigned  go_dedup:1;        /*proceed to dedup or stop*/
+    unsigned  no_dedup:1;        /*go on with(out) deduping*/
 };
 
 /**
