@@ -871,10 +871,10 @@ massip_parse_file(struct MassIP *massip, const char *filename)
 
         offset = 0;
         while (offset < count) {
-            unsigned begin, end;
-            int err;
+            unsigned begin = 0;
+            unsigned end   = 0;
+            int      err   = _parser_next(p, buf, &offset, count, &begin, &end);
 
-            err = _parser_next(p, buf, &offset, count, &begin, &end);
             switch (err) {
             case Still_Working:
                 if (offset < count) {

@@ -73,8 +73,8 @@ endif
 
 
 DEFINES = 
-bin/xtate: CFLAGS = $(FLAGS2) $(INCLUDES) $(DEFINES) -Wall -O3
-bin/xtate_debug: CFLAGS = -g -ggdb $(FLAGS2) $(INCLUDES) $(DEFINES) -Wall -O0 -rdynamic -no-pie
+bin/xtate: CFLAGS = $(FLAGS2) $(INCLUDES) $(DEFINES) -Wall -O3 -std=gnu99
+bin/xtate_debug: CFLAGS = -g -ggdb $(FLAGS2) $(INCLUDES) $(DEFINES) -Wall -O0 -rdynamic -no-pie -std=gnu99
 .SUFFIXES: .c .cpp
 
 all: bin/xtate

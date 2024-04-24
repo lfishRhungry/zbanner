@@ -43,7 +43,10 @@ target_link_libraries(${exe_name} PCRE2::8BIT)
 # target_include_directories(${exe_name} PRIVATE ${LUA_INCLUDE_DIR})
 # target_link_libraries(${exe_name} ${LUA_LIBRARIES})
 
-# math
+# math(libm) libdl pthread
 if (UNIX)
     target_link_libraries(${exe_name} m)
+    target_link_libraries(${exe_name} ${CMAKE_DL_LIBS})
+    find_package(Threads REQUIRED)
+    target_link_libraries(${exe_name} Threads::Threads)
 endif ()

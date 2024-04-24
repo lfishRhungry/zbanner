@@ -152,12 +152,13 @@ void receive_thread(void *v) {
     struct Output                 *output                      = (struct Output *)(&xconf->output);
     struct Adapter                *adapter                     = xconf->nic.adapter;
     int                            data_link                   = stack_if_datalink(adapter);
-    struct DedupTable             *dedup                       = NULL;
-    struct PcapFile               *pcapfile                    = NULL;
     uint64_t                       entropy                     = xconf->seed;
     struct stack_t                *stack                       = xconf->stack;
     struct ScanModule             *scan_module                 = xconf->scan_module;
+    struct DedupTable             *dedup                       = NULL;
+    struct PcapFile               *pcapfile                    = NULL;
     struct ScanTmEvent            *tm_event                    = NULL;
+    struct FHandler               *ft_handler                  = NULL;
     unsigned                       handler_num                 = xconf->rx_handler_count;
     size_t                         handler[handler_num];
     struct RxHandle                handle_parms[handler_num];
@@ -165,7 +166,6 @@ void receive_thread(void *v) {
     struct RxDispatch              dispatch_parms;
     size_t                         dispatcher;
     struct rte_ring               *dispatch_q;
-    struct FHandler               *ft_handler;
     struct Received               *recved;
 
 

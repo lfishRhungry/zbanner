@@ -60,10 +60,10 @@ void transmit_thread(void *v)
     struct Adapter              *adapter                  = xconf->nic.adapter;
     uint64_t                     packets_sent             = 0;
     unsigned                     increment                = xconf->shard.of * xconf->tx_thread_count;
-    uint64_t                     dynamic_seed                     = xconf->seed;
+    uint64_t                     dynamic_seed             = xconf->seed;
     uint64_t                     entropy                  = xconf->seed;
     struct ScanTmEvent          *tm_event                 = NULL;
-    struct FHandler             *ft_handler;
+    struct FHandler             *ft_handler               = NULL;
     uint64_t                    *status_sent_count;
 
     /* Wait to make sure receive_thread is ready */
