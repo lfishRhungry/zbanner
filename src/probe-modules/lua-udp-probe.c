@@ -193,7 +193,7 @@ luaudp_global_init(const struct Xconf *xconf)
     /* Dynamically link the library*/
     stublua_init();
     int version = (int)*lua_version(0);
-    LOG(LEVEL_HINT, "[-]Found Lua version = %d\n", version);
+    LOG(LEVEL_INFO, "[-]Found Lua version = %d\n", version);
     if (version != 503 && version != 502) {
         LOG(LEVEL_ERROR, "Fail: Unable to load Lua library of this version.\n");
         return CONF_ERR;
