@@ -104,8 +104,6 @@ struct PreHandle {
     unsigned  no_dedup:1;        /*go on with(out) deduping*/
     ipaddress dedup_ip_them;
     unsigned  dedup_port_them;
-    ipaddress dedup_ip_me;
-    unsigned  dedup_port_me;
     unsigned  dedup_type;
 };
 

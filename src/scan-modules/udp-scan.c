@@ -127,13 +127,15 @@ udp_validate(
 
     } else return;
 
-    unsigned proto;
+    ipaddress ip_me;
+    unsigned  port_me;
+    unsigned  proto;
     parse_icmp_port_unreachable(
         &recved->packet[recved->parsed.transport_offset],
         recved->parsed.transport_length,
         &pre->dedup_ip_them, &pre->dedup_port_them,
-        &pre->dedup_ip_me, &pre->dedup_port_me, &proto);
-    if (proto==Tmpl_Type_UDP) {
+        &ip_me, &port_me, &proto);
+    if (proto==17) {
         pre->go_record = 1;
         pre->go_dedup = 1;
     }

@@ -221,9 +221,10 @@ void receive_thread(void *v) {
 
 
     for (unsigned i=0; i<handler_num; i++) {
+        /*handle threads just add tm_event, it's thread safe*/
+        handle_parms[i].ft_handler      = xconf->is_fast_timeout?&ft_handler:NULL;
         handle_parms[i].scan_module     = xconf->scan_module;
         handle_parms[i].handle_queue    = handle_q[i];
-        handle_parms[i].ft_handler      = xconf->is_fast_timeout?&ft_handler:NULL;
         handle_parms[i].stack           = stack;
         handle_parms[i].out             = output;
         handle_parms[i].entropy         = entropy;
@@ -244,7 +245,6 @@ void receive_thread(void *v) {
                 if ((!xconf->is_nodedup &&
                      !dedup_is_duplicate(dedup,
                         tm_event->ip_them, tm_event->port_them,
-                        tm_event->ip_me, tm_event->port_me,
                         tm_event->dedup_type))
                     || xconf->is_nodedup) {
 
@@ -355,8 +355,6 @@ void receive_thread(void *v) {
             .go_dedup        = 0,
             .dedup_ip_them   = ip_them,
             .dedup_port_them = port_them,
-            .dedup_ip_me     = ip_me,
-            .dedup_port_me   = port_me,
             .dedup_type      = SCAN_MODULE_DEFAULT_DEDUP_TYPE,
         };
 
@@ -384,9 +382,7 @@ void receive_thread(void *v) {
         }
 
         if (!xconf->is_nodedup && !pre.no_dedup) {
-            if (dedup_is_duplicate(dedup, pre.dedup_ip_them, pre.dedup_port_them,
-                                   pre.dedup_ip_me, pre.dedup_port_me,
-                                   pre.dedup_type)) {
+            if (dedup_is_duplicate(dedup, pre.dedup_ip_them, pre.dedup_port_them, pre.dedup_type)) {
                 free(recved->packet);
                 free(recved);
                 continue;

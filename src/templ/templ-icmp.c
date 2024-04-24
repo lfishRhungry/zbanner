@@ -287,10 +287,10 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
         r_ip_me->ipv4   = BE_TO_U32(ip_header_in_icmp+12);
         r_ip_them->ipv4 = BE_TO_U32(ip_header_in_icmp+16);
 
-        if (ip_header_in_icmp[9]==6) {
-            *r_ip_proto = Tmpl_Type_TCP;
-        } else if (ip_header_in_icmp[9]==17) {
-            *r_ip_proto = Tmpl_Type_UDP;
+        if (ip_header_in_icmp[9]==6) { /*tcp*/
+            *r_ip_proto = 6;
+        } else if (ip_header_in_icmp[9]==17) { /*udp*/
+            *r_ip_proto = 17;
         } else {
             return false;
         }
