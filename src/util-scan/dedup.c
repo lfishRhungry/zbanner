@@ -345,7 +345,7 @@ _rand(unsigned *seed)
 int dedup_selftest()
 {
     struct DedupTable *dedup;
-    unsigned seed = 0;
+    unsigned seed = 2222;
     size_t i;
     unsigned found_match = 0;
     unsigned line = 0;
@@ -361,17 +361,17 @@ int dedup_selftest()
     {
         ipaddress ip_me;
         ipaddress ip_them;
-        unsigned port_me;
-        unsigned port_them;
-        unsigned type;
+        unsigned  port_me;
+        unsigned  port_them;
+        unsigned  type;
         
-        ip_me.version = 4;
+        ip_me.version   = 4;
         ip_them.version = 4;
-        ip_me.ipv4 = 0x12345678;
-        ip_them.ipv4 = 0xabcdef0;
-        port_me = 0x1234;
-        port_them = 0xfedc;
-        type = 0x8967;
+        ip_me.ipv4      = 0x12345678;
+        ip_them.ipv4    = 0xabcdef0;
+        port_me         = 0x1234;
+        port_them       = 0xfedc;
+        type            = 0x8967;
         
         if (dedup_is_duplicate(dedup, ip_them, port_them, type)) {
             line = __LINE__;
@@ -382,10 +382,10 @@ int dedup_selftest()
             goto fail;
         }
         
-        ip_me.version = 6;
+        ip_me.version   = 6;
         ip_them.version = 6;
-        ip_me.ipv6.hi = 0x12345678;
-	    ip_me.ipv6.lo = 0x12345678;
+        ip_me.ipv6.hi   = 0x12345678;
+        ip_me.ipv6.lo   = 0x12345678;
         ip_them.ipv6.hi = 0xabcdef0;
         ip_them.ipv6.lo = 0xabcdef0;
         type = 0x7654;
@@ -427,11 +427,7 @@ int dedup_selftest()
         }
     }
     
-    /* Approximately 30 matches should be found. If we couldn't
-     * find any, or if we've found too many, then the test has
-     * failed. */
-    if (found_match == 0 || found_match > 200) {
-        printf("match: %d\n", found_match);
+    if (found_match == 0 || found_match > 2800 || found_match < 2600) {
         line = __LINE__;
         goto fail;
     }
@@ -462,7 +458,7 @@ int dedup_selftest()
     }
 
     /* The result should be same as for IPv4, around 30 matches found. */
-    if (found_match == 0 || found_match > 200) {
+    if (found_match == 0 || found_match > 2800 || found_match < 2600) {
         line = __LINE__;
         goto fail;
     }
