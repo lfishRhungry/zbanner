@@ -165,7 +165,7 @@ void receive_thread(void *v) {
     struct RxDispatch              dispatch_parms;
     size_t                         dispatcher;
     struct rte_ring               *dispatch_q;
-    struct FHandler                ft_handler;
+    struct FHandler               *ft_handler;
     struct Received               *recved;
 
 
@@ -195,7 +195,7 @@ void receive_thread(void *v) {
         dedup = dedup_create(xconf->dedup_win);
 
     if (xconf->is_fast_timeout) {
-        ft_init_handler(xconf->ft_table, &ft_handler);
+        ft_handler = ft_get_handler(xconf->ft_table);
     }
 
     /**
@@ -222,7 +222,7 @@ void receive_thread(void *v) {
 
     for (unsigned i=0; i<handler_num; i++) {
         /*handle threads just add tm_event, it's thread safe*/
-        handle_parms[i].ft_handler      = xconf->is_fast_timeout?&ft_handler:NULL;
+        handle_parms[i].ft_handler      = xconf->is_fast_timeout?ft_handler:NULL;
         handle_parms[i].scan_module     = xconf->scan_module;
         handle_parms[i].handle_queue    = handle_q[i];
         handle_parms[i].stack           = stack;
@@ -239,7 +239,7 @@ void receive_thread(void *v) {
         /*handle one fast-timeout event in each loop to avoid blocking*/
         if (xconf->is_fast_timeout) {
 
-            tm_event = ft_pop_event(&ft_handler, global_now);
+            tm_event = ft_pop_event(ft_handler, global_now);
             /*dedup timeout event and other packets together*/
             if (tm_event) {
                 if ((!xconf->is_nodedup &&
@@ -256,7 +256,7 @@ void receive_thread(void *v) {
                     };
 
                     scan_module->timeout_cb(entropy, tm_event, &item,
-                        stack, &ft_handler);
+                        stack, ft_handler);
 
                     output_result(output, &item);
 
@@ -265,7 +265,7 @@ void receive_thread(void *v) {
                 tm_event = NULL;
             }
 
-            parms->total_tm_event = ft_event_count(&ft_handler);
+            parms->total_tm_event = ft_event_count(ft_handler);
         }
 
         /**
@@ -418,7 +418,7 @@ void receive_thread(void *v) {
     if (pcapfile)
         pcapfile_close(pcapfile);
     if (xconf->is_fast_timeout)
-        ft_close_handler(&ft_handler);
+        ft_close_handler(ft_handler);
 
     /* Thread is about to exit */
     parms->done_receiving = true;

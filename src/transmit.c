@@ -63,7 +63,7 @@ void transmit_thread(void *v)
     uint64_t                     dynamic_seed                     = xconf->seed;
     uint64_t                     entropy                  = xconf->seed;
     struct ScanTmEvent          *tm_event                 = NULL;
-    struct FHandler              ft_handler;
+    struct FHandler             *ft_handler;
     uint64_t                    *status_sent_count;
 
     /* Wait to make sure receive_thread is ready */
@@ -96,7 +96,7 @@ void transmit_thread(void *v)
     adapter_get_source_addresses(xconf, &src);
 
     if (xconf->is_fast_timeout) {
-        ft_init_handler(xconf->ft_table, &ft_handler);
+        ft_handler = ft_get_handler(xconf->ft_table);
     }
 
     throttler_start(throttler, xconf->max_rate / xconf->tx_thread_count);
@@ -219,7 +219,7 @@ infinite:;
 
                 /*add timeout event*/
                 if (xconf->is_fast_timeout && tm_event->need_timeout) {
-                    ft_add_event(&ft_handler, tm_event, global_now);
+                    ft_add_event(ft_handler, tm_event, global_now);
                     tm_event = NULL;
                 } else {
                     tm_event->need_timeout = 0;
@@ -279,7 +279,7 @@ infinite:;
     }
 
     if (xconf->is_fast_timeout)
-        ft_close_handler(&ft_handler);
+        ft_close_handler(ft_handler);
 
     parms->done_transmitting = true;
     LOG(LEVEL_WARNING, "[+] exiting transmit thread #%u                    \n",

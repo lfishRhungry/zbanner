@@ -7,22 +7,8 @@
 
 #include "../util-data/lfqueue.h"
 
-/**
- * I think its no need to add lock to FHandler because USER must only add event,
- * Our only one Rx thread will pop event in every loop.*/
-struct FHandler {
-    time_t            spec;
-    lfqueue_t        *queue;
-    struct FEntry    *oldest; /*oldest event poped from queue*/
-};
-
-struct FTable {
-    /**
-     * What time spec elapses before now should an event be timeout
-    */
-    time_t       spec;
-    lfqueue_t    queue_t;
-};
+struct FHandler;
+struct FTable;
 
 /**
  * Create a fast-timeout table to manage timeout events
@@ -31,7 +17,7 @@ struct FTable {
  * @param spec What time spec elapses before now should an event be timeout
  * @return fast-timeout table.
 */
-void ft_init_table(struct FTable *table, time_t spec);
+struct FTable * ft_init_table(time_t spec);
 
 /**
  * Got a handler from fast-timeout table to add or pop timeout events in one thread.
@@ -39,7 +25,7 @@ void ft_init_table(struct FTable *table, time_t spec);
  * @param table fast-timeout table.
  * @return fast-timeout table handler.
 */
-void ft_init_handler(struct FTable *table, struct FHandler *handler);
+struct FHandler * ft_get_handler(struct FTable *table);
 
 /**
  * Add an event to fast-timeout table through the handler.
