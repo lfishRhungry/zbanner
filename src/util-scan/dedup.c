@@ -345,7 +345,7 @@ _rand(unsigned *seed)
 int dedup_selftest()
 {
     struct DedupTable *dedup;
-    unsigned seed = 2222;
+    unsigned seed = 0;
     size_t i;
     unsigned found_match = 0;
     unsigned line = 0;
