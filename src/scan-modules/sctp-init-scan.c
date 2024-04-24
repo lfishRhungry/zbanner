@@ -8,6 +8,51 @@
 
 extern struct ScanModule SctpInitScan; /*for internal x-ref*/
 
+struct SctpInitConf {
+    unsigned record_ttl:1;
+    unsigned record_ipid:1;
+};
+
+static struct SctpInitConf sctpinit_conf = {0};
+
+static enum Config_Res SET_record_ttl(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    sctpinit_conf.record_ttl = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_record_ipid(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    sctpinit_conf.record_ipid = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static struct ConfigParam sctpinit_parameters[] = {
+    {
+        "record-ttl",
+        SET_record_ttl,
+        F_BOOL,
+        {"ttl", 0},
+        "Records TTL for IPv4 or Hop Limit for IPv6 in SCTP response."
+    },
+    {
+        "record-ipid",
+        SET_record_ipid,
+        F_BOOL,
+        {"ipid", 0},
+        "Records IPID of SCTP response just for IPv4."
+    },
+
+    {0}
+};
 static bool
 sctpinit_transmit(
     uint64_t entropy,
@@ -89,6 +134,15 @@ sctpinit_handle(
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "abort");
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
     }
+
+    int rpt_tmp = 0;
+
+    if (sctpinit_conf.record_ttl)
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+            "[ttl=%d]", recved->parsed.ip_ttl);
+    if (sctpinit_conf.record_ipid && recved->parsed.src_ip.version==4)
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+            "[ipid=%d]", recved->parsed.ip_v4_id);
 }
 
 void sctpinit_timeout(
@@ -107,7 +161,7 @@ struct ScanModule SctpInitScan = {
     .name                = "sctp-init",
     .required_probe_type = 0,
     .support_timeout     = 1,
-    .params              = NULL,
+    .params              = sctpinit_parameters,
     .bpf_filter          = "sctp && (sctp[12]==2 || sctp[12]==6)", /*sctp init or init ack*/
     .desc =
         "SctpInitScan sends an SCTP INIT packet(chunk) to target port. Expect an "
