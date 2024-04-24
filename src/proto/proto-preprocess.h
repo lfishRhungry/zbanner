@@ -39,7 +39,8 @@ struct PreprocessedInfo {
     unsigned ip_version;    /* 4 or 6 */
     unsigned ip_protocol;   /* 6 for TCP, 11 for UDP */
     unsigned ip_length;     /* length of total packet */
-    unsigned ip_ttl;
+    unsigned ip_ttl;        /* ttl of ipv4 or hop limit of ipv6*/
+    unsigned ip_v4_id;
 
     const unsigned char *_ip_src;
     const unsigned char *_ip_dst;

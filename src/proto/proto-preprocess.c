@@ -91,6 +91,7 @@ parse_ipv4:
 
 
         /* Save off pseudo header for checksum calculation */
+        info->ip_v4_id       = BE_TO_U16(px+offset+4);
         info->ip_version     = (px[offset]>>4)&0xF;
         info->_ip_src        = px+offset+12;
         info->_ip_dst        = px+offset+16;
@@ -197,10 +198,11 @@ parse_ipv6:
             length = offset + 40 + payload_length;
 
         /* Save off pseudo header for checksum calculation */
-        info->ip_version = (px[offset]>>4)&0xF;
-        info->_ip_src = px+offset+8;
-        info->_ip_dst = px+offset+8+16;
+        info->ip_version  = (px[offset]>>4)&0xF;
         info->ip_protocol = px[offset+6];
+        info->ip_ttl      = px[offset+7];
+        info->_ip_src     = px+offset+8;
+        info->_ip_dst     = px+offset+8+16;
 
         info->src_ip.version = 6;
         info->src_ip.ipv6.hi = BE_TO_U64(px+offset+ 8);
@@ -217,11 +219,11 @@ parse_ipv6:
 
 parse_ipv6_next:
         switch (info->ip_protocol) {
-        case 0: goto parse_ipv6_hop_by_hop;
-        case 6: goto parse_tcp;
-        case 17: goto parse_udp;
-        case 58: goto parse_icmpv6;
-        case 132: goto parse_sctp;
+        case 0:        goto parse_ipv6_hop_by_hop;
+        case 6:        goto parse_tcp;
+        case 17:       goto parse_udp;
+        case 58:       goto parse_icmpv6;
+        case 132:      goto parse_sctp;
         case 0x2c: /* IPv6 fragment */
             return false;
         default:

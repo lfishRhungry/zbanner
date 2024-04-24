@@ -10,9 +10,42 @@ extern struct ScanModule TcpSynScan; /*for internal x-ref*/
 
 struct TcpSynConf {
     unsigned send_rst:1;
+    unsigned record_ttl:1;
+    unsigned record_ipid:1;
+    unsigned record_win:1;
 };
 
 static struct TcpSynConf tcpsyn_conf = {0};
+
+static enum Config_Res SET_record_ttl(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.record_ttl = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_record_ipid(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.record_ipid = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_record_win(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.record_win = parseBoolean(value);
+
+    return CONF_OK;
+}
 
 static enum Config_Res SET_send_rst(void *conf, const char *name, const char *value)
 {
@@ -31,7 +64,29 @@ static struct ConfigParam tcpsyn_parameters[] = {
         F_BOOL,
         {"rst", 0},
         "Actively send an RST if got a SYN-ACK. This is useful when we are in "
-        "bypassing mode or working on Windows."
+        "bypassing mode or working on Windows and don't want to waste connection"
+        " resources of targets."
+    },
+    {
+        "record-ttl",
+        SET_record_ttl,
+        F_BOOL,
+        {"ttl", 0},
+        "Records TTL for IPv4 or Hop Limit for IPv6 in SYN-ACK or RST."
+    },
+    {
+        "record-ipid",
+        SET_record_ipid,
+        F_BOOL,
+        {"ipid", 0},
+        "Records IPID SYN-ACK or RST just for IPv4."
+    },
+    {
+        "record-win",
+        SET_record_win,
+        F_BOOL,
+        {"win", "window", 0},
+        "Records TCP window size."
     },
 
     {0}
@@ -107,6 +162,7 @@ tcpsyn_handle(
     struct stack_t *stack,
     struct FHandler *handler)
 {
+    uint16_t win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
     /*SYNACK*/
     if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
@@ -114,14 +170,11 @@ tcpsyn_handle(
         item->level = Output_SUCCESS;
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "syn-ack");
 
-        uint16_t win_them =
-            TCP_WIN(recved->packet, recved->parsed.transport_offset);
         if (win_them == 0) {
             safe_strcpy(item->classification, OUTPUT_CLS_LEN, "zerowin");
         } else {
             safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
         }
-
         if (tcpsyn_conf.send_rst) {
             unsigned seqno_me   = TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
             unsigned seqno_them = TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
@@ -143,6 +196,19 @@ tcpsyn_handle(
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "rst");
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
     }
+
+    int rpt_tmp = 0;
+
+    if (tcpsyn_conf.record_ttl)
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+            "[ttl=%d]", recved->parsed.ip_ttl);
+    if (tcpsyn_conf.record_ipid && recved->parsed.src_ip.version==4)
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+            "[ipid=%d]", recved->parsed.ip_v4_id);
+    if (tcpsyn_conf.record_win)
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+            "[win=%d]", win_them);
+
 }
 
 void tcpsyn_timeout(
