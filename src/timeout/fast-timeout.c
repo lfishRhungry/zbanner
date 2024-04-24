@@ -82,8 +82,8 @@ void * ft_pop_event(struct FHandler *handler, time_t now)
 }
 
 void ft_close_handler(struct FHandler *handler) {
-    if (!handler->oldest) {
-        if (!handler->oldest->event)
+    if (handler->oldest) {
+        if (handler->oldest->event)
             free(handler->oldest->event);
         free(handler->oldest);
         handler->oldest = NULL;
