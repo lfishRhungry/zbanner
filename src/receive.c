@@ -159,8 +159,8 @@ void receive_thread(void *v) {
     struct ScanModule             *scan_module                 = xconf->scan_module;
     struct ScanTmEvent            *tm_event                    = NULL;
     unsigned                       handler_num                 = xconf->rx_handler_count;
-    struct RxHandle                handle_parms[handler_num];
     size_t                         handler[handler_num];
+    struct RxHandle                handle_parms[handler_num];
     struct rte_ring               *handle_q[handler_num];
     struct RxDispatch              dispatch_parms;
     size_t                         dispatcher;
