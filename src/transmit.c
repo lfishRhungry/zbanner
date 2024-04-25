@@ -177,7 +177,7 @@ infinite:;
                 uint64_t ck = get_cookie_ipv4(
                     (unsigned)(i + parms->my_repeat),
                     (unsigned)((i + parms->my_repeat) >> 32),
-                    (unsigned)xXx, (unsigned)(xXx >> 32), entropy);
+                    (unsigned)xXx, (unsigned)(xXx >> 32), dynamic_seed);
                 target.port_me = src.port + (ck & src.port_mask);
             } else {
                 target.port_me = src.port;
