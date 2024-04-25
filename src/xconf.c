@@ -1548,6 +1548,20 @@ static enum Config_Res SET_offline(void *conf, const char *name, const char *val
     return CONF_OK;
 }
 
+static enum Config_Res SET_static_seed(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->is_static_seed || xconf->echo_all)
+            fprintf(xconf->echo, "static-seed = %s\n", xconf->is_infinite?"true":"false");
+        return 0;
+    }
+    xconf->is_static_seed = parseBoolean(value);
+    return CONF_OK;
+}
+
 static enum Config_Res SET_infinite(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
@@ -3039,6 +3053,16 @@ struct ConfigParam config_parameters[] = {
         " It also means the hit count for every target + 1. So default is 0."
         " `--infinite` will be automatically set when we use repeat.\n"
         "NOTE: We should be careful to the deduplication in the repeat mode."
+    },
+    {
+        "static-seed",
+        SET_static_seed,
+        F_BOOL,
+        {"keep-seed", 0},
+        "Use same seed to pick up addresses in infinite mode. "
+        XTATE_FIRST_UPPER_NAME" changes seed for every round to make a different"
+        " scan order while repeating. We can use static-seed to keep order of "
+        "all rounds."
     },
     {
         "blackrock-rounds",

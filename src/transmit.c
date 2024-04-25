@@ -254,7 +254,9 @@ infinite:;
         if ((xconf->repeat && parms->my_repeat<xconf->repeat)
             || !xconf->repeat) {
             /*update dynamic_seed and my_repeat while going again*/
-            dynamic_seed++;
+            if (!xconf->is_static_seed) {
+                dynamic_seed++;
+            }
             parms->my_repeat++;
             goto infinite;
         }
