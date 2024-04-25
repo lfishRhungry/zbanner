@@ -1,5 +1,6 @@
 rm -rf ./build/*
 rm -rf ./build/*
+rm -rf ./bin/*
 cd ./build
 
 if [[ "$1" = "debug" ]];then
