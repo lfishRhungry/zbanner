@@ -103,6 +103,6 @@ struct OutputModule CsvOutput = {
     .result_cb          = &csv_result,
     .close_cb           = &csv_close,
     .desc               =
-        "CsvOutput save results in Comma-seperated Values(csv) format to "
+        "CsvOutput save results in Comma-Seperated Values(csv) format to "
         "specified file.",
 };

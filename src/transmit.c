@@ -247,13 +247,13 @@ infinite:;
     }
 
     /*
-     * --infinite and --repeat
+     * --infinite, --repeat, --static-seed
      * Set repeat as condition to avoid more packets sending.
      */
     if (xconf->is_infinite && !time_to_finish_tx) {
         if ((xconf->repeat && parms->my_repeat<xconf->repeat)
             || !xconf->repeat) {
-            /*update dynamic_seed and my_repeat while going again*/
+            /* update dynamic_seed and my_repeat while going again*/
             if (!xconf->is_static_seed) {
                 dynamic_seed++;
             }
