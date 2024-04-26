@@ -108,7 +108,8 @@ hexval(int c)
 /*****************************************************************************
  *****************************************************************************/
 static struct RangeList
-parse_ports(struct NmapServiceProbeList *list, const char *line, size_t offset, size_t line_length)
+parse_ports(struct NmapServiceProbeList *list,
+    const char *line, size_t offset, size_t line_length)
 {
     /* Examples:
         Exclude 53,T:9100,U:30000-40000
@@ -125,7 +126,8 @@ parse_ports(struct NmapServiceProbeList *list, const char *line, size_t offset, 
     p = rangelist_parse_ports(&ranges, line + offset, &is_error, 0);
     
     if (is_error) {
-        LOG(LEVEL_ERROR, "%s:%u:%u: bad port spec\n", list->filename, list->line_number, (unsigned)(p-line));
+        LOG(LEVEL_ERROR, "%s:%u:%u: bad port spec\n",
+            list->filename, list->line_number, (unsigned)(p-line));
         rangelist_remove_all(&ranges);
     }
     
@@ -135,7 +137,8 @@ parse_ports(struct NmapServiceProbeList *list, const char *line, size_t offset, 
 /*****************************************************************************
  *****************************************************************************/
 static unsigned
-parse_number(struct NmapServiceProbeList *list, const char *line, size_t offset, size_t line_length)
+parse_number(struct NmapServiceProbeList *list,
+    const char *line, size_t offset, size_t line_length)
 {
     /* Examples:
      totalwaitms 6000
@@ -153,7 +156,9 @@ parse_number(struct NmapServiceProbeList *list, const char *line, size_t offset,
         offset++;
     
     if (offset != line_length) {
-        LOG(LEVEL_ERROR, "%s:%u:%u: unexpected character '%c'\n", list->filename, list->line_number, (unsigned)offset, isprint(line[offset])?line[offset]:'.');
+        LOG(LEVEL_ERROR, "%s:%u:%u: unexpected character '%c'\n",
+            list->filename, list->line_number, (unsigned)offset,
+            isprint(line[offset])?line[offset]:'.');
     }
     
     return number;
@@ -212,7 +217,8 @@ parse_fallback(struct NmapServiceProbeList *list, const char *line, size_t offse
         while (offset < line_length && (isspace(line[offset]) || line[offset] == ','))
             offset++; /* trim trailing whitespace */
         if (name_length == 0) {
-            LOG(LEVEL_ERROR, "%s:%u:%u: name too short\n", list->filename, list->line_number, (unsigned)name_offset);
+            LOG(LEVEL_ERROR, "%s:%u:%u: name too short\n",
+                list->filename, list->line_number, (unsigned)name_offset);
             break;
         }
         
@@ -237,7 +243,8 @@ parse_fallback(struct NmapServiceProbeList *list, const char *line, size_t offse
 /*****************************************************************************
  *****************************************************************************/
 static void
-parse_probe(struct NmapServiceProbeList *list, const char *line, size_t offset, size_t line_length)
+parse_probe(struct NmapServiceProbeList *list,
+    const char *line, size_t offset, size_t line_length)
 {
     /* Examples:
      Probe TCP GetRequest q|GET / HTTP/1.0\r\n\r\n|
@@ -255,7 +262,8 @@ parse_probe(struct NmapServiceProbeList *list, const char *line, size_t offset, 
     probe = CALLOC(1, sizeof(*probe));
     if (list->count + 1 >= list->max_slot) {
         list->max_slot = list->max_slot * 2 + 1;
-        list->probes = REALLOCARRAY(list->probes, sizeof(list->probes[0]), list->max_slot);
+        list->probes = REALLOCARRAY(list->probes,
+            sizeof(list->probes[0]), list->max_slot);
     }
     list->probes[list->count++] = probe;
     
@@ -263,7 +271,8 @@ parse_probe(struct NmapServiceProbeList *list, const char *line, size_t offset, 
      * <protocol>
      */
     if (line_length - offset <= 3) {
-        LOG(LEVEL_ERROR, "%s:%u:%u: line too short\n", filename, line_number, (unsigned)offset);
+        LOG(LEVEL_ERROR, "%s:%u:%u: line too short\n",
+            filename, line_number, (unsigned)offset);
         goto parse_error;
     }
     if (memcmp(line+offset, "TCP", 3) == 0)
@@ -271,12 +280,14 @@ parse_probe(struct NmapServiceProbeList *list, const char *line, size_t offset, 
     else if (memcmp(line+offset, "UDP", 3) == 0)
         probe->protocol = NMAP_IPPROTO_UDP;
     else {
-        LOG(LEVEL_ERROR, "%s:%u:%u: unknown protocol\n", filename, line_number, (unsigned)offset);
+        LOG(LEVEL_ERROR, "%s:%u:%u: unknown protocol\n",
+            filename, line_number, (unsigned)offset);
         goto parse_error;
     }
     offset += 3;
     if (!isspace(line[offset])) {
-        LOG(LEVEL_ERROR, "%s:%u:%u: unexpected character\n", filename, line_number, (unsigned)offset);
+        LOG(LEVEL_ERROR, "%s:%u:%u: unexpected character\n",
+            filename, line_number, (unsigned)offset);
         goto parse_error;
     }
     while (offset < line_length && isspace(line[offset]))
@@ -287,7 +298,8 @@ parse_probe(struct NmapServiceProbeList *list, const char *line, size_t offset, 
      */
     probe->name = parse_name(line, &offset, line_length);
     if (probe->name == 0) {
-        LOG(LEVEL_ERROR, "%s:%u:%u: probename parse error\n", filename, line_number, (unsigned)offset);
+        LOG(LEVEL_ERROR, "%s:%u:%u: probename parse error\n",
+            filename, line_number, (unsigned)offset);
         goto parse_error;
     }
     
@@ -304,11 +316,14 @@ parse_probe(struct NmapServiceProbeList *list, const char *line, size_t offset, 
         size_t x_offset;
         
         if (line_length - offset <= 2) {
-            LOG(LEVEL_ERROR, "%s:%u:%u: line too short\n", filename, line_number, (unsigned)offset);
+            LOG(LEVEL_ERROR, "%s:%u:%u: line too short\n",
+                filename, line_number, (unsigned)offset);
             goto parse_error;
         }
         if (line[offset++] != 'q') {
-            LOG(LEVEL_ERROR, "%s:%u:%u: expected 'q', found '%c'\n", filename, line_number, (unsigned)offset, isprint(line[offset-1])?line[offset-1]:'.');
+            LOG(LEVEL_ERROR, "%s:%u:%u: expected 'q', found '%c'\n",
+                filename, line_number, (unsigned)offset,
+                isprint(line[offset-1])?line[offset-1]:'.');
             goto parse_error;
         }
         
@@ -337,15 +352,19 @@ parse_probe(struct NmapServiceProbeList *list, const char *line, size_t offset, 
             /* skip escape character '\\' */
             offset++;
             if (offset >= line_length || line[offset] == delimiter) {
-                LOG(LEVEL_ERROR, "%s:%u:%u: premature end of field\n", filename, line_number, (unsigned)offset);
+                LOG(LEVEL_ERROR, "%s:%u:%u: premature end of field\n",
+                    filename, line_number, (unsigned)offset);
                 goto parse_error;
             }
             
             /* Handled escape sequence */
             switch (line[offset++]) {
                 default:
-                    LOG(LEVEL_ERROR, "%s:%u: %.*s\n", filename, line_number, (unsigned)line_length, line);
-                    LOG(LEVEL_ERROR, "%s:%u:%u: unexpected escape character '%c'\n", filename, line_number, (unsigned)offset-1, isprint(line[offset-1])?line[offset-1]:'.');
+                    LOG(LEVEL_ERROR, "%s:%u: %.*s\n", filename, line_number,
+                        (unsigned)line_length, line);
+                    LOG(LEVEL_ERROR, "%s:%u:%u: unexpected escape character '%c'\n",
+                        filename, line_number, (unsigned)offset-1,
+                        isprint(line[offset-1])?line[offset-1]:'.');
                     goto parse_error;
                 case '\\':
                     x[x_offset++] = '\\';
@@ -377,17 +396,21 @@ parse_probe(struct NmapServiceProbeList *list, const char *line, size_t offset, 
                 case 'x':
                     /* make sure at least 2 characters exist in input, either due
                      * to line-length or the delimiter */
-                    if (offset + 2 >= line_length || line[offset+0] == delimiter || line[offset+1] == delimiter) {
-                        LOG(LEVEL_ERROR, "%s:%u:%u: line too short\n", filename, line_number, (unsigned)offset);
+                    if (offset + 2 >= line_length
+                        || line[offset+0] == delimiter
+                        || line[offset+1] == delimiter) {
+                        LOG(LEVEL_ERROR, "%s:%u:%u: line too short\n",
+                            filename, line_number, (unsigned)offset);
                         goto parse_error;
                     }
                     
                     /* make sure those two characters are hex digits */
-                    if (!is_hexchar(line[offset+0]) || !is_hexchar(line[offset+1])) {
-                        LOG(LEVEL_ERROR, "%s:%u:%u: expected hex, found '%c%c'\n", filename, line_number, (unsigned)offset,
-                                isprint(line[offset+1])?line[offset+1]:'.',
-                                isprint(line[offset+2])?line[offset+2]:'.'
-                                );
+                    if (!is_hexchar(line[offset+0])
+                        || !is_hexchar(line[offset+1])) {
+                        LOG(LEVEL_ERROR, "%s:%u:%u: expected hex, found '%c%c'\n",
+                            filename, line_number, (unsigned)offset,
+                            isprint(line[offset+1])?line[offset+1]:'.',
+                            isprint(line[offset+2])?line[offset+2]:'.');
                         goto parse_error;
                     }
                     
@@ -400,7 +423,9 @@ parse_probe(struct NmapServiceProbeList *list, const char *line, size_t offset, 
         probe->hellolength = x_offset;
         
         if (offset >= line_length || line[offset] != delimiter) {
-            LOG(LEVEL_ERROR, "%s:%u:%u: missing end delimiter '%c'\n", filename, line_number, (unsigned)offset, isprint(delimiter)?delimiter:'.');
+            LOG(LEVEL_ERROR, "%s:%u:%u: missing end delimiter '%c'\n",
+                filename, line_number, (unsigned)offset,
+                isprint(delimiter)?delimiter:'.');
             goto parse_error;
         }
         //offset++;
@@ -424,7 +449,8 @@ parse_error:
 /*****************************************************************************
  *****************************************************************************/
 static struct ServiceProbeMatch *
-parse_match(struct NmapServiceProbeList *list, const char *line, size_t offset, size_t line_length)
+parse_match(struct NmapServiceProbeList *list,
+    const char *line, size_t offset, size_t line_length)
 {
     /* Examples:
      match ftp m/^220.*Welcome to .*Pure-?FTPd (\d\S+\s*)/ p/Pure-FTPd/ v/$1/ cpe:/a:pureftpd:pure-ftpd:$1/
@@ -447,7 +473,8 @@ parse_match(struct NmapServiceProbeList *list, const char *line, size_t offset, 
      */
     match->service = parse_name(line, &offset, line_length);
     if (match->service == 0) {
-        LOG(LEVEL_ERROR, "%s:%u:%u: servicename is empty\n", filename, line_number, (unsigned)offset);
+        LOG(LEVEL_ERROR, "%s:%u:%u: servicename is empty\n",
+            filename, line_number, (unsigned)offset);
         goto parse_error;
     }
 
@@ -466,11 +493,14 @@ parse_match(struct NmapServiceProbeList *list, const char *line, size_t offset, 
         
         /* line must start with 'm' */
         if (line_length - offset <= 2) {
-            LOG(LEVEL_ERROR, "%s:%u:%u: line too short\n", filename, line_number, (unsigned)offset);
+            LOG(LEVEL_ERROR, "%s:%u:%u: line too short\n",
+                filename, line_number, (unsigned)offset);
             goto parse_error;
         }
         if (line[offset] != 'm') {
-            LOG(LEVEL_ERROR, "%s:%u:%u: expected 'm', found '%c'\n", filename, line_number, (unsigned)offset, isprint(line[offset])?line[offset]:'.');
+            LOG(LEVEL_ERROR, "%s:%u:%u: expected 'm', found '%c'\n",
+                filename, line_number, (unsigned)offset,
+                isprint(line[offset])?line[offset]:'.');
             goto parse_error;
         }
         offset++;
@@ -484,7 +514,9 @@ parse_match(struct NmapServiceProbeList *list, const char *line, size_t offset, 
             offset++;
         regex_length = offset - regex_offset;
         if (offset >= line_length || line[offset] != delimiter) {
-            LOG(LEVEL_ERROR, "%s:%u:%u: missing ending delimiter '%c'\n", filename, line_number, (unsigned)offset, isprint(delimiter)?delimiter:'.');
+            LOG(LEVEL_ERROR, "%s:%u:%u: missing ending delimiter '%c'\n",
+                filename, line_number, (unsigned)offset,
+                isprint(delimiter)?delimiter:'.');
             goto parse_error;
         } else
             offset++;
@@ -505,7 +537,9 @@ parse_match(struct NmapServiceProbeList *list, const char *line, size_t offset, 
                     match->is_include_newlines = 1;
                     break;
                 default:
-                    LOG(LEVEL_ERROR, "%s:%u:%u: unknown regex pattern option '%c'\n", filename, line_number, (unsigned)offset, isprint(line[offset])?line[offset]:'.');
+                    LOG(LEVEL_ERROR, "%s:%u:%u: unknown regex pattern option '%c'\n",
+                        filename, line_number, (unsigned)offset,
+                        isprint(line[offset])?line[offset]:'.');
                     goto parse_error;
             }
             offset++;
@@ -534,7 +568,9 @@ parse_match(struct NmapServiceProbeList *list, const char *line, size_t offset, 
         if (offset >= line_length)
             break;
         if (offset + 2 >= line_length) {
-            LOG(LEVEL_ERROR, "%s:%u:%u: unexpected character at end of line '%c'\n", filename, line_number, (unsigned)offset, isprint(line[offset])?line[offset]:'.');
+            LOG(LEVEL_ERROR, "%s:%u:%u: unexpected character at end of line '%c'\n",
+                filename, line_number, (unsigned)offset,
+                isprint(line[offset])?line[offset]:'.');
             goto parse_error;
         }
         
@@ -542,11 +578,14 @@ parse_match(struct NmapServiceProbeList *list, const char *line, size_t offset, 
         id = line[offset++];
         if (id == 'c') {
             if (offset + 3 >= line_length) {
-                LOG(LEVEL_ERROR, "%s:%u:%u: unexpected character at end of line '%c'\n", filename, line_number, (unsigned)offset, isprint(line[offset])?line[offset]:'.');
+                LOG(LEVEL_ERROR, "%s:%u:%u: unexpected character at end of line '%c'\n",
+                    filename, line_number, (unsigned)offset,
+                    isprint(line[offset])?line[offset]:'.');
                 goto parse_error;
             }
             if (memcmp(line+offset, "pe:", 3) != 0) {
-                LOG(LEVEL_ERROR, "%s:%u:%u: expected string 'cpe:'\n", filename, line_number, (unsigned)offset);
+                LOG(LEVEL_ERROR, "%s:%u:%u: expected string 'cpe:'\n",
+                    filename, line_number, (unsigned)offset);
                 goto parse_error;
             }
             offset += 3;
@@ -574,13 +613,15 @@ parse_match(struct NmapServiceProbeList *list, const char *line, size_t offset, 
                 type = SvcV_CpeName;
                 break;
             default:
-                LOG(LEVEL_ERROR, "%s:%u:%u: versioninfo unknown identifier '%c'\n", filename, line_number, (unsigned)offset, isprint(id)?id:'.');
+                LOG(LEVEL_ERROR, "%s:%u:%u: versioninfo unknown identifier '%c'\n",
+                    filename, line_number, (unsigned)offset, isprint(id)?id:'.');
                 goto parse_error;
         }
         
         /* grab the delimiter */
         if (offset + 2 >= line_length) {
-            LOG(LEVEL_ERROR, "%s:%u:%u: line too short\n", filename, line_number, (unsigned)offset);
+            LOG(LEVEL_ERROR, "%s:%u:%u: line too short\n",
+                filename, line_number, (unsigned)offset);
             goto parse_error;
         }
         delimiter = line[offset++];
@@ -591,7 +632,9 @@ parse_match(struct NmapServiceProbeList *list, const char *line, size_t offset, 
             offset++;
         value_length = offset - value_offset;
         if (offset >= line_length || line[offset] != delimiter) {
-            LOG(LEVEL_ERROR, "%s:%u:%u: missing ending delimiter '%c'\n", filename, line_number, (unsigned)offset, isprint(delimiter)?delimiter:'.');
+            LOG(LEVEL_ERROR, "%s:%u:%u: missing ending delimiter '%c'\n",
+                filename, line_number, (unsigned)offset,
+                isprint(delimiter)?delimiter:'.');
             goto parse_error;
         } else
             offset++;
@@ -600,7 +643,9 @@ parse_match(struct NmapServiceProbeList *list, const char *line, size_t offset, 
             offset++;
         }
         if (offset < line_length && !isspace(line[offset])) {
-            LOG(LEVEL_ERROR, "%s:%u:%u: unexpected character after delimiter '%c'\n", filename, line_number, (unsigned)offset, isprint(delimiter)?delimiter:'.');
+            LOG(LEVEL_ERROR, "%s:%u:%u: unexpected character after delimiter '%c'\n",
+                filename, line_number, (unsigned)offset,
+                isprint(delimiter)?delimiter:'.');
             goto parse_error;
         }
         while (offset < line_length && isspace(line[offset]))
@@ -681,17 +726,20 @@ parse_line(struct NmapServiceProbeList *list, const char *line)
     /* parse the remainder of the line, depending upon the type */
     switch ((int)type) {
         case SvcP_Unknown:
-            LOG(LEVEL_ERROR, "%s:%u:%u: unknown type: '%.*s'\n", filename, line_number, (unsigned)offset, (int)offset-0, line);
+            LOG(LEVEL_ERROR, "%s:%u:%u: unknown type: '%.*s'\n",
+                filename, line_number, (unsigned)offset, (int)offset-0, line);
             return;
         case SvcP_Exclude:
             if (list->count) {
                 /* The 'Exclude' directive is only valid at the top of the file,
                  * before any Probes */
-                LOG(LEVEL_ERROR, "%s:%u:%u: 'Exclude' directive only valid before any 'Probe'\n", filename, line_number, (unsigned)offset);
+                LOG(LEVEL_ERROR, "%s:%u:%u: 'Exclude' directive only valid before any 'Probe'\n",
+                    filename, line_number, (unsigned)offset);
             } else {
                 ranges = parse_ports(list, line, offset, line_length);
                 if (ranges.count == 0) {
-                    LOG(LEVEL_ERROR, "%s:%u:%u: 'Exclude' bad format\n", filename, line_number, (unsigned)offset);
+                    LOG(LEVEL_ERROR, "%s:%u:%u: 'Exclude' bad format\n",
+                        filename, line_number, (unsigned)offset);
                 } else {
                     rangelist_merge(&list->exclude, &ranges);
                     rangelist_remove_all(&ranges);
@@ -710,7 +758,8 @@ parse_line(struct NmapServiceProbeList *list, const char *line)
      * directive
      */
     if (list->count == 0) {
-        LOG(LEVEL_ERROR, "%s:%u:%u: 'directive only valid after a 'Probe'\n", filename, line_number, (unsigned)offset);
+        LOG(LEVEL_ERROR, "%s:%u:%u: 'directive only valid after a 'Probe'\n",
+            filename, line_number, (unsigned)offset);
         return;
     }
     probe = list->probes[list->count-1];
@@ -719,7 +768,8 @@ parse_line(struct NmapServiceProbeList *list, const char *line)
         case SvcP_Ports:
             ranges = parse_ports(list, line, offset, line_length);
             if (ranges.count == 0) {
-                LOG(LEVEL_ERROR, "%s:%u:%u: bad ports format\n", filename, line_number, (unsigned)offset);
+                LOG(LEVEL_ERROR, "%s:%u:%u: bad ports format\n",
+                    filename, line_number, (unsigned)offset);
             } else {
                 rangelist_merge(&probe->ports, &ranges);
                 rangelist_remove_all(&ranges);
@@ -728,7 +778,8 @@ parse_line(struct NmapServiceProbeList *list, const char *line)
         case SvcP_Sslports:
             ranges = parse_ports(list, line, offset, line_length);
             if (ranges.count == 0) {
-                LOG(LEVEL_ERROR, "%s:%u:%u: bad ports format\n", filename, line_number, (unsigned)offset);
+                LOG(LEVEL_ERROR, "%s:%u:%u: bad ports format\n",
+                    filename, line_number, (unsigned)offset);
             } else {
                 rangelist_merge(&probe->sslports, &ranges);
                 rangelist_remove_all(&ranges);
@@ -1077,8 +1128,10 @@ nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp)
             fprintf(fp, "totalwaitms %u\n", probe->totalwaitms);
         if (probe->tcpwrappedms)
             fprintf(fp, "tcpwrappedms %u\n", probe->tcpwrappedms);
-        nmapserviceprobes_print_ports(&probe->ports, fp, "ports", (probe->protocol==NMAP_IPPROTO_TCP)?Port_TCP:Port_UDP);
-        nmapserviceprobes_print_ports(&probe->sslports, fp, "sslports", (probe->protocol==NMAP_IPPROTO_TCP)?Port_TCP:Port_UDP);
+        nmapserviceprobes_print_ports(&probe->ports, fp, "ports",
+            (probe->protocol==NMAP_IPPROTO_TCP)?Port_TCP:Port_UDP);
+        nmapserviceprobes_print_ports(&probe->sslports, fp, "sslports",
+            (probe->protocol==NMAP_IPPROTO_TCP)?Port_TCP:Port_UDP);
         
         for (match=probe->match; match; match = match->next) {
             struct ServiceVersionInfo *vi;
@@ -1324,7 +1377,8 @@ match_service_in_one_probe(
 
             match_data = pcre2_match_data_create_from_pattern(m->compiled_re, NULL);
             if (!match_data) {
-                LOG(LEVEL_ERROR, "FAIL: cannot allocate match_data when matching in probe %s.\n", probe->name);
+                LOG(LEVEL_ERROR, "FAIL: cannot allocate match_data when matching in probe %s.\n",
+                    probe->name);
                 match_res = NULL;
                 break;
             }
