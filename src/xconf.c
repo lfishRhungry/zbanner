@@ -2949,7 +2949,7 @@ struct ConfigParam config_parameters[] = {
         SET_resume_count,
         F_NONE,
         {"target-count", 0},
-        "The maximum number of probes to send before exiting. This is useful "
+        "The maximum number of targets to scan before exiting. This is useful "
         "with the --resume-index to chop up a scan and split it among multiple "
         "instances, though the --shards option might be better."
     },
@@ -3327,7 +3327,6 @@ void xconf_print_usage()
 void xconf_print_help()
 {
     printf("\n\n\n");
-    // printf("%s", ascii_xtate1);
     xprint_with_head(ascii_xtate1, 15, 80);
     printf("\n                               "XTATE_GOD"\n\n");
     printf("\n");
@@ -3345,26 +3344,30 @@ void xconf_print_help()
         "problem or advice, please contact me.\n", 2, 80);
     printf("\n");
     printf("\n");
-    printf(XPRINT_DASH_LINE);
-    printf("\n");
     printf("\n");
 
     unsigned count = 0;
     for (unsigned i=0; config_parameters[i].name; i++) {
 
-        if (!config_parameters[i].helps)
+        if (!config_parameters[i].helps) {
+            if (config_parameters[i].set==&SET_nothing) {
+                /*This is a paragraph name*/
+                printf(XPRINT_EQUAL_LINE"\n");
+                printf("  %s\n", config_parameters[i].name);
+                printf(XPRINT_EQUAL_LINE"\n\n");
+            }
             continue;
+        }
 
         printf("  --%s", config_parameters[i].name);
+
         for (unsigned j=0; config_parameters[i].alts[j]; j++) {
             printf(", --%s", config_parameters[i].alts[j]);
         }
-        // printf("\n\n      %s\n\n\n", config_parameters[i].helps);
+
         printf("\n\n");
         xprint(config_parameters[i].helps, 6, 80);
-        printf("\n\n");
-        printf(XPRINT_DASH_LINE);
-        printf("\n\n");
+        printf("\n\n\n");
         
         count++;
     }
