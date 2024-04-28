@@ -1216,10 +1216,6 @@ struct ProbeModule TlsStateProbe = {
         " user-spase TCP stack. TlsState is just a middle layer(probe), so we "
         "should specify a subprobe for it.",
     .global_init_cb                    = &tlsstate_global_init,
-    .make_payload_cb                   = NULL,
-    .get_payload_length_cb             = NULL,
-    .validate_response_cb              = NULL,
-    .handle_response_cb                = NULL,
     .conn_init_cb                      = &tlsstate_conn_init,
     .make_hello_cb                     = &tlsstate_make_hello,
     .parse_response_cb                 = &tlsstate_parse_response,

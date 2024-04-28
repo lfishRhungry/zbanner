@@ -71,8 +71,6 @@ getstate_make_hello(
 {
     LOG(LEVEL_WARNING, "[GetState Probe making hello] >>>\n");
     /*static data and don't close the conn*/
-    pass->payload = (unsigned char *)GET_STATE_PAYLOAD;
-    pass->len     = strlen(GET_STATE_PAYLOAD);
     datapass_set_data(pass, (unsigned char *)GET_STATE_PAYLOAD,
         strlen(GET_STATE_PAYLOAD), 0);
 }
@@ -89,16 +87,16 @@ getstate_parse_response(
     LOG(LEVEL_WARNING, "[GetState Probe parsing response] >>>\n");
     if (!getstate_conf.get_whole_page) {
         if (state->state) return 0;
-        state->state = 1;
+        state->state   = 1;
         pass->is_close = 1;
     }
 
     struct OutputItem item = {
-        .level = Output_SUCCESS,
-        .ip_them = target->ip_them,
-        .ip_me = target->ip_me,
+        .level     = Output_SUCCESS,
+        .ip_them   = target->ip_them,
+        .ip_me     = target->ip_me,
         .port_them = target->port_them,
-        .port_me = target->port_me,
+        .port_me   = target->port_me,
     };
 
     safe_strcpy(item.classification, OUTPUT_CLS_LEN, "banner");
@@ -124,10 +122,6 @@ struct ProbeModule GetStateProbe = {
         "state version of GetRequest Probe for testing ScanModules that needs a"
         " probe of state type.",
     .global_init_cb                    = &getstate_global_init,
-    .make_payload_cb                   = NULL,
-    .get_payload_length_cb             = NULL,
-    .validate_response_cb              = NULL,
-    .handle_response_cb                = NULL,
     .conn_init_cb                      = &getstate_conn_init,
     .make_hello_cb                     = &getstate_make_hello,
     .parse_response_cb                 = &getstate_parse_response,
