@@ -309,6 +309,7 @@ dedup_is_duplicate_ipv4(struct DedupTable *dedup,
      * seen in a while. */
     for (i = 0; i < 4; i++) {
         if (bucket[i].ip_them == ip_them.ipv4 && bucket[i].port_them == port_them
+            && bucket[i].ip_me == ip_me.ipv4 && bucket[i].port_me == port_me
             && bucket[i].type == type) {
             /* move to head of list so constant repeats get attention */
             if (i > 0) {
@@ -455,7 +456,7 @@ int dedup_selftest()
         unsigned  type;
         
         ip_them.version = 4;
-        ip_me.version = 4;
+        ip_me.version   = 4;
         
         /* Instead of completely random numbers over the entire
          * range, each port/IP is restricted to just 512
@@ -472,7 +473,7 @@ int dedup_selftest()
         }
     }
     
-    if (found_match == 0 || found_match > 2800 || found_match < 2600) {
+    if (found_match == 0 || found_match > 200) {
         line = __LINE__;
         goto fail;
     }
@@ -490,7 +491,7 @@ int dedup_selftest()
         unsigned  type;
         
         ip_them.version = 6;
-        ip_me.version = 6;
+        ip_me.version   = 6;
         
         /* Instead of completely random numbers over the entire
          * range, each port/IP is restricted to just 512
@@ -508,7 +509,7 @@ int dedup_selftest()
     }
 
     /* The result should be same as for IPv4, around 30 matches found. */
-    if (found_match == 0 || found_match > 2800 || found_match < 2600) {
+    if (found_match == 0 || found_match > 200) {
         line = __LINE__;
         goto fail;
     }
