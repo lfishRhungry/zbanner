@@ -246,7 +246,7 @@ static bool
 hellostate_global_init(const struct Xconf *xconf)
 {
     if (hellostate_conf.hello==NULL || hellostate_conf.hello_len==0) {
-        LOG(LEVEL_ERROR, "[-]HelloProbe: No hello data specified, just wait response.\n");
+        LOG(LEVEL_ERROR, "[-]HelloStateProbe: No hello data specified, just wait response.\n");
     }
 
     return true;

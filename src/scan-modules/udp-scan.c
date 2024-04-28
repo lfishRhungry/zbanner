@@ -89,7 +89,6 @@ udp_transmit(
 
     /*add timeout*/
     event->need_timeout = 1;
-    event->dedup_type   = 0;
     event->port_me      = src_port_start+target->index;
     
     /*for multi-probe*/
