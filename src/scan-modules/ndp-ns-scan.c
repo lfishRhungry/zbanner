@@ -97,6 +97,7 @@ ndpns_validate(
             recved->packet, recved->parsed.transport_offset)) {
         pre->go_dedup = 1;
         pre->dedup_port_them = 0;
+        pre->dedup_port_me   = 0;
     }
 }
 

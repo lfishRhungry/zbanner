@@ -101,6 +101,8 @@ struct Received {
 struct PreHandle {
     ipaddress dedup_ip_them;
     unsigned  dedup_port_them;
+    ipaddress dedup_ip_me;
+    unsigned  dedup_port_me;
     unsigned  dedup_type;
     unsigned  go_record:1;       /*proceed to record or stop*/
     unsigned  go_dedup:1;        /*proceed to dedup or stop*/
