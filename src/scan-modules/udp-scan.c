@@ -11,6 +11,33 @@
 
 extern struct ScanModule UdpScan; /*for internal x-ref*/
 
+struct UdpConf {
+    unsigned no_icmp:1;
+};
+
+static struct UdpConf udp_conf = {0};
+
+static enum Config_Res SET_no_icmp(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    udp_conf.no_icmp = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static struct ConfigParam udp_parameters[] = {
+    {
+        "no-icmp",
+        SET_no_icmp,
+        F_BOOL,
+        {0},
+        "Do not handle icmp port unreachable info."
+    },
+    {0}
+};
+
 /**
  *For calc the conn index.
  * NOTE: We use a trick of src-port to differenciate multi-probes to avoid
@@ -59,7 +86,7 @@ udp_transmit(
     *len = udp_create_packet(target->ip_them, target->port_them,
         target->ip_me, src_port_start+target->index,
         payload, payload_len, px, PKT_BUF_LEN);
-    
+
     /*add timeout*/
     event->need_timeout = 1;
     event->dedup_type   = 0;
@@ -111,7 +138,9 @@ udp_validate(
             pre->go_dedup = 1;
         else return;
     }
-    
+
+    if (udp_conf.no_icmp) return;
+
     /*record ICMP (udp) port unreachable message*/
     if (recved->parsed.found != FOUND_ICMP
         || !recved->is_myip)
@@ -403,7 +432,7 @@ struct ScanModule UdpScan = {
     .name                = "udp",
     .required_probe_type = ProbeType_UDP,
     .support_timeout     = 1,
-    .params              = NULL,
+    .params              = udp_parameters,
     .bpf_filter =
         "udp || (icmp && icmp[0]==3 && icmp[1]==3) || (icmp6 && icmp6[0]==1 && icmp6[1]==4)", /*udp and icmp port unreachable*/
     .desc =
