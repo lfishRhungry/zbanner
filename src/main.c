@@ -610,6 +610,7 @@ int main(int argc, char *argv[]) {
     xconf->ft_spec                          = XCONF_DFT_FT_SPEC;
     xconf->wait                             = XCONF_DFT_WAIT;
     xconf->nic.snaplen                      = XCONF_DFT_SNAPLEN;
+    xconf->max_packet_len                   = XCONF_DFT_MAX_PKT_LEN;
 
     /*
      * Read in the configuration from the command-line. We are looking for
