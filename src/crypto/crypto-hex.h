@@ -1,5 +1,6 @@
 /**
  * From ccan https://ccodearchive.net/list.html
+ * Licensed under BSD-MIT
 */
 #ifndef CRYPTO_HEX_H
 #define CRYPTO_HEX_H
