@@ -1133,7 +1133,7 @@ static enum Config_Res SET_target_ip(void *conf, const char *name, const char *v
         return CONF_ERR;
     }
 
-    if (xconf->op == 0)
+    if (xconf->op == Operation_Default)
         xconf->op = Operation_Scan;
 
     return CONF_OK;
@@ -1193,7 +1193,7 @@ static enum Config_Res SET_target_port(void *conf, const char *name, const char 
         return CONF_ERR;
     }
 
-    if (xconf->op == 0)
+    if (xconf->op == Operation_Default)
         xconf->op = Operation_Scan;
 
     return CONF_OK;
@@ -1254,7 +1254,7 @@ static enum Config_Res SET_exclude_ip(void *conf, const char *name, const char *
         return CONF_ERR;
     }
 
-    if (xconf->op == 0)
+    if (xconf->op == Operation_Default)
         xconf->op = Operation_Scan;
     
     return CONF_OK;
@@ -1276,7 +1276,7 @@ static enum Config_Res SET_exclude_port(void *conf, const char *name, const char
         LOG(LEVEL_ERROR, "    Hint: a port is a number [0..65535]\n");
         return CONF_ERR;
     }
-    if (xconf->op == 0)
+    if (xconf->op == Operation_Default)
         xconf->op = Operation_Scan;
     
     return CONF_OK;
@@ -1298,7 +1298,7 @@ static enum Config_Res SET_include_file(void *conf, const char *name, const char
         LOG(LEVEL_ERROR, "[-] FAIL: error reading from include file\n");
         return CONF_ERR;
     }
-    if (xconf->op == 0)
+    if (xconf->op == Operation_Default)
         xconf->op = Operation_Scan;
     
     return CONF_OK;
