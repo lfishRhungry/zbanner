@@ -1,6 +1,5 @@
 #include <ctype.h>
 #include <limits.h>
-#include <pcre.h>
 
 #include "xconf.h"
 #include "version.h"

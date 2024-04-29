@@ -25,14 +25,15 @@ typedef enum { false = 0, true = 1 } bool;
 #define strncasecmp _strnicmp
 #endif
 
-// MAX MIN
-#if defined(__GNUC__)
+#ifndef max
 #define max(a, b)                                                              \
   ({                                                                           \
     typeof(a) _a = (a);                                                        \
     typeof(b) _b = (b);                                                        \
     _a > _b ? _a : _b;                                                         \
   })
+#endif
+#ifndef min
 #define min(a, b)                                                              \
   ({                                                                           \
     typeof(a) _a = (a);                                                        \

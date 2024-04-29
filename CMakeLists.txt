@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 project(xtate VERSION 0.9)
 
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED True)
+
 if (NOT CMAKE_BUILD_TYPE)
    set (CMAKE_BUILD_TYPE "Release")
    message (
@@ -50,4 +53,10 @@ if (UNIX)
     target_link_libraries(${exe_name} ${CMAKE_DL_LIBS})
     find_package(Threads REQUIRED)
     target_link_libraries(${exe_name} Threads::Threads)
+endif ()
+
+# for functions of socket and adapter
+if (WIN32)
+    target_link_libraries(${exe_name} wsock32 ws2_32)
+    target_link_libraries(${exe_name} IPHLPAPI.lib)
 endif ()
