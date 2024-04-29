@@ -133,16 +133,16 @@ udp_validate(
 
         if (UdpScan.probe->validate_response_cb(&ptarget,
             &recved->packet[recved->parsed.app_offset],
-            recved->parsed.app_length))
+            recved->parsed.app_length)) {
             pre->go_dedup = 1;
-        else return;
-    }
+        }
 
-    if (udp_conf.no_icmp) return;
+        return;
+    }
 
     /*record ICMP (udp) port unreachable message*/
     if (recved->parsed.found != FOUND_ICMP
-        || !recved->is_myip)
+        || !recved->is_myip || udp_conf.no_icmp)
         return;
 
     if (recved->parsed.dst_ip.version == 4

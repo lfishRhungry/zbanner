@@ -242,8 +242,7 @@ void receive_thread(void *v) {
             tm_event = ft_pop_event(ft_handler, global_now);
             /*dedup timeout event and other packets together*/
             if (tm_event) {
-                if ((!xconf->is_nodedup &&
-                     !dedup_is_duplicate(dedup,
+                if ((!xconf->is_nodedup && !dedup_is_duplicate(dedup,
                         tm_event->ip_them, tm_event->port_them,
                         tm_event->ip_me, tm_event->port_me,
                         tm_event->dedup_type))
