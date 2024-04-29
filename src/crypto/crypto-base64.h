@@ -2,6 +2,38 @@
  * From ccan https://ccodearchive.net/list.html
  * Licensed under BSD-MIT
 */
+/**
+ * base64 - base64 encoding and decoding (rfc4648).
+ *
+ * base64 encoding is used to encode data in a 7-bit clean manner.
+ *  Commonly used for escaping data before encapsulation or transfer
+ *
+ * Example:
+ *      #include <stdio.h>
+ *      #include <string.h>
+ *      #include <ccan/base64/base64.h>
+ *
+ *      int main(int argc, char *argv[])
+ *      {
+ *          char *base64_encoded_string;
+ *          int i;
+ *
+ *          // print the base64-encoded form of the program arguments
+ *          for(i=1;i<argc;i++) {
+ *                size_t unencoded_length = strlen(argv[i]);
+ *                size_t encoded_length = base64_encoded_length(unencoded_length);
+ *                base64_encoded_string = malloc(encoded_length);
+ *                base64_encode(base64_encoded_string, encoded_length,
+ *                    argv[i], unencoded_length);
+ *                printf("%s\n", base64_encoded_string);
+ *                free(base64_encoded_string);
+ *          }
+ *
+ *          return 0;
+ *      }
+ *
+ * License: BSD-MIT
+ */
 #ifndef CRYPTO_BASE64_H
 #define CRYPTO_BASE64_H
 

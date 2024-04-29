@@ -2,6 +2,29 @@
  * From ccan https://ccodearchive.net/list.html
  * Licensed under BSD-MIT
 */
+/**
+ * str/hex - hex-to-string conversions and vice-versa
+ *
+ * This code contains simple routines for hexidecimal strings.
+ *
+ * License: CC0 (Public domain)
+ * Author: Rusty Russell <rusty@rustcorp.com.au>
+ *
+ * Example:
+ *    int main(int argc, char *argv[])
+ *    {
+ *        int i;
+ *
+ *        for (i = 1; i < argc; i++) {
+ *            char str[hex_str_size(strlen(argv[i]))];
+ *
+ *            hex_encode(str, sizeof(str), argv[i], strlen(argv[i]));
+ *            printf("%s ", str);
+ *        }
+ *        printf("\n");
+ *        return 0;
+ *    }
+ */
 #ifndef CRYPTO_HEX_H
 #define CRYPTO_HEX_H
 
