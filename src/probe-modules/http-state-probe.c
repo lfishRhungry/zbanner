@@ -87,9 +87,20 @@ struct HttpStateConf {
     /*dynamic set ip:port as Host field*/
     unsigned dynamic_host:1;
     unsigned get_whole_response:1;
+    unsigned report_while_regex:1;
 };
 
 static struct HttpStateConf httpstate_conf = {0};
+
+static enum Config_Res SET_report(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    httpstate_conf.report_while_regex = parseBoolean(value);
+
+    return CONF_OK;
+}
 
 static enum Config_Res SET_whole_response(void *conf, const char *name, const char *value)
 {
@@ -491,6 +502,13 @@ static struct ConfigParam httpstate_parameters[] = {
         {"whole", 0},
         "Get the whole response before connection timeout, not just the banner."
     },
+    {
+        "report",
+        SET_report,
+        F_BOOL,
+        {0},
+        "Report response data after regex matching."
+    },
 
     {0}
 };
@@ -774,11 +792,13 @@ httpstate_parse_response(
             item.level = Output_SUCCESS;
             safe_strcpy(item.classification, OUTPUT_CLS_LEN, "success");
             safe_strcpy(item.reason, OUTPUT_RSN_LEN, "matched");
-            normalize_string(px, sizeof_px, item.report, OUTPUT_RPT_LEN);
         } else {
             item.level = Output_FAILURE;
             safe_strcpy(item.classification, OUTPUT_CLS_LEN, "fail");
             safe_strcpy(item.reason, OUTPUT_RSN_LEN, "not matched");
+        }
+        
+        if (httpstate_conf.report_while_regex) {
             normalize_string(px, sizeof_px, item.report, OUTPUT_RPT_LEN);
         }
         pcre2_match_data_free(match_data);

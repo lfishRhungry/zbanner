@@ -19,9 +19,20 @@ struct HelloUdpConf {
     pcre2_match_context    *match_ctx;
     unsigned                re_case_insensitive:1;
     unsigned                re_include_newlines:1;
+    unsigned                report_while_regex:1;
 };
 
 static struct HelloUdpConf helloudp_conf = {0};
+
+static enum Config_Res SET_report(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    helloudp_conf.report_while_regex = parseBoolean(value);
+
+    return CONF_OK;
+}
 
 static enum Config_Res SET_newlines(void *conf, const char *name, const char *value)
 {
@@ -217,6 +228,13 @@ static struct ConfigParam helloudp_parameters[] = {
         {"include-newline", "newline", "newlines", 0},
         "Whether the specified regex contains newlines."
     },
+    {
+        "report",
+        SET_report,
+        F_BOOL,
+        {0},
+        "Report response data after regex matching."
+    },
     
     {0}
 };
@@ -301,7 +319,9 @@ helloudp_handle_response(
     item->level = Output_SUCCESS;
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "success");
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
-    normalize_string(px, sizeof_px, item->report, OUTPUT_RPT_LEN);
+
+    if (helloudp_conf.report_while_regex)
+        normalize_string(px, sizeof_px, item->report, OUTPUT_RPT_LEN);
 
     return 0;
 }
