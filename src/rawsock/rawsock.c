@@ -552,7 +552,8 @@ rawsock_init_adapter(const char *adapter_name,
                      unsigned is_packet_trace,
                      unsigned is_offline,
                      unsigned is_vlan,
-                     unsigned vlan_id)
+                     unsigned vlan_id,
+                     unsigned snaplen)
 {
     struct Adapter *adapter;
     char errbuf[PCAP_ERRBUF_SIZE] = "pcap";
@@ -611,7 +612,7 @@ rawsock_init_adapter(const char *adapter_name,
          * transmit and receive are separate functions?
          */
         LOG(LEVEL_INFO, "pfring:'%s': opening...\n", adapter_name);
-        adapter->ring = PFRING.open(adapter_name, 1500, 0);//PF_RING_REENTRANT);
+        adapter->ring = PFRING.open(adapter_name, snaplen, 0);//1500, PF_RING_REENTRANT);
         adapter->pcap = (pcap_t*)adapter->ring;
         adapter->link_type = 1;
         if (adapter->ring == NULL) {
@@ -684,8 +685,8 @@ rawsock_init_adapter(const char *adapter_name,
         if (adapter->pcap == NULL) {
             /*If going to this way, pcap will be a little bit slower, very strange*/
             adapter->pcap = PCAP.open_live(
-                        adapter_name,           /* interface name */
-                        65536,                  /* max packet size */
+                        adapter_name,
+                        snaplen,
                         8,                      /* promiscuous mode */
                         1000,                   /* read timeout in milliseconds */
                         errbuf);
@@ -698,7 +699,7 @@ rawsock_init_adapter(const char *adapter_name,
                 return 0;
             }
         } else {
-            err = PCAP.set_snaplen(adapter->pcap, 65536);
+            err = PCAP.set_snaplen(adapter->pcap, snaplen);
             if (err) {
                 PCAP.perror(adapter->pcap, "if: set_snaplen");
                 goto pcap_error;
@@ -923,7 +924,7 @@ int rawsock_selftest_if(const char *ifname)
     /*
      * Initialize the adapter.
      */
-    adapter = rawsock_init_adapter(ifname, 0, 0, 0, 0, 0, 0);
+    adapter = rawsock_init_adapter(ifname, 0, 0, 0, 0, 0, 0, 65535);
     if (adapter == 0) {
         LOG(LEVEL_ERROR, "[-] pcap = failed\n");
         return -1;

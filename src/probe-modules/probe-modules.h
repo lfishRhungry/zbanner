@@ -12,6 +12,10 @@
 
 struct Xconf;
 
+/**
+ * It should be a value a little less than PKT_BUF_LEN, but I'm lazy to estimate
+ * the actual number.
+*/
 #define PROBE_PAYLOAD_MAX_LEN 2048
 
 

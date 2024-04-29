@@ -4,7 +4,10 @@
 #include "../massip/massip-addr.h"
 #include <limits.h>
 
-#define PKT_BUF_LEN 2048
+/**It limits the max size of packet we could send
+ * and affects what value we set on PROBE_PAYLOAD_MAX_LEN
+*/
+#define PKT_BUF_LEN     2048
 
 struct stack_src_t;
 struct Adapter;

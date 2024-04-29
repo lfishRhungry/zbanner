@@ -9,9 +9,13 @@
 #include "../util-misc/cross.h"
 #include "../massip/massip-addr.h"
 
-#define OUTPUT_RSN_LEN      30
-#define OUTPUT_CLS_LEN      30
-#define OUTPUT_RPT_LEN    2048
+#define OUTPUT_RSN_LEN          30
+#define OUTPUT_CLS_LEN          30
+/**
+ * Relative with XCONF_DFT_SNAPLEN and XCONF_DFT_MAX_PKT_LEN
+ * I don't agree that always report all content that we received, xtate is not
+ * a browser or scrapper*/
+#define OUTPUT_RPT_LEN        2048
 
 struct OutputModule;
 

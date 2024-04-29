@@ -40,7 +40,8 @@ rawsock_init_adapter(const char *adapter_name,
                      unsigned is_packet_trace,
                      unsigned is_offline,
                      unsigned is_vlan,
-                     unsigned vlan_id);
+                     unsigned vlan_id,
+                     unsigned snaplen);
 
 void
 rawsock_set_filter(struct Adapter *adapter, const char *scan_filter,

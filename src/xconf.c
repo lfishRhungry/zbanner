@@ -1139,6 +1139,26 @@ static enum Config_Res SET_target_ip(void *conf, const char *name, const char *v
     return CONF_OK;
 }
 
+static enum Config_Res SET_adapter_snaplen(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    UNUSEDPARM(name);
+    if (xconf->echo) {
+        if (xconf->nic.snaplen!=XCONF_DFT_SNAPLEN || xconf->echo_all) {
+            fprintf(xconf->echo, "adapter-snaplen = %u\n", xconf->nic.snaplen);
+        }
+        return 0;
+    }
+    
+    xconf->nic.snaplen = (unsigned)parseInt(value);
+    if (xconf->nic.snaplen > 65535) {
+        LOG(LEVEL_ERROR, "FAIL: snaplen must be less than 65535.\n");
+        return CONF_ERR;
+    }
+
+    return CONF_OK;
+}
+
 static enum Config_Res SET_adapter_vlan(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
@@ -1790,12 +1810,26 @@ static enum Config_Res SET_rate(void *conf, const char *name, const char *value)
     return CONF_OK;
 }
 
+static enum Config_Res SET_max_packet_len(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    UNUSEDPARM(name);
+    if (xconf->echo) {
+        if (xconf->max_packet_len!=XCONF_DFT_MAX_PKT_LEN || xconf->echo_all) {
+            fprintf(xconf->echo, "max-packet-len = %u\n", xconf->max_packet_len);
+        }
+        return 0;
+    }
+    xconf->max_packet_len = parseInt(value);
+    return CONF_OK;
+}
+
 static enum Config_Res SET_resume_count(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->resume.count!=0) {
+        if (xconf->resume.count!=0 || xconf->echo_all) {
             fprintf(xconf->echo, "resume-count = %" PRIu64 "\n", xconf->resume.count);
         }
         return 0;
@@ -1809,7 +1843,7 @@ static enum Config_Res SET_resume_index(void *conf, const char *name, const char
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->resume.index!=0) {
+        if (xconf->resume.index!=0 || xconf->echo_all) {
             fprintf(xconf->echo, "resume-index = %" PRIu64 "\n", xconf->resume.index);
         }
         return 0;
@@ -2600,6 +2634,17 @@ struct ConfigParam config_parameters[] = {
         "Send packets using this 802.1q VLAN ID."
     },
     {
+        "adapter-snaplen",
+        SET_adapter_snaplen,
+        F_NUMABLE,
+        {"snaplen", 0},
+        "Set the maximum packet capture len of pcap or pfring. It means we can "
+        "just got snaplen size at most for any packet even just like a kind of "
+        "truncation. This is a non-commonly used switch for some special "
+        "experimental tests. Default snaplen is 65535 and must be less than 65535.\n"
+        "NOTE: Be cared to the interaction with tcp-win and max-packet-len."
+    },
+    {
         "lan-mode",
         SET_lan_mode,
         F_BOOL,
@@ -2856,7 +2901,8 @@ struct ConfigParam config_parameters[] = {
         {"tcp-win", 0},
         "Specifies what value of Window should TCP packets(except for SYN) use. "
         "The default value of TCP Window for TCP packets(except SYN) is 1024.\n"
-        "NOTE: This value could affects some ScanModules like ZBanner."
+        "NOTE: This value could affects some ScanModules working like ZBanner. "
+        "Be cared to the interaction with snaplen and max-packet-len."
     },
     {
         "tcp-wscale",
@@ -2924,6 +2970,15 @@ struct ConfigParam config_parameters[] = {
         " does not support part or all of BPF filters and this switch makes "
         XTATE_UPPER_NAME" working again."
     },
+    {
+        "max-packet-len",
+        SET_max_packet_len,
+        F_NUMABLE,
+        {"max-pkt-len", 0},
+        XTATE_UPPER_NAME" won't handle a received packet that is more than "
+        "max-packet-len. Default is 1514."
+        "NOTE: Be cared to the interaction with tcp-win and max-packet-len."
+    },
 
     {"MISC:", SET_nothing, 0, {0}, NULL},
 
@@ -2940,14 +2995,14 @@ struct ConfigParam config_parameters[] = {
     {
         "resume-index",
         SET_resume_index,
-        F_NONE,
+        F_NUMABLE,
         {0},
         "The point in the scan at when it was paused."
     },
     {
         "resume-count",
         SET_resume_count,
-        F_NONE,
+        F_NUMABLE,
         {"target-count", 0},
         "The maximum number of targets to scan before exiting. This is useful "
         "with the --resume-index to chop up a scan and split it among multiple "

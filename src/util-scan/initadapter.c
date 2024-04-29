@@ -61,7 +61,8 @@ initialize_adapter(struct Xconf *xconf)
                                             xconf->packet_trace,
                                             xconf->is_offline,
                                             xconf->nic.is_vlan,
-                                            xconf->nic.vlan_id);
+                                            xconf->nic.vlan_id,
+                                            xconf->nic.snaplen);
     if (xconf->nic.adapter == 0) {
         LOG(LEVEL_ERROR, "[-] if:%s:init: failed\n", ifname);
         return -1;

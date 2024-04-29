@@ -281,7 +281,7 @@ void receive_thread(void *v) {
         if (err != 0) {
             continue;
         }
-        if (pkt_len > 1514) {
+        if (pkt_len > xconf->max_packet_len) {
             continue;
         }
 

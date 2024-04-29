@@ -35,6 +35,8 @@ very low impact on scan rate */
 #define XCONF_DFT_SHARD_OF                          1
 #define XCONF_DFT_WAIT                             10
 #define XCONF_DFT_PORT_RANGE                      256
+#define XCONF_DFT_SNAPLEN                       65535  /*also the max*/
+#define XCONF_DFT_MAX_PKT_LEN                    1514
 
 
 struct Adapter;
@@ -89,9 +91,10 @@ struct Xconf
         macaddress_t             router_mac_ipv4;
         macaddress_t             router_mac_ipv6;
         ipv4address_t            router_ip;
+        unsigned                 vlan_id;
+        unsigned                 snaplen;
         int                      link_type;
         unsigned char            my_mac_count;    /*is there a MAC address? */
-        unsigned                 vlan_id;
         unsigned                 is_vlan:1;
         unsigned                 is_usable:1;
     } nic;
@@ -121,8 +124,8 @@ struct Xconf
     struct stack_t *stack;
     unsigned stack_buf_count;
 
-    char *bpf_filter;
-    char  pcap_filename[256];
+    char     *bpf_filter;
+    char      pcap_filename[256];
 
     /**
      * template for packet making quickly.
@@ -168,6 +171,7 @@ struct Xconf
     unsigned          tcp_init_window;
     unsigned          tcp_window;
     unsigned          packet_ttl;
+    unsigned          max_packet_len;
     unsigned          packet_trace:1;
     unsigned          is_status_ndjson:1;
     unsigned          is_status_queue:1;

@@ -609,6 +609,7 @@ int main(int argc, char *argv[]) {
     xconf->shard.of                         = XCONF_DFT_SHARD_OF;
     xconf->ft_spec                          = XCONF_DFT_FT_SPEC;
     xconf->wait                             = XCONF_DFT_WAIT;
+    xconf->nic.snaplen                      = XCONF_DFT_SNAPLEN;
 
     /*
      * Read in the configuration from the command-line. We are looking for
