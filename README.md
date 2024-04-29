@@ -20,10 +20,10 @@ Dependencies for building:
 
 Dependencies for running:
 
-- lua5.3
 - libpcap(Linux)
 - winpcap/npcap(Windows)
 - PFRING driver(optional on Linux)
+- lua5.3(optional for lua probe support)
 
 ### On Linux
 
