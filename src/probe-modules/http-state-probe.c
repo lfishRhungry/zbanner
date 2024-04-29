@@ -87,6 +87,7 @@ struct HttpStateConf {
     /*dynamic set ip:port as Host field*/
     unsigned dynamic_host:1;
     unsigned get_whole_response:1;
+    unsigned match_whole_response:1;
     unsigned report_while_regex:1;
 };
 
@@ -102,7 +103,18 @@ static enum Config_Res SET_report(void *conf, const char *name, const char *valu
     return CONF_OK;
 }
 
-static enum Config_Res SET_whole_response(void *conf, const char *name, const char *value)
+
+static enum Config_Res SET_match_whole_response(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    httpstate_conf.match_whole_response = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_get_whole_response(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -496,11 +508,19 @@ static struct ConfigParam httpstate_parameters[] = {
         "Whether the specified regex contains newlines."
     },
     {
-        "whole-response",
-        SET_whole_response,
+        "get-whole-response",
+        SET_get_whole_response,
         F_BOOL,
         {"whole", 0},
         "Get the whole response before connection timeout, not just the banner."
+    },
+    {
+        "match-whole-response",
+        SET_match_whole_response,
+        F_BOOL,
+        {"match-whole", 0},
+        "Continue to match the whole response after matched previous content.\n"
+        "NOTE: it works while using --get-whole-response."
     },
     {
         "report",
@@ -759,8 +779,9 @@ httpstate_parse_response(
     const unsigned char *px,
     unsigned sizeof_px)
 {
+    if (state->state) return 0;
+
     if (!httpstate_conf.get_whole_response) {
-        if (state->state) return 0;
         state->state   = 1;
         pass->is_close = 1;
     }
@@ -792,6 +813,12 @@ httpstate_parse_response(
             item.level = Output_SUCCESS;
             safe_strcpy(item.classification, OUTPUT_CLS_LEN, "success");
             safe_strcpy(item.reason, OUTPUT_RSN_LEN, "matched");
+
+            if (!httpstate_conf.match_whole_response) {
+                state->state   = 1;
+                pass->is_close = 1;
+            }
+
         } else {
             item.level = Output_FAILURE;
             safe_strcpy(item.classification, OUTPUT_CLS_LEN, "fail");
