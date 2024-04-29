@@ -2901,7 +2901,8 @@ struct ConfigParam config_parameters[] = {
         {"tcp-win", 0},
         "Specifies what value of Window should TCP packets(except for SYN) use. "
         "The default value of TCP Window for TCP packets(except SYN) is 1024.\n"
-        "NOTE: This value could affects some ScanModules working like ZBanner. "
+        "NOTE: This value could affects some ScanModules working like ZBanner "
+        "and limit communicating rate of stateful ScanModules."
         "Be cared to the interaction with snaplen and max-packet-len."
     },
     {

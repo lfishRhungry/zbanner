@@ -299,7 +299,10 @@ struct ScanModule TcpStateScan = {
         "Line number of added rule could be checked like:\n"
         "    `sudo iptables -L --line-numbers`\n"
         "Remove the rule by its line number if we do not need it:\n"
-        "    `sudo iptables -D OUTPUT <line-number>`",
+        "    `sudo iptables -D OUTPUT <line-number>`\n"
+        "NOTE: TcpStateScan causes so many packets with little data because of the "
+        "default small -tcp-win. You may set a new -tcp-win and adjust -max-pkt-len"
+        " to achieve a fast communicating.",
 
     .global_init_cb               = &tcpstate_global_init,
     .transmit_cb                  = &tcpstate_transmit,
