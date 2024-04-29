@@ -3007,7 +3007,9 @@ struct ConfigParam config_parameters[] = {
         {"target-count", 0},
         "The maximum number of targets to scan before exiting. This is useful "
         "with the --resume-index to chop up a scan and split it among multiple "
-        "instances, though the --shards option might be better."
+        "instances, though the --shards option might be better.\n"
+        "NOTE: This causes inifinite pause after finished resume-count and waits"
+        " user input <ctrl-c> to exit."
     },
     {
         "pcap-filename",

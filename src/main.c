@@ -395,7 +395,7 @@ static int main_scan(struct Xconf *xconf) {
         total_failed    = xconf->output.total_failed;
         total_info      = xconf->output.total_failed;
         total_tm_event  = rx_thread->total_tm_event;
-        
+
         if (rx_thread->dispatch_q) {
             double rx_free_entries = rte_ring_free_count(rx_thread->dispatch_q);
             for (unsigned i=0; i<xconf->rx_handler_count; i++) {
