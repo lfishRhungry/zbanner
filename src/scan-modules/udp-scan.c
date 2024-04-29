@@ -155,13 +155,9 @@ udp_validate(
 
     } else return;
 
-    unsigned  proto;
-    parse_icmp_port_unreachable(
+    if (17 == get_icmp_port_unreachable_proto(
         &recved->packet[recved->parsed.transport_offset],
-        recved->parsed.transport_length,
-        &pre->dedup_ip_them, &pre->dedup_port_them,
-        &pre->dedup_ip_me, &pre->dedup_port_me, &proto);
-    if (proto==17) {
+        recved->parsed.transport_length)) {
         pre->go_record = 1;
         pre->go_dedup  = 1;
     }
@@ -300,7 +296,7 @@ udp_handle(
             recved->parsed.transport_length,
             &item->ip_them, &item->port_them,
             &item->ip_me, &item->port_me, &proto);
-        }
+    }
 }
 
 static void

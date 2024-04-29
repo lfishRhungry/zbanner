@@ -111,6 +111,14 @@ unsigned
 get_icmp_cookie(const struct PreprocessedInfo *parsed,const unsigned char *px);
 
 /**
+ * get detail of icmp port unreachable info
+ * @param transport_px packet data over IP
+ * @param length len of transport_px
+ * @param r_ip_them for ret ip_them
+ * @param r_port_them for ret port_them
+ * @param r_ip_me for ret ip_me
+ * @param r_port_me for ret port_me
+ * @param r_ip_proto for ret ip protocol number, 6 for tcp or 17 for udp
  * @return TRUE if parse successfully
 */
 bool
@@ -120,7 +128,10 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
     unsigned *r_ip_proto);
 
 /**
- * @return Tmpl_Type_TCP or Tmpl_Type_UDP or 0 for nothing.
+ * get upper proto number of icmp port unreachable info
+ * @param transport_px packet data over IP
+ * @param length len of transport_px
+ * @return IP Protocol number 6(tcp) or 17(udp) or 0 for nothing.
 */
 unsigned
 get_icmp_port_unreachable_proto(const unsigned char *transport_px, unsigned length);

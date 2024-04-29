@@ -347,17 +347,17 @@ get_icmp_port_unreachable_proto(const unsigned char *transport_px, unsigned leng
     if (ip_header_in_icmp[0]>>4 == 0B0100) {
         
         if (ip_header_in_icmp[9]==6) {
-            return Tmpl_Type_TCP;
+            return 6;
         } else if (ip_header_in_icmp[9]==17) {
-            return Tmpl_Type_UDP;
+            return 17;
         }
 
     } else if (ip_header_in_icmp[0]>>4 == 0B0110) {
 
         if (ip_header_in_icmp[6]==6) {
-            return Tmpl_Type_TCP;
+            return 6;
         } else if (ip_header_in_icmp[6]==17) {
-            return Tmpl_Type_UDP;
+            return 17;
         }
     }
 
