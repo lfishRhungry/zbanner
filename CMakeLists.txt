@@ -24,9 +24,6 @@ add_executable(${exe_name})
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS src/*.c src/*.h)
 target_sources(${exe_name} PUBLIC ${sources})
 
-# find_package(Threads REQUIRED)
-# target_link_libraries(${exe_name} Threads::Threads)
-
 # openssl
 # set(OPENSSL_USE_STATIC_LIBS TRUE)
 find_package(OpenSSL REQUIRED)
@@ -42,6 +39,10 @@ target_link_libraries(${exe_name} PCRE2::8BIT)
 # find_package(Lua REQUIRED)
 # target_include_directories(${exe_name} PRIVATE ${LUA_INCLUDE_DIR})
 # target_link_libraries(${exe_name} ${LUA_LIBRARIES})
+
+# fann
+# find_package(fann REQUIRED)
+# target_link_libraries(${exe_name} fann)
 
 # math(libm) libdl pthread
 if (UNIX)
