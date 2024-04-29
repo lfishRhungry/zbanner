@@ -10,8 +10,8 @@ Xtate could be build through CMake both on Linux and Windows because of cross-pl
 
 Suggest compiler:
 
-- GCC(suggest with CMake) on Linux
-- MingW64(must with CMake) on Windows
+- GCC/Clang on Linux and suggest to work with CMake.
+- MingW64 on Windows and must work with CMake.
 
 Dependencies for building:
 
@@ -56,6 +56,8 @@ cmake .. \
     -DVCPKG_TARGET_TRIPLET=x64-windows
 make -j4
 ```
+
+Warning: I try my best to make Xtate could be compiled successful on Windows. However, it works better on Linux just like other amazing projects.
 
 ## Intro
 
