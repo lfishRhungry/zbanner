@@ -535,7 +535,7 @@ set_parameters_from_string(void *conf, struct ConfigParam *cp, char *string)
 {
     int     sub_argc;
     char ** sub_argv;
-    
+
     sub_argv = string_to_args(string, &sub_argc);
     if (!sub_argv) {
         return 1;

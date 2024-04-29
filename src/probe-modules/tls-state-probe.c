@@ -149,8 +149,10 @@ static struct ConfigParam tlsstate_parameters[] = {
         "subprobe-arg",
         SET_subprobe_args,
         F_NONE,
-        {"subprobe-args", 0},
-        "Specifies arguments for subprobe."
+        {"subprobe-args", "subarg", "subargs", 0},
+        "Specifies arguments for subprobe.\n"
+        "NOTE: Use double/single quotes and backslashes to handle params with "
+        "spaces in nesting."
     },
     {
         "ssl-keylog",
@@ -616,7 +618,7 @@ tlsstate_global_init(const struct Xconf *xconf)
      * Well...ugly but works.
      * */
     enum MultiMode *mode = (enum MultiMode *)&TlsStateProbe.multi_mode;
-    unsigned *num        = (unsigned *)&TlsStateProbe.multi_num;
+    unsigned       *num  = (unsigned *)&TlsStateProbe.multi_num;
     *mode = tlsstate_conf.subprobe->multi_mode;
     *num  = tlsstate_conf.subprobe->multi_num;
 
