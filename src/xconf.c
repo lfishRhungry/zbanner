@@ -1952,18 +1952,84 @@ static enum Config_Res SET_version(void *conf, const char *name, const char *val
 
         compiler = "VisualStudio";
 
-        if (msc_ver < 1500)
-            compiler_version = "pre2008";
+        if (msc_ver < 1200)
+            compiler_version = "pre6.0";
+        else if (msc_ver == 1200)
+            compiler_version = "6.0 VC++6.0";
+        else if (msc_ver == 1300)
+            compiler_version = ".NET 2002 VC++7.0";
+        else if (msc_ver == 1310)
+            compiler_version = ".NET 2003 VC++7.1";
+        else if (msc_ver == 1400)
+            compiler_version = "2005 VC++8.0";
         else if (msc_ver == 1500)
-            compiler_version = "2008";
+            compiler_version = "2008 VC++9.0";
         else if (msc_ver == 1600)
-            compiler_version = "2010";
+            compiler_version = "2010 VC++10.0";
         else if (msc_ver == 1700)
-            compiler_version = "2012";
+            compiler_version = "2012 VC++11.0";
         else if (msc_ver == 1800)
-            compiler_version = "2013";
+            compiler_version = "2013 VC++12.0";
+        else if (msc_ver == 1900)
+            compiler_version = "2015 VC++14.0";
+        else if (msc_ver == 1910)
+            compiler_version = "2017RTW VC++15.0";
+        else if (msc_ver == 1911)
+            compiler_version = "2017 VC++15.3";
+        else if (msc_ver == 1912)
+            compiler_version = "2017 VC++15.5";
+        else if (msc_ver == 1913)
+            compiler_version = "2017 VC++15.6";
+        else if (msc_ver == 1914)
+            compiler_version = "2017 VC++15.7";
+        else if (msc_ver == 1915)
+            compiler_version = "2017 VC++15.8";
+        else if (msc_ver == 1916)
+            compiler_version = "2017 VC++15.9";
+        else if (msc_ver == 1920)
+            compiler_version = "2019RTW VC++16.0";
+        else if (msc_ver == 1921)
+            compiler_version = "2019 VC++16.1";
+        else if (msc_ver == 1922)
+            compiler_version = "2019 VC++16.2";
+        else if (msc_ver == 1923)
+            compiler_version = "2019 VC++16.3";
+        else if (msc_ver == 1924)
+            compiler_version = "2019 VC++16.4";
+        else if (msc_ver == 1925)
+            compiler_version = "2019 VC++16.5";
+        else if (msc_ver == 1926)
+            compiler_version = "2019 VC++16.6";
+        else if (msc_ver == 1927)
+            compiler_version = "2019 VC++16.7";
+        else if (msc_ver == 1928)
+            compiler_version = "2019 VC++16.8/16.9a";
+        else if (msc_ver == 1929)
+            compiler_version = "2019 VC++16.10/16.11b";
+        else if (msc_ver == 1930)
+            compiler_version = "2022RTW VC++17.0";
+        else if (msc_ver == 1931)
+            compiler_version = "2022 VC++17.1";
+        else if (msc_ver == 1932)
+            compiler_version = "2022 VC++17.2";
+        else if (msc_ver == 1933)
+            compiler_version = "2022 VC++17.3";
+        else if (msc_ver == 1934)
+            compiler_version = "2022 VC++17.4";
+        else if (msc_ver == 1935)
+            compiler_version = "2022 VC++17.5";
+        else if (msc_ver == 1936)
+            compiler_version = "2022 VC++17.6";
+        else if (msc_ver == 1937)
+            compiler_version = "2022 VC++17.7";
+        else if (msc_ver == 1938)
+            compiler_version = "2022 VC++17.8";
+        else if (msc_ver == 1939)
+            compiler_version = "2022 VC++17.9";
+        else if (msc_ver == 1940)
+            compiler_version = "2022 VC++17.10";
         else
-            compiler_version = "post-2013";
+            compiler_version = "post-2022";
     }
 
     
