@@ -36,13 +36,15 @@ LIBS = -lm -lrt -ldl -lpthread -lssl -lcrypto -lpcre2-8
 endif
 INCLUDES = 
 FLAGS2 = 
+LDFLAG = 
 endif
 
 # MinGW on Windows
 ifneq (, $(findstring mingw, $(SYS)))
-INCLUDES = -Ivs10/include
-LIBS = -L vs10/lib -lIPHLPAPI -lWs2_32 -lssl -lcrypto -lpcre2-8
-#FLAGS2 = -march=i686
+INCLUDES = 
+LIBS = -lIPHLPAPI -lWs2_32 -lssl -lcrypto -lpcre2-8
+FLAGS2 = 
+LDFLAG = 
 endif
 
 # OpenBSD
@@ -50,6 +52,7 @@ ifneq (, $(findstring openbsd, $(SYS)))
 LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8
 INCLUDES = -I. 
 FLAGS2 = 
+LDFLAG = 
 endif
 
 # FreeBSD
@@ -57,6 +60,7 @@ ifneq (, $(findstring freebsd, $(SYS)))
 LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8
 INCLUDES = -I. 
 FLAGS2 =
+LDFLAG = 
 endif
 
 # NetBSD
@@ -64,12 +68,16 @@ ifneq (, $(findstring netbsd, $(SYS)))
 LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8
 INCLUDES = -I. 
 FLAGS2 =
+LDFLAG = 
 endif
 
 
 DEFINES = 
+
 bin/xtate: CFLAGS = $(FLAGS2) $(INCLUDES) $(DEFINES) -Wall -O3 -std=gnu99 -DNDEBUG
-bin/xtate_debug: CFLAGS = $(FLAGS2) $(INCLUDES) $(DEFINES) Wall -O0 -g -ggdb -rdynamic -no-pie -std=gnu99
+bin/xtate_debug: CFLAGS = $(FLAGS2) $(INCLUDES) $(DEFINES) -Wall -O0 -g -ggdb -fno-pie -std=gnu99
+bin/xtate_debug: LDFLAGS = $(LDFLAG) -rdynamic -no-pie
+
 .SUFFIXES: .c .cpp
 
 all: bin/xtate
@@ -212,10 +220,10 @@ OBJ = $(addprefix tmp/, $(notdir $(addsuffix .o, $(basename $(SRC)))))
 
 
 bin/xtate: $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS) $(LIBS)
+	$(CC) -o $@ $(OBJ) $(LDFLAGS) $(LIBS)
 
 bin/xtate_debug: $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS) $(LIBS)
+	$(CC) -o $@ $(OBJ) $(LDFLAGS) $(LIBS)
 
 ifneq ($(OS),Windows_NT)
 debug: bin/xtate_debug

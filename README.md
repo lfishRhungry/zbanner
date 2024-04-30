@@ -6,15 +6,10 @@ Welcome to Xtate -- A modular all-stack network scanner for next-generation inte
 
 ## Build
 
-### Depencendies
-
 Xtate could be build with CMake both on Linux and Windows because of cross-platform code.
+If any error with CMake, use or try to modify `Makefile` is a good idea. Sorry I'm failed to be a CMake professor...
 
-Suggest compile suites:
-
-- GCC/Clang and CMake/Make on Linux.
-- MSVC and CMake on Windows.
-- MinGW64, CMake and Make on Windows.
+### Depencendies
 
 Dependencies for building:
 
@@ -36,19 +31,25 @@ sudo apt install libpcre2-dev libssl-dev liblua5.3-0 libpcap-dev
 
 ### Compile On Linux
 
+Suggest compile suites:
+
+- GCC
+- Clang
+
 With dependencies installed we can build xtate by CMake with parameters or with given script quickly:
 
 ```
 ./build.sh [debug]
 ```
 
-If any error with CMake, use or try to modify `Makefile` is a good idea. Sorry I'm failed to be a CMake professor...
-
 ### Compile On Windows
 
-I suggest to use CMake in my experience.
+Suggest compile suites:
 
-With MSVC:
+- MSVC
+- MinGW-w64
+
+With MSVC if using vcpkg:
 
 ```
 cd build
@@ -57,7 +58,7 @@ cmake .. \
     -DVCPKG_TARGET_TRIPLET=x64-windows
 ```
 
-With MinGW64:
+With MinGW-w64 if using vcpkg:
 
 ```
 cd build

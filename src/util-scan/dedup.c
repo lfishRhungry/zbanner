@@ -157,6 +157,11 @@ is_equal6(ipv6address lhs, ipv6address rhs)
     return lhs.hi == rhs.hi && lhs.lo == rhs.lo;
 }
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
+#endif
+
 /**
  * Swap two addresses in the table. This uses the classic XOR trick
  * rather than using a swap variable.
@@ -188,6 +193,10 @@ swap6(struct DedupEntry_IPv6 *lhs, struct DedupEntry_IPv6 *rhs)
     lhs->port_me    ^= rhs->port_me;
     lhs->type       ^= rhs->type;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 /**
  * This implements the same algorithm as for IPv4 addresses, but for
@@ -263,6 +272,11 @@ dedup_hash_ipv4(ipaddress ip_them, unsigned port_them,
     return hash;
 }
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
+#endif
+
 /**
  * Swap two addresses in the table. This uses the classic XOR trick
  * rather than using a swap variable.
@@ -288,6 +302,10 @@ swap4(struct DedupEntry_IPv4 *lhs, struct DedupEntry_IPv4 *rhs)
     lhs->port_me   ^= rhs->port_me;
     lhs->type      ^= rhs->type;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 /***************************************************************************
  ***************************************************************************/

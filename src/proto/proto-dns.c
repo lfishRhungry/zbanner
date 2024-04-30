@@ -484,10 +484,19 @@ bool dns_str2rcode(char *str, dns_rcode *code)
     return false;
 }
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
+#endif
+
 static inline bool is_valid_label_char(int c)
 {
     return isalnum(c) || c == '-' || c == '_';
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 /**
  * Parse a DNS name from a DNS packet into a buffer.

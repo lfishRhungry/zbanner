@@ -1,5 +1,9 @@
 #include <ctype.h>
 #include <limits.h>
+#include <openssl/opensslv.h>
+
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
 
 #include "xconf.h"
 #include "version.h"
@@ -2032,14 +2036,15 @@ static enum Config_Res SET_version(void *conf, const char *name, const char *val
             compiler_version = "post-2022";
     }
 
-    
+
 #elif defined(__GNUC__)
 # if defined(__clang__)
     compiler = "clang";
+    compiler_version = __clang_version__;
 # else
     compiler = "gcc";
-# endif
     compiler_version = __VERSION__;
+# endif
 
 #if defined(i386) || defined(__i386) || defined(__i386__)
     cpu = "x86";
@@ -2070,6 +2075,15 @@ static enum Config_Res SET_version(void *conf, const char *name, const char *val
     printf("Compiler: %s %s\n", compiler, compiler_version);
     printf("OS: %s\n", os);
     printf("CPU: %s (%u bits)\n", cpu, (unsigned)(sizeof(void*))*8);
+    printf("\n");
+
+    printf("Build with:\n");
+    printf("  "OPENSSL_VERSION_TEXT"\n");
+
+    char version[120];
+    pcre2_config(PCRE2_CONFIG_VERSION, version);
+    printf("  PCRE2  %s\n", version);
+
     printf("\n");
 
     return CONF_ERR;
