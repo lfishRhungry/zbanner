@@ -66,7 +66,7 @@ rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
      * structure followed by an array of "sockaddr" structures.
      */
     sizeof_buffer = sizeof(*rtm) + 512;
-    rtm = calloc(1, sizeof_buffer);
+    rtm = CALLOC(1, sizeof_buffer);
 
     /*
      * Create a socket for querying the kernel

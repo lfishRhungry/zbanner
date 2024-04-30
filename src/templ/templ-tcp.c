@@ -86,6 +86,7 @@ TCP pseudo header
 #include "../util-out/logger.h"
 #include "../util-misc/checksum.h"
 #include "../util-data/safe-string.h"
+#include "../util-data/fine-malloc.h"
 #include "../util-data/data-convert.h"
 #include "../proto/proto-preprocess.h"
 
@@ -1609,7 +1610,7 @@ _selftests_run(void) {
 
         /* Each tests creates its own copy of the test packet, which it
          * will then alter according to the pre-conditions. */
-        buf = malloc(length);
+        buf = MALLOC(length);
         memcpy(buf, templ, length);
 
         /* Set the pre-condition <option-list> field by replacing what
@@ -1778,7 +1779,7 @@ int templ_tcp_selftest()
 
     /* We need to make an allocated copy of the buffer, because the
      * size may change from `realloc()` */
-    buf = malloc(length);
+    buf = MALLOC(length);
     memcpy(buf, templ, length);
 
     /*

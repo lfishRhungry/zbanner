@@ -234,6 +234,7 @@ vLOGtcb(const struct TCP_Control_Block *tcb, int dir, const char *fmt, va_list m
              tcb->ackno_them - tcb->seqno_me_first,
              tcp_state_to_string(tcb->tcpstate)
              );
+    sz[255] = '\0';
     if (dir == 2) {
         char *brace = strchr(sz, '{');
         memset(sz, ' ', brace-sz);
@@ -334,7 +335,7 @@ tcpcon_create_table(size_t entry_count,
     /* Create the table. If we can't allocate enough memory, then shrink
      * the desired size of the table */
     while (tcpcon->entries == 0) {
-        tcpcon->entries = malloc(entry_count * sizeof(*tcpcon->entries));
+        tcpcon->entries = MALLOC(entry_count * sizeof(*tcpcon->entries));
         if (tcpcon->entries == NULL) {
             entry_count >>= 1;
         }
@@ -799,13 +800,13 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     }
 
     /* Append this segment to the list */
-    seg   = calloc(1, sizeof(*seg));
+    seg   = CALLOC(1, sizeof(*seg));
     *next = seg;
 
     seg->seqno  = seqno;
     seg->length = length;
     seg->is_dynamic  = is_dynamic;
-    seg->buf = (void *)buf;
+    seg->buf = (unsigned char *)buf;
 
     if (tcb->tcpstate != STATE_ESTABLISHED_SEND)
         application_notify(tcpcon, tcb, APP_WHAT_SENDING, seg->buf, seg->length, 0, 0);
@@ -822,7 +823,7 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
      * split it up into multiple segments */
     if (length_more) {
         void *buf_more = MALLOC(length_more);
-        memcpy(buf_more, buf+length, length_more);
+        memcpy(buf_more, (unsigned char *)buf+length, length_more);
         _tcb_seg_send(tcpcon, tcb, buf_more, length_more, 1);
     }
 }
@@ -870,11 +871,11 @@ _tcp_seg_acknowledge(
         unsigned length = ackno - tcb->seqno_me;
         while (tcb->segments && length >= tcb->segments->length) {
             struct TCP_Segment *seg = tcb->segments;
+            assert(seg->buf);
 
-            tcb->segments = seg->next;
-
-            length -= seg->length;
-            tcb->seqno_me += seg->length;
+            tcb->segments    = seg->next;
+            length          -= seg->length;
+            tcb->seqno_me   += seg->length;
             tcb->ackno_them += seg->length;
             
             LOGtcb(tcb, 1, "ACKed %u-bytes\n", seg->length);
@@ -891,24 +892,27 @@ _tcp_seg_acknowledge(
 
         if (tcb->segments && length < tcb->segments->length) {
             struct TCP_Segment *seg = tcb->segments;
-            
-            tcb->seqno_me += length;
+            assert(seg->buf);
+
+            tcb->seqno_me   += length;
             tcb->ackno_them += length;
             LOGtcb(tcb, 1, "ACKed %u-bytes\n", length);
 
             /* This segment needs to be reduced */
             if (seg->is_dynamic) {
-                size_t new_length = seg->length - length;
-                unsigned char *buf = malloc(new_length);
+                size_t new_length  = seg->length - length;
+                unsigned char *buf = MALLOC(new_length);
+
                 memcpy(buf, seg->buf + length, new_length);
                 free(seg->buf);
-                seg->buf = buf;
-                seg->length -= length;
+
+                seg->buf        = buf;
+                seg->length     = new_length;
                 seg->is_dynamic = 1;
+
             } else {
                 seg->buf += length;
             }
-            
         }
     }
     

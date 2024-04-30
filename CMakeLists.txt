@@ -13,7 +13,7 @@ endif ()
 
 if (UNIX)
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall -O0 -rdynamic -ggdb -no-pie")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -Wall")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -Wall -DNDEBUG")
 endif ()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")

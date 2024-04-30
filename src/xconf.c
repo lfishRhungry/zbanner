@@ -910,9 +910,9 @@ static enum Config_Res SET_source_ip(void *conf, const char *name, const char *v
 
         if (xconf->nic.src.ipv6.range) {
             ipaddress_formatted_t ipv6_first =
-                ipv6address_fmt((ipv6address)(xconf->nic.src.ipv6.first));
+                ipv6address_fmt(xconf->nic.src.ipv6.first);
             ipaddress_formatted_t ipv6_last =
-                ipv6address_fmt((ipv6address)(xconf->nic.src.ipv6.last));
+                ipv6address_fmt(xconf->nic.src.ipv6.last);
             if (ipv6address_is_lessthan(xconf->nic.src.ipv6.first, xconf->nic.src.ipv6.last)) {
                 fprintf(xconf->echo, "source-ip = %s-%s\n",
                     ipv6_first.string, ipv6_last.string);
@@ -1452,7 +1452,7 @@ static enum Config_Res SET_read_conf(void *conf, const char *name, const char *v
     }
 
     FILE *fp;
-    char line[65536];
+    char *line = MALLOC(65535 * sizeof(char));
 
     fp = fopen(value, "rt");
     if (fp == NULL) {
@@ -1490,6 +1490,7 @@ static enum Config_Res SET_read_conf(void *conf, const char *name, const char *v
     }
 
     fclose(fp);
+    free(line);
 
     return CONF_OK;
 }
@@ -2131,7 +2132,7 @@ static enum Config_Res SET_tcp_mss(void *conf, const char *name, const char *val
     }
 
     if (xconf->templ_opts == NULL)
-        xconf->templ_opts = calloc(1, sizeof(*xconf->templ_opts));
+        xconf->templ_opts = CALLOC(1, sizeof(*xconf->templ_opts));
 
     if (value == 0 || value[0] == '\0') {
         /* no following parameter, so interpret this to mean "enable" */
@@ -2189,7 +2190,7 @@ static enum Config_Res SET_tcp_wscale(void *conf, const char *name, const char *
     }
 
     if (xconf->templ_opts == NULL)
-        xconf->templ_opts = calloc(1, sizeof(*xconf->templ_opts));
+        xconf->templ_opts = CALLOC(1, sizeof(*xconf->templ_opts));
 
     if (value == 0 || value[0] == '\0') {
         xconf->templ_opts->tcp.is_wscale = Add;
@@ -2243,7 +2244,7 @@ static enum Config_Res SET_tcp_tsecho(void *conf, const char *name, const char *
     }
 
     if (xconf->templ_opts == NULL)
-        xconf->templ_opts = calloc(1, sizeof(*xconf->templ_opts));
+        xconf->templ_opts = CALLOC(1, sizeof(*xconf->templ_opts));
 
     if (value == 0 || value[0] == '\0') {
         xconf->templ_opts->tcp.is_tsecho = Add;
@@ -2291,7 +2292,7 @@ static enum Config_Res SET_tcp_sackok(void *conf, const char *name, const char *
     }
 
     if (xconf->templ_opts == NULL)
-        xconf->templ_opts = calloc(1, sizeof(*xconf->templ_opts));
+        xconf->templ_opts = CALLOC(1, sizeof(*xconf->templ_opts));
 
     if (value == 0 || value[0] == '\0') {
         xconf->templ_opts->tcp.is_sackok = Add;

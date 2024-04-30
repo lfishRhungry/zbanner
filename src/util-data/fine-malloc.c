@@ -42,7 +42,7 @@ CALLOC(size_t count, size_t size)
             abort();
         }
     }
-    
+
     p = calloc(count, size);
     if (p == NULL && count * size != 0) {
         LOG(LEVEL_ERROR, "[-] out of memory, aborting\n");

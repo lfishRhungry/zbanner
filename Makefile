@@ -30,7 +30,7 @@ INSTALL_DATA := -pDm755
 # works on the bajillion of different Linux environments
 ifneq (, $(findstring linux, $(SYS)))
 ifneq (, $(findstring musl, $(SYS)))
-LIBS =  -lssl -lcrypto -lpcre2-8 -llua5.3
+LIBS =  -lssl -lcrypto -lpcre2-8
 else
 LIBS = -lm -lrt -ldl -lpthread -lssl -lcrypto -lpcre2-8
 endif
@@ -39,11 +39,6 @@ FLAGS2 =
 endif
 
 # MinGW on Windows
-# I develope on Visual Studio 2010, so that's the Windows environment
-# that'll work. However, 'git' on Windows runs under MingGW, so one
-# day I acccidentally typed 'make' instead of 'git, and felt compelled
-# to then fix all the errors, so this kinda works now. It's not the
-# intended environment, so it make break in the future.
 ifneq (, $(findstring mingw, $(SYS)))
 INCLUDES = -Ivs10/include
 LIBS = -L vs10/lib -lIPHLPAPI -lWs2_32 -lssl -lcrypto -lpcre2-8
@@ -73,15 +68,11 @@ endif
 
 
 DEFINES = 
-bin/xtate: CFLAGS = $(FLAGS2) $(INCLUDES) $(DEFINES) -Wall -O3 -std=gnu99
-bin/xtate_debug: CFLAGS = -g -ggdb $(FLAGS2) $(INCLUDES) $(DEFINES) -Wall -O0 -rdynamic -no-pie -std=gnu99
+bin/xtate: CFLAGS = $(FLAGS2) $(INCLUDES) $(DEFINES) -Wall -O3 -std=gnu99 -DNDEBUG
+bin/xtate_debug: CFLAGS = $(FLAGS2) $(INCLUDES) $(DEFINES) Wall -O0 -g -ggdb -rdynamic -no-pie -std=gnu99
 .SUFFIXES: .c .cpp
 
 all: bin/xtate
-
-
-# tmp/main-conf.o: src/xconf.c src/*.h
-# 	$(CC) $(CFLAGS) -c $< -o $@
 
 
 # just compile everything in the 'src' directory. Using this technique
@@ -193,11 +184,6 @@ tmp/%.o: \
 	src/timeout/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-tmp/%.o: \
-	src/thread-pool/%.c \
-	src/thread-pool/*.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
 
 SRC = $(sort $(wildcard \
 	src/*.c \
@@ -221,7 +207,6 @@ SRC = $(sort $(wildcard \
 	src/scan-modules/*.c \
 	src/output-modules/*.c \
 	src/timeout/*.c \
-	src/thread-pool/*.c \
 	))
 OBJ = $(addprefix tmp/, $(notdir $(addsuffix .o, $(basename $(SRC))))) 
 

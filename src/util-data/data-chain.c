@@ -301,7 +301,7 @@ datachain_vprintf(struct DataChain *dach, unsigned proto,
     
     len = vsnprintf(str, sizeof(str), fmt, marker);
     if (len > sizeof(str)-1) {
-        char *tmp = malloc(len+1);
+        char *tmp = MALLOC(len+1);
         vsnprintf(tmp, len+1, fmt, marker);
         datachain_append(dach, proto, tmp, len);
         free(tmp);

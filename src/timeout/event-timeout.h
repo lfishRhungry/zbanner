@@ -21,7 +21,7 @@ struct TimeoutEntry {
     uint64_t timestamp;
 
     /** we build a doubly-linked list */
-    struct TimeoutEntry *next;
+    struct TimeoutEntry  *next;
     struct TimeoutEntry **prev;
 
     /** The timeout entry is never allocated by itself, but instead
@@ -48,7 +48,8 @@ timeout_unlink(struct TimeoutEntry *entry)
 {
     if (entry->prev == 0 && entry->next == 0)
         return;
-    *(entry->prev) = entry->next;
+    if (entry->prev)
+        *(entry->prev) = entry->next;
     if (entry->next)
         entry->next->prev = entry->prev;
     entry->next = 0;

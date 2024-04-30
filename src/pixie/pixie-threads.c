@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include "pixie-threads.h"
+#include "../util-data/fine-malloc.h"
 
 #if defined(WIN32)
 #include <Windows.h>
@@ -203,11 +204,8 @@ pixie_begin_thread(
 #else
     typedef void *(*PTHREADFUNC)(void*);
     pthread_t thread_id = 0;
-    pthread_create(
-                          &thread_id,
-                          NULL,
-                          (PTHREADFUNC)worker_thread,
-                          worker_data);
+    pthread_create(&thread_id, NULL,
+        (PTHREADFUNC)worker_thread, worker_data);
     return (size_t)thread_id;
 #endif
 }
@@ -246,7 +244,7 @@ void pixie_set_thread_name(const char *name) {
     HANDLE h_thread;
     HRESULT hr;
     wchar_t wz_name[128];
-    h_thread = GetCurrentThread();
+    h_thread  = GetCurrentThread();
     thread_id = GetCurrentThreadId();
     swprintf_s(wz_name, ARRAY_SIZE(wz_name), L"%hs", name);
     hr = SetThreadDescription(GetCurrentThread(), wz_name);
@@ -255,17 +253,19 @@ void pixie_set_thread_name(const char *name) {
             (size_t)thread_id, name, hr);
     }
 
-    info.dwType = 0x1000;
-    info.szName = name;
+    info.dwType     = 0x1000;
+    info.szName     = name;
     info.dwThreadID = thread_id;
-    info.dwFlags = 0;
+    info.dwFlags    = 0;
 #pragma warning(push)
 #pragma warning(disable : 6320 6322)
-//   __try {
-//       RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR),
-//                      (ULONG_PTR *)&info);
-//   } __except (EXCEPTION_EXECUTE_HANDLER) {
-//   }
+#ifdef _MSC_VER
+__try {
+    RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR),
+                   (ULONG_PTR *)&info);
+} __except (EXCEPTION_EXECUTE_HANDLER) {
+}
+#endif
 #pragma warning(pop)
 
 #elif defined(__APPLE__)
@@ -291,7 +291,7 @@ void *pixie_create_barrier(unsigned total_threads) {
 #if defined(WIN32)
     BOOL is_succces;
     LPSYNCHRONIZATION_BARRIER p_barrier;
-    p_barrier = calloc(1, sizeof(SYNCHRONIZATION_BARRIER));
+    p_barrier = CALLOC(1, sizeof(SYNCHRONIZATION_BARRIER));
     if (p_barrier == NULL) {
         return NULL;
     }
@@ -304,7 +304,7 @@ void *pixie_create_barrier(unsigned total_threads) {
 #else
     int res;
     pthread_barrier_t *p_barrier;
-    p_barrier = calloc(1, sizeof(pthread_barrier_t));
+    p_barrier = CALLOC(1, sizeof(pthread_barrier_t));
     if (p_barrier == NULL) {
         return NULL;
     }
@@ -344,7 +344,7 @@ bool pixie_delete_barrier(void *p_barrier) {
 void *pixie_create_rwlock() {
 #if defined(WIN32)
     PSRWLOCK p_rwlock;
-    p_rwlock = calloc(1, sizeof(SRWLOCK));
+    p_rwlock = CALLOC(1, sizeof(SRWLOCK));
     if (p_rwlock == NULL) {
         return NULL;
     }
@@ -353,7 +353,7 @@ void *pixie_create_rwlock() {
 #else
     int res;
     pthread_rwlock_t *p_rwlock;
-    p_rwlock = calloc(1, sizeof(pthread_rwlock_t));
+    p_rwlock = CALLOC(1, sizeof(pthread_rwlock_t));
     if (p_rwlock == NULL) {
         return NULL;
     }
@@ -418,7 +418,7 @@ void *pixie_create_mutex() {
 #else
     int res;
     pthread_mutex_t *p_mutex;
-    p_mutex = calloc(1, sizeof(pthread_mutex_t));
+    p_mutex = CALLOC(1, sizeof(pthread_mutex_t));
     if (p_mutex == NULL) {
         return NULL;
     }

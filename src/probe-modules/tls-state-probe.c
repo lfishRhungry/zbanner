@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+#include <inttypes.h>
 
 #include <openssl/err.h>
 #include <openssl/ssl.h>
@@ -660,7 +661,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     }
 
     /*buffer for BIO*/
-    data = (unsigned char *)malloc(data_max_len);
+    data = (unsigned char *)MALLOC(data_max_len);
     if (data == NULL) {
         LOG(LEVEL_WARNING, "SSL alloc memory error 0x%X\n", data_max_len);
         goto error1;

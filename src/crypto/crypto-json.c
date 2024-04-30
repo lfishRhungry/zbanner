@@ -24,6 +24,7 @@
 */
 
 #include "crypto-json.h"
+#include "../util-data/fine-malloc.h"
 
 #include <assert.h>
 #include <stdint.h>
@@ -487,7 +488,7 @@ JsonNode *json_first_child(const JsonNode *node)
 
 static JsonNode *mknode(JsonTag tag)
 {
-    JsonNode *ret = (JsonNode*) calloc(1, sizeof(JsonNode));
+    JsonNode *ret = (JsonNode*) CALLOC(1, sizeof(JsonNode));
     if (ret == NULL)
         out_of_memory();
     ret->tag = tag;

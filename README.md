@@ -6,12 +6,15 @@ Welcome to Xtate -- A modular all-stack network scanner for next-generation inte
 
 ## Build
 
-Xtate could be build through CMake both on Linux and Windows because of cross-platform source code but with some dependencies for building or running.
+### Depencendies
 
-Suggest compiler:
+Xtate could be build with CMake both on Linux and Windows because of cross-platform code.
 
-- GCC/Clang on Linux and suggest to work with CMake.
-- MingW64 on Windows and must work with CMake.
+Suggest compile suites:
+
+- GCC/Clang and CMake/Make on Linux.
+- MSVC and CMake on Windows.
+- MinGW64, CMake and Make on Windows.
 
 Dependencies for building:
 
@@ -25,27 +28,36 @@ Dependencies for running:
 - PFRING driver(optional on Linux)
 - lua5.3(optional for lua probe support)
 
-### On Linux
-
-They can be installed easily on Ubuntu22 by:
+They can be installed on Windows in some way you like but always easier on Linux like Ubuntu22:
 
 ```
-sudo apt install libpcre2-dev libpcre3-dev libssl-dev liblua5.3-0 libpcap-dev
+sudo apt install libpcre2-dev libssl-dev liblua5.3-0 libpcap-dev
 ```
 
-With dependencies installed we can build xtate both release and debug version by CMake or executing `build.sh`.
+### Compile On Linux
 
-For other OS or version of Linux(maybe Ubuntu20), use or try to modify `Makefile` is a good idea.(I'm failed to be a CMake professor...)
-
-### On Windows
-
-I just give my suggestions that successed in my experiment. I use vcpkg to install the hard cores:
+With dependencies installed we can build xtate by CMake with parameters or with given script quickly:
 
 ```
-vcpkg install openssl:x64-windows pcre2:x64-windows
+./build.sh [debug]
 ```
 
-I prefer to use CMake:
+If any error with CMake, use or try to modify `Makefile` is a good idea. Sorry I'm failed to be a CMake professor...
+
+### Compile On Windows
+
+I suggest to use CMake in my experience.
+
+With MSVC:
+
+```
+cd build
+cmake .. \
+    -DCMAKE_TOOLCHAIN_FILE=<vcpkd.cmake path> \
+    -DVCPKG_TARGET_TRIPLET=x64-windows
+```
+
+With MinGW64:
 
 ```
 cd build
@@ -56,8 +68,6 @@ cmake .. \
     -DVCPKG_TARGET_TRIPLET=x64-windows
 make -j4
 ```
-
-Warning: I try my best to make Xtate could be compiled successful on Windows. However, it works better on Linux just like other amazing projects.
 
 ## Intro
 
@@ -82,7 +92,13 @@ Use `xtate --list-out` to see all OutputModules with sub-parameters and help.
 Xtate was created by lfishRhungry:
 - email: chenchiyu14@nudt.edu.cn
 
-Xtate referenced and was born from [ZMap](https://github.com/zmap/zmap), [Masscan](https://github.com/robertdavidgraham/masscan/tree/master) and [Masscan-ng](https://github.com/bi-zone/masscan-ng). Thanks to Robert Graham, Zakir Durumeric and Konstantin Molodyakov for their greate code and rigorous style. I learned a lot more about coding skills than just finishing my worthless graduate thesis.
+Xtate referenced and was born from
+[ZMap](https://github.com/zmap/zmap),
+[Masscan](https://github.com/robertdavidgraham/masscan/tree/master)
+and [Masscan-ng](https://github.com/bi-zone/masscan-ng).
+
+Thanks to Robert Graham, Zakir Durumeric and Konstantin Molodyakov for their greate code and rigorous style.
+I've learned about coding more than just finishing my worthless graduate thesis.
 
 # License
 

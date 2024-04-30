@@ -160,11 +160,11 @@ void receive_thread(void *v) {
     struct ScanTmEvent            *tm_event                    = NULL;
     struct FHandler               *ft_handler                  = NULL;
     unsigned                       handler_num                 = xconf->rx_handler_count;
-    size_t                         handler[handler_num];
-    struct RxHandle                handle_parms[handler_num];
-    struct rte_ring               *handle_q[handler_num];
-    struct RxDispatch              dispatch_parms;
+    size_t                        *handler                     = MALLOC(handler_num * sizeof(size_t));
+    struct RxHandle               *handle_parms                = MALLOC(handler_num * sizeof(struct RxHandle));
+    struct rte_ring              **handle_q                    = MALLOC(handler_num * sizeof(struct rte_ring *));
     size_t                         dispatcher;
+    struct RxDispatch              dispatch_parms;
     struct rte_ring               *dispatch_q;
     struct Received               *recved;
 
@@ -422,6 +422,12 @@ void receive_thread(void *v) {
         pcapfile_close(pcapfile);
     if (xconf->is_fast_timeout)
         ft_close_handler(ft_handler);
+    if (handler)
+        free(handler);
+    if (handle_parms)
+        free(handle_parms);
+    if (handle_q)
+        free(handle_q);
 
     /* Thread is about to exit */
     parms->done_receiving = true;
