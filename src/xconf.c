@@ -3422,10 +3422,10 @@ void xconf_print_version()
     compiler = "clang";
     compiler_version = __clang_version__;
 # elif defined(__MINGW64__)
-    compiler = "MinGW-w64";
+    compiler = "MinGW-w64 gcc";
     compiler_version = __VERSION__;
 # elif defined(__MINGW32__)
-    compiler = "MinGW-w32";
+    compiler = "MinGW-w32 gcc";
     compiler_version = __VERSION__;
 # else
     compiler = "gcc";
