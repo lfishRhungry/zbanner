@@ -1926,167 +1926,9 @@ static enum Config_Res SET_version(void *conf, const char *name, const char *val
         return 0;
     }
 
-    const char *cpu = "unknown";
-    const char *compiler = "unknown";
-    const char *compiler_version = "unknown";
-    const char *os = "unknown";
-    printf("\n");
-    printf(""XTATE_FIRST_UPPER_NAME" version %s\n( %s )\n", 
-        XTATE_VERSION,
-        XTATE_GITHUB
-        );
-    printf("\n");
-    printf("Compiled on: %s %s\n", __DATE__, __TIME__);
+    xconf->op = Operation_PrintVersion;
 
-#if defined(__x86_64) || defined(__x86_64__)
-    cpu = "x86";
-#endif
-
-#if defined(_MSC_VER)
-    #if defined(_M_AMD64) || defined(_M_X64)
-        cpu = "x86";
-    #elif defined(_M_IX86)
-        cpu = "x86";
-    #elif defined (_M_ARM_FP)
-        cpu = "arm";
-    #endif
-
-    {
-        int msc_ver = _MSC_VER;
-
-        compiler = "VisualStudio";
-
-        if (msc_ver < 1200)
-            compiler_version = "pre6.0";
-        else if (msc_ver == 1200)
-            compiler_version = "6.0 VC++6.0";
-        else if (msc_ver == 1300)
-            compiler_version = ".NET 2002 VC++7.0";
-        else if (msc_ver == 1310)
-            compiler_version = ".NET 2003 VC++7.1";
-        else if (msc_ver == 1400)
-            compiler_version = "2005 VC++8.0";
-        else if (msc_ver == 1500)
-            compiler_version = "2008 VC++9.0";
-        else if (msc_ver == 1600)
-            compiler_version = "2010 VC++10.0";
-        else if (msc_ver == 1700)
-            compiler_version = "2012 VC++11.0";
-        else if (msc_ver == 1800)
-            compiler_version = "2013 VC++12.0";
-        else if (msc_ver == 1900)
-            compiler_version = "2015 VC++14.0";
-        else if (msc_ver == 1910)
-            compiler_version = "2017RTW VC++15.0";
-        else if (msc_ver == 1911)
-            compiler_version = "2017 VC++15.3";
-        else if (msc_ver == 1912)
-            compiler_version = "2017 VC++15.5";
-        else if (msc_ver == 1913)
-            compiler_version = "2017 VC++15.6";
-        else if (msc_ver == 1914)
-            compiler_version = "2017 VC++15.7";
-        else if (msc_ver == 1915)
-            compiler_version = "2017 VC++15.8";
-        else if (msc_ver == 1916)
-            compiler_version = "2017 VC++15.9";
-        else if (msc_ver == 1920)
-            compiler_version = "2019RTW VC++16.0";
-        else if (msc_ver == 1921)
-            compiler_version = "2019 VC++16.1";
-        else if (msc_ver == 1922)
-            compiler_version = "2019 VC++16.2";
-        else if (msc_ver == 1923)
-            compiler_version = "2019 VC++16.3";
-        else if (msc_ver == 1924)
-            compiler_version = "2019 VC++16.4";
-        else if (msc_ver == 1925)
-            compiler_version = "2019 VC++16.5";
-        else if (msc_ver == 1926)
-            compiler_version = "2019 VC++16.6";
-        else if (msc_ver == 1927)
-            compiler_version = "2019 VC++16.7";
-        else if (msc_ver == 1928)
-            compiler_version = "2019 VC++16.8/16.9a";
-        else if (msc_ver == 1929)
-            compiler_version = "2019 VC++16.10/16.11b";
-        else if (msc_ver == 1930)
-            compiler_version = "2022RTW VC++17.0";
-        else if (msc_ver == 1931)
-            compiler_version = "2022 VC++17.1";
-        else if (msc_ver == 1932)
-            compiler_version = "2022 VC++17.2";
-        else if (msc_ver == 1933)
-            compiler_version = "2022 VC++17.3";
-        else if (msc_ver == 1934)
-            compiler_version = "2022 VC++17.4";
-        else if (msc_ver == 1935)
-            compiler_version = "2022 VC++17.5";
-        else if (msc_ver == 1936)
-            compiler_version = "2022 VC++17.6";
-        else if (msc_ver == 1937)
-            compiler_version = "2022 VC++17.7";
-        else if (msc_ver == 1938)
-            compiler_version = "2022 VC++17.8";
-        else if (msc_ver == 1939)
-            compiler_version = "2022 VC++17.9";
-        else if (msc_ver == 1940)
-            compiler_version = "2022 VC++17.10";
-        else
-            compiler_version = "post-2022";
-    }
-
-
-#elif defined(__GNUC__)
-# if defined(__clang__)
-    compiler = "clang";
-    compiler_version = __clang_version__;
-# else
-    compiler = "gcc";
-    compiler_version = __VERSION__;
-# endif
-
-#if defined(i386) || defined(__i386) || defined(__i386__)
-    cpu = "x86";
-#endif
-
-#if defined(__corei7) || defined(__corei7__)
-    cpu = "x86-Corei7";
-#endif
-
-#endif
-
-#if defined(WIN32)
-    os = "Windows";
-#elif defined(__linux__)
-    os = "Linux";
-#elif defined(__APPLE__)
-    os = "Apple";
-#elif defined(__MACH__)
-    os = "MACH";
-#elif defined(__FreeBSD__)
-    os = "FreeBSD";
-#elif defined(__NetBSD__)
-    os = "NetBSD";
-#elif defined(unix) || defined(__unix) || defined(__unix__)
-    os = "Unix";
-#endif
-
-    printf("Compiler: %s %s\n", compiler, compiler_version);
-    printf("OS: %s\n", os);
-    printf("CPU: %s (%u bits)\n", cpu, (unsigned)(sizeof(void*))*8);
-    printf("\n");
-
-    printf("Build with:\n");
-    printf("  "OPENSSL_VERSION_TEXT"\n");
-
-    char version[120];
-    pcre2_config(PCRE2_CONFIG_VERSION, version);
-    printf("  PCRE2  %s\n", version);
-
-    printf("\n");
-
-    return CONF_ERR;
+    return CONF_OK;
 }
 
 static enum Config_Res SET_usage(void *conf, const char *name, const char *value)
@@ -3459,6 +3301,169 @@ void xconf_print_usage()
     printf("\n");
     printf("  "XTATE_NAME" -help\n");
     xprint("display detailed help text of all parameters.\n", 6, 80);
+    printf("\n");
+}
+
+void xconf_print_version()
+{
+    const char *cpu = "unknown";
+    const char *compiler = "unknown";
+    const char *compiler_version = "unknown";
+    const char *os = "unknown";
+    printf("\n");
+    printf("  "XTATE_FIRST_UPPER_NAME" version %s\n", XTATE_VERSION);
+    printf("  Author : "XTATE_AUTHOR_NAME"\n");
+    printf("  Github : "XTATE_GITHUB"\n");
+    printf("  Contact: "XTATE_AUTHOR_MAIL"\n");
+    printf("\n");
+    printf("  Compiled on: %s %s\n", __DATE__, __TIME__);
+
+#if defined(__x86_64) || defined(__x86_64__)
+    cpu = "x86";
+#endif
+
+#if defined(_MSC_VER)
+    #if defined(_M_AMD64) || defined(_M_X64)
+        cpu = "x86";
+    #elif defined(_M_IX86)
+        cpu = "x86";
+    #elif defined (_M_ARM_FP)
+        cpu = "arm";
+    #endif
+
+    {
+        int msc_ver = _MSC_VER;
+
+        compiler = "VisualStudio";
+
+        if (msc_ver < 1200)
+            compiler_version = "pre6.0";
+        else if (msc_ver == 1200)
+            compiler_version = "6.0 VC++6.0";
+        else if (msc_ver == 1300)
+            compiler_version = ".NET 2002 VC++7.0";
+        else if (msc_ver == 1310)
+            compiler_version = ".NET 2003 VC++7.1";
+        else if (msc_ver == 1400)
+            compiler_version = "2005 VC++8.0";
+        else if (msc_ver == 1500)
+            compiler_version = "2008 VC++9.0";
+        else if (msc_ver == 1600)
+            compiler_version = "2010 VC++10.0";
+        else if (msc_ver == 1700)
+            compiler_version = "2012 VC++11.0";
+        else if (msc_ver == 1800)
+            compiler_version = "2013 VC++12.0";
+        else if (msc_ver == 1900)
+            compiler_version = "2015 VC++14.0";
+        else if (msc_ver == 1910)
+            compiler_version = "2017RTW VC++15.0";
+        else if (msc_ver == 1911)
+            compiler_version = "2017 VC++15.3";
+        else if (msc_ver == 1912)
+            compiler_version = "2017 VC++15.5";
+        else if (msc_ver == 1913)
+            compiler_version = "2017 VC++15.6";
+        else if (msc_ver == 1914)
+            compiler_version = "2017 VC++15.7";
+        else if (msc_ver == 1915)
+            compiler_version = "2017 VC++15.8";
+        else if (msc_ver == 1916)
+            compiler_version = "2017 VC++15.9";
+        else if (msc_ver == 1920)
+            compiler_version = "2019RTW VC++16.0";
+        else if (msc_ver == 1921)
+            compiler_version = "2019 VC++16.1";
+        else if (msc_ver == 1922)
+            compiler_version = "2019 VC++16.2";
+        else if (msc_ver == 1923)
+            compiler_version = "2019 VC++16.3";
+        else if (msc_ver == 1924)
+            compiler_version = "2019 VC++16.4";
+        else if (msc_ver == 1925)
+            compiler_version = "2019 VC++16.5";
+        else if (msc_ver == 1926)
+            compiler_version = "2019 VC++16.6";
+        else if (msc_ver == 1927)
+            compiler_version = "2019 VC++16.7";
+        else if (msc_ver == 1928)
+            compiler_version = "2019 VC++16.8/16.9a";
+        else if (msc_ver == 1929)
+            compiler_version = "2019 VC++16.10/16.11b";
+        else if (msc_ver == 1930)
+            compiler_version = "2022RTW VC++17.0";
+        else if (msc_ver == 1931)
+            compiler_version = "2022 VC++17.1";
+        else if (msc_ver == 1932)
+            compiler_version = "2022 VC++17.2";
+        else if (msc_ver == 1933)
+            compiler_version = "2022 VC++17.3";
+        else if (msc_ver == 1934)
+            compiler_version = "2022 VC++17.4";
+        else if (msc_ver == 1935)
+            compiler_version = "2022 VC++17.5";
+        else if (msc_ver == 1936)
+            compiler_version = "2022 VC++17.6";
+        else if (msc_ver == 1937)
+            compiler_version = "2022 VC++17.7";
+        else if (msc_ver == 1938)
+            compiler_version = "2022 VC++17.8";
+        else if (msc_ver == 1939)
+            compiler_version = "2022 VC++17.9";
+        else if (msc_ver == 1940)
+            compiler_version = "2022 VC++17.10";
+        else
+            compiler_version = "post-2022";
+    }
+
+
+#elif defined(__GNUC__)
+# if defined(__clang__)
+    compiler = "clang";
+    compiler_version = __clang_version__;
+# else
+    compiler = "gcc";
+    compiler_version = __VERSION__;
+# endif
+
+#if defined(i386) || defined(__i386) || defined(__i386__)
+    cpu = "x86";
+#endif
+
+#if defined(__corei7) || defined(__corei7__)
+    cpu = "x86-Corei7";
+#endif
+
+#endif
+
+#if defined(WIN32)
+    os = "Windows";
+#elif defined(__linux__)
+    os = "Linux";
+#elif defined(__APPLE__)
+    os = "Apple";
+#elif defined(__MACH__)
+    os = "MACH";
+#elif defined(__FreeBSD__)
+    os = "FreeBSD";
+#elif defined(__NetBSD__)
+    os = "NetBSD";
+#elif defined(unix) || defined(__unix) || defined(__unix__)
+    os = "Unix";
+#endif
+
+    printf("  Compiler: %s %s\n", compiler, compiler_version);
+    printf("  OS: %s\n", os);
+    printf("  CPU: %s (%u bits)\n", cpu, (unsigned)(sizeof(void*))*8);
+    printf("\n");
+
+    printf("  Build with libraries:\n");
+    printf("    "OPENSSL_VERSION_TEXT"\n");
+
+    char version[120];
+    pcre2_config(PCRE2_CONFIG_VERSION, version);
+    printf("    PCRE2  %s\n", version);
+
     printf("\n");
 }
 

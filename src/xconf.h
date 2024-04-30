@@ -45,20 +45,21 @@ struct TemplateOptions;
 
 enum Operation {
     Operation_Default = 0,                   /* nothing specified, so print usage */
-    Operation_ListAdapters,                  /* list all usable interfaces */
-    Operation_Selftest,                      /* do global regression test*/
     Operation_Scan,                          /* do scan */
-    Operation_DebugIF,                       /* do special selftest to interface for debugging*/
-    Operation_ListTargets,                   /* list all targets uniquely in random */
-    Operation_ListRange,                     /* list all targets in range */
-    Operation_Benchmark,                     /* do global benchmark for key units */
     Operation_Echo,                          /* echo the config used now or all configs with --echo-all */
+    Operation_DebugIF,                       /* do special selftest to interface for debugging*/
     Operation_ListCidr,                      /* list all targets in CIDR */
+    Operation_ListRange,                     /* list all targets in range */
+    Operation_ListTargets,                   /* list all targets uniquely in random */
+    Operation_ListAdapters,                  /* list all usable interfaces */
     Operation_ListScanModules,               /* list all scan modules */
     Operation_ListProbeModules,              /* list all probes */
     Operation_ListOutputModules,             /* list all probes */
     Operation_PrintHelp,                     /* print help text for all parameters*/
     Operation_PrintIntro,                    /* print introduction text of work flow*/
+    Operation_PrintVersion,                  /* print version and build info*/
+    Operation_Selftest,                      /* do global regression test*/
+    Operation_Benchmark,                     /* do global benchmark for key units */
 };
 
 struct source_t {
@@ -221,6 +222,8 @@ void xconf_print_intro();
 void xconf_print_usage();
 
 void xconf_print_help();
+
+void xconf_print_version();
 
 void xconf_selftest();
 

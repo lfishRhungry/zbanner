@@ -710,6 +710,22 @@ int main(int argc, char *argv[]) {
         }
         return main_scan(xconf);
 
+    case Operation_Echo:
+        xconf_echo(xconf, stdout);
+        break;
+
+    case Operation_DebugIF:
+        rawsock_selftest_if(xconf->nic.ifname);
+        break;
+
+    case Operation_ListCidr:
+        xconf_echo_cidr(xconf, stdout);
+        break;
+
+    case Operation_ListRange:
+        readrange(xconf);
+        break;
+
     case Operation_ListTargets:
         /* Create a randomized list of IP addresses */
         listscan(xconf);
@@ -718,20 +734,6 @@ int main(int argc, char *argv[]) {
     case Operation_ListAdapters:
         /* List the network adapters we might want to use for scanning */
         rawsock_list_adapters();
-        break;
-
-    case Operation_ListRange:
-        readrange(xconf);
-        return 0;
-
-    case Operation_Echo:
-        xconf_echo(xconf, stdout);
-        exit(0);
-        break;
-
-    case Operation_ListCidr:
-        xconf_echo_cidr(xconf, stdout);
-        exit(0);
         break;
 
     case Operation_ListScanModules:
@@ -754,16 +756,16 @@ int main(int argc, char *argv[]) {
         xconf_print_intro();
         break;
 
-    case Operation_DebugIF:
-        rawsock_selftest_if(xconf->nic.ifname);
-        break;
-
-    case Operation_Benchmark:
-        xconf_benchmark(xconf->blackrock_rounds);
+    case Operation_PrintVersion:
+        xconf_print_version();
         break;
 
     case Operation_Selftest:
         xconf_selftest();
+        break;
+
+    case Operation_Benchmark:
+        xconf_benchmark(xconf->blackrock_rounds);
         break;
     }
 
