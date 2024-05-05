@@ -52,14 +52,14 @@ Suggest compile suites:
 - MSVC
 - MinGW-w64
 
-With MSVC if using vcpkg:
+With MSVC as compiler:
 
 ```
 cd build
 cmake .. -DVCPKG_TARGET_TRIPLET=x64-windows
 ```
 
-With MinGW-w64 if using vcpkg:
+With MinGW-w64 as compiler:
 
 ```
 cd build
