@@ -9,6 +9,7 @@
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
 #include "../crypto/crypto-base64.h"
+#include "../crypto/crypto-nmapprobe.h"
 
 struct HelloStateConf {
     unsigned char          *hello;
@@ -147,6 +148,27 @@ static enum Config_Res SET_hello_string(void *conf, const char *name, const char
     return CONF_OK;
 }
 
+static enum Config_Res SET_hello_nmap(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    if (hellostate_conf.hello)
+        free(hellostate_conf.hello);
+
+    hellostate_conf.hello_len = strlen(value);
+    if (hellostate_conf.hello_len==0) {
+        LOG(LEVEL_ERROR, "FAIL: Invalid hello string in nmap probe format.\n");
+        return CONF_ERR;
+    }
+
+    hellostate_conf.hello     = CALLOC(1, hellostate_conf.hello_len);
+    hellostate_conf.hello_len = nmapprobe_decode(value,
+        hellostate_conf.hello_len, hellostate_conf.hello, hellostate_conf.hello_len);
+
+    return CONF_OK;
+}
+
 static enum Config_Res SET_hello_base64(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
@@ -218,6 +240,14 @@ static struct ConfigParam hellostate_parameters[] = {
         F_NONE,
         {"base64", 0},
         "Specifies a string in base64 format and set it as hello data after decoded."
+        " This will overwrite hello data set by other parameters."
+    },
+    {
+        "nmap-string",
+        SET_hello_nmap,
+        F_NONE,
+        {"nmap", 0},
+        "Specifies a string in nmap probe format and set it as hello data after decoded."
         " This will overwrite hello data set by other parameters."
     },
     {
