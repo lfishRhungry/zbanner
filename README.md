@@ -53,9 +53,7 @@ With MSVC if using vcpkg:
 
 ```
 cd build
-cmake .. \
-    -DCMAKE_TOOLCHAIN_FILE=<vcpkd.cmake path> \
-    -DVCPKG_TARGET_TRIPLET=x64-windows
+cmake .. -DVCPKG_TARGET_TRIPLET=x64-windows
 ```
 
 With MinGW-w64 if using vcpkg:
@@ -65,7 +63,6 @@ cd build
 cmake .. \
     -G "Unix Makefiles" \
     -DCMAKE_BUILD_TYPE=<Debug/Release> \
-    -DCMAKE_TOOLCHAIN_FILE=<vcpkd.cmake path> \
     -DVCPKG_TARGET_TRIPLET=x64-windows
 make -j4
 ```
