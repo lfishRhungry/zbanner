@@ -32,7 +32,7 @@ target_sources(${exe_name} PUBLIC ${sources})
 
 # openssl
 # set(OPENSSL_USE_STATIC_LIBS TRUE)
-find_package(OpenSSL REQUIRED)
+find_package(OpenSSL 1.1.1 REQUIRED)
 target_link_libraries(${exe_name} OpenSSL::Crypto OpenSSL::SSL)
 
 # pcre2
