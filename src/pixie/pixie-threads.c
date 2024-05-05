@@ -247,7 +247,14 @@ void pixie_set_thread_name(const char *name) {
     h_thread  = GetCurrentThread();
     thread_id = GetCurrentThreadId();
     swprintf_s(wz_name, ARRAY_SIZE(wz_name), L"%hs", name);
+#if defined(__MINGW64__) || defined(__MINGW32__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
+#endif
     hr = SetThreadDescription(GetCurrentThread(), wz_name);
+#if defined(__MINGW64__) || defined(__MINGW32__)
+#pragma GCC diagnostic pop
+#endif
     if (FAILED(hr)) {
         LOG(LEVEL_WARNING, "Set thread name %" PRIuPTR " %s. Error %ld\n",
             (size_t)thread_id, name, hr);
