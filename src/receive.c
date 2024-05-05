@@ -67,9 +67,8 @@ dispatch_thread(void *v)
         }
 
         /**
-         * send packet to recv handle queue by its cookie
+         * send packet to recv handle queue according to its cookie
         */
-
         uint64_t cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
             recved->parsed.dst_ip, recved->parsed.port_dst, parms->entropy);
 
@@ -410,6 +409,7 @@ void receive_thread(void *v) {
     /*
      * cleanup
      */
+
     /*stop reader and handlers*/
     pixie_thread_join(dispatcher);
     for (unsigned i=0; i<handler_num; i++) {

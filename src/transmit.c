@@ -44,8 +44,7 @@ adapter_get_source_addresses(const struct Xconf *xconf, struct source_t *src)
 
     src->ipv6 = ifsrc->ipv6.first;
 
-    /* TODO: currently supports only a single address. This needs to
-     * be fixed to support a list of addresses */
+    /* TODO: currently supports only a single address */
     src->ipv6_mask = mask;
 }
 
@@ -103,11 +102,6 @@ void transmit_thread(void *v)
 
 infinite:;
 
-    /* Create the shuffler/randomizer. This creates the 'range' variable,
-     * which is simply the number of IP addresses times the number of
-     * ports.
-     * IPv6: low index will pick addresses from the IPv6 ranges, and high
-     * indexes will pick addresses from the IPv4 ranges. */
     uint64_t range      = count_ipv4 * rangelist_count(&xconf->targets.ports) +
                           count_ipv6 * rangelist_count(&xconf->targets.ports);
     uint64_t range_ipv6 = count_ipv6 * rangelist_count(&xconf->targets.ports);
@@ -115,9 +109,6 @@ infinite:;
     struct BlackRock blackrock;
     blackrock_init(&blackrock, range, dynamic_seed, xconf->blackrock_rounds);
 
-    /* Calculate the 'start' and 'end' of a scan. One reason to do this is
-     * to support --shard, so that multiple machines can co-operate on
-     * the same scan. */
     uint64_t start = xconf->resume.index +
                      (xconf->shard.one - 1) * xconf->tx_thread_count +
                      parms->tx_index;
@@ -184,8 +175,7 @@ infinite:;
             }
 
             /**
-             * Due to our port store method.
-             * I think it is flexible.
+             * Due to flexible port store method.
              */
             target.proto = get_actual_proto_port(&(target.port_them));
 
@@ -236,8 +226,7 @@ infinite:;
 
         } /* end of batch */
 
-        /* save our current location for resuming, if the user pressed
-         * <ctrl-c> to exit early */
+        /* save our current location for resuming */
         parms->my_index = i;
 
         /* If the user pressed <ctrl-c>, then we need to exit and save state.*/
@@ -267,9 +256,6 @@ infinite:;
      */
     rawsock_flush(adapter);
 
-    /*
-     * Wait until the receive thread realizes the scan is over
-     */
     LOG(LEVEL_WARNING, "[+] transmit thread #%u complete\n", parms->tx_index);
 
     /*help rx thread to reponse*/

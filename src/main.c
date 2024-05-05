@@ -156,7 +156,7 @@ static int main_scan(struct Xconf *xconf) {
     }
 
     /*
-     * Set the "source port" of everything we transmit.
+     * Set the "source ports" of everything we transmit.
      */
     if (xconf->nic.src.port.range == 0) {
         unsigned port = 40000 + now % 20000;
@@ -373,7 +373,7 @@ static int main_scan(struct Xconf *xconf) {
         uint64_t       total_tm_event            = 0;
         uint64_t       total_sent                = 0;
 
-        /* Find the minimum index and repeat of all the threads */
+        /* Find the minimum index */
         min_index  = UINT64_MAX;
         min_repeat = UINT64_MAX;
         for (i = 0; i < xconf->tx_thread_count; i++) {
@@ -592,9 +592,6 @@ int main(int argc, char *argv[]) {
     if (is_backtrace)
         pixie_backtrace_init(argv[0]);
 
-    /*
-     * Initialize those defaults that aren't zero
-     */
     memset(xconf, 0, sizeof(*xconf));
 
     //=================================================Define default params
@@ -612,25 +609,15 @@ int main(int argc, char *argv[]) {
     xconf->nic.snaplen                      = XCONF_DFT_SNAPLEN;
     xconf->max_packet_len                   = XCONF_DFT_MAX_PKT_LEN;
 
-    /*
-     * Read in the configuration from the command-line. We are looking for
-     * either options or a list of IPv4 address ranges.
-     */
     xconf_command_line(xconf, argc, argv);
     if (xconf->seed == 0)
         xconf->seed = get_one_entropy(); /* entropy for randomness */
 
-    /* We need to do a separate "raw socket" initialization step. This is
-     * for Windows and PF_RING. */
+    /* a separate "raw socket" initialization step for Windows and PF_RING. */
     if (pcap_init() != 0)
         LOG(LEVEL_INFO, "libpcap: failed to load\n");
     rawsock_init();
 
-    /*
-     * Apply excludes. People ask us not to scan them, so we maintain a list
-     * of their ranges, and when doing wide scans, add the exclude list to
-     * prevent them from being scanned.
-     */
     has_target_addresses = massip_has_ipv4_targets(&xconf->targets) ||
                            massip_has_ipv6_targets(&xconf->targets);
     has_target_ports = massip_has_target_ports(&xconf->targets);
@@ -645,16 +632,6 @@ int main(int argc, char *argv[]) {
     massip_optimize(&xconf->targets);
 
     /* FIXME: we only support 63-bit scans at the current time.
-     * This is big enough for the IPv4 Internet, where scanning
-     * for all TCP ports on all IPv4 addresses results in a 48-bit
-     * scan, but this isn't big enough even for a single port on
-     * an IPv6 subnet (which are 64-bits in size, usually). However,
-     * even at millions of packets per second scanning rate, you still
-     * can't complete a 64-bit scan in a reasonable amount of time.
-     * Nor would you want to attempt the feat, as it would overload
-     * the target IPv6 subnet. Since implementing this would be
-     * difficult for 32-bit processors, for now, I'm going to stick
-     * to a simple 63-bit scan.
      */
     if (massint128_bitcount(massip_range(&xconf->targets)) > 63) {
         LOG(LEVEL_ERROR,
@@ -667,25 +644,14 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    /*
-     * Once we've read in the configuration, do the operation that was
-     * specified
-     */
     switch (xconf->op) {
     case Operation_Default:
-        /* Print usage info and exit */
         xconf_set_parameter(xconf, "usage", "true");
         break;
 
     case Operation_Scan:
-        /*
-         * THIS IS THE NORMAL THING
-         */
         if (rangelist_count(&xconf->targets.ipv4) == 0 &&
             massint128_is_zero(range6list_count(&xconf->targets.ipv6))) {
-            /* We check for an empty target list here first, before the excludes,
-             * so that we can differentiate error messages after excludes, in case
-             * the user specified addresses, but they were removed by excludes. */
             LOG(LEVEL_ERROR, "FAIL: target IP address list empty\n");
             if (has_target_addresses) {
                 LOG(LEVEL_ERROR, " [hint] all addresses were removed by exclusion ranges\n");
@@ -727,12 +693,10 @@ int main(int argc, char *argv[]) {
         break;
 
     case Operation_ListTargets:
-        /* Create a randomized list of IP addresses */
         listscan(xconf);
         return 0;
 
     case Operation_ListAdapters:
-        /* List the network adapters we might want to use for scanning */
         rawsock_list_adapters();
         break;
 
