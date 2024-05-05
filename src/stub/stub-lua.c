@@ -1,5 +1,6 @@
 #define LUAAPI
 #include "stub-lua.h"
+#include "../util-out/logger.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4133 4113 4047)
@@ -18,14 +19,16 @@
 #endif
 
 
-int stublua_init(void)
+bool stublua_init(void)
 {
     void *lib = NULL;
     
     {
 #if defined(__APPLE__)
         static const char *possible_names[] = {
-
+            "liblua.5.4.5.dylib",
+            "liblua.5.4.dylib",
+            "liblua5.4.dylib",
             "liblua.5.3.5.dylib",
             "liblua.5.3.dylib",
             "liblua5.3.dylib",
@@ -35,6 +38,7 @@ int stublua_init(void)
 #elif defined(WIN32) || defined(WIN64) || defined(_WIN32) || defined(_WIN64)
         static const char *possible_names[] = {
             "lua53.dll",
+            "lua54.dll",
             "lua.dll",
             0
         };
@@ -43,6 +47,9 @@ int stublua_init(void)
             "liblua5.3.so",
             "liblua5.3.so.0",
             "liblua5.3.so.0.0.0",
+            "liblua5.4.so",
+            "liblua5.4.so.0",
+            "liblua5.4.so.0.0.0",
             0
         };
 #endif
@@ -61,19 +68,20 @@ int stublua_init(void)
         }
         
         if (lib == NULL) {
-            fprintf(stderr, "liblua: failed to load Lua shared library\n");
-            fprintf(stderr, "    HINT: you must install Lua library\n");
+            LOG(LEVEL_ERROR, "liblua: failed to load Lua shared library\n");
+            LOG(LEVEL_ERROR, "    HINT: you must install Lua library\n");
+            return false;
         }
     }
 
 #if defined(WIN32)
 #define DOLINK(name) \
     name = (void (*)())GetProcAddress(lib, #name); \
-    if (name == NULL) fprintf(stderr, "liblua: %s: failed\n", #name);
+    if (name == NULL) {fprintf(stderr, "liblua: %s: failed\n", #name); return false;}
 #else
 #define DOLINK(name) \
     name = dlsym(lib, #name); \
-    if (name == NULL) fprintf(stderr, "liblua: %s: failed\n", #name);
+    if (name == NULL) {fprintf(stderr, "liblua: %s: failed\n", #name); return false;}
 #endif
     
     DOLINK(lua_version);
@@ -90,7 +98,7 @@ int stublua_init(void)
     DOLINK(lua_isinteger);
     DOLINK(lua_isuserdata);
     DOLINK(lua_newthread)
-    DOLINK(lua_newuserdata)
+    // DOLINK(lua_newuserdata) /*deprecated in lua5.4*/
     DOLINK(lua_pcallk)
     DOLINK(lua_pushcclosure)
     DOLINK(lua_pushinteger)
@@ -127,6 +135,6 @@ int stublua_init(void)
     DOLINK(luaL_setfuncs)
     DOLINK(luaL_setmetatable)
     DOLINK(luaL_unref)
-    
-    return 0;
+
+    return true;
 }

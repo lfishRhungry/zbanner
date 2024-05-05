@@ -21,12 +21,12 @@ Dependencies for running:
 - libpcap(Linux)
 - winpcap/npcap(Windows)
 - PFRING driver(optional on Linux)
-- lua5.3(optional for lua probe support)
+- lua5.3/5.4(optional for lua probe support)
 
 They can be installed on Windows in some way you like but always easier on Linux like Ubuntu22:
 
 ```
-sudo apt install libpcre2-dev libssl-dev liblua5.3-0 libpcap-dev
+sudo apt install libpcre2-dev libssl-dev liblua5.X-0 libpcap-dev
 ```
 
 ### Compile On Linux

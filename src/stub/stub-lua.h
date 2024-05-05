@@ -9,12 +9,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "../util-misc/cross.h"
+
 /**
  * Called to load the Lua dynamic library, suh as lua53.dll or lua5.3.so.0,
  * and link all the function pointers. This must be called before calling any
  * Lua functions, or the program will crash.
  */
-int stublua_init(void);
+bool stublua_init(void);
 
 struct lua_State;
 typedef struct lua_State lua_State;

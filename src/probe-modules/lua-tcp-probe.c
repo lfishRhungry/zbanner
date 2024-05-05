@@ -191,12 +191,10 @@ luatcp_global_init(const struct Xconf *xconf)
     }
 
     /* Dynamically link the library*/
-    stublua_init();
-    int version = (int)*lua_version(0);
-    LOG(LEVEL_INFO, "[-]Found Lua version = %d\n", version);
-    if (version != 503 && version != 502) {
-        LOG(LEVEL_ERROR, "Fail: Unable to load Lua library of this version.\n");
-        return CONF_ERR;
+    if (!stublua_init()) {
+        LOG(LEVEL_ERROR, "[-]Failed to init lua library dynamicly.\n");
+        LOG(LEVEL_ERROR, "    HINT: make sure lua library 5.3/5.4 was installed.\n");
+        return false;
     }
 
     int x;
@@ -208,6 +206,12 @@ luatcp_global_init(const struct Xconf *xconf)
     luaL_openlibs(luatcp_conf.Ltx);
     luaL_openlibs(luatcp_conf.Lrx);
     luaL_openlibs(luatcp_conf.Lhx);
+
+    /* Get lua version*/
+    lua_getglobal(luatcp_conf.Ltx, "_VERSION");
+    const char *version = lua_tostring(luatcp_conf.Ltx, -1);
+    LOG(LEVEL_HINT, "[-] Loaded lua library in %s\n", version);
+    lua_pop(luatcp_conf.Ltx, 1);
 
     /* Load the script. This will verify the syntax.*/
     x = luaL_loadfile(luatcp_conf.Ltx, luatcp_conf.script);
