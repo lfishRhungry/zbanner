@@ -4,19 +4,22 @@
 
 Welcome to Xtate -- A modular all-stack network scanner for next-generation internet surveys!
 
+PS: Xtate was originally designed to do all scans in stateless, but some modules make it more than stateless now.
+
 ## Build
 
 Xtate could be build with CMake both on Linux and Windows because of cross-platform code.
-If any error with CMake, use or try to modify `Makefile` is a good idea. Sorry I'm failed to be a CMake professor...
+If any error happened in CMake, try to modify and use `Makefile` is a good idea.
+I'm sorry about failed to be a CMake professor...
 
 ### Depencendies
 
-Dependencies for building:
+Dependent libraries for building:
 
 - OpenSSL>=1.1.1
 - PCRE2 8bits
 
-Dependencies for running:
+Dependent libraries for running:
 
 - libpcap(Linux)
 - winpcap/npcap(Windows)
