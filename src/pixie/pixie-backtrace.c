@@ -137,14 +137,13 @@ struct _Dbg {
     FUNC_SymFromAddr SymFromAddr;
 } Dbg;
 
-void printStack( void );
-void printStack( void )
+static void printStack(void)
 {
-     unsigned int   i;
-     void         * stack[100];
-     unsigned short frames;
-     SYMBOL_INFO  * symbol;
-     HANDLE         process;
+     unsigned int     i;
+     void            *stack[100];
+     unsigned short   frames;
+     SYMBOL_INFO     *symbol;
+     HANDLE           process;
 
      process = GetCurrentProcess();
 
@@ -155,20 +154,19 @@ void printStack( void )
      if (RtlCaptureStackBackTrace == NULL)
          return;
 
-     Dbg.SymInitialize( process, NULL, TRUE );
+     Dbg.SymInitialize(process, NULL, TRUE);
 
      frames               = CaptureStackBackTrace(0, 100, stack, NULL);
      symbol               = (SYMBOL_INFO *)CALLOC(sizeof(SYMBOL_INFO) + 256*sizeof(char), 1);
      symbol->MaxNameLen   = 255;
      symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
 
-     for( i = 0; i < frames; i++ ) {
+     for(i = 0; i<frames; i++) {
          Dbg.SymFromAddr(process, (DWORD64)(stack[i]), 0, symbol);
-
          printf( "%u: %s - 0x%0llX\n", frames-i-1, symbol->Name, symbol->Address);
      }
 
-     free( symbol );
+     free(symbol);
 }
 
 static void
@@ -176,10 +174,11 @@ handle_segfault(int sig)
 {
 
     UNUSEDPARM(sig);
-    printf("======================================================================");
+    printf("======================================================================\n");
     printf(" Segmentation fault: please post this backtrace to:\n");
     printf(" "XTATE_GITHUB_ISSUES"\n");
-    printf("======================================================================");
+    printf("======================================================================\n");
+    printStack();
     exit(1);
 }
 
@@ -196,19 +195,12 @@ pixie_backtrace_init(const char *self)
 
         h = LoadLibraryA("DbgHelp.dll");
         if (h != NULL) {
-            //printf("found DbgHelp.dll\n");
             Dbg.SymFromAddr = (FUNC_SymFromAddr)GetProcAddress(h, "SymFromAddr");
-            //if (Dbg.SymFromAddr) printf("found Dbg.SymFromAddr\n");
             Dbg.SymInitialize = (FUNC_SymInitialize)GetProcAddress(h, "SymInitialize");
-            //if (Dbg.SymInitialize) printf("found Dbg.SymInitialize\n");
-
-            h = LoadLibraryA("Kernel32.dll");
-            if (GetProcAddress(NULL, "RtlCaptureStackBackTrace") != NULL)
-                ; //printf("found Dbg.SymInitialize\n");
         }
     }
 
-    //signal(SIGSEGV, handle_segfault);
+    signal(SIGSEGV, handle_segfault);
 }
 #else
 void
