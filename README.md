@@ -34,7 +34,7 @@ sudo apt install libpcre2-dev libssl-dev liblua5.X-0 libpcap-dev
 
 ### Compile On Linux
 
-Suggest compile suites:
+Recommended compile suites:
 
 - GCC
 - Clang
@@ -47,7 +47,7 @@ With dependencies installed we can build xtate by CMake with parameters or with 
 
 ### Compile On Windows
 
-Suggest compile suites:
+Recommended compile suites:
 
 - MSVC
 - MinGW-w64
