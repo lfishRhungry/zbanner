@@ -151,8 +151,8 @@ static void printStack(void)
          return;
      if (Dbg.SymFromAddr == NULL)
          return;
-     if (RtlCaptureStackBackTrace == NULL)
-         return;
+    //  if (RtlCaptureStackBackTrace == NULL)
+    //      return;
 
      Dbg.SymInitialize(process, NULL, TRUE);
 
@@ -186,7 +186,7 @@ handle_segfault(int sig)
 void
 pixie_backtrace_init(const char *self)
 {
-    self;
+    // self;
 
     GetModuleFileNameA(NULL, global_self, sizeof(global_self));
 

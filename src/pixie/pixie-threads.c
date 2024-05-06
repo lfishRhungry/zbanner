@@ -251,7 +251,7 @@ void pixie_set_thread_name(const char *name) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
 #endif
-    hr = SetThreadDescription(GetCurrentThread(), wz_name);
+    hr = SetThreadDescription(h_thread, wz_name);
 #if defined(__MINGW64__) || defined(__MINGW32__)
 #pragma GCC diagnostic pop
 #endif
@@ -264,8 +264,11 @@ void pixie_set_thread_name(const char *name) {
     info.szName     = name;
     info.dwThreadID = thread_id;
     info.dwFlags    = 0;
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 6320 6322)
+#endif
+
 #ifdef _MSC_VER
 __try {
     RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR),
@@ -273,7 +276,10 @@ __try {
 } __except (EXCEPTION_EXECUTE_HANDLER) {
 }
 #endif
+
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 #elif defined(__APPLE__)
     int err;
