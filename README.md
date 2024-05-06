@@ -4,13 +4,13 @@
 
 Welcome to Xtate -- A modular all-stack network scanner for next-generation internet surveys!
 
-PS: Xtate was originally designed to do all scans in stateless, but some modules make it more than stateless now.
+PS: Xtate was originally designed to do all scans in complete stateless manner, but follow-up modules make it more than stateless.
 
 ## Build
 
-Xtate could be build with CMake both on Linux and Windows because of cross-platform code.
-If any error happened in CMake, try to modify and use `Makefile` is a good idea.
-I'm sorry about failed to be a CMake professor...
+Xtate could be built both on Linux and Windows with CMake because of cross-platform code.
+If any error happened in CMake, trying to modify and use `Makefile` is a good idea.
+I'm sorry about my fail to be a CMake professor...
 
 ### Depencendies
 
@@ -52,14 +52,14 @@ Suggest compile suites:
 - MSVC
 - MinGW-w64
 
-With MSVC as compiler:
+Generate a Visual Studio solution with MSVC as compiler:
 
 ```
 cd build
 cmake .. -DVCPKG_TARGET_TRIPLET=x64-windows
 ```
 
-With MinGW-w64 as compiler:
+Generate a Makefile with MinGW-w64 as compiler:
 
 ```
 cd build
