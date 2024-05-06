@@ -239,7 +239,14 @@ typedef struct tagTHREADNAME_INFO {
 void pixie_set_thread_name(const char *name) {
 #if defined(WIN32)
     // https://docs.microsoft.com/ru-ru/visualstudio/debugger/how-to-set-a-thread-name-in-native-code
+#if defined(__MINGW64__) || defined(__MINGW32__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#endif
     THREADNAME_INFO info;
+#if defined(__MINGW64__) || defined(__MINGW32__)
+#pragma GCC diagnostic pop
+#endif
     DWORD thread_id;
     HANDLE h_thread;
     HRESULT hr;
