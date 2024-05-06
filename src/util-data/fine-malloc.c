@@ -20,13 +20,13 @@ REALLOCARRAY(void *p, size_t count, size_t size)
         }
     }
 
-    p = realloc(p, count * size);
-    if (p == NULL && count * size != 0) {
+    void *ret = realloc(p, count * size);
+    if (ret == NULL && count * size != 0) {
         LOG(LEVEL_ERROR, "[-] out of memory, aborting\n");
         abort();
     }
     
-    return p;
+    return ret;
 }
 
 /***************************************************************************
@@ -88,14 +88,14 @@ MALLOC(size_t size)
 void *
 REALLOC(void *p, size_t size)
 {
-    p = realloc(p, size);
+    void *ret = realloc(p, size);
     
-    if (p == NULL) {
+    if (ret == NULL) {
         LOG(LEVEL_ERROR, "[-] out of memory, aborting\n");
         abort();
     }
     
-    return p;
+    return ret;
 }
 
 /***************************************************************************

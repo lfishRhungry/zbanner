@@ -1,9 +1,11 @@
 /*
     When program crashes, print backtrace with line numbers
 */
+#include "../version.h"
 #include "pixie-backtrace.h"
 #include "../util-misc/cross.h"
-#include "../version.h"
+#include "../util-data/fine-malloc.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -18,9 +20,8 @@ char global_self[512] = "";
 #include <dlfcn.h>
 
 
-
-
 #define BACKTRACE_SIZE 256
+
 static void
 handle_segfault(int sig)
 {
@@ -156,15 +157,15 @@ void printStack( void )
 
      Dbg.SymInitialize( process, NULL, TRUE );
 
-     frames               = CaptureStackBackTrace( 0, 100, stack, NULL);
-     symbol               = ( SYMBOL_INFO * )CALLOC(sizeof( SYMBOL_INFO ) + 256*sizeof(char), 1);
+     frames               = CaptureStackBackTrace(0, 100, stack, NULL);
+     symbol               = (SYMBOL_INFO *)CALLOC(sizeof(SYMBOL_INFO) + 256*sizeof(char), 1);
      symbol->MaxNameLen   = 255;
-     symbol->SizeOfStruct = sizeof( SYMBOL_INFO );
+     symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
 
      for( i = 0; i < frames; i++ ) {
          Dbg.SymFromAddr(process, (DWORD64)(stack[i]), 0, symbol);
 
-         printf( "%u: %s - 0x%0llX\n", frames - i - 1, symbol->Name, symbol->Address);
+         printf( "%u: %s - 0x%0llX\n", frames-i-1, symbol->Name, symbol->Address);
      }
 
      free( symbol );
