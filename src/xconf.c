@@ -3311,7 +3311,13 @@ void xconf_print_version()
     const char *compiler_version = "unknown";
     const char *os = "unknown";
     printf("\n");
-    printf("  "XTATE_FIRST_UPPER_NAME" version %s\n", XTATE_VERSION);
+    printf("  "XTATE_FIRST_UPPER_NAME" version %s", XTATE_VERSION);
+#ifdef NDEBUG
+    printf(" in Release\n");
+#else
+    printf(" in Debug\n");
+#endif
+    printf("\n");
     printf("  Author : "XTATE_AUTHOR_NAME"\n");
     printf("  Github : "XTATE_GITHUB"\n");
     printf("  Contact: "XTATE_AUTHOR_MAIL"\n");
