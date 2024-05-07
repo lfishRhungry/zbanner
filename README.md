@@ -93,13 +93,15 @@ Use `xtate --list-out` to see all OutputModules with sub-parameters and help.
 Xtate was created by lfishRhungry:
 - email: chenchiyu14@nudt.edu.cn
 
-Xtate referenced and was born from
-[ZMap](https://github.com/zmap/zmap),
+Xtate was born from
 [Masscan](https://github.com/robertdavidgraham/masscan/tree/master)
-and [Masscan-ng](https://github.com/bi-zone/masscan-ng).
+and referenced
+[ZMap](https://github.com/zmap/zmap),
+[Masscan-ng](https://github.com/bi-zone/masscan-ng)
+and other excellent open-source projects.
 
 Thanks to Robert Graham, Zakir Durumeric and Konstantin Molodyakov for their greate code and rigorous style.
-I've learned about coding more than just finishing my worthless graduate thesis.
+I've learned more than just finishing my worthless graduate thesis.
 
 # License
 
