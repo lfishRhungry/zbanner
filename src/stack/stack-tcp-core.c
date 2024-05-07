@@ -53,8 +53,8 @@
 
 /**
  * !BUT
- * For code clean, scan fast and achieve our target, I improve(or downgrade)
- * the TCP stack(FSM) to a simpler one.
+ * For code clean, fast scanning and achieve our target, I improve(or downgrade)
+ * the TCP stack(FSM) to a more simpler one with just 3 states.
 */
 #include "stack-tcp-core.h"
 
@@ -104,6 +104,10 @@ enum Tcp_State{
     STATE_ESTABLISHED_RECV,   /* our turn to receive */
 };
 
+/**
+ * Abstract TCP data exchange to uppper application service State and Event to
+ * fit our asynchronous sending and recving
+*/
 enum App_State{
     APP_STATE_CONNECT = 0,    /*init state*/
     APP_STATE_RECV_HELLO,     /*wait for hello*/
@@ -156,22 +160,22 @@ struct TCP_Control_Block
 };
 
 struct TCP_ConnectionTable {
-    struct TCP_Control_Block   **entries;
-    struct TCP_Control_Block    *freed_list;
+    struct TCP_Control_Block        **entries;
+    struct TCP_Control_Block         *freed_list;
 
-    unsigned                     timeout_conn;
-    unsigned                     count;
-    unsigned                     mask;
-    unsigned                     src_port_start;
+    struct TemplatePacket            *tcp_template;
+    struct TemplatePacket            *syn_template;
+    struct Timeouts                  *timeouts;
+    struct stack_t                   *stack;
+    struct Output                    *out;
 
-    uint64_t                     active_count;
-    uint64_t                     entropy;
+    unsigned                          timeout_conn;
+    unsigned                          count;
+    unsigned                          mask;
+    unsigned                          src_port_start;
 
-    struct TemplatePacket       *tcp_template;
-    struct TemplatePacket       *syn_template;
-    struct Timeouts             *timeouts;
-    struct stack_t              *stack;
-    struct Output               *out;
+    uint64_t                          active_count;
+    uint64_t                          entropy;
 };
 
 enum {
@@ -181,7 +185,7 @@ enum {
 
 struct stack_handle_t {
     struct TCP_ConnectionTable *tcpcon;
-    struct TCP_Control_Block *tcb;
+    struct TCP_Control_Block   *tcb;
     unsigned secs;
     unsigned usecs;
 };
@@ -243,7 +247,8 @@ vLOGtcb(const struct TCP_Control_Block *tcb, int dir, const char *fmt, va_list m
     vfprintf(stderr, fmt, marker);
     fflush(stderr);
 }
-int is_tcp_debug = 0;
+
+static int is_tcp_debug = 0;
 
 static void
 LOGtcb(const struct TCP_Control_Block *tcb, int dir, const char *fmt, ...)
@@ -309,9 +314,7 @@ tcpcon_create_table(size_t entry_count,
     unsigned connection_timeout,
     uint64_t entropy)
 {
-    struct TCP_ConnectionTable *tcpcon;
-
-    tcpcon = CALLOC(1, sizeof(*tcpcon));
+    struct TCP_ConnectionTable *tcpcon = CALLOC(1, sizeof(*tcpcon));
 
     /* Find nearest power of 2 to the tcb count, but don't go
      * over the number 16-million */
@@ -420,9 +423,8 @@ tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
     LOGtcb(tcb, 2, "--DESTROYED--\n");
 
     while (tcb->segments) {
-        struct TCP_Segment *seg;
-        seg           = tcb->segments;
-        tcb->segments = seg->next;
+        struct TCP_Segment *seg = tcb->segments;
+        tcb->segments           = seg->next;
 
         if (seg->is_dynamic) {
             free(seg->buf);
@@ -457,7 +459,7 @@ tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
 
 
     (*r_entry) = tcb->next;
-    tcb->next = tcpcon->freed_list;
+    tcb->next  = tcpcon->freed_list;
     tcpcon->freed_list = tcb;
     tcpcon->active_count--;
 }
@@ -476,8 +478,9 @@ tcpcon_destroy_table(struct TCP_ConnectionTable *tcpcon)
         return;
 
     for (i=0; i<=tcpcon->mask; i++) {
-        while (tcpcon->entries[i])
+        while (tcpcon->entries[i]) {
             tcpcon_destroy_tcb(tcpcon, tcpcon->entries[i], Reason_Shutdown);
+        }
     }
 
     while (tcpcon->freed_list) {
@@ -603,10 +606,10 @@ tcpcon_lookup_tcb(
     tmp.ip_them   = ip_them;
     tmp.port_me   = (unsigned short)port_me;
     tmp.port_them = (unsigned short)port_them;
-    index         =
-        get_cookie(ip_me, port_me, ip_them, port_them, tcpcon->entropy);
 
-    tcb = tcpcon->entries[index & tcpcon->mask];
+    index = get_cookie(ip_me, port_me, ip_them, port_them, tcpcon->entropy);
+    tcb   = tcpcon->entries[index & tcpcon->mask];
+
     while (tcb && !TCB_EQUALS(tcb, &tmp)) {
         tcb = tcb->next;
     }
@@ -627,7 +630,7 @@ tcpcon_send_packet(
 {
     struct PacketBuffer *response = 0;
     unsigned is_syn = (tcp_flags == TCP_FLAG_SYN);
-    
+
     assert(tcb->ip_me.version != 0 && tcb->ip_them.version != 0);
 
     /* If sending an ACK, print a message */
@@ -645,8 +648,7 @@ tcpcon_send_packet(
         }
         fflush(stdout);
 
-        /* FIXME: I'm no sure the best way to handle this.
-         * This would result from a bug in the code,
+        /* FIXME: This would result from a bug in the code,
          * but I'm not sure what should be done in response */
         pixie_usleep(100); /* no packet available */
     }
@@ -659,9 +661,8 @@ tcpcon_send_packet(
         tcb->ip_me, tcb->port_me,
         tcb->seqno_me - is_syn, tcb->seqno_them,
         tcp_flags, payload, payload_length,
-        response->px, sizeof(response->px)
-        );
-    
+        response->px, sizeof(response->px));
+
     stack_transmit_packetbuffer(tcpcon->stack, response);
 }
 
@@ -711,8 +712,7 @@ tcpcon_send_raw_SYN(struct TCP_ConnectionTable *tcpcon,
         }
         fflush(stdout);
         
-        /* FIXME: I'm no sure the best way to handle this.
-         * This would result from a bug in the code,
+        /* FIXME: This would result from a bug in the code,
          * but I'm not sure what should be done in response */
         pixie_usleep(100); /* no packet available */
     }
@@ -725,8 +725,7 @@ tcpcon_send_raw_SYN(struct TCP_ConnectionTable *tcpcon,
         ip_me, port_me,
         seqno_me, 0,
         TCP_FLAG_SYN, NULL, 0,
-        response->px, sizeof(response->px)
-        );
+        response->px, sizeof(response->px));
 
     stack_transmit_packetbuffer(tcpcon->stack, response);
 }
@@ -741,7 +740,7 @@ _tcb_seg_resend(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tc
     struct TCP_Segment *seg = tcb->segments;
 
     if (seg) {
-        /*just handle packets with data*/
+        /*just handle packets with data (no data could be impossible)*/
         if (!seg->length || !seg->buf) return;
 
         if (tcb->seqno_me != seg->seqno) {
@@ -753,7 +752,7 @@ _tcb_seg_resend(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tc
                             TCP_FLAG_PSH | TCP_FLAG_ACK,
                             seg->buf, seg->length);
     }
-                        
+
 }
 
 /***************************************************************************
@@ -791,7 +790,7 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
 
     if (length > tcb->mss) {
         length_more = length - tcb->mss;
-        length = tcb->mss;
+        length      = tcb->mss;
     }
 
     /* Go to the end of the segment list */
