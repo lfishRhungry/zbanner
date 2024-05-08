@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <limits.h>
 #include <openssl/opensslv.h>
+#include <libxml/parser.h>
 
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
@@ -3474,7 +3475,9 @@ void xconf_print_version()
 
     char version[120];
     pcre2_config(PCRE2_CONFIG_VERSION, version);
-    printf("    PCRE2  %s\n", version);
+    printf("    PCRE2 %s\n", version);
+
+    printf("    LibXml2 %s\n", LIBXML_DOTTED_VERSION);
 
     printf("\n");
 }

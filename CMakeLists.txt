@@ -36,12 +36,19 @@ target_sources(${exe_name} PUBLIC ${sources})
 # openssl
 # set(OPENSSL_USE_STATIC_LIBS TRUE)
 find_package(OpenSSL 1.1.1 REQUIRED)
+#include_directories(${OPENSSL_INCLUDE_DIR})
 target_link_libraries(${exe_name} OpenSSL::Crypto OpenSSL::SSL)
 
 # pcre2
 # set(PCRE2_USE_STATIC_LIBS TRUE)
 find_package(PCRE2 REQUIRED CONFIG COMPONENTS 8BIT)
 target_link_libraries(${exe_name} PCRE2::8BIT)
+
+# libxml2
+# set(LIBXML2_USE_STATIC_LIBS TRUE)
+find_package(LibXml2 REQUIRED)
+#include_directories(${LIBXML2_INCLUDE_DIR})
+target_link_libraries(${exe_name} LibXml2::LibXml2)
 
 # lua5.3
 # set(LUA_USE_STATIC_LIBS TRUE)

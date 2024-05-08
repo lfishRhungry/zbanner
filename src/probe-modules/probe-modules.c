@@ -27,6 +27,7 @@ extern struct ProbeModule SnmpProbe;
 extern struct ProbeModule HelloProbe;
 extern struct ProbeModule HelloUdpProbe;
 extern struct ProbeModule HelloStateProbe;
+extern struct ProbeModule RecogProbe;
 /*for lzr probes*/
 extern struct ProbeModule LzrProbe;
 extern struct ProbeModule LzrHttpProbe;
@@ -84,6 +85,7 @@ static struct ProbeModule *probe_modules_list[] = {
     &HelloProbe,
     &HelloUdpProbe,
     &HelloStateProbe,
+    &RecogProbe,
     /*for lzr probes*/
     &LzrProbe,
     &LzrHttpProbe,

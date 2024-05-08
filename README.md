@@ -18,6 +18,7 @@ Dependent libraries for building:
 
 - OpenSSL>=1.1.1
 - PCRE2 8bits
+- LibXml2
 
 Dependent libraries for running:
 
@@ -29,7 +30,7 @@ Dependent libraries for running:
 They can be installed on Windows in some way you like but always easier on Linux like Ubuntu22:
 
 ```
-sudo apt install libpcre2-dev libssl-dev liblua5.X-0 libpcap-dev
+sudo apt install libpcap-dev libssl-dev libpcre2-dev libxml2-dev liblua5.X-0
 ```
 
 ### Compile On Linux
