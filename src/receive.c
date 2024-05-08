@@ -416,18 +416,33 @@ void receive_thread(void *v) {
         pixie_thread_join(handler[i]);
     }
 
-    if (!xconf->is_nodedup)
+    if (!xconf->is_nodedup && dedup) {
         dedup_destroy(dedup);
-    if (pcapfile)
+        dedup = NULL;
+    }
+    if (pcapfile) {
         pcapfile_close(pcapfile);
-    if (xconf->is_fast_timeout)
+        pcapfile = NULL;
+    }
+    if (xconf->is_fast_timeout && ft_handler) {
         ft_close_handler(ft_handler);
-    if (handler)
+        ft_handler = NULL;
+    }
+    if (handler) {
         free(handler);
-    if (handle_parms)
+        handler = NULL;
+    }
+    if (handle_parms) {
         free(handle_parms);
-    if (handle_q)
+        handle_parms = NULL;
+    }
+    if (dispatch_q) {
+        parms->handle_q = NULL;
+    }
+    if (handle_q) {
         free(handle_q);
+        parms->handle_q = NULL;
+    }
 
     /* Thread is about to exit */
     parms->done_receiving = true;

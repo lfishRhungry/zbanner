@@ -396,13 +396,12 @@ static int main_scan(struct Xconf *xconf) {
         total_info      = xconf->output.total_failed;
         total_tm_event  = rx_thread->total_tm_event;
 
-        if (rx_thread->dispatch_q) {
+        if (rx_thread->dispatch_q && rx_thread->handle_q) {
             double rx_free_entries = rte_ring_free_count(rx_thread->dispatch_q);
             for (unsigned i=0; i<xconf->rx_handler_count; i++) {
                 rx_free_entries += rte_ring_free_count(rx_thread->handle_q[i]);
             }
-            rx_queue_ratio =
-                1.0 - rx_free_entries/
+            rx_queue_ratio = 1.0 - rx_free_entries /
                 (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count+1));
         }
 
@@ -490,13 +489,12 @@ static int main_scan(struct Xconf *xconf) {
         total_info      = xconf->output.total_failed;
         total_tm_event  = rx_thread->total_tm_event;
         
-        if (rx_thread->dispatch_q) {
+        if (rx_thread->dispatch_q && rx_thread->handle_q) {
             double rx_free_entries = rte_ring_free_count(rx_thread->dispatch_q);
             for (unsigned i=0; i<xconf->rx_handler_count; i++) {
                 rx_free_entries += rte_ring_free_count(rx_thread->handle_q[i]);
             }
-            rx_queue_ratio =
-                1.0 - rx_free_entries/
+            rx_queue_ratio = 1.0 - rx_free_entries /
                 (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count+1));
         }
 
