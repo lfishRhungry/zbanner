@@ -1,1 +1,3 @@
-nmap-service-probes
+*
+!.gitignore
+!exclude.conf
