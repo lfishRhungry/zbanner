@@ -692,7 +692,6 @@ int template_selftest()
 
     /* Test the module that edits TCP headers */
     if (templ_tcp_selftest()) {
-        LOG(LEVEL_ERROR, "[-] templ-tcp: selftest failed\n");
         return 1;
     }
 

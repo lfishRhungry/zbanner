@@ -582,9 +582,8 @@ fail:
 /***************************************************************************
  ***************************************************************************/
 static bool
-tcp_remove_opt(
-        unsigned char **inout_buf, size_t *inout_length, unsigned in_kind
-               ) {
+tcp_remove_opt(unsigned char **inout_buf, size_t *inout_length, unsigned in_kind)
+{
     unsigned char      *buf         = *inout_buf;
     size_t              length      = *inout_length;
     unsigned            nop_count   = 0;
@@ -832,7 +831,7 @@ static bool
 tcp_add_opt(unsigned char **inout_buf,
             size_t *inout_length,
             unsigned opt_kind,
-            unsigned opt_length,
+            unsigned opt_data_len,
             const unsigned char *opt_data) {
     unsigned char      *buf          = *inout_buf;
     size_t              length       = *inout_length;
@@ -846,7 +845,7 @@ tcp_add_opt(unsigned char **inout_buf,
      * The maximum size of a TCP header is 60 bytes (0x0F * 4), and the
      * rest of the header takes up 20 bytes. The [kind,length] takes up
      * another 2 bytes. Thus, the max option length is 38 bytes */
-    if (opt_length > 38) {
+    if (opt_data_len > 38) {
         LOG(LEVEL_ERROR, "[-] templ.tcp.add_opt: opt_len too large\n");
         goto fail;
     }
@@ -867,10 +866,10 @@ tcp_add_opt(unsigned char **inout_buf,
         size_t        old_end;
 
         /* Create a well-formatted field that will be inserted */
-        new_length   = 1 + 1 + opt_length;
+        new_length   = 1 + 1 + opt_data_len;
         new_field[0] = (unsigned char)opt_kind;
         new_field[1] = (unsigned char)new_length;
-        memcpy(new_field + 2, opt_data, opt_length);
+        memcpy(new_field + 2, opt_data, opt_data_len);
 
         /* Calculate the begin/end of the existing field in the packet */
         old_begin = offset;
@@ -1063,41 +1062,41 @@ templ_tcp_apply_options(unsigned char **inout_buf, size_t *inout_length,
     /* --tcp-mss <num>
      * Sets maximum segment size */
     if (templ_opts->tcp.is_mss == Remove) {
-        tcp_remove_opt(&buf, &length, 2 /* mss */);
+        tcp_remove_opt(&buf, &length, TCP_OPT_TYPE_MSS);
     } else if (templ_opts->tcp.is_mss == Add) {
-        unsigned char field[2];
+        unsigned char field[TCP_OPT_LEN_MSS-2];
         U16_TO_BE(field, templ_opts->tcp.mss);
-        tcp_add_opt(&buf, &length, 2, 2, field);
+        tcp_add_opt(&buf, &length, TCP_OPT_TYPE_MSS, TCP_OPT_LEN_MSS-2, field);
     }
 
     /* --tcp-sackok
      * Sets option flag that permits selective acknowledgements */
     if (templ_opts->tcp.is_sackok == Remove) {
-        tcp_remove_opt(&buf, &length, 4 /* sackok */);
+        tcp_remove_opt(&buf, &length, TCP_OPT_TYPE_SACK_PERM);
     } else if (templ_opts->tcp.is_sackok == Add) {
-        tcp_add_opt(&buf, &length, 4, 0, (const unsigned char*)"");
+        tcp_add_opt(&buf, &length, TCP_OPT_TYPE_SACK_PERM,
+            TCP_OPT_LEN_SACK_PERM-2, (const unsigned char*)"");
     }
 
     /* --tcp-wscale <num>
      * Sets window scale option  */
     if (templ_opts->tcp.is_wscale == Remove) {
-        tcp_remove_opt(&buf, &length, 3 /* wscale */);
+        tcp_remove_opt(&buf, &length, TCP_OPT_TYPE_WS);
     } else if (templ_opts->tcp.is_wscale == Add) {
-        unsigned char field[1];
+        unsigned char field[TCP_OPT_LEN_WS-2];
         field[0] = (unsigned char)templ_opts->tcp.wscale;
-        tcp_add_opt(&buf, &length, 3, 1, field);
+        tcp_add_opt(&buf, &length, TCP_OPT_TYPE_WS, TCP_OPT_LEN_WS-2, field);
     }
 
     /* --tcp-ts <num>
      * Timestamp */
     if (templ_opts->tcp.is_tsecho == Remove) {
-        tcp_remove_opt(&buf, &length, 8 /* ts */);
+        tcp_remove_opt(&buf, &length, TCP_OPT_TYPE_TS);
     } else if (templ_opts->tcp.is_tsecho == Add) {
-        unsigned char field[10] = {0};
+        unsigned char field[TCP_OPT_LEN_TS-2] = {0};
         U32_TO_BE(field, templ_opts->tcp.tsecho);
-        tcp_add_opt(&buf, &length, 8, 8, field);
+        tcp_add_opt(&buf, &length, TCP_OPT_TYPE_TS, TCP_OPT_LEN_TS-2, field);
     }
-
 
     *inout_buf    = buf;
     *inout_length = length;
@@ -1597,6 +1596,7 @@ _selftests_run(void) {
     "DeadBeef"
     ;
     size_t i;
+    unsigned line = 0;
 
     /* execute all tests */
     for (i=0; tests[i].pre.options; i++) {
@@ -1619,10 +1619,14 @@ _selftests_run(void) {
          * was there with a completely new field */
         success = _replace_options(&buf, &length,
                          tests[i].pre.options, tests[i].pre.length);
-        if (!success)
+        if (!success) {
+            line = __LINE__;
             goto fail; /* this should never happen */
-        if (_consistancy_check(buf, length, "DeadBeef", 8))
+        }
+        if (_consistancy_check(buf, length, "DeadBeef", 8)) {
+            line = __LINE__;
             goto fail; /* this shoiuld never happen*/
+        }
 
 
         //_HEXDUMPopt(buf, length, "[PRE]");
@@ -1639,33 +1643,37 @@ _selftests_run(void) {
                  * padding at the end, which needs to be trimmed to the
                  * minimum amount of padding */
                 success = _normalize_padding(&buf, &length);
-                if (!success)
+                if (!success) {
+                    line = __LINE__;
                     goto fail;
+                }
                 break;
             case TST_ADD:
                 /* We are testing `tcp_add_opt()` function, which is called
                  * to either 'add' or 'change' an existing option. */
                 field = (const unsigned char*)tests[i].test.data;
                 field_length = tests[i].test.length;
-                if (field_length < 2)
+                if (field_length < 2) {
+                    line = __LINE__;
                     goto fail;
-                else {
+                } else {
                     unsigned opt_kind = field[0];
                     unsigned opt_length = field[1];
                     const unsigned char *opt_data = field + 2;
 
-                    if (field_length != opt_length)
+                    if (field_length != opt_length) {
+                        line = __LINE__;
                         goto fail;
+                    }
 
                     /* skip the KIND and LENGTH fields, justa DATA length */
                     opt_length -= 2;
 
-                    success = tcp_add_opt(&buf, &length,
-                                          opt_kind,
-                                          opt_length,
-                                          opt_data);
-                    if (!success)
+                    success = tcp_add_opt(&buf, &length, opt_kind, opt_length, opt_data);
+                    if (!success) {
+                        line = __LINE__;
                         goto fail;
+                    }
                 }
                 break;
             case TST_REMOVE:
@@ -1673,16 +1681,18 @@ _selftests_run(void) {
                  * to either 'add' or 'change' an existing option. */
                 field = (const unsigned char*)tests[i].test.data;
                 field_length = tests[i].test.length;
-                if (field_length != 1)
+                if (field_length != 1) {
+                    line = __LINE__;
                     goto fail;
-                else {
+                } else {
                     unsigned opt_kind = field[0];
 
-                    success = tcp_remove_opt(&buf, &length,
-                                          opt_kind);
+                    success = tcp_remove_opt(&buf, &length, opt_kind);
 
-                    if (!success)
+                    if (!success) {
+                        line = __LINE__;
                         goto fail;
+                    }
                 }
                 break;
             default:
@@ -1691,8 +1701,10 @@ _selftests_run(void) {
 
         //_HEXDUMPopt(buf, length, "[POST]");
 
-        if (_consistancy_check(buf, length, "DeadBeef", 8))
+        if (_consistancy_check(buf, length, "DeadBeef", 8)) {
+            line = __LINE__;
             goto fail;
+        }
 
         /*
          * Make sure output matches expected results
@@ -1704,19 +1716,24 @@ _selftests_run(void) {
 
             /* Find the <options-list> field */
             hdr = _find_tcp_header(buf, length);
-            if (!hdr.is_found)
+            if (!hdr.is_found) {
+                line = __LINE__;
                 goto fail;
+            }
             offset = _opt_begin(hdr);
 
             /* Make sure the length matches the expected length */
             post_length = hdr.max - offset;
-            if (tests[i].post.length != post_length)
+            if (tests[i].post.length != post_length) {
+                line = __LINE__;
                 goto fail;
+            }
 
             /* makre sure the contents of the field match expected */
             err = memcmp(tests[i].post.options, buf+offset, (hdr.max-offset));
             if (err) {
                 _HEXDUMPopt(buf, length, "[-] failed expectations");
+                line = __LINE__;
                 goto fail;
             }
         }
@@ -1726,8 +1743,8 @@ _selftests_run(void) {
 
     return 0; /* success */
 fail:
-    LOG(LEVEL_ERROR, "[-] templ.tcp.selftest failed, test #%u\n",
-            (unsigned)i);
+    LOG(LEVEL_ERROR, "[-] templ.tcp.selftest failed, test #%u, file=%s, line=%u\n",
+            (unsigned)i, __FILE__, line);
     return 1;
 };
 
@@ -1774,6 +1791,7 @@ int templ_tcp_selftest()
     ;
     size_t length = sizeof(templ) - 1;
     unsigned char *buf;
+    unsigned line = 0;
 
     /* Execute planned selftests */
     if (_selftests_run())
@@ -1787,34 +1805,61 @@ int templ_tcp_selftest()
     /*
      * Make sure we start wtih an un-corrupted test packet
      */
-    if (_consistancy_check(buf, length, "DeadBeef", 8))
+    if (_consistancy_check(buf, length, "DeadBeef", 8)) {
+        line = __LINE__;
         goto fail;
+    }
 
-    if (1460 != tcp_get_mss(buf, length, 0))
+    if (1460 != tcp_get_mss(buf, length, 0)) {
+        line = __LINE__;
         goto fail;
-    if (6 != tcp_get_wscale(buf, length, 0))
-        goto fail;
-    if (0 != tcp_get_sackperm(buf, length, 0))
-        goto fail;
+    }
 
-    tcp_add_opt(&buf, &length, 2, 2, (const unsigned char*)"\x12\x34");
-    if (0x1234 != tcp_get_mss(buf, length, 0))
+    if (6 != tcp_get_wscale(buf, length, 0)) {
+        line = __LINE__;
         goto fail;
-    if (_consistancy_check(buf, length, "DeadBeef", 8))
-        goto fail;
+    }
 
-    tcp_remove_opt(&buf, &length, 3);
-    if (0x1234 != tcp_get_mss(buf, length, 0))
+    if (0 != tcp_get_sackperm(buf, length, 0)) {
+        line = __LINE__;
         goto fail;
-    if (0xFFFFffff != tcp_get_wscale(buf, length, 0))
+    }
+
+    tcp_add_opt(&buf, &length, TCP_OPT_TYPE_MSS, TCP_OPT_LEN_MSS-2,
+        (const unsigned char*)"\x12\x34");
+
+    if (0x1234 != tcp_get_mss(buf, length, 0)) {
+        line = __LINE__;
         goto fail;
-    if (_consistancy_check(buf, length, "DeadBeef", 8))
+    }
+
+    if (_consistancy_check(buf, length, "DeadBeef", 8)) {
+        line = __LINE__;
         goto fail;
+    }
+
+    tcp_remove_opt(&buf, &length, TCP_OPT_TYPE_WS);
+
+    if (0x1234 != tcp_get_mss(buf, length, 0)) {
+        line = __LINE__;
+        goto fail;
+    }
+
+    if (0xFFFFffff != tcp_get_wscale(buf, length, 0)) {
+        line = __LINE__;
+        goto fail;
+    }
+
+    if (_consistancy_check(buf, length, "DeadBeef", 8)) {
+        line = __LINE__;
+        goto fail;
+    }
 
 
     free(buf);
     return 0; /* success */
 fail:
+    LOG(LEVEL_ERROR, "[-] templ_tcp_selftest failed, file=%s, line=%u\n", __FILE__, line);
     free(buf);
     return 1; /* failure */
 }

@@ -124,12 +124,6 @@ enum App_Event {
     APP_WHAT_SEND_SENT,
 };
 
-/***************************************************************************
- * A "TCP control block" is what most operating-systems/network-stack
- * calls the structure that corresponds to a TCP connection. It contains
- * things like the IP addresses, port numbers, sequence numbers, timers,
- * and other things.
- ***************************************************************************/
 struct TCP_Control_Block
 {
     ipaddress                         ip_me;
@@ -301,10 +295,6 @@ tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usec
     }
 }
 
-/***************************************************************************
- * Called at startup, by a receive thread, to create a TCP connection
- * table.
- ***************************************************************************/
 struct TCP_ConnectionTable *
 tcpcon_create_table(size_t entry_count,
     struct stack_t *stack,
@@ -395,7 +385,6 @@ _tcb_change_state_to(struct TCP_Control_Block *tcb, enum Tcp_State new_state) {
 /***************************************************************************
  * Destroy a TCP connection entry. We have to unlink both from the
  * TCB-table as well as the timeout-table.
- * Called from 
  ***************************************************************************/
 static void
 tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
@@ -464,11 +453,6 @@ tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
     tcpcon->active_count--;
 }
 
-
-/***************************************************************************
- * Called at shutdown to free up all the memory used by the TCP
- * connection table.
- ***************************************************************************/
 void
 tcpcon_destroy_table(struct TCP_ConnectionTable *tcpcon)
 {
@@ -495,9 +479,7 @@ tcpcon_destroy_table(struct TCP_ConnectionTable *tcpcon)
 
 
 /***************************************************************************
- *
  * Called when we receive a "SYN-ACK" packet with the correct SYN-cookie.
- *
  ***************************************************************************/
 struct TCP_Control_Block *
 tcpcon_create_tcb(
@@ -688,10 +670,10 @@ what_to_string(enum TCP_What state)
 }
 
 
-/**
+/***************************************************************************
  * This function could be used without TCB.
  * So we could start any conn from any TCP Conn Table.
-*/
+ ***************************************************************************/
 static void
 tcpcon_send_raw_SYN(struct TCP_ConnectionTable *tcpcon,
                 ipaddress ip_them, unsigned port_them,
@@ -770,10 +752,10 @@ application_notify(struct TCP_ConnectionTable *tcpcon,
 }
 
 
-/**
+/***************************************************************************
  * !cannot do sending data and closing at same time
  * if set closing, we would ignore the data.
-*/
+ ***************************************************************************/
 static void 
 _tcb_seg_send(void *in_tcpcon, void *in_tcb, 
         const void *buf, size_t length, 
@@ -1075,7 +1057,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
     if (payload_length) {
         int payload_offset = seqno_them - tcb->seqno_them;
         if (payload_offset < 0) {
-            /* This is a retrnasmission that we've already acknowledged */
+            /* This is a retransmission that we've already acknowledged */
             if (payload_offset <= 0 - (int)payload_length) {
                 /* Both begin and end are old, so simply discard it */
                 return TCB__okay;
