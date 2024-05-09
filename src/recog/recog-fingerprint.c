@@ -113,7 +113,7 @@ struct Recog_FP * load_recog_fp(const char *filename, bool unprefix, bool unsuff
         match->compiled_re = pcre2_compile(
             (PCRE2_SPTR)tmp_char,
             PCRE2_ZERO_TERMINATED,
-            icase?PCRE2_CASELESS:0 | mline?PCRE2_DOTALL:0,
+            (icase?PCRE2_CASELESS:0) | (mline?PCRE2_DOTALL:0),
             &pcre2_errcode,
             &pcre2_erroffset,
             NULL);

@@ -3487,7 +3487,7 @@ void xconf_print_version()
 
 
 #ifndef NOT_FOUND_LIBXML2
-#include <libxml/parser.h>
+#include <libxml/xmlversion.h>
     printf("    LibXml2 %s\n", LIBXML_DOTTED_VERSION);
 #else
     printf("    LibXml2    (null)\n");
