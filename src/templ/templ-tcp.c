@@ -92,7 +92,8 @@ TCP pseudo header
 
 struct tcp_opt_t {
     const unsigned char *buf;
-    size_t length;
+    size_t opt_len;
+    size_t raw_len; /*raw_len = opt_len - opt_hdr*/
     unsigned kind;
     bool is_found;
 };
@@ -410,8 +411,9 @@ tcp_find_opt(const unsigned char *buf, size_t length, unsigned in_kind) {
      * a well formatted field, so just return it. */
     result.kind   = in_kind;
     result.buf    = buf + offset + 2;
-    result.length = buf[offset+1] - 2;
-    if (offset + result.length >= hdr.max)
+    result.raw_len = buf[offset+1] - 2;
+    result.opt_len = buf[offset+1];
+    if (offset + result.raw_len >= hdr.max)
         goto fail;
     result.is_found = true;
     return result;
@@ -979,13 +981,13 @@ tcp_get_mss(const unsigned char *buf, size_t length, bool *is_found) {
     struct tcp_opt_t opt;
     unsigned result = 0;
 
-    opt = tcp_find_opt(buf, length, 2 /* MSS */);
+    opt = tcp_find_opt(buf, length, TCP_OPT_TYPE_MSS);
     if (is_found)
         *is_found = opt.is_found;
     if (!opt.is_found)
         return 0xFFFFffff;
 
-    if (opt.length != 2) {
+    if (opt.opt_len != TCP_OPT_LEN_MSS) {
         /* corrupt */
         if (is_found)
             *is_found = false;
@@ -1004,13 +1006,13 @@ tcp_get_wscale(const unsigned char *buf, size_t length, bool *is_found) {
     struct tcp_opt_t opt;
     unsigned result = 0;
 
-    opt = tcp_find_opt(buf, length, 3 /* Wscale */);
+    opt = tcp_find_opt(buf, length, TCP_OPT_TYPE_WS);
     if (is_found)
         *is_found = opt.is_found;
     if (!opt.is_found)
         return 0xFFFFffff;
 
-    if (opt.length != 1) {
+    if (opt.opt_len != TCP_OPT_LEN_WS) {
         /* corrupt */
         if (is_found)
             *is_found = false;
@@ -1028,13 +1030,13 @@ unsigned
 tcp_get_sackperm(const unsigned char *buf, size_t length, bool *is_found) {
     struct tcp_opt_t opt;
 
-    opt = tcp_find_opt(buf, length, 3 /* Wscale */);
+    opt = tcp_find_opt(buf, length, TCP_OPT_TYPE_SACK_PERM);
     if (is_found)
         *is_found = opt.is_found;
     if (!opt.is_found)
         return 0xFFFFffff;
 
-    if (opt.length != 1) {
+    if (opt.opt_len != TCP_OPT_LEN_SACK_PERM) {
         /* corrupt */
         if (is_found)
             *is_found = false;

@@ -25,6 +25,28 @@ struct TemplateOptions;
 
 #define TCP_HAS_FLAG(px,i,flag) ((TCP_FLAGS((px),(i)) & (flag)) == (flag))
 
+#define TCP_OPT_TYPE_EOL            0
+#define TCP_OPT_TYPE_NOP            1
+#define TCP_OPT_TYPE_MSS            2
+#define TCP_OPT_TYPE_WS             3
+#define TCP_OPT_TYPE_SACK_PERM      4
+#define TCP_OPT_TYPE_SACK           5
+#define TCP_OPT_TYPE_TS             8
+#define TCP_OPT_TYPE_MD5            19
+#define TCP_OPT_TYPE_UTO            28
+#define TCP_OPT_TYPE_AO             29
+#define TCP_OPT_TYPE_EXP1           253
+#define TCP_OPT_TYPE_EXP2           254
+
+#define TCP_OPT_LEN_EOL            1
+#define TCP_OPT_LEN_NOP            1
+#define TCP_OPT_LEN_MSS            4
+#define TCP_OPT_LEN_WS             3
+#define TCP_OPT_LEN_SACK_PERM      2
+#define TCP_OPT_LEN_TS             10
+#define TCP_OPT_LEN_MD5            18
+#define TCP_OPT_LEN_UTO            4
+
 #define TCP_DEFAULT_MSS 1460
 
 
