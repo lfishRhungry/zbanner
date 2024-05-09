@@ -1,3 +1,5 @@
+#ifndef NOT_FOUND_PCRE2
+
 #include "nmap-service.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
@@ -1478,3 +1480,5 @@ int nmapservice_selftest()
     //nmapserviceprobes_print(list, stdout);
     return 0;
 }
+
+#endif /*ifndef NOT_FOUND_PCRE2*/

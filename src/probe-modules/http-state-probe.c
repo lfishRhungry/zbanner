@@ -1,7 +1,9 @@
 #include <string.h>
 
+#ifndef NOT_FOUND_PCRE2
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
+#endif
 
 #include "probe-modules.h"
 #include "../proto/proto-http-maker.h"
@@ -77,6 +79,8 @@ struct HttpStateConf {
     } remove[16];
     size_t remove_count;
 
+
+#ifndef NOT_FOUND_PCRE2
     char                   *regex;
     size_t                  regex_len;
     pcre2_code             *compiled_re;
@@ -84,14 +88,27 @@ struct HttpStateConf {
     unsigned                re_case_insensitive:1;
     unsigned                re_include_newlines:1;
 
+    unsigned match_whole_response:1;
+    unsigned report_while_regex:1;
+#endif
     /*dynamic set ip:port as Host field*/
     unsigned dynamic_host:1;
     unsigned get_whole_response:1;
-    unsigned match_whole_response:1;
-    unsigned report_while_regex:1;
 };
 
 static struct HttpStateConf httpstate_conf = {0};
+
+static enum Config_Res SET_get_whole_response(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    httpstate_conf.get_whole_response = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+#ifndef NOT_FOUND_PCRE2
 
 static enum Config_Res SET_report(void *conf, const char *name, const char *value)
 {
@@ -110,16 +127,6 @@ static enum Config_Res SET_match_whole_response(void *conf, const char *name, co
     UNUSEDPARM(name);
 
     httpstate_conf.match_whole_response = parseBoolean(value);
-
-    return CONF_OK;
-}
-
-static enum Config_Res SET_get_whole_response(void *conf, const char *name, const char *value)
-{
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    httpstate_conf.get_whole_response = parseBoolean(value);
 
     return CONF_OK;
 }
@@ -195,6 +202,8 @@ static enum Config_Res SET_regex(void *conf, const char *name, const char *value
 
     return CONF_OK;
 }
+
+#endif
 
 static enum Config_Res SET_method(void *conf, const char *name, const char *value)
 {
@@ -486,6 +495,15 @@ static struct ConfigParam httpstate_parameters[] = {
         "multiple times for fields like `Cookie` that can exist multiple times."
     },
     {
+        "get-whole-response",
+        SET_get_whole_response,
+        F_BOOL,
+        {"whole", 0},
+        "Get the whole response before connection timeout, not just the banner."
+    },
+
+#ifndef NOT_FOUND_PCRE2
+    {
         "regex",
         SET_regex,
         F_NONE,
@@ -508,13 +526,6 @@ static struct ConfigParam httpstate_parameters[] = {
         "Whether the specified regex contains newlines."
     },
     {
-        "get-whole-response",
-        SET_get_whole_response,
-        F_BOOL,
-        {"whole", 0},
-        "Get the whole response before connection timeout, not just the banner."
-    },
-    {
         "match-whole-response",
         SET_match_whole_response,
         F_BOOL,
@@ -529,6 +540,7 @@ static struct ConfigParam httpstate_parameters[] = {
         {0},
         "Report response data after regex matching."
     },
+#endif
 
     {0}
 };
@@ -793,6 +805,8 @@ httpstate_parse_response(
         .port_me   = target->port_me,
     };
 
+#ifndef NOT_FOUND_PCRE2
+
     if (httpstate_conf.compiled_re) {
         pcre2_match_data *match_data;
         int rc;
@@ -830,11 +844,17 @@ httpstate_parse_response(
         }
         pcre2_match_data_free(match_data);
     } else {
+
+#endif
+
         item.level = Output_SUCCESS;
         safe_strcpy(item.classification, OUTPUT_CLS_LEN, "serving");
         safe_strcpy(item.reason, OUTPUT_RSN_LEN, "banner exists");
         normalize_string(px, sizeof_px, item.report, OUTPUT_RPT_LEN);
+
+#ifndef NOT_FOUND_PCRE2
     }
+#endif
 
     output_result(out, &item);
 
@@ -844,6 +864,7 @@ httpstate_parse_response(
 static void
 httpstate_close()
 {
+#ifndef NOT_FOUND_PCRE2
     if (httpstate_conf.regex) {
         free(httpstate_conf.regex);
         httpstate_conf.regex = NULL;
@@ -859,7 +880,7 @@ httpstate_close()
         pcre2_match_context_free(httpstate_conf.match_ctx);
         httpstate_conf.match_ctx = NULL;
     }
-
+#endif
 }
 
 struct ProbeModule HttpStateProbe = {

@@ -1,7 +1,9 @@
 #include <string.h>
 
+#ifndef NOT_FOUND_PCRE2
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
+#endif
 
 #include "probe-modules.h"
 #include "../proto/proto-http-maker.h"
@@ -14,6 +16,7 @@
 struct HelloConf {
     unsigned char          *hello;
     size_t                  hello_len;
+#ifndef NOT_FOUND_PCRE2
     char                   *regex;
     size_t                  regex_len;
     pcre2_code             *compiled_re;
@@ -21,9 +24,12 @@ struct HelloConf {
     unsigned                re_case_insensitive:1;
     unsigned                re_include_newlines:1;
     unsigned                report_while_regex:1;
+#endif
 };
 
 static struct HelloConf hello_conf = {0};
+
+#ifndef NOT_FOUND_PCRE2
 
 static enum Config_Res SET_report(void *conf, const char *name, const char *value)
 {
@@ -106,6 +112,8 @@ static enum Config_Res SET_regex(void *conf, const char *name, const char *value
 
     return CONF_OK;
 }
+
+#endif
 
 static enum Config_Res SET_hello_string(void *conf, const char *name, const char *value)
 {
@@ -236,6 +244,8 @@ static struct ConfigParam hello_parameters[] = {
         "Specifies a file and set the content of file as hello data."
         " This will overwrite hello data set by other parameters."
     },
+
+#ifndef NOT_FOUND_PCRE2
     {
         "regex",
         SET_regex,
@@ -265,6 +275,7 @@ static struct ConfigParam hello_parameters[] = {
         {0},
         "Report response data after regex matching."
     },
+#endif
     
     {0}
 };
@@ -316,6 +327,8 @@ hello_handle_response(
         return 0;
     }
 
+#ifndef NOT_FOUND_PCRE2
+
     if (hello_conf.compiled_re) {
         pcre2_match_data *match_data;
         int rc;
@@ -347,11 +360,17 @@ hello_handle_response(
         }
         pcre2_match_data_free(match_data);
     } else {
+
+#endif
+
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "serving");
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "banner exists");
         normalize_string(px, sizeof_px, item->report, OUTPUT_RPT_LEN);
+
+#ifndef NOT_FOUND_PCRE2
     }
+#endif
 
     return 0;
 }
@@ -365,6 +384,7 @@ hello_close()
     }
     hello_conf.hello_len = 0;
 
+#ifndef NOT_FOUND_PCRE2
     if (hello_conf.regex) {
         free(hello_conf.regex);
         hello_conf.regex = NULL;
@@ -380,6 +400,7 @@ hello_close()
         pcre2_match_context_free(hello_conf.match_ctx);
         hello_conf.match_ctx = NULL;
     }
+#endif
 
 }
 

@@ -1,3 +1,5 @@
+#ifndef NOT_FOUND_OPENSSL
+
 #include <assert.h>
 
 #include <openssl/x509.h>
@@ -193,3 +195,5 @@ int GENERAL_NAME_simple_print(BIO *out, GENERAL_NAME *gen) {
 
     return ret;
 }
+
+#endif /*ifndef NOT_FOUND_OPENSSL*/

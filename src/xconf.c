@@ -1,10 +1,5 @@
 #include <ctype.h>
 #include <limits.h>
-#include <openssl/opensslv.h>
-#include <libxml/parser.h>
-
-#define PCRE2_CODE_UNIT_WIDTH 8
-#include <pcre2.h>
 
 #include "xconf.h"
 #include "version.h"
@@ -3471,13 +3466,32 @@ void xconf_print_version()
     printf("\n");
 
     printf("  Build with libraries:\n");
-    printf("    "OPENSSL_VERSION_TEXT"\n");
 
+#ifndef NOT_FOUND_OPENSSL
+#include <openssl/opensslv.h>
+    printf("    "OPENSSL_VERSION_TEXT"\n");
+#else
+    printf("    OpenSSL    (null)\n");
+#endif
+
+
+#ifndef NOT_FOUND_PCRE2
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
     char version[120];
     pcre2_config(PCRE2_CONFIG_VERSION, version);
-    printf("    PCRE2 %s\n", version);
+    printf("    PCRE2   %s\n", version);
+#else
+    printf("    PCRE2      (null)\n");
+#endif
 
+
+#ifndef NOT_FOUND_LIBXML2
+#include <libxml/parser.h>
     printf("    LibXml2 %s\n", LIBXML_DOTTED_VERSION);
+#else
+    printf("    LibXml2    (null)\n");
+#endif
 
     printf("\n");
 }
@@ -3594,7 +3608,9 @@ void xconf_selftest()
         x += smack_selftest();
         x += blackrock_selftest();
         x += blackrock2_selftest();
+#ifndef NOT_FOUND_PCRE2
         x += nmapservice_selftest();
+#endif
         x += siphash24_selftest();
         x += lcg_selftest();
         x += pixie_time_selftest();

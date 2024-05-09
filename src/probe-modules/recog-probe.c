@@ -1,3 +1,5 @@
+#ifndef NOT_FOUND_PCRE2
+
 #include <string.h>
 
 #include "probe-modules.h"
@@ -346,3 +348,5 @@ struct ProbeModule RecogProbe = {
     .handle_response_cb                = &recog_handle_response,
     .close_cb                          = &recog_close,
 };
+
+#endif /*ifndef NOT_FOUND_PCRE2*/

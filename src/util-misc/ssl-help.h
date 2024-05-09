@@ -1,3 +1,5 @@
+#ifndef NOT_FOUND_OPENSSL
+
 #ifndef SSL_HELP_H
 #define SSL_HELP_H
 
@@ -57,3 +59,5 @@ int GENERAL_NAME_simple_print(BIO *out, GENERAL_NAME *gen);
 void init_openssl_ext_obj();
 
 #endif // UTIL_OPENSSL_H
+
+#endif /*ifndef NOT_FOUND_OPENSSL*/

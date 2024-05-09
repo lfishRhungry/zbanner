@@ -1,3 +1,5 @@
+#ifndef NOT_FOUND_PCRE2
+
 #ifndef RECOG_FINGERPRINT_H
 #define RECOG_FINGERPRINT_H
 
@@ -22,3 +24,5 @@ match_recog_fp(struct Recog_FP *fp,
 void free_recog_fp(struct Recog_FP *fp);
 
 #endif
+
+#endif /*ifndef NOT_FOUND_PCRE2*/

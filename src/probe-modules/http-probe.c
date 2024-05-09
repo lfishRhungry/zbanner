@@ -1,7 +1,9 @@
 #include <string.h>
 
+#ifndef NOT_FOUND_PCRE2
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
+#endif
 
 #include "probe-modules.h"
 #include "../proto/proto-http-maker.h"
@@ -77,18 +79,23 @@ struct HttpConf {
     } remove[16];
     size_t remove_count;
 
+
+#ifndef NOT_FOUND_PCRE2
     char                   *regex;
     size_t                  regex_len;
     pcre2_code             *compiled_re;
     pcre2_match_context    *match_ctx;
     unsigned                re_case_insensitive:1;
     unsigned                re_include_newlines:1;
+    unsigned report_while_regex:1;
+#endif
     /*dynamic set ip:port as Host field*/
     unsigned dynamic_host:1;
-    unsigned report_while_regex:1;
 };
 
 static struct HttpConf http_conf = {0};
+
+#ifndef NOT_FOUND_PCRE2
 
 static enum Config_Res SET_report(void *conf, const char *name, const char *value)
 {
@@ -171,6 +178,8 @@ static enum Config_Res SET_regex(void *conf, const char *name, const char *value
 
     return CONF_OK;
 }
+
+#endif
 
 static enum Config_Res SET_method(void *conf, const char *name, const char *value)
 {
@@ -461,6 +470,8 @@ static struct ConfigParam http_parameters[] = {
         "Removes the first field from the header that matches. We may need "
         "multiple times for fields like `Cookie` that can exist multiple times."
     },
+
+#ifndef NOT_FOUND_PCRE2
     {
         "regex",
         SET_regex,
@@ -490,6 +501,7 @@ static struct ConfigParam http_parameters[] = {
         {0},
         "Report response data after regex matching."
     },
+#endif
 
     {0}
 };
@@ -747,6 +759,8 @@ http_handle_response(
         return 0;
     }
 
+#ifndef NOT_FOUND_PCRE2
+
     if (http_conf.compiled_re) {
         pcre2_match_data *match_data;
         int rc;
@@ -778,11 +792,17 @@ http_handle_response(
         }
         pcre2_match_data_free(match_data);
     } else {
+
+#endif
+
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "serving");
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "banner exists");
         normalize_string(px, sizeof_px, item->report, OUTPUT_RPT_LEN);
+
+#ifndef NOT_FOUND_PCRE2
     }
+#endif
 
     return 0;
 }
@@ -790,6 +810,8 @@ http_handle_response(
 static void
 http_close()
 {
+
+#ifndef NOT_FOUND_PCRE2
     if (http_conf.regex) {
         free(http_conf.regex);
         http_conf.regex = NULL;
@@ -805,6 +827,7 @@ http_close()
         pcre2_match_context_free(http_conf.match_ctx);
         http_conf.match_ctx = NULL;
     }
+#endif
 
 }
 

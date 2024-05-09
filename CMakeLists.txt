@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
 project(xtate VERSION 0.9)
 
+option(WITH_OPENSSL "Build with OpenSSL library" ON)
+option(WITH_PCRE2 "Build with PCRE2 library" ON)
+option(WITH_LIBXML2 "Build with LibXml2 library" ON)
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED True)
 
@@ -33,32 +37,57 @@ add_executable(${exe_name})
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS src/*.c src/*.h)
 target_sources(${exe_name} PUBLIC ${sources})
 
-# openssl
+
+# --------------------openssl
+if (${WITH_OPENSSL})
 # set(OPENSSL_USE_STATIC_LIBS TRUE)
-find_package(OpenSSL 1.1.1 REQUIRED)
-#include_directories(${OPENSSL_INCLUDE_DIR})
-target_link_libraries(${exe_name} OpenSSL::Crypto OpenSSL::SSL)
+find_package(OpenSSL 1.1.1)
+endif ()
 
-# pcre2
+if (${OPENSSL_FOUND})
+    #include_directories(${OPENSSL_INCLUDE_DIR})
+    target_link_libraries(${exe_name} OpenSSL::Crypto OpenSSL::SSL)
+else ()
+    add_compile_definitions(NOT_FOUND_OPENSSL)
+endif ()
+
+
+# --------------------pcre2
+if (${WITH_PCRE2})
 # set(PCRE2_USE_STATIC_LIBS TRUE)
-find_package(PCRE2 REQUIRED CONFIG COMPONENTS 8BIT)
-target_link_libraries(${exe_name} PCRE2::8BIT)
+find_package(PCRE2 CONFIG COMPONENTS 8BIT)
+endif ()
 
-# libxml2
+if (${PCRE2_FOUND})
+    target_link_libraries(${exe_name} PCRE2::8BIT)
+else ()
+    add_compile_definitions(NOT_FOUND_PCRE2)
+endif ()
+
+
+# --------------------libxml2
+if (${WITH_LIBXML2})
 # set(LIBXML2_USE_STATIC_LIBS TRUE)
-find_package(LibXml2 REQUIRED)
-#include_directories(${LIBXML2_INCLUDE_DIR})
-target_link_libraries(${exe_name} LibXml2::LibXml2)
+find_package(LibXml2)
+endif ()
 
-# lua5.3
+if (${LibXml2_FOUND})
+    #include_directories(${LIBXML2_INCLUDE_DIR})
+    target_link_libraries(${exe_name} LibXml2::LibXml2)
+else ()
+    add_compile_definitions(NOT_FOUND_LIBXML2)
+endif ()
+
+# --------------------lua5.3
 # set(LUA_USE_STATIC_LIBS TRUE)
 # find_package(Lua REQUIRED)
 # target_include_directories(${exe_name} PRIVATE ${LUA_INCLUDE_DIR})
 # target_link_libraries(${exe_name} ${LUA_LIBRARIES})
 
-# fann
+# --------------------fann
 # find_package(fann REQUIRED)
 # target_link_libraries(${exe_name} fann)
+
 
 # math(libm) libdl pthread
 if (UNIX)
@@ -68,6 +97,7 @@ if (UNIX)
     find_package(Threads REQUIRED)
     target_link_libraries(${exe_name} Threads::Threads)
 endif ()
+
 
 # for functions of socket and adapter
 if (WIN32)

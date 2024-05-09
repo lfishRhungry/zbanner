@@ -1,3 +1,5 @@
+#ifndef NOT_FOUND_OPENSSL
+
 #ifndef PROTO_JARM_H
 #define PROTO_JARM_H
 
@@ -68,3 +70,5 @@ size_t jarm_decipher_one(const unsigned char *payload, size_t payload_len,
     char *res_buf, size_t res_max);
 
 #endif
+
+#endif /*ifndef NOT_FOUND_OPENSSL*/

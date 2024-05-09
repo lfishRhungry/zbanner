@@ -3,7 +3,9 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#ifndef NOT_FOUND_OPENSSL
 #include <openssl/err.h>
+#endif
 
 static int global_debug_level = 0; /* yea! a global variable!! */
 
@@ -92,6 +94,7 @@ LOGip(int level, ipaddress ip, unsigned port, const char *fmt, ...)
     va_end(marker);
 }
 
+#ifndef NOT_FOUND_OPENSSL
 /***************************************************************************
  ***************************************************************************/
 static int LOGopenssl_cb(const char *str, size_t len, void *bp) {
@@ -112,3 +115,4 @@ int LOGopenssl(int level) {
   }
   return res;
 }
+#endif

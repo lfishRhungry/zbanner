@@ -1,3 +1,5 @@
+#ifndef NOT_FOUND_OPENSSL
+
 #include <stdio.h>
 
 #include "probe-modules.h"
@@ -194,3 +196,5 @@ struct ProbeModule JarmProbe = {
     .handle_response_cb                    = &jarm_handle_response,
     .close_cb                              = &probe_close_nothing,
 };
+
+#endif /*ifndef NOT_FOUND_OPENSSL*/

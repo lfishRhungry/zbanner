@@ -1,10 +1,15 @@
+#ifndef NOT_FOUND_PCRE2
+
 #include "recog-fingerprint.h"
 #include "../util-out/logger.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
 
+
+#ifndef NOT_FOUND_LIBXML2
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+#endif
 
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
@@ -24,6 +29,9 @@ struct Recog_FP {
 
 struct Recog_FP * load_recog_fp(const char *filename, bool unprefix, bool unsuffix)
 {
+
+#ifndef NOT_FOUND_LIBXML2
+
     if (filename==NULL || filename[0]=='\0') {
         LOG(LEVEL_ERROR, "[-] Invalid file name\n");
         return NULL;
@@ -180,6 +188,12 @@ error:
 
     return NULL;
 
+#else
+
+    LOG(LEVEL_ERROR, "[-] Failed to load recog fingerprints because no libxml2 build with.\n");
+    return NULL;
+
+#endif
 }
 
 const char *
@@ -241,3 +255,5 @@ void free_recog_fp(struct Recog_FP *fp)
         free(tmp);
     }
 }
+
+#endif /*ifndef NOT_FOUND_PCRE2*/

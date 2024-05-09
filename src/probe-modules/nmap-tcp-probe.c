@@ -1,3 +1,5 @@
+#ifndef NOT_FOUND_PCRE2
+
 #include <string.h>
 
 #include "probe-modules.h"
@@ -303,3 +305,5 @@ struct ProbeModule NmapTcpProbe = {
     .handle_response_cb                = &nmaptcp_handle_response,
     .close_cb                          = &nmaptcp_close,
 };
+
+#endif /*ifndef NOT_FOUND_PCRE2*/

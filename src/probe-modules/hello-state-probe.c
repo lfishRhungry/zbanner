@@ -1,7 +1,9 @@
 #include <string.h>
 
+#ifndef NOT_FOUND_PCRE2
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
+#endif
 
 #include "probe-modules.h"
 #include "../proto/proto-http-maker.h"
@@ -14,18 +16,32 @@
 struct HelloStateConf {
     unsigned char          *hello;
     size_t                  hello_len;
+#ifndef NOT_FOUND_PCRE2
     char                   *regex;
     size_t                  regex_len;
     pcre2_code             *compiled_re;
     pcre2_match_context    *match_ctx;
     unsigned                re_case_insensitive:1;
     unsigned                re_include_newlines:1;
-    unsigned                get_whole_response:1;
     unsigned                match_whole_response:1;
     unsigned                report_while_regex:1;
+#endif
+    unsigned                get_whole_response:1;
 };
 
 static struct HelloStateConf hellostate_conf = {0};
+
+static enum Config_Res SET_get_whole_response(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    hellostate_conf.get_whole_response = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+#ifndef NOT_FOUND_PCRE2
 
 static enum Config_Res SET_report(void *conf, const char *name, const char *value)
 {
@@ -43,16 +59,6 @@ static enum Config_Res SET_match_whole_response(void *conf, const char *name, co
     UNUSEDPARM(name);
 
     hellostate_conf.match_whole_response = parseBoolean(value);
-
-    return CONF_OK;
-}
-
-static enum Config_Res SET_get_whole_response(void *conf, const char *name, const char *value)
-{
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    hellostate_conf.get_whole_response = parseBoolean(value);
 
     return CONF_OK;
 }
@@ -128,6 +134,8 @@ static enum Config_Res SET_regex(void *conf, const char *name, const char *value
 
     return CONF_OK;
 }
+
+#endif
 
 static enum Config_Res SET_hello_string(void *conf, const char *name, const char *value)
 {
@@ -258,6 +266,8 @@ static struct ConfigParam hellostate_parameters[] = {
         "Specifies a file and set the content of file as hello data."
         " This will overwrite hello data set by other parameters."
     },
+
+#ifndef NOT_FOUND_PCRE2
     {
         "regex",
         SET_regex,
@@ -281,13 +291,6 @@ static struct ConfigParam hellostate_parameters[] = {
         "Whether the specified regex contains newlines."
     },
     {
-        "get-whole-response",
-        SET_get_whole_response,
-        F_BOOL,
-        {"whole", 0},
-        "Get the whole response before connection timeout, not just the banner."
-    },
-    {
         "match-whole-response",
         SET_match_whole_response,
         F_BOOL,
@@ -301,6 +304,15 @@ static struct ConfigParam hellostate_parameters[] = {
         F_BOOL,
         {0},
         "Report response data after regex matching."
+    },
+#endif
+
+    {
+        "get-whole-response",
+        SET_get_whole_response,
+        F_BOOL,
+        {"whole", 0},
+        "Get the whole response before connection timeout, not just the banner."
     },
     
     {0}
@@ -353,6 +365,9 @@ hellostate_parse_response(
         .port_me   = target->port_me,
     };
 
+
+#ifndef NOT_FOUND_PCRE2
+
     if (hellostate_conf.compiled_re) {
         pcre2_match_data *match_data;
         int rc;
@@ -389,11 +404,17 @@ hellostate_parse_response(
         }
         pcre2_match_data_free(match_data);
     } else {
+
+#endif
+
         item.level = Output_SUCCESS;
         safe_strcpy(item.classification, OUTPUT_CLS_LEN, "serving");
         safe_strcpy(item.reason, OUTPUT_RSN_LEN, "banner exists");
         normalize_string(px, sizeof_px, item.report, OUTPUT_RPT_LEN);
+
+#ifndef NOT_FOUND_PCRE2
     }
+#endif
 
     output_result(out, &item);
 
@@ -409,6 +430,7 @@ hellostate_close()
     }
     hellostate_conf.hello_len = 0;
 
+#ifndef NOT_FOUND_PCRE2
     if (hellostate_conf.regex) {
         free(hellostate_conf.regex);
         hellostate_conf.regex = NULL;
@@ -424,6 +446,7 @@ hellostate_close()
         pcre2_match_context_free(hellostate_conf.match_ctx);
         hellostate_conf.match_ctx = NULL;
     }
+#endif
 
 }
 

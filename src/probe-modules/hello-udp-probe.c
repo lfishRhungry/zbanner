@@ -1,3 +1,5 @@
+#ifndef NOT_FOUND_PCRE2
+
 #include <string.h>
 
 #define PCRE2_CODE_UNIT_WIDTH 8
@@ -401,3 +403,5 @@ struct ProbeModule HelloUdpProbe = {
     .handle_response_cb                = &helloudp_handle_response,
     .close_cb                          = &helloudp_close,
 };
+
+#endif /*ifndef NOT_FOUND_PCRE2*/

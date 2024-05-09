@@ -115,6 +115,8 @@ Message Flow for a 0-RTT Handshake
                   derived from [sender]_application_traffic_secret_N.
 */
 
+#ifndef NOT_FOUND_OPENSSL
+
 #ifndef PROTO_TLS_H
 #define PROTO_TLS_H
 
@@ -190,3 +192,5 @@ size_t tls_load_ext_alpn_proto(unsigned char *px, const char *proto);
 size_t tls_load_ext_alpn(unsigned char *px, const char **proto_list, unsigned proto_count);
 
 #endif
+
+#endif /*ifndef NOT_FOUND_OPENSSL*/

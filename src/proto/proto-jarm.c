@@ -1,3 +1,5 @@
+#ifndef NOT_FOUND_OPENSSL
+
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
@@ -692,3 +694,5 @@ size_t jarm_decipher_one(const unsigned char *payload, size_t payload_len,
 #undef CHECK_IDX
 
 }
+
+#endif /*ifndef NOT_FOUND_OPENSSL*/

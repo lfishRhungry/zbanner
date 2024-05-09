@@ -32,7 +32,7 @@ ifneq (, $(findstring linux, $(SYS)))
 ifneq (, $(findstring musl, $(SYS)))
 LIBS =  -lssl -lcrypto -lpcre2-8
 else
-LIBS = -lm -lrt -ldl -lpthread -lssl -lcrypto -lpcre2-8
+LIBS = -lm -lrt -ldl -lpthread -lssl -lcrypto -lpcre2-8 -lxml2
 endif
 INCLUDES = 
 FLAGS2 = 
@@ -42,14 +42,14 @@ endif
 # MinGW on Windows
 ifneq (, $(findstring mingw, $(SYS)))
 INCLUDES = 
-LIBS = -lIPHLPAPI -lWs2_32 -lssl -lcrypto -lpcre2-8
+LIBS = -lIPHLPAPI -lWs2_32 -lssl -lcrypto -lpcre2-8 -lxml2
 FLAGS2 = 
 LDFLAG = 
 endif
 
 # OpenBSD
 ifneq (, $(findstring openbsd, $(SYS)))
-LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8
+LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8 -lxml2
 INCLUDES = -I. 
 FLAGS2 = 
 LDFLAG = 
@@ -57,7 +57,7 @@ endif
 
 # FreeBSD
 ifneq (, $(findstring freebsd, $(SYS)))
-LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8
+LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8 -lxml2
 INCLUDES = -I. 
 FLAGS2 =
 LDFLAG = 
@@ -65,7 +65,7 @@ endif
 
 # NetBSD
 ifneq (, $(findstring netbsd, $(SYS)))
-LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8
+LIBS = -lm -lpthread -lssl -lcrypto -lpcre2-8 -lxml2
 INCLUDES = -I. 
 FLAGS2 =
 LDFLAG = 

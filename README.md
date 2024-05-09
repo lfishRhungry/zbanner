@@ -8,7 +8,7 @@ PS: Xtate was originally designed to do all scans in complete stateless manner, 
 
 ## Build
 
-Xtate could be built both on Linux and Windows with CMake because of cross-platform code.
+Xtate could be built both on Linux and Windows with CMake because of cross-platform code and optional dependencies.
 If any error happened in CMake, trying to modify and use `Makefile` is a good idea.
 I'm sorry about my fail to be a CMake professor...
 
@@ -16,9 +16,11 @@ I'm sorry about my fail to be a CMake professor...
 
 Dependent libraries for building:
 
-- OpenSSL>=1.1.1
-- PCRE2 8bits
-- LibXml2
+- OpenSSL>=1.1.1 (optional or use `-DWITH_OPENSSL=<ON/OFF>` to switch explicitly)
+- PCRE2 8bits (optional or use `-DWITH_PCRE2=<ON/OFF>` to switch explicitly)
+- LibXml2 (optional or use `-DWITH_LIBXML2=<ON/OFF>` to switch explicitly)
+
+Optional dependencies for building won't be compiled with if Cmake didn't find the packages on your system or you can switch off it by CMake parameters.
 
 Dependent libraries for running:
 
@@ -27,7 +29,7 @@ Dependent libraries for running:
 - PFRING driver(optional on Linux)
 - lua5.3/5.4(optional for lua probe support)
 
-They can be installed on Windows in some way you like but always easier on Linux like Ubuntu22:
+All of them can be installed on Windows in some way you like but always easier on Linux like Ubuntu22:
 
 ```
 sudo apt install libpcap-dev libssl-dev libpcre2-dev libxml2-dev liblua5.X-0

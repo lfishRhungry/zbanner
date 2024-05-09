@@ -1,3 +1,5 @@
+#ifndef NOT_FOUND_OPENSSL
+
 #include <string.h>
 
 #include "proto-tls.h"
@@ -88,3 +90,5 @@ size_t tls_load_ext_alpn(unsigned char *px, const char **proto_list, unsigned pr
 
     return ((size_t)ext_len) + 4;
 }
+
+#endif /*ifndef NOT_FOUND_OPENSSL*/

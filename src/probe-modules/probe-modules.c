@@ -74,18 +74,28 @@ static struct ProbeModule *probe_modules_list[] = {
     &HttpProbe,
     &HttpStateProbe,
     &EchoProbe,
+#ifndef NOT_FOUND_OPENSSL
     &JarmProbe,
+#endif
     &GetStateProbe,
+#ifndef NOT_FOUND_OPENSSL
     &TlsStateProbe,
+#endif
+#ifndef NOT_FOUND_PCRE2
     &NmapTcpProbe,
+#endif
     &DnsProbe,
     &LuaTcpProbe,
     &LuaUdpProbe,
     &SnmpProbe,
     &HelloProbe,
+#ifndef NOT_FOUND_PCRE2
     &HelloUdpProbe,
+#endif
     &HelloStateProbe,
+#ifndef NOT_FOUND_PCRE2
     &RecogProbe,
+#endif
     /*for lzr probes*/
     &LzrProbe,
     &LzrHttpProbe,

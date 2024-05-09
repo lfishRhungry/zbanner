@@ -1,3 +1,5 @@
+#ifndef NOT_FOUND_OPENSSL
+
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
@@ -1225,3 +1227,5 @@ struct ProbeModule TlsStateProbe = {
     .conn_close_cb                     = &tlsstate_conn_close,
     .close_cb                          = &tlsstate_close,
 };
+
+#endif

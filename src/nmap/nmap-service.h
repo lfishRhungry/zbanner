@@ -1,3 +1,5 @@
+#ifndef NOT_FOUND_PCRE2
+
 /*
     Reads the 'nmap-service-probes' file.
  */
@@ -170,3 +172,4 @@ int nmapservice_selftest();
 
 #endif
 
+#endif /*ifndef NOT_FOUND_PCRE2*/
