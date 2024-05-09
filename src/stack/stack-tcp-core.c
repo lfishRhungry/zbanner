@@ -142,7 +142,7 @@ struct TCP_Control_Block
     enum App_State                    app_state;
     unsigned char                     ttl;
     unsigned char                     syns_sent;         /* reconnect */
-    unsigned short                    mss;               /* maximum segment size 1460 */
+    unsigned short                    mss;               /* maximum segment size 1460 TODO: maybe negotiate it */
     time_t                            when_created;
     unsigned                          is_active:1;       /*in-use/allocated or to be del soon*/
 

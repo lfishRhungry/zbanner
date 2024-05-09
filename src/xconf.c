@@ -2560,7 +2560,7 @@ struct ConfigParam config_parameters[] = {
         "just got snaplen size at most for any packet even just like a kind of "
         "truncation. This is a non-commonly used switch for some special "
         "experimental tests. Default snaplen is 65535 and must be less than 65535.\n"
-        "NOTE: Be cared to the interaction with tcp-win and max-packet-len."
+        "NOTE: Be cared to the interaction with --tcp-win and --max-packet-len."
     },
     {
         "lan-mode",
@@ -2821,7 +2821,7 @@ struct ConfigParam config_parameters[] = {
         "The default value of TCP Window for TCP packets(except SYN) is 1024.\n"
         "NOTE: This value could affects some ScanModules working like ZBanner "
         "and limit communicating rate of stateful ScanModules."
-        "Be cared to the interaction with snaplen and max-packet-len."
+        "Be cared to the interaction with --snaplen and --max-packet-len."
     },
     {
         "tcp-wscale",
@@ -2896,7 +2896,7 @@ struct ConfigParam config_parameters[] = {
         {"max-pkt-len", 0},
         XTATE_UPPER_NAME" won't handle a received packet that is more than "
         "max-packet-len. Default is 1514."
-        "NOTE: Be cared to the interaction with tcp-win and max-packet-len."
+        "NOTE: Be cared to the interaction with --tcp-win and --snaplen."
     },
 
     {"MISC:", SET_nothing, 0, {0}, NULL},

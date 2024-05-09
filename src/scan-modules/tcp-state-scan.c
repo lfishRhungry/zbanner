@@ -2,8 +2,9 @@
 #include <time.h>
 
 #include "scan-modules.h"
-#include "../massip/massip-cookie.h"
 #include "../xconf.h"
+#include "../version.h"
+#include "../massip/massip-cookie.h"
 #include "../templ/templ-tcp.h"
 #include "../stack/stack-tcp-core.h"
 #include "../util-data/safe-string.h"
@@ -300,9 +301,18 @@ struct ScanModule TcpStateScan = {
         "    `sudo iptables -L --line-numbers`\n"
         "Remove the rule by its line number if we do not need it:\n"
         "    `sudo iptables -D OUTPUT <line-number>`\n"
-        "NOTE: TcpStateScan causes so many packets with little data because of the "
+        "NOTE1: TcpStateScan causes so many packets with little data because of the "
         "default small -tcp-win. You may set a new -tcp-win and adjust -max-pkt-len"
-        " to achieve a fast communicating.",
+        " to achieve a fast communicating. Yeah, I don't know why the MSS could be"
+        " useless than -tcp-win.\n"
+        "NOTE2: TcpStateScan uses an incomplete TCP protocol which has just 3 states"
+        " and acknowledges data pkt by pkt. This is because we want our TCP stack"
+        " to be light-weight and fast in specific scenarios. Specific scenarios"
+        " means little data exchanging in less times and our original purpose of "
+        "TcpStateScan is to get banners over TLS with TlsStateProbe.\n"
+        "NOTE3: Remember that "XTATE_FIRST_UPPER_NAME" is not a browser, crawler"
+        " or any other tools concentrated on contents in protocol. We must focus"
+        " on protocol itself with activate scanning.",
 
     .global_init_cb               = &tcpstate_global_init,
     .transmit_cb                  = &tcpstate_transmit,
