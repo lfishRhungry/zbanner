@@ -28,6 +28,7 @@ extern struct ProbeModule HelloProbe;
 extern struct ProbeModule HelloUdpProbe;
 extern struct ProbeModule HelloStateProbe;
 extern struct ProbeModule RecogProbe;
+extern struct ProbeModule RecogStateProbe;
 /*for lzr probes*/
 extern struct ProbeModule LzrProbe;
 extern struct ProbeModule LzrHttpProbe;
@@ -95,6 +96,7 @@ static struct ProbeModule *probe_modules_list[] = {
     &HelloStateProbe,
 #ifndef NOT_FOUND_PCRE2
     &RecogProbe,
+    &RecogStateProbe,
 #endif
     /*for lzr probes*/
     &LzrProbe,
