@@ -4,7 +4,10 @@
 
 Welcome to Xtate -- A modular all-stack network scanner for next-generation internet surveys!
 
-PS: Xtate was originally designed to do all scans in complete stateless manner, but follow-up modules make it more than stateless.
+Xtate focus on large-scale active measurement of protocol themselves and underlying characteristics they reflect.
+In other words, Xtate is not good at being a crawler or concentrating on contents like other specific scanners. (Although Xtate has that abilities...)
+
+PS: Xtate was originally designed to do all scans in complete stateless manner, but some new features and modules make it more than stateless. But being fast and concise is always our target.
 
 ## Build
 
