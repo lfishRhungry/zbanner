@@ -38,6 +38,8 @@ All of them can be installed on Windows in some way you like but always easier o
 sudo apt install libpcap-dev libssl-dev libpcre2-dev libxml2-dev liblua5.X-0
 ```
 
+Use `xtate --version` to check details of version, binary info after building.
+
 ### Compile On Linux
 
 Recommended compile suites:
