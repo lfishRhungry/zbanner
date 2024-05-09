@@ -88,8 +88,10 @@ struct Recog_FP * load_recog_fp(const char *filename, bool unprefix, bool unsuff
                 icase = true;
                 mline = true;
             }
+        } else {
+            xmlFree(tmp_xml_char);
         }
-    
+
         tmp_xml_char = xmlGetProp(cur_node, (const xmlChar *)"pattern");
         if (!tmp_xml_char) {
             continue;
@@ -120,15 +122,19 @@ struct Recog_FP * load_recog_fp(const char *filename, bool unprefix, bool unsuff
 
         if (!match->compiled_re) {
             LOG(LEVEL_HINT, "[-] regex compiled failed in %s.\n", tmp_xml_char);
+            xmlFree(tmp_xml_char);
             continue;
         }
 
         match->match_ctx = pcre2_match_context_create(NULL);
         if (!match->match_ctx) {
             LOG(LEVEL_HINT, "[-] regex allocates match_ctx failed in %s.\n", tmp_xml_char);
+            xmlFree(tmp_xml_char);
             pcre2_code_free(match->compiled_re);
             continue;
         }
+
+        xmlFree(tmp_xml_char);
 
         pcre2_set_match_limit(match->match_ctx, 100000);
 
