@@ -2678,14 +2678,15 @@ struct ConfigParam config_parameters[] = {
         SET_list_scan_modules,
         F_BOOL,
         {"list-scan-module", "list-scan", "list-scans", 0},
-        "List informations of all ScanModules."
+        "List informations and helps of all ScanModules."
     },
     {
         "scan-module-args",
         SET_scan_module_args,
         F_NONE,
         {"scan-module-arg", "scan-args", "scan-arg", 0},
-        "Specifies an argument for used ScanModule."
+        "Specifies module-specific parameters for used ScanModule. Information "
+        "of parameters for each ScanModule could be found in --list-scan."
     },
 
     {"PROBE MODULES:", SET_nothing, 0, {0}, NULL},
@@ -2705,14 +2706,15 @@ struct ConfigParam config_parameters[] = {
         SET_list_probe_modules,
         F_BOOL,
         {"list-probe-module", "list-probe", "list-probes", 0},
-        "List informations of all ProbeModules."
+        "List informations and helps of all ProbeModules."
     },
     {
         "probe-module-args",
         SET_probe_module_args,
         F_NONE,
         {"probe-module-arg", "probe-args", "probe-arg", 0},
-        "Specifies an argument for used ProbeModule."
+        "Specifies module-specific parameters for used ProbeModule. Information "
+        "of parameters for each ProbeModule could be found in --list-probe."
     },
 
     {"OUTPUT MODULES:", SET_nothing, 0, {0}, NULL},
@@ -2734,14 +2736,15 @@ struct ConfigParam config_parameters[] = {
         SET_list_output_modules,
         F_BOOL,
         {"list-output-module", "list-output", "list-out", 0},
-        "List informations of all OutputModules."
+        "List informations and helps of all OutputModules."
     },
     {
         "output-module-args",
         SET_output_module_args,
         F_NONE,
         {"output-module-arg", "output-arg", "out-arg", 0},
-        "Specifies an argument for used OutputModule."
+        "Specifies module-specific parameters for used OutputModule. Information "
+        "of parameters for each OutputModule could be found in --list-output."
     },
     {
         "output-file",
