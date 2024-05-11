@@ -401,12 +401,12 @@ static int main_scan(struct Xconf *xconf) {
             for (unsigned i=0; i<xconf->rx_handler_count; i++) {
                 rx_free_entries += rte_ring_free_count(rx_thread->handle_q[i]);
             }
-            rx_queue_ratio = 1.0 - rx_free_entries /
+            rx_queue_ratio = rx_free_entries*100.0 /
                 (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count+1));
         }
 
         double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
-        tx_queue_ratio = 1.0 - tx_free_entries/(double)xconf->stack_buf_count;
+        tx_queue_ratio = tx_free_entries*100.0/(double)xconf->stack_buf_count;
 
         /* Note: This is how we tell the Tx has ended */
         if (xconf->is_infinite) {
@@ -494,12 +494,12 @@ static int main_scan(struct Xconf *xconf) {
             for (unsigned i=0; i<xconf->rx_handler_count; i++) {
                 rx_free_entries += rte_ring_free_count(rx_thread->handle_q[i]);
             }
-            rx_queue_ratio = 1.0 - rx_free_entries /
+            rx_queue_ratio = rx_free_entries*100.0 /
                 (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count+1));
         }
 
         double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
-        tx_queue_ratio = 1.0 - tx_free_entries/(double)xconf->stack_buf_count;
+        tx_queue_ratio = tx_free_entries*100.0/(double)xconf->stack_buf_count;
 
         xtatus_print(
             &status,
