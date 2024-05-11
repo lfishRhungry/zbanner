@@ -13,7 +13,7 @@ Xtate was originally designed to do all scans in complete stateless manner, **ev
 But some new added features and modules make it more than stateless. 
 However, being fast and concise is always our target.
 
-In addition, Xtate supports IPv6 addresses and can be built on Windows and Linux.
+In addition, Xtate supports IPv6 addresses and can be built on Windows and Linux with optional dependencies.
 
 ## Intro/Design
 
