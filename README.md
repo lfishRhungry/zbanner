@@ -101,7 +101,7 @@ So I have tried to provide some general purpose Scan and Probe modules, includin
 
 Some of the Scan and Probe modules with original technology are derived from our papers.
 I hope that Xtate will be used more in academic research.
-And I would be honored if you would cite our papers in your research.
+And I would be honored if you would cite our papers related to xtate.
 
 ## Basic Usage
 
