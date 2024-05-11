@@ -52,6 +52,7 @@ Unlike existing high-speed scanners that Tx and Rx threads work in completely as
 The most important of these are the Scan module and the Probe module.
 The Scan module is responsible for tasks in the network, transport and sometimes data-link layers during the scanning process (e.g., underlying packet construction, verification, etc.), while the Probe module is responsible for tasks above the transport layer (e.g., payload generation, content detection, etc.).
 A Scan module can be used alone (e.g. `icmp-echo` ScanModule), or paired with different Probe modules (e.g., `zbanner` ScanModulea and `http` ProbeModule). By clever design, Probe modules can even be nested with other Probe modules (e.g., `tcp-state` ScanModule, `tls-state` ProbeModule and `http` ProbeModule).
+Both Scan modules and Probe modules have own sub-parameters and you can check details by `--list-scan` or `--list-probe`.
 
 This is what ScanModules, ProbeModules and "all-stack" mean (or you can check it by `xtate --intro`):
 
@@ -138,7 +139,7 @@ original examples of xtate:
       do NDP NS scan with a link-local source IP in local network.
 ```
 
-## Helps
+## Helps in Detail
 
 Xtate embeds more detailed helps into the program, and I recommend using the compiled binary to view them.
 
