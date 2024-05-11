@@ -227,7 +227,7 @@ Xtate was created by lfishRhungry:
 
 Xtate was born in:
 
-- College of Electronic Engineering, National University of Defense Technology.
+- College of Electronic Engineering, [National University of Defense Technology](https://english.nudt.edu.cn/).
 - Anhui Province Key Laboratory of Cyberspace Security Situation Awareness and Evaluation.
 
 Xtate referenced:
