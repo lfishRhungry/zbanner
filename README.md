@@ -53,7 +53,7 @@ The most important of these are the Scan module and the Probe module.
 The Scan module is responsible for tasks in the network, transport and sometimes data-link layers during the scanning process (e.g., underlying packet construction, verification, etc.), while the Probe module is responsible for tasks above the transport layer (e.g., payload generation, content detection, etc.).
 A Scan module can be used alone (e.g. `icmp-echo` ScanModule), or paired with different Probe modules (e.g., `zbanner` ScanModulea and `http` ProbeModule). By clever design, Probe modules can even be nested with other Probe modules (e.g., `tcp-state` ScanModule, `tls-state` ProbeModule and `http` ProbeModule).
 
-This is what ScanModules and ProbeModules mean (or you can check it by `xtate --intro`):
+This is what ScanModules, ProbeModules and "all-stack" mean (or you can check it by `xtate --intro`):
 
 ```
 +-----------------------------------------------------------------------+
@@ -106,7 +106,7 @@ And I would be honored if you would cite our papers in your research.
 ## Basic Usage
 
 Use `xtate --usage` to see the basic usages of xtate.
-But actually you can do much more than these if you know xtate deeply.
+But actually you can do much more than these if you know xtate deeply by reading helps.
 
 ```
 usage format:
@@ -222,14 +222,20 @@ make -j4
 # Author
 
 Xtate was created by lfishRhungry:
+
 - email: chenchiyu14@nudt.edu.cn
 
-It was born from
-[Masscan](https://github.com/robertdavidgraham/masscan/tree/master)
-and referenced
-[ZMap](https://github.com/zmap/zmap),
-[Masscan-ng](https://github.com/bi-zone/masscan-ng)
-and other excellent open-source projects.
+Xtate was born in:
+
+- College of Electronic Engineering, National University of Defense Technology.
+- Anhui Province Key Laboratory of Cyberspace Security Situation Awareness and Evaluation.
+
+Xtate referenced:
+
+- [Masscan](https://github.com/robertdavidgraham/masscan/tree/master)
+- [ZMap](https://github.com/zmap/zmap),
+- [Masscan-ng](https://github.com/bi-zone/masscan-ng)
+- Other excellent open-source projects (noted in the code).
 
 Thanks to Robert Graham, Zakir Durumeric and Konstantin Molodyakov for their greate code and rigorous style.
 I've learned more than just finishing my worthless graduate thesis.
