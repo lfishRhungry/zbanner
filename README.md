@@ -17,7 +17,7 @@ In addition, Xtate supports IPv6 addresses and can be built on Windows and Linux
 
 ## Intro/Design
 
-Unlike existing high-speed scanners that Tx and Rx threads work in completely asynchronous mode, Xtate enables richer scanning strategies by creating callback queues in both threads and dividing the scanning process at a fine-grained level into individual functional modules. This is how Xtate working internally (or you can check it by `xtate --intro`):
+Unlike existing high-speed asynchronous scanners, Xtate enables richer scanning strategies by dividing the scanning process at a fine-grained level into individual functional modules. This is how Xtate working internally (or you can check it by `xtate --intro`):
 
 ```
 +--------------------------------------------------------------------------------------------------+
@@ -111,17 +111,17 @@ But actually you can do much more than these if you know xtate deeply by reading
 
 ```
 usage format:
-  xtate [options] [-range IPs -p PORTs [-scan SCANMODULE [-probe PROBEMODULE]]]
+  xtate [options] [-ip IPs -p PORTs [-scan SCANMODULE [-probe PROBEMODULE]]]
 
 original examples of xtate:
 
   xtate -p 80,8000-8100 -range 10.0.0.0/8 --rate=10000
       use default TcpSyn ScanModule to scan web ports on 10.x.x.x at 10kpps.
 
-  xtate -p 80 -range 10.0.0.0/8 -scanmodule zbanner -probe getrequest
-      use ZBanner ScanModule to grab http banners with getrequest ProbeModule.
+  xtate -p 80 -range 10.0.0.0/8 -scan zbanner -probe http
+      use ZBanner ScanModule to grab http banners with http ProbeModule.
 
-  xtate -p u:80 -range 10.0.0.0/8 -scanmodule udp-probe -probe echo -show fail
+  xtate -p u:80 -range 10.0.0.0/8 -scan udp -probe echo -show fail
       use UdpProbe ScanModule to scan UDP 80 port with echo ProbeModule and also
       show failed results.
 
