@@ -16,8 +16,8 @@ extern struct ProbeModule NullProbe;
 extern struct ProbeModule HttpProbe;
 extern struct ProbeModule HttpStateProbe;
 extern struct ProbeModule EchoProbe;
-extern struct ProbeModule JarmProbe;
 extern struct ProbeModule GetStateProbe;
+extern struct ProbeModule JarmProbe;
 extern struct ProbeModule TlsStateProbe;
 extern struct ProbeModule NmapTcpProbe;
 extern struct ProbeModule DnsProbe;
@@ -28,6 +28,7 @@ extern struct ProbeModule HelloProbe;
 extern struct ProbeModule HelloUdpProbe;
 extern struct ProbeModule HelloStateProbe;
 extern struct ProbeModule RecogProbe;
+extern struct ProbeModule RecogUdpProbe;
 extern struct ProbeModule RecogStateProbe;
 /*for lzr probes*/
 extern struct ProbeModule LzrProbe;
@@ -75,29 +76,35 @@ static struct ProbeModule *probe_modules_list[] = {
     &HttpProbe,
     &HttpStateProbe,
     &EchoProbe,
+    &GetStateProbe,
+
 #ifndef NOT_FOUND_OPENSSL
     &JarmProbe,
-#endif
-    &GetStateProbe,
-#ifndef NOT_FOUND_OPENSSL
     &TlsStateProbe,
 #endif
+
 #ifndef NOT_FOUND_PCRE2
     &NmapTcpProbe,
 #endif
+
     &DnsProbe,
     &LuaTcpProbe,
     &LuaUdpProbe,
     &SnmpProbe,
     &HelloProbe,
+
 #ifndef NOT_FOUND_PCRE2
     &HelloUdpProbe,
 #endif
+
     &HelloStateProbe,
+
 #ifndef NOT_FOUND_PCRE2
     &RecogProbe,
+    &RecogUdpProbe,
     &RecogStateProbe,
 #endif
+
     /*for lzr probes*/
     &LzrProbe,
     &LzrHttpProbe,
