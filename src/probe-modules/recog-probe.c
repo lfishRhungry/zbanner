@@ -334,13 +334,16 @@ struct ProbeModule RecogProbe = {
         "RecogProbe use static content set by user as hello data and match the "
         "response with specified Recog fingerprints. It's a proof of concept for"
         " service version detection.\n"
-        "NOTE: Recog fingerprints are adapted for specific part of response data"
+        "NOTE1: Recog fingerprints are adapted for specific part of response data"
         " like html title, http cookie and etc. But RecogProbe doesn't prepare"
         " specific type of probes so that it cannot extract some part of data. "
         "However, we could ignore position parameters of regex like '^' and '$'"
         " by probe params to match the whole response. This is enough and useful"
         " to solve most cases. Implement your own probes if you want a more "
-        "accurate results.",
+        "accurate results.\n"
+        "NOTE2: I found the order of fingerprints in recog xml file would affect"
+        " the identidying result because our probe just output the first matched"
+        " result.",
     .global_init_cb                    = &recog_global_init,
     .make_payload_cb                   = &recog_make_payload,
     .get_payload_length_cb             = &recog_get_payload_length,
