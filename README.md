@@ -232,9 +232,12 @@ Xtate was born in:
 - College of Electronic Engineering, [National University of Defense Technology](https://english.nudt.edu.cn/).
 - Anhui Province Key Laboratory of Cyberspace Security Situation Awareness and Evaluation.
 
-Xtate referenced:
+Xtate was born from:
 
 - [Masscan](https://github.com/robertdavidgraham/masscan/tree/master)
+
+And referenced:
+
 - [ZMap](https://github.com/zmap/zmap),
 - [Masscan-ng](https://github.com/bi-zone/masscan-ng)
 - Other excellent open-source projects (noted in the code).
