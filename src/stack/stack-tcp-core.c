@@ -283,8 +283,12 @@ tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usec
             tcb->ackno_them);
 
         /**
-         * If the TCB hasn't been destroyed, then we need to make sure
-         * there is a timeout associated with it.
+         * If the TCB hasn't been destroyed, then we need to make sure there is
+         * a timeout associated with it.
+         * This is important for conn maintenance like:
+         * resending packets,
+         * deleting expired conns,
+         * etc.
          * */
         if (x != TCB__destroyed && timeout_is_unlinked(tcb->timeout)) {
             timeouts_add(tcpcon->timeouts,
