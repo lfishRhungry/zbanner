@@ -167,35 +167,36 @@ static struct ConfigParam tlsstate_parameters[] = {
         SET_ssl_keylog,
         F_BOOL,
         {"key-log", 0},
-        "Record the SSL key log to result."
+        "Record the SSL key log to result as INFO."
     },
     {
         "dump-version",
         SET_dump_version,
         F_BOOL,
         {"version", 0},
-        "Record SSL/TLS version to results."
+        "Record SSL/TLS version to results as INFO."
     },
     {
         "dump-cipher",
         SET_dump_cipher,
         F_BOOL,
         {"cipher", 0},
-        "Record cipher suites of SSL/TLS connection to results."
+        "Record cipher suites of SSL/TLS connection to results as INFO."
     },
     {
         "dump-cert",
         SET_dump_cert,
         F_BOOL,
         {"cert", 0},
-        "Record X509 cert info of SSL/TLS server to results in base64 format."
+        "Record X509 cert info of SSL/TLS server to results in base64 format as"
+        " INFO."
     },
     {
         "dump-subject",
         SET_dump_subject,
         F_BOOL,
         {"subject", 0},
-        "Record X509 cert subject names of SSL/TLS server to results."
+        "Record X509 cert subject names of SSL/TLS server to results as INFO."
     },
 
     {0}
