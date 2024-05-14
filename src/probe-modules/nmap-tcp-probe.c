@@ -297,7 +297,8 @@ struct ProbeModule NmapTcpProbe = {
         "NOTE2: Some hardmatch in nmap-service-probes file need banners from 2 "
         "phases(from Hellowait and after probe sending) to match patterns. "
         "NmapTcp Probe cannot do this type of hard matching because stateless "
-        "mechanism doesn't support \"Hello Wait\".",
+        "mechanism doesn't support \"Hello Wait\".\n"
+        "Dependencies: PCRE2.",
     .global_init_cb                    = &nmaptcp_global_init,
     .make_payload_cb                   = &nmaptcp_make_payload,
     .get_payload_length_cb             = &nmaptcp_get_payload_length,

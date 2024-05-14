@@ -395,7 +395,8 @@ struct ProbeModule HelloUdpProbe = {
         "HelloUdpProbe is the udp version of HelloPorbe, it uses static"
         " content set by user as hello data and reports banner if it matches regex"
         " that user set. It is used to test POC immediatly under udp.\n"
-        "NOTE: We must specify hello data and regex for HelloUdpProbe.",
+        "NOTE: We must specify hello data and regex for HelloUdpProbe.\n"
+        "Dependencies: PCRE2.",
     .global_init_cb                    = &helloudp_global_init,
     .make_payload_cb                   = &helloudp_make_payload,
     .get_payload_length_cb             = NULL,

@@ -1225,7 +1225,8 @@ struct ProbeModule TlsStateProbe = {
         "TlsState Probe emulates SSL/TLS layer by OpenSSL BIO machanism. "
         "It is used with TcpState ScanModule to perform TLS probing based on our"
         " user-spase TCP stack. TlsState is just a middle layer(probe), so we "
-        "should specify a subprobe for it.",
+        "should specify a subprobe for it.\n"
+        "Dependencies: OpenSSL.",
     .global_init_cb                    = &tlsstate_global_init,
     .conn_init_cb                      = &tlsstate_conn_init,
     .make_hello_cb                     = &tlsstate_make_hello,

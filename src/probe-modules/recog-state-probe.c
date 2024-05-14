@@ -366,7 +366,8 @@ struct ProbeModule RecogStateProbe = {
         "accurate results.\n"
         "NOTE2: I found the order of fingerprints in recog xml file would affect"
         " the identidying result because our probe just output the first matched"
-        " result.",
+        " result.\n"
+        "Dependencies: PCRE2, LibXml2.",
     .global_init_cb                    = &recogstate_global_init,
     .conn_init_cb                      = &probe_conn_init_nothing,
     .make_hello_cb                     = &recogstate_make_hello,

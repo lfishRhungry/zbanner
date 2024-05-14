@@ -211,7 +211,8 @@ Use `xtate --list-out | less` to see all OutputModules with sub-parameters and h
 
 ## Build
 
-Xtate could be built both on Linux and Windows with CMake because of cross-platform code and optional dependencies.
+Xtate could be built both on Linux and Windows with CMake because of cross-platform code.
+And some dependencies are optional, we can give up some modules if the specific dependency libraries cannot be prepared.
 If any error happened in CMake, trying to modify and use `Makefile` is a good idea.
 I'm sorry about my fail to be a CMake professor...
 

@@ -343,7 +343,8 @@ struct ProbeModule RecogProbe = {
         "accurate results.\n"
         "NOTE2: I found the order of fingerprints in recog xml file would affect"
         " the identidying result because our probe just output the first matched"
-        " result.",
+        " result.\n"
+        "Dependencies: PCRE2, LibXml2.",
     .global_init_cb                    = &recog_global_init,
     .make_payload_cb                   = &recog_make_payload,
     .get_payload_length_cb             = &recog_get_payload_length,
