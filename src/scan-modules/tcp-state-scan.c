@@ -286,7 +286,7 @@ struct ScanModule TcpStateScan = {
     .params              = tcpstate_parameters,
     .desc =
         "TcpStateScan tries to contruct TCP conn with target port with a user-space"
-        " TCP stack and do communication. Used ProbeModule could do more things "
+        " light-weight TCP stack and do further scan. Used ProbeModule could do more things "
         "than ZBannerScan like grabbing complete webpage, further interacting with"
         " server and etc. But TcpStateScan consumes more resources because of the "
         "complex user-space TCP stack and stateful connections.\n"

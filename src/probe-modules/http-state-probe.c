@@ -897,7 +897,8 @@ struct ProbeModule HttpStateProbe = {
         "      `GET / HTTP/1.0`\n"
         "      `User-Agent: "XTATE_WITH_VERSION" "XTATE_GITHUB"`\n"
         "      `Accept: */*`\n\n"
-        "And we can use various args to change the default request.\n"
+        "We can use various args to change the default request and set a regex "
+        "to match the response as successed.\n"
         "NOTE: HttpStateProbe could be used over TLS.",
     .global_init_cb                    = &http_global_init,
     .conn_init_cb                      = &probe_conn_init_nothing,

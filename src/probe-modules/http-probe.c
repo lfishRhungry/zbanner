@@ -843,7 +843,8 @@ struct ProbeModule HttpProbe = {
         "      `GET / HTTP/1.0`\n"
         "      `User-Agent: "XTATE_WITH_VERSION" "XTATE_GITHUB"`\n"
         "      `Accept: */*`\n\n"
-        "And we can use various args to change the default request.",
+        "We can use various args to change the default request and set a regex "
+        "to match the response as successed.",
     .global_init_cb                    = &http_global_init,
     .make_payload_cb                   = &http_make_payload,
     .get_payload_length_cb             = &http_get_payload_length,

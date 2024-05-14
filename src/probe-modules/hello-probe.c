@@ -412,7 +412,8 @@ struct ProbeModule HelloProbe = {
     .params     = hello_parameters,
     .desc =
         "HelloProbe use static content set by user as hello data and reports "
-        "banner. It is used to test POC immediatly.\n"
+        "banner. We can set hello data in different format and set a regex to "
+        "match the response as successed. It is used to test POC immediatly.\n"
         "NOTE: If no hello data was specified, HelloProbe would just wait response.",
     .global_init_cb                    = &hello_global_init,
     .make_payload_cb                   = &hello_make_payload,

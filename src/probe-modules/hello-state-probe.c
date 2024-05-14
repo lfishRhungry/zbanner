@@ -461,7 +461,9 @@ struct ProbeModule HelloStateProbe = {
         "HelloStateProbe is the stateful version of HelloPorbe, it uses static"
         " content set by user as hello data and reports banner. It is used to "
         "test POC immediatly under stateful TCP connection and can work with "
-        "services over TLS.\n"
+        "services over TLS. We can set hello data in different format and set"
+        " a regex to match the the first response(banner) or whole response "
+        " as successed.\n"
         "NOTE: If no hello data was specified, HelloStateProbe would just wait "
         "banner(first packet with reponse).",
     .global_init_cb                    = &hellostate_global_init,

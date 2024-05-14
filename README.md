@@ -4,21 +4,45 @@
 
 Welcome to Xtate -- A modular all-stack network scanner for next-generation internet surveys!
 
-Xtate provides the architecture of super fast asychronous packet sending and receiving and allows adding self-define ScanModules or ProbeModules to do different scan task with specific strategy.
+Xtate provides basic ability of super fast asychronous packet sending/receiving and highly extensible architecture.
+It allows adding self-define ScanModules or ProbeModules to do different scan task with specific strategy.
+All modules could work in a packet send rate which takes up more than 90% of a gigabit of bandwidth in pcap mode and 90% of a 10 gigabit of bandwidth in PFRING mode.
+
 Xtate focuses on large-scale active measurement of obtaining information about protocol themselves and corresponding underlying characteristics in real time.
 In other words, Xtate is not good at being a crawler or concentrating on content level detection like other specialized scanners. 
 (Although Xtate has that abilities...)
 
 Xtate was originally designed to do all scans for UDP and TCP in complete stateless manner, even obtaining responses over TCP with our **ZBanner** tech.
 But some new added features and modules make it be more than stateless.
+
 For example, Xtate could do stateful TCP connection and even get HTTPS reponses after finishing TLS handshake with an improved user space stack what we called **light-state TCP stack** that optimized for large-scale scanning.
 However, being fast and concise is always our target.
 
 In addition, Xtate supports IPv6 addresses and can be built on Windows and Linux with optional dependencies.
 
+## Papers
+
+Some of the Scan and Probe modules with original technology are derived from our papers.
+I hope that Xtate will be used more in academic research.
+And I would be honored if you would cite our papers related to xtate.
+
+- ZBanner: Fast Stateless Scanning Capable of Obtaining Responses over TCP
+
+```
+@misc{chen2024zbanner,
+      title={ZBanner: Fast Stateless Scanning Capable of Obtaining Responses over TCP}, 
+      author={Chiyu Chen and Yuliang Lu and Guozheng Yang and Yi Xie and Shasha Guo},
+      year={2024},
+      eprint={2405.07409},
+      archivePrefix={arXiv},
+      primaryClass={cs.NI}
+}
+```
+
 ## Intro/Design
 
-Unlike existing high-speed asynchronous scanners, Xtate enables richer scanning strategies by dividing the scanning process at a fine-grained level into individual functional modules. This is how Xtate working internally (or you can check it by `xtate --intro`):
+Unlike existing high-speed asynchronous scanners, Xtate enables richer scanning strategies by dividing the scanning process at a fine-grained level into individual functional modules.
+This is how Xtate working internally (or you can check it by `xtate --intro`):
 
 ```
 +--------------------------------------------------------------------------------------------------+
@@ -96,14 +120,6 @@ This is what ScanModules, ProbeModules and "all-stack" mean (or you can check it
 ```
 
 Xtate allows and encourages users to write their own modules to accomplish specific scanning tasks.
-However, writing modules in C is not an easy task (although I think it is very interesting).
-So I have tried to provide some general purpose Scan and Probe modules, including allowing users to use simple commands, regular expressions, or lua scripts to accomplish scanning tasks and etc.
-
-## Papers
-
-Some of the Scan and Probe modules with original technology are derived from our papers.
-I hope that Xtate will be used more in academic research.
-And I would be honored if you would cite our papers related to xtate.
 
 ## Basic Usage
 
@@ -139,6 +155,47 @@ original examples of xtate:
   xtate -range fe80::1/120 -scanmodule ndp-ns -src-ip fe80::2 -fake-router-mac
       do NDP NS scan with a link-local source IP in local network.
 ```
+
+## Typical Modules
+
+### Typical Scan Modules
+
+Some scan modules would carry probe modules in same type for different performing.
+
+I only mention some typicals of them here which do not contain much basic ones like `tcp-syn`, `icmp-echo`, etc. Details are in the help document.
+
+- `zbanner`: Send probe payload after construct complete TCP connection and grab the response banner.
+All of these happen in **completely stateless manner** so that ZBanner could work in high-speed pachet send rate.
+It accept tcp type probe module.
+ZBanner tech was born from our research papar.
+
+- `tcp-state`: Do scanning with an user space light weight stack what we called light-state TCP stack.
+Actually it's stateful scan module and accept state type of probe module.
+Light-state tcp stack was born from our research paper.
+It has basic tcp funtions in large-scale scanning scenario and could touch upper layer service over TLS by pairing with `tls-state` probe module.
+
+- `udp`: Send probe payload in type of udp and try to grab valid response.
+
+
+### Generalizable Probe Modules
+
+However, writing modules in C is not an easy task although it helps writter understand more about principle.
+So I try to provide some highly generalizable Scan and Probe modules.
+These allows you to just use simple commands, regular expressions, or lua scripts to accomplish most of scanning tasks for POC.
+
+I only present some typicals of them here.
+Details are in the help document.
+
+- `hello`: Hello probe use static content set by user and reports banner. We can set a regex to match the response as successed. It is tcp type probe and we have udp and state type version, too.
+
+- `recog`: Recog probe is like Hello probe but use a fingerprint file in Recog xml format to match the response by a bunch of regex. It is useful for version detection. It is tcp type probe and we have udp and state type version, too.
+
+- `http`: For the most import application protocol, we provide Http probe for self-defined http header. We also can set a regex to match the response. It is tcp type probe and we have state type version, too.
+
+- `lua-tcp`: Let a specified lua script with proper implementation as a tcp type probe. It will save a lot of time for use for writing simple probes.
+
+- `lua-udp`: The udp type version of `lua-tcp`.
+
 
 ## Helps in Detail
 
