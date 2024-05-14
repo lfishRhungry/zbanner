@@ -14,25 +14,6 @@
     </a>
 </p>
 
-<p align="center">
-  <a href="#XTATE">Xtate</a> •
-  <a href="##Papers">Papers</a> •
-  <a href="##Intro/Design">Intro/Design</a> •
-  <a href="##Basic Usage">Basic Usage</a> •
-  <a href="##Typical Modules">Typical Modules</a> •
-  <a href="##Helps in Detail">Helps in Detail</a> •
-  <a href="##Build">Build</a> •
-  <a href="##Author">Author</a> •
-  <a href="##License">License</a> •
-  <!-- <a href="#installation-instructions">Installation</a> •
-  <a href="#usage">Usage</a> •
-  <a href="#running-naabu">Running naabu</a> •
-  <a href="#configuration-file">Config</a> •
-  <a href="#nmap-integration">NMAP integration</a> •
-  <a href="#cdn-waf-exclusion">CDN/WAF Exclusion</a> •
-  <a href="https://discord.gg/projectdiscovery">Discord</a> -->
-</p>
-
 # XTATE
 
 Welcome to Xtate -- A modular all-stack network scanner for next-generation internet surveys!
