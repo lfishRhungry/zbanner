@@ -7,7 +7,9 @@
     <a href="https://opensource.org/license/agpl-v3">
         <img src="https://img.shields.io/badge/license-AGPL-blue.svg">
     </a>
-    <img src="https://img.shields.io/badge/build-passing-green.svg">
+    <a href="javascript:void(0);">
+        <img src="https://img.shields.io/badge/build-passing-green.svg">
+    </a>
     <img src="https://img.shields.io/badge/platform-%20Linux%20|%20Windows-orange.svg">
     <a href="https://cmake.org/">
         <img src="https://img.shields.io/badge/CMake-v3.20-yellow.svg">
