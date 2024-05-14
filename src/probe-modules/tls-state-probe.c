@@ -617,7 +617,7 @@ tlsstate_global_init(const struct Xconf *xconf)
         if (set_parameters_from_substring(NULL,
             tlsstate_conf.subprobe->params, tlsstate_conf.subprobe_args)) {
             LOG(LEVEL_ERROR, "FAIL: errors happened in param parsing of subprobe of TlsState.\n");
-            exit(1);
+            goto error0;
         }
     }
 
