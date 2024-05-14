@@ -1,4 +1,37 @@
-![state_poster](screenshots/poster.jpg)
+<h1 align="center">
+  <img src="screenshots/poster.jpg" alt="xtate" width="600px">
+  <br>
+</h1>
+
+<p align="center">
+    <a href="https://opensource.org/license/agpl-v3">
+        <img src="https://img.shields.io/badge/license-AGPL-blue.svg">
+    </a>
+    <img src="https://img.shields.io/badge/license-AGPL-blue.svg">
+    <img src="https://img.shields.io/badge/platform-%20Linux%20|%20Windows-orange.svg">
+    <a href="https://cmake.org/">
+        <img src="https://img.shields.io/badge/CMake-v3.20-yellow.svg">
+    </a>
+</p>
+
+<p align="center">
+  <a href="#XTATE">Xtate</a> •
+  <a href="##Papers">Papers</a> •
+  <a href="##Intro/Design">Intro/Design</a> •
+  <a href="##Basic Usage">Basic Usage</a> •
+  <a href="##Typical Modules">Typical Modules</a> •
+  <a href="##Helps in Detail">Helps in Detail</a> •
+  <a href="##Build">Build</a> •
+  <a href="##Author">Author</a> •
+  <a href="##License">License</a> •
+  <!-- <a href="#installation-instructions">Installation</a> •
+  <a href="#usage">Usage</a> •
+  <a href="#running-naabu">Running naabu</a> •
+  <a href="#configuration-file">Config</a> •
+  <a href="#nmap-integration">NMAP integration</a> •
+  <a href="#cdn-waf-exclusion">CDN/WAF Exclusion</a> •
+  <a href="https://discord.gg/projectdiscovery">Discord</a> -->
+</p>
 
 # XTATE
 
