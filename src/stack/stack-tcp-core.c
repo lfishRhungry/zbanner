@@ -99,9 +99,9 @@ struct TCP_Segment {
 };
 
 enum Tcp_State{
-    STATE_SYN_SENT = 0,       /* init state, must be zero */
-    STATE_ESTABLISHED_SEND,   /* sending now */
-    STATE_ESTABLISHED_RECV,   /* want to receive */
+    STATE_SYNSENT = 0,  /* init state, must be zero */
+    STATE_SENDING,      /* sending now */
+    STATE_RECVING,      /* want to receive */
 };
 
 /**
@@ -213,9 +213,9 @@ static const char *
 tcp_state_to_string(enum Tcp_State state)
 {
     switch (state) {
-        case STATE_SYN_SENT:            return "SYN_SENT";
-        case STATE_ESTABLISHED_SEND:    return "ESTABLISHED_SEND";
-        case STATE_ESTABLISHED_RECV:    return "ESTABLISHED_RECV";
+        case STATE_SYNSENT:    return "SYN_SENT";
+        case STATE_SENDING:    return "ESTABLISHED_SEND";
+        case STATE_RECVING:    return "ESTABLISHED_RECV";
 
         default:
             return "UNKN_STATE";
@@ -797,7 +797,7 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     seg->is_dynamic  = is_dynamic;
     seg->buf = (unsigned char *)buf;
 
-    if (tcb->tcpstate != STATE_ESTABLISHED_SEND)
+    if (tcb->tcpstate != STATE_SENDING)
         application_notify(tcpcon, tcb, APP_WHAT_SENDING, seg->buf, seg->length, 0, 0);
 
 
@@ -805,7 +805,7 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     if (tcb->segments == seg) {
         tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_PSH | TCP_FLAG_ACK,
             seg->buf, seg->length);
-        _tcb_change_state_to(tcb, STATE_ESTABLISHED_SEND);
+        _tcb_change_state_to(tcb, STATE_SENDING);
     }
 
     /* If the input buffer was too large to fit a single segment, then
@@ -936,8 +936,8 @@ tcpapi_recv(struct stack_handle_t *socket) {
 
     switch (tcb->tcpstate) {
         default:
-        case STATE_ESTABLISHED_SEND:
-            _tcb_change_state_to(socket->tcb, STATE_ESTABLISHED_RECV);
+        case STATE_SENDING:
+            _tcb_change_state_to(socket->tcb, STATE_RECVING);
             break;
     }
     return 0;
@@ -958,10 +958,10 @@ tcpapi_send_data(struct stack_handle_t *socket,
 
     tcb = socket->tcb;
     switch (tcb->tcpstate) {
-        case STATE_ESTABLISHED_RECV:
-            _tcb_change_state_to(tcb, STATE_ESTABLISHED_SEND);
+        case STATE_RECVING:
+            _tcb_change_state_to(tcb, STATE_SENDING);
             /*follow through*/
-        case STATE_ESTABLISHED_SEND:
+        case STATE_SENDING:
             _tcb_seg_send(socket->tcpcon, tcb, buf, length, is_dynamic);
             return 0;
         default:
@@ -1124,7 +1124,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
     switch (tcb->tcpstate) {
 
-        case STATE_SYN_SENT: {
+        case STATE_SYNSENT: {
             switch (what) {
                 case TCP_WHAT_TIMEOUT:
                     tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_SYN, NULL, 0);
@@ -1140,7 +1140,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                         what_to_string(what));
 
                     tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
-                    _tcb_change_state_to(tcb, STATE_ESTABLISHED_RECV);
+                    _tcb_change_state_to(tcb, STATE_RECVING);
 
                     application_notify(tcpcon, tcb, APP_WHAT_CONNECTED, 0, 0, secs, usecs);
                     break;
@@ -1153,7 +1153,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
             break;
         }
 
-        case STATE_ESTABLISHED_SEND: {
+        case STATE_SENDING: {
             switch (what) {
                 case TCP_WHAT_CLOSE:
                     tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
@@ -1176,7 +1176,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
                     if (tcb->segments == NULL || tcb->segments->length == 0) {
                         /* We've finished sending everything */
-                        _tcb_change_state_to(tcb, STATE_ESTABLISHED_RECV);
+                        _tcb_change_state_to(tcb, STATE_RECVING);
 
                         /* All the payload has been sent. Notify the application of this, so that they
                          * can send more if the want, or switch to listening. */
@@ -1205,7 +1205,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
             break;
         }
 
-        case STATE_ESTABLISHED_RECV: {
+        case STATE_RECVING: {
             switch (what) {
                 case TCP_WHAT_CLOSE:
                     tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
