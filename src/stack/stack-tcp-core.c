@@ -100,16 +100,16 @@ struct TCP_Segment {
 
 enum Tcp_State{
     STATE_SYN_SENT = 0,       /* init state, must be zero */
-    STATE_ESTABLISHED_SEND,   /* our turn to send */
-    STATE_ESTABLISHED_RECV,   /* our turn to receive */
+    STATE_ESTABLISHED_SEND,   /* sending now */
+    STATE_ESTABLISHED_RECV,   /* want to receive */
 };
 
 /**
  * Abstract TCP data exchange to uppper application service State and Event to
- * fit our asynchronous sending and recving
+ * fit our design and interfaces.
 */
 enum App_State{
-    APP_STATE_INIT = 0,       /*init state*/
+    APP_STATE_INIT = 0,       /*init state, must be zero*/
     APP_STATE_RECV_HELLO,     /*wait for hello*/
     APP_STATE_RECV_NEXT,      /*wait for payload*/
     APP_STATE_SEND_FIRST,     /*our turn to say hello*/
@@ -118,7 +118,7 @@ enum App_State{
 
 enum App_Event {
     APP_WHAT_CONNECTED,       /*conn has been established*/
-    APP_WHAT_RECV_TIMEOUT,
+    APP_WHAT_RECV_TIMEOUT,    /*for hello waiting*/
     APP_WHAT_RECV_PAYLOAD,
     APP_WHAT_SENDING,
     APP_WHAT_SEND_SENT,       /*our data has been sent and acked*/
@@ -1191,7 +1191,9 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                      * saves us from having to buffer it in this stack. */
                     break;
                 case TCP_WHAT_SYNACK:
-                    /*some delayed synack*/
+                    /** A delayed SYN-ACK.
+                     * It can be solved by our pkt sending if it's a retransmission for lost ACK.
+                    */
                     break;
                 default:
                     ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
@@ -1229,7 +1231,10 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     _tcb_seg_recv(tcpcon, tcb, payload, payload_length, seqno_them, secs, usecs);
                     break;
                 case TCP_WHAT_SYNACK:
-                    /* This happens when a delayed SYN-ACK arrives from the target */
+                    /** A delayed SYN-ACK.
+                     * Maybe a retransmission for lost ACK?
+                     * But our stack can't identify it, just give up.
+                    */
                     break;
                 default:
                     ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
@@ -1251,7 +1256,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
 static const char *app_state_to_string(unsigned state) {
     switch (state) {
-    case APP_STATE_INIT:       return "connect";
+    case APP_STATE_INIT:          return "connect";
     case APP_STATE_RECV_HELLO:    return "wait-for-hello";
     case APP_STATE_RECV_NEXT:     return "receive";
     case APP_STATE_SEND_FIRST:    return "send-first";
