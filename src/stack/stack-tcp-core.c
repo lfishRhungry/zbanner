@@ -138,6 +138,8 @@ struct TCP_Control_Block
         uint32_t                      seqno_them;        /* the next seqno I expect to receive */
         uint32_t                      ackno_me;
     };
+
+    /*conn's initial seqno for debugging */
     uint32_t                          seqno_me_first;
     uint32_t                          seqno_them_first;
 
