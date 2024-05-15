@@ -169,23 +169,34 @@ tcpstate_handle(
     /*it's not elegent now*/
     item->no_output = 1;
 
+    struct TCP_Control_Block   *tcb;
+    struct TCP_ConnectionTable *tcpcon;
+
     ipaddress ip_them    = recved->parsed.src_ip;
     ipaddress ip_me      = recved->parsed.dst_ip;
     unsigned  port_them  = recved->parsed.port_src;
     unsigned  port_me    = recved->parsed.port_dst;
     unsigned  seqno_me   = TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
     unsigned  seqno_them = TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
+    unsigned  win_them   = TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
-    struct TCP_Control_Block *tcb;
-
-    struct TCP_ConnectionTable *tcpcon = tcpcon_set.tcpcons[th_idx];
-
-    /* does a TCB already exist for this connection? */
-    tcb = tcpcon_lookup_tcb(tcpcon, ip_me, ip_them, port_me, port_them);
+    tcpcon = tcpcon_set.tcpcons[th_idx];
+    tcb    = tcpcon_lookup_tcb(tcpcon, ip_me, ip_them, port_me, port_them);
 
     if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
         TCP_FLAG_SYN|TCP_FLAG_ACK)) {
-        /*we have validated cookie for syn-ack in `tcpstate_validate`*/
+        /**
+         * We have validated cookie for syn-ack in `tcpstate_validate`.
+         * But also need to handle zero window
+         * */
+        if (win_them == 0) {
+            item->no_output = 0;
+            item->level = Output_INFO;
+            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "zerowin");
+            safe_strcpy(item->reason, OUTPUT_RSN_LEN, "syn-ack");
+            return;
+        }
+
         if (tcb == NULL) {
             tcb = tcpcon_create_tcb(tcpcon, ip_me, ip_them, port_me, port_them,
                 seqno_me, seqno_them+1, recved->parsed.ip_ttl,
@@ -193,11 +204,10 @@ tcpstate_handle(
         }
         stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_SYNACK, 0, 0,
             recved->secs, recved->usecs, seqno_them+1, seqno_me);
-        
+
         /*multi-probe Multi_IfOpen and filter zerowin*/
         if (TcpStateScan.probe->multi_mode==Multi_IfOpen
-            && recved->parsed.port_dst==src_port_start
-            &&TCP_WIN(recved->packet, recved->parsed.transport_offset)) {
+            && recved->parsed.port_dst==src_port_start) {
 
             for (unsigned idx=1; idx<TcpStateScan.probe->multi_num; idx++) {
 
