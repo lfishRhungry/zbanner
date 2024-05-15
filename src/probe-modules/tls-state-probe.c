@@ -1226,6 +1226,8 @@ struct ProbeModule TlsStateProbe = {
         "It is used with TcpState ScanModule to perform TLS probing based on our"
         " user-spase TCP stack. TlsState is just a middle layer(probe), so we "
         "should specify a subprobe for it.\n"
+        "NOTE: TlsState doesn't support initial waiting before hello for subprobe"
+        " because the nesting.\n"
         "Dependencies: OpenSSL.",
     .global_init_cb                    = &tlsstate_global_init,
     .conn_init_cb                      = &tlsstate_conn_init,
