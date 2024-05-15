@@ -130,10 +130,14 @@ struct TCP_Control_Block
     ipaddress                         ip_them;
     unsigned short                    port_me;
     unsigned short                    port_them;
-    uint32_t                          seqno_me;          /* next seqno I will use for transmit */
-    uint32_t                          seqno_them;        /* the next seqno I expect to receive */
-    uint32_t                          ackno_me;
-    uint32_t                          ackno_them;
+    union {
+        uint32_t                      seqno_me;          /* next seqno I will use for transmit */
+        uint32_t                      ackno_them;
+    };
+    union {
+        uint32_t                      seqno_them;        /* the next seqno I expect to receive */
+        uint32_t                      ackno_me;
+    };
     uint32_t                          seqno_me_first;
     uint32_t                          seqno_them_first;
 
@@ -533,14 +537,12 @@ tcpcon_create_tcb(
 
     tcb->ip_me            = ip_me;
     tcb->ip_them          = ip_them;
-    tcb->port_me          = (unsigned short)port_me;
-    tcb->port_them        = (unsigned short)port_them;
-    tcb->seqno_them_first = seqno_them;
-    tcb->seqno_me_first   = seqno_me;
+    tcb->port_me          = (uint16_t)port_me;
+    tcb->port_them        = (uint16_t)port_them;
     tcb->seqno_me         = seqno_me;
     tcb->seqno_them       = seqno_them;
-    tcb->ackno_me         = seqno_them;
-    tcb->ackno_them       = seqno_me;
+    tcb->seqno_me_first   = seqno_me;
+    tcb->seqno_them_first = seqno_them;
     tcb->when_created     = global_now;
     tcb->ttl              = (unsigned char)ttl;
     tcb->mss              = TCP_DEFAULT_MSS;
@@ -859,9 +861,8 @@ _tcp_seg_acknowledge(
             assert(seg->buf);
 
             tcb->segments    = seg->next;
-            length          -= seg->length;
             tcb->seqno_me   += seg->length;
-            tcb->ackno_them += seg->length;
+            length          -= seg->length;
             
             LOGtcb(tcb, 1, "ACKed %u-bytes\n", seg->length);
 
@@ -880,7 +881,6 @@ _tcp_seg_acknowledge(
             assert(seg->buf);
 
             tcb->seqno_me   += length;
-            tcb->ackno_them += length;
             LOGtcb(tcb, 1, "ACKed %u-bytes\n", length);
 
             /* This segment needs to be reduced */
@@ -1032,7 +1032,6 @@ _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
     LOGtcb(tcb, 2, "received %u bytes\n", payload_length);
 
     tcb->seqno_them += payload_length;
-    tcb->ackno_me   += payload_length;
 
     application_notify(tcpcon, tcb, APP_WHAT_RECV_PAYLOAD,
                        payload, payload_length, secs, usecs);
