@@ -58,15 +58,19 @@ void
 tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usecs);
 
 enum TCB_result
-stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *entry,
+stack_incoming_tcp(
+    struct TCP_ConnectionTable *tcpcon,
+    struct TCP_Control_Block *entry,
     enum TCP_What what, 
-    const unsigned char *payload, size_t payload_length,
+    const unsigned char *payload,
+    size_t payload_length,
     unsigned secs, unsigned usecs,
     unsigned seqno_them, unsigned ackno_them);
 
 
 struct TCP_Control_Block *
-tcpcon_lookup_tcb(struct TCP_ConnectionTable *tcpcon,
+tcpcon_lookup_tcb(
+    struct TCP_ConnectionTable *tcpcon,
     ipaddress ip_src, ipaddress ip_dst,
     unsigned port_src, unsigned port_dst);
 

@@ -109,7 +109,7 @@ enum Tcp_State{
  * fit our asynchronous sending and recving
 */
 enum App_State{
-    APP_STATE_CONNECT = 0,    /*init state*/
+    APP_STATE_INIT = 0,       /*init state*/
     APP_STATE_RECV_HELLO,     /*wait for hello*/
     APP_STATE_RECV_NEXT,      /*wait for payload*/
     APP_STATE_SEND_FIRST,     /*our turn to say hello*/
@@ -117,11 +117,11 @@ enum App_State{
 };
 
 enum App_Event {
-    APP_WHAT_CONNECTED,
+    APP_WHAT_CONNECTED,       /*conn has been established*/
     APP_WHAT_RECV_TIMEOUT,
     APP_WHAT_RECV_PAYLOAD,
     APP_WHAT_SENDING,
-    APP_WHAT_SEND_SENT,
+    APP_WHAT_SEND_SENT,       /*our data has been sent and acked*/
 };
 
 struct TCP_Control_Block
@@ -1055,7 +1055,8 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 {
 
     /* FILTER
-     * Reject out-of-order payloads 
+     * Reject out-of-order payloads
+     * NOTE: payload and ACK are handled seperately
      */
     if (payload_length) {
         int payload_offset = seqno_them - tcb->seqno_them;
@@ -1085,7 +1086,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
      */
     if (what == TCP_WHAT_FIN) {
         if (seqno_them == tcb->seqno_them - 1) {
-            /* Duplicate FIN, respond with RST */
+            /* Duplicate FIN(retransmission), respond with RST to close*/
             tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
             tcpcon_destroy_tcb(tcpcon, tcb, Reason_Shutdown);
             return TCB__destroyed;
@@ -1098,7 +1099,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
     LOGtcb(tcb, 1, "##%s##\n", what_to_string(what));
 
-    /* Make sure no connection lasts longer than ~30 seconds */
+    /* Make sure no connection lasts longer than specified seconds */
     if (what == TCP_WHAT_TIMEOUT) {
         if (tcb->when_created + tcpcon->timeout_conn < secs) {
             LOGip(LEVEL_DETAIL, tcb->ip_them, tcb->port_them,
@@ -1110,7 +1111,8 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
             return TCB__destroyed;
         }
     }
-    
+
+    /*passive closed by target host's RST*/
     if (what == TCP_WHAT_RST) {
         LOGSEND(tcb, "tcb(destroy)");
         tcpcon_destroy_tcb(tcpcon, tcb, Reason_RST);
@@ -1120,10 +1122,9 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
     switch (tcb->tcpstate) {
 
-        case STATE_SYN_SENT:
+        case STATE_SYN_SENT: {
             switch (what) {
                 case TCP_WHAT_TIMEOUT:
-                    /* We've sent a SYN, but didn't get SYN-ACK, so send another */
                     tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_SYN, NULL, 0);
                     tcb->syns_sent++;
                     break;
@@ -1136,13 +1137,9 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     LOGtcb(tcb, 1, "%s connection established\n",
                         what_to_string(what));
 
-                    /* Send "ACK" to acknowlege their "SYN-ACK" */
                     tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
                     _tcb_change_state_to(tcb, STATE_ESTABLISHED_RECV);
 
-                    /**
-                     * this will make probe to send hello, and change TCB state
-                     * to STATE_ESTABLISHED SEND*/
                     application_notify(tcpcon, tcb, APP_WHAT_CONNECTED, 0, 0, secs, usecs);
                     break;
                 default:
@@ -1152,9 +1149,9 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     break;
             }
             break;
+        }
 
-
-        case STATE_ESTABLISHED_SEND:
+        case STATE_ESTABLISHED_SEND: {
             switch (what) {
                 case TCP_WHAT_CLOSE:
                     tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
@@ -1176,8 +1173,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     _tcp_seg_acknowledge(tcb, ackno_them);
 
                     if (tcb->segments == NULL || tcb->segments->length == 0) {
-                        /* We've finished sending everything, so switch our application state
-                         * back to recv */
+                        /* We've finished sending everything */
                         _tcb_change_state_to(tcb, STATE_ESTABLISHED_RECV);
 
                         /* All the payload has been sent. Notify the application of this, so that they
@@ -1187,16 +1183,15 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     }
                     break;
                 case TCP_WHAT_TIMEOUT:
-                    /* They haven't acknowledged everything yet, so resend the last segment */
                     _tcb_seg_resend(tcpcon, tcb);
                     break;
                 case TCP_WHAT_DATA:
                     /* We don't receive data while in the sending state. We force them
                      * to keep re-sending it until we are prepared to receive it. This
-                     * saves us from having to buffer it in this stack.
-                     */
+                     * saves us from having to buffer it in this stack. */
                     break;
                 case TCP_WHAT_SYNACK:
+                    /*some delayed synack*/
                     break;
                 default:
                     ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
@@ -1204,8 +1199,9 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     break;
             }
             break;
+        }
 
-        case STATE_ESTABLISHED_RECV:
+        case STATE_ESTABLISHED_RECV: {
             switch (what) {
                 case TCP_WHAT_CLOSE:
                     tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
@@ -1233,10 +1229,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     _tcb_seg_recv(tcpcon, tcb, payload, payload_length, seqno_them, secs, usecs);
                     break;
                 case TCP_WHAT_SYNACK:
-                    /* This happens when a delayed SYN-ACK arrives from the target.
-                     * I see these fairly often from host 178.159.37.125.
-                     * We are going to make them silent for now, but eventually, keep
-                     * statistics about this sort of thing. */
+                    /* This happens when a delayed SYN-ACK arrives from the target */
                     break;
                 default:
                     ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
@@ -1244,18 +1237,21 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     break;
             }
             break;
+        }
 
-        default:
+        default: {
             ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
-                        tcp_state_to_string(tcb->tcpstate), what_to_string(what));
+                tcp_state_to_string(tcb->tcpstate), what_to_string(what));
             break;
+        }
     }
+
     return TCB__okay;
 }
 
 static const char *app_state_to_string(unsigned state) {
     switch (state) {
-    case APP_STATE_CONNECT:       return "connect";
+    case APP_STATE_INIT:       return "connect";
     case APP_STATE_RECV_HELLO:    return "wait-for-hello";
     case APP_STATE_RECV_NEXT:     return "receive";
     case APP_STATE_SEND_FIRST:    return "send-first";
@@ -1282,7 +1278,7 @@ application_event(struct stack_handle_t *socket,
 
 again:
     switch (state) {
-        case APP_STATE_CONNECT:
+        case APP_STATE_INIT: {
             switch (event) {
                 case APP_WHAT_CONNECTED:
                     if (probe->hello_wait <= 0) {
@@ -1300,9 +1296,10 @@ again:
                         app_state_to_string(state), event_to_string(event));
                     break;
             }
-
             break;
-        case APP_STATE_RECV_HELLO:
+        }
+
+        case APP_STATE_RECV_HELLO: {
             switch (event) {
                 case APP_WHAT_RECV_TIMEOUT:
                     /* We've got no response from the initial connection,
@@ -1324,8 +1321,9 @@ again:
                     break;
             }
             break;
+        }
 
-        case APP_STATE_RECV_NEXT:
+        case APP_STATE_RECV_NEXT: {
             switch (event) {
                 case APP_WHAT_RECV_PAYLOAD: {
 
@@ -1413,6 +1411,7 @@ again:
                     break;
             }
             break;
+        }
 
         case APP_STATE_SEND_FIRST: {
 
@@ -1441,7 +1440,8 @@ again:
             tcpapi_change_app_state(socket, APP_STATE_SEND_NEXT);
             break;
         }
-        case APP_STATE_SEND_NEXT:
+
+        case APP_STATE_SEND_NEXT: {
             switch (event) {
                 case APP_WHAT_SEND_SENT:
                     /* We've got an acknowledgement that all our data
@@ -1457,9 +1457,12 @@ again:
                     break;
             }
             break;
-        default:
+        }
+
+        default: {
             ERRMSG("TCP.app: unhandled event: state=%s event=%s\n",
                 app_state_to_string(state), event_to_string(event));
             break;
+        }
     }
 }
