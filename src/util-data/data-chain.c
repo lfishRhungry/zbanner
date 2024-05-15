@@ -10,6 +10,9 @@
     One complication is that since we can extract multiple types of 
     information from the same connection, we can have more than one
     result output for the same target in ProbeType_STATE.
+
+    From masscan's `banout`
+    Modified by lishRhungry 2024
 */
 #include "data-chain.h"
 #include "fine-malloc.h"

@@ -1,3 +1,19 @@
+/*
+    Data Chain
+
+    This module remembers "datas" from a target or session for ProbeType_STATE.
+    These are often simple strings, like the FTP hello string.
+    The can also be more complex strings, parsed from binary protocols.
+    They also may contain bulk data, such as BASE64 encoded X.509 certificates
+    from SSL.
+
+    One complication is that since we can extract multiple types of 
+    information from the same connection, we can have more than one
+    result output for the same target in ProbeType_STATE.
+
+    From masscan's `banout`
+    Modified by lishRhungry 2024
+*/
 #ifndef DATA_CHAIN_H
 #define DATA_CHAIN_H
 
