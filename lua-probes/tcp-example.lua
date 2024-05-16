@@ -42,7 +42,6 @@ end
 -- @string ip_me ip of us
 -- @int port_me port of us
 -- @int index index of expected hello probe
--- @response string reponsed data (0 if it is timeout)
 -- @return integer positive for starting after_handle or index +1 to set next probe in dynamic_next
 -- @return boolean result if a successful response
 -- @return string classification of result
@@ -62,4 +61,20 @@ function Handle_response(ip_them, port_them, ip_me, port_me, index, response)
     end
 
     return 0, false, "unknown", "not matched", "not http"
+end
+
+
+--- To handle reponse timeout
+-- @string ip_them ip of target
+-- @int port_them port of target
+-- @string ip_me ip of us
+-- @int port_me port of us
+-- @int index index of expected hello probe
+-- @return integer positive for starting after_handle or index +1 to set next probe in dynamic_next
+-- @return boolean result if a successful response
+-- @return string classification of result
+-- @return string reason of classification
+-- @return string report of response (empty ret value if no report)
+function Handle_timeout(ip_them, port_them, ip_me, port_me, index)
+    return 0, false, "no service", "timeout", ""
 end
