@@ -45,7 +45,7 @@ struct ProbeTarget {
 };
 
 /**
- * Happens in Tx Thread or Rx Thread for different ScanModules.
+ * !Happens in Tx Thread or Rx Thread for different ScanModules.
  * 
  * Make hello payload data for a target.
  * We could embed a cookie to payload for response validating in ProbeType_UDP mode.
@@ -64,7 +64,7 @@ typedef size_t
     unsigned char *payload_buf);
 
 /**
- * Happens in Tx Thread or Rx Thread for different ScanModules.
+ * !Happens in Tx Thread or Rx Thread for different ScanModules.
  * This func would be called even if xtate won't send the payload.
  * 
  * !Must be implemented for ProbeType_TCP.
@@ -82,7 +82,7 @@ typedef size_t
 ****************************************************************************/
 
 /**
- * Happens in Rx Thread
+ * !Happens in Rx Thread
  * 
  * Validate whether the response is for us(because of stateless).
  * This is useful when ScanModule cannot validate through the
@@ -103,7 +103,7 @@ typedef bool
 );
 
 /**
- * Happens in Rx Handle Thread,
+ * !Happens in Rx Handle Thread,
  * Decide the results for the response
  * 
  * !Must be implemented in Non-STATE type.
@@ -125,7 +125,7 @@ typedef unsigned
     struct OutputItem *item);
 
 /**
- * Happens in Rx Thread,
+ * !Happens in Rx Thread,
  * Handle response timeout
  * 
  * !Must be implemented in Non-STATE type.
@@ -151,6 +151,8 @@ struct ProbeState {
 };
 
 /**
+ * !Happens in Rx Handle Thread,
+ * !Same (ip_them, port_them, ip_me, port_me) in same Thread
  * Do init for a connection
  * 
  * !Must be implemented for ProbeType STATE
@@ -163,6 +165,8 @@ typedef void
 (*probe_modules_conn_init)(struct ProbeState *state, struct ProbeTarget *target);
 
 /**
+ * !Happens in Rx Handle Thread,
+ * !Same (ip_them, port_them, ip_me, port_me) in same Thread
  * Make correspond hello payload data for a target.
  * 
  * !Must be implemented for ProbeType STATE
@@ -181,6 +185,8 @@ typedef void
 
 /**
  * 
+ * !Happens in Rx Handle Thread
+ * !Same (ip_them, port_them, ip_me, port_me) in same Thread
  * Interacting with target after receive data.
  * 
  * !Must be implemented for ProbeType_STATE.
@@ -205,6 +211,8 @@ typedef unsigned
     unsigned sizeof_px);
 
 /**
+ * !Happens in Rx Handle Thread,
+ * !Same (ip_them, port_them, ip_me, port_me) in same Thread
  * Do init for a connection
  * 
  * !Must be implemented for ProbeType STATE

@@ -64,7 +64,7 @@ struct ScanTmEvent {
 };
 
 /**
- * Happens in Tx Thread.
+ * !Happens in Tx Thread.
  * Do the first packet transmitting for every target.
  * 
  * !Must be implemented.
@@ -128,7 +128,7 @@ typedef void (*scan_modules_validate)(
     struct PreHandle *pre);
 
 /**
- * !Second Step Happens in Rx Thread.
+ * !Second Step Happens in Rx Handle Thread.
  * Do following things for a received packet:
  *  1. Is and How to output a result.
  *  2. How and What packet to response.
@@ -180,6 +180,7 @@ typedef void (*scan_modules_timeout)(
 ****************************************************************************/
 
 /**
+ * !Happens in Rx Thread.
  * Some internal status of ScanModules should be update in real time.
  * This func would be called in every loop of packet receiving just like
  * in real time.
