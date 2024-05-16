@@ -59,33 +59,30 @@ Unlike existing high-speed asynchronous scanners, Xtate enables richer scanning 
 This is how Xtate working internally (or you can check it by `xtate --intro`):
 
 ```
-+--------------------------------------------------------------------------------------------------+
-|                                                                                                  |
-|                                                                                                  |
-|                                 Tx Threads                                         Tx Threads    |
-|     New Targets Generation     ------------->        ScanModule Transmit          ----------->   |
-|   +-------------------------+                   +----------------------------+                   |
-|   | 1.Address Randomization |  ------------->   | (ProbeModule Hello Making) |    ----------->   |
-|   | 2.Scan Rate Control     |                   | (Timeout Event Creating)   |                   |
-|   +-------------------------+  ------------->   +----------------------------+    ----------->   |
-|                                                                                                  |
-|                                                                                ^                 |
-|                                                                                |                 |
-|       Packets need to be send   +-----------------------+  Send in priority    |                 |
-|   +---------------------------->| Pakcets Sending Queue +----------------------+                 |
-|   |                             +-----------------------+                                        |
-|   |                                                                                              |
-|   |                                                                                              |
-|   |          ScanModule Handling                                                                 |
-|   |   +------------------------------+   Handle Threads   ScanModule Validation                  |
-|   |   |  1.ProbeModule Validation    |   <-------------  +---------------------+                 |
-|   |   |  2.ProbeModule Parsing       |                   | 1.Record            |    Rx  Thread   |
-|   |   |  3.OutputModule save results |   <-------------  | 2.Deduplication     |  <-----------   |
-|   |   |  4.More packets to send      |                   | 3.Timeout handling  |                 |
-|   +---+    (ProbeModule Hello Making)|   <-------------  +---------------------+                 |
-|       +------------------------------+                                                           |
-|                                                                                                  |
-+--------------------------------------------------------------------------------------------------+
++---------------------------------------------------------------------------------------------+
+|                                                                                             |
+|    New Targets Generation       Tx Threads         ScanModule Transmit         Tx Threads   |
+|  +-------------------------+  ------------->  +---------------------------+   ----------->  |
+|  | 1.Address Randomization |  ------------->  |(ProbeModule Hello Making) |   ----------->  |
+|  | 2.Scan Rate Control     |  ------------->  |(Timeout Event Creating)   |   ----------->  |
+|  +-------------------------+                  +---------------------------+                 |
+|                                                                                             |
+|                                                                             ^               |
+|                                                                             |               |
+|      Packets need to be send   +-----------------------+  Send in priority  |               |
+|  +---------------------------->| Pakcets Sending Queue +--------------------+               |
+|  |                             +-----------------------+                                    |
+|  |                                                                                          |
+|  |                                                                                          |
+|  |          ScanModule Handling                        ScanModule Validation                |
+|  |   +-----------------------------+                +-----------------------+               |
+|  |   | 1.ProbeModule Handling      | Handle Threads | 1.Packet Record       |   Rx  Thread  |
+|  |   | 2.OutputModule save results | <------------- | 2.Deduplication       | <-----------  |
+|  +---| 3.More packets to send      | <------------- | 3.Timeout handling    |               |
+|      |  (ProbeModule Hello Making) | <------------- | 4.ProbeModule Validate|               |
+|      +-----------------------------+                +-----------------------+               |
+|                                                                                             |
++---------------------------------------------------------------------------------------------+
 ```
 
 The most important of these are the Scan module and the Probe module.
@@ -96,41 +93,39 @@ Both Scan modules and Probe modules have own sub-parameters and you can check de
 This is what ScanModules, ProbeModules and "all-stack" mean (or you can check it by `xtate --intro`):
 
 ```
-+-----------------------------------------------------------------------+
-|   Free supporting for new scan strategies and protocols through       |
-|   flexible ScanModules and ProbeModules creating and combination      |
-|                                                                       |
-|                                                                       |
-|      +--------------------+           +-------------------------+     |
-|      |  Application Layer +---------->|                         |     |
-|      +--------------------+           |     ProbeModules        |     |
-|                                       |                         |     |
-|      +--------------------+           |       e.g. HTTP         |     |
-|      | Presentation Layer +---------->|            DNS          |     |
-|      +--------------------+           |            Netbios      |     |
-|                                       |            TLS          |     |
-|      +--------------------+           |                         |     |
-|      |   Session Layer    +---------->|                         |     |
-|      +--------------------+           +-------------------------+     |
-|                                                                       |
-|      +--------------------+           +-------------------------+     |
-|      |   Transport Layer  +---------->|                         |     |
-|      +--------------------+           |      ScanModules        |     |
-|                                       |                         |     |
-|      +--------------------+           |       e.g. TCP          |     |
-|      |   Network Layer    +---------->|            UDP          |     |
-|      +--------------------+           |            ICMP         |     |
-|                                       |            NDP          |     |
-|      +--------------------+           |            ARP          |     |
-|      |   Data-link Layer  +---------->|                         |     |
-|      +--------------------+           +-------------------------+     |
-|                                                                       |
-|      +--------------------+                                           |
-|      |   Physical Layer   +---------->     Stop kidding!!!            |
-|      +--------------------+                                           |
-|                                                                       |
-|                                                                       |
-+-----------------------------------------------------------------------+
++----------------------------------------------------------------------+
+|    Free supporting for new scan strategies and protocols through     |
+|    flexible ScanModules and ProbeModules creating and combination    |
+|                                                                      |
+|     +--------------------+           +-------------------------+     |
+|     |  Application Layer +---------->|                         |     |
+|     +--------------------+           |     ProbeModules        |     |
+|                                      |                         |     |
+|     +--------------------+           |       e.g. HTTP         |     |
+|     | Presentation Layer +---------->|            DNS          |     |
+|     +--------------------+           |            Netbios      |     |
+|                                      |            TLS          |     |
+|     +--------------------+           |                         |     |
+|     |   Session Layer    +---------->|                         |     |
+|     +--------------------+           +-------------------------+     |
+|                                                                      |
+|     +--------------------+           +-------------------------+     |
+|     |   Transport Layer  +---------->|                         |     |
+|     +--------------------+           |      ScanModules        |     |
+|                                      |                         |     |
+|     +--------------------+           |       e.g. TCP          |     |
+|     |   Network Layer    +---------->|            UDP          |     |
+|     +--------------------+           |            ICMP         |     |
+|                                      |            NDP          |     |
+|     +--------------------+           |            ARP          |     |
+|     |   Data-link Layer  +---------->|                         |     |
+|     +--------------------+           +-------------------------+     |
+|                                                                      |
+|     +--------------------+                                           |
+|     |   Physical Layer   +---------->     Stop kidding!!!            |
+|     +--------------------+                                           |
+|                                                                      |
++----------------------------------------------------------------------+
 ```
 
 Xtate allows and encourages users to write their own modules to accomplish specific scanning tasks.
