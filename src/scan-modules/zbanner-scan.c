@@ -181,13 +181,13 @@ zbanner_transmit(
     *len = tcp_create_packet(
         target->ip_them, target->port_them, target->ip_me, src_port_start+target->index,
         seqno, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_LEN);
-    
+
     if (zbanner_conf.is_port_timeout) {
         event->need_timeout = 1;
         event->dedup_type   = 0;
         event->port_me      = src_port_start+target->index;
     }
- 
+
     /*multi-probe Multi_Direct*/
     if (ZBannerScan.probe->multi_mode==Multi_Direct
         && target->index+1<ZBannerScan.probe->multi_num)

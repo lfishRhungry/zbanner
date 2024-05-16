@@ -41,9 +41,7 @@ static unsigned src_port_start;
 
 struct TcpStateConf {
     unsigned conn_timeout;
-    unsigned is_port_timeout:1;       /*--port-tm*/
     unsigned is_port_success:1;       /*--port-success*/
-    unsigned is_port_failure:1;       /*--port-fail*/
     unsigned record_ttl:1;
     unsigned record_ipid:1;
     unsigned record_win:1;
@@ -81,32 +79,12 @@ static enum Config_Res SET_record_win(void *conf, const char *name, const char *
     return CONF_OK;
 }
 
-static enum Config_Res SET_port_timeout(void *conf, const char *name, const char *value)
-{
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    tcpstate_conf.is_port_timeout = parseBoolean(value);
-
-    return CONF_OK;
-}
-
 static enum Config_Res SET_port_success(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tcpstate_conf.is_port_success = parseBoolean(value);
-
-    return CONF_OK;
-}
-
-static enum Config_Res SET_port_failure(void *conf, const char *name, const char *value)
-{
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    tcpstate_conf.is_port_failure = parseBoolean(value);
 
     return CONF_OK;
 }
@@ -136,26 +114,12 @@ static struct ConfigParam tcpstate_parameters[] = {
         "Specifies the max existing time of each connection."
     },
     {
-        "port-timeout",
-        SET_port_timeout,
-        F_BOOL,
-        {"timeout-port", "port-tm", "tm-port", 0},
-        "Use timeout for port scanning(openness detection) while in timeout mode."
-    },
-    {
         "port-success",
         SET_port_success,
         F_BOOL,
         {"success-port", 0},
         "Let port opening(contains zero syn-ack) results as success level."
         "(Default is info level)"
-    },
-    {
-        "port-failure",
-        SET_port_failure,
-        F_BOOL,
-        {"failure-port", "port-fail", "fail-port", 0},
-        "Let port closed results as failure level.(Default is info level)"
     },
     {
         "record-ttl",
@@ -277,7 +241,6 @@ tcpstate_handle(
 {
     /*in default*/
     item->no_output = 1;
-    item->level = Output_INFO;
 
     struct TCP_Control_Block   *tcb;
     struct TCP_ConnectionTable *tcpcon;
