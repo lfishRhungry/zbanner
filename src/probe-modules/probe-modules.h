@@ -45,7 +45,7 @@ struct ProbeTarget {
 };
 
 /**
- * !Happens in Tx Thread or Rx Thread for different ScanModules.
+ * !Happens in Tx Thread or Rx Handle Thread for different ScanModules.
  * 
  * Make hello payload data for a target.
  * We could embed a cookie to payload for response validating in ProbeType_UDP mode.
