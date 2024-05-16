@@ -486,7 +486,7 @@ static int main_scan(struct Xconf *xconf) {
 
         total_successed = xconf->output.total_successed;
         total_failed    = xconf->output.total_failed;
-        total_info      = xconf->output.total_failed;
+        total_info      = xconf->output.total_info;
         total_tm_event  = rx_thread->total_tm_event;
         
         if (rx_thread->dispatch_q && rx_thread->handle_q) {
