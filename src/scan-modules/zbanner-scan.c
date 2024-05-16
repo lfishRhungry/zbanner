@@ -15,9 +15,42 @@ struct ZBannerConf {
     unsigned is_port_timeout:1;       /*--port-tm*/
     unsigned is_port_success:1;       /*--port-success*/
     unsigned is_port_failure:1;       /*--port-fail*/
+    unsigned record_ttl:1;
+    unsigned record_ipid:1;
+    unsigned record_win:1;
 };
 
 static struct ZBannerConf zbanner_conf = {0};
+
+static enum Config_Res SET_record_ttl(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.record_ttl = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_record_ipid(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.record_ipid = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_record_win(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.record_win = parseBoolean(value);
+
+    return CONF_OK;
+}
 
 static enum Config_Res SET_banner_timeout(void *conf, const char *name, const char *value)
 {
@@ -88,6 +121,27 @@ static struct ConfigParam zbanner_parameters[] = {
         F_BOOL,
         {"failure-port", "port-fail", "fail-port", 0},
         "Let port closed results as failure level.(Default is info level)"
+    },
+    {
+        "record-ttl",
+        SET_record_ttl,
+        F_BOOL,
+        {"ttl", 0},
+        "Records TTL for IPv4 or Hop Limit for IPv6 in SYN-ACK or RST."
+    },
+    {
+        "record-ipid",
+        SET_record_ipid,
+        F_BOOL,
+        {"ipid", 0},
+        "Records IPID of SYN-ACK or RST just for IPv4."
+    },
+    {
+        "record-win",
+        SET_record_win,
+        F_BOOL,
+        {"win", "window", 0},
+        "Records TCP window size of SYN-ACK."
     },
 
     {0}
@@ -230,6 +284,19 @@ zbanner_handle(
 
         uint16_t win_them =
             TCP_WIN(recved->packet, recved->parsed.transport_offset);
+
+        int rpt_tmp = 0;
+
+        if (zbanner_conf.record_ttl)
+            rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+                "[ttl=%d]", recved->parsed.ip_ttl);
+        if (zbanner_conf.record_ipid && recved->parsed.src_ip.version==4)
+            rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+                "[ipid=%d]", recved->parsed.ip_v4_id);
+        if (zbanner_conf.record_win)
+            rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+                "[win=%d]", win_them);
+
         if (win_them == 0) {
             safe_strcpy(item->classification, OUTPUT_CLS_LEN, "zerowin");
         } else {

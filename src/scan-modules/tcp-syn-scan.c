@@ -86,7 +86,7 @@ static struct ConfigParam tcpsyn_parameters[] = {
         SET_record_win,
         F_BOOL,
         {"win", "window", 0},
-        "Records TCP window size."
+        "Records TCP window size of SYN-ACK."
     },
 
     {0}
