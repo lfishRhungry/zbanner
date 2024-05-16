@@ -40,7 +40,7 @@ static uint64_t *tcb_count;
 static unsigned src_port_start;
 
 struct TcpStateConf {
-    unsigned conn_timeout;
+    unsigned conn_expire;
     unsigned is_port_success:1;       /*--port-success*/
     unsigned record_ttl:1;
     unsigned record_ipid:1;
@@ -89,7 +89,7 @@ static enum Config_Res SET_port_success(void *conf, const char *name, const char
     return CONF_OK;
 }
 
-static enum Config_Res SET_conn_timeout(void *conf, const char *name, const char *value)
+static enum Config_Res SET_conn_expire(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
 
@@ -100,17 +100,17 @@ static enum Config_Res SET_conn_timeout(void *conf, const char *name, const char
         return CONF_ERR;
     }
 
-    tcpstate_conf.conn_timeout = tm;
+    tcpstate_conf.conn_expire = tm;
 
     return CONF_OK;
 }
 
 static struct ConfigParam tcpstate_parameters[] = {
     {
-        "conn-timeout",
-        SET_conn_timeout,
+        "conn-expire",
+        SET_conn_expire,
         F_NUMABLE,
-        {"conn-timeout", "timeout", "conn-tm", "tm", 0},
+        {"expire", 0},
         "Specifies the max existing time of each connection."
     },
     {
@@ -148,8 +148,8 @@ static struct ConfigParam tcpstate_parameters[] = {
 
 static bool tcpstate_global_init(const struct Xconf *xconf)
 {
-    if (tcpstate_conf.conn_timeout <= 0)
-        tcpstate_conf.conn_timeout = 30;
+    if (tcpstate_conf.conn_expire <= 0)
+        tcpstate_conf.conn_expire = 30;
     
     /*create rx_handler_count TCP tables for thread safe*/
     tcpcon_set.count   = xconf->rx_handler_count;
@@ -163,7 +163,7 @@ static bool tcpstate_global_init(const struct Xconf *xconf)
             xconf->stack, &global_tmplset->pkts[Tmpl_Type_TCP],
             &global_tmplset->pkts[Tmpl_Type_TCP_SYN],
             (struct Output *)(&xconf->output),
-            tcpstate_conf.conn_timeout, xconf->seed);
+            tcpstate_conf.conn_expire, xconf->seed);
     }
  
     tcb_count = &((struct Xconf *)xconf)->tcb_count;

@@ -169,7 +169,7 @@ struct TCP_ConnectionTable {
     struct stack_t                   *stack;
     struct Output                    *out;
 
-    unsigned                          timeout_conn;
+    unsigned                          expire;
     unsigned                          count;
     unsigned                          mask;
     unsigned                          src_port_start;
@@ -345,9 +345,9 @@ tcpcon_create_table(size_t entry_count,
     }
     memset(tcpcon->entries, 0, entry_count * sizeof(*tcpcon->entries));
 
-    tcpcon->timeout_conn = connection_timeout;
-    if (tcpcon->timeout_conn == 0)
-        tcpcon->timeout_conn = 30; /* half a minute before destroying tcb */
+    tcpcon->expire = connection_timeout;
+    if (tcpcon->expire == 0)
+        tcpcon->expire = 30; /* half a minute before destroying tcb */
 
     tcpcon->tcp_template         = tcp_template;
     tcpcon->syn_template         = syn_template;
@@ -1103,7 +1103,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
     /* Make sure no connection lasts longer than specified seconds */
     if (what == TCP_WHAT_TIMEOUT) {
-        if (tcb->when_created + tcpcon->timeout_conn < secs) {
+        if (tcb->when_created + tcpcon->expire < secs) {
             LOGip(LEVEL_DETAIL, tcb->ip_them, tcb->port_them,
                 "%s                \n",
                 "CONNECTION TIMEOUT---");
