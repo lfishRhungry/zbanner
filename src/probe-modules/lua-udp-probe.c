@@ -519,7 +519,6 @@ struct ProbeModule LuaUdpProbe = {
         " threads at least and should be careful to thread-safe problems.",
     .global_init_cb                        = &luaudp_global_init,
     .make_payload_cb                       = &luaudp_make_payload,
-    .get_payload_length_cb                 = NULL,
     .validate_response_cb                  = &luaudp_validate_response,
     .handle_response_cb                    = &luaudp_handle_response,
     .close_cb                              = &luaudp_close,

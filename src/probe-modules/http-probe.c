@@ -752,12 +752,6 @@ http_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    if (sizeof_px==0) {
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no service");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
-        item->level = Output_FAILURE;
-        return 0;
-    }
 
 #ifndef NOT_FOUND_PCRE2
 
@@ -807,6 +801,15 @@ http_handle_response(
     return 0;
 }
 
+static unsigned
+http_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+{
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no service");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+    item->level = Output_FAILURE;
+    return 0;
+}
+
 static void
 http_close()
 {
@@ -848,7 +851,7 @@ struct ProbeModule HttpProbe = {
     .global_init_cb                    = &http_global_init,
     .make_payload_cb                   = &http_make_payload,
     .get_payload_length_cb             = &http_get_payload_length,
-    .validate_response_cb              = NULL,
     .handle_response_cb                = &http_handle_response,
+    .handle_timeout_cb                 = &http_handle_timeout,
     .close_cb                          = &http_close,
 };

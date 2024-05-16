@@ -565,11 +565,6 @@ snmp_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    if (px==0) {
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
-        return 0;
-    }
 
     unsigned request_id = 0;
     struct DataChain dach[1];
@@ -594,6 +589,14 @@ snmp_handle_response(
     return 0;
 }
 
+static unsigned
+snmp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+{
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+    return 0;
+}
+
 struct ProbeModule SnmpProbe = {
     .name       = "snmp",
     .type       = ProbeType_UDP,
@@ -606,10 +609,10 @@ struct ProbeModule SnmpProbe = {
         "NOTE: SnmpProbe is capable of obtaining the basic info on snmp(v1 or v2c)"
         " theoretically but cannot identifying whether the port is serving of snmp"
         " protocol.",
-    .global_init_cb                 = &snmp_global_init,
-    .make_payload_cb                = &snmp_make_payload,
-    .get_payload_length_cb          = NULL,
-    .validate_response_cb           = &probe_all_valid,
-    .handle_response_cb             = &snmp_handle_response,
-    .close_cb                       = &probe_close_nothing,
+    .global_init_cb                          = &snmp_global_init,
+    .make_payload_cb                         = &snmp_make_payload,
+    .validate_response_cb                    = &probe_all_valid,
+    .handle_response_cb                      = &snmp_handle_response,
+    .handle_timeout_cb                       = &snmp_handle_timeout,
+    .close_cb                                = &probe_close_nothing,
 };

@@ -212,32 +212,6 @@ nmaptcp_handle_response(
     struct NmapServiceProbeList *list = nmaptcp_conf.service_probes;
     unsigned next_probe = 0;
 
-    /**
-     * no response
-     * */
-    if (sizeof_px==0) {
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
-        snprintf(item->report, OUTPUT_RPT_LEN, "[probe: %s]",
-            list->probes[target->index]->name);
-
-        /**
-         * We have to check whether it is the last available probe.
-         * */
-        unsigned next_probe = nmapservice_next_probe_index(list, target->index,
-            nmaptcp_conf.no_port_limit?0:target->port_them,
-            nmaptcp_conf.rarity, NMAP_IPPROTO_TCP,
-            nmaptcp_conf.softmatch);
-
-        if (next_probe) {
-            return next_probe+1;
-        } else {
-            /*last availabe probe*/
-            item->level = Output_FAILURE;
-            return 0;
-        }
-    }
-
     struct ServiceProbeMatch *match = nmapservice_match_service(list,
         target->index, px, sizeof_px,
         NMAP_IPPROTO_TCP, nmaptcp_conf.softmatch);
@@ -278,6 +252,33 @@ nmaptcp_handle_response(
     return next_probe+1;
 }
 
+static unsigned
+nmaptcp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+{
+    struct NmapServiceProbeList *list = nmaptcp_conf.service_probes;
+
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
+    snprintf(item->report, OUTPUT_RPT_LEN, "[probe: %s]",
+        list->probes[target->index]->name);
+
+    /**
+     * We have to check whether it is the last available probe.
+     * */
+    unsigned next_probe = nmapservice_next_probe_index(list, target->index,
+        nmaptcp_conf.no_port_limit?0:target->port_them,
+        nmaptcp_conf.rarity, NMAP_IPPROTO_TCP,
+        nmaptcp_conf.softmatch);
+
+    if (next_probe) {
+        return next_probe+1;
+    } else {
+        /*last availabe probe*/
+        item->level = Output_FAILURE;
+        return 0;
+    }
+}
+
 struct ProbeModule NmapTcpProbe = {
     .name       = "nmap-tcp",
     .type       = ProbeType_TCP,
@@ -299,12 +300,12 @@ struct ProbeModule NmapTcpProbe = {
         "NmapTcp Probe cannot do this type of hard matching because stateless "
         "mechanism doesn't support \"Hello Wait\".\n"
         "Dependencies: PCRE2.",
-    .global_init_cb                    = &nmaptcp_global_init,
-    .make_payload_cb                   = &nmaptcp_make_payload,
-    .get_payload_length_cb             = &nmaptcp_get_payload_length,
-    .validate_response_cb              = NULL,
-    .handle_response_cb                = &nmaptcp_handle_response,
-    .close_cb                          = &nmaptcp_close,
+    .global_init_cb                          = &nmaptcp_global_init,
+    .make_payload_cb                         = &nmaptcp_make_payload,
+    .get_payload_length_cb                   = &nmaptcp_get_payload_length,
+    .handle_response_cb                      = &nmaptcp_handle_response,
+    .handle_timeout_cb                       = &nmaptcp_handle_timeout,
+    .close_cb                                = &nmaptcp_close,
 };
 
 #endif /*ifndef NOT_FOUND_PCRE2*/

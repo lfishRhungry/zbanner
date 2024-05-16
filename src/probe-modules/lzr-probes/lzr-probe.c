@@ -265,24 +265,6 @@ lzr_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    if (sizeof_px==0) {
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
-        snprintf(item->report, OUTPUT_RPT_LEN, "[handshake: %s]",
-            lzr_conf.handshake[target->index]->name);
-        /**
-         * Set last unmatching as failure in normal mode.
-         * Or all unmatching as failure if force-all-handshakes
-         * */
-        if (target->index == lzr_conf.hs_count-1 || lzr_conf.force_all_handshakes)
-            item->level = Output_FAILURE;
-        /*last handshake*/
-        if (target->index != lzr_conf.hs_count-1) {
-            return target->index+2;
-        } else {
-            return 0;
-        }
-    }
     /**
      * I think it is long enough.
      * Some one has time to make it safe?
@@ -346,6 +328,27 @@ lzr_handle_response(
     return 0;
 }
 
+static unsigned
+lzr_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+{
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
+    snprintf(item->report, OUTPUT_RPT_LEN, "[handshake: %s]",
+        lzr_conf.handshake[target->index]->name);
+    /**
+     * Set last unmatching as failure in normal mode.
+     * Or all unmatching as failure if force-all-handshakes
+     * */
+    if (target->index == lzr_conf.hs_count-1 || lzr_conf.force_all_handshakes)
+        item->level = Output_FAILURE;
+    /*last handshake*/
+    if (target->index != lzr_conf.hs_count-1) {
+        return target->index+2;
+    } else {
+        return 0;
+    }
+}
+
 void lzr_close()
 {
     /*close for every handshake*/
@@ -369,10 +372,10 @@ struct ProbeModule LzrProbe = {
         "with all LZR handshakes.\n"
         "I suggest you to specify `--timeout` parameter because LzrProbe performs"
         " better by recognizing the status of non-responsing.",
-    .global_init_cb                        = &lzr_global_init,
-    .make_payload_cb                       = &lzr_make_payload,
-    .get_payload_length_cb                 = &lzr_get_payload_length,
-    .validate_response_cb                  = NULL,
-    .handle_response_cb                    = &lzr_handle_response,
-    .close_cb                              = &lzr_close,
+    .global_init_cb                          = &lzr_global_init,
+    .make_payload_cb                         = &lzr_make_payload,
+    .get_payload_length_cb                   = &lzr_get_payload_length,
+    .handle_response_cb                      = &lzr_handle_response,
+    .handle_timeout_cb                       = &lzr_handle_timeout,
+    .close_cb                                = &lzr_close,
 };

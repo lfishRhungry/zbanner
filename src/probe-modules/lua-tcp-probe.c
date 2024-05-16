@@ -515,7 +515,6 @@ struct ProbeModule LuaTcpProbe = {
     .global_init_cb                        = &luatcp_global_init,
     .make_payload_cb                       = &luatcp_make_payload,
     .get_payload_length_cb                 = &luatcp_get_payload_length,
-    .validate_response_cb                  = NULL,
     .handle_response_cb                    = &luatcp_handle_response,
     .close_cb                              = &luatcp_close,
 };

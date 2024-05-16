@@ -315,6 +315,13 @@ void probe_conn_close_nothing(struct ProbeState *state, struct ProbeTarget *targ
     return;
 }
 
+unsigned
+probe_no_timeout(struct ProbeTarget *target, struct OutputItem *item)
+{
+    item->no_output = 1;
+    return 0;
+}
+
 
 bool probe_all_valid(
     struct ProbeTarget *target,

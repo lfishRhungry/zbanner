@@ -137,14 +137,6 @@ jarm_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    /*handle timeout*/
-    if (sizeof_px == 0) {
-        item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no jarm");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
-        snprintf(item->report, OUTPUT_RPT_LEN, "JARM[%d]", target->index);
-        return 0;
-    }
     /**
      * The min length for ALERT
      * eg. \x15\x03\x01\x00\x02\x02
@@ -178,6 +170,16 @@ jarm_handle_response(
     return 0;
 }
 
+static unsigned
+jarm_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+{
+    item->level = Output_FAILURE;
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no jarm");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+    snprintf(item->report, OUTPUT_RPT_LEN, "JARM[%d]", target->index);
+    return 0;
+}
+
 struct ProbeModule JarmProbe = {
     .name       = "jarm",
     .type       = ProbeType_TCP,
@@ -190,12 +192,12 @@ struct ProbeModule JarmProbe = {
         "be analyzed to get JARM fingerprint of the target TLS stack for different "
         "purposes.\n"
         "Dependencies: OpenSSL.",
-    .global_init_cb                        = &probe_global_init_nothing,
-    .make_payload_cb                       = &jarm_make_payload,
-    .get_payload_length_cb                 = &jarm_get_payload_length,
-    .validate_response_cb                  = NULL,
-    .handle_response_cb                    = &jarm_handle_response,
-    .close_cb                              = &probe_close_nothing,
+    .global_init_cb                          = &probe_global_init_nothing,
+    .make_payload_cb                         = &jarm_make_payload,
+    .get_payload_length_cb                   = &jarm_get_payload_length,
+    .handle_response_cb                      = &jarm_handle_response,
+    .handle_timeout_cb                       = &jarm_handle_timeout,
+    .close_cb                                = &probe_close_nothing,
 };
 
 #endif /*ifndef NOT_FOUND_OPENSSL*/

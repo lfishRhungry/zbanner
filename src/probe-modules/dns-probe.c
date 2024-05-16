@@ -140,12 +140,6 @@ dns_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    if (sizeof_px==0) {
-        item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no reply");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
-        return 0;
-    }
 
     dns_pkt_t dns_pkt;
     
@@ -197,6 +191,15 @@ dns_handle_response(
     return 0;
 }
 
+static unsigned
+dns_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+{
+    item->level = Output_FAILURE;
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no reply");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
+    return 0;
+}
+
 static void dns_close()
 {
     if (dns_conf.req_name) {
@@ -219,10 +222,10 @@ struct ProbeModule DnsProbe = {
         " Unreachable sending, dns response retransmission will happen and waste"
         " resource both on scanner and targets. And an interesting thing will "
         "happen--every retransmited dns reply carries a different answer.",
-    .global_init_cb                 = &dns_global_init,
-    .make_payload_cb                = &dns_make_payload,
-    .get_payload_length_cb          = NULL,
-    .validate_response_cb           = &dns_validate_response,
-    .handle_response_cb             = &dns_handle_response,
-    .close_cb                       = &dns_close,
+    .global_init_cb                          = &dns_global_init,
+    .make_payload_cb                         = &dns_make_payload,
+    .validate_response_cb                    = &dns_validate_response,
+    .handle_response_cb                      = &dns_handle_response,
+    .handle_timeout_cb                       = &dns_handle_timeout,
+    .close_cb                                = &dns_close,
 };

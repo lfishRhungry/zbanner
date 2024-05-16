@@ -34,16 +34,19 @@ lzr_x11_handle_reponse(
     struct OutputItem *item)
 {
     item->level = Output_FAILURE;
-
-    if (sizeof_px==0) {
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
-        return 0;
-    }
-    
+    if (sizeof_px<15) {}
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
 
+    return 0;
+}
+
+static unsigned
+lzr_x11_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+{
+    item->level = Output_FAILURE;
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not x11");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
     return 0;
 }
 
@@ -58,7 +61,7 @@ struct ProbeModule LzrX11Probe = {
     .global_init_cb                          = &probe_global_init_nothing,
     .make_payload_cb                         = &lzr_x11_make_payload,
     .get_payload_length_cb                   = &lzr_x11_get_payload_length,
-    .validate_response_cb                    = NULL,
     .handle_response_cb                      = &lzr_x11_handle_reponse,
+    .handle_timeout_cb                       = &lzr_x11_handle_timeout,
     .close_cb                                = &probe_close_nothing,
 };

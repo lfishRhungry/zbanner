@@ -81,12 +81,6 @@ lzr_tls_handle_reponse(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    if (sizeof_px==0) {
-        item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not tls");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
-        return 0;
-    }
 
     if (sizeof_px < 3) {
         item->level = Output_FAILURE;
@@ -137,6 +131,15 @@ lzr_tls_handle_reponse(
     return 0;
 }
 
+static unsigned
+lzr_tls_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+{
+    item->level = Output_FAILURE;
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not tls");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
+    return 0;
+}
+
 struct ProbeModule LzrTlsProbe = {
     .name       = "lzr-tls",
     .type       = ProbeType_TCP,
@@ -148,7 +151,7 @@ struct ProbeModule LzrTlsProbe = {
     .global_init_cb                          = &lzr_tls_global_init,
     .make_payload_cb                         = &lzr_tls_make_payload,
     .get_payload_length_cb                   = &lzr_tls_get_payload_length,
-    .validate_response_cb                    = NULL,
     .handle_response_cb                      = &lzr_tls_handle_reponse,
+    .handle_timeout_cb                       = &lzr_tls_handle_timeout,
     .close_cb                                = &probe_close_nothing,
 };

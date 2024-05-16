@@ -111,16 +111,6 @@ udp_validate(
         && recved->is_myport) {
         pre->go_record = 1;
 
-        /**
-         * UDP without data
-         * It's conflict with `handle_reponse_cb` of ProbeModule
-         * in semantic.
-         * But ProbeModule is no need to handle responsed packets
-         * without any data.
-         * So I think its OK and Just record it*/
-        if (!recved->parsed.app_length)
-            return;
-
         struct ProbeTarget ptarget = {
             .ip_them   = recved->parsed.src_ip,
             .ip_me     = recved->parsed.dst_ip,
@@ -319,8 +309,7 @@ udp_timeout(
         .index     = event->port_me-src_port_start,
     };
 
-    unsigned is_multi = UdpScan.probe->handle_response_cb(&ptarget,
-        NULL, 0, item);
+    unsigned is_multi = UdpScan.probe->handle_timeout_cb(&ptarget, item);
 
     /*for multi-probe Multi_AfterHandle*/
     if (UdpScan.probe->multi_mode==Multi_AfterHandle&&is_multi

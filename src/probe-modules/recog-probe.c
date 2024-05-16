@@ -281,12 +281,6 @@ recog_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    if (sizeof_px==0) {
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no service");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
-        item->level = Output_FAILURE;
-        return 0;
-    }
 
     const char *match_res = match_recog_fp(recog_conf.recog_fp, px, sizeof_px);
 
@@ -305,6 +299,15 @@ recog_handle_response(
         }
     }
 
+    return 0;
+}
+
+static unsigned
+recog_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+{
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no service");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+    item->level = Output_FAILURE;
     return 0;
 }
 
@@ -345,12 +348,12 @@ struct ProbeModule RecogProbe = {
         " the identidying result because our probe just output the first matched"
         " result.\n"
         "Dependencies: PCRE2, LibXml2.",
-    .global_init_cb                    = &recog_global_init,
-    .make_payload_cb                   = &recog_make_payload,
-    .get_payload_length_cb             = &recog_get_payload_length,
-    .validate_response_cb              = NULL,
-    .handle_response_cb                = &recog_handle_response,
-    .close_cb                          = &recog_close,
+    .global_init_cb                          = &recog_global_init,
+    .make_payload_cb                         = &recog_make_payload,
+    .get_payload_length_cb                   = &recog_get_payload_length,
+    .handle_response_cb                      = &recog_handle_response,
+    .handle_timeout_cb                       = &recog_handle_timeout,
+    .close_cb                                = &recog_close,
 };
 
 #endif /*ifndef NOT_FOUND_PCRE2*/

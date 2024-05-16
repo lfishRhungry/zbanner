@@ -92,7 +92,7 @@ typedef size_t
  * !Must be thread safe.
  * 
  * @param target info of a target
- * @param px response data
+ * @param px response data, it can be zero
  * @param sizeof_px len of reponse
  * @return TRUE if the response is for us.
 */
@@ -103,7 +103,7 @@ typedef bool
 );
 
 /**
- * Happens in Rx Thread,
+ * Happens in Rx Handle Thread,
  * Decide the results for the response
  * 
  * !Must be implemented in Non-STATE type.
@@ -111,7 +111,7 @@ typedef bool
  * 
  * @param target info of a target
  * @param px response data
- * @param sizeof_px len of reponse (it can be 0 for no response while timeouted)
+ * @param sizeof_px len of reponse, must>0
  * @param item to define output content.
  * @return true for starting multi-probe in Multi_AfterHandle mode
  * or num=index+1 to set next probe in Multi_DynamicNext mode.
@@ -120,6 +120,23 @@ typedef unsigned
 (*probe_modules_handle_response)(
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
+    struct OutputItem *item);
+
+/**
+ * Happens in Rx Thread,
+ * Handle response timeout
+ * 
+ * !Must be implemented in Non-STATE type.
+ * !Must be thread safe.
+ * 
+ * @param target info of a target
+ * @param item to define output content.
+ * @return true for starting multi-probe in Multi_AfterHandle mode
+ * or num=index+1 to set next probe in Multi_DynamicNext mode.
+*/
+typedef unsigned
+(*probe_modules_timeout)(
+    struct ProbeTarget *target,
     struct OutputItem *item);
 
 /***************************************************************************
@@ -242,6 +259,7 @@ struct ProbeModule
     probe_modules_validate_response             validate_response_cb;
     /*for stateless response*/
     probe_modules_handle_response               handle_response_cb;
+    probe_modules_timeout                       handle_timeout_cb;
     /*for stateful process*/
     probe_modules_conn_init                     conn_init_cb;
     probe_modules_make_hello                    make_hello_cb;
@@ -297,6 +315,11 @@ void probe_close_nothing();
 void probe_conn_init_nothing(struct ProbeState *state, struct ProbeTarget *target);
 
 void probe_conn_close_nothing(struct ProbeState *state, struct ProbeTarget *target);
+
+unsigned
+probe_no_timeout(
+    struct ProbeTarget *target,
+    struct OutputItem *item);
 
 bool probe_all_valid(
     struct ProbeTarget *target,

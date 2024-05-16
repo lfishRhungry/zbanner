@@ -524,8 +524,7 @@ zbanner_timeout(
         .index     = event->port_me-src_port_start,
     };
 
-    unsigned is_multi = ZBannerScan.probe->handle_response_cb(&ptarget,
-        NULL, 0, item);
+    unsigned is_multi = ZBannerScan.probe->handle_timeout_cb(&ptarget, item);
 
     /*multi-probe Multi_AfterHandle*/
     if (ZBannerScan.probe->multi_mode==Multi_AfterHandle

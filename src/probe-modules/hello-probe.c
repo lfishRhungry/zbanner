@@ -320,12 +320,6 @@ hello_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    if (sizeof_px==0) {
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no service");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
-        item->level = Output_FAILURE;
-        return 0;
-    }
 
 #ifndef NOT_FOUND_PCRE2
 
@@ -375,6 +369,15 @@ hello_handle_response(
     return 0;
 }
 
+static unsigned
+hello_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+{
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no service");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+    item->level = Output_FAILURE;
+    return 0;
+}
+
 static void
 hello_close()
 {
@@ -416,10 +419,10 @@ struct ProbeModule HelloProbe = {
         "match the response as successed. It is used to test POC immediatly.\n"
         "NOTE: If no hello data was specified, HelloProbe would just wait response.\n"
         "Dependencies: PCRE2 for regex.",
-    .global_init_cb                    = &hello_global_init,
-    .make_payload_cb                   = &hello_make_payload,
-    .get_payload_length_cb             = &hello_get_payload_length,
-    .validate_response_cb              = NULL,
-    .handle_response_cb                = &hello_handle_response,
-    .close_cb                          = &hello_close,
+    .global_init_cb                          = &hello_global_init,
+    .make_payload_cb                         = &hello_make_payload,
+    .get_payload_length_cb                   = &hello_get_payload_length,
+    .handle_response_cb                      = &hello_handle_response,
+    .handle_timeout_cb                       = &hello_handle_timeout,
+    .close_cb                                = &hello_close,
 };

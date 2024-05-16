@@ -36,12 +36,6 @@ lzr_smb_handle_reponse(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    if (sizeof_px==0) {
-        item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not smb");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
-        return 0;
-    }
 
     if (safe_memmem(px, sizeof_px, "SMB", strlen("SMB"))) {
         item->level = Output_SUCCESS;
@@ -57,6 +51,15 @@ lzr_smb_handle_reponse(
     return 0;
 }
 
+static unsigned
+lzr_smb_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+{
+    item->level = Output_FAILURE;
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not smb");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
+    return 0;
+}
+
 struct ProbeModule LzrSmbProbe = {
     .name       = "lzr-smb",
     .type       = ProbeType_TCP,
@@ -68,7 +71,7 @@ struct ProbeModule LzrSmbProbe = {
     .global_init_cb                          = &probe_global_init_nothing,
     .make_payload_cb                         = &lzr_smb_make_payload,
     .get_payload_length_cb                   = &lzr_smb_get_payload_length,
-    .validate_response_cb                    = NULL,
     .handle_response_cb                      = &lzr_smb_handle_reponse,
+    .handle_timeout_cb                       = &lzr_smb_handle_timeout,
     .close_cb                                = &probe_close_nothing,
 };

@@ -341,12 +341,6 @@ helloudp_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    if (sizeof_px==0) {
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no service");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
-        item->level = Output_FAILURE;
-        return 0;
-    }
 
     item->level = Output_SUCCESS;
     safe_strcpy(item->classification, OUTPUT_CLS_LEN, "success");
@@ -355,6 +349,15 @@ helloudp_handle_response(
     if (helloudp_conf.report_while_regex)
         normalize_string(px, sizeof_px, item->report, OUTPUT_RPT_LEN);
 
+    return 0;
+}
+
+static unsigned
+helloudp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+{
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no service");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+    item->level = Output_FAILURE;
     return 0;
 }
 
@@ -397,12 +400,12 @@ struct ProbeModule HelloUdpProbe = {
         " that user set. It is used to test POC immediatly under udp.\n"
         "NOTE: We must specify hello data and regex for HelloUdpProbe.\n"
         "Dependencies: PCRE2.",
-    .global_init_cb                    = &helloudp_global_init,
-    .make_payload_cb                   = &helloudp_make_payload,
-    .get_payload_length_cb             = NULL,
-    .validate_response_cb              = &helloudp_validate_response,
-    .handle_response_cb                = &helloudp_handle_response,
-    .close_cb                          = &helloudp_close,
+    .global_init_cb                          = &helloudp_global_init,
+    .make_payload_cb                         = &helloudp_make_payload,
+    .validate_response_cb                    = &helloudp_validate_response,
+    .handle_response_cb                      = &helloudp_handle_response,
+    .handle_timeout_cb                       = &helloudp_handle_timeout,
+    .close_cb                                = &helloudp_close,
 };
 
 #endif /*ifndef NOT_FOUND_PCRE2*/

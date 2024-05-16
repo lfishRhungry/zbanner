@@ -41,12 +41,6 @@ lzr_ipmi_handle_reponse(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    if (sizeof_px==0) {
-        item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not ipmi");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
-        return 0;
-    }
 
     if (bytes_equals(px, sizeof_px, lzr_ipmi_pos_detect_unkn, sizeof(lzr_ipmi_pos_detect_unkn))) {
         item->level = Output_SUCCESS;
@@ -69,6 +63,15 @@ lzr_ipmi_handle_reponse(
     return 0;
 }
 
+static unsigned
+lzr_ipmi_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+{
+    item->level = Output_FAILURE;
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not ipmi");
+    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
+    return 0;
+}
+
 struct ProbeModule LzrIpmiProbe = {
     .name       = "lzr-ipmi",
     .type       = ProbeType_TCP,
@@ -80,7 +83,7 @@ struct ProbeModule LzrIpmiProbe = {
     .global_init_cb                          = &probe_global_init_nothing,
     .make_payload_cb                         = &lzr_ipmi_make_payload,
     .get_payload_length_cb                   = &lzr_ipmi_get_payload_length,
-    .validate_response_cb                    = NULL,
     .handle_response_cb                      = &lzr_ipmi_handle_reponse,
+    .handle_timeout_cb                       = &lzr_ipmi_handle_timeout,
     .close_cb                                = &probe_close_nothing,
 };
