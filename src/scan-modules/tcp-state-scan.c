@@ -41,9 +41,75 @@ static unsigned src_port_start;
 
 struct TcpStateConf {
     unsigned conn_timeout;
+    unsigned is_port_timeout:1;       /*--port-tm*/
+    unsigned is_port_success:1;       /*--port-success*/
+    unsigned is_port_failure:1;       /*--port-fail*/
+    unsigned record_ttl:1;
+    unsigned record_ipid:1;
+    unsigned record_win:1;
 };
 
 static struct TcpStateConf tcpstate_conf = {0};
+
+static enum Config_Res SET_record_ttl(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpstate_conf.record_ttl = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_record_ipid(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpstate_conf.record_ipid = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_record_win(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpstate_conf.record_win = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_port_timeout(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpstate_conf.is_port_timeout = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_port_success(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpstate_conf.is_port_success = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_port_failure(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpstate_conf.is_port_failure = parseBoolean(value);
+
+    return CONF_OK;
+}
 
 static enum Config_Res SET_conn_timeout(void *conf, const char *name, const char *value)
 {
@@ -68,6 +134,49 @@ static struct ConfigParam tcpstate_parameters[] = {
         F_NUMABLE,
         {"conn-timeout", "timeout", "conn-tm", "tm", 0},
         "Specifies the max existing time of each connection."
+    },
+    {
+        "port-timeout",
+        SET_port_timeout,
+        F_BOOL,
+        {"timeout-port", "port-tm", "tm-port", 0},
+        "Use timeout for port scanning(openness detection) while in timeout mode."
+    },
+    {
+        "port-success",
+        SET_port_success,
+        F_BOOL,
+        {"success-port", 0},
+        "Let port opening(contains zero syn-ack) results as success level."
+        "(Default is info level)"
+    },
+    {
+        "port-failure",
+        SET_port_failure,
+        F_BOOL,
+        {"failure-port", "port-fail", "fail-port", 0},
+        "Let port closed results as failure level.(Default is info level)"
+    },
+    {
+        "record-ttl",
+        SET_record_ttl,
+        F_BOOL,
+        {"ttl", 0},
+        "Records TTL for IPv4 or Hop Limit for IPv6 in SYN-ACK or RST."
+    },
+    {
+        "record-ipid",
+        SET_record_ipid,
+        F_BOOL,
+        {"ipid", 0},
+        "Records IPID of SYN-ACK or RST just for IPv4."
+    },
+    {
+        "record-win",
+        SET_record_win,
+        F_BOOL,
+        {"win", "window", 0},
+        "Records TCP window size of SYN-ACK."
     },
 
     {0}
@@ -166,8 +275,9 @@ tcpstate_handle(
     struct stack_t *stack,
     struct FHandler *handler)
 {
-    /*it's not elegent now*/
+    /*in default*/
     item->no_output = 1;
+    item->level = Output_INFO;
 
     struct TCP_Control_Block   *tcb;
     struct TCP_ConnectionTable *tcpcon;
@@ -178,23 +288,46 @@ tcpstate_handle(
     unsigned  port_me    = recved->parsed.port_dst;
     unsigned  seqno_me   = TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
     unsigned  seqno_them = TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
-    unsigned  win_them   = TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
     tcpcon = tcpcon_set.tcpcons[th_idx];
     tcb    = tcpcon_lookup_tcb(tcpcon, ip_me, ip_them, port_me, port_them);
 
     if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
         TCP_FLAG_SYN|TCP_FLAG_ACK)) {
+
+        item->no_output = 0;
+
+        /*zerowin could be a kind of port open*/
+        if (tcpstate_conf.is_port_success) {
+            item->level = Output_SUCCESS;
+        }
+
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "syn-ack");
+
+        uint16_t win_them =
+            TCP_WIN(recved->packet, recved->parsed.transport_offset);
+
+        int rpt_tmp = 0;
+
+        if (tcpstate_conf.record_ttl)
+            rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+                "[ttl=%d]", recved->parsed.ip_ttl);
+        if (tcpstate_conf.record_ipid && recved->parsed.src_ip.version==4)
+            rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+                "[ipid=%d]", recved->parsed.ip_v4_id);
+        if (tcpstate_conf.record_win)
+            rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+                "[win=%d]", win_them);
         /**
          * We have validated cookie for syn-ack in `tcpstate_validate`.
          * But also need to handle zero window
          * */
+
         if (win_them == 0) {
-            item->no_output = 0;
-            item->level = Output_INFO;
             safe_strcpy(item->classification, OUTPUT_CLS_LEN, "zerowin");
-            safe_strcpy(item->reason, OUTPUT_RSN_LEN, "syn-ack");
             return;
+        } else {
+            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
         }
 
         if (tcb == NULL) {
