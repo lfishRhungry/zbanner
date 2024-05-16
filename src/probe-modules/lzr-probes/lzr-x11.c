@@ -34,9 +34,27 @@ lzr_x11_handle_reponse(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
+    /**
+     * from nmap fingerprints:
+     * softmatch X11 m|^\x01\0\x0b\0\0......\0\0\0.|s
+    */
+
+    if (sizeof_px<15) {
+        item->level = Output_FAILURE;
+        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not x11");
+        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
+    }
+
+    if (safe_memmem(px, sizeof_px, "\x01\x00\x0b\x00\x00", 5)) {
+        if (safe_memmem(px+11, sizeof_px-11, "\x00\x00\x00", 3)) {
+            item->level = Output_SUCCESS;
+            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "x11");
+            safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+        }
+    }
+
     item->level = Output_FAILURE;
-    if (sizeof_px<15) {}
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
+    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not x11");
     safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
 
     return 0;
