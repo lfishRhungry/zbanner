@@ -403,6 +403,7 @@ luaudp_validate_response(struct ProbeTarget *target,
 
 static unsigned
 luaudp_handle_response(
+    unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)

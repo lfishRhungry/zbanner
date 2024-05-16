@@ -64,6 +64,7 @@ lzr_fox_get_payload_length(struct ProbeTarget *target)
 
 static unsigned
 lzr_fox_handle_reponse(
+    unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)

@@ -8,6 +8,7 @@ extern struct ProbeModule LzrPop3Probe;
 
 static unsigned
 lzr_pop3_handle_response(
+    unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)

@@ -109,6 +109,7 @@ typedef bool
  * !Must be implemented in Non-STATE type.
  * !Must be thread safe.
  * 
+ * @param th_idx the index of receive handler thread.
  * @param target info of a target
  * @param px response data
  * @param sizeof_px len of reponse, must>0
@@ -118,6 +119,7 @@ typedef bool
 */
 typedef unsigned
 (*probe_modules_handle_response)(
+    unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item);
@@ -135,7 +137,7 @@ typedef unsigned
  * or num=index+1 to set next probe in Multi_DynamicNext mode.
 */
 typedef unsigned
-(*probe_modules_timeout)(
+(*probe_modules_handle_timeout)(
     struct ProbeTarget *target,
     struct OutputItem *item);
 
@@ -254,17 +256,21 @@ struct ProbeModule
     probe_modules_global_init                   global_init_cb;
     /*for stateless payload*/
     probe_modules_make_payload                  make_payload_cb;
-    /*for stateless validate*/
+    /*for stateless validate (tcp)*/
     probe_modules_get_payload_length            get_payload_length_cb;
+    /*for stateless validate (udp)*/
     probe_modules_validate_response             validate_response_cb;
     /*for stateless response*/
     probe_modules_handle_response               handle_response_cb;
-    probe_modules_timeout                       handle_timeout_cb;
+    /*for stateless timeout*/
+    probe_modules_handle_timeout                handle_timeout_cb;
+
     /*for stateful process*/
     probe_modules_conn_init                     conn_init_cb;
     probe_modules_make_hello                    make_hello_cb;
     probe_modules_parse_response                parse_response_cb;
     probe_modules_conn_close                    conn_close_cb;
+
     /*for close*/
     probe_modules_close                         close_cb;
 };
@@ -298,6 +304,7 @@ probe_no_payload_length(struct ProbeTarget *target);
 /*implemented `probe_modules_handle_reponse`*/
 unsigned
 probe_report_nothing(
+    unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item);
@@ -305,6 +312,7 @@ probe_report_nothing(
 /*implemented `probe_modules_handle_reponse`*/
 unsigned
 probe_just_report_banner(
+    unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item);

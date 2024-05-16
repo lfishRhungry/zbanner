@@ -287,6 +287,7 @@ recogudp_validate_response(
 
 static unsigned
 recogudp_handle_response(
+    unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)

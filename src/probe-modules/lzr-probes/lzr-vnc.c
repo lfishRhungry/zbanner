@@ -8,6 +8,7 @@ extern struct ProbeModule LzrVncProbe;
 
 static unsigned
 lzr_vnc_handle_response(
+    unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)

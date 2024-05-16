@@ -261,6 +261,7 @@ lzr_get_payload_length(struct ProbeTarget *target)
 
 static unsigned
 lzr_handle_response(
+    unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
@@ -279,7 +280,7 @@ lzr_handle_response(
     */
     for (size_t i=0; i<ARRAY_SIZE(lzr_handshakes); i++) {
         lzr_handshakes[i]->handle_response_cb(
-            target, px, sizeof_px, item);
+            th_idx, target, px, sizeof_px, item);
 
         if (item->level==Output_SUCCESS) {
             safe_strcpy(rpt_idx,

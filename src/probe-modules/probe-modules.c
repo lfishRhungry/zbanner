@@ -263,6 +263,7 @@ probe_no_payload_length(struct ProbeTarget *target)
 
 unsigned
 probe_report_nothing(
+    unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
@@ -282,6 +283,7 @@ probe_report_nothing(
 
 unsigned
 probe_just_report_banner(
+    unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)

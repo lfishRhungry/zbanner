@@ -316,6 +316,7 @@ hello_get_payload_length(struct ProbeTarget *target)
 
 static unsigned
 hello_handle_response(
+    unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)

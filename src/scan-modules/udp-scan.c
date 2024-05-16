@@ -174,7 +174,9 @@ udp_handle(
             .index     = recved->parsed.port_dst-src_port_start,
         };
 
-        unsigned is_multi = UdpScan.probe->handle_response_cb(&ptarget,
+        unsigned is_multi = UdpScan.probe->handle_response_cb(
+            th_idx,
+            &ptarget,
             &recved->packet[recved->parsed.app_offset],
             recved->parsed.app_length, item);
 
