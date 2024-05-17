@@ -1,3 +1,6 @@
+/**
+ * modified from LZR by lfishRhungry 2024
+*/
 #include <string.h>
 #include <time.h>
 
@@ -45,8 +48,8 @@ lzr_x11_handle_reponse(
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
     }
 
-    if (safe_memmem(px, sizeof_px, "\x01\x00\x0b\x00\x00", 5)) {
-        if (safe_memmem(px+11, sizeof_px-11, "\x00\x00\x00", 3)) {
+    if (bytes_equals(px, sizeof_px, "\x01\x00\x0b\x00\x00", 5)) {
+        if (bytes_equals(px+11, sizeof_px-11, "\x00\x00\x00", 3)) {
             item->level = Output_SUCCESS;
             safe_strcpy(item->classification, OUTPUT_CLS_LEN, "x11");
             safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
