@@ -28,10 +28,14 @@ lzr_bgp_handle_response(
     }
 
     if (bytes_equals(px, sizeof_px, BGP_PREFIX, sizeof(BGP_PREFIX)-1)) {
-        item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "bgp");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
-        return 0;
+        if (bytes_equals(px+16, sizeof_px-16, "\x00\x15\x03\x06", 4)
+            || bytes_equals(px+16, sizeof_px-16, "\x00\x1d\x01\x04", 4)
+            || bytes_equals(px+18, sizeof_px-18, "\x01\x04", 2)) {
+            item->level = Output_SUCCESS;
+            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "bgp");
+            safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+            return 0;
+        }
     }
 
     item->level = Output_FAILURE;
