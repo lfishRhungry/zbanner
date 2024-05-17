@@ -28,7 +28,12 @@ static const unsigned char default_snmp_req[]=
 "\x05\x00"                                         /*^^^^_____IDS LULZ HAH HA HAH*/
 ;
 
-static struct SMACK *global_mib;
+struct SnmpConf {
+    struct SMACK **global_mibs;
+    unsigned mib_count;
+};
+
+static struct SnmpConf snmp_conf = {0};
 
 /****************************************************************************
  * We parse an SNMP packet into this structure
@@ -182,7 +187,7 @@ next_id(const unsigned char *oid, unsigned *offset, uint64_t oid_length)
 /****************************************************************************
  ****************************************************************************/
 static void
-snmp_banner_oid(const unsigned char *oid, size_t oid_length, struct DataChain *dach)
+snmp_banner_oid(struct SMACK *global_mib, const unsigned char *oid, size_t oid_length, struct DataChain *dach)
 {
     unsigned i;
     size_t id;
@@ -227,17 +232,20 @@ snmp_banner_oid(const unsigned char *oid, size_t oid_length, struct DataChain *d
 /****************************************************************************
  ****************************************************************************/
 static void
-snmp_banner(const unsigned char *oid, size_t oid_length,
-            uint64_t var_tag,
-            const unsigned char *var, size_t var_length,
-            struct DataChain *dach)
+snmp_banner(struct SMACK *global_mib,
+    const unsigned char *oid,
+    size_t oid_length,
+    uint64_t var_tag,
+    const unsigned char *var,
+    size_t var_length,
+    struct DataChain *dach)
 {
     size_t i;
 
     datachain_append_char(dach, SNMP_DACH_TYPE, '[');
 
     /* print the OID */
-    snmp_banner_oid(oid, oid_length, dach);
+    snmp_banner_oid(global_mib, oid, oid_length, dach);
 
     datachain_append_char(dach, SNMP_DACH_TYPE, ':');
     datachain_append_char(dach, SNMP_DACH_TYPE, ' ');
@@ -254,7 +262,7 @@ snmp_banner(const unsigned char *oid, size_t oid_length,
         }
         break;
     case 6:
-        snmp_banner_oid(var, var_length, dach);
+        snmp_banner_oid(global_mib, var, var_length, dach);
         break;
     case 4:
     default:
@@ -273,7 +281,7 @@ snmp_banner(const unsigned char *oid, size_t oid_length,
  * newer SNMP.
  ****************************************************************************/
 static void
-snmp_parse(const unsigned char *px, uint64_t length, struct DataChain *dach,
+snmp_parse(struct SMACK *global_mib, const unsigned char *px, uint64_t length, struct DataChain *dach,
     unsigned *request_id)
 {
     uint64_t offset=0;
@@ -365,7 +373,8 @@ snmp_parse(const unsigned char *px, uint64_t length, struct DataChain *dach,
             if (var_tag == 5)
                 continue; /* null */
 
-            snmp_banner(oid, (size_t)oid_length, var_tag, var, (size_t)var_length, dach);
+            snmp_banner(global_mib, oid, (size_t)oid_length,
+                var_tag, var, (size_t)var_length, dach);
         }
     }
 }
@@ -514,33 +523,32 @@ convert_oid(unsigned char *dst, size_t sizeof_dst, const char *src)
 static bool
 snmp_global_init(const struct Xconf *xconf)
 {
-    if (xconf->rx_handler_count>1) {
-        LOG(LEVEL_ERROR, "[-]SnmpProbe does not support multi rx-handler threads.\n");
-        return false;
+
+    snmp_conf.mib_count = xconf->rx_handler_count;
+    snmp_conf.global_mibs = MALLOC(sizeof(struct SMACK *) * xconf->rx_handler_count);
+
+    for (unsigned i=0; i<snmp_conf.mib_count; i++) {
+        /* We use an Aho-Corasick pattern matcher for this. Not necessarily
+         * the most efficient, but also not bad */
+        snmp_conf.global_mibs[i] = smack_create("snmp-mib", 0);
+
+        /* We just go through the table of OIDs and add them all one by
+         * one */
+        for (unsigned j=0; mib[j].name; j++) {
+            unsigned char pattern[256];
+            unsigned len;
+
+            len = convert_oid(pattern, sizeof(pattern), mib[j].oid);
+
+            smack_add_pattern(snmp_conf.global_mibs[i], pattern, len, j,
+                SMACK_ANCHOR_BEGIN | SMACK_SNMP_HACK);
+        }
+
+        /* Now that we've added all the OIDs, we need to compile this into
+         * an efficient data structure. Later, when we get packets, we'll
+         * use this for searching */
+        smack_compile(snmp_conf.global_mibs[i]);
     }
-
-    unsigned i;
-
-    /* We use an Aho-Corasick pattern matcher for this. Not necessarily
-     * the most efficient, but also not bad */
-    global_mib = smack_create("snmp-mib", 0);
-
-    /* We just go through the table of OIDs and add them all one by
-     * one */
-    for (i=0; mib[i].name; i++) {
-        unsigned char pattern[256];
-        unsigned len;
-
-        len = convert_oid(pattern, sizeof(pattern), mib[i].oid);
-
-        smack_add_pattern(global_mib, pattern, len, i,
-            SMACK_ANCHOR_BEGIN | SMACK_SNMP_HACK);
-    }
-
-    /* Now that we've added all the OIDs, we need to compile this into
-     * an efficient data structure. Later, when we get packets, we'll
-     * use this for searching */
-    smack_compile(global_mib);
 
     return true;
 }
@@ -572,7 +580,7 @@ snmp_handle_response(
 
     /* Parse the SNMP packet */
     datachain_init(dach);
-    snmp_parse(px, sizeof_px, dach, &request_id);
+    snmp_parse(snmp_conf.global_mibs[th_idx], px, sizeof_px, dach, &request_id);
 
     if ((target->cookie&0x7FFFffff) != request_id) {
         item->no_output = 1;
@@ -598,6 +606,16 @@ snmp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
     return 0;
 }
 
+static void snmp_close()
+{
+    if (snmp_conf.global_mibs) {
+        free(snmp_conf.global_mibs);
+        snmp_conf.global_mibs = NULL;
+    }
+
+    snmp_conf.mib_count = 0;
+}
+
 struct ProbeModule SnmpProbe = {
     .name       = "snmp",
     .type       = ProbeType_UDP,
@@ -615,5 +633,5 @@ struct ProbeModule SnmpProbe = {
     .validate_response_cb                    = &probe_all_valid,
     .handle_response_cb                      = &snmp_handle_response,
     .handle_timeout_cb                       = &snmp_handle_timeout,
-    .close_cb                                = &probe_close_nothing,
+    .close_cb                                = &snmp_close,
 };
