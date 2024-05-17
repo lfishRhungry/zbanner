@@ -28,7 +28,10 @@ lzr_telnet_handle_response(
         return 0;
     }
 
-    if (px[1]==0xff || px[1]==0xfe || px[1]==0xfd || px[1]==0xfc || px[1]==0xfb) {
+    /**
+     * fixed from LZR by lfishRhungry 2024
+    */
+    if (px[1]==0xff && (px[1]==0xfe || px[1]==0xfd || px[1]==0xfc || px[1]==0xfb)) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_LEN, "telnet");
         safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
