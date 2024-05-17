@@ -369,7 +369,7 @@ struct ProbeModule LzrProbe = {
     .multi_num  = 1,
     .params     = lzr_parameters,
     .desc =
-        "LzrProbe is an implementation of LZR( a service identifier in "
+        "LzrProbe is an implementation of LZR( a service identifier) in "
         XTATE_FIRST_UPPER_NAME". It sends a serias specified LZR handshakes"
         "(subprobes) until identified the service by matching responsed data "
         "with all LZR handshakes.\n"
