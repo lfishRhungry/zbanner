@@ -1403,6 +1403,12 @@ again:
                     break;
                 }
                 case APP_WHAT_RECV_TIMEOUT:
+                    /** FIXME:
+                     * RECV_HELLO can transit to SEND_FIRST by timeout, because we
+                     * have make_hello interface.
+                     * But this cannot handled well, so we cannot set socket to
+                     * wait mode after hello said.
+                     * And it leads to no hello wait when probe nested like tls-state*/
                     break;
                 case APP_WHAT_SENDING:
                     /* A higher level protocol has started sending packets while processing
