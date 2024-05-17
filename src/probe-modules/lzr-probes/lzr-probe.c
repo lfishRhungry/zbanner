@@ -369,12 +369,14 @@ struct ProbeModule LzrProbe = {
     .multi_num  = 1,
     .params     = lzr_parameters,
     .desc =
-        "LzrProbe is an implementation of LZR service identifier of LZR in "
+        "LzrProbe is an implementation of LZR( a service identifier in "
         XTATE_FIRST_UPPER_NAME". It sends a serias specified LZR handshakes"
         "(subprobes) until identified the service by matching responsed data "
         "with all LZR handshakes.\n"
         "I suggest you to specify `--timeout` parameter because LzrProbe performs"
-        " better by recognizing the status of non-responsing.",
+        " better by recognizing the status of non-responsing.\n"
+        "NOTE: I had fixed some matching bugs from original LZR and added more "
+        "handshakes. So, enjoy it!",
     .global_init_cb                          = &lzr_global_init,
     .make_payload_cb                         = &lzr_make_payload,
     .get_payload_length_cb                   = &lzr_get_payload_length,
