@@ -45,22 +45,22 @@ typedef bool (*scan_modules_global_init)(const struct Xconf *xconf);
 ****************************************************************************/
 
 struct ScanTarget {
-    enum PortProto proto;
-    ipaddress ip_them;
-    ipaddress ip_me;
-    unsigned  port_them;
-    unsigned  port_me;
-    unsigned  index; /*use in tx thread for multi packets per target in ScanModule*/
+    enum PortProto     proto;
+    ipaddress          ip_them;
+    ipaddress          ip_me;
+    unsigned           port_them;
+    unsigned           port_me;
+    unsigned           index;     /*use in tx thread for multi packets per target*/
 };
 
 /*a timeout event for scanning*/
 struct ScanTmEvent {
-    ipaddress ip_them;
-    ipaddress ip_me;
-    unsigned  port_them;
-    unsigned  port_me;
-    unsigned  dedup_type;
-    unsigned  need_timeout:1;
+    ipaddress          ip_them;
+    ipaddress          ip_me;
+    unsigned           port_them;
+    unsigned           port_me;
+    unsigned           dedup_type;
+    unsigned           need_timeout:1;
 };
 
 /**
@@ -88,25 +88,25 @@ typedef bool (*scan_modules_transmit)(
 ****************************************************************************/
 
 struct Received {
-    struct PreprocessedInfo parsed;
-    unsigned char *packet;
-    unsigned length;
-    unsigned secs;
-    unsigned usecs;
-    unsigned is_myip:1;
-    unsigned is_myport:1;
+    struct PreprocessedInfo     parsed;
+    unsigned char              *packet;
+    unsigned                    length;
+    unsigned                    secs;
+    unsigned                    usecs;
+    unsigned                    is_myip:1;
+    unsigned                    is_myport:1;
 };
 
 /*How we do prehandling for a packet*/
 struct PreHandle {
-    ipaddress dedup_ip_them;
-    unsigned  dedup_port_them;
-    ipaddress dedup_ip_me;
-    unsigned  dedup_port_me;
-    unsigned  dedup_type;
-    unsigned  go_record:1;       /*proceed to record or stop*/
-    unsigned  go_dedup:1;        /*proceed to dedup or stop*/
-    unsigned  no_dedup:1;        /*go on with(out) deduping*/
+    ipaddress                   dedup_ip_them;
+    unsigned                    dedup_port_them;
+    ipaddress                   dedup_ip_me;
+    unsigned                    dedup_port_me;
+    unsigned                    dedup_type;
+    unsigned                    go_record:1;       /*proceed to record or stop*/
+    unsigned                    go_dedup:1;        /*proceed to dedup or stop*/
+    unsigned                    no_dedup:1;        /*go on with(out) deduping*/
 };
 
 /**
