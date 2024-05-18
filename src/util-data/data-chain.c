@@ -13,6 +13,7 @@
 
 #include <stddef.h>
 #include <stdarg.h>
+#include <assert.h>
 
 
 static unsigned name_hash(const char *name) {
@@ -31,6 +32,11 @@ void
 datachain_release(struct DataChain *dach)
 {
     struct DataLink *link = dach->link;
+
+    if (!link) {
+        return;
+    }
+
     while (link->next) {
         struct DataLink *next = link->next->next;
         free(link->next);
@@ -156,19 +162,6 @@ datachain_string_length(const struct DataChain *dach, const char *name)
 /***************************************************************************
  ***************************************************************************/
 void
-datachain_end(struct DataChain *dach, const char *name)
-{
-    struct DataLink *p;
-
-    p = datachain_find_link(dach, name);
-    if (p && p->data_len) {
-        p->name_hash |= 0x80000000;
-    }
-}
-
-/***************************************************************************
- ***************************************************************************/
-void
 datachain_append_char(struct DataChain *dach, const char *name, int c)
 {
     char cc = (char)c;
@@ -230,31 +223,12 @@ datachain_append_unicode(struct DataChain *dach, const char *name, unsigned c)
 
 
 /***************************************************************************
- create a data
- NOTE: the name must not exist
- ***************************************************************************/
-static struct DataLink *
-datachain_new_link(struct DataChain *dach, const char *name)
-{
-    struct DataLink *p = MALLOC(sizeof(struct DataLink));
-
-    safe_strcpy(p->name, DACH_MAX_NAME_SIZE, name);
-
-    p->name_hash = name_hash(name);
-    p->data_size = sizeof(p->data);
-    p->data_len  = 0;
-    p->next      = dach->link;
-    dach->link   = p;
-
-    return p;
-}
-
-
-/***************************************************************************
  ***************************************************************************/
 static struct DataLink *
 datachain_expand(struct DataChain *dach, struct DataLink *p)
 {
+    assert(dach->link);
+
     struct DataLink *n;
 
     /* Double the space */
@@ -317,6 +291,26 @@ datachain_printf(struct DataChain *dach, const char *name, const char *fmt, ...)
 }
 
 /***************************************************************************
+ create a data
+ NOTE: the name must not exist
+ ***************************************************************************/
+static struct DataLink *
+datachain_new_link(struct DataChain *dach, const char *name)
+{
+    struct DataLink *p = MALLOC(sizeof(struct DataLink));
+
+    safe_strcpy(p->name, DACH_MAX_NAME_SIZE, name);
+
+    p->name_hash = name_hash(name);
+    p->data_size = sizeof(p->data);
+    p->data_len  = 0;
+    p->next      = dach->link;
+    dach->link   = p;
+
+    return p;
+}
+
+/***************************************************************************
  ***************************************************************************/
 void
 datachain_append(struct DataChain *dach, const char *name, 
@@ -332,7 +326,6 @@ datachain_append(struct DataChain *dach, const char *name,
         p = datachain_new_link(dach, name);
     }
 
-
     /*
      * If the current object isn't big enough, expand it
      */
@@ -340,8 +333,6 @@ datachain_append(struct DataChain *dach, const char *name,
         p = datachain_expand(dach, p);
     }
 
-    
-    
     /*
      * Now that we are assured there is enough space, do the copy
      */
@@ -365,7 +356,7 @@ void
 datachain_init_base64(struct DataChainB64 *base64)
 {
     base64->state = 0;
-    base64->temp = 0;
+    base64->temp  = 0;
 }
 
 /*****************************************************************************
@@ -436,11 +427,13 @@ static int
 datachain_string_equals(struct DataChain *dach, const char *name, const char *rhs)
 {
     const unsigned char *lhs = datachain_string(dach, name);
+
     size_t lhs_length = datachain_string_length(dach, name);
     size_t rhs_length = strlen(rhs);
     
     if (lhs_length != rhs_length)
         return 0;
+
     return memcmp(lhs, rhs, rhs_length) == 0;
 }
 

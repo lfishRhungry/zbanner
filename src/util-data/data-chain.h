@@ -44,12 +44,6 @@ void
 datachain_release(struct DataChain *dach);
 
 /**
- * End the data of the current.
- */
-void
-datachain_end(struct DataChain *dach, const char *name);
-
-/**
  * Append text onto the data. If this exceeds the buffer, then the
  * buffer will be expanded.
  */
