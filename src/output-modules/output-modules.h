@@ -9,13 +9,13 @@
 #include "../util-misc/cross.h"
 #include "../massip/massip-addr.h"
 
-#define OUTPUT_RSN_LEN          30
-#define OUTPUT_CLS_LEN          30
+#define OUT_RSN_SIZE          30
+#define OUT_CLS_SIZE          30
 /**
  * Relative with XCONF_DFT_SNAPLEN and XCONF_DFT_MAX_PKT_LEN
  * I don't agree that always report all content that we received, xtate is not
  * a browser or scrapper*/
-#define OUTPUT_RPT_LEN        2048
+#define OUT_RPT_SIZE          2048
 
 struct OutputModule;
 
@@ -32,9 +32,9 @@ struct OutputItem {
     unsigned                     port_them;                        /*no outputting if zero*/
     ipaddress                    ip_me;
     unsigned                     port_me;                          /*no outputting if zero*/
-    char                         reason[OUTPUT_RSN_LEN];           /*no outputting if start with zero*/
-    char                         classification[OUTPUT_CLS_LEN];   /*no outputting if start with zero*/
-    char                         report[OUTPUT_RPT_LEN];           /*no outputting if start with zero*/
+    char                         reason[OUT_RSN_SIZE];             /*no outputting if start with zero*/
+    char                         classification[OUT_CLS_SIZE];     /*no outputting if start with zero*/
+    char                         report[OUT_RPT_SIZE];             /*no outputting if start with zero*/
     unsigned                     no_output:1;
 };
 

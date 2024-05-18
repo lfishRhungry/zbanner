@@ -126,22 +126,22 @@ sctpinit_handle(
     if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
         SCTP_CHUNK_TYPE_INIT_ACK)) {
         item->level = Output_SUCCESS;
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "init-ack");
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "init-ack");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "open");
     } else if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
         SCTP_CHUNK_TYPE_ABORT)) {
         item->level = Output_FAILURE;
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "abort");
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "abort");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
     }
 
     int rpt_tmp = 0;
 
     if (sctpinit_conf.record_ttl)
-        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUT_RPT_SIZE-rpt_tmp,
             "[ttl=%d]", recved->parsed.ip_ttl);
     if (sctpinit_conf.record_ipid && recved->parsed.src_ip.version==4)
-        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUT_RPT_SIZE-rpt_tmp,
             "[ipid=%d]", recved->parsed.ip_v4_id);
 }
 
@@ -153,8 +153,8 @@ void sctpinit_timeout(
     struct FHandler *handler)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
 }
 
 struct ScanModule SctpInitScan = {

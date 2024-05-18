@@ -16,8 +16,8 @@ lzr_ftp_handle_response(
     
     if (safe_memismem(px, sizeof_px, "ftp", strlen("ftp"))) {
         item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "ftp");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "ftp");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
         return 0;
     }
 
@@ -29,14 +29,14 @@ lzr_ftp_handle_response(
         || strstr(tmp_str, "550")
         || strstr(tmp_str, "230")) {
         item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "ftp");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "ftp");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
         return 0;
     }
 
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not ftp");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not ftp");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -45,8 +45,8 @@ static unsigned
 lzr_ftp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not ftp");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not ftp");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     return 0;
 }
 

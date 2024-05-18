@@ -265,7 +265,7 @@ tcpstate_handle(
             item->level = Output_SUCCESS;
         }
 
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "syn-ack");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "syn-ack");
 
         uint16_t win_them =
             TCP_WIN(recved->packet, recved->parsed.transport_offset);
@@ -273,13 +273,13 @@ tcpstate_handle(
         int rpt_tmp = 0;
 
         if (tcpstate_conf.record_ttl)
-            rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+            rpt_tmp += snprintf(item->report+rpt_tmp, OUT_RPT_SIZE-rpt_tmp,
                 "[ttl=%d]", recved->parsed.ip_ttl);
         if (tcpstate_conf.record_ipid && recved->parsed.src_ip.version==4)
-            rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+            rpt_tmp += snprintf(item->report+rpt_tmp, OUT_RPT_SIZE-rpt_tmp,
                 "[ipid=%d]", recved->parsed.ip_v4_id);
         if (tcpstate_conf.record_win)
-            rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+            rpt_tmp += snprintf(item->report+rpt_tmp, OUT_RPT_SIZE-rpt_tmp,
                 "[win=%d]", win_them);
         /**
          * We have validated cookie for syn-ack in `tcpstate_validate`.
@@ -287,10 +287,10 @@ tcpstate_handle(
          * */
 
         if (win_them == 0) {
-            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "zerowin");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "zerowin");
             return;
         } else {
-            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "open");
         }
 
         if (tcb == NULL) {

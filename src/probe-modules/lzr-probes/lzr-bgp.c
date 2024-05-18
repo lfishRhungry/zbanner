@@ -22,8 +22,8 @@ lzr_bgp_handle_response(
     
     if (sizeof_px<20) {
         item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not bgp");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "not bgp");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
         return 0;
     }
 
@@ -32,15 +32,15 @@ lzr_bgp_handle_response(
             || bytes_equals(px+16, sizeof_px-16, "\x00\x1d\x01\x04", 4)
             || bytes_equals(px+18, sizeof_px-18, "\x01\x04", 2)) {
             item->level = Output_SUCCESS;
-            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "bgp");
-            safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "bgp");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
             return 0;
         }
     }
 
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not bgp");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not bgp");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -49,8 +49,8 @@ static unsigned
 lzr_bgp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not bgp");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not bgp");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     return 0;
 }
 

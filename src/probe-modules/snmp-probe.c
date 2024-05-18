@@ -588,10 +588,10 @@ snmp_handle_response(
     }
 
     item->level = Output_SUCCESS;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "snmp");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "snmp");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
     normalize_string(datachain_string(dach, SNMP_DACH_TYPE),
-        datachain_string_length(dach, SNMP_DACH_TYPE), item->report, OUTPUT_RPT_LEN);
+        datachain_string_length(dach, SNMP_DACH_TYPE), item->report, OUT_RPT_SIZE);
 
     datachain_release(dach);
 
@@ -601,8 +601,8 @@ snmp_handle_response(
 static unsigned
 snmp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
     return 0;
 }
 

@@ -39,14 +39,14 @@ lzr_modbus_handle_reponse(
         && bytes_equals(px, sizeof_px,
             "\x5a\x47\x00\x00", sizeof( "\x5a\x47\x00\x00")-1)) {
         item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "modbus");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "modbus");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
         return 0;
     }
 
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not modbus");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not modbus");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -55,8 +55,8 @@ static unsigned
 lzr_modbus_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not modbus");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not modbus");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     return 0;
 }
 

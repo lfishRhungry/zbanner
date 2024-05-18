@@ -114,14 +114,14 @@ ndpns_handle(
     item->port_me    = 0;
     item->level      = Output_SUCCESS;
 
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "ndp na");
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "alive");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "ndp na");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");
 
     int rpt_tmp = 0;
     /*check whether from router
       and extract mac addr from ICMPv6 Option: Target link-layer address*/
     if (NDP_NA_HAS_FLAG(recved->packet, recved->parsed.transport_offset, NDP_NA_FLAG_ROUTER)) {
-        rpt_tmp += snprintf(item->report, OUTPUT_RPT_LEN, "%02X:%02X:%02X:%02X:%02X:%02X from router",
+        rpt_tmp += snprintf(item->report, OUT_RPT_SIZE, "%02X:%02X:%02X:%02X:%02X:%02X from router",
             recved->packet[recved->parsed.transport_offset+26],
             recved->packet[recved->parsed.transport_offset+27],
             recved->packet[recved->parsed.transport_offset+28],
@@ -129,7 +129,7 @@ ndpns_handle(
             recved->packet[recved->parsed.transport_offset+30],
             recved->packet[recved->parsed.transport_offset+31]);
     } else {
-        rpt_tmp += snprintf(item->report, OUTPUT_RPT_LEN, "%02X:%02X:%02X:%02X:%02X:%02X",
+        rpt_tmp += snprintf(item->report, OUT_RPT_SIZE, "%02X:%02X:%02X:%02X:%02X:%02X",
             recved->packet[recved->parsed.transport_offset+26],
             recved->packet[recved->parsed.transport_offset+27],
             recved->packet[recved->parsed.transport_offset+28],
@@ -139,7 +139,7 @@ ndpns_handle(
     }
 
     if (ndpns_conf.record_ttl)
-        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUT_RPT_SIZE-rpt_tmp,
             "[ttl=%d]", recved->parsed.ip_ttl);
 }
 
@@ -151,8 +151,8 @@ void ndpns_timeout(
     struct FHandler *handler)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "down");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "down");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
 }
 
 struct ScanModule NdpNsScan = {

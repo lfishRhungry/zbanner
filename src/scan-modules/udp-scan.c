@@ -280,8 +280,8 @@ udp_handle(
             return;
         }
     } else {
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "port unreachable");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "port unreachable");
         unsigned proto;
         parse_icmp_port_unreachable(
             &recved->packet[recved->parsed.transport_offset],

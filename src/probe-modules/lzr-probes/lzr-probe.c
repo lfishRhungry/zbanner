@@ -286,7 +286,7 @@ lzr_handle_response(
 
         if (item->level==Output_SUCCESS) {
             safe_strcpy(rpt_idx,
-                OUTPUT_RPT_LEN-(rpt_idx-item->report), item->classification);
+                OUT_RPT_SIZE-(rpt_idx-item->report), item->classification);
 
             for (;*rpt_idx!='\0';rpt_idx++) {}
 
@@ -300,9 +300,9 @@ lzr_handle_response(
 
     if (rpt_idx==item->report) {
         /*got nothing*/
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
-        snprintf(item->report, OUTPUT_RPT_LEN, "[handshake: %s]",
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
+        snprintf(item->report, OUT_RPT_SIZE, "[handshake: %s]",
             lzr_conf.handshake[target->index]->name);
         /**
          * Set last unmatching as failure in normal mode.
@@ -318,9 +318,9 @@ lzr_handle_response(
         }
     } else {
         item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "identified");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
-        snprintf(rpt_idx-1, OUTPUT_RPT_LEN-(rpt_idx-item->report)+1, " [handshake: %s]",
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "identified");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
+        snprintf(rpt_idx-1, OUT_RPT_SIZE-(rpt_idx-item->report)+1, " [handshake: %s]",
             lzr_conf.handshake[target->index]->name);
 
         if (lzr_conf.force_all_handshakes && target->index != lzr_conf.hs_count-1) {
@@ -334,9 +334,9 @@ lzr_handle_response(
 static unsigned
 lzr_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
-    snprintf(item->report, OUTPUT_RPT_LEN, "[handshake: %s]",
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
+    snprintf(item->report, OUT_RPT_SIZE, "[handshake: %s]",
         lzr_conf.handshake[target->index]->name);
     /**
      * Set last unmatching as failure in normal mode.

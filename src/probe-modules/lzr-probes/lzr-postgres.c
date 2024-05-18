@@ -37,15 +37,15 @@ lzr_postgres_handle_reponse(
     if (sizeof_px==1) {
         if (px[0]==0x4e || px[0]==0x53 || px[0]==0x45) {
             item->level = Output_SUCCESS;
-            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "postgres");
-            safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "postgres");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
             return 0;
         }
     }
 
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not postgres");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not postgres");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -54,8 +54,8 @@ static unsigned
 lzr_postgres_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not postgres");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not postgres");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     return 0;
 }
 

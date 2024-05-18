@@ -85,15 +85,15 @@ lzr_tls_handle_reponse(
 
     if (sizeof_px < 3) {
         item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not tls");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "not tls");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
         return 0;
     }
 
     if (safe_memmem(px, sizeof_px, "HTTPS", strlen("HTTPS"))) {
         item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "tls");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "tls");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
         return 0;
     }
 
@@ -114,20 +114,20 @@ lzr_tls_handle_reponse(
     if ((px[0]>=0x14 && px[0]<=0x17) && px[1]==0x03) {
         if (px[2]>=0x01 && px[2]<=0x04) {
             item->level = Output_SUCCESS;
-            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "tls");
-            safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "tls");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
             return 0;
         } else if (px[2]==0x00) {
             item->level = Output_SUCCESS;
-            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "ssl");
-            safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "ssl");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
             return 0;
         }
     }
     
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not tls");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not tls");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -136,8 +136,8 @@ static unsigned
 lzr_tls_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not tls");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not tls");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     return 0;
 }
 

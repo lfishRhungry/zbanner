@@ -58,16 +58,16 @@ lzr_ipp_handle_reponse(
         if (safe_memmem(px, sizeof_px, "attributes-charset", strlen("attributes-charset"))
             || safe_memmem(px, sizeof_px, "data", strlen("data"))) {
             item->level = Output_SUCCESS;
-            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "ipp");
-            safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "ipp");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
             return 0;
         }
     }
     
 
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not ipp");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not ipp");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -76,8 +76,8 @@ static unsigned
 lzr_ipp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not ipp");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not ipp");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     return 0;
 }
 

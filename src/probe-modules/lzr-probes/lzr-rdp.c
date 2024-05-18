@@ -42,14 +42,14 @@ lzr_rdp_handle_reponse(
     if (sizeof_px>=11
         && bytes_equals(px, sizeof_px, lzr_rdp_verify, sizeof(lzr_rdp_verify)-1)) {
         item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "rdp");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "rdp");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
         return 0;
     }
 
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not rdp");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not rdp");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -58,8 +58,8 @@ static unsigned
 lzr_rdp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not rdp");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not rdp");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     return 0;
 }
 

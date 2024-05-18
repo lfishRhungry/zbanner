@@ -36,14 +36,14 @@ lzr_mema_handle_reponse(
     if (safe_memmem(px, sizeof_px, "STAT", strlen("STAT"))
         && safe_memmem(px, sizeof_px, "pid", strlen("pid"))) {
         item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "memcached_ascii");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "memcached_ascii");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
         return 0;
     }
 
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not memcached_ascii");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not memcached_ascii");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -52,8 +52,8 @@ static unsigned
 lzr_mema_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "not memcached_ascii");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not memcached_ascii");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     return 0;
 }
 

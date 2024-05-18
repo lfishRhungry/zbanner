@@ -168,12 +168,12 @@ tcpsyn_handle(
     if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
         TCP_FLAG_SYN|TCP_FLAG_ACK)) {
         item->level = Output_SUCCESS;
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "syn-ack");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "syn-ack");
 
         if (win_them == 0) {
-            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "zerowin");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "zerowin");
         } else {
-            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "open");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "open");
         }
         if (tcpsyn_conf.send_rst) {
             unsigned seqno_me   = TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
@@ -193,20 +193,20 @@ tcpsyn_handle(
     /*RST*/
     else {
         item->level = Output_FAILURE;
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "rst");
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "rst");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
     }
 
     int rpt_tmp = 0;
 
     if (tcpsyn_conf.record_ttl)
-        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUT_RPT_SIZE-rpt_tmp,
             "[ttl=%d]", recved->parsed.ip_ttl);
     if (tcpsyn_conf.record_ipid && recved->parsed.src_ip.version==4)
-        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUT_RPT_SIZE-rpt_tmp,
             "[ipid=%d]", recved->parsed.ip_v4_id);
     if (tcpsyn_conf.record_win)
-        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_LEN-rpt_tmp,
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUT_RPT_SIZE-rpt_tmp,
             "[win=%d]", win_them);
 
 }
@@ -219,8 +219,8 @@ void tcpsyn_timeout(
     struct FHandler *handler)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "closed");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
 }
 
 struct ScanModule TcpSynScan = {

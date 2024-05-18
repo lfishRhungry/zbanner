@@ -99,9 +99,9 @@ getstate_parse_response(
         .port_me   = target->port_me,
     };
 
-    safe_strcpy(item.classification, OUTPUT_CLS_LEN, "banner");
-    safe_strcpy(item.reason, OUTPUT_RSN_LEN, "responsed");
-    normalize_string(px, sizeof_px, item.report, OUTPUT_RPT_LEN);
+    safe_strcpy(item.classification, OUT_CLS_SIZE, "banner");
+    safe_strcpy(item.reason, OUT_RSN_SIZE, "responsed");
+    normalize_string(px, sizeof_px, item.report, OUT_RPT_SIZE);
 
     output_result(out, &item);
 

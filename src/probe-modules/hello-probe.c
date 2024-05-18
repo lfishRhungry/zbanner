@@ -342,16 +342,16 @@ hello_handle_response(
         /*matched one. ps: "offset is too small" means successful, too*/
         if (rc >= 0) {
             item->level = Output_SUCCESS;
-            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "success");
-            safe_strcpy(item->reason, OUTPUT_RSN_LEN, "matched");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "success");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
         } else {
             item->level = Output_FAILURE;
-            safe_strcpy(item->classification, OUTPUT_CLS_LEN, "fail");
-            safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "fail");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
         }
         
         if (hello_conf.report_while_regex) {
-            normalize_string(px, sizeof_px, item->report, OUTPUT_RPT_LEN);
+            normalize_string(px, sizeof_px, item->report, OUT_RPT_SIZE);
         }
         pcre2_match_data_free(match_data);
     } else {
@@ -359,9 +359,9 @@ hello_handle_response(
 #endif
 
         item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "serving");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "banner exists");
-        normalize_string(px, sizeof_px, item->report, OUTPUT_RPT_LEN);
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "serving");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "banner exists");
+        normalize_string(px, sizeof_px, item->report, OUT_RPT_SIZE);
 
 #ifndef NOT_FOUND_PCRE2
     }
@@ -373,8 +373,8 @@ hello_handle_response(
 static unsigned
 hello_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no service");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "no service");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
     item->level = Output_FAILURE;
     return 0;
 }

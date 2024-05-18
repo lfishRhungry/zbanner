@@ -272,12 +272,12 @@ probe_report_nothing(
 {
     if (sizeof_px > 0) {
         item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "serving");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "banner exists");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "serving");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "banner exists");
     } else {
         item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no serving");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "no serving");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
     }
 
     return 0;
@@ -292,13 +292,13 @@ probe_just_report_banner(
 {
     if (sizeof_px > 0) {
         item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "serving");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "banner exists");
-        normalize_string(px, sizeof_px, item->report, OUTPUT_RPT_LEN);
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "serving");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "banner exists");
+        normalize_string(px, sizeof_px, item->report, OUT_RPT_SIZE);
     } else {
         item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "no service");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN, "timeout");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "no service");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
     }
 
     return 0;

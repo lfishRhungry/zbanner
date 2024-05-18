@@ -220,22 +220,22 @@ nmaptcp_handle_response(
     if (match) {
         item->level = Output_SUCCESS;
 
-        safe_strcpy(item->classification, OUTPUT_CLS_LEN, "identified");
-        safe_strcpy(item->reason, OUTPUT_RSN_LEN,
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "identified");
+        safe_strcpy(item->reason, OUT_RSN_SIZE,
             match->is_softmatch?"softmatch":"matched");
-        int n = snprintf(item->report, OUTPUT_RPT_LEN, "[service: %s, line: %u",
+        int n = snprintf(item->report, OUT_RPT_SIZE, "[service: %s, line: %u",
             match->service, match->line);
         if (!match->is_softmatch&&match->versioninfo) {
-            n += snprintf(item->report+n, OUTPUT_RPT_LEN-n, ", info: %s", match->versioninfo->value);
+            n += snprintf(item->report+n, OUT_RPT_SIZE-n, ", info: %s", match->versioninfo->value);
         }
-        snprintf(item->report+n, OUTPUT_RPT_LEN-n, "]");
+        snprintf(item->report+n, OUT_RPT_SIZE-n, "]");
 
         return 0;
     }
 
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "not matched");
-    snprintf(item->report, OUTPUT_RPT_LEN, "[probe: %s]",
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
+    snprintf(item->report, OUT_RPT_SIZE, "[probe: %s]",
         list->probes[target->index]->name);
 
     /*fail to match or in softmatch mode, try to send next possible probe*/
@@ -258,9 +258,9 @@ nmaptcp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     struct NmapServiceProbeList *list = nmaptcp_conf.service_probes;
 
-    safe_strcpy(item->classification, OUTPUT_CLS_LEN, "unknown");
-    safe_strcpy(item->reason, OUTPUT_RSN_LEN, "no response");
-    snprintf(item->report, OUTPUT_RPT_LEN, "[probe: %s]",
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
+    snprintf(item->report, OUT_RPT_SIZE, "[probe: %s]",
         list->probes[target->index]->name);
 
     /**
