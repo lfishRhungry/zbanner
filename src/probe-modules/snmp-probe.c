@@ -6,7 +6,7 @@
 #include "../util-data/data-convert.h"
 #include "../util-data/data-chain.h"
 
-#define SNMP_DACH_TYPE 0
+#define SNMP_DACH_TYPE "snmp"
 
 /*for internal x-ref*/
 extern struct ProbeModule SnmpProbe;
@@ -187,7 +187,8 @@ next_id(const unsigned char *oid, unsigned *offset, uint64_t oid_length)
 /****************************************************************************
  ****************************************************************************/
 static void
-snmp_banner_oid(struct SMACK *global_mib, const unsigned char *oid, size_t oid_length, struct DataChain *dach)
+snmp_banner_oid(struct SMACK *global_mib, const unsigned char *oid,
+    size_t oid_length, struct DataChain *dach)
 {
     unsigned i;
     size_t id;
@@ -232,7 +233,8 @@ snmp_banner_oid(struct SMACK *global_mib, const unsigned char *oid, size_t oid_l
 /****************************************************************************
  ****************************************************************************/
 static void
-snmp_banner(struct SMACK *global_mib,
+snmp_banner(
+    struct SMACK *global_mib,
     const unsigned char *oid,
     size_t oid_length,
     uint64_t var_tag,
@@ -281,8 +283,8 @@ snmp_banner(struct SMACK *global_mib,
  * newer SNMP.
  ****************************************************************************/
 static void
-snmp_parse(struct SMACK *global_mib, const unsigned char *px, uint64_t length, struct DataChain *dach,
-    unsigned *request_id)
+snmp_parse(struct SMACK *global_mib, const unsigned char *px,
+    uint64_t length, struct DataChain *dach, unsigned *request_id)
 {
     uint64_t offset=0;
     uint64_t outer_length;
@@ -579,7 +581,6 @@ snmp_handle_response(
     struct DataChain dach[1];
 
     /* Parse the SNMP packet */
-    datachain_init(dach);
     snmp_parse(snmp_conf.global_mibs[th_idx], px, sizeof_px, dach, &request_id);
 
     if ((target->cookie&0x7FFFffff) != request_id) {
