@@ -297,16 +297,16 @@ recogudp_handle_response(
 
     if (match_res) {
         item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUT_CLS_SIZE, "success");
-        safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
-        snprintf(item->report, OUT_RPT_SIZE, "%s", match_res);
+        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "success");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        snprintf(item->report, OUTPUT_RPT_SIZE, "%s", match_res);
     } else {
         item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUT_CLS_SIZE, "fail");
-        safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
+        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "fail");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
 
         if (recogudp_conf.report_while_fail) {
-            normalize_string(px, sizeof_px, item->report, OUT_RPT_SIZE);
+            normalize_string(px, sizeof_px, item->report, OUTPUT_RPT_SIZE);
         }
     }
 
@@ -316,8 +316,8 @@ recogudp_handle_response(
 static unsigned
 recogudp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "no service");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
+    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "no service");
+    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
     item->level = Output_FAILURE;
     return 0;
 }

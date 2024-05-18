@@ -146,14 +146,14 @@ dns_handle_response(
     
     if (!dns_parse_reply((uint8_t *)px, sizeof_px, &dns_pkt)) {
         item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUT_CLS_SIZE, "invalid");
-        safe_strcpy(item->reason, OUT_RSN_SIZE, "not dns");
+        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "invalid");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not dns");
         return 0;
     }
 
     item->level = Output_SUCCESS;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "dns reply");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "valid dns");
+    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "dns reply");
+    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "valid dns");
 
     dns_record_t *rec;
     const char *type_str;
@@ -161,33 +161,33 @@ dns_handle_response(
 
     if (dns_pkt.head.header.ans_count > 0) {
 
-        offset += snprintf(item->report+offset, OUT_RPT_SIZE-offset, "[");
+        offset += snprintf(item->report+offset, OUTPUT_RPT_SIZE-offset, "[");
 
         rec = &dns_pkt.body.ans[0];
 
         type_str = dns_record_type2str(rec->type);
-        safe_strcpy(item->report+offset, OUT_RPT_SIZE-offset, type_str);
+        safe_strcpy(item->report+offset, OUTPUT_RPT_SIZE-offset, type_str);
         offset += strlen(type_str);
-        offset += snprintf(item->report+offset, OUT_RPT_SIZE-offset, " ");
+        offset += snprintf(item->report+offset, OUTPUT_RPT_SIZE-offset, " ");
         offset += dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
-            true, item->report+offset, OUT_RPT_SIZE-offset);
+            true, item->report+offset, OUTPUT_RPT_SIZE-offset);
     }
 
     if (dns_pkt.head.header.ans_count>1 && dns_conf.print_all_ans) {
         for (uint16_t i=0; i<dns_pkt.head.header.ans_count; i++) {
-            offset += snprintf(item->report+offset, OUT_RPT_SIZE-offset, ", ");
+            offset += snprintf(item->report+offset, OUTPUT_RPT_SIZE-offset, ", ");
             rec = &dns_pkt.body.ans[i];
             type_str = dns_record_type2str(rec->type);
-            safe_strcpy(item->report+offset, OUT_RPT_SIZE-offset, type_str);
+            safe_strcpy(item->report+offset, OUTPUT_RPT_SIZE-offset, type_str);
             offset += strlen(type_str);
-            offset += snprintf(item->report+offset, OUT_RPT_SIZE-offset, " ");
+            offset += snprintf(item->report+offset, OUTPUT_RPT_SIZE-offset, " ");
             offset += dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
-                true, item->report+offset, OUT_RPT_SIZE-offset);
+                true, item->report+offset, OUTPUT_RPT_SIZE-offset);
         }
     }
 
     if (item->report[0]!='\0')
-        offset += snprintf(item->report+offset, OUT_RPT_SIZE-offset, "]");
+        offset += snprintf(item->report+offset, OUTPUT_RPT_SIZE-offset, "]");
 
     return 0;
 }
@@ -196,8 +196,8 @@ static unsigned
 dns_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "no reply");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
+    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "no reply");
+    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "no response");
     return 0;
 }
 

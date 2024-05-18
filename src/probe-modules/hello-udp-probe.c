@@ -344,11 +344,11 @@ helloudp_handle_response(
 {
 
     item->level = Output_SUCCESS;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "success");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
+    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "success");
+    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
 
     if (helloudp_conf.report_while_regex)
-        normalize_string(px, sizeof_px, item->report, OUT_RPT_SIZE);
+        normalize_string(px, sizeof_px, item->report, OUTPUT_RPT_SIZE);
 
     return 0;
 }
@@ -356,8 +356,8 @@ helloudp_handle_response(
 static unsigned
 helloudp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "no service");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
+    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "no service");
+    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
     item->level = Output_FAILURE;
     return 0;
 }

@@ -216,9 +216,9 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line)
         .level     = Output_INFO,
     };
 
-    safe_strcpy(item.classification, OUT_CLS_SIZE, "ssl key log");
-    safe_strcpy(item.reason, OUT_RSN_SIZE, "recorded");
-    safe_strcpy(item.report, OUT_RPT_SIZE, line);
+    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "ssl key log");
+    safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "recorded");
+    safe_strcpy(item.report, OUTPUT_RPT_SIZE, line);
 
     output_result(tls_out, &item);
 }
@@ -237,9 +237,9 @@ static void ssl_info_callback(const SSL *ssl, int where, int ret) {
             .level     = Output_INFO,
         };
 
-        safe_strcpy(item.classification, OUT_CLS_SIZE, "ssl info");
-        safe_strcpy(item.reason, OUT_RSN_SIZE, "recorded");
-        snprintf(item.report, OUT_RPT_SIZE, "[OpenSSL Alert 0x%04x] %s: %s",
+        safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "ssl info");
+        safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "recorded");
+        snprintf(item.report, OUTPUT_RPT_SIZE, "[OpenSSL Alert 0x%04x] %s: %s",
             ret, SSL_alert_type_string_long(ret), SSL_alert_desc_string_long(ret));
 
         output_result(tls_out, &item);
@@ -250,7 +250,7 @@ static bool output_subject(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     int res;
-    char s_names[OUT_RPT_SIZE-1];
+    char s_names[OUTPUT_RPT_SIZE-1];
     BIO *bio = NULL;
     X509 *x509_cert = NULL;
     X509_NAME *x509_subject_name = NULL;
@@ -276,8 +276,8 @@ static bool output_subject(struct Output *out,
         .level     = Output_INFO,
     };
 
-    safe_strcpy(item.classification, OUT_CLS_SIZE, "tls subject");
-    safe_strcpy(item.reason, OUT_RSN_SIZE, "recorded");
+    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls subject");
+    safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "recorded");
 
     x509_subject_name = X509_get_subject_name(x509_cert);
     if (x509_subject_name != NULL) {
@@ -375,7 +375,7 @@ static bool output_cert(struct Output *out,
     STACK_OF(X509) * sk_x509_certs;
     int i_cert;
     int res;
-    char s_base64[OUT_RPT_SIZE-1];
+    char s_base64[OUTPUT_RPT_SIZE-1];
 
     sk_x509_certs = SSL_get_peer_cert_chain(ssl);
     if (sk_x509_certs == NULL) {
@@ -390,8 +390,8 @@ static bool output_cert(struct Output *out,
         .level     = Output_INFO,
     };
 
-    safe_strcpy(item.classification, OUT_CLS_SIZE, "tls cert");
-    safe_strcpy(item.reason, OUT_RSN_SIZE, "recorded");
+    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls cert");
+    safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "recorded");
 
     for (i_cert = 0; i_cert < sk_X509_num(sk_x509_certs); i_cert++) {
         X509 *x509_cert = NULL;
@@ -482,11 +482,11 @@ static bool output_cipher(struct Output *out,
         .level     = Output_INFO,
     };
 
-    safe_strcpy(item.classification, OUT_CLS_SIZE, "tls cipher");
-    safe_strcpy(item.reason, OUT_RSN_SIZE, "recorded");
+    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls cipher");
+    safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "recorded");
 
     cipher_suite = SSL_CIPHER_get_protocol_id(ssl_cipher);
-    snprintf(item.report, OUT_RPT_SIZE, "cipher[0x%x]", cipher_suite);
+    snprintf(item.report, OUTPUT_RPT_SIZE, "cipher[0x%x]", cipher_suite);
 
     output_result(tls_out, &item);
 
@@ -506,27 +506,27 @@ static bool output_version(struct Output *out,
         .level     = Output_INFO,
     };
 
-    safe_strcpy(item.classification, OUT_CLS_SIZE, "tls version");
-    safe_strcpy(item.reason, OUT_RSN_SIZE, "recorded");
+    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls version");
+    safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "recorded");
 
     switch (version) {
     case SSL3_VERSION:
-        safe_strcpy(item.report, OUT_RPT_SIZE, "SSLv3.0");
+        safe_strcpy(item.report, OUTPUT_RPT_SIZE, "SSLv3.0");
         break;
     case TLS1_VERSION:
-        safe_strcpy(item.report, OUT_RPT_SIZE, "TLSv1.0");
+        safe_strcpy(item.report, OUTPUT_RPT_SIZE, "TLSv1.0");
         break;
     case TLS1_1_VERSION:
-        safe_strcpy(item.report, OUT_RPT_SIZE, "TLSv1.1");
+        safe_strcpy(item.report, OUTPUT_RPT_SIZE, "TLSv1.1");
         break;
     case TLS1_2_VERSION:
-        safe_strcpy(item.report, OUT_RPT_SIZE, "TLSv1.2");
+        safe_strcpy(item.report, OUTPUT_RPT_SIZE, "TLSv1.2");
         break;
     case TLS1_3_VERSION:
-        safe_strcpy(item.report, OUT_RPT_SIZE, "TLSv1.3");
+        safe_strcpy(item.report, OUTPUT_RPT_SIZE, "TLSv1.3");
         break;
     default:
-        safe_strcpy(item.report, OUT_RPT_SIZE, "Other");
+        safe_strcpy(item.report, OUTPUT_RPT_SIZE, "Other");
     }
 
     output_result(tls_out, &item);

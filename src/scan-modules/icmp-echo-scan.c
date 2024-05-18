@@ -123,16 +123,16 @@ icmpecho_handle(
     item->port_me    = 0;
     item->level      = Output_SUCCESS;
 
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "echo reply");
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");
+    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "echo reply");
+    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "alive");
 
     int rpt_tmp = 0;
 
     if (icmpecho_conf.record_ttl)
-        rpt_tmp += snprintf(item->report+rpt_tmp, OUT_RPT_SIZE-rpt_tmp,
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_SIZE-rpt_tmp,
             "[ttl=%d]", recved->parsed.ip_ttl);
     if (icmpecho_conf.record_ipid && recved->parsed.src_ip.version==4)
-        rpt_tmp += snprintf(item->report+rpt_tmp, OUT_RPT_SIZE-rpt_tmp,
+        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_SIZE-rpt_tmp,
             "[ipid=%d]", recved->parsed.ip_v4_id);
 }
 
@@ -144,8 +144,8 @@ void icmpecho_timeout(
     struct FHandler *handler)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "down");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
+    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "down");
+    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
 }
 
 struct ScanModule IcmpEchoScan = {

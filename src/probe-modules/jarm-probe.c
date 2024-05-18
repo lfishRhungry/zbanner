@@ -144,8 +144,8 @@ jarm_handle_response(
      * */
     if (sizeof_px < 7) {
         item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUT_CLS_SIZE, "no jarm");
-        safe_strcpy(item->reason, OUT_RSN_SIZE, "not tls");
+        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "no jarm");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not tls");
         return 0;
     }
 
@@ -156,18 +156,18 @@ jarm_handle_response(
         if (px[1]==0x03) {
             if (px[2]==0x00 || px[2]==0x01 || px[2]==0x02 || px[2]==0x03) {
                 item->level = Output_SUCCESS;
-                safe_strcpy(item->classification, OUT_CLS_SIZE, "jarmed");
-                safe_strcpy(item->reason, OUT_RSN_SIZE, "tls banner");
-                int r = snprintf(item->report, OUT_RPT_SIZE, "JARM[%02d] ", target->index);
-                jarm_decipher_one(px, sizeof_px, item->report+r, OUT_RPT_SIZE-r);
+                safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "jarmed");
+                safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "tls banner");
+                int r = snprintf(item->report, OUTPUT_RPT_SIZE, "JARM[%02d] ", target->index);
+                jarm_decipher_one(px, sizeof_px, item->report+r, OUTPUT_RPT_SIZE-r);
                 return 1;
             }
         }
     }
 
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "no jarm");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "not tls");
+    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "no jarm");
+    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not tls");
     return 0;
 }
 
@@ -175,9 +175,9 @@ static unsigned
 jarm_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "no jarm");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
-    snprintf(item->report, OUT_RPT_SIZE, "JARM[%d]", target->index);
+    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "no jarm");
+    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
+    snprintf(item->report, OUTPUT_RPT_SIZE, "JARM[%d]", target->index);
     return 0;
 }
 

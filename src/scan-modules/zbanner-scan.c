@@ -280,7 +280,7 @@ zbanner_handle(
             item->level = Output_SUCCESS;
         }
 
-        safe_strcpy(item->reason, OUT_RSN_SIZE, "syn-ack");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "syn-ack");
 
         uint16_t win_them =
             TCP_WIN(recved->packet, recved->parsed.transport_offset);
@@ -288,19 +288,19 @@ zbanner_handle(
         int rpt_tmp = 0;
 
         if (zbanner_conf.record_ttl)
-            rpt_tmp += snprintf(item->report+rpt_tmp, OUT_RPT_SIZE-rpt_tmp,
+            rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_SIZE-rpt_tmp,
                 "[ttl=%d]", recved->parsed.ip_ttl);
         if (zbanner_conf.record_ipid && recved->parsed.src_ip.version==4)
-            rpt_tmp += snprintf(item->report+rpt_tmp, OUT_RPT_SIZE-rpt_tmp,
+            rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_SIZE-rpt_tmp,
                 "[ipid=%d]", recved->parsed.ip_v4_id);
         if (zbanner_conf.record_win)
-            rpt_tmp += snprintf(item->report+rpt_tmp, OUT_RPT_SIZE-rpt_tmp,
+            rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_SIZE-rpt_tmp,
                 "[win=%d]", win_them);
 
         if (win_them == 0) {
-            safe_strcpy(item->classification, OUT_CLS_SIZE, "zerowin");
+            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "zerowin");
         } else {
-            safe_strcpy(item->classification, OUT_CLS_SIZE, "open");
+            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "open");
 
             /*stack(send) ack with probe*/
             struct ProbeTarget ptarget = {
@@ -387,8 +387,8 @@ zbanner_handle(
     else if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
         TCP_FLAG_RST)) {
 
-        safe_strcpy(item->reason, OUT_RSN_SIZE, "rst");
-        safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "rst");
+        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "closed");
 
         if (zbanner_conf.is_port_failure) {
             item->level = Output_FAILURE;
@@ -507,8 +507,8 @@ zbanner_timeout(
 {
     /*event for port*/
     if (event->dedup_type==0) {
-        safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
-        safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
+        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "closed");
         if (zbanner_conf.is_port_failure) {
             item->level = Output_FAILURE;
         }

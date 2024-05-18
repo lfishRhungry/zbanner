@@ -86,14 +86,14 @@ lzr_k8s_handle_reponse(
 
     if (safe_memmem(px, sizeof_px, "kubernetes", strlen("kubernetes"))) {
         item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUT_CLS_SIZE, "k8s");
-        safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
+        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "k8s");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
         return 0;
     }
 
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "not k8s");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
+    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not k8s");
+    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -102,8 +102,8 @@ static unsigned
 lzr_k8s_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "not k8s");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
+    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not k8s");
+    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "no response");
     return 0;
 }
 

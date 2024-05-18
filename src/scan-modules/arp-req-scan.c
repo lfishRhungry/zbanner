@@ -75,9 +75,9 @@ arpreq_handle(
     item->port_me    = 0;
     item->level      = Output_SUCCESS;
 
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "arp reply");
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");
-    snprintf(item->report, OUT_RPT_SIZE, "%02X:%02X:%02X:%02X:%02X:%02X",
+    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "arp reply");
+    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "alive");
+    snprintf(item->report, OUTPUT_RPT_SIZE, "%02X:%02X:%02X:%02X:%02X:%02X",
         recved->parsed.mac_src[0], recved->parsed.mac_src[1],
         recved->parsed.mac_src[2], recved->parsed.mac_src[3],
         recved->parsed.mac_src[4], recved->parsed.mac_src[5]);
@@ -91,8 +91,8 @@ void arpreq_timeout(
     struct FHandler *handler)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "down");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
+    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "down");
+    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
 }
 
 struct ScanModule ArpReqScan = {
