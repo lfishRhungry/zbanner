@@ -1,15 +1,8 @@
 /*
     Data Chain
 
-    This module remembers "datas" from a target or session for ProbeType_STATE.
+    This module remembers a series of "name" & "data" identified by id.
     These are often simple strings, like the FTP hello string.
-    The can also be more complex strings, parsed from binary protocols.
-    They also may contain bulk data, such as BASE64 encoded X.509 certificates
-    from SSL.
-
-    One complication is that since we can extract multiple types of 
-    information from the same connection, we can have more than one
-    result output for the same target in ProbeType_STATE.
 
     From masscan's `banout`
     Modified by lishRhungry 2024
@@ -19,24 +12,23 @@
 
 #include <stddef.h>
 
+#define DACH_DEFAULT_SIZE 200
+
+/**
+ * A structure for tracking a series of data memories
+ */
+struct DataChain {
+    struct DataChain    *next;
+    unsigned             id;
+    unsigned             length;
+    unsigned             max_length;
+    unsigned char        data[DACH_DEFAULT_SIZE];
+};
+
 struct DataChainB64
 {
     unsigned state:2;
     unsigned temp:24;
-};
-
-/**
- * A structure for tracking one or more type of data memories
- * comes from BannerOutput of masscan. I stripped it because
- * we have need data tracking not only for banner but other
- * situation.
- */
-struct DataChain {
-    struct DataChain    *next;
-    unsigned             type;
-    unsigned             length;
-    unsigned             max_length;
-    unsigned char        data[200];
 };
 
 /**
@@ -59,53 +51,55 @@ datachain_release(struct DataChain *dach);
  * more interesting, which is why it's a separate function.
  */
 void
-datachain_newline(struct DataChain *dach, unsigned proto);
+datachain_newline(struct DataChain *dach, unsigned id);
 
 /**
  * End the data of the current.
  */
 void
-datachain_end(struct DataChain *dach, unsigned proto);
+datachain_end(struct DataChain *dach, unsigned id);
 
 /**
  * Append text onto the data. If this exceeds the buffer, then the
  * buffer will be expanded.
  */
 void
-datachain_append(struct DataChain *dach, unsigned proto, const void *px, size_t length);
+datachain_append(struct DataChain *dach, unsigned id, const void *px, size_t length);
+
 #define AUTO_LEN ((size_t)~0)
 
 void
-datachain_printf(struct DataChain *dach, unsigned proto, const char *fmt, ...);
+datachain_printf(struct DataChain *dach, unsigned id, const char *fmt, ...);
 
 /**
  * Append a single character to the data.
  */
 void
-datachain_append_char(struct DataChain *dach, unsigned proto, int c);
+datachain_append_char(struct DataChain *dach, unsigned id, int c);
 
 /**
  * Append an integer, with hex digits, with the specified number of
  * digits
  */
 void
-datachain_append_hexint(struct DataChain *dach, unsigned proto, unsigned long long number, int digits);
+datachain_append_hexint(struct DataChain *dach, unsigned id,
+    unsigned long long number, int digits);
 
 void
-datachain_append_unicode(struct DataChain *dach, unsigned proto, unsigned c);
+datachain_append_unicode(struct DataChain *dach, unsigned id, unsigned c);
 
 /**
  * Select a specific string (of the specified type).
  */
 const unsigned char *
-datachain_string(const struct DataChain *dach, unsigned proto);
+datachain_string(const struct DataChain *dach, unsigned id);
 
 /**
  * Get the length of a specific string of the specified type.
  * This is the matching function to datachain_string.
  */
 unsigned
-datachain_string_length(const struct DataChain *dach, unsigned proto);
+datachain_string_length(const struct DataChain *dach, unsigned id);
 
 
 /**
@@ -122,17 +116,16 @@ datachain_init_base64(struct DataChainB64 *base64);
  * fragment
  */
 void
-datachain_append_base64(struct DataChain *dach, unsigned proto,
-    const void *px, size_t length,
-    struct DataChainB64 *base64);
+datachain_append_base64(struct DataChain *dach, unsigned id,
+    const void *px, size_t length, struct DataChainB64 *base64);
 
 /**
  * Finish encoding the BASE64 string, appending the '==' things on the
  * end if necessary
  */
 void
-datachain_finalize_base64(struct DataChain *dach, unsigned proto,
-                       struct DataChainB64 *base64);
+datachain_finalize_base64(struct DataChain *dach, unsigned id,
+    struct DataChainB64 *base64);
 
 /**
  * Compares a data string to a fixed string. This is primarily used
@@ -140,12 +133,12 @@ datachain_finalize_base64(struct DataChain *dach, unsigned proto,
  * expected data.
  */
 unsigned
-datachain_is_equal(const struct DataChain *dach, unsigned proto,
-                const char *string);
+datachain_is_equal(const struct DataChain *dach,
+    unsigned id, const char *string);
 
 unsigned
-datachain_is_contains(const struct DataChain *dach, unsigned proto,
-                const char *string);
+datachain_is_contains(const struct DataChain *dach,
+    unsigned id, const char *string);
 
 /**
  * Do the typical unit/regression test, for this module.

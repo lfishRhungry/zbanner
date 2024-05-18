@@ -1,15 +1,8 @@
 /*
     Data Chain
 
-    This module remembers "datas" from a target or session for ProbeType_STATE.
+    This module remembers a series of "name" & "data" identified by id.
     These are often simple strings, like the FTP hello string.
-    The can also be more complex strings, parsed from binary protocols.
-    They also may contain bulk data, such as BASE64 encoded X.509 certificates
-    from SSL.
-
-    One complication is that since we can extract multiple types of 
-    information from the same connection, we can have more than one
-    result output for the same target in ProbeType_STATE.
 
     From masscan's `banout`
     Modified by lishRhungry 2024
@@ -27,9 +20,9 @@
 void
 datachain_init(struct DataChain *dach)
 {
-    dach->length = 0;
-    dach->type = 0;
-    dach->next = 0;
+    dach->length     = 0;
+    dach->id         = 0;
+    dach->next       = 0;
     dach->max_length = sizeof(dach->data);
 }
 
@@ -50,9 +43,9 @@ datachain_release(struct DataChain *dach)
 /***************************************************************************
  ***************************************************************************/
 static struct DataChain *
-banout_find_proto(struct DataChain *dach, unsigned proto)
+datachain_find_by_id(struct DataChain *dach, unsigned id)
 {
-    while (dach && dach->type != proto)
+    while (dach && dach->id != id)
         dach = dach->next;
     return dach;
 }
@@ -60,9 +53,9 @@ banout_find_proto(struct DataChain *dach, unsigned proto)
 /***************************************************************************
  ***************************************************************************/
 const unsigned char *
-datachain_string(const struct DataChain *dach, unsigned proto)
+datachain_string(const struct DataChain *dach, unsigned id)
 {
-    while (dach && (dach->type&0xFFFF) != proto)
+    while (dach && (dach->id&0xFFFF) != id)
         dach = dach->next;
 
     if (dach)
@@ -74,7 +67,7 @@ datachain_string(const struct DataChain *dach, unsigned proto)
 /***************************************************************************
  ***************************************************************************/
 unsigned
-datachain_is_equal(const struct DataChain *dach, unsigned proto,
+datachain_is_equal(const struct DataChain *dach, unsigned id,
                 const char *string)
 {
     const unsigned char *string2;
@@ -84,7 +77,7 @@ datachain_is_equal(const struct DataChain *dach, unsigned proto,
     /*
      * Grab the string
      */
-    string2 = datachain_string(dach, proto);
+    string2 = datachain_string(dach, id);
     if (string2 == NULL)
         return string == NULL;
 
@@ -92,7 +85,7 @@ datachain_is_equal(const struct DataChain *dach, unsigned proto,
         return 0;
     
     string_length = strlen(string);
-    string2_length = datachain_string_length(dach, proto);
+    string2_length = datachain_string_length(dach, id);
 
     if (string_length != string2_length)
         return 0;
@@ -103,7 +96,7 @@ datachain_is_equal(const struct DataChain *dach, unsigned proto,
 /***************************************************************************
  ***************************************************************************/
 unsigned
-datachain_is_contains(const struct DataChain *dach, unsigned proto,
+datachain_is_contains(const struct DataChain *dach, unsigned id,
                 const char *string)
 {
     const unsigned char *string2;
@@ -114,7 +107,7 @@ datachain_is_contains(const struct DataChain *dach, unsigned proto,
     /*
      * Grab the string
      */
-    string2 = datachain_string(dach, proto);
+    string2 = datachain_string(dach, id);
     if (string2 == NULL)
         return string == NULL;
 
@@ -122,7 +115,7 @@ datachain_is_contains(const struct DataChain *dach, unsigned proto,
         return 0;
     
     string_length = strlen(string);
-    string2_length = datachain_string_length(dach, proto);
+    string2_length = datachain_string_length(dach, id);
 
     if (string_length > string2_length)
         return 0;
@@ -137,9 +130,9 @@ datachain_is_contains(const struct DataChain *dach, unsigned proto,
 /***************************************************************************
  ***************************************************************************/
 unsigned
-datachain_string_length(const struct DataChain *dach, unsigned proto)
+datachain_string_length(const struct DataChain *dach, unsigned id)
 {
-    while (dach && dach->type != proto)
+    while (dach && dach->id != id)
         dach = dach->next;
 
     if (dach)
@@ -151,42 +144,42 @@ datachain_string_length(const struct DataChain *dach, unsigned proto)
 /***************************************************************************
  ***************************************************************************/
 void
-datachain_newline(struct DataChain *dach, unsigned proto)
+datachain_newline(struct DataChain *dach, unsigned id)
 {
     struct DataChain *p;
 
-    p = banout_find_proto(dach, proto);
+    p = datachain_find_by_id(dach, id);
     if (p && p->length) {
-        datachain_append_char(dach, proto, '\n');
+        datachain_append_char(dach, id, '\n');
     }
 }
 
 /***************************************************************************
  ***************************************************************************/
 void
-datachain_end(struct DataChain *dach, unsigned proto)
+datachain_end(struct DataChain *dach, unsigned id)
 {
     struct DataChain *p;
 
-    p = banout_find_proto(dach, proto);
+    p = datachain_find_by_id(dach, id);
     if (p && p->length) {
-        p->type |= 0x80000000;
+        p->id |= 0x80000000;
     }
 }
 
 /***************************************************************************
  ***************************************************************************/
 void
-datachain_append_char(struct DataChain *dach, unsigned proto, int c)
+datachain_append_char(struct DataChain *dach, unsigned id, int c)
 {
     char cc = (char)c;
-    datachain_append(dach, proto, &cc, 1);
+    datachain_append(dach, id, &cc, 1);
 }
 
 /***************************************************************************
  ***************************************************************************/
 void
-datachain_append_hexint(struct DataChain *dach, unsigned proto, unsigned long long number, int digits)
+datachain_append_hexint(struct DataChain *dach, unsigned id, unsigned long long number, int digits)
 {
     if (digits == 0) {
         for (digits=16; digits>0; digits--)
@@ -196,7 +189,7 @@ datachain_append_hexint(struct DataChain *dach, unsigned proto, unsigned long lo
     
     for (;digits>0; digits--) {
         char c = "0123456789abcdef"[(number>>(unsigned long long)((digits-1)*4)) & 0xF];
-        datachain_append_char(dach, proto, c);
+        datachain_append_char(dach, id, c);
     }
 }
 
@@ -204,34 +197,34 @@ datachain_append_hexint(struct DataChain *dach, unsigned proto, unsigned long lo
  * Output either a normal character, or the hex form of a UTF-8 string
  ***************************************************************************/
 void
-datachain_append_unicode(struct DataChain *dach, unsigned proto, unsigned c)
+datachain_append_unicode(struct DataChain *dach, unsigned id, unsigned c)
 {
     if (c & ~0xFFFF) {
         unsigned c2;
         c2 = 0xF0 | ((c>>18)&0x03);
-        datachain_append_char(dach, proto, c2);
+        datachain_append_char(dach, id, c2);
         c2 = 0x80 | ((c>>12)&0x3F);
-        datachain_append_char(dach, proto, c2);
+        datachain_append_char(dach, id, c2);
         c2 = 0x80 | ((c>> 6)&0x3F);
-        datachain_append_char(dach, proto, c2);
+        datachain_append_char(dach, id, c2);
         c2 = 0x80 | ((c>> 0)&0x3F);
-        datachain_append_char(dach, proto, c2);
+        datachain_append_char(dach, id, c2);
     } else if (c & ~0x7FF) {
         unsigned c2;
         c2 = 0xE0 | ((c>>12)&0x0F);
-        datachain_append_char(dach, proto, c2);
+        datachain_append_char(dach, id, c2);
         c2 = 0x80 | ((c>> 6)&0x3F);
-        datachain_append_char(dach, proto, c2);
+        datachain_append_char(dach, id, c2);
         c2 = 0x80 | ((c>> 0)&0x3F);
-        datachain_append_char(dach, proto, c2);
+        datachain_append_char(dach, id, c2);
     } else if (c & ~0x7f) {
         unsigned c2;
         c2 = 0xc0 | ((c>> 6)&0x1F);
-        datachain_append_char(dach, proto, c2);
+        datachain_append_char(dach, id, c2);
         c2 = 0x80 | ((c>> 0)&0x3F);
-        datachain_append_char(dach, proto, c2);
+        datachain_append_char(dach, id, c2);
     } else
-        datachain_append_char(dach, proto, c);
+        datachain_append_char(dach, id, c);
 }
 
 
@@ -239,17 +232,17 @@ datachain_append_unicode(struct DataChain *dach, unsigned proto, unsigned c)
 /***************************************************************************
  ***************************************************************************/
 static struct DataChain *
-datachain_new_type(struct DataChain *dach, unsigned proto)
+datachain_new_data(struct DataChain *dach, unsigned id)
 {
     struct DataChain *p;
 
-    if (dach->type == 0 && dach->length == 0) {
-        dach->type = proto;
+    if (dach->id == 0 && dach->length == 0) {
+        dach->id = id;
         return dach;
     }
 
     p = CALLOC(1, sizeof(*p));
-    p->type = proto;
+    p->id = id;
     p->max_length = sizeof(p->data);
     p->next = dach->next;
     dach->next = p;
@@ -265,17 +258,14 @@ datachain_expand(struct DataChain *dach, struct DataChain *p)
     struct DataChain *n;
 
     /* Double the space */
-    n = MALLOC(  offsetof(struct DataChain, data)
-                 + 2 * p->max_length);
-
-    /* Copy the old structure */
+    n = MALLOC(offsetof(struct DataChain, data) + 2*p->max_length);
     memcpy(n, p, offsetof(struct DataChain, data) + p->max_length);
     n->max_length *= 2;
 
     if (p == dach) {
         /* 'p' is the head of the linked list, so we can't free it */
         dach->next = n;
-        p->type = 0;
+        p->id = 0;
         p->length = 0;
     } else {
         /* 'p' is not the head, so replace it in the list with 'n',
@@ -297,7 +287,7 @@ datachain_expand(struct DataChain *dach, struct DataChain *p)
 /***************************************************************************
  ***************************************************************************/
 static void
-datachain_vprintf(struct DataChain *dach, unsigned proto,
+datachain_vprintf(struct DataChain *dach, unsigned id,
                const char *fmt, va_list marker) {
     char str[10];
     int len;
@@ -306,28 +296,28 @@ datachain_vprintf(struct DataChain *dach, unsigned proto,
     if (len > sizeof(str)-1) {
         char *tmp = MALLOC(len+1);
         vsnprintf(tmp, len+1, fmt, marker);
-        datachain_append(dach, proto, tmp, len);
+        datachain_append(dach, id, tmp, len);
         free(tmp);
     } else {
-        datachain_append(dach, proto, str, len);
+        datachain_append(dach, id, str, len);
     }
 }
 
 /***************************************************************************
  ***************************************************************************/
 void
-datachain_printf(struct DataChain *dach, unsigned proto, const char *fmt, ...) {
+datachain_printf(struct DataChain *dach, unsigned id, const char *fmt, ...) {
     va_list marker;
 
     va_start(marker, fmt);
-    datachain_vprintf(dach, proto, fmt, marker);
+    datachain_vprintf(dach, id, fmt, marker);
     va_end(marker);
 }
 
 /***************************************************************************
  ***************************************************************************/
 void
-datachain_append(struct DataChain *dach, unsigned proto, 
+datachain_append(struct DataChain *dach, unsigned id, 
               const void *px, size_t length)
 {
     struct DataChain *p;
@@ -335,14 +325,9 @@ datachain_append(struct DataChain *dach, unsigned proto,
     if (length == AUTO_LEN)
         length = strlen((const char*)px);
     
-    /*
-     * Get the matching record for the protocol (e.g. HTML, SSL, etc.).
-     * If it doesn't already exist, add the protocol object to the linked
-     * list.
-     */
-    p = banout_find_proto(dach, proto);
+    p = datachain_find_by_id(dach, id);
     if (p == NULL) {
-        p = datachain_new_type(dach, proto);
+        p = datachain_new_data(dach, id);
     }
 
 
@@ -384,7 +369,7 @@ datachain_init_base64(struct DataChainB64 *base64)
 /*****************************************************************************
  *****************************************************************************/
 void
-datachain_append_base64(struct DataChain *dach, unsigned proto,
+datachain_append_base64(struct DataChain *dach, unsigned id,
                      const void *vpx, size_t length,
                      struct DataChainB64 *base64)
 {
@@ -406,10 +391,10 @@ datachain_append_base64(struct DataChain *dach, unsigned proto,
             case 2:
                 x |= px[i];
                 state = 0;
-                datachain_append_char(dach, proto, b64[(x>>18)&0x3F]);
-                datachain_append_char(dach, proto, b64[(x>>12)&0x3F]);
-                datachain_append_char(dach, proto, b64[(x>> 6)&0x3F]);
-                datachain_append_char(dach, proto, b64[(x>> 0)&0x3F]);
+                datachain_append_char(dach, id, b64[(x>>18)&0x3F]);
+                datachain_append_char(dach, id, b64[(x>>12)&0x3F]);
+                datachain_append_char(dach, id, b64[(x>> 6)&0x3F]);
+                datachain_append_char(dach, id, b64[(x>> 0)&0x3F]);
         }
     }
     
@@ -420,7 +405,7 @@ datachain_append_base64(struct DataChain *dach, unsigned proto,
 /*****************************************************************************
  *****************************************************************************/
 void
-datachain_finalize_base64(struct DataChain *dach, unsigned proto,
+datachain_finalize_base64(struct DataChain *dach, unsigned id,
                        struct DataChainB64 *base64)
 {
     unsigned x = base64->temp;
@@ -428,16 +413,16 @@ datachain_finalize_base64(struct DataChain *dach, unsigned proto,
         case 0:
             break;
         case 1:
-            datachain_append_char(dach, proto, b64[(x>>18)&0x3F]);
-            datachain_append_char(dach, proto, b64[(x>>12)&0x3F]);
-            datachain_append_char(dach, proto, '=');
-            datachain_append_char(dach, proto, '=');
+            datachain_append_char(dach, id, b64[(x>>18)&0x3F]);
+            datachain_append_char(dach, id, b64[(x>>12)&0x3F]);
+            datachain_append_char(dach, id, '=');
+            datachain_append_char(dach, id, '=');
             break;
         case 2:
-            datachain_append_char(dach, proto, b64[(x>>18)&0x3F]);
-            datachain_append_char(dach, proto, b64[(x>>12)&0x3F]);
-            datachain_append_char(dach, proto, b64[(x>>6)&0x3F]);
-            datachain_append_char(dach, proto, '=');
+            datachain_append_char(dach, id, b64[(x>>18)&0x3F]);
+            datachain_append_char(dach, id, b64[(x>>12)&0x3F]);
+            datachain_append_char(dach, id, b64[(x>>6)&0x3F]);
+            datachain_append_char(dach, id, '=');
             break;
     }
 }
@@ -447,11 +432,11 @@ datachain_finalize_base64(struct DataChain *dach, unsigned proto,
 /*****************************************************************************
  *****************************************************************************/
 static int
-datachain_string_equals(struct DataChain *dach, unsigned proto,
+datachain_string_equals(struct DataChain *dach, unsigned id,
                      const char *rhs)
 {
-    const unsigned char *lhs = datachain_string(dach, proto);
-    size_t lhs_length = datachain_string_length(dach, proto);
+    const unsigned char *lhs = datachain_string(dach, id);
+    size_t lhs_length = datachain_string_length(dach, id);
     size_t rhs_length = strlen(rhs);
     
     if (lhs_length != rhs_length)
