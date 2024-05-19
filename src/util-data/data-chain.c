@@ -16,6 +16,8 @@
 #include <assert.h>
 
 
+#define DACH_DEFAULT_DATA_SIZE     200
+
 static unsigned name_hash(const char *name) {
     unsigned hash  = 0;
     unsigned prime = 151;
@@ -317,7 +319,7 @@ datachain_append(struct DataChain *dach, const char *name,
 {
     struct DataLink *p;
 
-    if (length == AUTO_LEN)
+    if (length == DACH_AUTO_LEN)
         length = strlen((const char*)px);
     
     p = datachain_find_link(dach, name);

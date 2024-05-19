@@ -11,8 +11,9 @@
 
 #include <stddef.h>
 
-#define DACH_DEFAULT_DATA_SIZE     200
 #define DACH_MAX_NAME_SIZE          20
+
+#define DACH_AUTO_LEN ((size_t)~0)
 
 /**
  * A structure for tracking a series of name/data memories
@@ -23,7 +24,7 @@ struct DataLink {
     unsigned             name_hash;
     unsigned             data_len;
     unsigned             data_size;
-    unsigned char        data[DACH_DEFAULT_DATA_SIZE];
+    unsigned char        data[0];
 };
 
 struct DataChain {
@@ -49,8 +50,6 @@ datachain_release(struct DataChain *dach);
  */
 void
 datachain_append(struct DataChain *dach, const char *name, const void *px, size_t length);
-
-#define AUTO_LEN ((size_t)~0)
 
 void
 datachain_printf(struct DataChain *dach, const char *name, const char *fmt, ...);
