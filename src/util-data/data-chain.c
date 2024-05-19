@@ -14,6 +14,7 @@
 #include <stddef.h>
 #include <stdarg.h>
 #include <assert.h>
+#include <ctype.h>
 
 
 #define DACH_DEFAULT_DATA_SIZE     200
@@ -31,149 +32,155 @@ static unsigned name_hash(const char *name) {
 /***************************************************************************
  ***************************************************************************/
 void
-datachain_release(struct DataChain *dach)
+dach_release(struct DataChain *dach)
 {
     struct DataLink *link = dach->link;
 
-    if (!link) {
-        return;
-    }
-
+    /*release all except dummy node*/
     while (link->next) {
         struct DataLink *next = link->next->next;
         free(link->next);
         link->next = next;
     }
 
-    free(link);
-
-    dach->link = NULL;
+    link->next = NULL;
 }
-
 
 /***************************************************************************
  ***************************************************************************/
-static struct DataLink *
-datachain_find_link(struct DataChain *dach, const char *name)
+struct DataLink *
+dach_get_pre_link(struct DataChain *dach, const char *name)
 {
     unsigned hash = name_hash(name);
 
-    struct DataLink *link = dach->link;
-    while (link && link->name_hash != hash)
-        link = link->next;
-    return link;
+    struct DataLink *pre = dach->link;
+    while (pre->next && pre->next->name_hash != hash)
+        pre = pre->next;
+
+    return pre;
 }
+
+struct DataLink *
+dach_get_link(struct DataChain *dach, const char *name)
+{
+    return dach_get_pre_link(dach, name)->next;
+}
+
+/*
+ * Try to maintain a c string by keeping at least a '\0' in tails of data
+ * ref:
+ *     new_link
+ *     expand
+*/
+
+/***************************************************************************
+ create a data link and put it after the dummy node
+ NOTE: the name must not exist
+ ***************************************************************************/
+static void
+datachain_new_link(struct DataChain *dach, const char *name, size_t len)
+{
+    /*keep a space for '\0'*/
+    size_t data_size   = len<DACH_DEFAULT_DATA_SIZE?DACH_DEFAULT_DATA_SIZE:len+1;
+    struct DataLink *p = CALLOC(1, sizeof(struct DataLink) + data_size);
+
+    safe_strcpy(p->name, DACH_MAX_NAME_SIZE, name);
+
+    p->name_hash       = name_hash(name);
+    p->data_size       = data_size;
+    p->next            = dach->link->next;
+    dach->link->next   = p;
+}
+
+
+/***************************************************************************
+ * expand the target link size to at least mlen by inputting its previous link.
+ * NOTE: pre & pre->next must not be NULL
+ ***************************************************************************/
+static void
+datachain_link_expand(struct DataLink *pre, size_t mlen)
+{
+    assert(pre && pre->next);
+
+    struct DataLink *n;
+    size_t length;
+
+    /*keep a space for '\0'*/
+    length = mlen<(2*pre->next->data_size)?(2*pre->next->data_size):mlen+1;
+    n      = CALLOC(1, sizeof(struct DataLink) + length);
+
+    memcpy(n, pre->next, offsetof(struct DataLink, data) + pre->next->data_size);
+    n->data_size = length;
+
+    free(pre->next);
+    pre->next = n;
+}
+
 
 /***************************************************************************
  ***************************************************************************/
-const unsigned char *
-datachain_string(const struct DataChain *dach, const char *name)
+void
+dach_append_by_pre(struct DataLink *pre, 
+    const void *px, size_t length)
 {
-    struct DataLink *link = dach->link;
-    unsigned hash = name_hash(name);
+    assert(pre && pre->next);
 
-    while (link && link->name_hash != hash)
-        link = link->next;
+    if (length == DACH_AUTO_LEN)
+        length = strlen((const char*)px);
 
-    if (link)
-        return link->data;
-    else
-        return NULL;
-}
-
-/***************************************************************************
- ***************************************************************************/
-unsigned
-datachain_is_equal(const struct DataChain *dach, const char *name,
-    const char *string)
-{
-    const unsigned char *string2;
-    size_t string_length;
-    size_t string2_length;
-
-    /*
-     * Grab the string
-     */
-    string2 = datachain_string(dach, name);
-    if (string2 == NULL)
-        return string == NULL;
-
-    if (string == NULL)
-        return 0;
-    
-    string_length = strlen(string);
-    string2_length = datachain_string_length(dach, name);
-
-    if (string_length != string2_length)
-        return 0;
-    
-    return memcmp(string, string2, string2_length) == 0;
-}
-
-/***************************************************************************
- ***************************************************************************/
-unsigned
-datachain_is_contains(const struct DataChain *dach, const char *name,
-    const char *string)
-{
-    const unsigned char *string2;
-    size_t string_length;
-    size_t string2_length;
-    size_t i;
-
-    /*
-     * Grab the string
-     */
-    string2 = datachain_string(dach, name);
-    if (string2 == NULL)
-        return string == NULL;
-
-    if (string == NULL)
-        return 0;
-    
-    string_length = strlen(string);
-    string2_length = datachain_string_length(dach, name);
-
-    if (string_length > string2_length)
-        return 0;
-    
-    for (i=0; i<string2_length-string_length+1; i++) {
-        if (memcmp(string, string2+i, string_length) == 0)
-            return 1;
+    size_t min_len = pre->next->data_len + length;
+    if (min_len >= pre->next->data_size) { /*at least keep a '\0'*/
+        datachain_link_expand(pre, min_len);
     }
-    return 0;
-}
 
-/***************************************************************************
- ***************************************************************************/
-unsigned
-datachain_string_length(const struct DataChain *dach, const char *name)
-{
-    struct DataLink *link = dach->link;
-    unsigned hash = name_hash(name);
-
-    while (link && link->name_hash != hash)
-        link = link->next;
-
-    if (link)
-        return link->data_len;
-    else
-        return 0;
+    memcpy(pre->next->data + pre->next->data_len, px, length);
+    pre->next->data_len = min_len;
 }
 
 /***************************************************************************
  ***************************************************************************/
 void
-datachain_append_char(struct DataChain *dach, const char *name, int c)
+dach_append(struct DataChain *dach, const char *name, 
+    const void *px, size_t length)
+{
+    struct DataLink *pre = dach_get_pre_link(dach, name);
+
+    if (pre->next == NULL) {
+        datachain_new_link(dach, name, length);
+        pre = dach->link;
+    }
+
+    dach_append_by_pre(pre, px, length);
+}
+
+/***************************************************************************
+ ***************************************************************************/
+void
+dach_append_char_by_pre(struct DataLink *pre, int c)
 {
     char cc = (char)c;
-    datachain_append(dach, name, &cc, 1);
+    dach_append_by_pre(pre, &cc, 1);
 }
 
 /***************************************************************************
  ***************************************************************************/
 void
-datachain_append_hexint(struct DataChain *dach, const char *name,
+dach_append_char(struct DataChain *dach, const char *name, int c)
+{
+    struct DataLink *pre = dach_get_pre_link(dach, name);
+
+    if (pre->next == NULL) {
+        datachain_new_link(dach, name, 1);
+        pre = dach->link;
+    }
+
+    dach_append_char_by_pre(pre, c);
+}
+
+/***************************************************************************
+ ***************************************************************************/
+void
+dach_append_hexint_by_pre(struct DataLink *pre,
     unsigned long long number, int digits)
 {
     if (digits == 0) {
@@ -181,165 +188,243 @@ datachain_append_hexint(struct DataChain *dach, const char *name,
             if (number>>((digits-1)*4) & 0xF)
                 break;
     }
-    
+
+
     for (;digits>0; digits--) {
         char c = "0123456789abcdef"[(number>>(unsigned long long)((digits-1)*4)) & 0xF];
-        datachain_append_char(dach, name, c);
+        dach_append_char_by_pre(pre, c);
     }
 }
 
 /***************************************************************************
- * Output either a normal character, or the hex form of a UTF-8 string
  ***************************************************************************/
 void
-datachain_append_unicode(struct DataChain *dach, const char *name, unsigned c)
+dach_append_hexint(struct DataChain *dach, const char *name,
+    unsigned long long number, int digits)
+{
+    struct DataLink *pre = dach_get_pre_link(dach, name);
+
+    if (pre->next == NULL) {
+        datachain_new_link(dach, name, 1); /*use default*/
+        pre = dach->link;
+    }
+
+    if (digits == 0) {
+        for (digits=16; digits>0; digits--)
+            if (number>>((digits-1)*4) & 0xF)
+                break;
+    }
+
+    for (;digits>0; digits--) {
+        char c = "0123456789abcdef"[(number>>(unsigned long long)((digits-1)*4)) & 0xF];
+        dach_append_char_by_pre(pre, c);
+    }
+}
+
+/***************************************************************************
+ ***************************************************************************/
+void
+dach_append_unicode_by_pre(struct DataLink *pre, unsigned c)
 {
     if (c & ~0xFFFF) {
         unsigned c2;
         c2 = 0xF0 | ((c>>18)&0x03);
-        datachain_append_char(dach, name, c2);
+        dach_append_char_by_pre(pre, c2);
         c2 = 0x80 | ((c>>12)&0x3F);
-        datachain_append_char(dach, name, c2);
+        dach_append_char_by_pre(pre, c2);
         c2 = 0x80 | ((c>> 6)&0x3F);
-        datachain_append_char(dach, name, c2);
+        dach_append_char_by_pre(pre, c2);
         c2 = 0x80 | ((c>> 0)&0x3F);
-        datachain_append_char(dach, name, c2);
+        dach_append_char_by_pre(pre, c2);
     } else if (c & ~0x7FF) {
         unsigned c2;
         c2 = 0xE0 | ((c>>12)&0x0F);
-        datachain_append_char(dach, name, c2);
+        dach_append_char_by_pre(pre, c2);
         c2 = 0x80 | ((c>> 6)&0x3F);
-        datachain_append_char(dach, name, c2);
+        dach_append_char_by_pre(pre, c2);
         c2 = 0x80 | ((c>> 0)&0x3F);
-        datachain_append_char(dach, name, c2);
+        dach_append_char_by_pre(pre, c2);
     } else if (c & ~0x7f) {
         unsigned c2;
         c2 = 0xc0 | ((c>> 6)&0x1F);
-        datachain_append_char(dach, name, c2);
+        dach_append_char_by_pre(pre, c2);
         c2 = 0x80 | ((c>> 0)&0x3F);
-        datachain_append_char(dach, name, c2);
+        dach_append_char_by_pre(pre, c2);
     } else
-        datachain_append_char(dach, name, c);
+        dach_append_char_by_pre(pre, c);
 }
-
-
 
 /***************************************************************************
  ***************************************************************************/
-static struct DataLink *
-datachain_expand(struct DataChain *dach, struct DataLink *p)
+void
+dach_append_unicode(struct DataChain *dach, const char *name, unsigned c)
 {
-    assert(dach->link);
+    struct DataLink *pre = dach_get_pre_link(dach, name);
 
-    struct DataLink *n;
-
-    /* Double the space */
-    n = CALLOC(1, offsetof(struct DataLink, data) + 2*p->data_size);
-    memcpy(n, p, offsetof(struct DataLink, data) + p->data_size);
-    n->data_size *= 2;
-
-    n->next = p->next;
-
-    struct DataLink *link = dach->link;
-
-    if (link==p) {
-        dach->link = n;
-    } else {
-        while (link->next != p)
-            link = link->next;
-        link->next = n;
+    if (pre->next == NULL) {
+        datachain_new_link(dach, name, 1); /*use default*/
+        pre = dach->link;
     }
 
-    free(p);
-
-    return n;
+    dach_append_unicode_by_pre(pre, c);
 }
 
 
-
-
-
-
 /***************************************************************************
+ * NOTE: pre & pre->next must not be NULL
  ***************************************************************************/
 static void
-datachain_vprintf(struct DataChain *dach, const char *name,
-    const char *fmt, va_list marker) {
+datachain_vprintf(struct DataLink *pre, const char *fmt, va_list marker) {
 
     char str[10];
     int len;
-    
+
+    /*FIXME: not a good implement*/
     len = vsnprintf(str, sizeof(str), fmt, marker);
     if (len > sizeof(str)-1) {
         char *tmp = MALLOC(len+1);
         vsnprintf(tmp, len+1, fmt, marker);
-        datachain_append(dach, name, tmp, len);
+        dach_append_by_pre(pre, tmp, len);
         free(tmp);
     } else {
-        datachain_append(dach, name, str, len);
+        dach_append_by_pre(pre, str, len);
     }
 }
 
 /***************************************************************************
  ***************************************************************************/
 void
-datachain_printf(struct DataChain *dach, const char *name, const char *fmt, ...)
+dach_printf_by_pre(struct DataLink *pre, const char *fmt, ...)
 {
     va_list marker;
 
     va_start(marker, fmt);
-    datachain_vprintf(dach, name, fmt, marker);
+    datachain_vprintf(pre, fmt, marker);
     va_end(marker);
-}
-
-/***************************************************************************
- create a data
- NOTE: the name must not exist
- ***************************************************************************/
-static struct DataLink *
-datachain_new_link(struct DataChain *dach, const char *name)
-{
-    struct DataLink *p = CALLOC(1, sizeof(struct DataLink));
-
-    safe_strcpy(p->name, DACH_MAX_NAME_SIZE, name);
-
-    p->name_hash = name_hash(name);
-    p->data_size = sizeof(p->data);
-    p->next      = dach->link;
-    dach->link   = p;
-
-    return p;
 }
 
 /***************************************************************************
  ***************************************************************************/
 void
-datachain_append(struct DataChain *dach, const char *name, 
-    const void *px, size_t length)
+dach_printf(struct DataChain *dach, const char *name, const char *fmt, ...)
 {
-    struct DataLink *p;
+    struct DataLink *pre = dach_get_pre_link(dach, name);
 
+    if (pre->next == NULL) {
+        /*we don't know the exact length, use default*/
+        datachain_new_link(dach, name, 1);
+        pre = dach->link;
+    }
+
+    va_list marker;
+
+    va_start(marker, fmt);
+    datachain_vprintf(pre, fmt, marker);
+    va_end(marker);
+}
+
+/***************************************************************************
+ ***************************************************************************/
+void dach_append_normalized_by_pre(struct DataLink *pre,
+    const unsigned char *px, size_t length)
+{
     if (length == DACH_AUTO_LEN)
         length = strlen((const char*)px);
+
+    for (size_t i=0; i<length; i++) {
+        int c = px[i];
+        if (isprint(c) && c != '<' && c != '>' && c != '&' && c != '\\' && c != '\"' && c != '\'') {
+            dach_append_char_by_pre(pre, c);
+        } else {
+            dach_append_by_pre(pre, "\\x", 2);
+            dach_append_char_by_pre(pre, "0123456789abcdef"[c>>4]);
+            dach_append_char_by_pre(pre, "0123456789abcdef"[c&0xF]);
+        }
+    }
+}
+
+/***************************************************************************
+ ***************************************************************************/
+void dach_append_normalized(struct DataChain *dach, const char *name,
+    const unsigned char *px, size_t length)
+{
+    struct DataLink *pre = dach_get_pre_link(dach, name);
+
+    if (pre->next == NULL) {
+        datachain_new_link(dach, name, length*4); /*worst length*/
+        pre = dach->link;
+    }
+
+    dach_append_normalized_by_pre(pre, px, length);
+}
+
+/***************************************************************************
+ ***************************************************************************/
+bool
+dach_link_contains(struct DataLink *link, const char *string)
+{
+    assert(link && link->data);
+
+    if (string==NULL) return false;
+
+    const unsigned char *string2 = link->next->data;
+    size_t string2_length        = link->data_len;
+    size_t string_length         = strlen(string);
+
+    if (string_length > string2_length)
+        return false;
     
-    p = datachain_find_link(dach, name);
-    if (p == NULL) {
-        p = datachain_new_link(dach, name);
+    for (size_t i=0; i<string2_length-string_length+1; i++) {
+        if (memcmp(string, string2+i, string_length) == 0)
+            return true;
     }
 
-    /*
-     * If the current object isn't big enough, expand it
-     */
-    while (p->data_len + length >= p->data_size) {
-        p = datachain_expand(dach, p);
-    }
+    return false;
+}
 
-    /*
-     * Now that we are assured there is enough space, do the copy
-     */
-    memcpy(p->data + p->data_len, px, length);
-    p->data_len = (unsigned)(p->data_len + length);
+/***************************************************************************
+ ***************************************************************************/
+bool
+dach_contains(struct DataChain *dach, const char *name,
+    const char *string)
+{
+    if (string==NULL) return false;
 
+    struct DataLink *link = dach_get_link(dach, name);
+    if (link==NULL) return false;
+
+    return dach_link_contains(link, string);
+}
+
+
+/*****************************************************************************
+ *****************************************************************************/
+bool
+dach_link_equals(struct DataLink *link, const char *rhs)
+{
+    assert(link && link->data);
+
+    const unsigned char *lhs = link->data;
+
+    size_t lhs_length = link->data_len;
+    size_t rhs_length = strlen(rhs);
+    
+    if (lhs_length != rhs_length)
+        return false;
+
+    return memcmp(lhs, rhs, rhs_length) == 0;
+}
+
+
+/*****************************************************************************
+ *****************************************************************************/
+bool
+dach_equals(struct DataChain *dach, const char *name, const char *rhs)
+{
+    struct DataLink *link = dach_get_link(dach, name);
+    if (link==NULL) return false;
+
+    return dach_link_equals(link, rhs);
 }
 
 /*****************************************************************************
@@ -354,7 +439,7 @@ static const char *b64 =
 /*****************************************************************************
  *****************************************************************************/
 void
-datachain_init_base64(struct DataChainB64 *base64)
+dach_init_base64(struct DataChainB64 *base64)
 {
     base64->state = 0;
     base64->temp  = 0;
@@ -363,9 +448,12 @@ datachain_init_base64(struct DataChainB64 *base64)
 /*****************************************************************************
  *****************************************************************************/
 void
-datachain_append_base64(struct DataChain *dach, const char *name,
+dach_append_base64_by_pre(struct DataLink *pre,
     const void *vpx, size_t length, struct DataChainB64 *base64)
 {
+    if (length == DACH_AUTO_LEN)
+        length = strlen((const char*)vpx);
+
     const unsigned char *px = (const unsigned char *)vpx;
     size_t i;
     unsigned x = base64->temp;
@@ -384,10 +472,10 @@ datachain_append_base64(struct DataChain *dach, const char *name,
             case 2:
                 x |= px[i];
                 state = 0;
-                datachain_append_char(dach, name, b64[(x>>18)&0x3F]);
-                datachain_append_char(dach, name, b64[(x>>12)&0x3F]);
-                datachain_append_char(dach, name, b64[(x>> 6)&0x3F]);
-                datachain_append_char(dach, name, b64[(x>> 0)&0x3F]);
+                dach_append_char_by_pre(pre, b64[(x>>18)&0x3F]);
+                dach_append_char_by_pre(pre, b64[(x>>12)&0x3F]);
+                dach_append_char_by_pre(pre, b64[(x>> 6)&0x3F]);
+                dach_append_char_by_pre(pre, b64[(x>> 0)&0x3F]);
         }
     }
     
@@ -398,44 +486,56 @@ datachain_append_base64(struct DataChain *dach, const char *name,
 /*****************************************************************************
  *****************************************************************************/
 void
-datachain_finalize_base64(struct DataChain *dach, const char *name,
-    struct DataChainB64 *base64)
+dach_append_base64(struct DataChain *dach, const char *name,
+    const void *vpx, size_t length, struct DataChainB64 *base64)
+{
+    struct DataLink *pre = dach_get_pre_link(dach, name);
+
+    if (pre->next == NULL) {
+        if (length == DACH_AUTO_LEN)
+            length = strlen((const char*)vpx);
+        /*len after encoding*/
+        datachain_new_link(dach, name, ((length+2)/3)*4);
+        pre = dach->link;
+    }
+
+    dach_append_base64_by_pre(pre, vpx, length, base64);
+}
+
+/*****************************************************************************
+ *****************************************************************************/
+void
+dach_finalize_base64_by_pre(struct DataLink *pre, struct DataChainB64 *base64)
 {
     unsigned x = base64->temp;
     switch (base64->state) {
         case 0:
             break;
         case 1:
-            datachain_append_char(dach, name, b64[(x>>18)&0x3F]);
-            datachain_append_char(dach, name, b64[(x>>12)&0x3F]);
-            datachain_append_char(dach, name, '=');
-            datachain_append_char(dach, name, '=');
+            dach_append_char_by_pre(pre, b64[(x>>18)&0x3F]);
+            dach_append_char_by_pre(pre, b64[(x>>12)&0x3F]);
+            dach_append_by_pre(pre, "==", 2);
             break;
         case 2:
-            datachain_append_char(dach, name, b64[(x>>18)&0x3F]);
-            datachain_append_char(dach, name, b64[(x>>12)&0x3F]);
-            datachain_append_char(dach, name, b64[(x>>6)&0x3F]);
-            datachain_append_char(dach, name, '=');
+            dach_append_char_by_pre(pre, b64[(x>>18)&0x3F]);
+            dach_append_char_by_pre(pre, b64[(x>>12)&0x3F]);
+            dach_append_char_by_pre(pre, b64[(x>>6)&0x3F]);
+            dach_append_char_by_pre(pre, '=');
             break;
     }
 }
 
-
-
 /*****************************************************************************
  *****************************************************************************/
-static int
-datachain_string_equals(struct DataChain *dach, const char *name, const char *rhs)
+void
+dach_finalize_base64(struct DataChain *dach, const char *name,
+    struct DataChainB64 *base64)
 {
-    const unsigned char *lhs = datachain_string(dach, name);
+    struct DataLink *pre = dach_get_pre_link(dach, name);
 
-    size_t lhs_length = datachain_string_length(dach, name);
-    size_t rhs_length = strlen(rhs);
-    
-    if (lhs_length != rhs_length)
-        return 0;
+    if (pre->next == NULL) return;
 
-    return memcmp(lhs, rhs, rhs_length) == 0;
+    dach_finalize_base64_by_pre(pre, base64);
 }
 
 /*****************************************************************************
@@ -447,24 +547,35 @@ datachain_selftest(void)
      * Basic test
      */
     {
-        struct DataChain dach[1];
+        struct DataChain *dach = CALLOC(1, sizeof(struct DataChain));
+        struct DataLink  *link;
         unsigned i;
 
         for (i=0; i<10; i++) {
-            datachain_append(dach, "x", "xxxx", 4);
-            datachain_append(dach, "y", "yyyyy", 5);
+            dach_append(dach, "x", "xxxx", 4);
+            dach_append(dach, "y", "yyyyy", 5);
         }
         
-        if (dach->link == 0)
+        if (dach->link->next == NULL)
             return 1;
-        if (datachain_string_length(dach, "x") != 40)
+
+        link = dach_get_link(dach, "x");
+        if (link==NULL)
             return 1;
-        if (datachain_string_length(dach, "y") != 50)
+        if (link->data_len != 40)
+            return 1;
+
+        link = dach_get_link(dach, "y");
+        if (link==NULL)
+            return 1;
+        if (link->data_len != 50)
             return 1;
         
-        datachain_release(dach);
-        if (dach->link != NULL)
+        dach_release(dach);
+        if (dach->link->next != NULL)
             return 1;
+        
+        free(dach);
     }
     
     /*
@@ -473,42 +584,43 @@ datachain_selftest(void)
      * properly
      */
     {
-        struct DataChain dach[1];
+        struct DataChain *dach = CALLOC(1, sizeof(struct DataChain));
         struct DataChainB64 base64[1];
 
-        datachain_init_base64(base64);
-        datachain_append_base64(dach, "1", "x", 1, base64);
-        datachain_finalize_base64(dach, "1", base64);
+        dach_init_base64(base64);
+        dach_append_base64(dach, "1", "x", 1, base64);
+        dach_finalize_base64(dach, "1", base64);
 
-        datachain_init_base64(base64);
-        datachain_append_base64(dach, "2", "bc", 2, base64);
-        datachain_finalize_base64(dach, "2", base64);
+        dach_init_base64(base64);
+        dach_append_base64(dach, "2", "bc", 2, base64);
+        dach_finalize_base64(dach, "2", base64);
         
-        datachain_init_base64(base64);
-        datachain_append_base64(dach, "3", "mno", 3, base64);
-        datachain_finalize_base64(dach, "3", base64);
+        dach_init_base64(base64);
+        dach_append_base64(dach, "3", "mno", 3, base64);
+        dach_finalize_base64(dach, "3", base64);
         
-        datachain_init_base64(base64);
-        datachain_append_base64(dach, "4", "stuv", 4, base64);
-        datachain_finalize_base64(dach, "4", base64);
+        dach_init_base64(base64);
+        dach_append_base64(dach, "4", "stuv", 4, base64);
+        dach_finalize_base64(dach, "4", base64);
         
-        datachain_init_base64(base64);
-        datachain_append_base64(dach, "5", "fghij", 5, base64);
-        datachain_finalize_base64(dach, "5", base64);
+        dach_init_base64(base64);
+        dach_append_base64(dach, "5", "fghij", 5, base64);
+        dach_finalize_base64(dach, "5", base64);
         
         
-        if (!datachain_string_equals(dach, "1", "eA=="))
+        if (!dach_equals(dach, "1", "eA=="))
             return 1;
-        if (!datachain_string_equals(dach, "2", "YmM="))
+        if (!dach_equals(dach, "2", "YmM="))
             return 1;
-        if (!datachain_string_equals(dach, "3", "bW5v"))
+        if (!dach_equals(dach, "3", "bW5v"))
             return 1;
-        if (!datachain_string_equals(dach, "4", "c3R1dg=="))
+        if (!dach_equals(dach, "4", "c3R1dg=="))
             return 1;
-        if (!datachain_string_equals(dach, "5", "ZmdoaWo="))
+        if (!dach_equals(dach, "5", "ZmdoaWo="))
             return 1;
 
-        datachain_release(dach);
+        dach_release(dach);
+        free(dach);
     }
     
     
