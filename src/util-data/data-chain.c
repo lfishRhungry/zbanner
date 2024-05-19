@@ -232,7 +232,7 @@ datachain_expand(struct DataChain *dach, struct DataLink *p)
     struct DataLink *n;
 
     /* Double the space */
-    n = MALLOC(offsetof(struct DataLink, data) + 2*p->data_size);
+    n = CALLOC(1, offsetof(struct DataLink, data) + 2*p->data_size);
     memcpy(n, p, offsetof(struct DataLink, data) + p->data_size);
     n->data_size *= 2;
 
@@ -297,13 +297,12 @@ datachain_printf(struct DataChain *dach, const char *name, const char *fmt, ...)
 static struct DataLink *
 datachain_new_link(struct DataChain *dach, const char *name)
 {
-    struct DataLink *p = MALLOC(sizeof(struct DataLink));
+    struct DataLink *p = CALLOC(1, sizeof(struct DataLink));
 
     safe_strcpy(p->name, DACH_MAX_NAME_SIZE, name);
 
     p->name_hash = name_hash(name);
     p->data_size = sizeof(p->data);
-    p->data_len  = 0;
     p->next      = dach->link;
     dach->link   = p;
 
