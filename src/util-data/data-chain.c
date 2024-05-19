@@ -10,6 +10,7 @@
 #include "data-chain.h"
 #include "fine-malloc.h"
 #include "safe-string.h"
+#include "../util-out/logger.h"
 
 #include <stddef.h>
 #include <stdarg.h>
@@ -543,6 +544,8 @@ dach_finalize_base64(struct DataChain *dach, const char *name,
 int
 datachain_selftest(void)
 {
+    unsigned line = 0;
+
     /*
      * Basic test
      */
@@ -556,24 +559,36 @@ datachain_selftest(void)
             dach_append(dach, "y", "yyyyy", 5);
         }
         
-        if (dach->link->next == NULL)
-            return 1;
+        if (dach->link->next == NULL) {
+            line = __LINE__;
+            goto fail;
+        }
 
         link = dach_get_link(dach, "x");
-        if (link==NULL)
-            return 1;
-        if (link->data_len != 40)
-            return 1;
+        if (link==NULL) {
+            line = __LINE__;
+            goto fail;
+        }
+        if (link->data_len != 40) {
+            line = __LINE__;
+            goto fail;
+        }
 
         link = dach_get_link(dach, "y");
-        if (link==NULL)
-            return 1;
-        if (link->data_len != 50)
-            return 1;
-        
+        if (link==NULL) {
+            line = __LINE__;
+            goto fail;
+        }
+        if (link->data_len != 50) {
+            line = __LINE__;
+            goto fail;
+        }
+
         dach_release(dach);
-        if (dach->link->next != NULL)
-            return 1;
+        if (dach->link->next != NULL) {
+            line = __LINE__;
+            goto fail;
+        }
         
         free(dach);
     }
@@ -594,35 +609,48 @@ datachain_selftest(void)
         dach_init_base64(base64);
         dach_append_base64(dach, "2", "bc", 2, base64);
         dach_finalize_base64(dach, "2", base64);
-        
+
         dach_init_base64(base64);
         dach_append_base64(dach, "3", "mno", 3, base64);
         dach_finalize_base64(dach, "3", base64);
-        
+
         dach_init_base64(base64);
         dach_append_base64(dach, "4", "stuv", 4, base64);
         dach_finalize_base64(dach, "4", base64);
-        
+
         dach_init_base64(base64);
         dach_append_base64(dach, "5", "fghij", 5, base64);
         dach_finalize_base64(dach, "5", base64);
-        
-        
-        if (!dach_equals(dach, "1", "eA=="))
-            return 1;
-        if (!dach_equals(dach, "2", "YmM="))
-            return 1;
-        if (!dach_equals(dach, "3", "bW5v"))
-            return 1;
-        if (!dach_equals(dach, "4", "c3R1dg=="))
-            return 1;
-        if (!dach_equals(dach, "5", "ZmdoaWo="))
-            return 1;
+
+
+        if (!dach_equals(dach, "1", "eA==")) {
+            line = __LINE__;
+            goto fail;
+        }
+        if (!dach_equals(dach, "2", "YmM=")) {
+            line = __LINE__;
+            goto fail;
+        }
+        if (!dach_equals(dach, "3", "bW5v")) {
+            line = __LINE__;
+            goto fail;
+        }
+        if (!dach_equals(dach, "4", "c3R1dg==")) {
+            line = __LINE__;
+            goto fail;
+        }
+        if (!dach_equals(dach, "5", "ZmdoaWo=")) {
+            line = __LINE__;
+            goto fail;
+        }
 
         dach_release(dach);
         free(dach);
     }
-    
-    
+
     return 0;
+
+fail:
+    LOG(LEVEL_ERROR, "[-] selftest: 'datachain' failed, file=%s, line=%u\n", __FILE__, line);
+    return 1;
 }
