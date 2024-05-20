@@ -3,6 +3,17 @@
 
     This module remembers a series of "data" identified by "name".
     These are often simple strings, like the FTP hello string.
+    I provide funcs to append data/string conveniently.
+
+    I try to maintain c string in data by keeping '\0' tail.
+    But you can break this by appending special string.
+
+    For out-of-box using and simple iterating, structures are exposed.
+    Change internal contents of structures after understanding code.
+    C is dangerous and charming, right?
+
+    Datachain was inspired by banout of masscan but with different
+    target, usage and internal code.
 
     Create by lishRhungry 2024
 */
@@ -19,6 +30,7 @@
 
 /**
  * A structure for tracking a series of name/data memories
+ * NOTE: name length
  */
 struct DataLink {
     struct DataLink     *next;
@@ -170,7 +182,7 @@ dach_printf(struct DataChain *dach, const char *name, const char *fmt, ...);
 */
 void
 dach_append_normalized_by_pre(struct DataLink *pre,
-    const unsigned char *px, size_t length);
+    const void *px, size_t length);
 
 /**
  * append after removing bad characters, especially new lines and HTML
@@ -182,7 +194,7 @@ dach_append_normalized_by_pre(struct DataLink *pre,
 */
 void
 dach_append_normalized(struct DataChain *dach, const char *name,
-    const unsigned char *px, size_t length);
+    const void *px, size_t length);
 
 /**
  * NOTE: link must not be NULL

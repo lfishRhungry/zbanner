@@ -1,11 +1,21 @@
 /*
     Data Chain
 
-    This module remembers a series of "name" & "data" identified by id.
+    This module remembers a series of "data" identified by "name".
     These are often simple strings, like the FTP hello string.
+    I provide funcs to append data/string conveniently.
 
-    From masscan's `banout`
-    Modified by lishRhungry 2024
+    I try to maintain c string in data by keeping '\0' tail.
+    But you can break this by appending special string.
+
+    For out-of-box using and simple iterating, structures are exposed.
+    Change internal contents of structures after understanding code.
+    C is dangerous and charming, right?
+
+    Datachain was inspired by banout of masscan but with different
+    target, usage and internal code.
+
+    Create by lishRhungry 2024
 */
 #include "data-chain.h"
 #include "fine-malloc.h"
@@ -347,13 +357,13 @@ dach_printf(struct DataChain *dach, const char *name, const char *fmt, ...)
 /***************************************************************************
  ***************************************************************************/
 void dach_append_normalized_by_pre(struct DataLink *pre,
-    const unsigned char *px, size_t length)
+    const void *px, size_t length)
 {
     if (length == DACH_AUTO_LEN)
         length = strlen((const char*)px);
 
     for (size_t i=0; i<length; i++) {
-        int c = px[i];
+        int c = ((const char*)px)[i];
         if (isprint(c) && c != '<' && c != '>' && c != '&' && c != '\\' && c != '\"' && c != '\'') {
             dach_append_char_by_pre(pre, c);
         } else {
@@ -367,7 +377,7 @@ void dach_append_normalized_by_pre(struct DataLink *pre,
 /***************************************************************************
  ***************************************************************************/
 void dach_append_normalized(struct DataChain *dach, const char *name,
-    const unsigned char *px, size_t length)
+    const void *px, size_t length)
 {
     if (length == DACH_AUTO_LEN)
         length = strlen((const char*)px);
