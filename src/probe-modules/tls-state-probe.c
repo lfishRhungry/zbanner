@@ -550,6 +550,11 @@ static bool extend_buffer(unsigned char **buf, size_t *buf_len)
 static bool
 tlsstate_global_init(const struct Xconf *xconf)
 {
+    if (tlsstate_conf.subprobe->type!=ProbeType_STATE) {
+        LOG(LEVEL_ERROR, "[-] TlsStateProbe need a subprobe in STATE type.\n");
+        return false;
+    }
+
     /*save `out`*/
     tls_out = &xconf->output;
 
