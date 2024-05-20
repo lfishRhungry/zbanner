@@ -280,8 +280,6 @@ zbanner_handle(
             item->level = Output_SUCCESS;
         }
 
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "syn-ack");
-
         uint16_t win_them =
             TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
@@ -293,9 +291,11 @@ zbanner_handle(
             dach_printf(&item->report, "win", "%d", win_them);
 
         if (win_them == 0) {
-            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "zerowin");
+            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "fake-open");
+            safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "zerowin");
         } else {
             safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "open");
+            safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "syn-ack");
 
             /*stack(send) ack with probe*/
             struct ProbeTarget ptarget = {

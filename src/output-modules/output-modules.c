@@ -25,6 +25,18 @@ static struct OutputModule *output_modules_list[] = {
 };
 
 
+const char *
+output_level_to_string(enum OutputLevel level)
+{
+    switch (level) {
+        case Output_INFO:       return "information";
+        case Output_FAILURE:    return "failed";
+        case Output_SUCCESS:    return "success";
+
+        default:
+            return "unknown";
+    }
+}
 
 
 struct OutputModule *get_output_module_by_name(const char *name)
@@ -88,8 +100,8 @@ void list_all_output_modules()
 static const char fmt_host[]   = "%s host: %-15s";
 static const char fmt_port[]   = " port: %-5u";
 static const char fmt_cls []   = " \"%s\"";
-static const char fmt_reason[] = " because of \"%s\"";
-static const char fmt_report[] = "  "XPRINT_CH_COLOR_YELLOW"%s: %s";
+static const char fmt_reason[] = " because \"%s\"";
+static const char fmt_report[] = ", "XPRINT_CH_COLOR_YELLOW"%s: %s";
 
 bool
 output_init(struct Output *output)

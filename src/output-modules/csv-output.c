@@ -23,7 +23,7 @@ static const char header_csv[] =
 
 static const char fmt_csv_prefix[] =
 "\"%s\","
-"%u,"
+"\"%s\","
 "\"%s\","
 "%u,"
 "\"%s\","
@@ -34,7 +34,7 @@ static const char fmt_csv_prefix[] =
 ;
 
 static const char fmt_csv_inffix[] =
-"%s:%s, "
+"%s:%s,"
 ;
 
 static const char fmt_csv_suffix[] =
@@ -82,14 +82,14 @@ csv_result(const struct Output *out, struct OutputItem *item)
 
     int err = fprintf(file, fmt_csv_prefix,
         format_time,
-        item->level,
+        output_level_to_string(item->level),
         ip_them_fmt.string,
         item->port_them,
         ip_me_fmt.string,
         item->port_me,
         item->classification,
         item->reason);
-    
+
     if (err<0) goto error;
 
     struct DataLink *pre = item->report.link;
@@ -126,5 +126,6 @@ struct OutputModule CsvOutput = {
     .close_cb           = &csv_close,
     .desc               =
         "CsvOutput save results in Comma-Seperated Values(csv) format to "
-        "specified file.",
+        "specified file.\n"
+        "NOTE: CsvOutput doesn't convert any escaped chars in result.",
 };

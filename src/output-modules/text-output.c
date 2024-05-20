@@ -6,8 +6,8 @@
 static const char fmt_host[]   = "%s host: %-15s";
 static const char fmt_port[]   = " port: %-5u";
 static const char fmt_cls []   = " \"%s\"";
-static const char fmt_reason[] = " because of \"%s\"";
-static const char fmt_report[] = "  %s: %s";
+static const char fmt_reason[] = " because \"%s\"";
+static const char fmt_report[] = ", %s: %s";
 
 extern struct OutputModule TextOutput; /*for internal x-ref*/
 
@@ -76,7 +76,7 @@ text_result(const struct Output *out, struct OutputItem *item)
 
     struct DataLink *pre = item->report.link;
     while (pre->next) {
-        fprintf(stdout, fmt_report, pre->next->name, pre->next->data);
+        fprintf(file, fmt_report, pre->next->name, pre->next->data);
         pre = pre->next;
     }
 

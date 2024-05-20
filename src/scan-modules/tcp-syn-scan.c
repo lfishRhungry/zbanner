@@ -168,12 +168,13 @@ tcpsyn_handle(
     if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
         TCP_FLAG_SYN|TCP_FLAG_ACK)) {
         item->level = Output_SUCCESS;
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "syn-ack");
 
         if (win_them == 0) {
-            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "zerowin");
+            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "fake-open");
+            safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "zerowin");
         } else {
             safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "open");
+            safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "syn-ack");
         }
         if (tcpsyn_conf.send_rst) {
             unsigned seqno_me   = TCP_ACKNO(recved->packet, recved->parsed.transport_offset);

@@ -81,6 +81,9 @@ struct OutputModule {
     output_modules_close                      close_cb;
 };
 
+const char *
+output_level_to_string(enum OutputLevel level);
+
 /*prepare for outputing results*/
 bool
 output_init(struct Output *output);

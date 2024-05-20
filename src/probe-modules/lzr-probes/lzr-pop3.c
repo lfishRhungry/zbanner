@@ -13,7 +13,7 @@ lzr_pop3_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    
+
     if (safe_memismem(px, sizeof_px, "pop3", strlen("pop3"))
         || safe_memmem(px, sizeof_px, "+OK", strlen("+OK"))
         || safe_memmem(px, sizeof_px, "* OK", strlen("* OK"))) {
