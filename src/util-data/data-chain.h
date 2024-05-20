@@ -67,7 +67,7 @@ dach_get_link(struct DataChain *dach, const char *name);
  * NOTE: pre must not be NULL
 */
 void
-dach_del_link_by_pre(struct DataLink *pre);
+dach_del_link_by_pre(struct DataChain *dach, struct DataLink *pre);
 
 /**
  * delete a link by inputting its previous link

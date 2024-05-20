@@ -91,10 +91,12 @@ datachain_new_link(struct DataChain *dach, const char *name, size_t len)
     p->data_size       = data_size;
     p->next            = dach->link->next;
     dach->link->next   = p;
+
+    dach->count++;
 }
 
 void
-dach_del_link_by_pre(struct DataLink *pre)
+dach_del_link_by_pre(struct DataChain *dach, struct DataLink *pre)
 {
     assert(pre);
 
@@ -102,13 +104,14 @@ dach_del_link_by_pre(struct DataLink *pre)
         struct DataLink *link = pre->next;
         pre->next = link->next;
         free(link);
+        dach->count--;
     }
 }
 
 void dach_del_link(struct DataChain *dach, const char *name)
 {
     struct DataLink *pre = dach_get_pre_link(dach, name);
-    dach_del_link_by_pre(pre);
+    dach_del_link_by_pre(dach, pre);
 }
 
 
@@ -589,6 +592,11 @@ datachain_selftest(void)
             goto fail;
         }
 
+        if (dach->count!=2) {
+            line = __LINE__;
+            goto fail;
+        }
+
         link = dach_get_link(dach, "x");
         if (link==NULL) {
             line = __LINE__;
@@ -610,8 +618,14 @@ datachain_selftest(void)
         }
 
         dach_del_link(dach, "x");
+
         link = dach_get_link(dach, "x");
         if (link) {
+            line = __LINE__;
+            goto fail;
+        }
+
+        if (dach->count!=1) {
             line = __LINE__;
             goto fail;
         }
@@ -638,9 +652,19 @@ datachain_selftest(void)
             goto fail;
         }
 
+        if (dach->count!=3) {
+            line = __LINE__;
+            goto fail;
+        }
+
         dach_del_link(dach, "normal");
         link = dach_get_link(dach, "normal");
         if (link) {
+            line = __LINE__;
+            goto fail;
+        }
+
+        if (dach->count!=2) {
             line = __LINE__;
             goto fail;
         }
