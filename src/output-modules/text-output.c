@@ -7,7 +7,7 @@ static const char fmt_host[]   = "%s host: %-15s";
 static const char fmt_port[]   = " port: %-5u";
 static const char fmt_cls []   = " \"%s\"";
 static const char fmt_reason[] = " because of \"%s\"";
-static const char fmt_report[] = "  Report: %s";
+static const char fmt_report[] = "  %s: %s";
 
 extern struct OutputModule TextOutput; /*for internal x-ref*/
 
@@ -31,7 +31,7 @@ text_init(const struct Output *out)
 }
 
 static void
-text_result(const struct Output *out, const struct OutputItem *item)
+text_result(const struct Output *out, struct OutputItem *item)
 {
     if (item->level==Output_INFO && !out->is_show_info)
         return;
@@ -74,9 +74,10 @@ text_result(const struct Output *out, const struct OutputItem *item)
         if (err<0) goto error;
     }
 
-    if (item->report[0]) {
-        err = fprintf(file, fmt_report, item->report);
-        if (err<0) goto error;
+    struct DataLink *pre = item->report.link;
+    while (pre->next) {
+        fprintf(stdout, fmt_report, pre->next->name, pre->next->data);
+        pre = pre->next;
     }
 
     err = fprintf(file, "\n");
@@ -85,7 +86,6 @@ text_result(const struct Output *out, const struct OutputItem *item)
     return;
 
 error:
-
     LOG(LEVEL_ERROR, "[-] TextOutput: could not write result to file.\n");
 }
 

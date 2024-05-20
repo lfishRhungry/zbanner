@@ -8,7 +8,7 @@ extern struct OutputModule NdjsonOutput; /*for internal x-ref*/
 
 static FILE *file;
 
-static const char fmt_ndjson[] =
+static const char fmt_ndjson_prefix[] =
 "{"
 "\"time\":\"%s\","
 "\"level\":%u,"
@@ -18,8 +18,16 @@ static const char fmt_ndjson[] =
 "\"port_me\":%u,"
 "\"classification\":\"%s\","
 "\"reason\":\"%s\","
-"\"report\":\"%s\""
-"}"
+"\"report\":{"
+;
+
+static const char fmt_ndjson_inffix[] =
+"\"%s\":\"%s\","
+;
+
+static const char fmt_ndjson_suffix[] =
+    "}"    /*close report*/
+"}"        /*cose all*/
 "\n"
 ;
 
@@ -43,7 +51,7 @@ ndjson_init(const struct Output *out)
 }
 
 static void
-ndjson_result(const struct Output *out, const struct OutputItem *item)
+ndjson_result(const struct Output *out, struct OutputItem *item)
 {
     if (item->level==Output_INFO && !out->is_show_info)
         return;
@@ -55,7 +63,7 @@ ndjson_result(const struct Output *out, const struct OutputItem *item)
 
     iso8601_time_str(format_time, sizeof(format_time), &item->timestamp);
 
-    int err = fprintf(file, fmt_ndjson,
+    int err = fprintf(file, fmt_ndjson_prefix,
         format_time,
         item->level,
         ip_them_fmt.string,
@@ -63,12 +71,26 @@ ndjson_result(const struct Output *out, const struct OutputItem *item)
         ip_me_fmt.string,
         item->port_me,
         item->classification,
-        item->reason,
-        item->report);
-    
-    if (err<0) {
-        LOG(LEVEL_ERROR, "[-] NdjsonOutput: could not write result to file.\n");
+        item->reason);
+
+    if (err<0) goto error;
+
+    struct DataLink *pre = item->report.link;
+    while (pre->next) {
+        err = fprintf(file, fmt_ndjson_inffix, pre->next->name, pre->next->data);
+        if (err<0) goto error;
+        pre = pre->next;
     }
+
+    /*overwrite tha last comma*/
+    fseek(file, -1, SEEK_CUR);
+    err = fprintf(file, fmt_ndjson_suffix);
+    if (err<0) goto error;
+
+    return;
+
+error:
+    LOG(LEVEL_ERROR, "[-] NdjsonOutput: could not write result to file.\n");
 }
 
 static void
@@ -87,5 +109,7 @@ struct OutputModule NdjsonOutput = {
     .close_cb           = &ndjson_close,
     .desc               =
         "NdjsonOutput save results in newline-delimited json(ndjson) format to "
-        "specified file.",
+        "specified file.\n"
+        "NOTE: NdjsonOutput doesn't convert any escaped chars from result string"
+        "and assumes all result string type except ports.",
 };

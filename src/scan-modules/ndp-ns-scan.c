@@ -117,30 +117,22 @@ ndpns_handle(
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "ndp na");
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "alive");
 
-    int rpt_tmp = 0;
-    /*check whether from router
-      and extract mac addr from ICMPv6 Option: Target link-layer address*/
+    dach_printf(&item->report, "mac_addr", "%02X:%02X:%02X:%02X:%02X:%02X",
+        recved->packet[recved->parsed.transport_offset+26],
+        recved->packet[recved->parsed.transport_offset+27],
+        recved->packet[recved->parsed.transport_offset+28],
+        recved->packet[recved->parsed.transport_offset+29],
+        recved->packet[recved->parsed.transport_offset+30],
+        recved->packet[recved->parsed.transport_offset+31]);
+    
     if (NDP_NA_HAS_FLAG(recved->packet, recved->parsed.transport_offset, NDP_NA_FLAG_ROUTER)) {
-        rpt_tmp += snprintf(item->report, OUTPUT_RPT_SIZE, "%02X:%02X:%02X:%02X:%02X:%02X from router",
-            recved->packet[recved->parsed.transport_offset+26],
-            recved->packet[recved->parsed.transport_offset+27],
-            recved->packet[recved->parsed.transport_offset+28],
-            recved->packet[recved->parsed.transport_offset+29],
-            recved->packet[recved->parsed.transport_offset+30],
-            recved->packet[recved->parsed.transport_offset+31]);
+        dach_append(&item->report, "from_router", "true", DACH_AUTO_LEN);
     } else {
-        rpt_tmp += snprintf(item->report, OUTPUT_RPT_SIZE, "%02X:%02X:%02X:%02X:%02X:%02X",
-            recved->packet[recved->parsed.transport_offset+26],
-            recved->packet[recved->parsed.transport_offset+27],
-            recved->packet[recved->parsed.transport_offset+28],
-            recved->packet[recved->parsed.transport_offset+29],
-            recved->packet[recved->parsed.transport_offset+30],
-            recved->packet[recved->parsed.transport_offset+31]);
+        dach_append(&item->report, "from_router", "false", DACH_AUTO_LEN);
     }
 
     if (ndpns_conf.record_ttl)
-        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_SIZE-rpt_tmp,
-            "[ttl=%d]", recved->parsed.ip_ttl);
+        dach_printf(&item->report, "ttl", "%d", recved->parsed.ip_ttl);
 }
 
 void ndpns_timeout(

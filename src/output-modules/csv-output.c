@@ -21,7 +21,7 @@ static const char header_csv[] =
 "\n"
 ;
 
-static const char fmt_csv[] =
+static const char fmt_csv_prefix[] =
 "\"%s\","
 "%u,"
 "\"%s\","
@@ -30,7 +30,15 @@ static const char fmt_csv[] =
 "%u,"
 "\"%s\","
 "\"%s\","
-"\"%s\""
+"\"{"
+;
+
+static const char fmt_csv_inffix[] =
+"%s:%s, "
+;
+
+static const char fmt_csv_suffix[] =
+"}\""
 "\n"
 ;
 
@@ -60,7 +68,7 @@ csv_init(const struct Output *out)
 }
 
 static void
-csv_result(const struct Output *out, const struct OutputItem *item)
+csv_result(const struct Output *out, struct OutputItem *item)
 {
     if (item->level==Output_INFO && !out->is_show_info)
         return;
@@ -72,7 +80,7 @@ csv_result(const struct Output *out, const struct OutputItem *item)
 
     iso8601_time_str(format_time, sizeof(format_time), &item->timestamp);
 
-    int err = fprintf(file, fmt_csv,
+    int err = fprintf(file, fmt_csv_prefix,
         format_time,
         item->level,
         ip_them_fmt.string,
@@ -80,12 +88,26 @@ csv_result(const struct Output *out, const struct OutputItem *item)
         ip_me_fmt.string,
         item->port_me,
         item->classification,
-        item->reason,
-        item->report);
+        item->reason);
     
-    if (err<0) {
-        LOG(LEVEL_ERROR, "[-] CsvOutput: could not write result to file.\n");
+    if (err<0) goto error;
+
+    struct DataLink *pre = item->report.link;
+    while (pre->next) {
+        err = fprintf(file, fmt_csv_inffix, pre->next->name, pre->next->data);
+        if (err<0) goto error;
+        pre = pre->next;
     }
+
+    /*overwrite tha last comma*/
+    fseek(file, -1, SEEK_CUR);
+    err = fprintf(file, fmt_csv_suffix);
+    if (err<0) goto error;
+
+    return;
+
+error:
+    LOG(LEVEL_ERROR, "[-] CsvOutput: could not write result to file.\n");
 }
 
 static void

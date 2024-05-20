@@ -99,9 +99,7 @@ getstate_parse_response(
         .port_me   = target->port_me,
     };
 
-    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "banner");
-    safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "responsed");
-    normalize_string(px, sizeof_px, item.report, OUTPUT_RPT_SIZE);
+    dach_append_normalized(&item.report, "banner", px, sizeof_px);
 
     output_result(out, &item);
 

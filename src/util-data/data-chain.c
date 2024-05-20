@@ -308,7 +308,7 @@ dach_append_unicode(struct DataChain *dach, const char *name, unsigned c)
 static void
 datachain_vprintf(struct DataLink *pre, const char *fmt, va_list marker) {
 
-    char str[10];
+    char str[50];
     int len;
 
     len = vsnprintf(str, sizeof(str), fmt, marker);

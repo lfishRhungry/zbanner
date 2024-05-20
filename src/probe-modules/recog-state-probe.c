@@ -311,16 +311,14 @@ recogstate_parse_response(
 
     if (match_res) {
         item.level = Output_SUCCESS;
-        safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "success");
-        safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "matched");
-        snprintf(item.report, OUTPUT_RPT_SIZE, "%s", match_res);
+        safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "matched");
+        dach_append(&item.report, "result", match_res, DACH_AUTO_LEN);
     } else {
         item.level = Output_FAILURE;
-        safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "fail");
-        safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "not matched");
+        safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "not matched");
 
         if (recogstate_conf.report_while_fail) {
-            normalize_string(px, sizeof_px, item.report, OUTPUT_RPT_SIZE);
+            dach_append_normalized(&item.report, "banner", px, sizeof_px);
         }
     }
 

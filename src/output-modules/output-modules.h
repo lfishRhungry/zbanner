@@ -5,17 +5,13 @@
 #include <ctype.h>
 #include <stdio.h>
 
+#include "../util-data/data-chain.h"
 #include "../util-misc/configer.h"
 #include "../util-misc/cross.h"
 #include "../massip/massip-addr.h"
 
 #define OUTPUT_RSN_SIZE          30
 #define OUTPUT_CLS_SIZE          30
-/**
- * Relative with XCONF_DFT_SNAPLEN and XCONF_DFT_MAX_PKT_LEN
- * I don't agree that always report all content that we received, xtate is not
- * a browser or scrapper*/
-#define OUTPUT_RPT_SIZE          2048
 
 struct OutputModule;
 
@@ -34,7 +30,7 @@ struct OutputItem {
     unsigned                     port_me;                          /*no outputting if zero*/
     char                         reason[OUTPUT_RSN_SIZE];          /*no outputting if start with zero*/
     char                         classification[OUTPUT_CLS_SIZE];  /*no outputting if start with zero*/
-    char                         report[OUTPUT_RPT_SIZE];          /*no outputting if start with zero*/
+    struct DataChain             report;                           /*dynamic-defined key-value report*/
     unsigned                     no_output:1;
 };
 
@@ -67,7 +63,7 @@ typedef bool
  * Output one result
 */
 typedef void
-(*output_modules_result)(const struct Output *out, const struct OutputItem *item);
+(*output_modules_result)(const struct Output *out, struct OutputItem *item);
 
 /**
  * Do close for outputing
@@ -89,10 +85,13 @@ struct OutputModule {
 bool
 output_init(struct Output *output);
 
+/**
+ * output a result within item and release datachain(report) in it.
+*/
 void
 output_result(
     const struct Output *output,
-    const struct OutputItem *item);
+    struct OutputItem *item);
 
 /*destroy resources of output*/
 void
@@ -109,7 +108,7 @@ Some useful implemented interfaces
 
 bool output_init_nothing(const struct Output *output);
 
-void output_result_nothing(const struct Output *out, const struct OutputItem *item);
+void output_result_nothing(const struct Output *out, struct OutputItem *item);
 
 void output_close_nothing(const struct Output *out);
 

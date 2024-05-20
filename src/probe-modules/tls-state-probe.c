@@ -216,9 +216,7 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line)
         .level     = Output_INFO,
     };
 
-    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "ssl key log");
-    safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "recorded");
-    safe_strcpy(item.report, OUTPUT_RPT_SIZE, line);
+    dach_append(&item.report, "key_log", line, DACH_AUTO_LEN);
 
     output_result(tls_out, &item);
 }
@@ -237,9 +235,7 @@ static void ssl_info_callback(const SSL *ssl, int where, int ret) {
             .level     = Output_INFO,
         };
 
-        safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "ssl info");
-        safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "recorded");
-        snprintf(item.report, OUTPUT_RPT_SIZE, "[OpenSSL Alert 0x%04x] %s: %s",
+        dach_printf(&item.report, "ssl_info", "[OpenSSL Alert 0x%04x] %s: %s",
             ret, SSL_alert_type_string_long(ret), SSL_alert_desc_string_long(ret));
 
         output_result(tls_out, &item);
@@ -250,7 +246,7 @@ static bool output_subject(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     int res;
-    char s_names[OUTPUT_RPT_SIZE-1];
+    char s_names[512];
     BIO *bio = NULL;
     X509 *x509_cert = NULL;
     X509_NAME *x509_subject_name = NULL;
@@ -275,9 +271,6 @@ static bool output_subject(struct Output *out,
         .port_me   = target->port_me,
         .level     = Output_INFO,
     };
-
-    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls subject");
-    safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "recorded");
 
     x509_subject_name = X509_get_subject_name(x509_cert);
     if (x509_subject_name != NULL) {
@@ -352,9 +345,7 @@ static bool output_subject(struct Output *out,
     while (true) {
         res = BIO_read(bio, s_names, sizeof(s_names));
         if (res > 0) {
-            memcpy(item.report, s_names, (size_t)res);
-            output_result(out, &item);
-            memset(item.report, 0, (size_t)res);
+            dach_append(&item.report, "x509_name", s_names, res);
         } else if (res == 0 || res == -1) {
             break;
         } else {
@@ -362,6 +353,8 @@ static bool output_subject(struct Output *out,
             break;
         }
     }
+
+    output_result(out, &item);
 
     // error2:
     BIO_free(bio);
@@ -375,7 +368,8 @@ static bool output_cert(struct Output *out,
     STACK_OF(X509) * sk_x509_certs;
     int i_cert;
     int res;
-    char s_base64[OUTPUT_RPT_SIZE-1];
+    char s_base64[512];
+    char tmp_name[20];
 
     sk_x509_certs = SSL_get_peer_cert_chain(ssl);
     if (sk_x509_certs == NULL) {
@@ -439,12 +433,12 @@ static bool output_cert(struct Output *out,
             continue;
         }
 
+        snprintf(tmp_name, sizeof(tmp_name), "cert_%d", i_cert);
+
         while (true) {
             res = BIO_read(bio_mem, s_base64, sizeof(s_base64));
             if (res > 0) {
-                memcpy(item.report, s_base64, (size_t)res);
-                output_result(out, &item);
-                memset(item.report, 0, (size_t)res);
+                dach_append(&item.report, tmp_name, s_base64, res);
             } else if (res == 0 || res == -1) {
                 break;
             } else {
@@ -453,9 +447,13 @@ static bool output_cert(struct Output *out,
                 break;
             }
         }
+
+        output_result(out, &item);
+
         BIO_free(bio_mem);
         BIO_free(bio_base64);
     }
+
 
     return true;
 }
@@ -482,11 +480,8 @@ static bool output_cipher(struct Output *out,
         .level     = Output_INFO,
     };
 
-    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls cipher");
-    safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "recorded");
-
     cipher_suite = SSL_CIPHER_get_protocol_id(ssl_cipher);
-    snprintf(item.report, OUTPUT_RPT_SIZE, "cipher[0x%x]", cipher_suite);
+    dach_printf(&item.report, "cipher", "cipher[0x%x]", cipher_suite);
 
     output_result(tls_out, &item);
 
@@ -506,27 +501,24 @@ static bool output_version(struct Output *out,
         .level     = Output_INFO,
     };
 
-    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls version");
-    safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "recorded");
-
     switch (version) {
     case SSL3_VERSION:
-        safe_strcpy(item.report, OUTPUT_RPT_SIZE, "SSLv3.0");
+        dach_append(&item.report, "version", "SSLv3.0", sizeof("SSLv3.0")-1);
         break;
     case TLS1_VERSION:
-        safe_strcpy(item.report, OUTPUT_RPT_SIZE, "TLSv1.0");
+        dach_append(&item.report, "version", "TLSv1.0", sizeof("TLSv1.0")-1);
         break;
     case TLS1_1_VERSION:
-        safe_strcpy(item.report, OUTPUT_RPT_SIZE, "TLSv1.1");
+        dach_append(&item.report, "version", "TLSv1.1", sizeof("TLSv1.1")-1);
         break;
     case TLS1_2_VERSION:
-        safe_strcpy(item.report, OUTPUT_RPT_SIZE, "TLSv1.2");
+        dach_append(&item.report, "version", "TLSv1.2", sizeof("TLSv1.2")-1);
         break;
     case TLS1_3_VERSION:
-        safe_strcpy(item.report, OUTPUT_RPT_SIZE, "TLSv1.3");
+        dach_append(&item.report, "version", "TLSv1.3", sizeof("TLSv1.3")-1);
         break;
     default:
-        safe_strcpy(item.report, OUTPUT_RPT_SIZE, "Other");
+        dach_append(&item.report, "version", "Other", sizeof("Other")-1);
     }
 
     output_result(tls_out, &item);

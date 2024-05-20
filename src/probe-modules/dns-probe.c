@@ -11,9 +11,20 @@ struct DnsConf {
     char *req_name;
     dns_record_type req_type;
     unsigned print_all_ans:1;
+    unsigned print_all_auth:1;
 };
 
 static struct DnsConf dns_conf = {0};
+
+static enum Config_Res SET_print_all_auth(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    dns_conf.print_all_auth = parseBoolean(value);
+
+    return CONF_OK;
+}
 
 static enum Config_Res SET_print_all_answer(void *conf, const char *name, const char *value)
 {
@@ -85,6 +96,13 @@ static struct ConfigParam dns_parameters[] = {
         {"all-ans", 0},
         "Print all answer records instead of only the first in default."
     },
+    {
+        "all-authority",
+        SET_print_all_auth,
+        F_BOOL,
+        {"all-auth", 0},
+        "Print all authority records instead of only the first in default."
+    },
 
     {0}
 };
@@ -143,51 +161,66 @@ dns_handle_response(
 {
 
     dns_pkt_t dns_pkt;
-    
+
     if (!dns_parse_reply((uint8_t *)px, sizeof_px, &dns_pkt)) {
         item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "invalid");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not dns");
+        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not dns");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "parse failed");
         return 0;
     }
 
     item->level = Output_SUCCESS;
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "dns reply");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "valid dns");
 
     dns_record_t *rec;
-    const char *type_str;
-    int offset = 0;
+    char tmp_name[20];
+    char tmp_data[50];
 
     if (dns_pkt.head.header.ans_count > 0) {
-
-        offset += snprintf(item->report+offset, OUTPUT_RPT_SIZE-offset, "[");
-
         rec = &dns_pkt.body.ans[0];
-
-        type_str = dns_record_type2str(rec->type);
-        safe_strcpy(item->report+offset, OUTPUT_RPT_SIZE-offset, type_str);
-        offset += strlen(type_str);
-        offset += snprintf(item->report+offset, OUTPUT_RPT_SIZE-offset, " ");
-        offset += dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
-            true, item->report+offset, OUTPUT_RPT_SIZE-offset);
+        dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
+            false, tmp_data, sizeof(tmp_data));
+        dach_append(&item->report, "ans_type_0", dns_record_type2str(rec->type), DACH_AUTO_LEN);
+        dach_append(&item->report, "ans_class_0", dns_class2str(rec->class), DACH_AUTO_LEN);
+        dach_append(&item->report, "ans_name_0", tmp_data, DACH_AUTO_LEN);
     }
 
     if (dns_pkt.head.header.ans_count>1 && dns_conf.print_all_ans) {
-        for (uint16_t i=0; i<dns_pkt.head.header.ans_count; i++) {
-            offset += snprintf(item->report+offset, OUTPUT_RPT_SIZE-offset, ", ");
+        for (uint16_t i=1; i<dns_pkt.head.header.ans_count; i++) {
             rec = &dns_pkt.body.ans[i];
-            type_str = dns_record_type2str(rec->type);
-            safe_strcpy(item->report+offset, OUTPUT_RPT_SIZE-offset, type_str);
-            offset += strlen(type_str);
-            offset += snprintf(item->report+offset, OUTPUT_RPT_SIZE-offset, " ");
-            offset += dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
-                true, item->report+offset, OUTPUT_RPT_SIZE-offset);
+            dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
+                false, tmp_data, sizeof(tmp_data));
+            snprintf(tmp_name, sizeof(tmp_name), "ans_type_%d", i);
+            dach_append(&item->report, tmp_name, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+            snprintf(tmp_name, sizeof(tmp_name), "ans_class_%d", i);
+            dach_append(&item->report, tmp_name, dns_class2str(rec->class), DACH_AUTO_LEN);
+            snprintf(tmp_name, sizeof(tmp_name), "ans_name_%d", i);
+            dach_append(&item->report, tmp_name, tmp_data, DACH_AUTO_LEN);
         }
     }
 
-    if (item->report[0]!='\0')
-        offset += snprintf(item->report+offset, OUTPUT_RPT_SIZE-offset, "]");
+    if (dns_pkt.head.header.auth_count > 0) {
+        rec = &dns_pkt.body.auth[0];
+        dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
+            false, tmp_data, sizeof(tmp_data));
+        dach_append(&item->report, "auth_type_0", dns_record_type2str(rec->type), DACH_AUTO_LEN);
+        dach_append(&item->report, "auth_class_0", dns_class2str(rec->class), DACH_AUTO_LEN);
+        dach_append(&item->report, "auth_name_0", tmp_data, DACH_AUTO_LEN);
+    }
+
+    if (dns_pkt.head.header.auth_count>1 && dns_conf.print_all_auth) {
+        for (uint16_t i=1; i<dns_pkt.head.header.auth_count; i++) {
+            rec = &dns_pkt.body.auth[i];
+            dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
+                false, tmp_data, sizeof(tmp_data));
+            snprintf(tmp_name, sizeof(tmp_name), "auth_type_%d", i);
+            dach_append(&item->report, tmp_name, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+            snprintf(tmp_name, sizeof(tmp_name), "auth_class_%d", i);
+            dach_append(&item->report, tmp_name, dns_class2str(rec->class), DACH_AUTO_LEN);
+            snprintf(tmp_name, sizeof(tmp_name), "auth_name_%d", i);
+            dach_append(&item->report, tmp_name, tmp_data, DACH_AUTO_LEN);
+        }
+    }
 
     return 0;
 }
@@ -196,8 +229,8 @@ static unsigned
 dns_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "no reply");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "no response");
+    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "no response");
+    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
     return 0;
 }
 

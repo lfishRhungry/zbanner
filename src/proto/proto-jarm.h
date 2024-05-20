@@ -63,7 +63,7 @@ size_t jarm_create_ch(struct JarmConfig *jc, unsigned char *buf, unsigned buf_le
 
 
 /**
- * Decpher ServerHello in JARM format.
+ * Decpher ServerHello in JARM format to c string
  * We should insure the payload is a valid ServerHello.(include ALERT)
 */
 size_t jarm_decipher_one(const unsigned char *payload, size_t payload_len,

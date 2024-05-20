@@ -11,8 +11,9 @@
  * LZR Probe will use `handle_response_cb` of all subprobes(handshakes) listed here
  * to match the banner and identify its service automaticly.
  * 
- * Subprobes' names always start with 'lzr-', and could be used as a normal
- * ProbeModule.
+ * Subprobes' names always start with 'lzr-' and could be used as a normal
+ * ProbeModule. Subprobes set classification of result to the service name and
+ * output level to success if it identified successfully.
  * 
  * When they specified as subprobes in LZR probe with `--probe-args`, we should
  * omit the 'lzr-' prefix like 'lzr-http' -> 'http'.
@@ -269,41 +270,47 @@ lzr_handle_response(
     struct OutputItem *item)
 {
     /**
-     * I think it is long enough.
-     * Some one has time to make it safe?
-     * However I am tired while coding there.
-    */
-    char *rpt_idx = item->report;
-
-    /**
      * strcat every lzr subprobes match result
      * print results just like lzr:
      *     pop3-smtp-http
     */
-    for (size_t i=0; i<ARRAY_SIZE(lzr_handshakes); i++) {
+
+    size_t i = 0;
+    for (; i<ARRAY_SIZE(lzr_handshakes); i++) {
         lzr_handshakes[i]->handle_response_cb(
             th_idx, target, px, sizeof_px, item);
 
         if (item->level==Output_SUCCESS) {
-            safe_strcpy(rpt_idx,
-                OUTPUT_RPT_SIZE-(rpt_idx-item->report), item->classification);
-
-            for (;*rpt_idx!='\0';rpt_idx++) {}
-
-            *rpt_idx = '-';
-            rpt_idx++;
-
-            if (!lzr_conf.force_all_match)
-                break;
+            dach_append(&item->report, "result", item->classification, DACH_AUTO_LEN);
+            break;
         }
     }
 
-    if (rpt_idx==item->report) {
-        /*got nothing*/
+    if (lzr_conf.force_all_match) {
+        for (++i; i<ARRAY_SIZE(lzr_handshakes); i++) {
+            lzr_handshakes[i]->handle_response_cb(
+                th_idx, target, px, sizeof_px, item);
+
+            if (item->level==Output_SUCCESS) {
+                dach_printf(&item->report, "result", "-%s", item->classification);
+            }
+        }
+    }
+
+    dach_append(&item->report, "handshake", lzr_conf.handshake[target->index]->name, DACH_AUTO_LEN);
+
+    if (dach_get_link(&item->report, "result")) {
+        item->level = Output_SUCCESS;
+        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "identified");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+
+        if (lzr_conf.force_all_handshakes && target->index != lzr_conf.hs_count-1) {
+            return target->index+2;
+        }
+    } else {
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "unknown");
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
-        snprintf(item->report, OUTPUT_RPT_SIZE, "[handshake: %s]",
-            lzr_conf.handshake[target->index]->name);
+
         /**
          * Set last unmatching as failure in normal mode.
          * Or all unmatching as failure if force-all-handshakes
@@ -316,16 +323,6 @@ lzr_handle_response(
         } else {
             return 0;
         }
-    } else {
-        item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "identified");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
-        snprintf(rpt_idx-1, OUTPUT_RPT_SIZE-(rpt_idx-item->report)+1, " [handshake: %s]",
-            lzr_conf.handshake[target->index]->name);
-
-        if (lzr_conf.force_all_handshakes && target->index != lzr_conf.hs_count-1) {
-            return target->index+2;
-        }
     }
 
     return 0;
@@ -336,8 +333,7 @@ lzr_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "unknown");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "no response");
-    snprintf(item->report, OUTPUT_RPT_SIZE, "[handshake: %s]",
-        lzr_conf.handshake[target->index]->name);
+    dach_append(&item->report, "handshake", lzr_conf.handshake[target->index]->name, DACH_AUTO_LEN);
     /**
      * Set last unmatching as failure in normal mode.
      * Or all unmatching as failure if force-all-handshakes

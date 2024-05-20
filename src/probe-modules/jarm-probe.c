@@ -149,17 +149,20 @@ jarm_handle_response(
         return 0;
     }
 
+    char tmp_data[100];
+
     /*Just ALERT or HANDSHAKE are valid*/
     if (px[0]==TLS_RECORD_CONTENT_TYPE_ALERT
         || px[0]==TLS_RECORD_CONTENT_TYPE_HANDSHAKE) {
         /*Validate the VERSION field*/
         if (px[1]==0x03) {
             if (px[2]==0x00 || px[2]==0x01 || px[2]==0x02 || px[2]==0x03) {
+
                 item->level = Output_SUCCESS;
                 safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "jarmed");
-                safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "tls banner");
-                int r = snprintf(item->report, OUTPUT_RPT_SIZE, "JARM[%02d] ", target->index);
-                jarm_decipher_one(px, sizeof_px, item->report+r, OUTPUT_RPT_SIZE-r);
+                dach_printf(&item->report, "order", "%d", target->index);
+                jarm_decipher_one(px, sizeof_px, tmp_data, sizeof(tmp_data));
+                dach_append(&item->report, "content", tmp_data, DACH_AUTO_LEN);
                 return 1;
             }
         }
@@ -177,7 +180,7 @@ jarm_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
     item->level = Output_FAILURE;
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "no jarm");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
-    snprintf(item->report, OUTPUT_RPT_SIZE, "JARM[%d]", target->index);
+    dach_printf(&item->report, "order", "%d", target->index);
     return 0;
 }
 

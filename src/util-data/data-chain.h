@@ -24,7 +24,7 @@
 
 #include <stddef.h>
 
-#define DACH_MAX_NAME_SIZE          20
+#define DACH_MAX_NAME_SIZE          25
 
 #define DACH_AUTO_LEN ((size_t)~0)
 

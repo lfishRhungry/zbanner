@@ -135,14 +135,10 @@ sctpinit_handle(
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "closed");
     }
 
-    int rpt_tmp = 0;
-
     if (sctpinit_conf.record_ttl)
-        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_SIZE-rpt_tmp,
-            "[ttl=%d]", recved->parsed.ip_ttl);
+        dach_printf(&item->report, "ttl", "%d", recved->parsed.ip_ttl);
     if (sctpinit_conf.record_ipid && recved->parsed.src_ip.version==4)
-        rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_SIZE-rpt_tmp,
-            "[ipid=%d]", recved->parsed.ip_v4_id);
+        dach_printf(&item->report, "ipid", "%d", recved->parsed.ip_v4_id);
 }
 
 void sctpinit_timeout(

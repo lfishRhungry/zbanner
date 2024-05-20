@@ -270,17 +270,13 @@ tcpstate_handle(
         uint16_t win_them =
             TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
-        int rpt_tmp = 0;
-
         if (tcpstate_conf.record_ttl)
-            rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_SIZE-rpt_tmp,
-                "[ttl=%d]", recved->parsed.ip_ttl);
+            dach_printf(&item->report, "ttl", "%d", recved->parsed.ip_ttl);
         if (tcpstate_conf.record_ipid && recved->parsed.src_ip.version==4)
-            rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_SIZE-rpt_tmp,
-                "[ipid=%d]", recved->parsed.ip_v4_id);
+            dach_printf(&item->report, "ipid", "%d", recved->parsed.ip_v4_id);
         if (tcpstate_conf.record_win)
-            rpt_tmp += snprintf(item->report+rpt_tmp, OUTPUT_RPT_SIZE-rpt_tmp,
-                "[win=%d]", win_them);
+            dach_printf(&item->report, "win", "%d", win_them);
+
         /**
          * We have validated cookie for syn-ack in `tcpstate_validate`.
          * But also need to handle zero window

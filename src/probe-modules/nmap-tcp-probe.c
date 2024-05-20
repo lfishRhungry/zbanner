@@ -223,20 +223,20 @@ nmaptcp_handle_response(
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "identified");
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE,
             match->is_softmatch?"softmatch":"matched");
-        int n = snprintf(item->report, OUTPUT_RPT_SIZE, "[service: %s, line: %u",
-            match->service, match->line);
+        dach_append(&item->report, "service", match->service, DACH_AUTO_LEN);
         if (!match->is_softmatch&&match->versioninfo) {
-            n += snprintf(item->report+n, OUTPUT_RPT_SIZE-n, ", info: %s", match->versioninfo->value);
+            dach_append(&item->report, "info", match->versioninfo->value, DACH_AUTO_LEN);
         }
-        snprintf(item->report+n, OUTPUT_RPT_SIZE-n, "]");
+        dach_printf(&item->report, "line", "%d", match->line);
+        dach_append(&item->report, "probe", list->probes[target->index]->name, DACH_AUTO_LEN);
+
 
         return 0;
     }
 
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "unknown");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
-    snprintf(item->report, OUTPUT_RPT_SIZE, "[probe: %s]",
-        list->probes[target->index]->name);
+    dach_append(&item->report, "probe", list->probes[target->index]->name, DACH_AUTO_LEN);
 
     /*fail to match or in softmatch mode, try to send next possible probe*/
     next_probe = nmapservice_next_probe_index(list, target->index,
@@ -260,8 +260,7 @@ nmaptcp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "unknown");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "no response");
-    snprintf(item->report, OUTPUT_RPT_SIZE, "[probe: %s]",
-        list->probes[target->index]->name);
+    dach_append(&item->report, "probe", list->probes[target->index]->name, DACH_AUTO_LEN);
 
     /**
      * We have to check whether it is the last available probe.

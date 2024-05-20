@@ -474,7 +474,7 @@ luatcp_handle_response(
         return 0;
     }
     lua_ret = lua_tolstring(luatcp_conf.Lhx, -1, &ret_len);
-    memcpy(item->report, lua_ret, ret_len);
+    dach_append(&item->report, "lua_rpt", lua_ret, ret_len);
 
     lua_settop(luatcp_conf.Lhx, 0);
     return ret;
@@ -555,7 +555,7 @@ luatcp_handle_timeout(
         return 0;
     }
     lua_ret = lua_tolstring(luatcp_conf.Lrx, -1, &ret_len);
-    memcpy(item->report, lua_ret, ret_len);
+    dach_append(&item->report, "lua_rpt", lua_ret, ret_len);
 
     lua_settop(luatcp_conf.Lrx, 0);
     return ret;

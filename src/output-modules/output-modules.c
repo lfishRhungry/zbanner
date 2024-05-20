@@ -89,7 +89,7 @@ static const char fmt_host[]   = "%s host: %-15s";
 static const char fmt_port[]   = " port: %-5u";
 static const char fmt_cls []   = " \"%s\"";
 static const char fmt_reason[] = " because of \"%s\"";
-static const char fmt_report[] = "  "XPRINT_CH_COLOR_YELLOW"Report: %s";
+static const char fmt_report[] = "  "XPRINT_CH_COLOR_YELLOW"%s: %s";
 
 bool
 output_init(struct Output *output)
@@ -131,7 +131,7 @@ output_init(struct Output *output)
 static void
 output_result_to_stdout(
     const struct Output *output,
-    const struct OutputItem *item)
+    struct OutputItem *item)
 {
     if (item->level==Output_INFO && !output->is_show_info)
         return;
@@ -161,7 +161,6 @@ output_result_to_stdout(
         return;
     }
 
-    
     if (item->port_them) {
         count += fprintf(stdout, fmt_port, item->port_them);
     }
@@ -174,12 +173,14 @@ output_result_to_stdout(
         count += fprintf(stdout, fmt_reason, item->reason);
     }
 
-    if (item->report[0]) {
-        count += fprintf(stdout, fmt_report, item->report);
+    struct DataLink *pre = item->report.link;
+    while (pre->next) {
+        count += fprintf(stdout, fmt_report, pre->next->name, pre->next->data);
+        pre = pre->next;
     }
-    
+
     if (count < 120)
-            fprintf(stdout, "%*s", (int)(120-count), "");
+        fprintf(stdout, "%*s", (int)(120-count), "");
 
     fprintf(stdout, XPRINT_COLOR_RESET"\n");
     fflush(stdout);
@@ -188,7 +189,7 @@ output_result_to_stdout(
 void
 output_result(
     const struct Output *output,
-    const struct OutputItem *item)
+    struct OutputItem *item)
 {
     if (item->no_output)
         return;
@@ -201,13 +202,13 @@ output_result(
         ((struct Output *)output)->total_successed++;
         pixie_release_mutex(output->succ_mutex);
     }
- 
+
     if (item->level==Output_FAILURE) {
         pixie_acquire_mutex(output->fail_mutex);
         ((struct Output *)output)->total_failed++;
         pixie_release_mutex(output->fail_mutex);
     }
- 
+
     if (item->level==Output_INFO) {
         pixie_acquire_mutex(output->info_mutex);
         ((struct Output *)output)->total_info++;
@@ -229,6 +230,7 @@ output_result(
         pixie_release_mutex(output->stdout_mutex);
     }
 
+    dach_release(&item->report);
 }
 
 void
@@ -250,6 +252,6 @@ bool output_init_nothing(const struct Output *output)
     return true;
 }
 
-void output_result_nothing(const struct Output *out, const struct OutputItem *item) {}
+void output_result_nothing(const struct Output *out, struct OutputItem *item) {}
 
 void output_close_nothing(const struct Output *out) {}
