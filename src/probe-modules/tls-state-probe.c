@@ -192,11 +192,11 @@ static struct ConfigParam tlsstate_parameters[] = {
         " INFO."
     },
     {
-        "dump-subject-name",
+        "dump-subject",
         SET_dump_subject,
         F_BOOL,
-        {"subject-name", "subject", 0},
-        "Record X509 cert subject names of SSL/TLS server to results as INFO."
+        {"subject", 0},
+        "Record X509 subject info of SSL/TLS server to results as INFO."
     },
 
     {0}
@@ -217,7 +217,9 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line)
     };
 
     safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
+    dach_append_char(&item.report, "key_log", '[');
     dach_append(&item.report, "key_log", line, DACH_AUTO_LEN);
+    dach_append_char(&item.report, "key_log", ']');
 
     output_result(tls_out, &item);
 }
@@ -244,14 +246,15 @@ static void ssl_info_callback(const SSL *ssl, int where, int ret) {
     }
 }
 
-static bool output_subject_name(struct Output *out,
+static bool output_subject_info(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
-    int res;
+    int  res;
+    unsigned count;
     char s_names[512];
-    BIO *bio = NULL;
+    BIO *bio        = NULL;
     X509 *x509_cert = NULL;
-    X509_NAME *x509_subject_name = NULL;
+    X509_NAME *x509_subject_name           = NULL;
     STACK_OF(GENERAL_NAME) *x509_alt_names = NULL;
 
     x509_cert = SSL_get_peer_certificate(ssl);
@@ -261,7 +264,7 @@ static bool output_subject_name(struct Output *out,
 
     bio = BIO_new(BIO_s_mem());
     if (bio == NULL) {
-        LOG(LEVEL_WARNING, "[BANNER_NAMES]BIO_new failed\n");
+        LOG(LEVEL_WARNING, "[output_subject]BIO_new failed\n");
         X509_free(x509_cert);
         return false;
     }
@@ -275,11 +278,12 @@ static bool output_subject_name(struct Output *out,
     };
     safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
 
+    BIO_printf(bio, "[");
     x509_subject_name = X509_get_subject_name(x509_cert);
     if (x509_subject_name != NULL) {
 
         int i_name;
-
+        count = 0;
         for (i_name = 0; i_name < X509_NAME_entry_count(x509_subject_name);
              i_name++) {
             X509_NAME_ENTRY *name_entry = NULL;
@@ -288,62 +292,40 @@ static bool output_subject_name(struct Output *out,
 
             name_entry = X509_NAME_get_entry(x509_subject_name, i_name);
             if (name_entry == NULL) {
-                LOG(LEVEL_WARNING, "[BANNER_NAMES]X509_NAME_get_entry failed on %d\n",
+                LOG(LEVEL_WARNING, "[output_subject]X509_NAME_get_entry failed on %d\n",
                     i_name);
                 continue;
             }
             fn = X509_NAME_ENTRY_get_object(name_entry);
             if (fn == NULL) {
                 LOG(LEVEL_WARNING,
-                    "[BANNER_NAMES]X509_NAME_ENTRY_get_object failed on %d\n", i_name);
+                    "[output_subject]X509_NAME_ENTRY_get_object failed on %d\n", i_name);
                 continue;
             }
             val = X509_NAME_ENTRY_get_data(name_entry);
             if (val == NULL) {
                 LOG(LEVEL_WARNING,
-                    "[BANNER_NAMES]X509_NAME_ENTRY_get_data failed on %d\n", i_name);
+                    "[output_subject]X509_NAME_ENTRY_get_data failed on %d\n", i_name);
                 continue;
             }
             if (NID_commonName == OBJ_obj2nid(fn)) {
-                BIO_printf(bio, ", ");
+                if (count) {
+                    BIO_printf(bio, ", ");
+                }
+                count++;
                 res = ASN1_STRING_print_ex(bio, val, 0);
                 if (res < 0) {
                     LOG(LEVEL_WARNING,
-                        "[BANNER_NAMES]ASN1_STRING_print_ex failed with error %d on %d\n",
+                        "[output_subject]ASN1_STRING_print_ex failed with error %d on %d\n",
                         res, i_name);
                     BIO_printf(bio, "<can't get cn>");
                 }
             }
         }
     } else {
-        LOG(LEVEL_WARNING, "[BANNER_NAMES]X509_get_subject_name failed\n");
+        LOG(LEVEL_WARNING, "[output_subject]X509_get_subject_name failed\n");
     }
-
-    x509_alt_names =
-        X509_get_ext_d2i(x509_cert, NID_subject_alt_name, NULL, NULL);
-    if (x509_alt_names != NULL) {
-        int i_name = 0;
-        for (i_name = 0; i_name < sk_GENERAL_NAME_num(x509_alt_names); i_name++) {
-            GENERAL_NAME *x509_alt_name;
-
-            x509_alt_name = sk_GENERAL_NAME_value(x509_alt_names, i_name);
-            if (x509_alt_name == NULL) {
-                LOG(LEVEL_WARNING, "[BANNER_NAMES]sk_GENERAL_NAME_value failed on %d\n",
-                    i_name);
-                continue;
-            }
-            BIO_printf(bio, ", ");
-            res = GENERAL_NAME_simple_print(bio, x509_alt_name);
-            if (res < 0) {
-                LOG(LEVEL_DEBUG,
-                    "[BANNER_NAMES]GENERAL_NAME_simple_print failed with error %d on "
-                    "%d\n",
-                    res, i_name);
-                BIO_printf(bio, "<can't get alt>");
-            }
-        }
-        sk_GENERAL_NAME_pop_free(x509_alt_names, GENERAL_NAME_free);
-    }
+    BIO_printf(bio, "]");
 
     while (true) {
         res = BIO_read(bio, s_names, sizeof(s_names));
@@ -352,7 +334,50 @@ static bool output_subject_name(struct Output *out,
         } else if (res == 0 || res == -1) {
             break;
         } else {
-            LOG(LEVEL_WARNING, "[BANNER_NAMES]BIO_read failed with error: %d\n", res);
+            LOG(LEVEL_WARNING, "[output_subject]BIO_read failed with error: %d\n", res);
+            break;
+        }
+    }
+
+    count = 0;
+    x509_alt_names = X509_get_ext_d2i(x509_cert, NID_subject_alt_name, NULL, NULL);
+    BIO_printf(bio, "[");
+    if (x509_alt_names != NULL) {
+        int i_name = 0;
+        for (i_name = 0; i_name < sk_GENERAL_NAME_num(x509_alt_names); i_name++) {
+            GENERAL_NAME *x509_alt_name;
+
+            x509_alt_name = sk_GENERAL_NAME_value(x509_alt_names, i_name);
+            if (x509_alt_name == NULL) {
+                LOG(LEVEL_WARNING, "[output_subject]sk_GENERAL_NAME_value failed on %d\n",
+                    i_name);
+                continue;
+            }
+            if (count) {
+                BIO_printf(bio, ", ");
+            }
+            count++;
+            res = GENERAL_NAME_simple_print(bio, x509_alt_name);
+            if (res < 0) {
+                LOG(LEVEL_DEBUG,
+                    "[output_subject]GENERAL_NAME_simple_print failed with error %d on "
+                    "%d\n",
+                    res, i_name);
+                BIO_printf(bio, "<can't get alt>");
+            }
+        }
+        sk_GENERAL_NAME_pop_free(x509_alt_names, GENERAL_NAME_free);
+    }
+    BIO_printf(bio, "]");
+
+    while (true) {
+        res = BIO_read(bio, s_names, sizeof(s_names));
+        if (res > 0) {
+            dach_append(&item.report, "alt_name", s_names, res);
+        } else if (res == 0 || res == -1) {
+            break;
+        } else {
+            LOG(LEVEL_WARNING, "[output_subject]BIO_read failed with error: %d\n", res);
             break;
         }
     }
@@ -365,7 +390,7 @@ static bool output_subject_name(struct Output *out,
     return true;
 }
 
-static bool output_cert(struct Output *out,
+static bool output_x502_cert(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     STACK_OF(X509) * sk_x509_certs;
@@ -397,13 +422,13 @@ static bool output_cert(struct Output *out,
 
         x509_cert = sk_X509_value(sk_x509_certs, i_cert);
         if (x509_cert == NULL) {
-            LOG(LEVEL_WARNING, "[BANNER_CERTS]sk_X509_value failed on %d\n", i_cert);
+            LOG(LEVEL_WARNING, "[output_cert]sk_X509_value failed on %d\n", i_cert);
             continue;
         }
 
         bio_base64 = BIO_new(BIO_f_base64());
         if (bio_base64 == NULL) {
-            LOG(LEVEL_WARNING, "[BANNER_CERTS]BIO_new(base64) failed on %d\n",
+            LOG(LEVEL_WARNING, "[output_cert]BIO_new(base64) failed on %d\n",
                 i_cert);
             continue;
         }
@@ -411,7 +436,7 @@ static bool output_cert(struct Output *out,
 
         bio_mem = BIO_new(BIO_s_mem());
         if (bio_mem == NULL) {
-            LOG(LEVEL_WARNING, "[BANNER_CERTS]BIO_new(bio_mem) failed on %d\n",
+            LOG(LEVEL_WARNING, "[output_cert]BIO_new(bio_mem) failed on %d\n",
                 i_cert);
             BIO_free(bio_base64);
             continue;
@@ -421,7 +446,7 @@ static bool output_cert(struct Output *out,
         res = i2d_X509_bio(bio_base64, x509_cert);
         if (res != 1) {
             LOG(LEVEL_WARNING,
-                "[BANNER_CERTS]i2d_X509_bio failed with error %d on %d\n", res,
+                "[output_cert]i2d_X509_bio failed with error %d on %d\n", res,
                 i_cert);
             BIO_free(bio_mem);
             BIO_free(bio_base64);
@@ -429,7 +454,7 @@ static bool output_cert(struct Output *out,
         }
         res = BIO_flush(bio_base64);
         if (res != 1) {
-            LOG(LEVEL_WARNING, "[BANNER_CERTS]BIO_flush failed with error %d on %d\n",
+            LOG(LEVEL_WARNING, "[output_cert]BIO_flush failed with error %d on %d\n",
                 res, i_cert);
             BIO_free(bio_mem);
             BIO_free(bio_base64);
@@ -445,7 +470,7 @@ static bool output_cert(struct Output *out,
             } else if (res == 0 || res == -1) {
                 break;
             } else {
-                LOG(LEVEL_WARNING, "[BANNER_CERTS]BIO_read failed with error: %d\n",
+                LOG(LEVEL_WARNING, "[output_cert]BIO_read failed with error: %d\n",
                     res);
                 break;
             }
@@ -461,7 +486,7 @@ static bool output_cert(struct Output *out,
     return true;
 }
 
-static bool output_cipher(struct Output *out,
+static bool output_cipher_suite(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     const SSL_CIPHER *ssl_cipher;
@@ -484,7 +509,7 @@ static bool output_cipher(struct Output *out,
     };
 
     cipher_suite = SSL_CIPHER_get_protocol_id(ssl_cipher);
-    dach_printf(&item.report, "cipher", "cipher[0x%x]", cipher_suite);
+    dach_printf(&item.report, "cipher", "0x%x", cipher_suite);
     safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
 
     output_result(tls_out, &item);
@@ -492,7 +517,7 @@ static bool output_cipher(struct Output *out,
     return true;
 }
 
-static bool output_version(struct Output *out,
+static bool output_tls_version(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     int version = SSL_version(ssl);
@@ -952,25 +977,25 @@ tlsstate_parse_response(
 
             /*output version*/
             if (tlsstate_conf.dump_version && !tls_state->have_dump_version) {
-                if (output_version(out, target, tls_state->ssl))
+                if (output_tls_version(out, target, tls_state->ssl))
                     tls_state->have_dump_version = 1;
             }
 
             /*output cipher suites*/
             if (tlsstate_conf.dump_cipher && !tls_state->have_dump_cipher) {
-                if (output_cipher(out, target, tls_state->ssl))
+                if (output_cipher_suite(out, target, tls_state->ssl))
                     tls_state->have_dump_cipher = 1;
             }
 
             /*output X.509 cert info*/
             if (tlsstate_conf.dump_cert && !tls_state->have_dump_cert) {
-                if (output_cert(out, target, tls_state->ssl))
+                if (output_x502_cert(out, target, tls_state->ssl))
                     tls_state->have_dump_cert = 1;
             }
 
             /*output X.509 subject info*/
             if (tlsstate_conf.dump_subject && !tls_state->have_dump_subject) {
-                if (output_subject_name(out, target, tls_state->ssl))
+                if (output_subject_info(out, target, tls_state->ssl))
                     tls_state->have_dump_subject = 1;
             }
 
