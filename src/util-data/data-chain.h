@@ -31,7 +31,7 @@ struct DataLink {
 
 /*must init with all zero*/
 struct DataChain {
-    struct DataLink      link[1]; /*dummy node*/
+    struct DataLink      link[1]; /*dummy node for using out of the box*/
     unsigned             count;
 };
 
@@ -49,7 +49,8 @@ dach_release(struct DataChain *dach);
 
 /**
  * find the previous link of target link.
- * check pre->next later.
+ * always return a non-null pre.
+ * check pre->next by your-self.
 */
 struct DataLink *
 dach_get_pre_link(struct DataChain *dach, const char *name);
@@ -60,6 +61,19 @@ dach_get_pre_link(struct DataChain *dach, const char *name);
 */
 struct DataLink *
 dach_get_link(struct DataChain *dach, const char *name);
+
+/**
+ * delete a link by inputting its previous link
+ * NOTE: pre must not be NULL
+*/
+void
+dach_del_link_by_pre(struct DataLink *pre);
+
+/**
+ * delete a link by inputting its previous link
+*/
+void
+dach_del_link(struct DataChain *dach, const char *name);
 
 /**
  * append target link by inputting its previous link.

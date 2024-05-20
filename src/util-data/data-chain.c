@@ -93,6 +93,24 @@ datachain_new_link(struct DataChain *dach, const char *name, size_t len)
     dach->link->next   = p;
 }
 
+void
+dach_del_link_by_pre(struct DataLink *pre)
+{
+    assert(pre);
+
+    if (pre->next) {
+        struct DataLink *link = pre->next;
+        pre->next = link->next;
+        free(link);
+    }
+}
+
+void dach_del_link(struct DataChain *dach, const char *name)
+{
+    struct DataLink *pre = dach_get_pre_link(dach, name);
+    dach_del_link_by_pre(pre);
+}
+
 
 /***************************************************************************
  * expand the target link size to at least mlen by inputting its previous link.
@@ -280,7 +298,6 @@ datachain_vprintf(struct DataLink *pre, const char *fmt, va_list marker) {
     char str[10];
     int len;
 
-    /*FIXME: not a good implement*/
     len = vsnprintf(str, sizeof(str), fmt, marker);
     if (len > sizeof(str)-1) {
         char *tmp = MALLOC(len+1);
@@ -349,6 +366,9 @@ void dach_append_normalized_by_pre(struct DataLink *pre,
 void dach_append_normalized(struct DataChain *dach, const char *name,
     const unsigned char *px, size_t length)
 {
+    if (length == DACH_AUTO_LEN)
+        length = strlen((const char*)px);
+
     struct DataLink *pre = dach_get_pre_link(dach, name);
 
     if (pre->next == NULL) {
@@ -556,9 +576,14 @@ datachain_selftest(void)
 
         for (i=0; i<10; i++) {
             dach_append(dach, "x", "xxxx", 4);
-            dach_append(dach, "y", "yyyyy", 5);
+            dach_append(dach, "y", "yyyyy", DACH_AUTO_LEN);
         }
-        
+
+        for (i=0; i<10; i++) {
+            dach_append_char(dach, "x", 'x');
+            dach_append_char(dach, "y", 'y');
+        }
+
         if (dach->link->next == NULL) {
             line = __LINE__;
             goto fail;
@@ -569,7 +594,7 @@ datachain_selftest(void)
             line = __LINE__;
             goto fail;
         }
-        if (link->data_len != 40) {
+        if (link->data_len != 50) {
             line = __LINE__;
             goto fail;
         }
@@ -579,10 +604,47 @@ datachain_selftest(void)
             line = __LINE__;
             goto fail;
         }
-        if (link->data_len != 50) {
+        if (link->data_len != 60) {
             line = __LINE__;
             goto fail;
         }
+
+        dach_del_link(dach, "x");
+        link = dach_get_link(dach, "x");
+        if (link) {
+            line = __LINE__;
+            goto fail;
+        }
+
+        dach_append_normalized(dach, "normal", "<hello>\n", DACH_AUTO_LEN);
+        link = dach_get_link(dach, "normal");
+        if (link==NULL) {
+            line = __LINE__;
+            goto fail;
+        }
+        if (!dach_equals(dach, "normal", "\\x3chello\\x3e\\x0a")) {
+            line = __LINE__;
+            goto fail;
+        }
+
+        dach_printf(dach, "print", "%s is %d", "65", 65);
+        link = dach_get_link(dach, "print");
+        if (link==NULL) {
+            line = __LINE__;
+            goto fail;
+        }
+        if (!dach_equals(dach, "print", "65 is 65")) {
+            line = __LINE__;
+            goto fail;
+        }
+
+        dach_del_link(dach, "normal");
+        link = dach_get_link(dach, "normal");
+        if (link) {
+            line = __LINE__;
+            goto fail;
+        }
+
 
         dach_release(dach);
         if (dach->link->next != NULL) {
