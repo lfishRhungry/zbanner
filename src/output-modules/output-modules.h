@@ -28,8 +28,8 @@ struct OutputItem {
     unsigned                     port_them;                        /*no outputting if zero*/
     ipaddress                    ip_me;
     unsigned                     port_me;                          /*no outputting if zero*/
+    char                         classification[OUTPUT_CLS_SIZE];  /*no outputting if start with zero, suggest to set it*/
     char                         reason[OUTPUT_RSN_SIZE];          /*no outputting if start with zero*/
-    char                         classification[OUTPUT_CLS_SIZE];  /*no outputting if start with zero*/
     struct DataChain             report;                           /*dynamic-defined key-value report*/
     unsigned                     no_output:1;
 };
