@@ -38,7 +38,7 @@ struct DataLink {
     unsigned             name_hash;
     unsigned             data_len;
     unsigned             data_size;
-    unsigned char        data[0];
+    unsigned char        data[1]; /*visual studio doesn't support zero size array as member*/
 };
 
 /*must init with all zero*/
