@@ -1810,17 +1810,17 @@ int templ_tcp_selftest()
         goto fail;
     }
 
-    if (1460 != tcp_get_mss(buf, length, 0)) {
+    if (1460 != tcp_get_mss(buf, length, NULL)) {
         line = __LINE__;
         goto fail;
     }
 
-    if (6 != tcp_get_wscale(buf, length, 0)) {
+    if (6 != tcp_get_wscale(buf, length, NULL)) {
         line = __LINE__;
         goto fail;
     }
 
-    if (0 != tcp_get_sackperm(buf, length, 0)) {
+    if (0 != tcp_get_sackperm(buf, length, NULL)) {
         line = __LINE__;
         goto fail;
     }
@@ -1828,7 +1828,7 @@ int templ_tcp_selftest()
     tcp_add_opt(&buf, &length, TCP_OPT_TYPE_MSS, TCP_OPT_LEN_MSS-2,
         (const unsigned char*)"\x12\x34");
 
-    if (0x1234 != tcp_get_mss(buf, length, 0)) {
+    if (0x1234 != tcp_get_mss(buf, length, NULL)) {
         line = __LINE__;
         goto fail;
     }
@@ -1840,12 +1840,12 @@ int templ_tcp_selftest()
 
     tcp_remove_opt(&buf, &length, TCP_OPT_TYPE_WS);
 
-    if (0x1234 != tcp_get_mss(buf, length, 0)) {
+    if (0x1234 != tcp_get_mss(buf, length, NULL)) {
         line = __LINE__;
         goto fail;
     }
 
-    if (0xFFFFffff != tcp_get_wscale(buf, length, 0)) {
+    if (0xFFFFffff != tcp_get_wscale(buf, length, NULL)) {
         line = __LINE__;
         goto fail;
     }
