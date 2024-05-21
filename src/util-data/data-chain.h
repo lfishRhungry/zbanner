@@ -58,6 +58,14 @@ struct DataChainB64
 };
 
 /**
+ * Create a data link with specified capasity by yourself.
+ * NOTE: return old link if the name exists
+ * @return the pre of new link
+ */
+struct DataLink *
+dach_new_link(struct DataChain *dach, const char *name, size_t data_size);
+
+/**
  * Release all memory.
  */
 void
