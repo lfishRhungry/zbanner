@@ -22,15 +22,40 @@ enum OutputLevel {
 };
 
 struct OutputItem {
+    /**This timestamp can be set in diff meanings by yourself like time of receiving
+     * packet or time of result generated.
+     * It will be set in output func by global time if hasn't be set by any module.*/
     time_t                       timestamp;
+    /**Type of result item itself. INFO and FAILURE are not to be output by default
+     * unless using `--show fail` or `--show info`.*/
     enum OutputLevel             level;
+    /**IP of target*/
     ipaddress                    ip_them;
-    unsigned                     port_them;                        /*no outputting if zero*/
+    /**Port of target.
+     * It won't be outputting in stdout and text if start with zero, suggest to set it*/
+    unsigned                     port_them;
+    /**IP of target.
+     * Our ip can be random when multi src ip set.
+     * It won't be showed in default stdout and text outputing.*/
     ipaddress                    ip_me;
-    unsigned                     port_me;                          /*no outputting if zero*/
-    char                         classification[OUTPUT_CLS_SIZE];  /*no outputting if start with zero, suggest to set it*/
-    char                         reason[OUTPUT_RSN_SIZE];          /*no outputting if start with zero*/
-    struct DataChain             report;                           /*dynamic-defined key-value report*/
+    /**IP of target.
+     * Our ip can be random when multi src ip set.
+     * It won't be showed in default stdout and text outputing.*/
+    unsigned                     port_me;
+    /**Type of this result. It is recommended to set a value.
+     * No double quotes in it for output format.
+     * It won't be outputting in stdout and text if start with zero, suggest to set it*/
+    char                         classification[OUTPUT_CLS_SIZE];
+    /**Why we set this result to that classification.
+     * No double quotes in it for output format.
+     * It won't be outputting in stdout and text if start with zero, suggest to set it*/
+    char                         reason[OUTPUT_RSN_SIZE];
+    /**Other thing need to be report. It's a dynamic and user-defined field in
+     * key-value format.
+     * No double quotes in it for output format.
+     * It won't be outputting in stdout and text if start with zero, suggest to set it*/
+    struct DataChain             report;
+    /**This result item won't be output if it set to true*/
     unsigned                     no_output:1;
 };
 
