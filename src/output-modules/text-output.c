@@ -3,9 +3,10 @@
 #include "../util-out/logger.h"
 #include "../pixie/pixie-file.h"
 
-static const char fmt_host[]   = "%s host: %-15s";
-static const char fmt_port[]   = " port: %-5u";
-static const char fmt_cls []   = " \"%s\"";
+static const char fmt_host[]   = "%s host: %s";
+static const char fmt_port[]   = " port: %u";
+static const char fmt_proto[]   = " in %s";
+static const char fmt_cls []   = " is \"%s\"";
 static const char fmt_reason[] = " because \"%s\"";
 static const char fmt_report_str[] = ",  %s: \"%s\"";
 static const char fmt_report_num[] = ",  %s: %s";
@@ -64,6 +65,9 @@ text_result(const struct Output *out, struct OutputItem *item)
         err = fprintf(file, fmt_port, item->port_them);
         if (err<0) goto error;
     }
+
+    err = fprintf(file, fmt_proto, ip_proto_to_string(item->ip_proto));
+    if (err<0) goto error;
 
     if (item->classification[0]) {
         err = fprintf(file, fmt_cls, item->classification);
