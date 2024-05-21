@@ -82,8 +82,11 @@ ndjson_result(const struct Output *out, struct OutputItem *item)
         pre = pre->next;
     }
 
-    /*overwrite tha last comma*/
-    fseek(file, -1, SEEK_CUR);
+    /*at least one report, overwrite the last comma*/
+    if (item->report.link->next) {
+        fseek(file, -1, SEEK_CUR);
+    }
+
     err = fprintf(file, fmt_ndjson_suffix);
     if (err<0) goto error;
 

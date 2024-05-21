@@ -7,7 +7,7 @@ static const char fmt_host[]   = "%s host: %-15s";
 static const char fmt_port[]   = " port: %-5u";
 static const char fmt_cls []   = " \"%s\"";
 static const char fmt_reason[] = " because \"%s\"";
-static const char fmt_report[] = ", %s: \"%s\"";
+static const char fmt_report[] = ",  %s: \"%s\"";
 
 extern struct OutputModule TextOutput; /*for internal x-ref*/
 

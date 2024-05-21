@@ -43,16 +43,16 @@ struct OutputItem {
      * It won't be showed in default stdout and text outputing.*/
     unsigned                     port_me;
     /**Type of this result. It is recommended to set a value.
-     * No double quotes in it for output format.
+     * No double or single quotes in it for output format.
      * It won't be outputting in stdout and text if start with zero, suggest to set it*/
     char                         classification[OUTPUT_CLS_SIZE];
     /**Why we set this result to that classification.
-     * No double quotes in it for output format.
+     * No double or single quotes in it for output format.
      * It won't be outputting in stdout and text if start with zero, suggest to set it*/
     char                         reason[OUTPUT_RSN_SIZE];
     /**Other thing need to be report. It's a dynamic and user-defined field in
      * key-value format.
-     * No double quotes in it for output format.
+     * No double or single quotes in it for output format.
      * It won't be outputting in stdout and text if start with zero, suggest to set it*/
     struct DataChain             report;
     /**This result item won't be output if it set to true*/

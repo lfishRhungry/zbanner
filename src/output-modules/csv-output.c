@@ -30,15 +30,15 @@ static const char fmt_csv_prefix[] =
 "%u,"
 "\"%s\","
 "\"%s\","
-"\"{"
+"\""
 ;
 
 static const char fmt_csv_inffix[] =
-"%s:%s,"
+"\'%s\':\'%s\',"
 ;
 
 static const char fmt_csv_suffix[] =
-"}\""
+"\""
 "\n"
 ;
 
@@ -59,7 +59,7 @@ csv_init(const struct Output *out)
     }
 
     err = fputs(header_csv, file);
-    
+
     if (err<0) {
         LOG(LEVEL_ERROR, "[-] CsvOutput: could not write header to file.\n");
     }
@@ -99,8 +99,10 @@ csv_result(const struct Output *out, struct OutputItem *item)
         pre = pre->next;
     }
 
-    /*overwrite tha last comma*/
-    fseek(file, -1, SEEK_CUR);
+    /*at least one report, overwrite the last comma*/
+    if (item->report.link->next) {
+        fseek(file, -1, SEEK_CUR);
+    }
     err = fprintf(file, fmt_csv_suffix);
     if (err<0) goto error;
 

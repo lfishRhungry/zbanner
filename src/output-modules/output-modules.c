@@ -101,7 +101,7 @@ static const char fmt_host[]   = "%s host: %-15s";
 static const char fmt_port[]   = " port: %-5u";
 static const char fmt_cls []   = " \"%s\"";
 static const char fmt_reason[] = " because \"%s\"";
-static const char fmt_report[] = ", "XPRINT_CH_COLOR_YELLOW"%s: \"%s\"";
+static const char fmt_report[] = ",  "XPRINT_CH_COLOR_YELLOW"%s: \"%s\"";
 
 bool
 output_init(struct Output *output)
