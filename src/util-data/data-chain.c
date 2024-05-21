@@ -75,6 +75,30 @@ dach_new_link(struct DataChain *dach, const char *name, size_t data_size)
 }
 
 
+/**
+ * Expand the target link size to at least mlen by inputting its previous link.
+ * NOTE: pre & pre->next must not be NULL
+ */
+static void
+dach_link_expand(struct DataLink *pre, size_t mlen)
+{
+    assert(pre && pre->next);
+
+    struct DataLink *n;
+    size_t length;
+
+    /*keep a space for '\0'*/
+    length = mlen<(2*pre->next->data_size)?(2*pre->next->data_size):mlen+1;
+    n      = CALLOC(1, sizeof(struct DataLink) + length);
+
+    memcpy(n, pre->next, offsetof(struct DataLink, data) + pre->next->data_size);
+    n->data_size = length;
+
+    free(pre->next);
+    pre->next = n;
+}
+
+
 /***************************************************************************
  ***************************************************************************/
 void
@@ -153,34 +177,11 @@ dach_del_link_by_pre(struct DataChain *dach, struct DataLink *pre)
     }
 }
 
-void dach_del_link(struct DataChain *dach, const char *name)
+void
+dach_del_link(struct DataChain *dach, const char *name)
 {
     struct DataLink *pre = dach_find_pre_link(dach, name);
     dach_del_link_by_pre(dach, pre);
-}
-
-
-/***************************************************************************
- * expand the target link size to at least mlen by inputting its previous link.
- * NOTE: pre & pre->next must not be NULL
- ***************************************************************************/
-static void
-datachain_link_expand(struct DataLink *pre, size_t mlen)
-{
-    assert(pre && pre->next);
-
-    struct DataLink *n;
-    size_t length;
-
-    /*keep a space for '\0'*/
-    length = mlen<(2*pre->next->data_size)?(2*pre->next->data_size):mlen+1;
-    n      = CALLOC(1, sizeof(struct DataLink) + length);
-
-    memcpy(n, pre->next, offsetof(struct DataLink, data) + pre->next->data_size);
-    n->data_size = length;
-
-    free(pre->next);
-    pre->next = n;
 }
 
 
@@ -197,7 +198,7 @@ dach_append_by_pre(struct DataLink *pre,
 
     size_t min_len = pre->next->data_len + length;
     if (min_len >= pre->next->data_size) { /*at least keep a '\0'*/
-        datachain_link_expand(pre, min_len);
+        dach_link_expand(pre, min_len);
     }
 
     memcpy(pre->next->data + pre->next->data_len, px, length);

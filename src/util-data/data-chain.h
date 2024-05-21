@@ -59,7 +59,7 @@ struct DataChainB64
 
 /**
  * Create a data link with specified capasity by yourself.
- * NOTE: return old link if the name exists
+ * NOTE: return old pre if the link exists
  * @return the pre of new link
  */
 struct DataLink *
