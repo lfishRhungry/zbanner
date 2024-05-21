@@ -85,7 +85,7 @@ tcpcon_create_tcb(
     ipaddress ip_src, ipaddress ip_dst,
     unsigned port_src, unsigned port_dst,
     unsigned my_seqno, unsigned their_seqno,
-    unsigned ttl,
+    unsigned ttl, unsigned mss,
     const struct ProbeModule *probe,
     unsigned secs, unsigned usecs);
 

@@ -89,6 +89,9 @@
 #pragma warning(disable:4996)
 #endif
 
+#define TCP_CORE_DEFAULT_EXPIRE          30
+#define TCP_CORE_DEFAULT_MSS           1460
+
 
 struct TCP_Segment {
     unsigned seqno;
@@ -169,6 +172,7 @@ struct TCP_ConnectionTable {
     struct stack_t                   *stack;
     struct Output                    *out;
 
+    unsigned                          mss_me;
     unsigned                          expire;
     unsigned                          count;
     unsigned                          mask;
@@ -347,7 +351,13 @@ tcpcon_create_table(size_t entry_count,
 
     tcpcon->expire = connection_timeout;
     if (tcpcon->expire == 0)
-        tcpcon->expire = 30; /* half a minute before destroying tcb */
+        tcpcon->expire = TCP_CORE_DEFAULT_EXPIRE; /* half a minute before destroying tcb */
+    
+    bool is_found;
+    tcpcon->mss_me = tcp_get_mss(syn_template->ipv4.packet,
+        syn_template->ipv4.length, &is_found);
+    if (!is_found)
+        tcpcon->mss_me = TCP_CORE_DEFAULT_MSS;
 
     tcpcon->tcp_template         = tcp_template;
     tcpcon->syn_template         = syn_template;
@@ -497,7 +507,7 @@ tcpcon_create_tcb(
     ipaddress ip_me, ipaddress ip_them,
     unsigned port_me, unsigned port_them,
     unsigned seqno_me, unsigned seqno_them,
-    unsigned ttl,
+    unsigned ttl, unsigned mss,
     const struct ProbeModule *probe,
     unsigned secs, unsigned usecs)
 {
@@ -537,6 +547,12 @@ tcpcon_create_tcb(
     tcb->next = tcpcon->entries[index & tcpcon->mask];
     tcpcon->entries[index & tcpcon->mask] = tcb;
 
+    /*negotiate mss*/
+    if (mss==0 || mss>tcpcon->mss_me)
+        tcb->mss = tcpcon->mss_me;
+    else
+        tcb->mss = mss;
+
     tcb->ip_me            = ip_me;
     tcb->ip_them          = ip_them;
     tcb->port_me          = (uint16_t)port_me;
@@ -547,7 +563,6 @@ tcpcon_create_tcb(
     tcb->seqno_them_first = seqno_them;
     tcb->when_created     = global_now;
     tcb->ttl              = (unsigned char)ttl;
-    tcb->mss              = TCP_DEFAULT_MSS;
     tcb->probe            = probe;
 
     /* Insert the TCB into the timeout. A TCB must always have a timeout

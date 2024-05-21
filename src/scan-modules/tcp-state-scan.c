@@ -289,9 +289,15 @@ tcpstate_handle(
             safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "syn-ack");
         }
 
+        unsigned mss;
+        bool is_found;
+        mss = tcp_get_mss(recved->packet, recved->length, &is_found);
+        if (!is_found)
+            mss = TCP_DEFAULT_MSS;
+
         if (tcb == NULL) {
             tcb = tcpcon_create_tcb(tcpcon, ip_me, ip_them, port_me, port_them,
-                seqno_me, seqno_them+1, recved->parsed.ip_ttl,
+                seqno_me, seqno_them+1, recved->parsed.ip_ttl, mss,
                 TcpStateScan.probe, recved->secs, recved->usecs);
         }
         stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_SYNACK, 0, 0,
