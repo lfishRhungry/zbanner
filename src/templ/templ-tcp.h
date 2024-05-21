@@ -38,16 +38,16 @@ struct TemplateOptions;
 #define TCP_OPT_TYPE_EXP1           253
 #define TCP_OPT_TYPE_EXP2           254
 
-#define TCP_OPT_LEN_EOL            1
-#define TCP_OPT_LEN_NOP            1
-#define TCP_OPT_LEN_MSS            4
-#define TCP_OPT_LEN_WS             3
-#define TCP_OPT_LEN_SACK_PERM      2
-#define TCP_OPT_LEN_TS             10
-#define TCP_OPT_LEN_MD5            18
-#define TCP_OPT_LEN_UTO            4
+#define TCP_OPT_LEN_EOL             1
+#define TCP_OPT_LEN_NOP             1
+#define TCP_OPT_LEN_MSS             4
+#define TCP_OPT_LEN_WS              3
+#define TCP_OPT_LEN_SACK_PERM       2
+#define TCP_OPT_LEN_TS              10
+#define TCP_OPT_LEN_MD5             18
+#define TCP_OPT_LEN_UTO             4
 
-#define TCP_DEFAULT_MSS 1460
+#define TCP_DEFAULT_MSS             1460
 
 
 /**
