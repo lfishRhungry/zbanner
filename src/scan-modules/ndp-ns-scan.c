@@ -117,7 +117,7 @@ ndpns_handle(
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "ndp na");
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "alive");
 
-    dach_printf(&item->report, "mac_addr", "%02X:%02X:%02X:%02X:%02X:%02X",
+    dach_printf(&item->report, "mac_addr", false, "%02X:%02X:%02X:%02X:%02X:%02X",
         recved->packet[recved->parsed.transport_offset+26],
         recved->packet[recved->parsed.transport_offset+27],
         recved->packet[recved->parsed.transport_offset+28],
@@ -132,7 +132,7 @@ ndpns_handle(
     }
 
     if (ndpns_conf.record_ttl)
-        dach_printf(&item->report, "ttl", "%d", recved->parsed.ip_ttl);
+        dach_printf(&item->report, "ttl", true, "%d", recved->parsed.ip_ttl);
 }
 
 void ndpns_timeout(

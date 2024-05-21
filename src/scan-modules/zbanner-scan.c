@@ -284,11 +284,11 @@ zbanner_handle(
             TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
         if (zbanner_conf.record_ttl)
-            dach_printf(&item->report, "ttl", "%d", recved->parsed.ip_ttl);
+            dach_printf(&item->report, "ttl", true, "%d", recved->parsed.ip_ttl);
         if (zbanner_conf.record_ipid && recved->parsed.src_ip.version==4)
-            dach_printf(&item->report, "ipid", "%d", recved->parsed.ip_v4_id);
+            dach_printf(&item->report, "ipid", true, "%d", recved->parsed.ip_v4_id);
         if (zbanner_conf.record_win)
-            dach_printf(&item->report, "win", "%d", win_them);
+            dach_printf(&item->report, "win", true, "%d", win_them);
 
         if (win_them == 0) {
             safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "fake-open");

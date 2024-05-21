@@ -21,8 +21,12 @@ static const char fmt_ndjson_prefix[] =
 "\"report\":{"
 ;
 
-static const char fmt_ndjson_inffix[] =
+static const char fmt_ndjson_str_inffix[] =
 "\"%s\":\"%s\","
+;
+
+static const char fmt_ndjson_num_inffix[] =
+"\"%s\":%s,"
 ;
 
 static const char fmt_ndjson_suffix[] =
@@ -77,7 +81,9 @@ ndjson_result(const struct Output *out, struct OutputItem *item)
 
     struct DataLink *pre = item->report.link;
     while (pre->next) {
-        err = fprintf(file, fmt_ndjson_inffix, pre->next->name, pre->next->data);
+        err = fprintf(file,
+            pre->next->is_number?fmt_ndjson_num_inffix:fmt_ndjson_str_inffix,
+            pre->next->name, pre->next->data);
         if (err<0) goto error;
         pre = pre->next;
     }

@@ -160,7 +160,7 @@ jarm_handle_response(
 
                 item->level = Output_SUCCESS;
                 safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "jarmed");
-                dach_printf(&item->report, "order", "%d", target->index);
+                dach_printf(&item->report, "order", true, "%d", target->index);
                 jarm_decipher_one(px, sizeof_px, tmp_data, sizeof(tmp_data));
                 dach_append(&item->report, "content", tmp_data, DACH_AUTO_LEN);
                 return 1;
@@ -180,7 +180,7 @@ jarm_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
     item->level = Output_FAILURE;
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "no jarm");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
-    dach_printf(&item->report, "order", "%d", target->index);
+    dach_printf(&item->report, "order", true, "%d", target->index);
     return 0;
 }
 

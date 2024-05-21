@@ -77,7 +77,7 @@ arpreq_handle(
 
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "alive");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "arp reply");
-    dach_printf(&item->report, "mac_addr", "%02X:%02X:%02X:%02X:%02X:%02X",
+    dach_printf(&item->report, "mac addr", false, "%02X:%02X:%02X:%02X:%02X:%02X",
         recved->parsed.mac_src[0], recved->parsed.mac_src[1],
         recved->parsed.mac_src[2], recved->parsed.mac_src[3],
         recved->parsed.mac_src[4], recved->parsed.mac_src[5]);

@@ -51,7 +51,7 @@ struct OutputItem {
      * It won't be outputting in stdout and text if start with zero, suggest to set it*/
     char                         reason[OUTPUT_RSN_SIZE];
     /**Other thing need to be report. It's a dynamic and user-defined field in
-     * key-value format.
+     * key-value format. You can set data link is_number to mention it is a num type.
      * No double or single quotes in it for output format.
      * It won't be outputting in stdout and text if start with zero, suggest to set it*/
     struct DataChain             report;

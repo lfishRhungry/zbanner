@@ -277,7 +277,7 @@ lzr_handle_response(
 
     bool identified = false;
     struct DataLink *pre;
-    pre = dach_new_link(&item->report, "result", DACH_DEFAULT_DATA_SIZE);
+    pre = dach_new_link(&item->report, "result", DACH_DEFAULT_DATA_SIZE, false);
 
     size_t i = 0;
     for (; i<ARRAY_SIZE(lzr_handshakes); i++) {

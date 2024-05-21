@@ -33,8 +33,12 @@ static const char fmt_csv_prefix[] =
 "\""
 ;
 
-static const char fmt_csv_inffix[] =
+static const char fmt_csv_str_inffix[] =
 "\'%s\':\'%s\',"
+;
+
+static const char fmt_csv_num_inffix[] =
+"\'%s\':%s,"
 ;
 
 static const char fmt_csv_suffix[] =
@@ -94,7 +98,9 @@ csv_result(const struct Output *out, struct OutputItem *item)
 
     struct DataLink *pre = item->report.link;
     while (pre->next) {
-        err = fprintf(file, fmt_csv_inffix, pre->next->name, pre->next->data);
+        err = fprintf(file,
+            pre->next->is_number?fmt_csv_num_inffix:fmt_csv_str_inffix,
+            pre->next->name, pre->next->data);
         if (err<0) goto error;
         pre = pre->next;
     }

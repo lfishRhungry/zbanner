@@ -227,7 +227,7 @@ nmaptcp_handle_response(
         if (!match->is_softmatch&&match->versioninfo) {
             dach_append(&item->report, "info", match->versioninfo->value, DACH_AUTO_LEN);
         }
-        dach_printf(&item->report, "line", "%d", match->line);
+        dach_printf(&item->report, "line", true, "%d", match->line);
         dach_append(&item->report, "probe", list->probes[target->index]->name, DACH_AUTO_LEN);
 
 

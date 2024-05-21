@@ -199,11 +199,11 @@ tcpsyn_handle(
     }
 
     if (tcpsyn_conf.record_ttl)
-        dach_printf(&item->report, "ttl", "%d", recved->parsed.ip_ttl);
+        dach_printf(&item->report, "ttl", true, "%d", recved->parsed.ip_ttl);
     if (tcpsyn_conf.record_ipid && recved->parsed.src_ip.version==4)
-        dach_printf(&item->report, "ipid", "%d", recved->parsed.ip_v4_id);
+        dach_printf(&item->report, "ipid", true, "%d", recved->parsed.ip_v4_id);
     if (tcpsyn_conf.record_win)
-        dach_printf(&item->report, "win", "%d", win_them);
+        dach_printf(&item->report, "win", true, "%d", win_them);
 
 }
 

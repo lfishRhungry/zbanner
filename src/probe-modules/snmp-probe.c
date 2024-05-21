@@ -529,7 +529,7 @@ snmp_handle_response(
         length = outer_length + offset;
 
 
-    pre = dach_new_link(&item->report, SNMP_DACH_NAME, DACH_DEFAULT_DATA_SIZE);
+    pre = dach_new_link(&item->report, SNMP_DACH_NAME, DACH_DEFAULT_DATA_SIZE, false);
     /* Var-bind list */
     while (offset < length) {
         uint64_t varbind_length;

@@ -101,7 +101,8 @@ static const char fmt_host[]   = "%s host: %-15s";
 static const char fmt_port[]   = " port: %-5u";
 static const char fmt_cls []   = " \"%s\"";
 static const char fmt_reason[] = " because \"%s\"";
-static const char fmt_report[] = ",  "XPRINT_CH_COLOR_YELLOW"%s: \"%s\"";
+static const char fmt_report_str[] = ",  "XPRINT_CH_COLOR_YELLOW"%s: \"%s\"";
+static const char fmt_report_num[] = ",  "XPRINT_CH_COLOR_YELLOW"%s: %s";
 
 bool
 output_init(struct Output *output)
@@ -187,7 +188,9 @@ output_result_to_stdout(
 
     struct DataLink *pre = item->report.link;
     while (pre->next) {
-        count += fprintf(stdout, fmt_report, pre->next->name, pre->next->data);
+        count += fprintf(stdout,
+            pre->next->is_number?fmt_report_num:fmt_report_str,
+            pre->next->name, pre->next->data);
         pre = pre->next;
     }
 

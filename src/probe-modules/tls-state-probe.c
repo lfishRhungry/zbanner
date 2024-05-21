@@ -237,7 +237,7 @@ static void ssl_info_cb(const SSL *ssl, int where, int ret) {
         };
 
         safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
-        dach_printf(&item.report, "openssl alert", "0x%04x %s: %s",
+        dach_printf(&item.report, "openssl alert", false, "0x%04x %s: %s",
             ret, SSL_alert_type_string_long(ret), SSL_alert_desc_string_long(ret));
 
         output_result(tls_out, &item);
@@ -324,7 +324,7 @@ static bool output_subject_info(struct Output *out,
         LOG(LEVEL_WARNING, "[output_subject]X509_get_subject_name failed\n");
     }
 
-    pre = dach_new_link(&item.report, "subject name", DACH_DEFAULT_DATA_SIZE);
+    pre = dach_new_link(&item.report, "subject name", DACH_DEFAULT_DATA_SIZE, false);
 
     while (true) {
         res = BIO_read(bio, s_names, sizeof(s_names));
@@ -367,7 +367,7 @@ static bool output_subject_info(struct Output *out,
         sk_GENERAL_NAME_pop_free(x509_alt_names, GENERAL_NAME_free);
     }
 
-    pre = dach_new_link(&item.report, "alt name", DACH_DEFAULT_DATA_SIZE);
+    pre = dach_new_link(&item.report, "alt name", DACH_DEFAULT_DATA_SIZE, false);
 
     while (true) {
         res = BIO_read(bio, s_names, sizeof(s_names));
@@ -461,7 +461,7 @@ static bool output_x502_cert(struct Output *out,
         }
 
         /*cert is a little bit large*/
-        pre = dach_new_link_printf(&item.report, 2048, "cert_%d", i_cert);
+        pre = dach_new_link_printf(&item.report, 2048, false, "cert_%d", i_cert);
 
         while (true) {
             res = BIO_read(bio_mem, s_base64, sizeof(s_base64));
@@ -511,7 +511,7 @@ static bool output_cipher_suite(struct Output *out,
     safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
 
     cipher_suite = SSL_CIPHER_get_protocol_id(ssl_cipher);
-    dach_printf(&item.report, "cipher", "0x%x", cipher_suite);
+    dach_printf(&item.report, "cipher", "0x%x", false, cipher_suite);
 
     output_result(tls_out, &item);
 
