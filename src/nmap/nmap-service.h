@@ -11,9 +11,6 @@
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
 
-#define NMAP_IPPROTO_TCP    6
-#define NMAP_IPPROTO_UDP   17
-
 
 struct ServiceProbeMatch;
 

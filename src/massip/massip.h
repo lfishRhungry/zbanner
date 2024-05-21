@@ -4,6 +4,18 @@
 #include "massip-rangesv4.h"
 #include "massip-rangesv6.h"
 
+
+/**
+ * For present ip protocol number and diff port type.
+ * Use it as unsigned type.
+*/
+#define IP_PROTO_TCP      6
+#define IP_PROTO_UDP     17
+#define IP_PROTO_SCTP   132
+#define IP_PROTO_Other   ~0
+
+
+
 struct MassIP {
     struct RangeList ipv4;
     struct Range6List ipv6;

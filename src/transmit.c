@@ -177,7 +177,7 @@ infinite:;
             /**
              * Due to flexible port store method.
              */
-            target.proto = get_actual_proto_port(&(target.port_them));
+            target.ip_proto = get_actual_proto_port(&(target.port_them));
 
             /*if we don't use fast-timeout, do not malloc more memory*/
             if (!tm_event) {

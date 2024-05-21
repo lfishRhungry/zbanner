@@ -63,7 +63,7 @@ udp_transmit(
     unsigned char *px, size_t *len)
 {
     /*we just handle udp target*/
-    if (target->proto != Port_UDP)
+    if (target->ip_proto != IP_PROTO_UDP)
         return false;
     
     unsigned cookie = get_cookie(target->ip_them, target->port_them,

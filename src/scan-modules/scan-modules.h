@@ -16,6 +16,7 @@
 #include "../util-misc/cross.h"
 #include "../output-modules/output-modules.h"
 #include "../stack/stack-queue.h"
+#include "../massip/massip.h"
 #include "../massip/massip-addr.h"
 #include "../massip/massip-rangesport.h"
 #include "../timeout/fast-timeout.h"
@@ -45,7 +46,7 @@ typedef bool (*scan_modules_global_init)(const struct Xconf *xconf);
 ****************************************************************************/
 
 struct ScanTarget {
-    enum PortProto     proto;
+    unsigned           ip_proto;
     ipaddress          ip_them;
     ipaddress          ip_me;
     unsigned           port_them;

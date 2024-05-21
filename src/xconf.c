@@ -998,7 +998,7 @@ static enum Config_Res SET_source_port(void *conf, const char *name, const char 
     }
 
     xconf->nic.src.port.first = ports.list[0].begin;
-    xconf->nic.src.port.last = ports.list[0].end;
+    xconf->nic.src.port.last  = ports.list[0].end;
     xconf->nic.src.port.range = ports.list[0].end - ports.list[0].begin + 1;
 
     return CONF_OK;

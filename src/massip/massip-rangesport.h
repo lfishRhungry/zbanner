@@ -24,13 +24,6 @@ enum Proto_Port_range{
     Range_Oproto_last        = (MASSIP_PORT_SPEC+1)*3 + MASSIP_PORT_SPEC,
 };
 
-enum PortProto {
-    Port_TCP = 1,
-    Port_UDP,
-    Port_SCTP,
-    Port_Oproto,
-};
-
 void
 rangelist_add_range_tcp(struct RangeList *targets, unsigned begin, unsigned end);
 
@@ -65,9 +58,9 @@ rangelist_parse_ports(struct RangeList *ports,
  * transfer port from range format to real port
  * and get what protocol this port belong to.
  * @param raw_port port Proto Port range format
- * @return enum PortProto or zero if invalid.
+ * @return ip proto number
 */
-enum PortProto
+unsigned
 get_actual_proto_port(unsigned *raw_port);
 
 int rangesport_selftest();

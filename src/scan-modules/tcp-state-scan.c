@@ -200,7 +200,7 @@ tcpstate_transmit(
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
-    if (target->proto != Port_TCP)
+    if (target->ip_proto != IP_PROTO_TCP)
         return false;
 
     unsigned cookie = get_cookie(target->ip_them, target->port_them,

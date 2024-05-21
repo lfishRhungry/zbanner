@@ -4,6 +4,7 @@
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
 #include "../massip/massip-rangesport.h"
+#include "../massip/massip.h"
 #include "../util-misc/cross.h"
 #include "../util-out/logger.h"
 
@@ -278,9 +279,9 @@ parse_probe(struct NmapServiceProbeList *list,
         goto parse_error;
     }
     if (memcmp(line+offset, "TCP", 3) == 0)
-        probe->protocol = NMAP_IPPROTO_TCP;
+        probe->protocol = IP_PROTO_TCP;
     else if (memcmp(line+offset, "UDP", 3) == 0)
-        probe->protocol = NMAP_IPPROTO_UDP;
+        probe->protocol = IP_PROTO_UDP;
     else {
         LOG(LEVEL_ERROR, "%s:%u:%u: unknown protocol\n",
             filename, line_number, (unsigned)offset);
@@ -928,7 +929,7 @@ nmapserviceprobes_free_record(struct NmapServiceProbe *probe)
  *****************************************************************************/
 static void
 nmapserviceprobes_print_ports(const struct RangeList *ranges,
-    FILE *fp, const char *prefix, enum PortProto default_proto)
+    FILE *fp, const char *prefix, unsigned default_proto)
 {
     unsigned i;
     
@@ -941,22 +942,22 @@ nmapserviceprobes_print_ports(const struct RangeList *ranges,
     
     /* print all ports */
     for (i=0; i<ranges->count; i++) {
-        enum PortProto proto;
+        unsigned proto;
         int begin = ranges->list[i].begin;
         int end = ranges->list[i].end;
         
         if (Range_TCP <= begin && begin < Range_UDP) {
-            proto  = Port_TCP;
+            proto  = IP_PROTO_TCP;
             begin -= Range_TCP;
             end   -= Range_TCP;
         }
         else if (Range_UDP <= begin && begin < Range_SCTP) {
-            proto  = Port_UDP;
+            proto  = IP_PROTO_UDP;
             begin -= Range_UDP;
             end   -= Range_UDP;
         }
         else {
-            proto  = Port_SCTP;
+            proto  = IP_PROTO_SCTP;
             begin -= Range_SCTP;
             end   -= Range_SCTP;
         }
@@ -973,10 +974,10 @@ nmapserviceprobes_print_ports(const struct RangeList *ranges,
         if (default_proto != proto) {
             default_proto = proto;
             switch (proto) {
-                case Port_TCP:    fprintf(fp, "T:"); break;
-                case Port_UDP:    fprintf(fp, "U:"); break;
-                case Port_SCTP:   fprintf(fp, "S:"); break;
-                case Port_Oproto: fprintf(fp, "O:"); break;
+                case IP_PROTO_TCP:    fprintf(fp, "T:"); break;
+                case IP_PROTO_UDP:    fprintf(fp, "U:"); break;
+                case IP_PROTO_SCTP:   fprintf(fp, "S:"); break;
+                default:              fprintf(fp, "O:"); break;
             }
         }
         fprintf(fp, "%u", begin);
@@ -1117,7 +1118,7 @@ nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp)
         
         /* print the first part of the probe */
         fprintf(fp, "Probe %s %s q",
-                (probe->protocol==NMAP_IPPROTO_TCP)?"TCP":"UDP",
+                (probe->protocol==IP_PROTO_TCP)?"TCP":"UDP",
                 probe->name);
         
         /* print the query/hello string */
@@ -1130,11 +1131,9 @@ nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp)
             fprintf(fp, "totalwaitms %u\n", probe->totalwaitms);
         if (probe->tcpwrappedms)
             fprintf(fp, "tcpwrappedms %u\n", probe->tcpwrappedms);
-        nmapserviceprobes_print_ports(&probe->ports, fp, "ports",
-            (probe->protocol==NMAP_IPPROTO_TCP)?Port_TCP:Port_UDP);
-        nmapserviceprobes_print_ports(&probe->sslports, fp, "sslports",
-            (probe->protocol==NMAP_IPPROTO_TCP)?Port_TCP:Port_UDP);
-        
+        nmapserviceprobes_print_ports(&probe->ports, fp, "ports", probe->protocol);
+        nmapserviceprobes_print_ports(&probe->sslports, fp, "sslports", probe->protocol);
+
         for (match=probe->match; match; match = match->next) {
             struct ServiceVersionInfo *vi;
 
@@ -1439,7 +1438,7 @@ nmapservice_match_service(
         return match_res;
     
     /*match with NULL probe at last if it's TCP and probe is not NULL*/
-    if (protocol==NMAP_IPPROTO_TCP && probe_idx!=0) {
+    if (protocol==IP_PROTO_TCP && probe_idx!=0) {
         match_res = match_service_in_one_probe(
             list->probes[0],
             payload, payload_len, softmatch);

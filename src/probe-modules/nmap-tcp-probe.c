@@ -8,6 +8,7 @@
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
 #include "../nmap/nmap-service.h"
+#include "../massip/massip.h"
 
 /*for internal x-ref*/
 extern struct ProbeModule NmapTcpProbe;
@@ -215,7 +216,7 @@ nmaptcp_handle_response(
 
     struct ServiceProbeMatch *match = nmapservice_match_service(list,
         target->index, px, sizeof_px,
-        NMAP_IPPROTO_TCP, nmaptcp_conf.softmatch);
+        IP_PROTO_TCP, nmaptcp_conf.softmatch);
 
     if (match) {
         item->level = Output_SUCCESS;
@@ -241,7 +242,7 @@ nmaptcp_handle_response(
     /*fail to match or in softmatch mode, try to send next possible probe*/
     next_probe = nmapservice_next_probe_index(list, target->index,
         nmaptcp_conf.no_port_limit?0:target->port_them,
-        nmaptcp_conf.rarity, NMAP_IPPROTO_TCP,
+        nmaptcp_conf.rarity, IP_PROTO_TCP,
         nmaptcp_conf.softmatch);
 
     /*no more probe, treat it as failure*/
@@ -267,7 +268,7 @@ nmaptcp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
      * */
     unsigned next_probe = nmapservice_next_probe_index(list, target->index,
         nmaptcp_conf.no_port_limit?0:target->port_them,
-        nmaptcp_conf.rarity, NMAP_IPPROTO_TCP,
+        nmaptcp_conf.rarity, IP_PROTO_TCP,
         nmaptcp_conf.softmatch);
 
     if (next_probe) {
