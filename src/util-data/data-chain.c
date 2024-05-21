@@ -748,7 +748,7 @@ datachain_selftest(void)
             goto fail;
         }
 
-        dach_printf(dach, "print", "%s is %d", "65", 65);
+        dach_printf(dach, "print", false, "%s is %d", "65", 65);
         link = dach_find_link(dach, "print");
         if (link==NULL) {
             line = __LINE__;
