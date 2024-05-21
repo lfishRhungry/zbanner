@@ -12,9 +12,20 @@ struct DnsConf {
     dns_record_type req_type;
     unsigned print_all_ans:1;
     unsigned print_all_auth:1;
+    unsigned print_all_add:1;
 };
 
 static struct DnsConf dns_conf = {0};
+
+static enum Config_Res SET_print_all_add(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    dns_conf.print_all_add = parseBoolean(value);
+
+    return CONF_OK;
+}
 
 static enum Config_Res SET_print_all_auth(void *conf, const char *name, const char *value)
 {
@@ -103,6 +114,13 @@ static struct ConfigParam dns_parameters[] = {
         {"all-auth", 0},
         "Print all authority records instead of only the first in default."
     },
+    {
+        "all-additional",
+        SET_print_all_add,
+        F_BOOL,
+        {"all-addition", "all-add", 0},
+        "Print all additional records instead of only the first in default."
+    },
 
     {0}
 };
@@ -181,13 +199,13 @@ dns_handle_response(
         dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
             false, tmp_data, sizeof(tmp_data));
 
-        pre = dach_append_char(&item->report, "answer RR", '\'');
+        pre = dach_append_char(&item->report, "answer RR", '[');
         dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
         dach_append_char_by_pre(pre, ' ');
         dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
         dach_append_char_by_pre(pre, ' ');
         dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
-        dach_append_char_by_pre(pre, '\'');
+        dach_append_char_by_pre(pre, ']');
     }
 
     if (dns_pkt.head.header.ans_count>1 && dns_conf.print_all_ans) {
@@ -196,13 +214,13 @@ dns_handle_response(
             dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
                 false, tmp_data, sizeof(tmp_data));
 
-            dach_append_by_pre(pre, ", \'", DACH_AUTO_LEN);
+            dach_append_by_pre(pre, ", [", DACH_AUTO_LEN);
             dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
             dach_append_char_by_pre(pre, ' ');
             dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
             dach_append_char_by_pre(pre, ' ');
             dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
-            dach_append_char_by_pre(pre, '\'');
+            dach_append_char_by_pre(pre, ']');
         }
     }
 
@@ -211,13 +229,13 @@ dns_handle_response(
         dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
             false, tmp_data, sizeof(tmp_data));
 
-        pre = dach_append_char(&item->report, "authority RR", '\'');
+        pre = dach_append_char(&item->report, "authority RR", '[');
         dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
         dach_append_char_by_pre(pre, ' ');
         dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
         dach_append_char_by_pre(pre, ' ');
         dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
-        dach_append_char_by_pre(pre, '\'');
+        dach_append_char_by_pre(pre, ']');
     }
 
     if (dns_pkt.head.header.auth_count>1 && dns_conf.print_all_auth) {
@@ -226,13 +244,43 @@ dns_handle_response(
             dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
                 false, tmp_data, sizeof(tmp_data));
 
-            dach_append_by_pre(pre, ", \'", DACH_AUTO_LEN);
+            dach_append_by_pre(pre, ", [", DACH_AUTO_LEN);
             dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
             dach_append_char_by_pre(pre, ' ');
             dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
             dach_append_char_by_pre(pre, ' ');
             dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
-            dach_append_char_by_pre(pre, '\'');
+            dach_append_char_by_pre(pre, ']');
+        }
+    }
+
+    if (dns_pkt.head.header.add_count > 0) {
+        rec = &dns_pkt.body.add[0];
+        dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
+            false, tmp_data, sizeof(tmp_data));
+
+        pre = dach_append_char(&item->report, "additional RR", '[');
+        dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+        dach_append_char_by_pre(pre, ' ');
+        dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
+        dach_append_char_by_pre(pre, ' ');
+        dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
+        dach_append_char_by_pre(pre, ']');
+    }
+
+    if (dns_pkt.head.header.add_count>1 && dns_conf.print_all_add) {
+        for (uint16_t i=1; i<dns_pkt.head.header.add_count; i++) {
+            rec = &dns_pkt.body.add[i];
+            dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
+                false, tmp_data, sizeof(tmp_data));
+
+            dach_append_by_pre(pre, ", [", DACH_AUTO_LEN);
+            dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+            dach_append_char_by_pre(pre, ' ');
+            dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
+            dach_append_char_by_pre(pre, ' ');
+            dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
+            dach_append_char_by_pre(pre, ']');
         }
     }
 

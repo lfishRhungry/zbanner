@@ -275,13 +275,18 @@ lzr_handle_response(
      *     pop3-smtp-http
     */
 
+    bool identified = false;
+    struct DataLink *pre;
+    pre = dach_new_link(&item->report, "result", DACH_DEFAULT_DATA_SIZE);
+
     size_t i = 0;
     for (; i<ARRAY_SIZE(lzr_handshakes); i++) {
         lzr_handshakes[i]->handle_response_cb(
             th_idx, target, px, sizeof_px, item);
 
         if (item->level==Output_SUCCESS) {
-            dach_append(&item->report, "result", item->classification, DACH_AUTO_LEN);
+            dach_append_by_pre(pre, item->classification, DACH_AUTO_LEN);
+            identified = true;
             break;
         }
     }
@@ -292,14 +297,14 @@ lzr_handle_response(
                 th_idx, target, px, sizeof_px, item);
 
             if (item->level==Output_SUCCESS) {
-                dach_printf(&item->report, "result", "-%s", item->classification);
+                dach_printf_by_pre(pre, "-%s", item->classification);
             }
         }
     }
 
     dach_append(&item->report, "handshake", lzr_conf.handshake[target->index]->name, DACH_AUTO_LEN);
 
-    if (dach_get_link(&item->report, "result")) {
+    if (identified) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "identified");
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
