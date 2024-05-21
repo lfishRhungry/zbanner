@@ -217,9 +217,7 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line)
     };
 
     safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
-    dach_append_char(&item.report, "key_log", '[');
     dach_append(&item.report, "key_log", line, DACH_AUTO_LEN);
-    dach_append_char(&item.report, "key_log", ']');
 
     output_result(tls_out, &item);
 }
@@ -239,7 +237,7 @@ static void ssl_info_callback(const SSL *ssl, int where, int ret) {
         };
 
         safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
-        dach_printf(&item.report, "ssl_info", "[OpenSSL Alert 0x%04x] %s: %s",
+        dach_printf(&item.report, "ssl_info", "OpenSSL Alert 0x%04x %s: %s",
             ret, SSL_alert_type_string_long(ret), SSL_alert_desc_string_long(ret));
 
         output_result(tls_out, &item);
@@ -278,7 +276,6 @@ static bool output_subject_info(struct Output *out,
     };
     safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
 
-    BIO_printf(bio, "[");
     x509_subject_name = X509_get_subject_name(x509_cert);
     if (x509_subject_name != NULL) {
 
@@ -325,7 +322,6 @@ static bool output_subject_info(struct Output *out,
     } else {
         LOG(LEVEL_WARNING, "[output_subject]X509_get_subject_name failed\n");
     }
-    BIO_printf(bio, "]");
 
     while (true) {
         res = BIO_read(bio, s_names, sizeof(s_names));
@@ -341,7 +337,6 @@ static bool output_subject_info(struct Output *out,
 
     count = 0;
     x509_alt_names = X509_get_ext_d2i(x509_cert, NID_subject_alt_name, NULL, NULL);
-    BIO_printf(bio, "[");
     if (x509_alt_names != NULL) {
         int i_name = 0;
         for (i_name = 0; i_name < sk_GENERAL_NAME_num(x509_alt_names); i_name++) {
@@ -368,7 +363,6 @@ static bool output_subject_info(struct Output *out,
         }
         sk_GENERAL_NAME_pop_free(x509_alt_names, GENERAL_NAME_free);
     }
-    BIO_printf(bio, "]");
 
     while (true) {
         res = BIO_read(bio, s_names, sizeof(s_names));
