@@ -439,8 +439,8 @@ struct ScanModule UdpScan = {
         "NOTE: Our host may send an ICMP Port Unreachable message to target after"
         " received udp response because we send udp packets bypassing the protocol"
         " stack of OS. Sometimes it can cause problems or needless retransmission"
-        " from server side. We could add iptables rules to ban this or observe "
-        "some strange things.",
+        " from server side. We could add iptables rules displayed in `firewall` "
+        "directory to ban this. Or we could observe some strange things.",
 
     .global_init_cb              = &udp_global_init,
     .transmit_cb                 = &udp_transmit,

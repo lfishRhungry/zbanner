@@ -649,16 +649,12 @@ struct ScanModule ZBannerScan = {
         " service identification and etc.\n"
         "By the way, ZBanner support `timeout` just for banner response and port"
         " openness(syn-ack).\n"
-        "Must specify a TcpType ProbeModule for ZBannerScan like:\n"
+        "NOTE1: Must specify a TcpType ProbeModule for ZBannerScan like:\n"
         "    `--probe-module xxx`\n"
-        "ZBannerScan will construct complete TCP conns. So must avoid Linux system "
-        "sending RST automatically by adding iptable rule like:\n"
-        "    `sudo iptables -A OUTPUT -p tcp --tcp-flags RST RST -j DROP -s <src-ip>`\n"
-        "Line number of added rule could be checked like:\n"
-        "    `sudo iptables -L --line-numbers`\n"
-        "Remove the rule by its line number if we do not need it:\n"
-        "    `sudo iptables -D OUTPUT <line-number>`\n"
-        "NOTE: Slow send rate may cause target host's retransmition.",
+        "NOTE2: ZBannerScan will construct complete TCP conns. So must avoid Linux"
+        " system sending RST automatically by adding iptable rules displayed in "
+        "`firewall` directory.\n"
+        "NOTE3: Slow send rate may cause target host's retransmition.",
 
     .global_init_cb               = &zbanner_global_init,
     .transmit_cb                  = &zbanner_transmit,
