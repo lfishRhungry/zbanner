@@ -60,6 +60,7 @@ struct DataChainB64
 
 /**
  * Create a data link with specified capacity by yourself.
+ * The actual size of data won't be less than DACH_DEFAULT_DATA_SIZE.
  * NOTE: return old pre if the link exists
  * @return the pre of new link
  */
@@ -68,6 +69,7 @@ dach_new_link(struct DataChain *dach, const char *name, size_t data_size);
 
 /**
  * Create a data link with formatted name and specified capacity by yourself.
+ * The actual size of data won't be less than DACH_DEFAULT_DATA_SIZE.
  * NOTE: return old pre if the link exists
  * @return the pre of new link
  */

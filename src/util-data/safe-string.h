@@ -67,6 +67,7 @@
 /**
  * A bounds checking version of strcpy, like `strcpy_s()` on Windows or
  * `strlcpy()` in glibc.
+ * Ensure to get a c string
  */
 void safe_strcpy(char *dst, size_t sizeof_dst, const char *src);
 int safe_localtime(struct tm* _tm, const time_t *time);
