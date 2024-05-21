@@ -15,6 +15,10 @@
     Datachain was inspired by banout of masscan but with different
     target, usage and internal code.
 
+    Appending new data to link by `dach_link_append...` is efficient than
+    `dach_append...` because of no name matching. You can get the corresponding
+    datalink pre by `dach_get/find_pre...` or `dach_append...`
+
     Create by lishRhungry 2024
 */
 #ifndef DATA_CHAIN_H
@@ -60,36 +64,50 @@ void
 dach_release(struct DataChain *dach);
 
 /**
- * find the previous link of target link.
- * always return a non-null pre.
- * check pre->next by your-self.
+ * Find the previous link of target link.
+ * Always return a non-null pre.
+ * Check pre->next by your-self.
 */
 struct DataLink *
-dach_get_pre_link(struct DataChain *dach, const char *name);
+dach_find_pre_link(struct DataChain *dach, const char *name);
 
 /**
  * Get data link by name
  * Retrun NULL if does not exist
 */
 struct DataLink *
+dach_find_link(struct DataChain *dach, const char *name);
+
+/**
+ * Find the previous link of target link.
+ * If the target link doesn't exist then create it.
+*/
+struct DataLink *
+dach_get_pre_link(struct DataChain *dach, const char *name);
+
+/**
+ * Get data link by name
+ * If the target link doesn't exist then create it.
+*/
+struct DataLink *
 dach_get_link(struct DataChain *dach, const char *name);
 
 /**
- * delete a link by inputting its previous link
+ * Delete a link by inputting its previous link
  * NOTE: pre must not be NULL
 */
 void
 dach_del_link_by_pre(struct DataChain *dach, struct DataLink *pre);
 
 /**
- * delete a link by inputting its previous link
+ * Delete a link by inputting its previous link
 */
 void
 dach_del_link(struct DataChain *dach, const char *name);
 
 /**
- * append target link by inputting its previous link.
- * length can be DACH_AUTO_LEN if px is c string.
+ * Append target link by inputting its previous link.
+ * Length can be DACH_AUTO_LEN if px is c string.
  * NOTE: pre & pre->next must not be NULL
 */
 void
@@ -97,15 +115,16 @@ dach_append_by_pre(struct DataLink *pre, const void *px, size_t length);
 
 /**
  * Append text onto the data.
- * length can be DACH_AUTO_LEN if px is c string.
+ * Length can be DACH_AUTO_LEN if px is c string.
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
+ * @return the pre of target link.
  */
-void
+struct DataLink *
 dach_append(struct DataChain *dach, const char *name, const void *px, size_t length);
 
 /**
- * append a char to target link by inputting its previous link
+ * Append a char to target link by inputting its previous link
  * If this exceeds the buffer, then the buffer will be expanded.
  * NOTE: pre & pre->next must not be NULL
 */
@@ -114,15 +133,16 @@ dach_append_char_by_pre(struct DataLink *pre, int c);
 
 
 /**
- * append a char
+ * Append a char
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
+ * @return the pre of target link.
 */
-void
+struct DataLink *
 dach_append_char(struct DataChain *dach, const char *name, int c);
 
 /**
- * append an integer, with hex digits, with the specified number of
+ * Append an integer, with hex digits, with the specified number of
  * digits
  * If this exceeds the buffer, then the buffer will be expanded.
  * NOTE: pre & pre->next must not be NULL
@@ -136,13 +156,14 @@ dach_append_hexint_by_pre(struct DataLink *pre,
  * digits
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
+ * @return the pre of target link.
  */
-void
+struct DataLink *
 dach_append_hexint(struct DataChain *dach, const char *name,
     unsigned long long number, int digits);
 
 /**
- * append either a normal character, or the hex form of a UTF-8 string
+ * Append either a normal character, or the hex form of a UTF-8 string
  * If this exceeds the buffer, then the buffer will be expanded.
  * NOTE: pre & pre->next must not be NULL
 */
@@ -150,15 +171,16 @@ void
 dach_append_unicode_by_pre(struct DataLink *pre, unsigned c);
 
 /**
- * append either a normal character, or the hex form of a UTF-8 string
+ * Append either a normal character, or the hex form of a UTF-8 string
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
+ * @return the pre of target link.
 */
-void
+struct DataLink *
 dach_append_unicode(struct DataChain *dach, const char *name, unsigned c);
 
 /**
- * printf in datachain version
+ * Printf in datachain version
  * If this exceeds the buffer, then the buffer will be expanded.
  * NOTE: pre & pre->next must not be NULL
 */
@@ -166,17 +188,18 @@ void
 dach_printf_by_pre(struct DataLink *pre, const char *fmt, ...);
 
 /**
- * printf in datachain version
+ * Printf in datachain version
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
+ * @return the pre of target link.
 */
-void
+struct DataLink *
 dach_printf(struct DataChain *dach, const char *name, const char *fmt, ...);
 
 /**
- * append after removing bad characters, especially new lines and HTML
+ * Append after removing bad characters, especially new lines and HTML
  * control codes.
- * length can be DACH_AUTO_LEN if px is c string.
+ * Length can be DACH_AUTO_LEN if px is c string.
  * If this exceeds the buffer, then the buffer will be expanded.
  * NOTE: pre & pre->next must not be NULL
 */
@@ -185,14 +208,15 @@ dach_append_normalized_by_pre(struct DataLink *pre,
     const void *px, size_t length);
 
 /**
- * append after removing bad characters, especially new lines and HTML
+ * Append after removing bad characters, especially new lines and HTML
  * control codes.
- * length can be DACH_AUTO_LEN if px is c string.
+ * Length can be DACH_AUTO_LEN if px is c string.
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
  * NOTE: pre & pre->next must not be NULL
+ * @return the pre of target link.
 */
-void
+struct DataLink *
 dach_append_normalized(struct DataChain *dach, const char *name,
     const void *px, size_t length);
 
@@ -225,10 +249,10 @@ dach_init_base64(struct DataChainB64 *base64);
 /**
  * Converts the string to BASE64 and appends it to the data.
  * Since this can be called iteratively as new input arrives,
- * a call to dach_init_base64() must be called before the first fragment,
- * and a call to dach_finalize_base64() must be called after the last
- * fragment
- * length can be DACH_AUTO_LEN if px is c string.
+ * a call to dach_init_base64() must be called before the first fragment.
+ * And a call to dach_finalize_base64() must be called after the last
+ * fragment.
+ * Length can be DACH_AUTO_LEN if px is c string.
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
  * NOTE: pre & pre->next must not be NULL
@@ -240,13 +264,14 @@ dach_append_base64_by_pre(struct DataLink *pre,
 /**
  * Converts the string to BASE64 and appends it to the data.
  * Since this can be called iteratively as new input arrives,
- * a call to dach_init_base64() must be called before the first fragment,
- * and a call to dach_finalize_base64() must be called after the last
- * fragment
- * length can be DACH_AUTO_LEN if px is c string.
+ * a call to dach_init_base64() must be called before the first fragment.
+ * And a call to dach_finalize_base64() must be called after the last
+ * fragment.
+ * Length can be DACH_AUTO_LEN if px is c string.
  * If data with this name doesn't exist, it'll be create.
+ * @return the pre of target link.
  */
-void
+struct DataLink *
 dach_append_base64(struct DataChain *dach, const char *name,
     const void *vpx, size_t length, struct DataChainB64 *base64);
 
@@ -260,7 +285,9 @@ dach_finalize_base64_by_pre(struct DataLink *pre, struct DataChainB64 *base64);
 
 /**
  * Finish encoding the BASE64 string, appending the '==' things on the
- * end if necessary
+ * end if necessary.
+ * Nothing happens if target link doesn't exist
+ * @return the pre of target link.
  */
 void
 dach_finalize_base64(struct DataChain *dach, const char *name,
