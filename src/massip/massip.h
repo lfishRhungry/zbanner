@@ -5,16 +5,6 @@
 #include "massip-rangesv6.h"
 
 
-/**
- * For present ip protocol number and diff port type.
- * Use it as unsigned type.
-*/
-#define IP_PROTO_TCP      6
-#define IP_PROTO_UDP     17
-#define IP_PROTO_SCTP   132
-#define IP_PROTO_Other   ~0
-
-
 
 struct MassIP {
     struct RangeList ipv4;
@@ -39,6 +29,33 @@ struct MassIP {
     uint64_t count_ipv4s;
     uint64_t count_ipv6s;
 };
+
+
+/**
+ * For present ip protocol number and diff port type.
+ * Use it as unsigned type.
+*/
+#define IP_PROTO_ICMP              1
+#define IP_PROTO_IGMP              2
+#define IP_PROTO_GGP               3
+#define IP_PROTO_IP                4
+#define IP_PROTO_TCP               6
+#define IP_PROTO_EGP               8
+#define IP_PROTO_IGP               9
+#define IP_PROTO_UDP              17
+#define IP_PROTO_IPv6             41
+#define IP_PROTO_IPv6_Route       43
+#define IP_PROTO_IPv6_Frag        44
+#define IP_PROTO_IDRP             45
+#define IP_PROTO_MOBILE           55
+#define IP_PROTO_IPv6_ICMP        58
+#define IP_PROTO_IPv6_NoNxt       59
+#define IP_PROTO_IPv6_Opts        60
+#define IP_PROTO_L2TP            115
+#define IP_PROTO_SCTP            132
+#define IP_PROTO_Other            ~0
+
+const char *ip_proto_to_string(unsigned ip_proto);
 
 /**
  * Count the total number of targets in a scan. This is calculated

@@ -92,6 +92,7 @@ getstate_parse_response(
     }
 
     struct OutputItem item = {
+        .ip_proto  = target->ip_proto,
         .level     = Output_SUCCESS,
         .ip_them   = target->ip_them,
         .ip_me     = target->ip_me,

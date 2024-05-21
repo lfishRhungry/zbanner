@@ -209,6 +209,7 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line)
         return;
 
     struct OutputItem item = {
+        .ip_proto  = tgt->ip_proto,
         .ip_them   = tgt->ip_them,
         .port_them = tgt->port_them,
         .ip_me     = tgt->ip_me,
@@ -229,6 +230,7 @@ static void ssl_info_cb(const SSL *ssl, int where, int ret) {
             return;
 
         struct OutputItem item = {
+            .ip_proto  = tgt->ip_proto,
             .ip_them   = tgt->ip_them,
             .port_them = tgt->port_them,
             .ip_me     = tgt->ip_me,
@@ -269,6 +271,7 @@ static bool output_subject_info(struct Output *out,
     }
 
     struct OutputItem item = {
+        .ip_proto  = target->ip_proto,
         .ip_them   = target->ip_them,
         .port_them = target->port_them,
         .ip_me     = target->ip_me,
@@ -406,6 +409,7 @@ static bool output_x502_cert(struct Output *out,
     for (i_cert = 0; i_cert < sk_X509_num(sk_x509_certs); i_cert++) {
 
         struct OutputItem item = {
+            .ip_proto  = target->ip_proto,
             .ip_them   = target->ip_them,
             .port_them = target->port_them,
             .ip_me     = target->ip_me,
@@ -501,6 +505,7 @@ static bool output_cipher_suite(struct Output *out,
     }
 
     struct OutputItem item = {
+        .ip_proto  = target->ip_proto,
         .ip_them   = target->ip_them,
         .port_them = target->port_them,
         .ip_me     = target->ip_me,
@@ -524,6 +529,7 @@ static bool output_tls_version(struct Output *out,
     int version = SSL_version(ssl);
 
     struct OutputItem item = {
+        .ip_proto  = target->ip_proto,
         .ip_them   = target->ip_them,
         .port_them = target->port_them,
         .ip_me     = target->ip_me,
@@ -742,6 +748,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
 
     /*save `target` to SSL object*/
     struct ProbeTarget *tgt = MALLOC(sizeof(struct ProbeTarget));
+    tgt->ip_proto  = target->ip_proto;
     tgt->ip_them   = target->ip_them;
     tgt->port_them = target->port_them;
     tgt->ip_me     = target->ip_me;

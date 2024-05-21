@@ -251,6 +251,7 @@ zbanner_validate(
         && recved->parsed.app_length) {
 
         struct ProbeTarget ptarget = {
+            .ip_proto  = recved->parsed.ip_protocol,
             .ip_them   = recved->parsed.src_ip,
             .ip_me     = recved->parsed.dst_ip,
             .port_them = recved->parsed.port_src,
@@ -326,6 +327,7 @@ zbanner_handle(
 
             /*stack(send) ack with probe*/
             struct ProbeTarget ptarget = {
+                .ip_proto  = recved->parsed.ip_protocol,
                 .ip_them   = recved->parsed.src_ip,
                 .ip_me     = recved->parsed.dst_ip,
                 .port_them = recved->parsed.port_src,
@@ -440,6 +442,7 @@ zbanner_handle(
         stack_transmit_packetbuffer(stack, pkt_buffer);
 
         struct ProbeTarget ptarget = {
+            .ip_proto  = recved->parsed.ip_protocol,
             .ip_them   = recved->parsed.src_ip,
             .ip_me     = recved->parsed.dst_ip,
             .port_them = recved->parsed.port_src,
@@ -549,6 +552,7 @@ zbanner_timeout(
     /*event for banner*/
 
     struct ProbeTarget ptarget = {
+        .ip_proto  = event->ip_proto,
         .ip_them   = event->ip_them,
         .ip_me     = event->ip_me,
         .port_them = event->port_them,

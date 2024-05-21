@@ -70,6 +70,7 @@ udp_transmit(
         target->ip_me, src_port_start+target->index, entropy);
 
     struct ProbeTarget ptarget = {
+        .ip_proto  = target->ip_proto,
         .ip_them   = target->ip_them,
         .ip_me     = target->ip_me,
         .port_them = target->port_them,
@@ -112,6 +113,7 @@ udp_validate(
         pre->go_record = 1;
 
         struct ProbeTarget ptarget = {
+            .ip_proto  = recved->parsed.ip_protocol,
             .ip_them   = recved->parsed.src_ip,
             .ip_me     = recved->parsed.dst_ip,
             .port_them = recved->parsed.port_src,
@@ -165,6 +167,7 @@ udp_handle(
     if (recved->parsed.found == FOUND_UDP) {
 
         struct ProbeTarget ptarget = {
+            .ip_proto  = recved->parsed.ip_protocol,
             .ip_them   = recved->parsed.src_ip,
             .ip_me     = recved->parsed.dst_ip,
             .port_them = recved->parsed.port_src,
@@ -190,6 +193,7 @@ udp_handle(
                 struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
 
                 struct ProbeTarget ptarget = {
+                    .ip_proto  = recved->parsed.ip_protocol,
                     .ip_them   = recved->parsed.src_ip,
                     .ip_me     = recved->parsed.dst_ip,
                     .port_them = recved->parsed.port_src,
@@ -239,6 +243,7 @@ udp_handle(
             struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
 
             struct ProbeTarget ptarget = {
+                .ip_proto  = recved->parsed.ip_protocol,
                 .ip_them   = recved->parsed.src_ip,
                 .ip_me     = recved->parsed.dst_ip,
                 .port_them = recved->parsed.port_src,
@@ -302,6 +307,7 @@ udp_timeout(
     /*all events is for banner*/
 
     struct ProbeTarget ptarget = {
+        .ip_proto  = event->ip_proto,
         .ip_them   = event->ip_them,
         .ip_me     = event->ip_me,
         .port_them = event->port_them,
@@ -323,6 +329,7 @@ udp_timeout(
             struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
 
             struct ProbeTarget ptarget = {
+                .ip_proto  = event->ip_proto,
                 .ip_them   = event->ip_them,
                 .ip_me     = event->ip_me,
                 .port_them = event->port_them,
@@ -371,6 +378,7 @@ udp_timeout(
         struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
 
         struct ProbeTarget ptarget = {
+            .ip_proto  = event->ip_proto,
             .ip_them   = event->ip_them,
             .ip_me     = event->ip_me,
             .port_them = event->port_them,

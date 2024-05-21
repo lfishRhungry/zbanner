@@ -70,6 +70,7 @@
 
 #include "stack-queue.h"
 #include "stack-src.h"
+#include "../massip/massip.h"
 #include "../massip/massip-cookie.h"
 #include "../timeout/event-timeout.h"
 #include "../rawsock/rawsock.h"
@@ -460,6 +461,7 @@ tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
 
     /*do connection close for probe*/
     struct ProbeTarget target = {
+        .ip_proto  = IP_PROTO_TCP,
         .ip_them   = tcb->ip_them,
         .port_them = tcb->port_them,
         .ip_me     = tcb->ip_me,
@@ -584,6 +586,7 @@ tcpcon_create_tcb(
 
     /*do connection init for probe*/
     struct ProbeTarget target = {
+        .ip_proto  = IP_PROTO_TCP,
         .ip_them   = ip_them,
         .port_them = port_them,
         .ip_me     = ip_me,
@@ -1372,6 +1375,7 @@ again:
                 case APP_WHAT_RECV_PAYLOAD: {
 
                     struct ProbeTarget target = {
+                        .ip_proto  = IP_PROTO_TCP,
                         .ip_them   = socket->tcb->ip_them,
                         .ip_me     = socket->tcb->ip_me,
                         .port_them = socket->tcb->port_them,
@@ -1466,6 +1470,7 @@ again:
         case APP_STATE_SEND_FIRST: {
 
             struct ProbeTarget target = {
+                .ip_proto  = IP_PROTO_TCP,
                 .ip_them   = socket->tcb->ip_them,
                 .port_them = socket->tcb->port_them,
                 .ip_me     = socket->tcb->ip_me,

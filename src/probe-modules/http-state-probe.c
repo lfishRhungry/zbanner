@@ -799,6 +799,7 @@ httpstate_parse_response(
     }
 
     struct OutputItem item = {
+        .ip_proto  = target->ip_proto,
         .ip_them   = target->ip_them,
         .ip_me     = target->ip_me,
         .port_them = target->port_them,

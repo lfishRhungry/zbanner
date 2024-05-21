@@ -184,6 +184,7 @@ infinite:;
                 tm_event = CALLOC(1, sizeof(struct ScanTmEvent));
             }
 
+            tm_event->ip_proto  = target.ip_proto;
             tm_event->ip_them   = target.ip_them;
             tm_event->ip_me     = target.ip_me;
             tm_event->port_them = target.port_them;

@@ -36,6 +36,7 @@ typedef bool (*probe_modules_global_init)(const struct Xconf *xconf);
 ****************************************************************************/
 
 struct ProbeTarget {
+    unsigned  ip_proto;
     ipaddress ip_them;
     ipaddress ip_me;
     unsigned  port_them;

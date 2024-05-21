@@ -125,6 +125,7 @@ handle_thread(void *v)
         }
 
         struct OutputItem item = {
+            .ip_proto  = recved->parsed.ip_protocol,
             .ip_them   = recved->parsed.src_ip,
             .ip_me     = recved->parsed.dst_ip,
             .port_them = recved->parsed.port_src,
@@ -248,6 +249,7 @@ void receive_thread(void *v) {
                     || xconf->is_nodedup) {
 
                     struct OutputItem item = {
+                        .ip_proto  = tm_event->ip_proto,
                         .ip_them   = tm_event->ip_them,
                         .ip_me     = tm_event->ip_me,
                         .port_them = tm_event->port_them,

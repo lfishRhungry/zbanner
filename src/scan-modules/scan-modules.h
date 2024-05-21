@@ -56,6 +56,7 @@ struct ScanTarget {
 
 /*a timeout event for scanning*/
 struct ScanTmEvent {
+    unsigned           ip_proto;
     ipaddress          ip_them;
     ipaddress          ip_me;
     unsigned           port_them;

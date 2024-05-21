@@ -29,6 +29,8 @@ struct OutputItem {
     /**Type of result item itself. INFO and FAILURE are not to be output by default
      * unless using `--show fail` or `--show info`.*/
     enum OutputLevel             level;
+    /**IP proto number to mention whether it is TCP, UDP, etc.*/
+    unsigned                     ip_proto;
     /**IP of target*/
     ipaddress                    ip_them;
     /**Port of target.
