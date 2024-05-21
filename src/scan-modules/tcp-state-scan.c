@@ -289,6 +289,7 @@ tcpstate_handle(
             safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "syn-ack");
         }
 
+        /*for mss negotiate*/
         unsigned mss;
         bool is_found;
         mss = tcp_get_mss(recved->packet, recved->length, &is_found);
@@ -420,7 +421,8 @@ struct ScanModule TcpStateScan = {
         "TcpStateScan is to get banners over TLS with TlsStateProbe.\n"
         "NOTE3: Remember that "XTATE_FIRST_UPPER_NAME" is not a browser, crawler"
         " or any other tools concentrated on contents in protocol. We must focus"
-        " on protocol itself with activate scanning.",
+        " on protocol itself with activate scanning.\n"
+        "NOTE4: Slow send rate may cause target host's retransmition.",
 
     .global_init_cb               = &tcpstate_global_init,
     .transmit_cb                  = &tcpstate_transmit,
