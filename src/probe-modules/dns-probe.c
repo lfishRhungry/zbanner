@@ -173,16 +173,21 @@ dns_handle_response(
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "dns reply");
 
     dns_record_t *rec;
-    char tmp_name[20];
     char tmp_data[50];
+    struct DataLink *pre;
 
     if (dns_pkt.head.header.ans_count > 0) {
         rec = &dns_pkt.body.ans[0];
         dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
             false, tmp_data, sizeof(tmp_data));
-        dach_append(&item->report, "ans_type_0", dns_record_type2str(rec->type), DACH_AUTO_LEN);
-        dach_append(&item->report, "ans_class_0", dns_class2str(rec->class), DACH_AUTO_LEN);
-        dach_append(&item->report, "ans_name_0", tmp_data, DACH_AUTO_LEN);
+
+        pre = dach_append_char(&item->report, "answer RR", '\'');
+        dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+        dach_append_char_by_pre(pre, ' ');
+        dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
+        dach_append_char_by_pre(pre, ' ');
+        dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
+        dach_append_char_by_pre(pre, '\'');
     }
 
     if (dns_pkt.head.header.ans_count>1 && dns_conf.print_all_ans) {
@@ -190,12 +195,14 @@ dns_handle_response(
             rec = &dns_pkt.body.ans[i];
             dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
                 false, tmp_data, sizeof(tmp_data));
-            snprintf(tmp_name, sizeof(tmp_name), "ans_type_%d", i);
-            dach_append(&item->report, tmp_name, dns_record_type2str(rec->type), DACH_AUTO_LEN);
-            snprintf(tmp_name, sizeof(tmp_name), "ans_class_%d", i);
-            dach_append(&item->report, tmp_name, dns_class2str(rec->class), DACH_AUTO_LEN);
-            snprintf(tmp_name, sizeof(tmp_name), "ans_name_%d", i);
-            dach_append(&item->report, tmp_name, tmp_data, DACH_AUTO_LEN);
+
+            dach_append_by_pre(pre, ", \'", DACH_AUTO_LEN);
+            dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+            dach_append_char_by_pre(pre, ' ');
+            dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
+            dach_append_char_by_pre(pre, ' ');
+            dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
+            dach_append_char_by_pre(pre, '\'');
         }
     }
 
@@ -203,9 +210,14 @@ dns_handle_response(
         rec = &dns_pkt.body.auth[0];
         dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
             false, tmp_data, sizeof(tmp_data));
-        dach_append(&item->report, "auth_type_0", dns_record_type2str(rec->type), DACH_AUTO_LEN);
-        dach_append(&item->report, "auth_class_0", dns_class2str(rec->class), DACH_AUTO_LEN);
-        dach_append(&item->report, "auth_name_0", tmp_data, DACH_AUTO_LEN);
+
+        pre = dach_append_char(&item->report, "authority RR", '\'');
+        dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+        dach_append_char_by_pre(pre, ' ');
+        dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
+        dach_append_char_by_pre(pre, ' ');
+        dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
+        dach_append_char_by_pre(pre, '\'');
     }
 
     if (dns_pkt.head.header.auth_count>1 && dns_conf.print_all_auth) {
@@ -213,12 +225,14 @@ dns_handle_response(
             rec = &dns_pkt.body.auth[i];
             dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
                 false, tmp_data, sizeof(tmp_data));
-            snprintf(tmp_name, sizeof(tmp_name), "auth_type_%d", i);
-            dach_append(&item->report, tmp_name, dns_record_type2str(rec->type), DACH_AUTO_LEN);
-            snprintf(tmp_name, sizeof(tmp_name), "auth_class_%d", i);
-            dach_append(&item->report, tmp_name, dns_class2str(rec->class), DACH_AUTO_LEN);
-            snprintf(tmp_name, sizeof(tmp_name), "auth_name_%d", i);
-            dach_append(&item->report, tmp_name, tmp_data, DACH_AUTO_LEN);
+
+            dach_append_by_pre(pre, ", \'", DACH_AUTO_LEN);
+            dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+            dach_append_char_by_pre(pre, ' ');
+            dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
+            dach_append_char_by_pre(pre, ' ');
+            dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
+            dach_append_char_by_pre(pre, '\'');
         }
     }
 
