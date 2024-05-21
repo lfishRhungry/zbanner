@@ -476,7 +476,9 @@ dach_append_normalized(struct DataChain *dach, const char *name,
     struct DataLink *pre = dach_find_pre_link(dach, name);
 
     if (pre->next == NULL) {
-        _dach_new_link(dach, name, length*4, false); /*worst length*/
+        _dach_new_link(dach, name,
+            length<DACH_DEFAULT_DATA_SIZE?length*4:length*2,
+            false); /*estimate the encoded length*/
         pre = dach->link;
     }
 
