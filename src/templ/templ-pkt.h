@@ -9,8 +9,9 @@
 #include "../util-out/logger.h"
 
 enum TemplateType {
-    Tmpl_Type_TCP,
+    Tmpl_Type_TCP = 1,
     Tmpl_Type_TCP_SYN,   /*convenient to set options for packets with syn flag*/
+    Tmpl_Type_TCP_RST,   /*convenient to set options for packets with syn flag*/
     Tmpl_Type_UDP,
     Tmpl_Type_SCTP,
     Tmpl_Type_ICMP_ECHO,

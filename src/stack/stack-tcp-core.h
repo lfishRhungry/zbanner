@@ -38,6 +38,7 @@ tcpcon_create_table(size_t entry_count,
     struct stack_t *stack,
     struct TemplatePacket *tcp_template,
     struct TemplatePacket *syn_template,
+    struct TemplatePacket *rst_template,
     struct Output *out,
     unsigned timeout,
     uint64_t entropy);

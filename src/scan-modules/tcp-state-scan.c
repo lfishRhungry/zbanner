@@ -177,9 +177,10 @@ static bool tcpstate_global_init(const struct Xconf *xconf)
     for (unsigned i=0; i<tcpcon_set.count; i++) {
         size_t entry_count = (size_t)(xconf->max_rate/5)/xconf->rx_handler_count;
         tcpcon_set.tcpcons[i] = tcpcon_create_table(
-            entry_count>=10?entry_count:10,
-            xconf->stack, &global_tmplset->pkts[Tmpl_Type_TCP],
+            entry_count>=10?entry_count:10, xconf->stack,
+            &global_tmplset->pkts[Tmpl_Type_TCP],
             &global_tmplset->pkts[Tmpl_Type_TCP_SYN],
+            &global_tmplset->pkts[Tmpl_Type_TCP_RST],
             (struct Output *)(&xconf->output),
             tcpstate_conf.conn_expire, xconf->seed);
     }

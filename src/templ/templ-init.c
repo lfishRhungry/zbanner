@@ -18,7 +18,38 @@
 #include "../util-data/fine-malloc.h"
 #include "../stub/stub-pcap-dlt.h"
 
-/* For adding some fixed tcp options*/
+/**
+ * No tcp options.
+ * For ACK */
+unsigned char default_tcp_template[] =
+    "\0\1\2\3\4\5"      /* Ethernet: destination */
+    "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
+    "\x08\x00"          /* Ethernet type: IPv4 */
+
+    "\x45"              /* IP type */
+    "\x00"
+    "\x00\x28"          /* total length = 40 bytes */
+    "\x00\x00"          /* identification */
+    "\x00\x00"          /* fragmentation flags */
+    "\xFF\x06"          /* TTL=255, proto=TCP */
+    "\xFF\xFF"          /* checksum */
+    "\0\0\0\0"          /* source address */
+    "\0\0\0\0"          /* destination address */
+
+    "\0\0"              /* source port */
+    "\0\0"              /* destination port */
+    "\0\0\0\0"          /* sequence number */
+    "\0\0\0\0"          /* ACK number */
+    "\x50"              /* header length: the first 4bits 0101=5 -> 5*4=20bytes */
+    "\x02"              /* SYN */
+    "\x04\x01"          /* window fixed to 1024, too large could make troubles for zbanner*/
+    "\xFF\xFF"          /* checksum */
+    "\x00\x00"          /* urgent pointer */
+;
+
+/**
+ * Could add some fixed tcp options.
+ * Just for SYN*/
 unsigned char default_tcp_syn_template[] =
     "\0\1\2\3\4\5"      /* Ethernet: destination */
     "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
@@ -46,8 +77,10 @@ unsigned char default_tcp_syn_template[] =
     "\x02\x04\x05\xb4"  /* opt [mss 1460] */
 ;
 
-/* No options */
-unsigned char default_tcp_template[] =
+/**
+ * No tcp options and zero window.
+ * For RST */
+unsigned char default_tcp_rst_template[] =
     "\0\1\2\3\4\5"      /* Ethernet: destination */
     "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
     "\x08\x00"          /* Ethernet type: IPv4 */
@@ -67,8 +100,8 @@ unsigned char default_tcp_template[] =
     "\0\0\0\0"          /* sequence number */
     "\0\0\0\0"          /* ACK number */
     "\x50"              /* header length: the first 4bits 0101=5 -> 5*4=20bytes */
-    "\x02"              /* SYN */
-    "\x04\x01"          /* window fixed to 1024, too large could make troubles for zbanner*/
+    "\x04"              /* RST */
+    "\x00\x00"          /* zero window */
     "\xFF\xFF"          /* checksum */
     "\x00\x00"          /* urgent pointer */
 ;
@@ -549,6 +582,14 @@ template_packet_init(
                    data_link);
     templset->count++;
     free(buf);
+
+    /* [TCP] */
+    _template_init(&templset->pkts[Tmpl_Type_TCP_RST],
+                   source_mac, router_mac_ipv4, router_mac_ipv6,
+                   default_tcp_rst_template,
+                   sizeof(default_tcp_rst_template)-1,
+                   data_link);
+    templset->count++;
 
     /* [UDP] */
     _template_init(&templset->pkts[Tmpl_Type_UDP],

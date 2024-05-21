@@ -168,6 +168,7 @@ struct TCP_ConnectionTable {
 
     struct TemplatePacket            *tcp_template;
     struct TemplatePacket            *syn_template;
+    struct TemplatePacket            *rst_template;
     struct Timeouts                  *timeouts;
     struct stack_t                   *stack;
     struct Output                    *out;
@@ -314,6 +315,7 @@ tcpcon_create_table(size_t entry_count,
     struct stack_t *stack,
     struct TemplatePacket *tcp_template,
     struct TemplatePacket *syn_template,
+    struct TemplatePacket *rst_template,
     struct Output *out,
     unsigned connection_timeout,
     uint64_t entropy)
@@ -361,6 +363,7 @@ tcpcon_create_table(size_t entry_count,
 
     tcpcon->tcp_template         = tcp_template;
     tcpcon->syn_template         = syn_template;
+    tcpcon->rst_template         = rst_template;
     tcpcon->entropy              = entropy;
     tcpcon->count                = (unsigned)entry_count;
     tcpcon->mask                 = (unsigned)(entry_count-1);
@@ -660,13 +663,32 @@ tcpcon_send_packet(
     if (response == NULL)
         return;
 
-    response->length = tcp_create_by_template(
-        is_syn?tcpcon->syn_template:tcpcon->tcp_template,
-        tcb->ip_them, tcb->port_them,
-        tcb->ip_me, tcb->port_me,
-        tcb->seqno_me - is_syn, tcb->seqno_them,
-        tcp_flags, payload, payload_length,
-        response->px, sizeof(response->px));
+    /*use different template according to flags*/
+    if (is_syn) {
+        response->length = tcp_create_by_template(
+            tcpcon->syn_template,
+            tcb->ip_them, tcb->port_them,
+            tcb->ip_me, tcb->port_me,
+            tcb->seqno_me - is_syn, tcb->seqno_them,
+            tcp_flags, payload, payload_length,
+            response->px, sizeof(response->px));
+    } else if (tcp_flags&TCP_FLAG_RST) {
+        response->length = tcp_create_by_template(
+            tcpcon->rst_template,
+            tcb->ip_them, tcb->port_them,
+            tcb->ip_me, tcb->port_me,
+            tcb->seqno_me - is_syn, tcb->seqno_them,
+            tcp_flags, payload, payload_length,
+            response->px, sizeof(response->px));
+    } else {
+        response->length = tcp_create_by_template(
+            tcpcon->tcp_template,
+            tcb->ip_them, tcb->port_them,
+            tcb->ip_me, tcb->port_me,
+            tcb->seqno_me - is_syn, tcb->seqno_them,
+            tcp_flags, payload, payload_length,
+            response->px, sizeof(response->px));
+    }
 
     stack_transmit_packetbuffer(tcpcon->stack, response);
 }

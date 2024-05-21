@@ -1295,9 +1295,14 @@ tcp_create_packet(
         const unsigned char *payload, size_t payload_length,
         unsigned char *px, size_t px_length)
 {
-    /*use different template for tcp with syn flags to apply some options*/
-    if ((flags&TCP_FLAG_SYN)==TCP_FLAG_SYN) {
+    /*use different template according to flags*/
+    if (flags==TCP_FLAG_SYN) {
         return tcp_create_by_template(&global_tmplset->pkts[Tmpl_Type_TCP_SYN],
+            ip_them, port_them, ip_me, port_me,
+            seqno, ackno, flags,
+            payload, payload_length, px, px_length);
+    } else if (flags&TCP_FLAG_RST) {
+        return tcp_create_by_template(&global_tmplset->pkts[Tmpl_Type_TCP_RST],
             ip_them, port_them, ip_me, port_me,
             seqno, ackno, flags,
             payload, payload_length, px, px_length);
