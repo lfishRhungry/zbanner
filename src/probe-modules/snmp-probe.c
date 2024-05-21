@@ -6,7 +6,7 @@
 #include "../util-data/data-convert.h"
 #include "../util-data/data-chain.h"
 
-#define SNMP_DACH_TYPE "snmp"
+#define SNMP_DACH_NAME "result"
 
 /*for internal x-ref*/
 extern struct ProbeModule SnmpProbe;
@@ -188,7 +188,7 @@ next_id(const unsigned char *oid, unsigned *offset, uint64_t oid_length)
  ****************************************************************************/
 static void
 snmp_banner_oid(struct SMACK *global_mib, const unsigned char *oid,
-    size_t oid_length, struct DataChain *dach)
+    size_t oid_length, struct DataLink *pre)
 {
     unsigned i;
     size_t id;
@@ -214,19 +214,17 @@ snmp_banner_oid(struct SMACK *global_mib, const unsigned char *oid,
     /* Do the string */
     if (found_id != SMACK_NOT_FOUND) {
         const char *str = mib[found_id].name;
-        datachain_append(dach, SNMP_DACH_TYPE, str, strlen(str));
+        dach_append_by_pre(pre, str, DACH_AUTO_LEN);
     }
 
     /* Do remaining OIDs */
     for (i=(unsigned)found_offset; i<oid_length; ) {
-        char foo[32] = {0};
         uint64_t x = next_id(oid, &i, oid_length);
 
         if (x == 0 && i >= oid_length)
             break;
 
-        snprintf(foo, sizeof(foo), ".%" PRIu64 "", x);
-        datachain_append(dach, SNMP_DACH_TYPE, foo, strlen(foo));
+        dach_printf_by_pre(pre, ".%" PRIu64 "", x);
     }
 }
 
@@ -240,145 +238,35 @@ snmp_banner(
     uint64_t var_tag,
     const unsigned char *var,
     size_t var_length,
-    struct DataChain *dach)
+    struct DataLink *pre)
 {
     size_t i;
 
-    datachain_append_char(dach, SNMP_DACH_TYPE, '[');
-
+    dach_append_char_by_pre(pre, '[');
     /* print the OID */
-    snmp_banner_oid(global_mib, oid, oid_length, dach);
+    snmp_banner_oid(global_mib, oid, oid_length, pre);
 
-    datachain_append_char(dach, SNMP_DACH_TYPE, ':');
-    datachain_append_char(dach, SNMP_DACH_TYPE, ' ');
+    dach_append_by_pre(pre, ": ", 2);
 
     switch (var_tag) {
     case 2:
         {
-            char foo[32];
             uint64_t result = 0;
             for (i=0; i<var_length; i++)
                 result = result<<8 | var[i];
-            snprintf(foo, sizeof(foo), "%" PRIu64 "", result);
-            datachain_append(dach, SNMP_DACH_TYPE, foo, strlen(foo));
+            dach_printf_by_pre(pre, "%" PRIu64 "", result);
         }
         break;
     case 6:
-        snmp_banner_oid(global_mib, var, var_length, dach);
+        snmp_banner_oid(global_mib, var, var_length, pre);
         break;
     case 4:
     default:
-        /* TODO: this needs to be normalized */
-        datachain_append(dach, SNMP_DACH_TYPE, var, var_length);
+        dach_append_normalized_by_pre(pre, var, var_length);
         break;
     }
 
-    datachain_append_char(dach, SNMP_DACH_TYPE, ']');
-}
-
-/****************************************************************************
- * This is a parser for SNMP packets.
- *
- * TODO: only SNMPv0 is supported, the parser will have to be extended for
- * newer SNMP.
- ****************************************************************************/
-static void
-snmp_parse(struct SMACK *global_mib, const unsigned char *px,
-    uint64_t length, struct DataChain *dach, unsigned *request_id)
-{
-    uint64_t offset=0;
-    uint64_t outer_length;
-    struct SNMP snmp[1];
-
-    memset(&snmp, 0, sizeof(*snmp));
-
-    /* tag */
-    if (asn1_tag(px, length, &offset) != 0x30)
-        return;
-
-    /* length */
-    outer_length = asn1_length(px, length, &offset);
-    if (length > outer_length + offset)
-        length = outer_length + offset;
-
-    /* Version */
-    snmp->version = asn1_integer(px, length, &offset);
-    if (snmp->version != 0)
-        return;
-
-    /* Community */
-    if (asn1_tag(px, length, &offset) != 0x04)
-        return;
-    snmp->community_length = asn1_length(px, length, &offset);
-    snmp->community = px+offset;
-    offset += snmp->community_length;
-
-    /* PDU */
-    snmp->pdu_tag = asn1_tag(px, length, &offset);
-    if (snmp->pdu_tag < 0xA0 || 0xA5 < snmp->pdu_tag)
-        return;
-    outer_length = asn1_length(px, length, &offset);
-    if (length > outer_length + offset)
-        length = outer_length + offset;
-
-    /* Request ID */
-    snmp->request_id = asn1_integer(px, length, &offset);
-    *request_id = (unsigned)snmp->request_id;
-    snmp->error_status = asn1_integer(px, length, &offset);
-    snmp->error_index = asn1_integer(px, length, &offset);
-
-    /* Varbind List */
-    if (asn1_tag(px, length, &offset) != 0x30)
-        return;
-    outer_length = asn1_length(px, length, &offset);
-    if (length > outer_length + offset)
-        length = outer_length + offset;
-
-
-    /* Var-bind list */
-    while (offset < length) {
-        uint64_t varbind_length;
-        uint64_t varbind_end;
-        if (px[offset++] != 0x30) {
-            break;
-        }
-        varbind_length = asn1_length(px, length, &offset);
-        if (varbind_length == 0xFFFFffff)
-            break;
-        varbind_end = offset + varbind_length;
-        if (varbind_end > length) {
-            return;
-        }
-
-        /* OID */
-        if (asn1_tag(px,length,&offset) != 6)
-            return;
-        else {
-            uint64_t oid_length = asn1_length(px, length, &offset);
-            const unsigned char *oid = px+offset;
-            uint64_t var_tag;
-            uint64_t var_length;
-            const unsigned char *var;
-
-            offset += oid_length;
-            if (offset > length)
-                return;
-
-            var_tag = asn1_tag(px,length,&offset);
-            var_length = asn1_length(px, length, &offset);
-            var = px+offset;
-
-            offset += var_length;
-            if (offset > length)
-                return;
-
-            if (var_tag == 5)
-                continue; /* null */
-
-            snmp_banner(global_mib, oid, (size_t)oid_length,
-                var_tag, var, (size_t)var_length, dach);
-        }
-    }
+    dach_append_char_by_pre(pre, ']');
 }
 
 /****************************************************************************
@@ -577,25 +465,125 @@ snmp_handle_response(
     struct OutputItem *item)
 {
 
-    unsigned request_id = 0;
-    struct DataChain dach[1];
+    struct DataLink *pre;
+    unsigned request_id      = 0;
+    uint64_t length          = sizeof_px;
+    struct SMACK *global_mib = snmp_conf.global_mibs[th_idx];
 
-    /* Parse the SNMP packet */
-    snmp_parse(snmp_conf.global_mibs[th_idx], px, sizeof_px, dach, &request_id);
 
-    if ((target->cookie&0x7FFFffff) != request_id) {
-        item->no_output = 1;
-        return 0;
+    /**
+     * Parse SNMP
+     * TODO: only SNMPv0 is supported, the parser will have to be extended for
+     * newer SNMP.
+     * */
+    uint64_t offset=0;
+    uint64_t outer_length;
+    struct SNMP snmp[1];
+
+    memset(&snmp, 0, sizeof(*snmp));
+
+    /* tag */
+    if (asn1_tag(px, length, &offset) != 0x30)
+        goto error;
+
+    /* length */
+    outer_length = asn1_length(px, length, &offset);
+    if (length > outer_length + offset)
+        length = outer_length + offset;
+
+    /* Version */
+    snmp->version = asn1_integer(px, length, &offset);
+    if (snmp->version != 0)
+        goto error;
+
+    /* Community */
+    if (asn1_tag(px, length, &offset) != 0x04)
+        goto error;
+    snmp->community_length = asn1_length(px, length, &offset);
+    snmp->community = px+offset;
+    offset += snmp->community_length;
+
+    /* PDU */
+    snmp->pdu_tag = asn1_tag(px, length, &offset);
+    if (snmp->pdu_tag < 0xA0 || 0xA5 < snmp->pdu_tag)
+        goto error;
+    outer_length = asn1_length(px, length, &offset);
+    if (length > outer_length + offset)
+        length = outer_length + offset;
+
+    /* Request ID */
+    snmp->request_id = asn1_integer(px, length, &offset);
+    request_id = (unsigned)snmp->request_id;
+
+    if ((target->cookie&0x7FFFffff) != request_id)
+        goto error;
+
+    snmp->error_status = asn1_integer(px, length, &offset);
+    snmp->error_index  = asn1_integer(px, length, &offset);
+
+    /* Varbind List */
+    if (asn1_tag(px, length, &offset) != 0x30)
+        goto error;
+    outer_length = asn1_length(px, length, &offset);
+    if (length > outer_length + offset)
+        length = outer_length + offset;
+
+
+    pre = dach_new_link(&item->report, SNMP_DACH_NAME, DACH_DEFAULT_DATA_SIZE);
+    /* Var-bind list */
+    while (offset < length) {
+        uint64_t varbind_length;
+        uint64_t varbind_end;
+        if (px[offset++] != 0x30) {
+            break;
+        }
+        varbind_length = asn1_length(px, length, &offset);
+        if (varbind_length == 0xFFFFffff)
+            break;
+        varbind_end = offset + varbind_length;
+        if (varbind_end > length) {
+            break;
+        }
+
+        /* OID */
+        if (asn1_tag(px,length,&offset) != 6)
+            break;
+        else {
+            uint64_t oid_length = asn1_length(px, length, &offset);
+            const unsigned char *oid = px+offset;
+            uint64_t var_tag;
+            uint64_t var_length;
+            const unsigned char *var;
+
+            offset += oid_length;
+            if (offset > length)
+                break;
+
+            var_tag = asn1_tag(px,length,&offset);
+            var_length = asn1_length(px, length, &offset);
+            var = px+offset;
+
+            offset += var_length;
+            if (offset > length)
+                break;
+
+            if (var_tag == 5)
+                continue; /* null */
+
+            snmp_banner(global_mib, oid, (size_t)oid_length,
+                var_tag, var, (size_t)var_length, pre);
+        }
     }
+
 
     item->level = Output_SUCCESS;
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "snmp");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
-    normalize_string(datachain_string(dach, SNMP_DACH_TYPE),
-        datachain_string_length(dach, SNMP_DACH_TYPE), item->report, OUTPUT_RPT_SIZE);
 
-    datachain_release(dach);
+    return 0;
 
+error:
+    item->no_output = 1;
     return 0;
 }
 
