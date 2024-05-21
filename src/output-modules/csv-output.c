@@ -11,6 +11,7 @@ static FILE *file;
 static const char header_csv[] =
 "time,"
 "level,"
+"ip_proto,"
 "ip_them,"
 "port_them,"
 "ip_me,"
@@ -22,6 +23,7 @@ static const char header_csv[] =
 ;
 
 static const char fmt_csv_prefix[] =
+"\"%s\","
 "\"%s\","
 "\"%s\","
 "\"%s\","
@@ -87,6 +89,7 @@ csv_result(const struct Output *out, struct OutputItem *item)
     int err = fprintf(file, fmt_csv_prefix,
         format_time,
         output_level_to_string(item->level),
+        ip_proto_to_string(item->ip_proto),
         ip_them_fmt.string,
         item->port_them,
         ip_me_fmt.string,

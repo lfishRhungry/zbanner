@@ -8,6 +8,7 @@
 #include "../util-data/data-chain.h"
 #include "../util-misc/configer.h"
 #include "../util-misc/cross.h"
+#include "../massip/massip.h"
 #include "../massip/massip-addr.h"
 
 #define OUTPUT_RSN_SIZE          30

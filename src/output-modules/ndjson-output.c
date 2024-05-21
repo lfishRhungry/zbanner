@@ -12,6 +12,7 @@ static const char fmt_ndjson_prefix[] =
 "{"
 "\"time\":\"%s\","
 "\"level\":\"%s\","
+"\"ip_proto\":\"%s\","
 "\"ip_them\":\"%s\","
 "\"port_them\":%u,"
 "\"ip_me\":\"%s\","
@@ -70,6 +71,7 @@ ndjson_result(const struct Output *out, struct OutputItem *item)
     int err = fprintf(file, fmt_ndjson_prefix,
         format_time,
         output_level_to_string(item->level),
+        ip_proto_to_string(item->ip_proto),
         ip_them_fmt.string,
         item->port_them,
         ip_me_fmt.string,
