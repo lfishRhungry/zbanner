@@ -13,9 +13,20 @@ struct TcpSynConf {
     unsigned record_ttl:1;
     unsigned record_ipid:1;
     unsigned record_win:1;
+    unsigned record_mss:1;
 };
 
 static struct TcpSynConf tcpsyn_conf = {0};
+
+static enum Config_Res SET_record_mss(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.record_mss = parseBoolean(value);
+
+    return CONF_OK;
+}
 
 static enum Config_Res SET_record_ttl(void *conf, const char *name, const char *value)
 {
@@ -86,7 +97,14 @@ static struct ConfigParam tcpsyn_parameters[] = {
         SET_record_win,
         F_BOOL,
         {"win", "window", 0},
-        "Records TCP window size of SYN-ACK."
+        "Records TCP window size of SYN-ACK or RST."
+    },
+    {
+        "record-mss",
+        SET_record_mss,
+        F_BOOL,
+        {"mss", 0},
+        "Records TCP MSS option value of SYN-ACK. Show zero if the option not set."
     },
 
     {0}
@@ -162,7 +180,11 @@ tcpsyn_handle(
     struct stack_t *stack,
     struct FHandler *handler)
 {
-    uint16_t win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
+    unsigned mss_them;
+    bool     mss_found;
+    uint16_t win_them;
+
+    win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
     /*SYNACK*/
     if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
@@ -189,6 +211,13 @@ tcpsyn_handle(
                 NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);
+        }
+
+        if (tcpsyn_conf.record_mss) {
+            /*comput of mss is not easy*/
+            mss_them = tcp_get_mss(recved->packet, recved->length, &mss_found);
+            if (!mss_found) mss_them = 0;
+            dach_printf(&item->report, "mss", true, "%d", mss_them);
         }
     }
     /*RST*/

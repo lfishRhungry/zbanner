@@ -45,9 +45,20 @@ struct TcpStateConf {
     unsigned record_ttl:1;
     unsigned record_ipid:1;
     unsigned record_win:1;
+    unsigned record_mss:1;
 };
 
 static struct TcpStateConf tcpstate_conf = {0};
+
+static enum Config_Res SET_record_mss(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpstate_conf.record_mss = parseBoolean(value);
+
+    return CONF_OK;
+}
 
 static enum Config_Res SET_record_ttl(void *conf, const char *name, const char *value)
 {
@@ -126,14 +137,14 @@ static struct ConfigParam tcpstate_parameters[] = {
         SET_record_ttl,
         F_BOOL,
         {"ttl", 0},
-        "Records TTL for IPv4 or Hop Limit for IPv6 in SYN-ACK or RST."
+        "Records TTL for IPv4 or Hop Limit for IPv6 in SYN-ACK."
     },
     {
         "record-ipid",
         SET_record_ipid,
         F_BOOL,
         {"ipid", 0},
-        "Records IPID of SYN-ACK or RST just for IPv4."
+        "Records IPID of SYN-ACK just for IPv4."
     },
     {
         "record-win",
@@ -141,6 +152,13 @@ static struct ConfigParam tcpstate_parameters[] = {
         F_BOOL,
         {"win", "window", 0},
         "Records TCP window size of SYN-ACK."
+    },
+    {
+        "record-mss",
+        SET_record_mss,
+        F_BOOL,
+        {"mss", 0},
+        "Records TCP MSS option value of SYN-ACK. Show zero if the option not set."
     },
 
     {0}
@@ -242,6 +260,10 @@ tcpstate_handle(
     /*in default*/
     item->no_output = 1;
 
+    unsigned mss_them;
+    bool     mss_found;
+    uint16_t win_them;
+
     struct TCP_Control_Block   *tcb;
     struct TCP_ConnectionTable *tcpcon;
 
@@ -265,8 +287,7 @@ tcpstate_handle(
             item->level = Output_SUCCESS;
         }
 
-        uint16_t win_them =
-            TCP_WIN(recved->packet, recved->parsed.transport_offset);
+        win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
         if (tcpstate_conf.record_ttl)
             dach_printf(&item->report, "ttl", true, "%d", recved->parsed.ip_ttl);
@@ -274,6 +295,12 @@ tcpstate_handle(
             dach_printf(&item->report, "ipid", true, "%d", recved->parsed.ip_v4_id);
         if (tcpstate_conf.record_win)
             dach_printf(&item->report, "win", true, "%d", win_them);
+        if (tcpstate_conf.record_mss) {
+            /*comput of mss is not easy*/
+            mss_them = tcp_get_mss(recved->packet, recved->length, &mss_found);
+            if (!mss_found) mss_them = 0;
+            dach_printf(&item->report, "mss", true, "%d", mss_them);
+        }
 
         /**
          * We have validated cookie for syn-ack in `tcpstate_validate`.
@@ -289,16 +316,12 @@ tcpstate_handle(
             safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "syn-ack");
         }
 
-        /*for mss negotiate*/
-        unsigned mss;
-        bool is_found;
-        mss = tcp_get_mss(recved->packet, recved->length, &is_found);
-        if (!is_found)
-            mss = TCP_DEFAULT_MSS;
-
         if (tcb == NULL) {
+            /*comput of mss is not easy*/
+            mss_them = tcp_get_mss(recved->packet, recved->length, &mss_found);
+            if (!mss_found) mss_them = 0;
             tcb = tcpcon_create_tcb(tcpcon, ip_me, ip_them, port_me, port_them,
-                seqno_me, seqno_them+1, recved->parsed.ip_ttl, mss,
+                seqno_me, seqno_them+1, recved->parsed.ip_ttl, mss_them,
                 TcpStateScan.probe, recved->secs, recved->usecs);
         }
         stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_SYNACK, 0, 0,

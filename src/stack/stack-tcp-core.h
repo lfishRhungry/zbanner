@@ -78,6 +78,7 @@ tcpcon_lookup_tcb(
  * Create a new TCB (TCP control block. It's created only in two places,
  * either because we've initiated an outbound TCP connection, or we've
  * received incoming SYN-ACK from a probe.
+ * @param mss the mss of in synack. set it to 0 if non-mss then we use default 1460
  */
 struct TCP_Control_Block *
 tcpcon_create_tcb(

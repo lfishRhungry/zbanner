@@ -18,9 +18,20 @@ struct ZBannerConf {
     unsigned record_ttl:1;
     unsigned record_ipid:1;
     unsigned record_win:1;
+    unsigned record_mss:1;
 };
 
 static struct ZBannerConf zbanner_conf = {0};
+
+static enum Config_Res SET_record_mss(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.record_mss = parseBoolean(value);
+
+    return CONF_OK;
+}
 
 static enum Config_Res SET_record_ttl(void *conf, const char *name, const char *value)
 {
@@ -141,7 +152,14 @@ static struct ConfigParam zbanner_parameters[] = {
         SET_record_win,
         F_BOOL,
         {"win", "window", 0},
-        "Records TCP window size of SYN-ACK."
+        "Records TCP window size of SYN-ACK or RST."
+    },
+    {
+        "record-mss",
+        SET_record_mss,
+        F_BOOL,
+        {"mss", 0},
+        "Records TCP MSS option value of SYN-ACK. Show zero if the option not set."
     },
 
     {0}
@@ -268,6 +286,10 @@ zbanner_handle(
     struct stack_t *stack,
     struct FHandler *handler)
 {
+    unsigned mss_them;
+    bool     mss_found;
+    uint16_t win_them;
+
     unsigned seqno_me   = TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
     unsigned seqno_them = TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
 
@@ -280,8 +302,7 @@ zbanner_handle(
             item->level = Output_SUCCESS;
         }
 
-        uint16_t win_them =
-            TCP_WIN(recved->packet, recved->parsed.transport_offset);
+        win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
         if (zbanner_conf.record_ttl)
             dach_printf(&item->report, "ttl", true, "%d", recved->parsed.ip_ttl);
@@ -289,6 +310,12 @@ zbanner_handle(
             dach_printf(&item->report, "ipid", true, "%d", recved->parsed.ip_v4_id);
         if (zbanner_conf.record_win)
             dach_printf(&item->report, "win", true, "%d", win_them);
+        if (zbanner_conf.record_mss) {
+            /*comput of mss is not easy*/
+            mss_them = tcp_get_mss(recved->packet, recved->length, &mss_found);
+            if (!mss_found) mss_them = 0;
+            dach_printf(&item->report, "mss", true, "%d", mss_them);
+        }
 
         if (win_them == 0) {
             safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "fake-open");
@@ -381,6 +408,15 @@ zbanner_handle(
     /*RST*/
     else if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
         TCP_FLAG_RST)) {
+
+        win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
+
+        if (zbanner_conf.record_ttl)
+            dach_printf(&item->report, "ttl", true, "%d", recved->parsed.ip_ttl);
+        if (zbanner_conf.record_ipid && recved->parsed.src_ip.version==4)
+            dach_printf(&item->report, "ipid", true, "%d", recved->parsed.ip_v4_id);
+        if (zbanner_conf.record_win)
+            dach_printf(&item->report, "win", true, "%d", win_them);
 
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "rst");
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "closed");
