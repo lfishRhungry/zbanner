@@ -29,6 +29,7 @@
 #include <stddef.h>
 
 #define DACH_MAX_NAME_SIZE          25
+#define DACH_DEFAULT_DATA_SIZE     200
 
 #define DACH_AUTO_LEN ((size_t)~0)
 
@@ -58,12 +59,20 @@ struct DataChainB64
 };
 
 /**
- * Create a data link with specified capasity by yourself.
+ * Create a data link with specified capacity by yourself.
  * NOTE: return old pre if the link exists
  * @return the pre of new link
  */
 struct DataLink *
 dach_new_link(struct DataChain *dach, const char *name, size_t data_size);
+
+/**
+ * Create a data link with formatted name and specified capacity by yourself.
+ * NOTE: return old pre if the link exists
+ * @return the pre of new link
+ */
+struct DataLink *
+dach_new_link_printf(struct DataChain *dach, size_t data_size, const char *fmt_name, ...);
 
 /**
  * Release all memory.

@@ -222,7 +222,7 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line)
     output_result(tls_out, &item);
 }
 
-static void ssl_info_callback(const SSL *ssl, int where, int ret) {
+static void ssl_info_cb(const SSL *ssl, int where, int ret) {
     if (where & SSL_CB_ALERT) {
         struct ProbeTarget *tgt = SSL_get_ex_data(ssl, 0);
         if (!tgt)
@@ -237,7 +237,7 @@ static void ssl_info_callback(const SSL *ssl, int where, int ret) {
         };
 
         safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
-        dach_printf(&item.report, "ssl_info", "OpenSSL Alert 0x%04x %s: %s",
+        dach_printf(&item.report, "openssl alert", "0x%04x %s: %s",
             ret, SSL_alert_type_string_long(ret), SSL_alert_desc_string_long(ret));
 
         output_result(tls_out, &item);
@@ -250,6 +250,7 @@ static bool output_subject_info(struct Output *out,
     int  res;
     unsigned count;
     char s_names[512];
+    struct DataLink *pre;
     BIO *bio        = NULL;
     X509 *x509_cert = NULL;
     X509_NAME *x509_subject_name           = NULL;
@@ -323,10 +324,12 @@ static bool output_subject_info(struct Output *out,
         LOG(LEVEL_WARNING, "[output_subject]X509_get_subject_name failed\n");
     }
 
+    pre = dach_new_link(&item.report, "subject name", DACH_DEFAULT_DATA_SIZE);
+
     while (true) {
         res = BIO_read(bio, s_names, sizeof(s_names));
         if (res > 0) {
-            dach_append(&item.report, "subject_name", s_names, res);
+            dach_append_by_pre(pre, s_names, res);
         } else if (res == 0 || res == -1) {
             break;
         } else {
@@ -364,10 +367,12 @@ static bool output_subject_info(struct Output *out,
         sk_GENERAL_NAME_pop_free(x509_alt_names, GENERAL_NAME_free);
     }
 
+    pre = dach_new_link(&item.report, "alt name", DACH_DEFAULT_DATA_SIZE);
+
     while (true) {
         res = BIO_read(bio, s_names, sizeof(s_names));
         if (res > 0) {
-            dach_append(&item.report, "alt_name", s_names, res);
+            dach_append_by_pre(pre, s_names, res);
         } else if (res == 0 || res == -1) {
             break;
         } else {
@@ -388,10 +393,10 @@ static bool output_x502_cert(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     STACK_OF(X509) * sk_x509_certs;
+    struct DataLink *pre;
     int i_cert;
     int res;
-    char s_base64[512];
-    char tmp_name[20];
+    char s_base64[2048];
 
     sk_x509_certs = SSL_get_peer_cert_chain(ssl);
     if (sk_x509_certs == NULL) {
@@ -455,12 +460,13 @@ static bool output_x502_cert(struct Output *out,
             continue;
         }
 
-        snprintf(tmp_name, sizeof(tmp_name), "cert_%d", i_cert);
+        /*cert is a little bit large*/
+        pre = dach_new_link_printf(&item.report, 2048, "cert_%d", i_cert);
 
         while (true) {
             res = BIO_read(bio_mem, s_base64, sizeof(s_base64));
             if (res > 0) {
-                dach_append(&item.report, tmp_name, s_base64, res);
+                dach_append_by_pre(pre, s_base64, res);
             } else if (res == 0 || res == -1) {
                 break;
             } else {
@@ -502,9 +508,10 @@ static bool output_cipher_suite(struct Output *out,
         .level     = Output_INFO,
     };
 
+    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
+
     cipher_suite = SSL_CIPHER_get_protocol_id(ssl_cipher);
     dach_printf(&item.report, "cipher", "0x%x", cipher_suite);
-    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
 
     output_result(tls_out, &item);
 
@@ -730,7 +737,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     SSL_set_bio(ssl, rbio, wbio);
 
     /*set info cb to print status changing, alert and errors*/
-    SSL_set_info_callback(ssl, ssl_info_callback);
+    SSL_set_info_callback(ssl, ssl_info_cb);
 
 
     /*save `target` to SSL object*/

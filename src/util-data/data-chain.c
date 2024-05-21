@@ -28,9 +28,9 @@
 #include <ctype.h>
 
 
-#define DACH_DEFAULT_DATA_SIZE     200
 
-static unsigned name_hash(const char *name) {
+static unsigned
+_name_hash(const char *name) {
     unsigned hash  = 0;
     unsigned prime = 151;
     while (*name) {
@@ -53,7 +53,7 @@ _dach_new_link(struct DataChain *dach, const char *name, size_t len)
 
     safe_strcpy(p->name, DACH_MAX_NAME_SIZE, name);
 
-    p->name_hash       = name_hash(name);
+    p->name_hash       = _name_hash(name);
     p->data_size       = data_size;
     p->next            = dach->link->next;
     dach->link->next   = p;
@@ -74,13 +74,55 @@ dach_new_link(struct DataChain *dach, const char *name, size_t data_size)
     return pre;
 }
 
+/**
+ * Create a data link with formatted name and specified capacity by yourself.
+ * NOTE: return old pre if the link exists
+ * @return the pre of new link
+ */
+static struct DataLink *
+_dach_new_link_vprintf(struct DataChain *dach, size_t data_size,
+    const char *fmt_name, va_list marker)
+{
+    char str[DACH_MAX_NAME_SIZE];
+    int  len;
+
+    /*may be `name` has no enough size, but it must be c string!*/
+    len = vsnprintf(str, sizeof(str), fmt_name, marker);
+    if (len > sizeof(str)-1) {
+        str[sizeof(str)-1] = '\0';
+    }
+
+    /*ensure not exist*/
+    struct DataLink *pre = dach_find_pre_link(dach, str);
+
+    if (pre->next == NULL) {
+        _dach_new_link(dach, str, data_size);
+        pre = dach->link;
+    }
+
+    return pre;
+}
+
+struct DataLink *
+dach_new_link_printf(struct DataChain *dach, size_t data_size, const char *fmt_name, ...)
+{
+    struct DataLink *pre;
+    va_list marker;
+
+    va_start(marker, fmt_name);
+    pre = _dach_new_link_vprintf(dach, data_size, fmt_name, marker);
+    va_end(marker);
+
+    return pre;
+}
+
 
 /**
  * Expand the target link size to at least mlen by inputting its previous link.
  * NOTE: pre & pre->next must not be NULL
  */
 static void
-dach_link_expand(struct DataLink *pre, size_t mlen)
+_dach_link_expand(struct DataLink *pre, size_t mlen)
 {
     assert(pre && pre->next);
 
@@ -121,7 +163,7 @@ dach_release(struct DataChain *dach)
 struct DataLink *
 dach_find_pre_link(struct DataChain *dach, const char *name)
 {
-    unsigned hash = name_hash(name);
+    unsigned hash = _name_hash(name);
 
     struct DataLink *pre = dach->link;
     while (pre->next && pre->next->name_hash != hash)
@@ -198,7 +240,7 @@ dach_append_by_pre(struct DataLink *pre,
 
     size_t min_len = pre->next->data_len + length;
     if (min_len >= pre->next->data_size) { /*at least keep a '\0'*/
-        dach_link_expand(pre, min_len);
+        _dach_link_expand(pre, min_len);
     }
 
     memcpy(pre->next->data + pre->next->data_len, px, length);
@@ -350,10 +392,10 @@ dach_append_unicode(struct DataChain *dach, const char *name, unsigned c)
  * NOTE: pre & pre->next must not be NULL
  ***************************************************************************/
 static void
-datachain_vprintf(struct DataLink *pre, const char *fmt, va_list marker) {
+_dach_vprintf(struct DataLink *pre, const char *fmt, va_list marker) {
 
     char str[50];
-    int len;
+    int  len;
 
     len = vsnprintf(str, sizeof(str), fmt, marker);
     if (len > sizeof(str)-1) {
@@ -374,7 +416,7 @@ dach_printf_by_pre(struct DataLink *pre, const char *fmt, ...)
     va_list marker;
 
     va_start(marker, fmt);
-    datachain_vprintf(pre, fmt, marker);
+    _dach_vprintf(pre, fmt, marker);
     va_end(marker);
 }
 
@@ -394,7 +436,7 @@ dach_printf(struct DataChain *dach, const char *name, const char *fmt, ...)
     va_list marker;
 
     va_start(marker, fmt);
-    datachain_vprintf(pre, fmt, marker);
+    _dach_vprintf(pre, fmt, marker);
     va_end(marker);
 
     return pre;
