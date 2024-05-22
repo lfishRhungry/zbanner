@@ -152,7 +152,8 @@ struct ScanModule NdpNsScan = {
     .required_probe_type = 0,
     .support_timeout     = 1,
     .params              = ndpns_parameters,
-    .bpf_filter          = "icmp6 && (icmp6[0]==136 && icmp6[1]==0)", /*ndp neighbor advertisement*/
+    .bpf_filter = /*ndp neighbor advertisement*/
+        "icmp6 && (icmp6[0]==136 && icmp6[1]==0)",
     .desc =
         "NdpNsScan sends an NDP(ICMPv6) Neighbor Solicitation to IPv6 target "
         "host(actually `the solicited-node multicast address`). Expect an NDP"

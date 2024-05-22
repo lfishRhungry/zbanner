@@ -427,8 +427,9 @@ struct ScanModule UdpScan = {
     .required_probe_type = ProbeType_UDP,
     .support_timeout     = 1,
     .params              = udp_parameters,
-    .bpf_filter =
-        "udp || (icmp && icmp[0]==3 && icmp[1]==3) || (icmp6 && icmp6[0]==1 && icmp6[1]==4)", /*udp and icmp port unreachable*/
+    .bpf_filter = /*udp and icmp port unreachable in ipv4 & ipv6*/
+        "udp || (icmp && icmp[0]==3 && icmp[1]==3) "
+        "|| (icmp6 && icmp6[0]==1 && icmp6[1]==4)",
     .desc =
         "UdpScan sends a udp packet with ProbeModule data to target port "
         "and expects a udp response to believe the port is open or an icmp port "

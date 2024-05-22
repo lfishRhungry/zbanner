@@ -638,8 +638,10 @@ struct ScanModule ZBannerScan = {
     .name                = "zbanner",
     .required_probe_type = ProbeType_TCP,
     .support_timeout     = 1,
-    .bpf_filter          = "tcp && (tcp[13] & 4 != 0 || tcp[13] & 16 != 0)", /*tcp with rst or ack*/
     .params              = zbanner_parameters,
+    .bpf_filter = /*is rst or with ack in ipv4 & ipv6*/
+        "(ip && tcp && (tcp[tcpflags]|tcp-ack!=0 || tcp[tcpflags]==tcp-rst)) "
+        "|| (ip6 && tcp && (ip6[40+13]|tcp-ack!=0 || ip6[40+13]==tcp-rst))",
     .desc =
         "ZBannerScan tries to contruct TCP conn with target port and send data "
         "from specified ProbeModule. Data in first reponse packet will be handled"
