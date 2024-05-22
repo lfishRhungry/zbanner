@@ -205,7 +205,7 @@ udp_create_by_template(
     unsigned char *payload, size_t payload_length,
     unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->proto != Tmpl_Type_UDP) {
+    if (tmpl->tmpl_type != Tmpl_Type_UDP) {
             LOG(LEVEL_ERROR, "udp_create_by_template: need a Tmpl_Type_UDP TemplatePacket.\n");
             return 0;
     }

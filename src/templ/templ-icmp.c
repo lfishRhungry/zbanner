@@ -3,6 +3,7 @@
 
 #include "templ-icmp.h"
 #include "../globals.h"
+#include "../massip/massip.h"
 #include "../util-misc/checksum.h"
 #include "../util-data/data-convert.h"
 
@@ -223,8 +224,8 @@ icmp_create_by_template(
     unsigned cookie, uint16_t ip_id, uint8_t ttl,
     unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->proto != Tmpl_Type_ICMP_ECHO
-        && tmpl->proto != Tmpl_Type_ICMP_TS) {
+    if (tmpl->tmpl_type != Tmpl_Type_ICMP_ECHO
+        && tmpl->tmpl_type != Tmpl_Type_ICMP_TS) {
             LOG(LEVEL_ERROR, "icmp_create_by_template: need a Tmpl_Type_ICMP_ECHO or Tmpl_Type_ICMP_TS TemplatePacket.\n");
             return 0;
     }
@@ -279,7 +280,7 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
     unsigned data_length_in_icmp           = length - (ip_header_in_icmp - transport_px);
     unsigned ipv4_header_len;
 
-    if (ip_header_in_icmp[0]>>4 == 0B0100) {
+    if (ip_header_in_icmp[0]>>4 == 4) {
         /*ipv4*/
         r_ip_them->version = 4;
         r_ip_me->version   = 4;
@@ -287,13 +288,9 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
         r_ip_me->ipv4   = BE_TO_U32(ip_header_in_icmp+12);
         r_ip_them->ipv4 = BE_TO_U32(ip_header_in_icmp+16);
 
-        if (ip_header_in_icmp[9]==6) { /*tcp*/
-            *r_ip_proto = 6;
-        } else if (ip_header_in_icmp[9]==17) { /*udp*/
-            *r_ip_proto = 17;
-        } else {
+        *r_ip_proto = ip_header_in_icmp[9];
+        if (*r_ip_proto!=IP_PROTO_TCP||*r_ip_proto!=IP_PROTO_UDP)
             return false;
-        }
 
         ipv4_header_len      = (ip_header_in_icmp[0]&0xF)<<2;
         ip_header_in_icmp   += ipv4_header_len;
@@ -305,23 +302,19 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
         *r_port_me   = BE_TO_U16(ip_header_in_icmp);
         *r_port_them = BE_TO_U16(ip_header_in_icmp+2);
 
-    } else if (ip_header_in_icmp[0]>>4 == 0B0110) {
+    } else if (ip_header_in_icmp[0]>>4 == 6) {
         /*ipv6*/
-        r_ip_them->version = 6;
-        r_ip_me->version   = 6;
+        r_ip_them->version   = 6;
+        r_ip_me->version     = 6;
 
         r_ip_me->ipv6.hi     = BE_TO_U64(ip_header_in_icmp+ 8);
         r_ip_me->ipv6.lo     = BE_TO_U64(ip_header_in_icmp+16);
         r_ip_them->ipv6.hi   = BE_TO_U64(ip_header_in_icmp+24);
         r_ip_them->ipv6.lo   = BE_TO_U64(ip_header_in_icmp+32);
 
-        if (ip_header_in_icmp[6]==6) {
-            *r_ip_proto = Tmpl_Type_TCP;
-        } else if (ip_header_in_icmp[6]==17) {
-            *r_ip_proto = Tmpl_Type_UDP;
-        } else {
+        *r_ip_proto = ip_header_in_icmp[6];
+        if (*r_ip_proto!=IP_PROTO_TCP||*r_ip_proto!=IP_PROTO_UDP)
             return false;
-        }
 
         /*length of ipv6 header is fixed*/
         ip_header_in_icmp   += 40;
@@ -344,21 +337,10 @@ get_icmp_port_unreachable_proto(const unsigned char *transport_px, unsigned leng
 {
     const unsigned char *ip_header_in_icmp = transport_px + 8;
 
-    if (ip_header_in_icmp[0]>>4 == 0B0100) {
-        
-        if (ip_header_in_icmp[9]==6) {
-            return 6;
-        } else if (ip_header_in_icmp[9]==17) {
-            return 17;
-        }
-
-    } else if (ip_header_in_icmp[0]>>4 == 0B0110) {
-
-        if (ip_header_in_icmp[6]==6) {
-            return 6;
-        } else if (ip_header_in_icmp[6]==17) {
-            return 17;
-        }
+    if (ip_header_in_icmp[0]>>4 == 4) {
+        return ip_header_in_icmp[9];
+    } else if (ip_header_in_icmp[0]>>4 == 6) {
+        return ip_header_in_icmp[6];
     }
 
     return 0;

@@ -23,190 +23,190 @@
  * No tcp options.
  * For ACK */
 unsigned char default_tcp_template[] =
-    "\0\1\2\3\4\5"      /* Ethernet: destination */
-    "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-    "\x08\x00"          /* Ethernet type: IPv4 */
+"\0\1\2\3\4\5"                     /* Ethernet: destination */
+"\6\7\x8\x9\xa\xb"                 /* Ethernet: source */
+"\x08\x00"                         /* Ethernet type: IPv4 */
 
-    "\x45"              /* IP type */
-    "\x00"
-    "\x00\x28"          /* total length = 40 bytes */
-    "\x00\x00"          /* identification */
-    "\x00\x00"          /* fragmentation flags */
-    "\xFF\x06"          /* TTL=255, proto=TCP */
-    "\xFF\xFF"          /* checksum */
-    "\0\0\0\0"          /* source address */
-    "\0\0\0\0"          /* destination address */
+"\x45"                             /* IP type */
+"\x00"
+"\x00\x28"                         /* total length = 40 bytes */
+"\x00\x00"                         /* identification */
+"\x00\x00"                         /* fragmentation flags */
+"\xFF\x06"                         /* TTL=255, proto=TCP */
+"\xFF\xFF"                         /* checksum */
+"\0\0\0\0"                         /* source address */
+"\0\0\0\0"                         /* destination address */
 
-    "\0\0"              /* source port */
-    "\0\0"              /* destination port */
-    "\0\0\0\0"          /* sequence number */
-    "\0\0\0\0"          /* ACK number */
-    "\x50"              /* header length: the first 4bits 0101=5 -> 5*4=20bytes */
-    "\x02"              /* SYN */
-    "\x04\x01"          /* window fixed to 1024, too large could make troubles for zbanner*/
-    "\xFF\xFF"          /* checksum */
-    "\x00\x00"          /* urgent pointer */
+"\0\0"                             /* source port */
+"\0\0"                             /* destination port */
+"\0\0\0\0"                         /* sequence number */
+"\0\0\0\0"                         /* ACK number */
+"\x50"                             /* header length: the first 4bits 0101=5 -> 5*4=20bytes */
+"\x02"                             /* SYN */
+"\x04\x01"                         /* window fixed to 1024, too large could make troubles for zbanner*/
+"\xFF\xFF"                         /* checksum */
+"\x00\x00"                         /* urgent pointer */
 ;
 
 /**
  * Could add some fixed tcp options.
  * Just for SYN*/
 unsigned char default_tcp_syn_template[] =
-    "\0\1\2\3\4\5"      /* Ethernet: destination */
-    "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-    "\x08\x00"          /* Ethernet type: IPv4 */
+"\0\1\2\3\4\5"                     /* Ethernet: destination */
+"\6\7\x8\x9\xa\xb"                 /* Ethernet: source */
+"\x08\x00"                         /* Ethernet type: IPv4 */
 
-    "\x45"              /* IP type */
-    "\x00"
-    "\x00\x2c"          /* total length = 44 bytes */
-    "\x00\x00"          /* identification */
-    "\x00\x00"          /* fragmentation flags */
-    "\xFF\x06"          /* TTL=255, proto=TCP */
-    "\xFF\xFF"          /* checksum */
-    "\0\0\0\0"          /* source address */
-    "\0\0\0\0"          /* destination address */
+"\x45"                             /* IP type */
+"\x00"
+"\x00\x2c"                         /* total length = 44 bytes */
+"\x00\x00"                         /* identification */
+"\x00\x00"                         /* fragmentation flags */
+"\xFF\x06"                         /* TTL=255, proto=TCP */
+"\xFF\xFF"                         /* checksum */
+"\0\0\0\0"                         /* source address */
+"\0\0\0\0"                         /* destination address */
 
-    "\0\0"              /* source port */
-    "\0\0"              /* destination port */
-    "\0\0\0\0"          /* sequence number */
-    "\0\0\0\0"          /* ACK number */
-    "\x60"              /* header length: the first 4bits 0110=6 -> 6*4=24bytes */
-    "\x02"              /* SYN */
-    "\xfa\xf0"          /* window 64240 (default ipv4 tcp win of my win11, and tcp win of win11 ipv6 is \xfd\x20->64800) */
-    "\xFF\xFF"          /* checksum */
-    "\x00\x00"          /* urgent pointer */
-    "\x02\x04\x05\xb4"  /* opt [mss 1460] */
+"\0\0"                             /* source port */
+"\0\0"                             /* destination port */
+"\0\0\0\0"                         /* sequence number */
+"\0\0\0\0"                         /* ACK number */
+"\x60"                             /* header length: the first 4bits 0110=6 -> 6*4=24bytes */
+"\x02"                             /* SYN */
+"\xfa\xf0"                         /* window 64240 (default ipv4 tcp win of my win11, and tcp win of win11 ipv6 is \xfd\x20->64800) */
+"\xFF\xFF"                         /* checksum */
+"\x00\x00"                         /* urgent pointer */
+"\x02\x04\x05\xb4"                 /* opt [mss 1460] */
 ;
 
 /**
  * No tcp options and zero window.
  * For RST */
 unsigned char default_tcp_rst_template[] =
-    "\0\1\2\3\4\5"      /* Ethernet: destination */
-    "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-    "\x08\x00"          /* Ethernet type: IPv4 */
+"\0\1\2\3\4\5"                     /* Ethernet: destination */
+"\6\7\x8\x9\xa\xb"                 /* Ethernet: source */
+"\x08\x00"                         /* Ethernet type: IPv4 */
 
-    "\x45"              /* IP type */
-    "\x00"
-    "\x00\x28"          /* total length = 40 bytes */
-    "\x00\x00"          /* identification */
-    "\x00\x00"          /* fragmentation flags */
-    "\xFF\x06"          /* TTL=255, proto=TCP */
-    "\xFF\xFF"          /* checksum */
-    "\0\0\0\0"          /* source address */
-    "\0\0\0\0"          /* destination address */
+"\x45"                             /* IP type */
+"\x00"
+"\x00\x28"                         /* total length = 40 bytes */
+"\x00\x00"                         /* identification */
+"\x00\x00"                         /* fragmentation flags */
+"\xFF\x06"                         /* TTL=255, proto=TCP */
+"\xFF\xFF"                         /* checksum */
+"\0\0\0\0"                         /* source address */
+"\0\0\0\0"                         /* destination address */
 
-    "\0\0"              /* source port */
-    "\0\0"              /* destination port */
-    "\0\0\0\0"          /* sequence number */
-    "\0\0\0\0"          /* ACK number */
-    "\x50"              /* header length: the first 4bits 0101=5 -> 5*4=20bytes */
-    "\x04"              /* RST */
-    "\x00\x00"          /* zero window */
-    "\xFF\xFF"          /* checksum */
-    "\x00\x00"          /* urgent pointer */
+"\0\0"                             /* source port */
+"\0\0"                             /* destination port */
+"\0\0\0\0"                         /* sequence number */
+"\0\0\0\0"                         /* ACK number */
+"\x50"                             /* header length: the first 4bits 0101=5 -> 5*4=20bytes */
+"\x04"                             /* RST */
+"\x00\x00"                         /* zero window */
+"\xFF\xFF"                         /* checksum */
+"\x00\x00"                         /* urgent pointer */
 ;
 
 static unsigned char default_udp_template[] =
-    "\0\1\2\3\4\5"      /* Ethernet: destination */
-    "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-    "\x08\x00"          /* Ethernet type: IPv4 */
-    "\x45"              /* IP type */
-    "\x00"
-    "\x00\x1c"          /* total length = 28 bytes */
-    "\x00\x00"          /* identification */
-    "\x00\x00"          /* fragmentation flags */
-    "\xFF\x11"          /* TTL=255, proto=UDP */
-    "\xFF\xFF"          /* checksum */
-    "\0\0\0\0"          /* source address */
-    "\0\0\0\0"          /* destination address */
+"\0\1\2\3\4\5"                     /* Ethernet: destination */
+"\6\7\x8\x9\xa\xb"                 /* Ethernet: source */
+"\x08\x00"                         /* Ethernet type: IPv4 */
+"\x45"                             /* IP type */
+"\x00"
+"\x00\x1c"                         /* total length = 28 bytes */
+"\x00\x00"                         /* identification */
+"\x00\x00"                         /* fragmentation flags */
+"\xFF\x11"                         /* TTL=255, proto=UDP */
+"\xFF\xFF"                         /* checksum */
+"\0\0\0\0"                         /* source address */
+"\0\0\0\0"                         /* destination address */
 
-    "\xfe\xdc"          /* source port */
-    "\x00\x00"          /* destination port */
-    "\x00\x08"          /* length */
-    "\x00\x00"          /* checksum */
+"\xfe\xdc"                         /* source port */
+"\x00\x00"                         /* destination port */
+"\x00\x08"                         /* length */
+"\x00\x00"                         /* checksum */
 ;
 
 static unsigned char default_sctp_template[] =
-    "\0\1\2\3\4\5"      /* Ethernet: destination */
-    "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-    "\x08\x00"          /* Ethernet type: IPv4 */
-    "\x45"              /* IP type */
-    "\x00"
-    "\x00\x34"          /* total length = 52 bytes */
-    "\x00\x00"          /* identification */
-    "\x00\x00"          /* fragmentation flags */
-    "\xFF\x84"          /* TTL=255, proto = SCTP */
-    "\x00\x00"          /* checksum */
-    "\0\0\0\0"          /* source address */
-    "\0\0\0\0"          /* destination address */
+"\0\1\2\3\4\5"                     /* Ethernet: destination */
+"\6\7\x8\x9\xa\xb"                 /* Ethernet: source */
+"\x08\x00"                         /* Ethernet type: IPv4 */
+"\x45"                             /* IP type */
+"\x00"
+"\x00\x34"                         /* total length = 52 bytes */
+"\x00\x00"                         /* identification */
+"\x00\x00"                         /* fragmentation flags */
+"\xFF\x84"                         /* TTL=255, proto = SCTP */
+"\x00\x00"                         /* checksum */
+"\0\0\0\0"                         /* source address */
+"\0\0\0\0"                         /* destination address */
 
-    "\x00\x00"          /* source port */
-    "\x00\x00"          /* destination port */
-    "\x00\x00\x00\x00"  /* verification tag */
-    "\x58\xe4\x5d\x36"  /* checksum */
-    "\x01"              /* type = init */
-    "\x00"              /* flags = none */
-    "\x00\x14"          /* length = 20 */
-    "\x9e\x8d\x52\x25"  /* initiate tag */
-    "\x00\x00\x80\x00"  /* receiver window credit */
-    "\x00\x0a"          /* outbound streams = 10 */
-    "\x08\x00"          /* inbound streams = 2048 */
-    "\x46\x1a\xdf\x3d"  /* initial TSN */
+"\x00\x00"                         /* source port */
+"\x00\x00"                         /* destination port */
+"\x00\x00\x00\x00"                 /* verification tag */
+"\x58\xe4\x5d\x36"                 /* checksum */
+"\x01"                             /* type = init */
+"\x00"                             /* flags = none */
+"\x00\x14"                         /* length = 20 */
+"\x9e\x8d\x52\x25"                 /* initiate tag */
+"\x00\x00\x80\x00"                 /* receiver window credit */
+"\x00\x0a"                         /* outbound streams = 10 */
+"\x08\x00"                         /* inbound streams = 2048 */
+"\x46\x1a\xdf\x3d"                 /* initial TSN */
 ;
 
 
 static unsigned char default_icmp_ping_template[] =
-    "\0\1\2\3\4\5"      /* Ethernet: destination */
-    "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-    "\x08\x00"          /* Ethernet type: IPv4 */
-    "\x45"              /* IP type */
-    "\x00"
-    "\x00\x4c"          /* total length = 76 bytes */
-    "\x00\x00"          /* identification */
-    "\x00\x00"          /* fragmentation flags */
-    "\xFF\x01"          /* TTL=255, proto=ICMP */
-    "\xFF\xFF"          /* checksum */
-    "\0\0\0\0"          /* source address */
-    "\0\0\0\0"          /* destination address */
+"\0\1\2\3\4\5"                     /* Ethernet: destination */
+"\6\7\x8\x9\xa\xb"                 /* Ethernet: source */
+"\x08\x00"                         /* Ethernet type: IPv4 */
+"\x45"                             /* IP type */
+"\x00"
+"\x00\x4c"                         /* total length = 76 bytes */
+"\x00\x00"                         /* identification */
+"\x00\x00"                         /* fragmentation flags */
+"\xFF\x01"                         /* TTL=255, proto=ICMP */
+"\xFF\xFF"                         /* checksum */
+"\0\0\0\0"                         /* source address */
+"\0\0\0\0"                         /* destination address */
 
-    "\x08\x00"          /* Ping Request */
-    "\x00\x00"          /* checksum */
+"\x08\x00"                         /* Ping Request */
+"\x00\x00"                         /* checksum */
 
-    "\x00\x00\x00\x00"  /* ID, seqno */
+"\x00\x00\x00\x00"                 /* ID, seqno */
 
-    "\x08\x09\x0a\x0b"  /* payload */
-    "\x0c\x0d\x0e\x0f"
-    "\x10\x11\x12\x13"
-    "\x14\x15\x16\x17"
-    "\x18\x19\x1a\x1b"
-    "\x1c\x1d\x1e\x1f"
-    "\x20\x21\x22\x23"
-    "\x24\x25\x26\x27"
-    "\x28\x29\x2a\x2b"
-    "\x2c\x2d\x2e\x2f"
-    "\x30\x31\x32\x33"
-    "\x34\x35\x36\x37"
+"\x08\x09\x0a\x0b"                 /* payload */
+"\x0c\x0d\x0e\x0f"
+"\x10\x11\x12\x13"
+"\x14\x15\x16\x17"
+"\x18\x19\x1a\x1b"
+"\x1c\x1d\x1e\x1f"
+"\x20\x21\x22\x23"
+"\x24\x25\x26\x27"
+"\x28\x29\x2a\x2b"
+"\x2c\x2d\x2e\x2f"
+"\x30\x31\x32\x33"
+"\x34\x35\x36\x37"
 ;
 
 static unsigned char default_icmp_timestamp_template[] =
-"\0\1\2\3\4\5"          /* Ethernet: destination */
-    "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-"\x08\x00"              /* Ethernet type: IPv4 */
-"\x45"                  /* IP type */
+"\0\1\2\3\4\5"                     /* Ethernet: destination */
+"\6\7\x8\x9\xa\xb"                 /* Ethernet: source */
+"\x08\x00"                         /* Ethernet type: IPv4 */
+"\x45"                             /* IP type */
 "\x00"
-"\x00\x28"              /* total length = 40 bytes */
-"\x00\x00"              /* identification */
-"\x00\x00"              /* fragmentation flags */
-"\xFF\x01"              /* TTL=255, proto=ICMP */
-"\xFF\xFF"              /* checksum */
-"\0\0\0\0"              /* source address */
-"\0\0\0\0"              /* destination address */
+"\x00\x28"                         /* total length = 40 bytes */
+"\x00\x00"                         /* identification */
+"\x00\x00"                         /* fragmentation flags */
+"\xFF\x01"                         /* TTL=255, proto=ICMP */
+"\xFF\xFF"                         /* checksum */
+"\0\0\0\0"                         /* source address */
+"\0\0\0\0"                         /* destination address */
 
-"\x0d\x00"              /* timestamp request */
-"\x00\x00"              /* checksum */
-"\x00\x00"              /* identifier */
-"\x00\x00"              /* sequence number */
+"\x0d\x00"                         /* timestamp request */
+"\x00\x00"                         /* checksum */
+"\x00\x00"                         /* identifier */
+"\x00\x00"                         /* sequence number */
 "\x00\x00\x00\x00"
 "\x00\x00\x00\x00"
 "\x00\x00\x00\x00"
@@ -214,46 +214,46 @@ static unsigned char default_icmp_timestamp_template[] =
 
 
 static unsigned char default_arp_template[] =
-    "\xff\xff\xff\xff\xff\xff"    /* Ethernet: destination */
-    "\x00\x00\x00\x00\x00\x00"    /* Ethernet: source */
-    "\x08\x06"                    /* Ethernet type: ARP */
-    "\x00\x01"                    /* hardware = Ethernet */
-    "\x08\x00"                    /* protocol = IPv4 */
-    "\x06\x04"                    /* MAC length = 6, IPv4 length = 4 */
-    "\x00\x01"                    /* opcode = request */
+"\xff\xff\xff\xff\xff\xff"         /* Ethernet: destination */
+"\x00\x00\x00\x00\x00\x00"         /* Ethernet: source */
+"\x08\x06"                         /* Ethernet type: ARP */
+"\x00\x01"                         /* hardware = Ethernet */
+"\x08\x00"                         /* protocol = IPv4 */
+"\x06\x04"                         /* MAC length = 6, IPv4 length = 4 */
+"\x00\x01"                         /* opcode = request */
 
-    "\x00\x00\x00\x00\x00\x00"
-    "\x00\x00\x00\x00"
+"\x00\x00\x00\x00\x00\x00"
+"\x00\x00\x00\x00"
 
-    "\x00\x00\x00\x00\x00\x00"
-    "\x00\x00\x00\x00"
+"\x00\x00\x00\x00\x00\x00"
+"\x00\x00\x00\x00"
 ;
 
 
 static unsigned char default_ndp_ns_template[] =
-"\0\1\2\3\4\5"                /* Ethernet: destination */
-    "\6\7\x8\x9\xa\xb"        /* Ethernet: source */
-"\x08\x00"                    /* Ethernet type: IPv4 */
-"\x45"                        /* IP type */
+"\0\1\2\3\4\5"                     /* Ethernet: destination */
+"\6\7\x8\x9\xa\xb"                 /* Ethernet: source */
+"\x08\x00"                         /* Ethernet type: IPv4 */
+"\x45"                             /* IP type */
 "\x00"
-"\x00\x34"                    /* total length = 54 bytes */
-"\x00\x00"                    /* identification */
-"\x00\x00"                    /* fragmentation flags */
-"\xFF\x01"                    /* TTL=255, proto=UDP */
-"\xFF\xFF"                    /* checksum */
-"\0\0\0\0"                    /* source address */
-"\0\0\0\0"                    /* destination address */
+"\x00\x34"                         /* total length = 54 bytes */
+"\x00\x00"                         /* identification */
+"\x00\x00"                         /* fragmentation flags */
+"\xFF\x01"                         /* TTL=255, proto=UDP */
+"\xFF\xFF"                         /* checksum */
+"\0\0\0\0"                         /* source address */
+"\0\0\0\0"                         /* destination address */
 
-"\x87\x00"                    /* neighbor solicitation */
-"\x00\x00"                    /* checksum */
-"\x00\x00\x00\x00"            /*reserved*/
-"\x00\x00\x00\x00"            /*Target address*/
+"\x87\x00"                         /* neighbor solicitation */
+"\x00\x00"                         /* checksum */
+"\x00\x00\x00\x00"                 /*reserved*/
+"\x00\x00\x00\x00"                 /*Target address*/
 "\x00\x00\x00\x00"
 "\x00\x00\x00\x00"
 "\x00\x00\x00\x00"
-"\x01"                        /*ICMPv6 Option Type: Source link-layer address*/
-"\x01"                        /*Length for 8 bytes*/
-"\x00\x00\x00\x00\x00\x00"    /*Link-layer address*/
+"\x01"                             /*ICMPv6 Option Type: Source link-layer address*/
+"\x01"                             /*Length for 8 bytes*/
+"\x00\x00\x00\x00\x00\x00"         /*Link-layer address*/
 ;
 
 #if defined(WIN32) || defined(_WIN32)
@@ -434,14 +434,14 @@ _template_init(
      */
     if (parsed.found == FOUND_ARP) {
         memcpy((char*)parsed._ip_src - 6, source_mac.addr, 6);
-        tmpl->proto = Tmpl_Type_ARP;
+        tmpl->tmpl_type = Tmpl_Type_ARP;
         return;
     }
 
     /*
      * IPv4
      *
-     * Calculate the partial checksum. We zero out the fields that will be
+     * Calculate the partial checksum. Zero out the fields that will be
      * added later the packet, then calculate the checksum as if they were
      * zero. This makes recalculation of the checksum easier when we transmit
      */
@@ -463,13 +463,13 @@ _template_init(
                 tmpl->ipv4.offset_tcp, tmpl->ipv4.length-tmpl->ipv4.offset_tcp);
             switch (px[tmpl->ipv4.offset_tcp]) {
                 case 8:
-                    tmpl->proto = Tmpl_Type_ICMP_ECHO;
+                    tmpl->tmpl_type = Tmpl_Type_ICMP_ECHO;
                     break;
                 case 13:
-                    tmpl->proto = Tmpl_Type_ICMP_TS;
+                    tmpl->tmpl_type = Tmpl_Type_ICMP_TS;
                     break;
                 case 135:
-                    tmpl->proto = Tmpl_Type_NDP_NS;
+                    tmpl->tmpl_type = Tmpl_Type_NDP_NS;
                     break;
             }
             break;
@@ -480,20 +480,20 @@ _template_init(
         memset(px + tmpl->ipv4.offset_tcp + 16, 0, 2); /* checksum */
         tmpl->ipv4.checksum_tcp = checksum_tcp(tmpl->ipv4.packet, tmpl->ipv4.offset_ip,
             tmpl->ipv4.offset_tcp, tmpl->ipv4.length-tmpl->ipv4.offset_tcp);
-        tmpl->proto = Tmpl_Type_TCP;
+        tmpl->tmpl_type = Tmpl_Type_TCP;
         break;
     case IP_PROTO_UDP:
         memset(px + tmpl->ipv4.offset_tcp + 6, 0, 2); /* checksum */
         tmpl->ipv4.checksum_tcp = checksum_udp(tmpl->ipv4.packet,
             tmpl->ipv4.offset_ip, tmpl->ipv4.offset_tcp,
             tmpl->ipv4.length-tmpl->ipv4.offset_tcp);
-        tmpl->proto = Tmpl_Type_UDP;
+        tmpl->tmpl_type = Tmpl_Type_UDP;
         break;
     case IP_PROTO_SCTP:
         tmpl->ipv4.checksum_tcp = checksum_sctp(
                                     tmpl->ipv4.packet + tmpl->ipv4.offset_tcp,
                                     tmpl->ipv4.length - tmpl->ipv4.offset_tcp);
-        tmpl->proto = Tmpl_Type_SCTP;
+        tmpl->tmpl_type = Tmpl_Type_SCTP;
         break;
     }
 
@@ -740,20 +740,22 @@ int template_selftest()
 
     memset(tmplset, 0, sizeof(tmplset[0]));
     template_packet_init(
-            tmplset,
-            macaddress_from_bytes("\x00\x11\x22\x33\x44\x55"),
-            macaddress_from_bytes("\x66\x55\x44\x33\x22\x11"),
-            macaddress_from_bytes("\x66\x55\x44\x33\x22\x11"),
-            1,  /* Ethernet */
-            0,  /* no entropy */
-            &templ_opts
-            );
-    failures += tmplset->pkts[Tmpl_Type_TCP].proto  != Tmpl_Type_TCP;
-    failures += tmplset->pkts[Tmpl_Type_UDP].proto  != Tmpl_Type_UDP;
-    //failures += tmplset->pkts[Tmpl_Type_SCTP].proto != Tmpl_Type_SCTP;
-    failures += tmplset->pkts[Tmpl_Type_ICMP_ECHO].proto != Tmpl_Type_ICMP_ECHO;
-    //failures += tmplset->pkts[Proto_ICMP_timestamp].proto != Proto_ICMP_timestamp;
-    //failures += tmplset->pkts[Tmpl_Type_ARP].proto  != Tmpl_Type_ARP;
+        tmplset,
+        macaddress_from_bytes("\x00\x11\x22\x33\x44\x55"),
+        macaddress_from_bytes("\x66\x55\x44\x33\x22\x11"),
+        macaddress_from_bytes("\x66\x55\x44\x33\x22\x11"),
+        1,  /* Ethernet */
+        0,  /* no entropy */
+        &templ_opts);
+    failures += tmplset->pkts[Tmpl_Type_TCP].tmpl_type         != Tmpl_Type_TCP;
+    failures += tmplset->pkts[Tmpl_Type_TCP_SYN].tmpl_type     != Tmpl_Type_TCP;
+    failures += tmplset->pkts[Tmpl_Type_TCP_RST].tmpl_type     != Tmpl_Type_TCP;
+    failures += tmplset->pkts[Tmpl_Type_UDP].tmpl_type         != Tmpl_Type_UDP;
+    failures += tmplset->pkts[Tmpl_Type_SCTP].tmpl_type        != Tmpl_Type_SCTP;
+    failures += tmplset->pkts[Tmpl_Type_ICMP_ECHO].tmpl_type   != Tmpl_Type_ICMP_ECHO;
+    failures += tmplset->pkts[Tmpl_Type_ICMP_TS].tmpl_type     != Tmpl_Type_ICMP_TS;
+    failures += tmplset->pkts[Tmpl_Type_ARP].tmpl_type         != Tmpl_Type_ARP;
+    failures += tmplset->pkts[Tmpl_Type_NDP_NS].tmpl_type      != Tmpl_Type_NDP_NS;
 
     if (failures)
         LOG(LEVEL_ERROR, "template: failed\n");

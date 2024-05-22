@@ -160,7 +160,7 @@ ndp_create_ns_by_template_ipv6(
     ipv6address ip_them, ipv6address ip_me, macaddress_t src_mac,
     uint8_t ttl, unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->proto != Tmpl_Type_NDP_NS) {
+    if (tmpl->tmpl_type != Tmpl_Type_NDP_NS) {
             LOG(LEVEL_ERROR, "ndp_create_by_template_ipv6: need a Tmpl_Type_NDP_NS TemplatePacket.\n");
             return 0;
     }

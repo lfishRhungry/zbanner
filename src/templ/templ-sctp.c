@@ -258,7 +258,7 @@ sctp_create_by_template(
     unsigned init_tag,
     unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->proto != Tmpl_Type_SCTP) {
+    if (tmpl->tmpl_type != Tmpl_Type_SCTP) {
             LOG(LEVEL_ERROR, "sctp_create_by_template: need a Tmpl_Type_SCTP TemplatePacket.\n");
             return 0;
     }

@@ -10,15 +10,15 @@
 
 enum TemplateType {
     Tmpl_Type_TCP = 1,
-    Tmpl_Type_TCP_SYN,   /*convenient to set options for packets with syn flag*/
-    Tmpl_Type_TCP_RST,   /*convenient to set options for packets with syn flag*/
+    Tmpl_Type_TCP_SYN,   /*for specific SYN settings and belongs to TCP*/
+    Tmpl_Type_TCP_RST,   /*for specific RST settings and belongs to TCP*/
     Tmpl_Type_UDP,
     Tmpl_Type_SCTP,
     Tmpl_Type_ICMP_ECHO,
     Tmpl_Type_ICMP_TS,
     Tmpl_Type_ARP,
     Tmpl_Type_NDP_NS,
-    Tmpl_Type_Count
+    Tmpl_Type_Count,
 };
 
 struct TemplatePacket {
@@ -42,7 +42,7 @@ struct TemplatePacket {
         unsigned checksum_tcp;
         unsigned ip_id;
     } ipv6;
-    enum TemplateType proto;
+    enum TemplateType tmpl_type;
 };
 
 struct TemplateSet

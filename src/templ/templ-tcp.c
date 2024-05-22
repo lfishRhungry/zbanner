@@ -1157,7 +1157,7 @@ tcp_create_by_template(
         const unsigned char *payload, size_t payload_length,
         unsigned char *px, size_t px_length)
 {
-    if (tmpl->proto != Tmpl_Type_TCP) {
+    if (tmpl->tmpl_type != Tmpl_Type_TCP) {
             LOG(LEVEL_ERROR, "tcp_create_by_template: need a Tmpl_Type_TCP TemplatePacket.\n");
             return 0;
     }

@@ -13,7 +13,7 @@ arp_create_by_template_ipv4(
     ipv4address ip_them, ipv4address ip_me,
     unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->proto != Tmpl_Type_ARP) {
+    if (tmpl->tmpl_type != Tmpl_Type_ARP) {
             LOG(LEVEL_ERROR, "arp_create_by_template_ipv4: need a Tmpl_Type_ARP TemplatePacket.\n");
             return 0;
     }
@@ -35,7 +35,7 @@ arp_create_by_template(
     ipaddress ip_them, ipaddress ip_me,
     unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->proto != Tmpl_Type_ARP) {
+    if (tmpl->tmpl_type != Tmpl_Type_ARP) {
             LOG(LEVEL_ERROR, "arp_create_by_template: need a Tmpl_Type_ARP TemplatePacket.\n");
             return 0;
     }
