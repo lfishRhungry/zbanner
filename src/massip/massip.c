@@ -11,6 +11,7 @@
 const char *ip_proto_to_string(unsigned ip_proto)
 {
     switch (ip_proto) {
+        case IP_PROTO_HOPOPT:        return "HOPOPT";
         case IP_PROTO_ICMP:          return "ICMP";
         case IP_PROTO_IGMP:          return "IGMP";
         case IP_PROTO_GGP:           return "GGP";

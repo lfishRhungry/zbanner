@@ -35,6 +35,7 @@ struct MassIP {
  * For present ip protocol number and diff port type.
  * Use it as unsigned type.
 */
+#define IP_PROTO_HOPOPT            0
 #define IP_PROTO_ICMP              1
 #define IP_PROTO_IGMP              2
 #define IP_PROTO_GGP               3

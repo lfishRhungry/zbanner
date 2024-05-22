@@ -14,6 +14,7 @@
 
  ****************************************************************************/
 #include "proto-preprocess.h"
+#include "../massip/massip.h"
 #include "../util-data/data-convert.h"
 #include <assert.h>
 #include <stdio.h>
@@ -113,14 +114,14 @@ parse_ipv4:
         info->transport_length = length - info->transport_offset;
 
         switch (info->ip_protocol) {
-        case   1: goto parse_icmp;
-        case   2: goto parse_igmp;
-        case   6: goto parse_tcp;
-        case  17: goto parse_udp;
-        case 132: goto parse_sctp;
+        case IP_PROTO_ICMP:       goto parse_icmp;
+        case IP_PROTO_IGMP:       goto parse_igmp;
+        case IP_PROTO_TCP:        goto parse_tcp;
+        case IP_PROTO_UDP:        goto parse_udp;
+        case IP_PROTO_SCTP:       goto parse_sctp;
         default:
-                VERIFY_REMAINING(0, FOUND_OPROTO);
-                return false; /* TODO: should add more protocols, like ICMP */
+            VERIFY_REMAINING(0, FOUND_OPROTO);
+            return false; /* TODO: should add more protocols, like ICMP */
         }
     }
 
@@ -219,16 +220,16 @@ parse_ipv6:
 
 parse_ipv6_next:
         switch (info->ip_protocol) {
-        case 0:        goto parse_ipv6_hop_by_hop;
-        case 6:        goto parse_tcp;
-        case 17:       goto parse_udp;
-        case 58:       goto parse_icmpv6;
-        case 132:      goto parse_sctp;
-        case 0x2c: /* IPv6 fragment */
+        case IP_PROTO_HOPOPT:          goto parse_ipv6_hop_by_hop;
+        case IP_PROTO_TCP:             goto parse_tcp;
+        case IP_PROTO_UDP:             goto parse_udp;
+        case IP_PROTO_IPv6_ICMP:       goto parse_icmpv6;
+        case IP_PROTO_SCTP:            goto parse_sctp;
+        case IP_PROTO_IPv6_Frag:
             return false;
         default:
             //printf("***** test me ******\n");
-            return false; /* TODO: should add more protocols, like ICMP */
+            return false;
         }
     }
 
@@ -469,7 +470,7 @@ parse_linktype:
         case 1:     goto parse_ethernet;
         case 12:
             switch (px[offset]>>4) {
-        case 4: goto parse_ipv4;
+                case 4: goto parse_ipv4;
                 case 6: goto parse_ipv6;
             }
             return false;

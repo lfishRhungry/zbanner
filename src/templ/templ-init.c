@@ -13,6 +13,7 @@
 #include "../util-out/logger.h"
 #include "../util-data/data-convert.h"
 #include "../massip/massip-cookie.h"
+#include "../massip/massip.h"
 #include "../util-misc/cross.h"
 #include "../util-misc/checksum.h"
 #include "../util-data/fine-malloc.h"
@@ -456,7 +457,7 @@ _template_init(
      * a partial checksum
      */
     switch (parsed.ip_protocol) {
-    case 1: /* ICMP */
+    case IP_PROTO_ICMP:
             tmpl->ipv4.offset_app   = tmpl->ipv4.length;
             tmpl->ipv4.checksum_tcp = checksum_icmp(tmpl->ipv4.packet,
                 tmpl->ipv4.offset_tcp, tmpl->ipv4.length-tmpl->ipv4.offset_tcp);
@@ -473,7 +474,7 @@ _template_init(
             }
             break;
         break;
-    case 6: /* TCP */
+    case IP_PROTO_TCP:
         /* zero out fields that'll be overwritten */
         memset(px + tmpl->ipv4.offset_tcp +  0, 0, 8); /* destination port and seqno */
         memset(px + tmpl->ipv4.offset_tcp + 16, 0, 2); /* checksum */
@@ -481,14 +482,14 @@ _template_init(
             tmpl->ipv4.offset_tcp, tmpl->ipv4.length-tmpl->ipv4.offset_tcp);
         tmpl->proto = Tmpl_Type_TCP;
         break;
-    case 17: /* UDP */
+    case IP_PROTO_UDP:
         memset(px + tmpl->ipv4.offset_tcp + 6, 0, 2); /* checksum */
         tmpl->ipv4.checksum_tcp = checksum_udp(tmpl->ipv4.packet,
             tmpl->ipv4.offset_ip, tmpl->ipv4.offset_tcp,
             tmpl->ipv4.length-tmpl->ipv4.offset_tcp);
         tmpl->proto = Tmpl_Type_UDP;
         break;
-    case 132: /* SCTP */
+    case IP_PROTO_SCTP:
         tmpl->ipv4.checksum_tcp = checksum_sctp(
                                     tmpl->ipv4.packet + tmpl->ipv4.offset_tcp,
                                     tmpl->ipv4.length - tmpl->ipv4.offset_tcp);
