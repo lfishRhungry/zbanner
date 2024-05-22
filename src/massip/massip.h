@@ -47,10 +47,17 @@ struct MassIP {
 #define IP_PROTO_IPv6_Route       43
 #define IP_PROTO_IPv6_Frag        44
 #define IP_PROTO_IDRP             45
+#define IP_PROTO_GRE              47
+#define IP_PROTO_MHRP             48
+#define IP_PROTO_ESP              50
+#define IP_PROTO_AH               51
 #define IP_PROTO_MOBILE           55
 #define IP_PROTO_IPv6_ICMP        58
 #define IP_PROTO_IPv6_NoNxt       59
 #define IP_PROTO_IPv6_Opts        60
+#define IP_PROTO_IPIP             94
+#define IP_PROTO_ETHERIP          97
+#define IP_PROTO_ENCAP            98
 #define IP_PROTO_L2TP            115
 #define IP_PROTO_SCTP            132
 #define IP_PROTO_Other            ~0
