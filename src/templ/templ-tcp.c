@@ -1165,12 +1165,12 @@ tcp_create_by_template(
     uint64_t xsum;
   
     if (ip_them.version == 4) {
-        unsigned ip_id = ip_them.ipv4 ^ port_them ^ seqno;
-        unsigned offset_ip = tmpl->ipv4.offset_ip;
-        unsigned offset_tcp = tmpl->ipv4. offset_tcp;
+        unsigned ip_id          = ip_them.ipv4 ^ port_them ^ seqno;
+        unsigned offset_ip      = tmpl->ipv4.offset_ip;
+        unsigned offset_tcp     = tmpl->ipv4. offset_tcp;
         unsigned offset_payload = offset_tcp + ((tmpl->ipv4.packet[offset_tcp+12]&0xF0)>>2);
-        size_t new_length = offset_payload + payload_length;
-        size_t ip_len = (offset_payload - offset_ip) + payload_length;
+        size_t new_length       = offset_payload + payload_length;
+        size_t ip_len           = (offset_payload - offset_ip) + payload_length;
         unsigned old_len;
 
         if (new_length > px_length) {
@@ -1279,7 +1279,8 @@ tcp_create_by_template(
         px[offset_tcp+16] = (unsigned char)(0 >>  8);
         px[offset_tcp+17] = (unsigned char)(0 >>  0);
 
-        xsum = checksum_ipv6(px + offset_ip + 8, px + offset_ip + 24, 6, (offset_app - offset_tcp) + payload_length, px + offset_tcp);
+        xsum = checksum_ipv6(px + offset_ip + 8, px + offset_ip + 24, 6,
+            (offset_app - offset_tcp) + payload_length, px + offset_tcp);
         U16_TO_BE(px+offset_tcp+16, xsum);
 
         return offset_app + payload_length;

@@ -117,7 +117,8 @@ checksum_ipv4(unsigned ip_src, unsigned ip_dst,
 }
 
 unsigned 
-checksum_ipv6(const unsigned char *ip_src, const unsigned char *ip_dst, unsigned ip_proto, size_t payload_length, const void *payload)
+checksum_ipv6(const unsigned char *ip_src, const unsigned char *ip_dst,
+    unsigned ip_proto, size_t payload_length, const void *payload)
 {
     const unsigned char *buf = (const unsigned char *)payload;
     unsigned sum;
