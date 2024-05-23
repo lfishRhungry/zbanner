@@ -37,6 +37,22 @@ add_executable(${exe_name})
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS src/*.c src/*.h)
 target_sources(${exe_name} PUBLIC ${sources})
 
+# Unix--------------------math(libm) libdl pthread
+if (UNIX)
+    target_link_libraries(${exe_name} m)
+    target_link_libraries(${exe_name} ${CMAKE_DL_LIBS})
+    # target_link_libraries(${exe_name} rt)
+    find_package(Threads REQUIRED)
+    target_link_libraries(${exe_name} Threads::Threads)
+endif ()
+
+
+# Windows--------------------WSock iphlpAPI
+if (WIN32)
+    target_link_libraries(${exe_name} wsock32 ws2_32)
+    target_link_libraries(${exe_name} IPHLPAPI.lib)
+endif ()
+
 
 # --------------------openssl
 if (${WITH_OPENSSL})
@@ -87,20 +103,3 @@ endif ()
 # --------------------fann
 # find_package(fann REQUIRED)
 # target_link_libraries(${exe_name} fann)
-
-
-# math(libm) libdl pthread
-if (UNIX)
-    target_link_libraries(${exe_name} m)
-    target_link_libraries(${exe_name} ${CMAKE_DL_LIBS})
-    # target_link_libraries(${exe_name} rt)
-    find_package(Threads REQUIRED)
-    target_link_libraries(${exe_name} Threads::Threads)
-endif ()
-
-
-# for functions of socket and adapter
-if (WIN32)
-    target_link_libraries(${exe_name} wsock32 ws2_32)
-    target_link_libraries(${exe_name} IPHLPAPI.lib)
-endif ()
