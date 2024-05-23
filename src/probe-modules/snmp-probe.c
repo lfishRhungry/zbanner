@@ -57,7 +57,6 @@ static struct SnmpOid {
     const char *oid;
     const char *name;
 } mib[] = {
-    {"43.1006.51.341332",       "selftest"}, /* for regression test */
     {"43",                      "iso.org"},
     {"43.6",                    "dod"},
     {"43.6.1",                  "inet"},
