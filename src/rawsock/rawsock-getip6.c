@@ -66,7 +66,7 @@ rawsock_get_adapter_ipv6(const char *ifname)
 
         addr = ipv6address_from_bytes((const unsigned char *)&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr);
         
-        /*comment this filter to support NAT6 scenario*/
+        /*comment this filter to support local and NAT6 scenario*/
         // if (addr.hi>>56ULL >= 0xFC)
         //     continue;
 
