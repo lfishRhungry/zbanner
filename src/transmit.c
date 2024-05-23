@@ -34,18 +34,15 @@ static void
 adapter_get_source_addresses(const struct Xconf *xconf, struct source_t *src)
 {
     const struct stack_src_t *ifsrc = &xconf->nic.src;
-    static ipv6address mask = {~0ULL, ~0ULL};
 
-    src->ipv4 = ifsrc->ipv4.first;
+    src->ipv4      = ifsrc->ipv4.first;
     src->ipv4_mask = ifsrc->ipv4.last - ifsrc->ipv4.first;
 
-    src->port = ifsrc->port.first;
+    src->ipv6      = ifsrc->ipv6.first;
+    src->ipv6_mask = ifsrc->ipv6.last.lo - ifsrc->ipv6.first.lo;
+
+    src->port      = ifsrc->port.first;
     src->port_mask = ifsrc->port.last - ifsrc->port.first;
-
-    src->ipv6 = ifsrc->ipv6.first;
-
-    /* TODO: currently supports only a single address */
-    src->ipv6_mask = mask;
 }
 
 void transmit_thread(void *v)
@@ -119,6 +116,7 @@ infinite:;
     LOG(LEVEL_DEBUG, "THREAD: xmit: starting main loop: [%llu..%llu]\n", start, end);
 
     uint64_t i;
+    uint64_t ck;
     unsigned more_idx = 0;
     for (i = start; i < end;) {
 
@@ -140,34 +138,52 @@ infinite:;
 
             struct ScanTarget target = {.index = more_idx};
 
+            /**
+             * Pick up target & source
+            */
             if (xXx < range_ipv6) {
                 target.ip_them.version = 6;
-                target.ip_me.version = 6;
+                target.ip_me.version   = 6;
+
                 target.ip_them.ipv6 =
                     range6list_pick(&xconf->targets.ipv6, xXx % count_ipv6);
                 target.port_them =
                     rangelist_pick(&xconf->targets.ports, xXx / count_ipv6);
+
                 target.ip_me.ipv6 = src.ipv6;
+
+                if (src.ipv6_mask > 1 || src.port_mask > 1) {
+                    ck = get_cookie_ipv4(
+                        (unsigned)( i + parms->my_repeat),
+                        (unsigned)((i + parms->my_repeat) >> 32),
+                        (unsigned)xXx, (unsigned)(xXx >> 32), dynamic_seed);
+                    target.port_me        = src.port + (ck & src.port_mask);
+                    target.ip_me.ipv6.lo += (ck & src.ipv6_mask);
+                } else {
+                    target.port_me    = src.port;
+                }
             } else {
                 xXx -= range_ipv6;
 
                 target.ip_them.version = 4;
-                target.ip_me.version = 4;
+                target.ip_me.version   = 4;
+
                 target.ip_them.ipv4 =
                     rangelist_pick(&xconf->targets.ipv4, xXx % count_ipv4);
                 target.port_them =
                     rangelist_pick(&xconf->targets.ports, xXx / count_ipv4);
-                target.ip_me.ipv4 = src.ipv4;
-            }
 
-            if (src.port_mask > 1) {
-                uint64_t ck = get_cookie_ipv4(
-                    (unsigned)(i + parms->my_repeat),
-                    (unsigned)((i + parms->my_repeat) >> 32),
-                    (unsigned)xXx, (unsigned)(xXx >> 32), dynamic_seed);
-                target.port_me = src.port + (ck & src.port_mask);
-            } else {
-                target.port_me = src.port;
+                if (src.ipv4_mask > 1 || src.port_mask > 1) {
+                    ck = get_cookie_ipv4(
+                        (unsigned)( i + parms->my_repeat),
+                        (unsigned)((i + parms->my_repeat) >> 32),
+                        (unsigned)xXx, (unsigned)(xXx >> 32), dynamic_seed);
+                    target.port_me    = src.port + (ck & src.port_mask);
+                    target.ip_me.ipv4 = src.ipv4 + ((ck>>16) & src.ipv4_mask);
+                } else {
+                    target.port_me    = src.port;
+                    target.ip_me.ipv4 = src.ipv4;
+                }
             }
 
             /**

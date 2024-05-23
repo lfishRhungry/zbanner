@@ -964,14 +964,24 @@ static enum Config_Res SET_source_ip(void *conf, const char *name, const char *v
                 return CONF_ERR;
             }
             xconf->nic.src.ipv4.first = range.begin;
-            xconf->nic.src.ipv4.last = range.end;
-            // xconf->nic.src.ipv4.range = range.end - range.begin + 1;
-            xconf->nic.src.ipv4.range = 1; /*Just need one source ip now*/
+            xconf->nic.src.ipv4.last  = range.end;
+            xconf->nic.src.ipv4.range = range.end - range.begin + 1;
             break;
         case Ipv6_Address:
+            if (range6.begin.hi!=range6.end.hi) {
+                LOG(LEVEL_ERROR, "FAIL: range of ipv6 source addresses is too large.\n");
+                return CONF_ERR;
+            }
+            /* If more than one IP address given, make the range is
+                * an even power of two (1, 2, 4, 8, 16, ...) */
+            if (!is_power_of_two(range6.end.lo - range6.begin.lo + 1)) {
+                LOG(LEVEL_ERROR, "FAIL: range must be even power of two: %s=%s\n",
+                    name, value);
+                return CONF_ERR;
+            }
             xconf->nic.src.ipv6.first = range6.begin;
-            xconf->nic.src.ipv6.last = range6.end;
-            xconf->nic.src.ipv6.range = 1; /* TODO: add support for more than one source */
+            xconf->nic.src.ipv6.last  = range6.end;
+            xconf->nic.src.ipv6.range = range6.end.lo - range6.begin.lo + 1;
             break;
         default:
             LOG(LEVEL_ERROR, "FAIL: bad source IP address: %s=%s\n",

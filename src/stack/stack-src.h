@@ -18,11 +18,11 @@ struct stack_src_t
         unsigned last;
         unsigned range;
     } port;
- 
+
     struct {
         ipv6address first;
         ipv6address last;
-        unsigned range;
+        uint64_t    range;
     } ipv6;
 };
 

@@ -68,7 +68,7 @@ struct source_t {
     unsigned         port;
     unsigned         port_mask;
     ipv6address      ipv6;
-    ipv6address      ipv6_mask;
+    uint64_t         ipv6_mask;
 };
 
 

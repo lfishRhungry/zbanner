@@ -9,9 +9,12 @@ bool is_my_ip(const struct stack_src_t *src, ipaddress ip)
 {
     switch (ip.version) {
     case 4:
-        return src->ipv4.first <= ip.ipv4 && ip.ipv4 <= src->ipv4.last;
+        return src->ipv4.first <= ip.ipv4
+            && ip.ipv4 <= src->ipv4.last;
     case 6:
-        return src->ipv6.first.hi == ip.ipv6.hi && src->ipv6.first.lo == ip.ipv6.lo;
+        return src->ipv6.first.hi == ip.ipv6.hi
+            && src->ipv6.first.lo <= ip.ipv6.lo
+            && ip.ipv6.lo <= src->ipv6.last.lo;
     default:
         return false;
     }
