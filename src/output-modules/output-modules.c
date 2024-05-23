@@ -142,13 +142,8 @@ output_init(struct Output *out)
 
 /*Some special processes should be done when output to stdout for avoiding mess*/
 static void
-output_result_to_stdout(const struct Output *out, struct OutputItem *item)
+output_result_to_stdout(struct OutputItem *item)
 {
-    if (item->level==Output_INFO && !out->is_show_info)
-        return;
-    if (item->level==Output_FAILURE && !out->is_show_failed)
-        return;
-
     // ipaddress_formatted_t ip_me_fmt = ipaddress_fmt(item->ip_me);
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->ip_them);
 
@@ -226,18 +221,25 @@ output_result(const struct Output *out, struct OutputItem *item)
         pixie_release_mutex(out->info_mutex);
     }
 
+    if (item->level==Output_INFO && !out->is_show_info)
+        return;
+    if (item->level==Output_FAILURE && !out->is_show_failed)
+        return;
+    if (item->level==Output_SUCCESS && out->no_show_success)
+        return;
+
     if (out->output_module) {
         pixie_acquire_mutex(out->module_mutex);
-        out->output_module->result_cb(out, item);
+        out->output_module->result_cb(item);
         pixie_release_mutex(out->module_mutex);
         if (out->is_interactive) {
             pixie_acquire_mutex(out->stdout_mutex);
-            output_result_to_stdout(out, item);
+            output_result_to_stdout(item);
             pixie_release_mutex(out->stdout_mutex);
         }
     } else {
         pixie_acquire_mutex(out->stdout_mutex);
-        output_result_to_stdout(out, item);
+        output_result_to_stdout(item);
         pixie_release_mutex(out->stdout_mutex);
     }
 
@@ -263,6 +265,6 @@ bool output_init_nothing(const struct Output *out)
     return true;
 }
 
-void output_result_nothing(const struct Output *out, struct OutputItem *item) {}
+void output_result_nothing(struct OutputItem *item) {}
 
 void output_close_nothing(const struct Output *out) {}

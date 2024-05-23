@@ -79,6 +79,7 @@ struct Output {
     unsigned                     is_interactive:1;
     unsigned                     is_show_failed:1;
     unsigned                     is_show_info:1;
+    unsigned                     no_show_success:1;
 };
 
 /**
@@ -91,7 +92,7 @@ typedef bool
  * Output one result
 */
 typedef void
-(*output_modules_result)(const struct Output *out, struct OutputItem *item);
+(*output_modules_result)(struct OutputItem *item);
 
 /**
  * Do close for outputing
@@ -137,7 +138,7 @@ Some useful implemented interfaces
 
 bool output_init_nothing(const struct Output *out);
 
-void output_result_nothing(const struct Output *out, struct OutputItem *item);
+void output_result_nothing(struct OutputItem *item);
 
 void output_close_nothing(const struct Output *out);
 

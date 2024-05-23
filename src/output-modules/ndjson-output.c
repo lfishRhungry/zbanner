@@ -56,13 +56,8 @@ ndjson_init(const struct Output *out)
 }
 
 static void
-ndjson_result(const struct Output *out, struct OutputItem *item)
+ndjson_result(struct OutputItem *item)
 {
-    if (item->level==Output_INFO && !out->is_show_info)
-        return;
-    if (item->level==Output_FAILURE && !out->is_show_failed)
-        return;
-    
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->ip_them);
     ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(item->ip_me);
 

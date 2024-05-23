@@ -434,6 +434,9 @@ static enum Config_Res SET_show_output(void *conf, const char *name, const char 
         if (xconf->out.is_show_info){
             fprintf(xconf->echo, "show-output = info\n");
         }
+        if (xconf->out.no_show_success){
+            fprintf(xconf->echo, "no-show-output = success\n");
+        }
         return 0;
     }
 
@@ -442,6 +445,31 @@ static enum Config_Res SET_show_output(void *conf, const char *name, const char 
         xconf->out.is_show_failed = true;
     } else if (EQUALS("info",value)||EQUALS("information",value)) {
         xconf->out.is_show_info = true;
+    } else if (EQUALS("success",value)) {
+        xconf->out.no_show_success = false;
+    } else {
+        LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
+        return CONF_ERR;
+    }
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_no_show_output(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    if (xconf->echo) {
+        /*echo in SET_show_output*/
+        return 0;
+    }
+
+
+    if (EQUALS("failed",value)||EQUALS("fail",value)) {
+        xconf->out.is_show_failed = false;
+    } else if (EQUALS("info",value)||EQUALS("information",value)) {
+        xconf->out.is_show_info = false;
+    } else if (EQUALS("success",value)) {
+        xconf->out.no_show_success = true;
     } else {
         LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
         return CONF_ERR;
@@ -2769,8 +2797,15 @@ struct ConfigParam config_parameters[] = {
         F_NONE,
         {"show-out", "show", 0},
         "Tells which type of results should be showed explicitly, such as:\n"
-        "'failed' for those ports that respond with a RST on TCP.\n"
-        "'info' for type of information or hint."
+        "'success', 'failed' or 'info'."
+    },
+    {
+        "no-show-output",
+        SET_no_show_output,
+        F_NONE,
+        {"no-show-out", "no-show", 0},
+        "Tells which type of results should not be showed explicitly, such as:\n"
+        "'success', 'failed' or 'info'."
     },
 
     {"XTATUS:", SET_nothing, 0, {0}, NULL},

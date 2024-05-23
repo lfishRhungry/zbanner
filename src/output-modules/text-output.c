@@ -33,13 +33,8 @@ text_init(const struct Output *out)
 }
 
 static void
-text_result(const struct Output *out, struct OutputItem *item)
+text_result(struct OutputItem *item)
 {
-    if (item->level==Output_INFO && !out->is_show_info)
-        return;
-    if (item->level==Output_FAILURE && !out->is_show_failed)
-        return;
-    
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->ip_them);
 
     int err = 0;
