@@ -96,7 +96,7 @@ initialize_adapter(struct Xconf *xconf)
                 return -1;
             }
         }
-        
+
         fmt = macaddress_fmt(xconf->nic.source_mac);
         LOG(LEVEL_WARNING, "[+] source-mac = %s\n", fmt.string);
     }
@@ -125,10 +125,10 @@ initialize_adapter(struct Xconf *xconf)
                 return -1;
             }
         }
-        
+
         fmt = ipv4address_fmt(adapter_ip);
         LOG(LEVEL_WARNING, "[+] source-ip = %s\n", fmt.string);
-        
+
         if (adapter_ip != 0)
             is_usable_ipv4 = 1;
         
@@ -178,7 +178,7 @@ initialize_adapter(struct Xconf *xconf)
             }
         }
     }
-        
+
 
     /*
      * IPv6 ADDRESS
@@ -219,7 +219,7 @@ initialize_adapter(struct Xconf *xconf)
                     xconf->nic.source_mac,
                     &xconf->nic.router_mac_ipv6);
         }
-        
+
         fmt = macaddress_fmt(xconf->nic.router_mac_ipv6);
         LOG(LEVEL_WARNING, "[+] router-mac-ipv6 = %s\n", fmt.string);
         if (macaddress_is_zero(xconf->nic.router_mac_ipv6)) {
