@@ -588,7 +588,7 @@ tlsstate_global_init(const struct Xconf *xconf)
     }
 
     /*save `out`*/
-    tls_out = &xconf->output;
+    tls_out = &xconf->out;
 
     const SSL_METHOD *meth;
     SSL_CTX *ctx;

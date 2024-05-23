@@ -97,58 +97,56 @@ void list_all_output_modules()
 
 
 
-static const char fmt_host[]   = "%s host: %-15s";
-static const char fmt_port[]   = " port: %-5u";
-static const char fmt_cls []   = " \"%s\"";
-static const char fmt_reason[] = " because \"%s\"";
+static const char fmt_host[]       = "%s host: %-15s";
+static const char fmt_port[]       = " port: %-5u";
+static const char fmt_cls []       = " \"%s\"";
+static const char fmt_reason[]     = " because \"%s\"";
 static const char fmt_report_str[] = ",  "XPRINT_CH_COLOR_YELLOW"%s: \"%s\"";
 static const char fmt_report_num[] = ",  "XPRINT_CH_COLOR_YELLOW"%s: %s";
 
 bool
-output_init(struct Output *output)
+output_init(struct Output *out)
 {
-    if (output->output_module) {
+    if (out->output_module) {
 
-        if (output->output_module->need_file && !output->output_filename[0]) {
+        if (out->output_module->need_file && !out->output_filename[0]) {
             LOG(LEVEL_ERROR,
                 "[-] OutputModule %s need to specify output file name by `--output-file`.\n",
-                output->output_module->name);
+                out->output_module->name);
             return false;
         }
 
-        if (output->output_module->params) {
+        if (out->output_module->params) {
             if (set_parameters_from_substring(NULL,
-                output->output_module->params, output->output_args)) {
+                out->output_module->params, out->output_args)) {
                 LOG(LEVEL_ERROR, "FAIL: errors happened in sub param parsing of OutputModule.\n");
                 return false;
             }
         }
 
-        if (!output->output_module->init_cb(output)) {
+        if (!out->output_module->init_cb(out)) {
             LOG(LEVEL_ERROR, "[-] FAIL: errors happened in %s initing.\n",
-                output->output_module->name);
+                out->output_module->name);
             return false;
         }
     }
 
-    output->stdout_mutex = pixie_create_mutex();
-    output->module_mutex = pixie_create_mutex();
-    output->succ_mutex   = pixie_create_mutex();
-    output->fail_mutex   = pixie_create_mutex();
-    output->info_mutex   = pixie_create_mutex();
+    out->stdout_mutex = pixie_create_mutex();
+    out->module_mutex = pixie_create_mutex();
+    out->succ_mutex   = pixie_create_mutex();
+    out->fail_mutex   = pixie_create_mutex();
+    out->info_mutex   = pixie_create_mutex();
 
     return true;
 }
 
 /*Some special processes should be done when output to stdout for avoiding mess*/
 static void
-output_result_to_stdout(
-    const struct Output *output,
-    struct OutputItem *item)
+output_result_to_stdout(const struct Output *out, struct OutputItem *item)
 {
-    if (item->level==Output_INFO && !output->is_show_info)
+    if (item->level==Output_INFO && !out->is_show_info)
         return;
-    if (item->level==Output_FAILURE && !output->is_show_failed)
+    if (item->level==Output_FAILURE && !out->is_show_failed)
         return;
 
     // ipaddress_formatted_t ip_me_fmt = ipaddress_fmt(item->ip_me);
@@ -202,9 +200,7 @@ output_result_to_stdout(
 }
 
 void
-output_result(
-    const struct Output *output,
-    struct OutputItem *item)
+output_result(const struct Output *out, struct OutputItem *item)
 {
     if (item->no_output)
         return;
@@ -213,56 +209,56 @@ output_result(
         ((struct OutputItem *)item)->timestamp = global_now;
 
     if (item->level==Output_SUCCESS) {
-        pixie_acquire_mutex(output->succ_mutex);
-        ((struct Output *)output)->total_successed++;
-        pixie_release_mutex(output->succ_mutex);
+        pixie_acquire_mutex(out->succ_mutex);
+        ((struct Output *)out)->total_successed++;
+        pixie_release_mutex(out->succ_mutex);
     }
 
     if (item->level==Output_FAILURE) {
-        pixie_acquire_mutex(output->fail_mutex);
-        ((struct Output *)output)->total_failed++;
-        pixie_release_mutex(output->fail_mutex);
+        pixie_acquire_mutex(out->fail_mutex);
+        ((struct Output *)out)->total_failed++;
+        pixie_release_mutex(out->fail_mutex);
     }
 
     if (item->level==Output_INFO) {
-        pixie_acquire_mutex(output->info_mutex);
-        ((struct Output *)output)->total_info++;
-        pixie_release_mutex(output->info_mutex);
+        pixie_acquire_mutex(out->info_mutex);
+        ((struct Output *)out)->total_info++;
+        pixie_release_mutex(out->info_mutex);
     }
 
-    if (output->output_module) {
-        pixie_acquire_mutex(output->module_mutex);
-        output->output_module->result_cb(output, item);
-        pixie_release_mutex(output->module_mutex);
-        if (output->is_interactive) {
-            pixie_acquire_mutex(output->stdout_mutex);
-            output_result_to_stdout(output, item);
-            pixie_release_mutex(output->stdout_mutex);
+    if (out->output_module) {
+        pixie_acquire_mutex(out->module_mutex);
+        out->output_module->result_cb(out, item);
+        pixie_release_mutex(out->module_mutex);
+        if (out->is_interactive) {
+            pixie_acquire_mutex(out->stdout_mutex);
+            output_result_to_stdout(out, item);
+            pixie_release_mutex(out->stdout_mutex);
         }
     } else {
-        pixie_acquire_mutex(output->stdout_mutex);
-        output_result_to_stdout(output, item);
-        pixie_release_mutex(output->stdout_mutex);
+        pixie_acquire_mutex(out->stdout_mutex);
+        output_result_to_stdout(out, item);
+        pixie_release_mutex(out->stdout_mutex);
     }
 
     dach_release(&item->report);
 }
 
 void
-output_close(struct Output *output)
+output_close(struct Output *out)
 {
-    if (output->output_module) {
-        output->output_module->close_cb(output);
+    if (out->output_module) {
+        out->output_module->close_cb(out);
     }
 
-    pixie_delete_mutex(output->stdout_mutex);
-    pixie_delete_mutex(output->module_mutex);
-    pixie_delete_mutex(output->succ_mutex);
-    pixie_delete_mutex(output->fail_mutex);
-    pixie_delete_mutex(output->info_mutex);
+    pixie_delete_mutex(out->stdout_mutex);
+    pixie_delete_mutex(out->module_mutex);
+    pixie_delete_mutex(out->succ_mutex);
+    pixie_delete_mutex(out->fail_mutex);
+    pixie_delete_mutex(out->info_mutex);
 }
 
-bool output_init_nothing(const struct Output *output)
+bool output_init_nothing(const struct Output *out)
 {
     return true;
 }

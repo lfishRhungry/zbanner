@@ -181,7 +181,7 @@ static bool tcpstate_global_init(const struct Xconf *xconf)
             &global_tmplset->pkts[Tmpl_Type_TCP],
             &global_tmplset->pkts[Tmpl_Type_TCP_SYN],
             &global_tmplset->pkts[Tmpl_Type_TCP_RST],
-            (struct Output *)(&xconf->output),
+            (struct Output *)(&xconf->out),
             tcpstate_conf.conn_expire, xconf->seed);
     }
  

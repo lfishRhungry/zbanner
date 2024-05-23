@@ -268,7 +268,7 @@ static int main_scan(struct Xconf *xconf) {
     /*
      * Do init for OutputModule
      */
-    if (!output_init(&xconf->output)) {
+    if (!output_init(&xconf->out)) {
         LOG(LEVEL_ERROR, "FAIL: errors in OutputModule initializing\n");
         exit(1);
     }
@@ -328,8 +328,8 @@ static int main_scan(struct Xconf *xconf) {
     LOG(LEVEL_HINT, "ScanModule  : %s\n", xconf->scan_module->name);
     if (xconf->probe_module)
         LOG(LEVEL_HINT, "ProbeModule : %s\n", xconf->probe_module->name);
-    if (xconf->output.output_module)
-        LOG(LEVEL_HINT, "OutputModule: %s\n", xconf->output.output_module->name);
+    if (xconf->out.output_module)
+        LOG(LEVEL_HINT, "OutputModule: %s\n", xconf->out.output_module->name);
 
     LOG(LEVEL_HINT, "Scanning %u hosts [%u port%s/host]\n\n", (unsigned)count_ips,
         (unsigned)count_ports, (count_ports == 1) ? "" : "s");
@@ -391,9 +391,9 @@ static int main_scan(struct Xconf *xconf) {
                 total_sent += *parms->total_sent;
         }
 
-        total_successed = xconf->output.total_successed;
-        total_failed    = xconf->output.total_failed;
-        total_info      = xconf->output.total_info;
+        total_successed = xconf->out.total_successed;
+        total_failed    = xconf->out.total_failed;
+        total_info      = xconf->out.total_info;
         total_tm_event  = rx_thread->total_tm_event;
 
         if (rx_thread->dispatch_q && rx_thread->handle_q) {
@@ -484,9 +484,9 @@ static int main_scan(struct Xconf *xconf) {
                 total_sent += *parms->total_sent;
         }
 
-        total_successed = xconf->output.total_successed;
-        total_failed    = xconf->output.total_failed;
-        total_info      = xconf->output.total_info;
+        total_successed = xconf->out.total_successed;
+        total_failed    = xconf->out.total_failed;
+        total_info      = xconf->out.total_info;
         total_tm_event  = rx_thread->total_tm_event;
         
         if (rx_thread->dispatch_q && rx_thread->handle_q) {
@@ -549,7 +549,7 @@ static int main_scan(struct Xconf *xconf) {
         xconf->probe_module->close_cb();
     }
 
-    output_close(&xconf->output);
+    output_close(&xconf->out);
 
     free(tx_thread);
 

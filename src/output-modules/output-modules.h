@@ -114,19 +114,17 @@ output_level_to_string(enum OutputLevel level);
 
 /*prepare for outputing results*/
 bool
-output_init(struct Output *output);
+output_init(struct Output *out);
 
 /**
  * output a result within item and release datachain(report) in it.
 */
 void
-output_result(
-    const struct Output *output,
-    struct OutputItem *item);
+output_result(const struct Output *out, struct OutputItem *item);
 
 /*destroy resources of output*/
 void
-output_close(struct Output *output);
+output_close(struct Output *out);
 
 struct OutputModule *
 get_output_module_by_name(const char *name);
@@ -137,7 +135,7 @@ void list_all_output_modules();
 Some useful implemented interfaces
 ************************************************************************/
 
-bool output_init_nothing(const struct Output *output);
+bool output_init_nothing(const struct Output *out);
 
 void output_result_nothing(const struct Output *out, struct OutputItem *item);
 

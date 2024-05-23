@@ -149,7 +149,7 @@ handle_thread(void *v)
 void receive_thread(void *v) {
     struct RxThread               *parms                       = (struct RxThread *)v;
     const struct Xconf            *xconf                       = parms->xconf;
-    struct Output                 *output                      = (struct Output *)(&xconf->output);
+    struct Output                 *out                         = (struct Output *)(&xconf->out);
     struct Adapter                *adapter                     = xconf->nic.adapter;
     int                            data_link                   = stack_if_datalink(adapter);
     uint64_t                       entropy                     = xconf->seed;
@@ -226,7 +226,7 @@ void receive_thread(void *v) {
         handle_parms[i].scan_module     = xconf->scan_module;
         handle_parms[i].handle_queue    = handle_q[i];
         handle_parms[i].stack           = stack;
-        handle_parms[i].out             = output;
+        handle_parms[i].out             = out;
         handle_parms[i].entropy         = entropy;
         handle_parms[i].index           = i;
 
@@ -259,7 +259,7 @@ void receive_thread(void *v) {
                     scan_module->timeout_cb(entropy, tm_event, &item,
                         stack, ft_handler);
 
-                    output_result(output, &item);
+                    output_result(out, &item);
 
                 }
                 free(tm_event);

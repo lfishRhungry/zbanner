@@ -3,11 +3,11 @@
 #include "../util-out/logger.h"
 #include "../pixie/pixie-file.h"
 
-static const char fmt_host[]   = "%s host: %s";
-static const char fmt_port[]   = " port: %u";
-static const char fmt_proto[]   = " in %s";
-static const char fmt_cls []   = " is \"%s\"";
-static const char fmt_reason[] = " because \"%s\"";
+static const char fmt_host[]       = "%s host: %s";
+static const char fmt_port[]       = " port: %u";
+static const char fmt_proto[]      = " in %s";
+static const char fmt_cls []       = " is \"%s\"";
+static const char fmt_reason[]     = " because \"%s\"";
 static const char fmt_report_str[] = ",  %s: \"%s\"";
 static const char fmt_report_num[] = ",  %s: %s";
 

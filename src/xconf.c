@@ -392,14 +392,14 @@ static enum Config_Res SET_output_module(void *conf, const char *name, const cha
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
-        if (xconf->output.output_module){
-            fprintf(xconf->echo, "output-module = %s\n", xconf->output.output_module->name);
+        if (xconf->out.output_module){
+            fprintf(xconf->echo, "output-module = %s\n", xconf->out.output_module->name);
         }
         return 0;
     }
 
-    xconf->output.output_module = get_output_module_by_name(value);
-    if(!xconf->output.output_module){
+    xconf->out.output_module = get_output_module_by_name(value);
+    if(!xconf->out.output_module){
         LOG(LEVEL_ERROR, "FAIL %s: no such output module\n", value);
         return CONF_ERR;
     }
@@ -411,15 +411,15 @@ static enum Config_Res SET_output_filename(void *conf, const char *name, const c
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
-        if (xconf->output.output_filename[0]){
+        if (xconf->out.output_filename[0]){
             fprintf(xconf->echo, "output-file = %s\n",
-                xconf->output.output_filename);
+                xconf->out.output_filename);
         }
         return 0;
     }
 
-    safe_strcpy(xconf->output.output_filename,
-        sizeof(xconf->output.output_filename), value);
+    safe_strcpy(xconf->out.output_filename,
+        sizeof(xconf->out.output_filename), value);
 
     return CONF_OK;
 }
@@ -428,20 +428,20 @@ static enum Config_Res SET_show_output(void *conf, const char *name, const char 
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
-        if (xconf->output.is_show_failed){
+        if (xconf->out.is_show_failed){
             fprintf(xconf->echo, "show-output = failed\n");
         }
-        if (xconf->output.is_show_info){
+        if (xconf->out.is_show_info){
             fprintf(xconf->echo, "show-output = info\n");
         }
         return 0;
     }
 
-    
+
     if (EQUALS("failed",value)||EQUALS("fail",value)) {
-        xconf->output.is_show_failed = true;
+        xconf->out.is_show_failed = true;
     } else if (EQUALS("info",value)||EQUALS("information",value)) {
-        xconf->output.is_show_info = true;
+        xconf->out.is_show_info = true;
     } else {
         LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
         return CONF_ERR;
@@ -521,17 +521,17 @@ static enum Config_Res SET_output_module_args(void *conf, const char *name, cons
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->output.output_args){
-            fprintf(xconf->echo, "output-module-args = %s\n", xconf->output.output_args);
+        if (xconf->out.output_args){
+            fprintf(xconf->echo, "output-module-args = %s\n", xconf->out.output_args);
         }
         return 0;
     }
 
     size_t len = strlen(value) + 1;
-    if (xconf->output.output_args)
-        free(xconf->output.output_args);
-    xconf->output.output_args = CALLOC(1, len);
-    memcpy(xconf->output.output_args, value, len);
+    if (xconf->out.output_args)
+        free(xconf->out.output_args);
+    xconf->out.output_args = CALLOC(1, len);
+    memcpy(xconf->out.output_args, value, len);
 
     return CONF_OK;
 }
@@ -1525,12 +1525,12 @@ static enum Config_Res SET_append(void *conf, const char *name, const char *valu
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->output.is_append || xconf->echo_all)
+        if (xconf->out.is_append || xconf->echo_all)
             fprintf(xconf->echo, "append-output = %s\n",
-                xconf->output.is_append?"true":"false");
+                xconf->out.is_append?"true":"false");
         return 0;
     }
-    xconf->output.is_append = parseBoolean(value);
+    xconf->out.is_append = parseBoolean(value);
     return CONF_OK;
 }
 
@@ -1540,12 +1540,12 @@ static enum Config_Res SET_interactive(void *conf, const char *name, const char 
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->output.is_interactive || xconf->echo_all)
+        if (xconf->out.is_interactive || xconf->echo_all)
             fprintf(xconf->echo, "interactive = %s\n",
-                xconf->output.is_interactive?"true":"false");
+                xconf->out.is_interactive?"true":"false");
         return 0;
     }
-    xconf->output.is_interactive = parseBoolean(value);
+    xconf->out.is_interactive = parseBoolean(value);
     return CONF_OK;
 }
 
