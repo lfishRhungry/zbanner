@@ -138,10 +138,6 @@ infinite:;
             }
             xXx = blackrock_shuffle(&blackrock, xXx);
 
-            /*
-             * figure out src/dst
-             */
-
             struct ScanTarget target = {.index = more_idx};
 
             if (xXx < range_ipv6) {
