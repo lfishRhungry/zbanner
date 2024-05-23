@@ -417,25 +417,17 @@ snmp_global_init(const struct Xconf *xconf)
     snmp_conf.global_mibs = MALLOC(sizeof(struct SMACK *) * xconf->rx_handler_count);
 
     for (unsigned i=0; i<snmp_conf.mib_count; i++) {
-        /* We use an Aho-Corasick pattern matcher for this. Not necessarily
-         * the most efficient, but also not bad */
         snmp_conf.global_mibs[i] = smack_create("snmp-mib", 0);
 
-        /* We just go through the table of OIDs and add them all one by
-         * one */
         for (unsigned j=0; mib[j].name; j++) {
             unsigned char pattern[256];
             unsigned len;
 
             len = convert_oid(pattern, sizeof(pattern), mib[j].oid);
-
             smack_add_pattern(snmp_conf.global_mibs[i], pattern, len, j,
                 SMACK_ANCHOR_BEGIN | SMACK_SNMP_HACK);
         }
 
-        /* Now that we've added all the OIDs, we need to compile this into
-         * an efficient data structure. Later, when we get packets, we'll
-         * use this for searching */
         smack_compile(snmp_conf.global_mibs[i]);
     }
 
