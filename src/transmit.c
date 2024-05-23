@@ -31,7 +31,7 @@
 #include "util-scan/throttle.h"
 
 static void
-adapter_get_source_addresses(const struct Xconf *xconf, struct source_t *src)
+_adapter_get_source_addresses(const struct Xconf *xconf, struct source_t *src)
 {
     const struct stack_src_t *ifsrc = &xconf->nic.src;
 
@@ -89,7 +89,7 @@ void transmit_thread(void *v)
     /* Normally, we have just one source address. In special cases, though
      * we can have multiple. */
     struct source_t src;
-    adapter_get_source_addresses(xconf, &src);
+    _adapter_get_source_addresses(xconf, &src);
 
     if (xconf->is_fast_timeout) {
         ft_handler = ft_get_handler(xconf->ft_table);
