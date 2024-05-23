@@ -13,6 +13,7 @@
 extern struct OutputModule TextOutput;
 extern struct OutputModule NdjsonOutput;
 extern struct OutputModule CsvOutput;
+extern struct OutputModule ListOutput;
 extern struct OutputModule NullOutput;
 //! REGIST YOUR OUTPUT MODULE HERE
 
@@ -20,6 +21,7 @@ static struct OutputModule *output_modules_list[] = {
     &TextOutput,
     &NdjsonOutput,
     &CsvOutput,
+    &ListOutput,
     &NullOutput,
     //! REGIST YOUR OUTPUT MODULE HERE
 };
