@@ -13,6 +13,6 @@ struct OutputModule NullOutput = {
     .init_cb            = &output_init_nothing,
     .result_cb          = &output_result_nothing,
     .close_cb           = &output_close_nothing,
-    .desc               =
+    .desc =
         "NullOutput doesn't save any results and is convenient for debugging. ",
 };

@@ -130,7 +130,7 @@ struct OutputModule CsvOutput = {
     .init_cb            = &csv_init,
     .result_cb          = &csv_result,
     .close_cb           = &csv_close,
-    .desc               =
+    .desc =
         "CsvOutput save results in Comma-Seperated Values(csv) format to "
         "specified file.\n"
         "NOTE: CsvOutput doesn't convert any escaped chars in result.",

@@ -105,6 +105,6 @@ struct OutputModule TextOutput = {
     .init_cb            = &text_init,
     .result_cb          = &text_result,
     .close_cb           = &text_close,
-    .desc               =
+    .desc =
         "TextOutput save results same as stdout to specified file without color.",
 };

@@ -66,7 +66,7 @@ struct OutputModule ListOutput = {
     .init_cb            = &list_init,
     .result_cb          = &list_result,
     .close_cb           = &list_close,
-    .desc               =
+    .desc =
         "ListOutput save results just in \"IP port\" format to specified file "
         "without any other information.",
 };

@@ -113,7 +113,7 @@ struct OutputModule NdjsonOutput = {
     .init_cb            = &ndjson_init,
     .result_cb          = &ndjson_result,
     .close_cb           = &ndjson_close,
-    .desc               =
+    .desc =
         "NdjsonOutput save results in newline-delimited json(ndjson) format to "
         "specified file.\n"
         "NOTE: NdjsonOutput doesn't convert any escaped chars from result string"
