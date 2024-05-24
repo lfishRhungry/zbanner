@@ -418,8 +418,8 @@ struct ScanModule TcpStateScan = {
     .bpf_filter          = "tcp",
     .params              = tcpstate_parameters,
     .desc =
-        "TcpStateScan tries to contruct TCP conn with target port with a user-space"
-        " light-weight TCP stack and do further scan. Used ProbeModule could do more things "
+        "TcpStateScan tries to contruct TCP conn with target port with a hybrid-state"
+        " lightweight TCP stack(HLTCP) and do further scan. It could do more things "
         "than ZBannerScan like grabbing complete webpage, further interacting with"
         " server and etc. But TcpStateScan consumes more resources because of the "
         "complex user-space TCP stack and stateful connections.\n"
