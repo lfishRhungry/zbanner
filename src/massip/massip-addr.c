@@ -15,14 +15,37 @@ typedef struct stream_t {
 
 /**
  * Append a character to the output string. All the other _append_xxx()
- * functions call this one, so this is the only one where a
- * buffer-overflow can occur.
+ * functions call _append_char or _append_str, so they must do buffer-overflow
+ * check.
  */
 static void
 _append_char(stream_t *out, char c)
 {
     if (out->offset < out->length)
         out->buf[out->offset++] = c;
+
+    /* keep the string nul terminated as we build it */
+    if (out->offset < out->length)
+        out->buf[out->offset] = '\0';
+}
+
+/**
+ * Append a c string to the output string. All the other _append_xxx()
+ * functions call _append_char or _append_str, so they must do buffer-overflow
+ * check.
+ */
+static void
+_append_str(stream_t *out, char *str)
+{
+    size_t len = strlen(str);
+
+    for (size_t i=0;i<len;i++) {
+        if (out->offset < out->length) {
+            out->buf[out->offset++] = str[i];
+        } else {
+            break;
+        }
+    }
 
     /* keep the string nul terminated as we build it */
     if (out->offset < out->length)
@@ -143,6 +166,7 @@ _append_decimal(stream_t *out, unsigned long long n)
     while (tmp_offset)
         _append_char(out, tmp[--tmp_offset]);
 }
+
 static void
 _append_hex2(stream_t *out, unsigned long long n)
 {
@@ -241,6 +265,98 @@ struct ipaddress_formatted ipaddress_fmt(ipaddress a)
     _append_decimal(&s, (ip >> 8) & 0xFF);
     _append_char(&s, '.');
     _append_decimal(&s, (ip >> 0) & 0xFF);
+
+    return out;
+}
+
+struct ipaddress_ptr ipv6address_ptr_fmt(ipv6address a)
+{
+    struct ipaddress_ptr out;
+    unsigned char tmp[16];
+    size_t i;
+    stream_t s;
+
+    /*
+     * Convert address into a sequence of bytes. Our code
+     * here represents an IPv6 address as two 64-bit numbers, but
+     * the formatting code above that we copied from a different
+     * project represents it as an array of bytes.
+     */
+    for (i=0; i<16; i++) {
+        uint64_t x;
+        if (i<8)
+            x = a.hi;
+        else
+            x = a.lo;
+        x >>= (7 - (i%8)) * 8;
+
+        tmp[i] = (unsigned char)(x & 0xFF);
+    }
+
+    s.buf = out.string;
+    s.offset = 0;
+    s.length = sizeof(out.string);
+
+    static const char hex[17] = "0123456789abcdef";
+
+    for (i=15;i>=0;i--) {
+        _append_char(&s, hex[(tmp[i]>>0)&0xF]);
+        _append_char(&s, '.');
+        _append_char(&s, hex[(tmp[i]>>4)&0xF]);
+        _append_char(&s, '.');
+    }
+
+    _append_str(&s, "ip6.arpa");
+
+    return out;
+}
+
+struct ipaddress_ptr ipv4address_ptr_fmt(ipv4address ip)
+{
+    struct ipaddress_ptr out;
+    stream_t s;
+
+    /* Call the formatting function */
+    s.buf = out.string;
+    s.offset = 0;
+    s.length = sizeof(out.string);
+
+    _append_decimal(&s, (ip >> 0) & 0xFF);
+    _append_char(&s, '.');
+    _append_decimal(&s, (ip >> 8) & 0xFF);
+    _append_char(&s, '.');
+    _append_decimal(&s, (ip >> 16) & 0xFF);
+    _append_char(&s, '.');
+    _append_decimal(&s, (ip >> 24) & 0xFF);
+    _append_str(&s, ".in-addr.arpa");
+
+    return out;
+}
+
+struct ipaddress_ptr ipaddress_ptr_fmt(ipaddress a)
+{
+    struct ipaddress_ptr out;
+    stream_t s;
+    ipv4address ip = a.ipv4;
+
+    if (a.version == 6) {
+        return ipv6address_ptr_fmt(a.ipv6);
+    }
+
+
+    /* Call the formatting function */
+    s.buf = out.string;
+    s.offset = 0;
+    s.length = sizeof(out.string);
+
+    _append_decimal(&s, (ip >> 0) & 0xFF);
+    _append_char(&s, '.');
+    _append_decimal(&s, (ip >> 8) & 0xFF);
+    _append_char(&s, '.');
+    _append_decimal(&s, (ip >> 16) & 0xFF);
+    _append_char(&s, '.');
+    _append_decimal(&s, (ip >> 24) & 0xFF);
+    _append_str(&s, ".in-addr.arpa");
 
     return out;
 }
