@@ -177,13 +177,6 @@ typedef struct ipaddress_formatted {
     char string[48];
 } ipaddress_formatted_t;
 
-/**
- * Return a buffer with the dns ptr string
- */
-typedef struct ipaddress_ptr {
-    char string[80];
-} ipaddress_ptr_t;
-
 size_t ipv6_byte2str(const unsigned char *bytes, char *buf, size_t buf_len);
 size_t ipv4_byte2str(const unsigned char *bytes, char *buf, size_t buf_len);
 
