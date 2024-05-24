@@ -4,7 +4,7 @@
 #include "../pixie/pixie-file.h"
 
 static const char fmt_host[]       = "%s";
-static const char fmt_port[]       = " %u";
+static const char fmt_port[]       = " %s%u";
 
 extern struct OutputModule ListOutput; /*for internal x-ref*/
 
@@ -39,7 +39,20 @@ list_result(struct OutputItem *item)
     if (err<0) goto error;
 
     if (item->port_them) {
-        err = fprintf(file, fmt_port, item->port_them);
+        switch (item->ip_proto) {
+            case IP_PROTO_TCP:
+                err = fprintf(file, fmt_port, "", item->port_them);
+                break;
+            case IP_PROTO_UDP:
+                err = fprintf(file, fmt_port, "u:", item->port_them);
+                break;
+            case IP_PROTO_SCTP:
+                err = fprintf(file, fmt_port, "s:", item->port_them);
+                break;
+            default:
+                err = fprintf(file, fmt_port, "o:", item->port_them);
+                break;
+        }
         if (err<0) goto error;
     }
 
