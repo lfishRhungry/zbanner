@@ -8,6 +8,7 @@
         <img src="https://img.shields.io/badge/license-AGPL-blue.svg">
     </a>
     <img src="https://img.shields.io/badge/build-passing-green.svg">
+    <img src="https://img.shields.io/badge/build%20with-pure c-yellow.svg">
     <img src="https://img.shields.io/badge/platform-%20Linux%20|%20Windows-orange.svg">
     <a href="https://cmake.org/">
         <img src="https://img.shields.io/badge/CMake-v3.20-yellow.svg">
@@ -29,7 +30,7 @@ In other words, Xtate is not good at being a crawler or concentrating on content
 Xtate was originally designed to do all scans for UDP and TCP in complete stateless manner, even obtaining responses over TCP with our **ZBanner** tech.
 But some new added features and modules make it be more than stateless.
 
-For example, Xtate could do stateful TCP connection and even get HTTPS reponses after finishing TLS handshake with an improved user space stack what we called **light-state TCP stack** that optimized for large-scale scanning.
+For example, Xtate could do stateful TCP connection and even get HTTPS reponses after finishing TLS handshake with an improved user space stack what we called **HLTCP(hybrid-state lightweight TCP stack)** that optimized for large-scale scanning.
 However, being fast and concise is always our target.
 
 In addition, Xtate supports IPv6 addresses and can be built on Windows and Linux with optional dependencies.
@@ -178,9 +179,9 @@ All of these happen in **completely stateless manner** so that ZBanner could wor
 It accept tcp type probe module.
 ZBanner tech was born from our research papar.
 
-- `tcp-state`: Do scanning with an user space light weight stack what we called light-state TCP stack.
+- `tcp-state`: Do scanning with an hybrid-state lightweight TCP stack what we called HLTCP.
 Actually it's stateful scan module and accept state type of probe module.
-Light-state tcp stack was born from our research paper.
+HLTCP was born from our research paper.
 It has basic tcp funtions in large-scale scanning scenario and could touch upper layer service over TLS by pairing with `tls-state` probe module.
 
 - `udp`: Send probe payload in type of udp and try to grab valid response.
@@ -205,6 +206,15 @@ Details are in the help document.
 
 - `lua-udp`: The udp type version of `lua-tcp`.
 
+### Output Modules
+
+I support users to write their own scan or probe modules to present unique scan strategy.
+And xtate support to result in a formatted item with standard and self-defined key-value field.
+This makes output modules to save results in various ways.
+
+Xtate could save results in text, csv and ndjson, etc.
+You can write your own output module for better saving.
+
 
 ## Helps in Detail
 
@@ -217,6 +227,37 @@ Use `xtate --list-scan | less` to see all ScanModules with sub-parameters and he
 Use `xtate --list-probe | less` to see all ProbeModules with sub-parameters and help.
 
 Use `xtate --list-out | less` to see all OutputModules with sub-parameters and help.
+
+## Scan Rate
+
+Xtate could do scan with a high-speed send rate like ZMap and Masscan.
+All those tools work on similar sending way like raw socket, libpcap(winpcap) or zero-copy(PFRING/netmap).
+
+Xtate inherent the packet sending way of Masscan which contains libpcap/winpcap and PFRING.
+And it randomizes the target IP addresses so that it shouldn't overwhelm any distant network.
+Xtate could event randomize the source IPv4/IPv6 addresses if needed(Yes, I fixed).
+
+By default, the rate is set to 100 packets/second. To increase the rate to a million use something like --rate 1000000.
+When scanning the IPv4 Internet, you'll be scanning lots of subnets, so even though there's a high rate of packets going out, each target subnet will receive a small rate of incoming packets.
+
+However, with IPv6 scanning, you'll tend to focus on a single target subnet with billions of addresses.
+Thus, your default behavior will overwhelm the target network.
+Networks often crash under the load that masscan can generate.
+
+In addition, Xtate support LAN mode to do NDP or ARP scan.
+Set a proper scan rate when operate on your own network.
+
+## Set Your Firewall
+
+Xtate needs to avoid responds of system stack when using udp, zbanner or HLTCP scan.
+When Linux local system receives a SYN-ACK from the probed target, it responds with a RST packet that kills the connection before Xtate handle.
+Same for udp, local system may respond an icmp(port unreachable) while we receive our packets.
+
+The easiest way to prevent this is to assign Xtate a separate IP address.
+Or I write some shell scripts to set iptable rules in `firewall` directory both for tcp/udp in IPv4/IPv6.
+
+Note, when we do tcp-syn scan, it's better to let system stack to respond RST automaticly.
+But you can also set subparameter `--send-rst` to tcp-syn scan module to let Xtate send rst by itself while we work on Windows or use seperate source IP address on Linux.
 
 ## Build
 
