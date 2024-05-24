@@ -66,9 +66,11 @@ rawsock_get_adapter_ipv6(const char *ifname)
 
         addr = ipv6address_from_bytes((const unsigned char *)&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr);
         
-        /*comment this filter to support local and NAT6 scenario*/
-        // if (addr.hi>>56ULL >= 0xFC)
-        //     continue;
+        /**
+         * Supports single-cast and NAT6(fdXX) scenarios
+         * Set source ip if use local(feXX) mode */
+        if (addr.hi>>56ULL >= 0xFE)
+            continue;
 
         if (addr.hi>>32ULL == 0x20010db8)
             continue;
@@ -184,7 +186,10 @@ again:
             continue;
         }
 
-        if (ipv6.hi>>56ULL >= 0xFC)
+        /**
+         * Supports single-cast and NAT6(fdXX) scenarios
+         * Set source ip if use local(feXX) mode */
+        if (ipv6.hi>>56ULL >= 0xFE)
             continue;
 
         if (ipv6.hi>>32ULL == 0x20010db8)
@@ -244,7 +249,10 @@ rawsock_get_adapter_ipv6(const char *ifname)
 
         addr = ipv6address_from_bytes((const unsigned char *)&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr);
         
-        if (addr.hi>>56ULL >= 0xFC)
+        /**
+         * Supports single-cast and NAT6(fdXX) scenarios
+         * Set source ip if use local(feXX) mode */
+        if (addr.hi>>56ULL >= 0xFE)
             continue;
         if (addr.hi>>32ULL == 0x20010db8)
             continue;

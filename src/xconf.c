@@ -2535,8 +2535,11 @@ struct ConfigParam config_parameters[] = {
         "Send packets using this IP address. If not specified, then the first IP"
         " address bound to the network interface will be used. Instead of a "
         "single IP address, a range may be specified.\n"
-        "NOTE: The size of the range must be an even power of 2, such as "
-        "1, 2, 4, 8, 16, 1024 etc."
+        "NOTE1: The size of the range must be an even power of 2, such as "
+        "1, 2, 4, 8, 16, 1024 etc.\n"
+        "NOTE2: "XTATE_FIRST_UPPER_NAME" could get source ipv6 address with global"
+        " scope include NAT6 network. But we need to specified manually if use "
+        "ipv6 address in local link scope."
     },
     {
         "source-port",
