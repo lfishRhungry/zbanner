@@ -220,8 +220,8 @@ tcp_state_to_string(enum Tcp_State state)
 {
     switch (state) {
         case STATE_SYNSENT:    return "SYN_SENT";
-        case STATE_SENDING:    return "ESTABLISHED_SEND";
-        case STATE_RECVING:    return "ESTABLISHED_RECV";
+        case STATE_SENDING:    return "SENDING";
+        case STATE_RECVING:    return "RECVING";
 
         default:
             return "UNKN_STATE";
@@ -1298,21 +1298,21 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
 static const char *app_state_to_string(unsigned state) {
     switch (state) {
-    case APP_STATE_INIT:          return "connect";
-    case APP_STATE_RECV_HELLO:    return "wait-for-hello";
-    case APP_STATE_RECV_NEXT:     return "receive";
-    case APP_STATE_SEND_FIRST:    return "send-first";
-    case APP_STATE_SEND_NEXT:     return "send";
+    case APP_STATE_INIT:          return "INIT";
+    case APP_STATE_RECV_HELLO:    return "RECV_HELLO";
+    case APP_STATE_RECV_NEXT:     return "RECV_NEXT";
+    case APP_STATE_SEND_FIRST:    return "SEND_FIRST";
+    case APP_STATE_SEND_NEXT:     return "SEND_NEXT";
     default: return "unknown";
     }
 }
 static const char *event_to_string(enum App_Event ev) {
     switch (ev) {
-    case APP_WHAT_CONNECTED:      return "connected";
-    case APP_WHAT_RECV_TIMEOUT:   return "timeout";
-    case APP_WHAT_RECV_PAYLOAD:   return "payload";
-    case APP_WHAT_SEND_SENT:      return "sent";
-    case APP_WHAT_SENDING:        return "sending";
+    case APP_WHAT_CONNECTED:      return "CONNECTED";
+    case APP_WHAT_RECV_TIMEOUT:   return "RECV_TIMEOUT";
+    case APP_WHAT_RECV_PAYLOAD:   return "RECV_PAYLOAD";
+    case APP_WHAT_SEND_SENT:      return "SEND_SENT";
+    case APP_WHAT_SENDING:        return "SENDING";
     default: return "unknown";
     }
 }
