@@ -114,18 +114,18 @@ enum Tcp_State{
 */
 enum App_State{
     APP_STATE_INIT = 0,       /*init state, must be zero*/
-    APP_STATE_RECV_HELLO,     /*wait for hello*/
-    APP_STATE_RECV_NEXT,      /*wait for payload*/
+    APP_STATE_RECV_HELLO,     /*waiting for hello response*/
+    APP_STATE_RECVING,        /*waiting for payload*/
     APP_STATE_SEND_FIRST,     /*our turn to say hello*/
-    APP_STATE_SEND_NEXT,      /*our turn to send payload*/
+    APP_STATE_SENDING,        /*data sending doesn't finish*/
 };
 
 enum App_Event {
     APP_WHAT_CONNECTED,       /*conn has been established*/
     APP_WHAT_RECV_TIMEOUT,    /*for hello waiting*/
-    APP_WHAT_RECV_PAYLOAD,
-    APP_WHAT_SENDING,
-    APP_WHAT_SEND_SENT,       /*our data has been sent and acked*/
+    APP_WHAT_RECV_PAYLOAD,    /*payload received*/
+    APP_WHAT_SENDING,         /*data sending doesn't finish*/
+    APP_WHAT_SEND_SENT,       /*data has been sent and acked*/
 };
 
 struct TCP_Control_Block
@@ -1300,9 +1300,9 @@ static const char *app_state_to_string(unsigned state) {
     switch (state) {
     case APP_STATE_INIT:          return "INIT";
     case APP_STATE_RECV_HELLO:    return "RECV_HELLO";
-    case APP_STATE_RECV_NEXT:     return "RECV_NEXT";
+    case APP_STATE_RECVING:       return "RECVING";
     case APP_STATE_SEND_FIRST:    return "SEND_FIRST";
-    case APP_STATE_SEND_NEXT:     return "SEND_NEXT";
+    case APP_STATE_SENDING:       return "SENDING";
     default: return "unknown";
     }
 }
@@ -1359,8 +1359,8 @@ again:
                 case APP_WHAT_RECV_PAYLOAD:
                     /* We've receive some data from them, so wait for some more.
                      * This means we won't be transmitting anything to them. */
-                    tcpapi_change_app_state(socket, APP_STATE_RECV_NEXT);
-                    state = APP_STATE_RECV_NEXT;
+                    tcpapi_change_app_state(socket, APP_STATE_RECVING);
+                    state = APP_STATE_RECVING;
                     goto again;
                 default:
                     ERRMSG("TCP.app: unhandled event: state=%s event=%s\n",
@@ -1370,7 +1370,7 @@ again:
             break;
         }
 
-        case APP_STATE_RECV_NEXT: {
+        case APP_STATE_RECVING: {
             switch (event) {
                 case APP_WHAT_RECV_PAYLOAD: {
 
@@ -1454,7 +1454,7 @@ again:
                 case APP_WHAT_SENDING:
                     /* A higher level protocol has started sending packets while processing
                      * a receive, therefore, change to the SEND state */
-                    tcpapi_change_app_state(socket, APP_STATE_SEND_NEXT);
+                    tcpapi_change_app_state(socket, APP_STATE_SENDING);
                     break;
                 case APP_WHAT_SEND_SENT:
                     /* FIXME */
@@ -1492,17 +1492,20 @@ again:
             if (pass.is_close)
                 tcpapi_close(socket);
 
-            tcpapi_change_app_state(socket, APP_STATE_SEND_NEXT);
+            if (pass.len)
+                tcpapi_change_app_state(socket, APP_STATE_SENDING);
+            else
+                tcpapi_change_app_state(socket, APP_STATE_RECVING);
             break;
         }
 
-        case APP_STATE_SEND_NEXT: {
+        case APP_STATE_SENDING: {
             switch (event) {
                 case APP_WHAT_SEND_SENT:
                     /* We've got an acknowledgement that all our data
                      * was sent. Therefore, change the receive state */
                     tcpapi_recv(socket);
-                    tcpapi_change_app_state(socket, APP_STATE_RECV_NEXT);
+                    tcpapi_change_app_state(socket, APP_STATE_RECVING);
                     break;
                 case APP_WHAT_SENDING:
                     break;
