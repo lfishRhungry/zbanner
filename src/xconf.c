@@ -2998,7 +2998,9 @@ struct ConfigParam config_parameters[] = {
         SET_nodedup,
         F_BOOL,
         {0},
-        "Do not deduplicate the results even if ScanModule use deduplication."
+        "Do not deduplicate the results even if ScanModule use deduplication.\n"
+        "NOTE: This will destroy the work of `--timeout`, so don't use these two"
+        " switch together."
     },
     {
         "dedup-win",
