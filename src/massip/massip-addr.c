@@ -272,26 +272,7 @@ struct ipaddress_formatted ipaddress_fmt(ipaddress a)
 struct ipaddress_ptr ipv6address_ptr_fmt(ipv6address a)
 {
     struct ipaddress_ptr out;
-    unsigned char tmp[16];
-    size_t i;
     stream_t s;
-
-    /*
-     * Convert address into a sequence of bytes. Our code
-     * here represents an IPv6 address as two 64-bit numbers, but
-     * the formatting code above that we copied from a different
-     * project represents it as an array of bytes.
-     */
-    for (i=0; i<16; i++) {
-        uint64_t x;
-        if (i<8)
-            x = a.hi;
-        else
-            x = a.lo;
-        x >>= (7 - (i%8)) * 8;
-
-        tmp[i] = (unsigned char)(x & 0xFF);
-    }
 
     s.buf = out.string;
     s.offset = 0;
@@ -299,10 +280,17 @@ struct ipaddress_ptr ipv6address_ptr_fmt(ipv6address a)
 
     static const char hex[17] = "0123456789abcdef";
 
-    for (i=15;i>=0;i--) {
-        _append_char(&s, hex[(tmp[i]>>0)&0xF]);
+    for (int i=15; i>=0; i--) {
+        uint64_t x;
+        if (i<8)
+            x = a.hi;
+        else
+            x = a.lo;
+        x >>= (7 - (i%8)) * 8;
+
+        _append_char(&s, hex[(x>>0)&0xF]);
         _append_char(&s, '.');
-        _append_char(&s, hex[(tmp[i]>>4)&0xF]);
+        _append_char(&s, hex[(x>>4)&0xF]);
         _append_char(&s, '.');
     }
 
