@@ -14,7 +14,7 @@
  * free it for responsibility.
  * */
 struct DataPass {
-    unsigned char *payload;
+    unsigned char *data;
     size_t         len;
     unsigned       is_dynamic:1;
     unsigned       is_close:1;
@@ -24,7 +24,7 @@ struct DataPass {
  * Just a wrapper to set dynamic or static data.
  * !set `is_close` by yourself
 */
-void datapass_set_data(struct DataPass *pass, unsigned char *payload,
-    size_t payload_len, unsigned is_dynamic);
+void datapass_set_data(struct DataPass *pass, unsigned char *data,
+    size_t len, unsigned is_dynamic);
 
 #endif

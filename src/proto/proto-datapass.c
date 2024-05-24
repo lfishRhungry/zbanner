@@ -4,27 +4,27 @@
 
 #include <string.h>
 
-void datapass_set_data(struct DataPass *pass, unsigned char *payload,
-    size_t payload_len, unsigned is_dynamic)
+void datapass_set_data(struct DataPass *pass, unsigned char *data,
+    size_t len, unsigned is_dynamic)
 {
     /*do a safe check for no payload*/
-    if (!payload || !payload_len) {
-        pass->payload    = NULL;
+    if (!data || !len) {
+        pass->data    = NULL;
         pass->len        = 0;
         pass->is_dynamic = 0;
         return;
     }
     if (is_dynamic) {
         /*dynamic data*/
-        pass->payload = MALLOC(payload_len);
-        memcpy(pass->payload, payload, payload_len);
+        pass->data = MALLOC(len);
+        memcpy(pass->data, data, len);
         pass->is_dynamic = 1;
     } else {
         /*static data*/
-        pass->payload = payload;
+        pass->data = data;
     }
 
-    pass->len = payload_len;
+    pass->len = len;
 
     return;
 }

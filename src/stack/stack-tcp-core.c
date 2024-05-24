@@ -1396,7 +1396,7 @@ again:
                      * Because our TCP API just handle one of each at a time.
                      * */
                     if (pass.len)
-                        tcpapi_send_data(socket, pass.payload, pass.len, pass.is_dynamic);
+                        tcpapi_send_data(socket, pass.data, pass.len, pass.is_dynamic);
                     if (pass.is_close)
                         tcpapi_close(socket);
                     
@@ -1488,7 +1488,7 @@ again:
              * Because our TCP API just handle one of each at a time.
              * */
             if (pass.len)
-                tcpapi_send_data(socket, pass.payload, pass.len, pass.is_dynamic);
+                tcpapi_send_data(socket, pass.data, pass.len, pass.is_dynamic);
             if (pass.is_close)
                 tcpapi_close(socket);
 

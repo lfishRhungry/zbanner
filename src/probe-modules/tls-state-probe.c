@@ -901,7 +901,7 @@ tlsstate_make_hello(
     datapass_set_data(pass, tls_state->data, offset, 1);
     return;
 error1:
-    pass->payload  = NULL;
+    pass->data  = NULL;
     pass->len      = 0;
     pass->is_close = 1;
     return;
@@ -945,7 +945,7 @@ tlsstate_parse_response(
                 LOG(LEVEL_WARNING,
                     "[ssl_parse_record]BIO_write failed with error: %d\n", res);
                 /*close connection*/
-                pass->payload    = NULL;
+                pass->data    = NULL;
                 pass->len        = 0;
                 pass->is_close   = 1;
                 return ret;
@@ -1075,7 +1075,7 @@ tlsstate_parse_response(
             tlsstate_conf.subprobe->make_hello_cb(&subpass, &tls_state->substate, target);
 
             /*Maybe no hello and maybe just close*/
-            if (!subpass.payload || !subpass.len) {
+            if (!subpass.data || !subpass.len) {
                 pass->is_close = subpass.is_close;
                 state->state = TLS_STATE_APP_RECEIVE_NEXT;
                 return ret;
@@ -1083,11 +1083,11 @@ tlsstate_parse_response(
 
             res = 1;
 
-            if (subpass.payload != NULL && subpass.len != 0) {
-                res = SSL_write(tls_state->ssl, subpass.payload, subpass.len);
+            if (subpass.data != NULL && subpass.len != 0) {
+                res = SSL_write(tls_state->ssl, subpass.data, subpass.len);
                 if (subpass.is_dynamic) {
-                    free(subpass.payload);
-                    subpass.payload = NULL;
+                    free(subpass.data);
+                    subpass.data = NULL;
                     subpass.len     = 0;
                 }
             }
@@ -1162,7 +1162,7 @@ tlsstate_parse_response(
                         &tls_state->substate, out, target, tls_state->data, offset);
 
                     /*Maybe no hello and maybe just close*/
-                    if (!subpass.payload || !subpass.len) {
+                    if (!subpass.data || !subpass.len) {
                         pass->is_close = subpass.is_close;
                         state->state = TLS_STATE_APP_RECEIVE_NEXT;
                         return ret;
@@ -1170,11 +1170,11 @@ tlsstate_parse_response(
 
                     res = 1;
                     /*have data to send, give it to SSL to encrypt*/
-                    if (subpass.payload != NULL && subpass.len != 0) {
-                        res = SSL_write(tls_state->ssl, subpass.payload, subpass.len);
+                    if (subpass.data != NULL && subpass.len != 0) {
+                        res = SSL_write(tls_state->ssl, subpass.data, subpass.len);
                         if (subpass.is_dynamic) {
-                            free(subpass.payload);
-                            subpass.payload = NULL;
+                            free(subpass.data);
+                            subpass.data = NULL;
                             subpass.len     = 0;
                         }
                     }
@@ -1241,7 +1241,7 @@ tlsstate_parse_response(
         case TLS_STATE_CLOSE:
             pass->is_close = 1;
             pass->len      = 0;
-            pass->payload  = NULL;
+            pass->data  = NULL;
             return ret;
         }
     }

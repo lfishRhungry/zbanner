@@ -763,13 +763,13 @@ httpstate_make_hello(
 {
     if (httpstate_conf.dynamic_host) {
         if (target->ip_them.version==4) {
-            pass->payload = MALLOC(httpstate_conf.req4_len+20);
-            pass->len = snprintf((char *)pass->payload,
+            pass->data = MALLOC(httpstate_conf.req4_len+20);
+            pass->len = snprintf((char *)pass->data,
                 httpstate_conf.req4_len+20, httpstate_conf.request4,
                 ipaddress_fmt(target->ip_them).string);
         } else {
-            pass->payload = MALLOC(httpstate_conf.req6_len+50);
-            pass->len = snprintf((char *)pass->payload,
+            pass->data = MALLOC(httpstate_conf.req6_len+50);
+            pass->len = snprintf((char *)pass->data,
                 httpstate_conf.req6_len+50, httpstate_conf.request6,
                 ipaddress_fmt(target->ip_them).string);
         }
