@@ -10,6 +10,7 @@ extern struct ScanModule TcpSynScan; /*for internal x-ref*/
 
 struct TcpSynConf {
     unsigned send_rst:1;
+    unsigned zero_fail:1;
     unsigned record_ttl:1;
     unsigned record_ipid:1;
     unsigned record_win:1;
@@ -58,6 +59,16 @@ static enum Config_Res SET_record_win(void *conf, const char *name, const char *
     return CONF_OK;
 }
 
+static enum Config_Res SET_zero_fail(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.zero_fail = parseBoolean(value);
+
+    return CONF_OK;
+}
+
 static enum Config_Res SET_send_rst(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
@@ -77,6 +88,13 @@ static struct ConfigParam tcpsyn_parameters[] = {
         "Actively send an RST if got a SYN-ACK. This is useful when we are in "
         "bypassing mode or working on Windows and don't want to waste connection"
         " resources of targets."
+    },
+    {
+        "fail-zerowin",
+        SET_zero_fail,
+        F_BOOL,
+        {"fail-zero", 0},
+        "Let SYN-ACK responds with zero window setting as failed. Default is success."
     },
     {
         "record-ttl",
@@ -194,10 +212,15 @@ tcpsyn_handle(
         if (win_them == 0) {
             safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "fake-open");
             safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "zerowin");
+
+            if (tcpsyn_conf.zero_fail)
+                item->level = Output_FAILURE;
+
         } else {
             safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "open");
             safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "syn-ack");
         }
+
         if (tcpsyn_conf.send_rst) {
             unsigned seqno_me   = TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
             unsigned seqno_them = TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
