@@ -53,8 +53,10 @@
 
 /**
  * !BUT
- * For code clean, fast scanning and achieve our target, I improve(or downgrade)
- * the TCP stack(FSM) to a more simpler one with just 3 states.
+ * For code clean, fast scanning and papers...Yeah, I improve(or downgrade)
+ * the TCP stack(FSM) to a more simpler one with just 2 states( with a init state).
+ * Actually, it combines stateless and stateful mode, also I call it hybrid-state
+ * lightweight TCP stack.
 */
 #include "stack-tcp-core.h"
 
