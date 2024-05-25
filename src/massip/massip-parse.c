@@ -1046,6 +1046,27 @@ fail:
     return 0xFFFFFFFF;
 }
 
+ipaddress
+massip_parse_ip(const char *line)
+{
+    ipaddress out;
+    out.version = 0;
+
+    out.ipv4 = massip_parse_ipv4(line);
+    if (out.ipv4 == ~0) {
+        out.ipv6 = massip_parse_ipv6(line);
+        if (out.ipv6.hi==~0 && out.ipv6.lo==~0) {
+            return out;
+        } else {
+            out.version = 6;
+        }
+    } else {
+        out.version = 4;
+    }
+
+    return out;
+}
+
 enum RangeParseResult
 massip_parse_range(const char *line, size_t *offset, size_t count, struct Range *ipv4, struct Range6 *ipv6)
 {

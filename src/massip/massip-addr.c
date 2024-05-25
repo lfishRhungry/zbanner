@@ -250,21 +250,22 @@ struct ipaddress_formatted ipaddress_fmt(ipaddress a)
 
     if (a.version == 6) {
         return ipv6address_fmt(a.ipv6);
+    } else if (a.version == 4) {
+        /* Call the formatting function */
+        s.buf = out.string;
+        s.offset = 0;
+        s.length = sizeof(out.string);
+
+        _append_decimal(&s, (ip >> 24) & 0xFF);
+        _append_char(&s, '.');
+        _append_decimal(&s, (ip >> 16) & 0xFF);
+        _append_char(&s, '.');
+        _append_decimal(&s, (ip >> 8) & 0xFF);
+        _append_char(&s, '.');
+        _append_decimal(&s, (ip >> 0) & 0xFF);
+    } else {
+        out.string[0] = '\0';
     }
-
-
-    /* Call the formatting function */
-    s.buf = out.string;
-    s.offset = 0;
-    s.length = sizeof(out.string);
-
-    _append_decimal(&s, (ip >> 24) & 0xFF);
-    _append_char(&s, '.');
-    _append_decimal(&s, (ip >> 16) & 0xFF);
-    _append_char(&s, '.');
-    _append_decimal(&s, (ip >> 8) & 0xFF);
-    _append_char(&s, '.');
-    _append_decimal(&s, (ip >> 0) & 0xFF);
 
     return out;
 }
@@ -329,22 +330,24 @@ struct ipaddress_ptr ipaddress_ptr_fmt(ipaddress a)
 
     if (a.version == 6) {
         return ipv6address_ptr_fmt(a.ipv6);
+    } else if (a.version == 4) {
+        /* Call the formatting function */
+        s.buf = out.string;
+        s.offset = 0;
+        s.length = sizeof(out.string);
+
+        _append_decimal(&s, (ip >> 0) & 0xFF);
+        _append_char(&s, '.');
+        _append_decimal(&s, (ip >> 8) & 0xFF);
+        _append_char(&s, '.');
+        _append_decimal(&s, (ip >> 16) & 0xFF);
+        _append_char(&s, '.');
+        _append_decimal(&s, (ip >> 24) & 0xFF);
+        _append_str(&s, ".in-addr.arpa");
+    } else {
+        out.string[0] = '\0';
     }
 
-
-    /* Call the formatting function */
-    s.buf = out.string;
-    s.offset = 0;
-    s.length = sizeof(out.string);
-
-    _append_decimal(&s, (ip >> 0) & 0xFF);
-    _append_char(&s, '.');
-    _append_decimal(&s, (ip >> 8) & 0xFF);
-    _append_char(&s, '.');
-    _append_decimal(&s, (ip >> 16) & 0xFF);
-    _append_char(&s, '.');
-    _append_decimal(&s, (ip >> 24) & 0xFF);
-    _append_str(&s, ".in-addr.arpa");
 
     return out;
 }

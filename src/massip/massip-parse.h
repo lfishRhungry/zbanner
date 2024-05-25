@@ -60,6 +60,12 @@ massip_parse_ipv6(const char *buf);
 ipv4address_t
 massip_parse_ipv4(const char *buf);
 
+/**
+ * got version 0 if failed
+*/
+ipaddress
+massip_parse_ip(const char *line);
+
 int massip_parse_selftest();
 
 #endif
