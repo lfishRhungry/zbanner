@@ -85,8 +85,9 @@ getstate_parse_response(
     unsigned sizeof_px)
 {
     LOG(LEVEL_WARNING, "[GetState Probe parsing response] >>>\n");
+    if (state->state) return 0;
+
     if (!getstate_conf.get_whole_page) {
-        if (state->state) return 0;
         state->state   = 1;
         pass->is_close = 1;
     }
