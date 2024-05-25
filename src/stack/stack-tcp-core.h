@@ -129,7 +129,7 @@ int tcpapi_close(struct stack_handle_t *socket);
  */
 void
 application_event(struct stack_handle_t *socket,
-    enum App_State state, enum App_Event event,
+    enum App_State cur_state, enum App_Event cur_event,
     const struct ProbeModule *probe,
     const void *payload, size_t payload_length);
 
