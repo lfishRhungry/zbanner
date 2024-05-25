@@ -1,5 +1,6 @@
 #include "probe-modules.h"
 #include "../proto/proto-dns.h"
+#include "../massip/massip-parse.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/data-convert.h"
@@ -16,6 +17,30 @@ struct DnsConf {
 };
 
 static struct DnsConf dns_conf = {0};
+
+static enum Config_Res SET_ptr(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    ipaddress ip = massip_parse_ip(value);
+    if (ip.version==0) {
+        LOG(LEVEL_ERROR, "[-] PTR request ip is invalid: %s.\n", value);
+        return CONF_ERR;
+    }
+
+    ipaddress_ptr_t ip_ptr = ipaddress_ptr_fmt(ip);
+
+    dns_conf.req_name = STRDUP(ip_ptr.string);
+    dns_conf.req_type = dns_str_to_record_type("ptr");
+
+    if (dns_conf.req_type==DNS_REC_INVALID) {
+        LOG(LEVEL_ERROR, "[-] internal error: invalide request type of dns.\n");
+        return CONF_ERR;
+    }
+
+    return CONF_OK;
+}
 
 static enum Config_Res SET_print_all_add(void *conf, const char *name, const char *value)
 {
@@ -99,6 +124,14 @@ static struct ConfigParam dns_parameters[] = {
         F_NONE,
         {"type", 0},
         "Specifies dns request type like 'A', 'AAAA'."
+    },
+    {
+        "ptr-request",
+        SET_ptr,
+        F_NONE,
+        {"ptr", "ptr-ip", 0},
+        "This is a wrapper of setting request type to PTR and request name by "
+        "the ip we specified."
     },
     {
         "all-answer",
