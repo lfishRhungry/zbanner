@@ -1319,18 +1319,18 @@ static const char *event_to_string(enum App_Event ev) {
  
 void
 application_event(struct stack_handle_t *socket,
-    enum App_State state, enum App_Event event,
+    enum App_State cur_state, enum App_Event cur_event,
     const struct ProbeModule *probe,
     const void *payload, size_t payload_length) {
 
 again:
-    switch (state) {
+    switch (cur_state) {
         case APP_STATE_INIT: {
-            switch (event) {
+            switch (cur_event) {
                 case APP_WHAT_CONNECTED:
                     if (probe->hello_wait <= 0) {
                         tcpapi_change_app_state(socket, APP_STATE_SEND_FIRST);
-                        state = APP_STATE_SEND_FIRST;
+                        cur_state = APP_STATE_SEND_FIRST;
                         goto again;
                     } else {
                         tcpapi_set_timeout(socket, probe->hello_wait, 0);
@@ -1340,38 +1340,38 @@ again:
                     break;
                 default:
                     ERRMSG("TCP.app: unhandled event: state=%s event=%s\n",
-                        app_state_to_string(state), event_to_string(event));
+                        app_state_to_string(cur_state), event_to_string(cur_event));
                     break;
             }
             break;
         }
 
         case APP_STATE_RECV_HELLO: {
-            switch (event) {
+            switch (cur_event) {
                 case APP_WHAT_RECV_TIMEOUT:
                     /* We've got no response from the initial connection,
                      * so switch from them being responsible for communications
                      * to us being responsible, and start sending */
                     tcpapi_change_app_state(socket, APP_STATE_SEND_FIRST);
-                    state = APP_STATE_SEND_FIRST;
+                    cur_state = APP_STATE_SEND_FIRST;
                     goto again;
                     break;
                 case APP_WHAT_RECV_PAYLOAD:
                     /* We've receive some data from them, so wait for some more.
                      * This means we won't be transmitting anything to them. */
                     tcpapi_change_app_state(socket, APP_STATE_RECVING);
-                    state = APP_STATE_RECVING;
+                    cur_state = APP_STATE_RECVING;
                     goto again;
                 default:
                     ERRMSG("TCP.app: unhandled event: state=%s event=%s\n",
-                        app_state_to_string(state), event_to_string(event));
+                        app_state_to_string(cur_state), event_to_string(cur_event));
                     break;
             }
             break;
         }
 
         case APP_STATE_RECVING: {
-            switch (event) {
+            switch (cur_event) {
                 case APP_WHAT_RECV_PAYLOAD: {
 
                     struct ProbeTarget target = {
@@ -1461,7 +1461,7 @@ again:
                     break;
                 default:
                     ERRMSG("TCP.app: unhandled event: state=%s event=%s\n",
-                        app_state_to_string(state), event_to_string(event));
+                        app_state_to_string(cur_state), event_to_string(cur_event));
                     break;
             }
             break;
@@ -1500,7 +1500,7 @@ again:
         }
 
         case APP_STATE_SENDING: {
-            switch (event) {
+            switch (cur_event) {
                 case APP_WHAT_SEND_SENT:
                     /* We've got an acknowledgement that all our data
                      * was sent. Therefore, change the receive state */
@@ -1511,7 +1511,7 @@ again:
                     break;
                 default:
                     ERRMSG("TCP.app: unhandled event: state=%s event=%s\n",
-                        app_state_to_string(state), event_to_string(event));
+                        app_state_to_string(cur_state), event_to_string(cur_event));
                     break;
             }
             break;
@@ -1519,7 +1519,7 @@ again:
 
         default: {
             ERRMSG("TCP.app: unhandled event: state=%s event=%s\n",
-                app_state_to_string(state), event_to_string(event));
+                app_state_to_string(cur_state), event_to_string(cur_event));
             break;
         }
     }
