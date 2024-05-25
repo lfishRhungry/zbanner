@@ -30,7 +30,7 @@
 enum {
     TLS_STATE_HANDSHAKE = 0,     /*init state: still in handshaking*/
     TLS_STATE_APP_HELLO,         /*our turn to say hello*/
-    TLS_STATE_APP_RECEIVE_NEXT,  /*waiting for data*/
+    TLS_STATE_APP_RECVING,       /*waiting for data*/
     TLS_STATE_CLOSE,             /*unexpected state that need to close conn*/
 };
 
@@ -563,19 +563,11 @@ static bool output_tls_version(struct Output *out,
     return true;
 }
 
-static bool extend_buffer(unsigned char **buf, size_t *buf_len)
+static void extend_buffer(unsigned char **buf, size_t *buf_len)
 {
     LOG(LEVEL_DEBUG, "[BUFFER extending...] >>>\n");
-    unsigned char *tmp_data = NULL;
-    tmp_data = REALLOC(*buf, *buf_len * 2);
-    if (tmp_data == NULL) {
-        LOG(LEVEL_WARNING, "SSL realoc memory error 0x%" PRIxPTR "\n",
-            *buf_len * 2);
-        return false;
-    }
-    *buf = tmp_data;
+    *buf = REALLOC(*buf, *buf_len * 2);
     *buf_len = *buf_len * 2;
-    return true;
 }
 
 /*init public SSL_CTX*/
@@ -627,10 +619,10 @@ tlsstate_global_init(const struct Xconf *xconf)
         LOG(LEVEL_WARNING, "SSL_CTX_set_cipher_list error %d\n", res);
     }
     /*ciphersuites allowed in TLSv1.3. (ALL & in order)*/
-    res = SSL_CTX_set_ciphersuites(
-        ctx, "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:"
-             "TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_CCM_SHA256:"
-             "TLS_AES_128_CCM_8_SHA256");
+    res = SSL_CTX_set_ciphersuites(ctx, 
+        "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:"
+        "TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_CCM_SHA256:"
+        "TLS_AES_128_CCM_8_SHA256");
     if (res != 1) {
         LOG(LEVEL_WARNING, "SSL_CTX_set_ciphersuites error %d\n", res);
     }
@@ -703,18 +695,8 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     }
 
     /*buffer for BIO*/
-    data = (unsigned char *)MALLOC(data_max_len);
-    if (data == NULL) {
-        LOG(LEVEL_WARNING, "SSL alloc memory error 0x%X\n", data_max_len);
-        goto error1;
-    }
-
+    data      = MALLOC(data_max_len);
     tls_state = CALLOC(1, sizeof(struct TlsState));
-    if (tls_state == NULL) {
-        LOG(LEVEL_WARNING, "SSL alloc memory error 0x%" PRIx64 "\n",
-            sizeof(struct TlsState));
-        goto error2;
-    }
 
     rbio = BIO_new(BIO_s_mem());
     if (rbio == NULL) {
@@ -797,9 +779,6 @@ error4:
     }
 error3:
     free(state->data);
-error2:
-    free(data);
-error1:
 error0:
 
     return;
@@ -866,8 +845,7 @@ tlsstate_make_hello(
         while (true) {
             /*extend if buffer is not enough*/
             if (tls_state->data_size - offset <= 0) {
-                if (!extend_buffer(&tls_state->data, &tls_state->data_size))
-                    goto error1;
+                extend_buffer(&tls_state->data, &tls_state->data_size);
             }
 
             /*get ClientHello here*/
@@ -901,7 +879,7 @@ tlsstate_make_hello(
     datapass_set_data(pass, tls_state->data, offset, 1);
     return;
 error1:
-    pass->data  = NULL;
+    pass->data     = NULL;
     pass->len      = 0;
     pass->is_close = 1;
     return;
@@ -916,9 +894,9 @@ tlsstate_parse_response(
     const unsigned char *px,
     unsigned sizeof_px)
 {
-    unsigned ret = 0;
     int res, res_ex;
     int is_continue;
+    unsigned ret = 0;
     struct TlsState *tls_state = state->data;
 
     if (state->state == TLS_STATE_CLOSE) {
@@ -1028,10 +1006,7 @@ tlsstate_parse_response(
 
                 while (true) {
                     if (tls_state->data_size - offset <= 0) {
-                        if (!extend_buffer(&tls_state->data, &tls_state->data_size)) {
-                          state->state = TLS_STATE_CLOSE;
-                          break;
-                        }
+                        extend_buffer(&tls_state->data, &tls_state->data_size);
                     }
 
                     res = BIO_read(
@@ -1077,7 +1052,7 @@ tlsstate_parse_response(
             /*Maybe no hello and maybe just close*/
             if (!subpass.data || !subpass.len) {
                 pass->is_close = subpass.is_close;
-                state->state = TLS_STATE_APP_RECEIVE_NEXT;
+                state->state   = TLS_STATE_APP_RECVING;
                 return ret;
             }
 
@@ -1088,7 +1063,7 @@ tlsstate_parse_response(
                 if (subpass.is_dynamic) {
                     free(subpass.data);
                     subpass.data = NULL;
-                    subpass.len     = 0;
+                    subpass.len  = 0;
                 }
             }
 
@@ -1103,10 +1078,7 @@ tlsstate_parse_response(
                 size_t offset = 0;
                 while (true) {
                     if (tls_state->data_size - offset <= 0) {
-                        if (!extend_buffer(&tls_state->data, &tls_state->data_size)) {
-                            state->state = TLS_STATE_CLOSE;
-                            break;
-                        }
+                        extend_buffer(&tls_state->data, &tls_state->data_size);
                     }
 
                     res = BIO_read(
@@ -1128,16 +1100,16 @@ tlsstate_parse_response(
                     }
                 }
                 if (state->state != TLS_STATE_CLOSE) {
-                    state->state  = TLS_STATE_APP_RECEIVE_NEXT;
                     datapass_set_data(pass, tls_state->data, offset, 1);
-                    pass->is_close   = subpass.is_close;
+                    pass->is_close = subpass.is_close;
+                    state->state   = TLS_STATE_APP_RECVING;
                     return ret;
                 }
             }
         } break;
 
         //!Pass data to subprobe and send data again and maybe close.
-        case TLS_STATE_APP_RECEIVE_NEXT: {
+        case TLS_STATE_APP_RECVING: {
             size_t offset = 0;
             while (true) {
                 /*We have to read all data in the SSL buffer.*/
@@ -1146,10 +1118,7 @@ tlsstate_parse_response(
                 offset += res;
                 /*maybe more data, extend buffer to read*/
                 if (res==tls_state->data_size-offset) {
-                    if (!extend_buffer(&tls_state->data, &tls_state->data_size)) {
-                        state->state = TLS_STATE_CLOSE;
-                        break;
-                    }
+                    extend_buffer(&tls_state->data, &tls_state->data_size);
                     /*go on to read*/
                     continue;
                 } else if (res > 0) {
@@ -1164,7 +1133,7 @@ tlsstate_parse_response(
                     /*Maybe no hello and maybe just close*/
                     if (!subpass.data || !subpass.len) {
                         pass->is_close = subpass.is_close;
-                        state->state = TLS_STATE_APP_RECEIVE_NEXT;
+                        state->state   = TLS_STATE_APP_RECVING;
                         return ret;
                     }
 
@@ -1175,7 +1144,7 @@ tlsstate_parse_response(
                         if (subpass.is_dynamic) {
                             free(subpass.data);
                             subpass.data = NULL;
-                            subpass.len     = 0;
+                            subpass.len  = 0;
                         }
                     }
 
@@ -1190,10 +1159,7 @@ tlsstate_parse_response(
                         size_t offset = 0;
                         while (true) {
                             if (tls_state->data_size - offset <= 0) {
-                                if (!extend_buffer(&tls_state->data, &tls_state->data_size)) {
-                                    state->state = TLS_STATE_CLOSE;
-                                    break;
-                                }
+                                extend_buffer(&tls_state->data, &tls_state->data_size);
                             }
 
                             res = BIO_read(tls_state->wbio, tls_state->data + offset,
@@ -1212,9 +1178,9 @@ tlsstate_parse_response(
                             }
                         }
                         if (state->state != TLS_STATE_CLOSE) {
-                            state->state  = TLS_STATE_APP_RECEIVE_NEXT;
                             datapass_set_data(pass, tls_state->data, offset, 1);
-                            pass->is_close   = subpass.is_close;
+                            pass->is_close = subpass.is_close;
+                            state->state   = TLS_STATE_APP_RECVING;
                             return ret;
                         }
                     }
@@ -1241,7 +1207,7 @@ tlsstate_parse_response(
         case TLS_STATE_CLOSE:
             pass->is_close = 1;
             pass->len      = 0;
-            pass->data  = NULL;
+            pass->data     = NULL;
             return ret;
         }
     }
