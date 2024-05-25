@@ -282,8 +282,7 @@ tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usec
         struct TCP_Control_Block *tcb;
         enum TCB_result x;
 
-        tcb = (struct TCP_Control_Block *)timeouts_remove(tcpcon->timeouts,
-                                                          timestamp);
+        tcb = (struct TCP_Control_Block *)timeouts_remove(tcpcon->timeouts, timestamp);
 
         if (tcb == NULL)
             break;
@@ -303,8 +302,7 @@ tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usec
          * etc.
          * */
         if (x != TCB__destroyed && timeout_is_unlinked(tcb->timeout)) {
-            timeouts_add(tcpcon->timeouts,
-                         tcb->timeout,
+            timeouts_add(tcpcon->timeouts, tcb->timeout,
                          offsetof(struct TCP_Control_Block, timeout),
                          TICKS_FROM_TV(secs+2, usecs));
         }
@@ -778,9 +776,7 @@ _tcb_seg_resend(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tc
             return;
         }
 
-        tcpcon_send_packet(tcpcon, tcb,
-                            TCP_FLAG_PSH | TCP_FLAG_ACK,
-                            seg->buf, seg->length);
+        tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_PSH | TCP_FLAG_ACK, seg->buf, seg->length);
     }
 
 }
@@ -795,8 +791,7 @@ application_notify(struct TCP_ConnectionTable *tcpcon,
 {
     struct stack_handle_t socket = {tcpcon, tcb, secs, usecs};
 
-    application_event(&socket, tcb->app_state, event, tcb->probe,
-        payload, payload_length);
+    application_event(&socket, tcb->app_state, event, tcb->probe, payload, payload_length);
 }
 
 
@@ -843,8 +838,7 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
 
     /* If this is the head of the segment list, then transmit right away */
     if (tcb->segments == seg) {
-        tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_PSH | TCP_FLAG_ACK,
-            seg->buf, seg->length);
+        tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_PSH | TCP_FLAG_ACK, seg->buf, seg->length);
         _tcb_change_state_to(tcb, STATE_SENDING);
     }
 
@@ -874,10 +868,10 @@ _tcp_seg_acknowledge(
     if (ackno - tcb->seqno_me > 100000) {
         ipaddress_formatted_t fmt = ipaddress_fmt(tcb->ip_them);
         LOG(LEVEL_DETAIL,  "%s - "
-                "tcb: ackno from past: "
-                "old ackno = 0x%08x, this ackno = 0x%08x\n",
-                fmt.string,
-                tcb->ackno_me, ackno);
+            "tcb: ackno from past: "
+            "old ackno = 0x%08x, this ackno = 0x%08x\n",
+            fmt.string,
+            tcb->ackno_me, ackno);
         return 0;
     }
 
@@ -886,10 +880,10 @@ _tcp_seg_acknowledge(
     if (tcb->seqno_me - ackno < 100000) {
         ipaddress_formatted_t fmt = ipaddress_fmt(tcb->ip_them);
         LOG(LEVEL_ERROR, "%s - "
-                "tcb: ackno from future: "
-                "my seqno = 0x%08x, their ackno = 0x%08x\n",
-                fmt.string,
-                tcb->seqno_me, ackno);
+            "tcb: ackno from future: "
+            "my seqno = 0x%08x, their ackno = 0x%08x\n",
+            fmt.string,
+            tcb->seqno_me, ackno);
         return 0;
     }
 
@@ -958,8 +952,8 @@ tcpapi_set_timeout(struct stack_handle_t *socket, unsigned secs, unsigned usecs)
         return SOCKERR_EBADF;
 
     timeouts_add(tcpcon->timeouts, tcb->timeout,
-             offsetof(struct TCP_Control_Block, timeout),
-             TICKS_FROM_TV(socket->secs+secs, socket->usecs + usecs));
+        offsetof(struct TCP_Control_Block, timeout),
+        TICKS_FROM_TV(socket->secs+secs, socket->usecs + usecs));
     return 0;
 }
 
@@ -985,8 +979,8 @@ tcpapi_recv(struct stack_handle_t *socket) {
 
 int
 tcpapi_send_data(struct stack_handle_t *socket,
-            const void *buf, size_t length,
-            unsigned is_dynamic) {
+    const void *buf, size_t length,
+    unsigned is_dynamic) {
 
     /*no data*/
     if (!buf || !length) return 1;
@@ -1043,8 +1037,7 @@ LOGSEND(struct TCP_Control_Block *tcb, const char *what)
     if (tcb == NULL)
         return;
     LOGip(5, tcb->ip_them, tcb->port_them, "=%s : --->> %s                  \n",
-          tcp_state_to_string(tcb->tcpstate),
-          what);
+        tcp_state_to_string(tcb->tcpstate), what);
 }
 
 static int
