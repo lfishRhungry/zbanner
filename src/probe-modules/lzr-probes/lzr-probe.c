@@ -118,9 +118,31 @@ struct LzrConf {
     unsigned hs_count;
     unsigned force_all_handshakes:1;
     unsigned force_all_match:1;
+    unsigned banner_if_fail:1;
+    unsigned banner:1;
 };
 
 static struct LzrConf lzr_conf = {0};
+
+static enum Config_Res SET_banner(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    lzr_conf.banner = parseBoolean(value);
+
+    return CONF_OK;
+}
+
+static enum Config_Res SET_banner_if_fail(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    lzr_conf.banner_if_fail = parseBoolean(value);
+
+    return CONF_OK;
+}
 
 static enum Config_Res SET_force_all_match(void *conf, const char *name, const char *value)
 {
@@ -217,6 +239,20 @@ static struct ConfigParam lzr_parameters[] = {
         "Complete all specified handshakes even if identified. This could make "
         "weird count of results."
     },
+    {
+        "show-banner",
+        SET_banner,
+        F_BOOL,
+        {"banner", 0},
+        "Show normalized banner in results."
+    },
+    {
+        "show-banner-if-fail",
+        SET_banner_if_fail,
+        F_BOOL,
+        {"banner-fail", 0},
+        "Show normalized banner in results if failed to identify."
+    },
 
     {0}
 };
@@ -276,8 +312,8 @@ lzr_handle_response(
     */
 
     bool identified = false;
-    struct DataLink *pre;
-    pre = dach_new_link(&item->report, "result", DACH_DEFAULT_DATA_SIZE, false);
+    struct DataLink *result_pre;
+    result_pre = dach_new_link(&item->report, "result", DACH_DEFAULT_DATA_SIZE, false);
 
     size_t i = 0;
     for (; i<ARRAY_SIZE(lzr_handshakes); i++) {
@@ -285,7 +321,7 @@ lzr_handle_response(
             th_idx, target, px, sizeof_px, item);
 
         if (item->level==Output_SUCCESS) {
-            dach_append_by_pre(pre, item->classification, DACH_AUTO_LEN);
+            dach_append_by_pre(result_pre, item->classification, DACH_AUTO_LEN);
             identified = true;
             break;
         }
@@ -297,7 +333,7 @@ lzr_handle_response(
                 th_idx, target, px, sizeof_px, item);
 
             if (item->level==Output_SUCCESS) {
-                dach_printf_by_pre(pre, "-%s", item->classification);
+                dach_printf_by_pre(result_pre, "-%s", item->classification);
             }
         }
     }
@@ -309,21 +345,25 @@ lzr_handle_response(
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "identified");
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
 
+        if (lzr_conf.banner) {
+            dach_append_normalized(&item->report, "banner", px, sizeof_px);
+        }
+
         if (lzr_conf.force_all_handshakes && target->index != lzr_conf.hs_count-1) {
             return target->index+2;
         }
     } else {
+        item->level = Output_FAILURE;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "unknown");
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
+        dach_del_link(&item->report, "result");
 
-        /**
-         * Set last unmatching as failure in normal mode.
-         * Or all unmatching as failure if force-all-handshakes
-         * */
-        if (target->index == lzr_conf.hs_count-1 || lzr_conf.force_all_handshakes)
-            item->level = Output_FAILURE;
+        if (lzr_conf.banner_if_fail || lzr_conf.banner) {
+            dach_append_normalized(&item->report, "banner", px, sizeof_px);
+        }
+
         /*last handshake*/
-        if (target->index != lzr_conf.hs_count-1) {
+        if (target->index != lzr_conf.hs_count-1 && lzr_conf.force_all_handshakes) {
             return target->index+2;
         } else {
             return 0;
