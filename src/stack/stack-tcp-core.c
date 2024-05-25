@@ -97,11 +97,11 @@
 
 
 struct TCP_Segment {
-    unsigned seqno;
-    unsigned char *buf;
-    size_t length;
-    unsigned is_dynamic:1;
-    struct TCP_Segment *next;
+    struct TCP_Segment     *next;
+    unsigned char          *buf;
+    size_t                  length;
+    unsigned                seqno;
+    unsigned                is_dynamic:1;
 };
 
 enum Tcp_State{

@@ -22,6 +22,9 @@ enum OutputLevel {
     Output_SUCCESS  = 2,
 };
 
+/**
+ * modifiable to change target.
+*/
 struct OutputItem {
     /**This timestamp can be set in diff meanings by yourself like time of receiving
      * packet or time of result generated.

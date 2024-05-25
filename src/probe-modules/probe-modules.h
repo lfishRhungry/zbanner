@@ -35,6 +35,9 @@ typedef bool (*probe_modules_global_init)(const struct Xconf *xconf);
  * * callback functions for probe(hello) payload making in Non-STATE type
 ****************************************************************************/
 
+/**
+ * not modifiable in probe module internal, we can't change the actual target.
+*/
 struct ProbeTarget {
     unsigned  ip_proto;
     ipaddress ip_them;
@@ -60,9 +63,7 @@ struct ProbeTarget {
  * @return paylaod length.
 */
 typedef size_t
-(*probe_modules_make_payload)(
-    struct ProbeTarget *target,
-    unsigned char *payload_buf);
+(*probe_modules_make_payload)(struct ProbeTarget *target, unsigned char *payload_buf);
 
 /**
  * !Happens in Tx Thread or Rx Thread for different ScanModules.
@@ -100,8 +101,7 @@ typedef size_t
 typedef bool
 (*probe_modules_validate_response)(
     struct ProbeTarget *target,
-    const unsigned char *px, unsigned sizeof_px
-);
+    const unsigned char *px, unsigned sizeof_px);
 
 /**
  * !Happens in Rx Handle Thread,
@@ -138,9 +138,7 @@ typedef unsigned
  * or num=index+1 to set next probe in Multi_DynamicNext mode.
 */
 typedef unsigned
-(*probe_modules_handle_timeout)(
-    struct ProbeTarget *target,
-    struct OutputItem *item);
+(*probe_modules_handle_timeout)(struct ProbeTarget *target, struct OutputItem *item);
 
 /***************************************************************************
  * * callback functions for ProbeType_STATE only

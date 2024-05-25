@@ -45,6 +45,9 @@ typedef bool (*scan_modules_global_init)(const struct Xconf *xconf);
  * * callback functions for Transmit
 ****************************************************************************/
 
+/**
+ * modifiable in scan module internal to change target.
+*/
 struct ScanTarget {
     unsigned           ip_proto;
     ipaddress          ip_them;
