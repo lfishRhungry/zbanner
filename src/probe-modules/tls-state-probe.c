@@ -30,7 +30,7 @@
 enum {
     TLS_STATE_HANDSHAKE = 0,     /*init state: still in handshaking*/
     TLS_STATE_APP_HELLO,         /*our turn to say hello*/
-    TLS_STATE_APP_RECEIVE_NEXT,
+    TLS_STATE_APP_RECEIVE_NEXT,  /*waiting for data*/
     TLS_STATE_CLOSE,             /*unexpected state that need to close conn*/
 };
 
@@ -42,27 +42,27 @@ static const struct Output *tls_out;
 static SSL_CTX *ssl_ctx;
 
 struct TlsState {
-    OSSL_HANDSHAKE_STATE handshake_state;
-    struct ProbeState substate;
-    SSL *ssl;
-    BIO *rbio;
-    BIO *wbio;
-    unsigned char *data;
-    size_t data_max_len;
-    unsigned have_dump_version:1;
-    unsigned have_dump_cipher:1;
-    unsigned have_dump_cert:1;
-    unsigned have_dump_subject:1;
+    OSSL_HANDSHAKE_STATE   handshake_state;
+    struct ProbeState      substate;
+    unsigned char         *data;
+    size_t                 data_size;
+    SSL                   *ssl;
+    BIO                   *rbio;
+    BIO                   *wbio;
+    unsigned               have_dump_version:1;
+    unsigned               have_dump_subject:1;
+    unsigned               have_dump_cipher:1;
+    unsigned               have_dump_cert:1;
 };
 
 struct TlsStateConf {
-    struct ProbeModule *subprobe;
-    char               *subprobe_args;
-    unsigned            ssl_keylog:1;
-    unsigned            dump_version:1;
-    unsigned            dump_cipher:1;
-    unsigned            dump_cert:1;
-    unsigned            dump_subject:1;
+    struct ProbeModule    *subprobe;
+    char                  *subprobe_args;
+    unsigned               dump_subject:1;
+    unsigned               dump_version:1;
+    unsigned               dump_cipher:1;
+    unsigned               ssl_keylog:1;
+    unsigned               dump_cert:1;
 };
 
 static struct TlsStateConf tlsstate_conf = {0};
@@ -767,7 +767,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     tls_state->wbio = wbio;
     tls_state->data = data;
 
-    tls_state->data_max_len    = data_max_len;
+    tls_state->data_size    = data_max_len;
     tls_state->handshake_state = TLS_ST_BEFORE; /*state for openssl*/
  
     state->data = tls_state;
@@ -836,7 +836,7 @@ tlsstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
     if (tls_state->data) {
         free(tls_state->data);
         tls_state->data = NULL;
-        tls_state->data_max_len = 0;
+        tls_state->data_size = 0;
     }
 
     free(tls_state);
@@ -865,15 +865,15 @@ tlsstate_make_hello(
         offset = 0;
         while (true) {
             /*extend if buffer is not enough*/
-            if (tls_state->data_max_len - offset <= 0) {
-                if (!extend_buffer(&tls_state->data, &tls_state->data_max_len))
+            if (tls_state->data_size - offset <= 0) {
+                if (!extend_buffer(&tls_state->data, &tls_state->data_size))
                     goto error1;
             }
 
             /*get ClientHello here*/
             res = BIO_read(tls_state->wbio,
                            tls_state->data + offset,
-                           (int)(tls_state->data_max_len - offset));
+                           (int)(tls_state->data_size - offset));
             if (res > 0) {
                 LOG(LEVEL_INFO, "[ssl_transmit_hello]BIO_read: %d\n", res);
                 offset += (size_t)res;
@@ -1027,8 +1027,8 @@ tlsstate_parse_response(
                 size_t offset = 0;
 
                 while (true) {
-                    if (tls_state->data_max_len - offset <= 0) {
-                        if (!extend_buffer(&tls_state->data, &tls_state->data_max_len)) {
+                    if (tls_state->data_size - offset <= 0) {
+                        if (!extend_buffer(&tls_state->data, &tls_state->data_size)) {
                           state->state = TLS_STATE_CLOSE;
                           break;
                         }
@@ -1037,7 +1037,7 @@ tlsstate_parse_response(
                     res = BIO_read(
                         tls_state->wbio,
                         tls_state->data + offset,
-                        (unsigned int)(tls_state->data_max_len - offset));
+                        (unsigned int)(tls_state->data_size - offset));
 
                     if (res > 0) {
                         LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_HANDSHAKE]BIO_read: %d\n", res);
@@ -1102,8 +1102,8 @@ tlsstate_parse_response(
                 LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_APP_HELLO]SSL_write: %d\n", res);
                 size_t offset = 0;
                 while (true) {
-                    if (tls_state->data_max_len - offset <= 0) {
-                        if (!extend_buffer(&tls_state->data, &tls_state->data_max_len)) {
+                    if (tls_state->data_size - offset <= 0) {
+                        if (!extend_buffer(&tls_state->data, &tls_state->data_size)) {
                             state->state = TLS_STATE_CLOSE;
                             break;
                         }
@@ -1112,7 +1112,7 @@ tlsstate_parse_response(
                     res = BIO_read(
                         tls_state->wbio,
                         tls_state->data + offset,
-                        (unsigned int)(tls_state->data_max_len - offset));
+                        (unsigned int)(tls_state->data_size - offset));
                     if (res > 0) {
                         LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_APP_HELLO]BIO_read: %d\n", res);
                         offset += (size_t)res;
@@ -1142,11 +1142,11 @@ tlsstate_parse_response(
             while (true) {
                 /*We have to read all data in the SSL buffer.*/
                 res = SSL_read(tls_state->ssl, tls_state->data + offset,
-                    tls_state->data_max_len - offset);
+                    tls_state->data_size - offset);
                 offset += res;
                 /*maybe more data, extend buffer to read*/
-                if (res==tls_state->data_max_len-offset) {
-                    if (!extend_buffer(&tls_state->data, &tls_state->data_max_len)) {
+                if (res==tls_state->data_size-offset) {
+                    if (!extend_buffer(&tls_state->data, &tls_state->data_size)) {
                         state->state = TLS_STATE_CLOSE;
                         break;
                     }
@@ -1189,15 +1189,15 @@ tlsstate_parse_response(
                         LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]SSL_write: %d\n", res);
                         size_t offset = 0;
                         while (true) {
-                            if (tls_state->data_max_len - offset <= 0) {
-                                if (!extend_buffer(&tls_state->data, &tls_state->data_max_len)) {
+                            if (tls_state->data_size - offset <= 0) {
+                                if (!extend_buffer(&tls_state->data, &tls_state->data_size)) {
                                     state->state = TLS_STATE_CLOSE;
                                     break;
                                 }
                             }
 
                             res = BIO_read(tls_state->wbio, tls_state->data + offset,
-                                (unsigned int)(tls_state->data_max_len - offset));
+                                (unsigned int)(tls_state->data_size - offset));
                             if (res > 0) {
                                 LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]BIO_read: %d\n", res);
                                 offset += (size_t)res;

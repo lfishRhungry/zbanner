@@ -124,7 +124,7 @@ enum App_Event {
     APP_WHAT_CONNECTED,       /*conn has been established*/
     APP_WHAT_RECV_TIMEOUT,    /*for hello waiting*/
     APP_WHAT_RECV_PAYLOAD,    /*payload received*/
-    APP_WHAT_SENDING,         /*data sending doesn't finish*/
+    APP_WHAT_SENDING,         /*there's data is sending now*/
     APP_WHAT_SEND_SENT,       /*data has been sent and acked*/
 };
 
