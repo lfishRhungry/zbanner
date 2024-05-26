@@ -444,7 +444,7 @@ stack_ndpv6_resolve(struct Adapter *adapter,
 
             /* It's taking too long, so notify the user */
             if (!is_delay_reported) {
-                LOG(LEVEL_HINT, "[ ] resolving IPv6 router MAC address (may take some time)...\n");
+                LOG(LEVEL_HINT, "[*] resolving IPv6 router MAC address (may take some time)...\n");
                 is_delay_reported = 1;
             }
         }
@@ -452,7 +452,7 @@ stack_ndpv6_resolve(struct Adapter *adapter,
         /* If we aren't getting a response back to our ARP, then print a
          * status message */
         if (time(0) > start+1 && !is_arp_notice_given) {
-            LOG(LEVEL_HINT, "[ ] resolving local IPv6 router\n");
+            LOG(LEVEL_HINT, "[*] resolving local IPv6 router\n");
             is_arp_notice_given = 1;
         }
 

@@ -623,10 +623,10 @@ int main(int argc, char *argv[]) {
     if (!has_target_ports) {
         massip_add_port_string(&xconf->targets, "o:0", 0);
 
-        LOG(LEVEL_HINT, "NOTE: no ports were specified, use default other proto port 0.\n");
-        LOG(LEVEL_HINT, " [hint] ignored if the ScanModule does not need port. (eg. "
-            "icmp, arp, ndp, etc.)\n");
-        LOG(LEVEL_HINT, " [hint] or try something like \"-p 80,8000-9000\"\n");
+        // LOG(LEVEL_HINT, "NOTE: no ports were specified, use default other proto port 0.\n");
+        // LOG(LEVEL_HINT, " [hint] ignored if the ScanModule does not need port. (eg. "
+        //     "icmp, arp, ndp, etc.)\n");
+        // LOG(LEVEL_HINT, " [hint] or try something like \"-p 80,8000-9000\"\n");
     }
 
     /* Optimize target selection so it's a quick binary search instead
