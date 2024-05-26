@@ -32,13 +32,16 @@ list_result(struct OutputItem *item)
 {
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->ip_them);
 
+    bool output_port = (item->ip_proto==IP_PROTO_TCP
+        || item->ip_proto==IP_PROTO_UDP || item->ip_proto==IP_PROTO_SCTP);
+
     int err = 0;
 
     err = fprintf(file, fmt_host, ip_them_fmt.string);
 
     if (err<0) goto error;
 
-    if (item->port_them) {
+    if (output_port) {
         switch (item->ip_proto) {
             case IP_PROTO_TCP:
                 err = fprintf(file, fmt_port, "", item->port_them);

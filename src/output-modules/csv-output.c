@@ -76,6 +76,9 @@ csv_init(const struct Output *out)
 static void
 csv_result(struct OutputItem *item)
 {
+    bool output_port = (item->ip_proto==IP_PROTO_TCP
+        || item->ip_proto==IP_PROTO_UDP || item->ip_proto==IP_PROTO_SCTP);
+
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->ip_them);
     ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(item->ip_me);
 
@@ -86,9 +89,9 @@ csv_result(struct OutputItem *item)
         output_level_to_string(item->level),
         ip_proto_to_string(item->ip_proto),
         ip_them_fmt.string,
-        item->port_them,
+        output_port?item->port_them:0,
         ip_me_fmt.string,
-        item->port_me,
+        output_port?item->port_me:0,
         item->classification,
         item->reason);
 

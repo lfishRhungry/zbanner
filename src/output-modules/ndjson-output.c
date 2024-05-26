@@ -14,9 +14,21 @@ static const char fmt_ndjson_prefix[] =
 "\"level\":\"%s\","
 "\"ip_proto\":\"%s\","
 "\"ip_them\":\"%s\","
+;
+
+static const char fmt_ndjson_port_them[] =
 "\"port_them\":%u,"
+;
+
+static const char fmt_ndjson_ip_me[] =
 "\"ip_me\":\"%s\","
-"\"port_me\":%u,"
+;
+
+static const char fmt_ndjson_port_me[] =
+"\"port_them\":%u,"
+;
+
+static const char fmt_ndjson_inffix[] =
 "\"classification\":\"%s\","
 "\"reason\":\"%s\","
 "\"report\":{"
@@ -58,22 +70,40 @@ ndjson_init(const struct Output *out)
 static void
 ndjson_result(struct OutputItem *item)
 {
+    int err;
+
+    bool output_port = (item->ip_proto==IP_PROTO_TCP
+        || item->ip_proto==IP_PROTO_UDP || item->ip_proto==IP_PROTO_SCTP);
+
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->ip_them);
     ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(item->ip_me);
 
     iso8601_time_str(format_time, sizeof(format_time), &item->timestamp);
 
-    int err = fprintf(file, fmt_ndjson_prefix,
+    err = fprintf(file, fmt_ndjson_prefix,
         format_time,
         output_level_to_string(item->level),
         ip_proto_to_string(item->ip_proto),
-        ip_them_fmt.string,
-        item->port_them,
-        ip_me_fmt.string,
-        item->port_me,
+        ip_them_fmt.string);
+
+    if (err<0) goto error;
+
+    if (output_port) {
+        err = fprintf(file, fmt_ndjson_port_them, item->port_them);
+        if (err<0) goto error;
+    }
+
+    err = fprintf(file, fmt_ndjson_ip_me, ip_me_fmt.string);
+    if (err<0) goto error;
+
+    if (output_port) {
+        err = fprintf(file, fmt_ndjson_port_me, item->port_me);
+        if (err<0) goto error;
+    }
+
+    err = fprintf(file, fmt_ndjson_inffix,
         item->classification,
         item->reason);
-
     if (err<0) goto error;
 
     struct DataLink *pre = item->report.link;

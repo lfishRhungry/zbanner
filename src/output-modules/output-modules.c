@@ -148,6 +148,9 @@ output_result_to_stdout(struct OutputItem *item)
     // ipaddress_formatted_t ip_me_fmt = ipaddress_fmt(item->ip_me);
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->ip_them);
 
+    bool output_port = (item->ip_proto==IP_PROTO_TCP
+        || item->ip_proto==IP_PROTO_UDP || item->ip_proto==IP_PROTO_SCTP);
+
     unsigned count = 0;
 
     switch (item->level)
@@ -165,10 +168,11 @@ output_result_to_stdout(struct OutputItem *item)
             XPRINT_CH_COLOR_CYAN"[*]", ip_them_fmt.string);
         break;
     default:
-        return;
+        count = fprintf(stdout, fmt_host,
+            "[?]", ip_them_fmt.string);
     }
 
-    if (item->port_them) {
+    if (output_port) {
         count += fprintf(stdout, fmt_port, item->port_them);
     }
 
