@@ -117,8 +117,7 @@ const char *
 output_level_to_string(enum OutputLevel level);
 
 /*prepare for outputing results*/
-bool
-output_init(struct Output *out);
+bool output_init(struct Output *out);
 
 /**
  * output a result within item and release datachain(report) in it.
@@ -127,8 +126,7 @@ void
 output_result(const struct Output *out, struct OutputItem *item);
 
 /*destroy resources of output*/
-void
-output_close(struct Output *out);
+void output_close(struct Output *out);
 
 struct OutputModule *
 get_output_module_by_name(const char *name);

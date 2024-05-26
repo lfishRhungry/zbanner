@@ -106,8 +106,7 @@ static const char fmt_reason[]     = " because \"%s\"";
 static const char fmt_report_str[] = ",  "XPRINT_CH_COLOR_YELLOW"%s: \"%s\"";
 static const char fmt_report_num[] = ",  "XPRINT_CH_COLOR_YELLOW"%s: %s";
 
-bool
-output_init(struct Output *out)
+bool output_init(struct Output *out)
 {
     if (out->output_module) {
 
@@ -248,8 +247,7 @@ output_result(const struct Output *out, struct OutputItem *item)
     dach_release(&item->report);
 }
 
-void
-output_close(struct Output *out)
+void output_close(struct Output *out)
 {
     if (out->output_module) {
         out->output_module->close_cb(out);
