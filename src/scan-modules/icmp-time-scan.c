@@ -15,38 +15,38 @@ struct IcmpTimeConf {
 
 static struct IcmpTimeConf icmptime_conf = {0};
 
-static enum Config_Res SET_record_ttl(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     icmptime_conf.record_ttl = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_record_ipid(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     icmptime_conf.record_ipid = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam icmptime_parameters[] = {
     {
         "record-ttl",
         SET_record_ttl,
-        F_BOOL,
+        Type_BOOL,
         {"ttl", 0},
         "Records TTL for IPv4 or Hop Limit for IPv6 in ICMP Echo Reply."
     },
     {
         "record-ipid",
         SET_record_ipid,
-        F_BOOL,
+        Type_BOOL,
         {"ipid", 0},
         "Records IPID of ICMP Echo Reply just for IPv4."
     },

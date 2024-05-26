@@ -24,47 +24,47 @@ struct RecogStateConf {
 
 static struct RecogStateConf recogstate_conf = {0};
 
-static enum Config_Res SET_unsuffix(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_unsuffix(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     recogstate_conf.unsuffix = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_unprefix(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_unprefix(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     recogstate_conf.unprefix = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_report(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_report(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     recogstate_conf.report_while_fail = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_get_whole_response(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_get_whole_response(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     recogstate_conf.get_whole_response = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_hello_string(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_hello_string(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -75,15 +75,15 @@ static enum Config_Res SET_hello_string(void *conf, const char *name, const char
     recogstate_conf.hello_len = strlen(value);
     if (recogstate_conf.hello_len==0) {
         LOG(LEVEL_ERROR, "FAIL: Invalid hello string.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
     recogstate_conf.hello = MALLOC(recogstate_conf.hello_len);
     memcpy(recogstate_conf.hello, value, recogstate_conf.hello_len);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_hello_nmap(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_hello_nmap(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -94,17 +94,17 @@ static enum Config_Res SET_hello_nmap(void *conf, const char *name, const char *
     recogstate_conf.hello_len = strlen(value);
     if (recogstate_conf.hello_len==0) {
         LOG(LEVEL_ERROR, "FAIL: Invalid hello string in nmap probe format.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     recogstate_conf.hello     = CALLOC(1, recogstate_conf.hello_len);
     recogstate_conf.hello_len = nmapprobe_decode(value,
         recogstate_conf.hello_len, recogstate_conf.hello, recogstate_conf.hello_len);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_hello_base64(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_hello_base64(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -115,17 +115,17 @@ static enum Config_Res SET_hello_base64(void *conf, const char *name, const char
     recogstate_conf.hello_len = strlen(value);
     if (recogstate_conf.hello_len==0) {
         LOG(LEVEL_ERROR, "FAIL: Invalid hello string in base64 format.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     recogstate_conf.hello     = CALLOC(1, recogstate_conf.hello_len);
     recogstate_conf.hello_len = base64_decode((char *)recogstate_conf.hello,
         recogstate_conf.hello_len, value, recogstate_conf.hello_len);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_hello_file(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -136,7 +136,7 @@ static enum Config_Res SET_hello_file(void *conf, const char *name, const char *
     FILE *fp = fopen(value, "rb");
     if (fp==NULL) {
         LOG(LEVEL_ERROR, "[-]Failed to open file %s.\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     /**
@@ -148,7 +148,7 @@ static enum Config_Res SET_hello_file(void *conf, const char *name, const char *
         LOG(LEVEL_ERROR, "[-]Failed to read valid hello in file %s.\n", value);
         perror(value);
         fclose(fp);
-        return CONF_ERR;
+        return Conf_ERR;
     }
     fclose(fp);
 
@@ -157,10 +157,10 @@ static enum Config_Res SET_hello_file(void *conf, const char *name, const char *
     recogstate_conf.hello     = MALLOC(bytes_read);
     memcpy(recogstate_conf.hello, buf, bytes_read);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_recog_file(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_recog_file(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -170,14 +170,14 @@ static enum Config_Res SET_recog_file(void *conf, const char *name, const char *
     
     recogstate_conf.xml_filename = STRDUP(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam recogstate_parameters[] = {
     {
         "string",
         SET_hello_string,
-        F_NONE,
+        Type_NONE,
         {0},
         "Specifies a string and set it as hello data after decoded."
         " This will overwrite hello data set by other parameters."
@@ -185,7 +185,7 @@ static struct ConfigParam recogstate_parameters[] = {
     {
         "base64-string",
         SET_hello_base64,
-        F_NONE,
+        Type_NONE,
         {"base64", 0},
         "Specifies a string in base64 format and set it as hello data after decoded."
         " This will overwrite hello data set by other parameters."
@@ -193,7 +193,7 @@ static struct ConfigParam recogstate_parameters[] = {
     {
         "nmap-string",
         SET_hello_nmap,
-        F_NONE,
+        Type_NONE,
         {"nmap", 0},
         "Specifies a string in nmap probe format and set it as hello data after decoded."
         " This will overwrite hello data set by other parameters."
@@ -201,7 +201,7 @@ static struct ConfigParam recogstate_parameters[] = {
     {
         "file",
         SET_hello_file,
-        F_NONE,
+        Type_NONE,
         {0},
         "Specifies a file and set the content of file as hello data."
         " This will overwrite hello data set by other parameters."
@@ -209,28 +209,28 @@ static struct ConfigParam recogstate_parameters[] = {
     {
         "get-whole-response",
         SET_get_whole_response,
-        F_BOOL,
+        Type_BOOL,
         {"whole", 0},
         "Get the whole response before connection timeout, not just the banner."
     },
     {
         "recog-xml",
         SET_recog_file,
-        F_NONE,
+        Type_NONE,
         {"xml", "xml-file",0},
         "Specifies a xml file in Recog fingerprint format as the matching source."
     },
     {
         "report",
         SET_report,
-        F_BOOL,
+        Type_BOOL,
         {0},
         "Report response data if matching failed."
     },
     {
         "unprefix",
         SET_unprefix,
-        F_BOOL,
+        Type_BOOL,
         {0},
         "Unprefix the '^' from the head of all regex. It's useful if we cannot "
         "extract exactly the proper part of string for matching."
@@ -238,7 +238,7 @@ static struct ConfigParam recogstate_parameters[] = {
     {
         "unsuffix",
         SET_unsuffix,
-        F_BOOL,
+        Type_BOOL,
         {0},
         "Unprefix the '$' from the tail of all regex. It's useful if we cannot "
         "extract exactly the proper part of string for matching."
@@ -268,7 +268,7 @@ recogstate_global_init(const struct Xconf *xconf)
         recogstate_conf.unprefix, recogstate_conf.unsuffix);
     if (recogstate_conf.recog_fp==NULL) {
         LOG(LEVEL_ERROR, "[-]Failed to load recog xml file %s.\n", recogstate_conf.xml_filename);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
 

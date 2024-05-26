@@ -23,37 +23,37 @@ struct RecogConf {
 
 static struct RecogConf recog_conf = {0};
 
-static enum Config_Res SET_unsuffix(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_unsuffix(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     recog_conf.unsuffix = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_unprefix(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_unprefix(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     recog_conf.unprefix = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_report(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_report(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     recog_conf.report_while_fail = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_hello_string(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_hello_string(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -64,15 +64,15 @@ static enum Config_Res SET_hello_string(void *conf, const char *name, const char
     recog_conf.hello_len = strlen(value);
     if (recog_conf.hello_len==0) {
         LOG(LEVEL_ERROR, "FAIL: Invalid hello string.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
     recog_conf.hello = MALLOC(recog_conf.hello_len);
     memcpy(recog_conf.hello, value, recog_conf.hello_len);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_hello_nmap(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_hello_nmap(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -83,17 +83,17 @@ static enum Config_Res SET_hello_nmap(void *conf, const char *name, const char *
     recog_conf.hello_len = strlen(value);
     if (recog_conf.hello_len==0) {
         LOG(LEVEL_ERROR, "FAIL: Invalid hello string in nmap probe format.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     recog_conf.hello     = CALLOC(1, recog_conf.hello_len);
     recog_conf.hello_len = nmapprobe_decode(value,
         recog_conf.hello_len, recog_conf.hello, recog_conf.hello_len);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_hello_base64(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_hello_base64(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -104,17 +104,17 @@ static enum Config_Res SET_hello_base64(void *conf, const char *name, const char
     recog_conf.hello_len = strlen(value);
     if (recog_conf.hello_len==0) {
         LOG(LEVEL_ERROR, "FAIL: Invalid hello string in base64 format.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     recog_conf.hello     = CALLOC(1, recog_conf.hello_len);
     recog_conf.hello_len = base64_decode((char *)recog_conf.hello,
         recog_conf.hello_len, value, recog_conf.hello_len);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_hello_file(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -125,7 +125,7 @@ static enum Config_Res SET_hello_file(void *conf, const char *name, const char *
     FILE *fp = fopen(value, "rb");
     if (fp==NULL) {
         LOG(LEVEL_ERROR, "[-]Failed to open file %s.\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     /**
@@ -137,7 +137,7 @@ static enum Config_Res SET_hello_file(void *conf, const char *name, const char *
         LOG(LEVEL_ERROR, "[-]Failed to read valid hello in file %s.\n", value);
         perror(value);
         fclose(fp);
-        return CONF_ERR;
+        return Conf_ERR;
     }
     fclose(fp);
 
@@ -146,10 +146,10 @@ static enum Config_Res SET_hello_file(void *conf, const char *name, const char *
     recog_conf.hello     = MALLOC(bytes_read);
     memcpy(recog_conf.hello, buf, bytes_read);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_recog_file(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_recog_file(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -159,14 +159,14 @@ static enum Config_Res SET_recog_file(void *conf, const char *name, const char *
     
     recog_conf.xml_filename = STRDUP(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam recog_parameters[] = {
     {
         "string",
         SET_hello_string,
-        F_NONE,
+        Type_NONE,
         {0},
         "Specifies a string and set it as hello data after decoded."
         " This will overwrite hello data set by other parameters."
@@ -174,7 +174,7 @@ static struct ConfigParam recog_parameters[] = {
     {
         "base64-string",
         SET_hello_base64,
-        F_NONE,
+        Type_NONE,
         {"base64", 0},
         "Specifies a string in base64 format and set it as hello data after decoded."
         " This will overwrite hello data set by other parameters."
@@ -182,7 +182,7 @@ static struct ConfigParam recog_parameters[] = {
     {
         "nmap-string",
         SET_hello_nmap,
-        F_NONE,
+        Type_NONE,
         {"nmap", 0},
         "Specifies a string in nmap probe format and set it as hello data after decoded."
         " This will overwrite hello data set by other parameters."
@@ -190,7 +190,7 @@ static struct ConfigParam recog_parameters[] = {
     {
         "file",
         SET_hello_file,
-        F_NONE,
+        Type_NONE,
         {0},
         "Specifies a file and set the content of file as hello data."
         " This will overwrite hello data set by other parameters."
@@ -198,21 +198,21 @@ static struct ConfigParam recog_parameters[] = {
     {
         "recog-xml",
         SET_recog_file,
-        F_NONE,
+        Type_NONE,
         {"xml", "xml-file",0},
         "Specifies a xml file in Recog fingerprint format as the matching source."
     },
     {
         "report",
         SET_report,
-        F_BOOL,
+        Type_BOOL,
         {0},
         "Report response data if matching failed."
     },
     {
         "unprefix",
         SET_unprefix,
-        F_BOOL,
+        Type_BOOL,
         {0},
         "Unprefix the '^' from the head of all regex. It's useful if we cannot "
         "extract exactly the proper part of string for matching."
@@ -220,7 +220,7 @@ static struct ConfigParam recog_parameters[] = {
     {
         "unsuffix",
         SET_unsuffix,
-        F_BOOL,
+        Type_BOOL,
         {0},
         "Unprefix the '$' from the tail of all regex. It's useful if we cannot "
         "extract exactly the proper part of string for matching."
@@ -250,7 +250,7 @@ recog_global_init(const struct Xconf *xconf)
         recog_conf.unprefix, recog_conf.unsuffix);
     if (recog_conf.recog_fp==NULL) {
         LOG(LEVEL_ERROR, "[-]Failed to load recog xml file %s.\n", recog_conf.xml_filename);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     return true;

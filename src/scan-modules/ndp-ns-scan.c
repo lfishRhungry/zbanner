@@ -18,21 +18,21 @@ struct NdpNsConf {
 
 static struct NdpNsConf ndpns_conf = {0};
 
-static enum Config_Res SET_record_ttl(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     ndpns_conf.record_ttl = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam ndpns_parameters[] = {
     {
         "record-ttl",
         SET_record_ttl,
-        F_BOOL,
+        Type_BOOL,
         {"ttl", 0},
         "Records Hop Limit for IPv6 in NDP NA of ICMPv6."
     },

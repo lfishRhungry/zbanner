@@ -24,17 +24,17 @@ struct NmapTcpConf {
 static struct NmapTcpConf nmaptcp_conf = {0};
 
 
-static enum Config_Res SET_no_port_limit(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_no_port_limit(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     nmaptcp_conf.no_port_limit = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_softmatch(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_softmatch(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
 
@@ -43,10 +43,10 @@ static enum Config_Res SET_softmatch(void *conf, const char *name, const char *v
     }
 
     nmaptcp_conf.softmatch = STRDUP(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_probe_file(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_probe_file(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
 
@@ -55,10 +55,10 @@ static enum Config_Res SET_probe_file(void *conf, const char *name, const char *
     }
 
     nmaptcp_conf.probe_file = STRDUP(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_rarity(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_rarity(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -66,26 +66,26 @@ static enum Config_Res SET_rarity(void *conf, const char *name, const char *valu
     unsigned rarity = parseBoolean(value);
     if (rarity < 1 || rarity > 9) {
         LOG(LEVEL_ERROR, "[-] NmapTcpProbe: rarity must be in range 1-9.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     nmaptcp_conf.rarity = rarity;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam nmapservice_parameters[] = {
     {
         "probe-file",
         SET_probe_file,
-        F_NONE,
+        Type_NONE,
         {"service-probe-file", "probes-file", 0},
         "Specifies nmap-service-probes file for probes loading."
     },
     {
         "rarity",
         SET_rarity,
-        F_NONE,
+        Type_NONE,
         {"intensity", 0},
         "Specifies the intensity of nmap version scan. The lower-numbered probes"
         " are effective against a wide variety of common services, while the "
@@ -95,7 +95,7 @@ static struct ConfigParam nmapservice_parameters[] = {
     {
         "softmatch",
         SET_softmatch,
-        F_NONE,
+        Type_NONE,
         {0},
         "Specifies what service has been softmatched for target ports before, so "
         "NmapTcpProbe could use more accurate probes to reduce cost and just do "
@@ -106,7 +106,7 @@ static struct ConfigParam nmapservice_parameters[] = {
     {
         "no-port-limit",
         SET_no_port_limit,
-        F_NUMABLE,
+        Type_NUM,
         {0},
         "Switch on this param to release limitation of port ranges in probes of "
         "nmap-service-probes file."

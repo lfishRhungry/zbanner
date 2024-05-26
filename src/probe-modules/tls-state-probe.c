@@ -67,7 +67,7 @@ struct TlsStateConf {
 
 static struct TlsStateConf tlsstate_conf = {0};
 
-static enum Config_Res SET_subprobe(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_subprobe(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -75,13 +75,13 @@ static enum Config_Res SET_subprobe(void *conf, const char *name, const char *va
     tlsstate_conf.subprobe = get_probe_module_by_name(value);
     if (!tlsstate_conf.subprobe) {
         LOG(LEVEL_ERROR, "[-] Invalid name of subprobe: %s.\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_subprobe_args(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_subprobe_args(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -92,71 +92,71 @@ static enum Config_Res SET_subprobe_args(void *conf, const char *name, const cha
     tlsstate_conf.subprobe_args = CALLOC(1, len);
     memcpy(tlsstate_conf.subprobe_args, value, len);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_ssl_keylog(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_ssl_keylog(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tlsstate_conf.ssl_keylog = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_dump_version(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_dump_version(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tlsstate_conf.dump_version = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_dump_cipher(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_dump_cipher(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tlsstate_conf.dump_cipher = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_dump_cert(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_dump_cert(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tlsstate_conf.dump_cert = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_dump_subject(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_dump_subject(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tlsstate_conf.dump_subject = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam tlsstate_parameters[] = {
     {
         "subprobe",
         SET_subprobe,
-        F_NONE,
+        Type_NONE,
         {"sub-probe-module", 0},
         "Specifies a ProbeModule as subprobe of TlsState Probe."
     },
     {
         "subprobe-arg",
         SET_subprobe_args,
-        F_NONE,
+        Type_NONE,
         {"subprobe-args", "subarg", "subargs", 0},
         "Specifies arguments for subprobe.\n"
         "NOTE: Use double/single quotes and backslashes to handle params with "
@@ -165,28 +165,28 @@ static struct ConfigParam tlsstate_parameters[] = {
     {
         "ssl-keylog",
         SET_ssl_keylog,
-        F_BOOL,
+        Type_BOOL,
         {"key-log", 0},
         "Record the SSL key log to result as INFO."
     },
     {
         "dump-version",
         SET_dump_version,
-        F_BOOL,
+        Type_BOOL,
         {"version", 0},
         "Record SSL/TLS version to results as INFO."
     },
     {
         "dump-cipher",
         SET_dump_cipher,
-        F_BOOL,
+        Type_BOOL,
         {"cipher", 0},
         "Record cipher suites of SSL/TLS connection to results as INFO."
     },
     {
         "dump-cert",
         SET_dump_cert,
-        F_BOOL,
+        Type_BOOL,
         {"cert", 0},
         "Record X509 cert info of SSL/TLS server to results in base64 format as"
         " INFO."
@@ -194,7 +194,7 @@ static struct ConfigParam tlsstate_parameters[] = {
     {
         "dump-subject",
         SET_dump_subject,
-        F_BOOL,
+        Type_BOOL,
         {"subject", 0},
         "Record X509 subject info of SSL/TLS server to results as INFO."
     },

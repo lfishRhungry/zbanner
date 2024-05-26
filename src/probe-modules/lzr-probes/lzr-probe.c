@@ -124,47 +124,47 @@ struct LzrConf {
 
 static struct LzrConf lzr_conf = {0};
 
-static enum Config_Res SET_banner(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_banner(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     lzr_conf.banner = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_banner_if_fail(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_banner_if_fail(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     lzr_conf.banner_if_fail = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_force_all_match(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_force_all_match(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     lzr_conf.force_all_match = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_force_all_handshake(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_force_all_handshake(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     lzr_conf.force_all_handshakes = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_handshake(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_handshake(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -173,7 +173,7 @@ static enum Config_Res SET_handshake(void *conf, const char *name, const char *v
     size_t str_len = strlen(str);
     if (str_len == 0) {
         LOG(LEVEL_ERROR, "[-] Invalid name of handshake for lzr.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     size_t hs_count = 0;
@@ -201,7 +201,7 @@ static enum Config_Res SET_handshake(void *conf, const char *name, const char *v
             if (lzr_conf.handshake[hs_index] == NULL) {
                 LOG(LEVEL_ERROR, "[-] Invalid name of handshake for lzr.\n");
                 free(str);
-                return CONF_ERR;
+                return Conf_ERR;
             }
 
             hs_index++;
@@ -211,14 +211,14 @@ static enum Config_Res SET_handshake(void *conf, const char *name, const char *v
 
     free(str);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam lzr_parameters[] = {
     {
         "handshake",
         SET_handshake,
-        F_NONE,
+        Type_NONE,
         {"subprobe", "handshakes", "subprobes", 0},
         "Specifies handshakes(subprobes) for probe sending. Handshake names are "
         "splitted by comma like `--handshake http,tls`."
@@ -226,7 +226,7 @@ static struct ConfigParam lzr_parameters[] = {
     {
         "force-all-match",
         SET_force_all_match,
-        F_BOOL,
+        Type_BOOL,
         {"all-match", 0},
         "Complete all matching process even if identified. This might get multi- "
         "results."
@@ -234,7 +234,7 @@ static struct ConfigParam lzr_parameters[] = {
     {
         "force-all-handshakes",
         SET_force_all_handshake,
-        F_BOOL,
+        Type_BOOL,
         {"force-all-handshake", "all-handshake", "all-handshakes", 0},
         "Complete all specified handshakes even if identified. This could make "
         "weird count of results."
@@ -242,14 +242,14 @@ static struct ConfigParam lzr_parameters[] = {
     {
         "show-banner",
         SET_banner,
-        F_BOOL,
+        Type_BOOL,
         {"banner", 0},
         "Show normalized banner in results."
     },
     {
         "show-banner-if-fail",
         SET_banner_if_fail,
-        F_BOOL,
+        Type_BOOL,
         {"banner-fail", 0},
         "Show normalized banner in results if failed to identify."
     },

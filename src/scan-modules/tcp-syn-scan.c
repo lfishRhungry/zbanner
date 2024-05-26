@@ -19,71 +19,71 @@ struct TcpSynConf {
 
 static struct TcpSynConf tcpsyn_conf = {0};
 
-static enum Config_Res SET_record_mss(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_record_mss(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tcpsyn_conf.record_mss = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_record_ttl(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tcpsyn_conf.record_ttl = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_record_ipid(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tcpsyn_conf.record_ipid = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_record_win(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_record_win(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tcpsyn_conf.record_win = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_zero_fail(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_zero_fail(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tcpsyn_conf.zero_fail = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_send_rst(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_send_rst(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tcpsyn_conf.send_rst = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam tcpsyn_parameters[] = {
     {
         "send-rst",
         SET_send_rst,
-        F_BOOL,
+        Type_BOOL,
         {"rst", 0},
         "Actively send an RST if got a SYN-ACK. This is useful when we are in "
         "bypassing mode or working on Windows and don't want to waste connection"
@@ -92,35 +92,35 @@ static struct ConfigParam tcpsyn_parameters[] = {
     {
         "fail-zerowin",
         SET_zero_fail,
-        F_BOOL,
+        Type_BOOL,
         {"fail-zero", 0},
         "Let SYN-ACK responds with zero window setting as failed. Default is success."
     },
     {
         "record-ttl",
         SET_record_ttl,
-        F_BOOL,
+        Type_BOOL,
         {"ttl", 0},
         "Records TTL for IPv4 or Hop Limit for IPv6 in SYN-ACK or RST."
     },
     {
         "record-ipid",
         SET_record_ipid,
-        F_BOOL,
+        Type_BOOL,
         {"ipid", 0},
         "Records IPID of SYN-ACK or RST just for IPv4."
     },
     {
         "record-win",
         SET_record_win,
-        F_BOOL,
+        Type_BOOL,
         {"win", "window", 0},
         "Records TCP window size of SYN-ACK or RST."
     },
     {
         "record-mss",
         SET_record_mss,
-        F_BOOL,
+        Type_BOOL,
         {"mss", 0},
         "Records TCP MSS option value of SYN-ACK. Show zero if the option not set."
     },

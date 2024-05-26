@@ -72,15 +72,15 @@ void list_all_scan_modules()
         if (scan_modules_list[i]->params) {
             for (unsigned j=0; scan_modules_list[i]->params[j].name; j++) {
 
-                if (!scan_modules_list[i]->params[j].helps)
+                if (!scan_modules_list[i]->params[j].help_text)
                     continue;
 
                 printf("  --%s", scan_modules_list[i]->params[j].name);
-                for (unsigned k=0; scan_modules_list[i]->params[j].alts[k]; k++) {
-                    printf(", --%s", scan_modules_list[i]->params[j].alts[k]);
+                for (unsigned k=0; scan_modules_list[i]->params[j].alt_names[k]; k++) {
+                    printf(", --%s", scan_modules_list[i]->params[j].alt_names[k]);
                 }
                 printf("\n");
-                xprint(scan_modules_list[i]->params[j].helps, 6, 80);
+                xprint(scan_modules_list[i]->params[j].help_text, 6, 80);
                 printf("\n\n");
             }
         }

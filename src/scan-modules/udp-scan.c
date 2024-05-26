@@ -17,21 +17,21 @@ struct UdpConf {
 
 static struct UdpConf udp_conf = {0};
 
-static enum Config_Res SET_no_icmp(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_no_icmp(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     udp_conf.no_icmp = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam udp_parameters[] = {
     {
         "no-icmp",
         SET_no_icmp,
-        F_BOOL,
+        Type_BOOL,
         {0},
         "Do not handle icmp port unreachable info."
     },

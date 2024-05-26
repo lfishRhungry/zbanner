@@ -31,59 +31,59 @@ struct HelloStateConf {
 
 static struct HelloStateConf hellostate_conf = {0};
 
-static enum Config_Res SET_get_whole_response(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_get_whole_response(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     hellostate_conf.get_whole_response = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 #ifndef NOT_FOUND_PCRE2
 
-static enum Config_Res SET_report(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_report(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     hellostate_conf.report_while_regex = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_match_whole_response(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_match_whole_response(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     hellostate_conf.match_whole_response = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_newlines(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_newlines(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     hellostate_conf.re_include_newlines = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_insensitive(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_insensitive(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     hellostate_conf.re_case_insensitive = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_regex(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -96,7 +96,7 @@ static enum Config_Res SET_regex(void *conf, const char *name, const char *value
     hellostate_conf.regex_len = strlen(value);
     if (hellostate_conf.regex_len==0) {
         LOG(LEVEL_ERROR, "FAIL: Invalid regex.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     int pcre2_errcode;
@@ -112,13 +112,13 @@ static enum Config_Res SET_regex(void *conf, const char *name, const char *value
     
     if (!hellostate_conf.compiled_re) {
         LOG(LEVEL_ERROR, "[-]Regex compiled failed.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     hellostate_conf.match_ctx = pcre2_match_context_create(NULL);
     if (!hellostate_conf.match_ctx) {
         LOG(LEVEL_ERROR, "[-]Regex allocates match_ctx failed.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     pcre2_set_match_limit(hellostate_conf.match_ctx, 100000);
@@ -132,12 +132,12 @@ static enum Config_Res SET_regex(void *conf, const char *name, const char *value
 #endif
 
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 #endif
 
-static enum Config_Res SET_hello_string(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_hello_string(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -148,15 +148,15 @@ static enum Config_Res SET_hello_string(void *conf, const char *name, const char
     hellostate_conf.hello_len = strlen(value);
     if (hellostate_conf.hello_len==0) {
         LOG(LEVEL_ERROR, "FAIL: Invalid hello string.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
     hellostate_conf.hello = MALLOC(hellostate_conf.hello_len);
     memcpy(hellostate_conf.hello, value, hellostate_conf.hello_len);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_hello_nmap(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_hello_nmap(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -167,17 +167,17 @@ static enum Config_Res SET_hello_nmap(void *conf, const char *name, const char *
     hellostate_conf.hello_len = strlen(value);
     if (hellostate_conf.hello_len==0) {
         LOG(LEVEL_ERROR, "FAIL: Invalid hello string in nmap probe format.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     hellostate_conf.hello     = CALLOC(1, hellostate_conf.hello_len);
     hellostate_conf.hello_len = nmapprobe_decode(value,
         hellostate_conf.hello_len, hellostate_conf.hello, hellostate_conf.hello_len);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_hello_base64(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_hello_base64(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -188,17 +188,17 @@ static enum Config_Res SET_hello_base64(void *conf, const char *name, const char
     hellostate_conf.hello_len = strlen(value);
     if (hellostate_conf.hello_len==0) {
         LOG(LEVEL_ERROR, "FAIL: Invalid hello string in base64 format.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     hellostate_conf.hello     = CALLOC(1, hellostate_conf.hello_len);
     hellostate_conf.hello_len = base64_decode((char *)hellostate_conf.hello,
         hellostate_conf.hello_len, value, hellostate_conf.hello_len);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_hello_file(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -209,7 +209,7 @@ static enum Config_Res SET_hello_file(void *conf, const char *name, const char *
     FILE *fp = fopen(value, "rb");
     if (fp==NULL) {
         LOG(LEVEL_ERROR, "[-]Failed to open file %s.\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     /**
@@ -221,7 +221,7 @@ static enum Config_Res SET_hello_file(void *conf, const char *name, const char *
         LOG(LEVEL_ERROR, "[-]Failed to read valid hello in file %s.\n", value);
         perror(value);
         fclose(fp);
-        return CONF_ERR;
+        return Conf_ERR;
     }
     fclose(fp);
 
@@ -230,14 +230,14 @@ static enum Config_Res SET_hello_file(void *conf, const char *name, const char *
     hellostate_conf.hello     = MALLOC(bytes_read);
     memcpy(hellostate_conf.hello, buf, bytes_read);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam hellostate_parameters[] = {
     {
         "string",
         SET_hello_string,
-        F_NONE,
+        Type_NONE,
         {0},
         "Specifies a string and set it as hello data after decoded."
         " This will overwrite hello data set by other parameters."
@@ -245,7 +245,7 @@ static struct ConfigParam hellostate_parameters[] = {
     {
         "base64-string",
         SET_hello_base64,
-        F_NONE,
+        Type_NONE,
         {"base64", 0},
         "Specifies a string in base64 format and set it as hello data after decoded."
         " This will overwrite hello data set by other parameters."
@@ -253,7 +253,7 @@ static struct ConfigParam hellostate_parameters[] = {
     {
         "nmap-string",
         SET_hello_nmap,
-        F_NONE,
+        Type_NONE,
         {"nmap", 0},
         "Specifies a string in nmap probe format and set it as hello data after decoded."
         " This will overwrite hello data set by other parameters."
@@ -261,7 +261,7 @@ static struct ConfigParam hellostate_parameters[] = {
     {
         "file",
         SET_hello_file,
-        F_NONE,
+        Type_NONE,
         {0},
         "Specifies a file and set the content of file as hello data."
         " This will overwrite hello data set by other parameters."
@@ -271,7 +271,7 @@ static struct ConfigParam hellostate_parameters[] = {
     {
         "regex",
         SET_regex,
-        F_NONE,
+        Type_NONE,
         {0},
         "Specifies a regex and sets matched response data as successed instead of"
         " reporting all results."
@@ -279,21 +279,21 @@ static struct ConfigParam hellostate_parameters[] = {
     {
         "case-insensitive",
         SET_insensitive,
-        F_BOOL,
+        Type_BOOL,
         {"insensitive", 0},
         "Whether the specified regex is case-insensitive or not."
     },
     {
         "include-newlines",
         SET_newlines,
-        F_BOOL,
+        Type_BOOL,
         {"include-newline", "newline", "newlines", 0},
         "Whether the specified regex contains newlines."
     },
     {
         "match-whole-response",
         SET_match_whole_response,
-        F_BOOL,
+        Type_BOOL,
         {"match-whole", 0},
         "Continue to match the whole response after matched previous content.\n"
         "NOTE: it works while using --get-whole-response."
@@ -301,7 +301,7 @@ static struct ConfigParam hellostate_parameters[] = {
     {
         "report",
         SET_report,
-        F_BOOL,
+        Type_BOOL,
         {0},
         "Report response data after regex matching."
     },
@@ -310,7 +310,7 @@ static struct ConfigParam hellostate_parameters[] = {
     {
         "get-whole-response",
         SET_get_whole_response,
-        F_BOOL,
+        Type_BOOL,
         {"whole", 0},
         "Get the whole response before connection timeout, not just the banner."
     },

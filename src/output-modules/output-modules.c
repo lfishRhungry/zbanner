@@ -78,15 +78,15 @@ void list_all_output_modules()
         if (output_modules_list[i]->params) {
             for (unsigned j=0; output_modules_list[i]->params[j].name; j++) {
 
-                if (!output_modules_list[i]->params[j].helps)
+                if (!output_modules_list[i]->params[j].help_text)
                     continue;
 
                 printf("  --%s", output_modules_list[i]->params[j].name);
-                for (unsigned k=0; output_modules_list[i]->params[j].alts[k]; k++) {
-                    printf(", --%s", output_modules_list[i]->params[j].alts[k]);
+                for (unsigned k=0; output_modules_list[i]->params[j].alt_names[k]; k++) {
+                    printf(", --%s", output_modules_list[i]->params[j].alt_names[k]);
                 }
                 printf("\n");
-                xprint(output_modules_list[i]->params[j].helps, 6, 80);
+                xprint(output_modules_list[i]->params[j].help_text, 6, 80);
                 printf("\n\n");
             }
         }

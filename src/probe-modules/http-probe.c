@@ -97,37 +97,37 @@ static struct HttpConf http_conf = {0};
 
 #ifndef NOT_FOUND_PCRE2
 
-static enum Config_Res SET_report(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_report(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     http_conf.report_while_regex = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_newlines(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_newlines(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     http_conf.re_include_newlines = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_insensitive(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_insensitive(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     http_conf.re_case_insensitive = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_regex(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -140,7 +140,7 @@ static enum Config_Res SET_regex(void *conf, const char *name, const char *value
     http_conf.regex_len = strlen(value);
     if (http_conf.regex_len==0) {
         LOG(LEVEL_ERROR, "FAIL: Invalid regex.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     int pcre2_errcode;
@@ -156,13 +156,13 @@ static enum Config_Res SET_regex(void *conf, const char *name, const char *value
     
     if (!http_conf.compiled_re) {
         LOG(LEVEL_ERROR, "[-]Regex compiled failed.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     http_conf.match_ctx = pcre2_match_context_create(NULL);
     if (!http_conf.match_ctx) {
         LOG(LEVEL_ERROR, "[-]Regex allocates match_ctx failed.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     pcre2_set_match_limit(http_conf.match_ctx, 100000);
@@ -176,12 +176,12 @@ static enum Config_Res SET_regex(void *conf, const char *name, const char *value
 #endif
 
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 #endif
 
-static enum Config_Res SET_method(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_method(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -192,10 +192,10 @@ static enum Config_Res SET_method(void *conf, const char *name, const char *valu
     http_conf.method_length = strlen(value);
     http_conf.method = STRDUP(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_url(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_url(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -206,10 +206,10 @@ static enum Config_Res SET_url(void *conf, const char *name, const char *value)
     http_conf.url_length = strlen(value);
     http_conf.url = STRDUP(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_version(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_version(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -220,10 +220,10 @@ static enum Config_Res SET_version(void *conf, const char *name, const char *val
     http_conf.version_length = strlen(value);
     http_conf.version = STRDUP(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_host(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_host(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -234,10 +234,10 @@ static enum Config_Res SET_host(void *conf, const char *name, const char *value)
     http_conf.host_length = strlen(value);
     http_conf.host = STRDUP(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_user_agent(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_user_agent(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -248,10 +248,10 @@ static enum Config_Res SET_user_agent(void *conf, const char *name, const char *
     http_conf.user_agent_length = strlen(value);
     http_conf.user_agent = STRDUP(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_payload(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_payload(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -262,10 +262,10 @@ static enum Config_Res SET_payload(void *conf, const char *name, const char *val
     http_conf.payload_length = strlen(value);
     http_conf.payload = STRDUP(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_header(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_header(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
 
@@ -305,7 +305,7 @@ static enum Config_Res SET_header(void *conf, const char *name, const char *valu
     } else {
         LOG(LEVEL_ERROR, "[-] --header needs both a name and value\n");
         LOG(LEVEL_ERROR, "    hint: \"--header Name:value\"\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     /* allocate new value */
@@ -323,10 +323,10 @@ static enum Config_Res SET_header(void *conf, const char *name, const char *valu
         http_conf.headers_count++;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_cookie(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_cookie(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -348,10 +348,10 @@ static enum Config_Res SET_cookie(void *conf, const char *name, const char *valu
         http_conf.cookies_count++;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_remove(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_remove(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -372,52 +372,52 @@ static enum Config_Res SET_remove(void *conf, const char *name, const char *valu
         http_conf.remove_count++;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_dynamic_host(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_dynamic_host(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     http_conf.dynamic_host = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam http_parameters[] = {
     {
         "method",
         SET_method,
-        F_NONE,
+        Type_NONE,
         {0},
         "Changes the default `GET` method in http request line."
     },
     {
         "url",
         SET_url,
-        F_NONE,
+        Type_NONE,
         {0},
         "Replaces the existing `/` url field in http request line."
     },
     {
         "version",
         SET_version,
-        F_NONE,
+        Type_NONE,
         {"ver", 0},
         "Replaces the existing `HTTP/1.0` version field in http request line."
     },
     {
         "host",
         SET_host,
-        F_NONE,
+        Type_NONE,
         {0},
         "Adds `Host` field to http request header."
     },
     {
         "dynamic-host",
         SET_dynamic_host,
-        F_BOOL,
+        Type_BOOL,
         {"ip-host", 0},
         "Sets(Adds) correspond IP address as `Host` field to http request header"
         " for different target e.g. `Host: 192.168.0.1`, `Host: [fe80::1]`."
@@ -425,7 +425,7 @@ static struct ConfigParam http_parameters[] = {
     {
         "user-agent",
         SET_user_agent,
-        F_NONE,
+        Type_NONE,
         {"ua", 0},
         "Replaces existing `User-Agent` field in http request header.(highly "
         "recommended)"
@@ -433,7 +433,7 @@ static struct ConfigParam http_parameters[] = {
     {
         "payload",
         SET_payload,
-        F_NONE,
+        Type_NONE,
         {0},
         "Adds a payload string after http request header. This will automatically"
         " add `--header Content-Length:LEN` field to match the length of the "
@@ -446,7 +446,7 @@ static struct ConfigParam http_parameters[] = {
     {
         "cookie",
         SET_cookie,
-        F_NONE,
+        Type_NONE,
         {0},
         "Adds a `Cookie` field to http request header even if other cookie fields"
         " exist."
@@ -454,7 +454,7 @@ static struct ConfigParam http_parameters[] = {
     {
         "header",
         SET_header,
-        F_NONE,
+        Type_NONE,
         {0},
         "Replaces the existing http request header field or inserts a new one if"
         " the fields doesn't exist, given as a `name:value` pair. It cannot be "
@@ -465,7 +465,7 @@ static struct ConfigParam http_parameters[] = {
     {
         "remove",
         SET_remove,
-        F_NONE,
+        Type_NONE,
         {0},
         "Removes the first field from the header that matches. We may need "
         "multiple times for fields like `Cookie` that can exist multiple times."
@@ -475,7 +475,7 @@ static struct ConfigParam http_parameters[] = {
     {
         "regex",
         SET_regex,
-        F_NONE,
+        Type_NONE,
         {0},
         "Specifies a regex and sets matched response data as successed instead of"
         " reporting all results."
@@ -483,21 +483,21 @@ static struct ConfigParam http_parameters[] = {
     {
         "case-insensitive",
         SET_insensitive,
-        F_BOOL,
+        Type_BOOL,
         {"insensitive", 0},
         "Whether the specified regex is case-insensitive or not."
     },
     {
         "include-newlines",
         SET_newlines,
-        F_BOOL,
+        Type_BOOL,
         {"include-newline", "newline", "newlines", 0},
         "Whether the specified regex contains newlines."
     },
     {
         "report",
         SET_report,
-        F_BOOL,
+        Type_BOOL,
         {0},
         "Report response data after regex matching."
     },

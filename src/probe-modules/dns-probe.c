@@ -18,7 +18,7 @@ struct DnsConf {
 
 static struct DnsConf dns_conf = {0};
 
-static enum Config_Res SET_ptr(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_ptr(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -26,7 +26,7 @@ static enum Config_Res SET_ptr(void *conf, const char *name, const char *value)
     ipaddress ip = massip_parse_ip(value);
     if (ip.version==0) {
         LOG(LEVEL_ERROR, "[-] PTR request ip is invalid: %s.\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     ipaddress_ptr_t ip_ptr = ipaddress_ptr_fmt(ip);
@@ -36,43 +36,43 @@ static enum Config_Res SET_ptr(void *conf, const char *name, const char *value)
 
     if (dns_conf.req_type==DNS_REC_INVALID) {
         LOG(LEVEL_ERROR, "[-] internal error: invalide request type of dns.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_print_all_add(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_print_all_add(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     dns_conf.print_all_add = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_print_all_auth(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_print_all_auth(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     dns_conf.print_all_auth = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_print_all_answer(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_print_all_answer(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     dns_conf.print_all_ans = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_req_name(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_req_name(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -81,15 +81,15 @@ static enum Config_Res SET_req_name(void *conf, const char *name, const char *va
     size_t str_len = strlen(str);
     if (str_len == 0) {
         LOG(LEVEL_ERROR, "[-] request name of dns is error.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     dns_conf.req_name = str;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_req_type(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_req_type(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -97,38 +97,38 @@ static enum Config_Res SET_req_type(void *conf, const char *name, const char *va
     size_t str_len = strlen(value);
     if (str_len == 0) {
         LOG(LEVEL_ERROR, "[-] request type of dns is error.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     dns_conf.req_type = dns_str_to_record_type(value);
 
     if (dns_conf.req_type==DNS_REC_INVALID) {
         LOG(LEVEL_ERROR, "[-] invalide request type of dns.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam dns_parameters[] = {
     {
         "req-name",
         SET_req_name,
-        F_NONE,
+        Type_NONE,
         {"name", 0},
         "Specifies dns request name like 'www.google.com'."
     },
     {
         "req-type",
         SET_req_type,
-        F_NONE,
+        Type_NONE,
         {"type", 0},
         "Specifies dns request type like 'A', 'AAAA'."
     },
     {
         "ptr-request",
         SET_ptr,
-        F_NONE,
+        Type_NONE,
         {"ptr", "ptr-ip", 0},
         "This is a wrapper of setting request type to PTR and request name by "
         "the ip we specified."
@@ -136,21 +136,21 @@ static struct ConfigParam dns_parameters[] = {
     {
         "all-answer",
         SET_print_all_answer,
-        F_BOOL,
+        Type_BOOL,
         {"all-ans", 0},
         "Print all answer records instead of only the first in default."
     },
     {
         "all-authority",
         SET_print_all_auth,
-        F_BOOL,
+        Type_BOOL,
         {"all-auth", 0},
         "Print all authority records instead of only the first in default."
     },
     {
         "all-additional",
         SET_print_all_add,
-        F_BOOL,
+        Type_BOOL,
         {"all-addition", "all-add", 0},
         "Print all additional records instead of only the first in default."
     },

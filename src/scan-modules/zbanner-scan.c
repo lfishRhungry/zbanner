@@ -23,105 +23,105 @@ struct ZBannerConf {
 
 static struct ZBannerConf zbanner_conf = {0};
 
-static enum Config_Res SET_record_mss(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_record_mss(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     zbanner_conf.record_mss = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_record_ttl(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     zbanner_conf.record_ttl = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_record_ipid(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     zbanner_conf.record_ipid = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_record_win(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_record_win(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     zbanner_conf.record_win = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_banner_timeout(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_banner_timeout(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     zbanner_conf.no_banner_timeout = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_port_timeout(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_port_timeout(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     zbanner_conf.is_port_timeout = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_port_success(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_port_success(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     zbanner_conf.is_port_success = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_port_failure(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_port_failure(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     zbanner_conf.is_port_failure = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam zbanner_parameters[] = {
     {
         "no-banner-timeout",
         SET_banner_timeout,
-        F_BOOL,
+        Type_BOOL,
         {"no-banner-tm", "no-timeout-banner","no-tm-banner", 0},
         "Do not use timeout for banner grabbing while in timeout mode."
     },
     {
         "port-timeout",
         SET_port_timeout,
-        F_BOOL,
+        Type_BOOL,
         {"timeout-port", "port-tm", "tm-port", 0},
         "Use timeout for port scanning(openness detection) while in timeout mode."
     },
     {
         "port-success",
         SET_port_success,
-        F_BOOL,
+        Type_BOOL,
         {"success-port", 0},
         "Let port opening(contains zero syn-ack) results as success level."
         "(Default is info level)"
@@ -129,35 +129,35 @@ static struct ConfigParam zbanner_parameters[] = {
     {
         "port-failure",
         SET_port_failure,
-        F_BOOL,
+        Type_BOOL,
         {"failure-port", "port-fail", "fail-port", 0},
         "Let port closed results as failure level.(Default is info level)"
     },
     {
         "record-ttl",
         SET_record_ttl,
-        F_BOOL,
+        Type_BOOL,
         {"ttl", 0},
         "Records TTL for IPv4 or Hop Limit for IPv6 in SYN-ACK or RST."
     },
     {
         "record-ipid",
         SET_record_ipid,
-        F_BOOL,
+        Type_BOOL,
         {"ipid", 0},
         "Records IPID of SYN-ACK or RST just for IPv4."
     },
     {
         "record-win",
         SET_record_win,
-        F_BOOL,
+        Type_BOOL,
         {"win", "window", 0},
         "Records TCP window size of SYN-ACK or RST."
     },
     {
         "record-mss",
         SET_record_mss,
-        F_BOOL,
+        Type_BOOL,
         {"mss", 0},
         "Records TCP MSS option value of SYN-ACK. Show zero if the option not set."
     },

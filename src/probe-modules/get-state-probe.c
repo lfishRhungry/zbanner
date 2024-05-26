@@ -18,21 +18,21 @@ struct GetStateConf {
 static struct GetStateConf getstate_conf = {0};
 
 
-static enum Config_Res SET_whole_page(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_whole_page(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     getstate_conf.get_whole_page = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam getstate_parameters[] = {
     {
         "whole-page",
         SET_whole_page,
-        F_BOOL,
+        Type_BOOL,
         {"whole", 0},
         "Get the whole page before connection timeout, not just the banner."
     },

@@ -59,7 +59,7 @@ struct LuaUdpConf {
 
 static struct LuaUdpConf luaudp_conf = {0};
 
-static enum Config_Res SET_script(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_script(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -69,14 +69,14 @@ static enum Config_Res SET_script(void *conf, const char *name, const char *valu
     
     luaudp_conf.script = STRDUP(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam luaudp_parameters[] = {
     {
         "script",
         SET_script,
-        F_NONE,
+        Type_NONE,
         {0},
         "Specifies which lua script we'll load to as probe."
     },

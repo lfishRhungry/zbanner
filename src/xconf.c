@@ -347,7 +347,7 @@ xconf_save_state(struct Xconf *xconf)
     fclose(fp);
 }
 
-static enum Config_Res SET_scan_module(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_scan_module(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -363,13 +363,13 @@ static enum Config_Res SET_scan_module(void *conf, const char *name, const char 
     xconf->scan_module = get_scan_module_by_name(value);
     if(!xconf->scan_module){
         LOG(LEVEL_ERROR, "FAIL %s: no such scan module named %s\n", name, value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_probe_module(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_probe_module(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -382,13 +382,13 @@ static enum Config_Res SET_probe_module(void *conf, const char *name, const char
     xconf->probe_module = get_probe_module_by_name(value);
     if(!xconf->probe_module){
         LOG(LEVEL_ERROR, "FAIL %s: no such probe module\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_output_module(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_output_module(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -401,13 +401,13 @@ static enum Config_Res SET_output_module(void *conf, const char *name, const cha
     xconf->out.output_module = get_output_module_by_name(value);
     if(!xconf->out.output_module){
         LOG(LEVEL_ERROR, "FAIL %s: no such output module\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_output_filename(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_output_filename(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -421,10 +421,10 @@ static enum Config_Res SET_output_filename(void *conf, const char *name, const c
     safe_strcpy(xconf->out.output_filename,
         sizeof(xconf->out.output_filename), value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_show_output(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_show_output(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -449,13 +449,13 @@ static enum Config_Res SET_show_output(void *conf, const char *name, const char 
         xconf->out.no_show_success = false;
     } else {
         LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_no_show_output(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_no_show_output(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -472,13 +472,13 @@ static enum Config_Res SET_no_show_output(void *conf, const char *name, const ch
         xconf->out.no_show_success = true;
     } else {
         LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_print_status(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_print_status(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -498,13 +498,13 @@ static enum Config_Res SET_print_status(void *conf, const char *name, const char
         xconf->is_status_info_num = true;
     } else {
         LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_scan_module_args(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_scan_module_args(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -521,10 +521,10 @@ static enum Config_Res SET_scan_module_args(void *conf, const char *name, const 
     xconf->scan_module_args = CALLOC(1, len);
     memcpy(xconf->scan_module_args, value, len);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_probe_module_args(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_probe_module_args(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -541,10 +541,10 @@ static enum Config_Res SET_probe_module_args(void *conf, const char *name, const
     xconf->probe_module_args = CALLOC(1, len);
     memcpy(xconf->probe_module_args, value, len);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_output_module_args(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_output_module_args(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -561,10 +561,10 @@ static enum Config_Res SET_output_module_args(void *conf, const char *name, cons
     xconf->out.output_args = CALLOC(1, len);
     memcpy(xconf->out.output_args, value, len);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_list_scan_modules(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_list_scan_modules(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -573,10 +573,10 @@ static enum Config_Res SET_list_scan_modules(void *conf, const char *name, const
        return 0;
     }
     xconf->op = parseBoolean(value)?Operation_ListScanModules:xconf->op;
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_list_probe_modules(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_list_probe_modules(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -585,10 +585,10 @@ static enum Config_Res SET_list_probe_modules(void *conf, const char *name, cons
        return 0;
     }
     xconf->op = parseBoolean(value)?Operation_ListProbeModules:xconf->op;
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_list_output_modules(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_list_output_modules(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -597,10 +597,10 @@ static enum Config_Res SET_list_output_modules(void *conf, const char *name, con
        return 0;
     }
     xconf->op = parseBoolean(value)?Operation_ListOutputModules:xconf->op;
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_listif(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_listif(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -614,10 +614,10 @@ static enum Config_Res SET_listif(void *conf, const char *name, const char *valu
 
     if (parseBoolean(value))
         xconf->op = Operation_ListAdapters;
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_list_target(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_list_target(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -630,10 +630,10 @@ static enum Config_Res SET_list_target(void *conf, const char *name, const char 
     /* Read in a binary file instead of scanning the network*/
     xconf->op = Operation_ListTargets;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_list_range(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_list_range(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -645,10 +645,10 @@ static enum Config_Res SET_list_range(void *conf, const char *name, const char *
     if (parseBoolean(value))
         xconf->op = Operation_ListRange;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_pfring(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_pfring(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -661,10 +661,10 @@ static enum Config_Res SET_pfring(void *conf, const char *name, const char *valu
 
     xconf->is_pfring = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_nodedup(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_nodedup(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -676,10 +676,10 @@ static enum Config_Res SET_nodedup(void *conf, const char *name, const char *val
 
     xconf->is_nodedup = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_tcp_window(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_tcp_window(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -691,15 +691,15 @@ static enum Config_Res SET_tcp_window(void *conf, const char *name, const char *
     unsigned x = parseInt(value);
     if (x > 65535) {
         LOG(LEVEL_ERROR, "error: %s=<n>: expected number less than 65535\n", name);
-        return CONF_ERR;
+        return Conf_ERR;
     } else {
         xconf->tcp_window = x;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_tcp_init_window(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_tcp_init_window(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -711,15 +711,15 @@ static enum Config_Res SET_tcp_init_window(void *conf, const char *name, const c
     unsigned x = parseInt(value);
     if (x > 65535) {
         LOG(LEVEL_ERROR, "error: %s=<n>: expected number less than 65535\n", name);
-        return CONF_ERR;
+        return Conf_ERR;
     } else {
         xconf->tcp_init_window = x;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_packet_ttl(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_packet_ttl(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -731,15 +731,15 @@ static enum Config_Res SET_packet_ttl(void *conf, const char *name, const char *
     unsigned x = parseInt(value);
     if (x >= 256) {
         LOG(LEVEL_ERROR, "error: %s=<n>: expected number less than 256\n", name);
-        return CONF_ERR;
+        return Conf_ERR;
     } else {
         xconf->packet_ttl = x;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_dedup_win(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_dedup_win(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -750,15 +750,15 @@ static enum Config_Res SET_dedup_win(void *conf, const char *name, const char *v
 
     if (parseInt(value)<1024) {
         LOG(LEVEL_ERROR, "FAIL: %s: dedup-win must >= 1024.\n", name);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     xconf->dedup_win = parseInt(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_stack_buf_count(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_stack_buf_count(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -772,21 +772,21 @@ static enum Config_Res SET_stack_buf_count(void *conf, const char *name, const c
     uint64_t v = parseInt(value);
     if (v<2048) {
         LOG(LEVEL_ERROR, "FAIL: %s: stack-buf-count must >= 2048.\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     } else if (!is_power_of_two(v)) {
         LOG(LEVEL_ERROR, "FAIL: %s: stack-buf-count must be power of 2.\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     } else if (v>RTE_RING_SZ_MASK) {
         LOG(LEVEL_ERROR, "FAIL: %s: stack-buf-count exceeded size limit.\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     xconf->stack_buf_count = v;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_dispatch_buf_count(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_dispatch_buf_count(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -800,21 +800,21 @@ static enum Config_Res SET_dispatch_buf_count(void *conf, const char *name, cons
     uint64_t v = parseInt(value);
     if (v<2048) {
         LOG(LEVEL_ERROR, "FAIL: %s: dispatch-buf-count must >= 2048.\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     } else if (!is_power_of_two(v)) {
         LOG(LEVEL_ERROR, "FAIL: %s: dispatch-buf-count must be power of 2.\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     } else if (v>RTE_RING_SZ_MASK) {
         LOG(LEVEL_ERROR, "FAIL: %s: dispatch-buf-count exceeded size limit.\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     xconf->dispatch_buf_count = v;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_forever(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_forever(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
     UNUSEDPARM(value);
@@ -826,10 +826,10 @@ static enum Config_Res SET_forever(void *conf, const char *name, const char *val
 
     xconf->wait =  INT_MAX;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_wait(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_wait(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -844,10 +844,10 @@ static enum Config_Res SET_wait(void *conf, const char *name, const char *value)
 
     xconf->wait = (unsigned)parseInt(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_rx_handler_count(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_rx_handler_count(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -860,18 +860,18 @@ static enum Config_Res SET_rx_handler_count(void *conf, const char *name, const 
     unsigned count = parseInt(value);
     if (count<=0) {
         LOG(LEVEL_ERROR, "FAIL: %s: receive handler thread count cannot be zero.\n", name);
-        return CONF_ERR;
+        return Conf_ERR;
     } else if (!is_power_of_two(count)) {
         LOG(LEVEL_ERROR, "FAIL: %s: receive handler thread count must be power of 2.\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     xconf->rx_handler_count = count;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_tx_thread_count(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_tx_thread_count(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -884,15 +884,15 @@ static enum Config_Res SET_tx_thread_count(void *conf, const char *name, const c
     unsigned count = parseInt(value);
     if (count==0) {
         LOG(LEVEL_ERROR, "FAIL: %s: transmit thread count cannot be zero.\n", name);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     xconf->tx_thread_count = count;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_adapter(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_adapter(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -909,10 +909,10 @@ static enum Config_Res SET_adapter(void *conf, const char *name, const char *val
     snprintf(  xconf->nic.ifname, sizeof(xconf->nic.ifname),
         "%s", value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_source_ip(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_source_ip(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -961,7 +961,7 @@ static enum Config_Res SET_source_ip(void *conf, const char *name, const char *v
             if (!is_power_of_two((uint64_t)range.end - range.begin + 1)) {
                 LOG(LEVEL_ERROR, "FAIL: range must be even power of two: %s=%s\n",
                     name, value);
-                return CONF_ERR;
+                return Conf_ERR;
             }
             xconf->nic.src.ipv4.first = range.begin;
             xconf->nic.src.ipv4.last  = range.end;
@@ -970,14 +970,14 @@ static enum Config_Res SET_source_ip(void *conf, const char *name, const char *v
         case Ipv6_Address:
             if (range6.begin.hi!=range6.end.hi) {
                 LOG(LEVEL_ERROR, "FAIL: range of ipv6 source addresses is too large.\n");
-                return CONF_ERR;
+                return Conf_ERR;
             }
             /* If more than one IP address given, make the range is
                 * an even power of two (1, 2, 4, 8, 16, ...) */
             if (!is_power_of_two(range6.end.lo - range6.begin.lo + 1)) {
                 LOG(LEVEL_ERROR, "FAIL: range must be even power of two: %s=%s\n",
                     name, value);
-                return CONF_ERR;
+                return Conf_ERR;
             }
             xconf->nic.src.ipv6.first = range6.begin;
             xconf->nic.src.ipv6.last  = range6.end;
@@ -987,13 +987,13 @@ static enum Config_Res SET_source_ip(void *conf, const char *name, const char *v
             LOG(LEVEL_ERROR, "FAIL: bad source IP address: %s=%s\n",
                 name, value);
             LOG(LEVEL_ERROR, "hint   addresses look like \"192.168.1.23\" or \"2001:db8:1::1ce9\".\n");
-            return CONF_ERR;
+            return Conf_ERR;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_source_port(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_source_port(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1018,31 +1018,31 @@ static enum Config_Res SET_source_port(void *conf, const char *name, const char 
     /* Check if there was an error in parsing */
     if (is_error) {
         LOG(LEVEL_ERROR, "FAIL: bad source port specification: %s\n", name);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     /* Only allow one range of ports */
     if (ports.count != 1) {
         LOG(LEVEL_ERROR, "FAIL: only one '%s' range may be specified, found %u ranges\n",
             name, ports.count);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     /* verify range is even power of 2 (1, 2, 4, 8, 16, ...) */
     if (!is_power_of_two(ports.list[0].end - ports.list[0].begin + 1)) {
         LOG(LEVEL_ERROR, "FAIL: source port range must be even power of two: %s=%s\n",
             name, value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     xconf->nic.src.port.first = ports.list[0].begin;
     xconf->nic.src.port.last  = ports.list[0].end;
     xconf->nic.src.port.range = ports.list[0].end - ports.list[0].begin + 1;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_target_output(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_target_output(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1147,10 +1147,10 @@ static enum Config_Res SET_target_output(void *conf, const char *name, const cha
         }
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_target_ip(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_target_ip(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1162,16 +1162,16 @@ static enum Config_Res SET_target_ip(void *conf, const char *name, const char *v
     err = massip_add_target_string(&xconf->targets, value);
     if (err) {
         LOG(LEVEL_ERROR, "ERROR: bad IP address/range: %s\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     if (xconf->op == Operation_Default)
         xconf->op = Operation_Scan;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_adapter_snaplen(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_adapter_snaplen(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1185,13 +1185,13 @@ static enum Config_Res SET_adapter_snaplen(void *conf, const char *name, const c
     xconf->nic.snaplen = (unsigned)parseInt(value);
     if (xconf->nic.snaplen > 65535) {
         LOG(LEVEL_ERROR, "FAIL: snaplen must be less than 65535.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_adapter_vlan(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_adapter_vlan(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1205,10 +1205,10 @@ static enum Config_Res SET_adapter_vlan(void *conf, const char *name, const char
     xconf->nic.is_vlan = 1;
     xconf->nic.vlan_id = (unsigned)parseInt(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_target_port(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_target_port(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1222,16 +1222,16 @@ static enum Config_Res SET_target_port(void *conf, const char *name, const char 
 
     if (is_error) {
         LOG(LEVEL_ERROR, "FAIL: error to set target port.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     if (xconf->op == Operation_Default)
         xconf->op = Operation_Scan;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_top_port(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_top_port(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1243,7 +1243,7 @@ static enum Config_Res SET_top_port(void *conf, const char *name, const char *va
 
     if (!maxports) {
         LOG(LEVEL_ERROR, "[-] FAIL %s: value of top-port must > 0.\n", name);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     struct RangeList *ports = &xconf->targets.ports;
@@ -1268,10 +1268,10 @@ static enum Config_Res SET_top_port(void *conf, const char *name, const char *va
     /* Targets must be sorted after every change, before being used */
     rangelist_sort(ports);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_exclude_ip(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_exclude_ip(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1283,16 +1283,16 @@ static enum Config_Res SET_exclude_ip(void *conf, const char *name, const char *
     err = massip_add_target_string(&xconf->exclude, value);
     if (err) {
         LOG(LEVEL_ERROR, "ERROR: bad exclude address/range: %s\n", value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     if (xconf->op == Operation_Default)
         xconf->op = Operation_Scan;
     
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_exclude_port(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_exclude_port(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1306,15 +1306,15 @@ static enum Config_Res SET_exclude_port(void *conf, const char *name, const char
     if (err) {
         LOG(LEVEL_ERROR, "[-] FAIL: bad exclude port: %s\n", value);
         LOG(LEVEL_ERROR, "    Hint: a port is a number [0..65535]\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
     if (xconf->op == Operation_Default)
         xconf->op = Operation_Scan;
     
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_include_file(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_include_file(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1328,15 +1328,15 @@ static enum Config_Res SET_include_file(void *conf, const char *name, const char
     err = massip_parse_file(&xconf->targets, filename);
     if (err) {
         LOG(LEVEL_ERROR, "[-] FAIL: error reading from include file\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
     if (xconf->op == Operation_Default)
         xconf->op = Operation_Scan;
     
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_exclude_file(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_exclude_file(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1353,7 +1353,7 @@ static enum Config_Res SET_exclude_file(void *conf, const char *name, const char
     err = massip_parse_file(&xconf->exclude, filename);
     if (err) {
         LOG(LEVEL_ERROR, "[-] FAIL: error reading from exclude file\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
     /* Detect if this file has made any change, otherwise don't print
         * a message */
@@ -1362,10 +1362,10 @@ static enum Config_Res SET_exclude_file(void *conf, const char *name, const char
         LOG(LEVEL_HINT, "%s: excluding %u ranges from file\n",
             value, count2 - count1);
     
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_source_mac(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_source_mac(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1380,18 +1380,18 @@ static enum Config_Res SET_source_mac(void *conf, const char *name, const char *
     macaddress_t source_mac;
     int err;
 
-    err = parse_mac_address(value, &source_mac);
+    err = parseMacAddress(value, &source_mac);
     if (err) {
         LOG(LEVEL_ERROR, "[-] CONF: bad MAC address: %s = %s\n",
             name, value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     /* Check for duplicates */
     if (macaddress_is_equal(xconf->nic.source_mac, source_mac)) {
         /* suppresses warning message about duplicate MAC addresses if
             * they are in fact the same */
-        return CONF_OK;
+        return Conf_OK;
     }
 
     /* Warn if we are overwriting a Mac address */
@@ -1406,10 +1406,10 @@ static enum Config_Res SET_source_mac(void *conf, const char *name, const char *
     xconf->nic.source_mac = source_mac;
     xconf->nic.my_mac_count = 1;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_router_ip(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_router_ip(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1431,15 +1431,15 @@ static enum Config_Res SET_router_ip(void *conf, const char *name, const char *v
     if (range.begin != range.end) {
         LOG(LEVEL_ERROR, "FAIL: bad source IPv4 address: %s=%s\n", name, value);
         LOG(LEVEL_ERROR, "hint   addresses look like \"19.168.1.23\"\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     xconf->nic.router_ip = range.begin;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_router_mac(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_router_mac(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1457,10 +1457,10 @@ static enum Config_Res SET_router_mac(void *conf, const char *name, const char *
 
     macaddress_t router_mac;
     int err;
-    err = parse_mac_address(value, &router_mac);
+    err = parseMacAddress(value, &router_mac);
     if (err) {
         LOG(LEVEL_ERROR, "[-] CONF: bad MAC address: %s = %s\n", name, value);
-        return CONF_ERR;
+        return Conf_ERR;
     }
     if (EQUALS("router-mac-ipv4", name))
         xconf->nic.router_mac_ipv4 = router_mac;
@@ -1471,13 +1471,13 @@ static enum Config_Res SET_router_mac(void *conf, const char *name, const char *
         xconf->nic.router_mac_ipv6 = router_mac;
     }
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 /**
  * read conf file and set params directly
 */
-static enum Config_Res SET_read_conf(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_read_conf(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1498,7 +1498,7 @@ static enum Config_Res SET_read_conf(void *conf, const char *name, const char *v
         x = getcwd(dir, sizeof(dir));
         if (x)
             LOG(LEVEL_ERROR, "[-] cwd = %s\n", dir);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     while (fgets(line, sizeof(line), fp)) {
@@ -1525,10 +1525,10 @@ static enum Config_Res SET_read_conf(void *conf, const char *name, const char *v
     fclose(fp);
     free(line);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_packet_trace(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_packet_trace(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1540,10 +1540,10 @@ static enum Config_Res SET_packet_trace(void *conf, const char *name, const char
         return 0;
     }
     xconf->packet_trace = parseBoolean(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_ndjson_status(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_ndjson_status(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1554,10 +1554,10 @@ static enum Config_Res SET_ndjson_status(void *conf, const char *name, const cha
         return 0;
     }
     xconf->is_status_ndjson = parseBoolean(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_append(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_append(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1569,10 +1569,10 @@ static enum Config_Res SET_append(void *conf, const char *name, const char *valu
         return 0;
     }
     xconf->out.is_append = parseBoolean(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_interactive(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_interactive(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1584,10 +1584,10 @@ static enum Config_Res SET_interactive(void *conf, const char *name, const char 
         return 0;
     }
     xconf->out.is_interactive = parseBoolean(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_offline(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_offline(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1598,10 +1598,10 @@ static enum Config_Res SET_offline(void *conf, const char *name, const char *val
         return 0;
     }
     xconf->is_offline = parseBoolean(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_static_seed(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_static_seed(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1612,10 +1612,10 @@ static enum Config_Res SET_static_seed(void *conf, const char *name, const char 
         return 0;
     }
     xconf->is_static_seed = parseBoolean(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_infinite(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_infinite(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1626,10 +1626,10 @@ static enum Config_Res SET_infinite(void *conf, const char *name, const char *va
         return 0;
     }
     xconf->is_infinite = parseBoolean(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_fast_timeout(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_fast_timeout(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1651,20 +1651,20 @@ static enum Config_Res SET_fast_timeout(void *conf, const char *name, const char
         int spec = parseInt(value);
         if (spec <= 0) {
             LOG(LEVEL_ERROR, "[-] %s: need a switch word or a positive number.\n", name);
-            return CONF_ERR;
+            return Conf_ERR;
         }
         xconf->is_fast_timeout = 1;
         xconf->ft_spec = (time_t)spec;
     } else
         goto fail;
 
-    return CONF_OK;
+    return Conf_OK;
 fail:
     LOG(LEVEL_ERROR, "[-] %s: bad value: %s\n", name, value);
-    return CONF_ERR;
+    return Conf_ERR;
 }
 
-static enum Config_Res SET_pcap_filename(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_pcap_filename(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1675,10 +1675,10 @@ static enum Config_Res SET_pcap_filename(void *conf, const char *name, const cha
     }
     if (value)
         safe_strcpy(xconf->pcap_filename, sizeof(xconf->pcap_filename), value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_echo(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_echo(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1692,10 +1692,10 @@ static enum Config_Res SET_echo(void *conf, const char *name, const char *value)
         xconf->echo_all = 1;
     }
     
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_debugif(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_debugif(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1705,10 +1705,10 @@ static enum Config_Res SET_debugif(void *conf, const char *name, const char *val
     if (parseBoolean(value))
         xconf->op = Operation_DebugIF;
     
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_benchmark(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_benchmark(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1718,10 +1718,10 @@ static enum Config_Res SET_benchmark(void *conf, const char *name, const char *v
     if (parseBoolean(value))
         xconf->op = Operation_Benchmark;
     
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_selftest(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_selftest(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1731,10 +1731,10 @@ static enum Config_Res SET_selftest(void *conf, const char *name, const char *va
     if (parseBoolean(value))
         xconf->op = Operation_Selftest;
     
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_list_cidr(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_list_cidr(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1744,10 +1744,10 @@ static enum Config_Res SET_list_cidr(void *conf, const char *name, const char *v
     if (parseBoolean(value))
         xconf->op = Operation_ListCidr;
     
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_lan_mode(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_lan_mode(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1760,10 +1760,10 @@ static enum Config_Res SET_lan_mode(void *conf, const char *name, const char *va
         SET_router_mac(xconf, "router-mac", "ff-ff-ff-ff-ff-ff");
     }
     
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_bypass_os(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_bypass_os(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1777,10 +1777,10 @@ static enum Config_Res SET_bypass_os(void *conf, const char *name, const char *v
     
     xconf->is_bypass_os = parseBoolean(value);
     
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_fake_router_mac(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_fake_router_mac(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1793,10 +1793,10 @@ static enum Config_Res SET_fake_router_mac(void *conf, const char *name, const c
         SET_router_mac(xconf, "router-mac", "01-02-03-04-05-06");
     }
     
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_rate(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_rate(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     double rate = 0.0;
@@ -1819,7 +1819,7 @@ static enum Config_Res SET_rate(void *conf, const char *name, const char *value)
         char c = value[i];
         if (c < '0' || '9' < c) {
             LOG(LEVEL_ERROR, "CONF: non-digit in rate spec: %s=%s\n", name, value);
-            return CONF_ERR;
+            return Conf_ERR;
         }
         rate = rate * 10.0 + (c - '0');
     }
@@ -1831,7 +1831,7 @@ static enum Config_Res SET_rate(void *conf, const char *name, const char *value)
             if (c < '0' || '9' < c) {
                 LOG(LEVEL_ERROR, "CONF: non-digit in rate spec: %s=%s\n",
                         name, value);
-                return CONF_ERR;
+                return Conf_ERR;
             }
             rate += (c - '0')/point;
             point *= 10.0;
@@ -1840,10 +1840,10 @@ static enum Config_Res SET_rate(void *conf, const char *name, const char *value)
     }
     
     xconf->max_rate = rate;
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_max_packet_len(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_max_packet_len(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1854,10 +1854,10 @@ static enum Config_Res SET_max_packet_len(void *conf, const char *name, const ch
         return 0;
     }
     xconf->max_packet_len = parseInt(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_resume_count(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_resume_count(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1868,10 +1868,10 @@ static enum Config_Res SET_resume_count(void *conf, const char *name, const char
         return 0;
     }
     xconf->resume.count = parseInt(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_resume_index(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_resume_index(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1882,10 +1882,10 @@ static enum Config_Res SET_resume_index(void *conf, const char *name, const char
         return 0;
     }
     xconf->resume.index = parseInt(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_no_bpf(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_no_bpf(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1897,10 +1897,10 @@ static enum Config_Res SET_no_bpf(void *conf, const char *name, const char *valu
         return 0;
     }
     xconf->is_no_bpf = parseBoolean(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_bpf_filter(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_bpf_filter(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1916,11 +1916,11 @@ static enum Config_Res SET_bpf_filter(void *conf, const char *name, const char *
     xconf->bpf_filter = MALLOC(len);
     memcpy(xconf->bpf_filter, value, len);
     
-    return CONF_OK;
+    return Conf_OK;
 }
 
 
-static enum Config_Res SET_seed(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_seed(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1932,10 +1932,10 @@ static enum Config_Res SET_seed(void *conf, const char *name, const char *value)
         xconf->seed = time(0);
     else
         xconf->seed = parseInt(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_nothing(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_nothing(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1943,10 +1943,10 @@ static enum Config_Res SET_nothing(void *conf, const char *name, const char *val
     if (xconf->echo) {
         return 0;
     }
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_version(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_version(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1957,10 +1957,10 @@ static enum Config_Res SET_version(void *conf, const char *name, const char *val
 
     xconf->op = Operation_PrintVersion;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_usage(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_usage(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1971,10 +1971,10 @@ static enum Config_Res SET_usage(void *conf, const char *name, const char *value
 
     xconf_print_usage();
 
-    return CONF_ERR;
+    return Conf_ERR;
 }
 
-static enum Config_Res SET_print_intro(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_print_intro(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1985,10 +1985,10 @@ static enum Config_Res SET_print_intro(void *conf, const char *name, const char 
 
     xconf->op = Operation_PrintIntro;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_print_help(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_print_help(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1999,10 +1999,10 @@ static enum Config_Res SET_print_help(void *conf, const char *name, const char *
 
     xconf->op = Operation_PrintHelp;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_log_level(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_log_level(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(value);
@@ -2019,10 +2019,10 @@ static enum Config_Res SET_log_level(void *conf, const char *name, const char *v
 
     LOG_add_level(strlen(name));
     
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_shard(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_shard(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     unsigned one = 0;
@@ -2044,19 +2044,19 @@ static enum Config_Res SET_shard(void *conf, const char *name, const char *value
     if (one < 1) {
         LOG(LEVEL_ERROR, "FAIL: shard index can't be zero\n");
         LOG(LEVEL_ERROR, "hint   it goes like 1/4 2/4 3/4 4/4\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
     if (one > of) {
         LOG(LEVEL_ERROR, "FAIL: shard spec is wrong\n");
         LOG(LEVEL_ERROR, "hint   it goes like 1/4 2/4 3/4 4/4\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
     xconf->shard.one = one;
     xconf->shard.of = of;
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_tcp_mss(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_tcp_mss(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
 
@@ -2107,13 +2107,13 @@ static enum Config_Res SET_tcp_mss(void *conf, const char *name, const char *val
     } else
         goto fail;
 
-    return CONF_OK;
+    return Conf_OK;
 fail:
     LOG(LEVEL_ERROR, "[-] %s: bad value: %s\n", name, value);
-    return CONF_ERR;
+    return Conf_ERR;
 }
 
-static enum Config_Res SET_tcp_wscale(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_tcp_wscale(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     static const unsigned default_value = 3;
@@ -2161,13 +2161,13 @@ static enum Config_Res SET_tcp_wscale(void *conf, const char *name, const char *
     } else
         goto fail;
 
-    return CONF_OK;
+    return Conf_OK;
 fail:
     LOG(LEVEL_ERROR, "[-] %s: bad value: %s\n", name, value);
-    return CONF_ERR;
+    return Conf_ERR;
 }
 
-static enum Config_Res SET_tcp_tsecho(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_tcp_tsecho(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     static const unsigned default_value = 0x12345678;
@@ -2215,13 +2215,13 @@ static enum Config_Res SET_tcp_tsecho(void *conf, const char *name, const char *
     } else
         goto fail;
 
-    return CONF_OK;
+    return Conf_OK;
 fail:
     LOG(LEVEL_ERROR, "[-] %s: bad value: %s\n", name, value);
-    return CONF_ERR;
+    return Conf_ERR;
 }
 
-static enum Config_Res SET_tcp_sackok(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_tcp_sackok(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -2258,13 +2258,13 @@ static enum Config_Res SET_tcp_sackok(void *conf, const char *name, const char *
     } else
         goto fail;
 
-    return CONF_OK;
+    return Conf_OK;
 fail:
     LOG(LEVEL_ERROR, "[-] %s: bad value: %s\n", name, value);
-    return CONF_ERR;
+    return Conf_ERR;
 }
 
-static enum Config_Res SET_repeat(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_repeat(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -2280,12 +2280,12 @@ static enum Config_Res SET_repeat(void *conf, const char *name, const char *valu
         xconf->is_infinite = 1;
     } else {
         LOG(LEVEL_ERROR, "FAIL: repeat must > 0.\n");
-        return CONF_ERR;
+        return Conf_ERR;
     }
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_blackrock_rounds(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_blackrock_rounds(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -2297,10 +2297,10 @@ static enum Config_Res SET_blackrock_rounds(void *conf, const char *name, const 
     }
 
     xconf->blackrock_rounds = (unsigned)parseInt(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_send_queue(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_send_queue(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -2312,7 +2312,7 @@ static enum Config_Res SET_send_queue(void *conf, const char *name, const char *
     }
 
     xconf->is_sendq = parseBoolean(value);
-    return CONF_OK;
+    return Conf_OK;
 }
 
 struct ConfigParam config_parameters[] = {
@@ -2321,7 +2321,7 @@ struct ConfigParam config_parameters[] = {
     {
         "seed",
         SET_seed,
-        F_NONE,
+        Type_NONE,
         {0},
         "Set a global seed for randomizing of target addresses(ports), and to "
         "generate cookies in some ScanModules & ProbeModules."
@@ -2335,7 +2335,7 @@ struct ConfigParam config_parameters[] = {
     {
         "rate",
         SET_rate,
-        F_NONE,
+        Type_NONE,
         {"max-rate", 0},
         "Specifies the desired rate for transmitting packets. This can be very "
         "small numbers, like 0.1 for transmitting packets at rates of one every "
@@ -2349,7 +2349,7 @@ struct ConfigParam config_parameters[] = {
     {
         "wait",
         SET_wait,
-        F_NUMABLE,
+        Type_NUM,
         {"cooldown", 0},
         "How many seconds should "XTATE_FIRST_UPPER_NAME" waiting and handling "
         "incoming packets after all transmit threads finished. Default is 10s."
@@ -2360,14 +2360,14 @@ struct ConfigParam config_parameters[] = {
     {
         "forever",
         SET_forever,
-        F_BOOL,
+        Type_BOOL,
         {0},
         "Set `--wait` to a large enough time."
     },
     {
         "shard",
         SET_shard,
-        F_NONE,
+        Type_NONE,
         {"shards", 0},
         "Set a string like \"x/y\" to splits the scan among instances. x is the "
         "id for this scan, while y is the total number of instances. For example,"
@@ -2378,7 +2378,7 @@ struct ConfigParam config_parameters[] = {
     {
         "tx-thread-count",
         SET_tx_thread_count,
-        F_NUMABLE,
+        Type_NUM,
         {"tx-count", "tx-num", 0},
         "Specify the number of transmit threads. "XTATE_FIRST_UPPER_NAME" could"
         " has multiple transmit threads but only one receive thread. Every "
@@ -2388,7 +2388,7 @@ struct ConfigParam config_parameters[] = {
     {
         "rx-handler-count",
         SET_rx_handler_count,
-        F_NUMABLE,
+        Type_NUM,
         {"rx-count", "rx-num", 0},
         "Specify the number of receive handler threads. "XTATE_FIRST_UPPER_NAME" could"
         " has multiple receive handler threads but only one receive thread. Every "
@@ -2403,35 +2403,35 @@ struct ConfigParam config_parameters[] = {
     {
         "d",
         SET_log_level,
-        F_BOOL,
+        Type_BOOL,
         {"dd", "ddd", "dddd", "ddddd", 0},
         "Set the log level. You can set \"-d\", \"-dd\", \"-ddd\" and etc."
     },
     {
         "version",
         SET_version,
-        F_BOOL,
+        Type_BOOL,
         {"v", 0},
         "Print the version and compilation info."
     },
     {
         "usage",
         SET_usage,
-        F_BOOL,
+        Type_BOOL,
         {0},
         "Print basic usage with some examples."
     },
     {
         "help",
         SET_print_help,
-        F_BOOL,
+        Type_BOOL,
         {"h", "?", 0},
         "Print the detailed help text of all parameters."
     },
     {
         "introduction",
         SET_print_intro,
-        F_BOOL,
+        Type_BOOL,
         {"intro", 0},
         "Print the introduction of work flow."
     },
@@ -2441,7 +2441,7 @@ struct ConfigParam config_parameters[] = {
     {
         "target-ip",
         SET_target_ip,
-        F_NONE,
+        Type_NONE,
         {"range", "ranges", "dst-ip", "ip", 0},
         "Specifies an IP address or range as target "XTATE_FIRST_UPPER_NAME". "
         "There are three valid formats. The first is a single IP address like "
@@ -2454,7 +2454,7 @@ struct ConfigParam config_parameters[] = {
     {
         "port",
         SET_target_port,
-        F_NONE,
+        Type_NONE,
         {"p", "ports", 0},
         "Specifies the port(s) to be scanned. A single port can be specified, "
         "like -p 80. A range of ports can be specified, like -p 20-25. A list of"
@@ -2467,21 +2467,21 @@ struct ConfigParam config_parameters[] = {
     {
         "top-port",
         SET_top_port,
-        F_NUMABLE,
+        Type_NUM,
         {"top", "tcp-top", "tcp-top-port", 0},
         "Add a number of tcp ports to scan from predefined top list."
     },
     {
         "udp-top-port",
         SET_top_port,
-        F_NUMABLE,
+        Type_NUM,
         {"udp-top", 0},
         "Add a number of udp ports to scan from predefined top list."
     },
     {
         "include-file",
         SET_include_file,
-        F_NONE,
+        Type_NONE,
         {"iL", 0},
         "Reads in a list of ranges from specified file to scan, in the same "
         "target format described above for IP addresses and ranges. This file "
@@ -2490,7 +2490,7 @@ struct ConfigParam config_parameters[] = {
     {
         "exclude",
         SET_exclude_ip,
-        F_NONE,
+        Type_NONE,
         {"exclude-range", "exlude-ranges", "exclude-ip", 0},
         "Blacklist an IP address or range, preventing it from being scanned. "
         "This overrides any target specification, guaranteeing that this "
@@ -2500,7 +2500,7 @@ struct ConfigParam config_parameters[] = {
     {
         "exclude-port",
         SET_exclude_port,
-        F_NONE,
+        Type_NONE,
         {"exclude-ports", 0},
         "Blacklist ports to preventing it from being scanned. This overrides "
         "any port specification. This has the same format as the normal port "
@@ -2509,7 +2509,7 @@ struct ConfigParam config_parameters[] = {
     {
         "exclude-file",
         SET_exclude_file,
-        F_NONE,
+        Type_NONE,
         {0},
         "Reads in a list of exclude ranges, in the same target format described "
         "above. These ranges override any targets, preventing them from being "
@@ -2521,7 +2521,7 @@ struct ConfigParam config_parameters[] = {
     {
         "adapter",
         SET_adapter,
-        F_NONE,
+        Type_NONE,
         {"if", "interface", 0},
         "Use the named raw network interface, such as \"eth0\" or \"dna1\". If "
         "not specified, the first network interface found with a default gateway"
@@ -2530,7 +2530,7 @@ struct ConfigParam config_parameters[] = {
     {
         "source-ip",
         SET_source_ip,
-        F_NONE,
+        Type_NONE,
         {"src-ip", 0},
         "Send packets using this IP address. If not specified, then the first IP"
         " address bound to the network interface will be used. Instead of a "
@@ -2544,7 +2544,7 @@ struct ConfigParam config_parameters[] = {
     {
         "source-port",
         SET_source_port,
-        F_NONE,
+        Type_NONE,
         {"src-port", 0},
         "Send packets using this port number as the source. If not specified, a"
         " random port will be chosen in the range 40000 through 60000. This port"
@@ -2557,7 +2557,7 @@ struct ConfigParam config_parameters[] = {
     {
         "source-mac",
         SET_source_mac,
-        F_NONE,
+        Type_NONE,
         {"src-mac", 0},
         "Send packets using this as the source MAC address. If not specified, "
         "then the first MAC address bound to the network interface will be used."
@@ -2565,14 +2565,14 @@ struct ConfigParam config_parameters[] = {
     {
         "router-ip",
         SET_router_ip,
-        F_NONE,
+        Type_NONE,
         {0},
         "Set an IP as router's address."
     },
     {
         "router-mac",
         SET_router_mac,
-        F_NONE,
+        Type_NONE,
         {"gateway-mac", "router-mac-ipv4", "router-mac-ipv6", 0},
         "Send packets to this MAC address as the destination. If not specified, "
         "then the gateway address of the network interface will be get by ARP "
@@ -2583,14 +2583,14 @@ struct ConfigParam config_parameters[] = {
     {
         "adapter-vlan",
         SET_adapter_vlan,
-        F_NUMABLE,
+        Type_NUM,
         {"vlan", "vlan-id", 0},
         "Send packets using this 802.1q VLAN ID."
     },
     {
         "adapter-snaplen",
         SET_adapter_snaplen,
-        F_NUMABLE,
+        Type_NUM,
         {"snaplen", 0},
         "Set the maximum packet capture len of pcap or pfring. It means we can "
         "just got snaplen size at most for any packet even just like a kind of "
@@ -2601,7 +2601,7 @@ struct ConfigParam config_parameters[] = {
     {
         "lan-mode",
         SET_lan_mode,
-        F_BOOL,
+        Type_BOOL,
         {"local", "lan", 0},
         "Set the router MAC address to a broadcast address(ff-ff-ff-ff-ff-ff). "
         "This can make "XTATE_FIRST_UPPER_NAME" be able to scan in a local network.\n"
@@ -2611,7 +2611,7 @@ struct ConfigParam config_parameters[] = {
     {
         "fake-router-mac",
         SET_fake_router_mac,
-        F_BOOL,
+        Type_BOOL,
         {"no-router-mac", 0},
         "Set the router MAC address to a invalid address(01-02-03-04-05-06). "
         "This can stop "XTATE_FIRST_UPPER_NAME" to resolve router MAC address."
@@ -2623,7 +2623,7 @@ struct ConfigParam config_parameters[] = {
     {
         "bypass-os",
         SET_bypass_os,
-        F_BOOL,
+        Type_BOOL,
         {"bypass", 0},
         "Completely bypass the OS protocol stack. This means we can set a proper"
         " `--src-ip`(in the local subnet) and `--src-mac` different from the OS "
@@ -2640,7 +2640,7 @@ struct ConfigParam config_parameters[] = {
     {
         "echo",
         SET_echo,
-        F_BOOL,
+        Type_BOOL,
         {"echo-all", 0},
         "Do not run, but instead print the current configuration. Use --echo to "
         "dump configurations that are different from default value. Use --echo-all"
@@ -2650,7 +2650,7 @@ struct ConfigParam config_parameters[] = {
     {
         "debug-if",
         SET_debugif,
-        F_BOOL,
+        Type_BOOL,
         {0},
         "Run special selftest for code about interface. This is useful to figure"
         " out why the interface doesn't work."
@@ -2658,42 +2658,42 @@ struct ConfigParam config_parameters[] = {
     {
         "benchmark",
         SET_benchmark,
-        F_BOOL,
+        Type_BOOL,
         {"bench", 0},
         "Run a global benchmark for key units."
     },
     {
         "selftest",
         SET_selftest,
-        F_BOOL,
+        Type_BOOL,
         {"regress", "regression", 0},
         "Run a global regression test to check if new changes in code healthy."
     },
     {
         "list-cidr",
         SET_list_cidr,
-        F_BOOL,
+        Type_BOOL,
         {"cidr", 0},
         "Do not run, but instead print all IP targets in CIDR format."
     },
     {
         "list-range",
         SET_list_range,
-        F_BOOL,
+        Type_BOOL,
         {"list-ranges", 0},
         "Do not run, but instead print all IP targets in ranges."
     },
     {
         "list-target",
         SET_list_target,
-        F_BOOL,
+        Type_BOOL,
         {"list-targets", 0},
         "Do not run, but instead print every unique IP targets in random."
     },
     {
         "list-if",
         SET_listif,
-        F_BOOL,
+        Type_BOOL,
         {"list-interface", "list-adapter", 0},
         "Do not run, but instead print informations of all adapters in this machine."
     },
@@ -2703,7 +2703,7 @@ struct ConfigParam config_parameters[] = {
     {
         "scan-module",
         SET_scan_module,
-        F_NONE,
+        Type_NONE,
         {"scan", 0},
         "Specifies a ScanModule to perform scanning. Use --list-scan to get "
         "informations of all ScanModules.\nNOTE: A ScanModule must be used in "
@@ -2712,14 +2712,14 @@ struct ConfigParam config_parameters[] = {
     {
         "list-scan-modules",
         SET_list_scan_modules,
-        F_BOOL,
+        Type_BOOL,
         {"list-scan-module", "list-scan", "list-scans", 0},
         "List informations and helps of all ScanModules."
     },
     {
         "scan-module-args",
         SET_scan_module_args,
-        F_NONE,
+        Type_NONE,
         {"scan-module-arg", "scan-args", "scan-arg", 0},
         "Specifies module-specific parameters for used ScanModule. Information "
         "of parameters for each ScanModule could be found in --list-scan."
@@ -2730,7 +2730,7 @@ struct ConfigParam config_parameters[] = {
     {
         "probe-module",
         SET_probe_module,
-        F_NONE,
+        Type_NONE,
         {"probe", 0},
         "Specifies a ProbeModule for used ScanModule to perform scanning. Use "
         "--list-probe to get informations of all ProbeModules.\nNOTE: ProbeModule"
@@ -2740,14 +2740,14 @@ struct ConfigParam config_parameters[] = {
     {
         "list-probe-modules",
         SET_list_probe_modules,
-        F_BOOL,
+        Type_BOOL,
         {"list-probe-module", "list-probe", "list-probes", 0},
         "List informations and helps of all ProbeModules."
     },
     {
         "probe-module-args",
         SET_probe_module_args,
-        F_NONE,
+        Type_NONE,
         {"probe-module-arg", "probe-args", "probe-arg", 0},
         "Specifies module-specific parameters for used ProbeModule. Information "
         "of parameters for each ProbeModule could be found in --list-probe."
@@ -2758,7 +2758,7 @@ struct ConfigParam config_parameters[] = {
     {
         "output-module",
         SET_output_module,
-        F_NONE,
+        Type_NONE,
         {"output", "out", 0},
         "Specifies an OutputModule for outputing results in special way. Use "
         "--list-output to get informations of all OutputModules. OutputModule"
@@ -2770,14 +2770,14 @@ struct ConfigParam config_parameters[] = {
     {
         "list-output-modules",
         SET_list_output_modules,
-        F_BOOL,
+        Type_BOOL,
         {"list-output-module", "list-output", "list-out", 0},
         "List informations and helps of all OutputModules."
     },
     {
         "output-module-args",
         SET_output_module_args,
-        F_NONE,
+        Type_NONE,
         {"output-module-arg", "output-arg", "out-arg", 0},
         "Specifies module-specific parameters for used OutputModule. Information "
         "of parameters for each OutputModule could be found in --list-output."
@@ -2785,14 +2785,14 @@ struct ConfigParam config_parameters[] = {
     {
         "output-file",
         SET_output_filename,
-        F_NONE,
+        Type_NONE,
         {"out-file", "o", 0},
         "Specifies a file for OutputModule."
     },
     {
         "append-output",
         SET_append,
-        F_BOOL,
+        Type_BOOL,
         {"output-append", "append", 0},
         "Causes output to append mode, rather than overwriting. OutputModules "
         "have different performance with this switch."
@@ -2800,14 +2800,14 @@ struct ConfigParam config_parameters[] = {
     {
         "interactive",
         SET_interactive,
-        F_BOOL,
+        Type_BOOL,
         {"interact", 0},
         "Also print the results to screen while specifying an OutputModule."
     },
     {
         "show-output",
         SET_show_output,
-        F_NONE,
+        Type_NONE,
         {"show-out", "show", 0},
         "Tells which type of results should be showed explicitly, such as:\n"
         "'success', 'failed' or 'info'."
@@ -2815,7 +2815,7 @@ struct ConfigParam config_parameters[] = {
     {
         "no-show-output",
         SET_no_show_output,
-        F_NONE,
+        Type_NONE,
         {"no-show-out", "no-show", 0},
         "Tells which type of results should not be showed explicitly, such as:\n"
         "'success', 'failed' or 'info'."
@@ -2826,7 +2826,7 @@ struct ConfigParam config_parameters[] = {
     {
         "print-status",
         SET_print_status,
-        F_NONE,
+        Type_NONE,
         {"print-st", "print", 0},
         "Tells which type of status should be printed explicitly, such as:\n"
         "'queue' for real-time capacity of transmit queue and receive queues.\n"
@@ -2835,7 +2835,7 @@ struct ConfigParam config_parameters[] = {
     {
         "ndjson-status",
         SET_ndjson_status,
-        F_BOOL,
+        Type_BOOL,
         {"status-ndjson", 0},
         "Print status information in NDJSON format(Newline Delimited JSON) while"
         " running."
@@ -2846,14 +2846,14 @@ struct ConfigParam config_parameters[] = {
     {
         "packet-ttl",
         SET_packet_ttl,
-        F_NUMABLE,
+        Type_NUM,
         {"ttl", 0},
         "Specifies the TTL of outgoing packets, defaults to 255."
     },
     {
         "tcp-init-window",
         SET_tcp_init_window,
-        F_NUMABLE,
+        Type_NUM,
         {"tcp-init-win", 0},
         "Specifies what value of Window should TCP SYN packets use. The default "
         "value of TCP Window for TCP SYN packets is 64240."
@@ -2861,7 +2861,7 @@ struct ConfigParam config_parameters[] = {
     {
         "tcp-window",
         SET_tcp_window,
-        F_NUMABLE,
+        Type_NUM,
         {"tcp-win", 0},
         "Specifies what value of Window should TCP packets(except for SYN) use. "
         "The default value of TCP Window for TCP packets(except SYN) is 1024.\n"
@@ -2872,7 +2872,7 @@ struct ConfigParam config_parameters[] = {
     {
         "tcp-wscale",
         SET_tcp_wscale,
-        F_NUMABLE,
+        Type_NUM,
         {0},
         "Specifies whether or what value of TCP Window Scaling option should TCP"
         " SYN packets use. e.g. --tcp-wscale true, --tcp-wscale 8. The default "
@@ -2882,7 +2882,7 @@ struct ConfigParam config_parameters[] = {
     {
         "tcp-mss",
         SET_tcp_mss,
-        F_NUMABLE,
+        Type_NUM,
         {0},
         "Specifies whether or what value of TCP MMS(Maximum Segment Size) option"
         " should TCP SYN packets use. e.g. --tcp-mss false, --tcp-mss 64000. The "
@@ -2891,7 +2891,7 @@ struct ConfigParam config_parameters[] = {
     {
         "tcp-sackok",
         SET_tcp_sackok,
-        F_BOOL,
+        Type_BOOL,
         {"tcp-sack",0},
         "Specifies whether should TCP SYN packets use TCP Selective Acknowledgement"
         " option. e.g. --tcp-sackok true. The default template of TCP SYN packet"
@@ -2900,7 +2900,7 @@ struct ConfigParam config_parameters[] = {
     {
         "tcp-tsecho",
         SET_tcp_tsecho,
-        F_NUMABLE,
+        Type_NUM,
         {0},
         "Specifies whether or what value of timestamp in TCP Timestamp option"
         " should TCP SYN packets use for timestamp echoing. e.g. --tcp-tsecho "
@@ -2910,7 +2910,7 @@ struct ConfigParam config_parameters[] = {
     {
         "packet-trace",
         SET_packet_trace,
-        F_BOOL,
+        Type_BOOL,
         {"trace-packet", 0},
         "Prints a summary of packets we sent and received. This is useful for "
         "debugging at low rates, like a few packets per second, but will "
@@ -2919,7 +2919,7 @@ struct ConfigParam config_parameters[] = {
     {
         "bpf-filter",
         SET_bpf_filter,
-        F_NONE,
+        Type_NONE,
         {0},
         "Specifies a string as BPF filter addition for ScanModule we use at pcap"
         " mode. NOTE: Every ScanModule has its own BPF filter and we can observe"
@@ -2929,7 +2929,7 @@ struct ConfigParam config_parameters[] = {
     {
         "no-bpf-filter",
         SET_no_bpf,
-        F_BOOL,
+        Type_BOOL,
         {"no-bpf", 0},
         "Do not compile any BPF filter from ScanModules or users. Some machines"
         " does not support part or all of BPF filters and this switch makes "
@@ -2938,7 +2938,7 @@ struct ConfigParam config_parameters[] = {
     {
         "max-packet-len",
         SET_max_packet_len,
-        F_NUMABLE,
+        Type_NUM,
         {"max-pkt-len", 0},
         XTATE_UPPER_NAME" won't handle a received packet that is more than "
         "max-packet-len. Default is 1514."
@@ -2950,7 +2950,7 @@ struct ConfigParam config_parameters[] = {
     {
         "conf",
         SET_read_conf,
-        F_NONE,
+        Type_NONE,
         {"config", "resume", 0},
         "Reads in a configuration file. If not specified, then will read from "
         "/etc/xtate/xtate.conf by default. We could specifies a configuration "
@@ -2960,14 +2960,14 @@ struct ConfigParam config_parameters[] = {
     {
         "resume-index",
         SET_resume_index,
-        F_NUMABLE,
+        Type_NUM,
         {0},
         "The point in the scan at when it was paused."
     },
     {
         "resume-count",
         SET_resume_count,
-        F_NUMABLE,
+        Type_NUM,
         {"target-count", 0},
         "The maximum number of targets to scan before exiting. This is useful "
         "with the --resume-index to chop up a scan and split it among multiple "
@@ -2978,7 +2978,7 @@ struct ConfigParam config_parameters[] = {
     {
         "pcap-filename",
         SET_pcap_filename,
-        F_NONE,
+        Type_NONE,
         {"pcap",0},
         "Saves received packets (but not transmitted packets) to the "
         "libpcap-format file."
@@ -2986,7 +2986,7 @@ struct ConfigParam config_parameters[] = {
     {
         "timeout",
         SET_fast_timeout,
-        F_NUMABLE,
+        Type_NUM,
         {"use-timeout", 0},
         "Specifies whether or how many timeouts(sec) should ScanModule use like"
         " --timeout true, --timeout 15. Some ScanModules could use timeout "
@@ -2996,7 +2996,7 @@ struct ConfigParam config_parameters[] = {
     {
         "no-dedup",
         SET_nodedup,
-        F_BOOL,
+        Type_BOOL,
         {0},
         "Do not deduplicate the results even if ScanModule use deduplication.\n"
         "NOTE: This will destroy the work of `--timeout`, so don't use these two"
@@ -3005,14 +3005,14 @@ struct ConfigParam config_parameters[] = {
     {
         "dedup-win",
         SET_dedup_win,
-        F_NUMABLE,
+        Type_NUM,
         {0},
         "Set the window size of deduplication table. Default size if 1000000."
     },
     {
         "stack-buf-count",
         SET_stack_buf_count,
-        F_NUMABLE,
+        Type_NUM,
         {"tx-buf-count", 0},
         "Set the buffer size of packets queue(stack) from receive thread to transmit "
         "thread.\n"
@@ -3021,7 +3021,7 @@ struct ConfigParam config_parameters[] = {
     {
         "dispatch-buf-count",
         SET_dispatch_buf_count,
-        F_NUMABLE,
+        Type_NUM,
         {"rx-buf-count", 0},
         "Set the buffer size of dispatch queue from receive thread to receive "
         "handler threads.\n"
@@ -3030,7 +3030,7 @@ struct ConfigParam config_parameters[] = {
     {
         "pfring",
         SET_pfring,
-        F_BOOL,
+        Type_BOOL,
         {0},
         "Force the use of the PF_RING driver. The program will exit if PF_RING "
         "DNA drvers are not available."
@@ -3038,7 +3038,7 @@ struct ConfigParam config_parameters[] = {
     {
         "send-queue",
         SET_send_queue,
-        F_BOOL,
+        Type_BOOL,
         {"sendq", 0},
         "Use sendqueue feature of Npcap/Winpcap on Windows to transmit packets. "
         "The transmit rate on Windows is really slow, like 40-kpps. The speed "
@@ -3047,7 +3047,7 @@ struct ConfigParam config_parameters[] = {
     {
         "offline",
         SET_offline,
-        F_BOOL,
+        Type_BOOL,
         {"dry-run", 0},
         "Do not actually transmit packets. This is useful with a low rate and "
         "--packet-trace to look at what packets might've been transmitted. Or, "
@@ -3058,7 +3058,7 @@ struct ConfigParam config_parameters[] = {
     {
         "infinite",
         SET_infinite,
-        F_BOOL,
+        Type_BOOL,
         {0},
         "Scan the target again and again. Not stop until we hit <Ctrl-C>. This "
         "is useful for us to test the some performance of "XTATE_FIRST_UPPER_NAME
@@ -3071,7 +3071,7 @@ struct ConfigParam config_parameters[] = {
     {
         "repeat",
         SET_repeat,
-        F_NUMABLE,
+        Type_NUM,
         {"repeats", 0},
         "How many times "XTATE_FIRST_UPPER_NAME" should repeat for all targets."
         " It also means the hit count for every target + 1. So default is 0."
@@ -3081,7 +3081,7 @@ struct ConfigParam config_parameters[] = {
     {
         "static-seed",
         SET_static_seed,
-        F_BOOL,
+        Type_BOOL,
         {"keep-seed", 0},
         "Use same seed to pick up addresses in infinite mode. "
         XTATE_FIRST_UPPER_NAME" changes seed for every round to make a different"
@@ -3091,7 +3091,7 @@ struct ConfigParam config_parameters[] = {
     {
         "blackrock-rounds",
         SET_blackrock_rounds,
-        F_NUMABLE,
+        Type_NUM,
         {"blackrock-round", 0},
         "Specifies the number of round in blackrock algorithm for targets "
         "randomization. It's 14 rounds in default to give a better statistical "
@@ -3145,18 +3145,18 @@ xconf_echo(struct Xconf *xconf, FILE *fp)
      */
     xconf->echo = fp;
 
-    SET_PARAMETER tmp = NULL;
+    CONFIG_SET_PARAM tmp = NULL;
     for (i=0; config_parameters[i].name; i++) {
         /**
          * We may use same `set` func more than one times back-to-back
          * in config_paramiters.
          * Do a dedup easily when echoing.
         */
-        if (config_parameters[i].set == tmp)
+        if (config_parameters[i].setter == tmp)
             continue;
-        tmp = config_parameters[i].set;
+        tmp = config_parameters[i].setter;
 
-        config_parameters[i].set(xconf, 0, 0);
+        config_parameters[i].setter(xconf, 0, 0);
     }
     xconf->echo = 0;
     xconf->echo_all = 0;
@@ -3572,8 +3572,8 @@ void xconf_print_help()
     unsigned count = 0;
     for (unsigned i=0; config_parameters[i].name; i++) {
 
-        if (!config_parameters[i].helps) {
-            if (config_parameters[i].set==&SET_nothing) {
+        if (!config_parameters[i].help_text) {
+            if (config_parameters[i].setter==&SET_nothing) {
                 /*This is a paragraph name*/
                 printf(XPRINT_EQUAL_LINE"\n");
                 printf("  %s\n", config_parameters[i].name);
@@ -3584,12 +3584,12 @@ void xconf_print_help()
 
         printf("  --%s", config_parameters[i].name);
 
-        for (unsigned j=0; config_parameters[i].alts[j]; j++) {
-            printf(", --%s", config_parameters[i].alts[j]);
+        for (unsigned j=0; config_parameters[i].alt_names[j]; j++) {
+            printf(", --%s", config_parameters[i].alt_names[j]);
         }
 
         printf("\n\n");
-        xprint(config_parameters[i].helps, 6, 80);
+        xprint(config_parameters[i].help_text, 6, 80);
         printf("\n\n\n");
         
         count++;

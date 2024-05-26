@@ -231,7 +231,7 @@ parseSize(const char *value)
 }
 
 unsigned
-hexval(char c)
+parseHexChar(char c)
 {
     if ('0' <= c && c <= '9')
         return (unsigned)(c - '0');
@@ -243,7 +243,7 @@ hexval(char c)
 }
 
 int
-parse_mac_address(const char *text, macaddress_t *mac)
+parseMacAddress(const char *text, macaddress_t *mac)
 {
     unsigned i;
 
@@ -257,13 +257,13 @@ parse_mac_address(const char *text, macaddress_t *mac)
         c = *text;
         if (!isxdigit(c&0xFF))
             return -1;
-        x = hexval(c)<<4;
+        x = parseHexChar(c)<<4;
         text++;
 
         c = *text;
         if (!isxdigit(c&0xFF))
             return -1;
-        x |= hexval(c);
+        x |= parseHexChar(c);
         text++;
 
         mac->addr[i] = (unsigned char)x;
@@ -364,12 +364,12 @@ is_numable(const struct ConfigParam *cp, const char *name)
 
     for (i=0; cp[i].name; i++) {
         if (EQUALS(cp[i].name, name)) {
-            return (cp[i].flags & F_NUMABLE) == F_NUMABLE;
+            return (cp[i].type & Type_NUM) == Type_NUM;
         } else {
             size_t j;
-            for (j=0; cp[i].alts[j]; j++) {
-                if (EQUALS(cp[i].alts[j], name)) {
-                    return (cp[i].flags & F_NUMABLE) == F_NUMABLE;
+            for (j=0; cp[i].alt_names[j]; j++) {
+                if (EQUALS(cp[i].alt_names[j], name)) {
+                    return (cp[i].type & Type_NUM) == Type_NUM;
                 }
             }
         }
@@ -386,12 +386,12 @@ is_singleton(const struct ConfigParam *cp, const char *name)
 {
     for (size_t i=0; cp[i].name; i++) {
         if (EQUALS(cp[i].name, name)) {
-            return (cp[i].flags & F_BOOL) == F_BOOL;
+            return (cp[i].type & Type_BOOL) == Type_BOOL;
         } else {
             size_t j;
-            for (j=0; cp[i].alts[j]; j++) {
-                if (EQUALS(cp[i].alts[j], name)) {
-                    return (cp[i].flags & F_BOOL) == F_BOOL;
+            for (j=0; cp[i].alt_names[j]; j++) {
+                if (EQUALS(cp[i].alt_names[j], name)) {
+                    return (cp[i].type & Type_BOOL) == Type_BOOL;
                 }
             }
         }
@@ -407,14 +407,14 @@ void set_one_parameter(void *conf, struct ConfigParam *cp,
     
     for (i=0; cp[i].name; i++) {
         if (EQUALS(cp[i].name, name)) {
-            if (CONF_ERR == cp[i].set(conf, name, value))
+            if (Conf_ERR == cp[i].setter(conf, name, value))
                 exit(0);
             return;
         } else {
             size_t j;
-            for (j=0; cp[i].alts[j]; j++) {
-                if (EQUALS(cp[i].alts[j], name)) {
-                    if (CONF_ERR == cp[i].set(conf, name, value))
+            for (j=0; cp[i].alt_names[j]; j++) {
+                if (EQUALS(cp[i].alt_names[j], name)) {
+                    if (Conf_ERR == cp[i].setter(conf, name, value))
                         exit(0);
                     return;
                 }

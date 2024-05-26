@@ -6,33 +6,33 @@
 #include "cross.h"
 #include "../massip/massip-addr.h"
 
-enum Config_Res {
-    CONF_OK,
-    CONF_WARN,
-    CONF_ERR
+enum ConfigRes {
+    Conf_OK,
+    Conf_WARN,
+    Conf_ERR,
 };
 
-enum Config_Flag {
-    F_NONE      = 0,
-    F_BOOL      = 1,
-    F_NUMABLE   = 2
+enum ConfigParamType {
+    Type_NONE  = 0,
+    Type_BOOL  = 1,
+    Type_NUM   = 2,
 };
 
 /**
  * @param conf where parameters would be set
  * @param name param name
  * @param value param value
- * @return (CONF_OK, CONF_WARN, CONF_ERR) or 0 in echo mode.
+ * @return enum ConfigRes or 0 in echo mode.
 */
-typedef enum Config_Res (*SET_PARAMETER)(void *conf, const char *name, const char *value);
+typedef enum ConfigRes (*CONFIG_SET_PARAM)(void *conf, const char *name, const char *value);
 
 
 struct ConfigParam {
-    const char            *name;
-    SET_PARAMETER          set;
-    enum Config_Flag       flags;
-    const char            *alts[8];
-    const char            *helps; /*set NULL if not normal prarameter*/
+    const char               *name;
+    CONFIG_SET_PARAM          setter;
+    enum ConfigParamType      type;
+    const char               *alt_names[8];
+    const char               *help_text;    /*set NULL if not normal prarameter*/
 };
 
 uint64_t
@@ -66,10 +66,10 @@ uint64_t
 parseSize(const char *value);
 
 unsigned
-hexval(char c);
+parseHexChar(char c);
 
 int
-parse_mac_address(const char *text, macaddress_t *mac);
+parseMacAddress(const char *text, macaddress_t *mac);
 
 bool
 is_power_of_two(uint64_t x);

@@ -50,57 +50,57 @@ struct TcpStateConf {
 
 static struct TcpStateConf tcpstate_conf = {0};
 
-static enum Config_Res SET_record_mss(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_record_mss(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tcpstate_conf.record_mss = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_record_ttl(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tcpstate_conf.record_ttl = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_record_ipid(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tcpstate_conf.record_ipid = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_record_win(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_record_win(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tcpstate_conf.record_win = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_port_success(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_port_success(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
     tcpstate_conf.is_port_success = parseBoolean(value);
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
-static enum Config_Res SET_conn_expire(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_conn_expire(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
 
@@ -108,26 +108,26 @@ static enum Config_Res SET_conn_expire(void *conf, const char *name, const char 
 
     if (tm <= 0) {
         LOG(LEVEL_ERROR, "FAIL: %s must be positive.\n", name);
-        return CONF_ERR;
+        return Conf_ERR;
     }
 
     tcpstate_conf.conn_expire = tm;
 
-    return CONF_OK;
+    return Conf_OK;
 }
 
 static struct ConfigParam tcpstate_parameters[] = {
     {
         "conn-expire",
         SET_conn_expire,
-        F_NUMABLE,
+        Type_NUM,
         {"expire", 0},
         "Specifies the max existing time of each connection."
     },
     {
         "port-success",
         SET_port_success,
-        F_BOOL,
+        Type_BOOL,
         {"success-port", 0},
         "Let port opening(contains zero syn-ack) results as success level."
         "(Default is info level)"
@@ -135,28 +135,28 @@ static struct ConfigParam tcpstate_parameters[] = {
     {
         "record-ttl",
         SET_record_ttl,
-        F_BOOL,
+        Type_BOOL,
         {"ttl", 0},
         "Records TTL for IPv4 or Hop Limit for IPv6 in SYN-ACK."
     },
     {
         "record-ipid",
         SET_record_ipid,
-        F_BOOL,
+        Type_BOOL,
         {"ipid", 0},
         "Records IPID of SYN-ACK just for IPv4."
     },
     {
         "record-win",
         SET_record_win,
-        F_BOOL,
+        Type_BOOL,
         {"win", "window", 0},
         "Records TCP window size of SYN-ACK."
     },
     {
         "record-mss",
         SET_record_mss,
-        F_BOOL,
+        Type_BOOL,
         {"mss", 0},
         "Records TCP MSS option value of SYN-ACK. Show zero if the option not set."
     },
