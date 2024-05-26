@@ -312,8 +312,8 @@ lzr_handle_response(
     */
 
     bool identified = false;
-    struct DataLink *result_pre;
-    result_pre = dach_new_link(&item->report, "result", DACH_DEFAULT_DATA_SIZE, false);
+    struct DataLink *res_link;
+    res_link = dach_new_link(&item->report, "result", DACH_DEFAULT_DATA_SIZE, false);
 
     size_t i = 0;
     for (; i<ARRAY_SIZE(lzr_handshakes); i++) {
@@ -321,7 +321,7 @@ lzr_handle_response(
             th_idx, target, px, sizeof_px, item);
 
         if (item->level==Output_SUCCESS) {
-            dach_append_by_pre(result_pre, item->classification, DACH_AUTO_LEN);
+            res_link = dach_append_by_link(res_link, item->classification, DACH_AUTO_LEN);
             identified = true;
             break;
         }
@@ -333,7 +333,7 @@ lzr_handle_response(
                 th_idx, target, px, sizeof_px, item);
 
             if (item->level==Output_SUCCESS) {
-                dach_printf_by_pre(result_pre, "-%s", item->classification);
+                res_link = dach_printf_by_link(res_link, "-%s", item->classification);
             }
         }
     }
@@ -356,7 +356,7 @@ lzr_handle_response(
         item->level = Output_FAILURE;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "unknown");
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
-        dach_del_link(&item->report, "result");
+        dach_del_by_link(&item->report, res_link);
 
         if (lzr_conf.banner_if_fail || lzr_conf.banner) {
             dach_append_normalized(&item->report, "banner", px, sizeof_px);

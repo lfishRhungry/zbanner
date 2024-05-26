@@ -187,7 +187,7 @@ next_id(const unsigned char *oid, unsigned *offset, uint64_t oid_length)
  ****************************************************************************/
 static void
 snmp_banner_oid(struct SMACK *global_mib, const unsigned char *oid,
-    size_t oid_length, struct DataLink *pre)
+    size_t oid_length, struct DataChain *dach)
 {
     unsigned i;
     size_t id;
@@ -213,7 +213,7 @@ snmp_banner_oid(struct SMACK *global_mib, const unsigned char *oid,
     /* Do the string */
     if (found_id != SMACK_NOT_FOUND) {
         const char *str = mib[found_id].name;
-        dach_append_by_pre(pre, str, DACH_AUTO_LEN);
+        dach_append(dach, SNMP_DACH_NAME, str, DACH_AUTO_LEN);
     }
 
     /* Do remaining OIDs */
@@ -223,7 +223,7 @@ snmp_banner_oid(struct SMACK *global_mib, const unsigned char *oid,
         if (x == 0 && i >= oid_length)
             break;
 
-        dach_printf_by_pre(pre, ".%" PRIu64 "", x);
+        dach_printf(dach, SNMP_DACH_NAME, false, ".%" PRIu64 "", x);
     }
 }
 
@@ -237,15 +237,15 @@ snmp_banner(
     uint64_t var_tag,
     const unsigned char *var,
     size_t var_length,
-    struct DataLink *pre)
+    struct DataChain *dach)
 {
     size_t i;
 
-    dach_append_char_by_pre(pre, '[');
+    dach_append_char(dach, SNMP_DACH_NAME, '[');
     /* print the OID */
-    snmp_banner_oid(global_mib, oid, oid_length, pre);
+    snmp_banner_oid(global_mib, oid, oid_length, dach);
 
-    dach_append_by_pre(pre, ": ", 2);
+    dach_append(dach, SNMP_DACH_NAME, ": ", 2);
 
     switch (var_tag) {
     case 2:
@@ -253,19 +253,19 @@ snmp_banner(
             uint64_t result = 0;
             for (i=0; i<var_length; i++)
                 result = result<<8 | var[i];
-            dach_printf_by_pre(pre, "%" PRIu64 "", result);
+            dach_printf(dach, SNMP_DACH_NAME, false, "%" PRIu64 "", result);
         }
         break;
     case 6:
-        snmp_banner_oid(global_mib, var, var_length, pre);
+        snmp_banner_oid(global_mib, var, var_length, dach);
         break;
     case 4:
     default:
-        dach_append_normalized_by_pre(pre, var, var_length);
+        dach_append_normalized(dach, SNMP_DACH_NAME, var, var_length);
         break;
     }
 
-    dach_append_char_by_pre(pre, ']');
+    dach_append_char(dach, SNMP_DACH_NAME, ']');
 }
 
 /****************************************************************************
@@ -455,8 +455,6 @@ snmp_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-
-    struct DataLink *pre;
     unsigned request_id      = 0;
     uint64_t length          = sizeof_px;
     struct SMACK *global_mib = snmp_conf.global_mibs[th_idx];
@@ -520,7 +518,6 @@ snmp_handle_response(
         length = outer_length + offset;
 
 
-    pre = dach_new_link(&item->report, SNMP_DACH_NAME, DACH_DEFAULT_DATA_SIZE, false);
     /* Var-bind list */
     while (offset < length) {
         uint64_t varbind_length;
@@ -562,10 +559,9 @@ snmp_handle_response(
                 continue; /* null */
 
             snmp_banner(global_mib, oid, (size_t)oid_length,
-                var_tag, var, (size_t)var_length, pre);
+                var_tag, var, (size_t)var_length, &item->report);
         }
     }
-
 
     item->level = Output_SUCCESS;
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "snmp");

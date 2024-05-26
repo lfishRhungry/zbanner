@@ -225,20 +225,20 @@ dns_handle_response(
 
     dns_record_t *rec;
     char tmp_data[50];
-    struct DataLink *pre;
+    struct DataLink *link;
 
     if (dns_pkt.head.header.ans_count > 0) {
         rec = &dns_pkt.body.ans[0];
         dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
             false, tmp_data, sizeof(tmp_data));
 
-        pre = dach_append_char(&item->report, "answer RR", '[');
-        dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
-        dach_append_char_by_pre(pre, ' ');
-        dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
-        dach_append_char_by_pre(pre, ' ');
-        dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
-        dach_append_char_by_pre(pre, ']');
+        link = dach_append_char(&item->report, "answer RR", '[');
+        link = dach_append_by_link(link, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+        link = dach_append_char_by_link(link, ' ');
+        link = dach_append_by_link(link, dns_class2str(rec->class), DACH_AUTO_LEN);
+        link = dach_append_char_by_link(link, ' ');
+        link = dach_append_by_link(link, tmp_data, DACH_AUTO_LEN);
+        link = dach_append_char_by_link(link, ']');
     }
 
     if (dns_pkt.head.header.ans_count>1 && dns_conf.print_all_ans) {
@@ -247,13 +247,13 @@ dns_handle_response(
             dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
                 false, tmp_data, sizeof(tmp_data));
 
-            dach_append_by_pre(pre, ", [", DACH_AUTO_LEN);
-            dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
-            dach_append_char_by_pre(pre, ' ');
-            dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
-            dach_append_char_by_pre(pre, ' ');
-            dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
-            dach_append_char_by_pre(pre, ']');
+            link = dach_append_by_link(link, ", [", DACH_AUTO_LEN);
+            link = dach_append_by_link(link, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+            link = dach_append_char_by_link(link, ' ');
+            link = dach_append_by_link(link, dns_class2str(rec->class), DACH_AUTO_LEN);
+            link = dach_append_char_by_link(link, ' ');
+            link = dach_append_by_link(link, tmp_data, DACH_AUTO_LEN);
+            link = dach_append_char_by_link(link, ']');
         }
     }
 
@@ -262,13 +262,13 @@ dns_handle_response(
         dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
             false, tmp_data, sizeof(tmp_data));
 
-        pre = dach_append_char(&item->report, "authority RR", '[');
-        dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
-        dach_append_char_by_pre(pre, ' ');
-        dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
-        dach_append_char_by_pre(pre, ' ');
-        dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
-        dach_append_char_by_pre(pre, ']');
+        link = dach_append_char(&item->report, "authority RR", '[');
+        link = dach_append_by_link(link, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+        link = dach_append_char_by_link(link, ' ');
+        link = dach_append_by_link(link, dns_class2str(rec->class), DACH_AUTO_LEN);
+        link = dach_append_char_by_link(link, ' ');
+        link = dach_append_by_link(link, tmp_data, DACH_AUTO_LEN);
+        link = dach_append_char_by_link(link, ']');
     }
 
     if (dns_pkt.head.header.auth_count>1 && dns_conf.print_all_auth) {
@@ -277,13 +277,13 @@ dns_handle_response(
             dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
                 false, tmp_data, sizeof(tmp_data));
 
-            dach_append_by_pre(pre, ", [", DACH_AUTO_LEN);
-            dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
-            dach_append_char_by_pre(pre, ' ');
-            dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
-            dach_append_char_by_pre(pre, ' ');
-            dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
-            dach_append_char_by_pre(pre, ']');
+            link = dach_append_by_link(link, ", [", DACH_AUTO_LEN);
+            link = dach_append_by_link(link, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+            link = dach_append_char_by_link(link, ' ');
+            link = dach_append_by_link(link, dns_class2str(rec->class), DACH_AUTO_LEN);
+            link = dach_append_char_by_link(link, ' ');
+            link = dach_append_by_link(link, tmp_data, DACH_AUTO_LEN);
+            link = dach_append_char_by_link(link, ']');
         }
     }
 
@@ -292,13 +292,13 @@ dns_handle_response(
         dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
             false, tmp_data, sizeof(tmp_data));
 
-        pre = dach_append_char(&item->report, "additional RR", '[');
-        dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
-        dach_append_char_by_pre(pre, ' ');
-        dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
-        dach_append_char_by_pre(pre, ' ');
-        dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
-        dach_append_char_by_pre(pre, ']');
+        link = dach_append_char(&item->report, "additional RR", '[');
+        link = dach_append_by_link(link, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+        link = dach_append_char_by_link(link, ' ');
+        link = dach_append_by_link(link, dns_class2str(rec->class), DACH_AUTO_LEN);
+        link = dach_append_char_by_link(link, ' ');
+        link = dach_append_by_link(link, tmp_data, DACH_AUTO_LEN);
+        link = dach_append_char_by_link(link, ']');
     }
 
     if (dns_pkt.head.header.add_count>1 && dns_conf.print_all_add) {
@@ -307,13 +307,13 @@ dns_handle_response(
             dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
                 false, tmp_data, sizeof(tmp_data));
 
-            dach_append_by_pre(pre, ", [", DACH_AUTO_LEN);
-            dach_append_by_pre(pre, dns_record_type2str(rec->type), DACH_AUTO_LEN);
-            dach_append_char_by_pre(pre, ' ');
-            dach_append_by_pre(pre, dns_class2str(rec->class), DACH_AUTO_LEN);
-            dach_append_char_by_pre(pre, ' ');
-            dach_append_by_pre(pre, tmp_data, DACH_AUTO_LEN);
-            dach_append_char_by_pre(pre, ']');
+            link = dach_append_by_link(link, ", [", DACH_AUTO_LEN);
+            link = dach_append_by_link(link, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+            link = dach_append_char_by_link(link, ' ');
+            link = dach_append_by_link(link, dns_class2str(rec->class), DACH_AUTO_LEN);
+            link = dach_append_char_by_link(link, ' ');
+            link = dach_append_by_link(link, tmp_data, DACH_AUTO_LEN);
+            link = dach_append_char_by_link(link, ']');
         }
     }
 

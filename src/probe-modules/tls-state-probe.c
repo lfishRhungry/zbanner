@@ -252,7 +252,7 @@ static bool output_subject_info(struct Output *out,
     int  res;
     unsigned count;
     char s_names[512];
-    struct DataLink *pre;
+    struct DataLink *link;
     BIO *bio        = NULL;
     X509 *x509_cert = NULL;
     X509_NAME *x509_subject_name           = NULL;
@@ -327,12 +327,12 @@ static bool output_subject_info(struct Output *out,
         LOG(LEVEL_WARNING, "[output_subject]X509_get_subject_name failed\n");
     }
 
-    pre = dach_new_link(&item.report, "subject name", DACH_DEFAULT_DATA_SIZE, false);
+    link = dach_new_link(&item.report, "subject name", DACH_DEFAULT_DATA_SIZE, false);
 
     while (true) {
         res = BIO_read(bio, s_names, sizeof(s_names));
         if (res > 0) {
-            dach_append_by_pre(pre, s_names, res);
+            link = dach_append_by_link(link, s_names, res);
         } else if (res == 0 || res == -1) {
             break;
         } else {
@@ -370,12 +370,12 @@ static bool output_subject_info(struct Output *out,
         sk_GENERAL_NAME_pop_free(x509_alt_names, GENERAL_NAME_free);
     }
 
-    pre = dach_new_link(&item.report, "alt name", DACH_DEFAULT_DATA_SIZE, false);
+    link = dach_new_link(&item.report, "alt name", DACH_DEFAULT_DATA_SIZE, false);
 
     while (true) {
         res = BIO_read(bio, s_names, sizeof(s_names));
         if (res > 0) {
-            dach_append_by_pre(pre, s_names, res);
+            link = dach_append_by_link(link, s_names, res);
         } else if (res == 0 || res == -1) {
             break;
         } else {
@@ -396,7 +396,7 @@ static bool output_x502_cert(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     STACK_OF(X509) * sk_x509_certs;
-    struct DataLink *pre;
+    struct DataLink *link;
     int i_cert;
     int res;
     char s_base64[2048];
@@ -465,12 +465,12 @@ static bool output_x502_cert(struct Output *out,
         }
 
         /*cert is a little bit large*/
-        pre = dach_new_link_printf(&item.report, 2048, false, "cert_%d", i_cert);
+        link = dach_new_link_printf(&item.report, 2048, false, "cert_%d", i_cert);
 
         while (true) {
             res = BIO_read(bio_mem, s_base64, sizeof(s_base64));
             if (res > 0) {
-                dach_append_by_pre(pre, s_base64, res);
+                link = dach_append_by_link(link, s_base64, res);
             } else if (res == 0 || res == -1) {
                 break;
             } else {

@@ -41,38 +41,67 @@ _name_hash(const char *name) {
 
 /**
  * Create a data link by yourself and put it after the dummy node.
- * The actual size of data won't be less than DACH_DEFAULT_DATA_SIZE.
- * NOTE: the name must not exist
+ * The initial size of data won't be less than DACH_DEFAULT_DATA_SIZE.
+ * NOTE: the name must not exist already
+ * @param len min necessary size of data
+ * @return new created link
  */
-static void
+static struct DataLink *
 _dach_new_link(struct DataChain *dach, const char *name, size_t len, bool is_number)
 {
     /*keep a space for '\0'*/
     size_t data_size   = len<DACH_DEFAULT_DATA_SIZE?DACH_DEFAULT_DATA_SIZE:len+1;
-    struct DataLink *p = CALLOC(1, sizeof(struct DataLink) + data_size);
+    struct DataLink *p = CALLOC(1, offsetof(struct DataLink, data) + data_size);
 
     safe_strcpy(p->name, DACH_MAX_NAME_SIZE, name);
 
     p->name_hash       = _name_hash(name);
     p->data_size       = data_size;
-    p->next            = dach->link->next;
     p->is_number       = is_number;
+
+    p->next            = dach->link->next;
+    p->prev            = dach->link;
     dach->link->next   = p;
+    if (p->next)
+        p->next->prev = p;
 
     dach->count++;
+
+    return p;
 }
 
+
+/*
+ * Try to maintain a c string by keeping at least a '\0' in tails of data
+ * ref:
+ *     new_link
+ *     expand
+*/
 struct DataLink *
 dach_new_link(struct DataChain *dach, const char *name, size_t data_size, bool is_number)
 {
-    struct DataLink *pre = dach_find_pre_link(dach, name);
+    struct DataLink *link = dach_find_link(dach, name);
 
-    if (pre->next == NULL) {
-        _dach_new_link(dach, name, data_size, is_number);
-        pre = dach->link;
+    if (link == NULL) {
+        link = _dach_new_link(dach, name, data_size, is_number);
     }
 
-    return pre;
+    return link;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+struct DataLink *
+dach_find_link(struct DataChain *dach, const char *name)
+{
+    unsigned hash = _name_hash(name);
+
+    struct DataLink *pre = dach->link;
+    while (pre->next && pre->next->name_hash!=hash) {
+        pre = pre->next;
+    }
+
+    return pre->next;
 }
 
 /**
@@ -94,112 +123,29 @@ _dach_new_link_vprintf(struct DataChain *dach, size_t data_size,
     }
 
     /*ensure not exist*/
-    struct DataLink *pre = dach_find_pre_link(dach, str);
+    struct DataLink *link = dach_find_link(dach, str);
 
-    if (pre->next == NULL) {
-        _dach_new_link(dach, str, data_size, is_number);
-        pre = dach->link;
+    if (link == NULL) {
+        link = _dach_new_link(dach, str, data_size, is_number);
     }
 
-    return pre;
+    return link;
 }
 
 struct DataLink *
 dach_new_link_printf(struct DataChain *dach, size_t data_size,
     bool is_number, const char *fmt_name, ...)
 {
-    struct DataLink *pre;
+    struct DataLink *link;
     va_list marker;
 
     va_start(marker, fmt_name);
-    pre = _dach_new_link_vprintf(dach, data_size, is_number, fmt_name, marker);
+    link = _dach_new_link_vprintf(dach, data_size, is_number, fmt_name, marker);
     va_end(marker);
 
-    return pre;
+    return link;
 }
 
-
-/**
- * Expand the target link size to at least mlen by inputting its previous link.
- * NOTE: pre & pre->next must not be NULL
- */
-static void
-_dach_link_expand(struct DataLink *pre, size_t mlen)
-{
-    assert(pre && pre->next);
-
-    struct DataLink *n;
-    size_t length;
-
-    /*keep a space for '\0'*/
-    length = mlen<(2*pre->next->data_size)?(2*pre->next->data_size):mlen+1;
-    n      = CALLOC(1, sizeof(struct DataLink) + length);
-
-    memcpy(n, pre->next, offsetof(struct DataLink, data) + pre->next->data_size);
-    n->data_size = length;
-
-    free(pre->next);
-    pre->next = n;
-}
-
-
-/***************************************************************************
- ***************************************************************************/
-void
-dach_release(struct DataChain *dach)
-{
-    struct DataLink *link = dach->link;
-
-    /*release all except dummy node*/
-    while (link->next) {
-        struct DataLink *next = link->next->next;
-        free(link->next);
-        link->next = next;
-    }
-
-    link->next = NULL;
-}
-
-/***************************************************************************
- ***************************************************************************/
-struct DataLink *
-dach_find_pre_link(struct DataChain *dach, const char *name)
-{
-    unsigned hash = _name_hash(name);
-
-    struct DataLink *pre = dach->link;
-    while (pre->next && pre->next->name_hash != hash)
-        pre = pre->next;
-
-    return pre;
-}
-
-struct DataLink *
-dach_find_link(struct DataChain *dach, const char *name)
-{
-    return dach_find_pre_link(dach, name)->next;
-}
-
-/***************************************************************************
- ***************************************************************************/
-struct DataLink *
-dach_get_pre_link(struct DataChain *dach, const char *name)
-{
-    struct DataLink *pre = dach_find_pre_link(dach, name);
-
-    if (pre->next == NULL) {
-        _dach_new_link(dach, name, 1, false);
-        pre = dach->link;
-    }
-
-    return pre;
-}
-
-struct DataLink *
-dach_get_link(struct DataChain *dach, const char *name)
-{
-    return dach_get_pre_link(dach, name)->next;
-}
 
 /*
  * Try to maintain a c string by keeping at least a '\0' in tails of data
@@ -208,45 +154,87 @@ dach_get_link(struct DataChain *dach, const char *name)
  *     expand
 */
 
-void
-dach_del_link_by_pre(struct DataChain *dach, struct DataLink *pre)
+/**
+ * Expand the target link size to at least mlen
+ * NOTE: link must not be NULL
+ * @return expanded link
+ */
+static struct DataLink *
+_dach_link_expand(struct DataLink *link, size_t mlen)
 {
-    assert(pre);
+    assert(link);
 
-    if (pre->next) {
-        struct DataLink *link = pre->next;
-        pre->next = link->next;
-        free(link);
-        dach->count--;
-    }
-}
+    struct DataLink *n;
+    size_t length;
 
-void
-dach_del_link(struct DataChain *dach, const char *name)
-{
-    struct DataLink *pre = dach_find_pre_link(dach, name);
-    dach_del_link_by_pre(dach, pre);
+    /*keep a space for '\0'*/
+    length = mlen<(2*link->data_size)?(2*link->data_size):mlen+1;
+    n      = CALLOC(1, offsetof(struct DataLink, data) + length);
+
+    memcpy(n, link, offsetof(struct DataLink, data) + link->data_size);
+    n->data_size = length;
+
+    n->next = link->next;
+    n->prev = link->prev;
+    link->prev->next = n;
+    if (link->next)
+        link->next->prev = n;
+
+    free(link);
+
+    return n;
 }
 
 
 /***************************************************************************
  ***************************************************************************/
 void
-dach_append_by_pre(struct DataLink *pre, 
-    const void *px, size_t length)
+dach_release(struct DataChain *dach)
 {
-    assert(pre && pre->next);
+    struct DataLink *pre = dach->link;
+    struct DataLink *tmp;
+
+    /*release all except dummy node*/
+    while (pre->next) {
+        tmp = pre->next;
+        pre->next = pre->next->next;
+        free(tmp);
+    }
+
+    pre->next = NULL;
+}
+
+void
+dach_del_by_link(struct DataChain *dach, struct DataLink *link)
+{
+    if (link) {
+        link->prev->next = link->next;
+        if (link->next)
+            link->next->prev = link->prev;
+        free(link);
+        dach->count--;
+    }
+}
+
+/***************************************************************************
+ ***************************************************************************/
+struct DataLink *
+dach_append_by_link(struct DataLink *link, const void *px, size_t length)
+{
+    assert(link);
 
     if (length == DACH_AUTO_LEN)
         length = strlen((const char*)px);
 
-    size_t min_len = pre->next->data_len + length;
-    if (min_len >= pre->next->data_size) { /*at least keep a '\0'*/
-        _dach_link_expand(pre, min_len);
+    size_t min_len = link->data_len + length;
+    if (min_len >= link->data_size) { /*at least keep a '\0'*/
+        link = _dach_link_expand(link, min_len);
     }
 
-    memcpy(pre->next->data + pre->next->data_len, px, length);
-    pre->next->data_len = min_len;
+    memcpy(link->data + link->data_len, px, length);
+    link->data_len = min_len;
+
+    return link;
 }
 
 /***************************************************************************
@@ -255,25 +243,22 @@ struct DataLink *
 dach_append(struct DataChain *dach, const char *name, 
     const void *px, size_t length)
 {
-    struct DataLink *pre = dach_find_pre_link(dach, name);
+    struct DataLink *link = dach_find_link(dach, name);
 
-    if (pre->next == NULL) {
-        _dach_new_link(dach, name, length, false);
-        pre = dach->link;
+    if (link == NULL) {
+        link = _dach_new_link(dach, name, length, false);
     }
 
-    dach_append_by_pre(pre, px, length);
-
-    return pre;
+    return dach_append_by_link(link, px, length);
 }
 
 /***************************************************************************
  ***************************************************************************/
-void
-dach_append_char_by_pre(struct DataLink *pre, int c)
+struct DataLink *
+dach_append_char_by_link(struct DataLink *link, int c)
 {
     char cc = (char)c;
-    dach_append_by_pre(pre, &cc, 1);
+    return dach_append_by_link(link, &cc, 1);
 }
 
 /***************************************************************************
@@ -281,22 +266,19 @@ dach_append_char_by_pre(struct DataLink *pre, int c)
 struct DataLink *
 dach_append_char(struct DataChain *dach, const char *name, int c)
 {
-    struct DataLink *pre = dach_find_pre_link(dach, name);
+    struct DataLink *link = dach_find_link(dach, name);
 
-    if (pre->next == NULL) {
-        _dach_new_link(dach, name, 1, false);
-        pre = dach->link;
+    if (link == NULL) {
+        link = _dach_new_link(dach, name, 1, false);
     }
 
-    dach_append_char_by_pre(pre, c);
-
-    return pre;
+    return dach_append_char_by_link(link, c);
 }
 
 /***************************************************************************
  ***************************************************************************/
-void
-dach_append_hexint_by_pre(struct DataLink *pre,
+struct DataLink *
+dach_append_hexint_by_link(struct DataLink *link,
     unsigned long long number, int digits)
 {
     if (digits == 0) {
@@ -308,8 +290,10 @@ dach_append_hexint_by_pre(struct DataLink *pre,
 
     for (;digits>0; digits--) {
         char c = "0123456789abcdef"[(number>>(unsigned long long)((digits-1)*4)) & 0xF];
-        dach_append_char_by_pre(pre, c);
+        link = dach_append_char_by_link(link, c);
     }
+
+    return link;
 }
 
 /***************************************************************************
@@ -318,11 +302,10 @@ struct DataLink *
 dach_append_hexint(struct DataChain *dach, const char *name,
     unsigned long long number, int digits)
 {
-    struct DataLink *pre = dach_find_pre_link(dach, name);
+    struct DataLink *link = dach_find_link(dach, name);
 
-    if (pre->next == NULL) {
-        _dach_new_link(dach, name, 1, false); /*use default*/
-        pre = dach->link;
+    if (link == NULL) {
+        link = _dach_new_link(dach, name, 1, false); /*use default*/
     }
 
     if (digits == 0) {
@@ -333,43 +316,45 @@ dach_append_hexint(struct DataChain *dach, const char *name,
 
     for (;digits>0; digits--) {
         char c = "0123456789abcdef"[(number>>(unsigned long long)((digits-1)*4)) & 0xF];
-        dach_append_char_by_pre(pre, c);
+        link = dach_append_char_by_link(link, c);
     }
 
-    return pre;
+    return link;
 }
 
 /***************************************************************************
  ***************************************************************************/
-void
-dach_append_unicode_by_pre(struct DataLink *pre, unsigned c)
+struct DataLink *
+dach_append_unicode_by_link(struct DataLink *link, unsigned c)
 {
     if (c & ~0xFFFF) {
         unsigned c2;
         c2 = 0xF0 | ((c>>18)&0x03);
-        dach_append_char_by_pre(pre, c2);
+        link = dach_append_char_by_link(link, c2);
         c2 = 0x80 | ((c>>12)&0x3F);
-        dach_append_char_by_pre(pre, c2);
+        link = dach_append_char_by_link(link, c2);
         c2 = 0x80 | ((c>> 6)&0x3F);
-        dach_append_char_by_pre(pre, c2);
+        link = dach_append_char_by_link(link, c2);
         c2 = 0x80 | ((c>> 0)&0x3F);
-        dach_append_char_by_pre(pre, c2);
+        link = dach_append_char_by_link(link, c2);
     } else if (c & ~0x7FF) {
         unsigned c2;
         c2 = 0xE0 | ((c>>12)&0x0F);
-        dach_append_char_by_pre(pre, c2);
+        link = dach_append_char_by_link(link, c2);
         c2 = 0x80 | ((c>> 6)&0x3F);
-        dach_append_char_by_pre(pre, c2);
+        link = dach_append_char_by_link(link, c2);
         c2 = 0x80 | ((c>> 0)&0x3F);
-        dach_append_char_by_pre(pre, c2);
+        link = dach_append_char_by_link(link, c2);
     } else if (c & ~0x7f) {
         unsigned c2;
         c2 = 0xc0 | ((c>> 6)&0x1F);
-        dach_append_char_by_pre(pre, c2);
+        link = dach_append_char_by_link(link, c2);
         c2 = 0x80 | ((c>> 0)&0x3F);
-        dach_append_char_by_pre(pre, c2);
+        link = dach_append_char_by_link(link, c2);
     } else
-        dach_append_char_by_pre(pre, c);
+        link = dach_append_char_by_link(link, c);
+    
+    return link;
 }
 
 /***************************************************************************
@@ -377,24 +362,21 @@ dach_append_unicode_by_pre(struct DataLink *pre, unsigned c)
 struct DataLink *
 dach_append_unicode(struct DataChain *dach, const char *name, unsigned c)
 {
-    struct DataLink *pre = dach_find_pre_link(dach, name);
+    struct DataLink *link = dach_find_link(dach, name);
 
-    if (pre->next == NULL) {
-        _dach_new_link(dach, name, 1, false); /*use default*/
-        pre = dach->link;
+    if (link == NULL) {
+        link = _dach_new_link(dach, name, 1, false); /*use default*/
     }
 
-    dach_append_unicode_by_pre(pre, c);
-
-    return pre;
+    return dach_append_unicode_by_link(link, c);
 }
 
 
 /***************************************************************************
- * NOTE: pre & pre->next must not be NULL
+ * NOTE: link must not be NULL
  ***************************************************************************/
-static void
-_dach_vprintf(struct DataLink *pre, const char *fmt, va_list marker) {
+static struct DataLink *
+_dach_vprintf(struct DataLink *link, const char *fmt, va_list marker) {
 
     char str[50];
     int  len;
@@ -403,23 +385,27 @@ _dach_vprintf(struct DataLink *pre, const char *fmt, va_list marker) {
     if (len > sizeof(str)-1) {
         char *tmp = MALLOC(len+1);
         vsnprintf(tmp, len+1, fmt, marker);
-        dach_append_by_pre(pre, tmp, len);
+        link = dach_append_by_link(link, tmp, len);
         free(tmp);
     } else {
-        dach_append_by_pre(pre, str, len);
+        link = dach_append_by_link(link, str, len);
     }
+
+    return link;
 }
 
 /***************************************************************************
  ***************************************************************************/
-void
-dach_printf_by_pre(struct DataLink *pre, const char *fmt, ...)
+struct DataLink *
+dach_printf_by_link(struct DataLink *link, const char *fmt, ...)
 {
     va_list marker;
 
     va_start(marker, fmt);
-    _dach_vprintf(pre, fmt, marker);
+    link = _dach_vprintf(link, fmt, marker);
     va_end(marker);
+
+    return link;
 }
 
 /***************************************************************************
@@ -427,27 +413,26 @@ dach_printf_by_pre(struct DataLink *pre, const char *fmt, ...)
 struct DataLink *
 dach_printf(struct DataChain *dach, const char *name, bool is_number, const char *fmt, ...)
 {
-    struct DataLink *pre = dach_find_pre_link(dach, name);
+    struct DataLink *link = dach_find_link(dach, name);
 
-    if (pre->next == NULL) {
+    if (link == NULL) {
         /*we don't know the exact length, use default*/
-        _dach_new_link(dach, name, 1, is_number);
-        pre = dach->link;
+        link = _dach_new_link(dach, name, 1, is_number);
     }
 
     va_list marker;
 
     va_start(marker, fmt);
-    _dach_vprintf(pre, fmt, marker);
+    link = _dach_vprintf(link, fmt, marker);
     va_end(marker);
 
-    return pre;
+    return link;
 }
 
 /***************************************************************************
  ***************************************************************************/
-void dach_append_normalized_by_pre(struct DataLink *pre,
-    const void *px, size_t length)
+struct DataLink *
+dach_append_normalized_by_link(struct DataLink *link, const void *px, size_t length)
 {
     if (length == DACH_AUTO_LEN)
         length = strlen((const char*)px);
@@ -455,13 +440,15 @@ void dach_append_normalized_by_pre(struct DataLink *pre,
     for (size_t i=0; i<length; i++) {
         int c = ((const char*)px)[i];
         if (isprint(c) && c != '<' && c != '>' && c != '&' && c != '\\' && c != '\"' && c != '\'') {
-            dach_append_char_by_pre(pre, c);
+            link = dach_append_char_by_link(link, c);
         } else {
-            dach_append_by_pre(pre, "\\x", 2);
-            dach_append_char_by_pre(pre, "0123456789abcdef"[c>>4]);
-            dach_append_char_by_pre(pre, "0123456789abcdef"[c&0xF]);
+            link = dach_append_by_link(link, "\\x", 2);
+            link = dach_append_char_by_link(link, "0123456789abcdef"[c>>4]);
+            link = dach_append_char_by_link(link, "0123456789abcdef"[c&0xF]);
         }
     }
+
+    return link;
 }
 
 /***************************************************************************
@@ -473,18 +460,15 @@ dach_append_normalized(struct DataChain *dach, const char *name,
     if (length == DACH_AUTO_LEN)
         length = strlen((const char*)px);
 
-    struct DataLink *pre = dach_find_pre_link(dach, name);
+    struct DataLink *link = dach_find_link(dach, name);
 
-    if (pre->next == NULL) {
-        _dach_new_link(dach, name,
+    if (link == NULL) {
+        link = _dach_new_link(dach, name,
             length<DACH_DEFAULT_DATA_SIZE?length*4:length*2,
             false); /*estimate the encoded length*/
-        pre = dach->link;
     }
 
-    dach_append_normalized_by_pre(pre, px, length);
-
-    return pre;
+    return dach_append_normalized_by_link(link, px, length);
 }
 
 /***************************************************************************
@@ -496,7 +480,7 @@ dach_link_contains(struct DataLink *link, const char *string)
 
     if (string==NULL) return false;
 
-    const unsigned char *string2 = link->next->data;
+    const unsigned char *string2 = link->data;
     size_t string2_length        = link->data_len;
     size_t string_length         = strlen(string);
 
@@ -514,8 +498,7 @@ dach_link_contains(struct DataLink *link, const char *string)
 /***************************************************************************
  ***************************************************************************/
 bool
-dach_contains(struct DataChain *dach, const char *name,
-    const char *string)
+dach_contains(struct DataChain *dach, const char *name, const char *string)
 {
     if (string==NULL) return false;
 
@@ -568,7 +551,7 @@ static const char *b64 =
 /*****************************************************************************
  *****************************************************************************/
 void
-dach_init_base64(struct DataChainB64 *base64)
+dach_init_base64(struct DachBase64 *base64)
 {
     base64->state = 0;
     base64->temp  = 0;
@@ -576,9 +559,9 @@ dach_init_base64(struct DataChainB64 *base64)
 
 /*****************************************************************************
  *****************************************************************************/
-void
-dach_append_base64_by_pre(struct DataLink *pre,
-    const void *vpx, size_t length, struct DataChainB64 *base64)
+struct DataLink *
+dach_append_base64_by_link(struct DataLink *link,
+    const void *vpx, size_t length, struct DachBase64 *base64)
 {
     if (length == DACH_AUTO_LEN)
         length = strlen((const char*)vpx);
@@ -601,72 +584,73 @@ dach_append_base64_by_pre(struct DataLink *pre,
             case 2:
                 x |= px[i];
                 state = 0;
-                dach_append_char_by_pre(pre, b64[(x>>18)&0x3F]);
-                dach_append_char_by_pre(pre, b64[(x>>12)&0x3F]);
-                dach_append_char_by_pre(pre, b64[(x>> 6)&0x3F]);
-                dach_append_char_by_pre(pre, b64[(x>> 0)&0x3F]);
+                link = dach_append_char_by_link(link, b64[(x>>18)&0x3F]);
+                link = dach_append_char_by_link(link, b64[(x>>12)&0x3F]);
+                link = dach_append_char_by_link(link, b64[(x>> 6)&0x3F]);
+                link = dach_append_char_by_link(link, b64[(x>> 0)&0x3F]);
         }
     }
     
     base64->temp = x;
     base64->state = state;
+
+    return link;
 }
 
 /*****************************************************************************
  *****************************************************************************/
 struct DataLink *
 dach_append_base64(struct DataChain *dach, const char *name,
-    const void *vpx, size_t length, struct DataChainB64 *base64)
+    const void *vpx, size_t length, struct DachBase64 *base64)
 {
-    struct DataLink *pre = dach_find_pre_link(dach, name);
+    struct DataLink *link = dach_find_link(dach, name);
 
-    if (pre->next == NULL) {
+    if (link == NULL) {
         if (length == DACH_AUTO_LEN)
             length = strlen((const char*)vpx);
         /*len after encoding*/
-        _dach_new_link(dach, name, ((length+2)/3)*4, false);
-        pre = dach->link;
+        link = _dach_new_link(dach, name, ((length+2)/3)*4, false);
     }
 
-    dach_append_base64_by_pre(pre, vpx, length, base64);
-
-    return pre;
+    return dach_append_base64_by_link(link, vpx, length, base64);
 }
 
 /*****************************************************************************
  *****************************************************************************/
-void
-dach_finalize_base64_by_pre(struct DataLink *pre, struct DataChainB64 *base64)
+struct DataLink *
+dach_finalize_base64_by_link(struct DataLink *link, struct DachBase64 *base64)
 {
     unsigned x = base64->temp;
     switch (base64->state) {
         case 0:
             break;
         case 1:
-            dach_append_char_by_pre(pre, b64[(x>>18)&0x3F]);
-            dach_append_char_by_pre(pre, b64[(x>>12)&0x3F]);
-            dach_append_by_pre(pre, "==", 2);
+            link = dach_append_char_by_link(link, b64[(x>>18)&0x3F]);
+            link = dach_append_char_by_link(link, b64[(x>>12)&0x3F]);
+            link = dach_append_by_link(link, "==", 2);
             break;
         case 2:
-            dach_append_char_by_pre(pre, b64[(x>>18)&0x3F]);
-            dach_append_char_by_pre(pre, b64[(x>>12)&0x3F]);
-            dach_append_char_by_pre(pre, b64[(x>>6)&0x3F]);
-            dach_append_char_by_pre(pre, '=');
+            link = dach_append_char_by_link(link, b64[(x>>18)&0x3F]);
+            link = dach_append_char_by_link(link, b64[(x>>12)&0x3F]);
+            link = dach_append_char_by_link(link, b64[(x>>6)&0x3F]);
+            link = dach_append_char_by_link(link, '=');
             break;
     }
+
+    return link;
 }
 
 /*****************************************************************************
  *****************************************************************************/
 void
 dach_finalize_base64(struct DataChain *dach, const char *name,
-    struct DataChainB64 *base64)
+    struct DachBase64 *base64)
 {
-    struct DataLink *pre = dach_find_pre_link(dach, name);
+    struct DataLink *link = dach_find_link(dach, name);
 
-    if (pre->next == NULL) return;
+    if (link == NULL) return;
 
-    dach_finalize_base64_by_pre(pre, base64);
+    dach_finalize_base64_by_link(link, base64);
 }
 
 /*****************************************************************************
@@ -724,7 +708,7 @@ datachain_selftest(void)
             goto fail;
         }
 
-        dach_del_link(dach, "x");
+        dach_del_by_link(dach, dach_find_link(dach, "x"));
 
         link = dach_find_link(dach, "x");
         if (link) {
@@ -764,7 +748,7 @@ datachain_selftest(void)
             goto fail;
         }
 
-        dach_del_link(dach, "normal");
+        dach_del_by_link(dach, dach_find_link(dach, "normal"));
         link = dach_find_link(dach, "normal");
         if (link) {
             line = __LINE__;
@@ -793,7 +777,7 @@ datachain_selftest(void)
      */
     {
         struct DataChain *dach = CALLOC(1, sizeof(struct DataChain));
-        struct DataChainB64 base64[1];
+        struct DachBase64 base64[1];
 
         dach_init_base64(base64);
         dach_append_base64(dach, "1", "x", 1, base64);
