@@ -11,19 +11,17 @@
 /** Use this when adding TCP ports, to avoid the comoplication of how
  * ports are stored */
 void
-rangelist_add_range_tcp(struct RangeList *targets, unsigned begin, unsigned end) {
-    rangelist_add_range(targets,
-                            Range_TCP + begin,
-                            Range_TCP + end);
+rangelist_add_range_tcp(struct RangeList *targets, unsigned begin, unsigned end)
+{
+    rangelist_add_range(targets, Range_TCP + begin, Range_TCP + end);
 }
 
 /** Use this when adding UDP ports, to avoid the comoplication of how
  * ports are stored */
 void
-rangelist_add_range_udp(struct RangeList *targets, unsigned begin, unsigned end) {
-    rangelist_add_range(targets,
-                            Range_UDP + begin,
-                            Range_UDP + end);
+rangelist_add_range_udp(struct RangeList *targets, unsigned begin, unsigned end)
+{
+    rangelist_add_range(targets, Range_UDP + begin, Range_UDP + end);
 }
 
 /***************************************************************************
@@ -31,7 +29,8 @@ rangelist_add_range_udp(struct RangeList *targets, unsigned begin, unsigned end)
  * handle multiple stuff on the same line
  ***************************************************************************/
 const char *
-rangelist_parse_ports(struct RangeList *ports, const char *string, unsigned *is_error, unsigned proto_offset)
+rangelist_parse_ports(struct RangeList *ports, const char *string,
+    unsigned *is_error, unsigned proto_offset)
 {
     char *p = (char*)string;
     unsigned tmp = 0;

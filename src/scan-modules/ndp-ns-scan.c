@@ -43,6 +43,11 @@ static struct ConfigParam ndpns_parameters[] = {
 static bool
 ndpns_global_init(const struct Xconf *xconf)
 {
+    if (xconf->targets.count_ports!=1) {
+        LOG(LEVEL_ERROR, "[-] NdpNsScan doesn't need to specify any ports.\n");
+        return false;
+    }
+
     if (xconf->nic.link_type!=1) {
         LOG(LEVEL_ERROR, "[-] NdpNsScan cannot work on non-ethernet link type.\n");
         return false;
@@ -59,6 +64,9 @@ ndpns_transmit(
     struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
+    if (target->ip_proto != IP_PROTO_Other)
+        return false;
+
     /*ndp ns is just for ipv6*/
     if (target->ip_them.version!=6)
         return false; 
@@ -168,7 +176,8 @@ struct ScanModule NdpNsScan = {
         "Example on Linux:\n"
         "      ping -6 <dst-IPv6-addr> -I <src-IPv6-addr>%<interface>\n"
         "Example on Windows:\n"
-        "      ping -6 <dst-IPv6-addr> -S <src-IPv6-addr>%<interface-num>",
+        "      ping -6 <dst-IPv6-addr> -S <src-IPv6-addr>%<interface-num>\n"
+        "NOTE: Don't specify any ports for this module.",
 
     .global_init_cb         = &ndpns_global_init,
     .transmit_cb            = &ndpns_transmit,

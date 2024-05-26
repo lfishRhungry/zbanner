@@ -620,8 +620,14 @@ int main(int argc, char *argv[]) {
                            massip_has_ipv6_targets(&xconf->targets);
     has_target_ports = massip_has_target_ports(&xconf->targets);
     massip_apply_excludes(&xconf->targets, &xconf->exclude);
-    if (!has_target_ports && xconf->op == Operation_ListTargets)
-        massip_add_port_string(&xconf->targets, "80", 0);
+    if (!has_target_ports) {
+        massip_add_port_string(&xconf->targets, "o:0", 0);
+
+        LOG(LEVEL_HINT, "NOTE: no ports were specified, use default other proto port 0.\n");
+        LOG(LEVEL_HINT, " [hint] ignored if the ScanModule does not need port. (eg. "
+            "icmp, arp, ndp, etc.)\n");
+        LOG(LEVEL_HINT, " [hint] or try something like \"-p 80,8000-9000\"\n");
+    }
 
     /* Optimize target selection so it's a quick binary search instead
      * of walking large memory tables. When we scan the entire Internet
@@ -633,11 +639,12 @@ int main(int argc, char *argv[]) {
      */
     if (massint128_bitcount(massip_range(&xconf->targets)) > 63) {
         LOG(LEVEL_ERROR,
-                "[-] FAIL: scan range too large, max is 63-bits, requested is %u "
-                "bits\n",
-                massint128_bitcount(massip_range(&xconf->targets)));
-        LOG(LEVEL_ERROR, "    Hint: scan range is number of IP addresses times "
-                        "number of ports\n");
+            "[-] FAIL: scan range too large, max is 63-bits, requested is %u "
+            "bits\n",
+            massint128_bitcount(massip_range(&xconf->targets)));
+        LOG(LEVEL_ERROR,
+            "    Hint: scan range is number of IP addresses times "
+            "number of ports\n");
         LOG(LEVEL_ERROR, "    Hint: IPv6 subnet must be at least /66 \n");
         exit(1);
     }
@@ -656,21 +663,13 @@ int main(int argc, char *argv[]) {
             } else {
                 LOG(LEVEL_ERROR, " [hint] try something like \"--range 10.0.0.0/8\"\n");
                 LOG(LEVEL_ERROR, " [hint] try something like \"--range "
-                       "192.168.0.100-192.168.0.200\"\n");
+                    "192.168.0.100-192.168.0.200\"\n");
             }
             exit(1);
         }
-        if (rangelist_count(&xconf->targets.ports) == 0) {
-            if (has_target_ports) {
-                LOG(LEVEL_ERROR, " [hint] all ports were removed by exclusion ranges\n");
-                return 1;
-            } else {
-                LOG(LEVEL_HINT, "NOTE: no ports were specified, use default port TCP:80 .\n");
-                LOG(LEVEL_HINT, " [hint] ignored if the ScanModule does not need port. (eg. "
-                       "icmp or arp)\n");
-                LOG(LEVEL_HINT, " [hint] or try something like \"-p 80,8000-9000\"\n");
-                massip_add_port_string(&xconf->targets, "80", 0);
-            }
+        if (rangelist_count(&xconf->targets.ports) == 0 && has_target_ports) {
+            LOG(LEVEL_ERROR, " [hint] all ports were removed by exclusion ranges\n");
+            return 1;
         }
         return main_scan(xconf);
 

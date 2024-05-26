@@ -48,9 +48,9 @@ enum Operation {
     Operation_Scan,                          /* do scan */
     Operation_Echo,                          /* echo the config used now or all configs with --echo-all */
     Operation_DebugIF,                       /* do special selftest to interface for debugging*/
-    Operation_ListCidr,                      /* list all targets in CIDR */
-    Operation_ListRange,                     /* list all targets in range */
-    Operation_ListTargets,                   /* list all targets uniquely in random */
+    Operation_ListCidr,                      /* list all target IPs in CIDR */
+    Operation_ListRange,                     /* list all target IPs in range */
+    Operation_ListTargets,                   /* list all target IPs uniquely in random */
     Operation_ListAdapters,                  /* list all usable interfaces */
     Operation_ListScanModules,               /* list all scan modules */
     Operation_ListProbeModules,              /* list all probes */

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "scan-modules.h"
+#include "../xconf.h"
 #include "../massip/massip-cookie.h"
 #include "../templ/templ-icmp.h"
 #include "../util-data/safe-string.h"
@@ -55,12 +56,26 @@ static struct ConfigParam icmptime_parameters[] = {
 };
 
 static bool
+icmptime_global_init(const struct Xconf *xconf)
+{
+    if (xconf->targets.count_ports!=1) {
+        LOG(LEVEL_ERROR, "[-] IcmpTimeScan doesn't need to specify any ports.\n");
+        return false;
+    }
+
+    return true;
+}
+
+static bool
 icmptime_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
     struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
+    if (target->ip_proto != IP_PROTO_Other)
+        return false;
+
     /*icmp timestamp is just for ipv4*/
     if (target->ip_them.version!=4)
         return 0; 
@@ -150,9 +165,10 @@ struct ScanModule IcmpTimeScan = {
         "icmp && (icmp[0]==14 && icmp[1]==0)",
     .desc =
         "IcmpTimeScan sends an ICMP Timestamp mesage to IPv4 target host. Expect an "
-        "ICMP Timestamp Reply to believe the host is alive.",
+        "ICMP Timestamp Reply to believe the host is alive.\n"
+        "NOTE: Don't specify any ports for this module.",
 
-    .global_init_cb         = &scan_global_init_nothing,
+    .global_init_cb         = &icmptime_global_init,
     .transmit_cb            = &icmptime_transmit,
     .validate_cb            = &icmptime_validate,
     .handle_cb              = &icmptime_handle,

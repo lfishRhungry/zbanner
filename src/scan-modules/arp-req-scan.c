@@ -18,6 +18,11 @@ arpreq_global_init(const struct Xconf *xconf)
         return false;
     }
 
+    if (xconf->targets.count_ports!=1) {
+        LOG(LEVEL_ERROR, "[-] ArpReqScan doesn't need to specify any ports.\n");
+        return false;
+    }
+
     return true;
 }
 
@@ -28,6 +33,9 @@ arpreq_transmit(
     struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
+    if (target->ip_proto != IP_PROTO_Other)
+        return false;
+
     /*arp is just for ipv4*/
     if (target->ip_them.version!=4)
         return false; 
@@ -109,10 +117,11 @@ struct ScanModule ArpReqScan = {
         "discovery messages of Neighbor Dicovery Protocol(NDP) implemented by ICMPv6 "
         " to dicovery neighbors and their mac addr. ArpReqScan will ignore ipv6 "
         "targets.\n"
-        "NOTE: ArpReqScan works in local area network only, so remember to use\n"
+        "NOTE1: ArpReqScan works in local area network only, so remember to use\n"
         "    `--lan-mode`\n"
         "or to set router mac like:\n"
-        "    `--router-mac ff-ff-ff-ff-ff-ff`.",
+        "    `--router-mac ff-ff-ff-ff-ff-ff`.\n"
+        "NOTE2: Don't specify any ports for this module.",
 
     .global_init_cb    = &arpreq_global_init,
     .transmit_cb       = &arpreq_transmit,

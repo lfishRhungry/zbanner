@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "scan-modules.h"
+#include "../xconf.h"
 #include "../massip/massip-cookie.h"
 #include "../templ/templ-icmp.h"
 #include "../util-data/safe-string.h"
@@ -55,12 +56,26 @@ static struct ConfigParam icmpecho_parameters[] = {
 };
 
 static bool
+icmpecho_global_init(const struct Xconf *xconf)
+{
+    if (xconf->targets.count_ports!=1) {
+        LOG(LEVEL_ERROR, "[-] IcmpEchoScan doesn't need to specify any ports.\n");
+        return false;
+    }
+
+    return true;
+}
+
+static bool
 icmpecho_transmit(
     uint64_t entropy,
     struct ScanTarget *target,
     struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
+    if (target->ip_proto != IP_PROTO_Other)
+        return false;
+
     /*we do not care target port*/
     unsigned cookie = get_cookie(
         target->ip_them, 0, target->ip_me, 0, entropy);
@@ -154,9 +169,10 @@ struct ScanModule IcmpEchoScan = {
         "|| (icmp6 && (icmp6[0]==129 && icmp6[1]==0))",
     .desc =
         "IcmpEchoScan sends an ICMP ECHO Request packet to target host. Expect an "
-        "ICMP ECHO Reply to believe the host is alive.",
+        "ICMP ECHO Reply to believe the host is alive.\n"
+        "NOTE: Don't specify any ports for this module.",
 
-    .global_init_cb         = &scan_global_init_nothing,
+    .global_init_cb         = &icmpecho_global_init,
     .transmit_cb            = &icmpecho_transmit,
     .validate_cb            = &icmpecho_validate,
     .handle_cb              = &icmpecho_handle,
