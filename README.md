@@ -331,7 +331,7 @@ make -j4
 
 # Author
 
-Xtate was created by lfishRhungry:
+Xtate was created by sharkocha:
 
 - email: chenchiyu14@nudt.edu.cn
 
@@ -352,7 +352,7 @@ I've learned more than just finishing my worthless graduate thesis.
 
 # License
 
-Copyright (c) 2024 lfishRhungry
+Copyright (c) 2024 sharkocha
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by

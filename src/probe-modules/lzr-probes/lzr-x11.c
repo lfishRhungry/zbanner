@@ -1,5 +1,5 @@
 /**
- * modified from LZR by lfishRhungry 2024
+ * modified from LZR by sharkocha 2024
 */
 #include <string.h>
 #include <time.h>

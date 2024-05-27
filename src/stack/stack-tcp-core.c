@@ -59,7 +59,7 @@
  * lightweight TCP stack----HLTCP.
  * 
  * Born from masscan's tcp stack.
- * Modified by lfishRhungry 2024.
+ * Modified by sharkocha 2024.
 */
 #include "stack-tcp-core.h"
 

@@ -1,5 +1,5 @@
 /**
- * Add to LZR by lfishRhungry 2024
+ * Add to LZR by sharkocha 2024
 */
 #include <string.h>
 

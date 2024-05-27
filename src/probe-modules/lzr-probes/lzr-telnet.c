@@ -29,7 +29,7 @@ lzr_telnet_handle_response(
     }
 
     /**
-     * fixed from LZR by lfishRhungry 2024
+     * fixed from LZR by sharkocha 2024
     */
     if (px[1]==0xff && (px[1]==0xfe || px[1]==0xfd || px[1]==0xfc || px[1]==0xfb)) {
         item->level = Output_SUCCESS;

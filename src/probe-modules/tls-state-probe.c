@@ -1,6 +1,6 @@
 /**
  * Originally born from https://github.com/bi-zone/masscan-ng
- * Modified by lfishRhungry 2024
+ * Modified by sharkocha 2024
  * Now it supports multi data exchange after hello over TLS and more functions.
 */
 #ifndef NOT_FOUND_OPENSSL

@@ -6,7 +6,7 @@
  * e.g. make it be thread safe.
  * and fix some bugs e.g. memcpy/memmove
  * 
- * Modified: lfishRhungry 2024
+ * Modified: sharkocha 2024
 */
 // SPDX-License-Identifier: GPL-3.0-only
 
