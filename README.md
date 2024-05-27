@@ -222,12 +222,12 @@ The original Masscan was created by Robert Graham:
 - email: robert_david_graham@yahoo.com
 - twitter: @ErrataRob
 
-ZBanner was written by lfishRhungry:
+ZBanner was written by sharkocha:
 - email: shineccy@aliyun.com
 
 # License
 
-Copyright (c) 2023 lfishRhungry
+Copyright (c) 2023 sharkocha
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by

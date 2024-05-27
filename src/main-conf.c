@@ -114,7 +114,7 @@ print_version()
     printf("\n");
     printf("ZBanner version %s\n( %s )\n", 
         ZBANNER_VERSION,
-        "https://github.com/lfishRhungry/zbanner"
+        "https://github.com/sharkocha/zbanner"
         );
     printf("Compiled on: %s %s\n", __DATE__, __TIME__);
 
@@ -199,7 +199,7 @@ print_version()
 static void
 print_nmap_help(void)
 {
-    printf("\nZBanner (https://github.com/lfishRhungry/zbanner)\n"
+    printf("\nZBanner (https://github.com/sharkocha/zbanner)\n"
 "Usage: zbanner [Options] -p{Target-Ports} {Target-IP-Ranges}\n"
 "TARGET SPECIFICATION:\n"
 "  Can pass only IPv4/IPv6 address, CIDR networks, or ranges (non-nmap style)\n"
@@ -257,7 +257,7 @@ print_nmap_help(void)
 "  zbanner 23.0.0.0/0 -p80 --banners -output-format binary --output-filename internet.scan\n"
 "  zbanner --open --banners --readscan internet.scan -oG internet_scan.grepable\n\n"
 "SEE (https://github.com/robertdavidgraham/masscan) FOR ORIGINAL HELP\n"
-"SEE (https://github.com/lfishRhungry/zbanner) FOR ZBANNER HELP\n"
+"SEE (https://github.com/sharkocha/zbanner) FOR ZBANNER HELP\n"
 "\n");
 }
 

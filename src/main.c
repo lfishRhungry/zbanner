@@ -1527,7 +1527,7 @@ main_scan(struct Masscan *masscan)
         now = time(0);
         safe_gmtime(&x, &now);
         strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S GMT", &x);
-        LOG(0, "Starting zbanner " ZBANNER_VERSION " (https://github.com/lfishRhungry/zbanner) at %s\n",
+        LOG(0, "Starting zbanner " ZBANNER_VERSION " (https://github.com/sharkocha/zbanner) at %s\n",
             buffer);
 
         if (count_ports == 1 && \
