@@ -97,16 +97,15 @@ static void control_c_handler(int x) {
 
 static int main_scan(struct Xconf *xconf) {
     struct TxThread      *tx_thread;
-    struct RxThread       rx_thread[1];
-    struct TemplateSet    tmplset;
-    struct Xtatus         status;
-    uint64_t              count_ips;
-    uint64_t              count_ports;
-    uint64_t              range;
-    unsigned              index;
+    struct RxThread       rx_thread[1]          = {0};
+    struct TemplateSet    tmplset               = {0};
+    struct Xtatus         status                = {0};
     uint64_t              min_index             = UINT64_MAX;
     uint64_t              min_repeat            = UINT64_MAX;
     time_t                now                   = time(0);
+    uint64_t              count_ports; 
+    uint64_t              count_ips;
+    uint64_t              range;
 
     memset(rx_thread, 0, sizeof(struct RxThread));
     tx_thread = CALLOC(xconf->tx_thread_count, sizeof(struct TxThread));
@@ -292,7 +291,7 @@ static int main_scan(struct Xconf *xconf) {
     /*
      * Prepare for tx threads
      */
-    for (index = 0; index < xconf->tx_thread_count; index++) {
+    for (unsigned index = 0; index < xconf->tx_thread_count; index++) {
         struct TxThread *parms          = &tx_thread[index];
         parms->xconf                    = xconf;
         parms->tx_index                 = index;
@@ -339,7 +338,7 @@ static int main_scan(struct Xconf *xconf) {
      */
     rx_thread->thread_handle_recv =
         pixie_begin_thread(receive_thread, 0, rx_thread);
-    for (index = 0; index < xconf->tx_thread_count; index++) {
+    for (unsigned index = 0; index < xconf->tx_thread_count; index++) {
         struct TxThread *parms    = &tx_thread[index];
         parms->thread_handle_xmit = pixie_begin_thread(transmit_thread, 0, parms);
     }
@@ -568,7 +567,7 @@ static int main_scan(struct Xconf *xconf) {
 /***************************************************************************
  ***************************************************************************/
 int main(int argc, char *argv[]) {
-    struct Xconf xconf[1];
+    struct Xconf xconf[1]    = {0};
     int has_target_addresses = 0;
     int has_target_ports     = 0;
     usec_start               = pixie_gettime();
@@ -589,8 +588,6 @@ int main(int argc, char *argv[]) {
     }
     if (is_backtrace)
         pixie_backtrace_init(argv[0]);
-
-    memset(xconf, 0, sizeof(*xconf));
 
     //=================================================Define default params
     xconf->blackrock_rounds                 = XCONF_DFT_BLACKROCK_ROUND;
