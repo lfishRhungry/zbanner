@@ -335,19 +335,16 @@ Xtate was created by lfishRhungry:
 
 - email: chenchiyu14@nudt.edu.cn
 
-Xtate was born in:
+Original code was written in:
 
 - College of Electronic Engineering, [National University of Defense Technology](https://english.nudt.edu.cn/).
 - Anhui Province Key Laboratory of Cyberspace Security Situation Awareness and Evaluation.
 
-Xtate was born from:
-
-- [Masscan](https://github.com/robertdavidgraham/masscan/tree/master)
-
 And referenced:
 
-- [ZMap](https://github.com/zmap/zmap),
+- [Masscan](https://github.com/robertdavidgraham/masscan/tree/master)
 - [Masscan-ng](https://github.com/bi-zone/masscan-ng)
+- [ZMap](https://github.com/zmap/zmap),
 - Other excellent open-source projects (noted in the code).
 
 Thanks to Robert Graham, Zakir Durumeric and Konstantin Molodyakov for their greate code and rigorous style.
