@@ -97,21 +97,13 @@
 
 
 
-static int _is_tcp_debug = 0;
+static bool _is_tcp_debug = false;
 
-
-struct TCP_Segment {
-    struct TCP_Segment     *next;
-    unsigned char          *buf;
-    size_t                  length;
-    unsigned                seqno;
-    unsigned                is_dynamic:1;
-};
 
 enum Tcp_State{
-    STATE_SYNSENT = 0,  /* init state, must be zero */
-    STATE_SENDING,      /* sending now */
-    STATE_RECVING,      /* want to receive */
+    STATE_SYNSENT = 0,        /* init state, must be zero */
+    STATE_SENDING,            /* sending now */
+    STATE_RECVING,            /* want to receive */
 };
 
 /**
@@ -132,6 +124,14 @@ enum App_Event {
     APP_WHAT_RECV_PAYLOAD,    /*payload received*/
     APP_WHAT_SENDING,         /*there's data is sending now*/
     APP_WHAT_SEND_SENT,       /*data has been sent and acked*/
+};
+
+struct TCP_Segment {
+    struct TCP_Segment               *next;
+    unsigned char                    *buf;
+    size_t                            length;
+    unsigned                          seqno;
+    unsigned                          is_dynamic:1;
 };
 
 struct TCP_Control_Block
@@ -190,16 +190,16 @@ struct TCP_ConnectionTable {
     uint64_t                          entropy;
 };
 
-enum SOCK_Res {
-    SOCKERR_NONE = 0,   /* no error */
-    SOCKERR_EBADF,  /* bad socket descriptor */
+struct StackHandler {
+    struct TCP_ConnectionTable       *tcpcon;
+    struct TCP_Control_Block         *tcb;
+    unsigned                          secs;
+    unsigned                          usecs;
 };
 
-struct StackHandler {
-    struct TCP_ConnectionTable *tcpcon;
-    struct TCP_Control_Block   *tcb;
-    unsigned                    secs;
-    unsigned                    usecs;
+enum SOCK_Res {
+    SOCKERR_NONE = 0,   /* no error */
+    SOCKERR_EBADF,      /* bad socket descriptor */
 };
 
 enum DestroyReason {
