@@ -419,13 +419,13 @@ _tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
 {
     unsigned index;
     struct TCP_Control_Block **r_entry;
-    
+
     UNUSEDPARM(reason);
 
     index = get_cookie(tcb->ip_me, tcb->port_me, 
         tcb->ip_them, tcb->port_them, 
         tcpcon->entropy);
-    
+
     r_entry = &tcpcon->entries[index & tcpcon->mask];
     while (*r_entry && *r_entry != tcb)
         r_entry = &(*r_entry)->next;

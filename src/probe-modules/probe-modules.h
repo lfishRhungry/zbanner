@@ -282,7 +282,8 @@ struct ProbeModule
     probe_modules_close                         close_cb;
 };
 
-struct ProbeModule *get_probe_module_by_name(const char *name);
+struct ProbeModule *
+get_probe_module_by_name(const char *name);
 
 const char *
 get_probe_type_name(const enum ProbeType type);
@@ -290,19 +291,19 @@ get_probe_type_name(const enum ProbeType type);
 int
 probe_type_to_string(unsigned type, char *string, size_t str_len);
 
-void list_all_probe_modules();
+void
+list_all_probe_modules();
 
 /************************************************************************
 Some useful implemented interfaces
 ************************************************************************/
 
 /*implemented `probe_modules_xxx_init`*/
-bool probe_global_init_nothing(const struct Xconf *xconf);
+bool
+probe_global_init_nothing(const struct Xconf *xconf);
 
 size_t
-probe_make_no_payload(
-    struct ProbeTarget *target,
-    unsigned char *payload_buf);
+probe_make_no_payload(struct ProbeTarget *target, unsigned char *payload_buf);
 
 /*implemented `probe_modules_get_payload_length`*/
 size_t
@@ -325,19 +326,19 @@ probe_just_report_banner(
     struct OutputItem *item);
 
 /*implemented `probe_modules_close`*/
-void probe_close_nothing();
+void
+probe_close_nothing();
 
-void probe_conn_init_nothing(struct ProbeState *state, struct ProbeTarget *target);
+void
+probe_conn_init_nothing(struct ProbeState *state, struct ProbeTarget *target);
 
-void probe_conn_close_nothing(struct ProbeState *state, struct ProbeTarget *target);
+void
+probe_conn_close_nothing(struct ProbeState *state, struct ProbeTarget *target);
 
 unsigned
-probe_no_timeout(
-    struct ProbeTarget *target,
-    struct OutputItem *item);
+probe_no_timeout(struct ProbeTarget *target, struct OutputItem *item);
 
-bool probe_all_valid(
-    struct ProbeTarget *target,
-    const unsigned char *px, unsigned sizeof_px);
+bool
+probe_all_valid(struct ProbeTarget *target, const unsigned char *px, unsigned sizeof_px);
 
 #endif

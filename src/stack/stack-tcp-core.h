@@ -24,14 +24,13 @@ enum TCB_result {
     TCB__destroyed
 };
 
-struct TCP_Control_Block;
-struct TCP_ConnectionTable;
-
 enum   App_State;
 enum   App_Event;
+enum   SOCK_Res;
 
-enum SOCK_Res;
 struct StackHandler;
+struct TCP_Control_Block;
+struct TCP_ConnectionTable;
 
 
 

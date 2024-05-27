@@ -69,7 +69,7 @@ struct ScanTmEvent {
 };
 
 /**
- * !Happens in Tx Thread.
+ * !Only step for transmitting. Happens in Tx Thread.
  * Do the first packet transmitting for every target.
  * 
  * !Must be implemented.
@@ -115,7 +115,7 @@ struct PreHandle {
 };
 
 /**
- * !First Step Happens in Rx Thread.
+ * !First Step for recving. Happens in Rx Thread.
  * Do following things for a received packet in orders:
  *  1. Record or drop.
  *  2. Is and How to dedup or drop.
@@ -133,7 +133,7 @@ typedef void (*scan_modules_validate)(
     struct PreHandle *pre);
 
 /**
- * !Second Step Happens in Rx Handle Thread.
+ * !Second Step for recving. Happens in Rx Handle Thread.
  * Do following things for a received packet:
  *  1. Is and How to output a result.
  *  2. How and What packet to response.
