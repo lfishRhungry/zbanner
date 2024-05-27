@@ -872,7 +872,7 @@ bool dns_send_question(uint8_t *buffer, char *name, dns_record_type type, uint16
         return false;
     }
     sendto(fd,
-           buffer,
+           (void *)buffer,
            (size_t) result,
            0,
            (struct sockaddr *) addr,
@@ -1097,7 +1097,7 @@ void dns_buf_set_rcode(uint8_t *buf, uint8_t code)
 void dns_send_reply(uint8_t *buffer, size_t len, int fd, struct sockaddr_storage *addr)
 {
     sendto(fd,
-           buffer,
+           (void *)buffer,
            len,
            0,
            (struct sockaddr *) addr,
@@ -1269,11 +1269,11 @@ size_t dns_raw_record_data2str(dns_record_t *record,
             }
 
             ret += snprintf(ptr, buf_len-ret, "%" PRIu32 " %" PRIu32 " %" PRIu32 " %" PRIu32 " %" PRIu32,
-                    ntohl(*((uint32_t*)next)),
-                    ntohl(*(((uint32_t*)next) + 1)),
-                    ntohl(*(((uint32_t*)next) + 2)),
-                    ntohl(*(((uint32_t*)next) + 3)),
-                    ntohl(*(((uint32_t*)next) + 4)));
+                    (uint32_t)ntohl(*((uint32_t*)next)),
+                    (uint32_t)ntohl(*(((uint32_t*)next) + 1)),
+                    (uint32_t)ntohl(*(((uint32_t*)next) + 2)),
+                    (uint32_t)ntohl(*(((uint32_t*)next) + 3)),
+                    (uint32_t)ntohl(*(((uint32_t*)next) + 4)));
             break;
         }
         case DNS_REC_A:

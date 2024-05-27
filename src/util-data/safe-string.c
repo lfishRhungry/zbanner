@@ -660,7 +660,14 @@ bytes_equals(const void *src, size_t src_len, const void *byt, size_t byt_len)
 
 int
 iso8601_time_str(char* format_time, size_t size, const time_t *time) {
+#if defined(__MINGW64__) || defined(__MINGW32__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat="
+#endif
     return strftime(format_time, size, "%FT%TZ", gmtime(time));
+#if defined(__MINGW64__) || defined(__MINGW32__)
+#pragma GCC diagnostic pop
+#endif
 }
 
 void
