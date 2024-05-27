@@ -17,7 +17,6 @@ enum TCP_What {
     TCP_WHAT_FIN,     /*Received FIN*/
     TCP_WHAT_ACK,     /*Received ACK (ignored data)*/
     TCP_WHAT_DATA,    /*Received DATA (just focus data)*/
-    TCP_WHAT_CLOSE,   /*We want to close the connection*/
 };
 
 enum TCB_result {
@@ -25,11 +24,14 @@ enum TCB_result {
     TCB__destroyed
 };
 
-enum   App_State;
-enum   App_Event;
 struct TCP_Control_Block;
 struct TCP_ConnectionTable;
-struct stack_handle_t;
+
+enum   App_State;
+enum   App_Event;
+
+enum SOCK_Res;
+struct StackHandler;
 
 
 
@@ -94,10 +96,12 @@ tcpcon_create_tcb(
 /**
  * get active tcb count
 */
-uint64_t tcpcon_active_tcb(struct TCP_ConnectionTable *tcpcon);
+uint64_t
+tcpcon_active_tcb(struct TCP_ConnectionTable *tcpcon);
 
 
-int tcpapi_set_timeout(struct stack_handle_t *socket,
+enum SOCK_Res
+tcpapi_set_timeout(struct StackHandler *socket,
     unsigned secs, unsigned usecs);
 
 /**
@@ -106,29 +110,33 @@ int tcpapi_set_timeout(struct stack_handle_t *socket,
  * This is none-blocking, an event will be triggered
  * later that has the data.
  */
-int tcpapi_recv(struct stack_handle_t *socket);
+enum SOCK_Res
+tcpapi_recv(struct StackHandler *socket);
 
 /**
  * just send data but not close
 */
-int tcpapi_send_data(struct stack_handle_t *socket, const void *buf,
+enum SOCK_Res
+tcpapi_send_data(struct StackHandler *socket, const void *buf,
     size_t length, unsigned is_dynamic);
 
 
-unsigned
-tcpapi_change_app_state(struct stack_handle_t *socket, enum App_State new_app_state);
+enum SOCK_Res
+tcpapi_change_app_state(struct StackHandler *socket, enum App_State new_app_state);
 
 
 /**
  * Send RST and del TCB to close the conn quickly.
+ * Call this only when the upper-layer probe want to close it actively.
 */
-int tcpapi_close(struct stack_handle_t *socket);
+enum SOCK_Res
+tcpapi_close(struct StackHandler *socket);
 
 /**
  * Media between Probe and our simplified TCP stack
  */
 void
-application_event(struct stack_handle_t *socket,
+application_event(struct StackHandler *socket,
     enum App_State cur_state, enum App_Event cur_event,
     const struct ProbeModule *probe,
     const void *payload, size_t payload_length);
