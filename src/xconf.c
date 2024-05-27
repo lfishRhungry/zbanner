@@ -3471,19 +3471,19 @@ void xconf_print_version()
 
 
 #elif defined(__GNUC__)
-# if defined(__clang__)
+#if defined(__clang__)
     compiler = "clang";
     compiler_version = __clang_version__;
-# elif defined(__MINGW64__)
+#elif defined(__MINGW64__)
     compiler = "MinGW-w64 gcc";
     compiler_version = __VERSION__;
-# elif defined(__MINGW32__)
+#elif defined(__MINGW32__)
     compiler = "MinGW-w32 gcc";
     compiler_version = __VERSION__;
-# else
+#else
     compiler = "gcc";
     compiler_version = __VERSION__;
-# endif
+#endif
 
 #if defined(i386) || defined(__i386) || defined(__i386__)
     cpu = "x86";
