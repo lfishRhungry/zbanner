@@ -105,12 +105,51 @@ static struct JarmConfig jc_list[] = {
 /*for x-refer*/
 extern struct ProbeModule JarmProbe;
 
+struct JarmConf {
+    unsigned probe_index;
+};
+
+static struct JarmConf jarm_conf = {0};
+
+static enum ConfigRes SET_probe_index(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    jarm_conf.probe_index = parseInt(value);
+
+    if (jarm_conf.probe_index<1 || jarm_conf.probe_index>10) {
+        LOG(LEVEL_ERROR, "[-]JarmProbe: probe index should be in 1..10\n");
+        return Conf_ERR;
+    }
+
+    return Conf_OK;
+}
+
+static struct ConfigParam jarm_parameters[] = {
+    {
+        "probe-index",
+        SET_probe_index,
+        Type_NUM,
+        {"index", 0},
+        "Just send one specified jarm probe to target."
+    },
+
+    {0}
+};
+
 static size_t
 jarm_make_payload(
     struct ProbeTarget *target,
     unsigned char *payload_buf)
 {
-    struct JarmConfig jc = jc_list[target->index];
+    struct JarmConfig jc;
+
+    if (jarm_conf.probe_index)
+        jc = jc_list[jarm_conf.probe_index-1];
+    else
+        jc = jc_list[target->index];
+
     jc.servername        = ipaddress_fmt(target->ip_them).string;
     jc.dst_port          = target->port_them;
 
@@ -123,7 +162,13 @@ jarm_get_payload_length(struct ProbeTarget *target)
     if (target->index >= JarmProbe.multi_num)
         return 0;
 
-    struct JarmConfig jc = jc_list[target->index];
+    struct JarmConfig jc;
+
+    if (jarm_conf.probe_index)
+        jc = jc_list[jarm_conf.probe_index-1];
+    else
+        jc = jc_list[target->index];
+
     jc.servername        = ipaddress_fmt(target->ip_them).string;
     jc.dst_port          = target->port_them;
     unsigned char buf[TLS_CLIENTHELLO_MAX_LEN];
@@ -160,10 +205,16 @@ jarm_handle_response(
 
                 item->level = Output_SUCCESS;
                 safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "jarmed");
-                dach_printf(&item->report, "order", true, "%d", target->index);
                 jarm_decipher_one(px, sizeof_px, tmp_data, sizeof(tmp_data));
-                dach_append(&item->report, "content", tmp_data, DACH_AUTO_LEN);
-                return 1;
+                dach_append(&item->report, "fingerprint", tmp_data, DACH_AUTO_LEN);
+
+                if (jarm_conf.probe_index) {
+                    dach_printf(&item->report, "index", true, "%d", jarm_conf.probe_index);
+                    return 0;
+                } else {
+                    dach_printf(&item->report, "index", true, "%d", target->index+1);
+                    return 1;
+                }
             }
         }
     }
@@ -180,7 +231,11 @@ jarm_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
     item->level = Output_FAILURE;
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "no jarm");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
-    dach_printf(&item->report, "order", true, "%d", target->index);
+    if (jarm_conf.probe_index) {
+        dach_printf(&item->report, "index", true, "%d", jarm_conf.probe_index);
+    } else {
+        dach_printf(&item->report, "index", true, "%d", target->index+1);
+    }
     return 0;
 }
 
@@ -189,7 +244,7 @@ struct ProbeModule JarmProbe = {
     .type       = ProbeType_TCP,
     .multi_mode = Multi_AfterHandle,
     .multi_num  = 10,
-    .params     = NULL,
+    .params     = jarm_parameters,
     .desc =
         "Jarm Probe sends 10 various TLS ClientHello probes in total if the first "
         "response represents the target port is running TLS protocol. Results can "
