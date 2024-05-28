@@ -220,6 +220,7 @@ udp_handle(
                     struct ScanTmEvent *tm_event =
                         CALLOC(1, sizeof(struct ScanTmEvent));
 
+                    tm_event->ip_proto  = IP_PROTO_UDP;
                     tm_event->ip_them   = recved->parsed.src_ip;
                     tm_event->ip_me     = recved->parsed.dst_ip;
                     tm_event->port_them = recved->parsed.port_src;
@@ -270,6 +271,7 @@ udp_handle(
                 struct ScanTmEvent *tm_event =
                     CALLOC(1, sizeof(struct ScanTmEvent));
 
+                tm_event->ip_proto  = IP_PROTO_UDP;
                 tm_event->ip_them   = recved->parsed.src_ip;
                 tm_event->ip_me     = recved->parsed.dst_ip;
                 tm_event->port_them = recved->parsed.port_src;
@@ -356,6 +358,7 @@ udp_timeout(
                 struct ScanTmEvent *tm_event =
                     CALLOC(1, sizeof(struct ScanTmEvent));
 
+                tm_event->ip_proto  = IP_PROTO_UDP;
                 tm_event->ip_them   = event->ip_them;
                 tm_event->ip_me     = event->ip_me;
                 tm_event->port_them = event->port_them;
@@ -405,6 +408,7 @@ udp_timeout(
             struct ScanTmEvent *tm_event =
                 CALLOC(1, sizeof(struct ScanTmEvent));
 
+            tm_event->ip_proto  = IP_PROTO_UDP;
             tm_event->ip_them   = event->ip_them;
             tm_event->ip_me     = event->ip_me;
             tm_event->port_them = event->port_them;
