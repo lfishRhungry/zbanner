@@ -266,7 +266,7 @@ And some dependencies are optional, we can give up some modules if the specific 
 If any error happened in CMake, trying to modify and use `Makefile` is a good idea.
 I'm sorry about my fail to be a CMake professor...
 
-### Depencendies
+### Dependencies
 
 Dependent libraries for building:
 
@@ -298,7 +298,7 @@ Recommended compile suites:
 - GCC
 - Clang
 
-With dependencies installed we can build xtate by CMake with parameters or with given script quickly:
+After dependencies installed we can build xtate by CMake with parameters or with given script quickly:
 
 ```
 ./build.sh [debug]
@@ -342,9 +342,9 @@ Original code was written in:
 
 And referenced:
 
+- [ZMap](https://github.com/zmap/zmap)
 - [Masscan](https://github.com/robertdavidgraham/masscan/tree/master)
 - [Masscan-ng](https://github.com/bi-zone/masscan-ng)
-- [ZMap](https://github.com/zmap/zmap),
 - Other excellent open-source projects (noted in the code).
 
 Thanks to Robert Graham, Zakir Durumeric and Konstantin Molodyakov for their greate code and rigorous style.
