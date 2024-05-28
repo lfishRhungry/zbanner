@@ -284,9 +284,7 @@ lzr_global_init(const struct Xconf *xconf)
 }
 
 static size_t
-lzr_make_payload(
-    struct ProbeTarget *target,
-    unsigned char *payload_buf)
+lzr_make_payload(struct ProbeTarget *target, unsigned char *payload_buf)
 {
     return lzr_conf.handshake[target->index]->make_payload_cb(target, payload_buf);
 }
