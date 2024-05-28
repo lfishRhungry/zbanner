@@ -13,8 +13,8 @@ lzr_ftp_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    
-    if (safe_memismem(px, sizeof_px, "ftp", strlen("ftp"))) {
+    if (safe_memismem(px, sizeof_px, "ftp", strlen("ftp"))
+        || safe_memismem(px, sizeof_px, "conv_code ret failed", strlen( "conv_code ret failed"))) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "ftp");
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
@@ -27,6 +27,7 @@ lzr_ftp_handle_response(
         || strstr(tmp_str, "421")
         || strstr(tmp_str, "530")
         || strstr(tmp_str, "550")
+        || strstr(tmp_str, "500")
         || strstr(tmp_str, "230")) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "ftp");

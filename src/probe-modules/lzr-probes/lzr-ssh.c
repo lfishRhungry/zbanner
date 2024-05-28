@@ -36,8 +36,15 @@ lzr_ssh_handle_reponse(
 {
 
     if (safe_memismem(px, sizeof_px, "ssh", strlen("ssh"))
-        && !safe_memismem(px, sizeof_px, "not implemented", strlen( "not implemented"))
+        && !safe_memismem(px, sizeof_px, "not implemented", strlen("not implemented"))
         && !safe_memismem(px, sizeof_px, "bad", strlen("bad"))) {
+        item->level = Output_SUCCESS;
+        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "ssh");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        return 0;
+    }
+
+    if (safe_memismem(px, sizeof_px, "Protocol mismatch", strlen("Protocol mismatch"))) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "ssh");
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
