@@ -134,9 +134,9 @@ ndpns_handle(
         recved->packet[recved->parsed.transport_offset+31]);
     
     if (NDP_NA_HAS_FLAG(recved->packet, recved->parsed.transport_offset, NDP_NA_FLAG_ROUTER)) {
-        dach_append(&item->report, "from_router", "true", DACH_AUTO_LEN);
+        dach_append(&item->report, "from_router", "true", sizeof("true")-1);
     } else {
-        dach_append(&item->report, "from_router", "false", DACH_AUTO_LEN);
+        dach_append(&item->report, "from_router", "false", sizeof("false")-1);
     }
 
     if (ndpns_conf.record_ttl)

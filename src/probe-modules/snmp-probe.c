@@ -213,7 +213,7 @@ snmp_banner_oid(struct SMACK *global_mib, const unsigned char *oid,
     /* Do the string */
     if (found_id != SMACK_NOT_FOUND) {
         const char *str = mib[found_id].name;
-        dach_append(dach, SNMP_DACH_NAME, str, DACH_AUTO_LEN);
+        dach_append(dach, SNMP_DACH_NAME, str, strlen(str));
     }
 
     /* Do remaining OIDs */

@@ -224,12 +224,14 @@ nmaptcp_handle_response(
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "identified");
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE,
             match->is_softmatch?"softmatch":"matched");
-        dach_append(&item->report, "service", match->service, DACH_AUTO_LEN);
+        dach_append(&item->report, "service", match->service, strlen(match->service));
         if (!match->is_softmatch&&match->versioninfo) {
-            dach_append(&item->report, "info", match->versioninfo->value, DACH_AUTO_LEN);
+            dach_append(&item->report, "info", match->versioninfo->value,
+                strlen(match->versioninfo->value));
         }
         dach_printf(&item->report, "line", true, "%d", match->line);
-        dach_append(&item->report, "probe", list->probes[target->index]->name, DACH_AUTO_LEN);
+        dach_append(&item->report, "probe", list->probes[target->index]->name,
+            strlen(list->probes[target->index]->name));
 
 
         return 0;
@@ -237,7 +239,8 @@ nmaptcp_handle_response(
 
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "unknown");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
-    dach_append(&item->report, "probe", list->probes[target->index]->name, DACH_AUTO_LEN);
+    dach_append(&item->report, "probe", list->probes[target->index]->name,
+        strlen(list->probes[target->index]->name));
 
     /*fail to match or in softmatch mode, try to send next possible probe*/
     next_probe = nmapservice_next_probe_index(list, target->index,
@@ -261,7 +264,8 @@ nmaptcp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "unknown");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "no response");
-    dach_append(&item->report, "probe", list->probes[target->index]->name, DACH_AUTO_LEN);
+    dach_append(&item->report, "probe", list->probes[target->index]->name,
+        strlen(list->probes[target->index]->name));
 
     /**
      * We have to check whether it is the last available probe.

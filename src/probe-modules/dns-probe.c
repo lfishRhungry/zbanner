@@ -231,13 +231,15 @@ dns_handle_response(
         rec = &dns_pkt.body.ans[0];
         dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
             false, tmp_data, sizeof(tmp_data));
+        const char *type_str  = dns_record_type2str(rec->type);
+        const char *class_str = dns_class2str(rec->class);
 
         link = dach_append_char(&item->report, "answer RR", '[');
-        link = dach_append_by_link(link, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+        link = dach_append_by_link(link, type_str, strlen(type_str));
         link = dach_append_char_by_link(link, ' ');
-        link = dach_append_by_link(link, dns_class2str(rec->class), DACH_AUTO_LEN);
+        link = dach_append_by_link(link, class_str, strlen(class_str));
         link = dach_append_char_by_link(link, ' ');
-        link = dach_append_by_link(link, tmp_data, DACH_AUTO_LEN);
+        link = dach_append_by_link(link, tmp_data, strlen(tmp_data));
         link = dach_append_char_by_link(link, ']');
     }
 
@@ -246,13 +248,15 @@ dns_handle_response(
             rec = &dns_pkt.body.ans[i];
             dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
                 false, tmp_data, sizeof(tmp_data));
+            const char *type_str  = dns_record_type2str(rec->type);
+            const char *class_str = dns_class2str(rec->class);
 
-            link = dach_append_by_link(link, ", [", DACH_AUTO_LEN);
-            link = dach_append_by_link(link, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+            link = dach_append_by_link(link, ", [", 3);
+            link = dach_append_by_link(link, type_str, strlen(type_str));
             link = dach_append_char_by_link(link, ' ');
-            link = dach_append_by_link(link, dns_class2str(rec->class), DACH_AUTO_LEN);
+            link = dach_append_by_link(link, class_str, strlen(class_str));
             link = dach_append_char_by_link(link, ' ');
-            link = dach_append_by_link(link, tmp_data, DACH_AUTO_LEN);
+            link = dach_append_by_link(link, tmp_data, strlen(tmp_data));
             link = dach_append_char_by_link(link, ']');
         }
     }
@@ -261,13 +265,15 @@ dns_handle_response(
         rec = &dns_pkt.body.auth[0];
         dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
             false, tmp_data, sizeof(tmp_data));
+        const char *type_str  = dns_record_type2str(rec->type);
+        const char *class_str = dns_class2str(rec->class);
 
         link = dach_append_char(&item->report, "authority RR", '[');
-        link = dach_append_by_link(link, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+        link = dach_append_by_link(link, type_str, strlen(type_str));
         link = dach_append_char_by_link(link, ' ');
-        link = dach_append_by_link(link, dns_class2str(rec->class), DACH_AUTO_LEN);
+        link = dach_append_by_link(link, class_str, strlen(class_str));
         link = dach_append_char_by_link(link, ' ');
-        link = dach_append_by_link(link, tmp_data, DACH_AUTO_LEN);
+        link = dach_append_by_link(link, tmp_data, strlen(tmp_data));
         link = dach_append_char_by_link(link, ']');
     }
 
@@ -276,13 +282,15 @@ dns_handle_response(
             rec = &dns_pkt.body.auth[i];
             dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
                 false, tmp_data, sizeof(tmp_data));
+            const char *type_str  = dns_record_type2str(rec->type);
+            const char *class_str = dns_class2str(rec->class);
 
-            link = dach_append_by_link(link, ", [", DACH_AUTO_LEN);
-            link = dach_append_by_link(link, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+            link = dach_append_by_link(link, ", [", 3);
+            link = dach_append_by_link(link, type_str, strlen(type_str));
             link = dach_append_char_by_link(link, ' ');
-            link = dach_append_by_link(link, dns_class2str(rec->class), DACH_AUTO_LEN);
+            link = dach_append_by_link(link, class_str, strlen(class_str));
             link = dach_append_char_by_link(link, ' ');
-            link = dach_append_by_link(link, tmp_data, DACH_AUTO_LEN);
+            link = dach_append_by_link(link, tmp_data, strlen(tmp_data));
             link = dach_append_char_by_link(link, ']');
         }
     }
@@ -291,13 +299,15 @@ dns_handle_response(
         rec = &dns_pkt.body.add[0];
         dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
             false, tmp_data, sizeof(tmp_data));
+        const char *type_str  = dns_record_type2str(rec->type);
+        const char *class_str = dns_class2str(rec->class);
 
         link = dach_append_char(&item->report, "additional RR", '[');
-        link = dach_append_by_link(link, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+        link = dach_append_by_link(link, type_str, strlen(type_str));
         link = dach_append_char_by_link(link, ' ');
-        link = dach_append_by_link(link, dns_class2str(rec->class), DACH_AUTO_LEN);
+        link = dach_append_by_link(link, class_str, strlen(class_str));
         link = dach_append_char_by_link(link, ' ');
-        link = dach_append_by_link(link, tmp_data, DACH_AUTO_LEN);
+        link = dach_append_by_link(link, tmp_data, strlen(tmp_data));
         link = dach_append_char_by_link(link, ']');
     }
 
@@ -306,13 +316,15 @@ dns_handle_response(
             rec = &dns_pkt.body.add[i];
             dns_raw_record_data2str(rec, (uint8_t *)px, (uint8_t *)px+sizeof_px,
                 false, tmp_data, sizeof(tmp_data));
+            const char *type_str  = dns_record_type2str(rec->type);
+            const char *class_str = dns_class2str(rec->class);
 
-            link = dach_append_by_link(link, ", [", DACH_AUTO_LEN);
-            link = dach_append_by_link(link, dns_record_type2str(rec->type), DACH_AUTO_LEN);
+            link = dach_append_by_link(link, ", [", 3);
+            link = dach_append_by_link(link, type_str, strlen(type_str));
             link = dach_append_char_by_link(link, ' ');
-            link = dach_append_by_link(link, dns_class2str(rec->class), DACH_AUTO_LEN);
+            link = dach_append_by_link(link, class_str, strlen(class_str));
             link = dach_append_char_by_link(link, ' ');
-            link = dach_append_by_link(link, tmp_data, DACH_AUTO_LEN);
+            link = dach_append_by_link(link, tmp_data, strlen(tmp_data));
             link = dach_append_char_by_link(link, ']');
         }
     }

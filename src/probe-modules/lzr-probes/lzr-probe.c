@@ -308,14 +308,12 @@ lzr_handle_response(
     struct OutputItem *item)
 {
     /**
-     * strcat every lzr subprobes match result
      * print results just like lzr:
      *     pop3-smtp-http
     */
-
     bool identified = false;
     struct DataLink *res_link;
-    res_link = dach_new_link(&item->report, "result", DACH_DEFAULT_DATA_SIZE, false);
+    res_link = dach_new_link(&item->report, "result", 1, false);
 
     size_t i = 0;
     for (; i<ARRAY_SIZE(lzr_handshakes); i++) {
@@ -323,7 +321,8 @@ lzr_handle_response(
             th_idx, target, px, sizeof_px, item);
 
         if (item->level==Output_SUCCESS) {
-            res_link = dach_append_by_link(res_link, item->classification, DACH_AUTO_LEN);
+            res_link = dach_append_by_link(res_link, item->classification,
+                strlen(item->classification));
             identified = true;
             break;
         }
@@ -340,7 +339,9 @@ lzr_handle_response(
         }
     }
 
-    dach_append(&item->report, "handshake", lzr_conf.handshake[target->index]->name, DACH_AUTO_LEN);
+    dach_append(&item->report, "handshake",
+        lzr_conf.handshake[target->index]->name,
+        strlen(lzr_conf.handshake[target->index]->name));
 
     if (identified) {
         item->level = Output_SUCCESS;
@@ -380,7 +381,9 @@ lzr_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "unknown");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "no response");
-    dach_append(&item->report, "handshake", lzr_conf.handshake[target->index]->name, DACH_AUTO_LEN);
+    dach_append(&item->report, "handshake",
+        lzr_conf.handshake[target->index]->name,
+        strlen(lzr_conf.handshake[target->index]->name));
     /**
      * Set last unmatching as failure in normal mode.
      * Or all unmatching as failure if force-all-handshakes

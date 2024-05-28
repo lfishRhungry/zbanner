@@ -51,7 +51,7 @@ _dach_new_link(struct DataChain *dach, const char *name, size_t len, bool is_num
 {
     /*keep a space for '\0'*/
     size_t data_size   = len<DACH_DEFAULT_DATA_SIZE?DACH_DEFAULT_DATA_SIZE:len+1;
-    struct DataLink *p = CALLOC(1, offsetof(struct DataLink, data) + data_size);
+    struct DataLink *p = CALLOC(1, offsetof(struct DataLink, data) + 1 + data_size);
 
     safe_strcpy(p->name, DACH_MAX_NAME_SIZE, name);
 
@@ -169,9 +169,9 @@ _dach_link_expand(struct DataLink *link, size_t mlen)
 
     /*keep a space for '\0'*/
     length = mlen<(2*link->data_size)?(2*link->data_size):mlen+1;
-    n      = CALLOC(1, offsetof(struct DataLink, data) + length);
+    n      = CALLOC(1, offsetof(struct DataLink, data) + 1 + length);
 
-    memcpy(n, link, offsetof(struct DataLink, data) + link->data_size);
+    memcpy(n, link, offsetof(struct DataLink, data) + 1 + link->data_size);
     n->data_size = length;
 
     n->next = link->next;
@@ -222,9 +222,6 @@ struct DataLink *
 dach_append_by_link(struct DataLink *link, const void *px, size_t length)
 {
     assert(link);
-
-    if (length == DACH_AUTO_LEN)
-        length = strlen((const char*)px);
 
     size_t min_len = link->data_len + length;
     if (min_len >= link->data_size) { /*at least keep a '\0'*/
@@ -434,11 +431,10 @@ dach_printf(struct DataChain *dach, const char *name, bool is_number, const char
 struct DataLink *
 dach_append_normalized_by_link(struct DataLink *link, const void *px, size_t length)
 {
-    if (length == DACH_AUTO_LEN)
-        length = strlen((const char*)px);
+    int c;
 
     for (size_t i=0; i<length; i++) {
-        int c = ((const char*)px)[i];
+        c = ((const char*)px)[i];
         if (isprint(c) && c != '<' && c != '>' && c != '&' && c != '\\' && c != '\"' && c != '\'') {
             link = dach_append_char_by_link(link, c);
         } else {
@@ -457,14 +453,11 @@ struct DataLink *
 dach_append_normalized(struct DataChain *dach, const char *name,
     const void *px, size_t length)
 {
-    if (length == DACH_AUTO_LEN)
-        length = strlen((const char*)px);
-
     struct DataLink *link = dach_find_link(dach, name);
 
     if (link == NULL) {
         link = _dach_new_link(dach, name,
-            length<DACH_DEFAULT_DATA_SIZE?length*4:length*2,
+            length*4<DACH_DEFAULT_DATA_SIZE?length*4:length*2,
             false); /*estimate the encoded length*/
     }
 
@@ -563,9 +556,6 @@ struct DataLink *
 dach_append_base64_by_link(struct DataLink *link,
     const void *vpx, size_t length, struct DachBase64 *base64)
 {
-    if (length == DACH_AUTO_LEN)
-        length = strlen((const char*)vpx);
-
     const unsigned char *px = (const unsigned char *)vpx;
     size_t i;
     unsigned x = base64->temp;
@@ -606,8 +596,6 @@ dach_append_base64(struct DataChain *dach, const char *name,
     struct DataLink *link = dach_find_link(dach, name);
 
     if (link == NULL) {
-        if (length == DACH_AUTO_LEN)
-            length = strlen((const char*)vpx);
         /*len after encoding*/
         link = _dach_new_link(dach, name, ((length+2)/3)*4, false);
     }
@@ -670,7 +658,7 @@ datachain_selftest(void)
 
         for (i=0; i<10; i++) {
             dach_append(dach, "x", "xxxx", 4);
-            dach_append(dach, "y", "yyyyy", DACH_AUTO_LEN);
+            dach_append(dach, "y", "yyyyy", 5);
         }
 
         for (i=0; i<10; i++) {
@@ -721,7 +709,7 @@ datachain_selftest(void)
             goto fail;
         }
 
-        dach_append_normalized(dach, "normal", "<hello>\n", DACH_AUTO_LEN);
+        dach_append_normalized(dach, "normal", "<hello>\n", strlen( "<hello>\n"));
         link = dach_find_link(dach, "normal");
         if (link==NULL) {
             line = __LINE__;

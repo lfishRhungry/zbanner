@@ -206,7 +206,7 @@ jarm_handle_response(
                 item->level = Output_SUCCESS;
                 safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "jarmed");
                 jarm_decipher_one(px, sizeof_px, tmp_data, sizeof(tmp_data));
-                dach_append(&item->report, "fingerprint", tmp_data, DACH_AUTO_LEN);
+                dach_append(&item->report, "fingerprint", tmp_data, strlen(tmp_data));
 
                 if (jarm_conf.probe_index) {
                     dach_printf(&item->report, "index", true, "%d", jarm_conf.probe_index);

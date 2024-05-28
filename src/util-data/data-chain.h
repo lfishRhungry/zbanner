@@ -36,8 +36,6 @@
 #define DACH_MAX_NAME_SIZE          25
 #define DACH_DEFAULT_DATA_SIZE     200
 
-#define DACH_AUTO_LEN ((size_t)~0)
-
 /**
  * A double link list structure for tracking a series of name/data memories
  * Why not be a ring? I'd like it to be used out-of-the-box.

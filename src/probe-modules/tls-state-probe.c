@@ -218,7 +218,7 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line)
     };
 
     safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
-    dach_append(&item.report, "key_log", line, DACH_AUTO_LEN);
+    dach_append(&item.report, "key_log", line, strlen(line));
 
     output_result(tls_out, &item);
 }

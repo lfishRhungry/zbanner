@@ -288,7 +288,7 @@ recog_handle_response(
     if (match_res) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "matched");
-        dach_append(&item->report, "result", match_res, DACH_AUTO_LEN);
+        dach_append(&item->report, "result", match_res, strlen(match_res));
     } else {
         item->level = Output_FAILURE;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not matched");
