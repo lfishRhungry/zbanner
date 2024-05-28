@@ -236,38 +236,40 @@ void receive_thread(void *v) {
     LOG(LEVEL_INFO, "[+] THREAD: recv: starting main loop\n");
     while (!time_to_finish_rx) {
 
-        /*handle one fast-timeout event in each loop to avoid blocking*/
-        if (xconf->is_fast_timeout) {
+        /*handle only one actual fast-timeout event to avoid blocking*/
+        while (xconf->is_fast_timeout) {
 
             tm_event = ft_pop_event(ft_handler, global_now);
-            /*dedup timeout event and other packets together*/
-            if (tm_event) {
-                if ((!xconf->is_nodedup && !dedup_is_duplicate(dedup,
-                        tm_event->ip_them, tm_event->port_them,
-                        tm_event->ip_me, tm_event->port_me,
-                        tm_event->dedup_type))
-                    || xconf->is_nodedup) {
 
-                    struct OutputItem item = {
-                        .ip_proto  = tm_event->ip_proto,
-                        .ip_them   = tm_event->ip_them,
-                        .ip_me     = tm_event->ip_me,
-                        .port_them = tm_event->port_them,
-                        .port_me   = tm_event->port_me,
-                    };
+            if (tm_event==NULL) break;
 
-                    scan_module->timeout_cb(entropy, tm_event, &item,
-                        stack, ft_handler);
+            if ((!xconf->is_nodedup && !dedup_is_duplicate(dedup,
+                                        tm_event->ip_them, tm_event->port_them,
+                                        tm_event->ip_me, tm_event->port_me,
+                                        tm_event->dedup_type))
+                || xconf->is_nodedup) {
 
-                    output_result(out, &item);
+                struct OutputItem item = {
+                    .ip_proto  = tm_event->ip_proto,
+                    .ip_them   = tm_event->ip_them,
+                    .ip_me     = tm_event->ip_me,
+                    .port_them = tm_event->port_them,
+                    .port_me   = tm_event->port_me,
+                };
 
-                }
+                scan_module->timeout_cb(entropy, tm_event, &item, stack, ft_handler);
+                output_result(out, &item);
+
                 free(tm_event);
                 tm_event = NULL;
+
+                break;
             }
 
-            parms->total_tm_event = ft_event_count(ft_handler);
+            free(tm_event);
         }
+
+        parms->total_tm_event = ft_event_count(ft_handler);
 
         /**
          * Do polling for scan module in each loop

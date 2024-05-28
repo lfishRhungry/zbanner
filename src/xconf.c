@@ -2991,7 +2991,9 @@ struct ConfigParam config_parameters[] = {
         "Specifies whether or how many timeouts(sec) should ScanModule use like"
         " --timeout true, --timeout 15. Some ScanModules could use timeout "
         "function of "XTATE_UPPER_NAME" to result some unresponsed targets and "
-        "do some operation."
+        "do some operation.\n"
+        "NOTE: Timeout mechanisim may use a lot memory and cause blocking on Rx"
+        " thread while in high-speed send rate."
     },
     {
         "no-dedup",
