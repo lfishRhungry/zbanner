@@ -27,7 +27,7 @@
 #include <assert.h>
 #include <ctype.h>
 
-
+#define HEX_ARRAY "0123456789abcdef"
 
 static unsigned
 _name_hash(const char *name) {
@@ -286,7 +286,7 @@ dach_append_hexint_by_link(struct DataLink *link,
 
 
     for (;digits>0; digits--) {
-        char c = "0123456789abcdef"[(number>>(unsigned long long)((digits-1)*4)) & 0xF];
+        char c = HEX_ARRAY[(number>>(unsigned long long)((digits-1)*4)) & 0xF];
         link = dach_append_char_by_link(link, c);
     }
 
@@ -312,7 +312,7 @@ dach_append_hexint(struct DataChain *dach, const char *name,
     }
 
     for (;digits>0; digits--) {
-        char c = "0123456789abcdef"[(number>>(unsigned long long)((digits-1)*4)) & 0xF];
+        char c = HEX_ARRAY[(number>>(unsigned long long)((digits-1)*4)) & 0xF];
         link = dach_append_char_by_link(link, c);
     }
 
@@ -439,8 +439,8 @@ dach_append_normalized_by_link(struct DataLink *link, const void *px, size_t len
             link = dach_append_char_by_link(link, c);
         } else {
             link = dach_append_by_link(link, "\\x", 2);
-            link = dach_append_char_by_link(link, "0123456789abcdef"[c>>4]);
-            link = dach_append_char_by_link(link, "0123456789abcdef"[c&0xF]);
+            link = dach_append_char_by_link(link, HEX_ARRAY[(c>>4)&0xF]);
+            link = dach_append_char_by_link(link, HEX_ARRAY[(c>>0)&0xF]);
         }
     }
 
