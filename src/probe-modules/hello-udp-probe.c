@@ -22,17 +22,17 @@ struct HelloUdpConf {
     pcre2_match_context    *match_ctx;
     unsigned                re_case_insensitive:1;
     unsigned                re_include_newlines:1;
-    unsigned                report_while_regex:1;
+    unsigned                show_banner:1;
 };
 
 static struct HelloUdpConf helloudp_conf = {0};
 
-static enum ConfigRes SET_report(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    helloudp_conf.report_while_regex = parseBoolean(value);
+    helloudp_conf.show_banner = parseBoolean(value);
 
     return Conf_OK;
 }
@@ -261,13 +261,13 @@ static struct ConfigParam helloudp_parameters[] = {
         "Whether the specified regex contains newlines."
     },
     {
-        "report",
-        SET_report,
+        "banner",
+        SET_show_banner,
         Type_BOOL,
         {0},
-        "Report response data after regex matching."
+        "Show normalized banner."
     },
-    
+
     {0}
 };
 
@@ -346,7 +346,7 @@ helloudp_handle_response(
     item->level = Output_SUCCESS;
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "matched");
 
-    if (helloudp_conf.report_while_regex)
+    if (helloudp_conf.show_banner)
         dach_append_normalized(&item->report, "banner", px, sizeof_px);
 
     return 0;

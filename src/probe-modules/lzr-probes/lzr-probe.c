@@ -126,7 +126,7 @@ struct LzrConf {
 
 static struct LzrConf lzr_conf = {0};
 
-static enum ConfigRes SET_banner(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -242,14 +242,14 @@ static struct ConfigParam lzr_parameters[] = {
         "weird count of results."
     },
     {
-        "show-banner",
-        SET_banner,
+        "banner",
+        SET_show_banner,
         Type_BOOL,
-        {"banner", 0},
+        {0},
         "Show normalized banner in results."
     },
     {
-        "show-banner-if-fail",
+        "banner-if-fail",
         SET_banner_if_fail,
         Type_BOOL,
         {"banner-fail", "fail-banner", 0},

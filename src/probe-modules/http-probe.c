@@ -97,7 +97,7 @@ static struct HttpConf http_conf = {0};
 
 #ifndef NOT_FOUND_PCRE2
 
-static enum ConfigRes SET_report(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -496,7 +496,7 @@ static struct ConfigParam http_parameters[] = {
     },
     {
         "report",
-        SET_report,
+        SET_show_banner,
         Type_BOOL,
         {0},
         "Report response data after regex matching."

@@ -110,7 +110,7 @@ static enum ConfigRes SET_get_whole_response(void *conf, const char *name, const
 
 #ifndef NOT_FOUND_PCRE2
 
-static enum ConfigRes SET_report(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -535,7 +535,7 @@ static struct ConfigParam httpstate_parameters[] = {
     },
     {
         "report",
-        SET_report,
+        SET_show_banner,
         Type_BOOL,
         {0},
         "Report response data after regex matching."

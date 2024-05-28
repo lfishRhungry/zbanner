@@ -16,7 +16,8 @@ struct RecogStateConf {
     size_t                  hello_len;
     char                   *xml_filename;
     struct Recog_FP        *recog_fp;
-    unsigned                report_while_fail:1;
+    unsigned                banner_while_regex:1;
+    unsigned                banner_if_fail:1;
     unsigned                unprefix:1;
     unsigned                unsuffix:1;
     unsigned                get_whole_response:1;
@@ -44,12 +45,22 @@ static enum ConfigRes SET_unprefix(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_report(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_banner_if_fail(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    recogstate_conf.report_while_fail = parseBoolean(value);
+    recogstate_conf.banner_if_fail = parseBoolean(value);
+
+    return Conf_OK;
+}
+
+static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    recogstate_conf.banner_while_regex = parseBoolean(value);
 
     return Conf_OK;
 }
@@ -221,11 +232,18 @@ static struct ConfigParam recogstate_parameters[] = {
         "Specifies a xml file in Recog fingerprint format as the matching source."
     },
     {
-        "report",
-        SET_report,
+        "banner",
+        SET_show_banner,
         Type_BOOL,
         {0},
-        "Report response data if matching failed."
+        "Show normalized banner after regex matching."
+    },
+    {
+        "banner-if-fail",
+        SET_banner_if_fail,
+        Type_BOOL,
+        {"banner-fail", "fail-banner", 0},
+        "Show normalized banner in results if regex matching failed."
     },
     {
         "unprefix",
@@ -314,11 +332,15 @@ recogstate_parse_response(
         item.level = Output_SUCCESS;
         safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "matched");
         dach_append(&item.report, "result", match_res, strlen(match_res));
+
+        if (recogstate_conf.banner_while_regex) {
+            dach_append_normalized(&item.report, "banner", px, sizeof_px);
+        }
     } else {
         item.level = Output_FAILURE;
         safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "not matched");
 
-        if (recogstate_conf.report_while_fail) {
+        if (recogstate_conf.banner_while_regex||recogstate_conf.banner_if_fail) {
             dach_append_normalized(&item.report, "banner", px, sizeof_px);
         }
     }

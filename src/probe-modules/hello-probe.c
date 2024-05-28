@@ -23,7 +23,8 @@ struct HelloConf {
     pcre2_match_context    *match_ctx;
     unsigned                re_case_insensitive:1;
     unsigned                re_include_newlines:1;
-    unsigned                report_while_regex:1;
+    unsigned                banner_while_regex:1;
+    unsigned                banner_if_fail:1;
 #endif
 };
 
@@ -31,12 +32,22 @@ static struct HelloConf hello_conf = {0};
 
 #ifndef NOT_FOUND_PCRE2
 
-static enum ConfigRes SET_report(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_banner_if_fail(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    hello_conf.report_while_regex = parseBoolean(value);
+    hello_conf.banner_if_fail = parseBoolean(value);
+
+    return Conf_OK;
+}
+
+static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    hello_conf.banner_while_regex = parseBoolean(value);
 
     return Conf_OK;
 }
@@ -269,11 +280,18 @@ static struct ConfigParam hello_parameters[] = {
         "Whether the specified regex contains newlines."
     },
     {
-        "report",
-        SET_report,
+        "banner",
+        SET_show_banner,
         Type_BOOL,
         {0},
-        "Report response data after regex matching."
+        "Show normalized banner after regex matching."
+    },
+    {
+        "banner-if-fail",
+        SET_banner_if_fail,
+        Type_BOOL,
+        {"banner-fail", "fail-banner", 0},
+        "Show normalized banner in results if regex matching failed."
     },
 #endif
     
@@ -343,14 +361,19 @@ hello_handle_response(
         if (rc >= 0) {
             item->level = Output_SUCCESS;
             safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "matched");
+
+            if (hello_conf.banner_while_regex) {
+                dach_append_normalized(&item->report, "banner", px, sizeof_px);
+            }
         } else {
             item->level = Output_FAILURE;
             safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not matched");
+
+            if (hello_conf.banner_while_regex||hello_conf.banner_if_fail) {
+                dach_append_normalized(&item->report, "banner", px, sizeof_px);
+            }
         }
-        
-        if (hello_conf.report_while_regex) {
-            dach_append_normalized(&item->report, "banner", px, sizeof_px);
-        }
+
         pcre2_match_data_free(match_data);
     } else {
 

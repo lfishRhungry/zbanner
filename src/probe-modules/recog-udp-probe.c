@@ -16,7 +16,7 @@ struct RecogUdpConf {
     size_t                  hello_len;
     char                   *xml_filename;
     struct Recog_FP        *recog_fp;
-    unsigned                report_while_fail:1;
+    unsigned                show_banner:1;
     unsigned                unprefix:1;
     unsigned                unsuffix:1;
 };
@@ -43,12 +43,12 @@ static enum ConfigRes SET_unprefix(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_report(void *conf, const char *name, const char *value)
+static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    recogudp_conf.report_while_fail = parseBoolean(value);
+    recogudp_conf.show_banner = parseBoolean(value);
 
     return Conf_OK;
 }
@@ -203,12 +203,11 @@ static struct ConfigParam recogudp_parameters[] = {
         "Specifies a xml file in Recog fingerprint format as the matching source."
     },
     {
-        "report",
-        SET_report,
+        "banner",
+        SET_show_banner,
         Type_BOOL,
         {0},
-        "Report response data if matching failed.\n"
-        "NOTE: it may report many unrelative response."
+        "Show normalized banner."
     },
     {
         "unprefix",
@@ -299,13 +298,11 @@ recogudp_handle_response(
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "matched");
         dach_append(&item->report, "result", match_res, strlen(match_res));
-    } else {
-        item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not matched");
 
-        if (recogudp_conf.report_while_fail) {
+        if (recogudp_conf.show_banner)
             dach_append_normalized(&item->report, "banner", px, sizeof_px);
-        }
+    } else {
+        item->no_output = 1;
     }
 
     return 0;
