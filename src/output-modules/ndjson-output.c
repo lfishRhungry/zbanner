@@ -25,7 +25,7 @@ static const char fmt_ndjson_ip_me[] =
 ;
 
 static const char fmt_ndjson_port_me[] =
-"\"port_them\":%u,"
+"\"port_me\":%u,"
 ;
 
 static const char fmt_ndjson_inffix[] =
