@@ -269,7 +269,8 @@ void receive_thread(void *v) {
             free(tm_event);
         }
 
-        parms->total_tm_event = ft_event_count(ft_handler);
+        if (xconf->is_fast_timeout)
+            parms->total_tm_event = ft_event_count(ft_handler);
 
         /**
          * Do polling for scan module in each loop
