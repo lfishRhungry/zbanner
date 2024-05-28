@@ -441,7 +441,7 @@ static enum ConfigRes SET_show_output(void *conf, const char *name, const char *
     }
 
 
-    if (EQUALS("failed",value)||EQUALS("fail",value)) {
+    if (EQUALS("failed",value)||EQUALS("fail",value)||EQUALS("error",value)) {
         xconf->out.is_show_failed = true;
     } else if (EQUALS("info",value)||EQUALS("information",value)) {
         xconf->out.is_show_info = true;
