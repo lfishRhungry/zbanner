@@ -465,7 +465,7 @@ static bool output_x502_cert(struct Output *out,
         }
 
         /*cert is a little bit large*/
-        link = dach_new_link_printf(&item.report, 2048, false, "cert_%d", i_cert);
+        link = dach_new_link_printf(&item.report, 2048, false, "cert_%d", i_cert+1);
 
         while (true) {
             res = BIO_read(bio_mem, s_base64, sizeof(s_base64));
