@@ -79,7 +79,7 @@ static struct ConfigParam nmapservice_parameters[] = {
         "probe-file",
         SET_probe_file,
         Type_NONE,
-        {"service-probe-file", "probes-file", 0},
+        {"probes-file", "probes", 0},
         "Specifies nmap-service-probes file for probes loading."
     },
     {

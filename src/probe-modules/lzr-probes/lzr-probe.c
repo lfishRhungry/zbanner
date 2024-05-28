@@ -250,7 +250,7 @@ static struct ConfigParam lzr_parameters[] = {
         "show-banner-if-fail",
         SET_banner_if_fail,
         Type_BOOL,
-        {"banner-fail", 0},
+        {"banner-fail", "fail-banner", 0},
         "Show normalized banner in results if failed to identify."
     },
 
