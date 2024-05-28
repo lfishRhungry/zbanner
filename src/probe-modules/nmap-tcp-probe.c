@@ -19,10 +19,31 @@ struct NmapTcpConf {
     char *                       softmatch;
     unsigned                     rarity;
     unsigned                     no_port_limit:1;
+    unsigned                     show_banner:1;
+    unsigned                     banner_if_fail:1;
 };
 
 static struct NmapTcpConf nmaptcp_conf = {0};
 
+static enum ConfigRes SET_banner_if_fail(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    nmaptcp_conf.banner_if_fail = parseBoolean(value);
+
+    return Conf_OK;
+}
+
+static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    nmaptcp_conf.show_banner = parseBoolean(value);
+
+    return Conf_OK;
+}
 
 static enum ConfigRes SET_no_port_limit(void *conf, const char *name, const char *value)
 {
@@ -110,6 +131,20 @@ static struct ConfigParam nmapservice_parameters[] = {
         {0},
         "Switch on this param to release limitation of port ranges in probes of "
         "nmap-service-probes file."
+    },
+    {
+        "banner",
+        SET_show_banner,
+        Type_BOOL,
+        {0},
+        "Show normalized banner after fingerprint matching."
+    },
+    {
+        "banner-if-fail",
+        SET_banner_if_fail,
+        Type_BOOL,
+        {"banner-fail", "fail-banner", 0},
+        "Show normalized banner in results if fingerprint matching failed."
     },
 
     {0}
@@ -225,14 +260,19 @@ nmaptcp_handle_response(
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE,
             match->is_softmatch?"softmatch":"matched");
         dach_append(&item->report, "service", match->service, strlen(match->service));
+
         if (!match->is_softmatch&&match->versioninfo) {
             dach_append(&item->report, "info", match->versioninfo->value,
                 strlen(match->versioninfo->value));
         }
+
         dach_printf(&item->report, "line", true, "%d", match->line);
         dach_append(&item->report, "probe", list->probes[target->index]->name,
             strlen(list->probes[target->index]->name));
 
+        if (nmaptcp_conf.show_banner) {
+            dach_append_normalized(&item->report, "banner", px, sizeof_px);
+        }
 
         return 0;
     }
@@ -251,6 +291,10 @@ nmaptcp_handle_response(
     /*no more probe, treat it as failure*/
     if (!next_probe) {
         item->level = Output_FAILURE;
+
+        if (nmaptcp_conf.show_banner||nmaptcp_conf.banner_if_fail) {
+            dach_append_normalized(&item->report, "banner", px, sizeof_px);
+        }
         return 0;
     }
 
