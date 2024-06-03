@@ -275,12 +275,31 @@ parseMacAddress(const char *text, macaddress_t *mac)
     return 0;
 }
 
-bool
-is_power_of_two(uint64_t x)
+unsigned
+parseOptionInt(const char *name)
 {
-    while ((x&1) == 0)
-        x >>= 1;
-    return x == 1;
+    const char *p = strchr(name, '[');
+    if (p == NULL)
+        return 0;
+    else
+        p++;
+    return (unsigned)parseInt(p);
+}
+
+char *
+parseOptionStr(const char *name)
+{
+    const char *p1 = strchr(name, '[');
+    const char *p2 = strchr(name, ']');
+
+    if (p1==NULL || p2==NULL || p2<=p1+1)
+        return NULL;
+
+    char *ret = MALLOC(p2-p1);
+    memcpy(ret, p1+1, p2-p1-1);
+    ret[p2-p1-2] = '\0';
+
+    return ret;
 }
 
 bool
@@ -332,19 +351,8 @@ INDEX_OF(const char *str, char c)
     return i;
 }
 
-unsigned
-ARRAY(const char *rhs)
-{
-    const char *p = strchr(rhs, '[');
-    if (p == NULL)
-        return 0;
-    else
-        p++;
-    return (unsigned)parseInt(p);
-}
-
 bool
-isInteger(const char *value)
+is_integer(const char *value)
 {
     size_t i;
     
@@ -375,6 +383,14 @@ is_numable(const struct ConfigParam *cp, const char *name)
         }
     }
     return false;
+}
+
+bool
+is_power_of_two(uint64_t x)
+{
+    while ((x&1) == 0)
+        x >>= 1;
+    return x == 1;
 }
 
 /***************************************************************************
@@ -466,7 +482,7 @@ set_parameters_from_args(void *conf, struct ConfigParam *cp,
                     /* The next parameter contains the name */
                     if (i+1 < argc) {
                         value = argv[i+1];
-                        if (isInteger(value) || isBoolean(value))
+                        if (is_integer(value) || isBoolean(value))
                             i++;
                         else
                             value = "";

@@ -1647,7 +1647,7 @@ static enum ConfigRes SET_fast_timeout(void *conf, const char *name, const char 
         if (parseBoolean(value)) {
             xconf->is_fast_timeout = 1;
         }
-    } else if (isInteger(value)) {
+    } else if (is_integer(value)) {
         int spec = parseInt(value);
         if (spec <= 0) {
             LOG(LEVEL_ERROR, "[-] %s: need a switch word or a positive number.\n", name);
@@ -2097,7 +2097,7 @@ static enum ConfigRes SET_tcp_mss(void *conf, const char *name, const char *valu
             xconf->templ_opts->tcp.mss = TCP_DEFAULT_MSS;
         } else
             xconf->templ_opts->tcp.is_mss = Remove;
-    } else if (isInteger(value)) {
+    } else if (is_integer(value)) {
         /* A specific number was specified */
         uint64_t num = parseInt(value);
         if (num >= 0x10000)
@@ -2152,7 +2152,7 @@ static enum ConfigRes SET_tcp_wscale(void *conf, const char *name, const char *v
             xconf->templ_opts->tcp.wscale = default_value;
         } else
             xconf->templ_opts->tcp.is_wscale = Remove;
-    } else if (isInteger(value)) {
+    } else if (is_integer(value)) {
         uint64_t num = parseInt(value);
         if (num >= 255)
             goto fail;
@@ -2206,7 +2206,7 @@ static enum ConfigRes SET_tcp_tsecho(void *conf, const char *name, const char *v
             xconf->templ_opts->tcp.tsecho = default_value;
         } else
             xconf->templ_opts->tcp.is_tsecho = Remove;
-    } else if (isInteger(value)) {
+    } else if (is_integer(value)) {
         uint64_t num = parseInt(value);
         if (num >= 255)
             goto fail;
@@ -2252,7 +2252,7 @@ static enum ConfigRes SET_tcp_sackok(void *conf, const char *name, const char *v
             xconf->templ_opts->tcp.is_sackok = Add;
         } else
             xconf->templ_opts->tcp.is_sackok = Remove;
-    } else if (isInteger(value)) {
+    } else if (is_integer(value)) {
         if (parseInt(value) != 0)
             xconf->templ_opts->tcp.is_sackok = Add;
     } else

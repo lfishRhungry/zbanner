@@ -71,8 +71,11 @@ parseHexChar(char c);
 int
 parseMacAddress(const char *text, macaddress_t *mac);
 
-bool
-is_power_of_two(uint64_t x);
+unsigned
+parseOptionInt(const char *name);
+
+char *
+parseOptionStr(const char *name);
 
 /***************************************************************************
  * Tests if the named parameter on the command-line. We do a little
@@ -90,14 +93,14 @@ EQUALSx(const char *lhs, const char *rhs, size_t rhs_length);
 unsigned
 INDEX_OF(const char *str, char c);
 
-unsigned
-ARRAY(const char *rhs);
-
 bool
-isInteger(const char *value);
+is_integer(const char *value);
 
 bool
 is_numable(const struct ConfigParam *cp, const char *name);
+
+bool
+is_power_of_two(uint64_t x);
 
 /***************************************************************************
  * Command-line parsing code assumes every --parm is followed by a value.
