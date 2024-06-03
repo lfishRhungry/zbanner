@@ -2651,7 +2651,7 @@ struct ConfigParam config_parameters[] = {
         "debug-if",
         SET_debugif,
         Type_BOOL,
-        {0},
+        {"if-debug", 0},
         "Run special selftest for code about interface. This is useful to figure"
         " out why the interface doesn't work."
     },
