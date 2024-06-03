@@ -10,6 +10,34 @@ extern struct OutputModule ListOutput; /*for internal x-ref*/
 
 static FILE *file;
 
+struct ListConf {
+    unsigned no_port:1;
+};
+
+static struct ListConf list_conf = {0};
+
+static enum ConfigRes SET_no_port(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    list_conf.no_port = parseBoolean(value);
+
+    return Conf_OK;
+}
+
+static struct ConfigParam list_parameters[] = {
+    {
+        "no-port",
+        SET_no_port,
+        Type_BOOL,
+        {0},
+        "Just output IP list in any time.\n"
+        "NOTE: No deduplicating will be used for IP."
+    },
+    {0}
+};
+
 static bool
 list_init(const struct Output *out)
 {
@@ -41,7 +69,7 @@ list_result(struct OutputItem *item)
 
     if (err<0) goto error;
 
-    if (output_port) {
+    if (output_port && !list_conf.no_port) {
         switch (item->ip_proto) {
             case IP_PROTO_TCP:
                 err = fprintf(file, fmt_port, "", item->port_them);
@@ -78,7 +106,7 @@ list_close(const struct Output *out)
 struct OutputModule ListOutput = {
     .name               = "list",
     .need_file          = 1,
-    .params             = NULL,
+    .params             = list_parameters,
     .init_cb            = &list_init,
     .result_cb          = &list_result,
     .close_cb           = &list_close,
