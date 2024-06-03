@@ -117,7 +117,7 @@ bool output_init(struct Output *out)
             return false;
         }
 
-        if (out->output_module->params) {
+        if (out->output_module->params && out->output_args) {
             if (set_parameters_from_substring(NULL,
                 out->output_module->params, out->output_args)) {
                 LOG(LEVEL_ERROR, "FAIL: errors happened in sub param parsing of OutputModule.\n");
