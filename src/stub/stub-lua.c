@@ -13,7 +13,7 @@
 #include <dlfcn.h>
 #endif
 
-#if defined(__GNUC__)
+#if defined(__MINGW32__) || defined(__MINGW64__)
 /* Disable MinGW warnings for Windows */
 #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
 #endif

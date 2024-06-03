@@ -97,9 +97,9 @@ static void control_c_handler(int x) {
 
 static int main_scan(struct Xconf *xconf) {
     struct TxThread      *tx_thread;
-    struct RxThread       rx_thread[1]          = {0};
+    struct RxThread       rx_thread[1]          = {{0}};
     struct TemplateSet    tmplset               = {0};
-    struct Xtatus         status                = {0};
+    struct Xtatus         status                = {.last={0}};
     uint64_t              min_index             = UINT64_MAX;
     uint64_t              min_repeat            = UINT64_MAX;
     time_t                now                   = time(0);
@@ -567,7 +567,7 @@ static int main_scan(struct Xconf *xconf) {
 /***************************************************************************
  ***************************************************************************/
 int main(int argc, char *argv[]) {
-    struct Xconf xconf[1]    = {0};
+    struct Xconf xconf[1]    = {{.nic={.ifname={0}}, .resume={0}, .shard={0}}};
     int has_target_addresses = 0;
     int has_target_ports     = 0;
     usec_start               = pixie_gettime();
