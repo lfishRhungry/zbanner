@@ -93,7 +93,7 @@ static struct ConfigParam tcpsyn_parameters[] = {
         "fail-zerowin",
         SET_zero_fail,
         Type_BOOL,
-        {"fail-zero", 0},
+        {"fail-zero", "zero-fail", 0},
         "Let SYN-ACK responds with zero window setting as failed. Default is success."
     },
     {
