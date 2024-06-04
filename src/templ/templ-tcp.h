@@ -25,26 +25,58 @@ struct TemplateOptions;
 
 #define TCP_HAS_FLAG(px,i,flag) ((TCP_FLAGS((px),(i)) & (flag)) == (flag))
 
-#define TCP_OPT_TYPE_EOL            0
-#define TCP_OPT_TYPE_NOP            1
+/**
+ * ref: https://www.iana.org/assignments/tcp-parameters/tcp-parameters.xhtml
+*/
+#define TCP_OPT_TYPE_EOL            0      /*End of Option List*/
+#define TCP_OPT_TYPE_NOP            1      /*No-Operation*/
 #define TCP_OPT_TYPE_MSS            2
-#define TCP_OPT_TYPE_WS             3
-#define TCP_OPT_TYPE_SACK_PERM      4
+#define TCP_OPT_TYPE_WS             3      /*Window Scale*/
+#define TCP_OPT_TYPE_SACK_PERM      4      /*SACK Permitted*/
 #define TCP_OPT_TYPE_SACK           5
-#define TCP_OPT_TYPE_TS             8
-#define TCP_OPT_TYPE_MD5            19
-#define TCP_OPT_TYPE_UTO            28
-#define TCP_OPT_TYPE_AO             29
-#define TCP_OPT_TYPE_EXP1           253
-#define TCP_OPT_TYPE_EXP2           254
+#define TCP_OPT_TYPE_ECHO           6
+#define TCP_OPT_TYPE_ECHO_REPLY     7
+#define TCP_OPT_TYPE_TS             8      /*Timestamps*/
+#define TCP_OPT_TYPE_POCP           9      /*Partial Order Connection Permitted*/
+#define TCP_OPT_TYPE_POSP           10     /*Partial Order Service Profile*/
+#define TCP_OPT_TYPE_CC             11
+#define TCP_OPT_TYPE_CCNEW          12
+#define TCP_OPT_TYPE_CCECHO         13
+#define TCP_OPT_TYPE_ACR            14     /*TCP Alternate Checksum Request*/
+#define TCP_OPT_TYPE_ACD            15     /*TCP Alternate Checksum Data*/
+#define TCP_OPT_TYPE_SKEETER        16
+#define TCP_OPT_TYPE_BUBBA          17
+#define TCP_OPT_TYPE_TCO            18     /*Trailer Checksum Option*/
+#define TCP_OPT_TYPE_MD5            19     /*MD5 Signature Option*/
+#define TCP_OPT_TYPE_SCPS           20     /*SCPS Capabilities*/
+#define TCP_OPT_TYPE_SNA            21     /*Selective Negative Acknowledgements*/
+#define TCP_OPT_TYPE_RECORD_BDR     22     /*Record Boundaries*/
+#define TCP_OPT_TYPE_CORRUPT        23     /*Corruption experienced*/
+#define TCP_OPT_TYPE_SNAP           24
+#define TCP_OPT_TYPE_CF             26     /*TCP Compression Filter*/
+#define TCP_OPT_TYPE_QSR            27     /*Quick-Start Response*/
+#define TCP_OPT_TYPE_UTO            28     /*User Timeout Option (also, other known unauthorized use)*/
+#define TCP_OPT_TYPE_AO             29     /*TCP Authentication Option (TCP-AO)*/
+#define TCP_OPT_TYPE_MPTCP          30     /*Multipath TCP*/
+#define TCP_OPT_TYPE_FOC            34     /*TCP Fast Open Cookie*/
+#define TCP_OPT_TYPE_ENO            69     /*Encryption Negotiation (TCP-ENO)*/
+#define TCP_OPT_TYPE_EXP1           253    /*RFC3692-style Experiment 1 (also improperly used for shipping products)*/
+#define TCP_OPT_TYPE_EXP2           254    /*RFC3692-style Experiment 2 (also improperly used for shipping products) */
 
 #define TCP_OPT_LEN_EOL             1
 #define TCP_OPT_LEN_NOP             1
 #define TCP_OPT_LEN_MSS             4
 #define TCP_OPT_LEN_WS              3
+#define TCP_OPT_LEN_ECHO            6
+#define TCP_OPT_LEN_ECHO_REPLY      6
 #define TCP_OPT_LEN_SACK_PERM       2
 #define TCP_OPT_LEN_TS              10
+#define TCP_OPT_LEN_POCP            2
+#define TCP_OPT_LEN_POSP            3
+#define TCP_OPT_LEN_ACR             3
+#define TCP_OPT_LEN_TCO             3
 #define TCP_OPT_LEN_MD5             18
+#define TCP_OPT_LEN_QSR             8
 #define TCP_OPT_LEN_UTO             4
 
 #define TCP_DEFAULT_MSS             1460
