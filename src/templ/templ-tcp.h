@@ -82,6 +82,14 @@ struct TemplateOptions;
 #define TCP_DEFAULT_MSS             1460
 
 
+struct TcpOption {
+    const unsigned char *buf;
+    size_t opt_len;
+    size_t raw_len; /*raw_len = opt_len - opt_hdr (opt_hdr=kind(1)+len(1)=2)*/
+    unsigned kind;
+    bool is_found;
+};
+
 /**
  * Called during configuration, to apply all the various changes the
  * user asked for on the command-line, such as optioms like:
@@ -129,6 +137,13 @@ tcp_create_packet(
 /*Convert TCP flags into string*/
 void
 tcp_flags_to_string(unsigned flag, char *string, size_t str_len);
+
+/**
+ * Search the TCP header's <options> field for the specified kind/type.
+ * Typical kinds of options are MSS, window scale, SACK, timestamp.
+*/
+struct TcpOption
+tcp_find_opt(const unsigned char *buf, size_t length, unsigned in_kind);
 
 unsigned
 tcp_get_mss(const unsigned char *buf, size_t length, bool *is_found);

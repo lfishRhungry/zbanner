@@ -90,14 +90,6 @@ TCP pseudo header
 #include "../util-data/data-convert.h"
 #include "../proto/proto-preprocess.h"
 
-struct tcp_opt_t {
-    const unsigned char *buf;
-    size_t opt_len;
-    size_t raw_len; /*raw_len = opt_len - opt_hdr*/
-    unsigned kind;
-    bool is_found;
-};
-
 struct tcp_hdr_t {
     size_t begin;
     size_t max;
@@ -387,13 +379,9 @@ _find_opt(const unsigned char *buf, struct tcp_hdr_t hdr, unsigned in_kind,
     return offset;
 }
 
-/***************************************************************************
- * Search the TCP header's <options> field for the specified kind/type.
- * Typical kinds of options are MSS, window scale, SACK, timestamp.
- ***************************************************************************/
-static struct tcp_opt_t
+struct TcpOption
 tcp_find_opt(const unsigned char *buf, size_t length, unsigned in_kind) {
-    struct tcp_opt_t result = {0};
+    struct TcpOption result = {0};
     struct tcp_hdr_t hdr;
     size_t offset;
 
@@ -977,7 +965,7 @@ fail:
  ***************************************************************************/
 unsigned
 tcp_get_mss(const unsigned char *buf, size_t length, bool *is_found) {
-    struct tcp_opt_t opt;
+    struct TcpOption opt;
     unsigned result = 0;
 
     opt = tcp_find_opt(buf, length, TCP_OPT_TYPE_MSS);
@@ -1002,7 +990,7 @@ tcp_get_mss(const unsigned char *buf, size_t length, bool *is_found) {
  ***************************************************************************/
 unsigned
 tcp_get_wscale(const unsigned char *buf, size_t length, bool *is_found) {
-    struct tcp_opt_t opt;
+    struct TcpOption opt;
     unsigned result = 0;
 
     opt = tcp_find_opt(buf, length, TCP_OPT_TYPE_WS);
@@ -1018,6 +1006,7 @@ tcp_get_wscale(const unsigned char *buf, size_t length, bool *is_found) {
         return 0xFFFFffff;
     }
 
+    /*raw len of wscale is 1 byte*/
     result = opt.buf[0];
 
     return result;
@@ -1027,7 +1016,7 @@ tcp_get_wscale(const unsigned char *buf, size_t length, bool *is_found) {
  ***************************************************************************/
 unsigned
 tcp_get_sackperm(const unsigned char *buf, size_t length, bool *is_found) {
-    struct tcp_opt_t opt;
+    struct TcpOption opt;
 
     opt = tcp_find_opt(buf, length, TCP_OPT_TYPE_SACK_PERM);
     if (is_found)
