@@ -664,6 +664,21 @@ static enum ConfigRes SET_pfring(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
+static enum ConfigRes SET_noresume(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    if (xconf->echo) {
+        if (xconf->is_nodedup || xconf->echo_all) {
+            fprintf(xconf->echo, "no-resume = %s\n", xconf->is_noresume?"true":"false");
+        }
+       return 0;
+    }
+
+    xconf->is_noresume = parseBoolean(value);
+
+    return Conf_OK;
+}
+
 static enum ConfigRes SET_nodedup(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
@@ -2974,6 +2989,15 @@ struct ConfigParam config_parameters[] = {
         "instances, though the --shards option might be better.\n"
         "NOTE: This causes inifinite pause after finished resume-count and waits"
         " user input <ctrl-c> to exit."
+    },
+    {
+        "no-resume",
+        SET_noresume,
+        Type_BOOL,
+        {0},
+        "Do not save scan info to resume file(paused.conf) for resuming. This is"
+        " useful when our target list is too large and scattered and spend too "
+        "much time to save."
     },
     {
         "pcap-filename",

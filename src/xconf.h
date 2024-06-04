@@ -181,6 +181,7 @@ struct Xconf
     unsigned          is_sendq:1;
     unsigned          is_offline:1;
     unsigned          is_nodedup:1;
+    unsigned          is_noresume:1;
     unsigned          is_infinite:1;
     unsigned          is_fast_timeout:1;
     unsigned          is_bypass_os:1;

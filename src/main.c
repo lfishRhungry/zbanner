@@ -441,7 +441,7 @@ static int main_scan(struct Xconf *xconf) {
      * If we haven't completed the scan, then save the resume
      * information.
      */
-    if (min_index < range && !xconf->is_infinite) {
+    if (min_index < range && !xconf->is_infinite && !xconf->is_noresume) {
         xconf->resume.index = min_index;
         xconf_save_state(xconf);
     }
