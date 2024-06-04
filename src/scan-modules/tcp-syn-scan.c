@@ -122,7 +122,7 @@ static struct ConfigParam tcpsyn_parameters[] = {
         SET_record_mss,
         Type_BOOL,
         {"mss", 0},
-        "Records TCP MSS option value of SYN-ACK. Show zero if the option not set."
+        "Records TCP MSS option value of SYN-ACK if the option exists."
     },
 
     {0}
