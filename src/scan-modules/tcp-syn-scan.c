@@ -239,8 +239,8 @@ tcpsyn_handle(
         if (tcpsyn_conf.record_mss) {
             /*comput of mss is not easy*/
             mss_them = tcp_get_mss(recved->packet, recved->length, &mss_found);
-            if (!mss_found) mss_them = 0;
-            dach_printf(&item->report, "mss", true, "%d", mss_them);
+            if (mss_found)
+                dach_printf(&item->report, "mss", true, "%d", mss_them);
         }
     }
     /*RST*/
