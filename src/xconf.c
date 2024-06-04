@@ -2694,7 +2694,7 @@ struct ConfigParam config_parameters[] = {
         "list-if",
         SET_listif,
         Type_BOOL,
-        {"list-interface", "list-adapter", 0},
+        {"if-list", "list-interface", "list-adapter", 0},
         "Do not run, but instead print informations of all adapters in this machine."
     },
 
