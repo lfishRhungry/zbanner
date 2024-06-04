@@ -19,8 +19,8 @@
     `dach_append...` because of no name matching. You can get the corresponding
     datalink by `dach_get/find_link...` or `dach_append...` funcs.
 
-    We can set is_number to mention the data string present a number. This is for
-    some output module formatting.
+    We can set is_number to mention the data string present a number or bool
+    string(true or false). This is for some output module formatting.
 
     !NOTE: Everytime operate by a link, update it by returned link.
 
@@ -48,8 +48,8 @@ struct DataLink {
     unsigned             name_hash;
     unsigned             data_len;
     unsigned             data_size;
-    bool                 is_number;
-    unsigned char        data[1]; /*visual studio doesn't support zero size array as member*/
+    bool                 is_number; /*is this value a number or bool string(true/false)*/
+    unsigned char        data[1];   /*visual studio doesn't support zero size array as member*/
 };
 
 /**
@@ -70,7 +70,7 @@ struct DachBase64
  * Create a data link with specified capacity by yourself.
  * @param data_size expected capacity, the actual size of data won't be less
  * than DACH_DEFAULT_DATA_SIZE.
- * @param is_number is the link a number type
+ * @param is_number is the link a number type or bool string(true/false)
  * @return link of new link or already existed link
  */
 struct DataLink *
@@ -98,7 +98,7 @@ dach_get_link(struct DataChain *dach, const char *name)
  * Create a data link with formatted name and specified capacity by yourself.
  * @param data_size expected capacity, the actual size of data won't be less
  * than DACH_DEFAULT_DATA_SIZE.
- * @param is_number is the link a number type
+ * @param is_number is the link a number type or bool string(true/false)
  * @return new link or already existed link
  */
 struct DataLink *
@@ -220,7 +220,7 @@ dach_printf_by_link(struct DataLink *link, const char *fmt, ...);
  * Printf in datachain version
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
- * @param is_number set link number type if create it.
+ * @param is_number set link number type or bool string(true/false) if create it.
  * @return target link after append.
 */
 struct DataLink *
