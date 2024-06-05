@@ -60,6 +60,7 @@ lzr_smtp_handle_reponse(
      * also can start with `220`, but must contain an `smtp` or `mail`*/
     if (bytes_equals(px, sizeof_px, "572", 3)
         || bytes_equals(px, sizeof_px, "554", 3)
+        || bytes_equals(px, sizeof_px, "450", 3)
         || bytes_equals(px, sizeof_px, "550", 3)) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "smtp");

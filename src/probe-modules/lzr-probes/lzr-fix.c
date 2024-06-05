@@ -13,7 +13,7 @@ lzr_fix_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    if (bytes_equals(px, sizeof_px, "8=FIX.", strlen("8=FIX."))) {
+    if (bytes_equals(px, sizeof_px, "8=FIX", strlen("8=FIX"))) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "fix");
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
