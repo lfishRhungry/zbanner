@@ -29,9 +29,10 @@ lzr_telnet_handle_response(
     }
 
     /**
-     * fixed from LZR by sharkocha 2024
+     * simple rule fixed from LZR and ref to nmap
+     * by sharkocha 2024
     */
-    if (px[1]==0xff && (px[1]==0xfe || px[1]==0xfd || px[1]==0xfc || px[1]==0xfb)) {
+    if (px[0]==0xff && (px[1]==0xfe || px[1]==0xfd || px[1]==0xfc || px[1]==0xfb)) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "telnet");
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
