@@ -14,9 +14,11 @@ lzr_pop3_handle_response(
     struct OutputItem *item)
 {
 
-    if (safe_memismem(px, sizeof_px, "pop3", strlen("pop3"))
-        || safe_memmem(px, sizeof_px, "+OK", strlen("+OK"))
-        || safe_memmem(px, sizeof_px, "* OK", strlen("* OK"))) {
+    /**
+     * ref to nmap.
+     * must be compatible with lzr-imap
+    */
+    if (safe_memismem(px, sizeof_px, "pop3", strlen("pop3"))) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "pop3");
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");

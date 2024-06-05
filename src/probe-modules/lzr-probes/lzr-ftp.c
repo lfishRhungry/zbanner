@@ -14,7 +14,7 @@ lzr_ftp_handle_response(
     struct OutputItem *item)
 {
     if (safe_memismem(px, sizeof_px, "ftp", strlen("ftp"))
-        || safe_memismem(px, sizeof_px, "conv_code ret failed", strlen( "conv_code ret failed"))) {
+        || safe_memmem(px, sizeof_px, "conv_code ret failed", strlen( "conv_code ret failed"))) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "ftp");
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
@@ -23,10 +23,19 @@ lzr_ftp_handle_response(
 
     /**
      * ref to nmap.
-     * must compatible with rules of lzr-smtp.
+     * must be compatible with rules of lzr-smtp.
     */
+
     if (bytes_equals(px, sizeof_px, "220", 3)
-        ||bytes_equals(px, sizeof_px, "501", 3)
+        && !safe_memismem(px, sizeof_px, "mail", strlen("mail"))
+        && !safe_memismem(px, sizeof_px, "smtp", strlen("smtp"))) {
+        item->level = Output_SUCCESS;
+        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "ftp");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        return 0;
+    }
+
+    if (bytes_equals(px, sizeof_px, "501", 3)
         ||bytes_equals(px, sizeof_px, "500", 3)) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "ftp");

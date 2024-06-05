@@ -26,6 +26,7 @@ lzr_imap_handle_reponse(
 
     /**
      * ref to nmap.
+     * must be compatible with lzr-pop3
     */
     if (bytes_equals(px, sizeof_px, "* OK", strlen("* OK"))
         ||bytes_equals(px, sizeof_px, "* BYE", strlen("* BYE"))

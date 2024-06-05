@@ -43,8 +43,21 @@ lzr_smtp_handle_reponse(
     }
 
     /**
+     * ref to nmap.
+     * must be compatible with rules of lzr-ftp.
+    */
+
+    if (bytes_equals(px, sizeof_px, "220", 3)
+        && safe_memismem(px, sizeof_px, "mail", strlen("mail"))) {
+        item->level = Output_SUCCESS;
+        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "smtp");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        return 0;
+    }
+
+    /**
      * ref to nmap
-     * also can start with `220`, but must contain an `smtp`*/
+     * also can start with `220`, but must contain an `smtp` or `mail`*/
     if (bytes_equals(px, sizeof_px, "572", 3)
         || bytes_equals(px, sizeof_px, "554", 3)
         || bytes_equals(px, sizeof_px, "550", 3)) {
