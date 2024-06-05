@@ -421,7 +421,13 @@ struct ProbeModule LzrProbe = {
         "with all LZR handshakes.\n"
         "I suggest you to specify `--timeout` parameter because LzrProbe performs"
         " better by recognizing the status of non-responsing.\n"
-        "NOTE: I had fixed some matching bugs and errors from original LZR and "
+        "NOTE1: Recommended optimal handshake order by LZR paper:\n"
+        "1.  wait\n"
+        "2.  tls\n"
+        "3.  http\n"
+        "4.  dns\n"
+        "5.  pptp\n"
+        "NOTE2: I had fixed some matching bugs and errors from original LZR and "
         "added more useful handshakes. So, enjoy it!",
     .global_init_cb                          = &lzr_global_init,
     .make_payload_cb                         = &lzr_make_payload,
