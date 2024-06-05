@@ -421,8 +421,8 @@ struct ProbeModule LzrProbe = {
         "with all LZR handshakes.\n"
         "I suggest you to specify `--timeout` parameter because LzrProbe performs"
         " better by recognizing the status of non-responsing.\n"
-        "NOTE: I had fixed some matching bugs from original LZR and added more "
-        "handshakes. So, enjoy it!",
+        "NOTE: I had fixed some matching bugs and errors from original LZR and "
+        "added more useful handshakes. So, enjoy it!",
     .global_init_cb                          = &lzr_global_init,
     .make_payload_cb                         = &lzr_make_payload,
     .get_payload_length_cb                   = &lzr_get_payload_length,
