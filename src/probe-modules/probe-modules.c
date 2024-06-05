@@ -42,6 +42,7 @@ extern struct ProbeModule LzrSmtpProbe;
 extern struct ProbeModule LzrSshProbe;
 extern struct ProbeModule LzrSocks5Probe;
 extern struct ProbeModule LzrTelnetProbe;
+extern struct ProbeModule LzrFixProbe;
 extern struct ProbeModule LzrSmbProbe;
 extern struct ProbeModule LzrMqttProbe;
 extern struct ProbeModule LzrAmqpProbe;
@@ -121,6 +122,7 @@ static struct ProbeModule *probe_modules_list[] = {
     &LzrSshProbe,
     &LzrSocks5Probe,
     &LzrTelnetProbe,
+    &LzrFixProbe,
     &LzrSmbProbe,
     &LzrMqttProbe,
     &LzrAmqpProbe,
