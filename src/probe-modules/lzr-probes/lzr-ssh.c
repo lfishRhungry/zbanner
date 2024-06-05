@@ -51,6 +51,14 @@ lzr_ssh_handle_reponse(
         return 0;
     }
 
+    if (safe_memismem(px, sizeof_px, "MaxStartup", strlen("MaxStartup"))
+        || safe_memismem(px, sizeof_px, "MaxSession", strlen("MaxSession"))) {
+        item->level = Output_SUCCESS;
+        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "ssh");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        return 0;
+    }
+
     item->level = Output_FAILURE;
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not ssh");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
