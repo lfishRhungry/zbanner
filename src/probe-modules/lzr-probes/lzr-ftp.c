@@ -21,14 +21,13 @@ lzr_ftp_handle_response(
         return 0;
     }
 
-    /* This matching is like fallback condition in Nmap*/
-    char tmp_str[4] = {px[0], px[1], px[2], '\0'};
-    if (strstr(tmp_str, "220")
-        || strstr(tmp_str, "421")
-        || strstr(tmp_str, "530")
-        || strstr(tmp_str, "550")
-        || strstr(tmp_str, "500")
-        || strstr(tmp_str, "230")) {
+    /**
+     * ref to nmap.
+     * must compatible with rules of lzr-smtp.
+    */
+    if (bytes_equals(px, sizeof_px, "220", 3)
+        ||bytes_equals(px, sizeof_px, "501", 3)
+        ||bytes_equals(px, sizeof_px, "500", 3)) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "ftp");
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");

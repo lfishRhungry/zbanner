@@ -24,6 +24,18 @@ lzr_imap_handle_reponse(
         return 0;
     }
 
+    /**
+     * ref to nmap.
+    */
+    if (bytes_equals(px, sizeof_px, "* OK", strlen("* OK"))
+        ||bytes_equals(px, sizeof_px, "* BYE", strlen("* BYE"))
+        ||bytes_equals(px, sizeof_px, "+OK", strlen("+OK"))) {
+        item->level = Output_SUCCESS;
+        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "imap");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        return 0;
+    }
+
     item->level = Output_FAILURE;
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not imap");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");

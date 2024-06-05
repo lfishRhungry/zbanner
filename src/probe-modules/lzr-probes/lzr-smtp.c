@@ -42,6 +42,18 @@ lzr_smtp_handle_reponse(
         return 0;
     }
 
+    /**
+     * ref to nmap
+     * also can start with `220`, but must contain an `smtp`*/
+    if (bytes_equals(px, sizeof_px, "572", 3)
+        || bytes_equals(px, sizeof_px, "554", 3)
+        || bytes_equals(px, sizeof_px, "550", 3)) {
+        item->level = Output_SUCCESS;
+        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "smtp");
+        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        return 0;
+    }
+
     item->level = Output_FAILURE;
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not smtp");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
