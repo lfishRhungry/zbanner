@@ -2702,7 +2702,7 @@ struct ConfigParam config_parameters[] = {
         "list-target",
         SET_list_target,
         Type_BOOL,
-        {"list-targets", 0},
+        {"list-targets", "list-ip", "ip-list", 0},
         "Do not run, but instead print every unique IP targets in random."
     },
     {

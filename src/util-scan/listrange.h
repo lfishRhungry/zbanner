@@ -6,6 +6,6 @@
 struct Xconf;
 
 void
-readrange(struct Xconf *xconf);
+listrange(struct Xconf *xconf);
 
 #endif

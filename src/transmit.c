@@ -27,7 +27,7 @@
 
 #include "util-out/logger.h"
 #include "util-data/fine-malloc.h"
-#include "util-scan/readrange.h"
+#include "util-scan/listrange.h"
 #include "util-scan/throttle.h"
 
 static void

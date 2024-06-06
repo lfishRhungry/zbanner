@@ -1,10 +1,10 @@
-#include "listscan.h"
+#include "listtargets.h"
 #include "../util-out/logger.h"
 #include "../crypto/crypto-blackrock.h"
 
 
 void
-listscan(struct Xconf *xconf)
+listip(struct Xconf *xconf)
 {
     uint64_t i;
     uint64_t range;
@@ -17,7 +17,7 @@ listscan(struct Xconf *xconf)
     /* If called with no ports, then create a pseudo-port needed
      * for the internal algorithm. */
     if (!massip_has_target_ports(&xconf->targets))
-        rangelist_add_range(&xconf->targets.ports, 80, 80);
+        massip_add_port_string(&xconf->targets, "o:0", 0);
     massip_optimize(&xconf->targets);
 
     /* The "range" is the total number of IP/port combinations that

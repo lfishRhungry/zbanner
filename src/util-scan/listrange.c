@@ -1,4 +1,4 @@
-#include "readrange.h"
+#include "listrange.h"
 #include <assert.h>
 
 /***************************************************************************
@@ -27,7 +27,7 @@ count_cidr6_bits(struct Range6 range)
 /***************************************************************************
  ***************************************************************************/
 void
-readrange(struct Xconf *xconf)
+listrange(struct Xconf *xconf)
 {
     struct RangeList  *list4 = &xconf->targets.ipv4;
     struct Range6List *list6 = &xconf->targets.ipv6;
