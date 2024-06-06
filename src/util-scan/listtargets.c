@@ -11,8 +11,8 @@ listip(struct Xconf *xconf)
     uint64_t start;
     uint64_t end;
     struct   BlackRock blackrock;
-    unsigned increment = xconf->shard.of;
-    uint64_t seed = xconf->seed;
+    unsigned increment    = xconf->shard.of;
+    uint64_t dynamic_seed = xconf->seed;
 
     /* If called with no ports, then create a pseudo-port needed
      * for the internal algorithm. */
@@ -26,7 +26,7 @@ listip(struct Xconf *xconf)
 
 
 infinite:
-    blackrock_init(&blackrock, range, seed, xconf->blackrock_rounds);
+    blackrock_init(&blackrock, range, dynamic_seed, xconf->blackrock_rounds);
 
     start = xconf->resume.index + (xconf->shard.one-1);
     end = range;
@@ -78,7 +78,9 @@ infinite:
     }
 
     if (xconf->is_infinite) {
-        seed++;
+        if (!xconf->is_static_seed) {
+            dynamic_seed++;
+        }
         goto infinite;
     }
 }
