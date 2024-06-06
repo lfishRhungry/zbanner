@@ -36,12 +36,14 @@ infinite:
     for (i=start; i<end; ) {
         uint64_t xXx;
         unsigned port;
+        unsigned ip_proto;
         ipaddress addr;
 
         xXx = blackrock_shuffle(&blackrock,  i);
 
         massip_pick(&xconf->targets, xXx, &addr, &port);
-        
+
+        ip_proto = get_actual_proto_port(&port);
 
         if (xconf->targets.count_ports == 1) {
             ipaddress_formatted_t fmt = ipaddress_fmt(addr);
@@ -50,9 +52,26 @@ infinite:
         } else {
             ipaddress_formatted_t fmt = ipaddress_fmt(addr);
             if (addr.version == 6)
-                printf("[%s]:%u\n", fmt.string, port);
+                printf("%s ", fmt.string);
             else
-                printf("%s:%u\n", fmt.string, port);
+                printf("%s ", fmt.string);
+
+            switch (ip_proto) {
+                case IP_PROTO_TCP:
+                    printf("%u", port);
+                    break;
+                case IP_PROTO_UDP:
+                    printf("u:%u", port);
+                    break;
+                case IP_PROTO_SCTP:
+                    printf("s:%u", port);
+                    break;
+                default:
+                    printf("o:%u", port);
+                    break;
+            }
+
+            printf("\n");
         }
 
         i += increment; /* <------ increment by 1 normally, more with shards/NICs */
