@@ -395,13 +395,16 @@ static int main_scan(struct Xconf *xconf) {
         total_info      = xconf->out.total_info;
         total_tm_event  = rx_thread->total_tm_event;
 
-        if (rx_thread->dispatch_q && rx_thread->handle_q) {
-            double rx_free_entries = rte_ring_free_count(rx_thread->dispatch_q);
+        /**
+         * Rx handle queue is the bottle-neck
+         */
+        if (rx_thread->handle_q) {
+            double rx_free_entries = 0;
             for (unsigned i=0; i<xconf->rx_handler_count; i++) {
                 rx_free_entries += rte_ring_free_count(rx_thread->handle_q[i]);
             }
             rx_queue_ratio = rx_free_entries*100.0 /
-                (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count+1));
+                (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count));
         }
 
         double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
@@ -487,14 +490,17 @@ static int main_scan(struct Xconf *xconf) {
         total_failed    = xconf->out.total_failed;
         total_info      = xconf->out.total_info;
         total_tm_event  = rx_thread->total_tm_event;
-        
-        if (rx_thread->dispatch_q && rx_thread->handle_q) {
-            double rx_free_entries = rte_ring_free_count(rx_thread->dispatch_q);
+
+        /**
+         * Rx handle queue is the bottle-neck
+         */
+        if (rx_thread->handle_q) {
+            double rx_free_entries = 0;
             for (unsigned i=0; i<xconf->rx_handler_count; i++) {
                 rx_free_entries += rte_ring_free_count(rx_thread->handle_q[i]);
             }
             rx_queue_ratio = rx_free_entries*100.0 /
-                (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count+1));
+                (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count));
         }
 
         double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
