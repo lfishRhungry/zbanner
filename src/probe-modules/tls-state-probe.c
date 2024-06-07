@@ -739,7 +739,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     tgt->index     = target->index;
     res = SSL_set_ex_data(ssl, 0, tgt);
     if (res != 1) {
-        LOG(LEVEL_WARNING, "SSL_set_ex_data banout error\n");
+        LOG(LEVEL_WARNING, "SSL_set_ex_data error\n");
         goto error6;
     }
 
@@ -779,6 +779,7 @@ error4:
     }
 error3:
     free(state->data);
+    state->data = NULL;
 error0:
 
     return;
@@ -831,6 +832,9 @@ tlsstate_make_hello(
     int res, res_ex;
     size_t offset = 0;
     struct TlsState *tls_state = state->data;
+
+    if (tls_state==NULL)
+        goto error1;
 
     res = SSL_do_handshake(tls_state->ssl);
     res_ex = SSL_ERROR_NONE;
