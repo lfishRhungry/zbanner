@@ -8,19 +8,19 @@
  * incoming responses with their original requests
  */
 uint64_t
-get_cookie_ipv4( unsigned ip_dst, unsigned port_dst,
-            unsigned ip_src, unsigned port_src,
-            uint64_t entropy);
+get_cookie_ipv4(unsigned ip_them, unsigned port_them,
+    unsigned ip_me, unsigned port_me,
+    uint64_t entropy);
 
 uint64_t
-get_cookie( ipaddress ip_dst, unsigned port_dst,
-            ipaddress ip_src, unsigned port_src,
-            uint64_t entropy);
+get_cookie(ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    uint64_t entropy);
 
 uint64_t
-get_cookie_ipv6( ipv6address ip_dst, unsigned port_dst,
-            ipv6address ip_src, unsigned port_src,
-            uint64_t entropy);
+get_cookie_ipv6(ipv6address ip_them, unsigned port_them,
+    ipv6address ip_me, unsigned port_me,
+    uint64_t entropy);
 
 
 /**

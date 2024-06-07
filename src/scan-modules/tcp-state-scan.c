@@ -16,11 +16,11 @@ extern struct ScanModule TcpStateScan; /*for internal x-ref*/
 
 /**
  * For compatible with multi-recv-handlers and keeping internal thread-safe of
- * a TCP Conn table. We create many TCP Conn tables and one for each handler.
- * The key point is keeping one connection in one TCP Conn table. So we hash each
- * connect to let it fixed on one table.
+ * a TCP Conn table. We create multiple TCP Conn tables and one for each handler.
+ * The key point is keeping same connection and its operation in its beloned TCP Conn table.
+ * For this, we hash each connect to let it fixed on just one table.
  * 
- * !NOTE: Never CRUD a conn with c TCB if the TCB does not belong to this table.
+ * !NOTE: Never CRUD a conn by a TCB if the conn does not belong to this table.
  * */
 struct TCP_ConSet {
     struct TCP_ConnectionTable **tcpcons;

@@ -115,9 +115,9 @@ murmur(uint64_t entropy, ...)
 /***************************************************************************
  ***************************************************************************/
 uint64_t
-get_cookie( ipaddress ip_them, unsigned port_them,
-            ipaddress ip_me, unsigned port_me,
-            uint64_t entropy)
+get_cookie(ipaddress ip_them, unsigned port_them,
+    ipaddress ip_me, unsigned port_me,
+    uint64_t entropy)
 {
     switch (ip_them.version) {
     case 4:
@@ -133,9 +133,9 @@ get_cookie( ipaddress ip_them, unsigned port_them,
 /***************************************************************************
  ***************************************************************************/
 uint64_t
-get_cookie_ipv4( unsigned ip_them, unsigned port_them,
-            unsigned ip_me, unsigned port_me,
-            uint64_t entropy)
+get_cookie_ipv4(unsigned ip_them, unsigned port_them,
+    unsigned ip_me, unsigned port_me,
+    uint64_t entropy)
 {
     unsigned data[4];
     uint64_t x[2];
@@ -153,9 +153,9 @@ get_cookie_ipv4( unsigned ip_them, unsigned port_them,
 /***************************************************************************
  ***************************************************************************/
 uint64_t
-get_cookie_ipv6( ipv6address ip_them, unsigned port_them,
-            ipv6address ip_me, unsigned port_me,
-            uint64_t entropy)
+get_cookie_ipv6(ipv6address ip_them, unsigned port_them,
+    ipv6address ip_me, unsigned port_me,
+    uint64_t entropy)
 {
     uint64_t data[5];
     uint64_t x[2];

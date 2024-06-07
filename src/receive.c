@@ -397,7 +397,7 @@ void receive_thread(void *v) {
         }
 
         /**
-         * give it to reader and to handlers
+         * give it to dispatcher
         */
         for (err=1; err; ) {
             err = rte_ring_sp_enqueue(dispatch_q, recved);
