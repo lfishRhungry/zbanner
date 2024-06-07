@@ -39,7 +39,7 @@ extern struct ProbeModule TlsStateProbe;
 /*save Output*/
 static const struct Output *tls_out;
 /*public SSL obj for all conn*/
-static SSL_CTX *ssl_ctx;
+static SSL_CTX *general_ssl_ctx;
 
 struct TlsState {
     OSSL_HANDSHAKE_STATE   handshake_state;
@@ -635,7 +635,7 @@ tlsstate_global_init(const struct Xconf *xconf)
         SSL_CTX_set_keylog_callback(ctx, ssl_keylog_cb);
     }
 
-    ssl_ctx = ctx;
+    general_ssl_ctx = ctx;
     LOG(LEVEL_INFO, "SUCCESS init dynamic ssl\n");
 
     if (tlsstate_conf.subprobe_args
@@ -669,9 +669,9 @@ static void tlsstate_close()
 {
     tlsstate_conf.subprobe->close_cb();
 
-    if (ssl_ctx) {
-        SSL_CTX_free(ssl_ctx);
-        ssl_ctx = NULL;
+    if (general_ssl_ctx) {
+        SSL_CTX_free(general_ssl_ctx);
+        general_ssl_ctx = NULL;
     }
 
     return;
@@ -690,7 +690,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
 
     LOG(LEVEL_INFO, "[ssl_transmit_hello] >>>\n");
 
-    if (ssl_ctx == NULL) {
+    if (general_ssl_ctx == NULL) {
         goto error0;
     }
 
@@ -712,7 +712,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
         goto error4;
     }
 
-    ssl = SSL_new(ssl_ctx);
+    ssl = SSL_new(general_ssl_ctx);
     if (ssl == NULL) {
         LOG(LEVEL_WARNING, "SSL_new error\n");
         LOGopenssl(LEVEL_WARNING);
