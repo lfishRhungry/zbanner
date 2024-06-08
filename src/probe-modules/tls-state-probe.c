@@ -702,21 +702,21 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     if (rbio == NULL) {
         LOG(LEVEL_WARNING, "BIO_new(read) error\n");
         LOGopenssl(LEVEL_WARNING);
-        goto error3;
+        goto error1;
     }
 
     wbio = BIO_new(BIO_s_mem());
     if (wbio == NULL) {
         LOG(LEVEL_WARNING, "BIO_new(write) error\n");
         LOGopenssl(LEVEL_WARNING);
-        goto error4;
+        goto error2;
     }
 
     ssl = SSL_new(general_ssl_ctx);
     if (ssl == NULL) {
         LOG(LEVEL_WARNING, "SSL_new error\n");
         LOGopenssl(LEVEL_WARNING);
-        goto error5;
+        goto error3;
     }
 
     /*client mode*/
@@ -740,7 +740,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     res = SSL_set_ex_data(ssl, 0, tgt);
     if (res != 1) {
         LOG(LEVEL_WARNING, "SSL_set_ex_data error\n");
-        goto error6;
+        goto error4;
     }
 
     /*keep important struct in probe state*/
@@ -749,7 +749,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     tls_state->wbio = wbio;
     tls_state->data = data;
 
-    tls_state->data_size    = data_max_len;
+    tls_state->data_size       = data_max_len;
     tls_state->handshake_state = TLS_ST_BEFORE; /*state for openssl*/
  
     state->data = tls_state;
@@ -762,23 +762,24 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     // SSL_set_ex_data(ssl, 1, NULL);
 // error7:
     // SSL_set_ex_data(ssl, 0, NULL);
-error6:
+error4:
     free(tgt);
     SSL_free(ssl);
-    wbio = NULL;
-    rbio = NULL;
-error5:
+    ssl = NULL;
+    tgt = NULL;
+error3:
     if (wbio != NULL) {
         BIO_free(wbio);
         wbio = NULL;
     }
-error4:
+error2:
     if (rbio != NULL) {
         BIO_free(rbio);
         rbio = NULL;
     }
-error3:
-    free(state->data);
+error1:
+    free(data);
+    free(tls_state);
     state->data = NULL;
 error0:
 
@@ -829,14 +830,14 @@ tlsstate_make_hello(
     struct ProbeState *state,
     struct ProbeTarget *target)
 {
-    int res, res_ex;
-    size_t offset = 0;
-    struct TlsState *tls_state = state->data;
-
-    if (tls_state==NULL)
+    if (state->data==NULL)
         goto error1;
 
-    res = SSL_do_handshake(tls_state->ssl);
+    struct TlsState *tls_state = state->data;
+    int    res, res_ex;
+    size_t offset = 0;
+
+    res    = SSL_do_handshake(tls_state->ssl);
     res_ex = SSL_ERROR_NONE;
     if (res < 0) {
         res_ex = SSL_get_error(tls_state->ssl, res);
