@@ -645,7 +645,7 @@ _tcpcon_send_packet(
     const unsigned char *payload, size_t payload_length)
 {
     struct PacketBuffer *response = 0;
-    unsigned is_syn = (tcp_flags == TCP_FLAG_SYN);
+    bool is_syn = (tcp_flags == TCP_FLAG_SYN);
 
     assert(tcb->ip_me.version != 0 && tcb->ip_them.version != 0);
 
@@ -677,7 +677,7 @@ _tcpcon_send_packet(
             tcpcon->syn_template,
             tcb->ip_them, tcb->port_them,
             tcb->ip_me, tcb->port_me,
-            tcb->seqno_me - is_syn, tcb->seqno_them,
+            tcb->seqno_me - 1, tcb->seqno_them, /*NOTE the seqno*/
             tcp_flags, payload, payload_length,
             response->px, sizeof(response->px));
     } else if (tcp_flags&TCP_FLAG_RST) {
@@ -685,7 +685,7 @@ _tcpcon_send_packet(
             tcpcon->rst_template,
             tcb->ip_them, tcb->port_them,
             tcb->ip_me, tcb->port_me,
-            tcb->seqno_me - is_syn, tcb->seqno_them,
+            tcb->seqno_me, tcb->seqno_them,
             tcp_flags, payload, payload_length,
             response->px, sizeof(response->px));
     } else {
@@ -693,7 +693,7 @@ _tcpcon_send_packet(
             tcpcon->tcp_template,
             tcb->ip_them, tcb->port_them,
             tcb->ip_me, tcb->port_me,
-            tcb->seqno_me - is_syn, tcb->seqno_them,
+            tcb->seqno_me, tcb->seqno_them,
             tcp_flags, payload, payload_length,
             response->px, sizeof(response->px));
     }
@@ -771,6 +771,7 @@ _tcpcon_send_raw_SYN(struct TCP_ConnectionTable *tcpcon,
  ***************************************************************************/
 static void
 _tcb_seg_resend(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tcb) {
+
     struct TCP_Segment *seg = tcb->segments;
 
     if (seg) {
@@ -790,10 +791,12 @@ _tcb_seg_resend(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tc
 /***************************************************************************
  ***************************************************************************/
 static void
-_application_notify(struct TCP_ConnectionTable *tcpcon,
-                   struct TCP_Control_Block *tcb,
-                   enum App_Event event, const void *payload, size_t payload_length,
-                   unsigned secs, unsigned usecs)
+_application_notify(
+    struct TCP_ConnectionTable *tcpcon,
+    struct TCP_Control_Block *tcb,
+    enum App_Event event,
+    const void *payload, size_t payload_length,
+    unsigned secs, unsigned usecs)
 {
     struct StackHandler socket = {tcpcon, tcb, secs, usecs};
 
@@ -806,18 +809,18 @@ _application_notify(struct TCP_ConnectionTable *tcpcon,
  * if set closing, we would ignore the data.
  ***************************************************************************/
 static void 
-_tcb_seg_send(void *in_tcpcon, void *in_tcb, 
-        const void *buf, size_t length, 
-        unsigned is_dynamic) {
+_tcb_seg_send(
+    struct TCP_ConnectionTable *tcpcon,
+    struct TCP_Control_Block *tcb, 
+    const void *buf, size_t length, 
+    unsigned is_dynamic) {
     
     if (!buf || !length) return;
 
-    struct TCP_ConnectionTable    *tcpcon        = (struct TCP_ConnectionTable *)in_tcpcon;
-    struct TCP_Control_Block      *tcb           = (struct TCP_Control_Block *)in_tcb;
-    unsigned                       seqno         = tcb->seqno_me;
-    size_t                         length_more   = 0;
-    struct TCP_Segment            *seg;
-    struct TCP_Segment           **next;
+    struct TCP_Segment    *seg;
+    struct TCP_Segment   **next;
+    unsigned               seqno         = tcb->seqno_me;
+    size_t                 length_more   = 0;
 
     if (length > tcb->mss) {
         length_more = length - tcb->mss;
@@ -833,10 +836,10 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
     seg   = CALLOC(1, sizeof(*seg));
     *next = seg;
 
-    seg->seqno  = seqno;
-    seg->length = length;
+    seg->seqno       = seqno;
+    seg->length      = length;
     seg->is_dynamic  = is_dynamic;
-    seg->buf = (unsigned char *)buf;
+    seg->buf         = (unsigned char *)buf;
 
     if (tcb->tcpstate != STATE_SENDING)
         _application_notify(tcpcon, tcb, APP_WHAT_SENDING, seg->buf, seg->length, 0, 0);
@@ -858,15 +861,16 @@ _tcb_seg_send(void *in_tcpcon, void *in_tcb,
 }
 
 /***************************************************************************
+ * @return true for good ack.
  ***************************************************************************/
-static int
+static bool
 _tcp_seg_acknowledge(
     struct TCP_Control_Block *tcb,
     uint32_t ackno)
 {
     /* Normal: just discard repeats */
     if (ackno == tcb->seqno_me) {
-        return 0;
+        return false;
     }
 
     /* Make sure this isn't a duplicate ACK from past
@@ -878,7 +882,7 @@ _tcp_seg_acknowledge(
             "old ackno = 0x%08x, this ackno = 0x%08x\n",
             fmt.string,
             tcb->ackno_me, ackno);
-        return 0;
+        return false;
     }
 
     /* Make sure this isn't invalid ACK from the future
@@ -890,7 +894,7 @@ _tcp_seg_acknowledge(
             "my seqno = 0x%08x, their ackno = 0x%08x\n",
             fmt.string,
             tcb->seqno_me, ackno);
-        return 0;
+        return false;
     }
 
     /*
@@ -915,7 +919,7 @@ _tcp_seg_acknowledge(
             }
             free(seg);
             if (ackno == tcb->ackno_them)
-                return 1; /* good ACK */
+                return true; /* good ACK */
         }
 
         if (tcb->segments && length < tcb->segments->length) {
@@ -944,7 +948,7 @@ _tcp_seg_acknowledge(
     }
     
     /* Mark that this was a good ack */
-    return 1;
+    return true;
 }
 
 /***************************************************************************
@@ -984,7 +988,8 @@ tcpapi_recv(struct StackHandler *socket) {
 }
 
 enum SOCK_Res
-tcpapi_send_data(struct StackHandler *socket,
+tcpapi_send_data(
+    struct StackHandler *socket,
     const void *buf, size_t length,
     unsigned is_dynamic) {
 
@@ -1047,9 +1052,11 @@ _LOGSEND(struct TCP_Control_Block *tcb, const char *what)
 }
 
 static int
-_tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
+_tcb_seg_recv(
+    struct TCP_ConnectionTable *tcpcon,
     struct TCP_Control_Block *tcb,
-    const unsigned char *payload, size_t payload_length,
+    const unsigned char *payload,
+    size_t payload_length,
     unsigned seqno_them,
     unsigned secs, unsigned usecs)
 {
@@ -1089,10 +1096,10 @@ _tcb_seg_recv(struct TCP_ConnectionTable *tcpcon,
  *****************************************************************************/
 enum TCB_result
 stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
-              struct TCP_Control_Block *tcb, enum TCP_What what,
-              const unsigned char *payload, size_t payload_length,
-              unsigned secs, unsigned usecs,
-              unsigned seqno_them, unsigned ackno_them)
+    struct TCP_Control_Block *tcb, enum TCP_What what,
+    const unsigned char *payload, size_t payload_length,
+    unsigned secs, unsigned usecs,
+    unsigned seqno_them, unsigned ackno_them)
 {
 
     /* FILTER
