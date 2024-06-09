@@ -374,9 +374,9 @@ tcpstate_handle(
             !TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
             TCP_FLAG_RST)) {
             stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_FIN, 0, 0, 
-                    recved->secs, recved->usecs, 
-                    seqno_them + recved->parsed.app_length, /* the FIN comes after any data in the packet */
-                    seqno_me);
+                recved->secs, recved->usecs, 
+                seqno_them + recved->parsed.app_length, /* the FIN comes after any data in the packet */
+                seqno_me);
         }
 
         /* If this is a RST, then we'll be closing the connection */

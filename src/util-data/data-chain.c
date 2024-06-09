@@ -435,7 +435,7 @@ dach_append_normalized_by_link(struct DataLink *link, const void *px, size_t len
 
     for (size_t i=0; i<length; i++) {
         c = ((const char*)px)[i];
-        if (c >=-1 && isprint(c) && c != '<' && c != '>' && c != '&' && c != '\\' && c != '"' && c != '\'') {
+        if (c>=-1 && isprint(c) && c!='<' &&c!='>' && c!='&' && c!='\\' && c!='"' && c!='\'') {
             link = dach_append_char_by_link(link, c);
         } else {
             link = dach_append_by_link(link, "\\x", 2);
