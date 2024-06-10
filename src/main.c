@@ -442,7 +442,7 @@ static int main_scan(struct Xconf *xconf) {
             xconf->is_status_ndjson);
 
         /* Sleep for almost a second */
-        pixie_mssleep(500);
+        pixie_mssleep(750);
     }
 
     /*
@@ -536,7 +536,7 @@ static int main_scan(struct Xconf *xconf) {
             break;
         }
 
-        pixie_mssleep(250);
+        pixie_mssleep(350);
     }
 
     for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
