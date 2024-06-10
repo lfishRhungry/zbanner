@@ -24,6 +24,11 @@ size_t pixie_begin_thread(void (*worker_thread)(void*),
                           void *worker_data);
 
 void pixie_thread_join(size_t thread_handle);
+
+/**
+ * set a name for the thread.
+ * NOTE: name length cannot exceed 16 with null tail on Linux.
+ */
 void pixie_set_thread_name(const char *name);
 
 /* barrier */

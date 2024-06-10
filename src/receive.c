@@ -47,7 +47,7 @@ static void
 dispatch_thread(void *v)
 {
     LOG(LEVEL_WARNING, "[+] starting dispatch thread\n");
-    pixie_set_thread_name(XTATE_NAME" dispatch thread");
+    pixie_set_thread_name("x-dispatcher");
 
     struct RxDispatch *parms = v;
     while (!time_to_finish_rx) {
@@ -104,7 +104,7 @@ handle_thread(void *v)
     LOG(LEVEL_WARNING, "[+] starting handle thread #%u\n", parms->index);
 
     char th_name[30];
-    snprintf(th_name, sizeof(th_name), XTATE_NAME" handler #%u", parms->index);
+    snprintf(th_name, sizeof(th_name), "x-handler #%u", parms->index);
     pixie_set_thread_name(th_name);
 
     while (!time_to_finish_rx) {
@@ -171,7 +171,7 @@ void receive_thread(void *v) {
 
     LOG(LEVEL_WARNING, "[+] starting receive thread\n");
 
-    pixie_set_thread_name(XTATE_NAME" receive");
+    pixie_set_thread_name("x-receive");
 
     if (xconf->is_offline) {
         while (!time_to_finish_rx)
