@@ -108,11 +108,8 @@ handle_thread(void *v)
     pixie_set_thread_name(th_name);
 
     while (!time_to_finish_rx) {
-        int err = 1;
-
         struct Received *recved = NULL;
-
-        err = rte_ring_sc_dequeue(parms->handle_queue, (void**)&recved);
+        int err = rte_ring_sc_dequeue(parms->handle_queue, (void**)&recved);
         if (err != 0) {
             pixie_usleep(100);
             continue;
@@ -237,7 +234,7 @@ void receive_thread(void *v) {
     while (!time_to_finish_rx) {
 
         /*handle only one actual fast-timeout event to avoid blocking*/
-        while (xconf->is_fast_timeout) {
+        while (xconf->is_fast_timeout && !time_to_finish_rx) {
 
             tm_event = ft_pop_event(ft_handler, global_now);
 
