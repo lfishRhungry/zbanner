@@ -48,6 +48,7 @@ static int is_pcap_file = 0;
 #include "rawsock-adapter.h"
 
 #define SENDQ_SIZE 65536 * 8
+#define READ_TIMEOUT 1000
 
 
 struct AdapterNames
@@ -355,11 +356,11 @@ int rawsock_recv_packet(
 
         again:
         err = PFRING.recv(adapter->ring,
-                        (unsigned char**)packet,
-                        0,  /* zero-copy */
-                        &hdr,
-                        0   /* return immediately */
-                        );
+            (unsigned char**)packet,
+            0,  /* zero-copy */
+            &hdr,
+            0   /* return immediately */
+            );
         if (err == PF_RING_ERROR_NO_PKT_AVAILABLE || hdr.caplen == 0) {
             PFRING.poll(adapter->ring, 1);
             if (time_to_finish_tx)
@@ -370,8 +371,8 @@ int rawsock_recv_packet(
             return 1;
 
         *length = hdr.caplen;
-        *secs = (unsigned)hdr.ts.tv_sec;
-        *usecs = (unsigned)hdr.ts.tv_usec;
+        *secs   = (unsigned)hdr.ts.tv_sec;
+        *usecs  = (unsigned)hdr.ts.tv_usec;
 
     } else if (adapter->pcap) {
         struct pcap_pkthdr *hdr;
@@ -396,8 +397,8 @@ int rawsock_recv_packet(
         }
 
         *length = hdr->caplen;
-        *secs = (unsigned)hdr->ts.tv_sec;
-        *usecs = (unsigned)hdr->ts.tv_usec;
+        *secs   = (unsigned)hdr->ts.tv_sec;
+        *usecs  = (unsigned)hdr->ts.tv_usec;
     }
 
 
@@ -628,15 +629,15 @@ rawsock_init_adapter(const char *adapter_name,
         PFRING.set_application_name(adapter->ring, XTATE_NAME);
         PFRING.version(adapter->ring, &version);
         LOG(LEVEL_WARNING, "pfring: version %d.%d.%d\n",
-                (version >> 16) & 0xFFFF,
-                (version >> 8) & 0xFF,
-                (version >> 0) & 0xFF);
+            (version >> 16) & 0xFFFF,
+            (version >> 8) & 0xFF,
+            (version >> 0) & 0xFF);
 
         LOG(LEVEL_INFO, "pfring:'%s': setting direction\n", adapter_name);
         err = PFRING.set_direction(adapter->ring, rx_only_direction);
         if (err) {
             LOG(LEVEL_ERROR, "pfring:'%s': setdirection = %d\n",
-                    adapter_name, err);
+                adapter_name, err);
         } else
             LOG(LEVEL_INFO, "pfring:'%s': direction success\n", adapter_name);
 
@@ -648,11 +649,11 @@ rawsock_init_adapter(const char *adapter_name,
         LOG(LEVEL_INFO, "pfring:'%s': activating\n", adapter_name);
         err = PFRING.enable_ring(adapter->ring);
         if (err != 0) {
-                LOG(LEVEL_ERROR, "pfring: '%s': ENABLE ERROR: %s\n",
-                    adapter_name, strerror(errno));
-                PFRING.close(adapter->ring);
-                adapter->ring = 0;
-                return 0;
+            LOG(LEVEL_ERROR, "pfring: '%s': ENABLE ERROR: %s\n",
+                adapter_name, strerror(errno));
+            PFRING.close(adapter->ring);
+            adapter->ring = 0;
+            return 0;
         } else
             LOG(LEVEL_WARNING, "pfring:'%s': successfully enabled\n", adapter_name);
 
@@ -664,9 +665,8 @@ rawsock_init_adapter(const char *adapter_name,
      *----------------------------------------------------------------*/
     if (memcmp(adapter_name, "file:", 5) == 0) {
         LOG(LEVEL_WARNING, "pcap: file: %s\n", adapter_name+5);
-        is_pcap_file = 1;
-
-        adapter->pcap = PCAP.open_offline(adapter_name+5, errbuf);
+        is_pcap_file       = 1;
+        adapter->pcap      = PCAP.open_offline(adapter_name+5, errbuf);
         adapter->link_type = PCAP.datalink(adapter->pcap);
     }
     /*----------------------------------------------------------------
@@ -683,13 +683,14 @@ rawsock_init_adapter(const char *adapter_name,
          * adapter until we call pcap_activate */
         adapter->pcap = PCAP.create(adapter_name, errbuf);
         if (adapter->pcap == NULL) {
+            LOG(LEVEL_HINT, "[PCAP] use `open_live` instead of `activate`, this may cause send rate a little slow.\n");
             /*If going to this way, pcap will be a little bit slower, very strange*/
             adapter->pcap = PCAP.open_live(
-                        adapter_name,
-                        snaplen,
-                        8,                      /* promiscuous mode */
-                        1000,                   /* read timeout in milliseconds */
-                        errbuf);
+                adapter_name,
+                snaplen,
+                8,               /* promiscuous mode */
+                READ_TIMEOUT,    /* read timeout in milliseconds */
+                errbuf);
             if (adapter->pcap == NULL) {
                 LOG(LEVEL_ERROR, "FAIL:%s: can't open adapter: %s\n", adapter_name, errbuf);
                 if (strstr(errbuf, "perm")) {
@@ -711,7 +712,7 @@ rawsock_init_adapter(const char *adapter_name,
                 goto pcap_error;
             }
 
-            err = PCAP.set_timeout(adapter->pcap, 1000);
+            err = PCAP.set_timeout(adapter->pcap, READ_TIMEOUT);
             if (err) {
                 PCAP.perror(adapter->pcap, "if: set_timeout");
                 goto pcap_error;
@@ -759,9 +760,9 @@ rawsock_init_adapter(const char *adapter_name,
                 break;
             default:
                 LOG(LEVEL_ERROR, "[-] if(%s): unknown data link type: %u(%s)\n",
-                        adapter_name,
-                        adapter->link_type,
-                        PCAP.datalink_val_to_name(adapter->link_type));
+                    adapter_name,
+                    adapter->link_type,
+                    PCAP.datalink_val_to_name(adapter->link_type));
                 break;
         }
 
@@ -780,8 +781,9 @@ rawsock_init_adapter(const char *adapter_name,
         adapter->sendq = PCAP.sendqueue_alloc(SENDQ_SIZE);
 #endif
 
-
     return adapter;
+
+
 pcap_error:
     if (adapter->pcap) {
         PCAP.close(adapter->pcap);
@@ -825,11 +827,11 @@ rawsock_set_filter(struct Adapter *adapter, const char *scan_filter,
         return;
     } else if (filter_num==1) {
         /*Also copy the only filter for beautiful code*/
-        filter_len = strlen(only_filter)+1;
+        filter_len   = strlen(only_filter)+1;
         final_filter = MALLOC(filter_len);
         safe_strcpy(final_filter, filter_len, only_filter);
     } else if (filter_num==2) {
-        filter_len = strlen(scan_filter)+strlen(user_filter)+10;
+        filter_len   = strlen(scan_filter)+strlen(user_filter)+10;
         final_filter = MALLOC(filter_len);
         snprintf(final_filter, filter_len, "(%s) and (%s)",
             scan_filter, user_filter);
@@ -961,9 +963,9 @@ int rawsock_selftest_if(const char *ifname)
 
     switch (adapter->link_type) {
     case 0:
-            LOG(LEVEL_HINT, "[+] router-ip = implicit\n");
-            LOG(LEVEL_HINT, "[+] router-mac = implicit\n");
-            break;
+        LOG(LEVEL_HINT, "[+] router-ip = implicit\n");
+        LOG(LEVEL_HINT, "[+] router-mac = implicit\n");
+        break;
     default:
         /* IPv4 router IP address */
         err = rawsock_get_default_gateway(ifname, &router_ipv4);
@@ -979,11 +981,11 @@ int rawsock_selftest_if(const char *ifname)
             macaddress_t router_mac = {{0,0,0,0,0,0}};
             
             stack_arp_resolve(
-                    adapter,
-                    ipv4,
-                    source_mac,
-                    router_ipv4,
-                    &router_mac);
+                adapter,
+                ipv4,
+                source_mac,
+                router_ipv4,
+                &router_mac);
 
             if (macaddress_is_zero(router_mac)) {
                 LOG(LEVEL_ERROR, "[-] router-mac-ipv4 = not found\n");
@@ -1004,10 +1006,10 @@ int rawsock_selftest_if(const char *ifname)
             macaddress_t router_mac = {{0,0,0,0,0,0}};
             
             stack_ndpv6_resolve(
-                    adapter,
-                    ipv6,
-                    source_mac,
-                    &router_mac);
+                adapter,
+                ipv6,
+                source_mac,
+                &router_mac);
 
             if (macaddress_is_zero(router_mac)) {
                 LOG(LEVEL_ERROR, "[-] router-mac-ipv6 = not found\n");
