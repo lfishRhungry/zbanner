@@ -318,18 +318,14 @@ rawsock_send_packet(
         hdr.len    = length;
         hdr.caplen = length;
 
-        pixie_acquire_mutex(adapter->mtx);
         err = PCAP.sendqueue_queue(adapter->sendq, &hdr, packet);
         if (err) {
             rawsock_flush(adapter);
             PCAP.sendqueue_queue(adapter->sendq, &hdr, packet);
         }
-        pixie_release_mutex(adapter->mtx);
 
         if (flush) {
-            pixie_acquire_mutex(adapter->mtx);
             rawsock_flush(adapter);
-            pixie_release_mutex(adapter->mtx);
         }
 
         return 0;
@@ -501,10 +497,6 @@ rawsock_close_adapter(struct Adapter *adapter)
     if (adapter->sendq) {
         PCAP.sendqueue_destroy(adapter->sendq);
         adapter->sendq = NULL;
-    }
-    if (adapter->mtx) {
-        pixie_delete_mutex(adapter->mtx);
-        adapter->mtx = NULL;
     }
 
     free(adapter);
@@ -791,8 +783,6 @@ rawsock_init_adapter(const char *adapter_name,
     if (is_sendq)
         adapter->sendq = PCAP.sendqueue_alloc(SENDQ_SIZE);
 #endif
-
-    adapter->mtx = pixie_create_mutex();
 
     return adapter;
 

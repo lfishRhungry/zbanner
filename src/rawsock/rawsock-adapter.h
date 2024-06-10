@@ -6,7 +6,6 @@ struct Adapter
     struct pcap                *pcap;
     struct pcap_send_queue     *sendq;
     struct __pfring            *ring;
-    void                       *mtx;
     unsigned                    is_packet_trace:1; /* is --packet-trace option set? */
     unsigned                    is_vlan:1;
     unsigned                    vlan_id;

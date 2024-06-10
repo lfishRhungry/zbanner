@@ -3068,7 +3068,8 @@ struct ConfigParam config_parameters[] = {
         {"sendq", 0},
         "Use sendqueue feature of Npcap/Winpcap on Windows to transmit packets. "
         "The transmit rate on Windows is really slow, like 40-kpps. The speed "
-        "can be increased by using the sendqueue feature to roughly 300-kpps."
+        "can be increased by using the sendqueue feature to roughly 300-kpps.\n"
+        "NOTE: We can just use one Tx thread under sendqueue feature."
     },
     {
         "offline",
