@@ -72,11 +72,11 @@ dispatch_thread(void *v)
         uint64_t cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
             recved->parsed.dst_ip, recved->parsed.port_dst, parms->entropy);
 
-        for (err=1; err; ) {
+        for (err=1; err!=0; ) {
             unsigned i = cookie & parms->recv_handle_mask;
             err = rte_ring_sp_enqueue(
                 parms->handle_queue[i], recved);
-            if (err) {
+            if (err!=0) {
                 LOG(LEVEL_ERROR, "[-] handle queue #%d full from dispatch thread.\n", i);
                 pixie_usleep(1000);
             }
@@ -395,9 +395,9 @@ void receive_thread(void *v) {
         /**
          * give it to dispatcher
         */
-        for (err=1; err; ) {
+        for (err=1; err!=0; ) {
             err = rte_ring_sp_enqueue(dispatch_q, recved);
-            if (err) {
+            if (err != 0) {
                 LOG(LEVEL_ERROR, "[-] dispatch queue full from rx thread with too fast rate.\n");
                 pixie_usleep(1000);
                 // exit(1);

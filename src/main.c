@@ -90,7 +90,7 @@ static void control_c_handler(int x) {
             /*Not first time of <ctrl-c> */
             /*and we are waiting now*/
             /*tell Rx to exit*/
-            time_to_finish_rx       = 1;
+            time_to_finish_rx = 1;
         }
     }
 }
