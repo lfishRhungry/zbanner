@@ -213,8 +213,7 @@ infinite:;
              * send packet actually
              */
             if (pkt_len) {
-                rawsock_send_packet(
-                    adapter, pkt_buffer, (unsigned)pkt_len, !batch_size);
+                rawsock_send_packet(adapter, pkt_buffer, (unsigned)pkt_len, !batch_size);
 
                 batch_size--;
                 packets_sent++;

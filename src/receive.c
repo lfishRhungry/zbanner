@@ -280,8 +280,7 @@ void receive_thread(void *v) {
         unsigned pkt_len, pkt_secs, pkt_usecs;
         const unsigned char *pkt_data;
 
-        int err = rawsock_recv_packet(adapter, &pkt_len, &pkt_secs,
-                                      &pkt_usecs, &pkt_data);
+        int err = rawsock_recv_packet(adapter, &pkt_len, &pkt_secs, &pkt_usecs, &pkt_data);
         if (err != 0) {
             continue;
         }
@@ -409,7 +408,7 @@ void receive_thread(void *v) {
         }
     }
 
-    LOG(LEVEL_WARNING, "[+] exiting receive thread                            \n");
+    LOG(LEVEL_WARNING, "[+] exiting receive thread and joining handlers               \n");
 
     /*
      * cleanup

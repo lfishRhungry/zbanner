@@ -525,7 +525,8 @@ static int main_scan(struct Xconf *xconf) {
 
         /*no more waiting or too many <ctrl-c>*/
         if (time(0) - now >= xconf->wait || time_to_finish_rx) {
-            LOG(LEVEL_WARNING, "[+] telling threads to exit...                    \n");
+            LOG(LEVEL_WARNING, "[+] telling threads to exit..."
+                "                                           \n");
             time_to_finish_rx = 1;
             break;
         }

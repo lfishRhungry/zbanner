@@ -234,9 +234,9 @@ initialize_adapter(struct Xconf *xconf)
     }
 
     /*
-     * set NonBlock to avoid block of pcap recv when using bpf filter.
+     * set NonBlock will cause send latency on Windows.
      */
-    rawsock_set_nonblock(xconf->nic.adapter);
+    // rawsock_set_nonblock(xconf->nic.adapter);
 
     xconf->nic.is_usable = (is_usable_ipv4 & is_usable_ipv6);
 
