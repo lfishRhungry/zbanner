@@ -313,8 +313,6 @@ static int main_scan(struct Xconf *xconf) {
     /*
      * Print helpful text
      */
-    pixie_set_thread_name("x-main");
-
     char buffer[80];
     struct tm x;
 

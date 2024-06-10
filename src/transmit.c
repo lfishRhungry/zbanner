@@ -67,7 +67,7 @@ void transmit_thread(void *v)
     LOG(LEVEL_WARNING, "[+] starting transmit thread #%u\n", parms->tx_index);
 
     char th_name[30];
-    snprintf(th_name, sizeof(th_name), "x-transmit #%u", parms->tx_index);
+    snprintf(th_name, sizeof(th_name), XTATE_NAME"-xmit #%u", parms->tx_index);
     pixie_set_thread_name(th_name);
 
     /* Lock threads to the CPUs one by one.
