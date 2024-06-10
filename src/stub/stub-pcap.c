@@ -58,11 +58,11 @@
 #endif
 
 struct pcap_if {
-    struct pcap_if *next;
-    char *name;        /* name to hand to "pcap_open_live()" */
-    char *description;    /* textual description of interface, or NULL */
-    void  *addresses;
-    unsigned flags;    /* PCAP_IF_ interface flags */
+    struct pcap_if    *next;
+    char              *name;           /* name to hand to "pcap_open_live()" */
+    char              *description;    /* textual description of interface, or NULL */
+    void              *addresses;
+    unsigned           flags;          /* PCAP_IF_ interface flags */
 };
 
 static void seterr(char *errbuf, const char *msg)
@@ -165,7 +165,8 @@ static char *null_PCAP_LOOKUPDEV(char *errbuf)
 }
 
 
-static void * null_PCAP_OPEN_LIVE(const char *devicename, unsigned snap_length, unsigned is_promiscuous, unsigned read_timeout, char *errbuf)
+static void * null_PCAP_OPEN_LIVE(const char *devicename, unsigned snap_length,
+    unsigned is_promiscuous, unsigned read_timeout, char *errbuf)
 {
 #ifdef STATICPCAP
     return pcap_open_live(devicename, snap_length, is_promiscuous, read_timeout, errbuf);
@@ -423,54 +424,54 @@ pl->func_err=0, pl->datalink = null_##PCAP_DATALINK;
 #endif
 #endif
     
-    DOLINK(PCAP_CLOSE            , close);
-    DOLINK(PCAP_DATALINK        , datalink);
-    DOLINK(PCAP_DISPATCH        , dispatch);
-    DOLINK(PCAP_FINDALLDEVS        , findalldevs);
-    DOLINK(PCAP_FREEALLDEVS        , freealldevs);
-    DOLINK(PCAP_LIB_VERSION        , lib_version);
-    DOLINK(PCAP_LOOKUPDEV        , lookupdev);
-    DOLINK(PCAP_MAJOR_VERSION    , major_version);
-    DOLINK(PCAP_MINOR_VERSION    , minor_version);
-    DOLINK(PCAP_OPEN_LIVE        , open_live);
+    DOLINK(PCAP_CLOSE                     , close);
+    DOLINK(PCAP_DATALINK                  , datalink);
+    DOLINK(PCAP_DISPATCH                  , dispatch);
+    DOLINK(PCAP_FINDALLDEVS               , findalldevs);
+    DOLINK(PCAP_FREEALLDEVS               , freealldevs);
+    DOLINK(PCAP_LIB_VERSION               , lib_version);
+    DOLINK(PCAP_LOOKUPDEV                 , lookupdev);
+    DOLINK(PCAP_MAJOR_VERSION             , major_version);
+    DOLINK(PCAP_MINOR_VERSION             , minor_version);
+    DOLINK(PCAP_OPEN_LIVE                 , open_live);
     
-    DOLINK(PCAP_OPEN_OFFLINE    , open_offline);
-    DOLINK(PCAP_SENDPACKET      , sendpacket);
-    DOLINK(PCAP_NEXT            , next);
-    DOLINK(PCAP_SETDIRECTION    , setdirection);
-    DOLINK(PCAP_DATALINK_VAL_TO_NAME , datalink_val_to_name);
-    DOLINK(PCAP_PERROR          , perror);
-    DOLINK(PCAP_GETERR          , geterr);
+    DOLINK(PCAP_OPEN_OFFLINE              , open_offline);
+    DOLINK(PCAP_SENDPACKET                , sendpacket);
+    DOLINK(PCAP_NEXT                      , next);
+    DOLINK(PCAP_SETDIRECTION              , setdirection);
+    DOLINK(PCAP_DATALINK_VAL_TO_NAME      , datalink_val_to_name);
+    DOLINK(PCAP_PERROR                    , perror);
+    DOLINK(PCAP_GETERR                    , geterr);
 
 
     /* pseudo functions that don't exist in the libpcap interface */
-    pl->dev_name = null_PCAP_DEV_NAME;
-    pl->dev_description = null_PCAP_DEV_DESCRIPTION;
-    pl->dev_next = null_PCAP_DEV_NEXT;
+    pl->dev_name             = null_PCAP_DEV_NAME;
+    pl->dev_description      = null_PCAP_DEV_DESCRIPTION;
+    pl->dev_next             = null_PCAP_DEV_NEXT;
 
     /* windows-only functions that might improve speed */
 #if defined(WIN32)
-    DOLINK(PCAP_SENDQUEUE_ALLOC        , sendqueue_alloc);
-    DOLINK(PCAP_SENDQUEUE_TRANSMIT    , sendqueue_transmit);
-    DOLINK(PCAP_SENDQUEUE_DESTROY    , sendqueue_destroy);
-    DOLINK(PCAP_SENDQUEUE_QUEUE        , sendqueue_queue);
+    DOLINK(PCAP_SENDQUEUE_ALLOC           , sendqueue_alloc);
+    DOLINK(PCAP_SENDQUEUE_TRANSMIT        , sendqueue_transmit);
+    DOLINK(PCAP_SENDQUEUE_DESTROY         , sendqueue_destroy);
+    DOLINK(PCAP_SENDQUEUE_QUEUE           , sendqueue_queue);
 #endif
 
-    DOLINK(PCAP_CREATE              , create);
-    DOLINK(PCAP_SET_SNAPLEN         , set_snaplen);
-    DOLINK(PCAP_SET_PROMISC         , set_promisc);
-    DOLINK(PCAP_SET_TIMEOUT         , set_timeout);
-    DOLINK(PCAP_SET_IMMEDIATE_MODE  , set_immediate_mode);
-    DOLINK(PCAP_SET_BUFFER_SIZE     , set_buffer_size);
-    DOLINK(PCAP_SET_RFMON           , set_rfmon);
-    DOLINK(PCAP_CAN_SET_RFMON       , can_set_rfmon);
-    DOLINK(PCAP_ACTIVATE            , activate);
+    DOLINK(PCAP_CREATE                    , create);
+    DOLINK(PCAP_SET_SNAPLEN               , set_snaplen);
+    DOLINK(PCAP_SET_PROMISC               , set_promisc);
+    DOLINK(PCAP_SET_TIMEOUT               , set_timeout);
+    DOLINK(PCAP_SET_IMMEDIATE_MODE        , set_immediate_mode);
+    DOLINK(PCAP_SET_BUFFER_SIZE           , set_buffer_size);
+    DOLINK(PCAP_SET_RFMON                 , set_rfmon);
+    DOLINK(PCAP_CAN_SET_RFMON             , can_set_rfmon);
+    DOLINK(PCAP_ACTIVATE                  , activate);
 
-    DOLINK(PCAP_COMPILE             , compile);
-    DOLINK(PCAP_SETFILTER           , setfilter);
-    DOLINK(PCAP_LOOKUPNET           , lookupnet);
-    DOLINK(PCAP_SETNONBLOCK         , setnonblock);
-    DOLINK(PCAP_NEXT_EX             , next_ex);
+    DOLINK(PCAP_COMPILE                   , compile);
+    DOLINK(PCAP_SETFILTER                 , setfilter);
+    DOLINK(PCAP_LOOKUPNET                 , lookupnet);
+    DOLINK(PCAP_SETNONBLOCK               , setnonblock);
+    DOLINK(PCAP_NEXT_EX                   , next_ex);
 
     
     if (!pl->func_err)
