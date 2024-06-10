@@ -47,8 +47,8 @@ static int is_pcap_file = 0;
 
 #include "rawsock-adapter.h"
 
-#define SENDQ_SIZE 65536 * 8
-#define READ_TIMEOUT 1000
+#define SENDQ_SIZE      65536 * 8
+#define READ_TIMEOUT    1000
 
 
 struct AdapterNames
@@ -264,9 +264,9 @@ rawsock_flush(struct Adapter *adapter)
 {
     if (adapter->sendq) {
         PCAP.sendqueue_transmit(adapter->pcap, adapter->sendq, 0);
-
-        /* Dude, I totally forget why this step is necessary. I vaguely
-         * remember there's a good reason for it though */
+        /**
+         * sendqueue cannot be reused because there's no way to clear it.
+         */
         PCAP.sendqueue_destroy(adapter->sendq);
         adapter->sendq =  PCAP.sendqueue_alloc(SENDQ_SIZE);
     }
@@ -315,7 +315,7 @@ rawsock_send_packet(
     if (adapter->sendq) {
         int err;
         struct pcap_pkthdr hdr;
-        hdr.len = length;
+        hdr.len    = length;
         hdr.caplen = length;
 
         err = PCAP.sendqueue_queue(adapter->sendq, &hdr, packet);
