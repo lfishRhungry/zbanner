@@ -322,9 +322,9 @@ static int main_scan(struct Xconf *xconf) {
     safe_gmtime(&x, &now);
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S GMT", &x);
     LOG(LEVEL_HINT,
-        "\nStarting " XTATE_FIRST_UPPER_NAME " " XTATE_VERSION " (" XTATE_GITHUB
-        ") at %s\n",
+        "\nStarting " XTATE_FIRST_UPPER_NAME " " XTATE_VERSION " at %s\n",
         buffer);
+    LOG(LEVEL_HINT, XTATE_GITHUB"\n\n");
 
     LOG(LEVEL_HINT, "ScanModule  : %s\n", xconf->scan_module->name);
     if (xconf->probe_module)

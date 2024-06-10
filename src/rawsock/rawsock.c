@@ -838,7 +838,7 @@ rawsock_set_filter(struct Adapter *adapter, const char *scan_filter,
         
     } else return;
 
-    LOG(LEVEL_WARNING, "final bpf filter: %s", final_filter);
+    LOG(LEVEL_WARNING, "[+] Final bpf filter: %s\n", final_filter);
 
     /**
      * set BPF filter
