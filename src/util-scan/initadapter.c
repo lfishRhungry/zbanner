@@ -234,9 +234,15 @@ initialize_adapter(struct Xconf *xconf)
     }
 
     /*
-     * set NonBlock will cause send latency on Windows.
+     * Set to non-block mode will cause a weired sending latency on Windows.
+     * Set to block mode will cause a weired recving latency finally on Linux.
+     * Actually I have not found the reason and explain, so just adapt it.
+     * 
+     * The good news is xtate's tx/rx won't be affected by the mode.
      */
-    // rawsock_set_nonblock(xconf->nic.adapter);
+#ifndef WIN32
+    rawsock_set_nonblock(xconf->nic.adapter);
+#endif
 
     xconf->nic.is_usable = (is_usable_ipv4 & is_usable_ipv6);
 
