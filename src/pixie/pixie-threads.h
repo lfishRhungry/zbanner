@@ -61,9 +61,9 @@ void pixie_cpu_raise_priority(void);
 
 #elif defined(__GNUC__)
 #define pixie_locked_add_u32(dst, src) __sync_add_and_fetch((volatile int*)(dst), (int)(src));
-#define rte_atomic32_cmpset(dst, expected, src) __sync_bool_compare_and_swap((volatile int*)(dst),(int)expected,(int)src)
 #define pixie_locked_CAS32(dst, src, expected) __sync_bool_compare_and_swap((volatile int*)(dst),(int)expected,(int)src);
 #define pixie_locked_CAS64(dst, src, expected) __sync_bool_compare_and_swap((volatile long long int*)(dst),(long long int)expected,(long long int)src);
+#define rte_atomic32_cmpset(dst, expected, src) __sync_bool_compare_and_swap((volatile int*)(dst),(int)expected,(int)src)
 
 #if !defined(__x86_64__) && !defined(__i386__)
 #define rte_wmb() __sync_synchronize()

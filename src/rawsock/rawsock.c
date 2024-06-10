@@ -377,15 +377,15 @@ int rawsock_recv_packet(
     } else if (adapter->pcap) {
         struct pcap_pkthdr *hdr;
 
-        again_pcap:
-
+        /**
+         * ret:
+         *     0 if packets are being read from a live capture and the packet buffer timeout expired.
+         *     1 if the packet was read without problems.
+         *     PCAP_ERROR_BREAK if packets are being read from a `savefile` and there are no more packets to read from the savefile.
+         *     PCAP_ERROR_NOT_ACTIVATED if called on a capture handle that has been created but not activated.
+         *     PCAP_ERROR if an error occurred while reading the packet.
+         */
         err = PCAP.next_ex(adapter->pcap, &hdr, packet);
-
-        if (err == 0) {
-            if (time_to_finish_tx)
-                return 1;
-            goto again_pcap;
-        }
 
         if (err != 1) {
             if (is_pcap_file) {
