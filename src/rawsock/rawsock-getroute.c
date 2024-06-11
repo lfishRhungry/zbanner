@@ -339,7 +339,7 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
 {
     int fd;
     struct nlmsghdr *nlMsg;
-    char msgBuf[16384];
+    char msgBuf[16384] = {0};
     int len;
     int msgSeq = 0;
 
@@ -361,7 +361,6 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
     /*
      * format the netlink buffer
      */
-    memset(msgBuf, 0, sizeof(msgBuf));
     nlMsg = (struct nlmsghdr *)msgBuf;
 
     nlMsg->nlmsg_len = NLMSG_LENGTH(sizeof(struct rtmsg));
@@ -394,10 +393,8 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
      * Parse the response
      */
     for (; NLMSG_OK(nlMsg, len); nlMsg = NLMSG_NEXT(nlMsg, len)) {
-        struct route_info rtInfo[1];
+        struct route_info rtInfo[1] = {{.ifName={0}}};
         int err;
-
-        memset(rtInfo, 0, sizeof(struct route_info));
 
         err = parseRoutes(nlMsg, rtInfo);
         if (err != 0)

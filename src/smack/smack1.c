@@ -407,7 +407,7 @@ smack_create(const char *name, unsigned nocase)
         LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
         exit(1);
     }
-    memset (smack, 0, sizeof (struct SMACK));
+    memset(smack, 0, sizeof (struct SMACK));
 
     smack->is_nocase = nocase;
     smack->name = (char*)malloc(strlen(name)+1);

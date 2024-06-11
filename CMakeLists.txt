@@ -5,6 +5,14 @@ option(WITH_OPENSSL "Build with OpenSSL library" ON)
 option(WITH_PCRE2 "Build with PCRE2 library" ON)
 option(WITH_LIBXML2 "Build with LibXml2 library" ON)
 
+# According to C99 standards while using designated initializer:
+#     "Omitted fields are implicitly initialized the same as for objects
+# that have static storage duration."
+#
+# ref: https://gcc.gnu.org/onlinedocs/gcc/Designated-Inits.html
+#
+# This is more efficient to got an all-zero var than memset and could got
+# a partial-zero var conveniently.
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED True)
 

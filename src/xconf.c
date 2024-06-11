@@ -1024,9 +1024,8 @@ static enum ConfigRes SET_source_port(void *conf, const char *name, const char *
     }
 
     /* Send packets FROM this port number */
-    unsigned is_error = 0;
+    unsigned is_error      = 0;
     struct RangeList ports = {0};
-    memset(&ports, 0, sizeof(ports));
 
     rangelist_parse_ports(&ports, value, &is_error, 0);
 

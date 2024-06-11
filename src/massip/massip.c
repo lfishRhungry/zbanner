@@ -147,14 +147,11 @@ int massip_add_port_string(struct MassIP *targets, const char *string, unsigned 
 
 int massip_selftest()
 {
-    struct MassIP targets;
-    struct MassIP excludes;
+    struct MassIP targets   = {0};
+    struct MassIP excludes  = {0};
     int err;
     int line;
     massint128_t count;
-
-    memset(&targets, 0, sizeof(targets));
-    memset(&excludes, 0, sizeof(targets));
 
     rangelist_parse_ports(&targets.ports, "80", 0, 0);
 

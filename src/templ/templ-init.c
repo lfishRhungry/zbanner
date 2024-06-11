@@ -728,17 +728,15 @@ template_packet_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan)
  ***************************************************************************/
 int template_selftest()
 {
-    struct TemplateSet tmplset[1];
-    int failures = 0;
+    struct TemplateSet tmplset[1]     = {{0}};
     struct TemplateOptions templ_opts = {{0}};
+    int failures                      = 0;
 
     /* Test the module that edits TCP headers */
     if (templ_tcp_selftest()) {
         return 1;
     }
 
-
-    memset(tmplset, 0, sizeof(tmplset[0]));
     template_packet_init(
         tmplset,
         macaddress_from_bytes("\x00\x11\x22\x33\x44\x55"),

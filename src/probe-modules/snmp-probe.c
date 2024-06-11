@@ -465,11 +465,9 @@ snmp_handle_response(
      * TODO: only SNMPv0 is supported, the parser will have to be extended for
      * newer SNMP.
      * */
-    uint64_t offset=0;
-    uint64_t outer_length;
-    struct SNMP snmp[1];
-
-    memset(&snmp, 0, sizeof(*snmp));
+    uint64_t    outer_length;
+    uint64_t    offset        = 0;
+    struct SNMP snmp[1]       = {{0}};
 
     /* tag */
     if (asn1_tag(px, length, &offset) != 0x30)

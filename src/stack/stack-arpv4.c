@@ -111,7 +111,7 @@ stack_arp_resolve(
     unsigned i;
     time_t start;
     unsigned is_arp_notice_given = 0;
-    struct ARP_IncomingRequest response;
+    struct ARP_IncomingRequest response = {0};
     int is_delay_reported = 0;
 
     /*
@@ -122,8 +122,6 @@ stack_arp_resolve(
         memcpy(your_mac_address->addr, "\0\0\0\0\0\2", 6);
         return 0; /* success */
     }
-
-    memset(&response, 0, sizeof(response));
 
     /* zero out bytes in packet to avoid leaking stuff in the padding
      * (ARP is 42 byte packet, Ethernet is 60 byte minimum) */
@@ -285,11 +283,8 @@ stack_arp_incoming_request( struct stack_t *stack,
     ipv4address_t my_ip, macaddress_t my_mac,
     const unsigned char *px, unsigned length)
 {
-    struct PacketBuffer *response = 0;
-    struct ARP_IncomingRequest request;
-
-    memset(&request, 0, sizeof(request));
-
+    struct PacketBuffer *response      = 0;
+    struct ARP_IncomingRequest request = {0};
 
     /* Get a buffer for sending the response packet. This thread doesn't
      * send the packet itself. Instead, it formats a packet, then hands

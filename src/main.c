@@ -95,19 +95,29 @@ static void control_c_handler(int x) {
     }
 }
 
-static int main_scan(struct Xconf *xconf) {
-    struct TxThread      *tx_thread;
-    struct RxThread       rx_thread[1]          = {{0}};
-    struct TemplateSet    tmplset               = {0};
-    struct Xtatus         status                = {.last={0}};
+static int _main_scan(struct Xconf *xconf) {
+    /**
+     * According to C99 standards while using designated initializer:
+     * 
+     *     "Omitted fields are implicitly initialized the same as for objects
+     * that have static storage duration."
+     * 
+     * ref: https://gcc.gnu.org/onlinedocs/gcc/Designated-Inits.html
+     * 
+     * This is more efficient to got an all-zero var than memset and could got
+     * a partial-zero var conveniently.
+     */
+    time_t                now                   = time(0);
     uint64_t              min_index             = UINT64_MAX;
     uint64_t              min_repeat            = UINT64_MAX;
-    time_t                now                   = time(0);
+    struct TemplateSet    tmplset               = {0};
+    struct Xtatus         status                = {.last={0}};
+    struct RxThread       rx_thread[1]          = {{0}};
+    struct TxThread      *tx_thread;
     uint64_t              count_ports; 
     uint64_t              count_ips;
     uint64_t              range;
 
-    memset(rx_thread, 0, sizeof(struct RxThread));
     tx_thread = CALLOC(xconf->tx_thread_count, sizeof(struct TxThread));
 
     /*
@@ -576,10 +586,13 @@ static int main_scan(struct Xconf *xconf) {
 /***************************************************************************
  ***************************************************************************/
 int main(int argc, char *argv[]) {
-    struct Xconf xconf[1]    = {{.nic={.ifname={0}}, .resume={0}, .shard={0}}};
+
+    struct Xconf xconf[1];
+    memset(xconf, 0, sizeof(xconf));
+
     int has_target_addresses = 0;
     int has_target_ports     = 0;
-    usec_start               = pixie_gettime();
+
 #if defined(WIN32)
   {
     WSADATA x;
@@ -587,6 +600,7 @@ int main(int argc, char *argv[]) {
   }
 #endif
 
+    usec_start = pixie_gettime();
     global_now = time(0);
 
     /* Set system to report debug information on crash */
@@ -677,7 +691,7 @@ int main(int argc, char *argv[]) {
             LOG(LEVEL_ERROR, " [hint] all ports were removed by exclusion ranges\n");
             return 1;
         }
-        return main_scan(xconf);
+        return _main_scan(xconf);
 
     case Operation_Echo:
         xconf_echo(xconf, stdout);

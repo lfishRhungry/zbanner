@@ -299,7 +299,7 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
 {
     int fd;
     struct nlmsghdr *nlMsg;
-    char msgBuf[16384];
+    char msgBuf[16384] = {0};
     int len;
     int msgSeq = 0;
     unsigned ipv4 = 0;
@@ -319,7 +319,6 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
     /*
      * format the netlink buffer
      */
-    memset(msgBuf, 0, sizeof(msgBuf));
     nlMsg = (struct nlmsghdr *)msgBuf;
 
     nlMsg->nlmsg_len   = NLMSG_LENGTH(sizeof(struct rtmsg));
@@ -352,10 +351,8 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
      * Parse the response
      */
     for (; NLMSG_OK(nlMsg, len); nlMsg = NLMSG_NEXT(nlMsg, len)) {
-        struct route_info rtInfo[1];
+        struct route_info rtInfo[1] = {{0}};
         int err;
-
-        memset(rtInfo, 0, sizeof(struct route_info));
 
         //LOG(LEVEL_DEBUG, "if: nlmsg_type=%d nlmsg_flags=0x%x\n", nlMsg->nlmsg_type, nlMsg->nlmsg_flags);
         err = parseRoutes(nlMsg, rtInfo);

@@ -88,7 +88,7 @@ _init_next_address(struct massip_parser *p, int is_second)
 static unsigned
 _parser_finish_ipv6(struct massip_parser *p)
 {
-    unsigned index = p->ipv6.index;
+    unsigned index    = p->ipv6.index;
     unsigned ellision = p->ipv6.ellision_index;
     
 

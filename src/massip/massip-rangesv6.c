@@ -633,15 +633,12 @@ regress_pick2()
         unsigned num_targets;
         ipv6address begin = {0};
         ipv6address end = {0};
-        struct Range6List targets[1];
-        struct Range6List duplicate[1];
+        struct Range6List targets[1]   = {{0}};
+        struct Range6List duplicate[1] = {{0}};
         uint64_t range;
         ipv6address x;
 
         seed = i;
-
-        /* Create a new target list */
-        memset(targets, 0, sizeof(targets[0]));
 
         /* fill the target list with random ranges */
         num_targets = r_rand(&seed)%5 + 1;
@@ -657,7 +654,6 @@ regress_pick2()
 
 
         /* Duplicate the targetlist using the picker */
-        memset(duplicate, 0, sizeof(duplicate[0]));
         x = range6list_count(targets);
         if (x.hi) {
             LOG(LEVEL_ERROR, "[-] range6: range too big\n");
@@ -685,12 +681,10 @@ regress_pick2()
 int ranges6_selftest()
 {
     struct Range6 r;
-    struct Range6List targets[1];
     int err;
 
     REGRESS(0, regress_pick2() == 0);
 
-    memset(targets, 0, sizeof(targets[0]));
 #define ERROR() LOG(LEVEL_ERROR, "selftest: failed %s:%u\n", __FILE__, __LINE__);
 
     err = massip_parse_range("2001:0db8:85a3:0000:0000:8a2e:0370:7334", 0, 0, 0, &r);

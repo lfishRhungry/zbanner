@@ -923,13 +923,9 @@ regress_pick2()
         unsigned num_targets;
         unsigned begin = 0;
         unsigned end;
-        struct RangeList targets[1] = {{0}};
+        struct RangeList targets[1]   = {{0}};
         struct RangeList duplicate[1] = {{0}};
         unsigned range;
-
-
-        /* Create a new target list */
-        memset(targets, 0, sizeof(targets[0]));
 
         /* fill the target list with random ranges */
         num_targets = r_rand(&seed)%5 + 1;
@@ -946,11 +942,8 @@ regress_pick2()
         rangelist_optimize(targets);
 
         /* Duplicate the targetlist using the picker */
-        memset(duplicate, 0, sizeof(duplicate[0]));
         for (j=0; j<range; j++) {
-            unsigned x;
-
-            x = rangelist_pick(targets, j);
+            unsigned x = rangelist_pick(targets, j);
             rangelist_add_range(duplicate, x, x);
         }
         rangelist_sort(duplicate);
@@ -1117,8 +1110,7 @@ int ranges_selftest(void)
     /* Do a separate test of the 'exclude' feature */
     if (exclude_selftest())
         return 1;
-    
-    memset(targets, 0, sizeof(targets[0]));
+
 #define ERROR() LOG(LEVEL_ERROR, "selftest: failed %s:%u\n", __FILE__, __LINE__);
 
     /* test for the /0 CIDR block, since we'll be using that a lot to scan the entire

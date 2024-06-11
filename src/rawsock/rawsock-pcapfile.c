@@ -550,8 +550,7 @@ struct PcapFile *pcapfile_openread(const char *capfilename)
 
     /* Grab info about the file */
     {
-        struct stat s;
-        memset(&s, 0, sizeof(s));
+        struct stat s = {0};
         if (stat(capfilename, &s) == 0) {
             file_size = s.st_size;
         }
