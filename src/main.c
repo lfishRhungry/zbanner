@@ -58,7 +58,7 @@ unsigned volatile time_to_finish_rx = 0;
  */
 time_t global_now;
 
-uint64_t usec_start;
+static uint64_t usec_start;
 
 /**
  * This is for some wrappered functions that use TemplateSet to create packets.
