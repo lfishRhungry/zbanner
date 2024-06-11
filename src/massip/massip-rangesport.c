@@ -145,7 +145,7 @@ get_actual_proto_port(unsigned *raw_port)
 
 int rangesport_selftest()
 {
-    struct MassIP targets = {0};
+    struct MassIP targets = {.ipv4={0}, .ipv6={0}, .ports={0}};
 
     unsigned err;
     int line;

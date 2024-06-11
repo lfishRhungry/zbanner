@@ -147,8 +147,8 @@ int massip_add_port_string(struct MassIP *targets, const char *string, unsigned 
 
 int massip_selftest()
 {
-    struct MassIP targets   = {0};
-    struct MassIP excludes  = {0};
+    struct MassIP targets   = {.ipv4={0}, .ipv6={0}, .ports={0}};
+    struct MassIP excludes  = {.ipv4={0}, .ipv6={0}, .ports={0}};
     int err;
     int line;
     massint128_t count;
