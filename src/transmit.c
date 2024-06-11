@@ -216,13 +216,12 @@ infinite:;
                 entropy, &target, tm_event, pkt_buffer, &pkt_len);
 
             /*
-             * send packet actually
+             * Send packet actually.
+             * No explicit sock flushing in this loop because I assume there are
+             * always enough packets here to trigger implicit flushing.
              */
             if (pkt_len) {
-                rawsock_send_packet(
-                    adapter, acache,
-                    pkt_buffer, (unsigned)pkt_len,
-                    !batch_size);
+                rawsock_send_packet(adapter, acache, pkt_buffer, (unsigned)pkt_len);
 
                 batch_size--;
                 packets_sent++;
@@ -279,7 +278,11 @@ infinite:;
 
     LOG(LEVEL_WARNING, "[+] transmit thread #%u complete\n", parms->tx_index);
 
-    /*help rx thread to reponse*/
+    /*
+     * Help rx thread to do further response.
+     * Packets for sending here are not always enough to trigger implicit sock
+     * flush. So do explicit flush for less latency.
+     */
     uint64_t batch_size;
     while (!time_to_finish_rx) {
         batch_size = throttler_next_batch(throttler, packets_sent);

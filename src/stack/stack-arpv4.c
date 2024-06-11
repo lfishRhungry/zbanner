@@ -173,7 +173,7 @@ stack_arp_resolve(
     /*
      * Now loop for a few seconds looking for the response
      */
-    rawsock_send_packet(adapter, acache, arp_packet, 60, 1);
+    rawsock_send_packet(adapter, acache, arp_packet, 60);
     start = time(0);
     i = 0;
     for (;;) {
@@ -185,7 +185,7 @@ stack_arp_resolve(
 
         if (time(0) != start) {
             start = time(0);
-            rawsock_send_packet(adapter, acache, arp_packet, 60, 1);
+            rawsock_send_packet(adapter, acache, arp_packet, 60);
             if (i++ >= 10)
                 break; /* timeout */
 

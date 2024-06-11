@@ -170,6 +170,7 @@ initialize_adapter(struct Xconf *xconf)
                         xconf->nic.source_mac,
                         router_ipv4,
                         &xconf->nic.router_mac_ipv4);
+                rawsock_flush(xconf->nic.adapter, tmp_acache);
             }
             
             fmt = macaddress_fmt(xconf->nic.router_mac_ipv4);
@@ -227,6 +228,7 @@ initialize_adapter(struct Xconf *xconf)
                     adapter_ipv6,
                     xconf->nic.source_mac,
                     &xconf->nic.router_mac_ipv6);
+            rawsock_flush(xconf->nic.adapter, tmp_acache);
         }
 
         fmt = macaddress_fmt(xconf->nic.router_mac_ipv6);

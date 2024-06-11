@@ -261,6 +261,11 @@ adapter_from_index(unsigned index)
 void
 rawsock_flush(struct Adapter *adapter, struct AdapterCache *acache)
 {
+    if (adapter->ring) {
+        PFRING.flush(adapter->ring);
+        return;
+    }
+
     if (acache->sendq) {
         PCAP.sendqueue_transmit(adapter->pcap, acache->sendq, 0);
         /**
@@ -272,21 +277,12 @@ rawsock_flush(struct Adapter *adapter, struct AdapterCache *acache)
 
 }
 
-/***************************************************************************
- * wrapper for libpcap's sendpacket
- *
- * PORTABILITY: WINDOWS and PF_RING
- * For performance, Windows and PF_RING can queue up multiple packets, then
- * transmit them all in a chunk. If we stop and wait for a bit, we need
- * to flush the queue to force packets to be transmitted immediately.
- ***************************************************************************/
 int
 rawsock_send_packet(
     struct Adapter *adapter,
     struct AdapterCache *acache,
     const unsigned char *packet,
-    unsigned length,
-    unsigned flush)
+    unsigned length)
 {
 
     /* Why: this happens in "offline mode", when we are benchmarking the
@@ -304,7 +300,7 @@ rawsock_send_packet(
         int err = PF_RING_ERROR_NO_TX_SLOT_AVAILABLE;
 
         while (err == PF_RING_ERROR_NO_TX_SLOT_AVAILABLE) {
-            err = PFRING.send(adapter->ring, packet, length, (unsigned char)flush);
+            err = PFRING.send(adapter->ring, packet, length, 0);
         }
         if (err < 0)
             LOG(LEVEL_WARNING, "pfring:xmit: ERROR %d\n", err);
@@ -329,10 +325,6 @@ rawsock_send_packet(
         if (err) {
             rawsock_flush(adapter, acache);
             PCAP.sendqueue_queue(acache->sendq, &hdr, packet);
-        }
-
-        if (flush) {
-            rawsock_flush(adapter, acache);
         }
 
         return 0;

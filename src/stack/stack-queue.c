@@ -77,9 +77,10 @@ stack_flush_packets(
 
 
         /*
-         * Actually send the packet
+         * Actually send the packet.
+         * We won't flush there but outside the function.
          */
-        rawsock_send_packet(adapter, acache, p->px, (unsigned)p->length, 1);
+        rawsock_send_packet(adapter, acache, p->px, (unsigned)p->length);
 
         /*
          * Now that we are done with the packet, put it on the free list

@@ -3068,7 +3068,10 @@ struct ConfigParam config_parameters[] = {
         {"sendq", 0},
         "Use sendqueue feature of Npcap/Winpcap on Windows to transmit packets. "
         "The transmit rate on Windows is really slow, like 40-kpps. The speed "
-        "can be increased by using the sendqueue feature to roughly 300-kpps."
+        "can be increased by using the sendqueue feature to roughly 300-kpps.\n"
+        "NOTE: It's not recommended to use sendqueue feature in low send rate, "
+        "because this may cause a lot latency for every single packet and affect"
+        " some scan modules working with connections."
     },
     {
         "offline",

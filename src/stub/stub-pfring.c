@@ -76,6 +76,7 @@ PFRING_init(void)
     LOADSYM(close);
     LOADSYM(enable_ring);
     LOADSYM(send);
+    LOADSYM(flush);
     LOADSYM(recv);
     LOADSYM(poll);
     LOADSYM(version);

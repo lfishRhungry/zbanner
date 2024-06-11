@@ -56,11 +56,12 @@ typedef pfring*(*PFRING_OPEN)(
                     unsigned flags);
 typedef void (*PFRING_CLOSE)(pfring *ring);
 typedef int (*PFRING_ENABLE_RING)(pfring *ring);
-typedef int (*PFRING_SEND)( pfring *ring,
+typedef int (*PFRING_SEND)(pfring *ring,
                     const unsigned char *buffer,
                     unsigned buffer_length,
                     unsigned char flush_packet);
-typedef int (*PFRING_RECV)(    pfring *ring,
+typedef int (*PFRING_FLUSH_TX_PACKETS)(pfring *ring);
+typedef int (*PFRING_RECV)(pfring *ring,
                     unsigned char** buffer,
                     unsigned buffer_length,
                     struct pfring_pkthdr *hdr,
@@ -79,6 +80,7 @@ extern struct PFRING {
     PFRING_CLOSE                    close;
     PFRING_ENABLE_RING              enable_ring;
     PFRING_SEND                     send;
+    PFRING_FLUSH_TX_PACKETS         flush;
     PFRING_RECV                     recv;
     PFRING_POLL                     poll;
     PFRING_VERSION                  version;

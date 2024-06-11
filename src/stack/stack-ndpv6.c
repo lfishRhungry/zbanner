@@ -408,7 +408,7 @@ stack_ndpv6_resolve(
                             buf + offset_icmpv6);
     buf[offset_icmpv6 + 2] = (unsigned char)(xsum >> 8);
     buf[offset_icmpv6 + 3] = (unsigned char)(xsum >> 0);
-    rawsock_send_packet(adapter, acache, buf, (unsigned)offset, 1);
+    rawsock_send_packet(adapter, acache, buf, (unsigned)offset);
 
     /*
      * Send a shorter version after the long version. I don't know
@@ -424,7 +424,7 @@ stack_ndpv6_resolve(
                             buf + offset_icmpv6);
     buf[offset_icmpv6 + 2] = (unsigned char)(xsum >> 8);
     buf[offset_icmpv6 + 3] = (unsigned char)(xsum >> 0);
-    rawsock_send_packet(adapter, acache, buf, (unsigned)offset, 1);
+    rawsock_send_packet(adapter, acache, buf, (unsigned)offset);
     
 
     start = time(0);
@@ -440,7 +440,7 @@ stack_ndpv6_resolve(
         /* Resend every so often */
         if (time(0) != start) {
             start = time(0);
-            rawsock_send_packet(adapter, acache, buf, (unsigned)offset, 1);
+            rawsock_send_packet(adapter, acache, buf, (unsigned)offset);
             if (i++ >= 10)
                 break; /* timeout */
 
@@ -458,12 +458,7 @@ stack_ndpv6_resolve(
             is_arp_notice_given = 1;
         }
 
-        err =  rawsock_recv_packet(
-                    adapter,
-                    &length2,
-                    &secs,
-                    &usecs,
-                    &buf2);
+        err =  rawsock_recv_packet(adapter, &length2, &secs, &usecs, &buf2);
 
         if (err != 0)
             continue;

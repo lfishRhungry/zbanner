@@ -96,12 +96,22 @@ int rawsock_is_adapter_names_equal(const char *lhs, const char *rhs);
 void
 rawsock_flush(struct Adapter *adapter, struct AdapterCache *acache);
 
+/***************************************************************************
+ * wrapper for libpcap's sendpacket
+ *
+ * PORTABILITY: WINDOWS and PF_RING
+ * For performance, Windows and PF_RING can queue up multiple packets, then
+ * transmit them all in a chunk. If we stop and wait for a bit, we need
+ * to flush the queue to force packets to be transmitted immediately.
+ * NOTE: Every `flush` operate in sendqueue or PFRING will not be executed
+ * in this function except the queue or cache is full. The explicit `flush`
+ * operation is in `rawsock_flush` function.
+ ***************************************************************************/
 int rawsock_send_packet(
     struct Adapter *adapter,
     struct AdapterCache *acache,
     const unsigned char *packet,
-    unsigned length,
-    unsigned flush);
+    unsigned length);
 
 /**
  * Called to read the next packet from the network.
