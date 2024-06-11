@@ -565,7 +565,7 @@ static bool output_tls_version(struct Output *out,
 
 static void extend_buffer(unsigned char **buf, size_t *buf_len)
 {
-    LOG(LEVEL_DEBUG, "[BUFFER extending...] >>>\n");
+    LOG(LEVEL_DETAIL, "[BUFFER extending...] >>>\n");
     *buf = REALLOC(*buf, *buf_len * 2);
     *buf_len = *buf_len * 2;
 }
@@ -586,7 +586,7 @@ tlsstate_global_init(const struct Xconf *xconf)
     SSL_CTX *ctx;
     int res;
 
-    LOG(LEVEL_INFO, "[ssl_init] >>>\n");
+    LOG(LEVEL_DETAIL, "[ssl_init] >>>\n");
 
     /*support cryptographic algorithms from SSLv3.0 to TLSv1.3*/
     meth = TLS_method();
@@ -688,7 +688,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     struct TlsState *tls_state;
     unsigned int data_max_len = 4096;
 
-    LOG(LEVEL_INFO, "[ssl_transmit_hello] >>>\n");
+    LOG(LEVEL_DETAIL, "[ssl_transmit_hello] >>>\n");
 
     if (general_ssl_ctx == NULL) {
         goto error0;
@@ -789,7 +789,7 @@ error0:
 static void
 tlsstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
 {
-    LOG(LEVEL_INFO, "[ssl_cleanup] >>>\n");
+    LOG(LEVEL_DETAIL, "[ssl_cleanup] >>>\n");
 
     if (!state->data) return;
 
