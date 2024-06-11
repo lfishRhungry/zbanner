@@ -2398,7 +2398,9 @@ struct ConfigParam config_parameters[] = {
         "Specify the number of transmit threads. "XTATE_FIRST_UPPER_NAME" could"
         " has multiple transmit threads but only one receive thread. Every "
         "thread will be lock on a CPU kernel if the number of all threads is no"
-        " more than kernel's."
+        " more than kernel's.\n"
+        "NOTE: 4 transmit threads could got a stable and high send rate in most "
+        "conditions. So the default value is 4."
     },
     {
         "rx-handler-count",

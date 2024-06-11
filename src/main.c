@@ -54,7 +54,7 @@ unsigned volatile time_to_finish_rx = 0;
 
 /*
  * We update a global time in xtatus.c for less syscall.
- * Use this if you need cur time.
+ * Use this if you need rough and not accurate current time.
  */
 time_t global_now;
 
@@ -206,7 +206,7 @@ static int main_scan(struct Xconf *xconf) {
     if (!xconf->scan_module) {
         xconf->scan_module = get_scan_module_by_name("tcp-syn");
         LOG(LEVEL_ERROR, "[-] Default ScanModule `tcpsyn` is chosen because no ScanModule "
-               "was specified.\n");
+            "was specified.\n");
     }
 
     /*validate probe type*/
@@ -279,8 +279,10 @@ static int main_scan(struct Xconf *xconf) {
      * And the filter string is combined from ProbeModule and user setting.
      */
     if (!xconf->is_no_bpf) {
-        rawsock_set_filter(xconf->nic.adapter, xconf->scan_module->bpf_filter,
-                           xconf->bpf_filter);
+        rawsock_set_filter(
+            xconf->nic.adapter,
+            xconf->scan_module->bpf_filter,
+            xconf->bpf_filter);
     }
 
     /*
@@ -437,7 +439,7 @@ static int main_scan(struct Xconf *xconf) {
             xconf->is_status_ndjson);
 
         /* Sleep for almost a second */
-        pixie_mssleep(750);
+        pixie_mssleep(500);
     }
 
     /*

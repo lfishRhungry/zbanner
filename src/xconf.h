@@ -24,7 +24,7 @@
 /* 14 rounds seem to give way better statistical distribution than 4 with a
 very low impact on scan rate */
 #define XCONF_DFT_BLACKROCK_ROUND                  14
-#define XCONF_DFT_TX_THD_COUNT                      1
+#define XCONF_DFT_TX_THD_COUNT                      4
 #define XCONF_DFT_RX_HDL_COUNT                      1
 #define XCONF_DFT_STACK_BUF_COUNT               16384
 #define XCONF_DFT_DISPATCH_BUF_COUNT            16384
