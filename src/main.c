@@ -66,7 +66,7 @@ uint64_t usec_start;
  */
 struct TemplateSet *global_tmplset;
 
-static void control_c_handler(int x) {
+static void _control_c_handler(int x) {
 
     static unsigned control_c_pressed = 0;
 
@@ -298,7 +298,7 @@ static int _main_scan(struct Xconf *xconf) {
     /*
      * trap <ctrl-c>
      */
-    signal(SIGINT, control_c_handler);
+    signal(SIGINT, _control_c_handler);
 
     /*
      * Prepare for tx threads

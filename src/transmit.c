@@ -119,11 +119,17 @@ infinite:;
     if (xconf->resume.count && end > start + xconf->resume.count)
         end = start + xconf->resume.count;
 
-    LOG(LEVEL_DEBUG, "THREAD: xmit: starting main loop: [%llu..%llu]\n", start, end);
+    /**
+     * NOTE: This init insures the stop of tx while the tx thread got no target to scan.
+     */
+    parms->my_index   = start;
+
+    LOG(LEVEL_DEBUG, "Tx Thread: starting main loop [%llu..%lu] inc: %llu\n", start, end, increment);
 
     uint64_t i;
     uint64_t ck;
     unsigned more_idx = 0;
+
     for (i = start; i < end;) {
 
         uint64_t batch_size = throttler_next_batch(throttler, packets_sent);
