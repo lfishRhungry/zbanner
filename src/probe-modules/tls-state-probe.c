@@ -26,6 +26,7 @@
 #include "../xconf.h"
 
 #define TLS_BIO_MEM_LIMIT 16384
+#define TLS_EXT_TGT       0
 
 enum {
     TLS_STATE_HANDSHAKE = 0,     /*init state: still in handshaking*/
@@ -37,9 +38,9 @@ enum {
 /*for internal x-ref*/
 extern struct ProbeModule TlsStateProbe;
 /*save Output*/
-static const struct Output *tls_out;
+static const struct Output *_tls_out;
 /*public SSL obj for all conn*/
-static SSL_CTX *general_ssl_ctx;
+static SSL_CTX *_general_ssl_ctx;
 
 struct TlsState {
     OSSL_HANDSHAKE_STATE   handshake_state;
@@ -204,7 +205,7 @@ static struct ConfigParam tlsstate_parameters[] = {
 
 static void ssl_keylog_cb(const SSL *ssl, const char *line)
 {
-    struct ProbeTarget *tgt = SSL_get_ex_data(ssl, 0);
+    struct ProbeTarget *tgt = SSL_get_ex_data(ssl, TLS_EXT_TGT);
     if (!tgt)
         return;
 
@@ -220,12 +221,12 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line)
     safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
     dach_append(&item.report, "key_log", line, strlen(line));
 
-    output_result(tls_out, &item);
+    output_result(_tls_out, &item);
 }
 
 static void ssl_info_cb(const SSL *ssl, int where, int ret) {
     if (where & SSL_CB_ALERT) {
-        struct ProbeTarget *tgt = SSL_get_ex_data(ssl, 0);
+        struct ProbeTarget *tgt = SSL_get_ex_data(ssl, TLS_EXT_TGT);
         if (!tgt)
             return;
 
@@ -242,7 +243,7 @@ static void ssl_info_cb(const SSL *ssl, int where, int ret) {
         dach_printf(&item.report, "openssl alert", false, "0x%04x %s: %s",
             ret, SSL_alert_type_string_long(ret), SSL_alert_desc_string_long(ret));
 
-        output_result(tls_out, &item);
+        output_result(_tls_out, &item);
     }
 }
 
@@ -518,7 +519,7 @@ static bool output_cipher_suite(struct Output *out,
     cipher_suite = SSL_CIPHER_get_protocol_id(ssl_cipher);
     dach_printf(&item.report, "cipher", "0x%x", false, cipher_suite);
 
-    output_result(tls_out, &item);
+    output_result(_tls_out, &item);
 
     return true;
 }
@@ -558,7 +559,7 @@ static bool output_tls_version(struct Output *out,
     }
 
     safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
-    output_result(tls_out, &item);
+    output_result(_tls_out, &item);
 
     return true;
 }
@@ -580,7 +581,7 @@ tlsstate_global_init(const struct Xconf *xconf)
     }
 
     /*save `out`*/
-    tls_out = &xconf->out;
+    _tls_out = &xconf->out;
 
     const SSL_METHOD *meth;
     SSL_CTX *ctx;
@@ -635,7 +636,7 @@ tlsstate_global_init(const struct Xconf *xconf)
         SSL_CTX_set_keylog_callback(ctx, ssl_keylog_cb);
     }
 
-    general_ssl_ctx = ctx;
+    _general_ssl_ctx = ctx;
     LOG(LEVEL_INFO, "SUCCESS init dynamic ssl\n");
 
     if (tlsstate_conf.subprobe_args
@@ -669,9 +670,9 @@ static void tlsstate_close()
 {
     tlsstate_conf.subprobe->close_cb();
 
-    if (general_ssl_ctx) {
-        SSL_CTX_free(general_ssl_ctx);
-        general_ssl_ctx = NULL;
+    if (_general_ssl_ctx) {
+        SSL_CTX_free(_general_ssl_ctx);
+        _general_ssl_ctx = NULL;
     }
 
     return;
@@ -690,7 +691,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
 
     LOG(LEVEL_DETAIL, "[ssl_transmit_hello] >>>\n");
 
-    if (general_ssl_ctx == NULL) {
+    if (_general_ssl_ctx == NULL) {
         goto error0;
     }
 
@@ -712,7 +713,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
         goto error2;
     }
 
-    ssl = SSL_new(general_ssl_ctx);
+    ssl = SSL_new(_general_ssl_ctx);
     if (ssl == NULL) {
         LOG(LEVEL_WARNING, "SSL_new error\n");
         LOGopenssl(LEVEL_WARNING);
@@ -737,7 +738,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     tgt->port_me   = target->port_me;
     tgt->cookie    = target->cookie;
     tgt->index     = target->index;
-    res = SSL_set_ex_data(ssl, 0, tgt);
+    res = SSL_set_ex_data(ssl, TLS_EXT_TGT, tgt);
     if (res != 1) {
         LOG(LEVEL_WARNING, "SSL_set_ex_data error\n");
         goto error4;
@@ -802,9 +803,9 @@ tlsstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
 
     if (tls_state->ssl) {
         /*cleanup ex data in SSL obj*/
-        void *ex_data = SSL_get_ex_data(tls_state->ssl, 0);
+        void *ex_data = SSL_get_ex_data(tls_state->ssl, TLS_EXT_TGT);
         if (ex_data) {
-            free(SSL_get_ex_data(tls_state->ssl, 0));
+            free(ex_data);
             ex_data = NULL;
         }
 
