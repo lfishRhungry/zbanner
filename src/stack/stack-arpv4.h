@@ -30,7 +30,9 @@ int stack_arp_incoming_request(struct stack_t *stack,
  * MAC address. Usually done in order to find the local router's 
  * MAC address when given the IPv4 address of the router.
  */
-int stack_arp_resolve(struct Adapter *adapter,
+int stack_arp_resolve(
+    struct Adapter *adapter,
+    struct AdapterCache *acache,
     ipv4address_t my_ipv4, macaddress_t my_mac_address,
     ipv4address_t your_ipv4, macaddress_t *your_mac_address);
 

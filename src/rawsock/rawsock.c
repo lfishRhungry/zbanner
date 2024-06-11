@@ -47,7 +47,6 @@ static int is_pcap_file = 0;
 
 #include "rawsock-adapter.h"
 
-#define SENDQ_SIZE      65536 * 8
 #define READ_TIMEOUT    1000
 
 
@@ -260,15 +259,15 @@ adapter_from_index(unsigned index)
  * we'll have to flush them.
  ***************************************************************************/
 void
-rawsock_flush(struct Adapter *adapter)
+rawsock_flush(struct Adapter *adapter, struct AdapterCache *acache)
 {
-    if (adapter->sendq) {
-        PCAP.sendqueue_transmit(adapter->pcap, adapter->sendq, 0);
+    if (acache->sendq) {
+        PCAP.sendqueue_transmit(adapter->pcap, acache->sendq, 0);
         /**
          * sendqueue cannot be reused because there's no way to clear it.
          */
-        PCAP.sendqueue_destroy(adapter->sendq);
-        adapter->sendq =  PCAP.sendqueue_alloc(SENDQ_SIZE);
+        PCAP.sendqueue_destroy(acache->sendq);
+        acache->sendq =  PCAP.sendqueue_alloc(SENDQ_SIZE);
     }
 
 }
@@ -284,6 +283,7 @@ rawsock_flush(struct Adapter *adapter)
 int
 rawsock_send_packet(
     struct Adapter *adapter,
+    struct AdapterCache *acache,
     const unsigned char *packet,
     unsigned length,
     unsigned flush)
@@ -312,20 +312,27 @@ rawsock_send_packet(
     }
 
     /* WINDOWS PCAP */
-    if (adapter->sendq) {
+    /*----------------------------------------------------------------
+     * PORTABILITY: WINDOWS
+     *
+     * The transmit rate on Windows is really slow, like 40-kpps.
+     * The speed can be increased by using the "sendqueue" feature
+     * to roughly 300-kpps.
+     *----------------------------------------------------------------*/
+    if (acache->sendq) {
         int err;
         struct pcap_pkthdr hdr;
         hdr.len    = length;
         hdr.caplen = length;
 
-        err = PCAP.sendqueue_queue(adapter->sendq, &hdr, packet);
+        err = PCAP.sendqueue_queue(acache->sendq, &hdr, packet);
         if (err) {
-            rawsock_flush(adapter);
-            PCAP.sendqueue_queue(adapter->sendq, &hdr, packet);
+            rawsock_flush(adapter, acache);
+            PCAP.sendqueue_queue(acache->sendq, &hdr, packet);
         }
 
         if (flush) {
-            rawsock_flush(adapter);
+            rawsock_flush(adapter, acache);
         }
 
         return 0;
@@ -493,10 +500,6 @@ rawsock_close_adapter(struct Adapter *adapter)
     if (adapter->pcap) {
         PCAP.close(adapter->pcap);
         adapter->pcap = NULL;
-    }
-    if (adapter->sendq) {
-        PCAP.sendqueue_destroy(adapter->sendq);
-        adapter->sendq = NULL;
     }
 
     free(adapter);
@@ -771,19 +774,6 @@ rawsock_init_adapter(const char *adapter_name,
 
     }
 
-    /*----------------------------------------------------------------
-     * PORTABILITY: WINDOWS
-     *
-     * The transmit rate on Windows is really slow, like 40-kpps.
-     * The speed can be increased by using the "sendqueue" feature
-     * to roughly 300-kpps.
-     *----------------------------------------------------------------*/
-    adapter->sendq = 0;
-#if defined(WIN32)
-    if (is_sendq)
-        adapter->sendq = PCAP.sendqueue_alloc(SENDQ_SIZE);
-#endif
-
     return adapter;
 
 
@@ -904,14 +894,15 @@ rawsock_is_adapter_names_equal(const char *lhs, const char *rhs)
 
 int rawsock_selftest_if(const char *ifname)
 {
-    int err;
-    ipv4address_t ipv4 = 0;
-    ipv6address_t ipv6;
-    ipv4address_t router_ipv4 = 0;
-    macaddress_t source_mac = {{0,0,0,0,0,0}};
-    struct Adapter *adapter;
-    char ifname2[246];
-    ipaddress_formatted_t fmt;
+    int                            err;
+    ipv4address_t                  ipv4            = 0;
+    ipv6address_t                  ipv6;
+    ipv4address_t                  router_ipv4     = 0;
+    macaddress_t                   source_mac      = {{0,0,0,0,0,0}};
+    struct Adapter                *adapter;
+    struct AdapterCache           *acache;
+    char                           ifname2[246];
+    ipaddress_formatted_t          fmt;
 
     /*
      * Get the interface
@@ -936,6 +927,8 @@ int rawsock_selftest_if(const char *ifname)
     } else {
         LOG(LEVEL_HINT, "[+] pcap = opened\n");
     }
+
+    acache = rawsock_init_cache(false);
 
     /* IPv4 address */
     ipv4 = rawsock_get_adapter_ip(ifname);
@@ -985,6 +978,7 @@ int rawsock_selftest_if(const char *ifname)
             
             stack_arp_resolve(
                 adapter,
+                acache,
                 ipv4,
                 source_mac,
                 router_ipv4,
@@ -1010,6 +1004,7 @@ int rawsock_selftest_if(const char *ifname)
             
             stack_ndpv6_resolve(
                 adapter,
+                acache,
                 ipv6,
                 source_mac,
                 &router_mac);
@@ -1023,6 +1018,7 @@ int rawsock_selftest_if(const char *ifname)
         }
     }
     
+    rawsock_close_cache(acache);
     rawsock_close_adapter(adapter);
     return 0;
 }

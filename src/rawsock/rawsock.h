@@ -3,11 +3,17 @@
 */
 #ifndef RAWSOCK_H
 #define RAWSOCK_H
-#include "../massip/massip-addr.h"
+
 #include <stdio.h>
-struct Adapter;
-struct TemplateSet;
+
+#include "../massip/massip-addr.h"
 #include "../stack/stack-queue.h"
+
+
+
+struct Adapter;
+struct AdapterCache;
+struct TemplateSet;
 
 
 void rawsock_init(void);
@@ -88,10 +94,11 @@ int rawsock_is_adapter_names_equal(const char *lhs, const char *rhs);
  * cases, like when shutting down.
  */
 void
-rawsock_flush(struct Adapter *adapter);
+rawsock_flush(struct Adapter *adapter, struct AdapterCache *acache);
 
 int rawsock_send_packet(
     struct Adapter *adapter,
+    struct AdapterCache *acache,
     const unsigned char *packet,
     unsigned length,
     unsigned flush);

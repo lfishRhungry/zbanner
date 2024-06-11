@@ -31,7 +31,9 @@ stack_ndpv6_incoming_request(struct stack_t *stack,
  * Find the MAC address for the local router.
  */
 int
-stack_ndpv6_resolve(struct Adapter *adapter,
+stack_ndpv6_resolve(
+    struct Adapter *adapter,
+    struct AdapterCache *acache,
     ipv6address my_ipv6,
     macaddress_t my_mac_address,
     macaddress_t *your_mac_address);

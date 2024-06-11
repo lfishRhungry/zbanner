@@ -11,6 +11,7 @@
 
 struct stack_src_t;
 struct Adapter;
+struct AdapterCache;
 
 typedef struct rte_ring PACKET_QUEUE;
 
@@ -45,6 +46,7 @@ void
 stack_flush_packets(
     struct stack_t *stack,
     struct Adapter *adapter,
+    struct AdapterCache *acache,
     uint64_t *packets_sent,
     uint64_t *batchsize);
 

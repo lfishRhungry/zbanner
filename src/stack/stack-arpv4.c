@@ -100,7 +100,9 @@ proto_arp_parse(struct ARP_IncomingRequest *arp,
  * but not during then normal asynchronous operation during the scan.
  ****************************************************************************/
 int
-stack_arp_resolve(struct Adapter *adapter,
+stack_arp_resolve(
+    struct Adapter *adapter,
+    struct AdapterCache *acache,
     ipv4address_t my_ipv4, macaddress_t my_mac_address,
     ipv4address_t your_ipv4, macaddress_t *your_mac_address)
 {
@@ -171,7 +173,7 @@ stack_arp_resolve(struct Adapter *adapter,
     /*
      * Now loop for a few seconds looking for the response
      */
-    rawsock_send_packet(adapter, arp_packet, 60, 1);
+    rawsock_send_packet(adapter, acache, arp_packet, 60, 1);
     start = time(0);
     i = 0;
     for (;;) {
@@ -183,7 +185,7 @@ stack_arp_resolve(struct Adapter *adapter,
 
         if (time(0) != start) {
             start = time(0);
-            rawsock_send_packet(adapter, arp_packet, 60, 1);
+            rawsock_send_packet(adapter, acache, arp_packet, 60, 1);
             if (i++ >= 10)
                 break; /* timeout */
 

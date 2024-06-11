@@ -312,7 +312,9 @@ _extract_router_advertisement(
 /****************************************************************************
  ****************************************************************************/
 int
-stack_ndpv6_resolve(struct Adapter *adapter,
+stack_ndpv6_resolve(
+    struct Adapter *adapter,
+    struct AdapterCache *acache,
     ipv6address my_ipv6,
     macaddress_t my_mac_address,
     macaddress_t *router_mac)
@@ -406,7 +408,7 @@ stack_ndpv6_resolve(struct Adapter *adapter,
                             buf + offset_icmpv6);
     buf[offset_icmpv6 + 2] = (unsigned char)(xsum >> 8);
     buf[offset_icmpv6 + 3] = (unsigned char)(xsum >> 0);
-    rawsock_send_packet(adapter, buf, (unsigned)offset, 1);
+    rawsock_send_packet(adapter, acache, buf, (unsigned)offset, 1);
 
     /*
      * Send a shorter version after the long version. I don't know
@@ -422,7 +424,7 @@ stack_ndpv6_resolve(struct Adapter *adapter,
                             buf + offset_icmpv6);
     buf[offset_icmpv6 + 2] = (unsigned char)(xsum >> 8);
     buf[offset_icmpv6 + 3] = (unsigned char)(xsum >> 0);
-    rawsock_send_packet(adapter, buf, (unsigned)offset, 1);
+    rawsock_send_packet(adapter, acache, buf, (unsigned)offset, 1);
     
 
     start = time(0);
@@ -438,7 +440,7 @@ stack_ndpv6_resolve(struct Adapter *adapter,
         /* Resend every so often */
         if (time(0) != start) {
             start = time(0);
-            rawsock_send_packet(adapter, buf, (unsigned)offset, 1);
+            rawsock_send_packet(adapter, acache, buf, (unsigned)offset, 1);
             if (i++ >= 10)
                 break; /* timeout */
 

@@ -54,6 +54,7 @@ void
 stack_flush_packets(
     struct stack_t *stack,
     struct Adapter *adapter,
+    struct AdapterCache *acache,
     uint64_t *packets_sent,
     uint64_t *batchsize)
 {
@@ -78,7 +79,7 @@ stack_flush_packets(
         /*
          * Actually send the packet
          */
-        rawsock_send_packet(adapter, p->px, (unsigned)p->length, 1);
+        rawsock_send_packet(adapter, acache, p->px, (unsigned)p->length, 1);
 
         /*
          * Now that we are done with the packet, put it on the free list

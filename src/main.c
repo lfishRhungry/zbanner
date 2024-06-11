@@ -144,11 +144,6 @@ static int main_scan(struct Xconf *xconf) {
         exit(1);
     }
 
-    if (xconf->tx_thread_count>1 && xconf->is_sendq) {
-        LOG(LEVEL_ERROR, "FAIL: Multi Tx threads cannot work well with sendqueue.\n");
-        exit(1);
-    }
-
     if (initialize_adapter(xconf) != 0)
         exit(1);
     if (!xconf->nic.is_usable) {

@@ -54,6 +54,7 @@ void transmit_thread(void *v)
     uint64_t                     count_ipv6               = range6list_count(&xconf->targets.ipv6).lo;
     struct Throttler            *throttler                = parms->throttler;
     struct Adapter              *adapter                  = xconf->nic.adapter;
+    struct AdapterCache         *acache                   = NULL;
     uint64_t                     packets_sent             = 0;
     unsigned                     increment                = xconf->shard.of * xconf->tx_thread_count;
     uint64_t                     dynamic_seed             = xconf->seed;
@@ -91,6 +92,11 @@ void transmit_thread(void *v)
     struct source_t src;
     _adapter_get_source_addresses(xconf, &src);
 
+    /**
+     * init tx's own adapter transmit cache.
+     */
+    acache = rawsock_init_cache(xconf->is_sendq);
+
     if (xconf->is_fast_timeout) {
         ft_handler = ft_get_handler(xconf->ft_table);
     }
@@ -123,7 +129,7 @@ infinite:;
         uint64_t batch_size = throttler_next_batch(throttler, packets_sent);
 
         /*Transmit packets from stack first */
-        stack_flush_packets(xconf->stack, adapter, &packets_sent, &batch_size);
+        stack_flush_packets(xconf->stack, adapter, acache, &packets_sent, &batch_size);
 
         while (batch_size && i < end) {
             uint64_t xXx = i;
@@ -213,7 +219,10 @@ infinite:;
              * send packet actually
              */
             if (pkt_len) {
-                rawsock_send_packet(adapter, pkt_buffer, (unsigned)pkt_len, !batch_size);
+                rawsock_send_packet(
+                    adapter, acache,
+                    pkt_buffer, (unsigned)pkt_len,
+                    !batch_size);
 
                 batch_size--;
                 packets_sent++;
@@ -266,7 +275,7 @@ infinite:;
     /*
      * Makes sure all packets are transmitted while in sendq or PF_RING mode.
      */
-    rawsock_flush(adapter);
+    rawsock_flush(adapter, acache);
 
     LOG(LEVEL_WARNING, "[+] transmit thread #%u complete\n", parms->tx_index);
 
@@ -274,9 +283,13 @@ infinite:;
     uint64_t batch_size;
     while (!time_to_finish_rx) {
         batch_size = throttler_next_batch(throttler, packets_sent);
-        stack_flush_packets(xconf->stack, adapter, &packets_sent, &batch_size);
-        rawsock_flush(adapter);
+        stack_flush_packets(xconf->stack, adapter, acache, &packets_sent, &batch_size);
+        rawsock_flush(adapter, acache);
     }
+
+    /*clean adapter transmit cache*/
+    rawsock_close_cache(acache);
+    acache = NULL;
 
     if (xconf->is_fast_timeout)
         ft_close_handler(ft_handler);

@@ -25,6 +25,7 @@ initialize_adapter(struct Xconf *xconf)
     char                    *ifname;
     char                     ifname2[256];
     unsigned                 adapter_ip        = 0;
+    struct AdapterCache     *tmp_acache        = rawsock_init_cache(false);
     unsigned                 is_usable_ipv4    = !massip_has_ipv4_targets(&xconf->targets);
     unsigned                 is_usable_ipv6    = !massip_has_ipv6_targets(&xconf->targets);
 
@@ -45,6 +46,7 @@ initialize_adapter(struct Xconf *xconf)
         if (err || ifname2[0] == '\0') {
             LOG(LEVEL_ERROR, "[-] FAIL: could not determine default interface\n");
             LOG(LEVEL_ERROR, "    [hint] try \"--interface ethX\"\n");
+            rawsock_close_cache(tmp_acache);
             return -1;
         }
         ifname = ifname2;
@@ -65,6 +67,7 @@ initialize_adapter(struct Xconf *xconf)
                                             xconf->nic.snaplen);
     if (xconf->nic.adapter == 0) {
         LOG(LEVEL_ERROR, "[-] if:%s:init: failed\n", ifname);
+        rawsock_close_cache(tmp_acache);
         return -1;
     }
     xconf->nic.link_type = xconf->nic.adapter->link_type;
@@ -93,6 +96,7 @@ initialize_adapter(struct Xconf *xconf)
                         " \"%s\"\n", ifname);
                 LOG(LEVEL_ERROR, " [hint] try something like "
                         "\"--source-mac 00-11-22-33-44-55\"\n");
+                rawsock_close_cache(tmp_acache);
                 return -1;
             }
         }
@@ -122,6 +126,7 @@ initialize_adapter(struct Xconf *xconf)
             LOG(LEVEL_ERROR, "    [hint] if it has no IP address, manually set with something like "
                             "\"--source-ip 198.51.100.17\"\n");
             if (massip_has_ipv4_targets(&xconf->targets)) {
+                rawsock_close_cache(tmp_acache);
                 return -1;
             }
         }
@@ -160,6 +165,7 @@ initialize_adapter(struct Xconf *xconf)
                 
                 stack_arp_resolve(
                         xconf->nic.adapter,
+                        tmp_acache,
                         adapter_ip,
                         xconf->nic.source_mac,
                         router_ipv4,
@@ -174,6 +180,7 @@ initialize_adapter(struct Xconf *xconf)
                 LOG(LEVEL_ERROR, "    [hint] try \"--router ip 192.0.2.1\" to specify different router\n");
                 LOG(LEVEL_ERROR, "    [hint] try \"--router-mac 66-55-44-33-22-11\" instead to bypass ARP\n");
                 LOG(LEVEL_ERROR, "    [hint] try \"--interface eth0\" to change interface\n");
+                rawsock_close_cache(tmp_acache);
                 return -1;
             }
         }
@@ -197,6 +204,7 @@ initialize_adapter(struct Xconf *xconf)
             LOG(LEVEL_ERROR, "    [hint] did you spell the name correctly?\n");
             LOG(LEVEL_ERROR, "    [hint] if it has no IP address, manually set with something like "
                             "\"--source-ip 2001:3b8::1234\"\n");
+            rawsock_close_cache(tmp_acache);
             return -1;
         }
         fmt = ipv6address_fmt(adapter_ipv6);
@@ -215,6 +223,7 @@ initialize_adapter(struct Xconf *xconf)
              * some time */
             stack_ndpv6_resolve(
                     xconf->nic.adapter,
+                    tmp_acache,
                     adapter_ipv6,
                     xconf->nic.source_mac,
                     &xconf->nic.router_mac_ipv6);
@@ -227,6 +236,7 @@ initialize_adapter(struct Xconf *xconf)
             LOG(LEVEL_ERROR, "[-] FAIL: NDP timed-out resolving MAC address for router %s: \"%s\"\n", ifname, fmt.string);
             LOG(LEVEL_ERROR, "    [hint] try \"--router-mac-ipv6 66-55-44-33-22-11\" instead to bypass ARP\n");
             LOG(LEVEL_ERROR, "    [hint] try \"--interface eth0\" to change interface\n");
+            rawsock_close_cache(tmp_acache);
             return -1;
         }
 
@@ -249,5 +259,6 @@ initialize_adapter(struct Xconf *xconf)
 
 
     LOG(LEVEL_INFO, "[+] if(%s): initialization done.\n", ifname);
+    rawsock_close_cache(tmp_acache);
     return 0;
 }
