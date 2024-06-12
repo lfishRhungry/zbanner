@@ -25,45 +25,64 @@
 #include "../util-misc/cross.h"
 #include "../xconf.h"
 
-#define TLS_BIO_MEM_LIMIT 16384
-#define TLS_EXT_TGT       0
+#define TLS_BIO_MEM_LIMIT        16384
+#define TLS_DATA_INIT_SIZE       4096
+#define TLS_EXT_TGT              0
 
-enum {
-    TLS_STATE_HANDSHAKE = 0,     /*init state: still in handshaking*/
-    TLS_STATE_APP_HELLO,         /*our turn to say hello*/
-    TLS_STATE_APP_RECVING,       /*waiting for data*/
-    TLS_STATE_CLOSE,             /*unexpected state that need to close conn*/
+/**
+ * TlsStateProbe's internal state.
+ * Diff from TLS's.
+ */
+enum TSP_State{
+    TSP_STATE_HANDSHAKE = 0,     /*init state: still in handshaking*/
+    TSP_STATE_SAY_HELLO,         /*our turn to say hello*/
+    TSP_STATE_RECV_DATA,         /*waiting for data*/
+    TSP_STATE_NEED_CLOSE,        /*unexpected state that need to close conn*/
 };
 
+static const char *
+_tsp_state_to_string(enum TSP_State state)
+{
+    switch (state) {
+        case TSP_STATE_HANDSHAKE:          return "TSP_HANDSHAKE";
+        case TSP_STATE_SAY_HELLO:          return "TSP_SAY_HELLO";
+        case TSP_STATE_RECV_DATA:          return "TSP_RECV_DATA";
+        case TSP_STATE_NEED_CLOSE:         return "TSP_NEED_CLOSE";
+
+        default:
+            return "UNKN_TSP_STATE";
+    }
+}
+
 /*for internal x-ref*/
-extern struct ProbeModule TlsStateProbe;
+extern struct ProbeModule      TlsStateProbe;
 /*save Output*/
-static const struct Output *_tls_out;
+static const struct Output    *_tls_out;
 /*public SSL obj for all conn*/
-static SSL_CTX *_general_ssl_ctx;
+static SSL_CTX                *_general_ssl_ctx;
 
 struct TlsState {
-    OSSL_HANDSHAKE_STATE   handshake_state;
-    struct ProbeState      substate;
-    unsigned char         *data;
-    size_t                 data_size;
-    SSL                   *ssl;
-    BIO                   *rbio;
-    BIO                   *wbio;
-    unsigned               have_dump_version:1;
-    unsigned               have_dump_subject:1;
-    unsigned               have_dump_cipher:1;
-    unsigned               have_dump_cert:1;
+    OSSL_HANDSHAKE_STATE      handshake_state;
+    struct ProbeState         substate;
+    unsigned char            *data;
+    size_t                    data_size;
+    SSL                      *ssl;
+    BIO                      *rbio;
+    BIO                      *wbio;
+    unsigned                  have_dump_version:1;
+    unsigned                  have_dump_subject:1;
+    unsigned                  have_dump_cipher:1;
+    unsigned                  have_dump_cert:1;
 };
 
 struct TlsStateConf {
-    struct ProbeModule    *subprobe;
-    char                  *subprobe_args;
-    unsigned               dump_subject:1;
-    unsigned               dump_version:1;
-    unsigned               dump_cipher:1;
-    unsigned               ssl_keylog:1;
-    unsigned               dump_cert:1;
+    struct ProbeModule       *subprobe;
+    char                     *subprobe_args;
+    unsigned                  dump_subject:1;
+    unsigned                  dump_version:1;
+    unsigned                  dump_cipher:1;
+    unsigned                  ssl_keylog:1;
+    unsigned                  dump_cert:1;
 };
 
 static struct TlsStateConf tlsstate_conf = {0};
@@ -566,8 +585,10 @@ static bool output_tls_version(struct Output *out,
 
 static void extend_buffer(unsigned char **buf, size_t *buf_len)
 {
-    LOG(LEVEL_DETAIL, "[BUFFER extending...] >>>\n");
-    *buf = REALLOC(*buf, *buf_len * 2);
+    LOG(LEVEL_DETAIL, "[TSP BUFFER extending...] >>>\n");
+    unsigned char *tmp_ptr;
+    tmp_ptr  = REALLOC(*buf, *buf_len * 2);
+    *buf     = tmp_ptr;
     *buf_len = *buf_len * 2;
 }
 
@@ -587,19 +608,19 @@ tlsstate_global_init(const struct Xconf *xconf)
     SSL_CTX *ctx;
     int res;
 
-    LOG(LEVEL_DETAIL, "[ssl_init] >>>\n");
+    LOG(LEVEL_DETAIL, "[TSP Global INIT] >>>\n");
 
     /*support cryptographic algorithms from SSLv3.0 to TLSv1.3*/
     meth = TLS_method();
     if (meth == NULL) {
-        LOG(LEVEL_WARNING, "TLS_method error\n");
+        LOG(LEVEL_WARNING, "[TSP Global INIT] TLS_method error\n");
         LOGopenssl(LEVEL_WARNING);
         goto error0;
     }
 
     ctx = SSL_CTX_new(meth);
     if (ctx == NULL) {
-        LOG(LEVEL_WARNING, "SSL_CTX_new error\n");
+        LOG(LEVEL_WARNING, "[TSP Global INIT] SSL_CTX_new error\n");
         LOGopenssl(LEVEL_WARNING);
         goto error0;
     }
@@ -617,7 +638,7 @@ tlsstate_global_init(const struct Xconf *xconf)
     /*ciphersuites allowed in TLSv1.2 or older*/
     res = SSL_CTX_set_cipher_list(ctx, "ALL:eNULL");
     if (res != 1) {
-        LOG(LEVEL_WARNING, "SSL_CTX_set_cipher_list error %d\n", res);
+        LOG(LEVEL_WARNING, "[TSP Global INIT] SSL_CTX_set_cipher_list error %d\n", res);
     }
     /*ciphersuites allowed in TLSv1.3. (ALL & in order)*/
     res = SSL_CTX_set_ciphersuites(ctx, 
@@ -625,7 +646,7 @@ tlsstate_global_init(const struct Xconf *xconf)
         "TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_CCM_SHA256:"
         "TLS_AES_128_CCM_8_SHA256");
     if (res != 1) {
-        LOG(LEVEL_WARNING, "SSL_CTX_set_ciphersuites error %d\n", res);
+        LOG(LEVEL_WARNING, "[TSP Global INIT] SSL_CTX_set_ciphersuites error %d\n", res);
     }
 
     /**
@@ -637,7 +658,6 @@ tlsstate_global_init(const struct Xconf *xconf)
     }
 
     _general_ssl_ctx = ctx;
-    LOG(LEVEL_INFO, "SUCCESS init dynamic ssl\n");
 
     if (tlsstate_conf.subprobe_args
         && tlsstate_conf.subprobe->params) {
@@ -668,6 +688,8 @@ error0:
 
 static void tlsstate_close()
 {
+    LOG(LEVEL_DETAIL, "[TSP CLOSE] >>>\n");
+
     tlsstate_conf.subprobe->close_cb();
 
     if (_general_ssl_ctx) {
@@ -682,40 +704,40 @@ static void tlsstate_close()
 static void
 tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
 {
-    int res;
-    SSL *ssl;
-    BIO *rbio, *wbio;
-    unsigned char *data;
-    struct TlsState *tls_state;
-    unsigned int data_max_len = 4096;
+    int                 res;
+    SSL                *ssl;
+    BIO                *rbio;
+    BIO                *wbio;
+    unsigned char      *data;
+    struct TlsState    *tls_state;
 
-    LOG(LEVEL_DETAIL, "[ssl_transmit_hello] >>>\n");
+    LOG(LEVEL_DETAIL, "[TSP Conn INIT] >>>\n");
 
     if (_general_ssl_ctx == NULL) {
         goto error0;
     }
 
     /*buffer for BIO*/
-    data      = MALLOC(data_max_len);
+    data      = MALLOC(TLS_DATA_INIT_SIZE);
     tls_state = CALLOC(1, sizeof(struct TlsState));
 
     rbio = BIO_new(BIO_s_mem());
     if (rbio == NULL) {
-        LOG(LEVEL_WARNING, "BIO_new(read) error\n");
+        LOG(LEVEL_WARNING, "[TSP Conn INIT] BIO_new(read) error\n");
         LOGopenssl(LEVEL_WARNING);
         goto error1;
     }
 
     wbio = BIO_new(BIO_s_mem());
     if (wbio == NULL) {
-        LOG(LEVEL_WARNING, "BIO_new(write) error\n");
+        LOG(LEVEL_WARNING, "[TSP Conn INIT] BIO_new(write) error\n");
         LOGopenssl(LEVEL_WARNING);
         goto error2;
     }
 
     ssl = SSL_new(_general_ssl_ctx);
     if (ssl == NULL) {
-        LOG(LEVEL_WARNING, "SSL_new error\n");
+        LOG(LEVEL_WARNING, "[TSP Conn INIT] SSL_new error\n");
         LOGopenssl(LEVEL_WARNING);
         goto error3;
     }
@@ -730,28 +752,29 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
 
 
     /*save `target` to SSL object*/
-    struct ProbeTarget *tgt = MALLOC(sizeof(struct ProbeTarget));
-    tgt->ip_proto  = target->ip_proto;
-    tgt->ip_them   = target->ip_them;
-    tgt->port_them = target->port_them;
-    tgt->ip_me     = target->ip_me;
-    tgt->port_me   = target->port_me;
-    tgt->cookie    = target->cookie;
-    tgt->index     = target->index;
+    struct ProbeTarget *tgt;
+    tgt              = MALLOC(sizeof(struct ProbeTarget));
+    tgt->ip_proto    = target->ip_proto;
+    tgt->ip_them     = target->ip_them;
+    tgt->port_them   = target->port_them;
+    tgt->ip_me       = target->ip_me;
+    tgt->port_me     = target->port_me;
+    tgt->cookie      = target->cookie;
+    tgt->index       = target->index;
+
     res = SSL_set_ex_data(ssl, TLS_EXT_TGT, tgt);
     if (res != 1) {
-        LOG(LEVEL_WARNING, "SSL_set_ex_data error\n");
+        LOG(LEVEL_WARNING, "[TSP Conn INIT] SSL_set_ex_data error\n");
         goto error4;
     }
 
     /*keep important struct in probe state*/
-    tls_state->ssl  = ssl;
-    tls_state->rbio = rbio;
-    tls_state->wbio = wbio;
-    tls_state->data = data;
-
-    tls_state->data_size       = data_max_len;
-    tls_state->handshake_state = TLS_ST_BEFORE; /*state for openssl*/
+    tls_state->ssl               = ssl;
+    tls_state->rbio              = rbio;
+    tls_state->wbio              = wbio;
+    tls_state->data              = data;
+    tls_state->data_size         = TLS_DATA_INIT_SIZE;
+    tls_state->handshake_state   = TLS_ST_BEFORE; /*state for openssl*/
  
     state->data = tls_state;
 
@@ -790,7 +813,7 @@ error0:
 static void
 tlsstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
 {
-    LOG(LEVEL_DETAIL, "[ssl_cleanup] >>>\n");
+    LOG(LEVEL_DETAIL, "[TSP Conn CLOSE] >>>\n");
 
     if (!state->data) return;
 
@@ -831,6 +854,8 @@ tlsstate_make_hello(
     struct ProbeState *state,
     struct ProbeTarget *target)
 {
+    LOG(LEVEL_DETAIL, "[TSP Make HELLO] >>>\n");
+
     if (state->data==NULL)
         goto error1;
 
@@ -859,20 +884,20 @@ tlsstate_make_hello(
                            tls_state->data + offset,
                            (int)(tls_state->data_size - offset));
             if (res > 0) {
-                LOG(LEVEL_INFO, "[ssl_transmit_hello]BIO_read: %d\n", res);
+                LOG(LEVEL_INFO, "[TSP Make HELLO] BIO_read: %d\n", res);
                 offset += (size_t)res;
             } else if (res == 0 || res == -1) {
-                LOG(LEVEL_INFO, "[ssl_transmit_hello]BIO_read: %d\n", res);
+                LOG(LEVEL_INFO, "[TSP Make HELLO] BIO_read: %d\n", res);
                 break;
             } else {
                 LOG(LEVEL_WARNING,
-                    "[ssl_transmit_hello]BIO_read failed with error: %d\n", res);
+                    "[TSP Make HELLO] BIO_read failed with error: %d\n", res);
                 LOGopenssl(LEVEL_WARNING);
                 goto error1;
             }
         }
     } else {
-        LOG(LEVEL_WARNING, "SSL_do_handshake failed with error: %d, ex_error: %d\n",
+        LOG(LEVEL_WARNING, "[TSP Make HELLO] SSL_do_handshake failed with error: %d, ex_error: %d\n",
             res, res_ex);
         LOGopenssl(LEVEL_WARNING);
         goto error1;
@@ -881,8 +906,9 @@ tlsstate_make_hello(
     /*save state for openssl*/
     tls_state->handshake_state = SSL_get_state(tls_state->ssl);
 
-    /*telling to send ClientHello*/
+    /*telling underlayer to send ClientHello*/
     datapass_set_data(pass, tls_state->data, offset, 1);
+
     return;
 error1:
     pass->data     = NULL;
@@ -900,34 +926,37 @@ tlsstate_parse_response(
     const unsigned char *px,
     unsigned sizeof_px)
 {
-    int res, res_ex;
-    int is_continue;
-    unsigned ret = 0;
+    LOG(LEVEL_DETAIL, "[TSP Parse RESPONSE] >>>\n");
+
     struct TlsState *tls_state = state->data;
 
-    if (state->state == TLS_STATE_CLOSE) {
-        is_continue = 0;
+    int      res, res_ex;
+    bool     is_continue;
+    unsigned ret = 0;
+
+    if (state->state == TSP_STATE_NEED_CLOSE) {
+        is_continue = false;
     } else {
-        is_continue = 1;
+        is_continue = true;
     }
 
     if (is_continue && px != NULL && sizeof_px != 0) {
 
-        size_t offset = 0;
+        size_t   offset   = 0;
         uint64_t now_time = pixie_gettime();
-        res = 0;
 
+        res = 0;
         while (offset < sizeof_px) {
             res = BIO_write(tls_state->rbio, px + offset,
-                            (unsigned int)min(TLS_BIO_MEM_LIMIT, sizeof_px - offset));
-            LOG(LEVEL_INFO, "[ssl_parse_record]BIO_write: %d \n", res);
+                (unsigned int)min(TLS_BIO_MEM_LIMIT, sizeof_px - offset));
+            LOG(LEVEL_INFO, "[TSP Parse RESPONSE] BIO_write: %d \n", res);
             if (res > 0) {
                 offset += (size_t)res;
                 if (sizeof_px - offset <= 0)
                     break;
             } else {
                 LOG(LEVEL_WARNING,
-                    "[ssl_parse_record]BIO_write failed with error: %d\n", res);
+                    "[TSP Parse RESPONSE] BIO_write failed with error: %d\n", res);
                 /*close connection*/
                 pass->data    = NULL;
                 pass->len        = 0;
@@ -939,13 +968,13 @@ tlsstate_parse_response(
         now_time = pixie_gettime() - now_time;
         if (sizeof_px > TLS_BIO_MEM_LIMIT || now_time > 1000000) {
             LOGip(LEVEL_WARNING, target->ip_them, target->port_them,
-                  "[ssl_parse_record]len px: 0x%" PRIxPTR ", time: " PRIu64
+                  "[TSP Parse RESPONSE] len px: 0x%" PRIxPTR ", time: " PRIu64
                   " millis\n",
                   sizeof_px, now_time * 1000);
-            LOG(LEVEL_WARNING, "[ssl_parse_record]offset: 0x%" PRIxPTR ", res = %d\n",
+            LOG(LEVEL_WARNING, "[TSP Parse RESPONSE] offset: 0x%" PRIxPTR ", res = %d\n",
                 offset, res);
             if (sizeof_px > 3) {
-                LOG(LEVEL_WARNING, "[ssl_parse_record]dump: %02X %02X %02X %02X\n",
+                LOG(LEVEL_WARNING, "[TSP Parse RESPONSE] dump: %02X %02X %02X %02X\n",
                     px[0], px[1], px[2], px[3]);
             }
         }
@@ -956,7 +985,7 @@ tlsstate_parse_response(
         switch (state->state) {
 
         /*still in handshake*/
-        case TLS_STATE_HANDSHAKE:
+        case TSP_STATE_HANDSHAKE:
 
             res = SSL_do_handshake(tls_state->ssl);
             res_ex = SSL_ERROR_NONE;
@@ -998,12 +1027,12 @@ tlsstate_parse_response(
                 if (tls_state->handshake_state == TLS_ST_OK) {
                     /*We also can do conn init for subprobe here,
                     but I must know exactly whether subprobe has been inited.*/
-                    state->state = TLS_STATE_APP_HELLO;
+                    state->state = TSP_STATE_SAY_HELLO;
 
                 } else {
-                    LOG(LEVEL_WARNING, "Unknown handshake state %d\n",
+                    LOG(LEVEL_WARNING, "[TSP Parse RESPONSE] Unknown handshake state %d\n",
                         tls_state->handshake_state);
-                    state->state = TLS_STATE_CLOSE;
+                    state->state = TSP_STATE_NEED_CLOSE;
                 }
 
             } else if (res < 0 && res_ex == SSL_ERROR_WANT_READ) { //go on handshake
@@ -1021,36 +1050,39 @@ tlsstate_parse_response(
                         (unsigned int)(tls_state->data_size - offset));
 
                     if (res > 0) {
-                        LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_HANDSHAKE]BIO_read: %d\n", res);
+                        LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
+                            _tsp_state_to_string(state->state), res);
                         offset += (size_t)res;
                     } else if (res == 0 || res == -1) {
-                        LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_HANDSHAKE]BIO_read: %d\n", res);
+                        LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
+                            _tsp_state_to_string(state->state), res);
                         break;
                     } else {
                         LOG(LEVEL_WARNING,
-                            "[ssl_parse_record TLS_STATE_HANDSHAKE]BIO_read failed with error: %d\n", res);
-                        state->state = TLS_STATE_CLOSE;
+                            "[TSP Parse RESPONSE: %s] BIO_read failed with error: %d\n",
+                            _tsp_state_to_string(state->state), res);
+                        state->state = TSP_STATE_NEED_CLOSE;
                         break;
                     }
                 }
 
-                if (state->state != TLS_STATE_CLOSE) {
+                if (state->state != TSP_STATE_NEED_CLOSE) {
                     datapass_set_data(pass, tls_state->data, offset, 1);
                     return ret;
                 }
 
             } else {  //cannot go on handshake
                 LOG(LEVEL_DEBUG,
-                    "[ssl_parse_record TLS_STATE_HANDSHAKE]SSL_do_handshake failed with error: %d, "
+                    "[TSP Parse RESPONSE: %s] SSL_do_handshake failed with error: %d, "
                     "ex_error: %d\n",
-                    res, res_ex);
+                    _tsp_state_to_string(state->state), res, res_ex);
                 LOGopenssl(LEVEL_DEBUG);
-                state->state = TLS_STATE_CLOSE;
+                state->state = TSP_STATE_NEED_CLOSE;
             }
             break;
 
         //!It's time for subprobe to say hello
-        case TLS_STATE_APP_HELLO: {
+        case TSP_STATE_SAY_HELLO: {
 
             struct DataPass subpass = {0};
             tlsstate_conf.subprobe->make_hello_cb(&subpass, &tls_state->substate, target);
@@ -1058,7 +1090,7 @@ tlsstate_parse_response(
             /*Maybe no hello and maybe just close*/
             if (!subpass.data || !subpass.len) {
                 pass->is_close = subpass.is_close;
-                state->state   = TLS_STATE_APP_RECVING;
+                state->state   = TSP_STATE_RECV_DATA;
                 return ret;
             }
 
@@ -1075,12 +1107,13 @@ tlsstate_parse_response(
 
             if (res <= 0) {
                 res_ex = SSL_get_error(tls_state->ssl, res);
-                LOG(LEVEL_WARNING, "[ssl_parse_record TLS_STATE_APP_HELLO]SSL_write error: %d %d\n", res,
-                    res_ex);
+                LOG(LEVEL_WARNING, "[TSP Parse RESPONSE: %s] SSL_write error: %d %d\n",
+                    _tsp_state_to_string(state->state), res, res_ex);
                 LOGopenssl(LEVEL_WARNING);
-                state->state = TLS_STATE_CLOSE;
+                state->state = TSP_STATE_NEED_CLOSE;
             } else {
-                LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_APP_HELLO]SSL_write: %d\n", res);
+                LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] SSL_write: %d\n",
+                    _tsp_state_to_string(state->state), res);
                 size_t offset = 0;
                 while (true) {
                     if (tls_state->data_size - offset <= 0) {
@@ -1092,30 +1125,33 @@ tlsstate_parse_response(
                         tls_state->data + offset,
                         (unsigned int)(tls_state->data_size - offset));
                     if (res > 0) {
-                        LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_APP_HELLO]BIO_read: %d\n", res);
+                        LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
+                            _tsp_state_to_string(state->state), res);
                         offset += (size_t)res;
                     } else if (res == 0 || res == -1) {
-                        LOG(LEVEL_DEBUG, "[ssl_parse_record TLS_STATE_APP_HELLO]BIO_read: %d\n", res);
+                        LOG(LEVEL_DEBUG, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
+                            _tsp_state_to_string(state->state), res);
                         break;
                     } else {
                         LOG(LEVEL_WARNING,
-                            "[ssl_parse_record TLS_STATE_APP_HELLO]BIO_read failed with error: %d\n", res);
+                            "[TSP Parse RESPONSE: %s] BIO_read failed with error: %d\n",
+                             _tsp_state_to_string(state->state), res);
                         LOGopenssl(LEVEL_WARNING);
-                        state->state = TLS_STATE_CLOSE;
+                        state->state = TSP_STATE_NEED_CLOSE;
                         break;
                     }
                 }
-                if (state->state != TLS_STATE_CLOSE) {
+                if (state->state != TSP_STATE_NEED_CLOSE) {
                     datapass_set_data(pass, tls_state->data, offset, 1);
                     pass->is_close = subpass.is_close;
-                    state->state   = TLS_STATE_APP_RECVING;
+                    state->state   = TSP_STATE_RECV_DATA;
                     return ret;
                 }
             }
         } break;
 
         //!Pass data to subprobe and send data again and maybe close.
-        case TLS_STATE_APP_RECVING: {
+        case TSP_STATE_RECV_DATA: {
             size_t offset = 0;
             while (true) {
                 /*We have to read all data in the SSL buffer.*/
@@ -1129,7 +1165,8 @@ tlsstate_parse_response(
                     continue;
                 } else if (res > 0) {
                     /*got all data from SSL buffer, give it to subprobe*/
-                    LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]SSL_read: %d\n", offset);
+                    LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] SSL_read: %d\n",
+                        _tsp_state_to_string(state->state), offset);
 
                     struct DataPass subpass = {0};
 
@@ -1139,7 +1176,7 @@ tlsstate_parse_response(
                     /*Maybe no hello and maybe just close*/
                     if (!subpass.data || !subpass.len) {
                         pass->is_close = subpass.is_close;
-                        state->state   = TLS_STATE_APP_RECVING;
+                        state->state   = TSP_STATE_RECV_DATA;
                         return ret;
                     }
 
@@ -1156,12 +1193,13 @@ tlsstate_parse_response(
 
                     if (res <= 0) {
                         res_ex = SSL_get_error(tls_state->ssl, res);
-                        LOG(LEVEL_WARNING, "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]SSL_write error: %d %d\n", res,
-                            res_ex);
-                        state->state = TLS_STATE_CLOSE;
+                        LOG(LEVEL_WARNING, "[TSP Parse RESPONSE: %s] SSL_write error: %d %d\n",
+                            _tsp_state_to_string(state->state), res, res_ex);
+                        state->state = TSP_STATE_NEED_CLOSE;
                         break;
                     } else {
-                        LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]SSL_write: %d\n", res);
+                        LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] SSL_write: %d\n",
+                            _tsp_state_to_string(state->state), res);
                         size_t offset = 0;
                         while (true) {
                             if (tls_state->data_size - offset <= 0) {
@@ -1171,38 +1209,41 @@ tlsstate_parse_response(
                             res = BIO_read(tls_state->wbio, tls_state->data + offset,
                                 (unsigned int)(tls_state->data_size - offset));
                             if (res > 0) {
-                                LOG(LEVEL_INFO, "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]BIO_read: %d\n", res);
+                                LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
+                                    _tsp_state_to_string(state->state), res);
                                 offset += (size_t)res;
                             } else if (res == 0 || res == -1) {
-                                LOG(LEVEL_DEBUG, "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]BIO_read: %d\n", res);
+                                LOG(LEVEL_DEBUG, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
+                                    _tsp_state_to_string(state->state), res);
                                 break;
                             } else {
                                 LOG(LEVEL_WARNING,
-                                    "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]BIO_read failed with error: %d\n", res);
-                                state->state = TLS_STATE_CLOSE;
+                                    "[TSP Parse RESPONSE: %s] BIO_read failed with error: %d\n",
+                                    _tsp_state_to_string(state->state), res);
+                                state->state = TSP_STATE_NEED_CLOSE;
                                 break;
                             }
                         }
-                        if (state->state != TLS_STATE_CLOSE) {
+                        if (state->state != TSP_STATE_NEED_CLOSE) {
                             datapass_set_data(pass, tls_state->data, offset, 1);
                             pass->is_close = subpass.is_close;
-                            state->state   = TLS_STATE_APP_RECVING;
+                            state->state   = TSP_STATE_RECV_DATA;
                             return ret;
                         }
                     }
                 } else {
                     res_ex = SSL_get_error(tls_state->ssl, res);
                     if (res_ex == SSL_ERROR_WANT_READ) {
-                        is_continue = 0;
+                        is_continue = false;
                     } else if (res_ex == SSL_ERROR_ZERO_RETURN) {
-                        state->state = TLS_STATE_CLOSE;
+                        state->state = TSP_STATE_NEED_CLOSE;
                     } else {
                         if (res_ex != SSL_ERROR_SSL) {
-                            LOG(LEVEL_WARNING, "[ssl_parse_record TLS_STATE_APP_RECEIVE_NEXT]SSL_read error: %d %d\n",
-                                res, res_ex);
+                            LOG(LEVEL_WARNING, "[TSP Parse RESPONSE: %s] SSL_read error: %d %d\n",
+                                _tsp_state_to_string(state->state), res, res_ex);
                             LOGopenssl(LEVEL_WARNING);
                         }
-                        state->state = TLS_STATE_CLOSE;
+                        state->state = TSP_STATE_NEED_CLOSE;
                     }
                     break;
                 }
@@ -1210,7 +1251,7 @@ tlsstate_parse_response(
             break;
         }
 
-        case TLS_STATE_CLOSE:
+        case TSP_STATE_NEED_CLOSE:
             pass->is_close = 1;
             pass->len      = 0;
             pass->data     = NULL;
