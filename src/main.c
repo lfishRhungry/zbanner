@@ -376,8 +376,8 @@ static int _main_scan(struct Xconf *xconf) {
     while (!time_to_finish_tx) {
         unsigned       i;
         double         rate                      = 0;
-        double         tx_queue_ratio            = 0;
-        double         rx_queue_ratio            = 0;
+        double         tx_queue_ratio            = 100.0;
+        double         rx_queue_ratio            = 100.0;
         uint64_t       total_successed           = 0;
         uint64_t       total_failed              = 0;
         uint64_t       total_info                = 0;
@@ -472,8 +472,8 @@ static int _main_scan(struct Xconf *xconf) {
     for (;;) {
         unsigned      i;
         double        rate                        = 0;
-        double        tx_queue_ratio              = 0;
-        double        rx_queue_ratio              = 0;
+        double        tx_queue_ratio              = 100.0;
+        double        rx_queue_ratio              = 100.0;
         uint64_t      total_successed             = 0;
         uint64_t      total_failed                = 0;
         uint64_t      total_info                  = 0;

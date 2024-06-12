@@ -1133,10 +1133,10 @@ static enum ConfigRes SET_target_output(void *conf, const char *name, const char
                         (range.begin>>16)&0xFF,
                         (range.begin>> 8)&0xFF,
                         (range.begin>> 0)&0xFF,
-                        (range.end>>24)&0xFF,
-                        (range.end>>16)&0xFF,
-                        (range.end>> 8)&0xFF,
-                        (range.end>> 0)&0xFF
+                        (range.end  >>24)&0xFF,
+                        (range.end  >>16)&0xFF,
+                        (range.end  >> 8)&0xFF,
+                        (range.end  >> 0)&0xFF
                         );
             }
             fprintf(xconf->echo, "\n");
