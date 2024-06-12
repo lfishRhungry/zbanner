@@ -108,9 +108,9 @@ static int LOGopenssl_cb(const char *str, size_t len, void *bp) {
 int LOGopenssl(int level) {
   int res = 0;
   if (level <= global_debug_level) {
-    fprintf(stderr, "OpenSSL error:\n");
+    fprintf(stderr, "[TSP OpenSSL error] ");
     ERR_print_errors_cb(LOGopenssl_cb, NULL);
-    fprintf(stderr, "\n");
+    // fprintf(stderr, "\n");
     fflush(stderr);
   }
   return res;

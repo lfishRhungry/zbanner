@@ -83,6 +83,7 @@ struct TlsStateConf {
     unsigned                  dump_cipher:1;
     unsigned                  ssl_keylog:1;
     unsigned                  dump_cert:1;
+    unsigned                  fail_handshake:1;
 };
 
 static struct TlsStateConf tlsstate_conf = {0};
@@ -165,6 +166,16 @@ static enum ConfigRes SET_dump_subject(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
+static enum ConfigRes SET_fail_handshake(void *conf, const char *name, const char *value)
+{
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tlsstate_conf.fail_handshake = parseBoolean(value);
+
+    return Conf_OK;
+}
+
 static struct ConfigParam tlsstate_parameters[] = {
     {
         "subprobe",
@@ -217,6 +228,13 @@ static struct ConfigParam tlsstate_parameters[] = {
         Type_BOOL,
         {"subject", 0},
         "Record X509 subject info of SSL/TLS server to results as INFO."
+    },
+    {
+        "fail-handshake",
+        SET_fail_handshake,
+        Type_BOOL,
+        {"handshake-fail", 0},
+        "Output TLS handshake failed as FAILED results. Default is INFO."
     },
 
     {0}
@@ -1065,12 +1083,26 @@ tlsstate_parse_response(
                 }
 
             } else {  //cannot go on handshake
+
+                state->state = TSP_STATE_NEED_CLOSE;
+
                 LOG(LEVEL_DEBUG,
                     "[TSP Parse RESPONSE: %s] SSL_do_handshake failed with error: %d, "
                     "ex_error: %d\n",
                     _tsp_state_to_string(state->state), res, res_ex);
                 LOGopenssl(LEVEL_DEBUG);
-                state->state = TSP_STATE_NEED_CLOSE;
+
+                struct OutputItem item = {
+                    .ip_proto  = target->ip_proto,
+                    .ip_them   = target->ip_them,
+                    .port_them = target->port_them,
+                    .ip_me     = target->ip_me,
+                    .port_me   = target->port_me,
+                    .level     = tlsstate_conf.fail_handshake?Output_FAILURE:Output_INFO,
+                };
+                safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls error");
+                safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "handshake failed");
+                output_result(_tls_out, &item);
             }
             break;
 
