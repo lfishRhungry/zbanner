@@ -943,7 +943,7 @@ tlsstate_parse_response(
     if (is_continue && px != NULL && sizeof_px != 0) {
 
         size_t   offset   = 0;
-        uint64_t now_time = pixie_gettime();
+        // uint64_t now_time = pixie_gettime();
 
         res = 0;
         while (offset < sizeof_px) {
@@ -963,19 +963,19 @@ tlsstate_parse_response(
             }
         }
 
-        now_time = pixie_gettime() - now_time;
-        if (sizeof_px > TLS_BIO_MEM_LIMIT || now_time > 1000000) {
-            LOGip(LEVEL_WARNING, target->ip_them, target->port_them,
-                  "[TSP Parse RESPONSE] len px: 0x%" PRIxPTR ", time: " PRIu64
-                  " millis\n",
-                  sizeof_px, now_time * 1000);
-            LOG(LEVEL_WARNING, "[TSP Parse RESPONSE] offset: 0x%" PRIxPTR ", res = %d\n",
-                offset, res);
-            if (sizeof_px > 3) {
-                LOG(LEVEL_WARNING, "[TSP Parse RESPONSE] dump: %02X %02X %02X %02X\n",
-                    px[0], px[1], px[2], px[3]);
-            }
-        }
+        // now_time = pixie_gettime() - now_time;
+        // if (sizeof_px > TLS_BIO_MEM_LIMIT || now_time > 1000000) {
+        //     LOGip(LEVEL_WARNING, target->ip_them, target->port_them,
+        //           "[TSP Parse RESPONSE] len px: 0x%" PRIxPTR ", time: " PRIu64
+        //           " millis\n",
+        //           sizeof_px, now_time * 1000);
+        //     LOG(LEVEL_WARNING, "[TSP Parse RESPONSE] offset: 0x%" PRIxPTR ", res = %d\n",
+        //         offset, res);
+        //     if (sizeof_px > 3) {
+        //         LOG(LEVEL_WARNING, "[TSP Parse RESPONSE] dump: %02X %02X %02X %02X\n",
+        //             px[0], px[1], px[2], px[3]);
+        //     }
+        // }
     }
 
     while (is_continue) {
@@ -1068,7 +1068,8 @@ tlsstate_parse_response(
 
                 if (state->state != TSP_STATE_NEED_CLOSE) {
                     datapass_set_data(pass, tls_state->data, offset, 1);
-                    return ret;
+                    is_continue = false;
+                    break;
                 }
 
             } else {  //cannot go on handshake
@@ -1087,22 +1088,21 @@ tlsstate_parse_response(
             struct DataPass subpass = {0};
             tlsstate_conf.subprobe->make_hello_cb(&subpass, &tls_state->substate, target);
 
-            /*Maybe no hello and maybe just close*/
+            /**
+             * Maybe no hello to say and just wait for response.
+             * Or maybe just close the conn*/
             if (!subpass.data || !subpass.len) {
                 pass->is_close = subpass.is_close;
                 state->state   = TSP_STATE_RECV_DATA;
-                return ret;
+                is_continue    = false;
+                break;
             }
 
-            res = 1;
-
-            if (subpass.data != NULL && subpass.len != 0) {
-                res = SSL_write(tls_state->ssl, subpass.data, subpass.len);
-                if (subpass.is_dynamic) {
-                    free(subpass.data);
-                    subpass.data = NULL;
-                    subpass.len  = 0;
-                }
+            res = SSL_write(tls_state->ssl, subpass.data, subpass.len);
+            if (subpass.is_dynamic) {
+                free(subpass.data);
+                subpass.data = NULL;
+                subpass.len  = 0;
             }
 
             if (res <= 0) {
@@ -1145,10 +1145,12 @@ tlsstate_parse_response(
                     datapass_set_data(pass, tls_state->data, offset, 1);
                     pass->is_close = subpass.is_close;
                     state->state   = TSP_STATE_RECV_DATA;
-                    return ret;
+                    is_continue    = false;
+                    break;
                 }
             }
-        } break;
+            break;
+        }
 
         //!Pass data to subprobe and send data again and maybe close.
         case TSP_STATE_RECV_DATA: {
