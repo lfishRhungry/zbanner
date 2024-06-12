@@ -203,7 +203,7 @@ void
 output_result(const struct Output *out, struct OutputItem *item)
 {
     if (item->no_output)
-        return;
+        goto error0;
 
     if (!item->timestamp)
         ((struct OutputItem *)item)->timestamp = global_now;
@@ -227,11 +227,11 @@ output_result(const struct Output *out, struct OutputItem *item)
     }
 
     if (item->level==Output_INFO && !out->is_show_info)
-        return;
+        goto error0;
     if (item->level==Output_FAILURE && !out->is_show_failed)
-        return;
+        goto error0;
     if (item->level==Output_SUCCESS && out->no_show_success)
-        return;
+        goto error0;
 
     if (out->output_module) {
         pixie_acquire_mutex(out->module_mutex);
@@ -248,6 +248,7 @@ output_result(const struct Output *out, struct OutputItem *item)
         pixie_release_mutex(out->stdout_mutex);
     }
 
+error0:
     dach_release(&item->report);
 }
 
