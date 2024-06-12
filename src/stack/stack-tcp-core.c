@@ -412,6 +412,35 @@ _tcb_change_state_to(struct TCP_Control_Block *tcb, enum Tcp_State new_state) {
 }
 
 /***************************************************************************
+ ***************************************************************************/
+static unsigned
+_tcb_hash(ipaddress ip_me, unsigned port_me, 
+    ipaddress ip_them, unsigned port_them,
+    uint64_t entropy)
+{
+    unsigned index;
+
+    /* TCB hash table uses symmetric hash, so incoming/outgoing packets
+     * get the same hash. */
+    if (ip_me.version == 6) {
+        ipv6address ipv6 = ip_me.ipv6;
+        ipv6.hi ^= ip_them.ipv6.hi;
+        ipv6.lo ^= ip_them.ipv6.lo;
+        index = (unsigned)get_cookie_ipv6(
+            ipv6, port_me ^ port_them,
+            ipv6, port_me ^ port_them,
+            entropy);
+
+    } else {
+        index = (unsigned)get_cookie_ipv4(
+            ip_me.ipv4 ^ ip_them.ipv4, port_me ^ port_them,
+            ip_me.ipv4 ^ ip_them.ipv4, port_me ^ port_them,
+            entropy);
+    }
+    return index;
+}
+
+/***************************************************************************
  * Destroy a TCP connection entry. We have to unlink both from the
  * TCB-table as well as the timeout-table.
  ***************************************************************************/
@@ -425,7 +454,8 @@ _tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
 
     UNUSEDPARM(reason);
 
-    index = get_cookie(tcb->ip_me, tcb->port_me, 
+    index = _tcb_hash(
+        tcb->ip_me, tcb->port_me, 
         tcb->ip_them, tcb->port_them, 
         tcpcon->entropy);
 
@@ -508,6 +538,7 @@ tcpcon_destroy_table(struct TCP_ConnectionTable *tcpcon)
 }
 
 
+
 /***************************************************************************
  * Called when we receive a "SYN-ACK" packet with the correct SYN-cookie.
  ***************************************************************************/
@@ -533,7 +564,7 @@ tcpcon_create_tcb(
     tmp.port_me   = (unsigned short)port_me;
     tmp.port_them = (unsigned short)port_them;
 
-    index = get_cookie(ip_me, port_me, ip_them, port_them, tcpcon->entropy);
+    index = _tcb_hash(ip_me, port_me, ip_them, port_them, tcpcon->entropy);
     tcb   = tcpcon->entries[index & tcpcon->mask];
 
     while (tcb && !_TCB_EQUALS(tcb, &tmp)) {
@@ -623,7 +654,7 @@ tcpcon_lookup_tcb(
     tmp.port_me   = (unsigned short)port_me;
     tmp.port_them = (unsigned short)port_them;
 
-    index = get_cookie(ip_me, port_me, ip_them, port_them, tcpcon->entropy);
+    index = _tcb_hash(ip_me, port_me, ip_them, port_them, tcpcon->entropy);
     tcb   = tcpcon->entries[index & tcpcon->mask];
 
     while (tcb && !_TCB_EQUALS(tcb, &tmp)) {
