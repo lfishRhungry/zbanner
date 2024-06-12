@@ -859,12 +859,11 @@ tlsstate_make_hello(
     if (state->data==NULL)
         goto error1;
 
-    struct TlsState *tls_state = state->data;
-    int    res, res_ex;
     size_t offset = 0;
+    struct TlsState *tls_state = state->data;
 
-    res    = SSL_do_handshake(tls_state->ssl);
-    res_ex = SSL_ERROR_NONE;
+    int res    = SSL_do_handshake(tls_state->ssl);
+    int res_ex = SSL_ERROR_NONE;
     if (res < 0) {
         res_ex = SSL_get_error(tls_state->ssl, res);
     }
@@ -1256,7 +1255,6 @@ tlsstate_parse_response(
                     }
                     state->state = TSP_STATE_NEED_CLOSE;
                 }
-                break;
             }
             break;
         }
@@ -1265,7 +1263,8 @@ tlsstate_parse_response(
             pass->is_close = 1;
             pass->len      = 0;
             pass->data     = NULL;
-            return ret;
+            is_continue    = false;
+            break;
         }
     }
 
