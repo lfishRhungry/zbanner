@@ -318,7 +318,7 @@ tcpstate_handle(
         }
 
         if (tcb == NULL) {
-            /*comput of mss is not easy*/
+            /*compute of mss is not easy*/
             mss_them = tcp_get_mss(recved->packet, recved->length, &mss_found);
             if (!mss_found) mss_them = 0;
             tcb = tcpcon_create_tcb(tcpcon, ip_me, ip_them, port_me, port_them,
@@ -350,7 +350,7 @@ tcpstate_handle(
         }
 
     } else if (tcb) {
-        /* If this is an ACK, then handle that first */
+        /* If this has an ACK, then handle that first */
         if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
             TCP_FLAG_ACK)) {
             stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_ACK, 0, 0,
