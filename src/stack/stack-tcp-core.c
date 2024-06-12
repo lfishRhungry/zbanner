@@ -798,9 +798,14 @@ _application_notify(
     const void *payload, size_t payload_length,
     unsigned secs, unsigned usecs)
 {
-    struct StackHandler socket = {tcpcon, tcb, secs, usecs};
+    struct StackHandler socket = {
+        .tcpcon = tcpcon,
+        .tcb    = tcb,
+        .secs   = secs,
+        .usecs  = usecs
+    };
 
-    application_event(&socket, tcb->app_state, event, tcb->probe, payload, payload_length);
+    application_event(&socket, event, payload, payload_length);
 }
 
 
@@ -1315,12 +1320,13 @@ _event_to_string(enum App_Event ev) {
     default: return "unknown";
     }
 }
- 
+
 void
-application_event(struct StackHandler *socket,
-    enum App_State cur_state, enum App_Event cur_event,
-    const struct ProbeModule *probe,
+application_event(struct StackHandler *socket, enum App_Event cur_event,
     const void *payload, size_t payload_length) {
+
+    enum App_State cur_state         = socket->tcb->app_state;
+    const struct ProbeModule *probe  = socket->tcb->probe;
 
 again:
     switch (cur_state) {

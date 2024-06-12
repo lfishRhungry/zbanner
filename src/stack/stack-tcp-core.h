@@ -135,9 +135,7 @@ tcpapi_close(struct StackHandler *socket);
  * Media between Probe and our simplified TCP stack
  */
 void
-application_event(struct StackHandler *socket,
-    enum App_State cur_state, enum App_Event cur_event,
-    const struct ProbeModule *probe,
+application_event(struct StackHandler *socket, enum App_Event cur_event,
     const void *payload, size_t payload_length);
 
 #endif
