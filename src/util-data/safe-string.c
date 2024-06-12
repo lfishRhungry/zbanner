@@ -103,23 +103,23 @@ stristr (const char * haystack, const char * needle)
 {
     char *cp = (char *) haystack;
     char *s1, *s2;
-    
+
     if (!*needle)
         return((char *)haystack);
-    
+
     while (*cp) {
         s1 = cp;
         s2 = (char *) needle;
-        
+
         while (*s1 && *s2 && toupper(*s1)==toupper(*s2) ) {
             s1++, s2++;
         }
-        
+
         if (!*s2) return(cp);
-        
+
         cp++;
     }
-    
+
     return(NULL);
 }
 
@@ -129,22 +129,22 @@ safe_memismem (const void * haystack, size_t haystacklen,
 {
     char *cp = (char *) haystack;
     char *s1, *s2;
-    
+
     while (*cp) {
         s1 = cp;
         s2 = (char *) needle;
-        
+
         while ((s1-(char *)haystack)!=haystacklen
             && (s2-(char *)needle)!=needlelen
             && toupper(*s1)==toupper(*s2) ) {
             s1++, s2++;
         }
-        
+
         if ((s2-(char *)needle)==needlelen) return(cp);
-        
+
         cp++;
     }
-    
+
     return(NULL);
 }
 

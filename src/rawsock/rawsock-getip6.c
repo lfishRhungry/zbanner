@@ -65,7 +65,7 @@ rawsock_get_adapter_ipv6(const char *ifname)
             continue;
 
         addr = ipv6address_from_bytes((const unsigned char *)&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr);
-        
+
         /**
          * Supports single-cast and NAT6(fdXX) scenarios
          * Set source ip if use local(feXX) mode */
@@ -248,7 +248,7 @@ rawsock_get_adapter_ipv6(const char *ifname)
             continue;
 
         addr = ipv6address_from_bytes((const unsigned char *)&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr);
-        
+
         /**
          * Supports single-cast and NAT6(fdXX) scenarios
          * Set source ip if use local(feXX) mode */

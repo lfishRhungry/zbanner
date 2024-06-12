@@ -252,7 +252,7 @@ struct SmackPattern
     unsigned                is_anchor_end:1;
 
     unsigned                is_snmp_hack:1;
-    
+
     unsigned                is_wildcards:1;
 };
 
@@ -1108,15 +1108,15 @@ static void
 smack_fixup_wildcards(struct SMACK *smack)
 {
     size_t i;
-    
+
     for (i=0; i<smack->m_pattern_count; i++) {
         size_t j;
         struct SmackPattern *pat = smack->m_pattern_list[i];
-        
+
         /* skip patterns that aren't wildcards */
         if (!pat->is_wildcards)
             continue;
-        
+
         /* find the state leading up to the wilcard * character */
         for (j=0; j<pat->pattern_length; j++) {
             unsigned row = 0;
@@ -1126,19 +1126,19 @@ smack_fixup_wildcards(struct SMACK *smack)
             transition_t next_pattern;
             transition_t base_state = (smack->is_anchor_begin?1:0);
             size_t k;
-            
+
             /* Skip non-wildcard characters */
             if (pat->pattern[j] != '*')
                 continue;
-            
+
             /* find the current 'row' */
             while (offset < j)
                 smack_search_next(smack, &row, pat->pattern, &offset, (unsigned)j);
-            
+
             row = row & 0xFFFFFF;
             table = smack->table + (row << smack->row_shift);
             next_pattern = table[smack->char_to_symbol['*']];
-            
+
             for (k=0; k<row_size; k++) {
                 if (table[k] == base_state)
                     table[k] = next_pattern;
@@ -1210,7 +1210,7 @@ smack_compile(struct SMACK *smack)
      * Build the final table we use for evaluation
      */
     smack_stage4_make_final_table(smack);
-    
+
     /*
      * Fixup the wildcard states
      */
@@ -1349,17 +1349,17 @@ inner_match(    const unsigned char *px,
     const unsigned char *px_start = px;
     const unsigned char *px_end = px + length;
     unsigned row = *state;
-    
+
     for ( ; px<px_end; px++) {
         unsigned char column;
-        
+
         /* Convert that character into a symbol. This compresses the table.
          * Even though there are 256 possible combinations for a byte, we
          * are probably using fewer than 32 individual characters in the
          * patterns we are looking for. This step allows us to create tables
          * that are only 32 elements wide, instead of 256 elements wide */
         column = char_to_symbol[*px];
-        
+
         /*
          * STATE TRANSITION
          * Given the current row, lookup the symbol, and find the next row.
@@ -1370,10 +1370,10 @@ inner_match(    const unsigned char *px,
          * manually.
          */
         row = *(table + (row<<row_shift) + column);
-        
+
         if (row >= match_limit)
             break;
-        
+
     }
 
     *state = row;
@@ -1392,7 +1392,7 @@ inner_match_shift7(    const unsigned char *px,
     const unsigned char *px_start = px;
     const unsigned char *px_end = px + length;
     unsigned row = *state;
-    
+
     for ( ; px<px_end; px++) {
         unsigned char column;
         column = char_to_symbol[*px];
@@ -1400,7 +1400,7 @@ inner_match_shift7(    const unsigned char *px,
         if (row >= match_limit)
             break;
     }
-    
+
     *state = row;
     return px - px_start;
 }
@@ -1432,7 +1432,7 @@ smack_search_next(      struct SMACK *  smack,
 
     /* See if there are current matches we are processing */
     current_matches = (*current_state)>>24;
- 
+
     /* 'for all bytes in this block' */
     if (current_matches == 0 /*no previous matches*/) {
         /*if ((length-i) & 1)
@@ -1592,7 +1592,7 @@ smack_search_next_end(  struct SMACK *  smack,
         id = match[row].m_ids[current_matches - 1];
         current_matches--;
     }
-    
+
     *current_state = row | (current_matches<<24);
     return id;
 }
@@ -1608,7 +1608,7 @@ r_rand(unsigned *seed)
 {
     static const unsigned a = 214013;
     static const unsigned c = 2531011;
-    
+
     *seed = (*seed) * a + c;
     return (*seed)>>16 & 0x7fff;
 }
@@ -1628,7 +1628,7 @@ int smack_benchmark()
     uint64_t cycle1, cycle2;
 
     printf("-- smack-1 -- \n");
-    
+
     s = smack_create("benchmark1", 1);
 
     /* Fill a buffer full of junk */
@@ -1649,7 +1649,7 @@ int smack_benchmark()
 
         for (j=0; j<pattern_length; j++)
             pattern[j] = (char)(r_rand(&seed)&0x7F) | 0x80;
-        
+
         smack_add_pattern(s, pattern, pattern_length, i, 0);
     }
 
@@ -1678,7 +1678,7 @@ int smack_benchmark()
         printf("clocks/byte = %5.3f\n", (1.0/cycles));
         printf("clockrate = %5.3f-GHz\n", ((cycle2-cycle1)*1.0/elapsed)/1000000000.0);
 
-        
+
     }
 
     free(buf);
@@ -1758,7 +1758,7 @@ int smack_selftest()
         fprintf(stderr, "[-] smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
         return 1;
     }
-    
+
     /* SMACK_ANCHOR_END search end test
      * We've reached the end of input, so now we tell this to the module.
      * The only purpose for calling this is if we have "ANCHOR_END"
@@ -1770,7 +1770,7 @@ int smack_selftest()
         LOG(LEVEL_ERROR, "[-] smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
         return 1;
     }
-    
+
     /* We have TWO end patterns that will match. We need to make sure the
      * second also was triggered, and that it's different from the first.
      * Note that this text is agnostic which of the two ending patterns
@@ -1785,7 +1785,7 @@ int smack_selftest()
         LOG(LEVEL_ERROR, "[-] smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
         return 1;
     }
-    
+
     /* We have only two ending patterns, so if we try for a third, we'll get
      * a NOT FOUND */
     id2 = smack_search_next_end(s, &state);
@@ -1797,7 +1797,7 @@ int smack_selftest()
 
     smack_destroy(s);
 
-    
+
     LOG(LEVEL_WARNING, "[+] smack: success!\n");
     return 0;
 }

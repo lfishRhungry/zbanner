@@ -205,7 +205,7 @@ int probe_type_to_string(unsigned type, char *string, size_t str_len)
 void list_all_probe_modules()
 {
     int len = (int)ARRAY_SIZE(probe_modules_list);
-    
+
     printf("\n");
     printf(XPRINT_STAR_LINE);
     printf("\n");

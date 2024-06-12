@@ -305,7 +305,7 @@ blackrock_verify(struct BlackRock *br, uint64_t max)
 
     /* Allocate a list of 1-byte counters */
     list = CALLOC(1, (size_t)((range<max)?range:max));
-    
+
     /* For all numbers in the range, verify increment the counter for
      * the output. */
     for (i=0; i<range; i++) {
@@ -383,7 +383,7 @@ int blackrock_selftest()
      */
     {
         struct BlackRock br;
-        
+
         blackrock_init(&br, 1000, 0, 4);
 
         for (i=0; i<10; i++) {

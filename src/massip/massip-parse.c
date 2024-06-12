@@ -90,12 +90,12 @@ _parser_finish_ipv6(struct massip_parser *p)
 {
     unsigned index    = p->ipv6.index;
     unsigned ellision = p->ipv6.ellision_index;
-    
+
 
     /* We must have seen 8 numbers, or an ellision */
     if (index < 8 && ellision >= 8)
         return 1;
-    
+
     /* Handle ellision */
     memmove(
         &p->ipv6.tmp[8-(index-ellision)],
@@ -107,7 +107,7 @@ _parser_finish_ipv6(struct massip_parser *p)
         0,
         sizeof(p->ipv6.tmp[0]) * (8 - index)
     );
-    
+
     /* Copy over to begin/end. We parse the address as a series of 16-bit
      * integers, but return the result as two 64-bit integers */
     {
@@ -177,7 +177,7 @@ _switch_to_ipv6(struct massip_parser *p, int old_state)
         + ((num/100)%10) * 16 * 16
         + ((num/10)%10) * 16
         + (num % 10);
-    
+
     //printf("%u -> 0x%x\n", p->tmp, num);
     p->tmp = num;
     return old_state;
@@ -205,7 +205,7 @@ static void
 _ipv4_apply_cidr(unsigned *begin, unsigned *end, unsigned bitcount)
 {
     unsigned long long mask = 0xFFFFFFFF00000000ULL >> bitcount;
-    
+
     /* mask off low-order bits */
     *begin &= (unsigned)mask;
 
@@ -233,7 +233,7 @@ static void
 _ipv6_apply_cidr(ipv6address *begin, ipv6address *end, unsigned prefix)
 {
     ipv6address mask;
-    
+
     /* For bad prefixes, make sure we return an invalid address */
     if (prefix > 128) {
         static const ipv6address invalid = {~0ULL, ~0ULL};
@@ -249,7 +249,7 @@ _ipv6_apply_cidr(ipv6address *begin, ipv6address *end, unsigned prefix)
         mask.hi = 0;
     else
         mask.hi = ~0ULL << (64 - prefix);
-    
+
     if (prefix > 64)
         mask.lo = ~0ULL << (128 - prefix);
     else
@@ -259,7 +259,7 @@ _ipv6_apply_cidr(ipv6address *begin, ipv6address *end, unsigned prefix)
      * TODO print warning */
     begin->hi &= mask.hi;
     begin->lo &= mask.lo;
-    
+
     /* Set all suffix bits to 1, so that 192.168.1.0/24 has
      * an ending address of 192.168.1.255. */
     end->hi = begin->hi | ~mask.hi;
@@ -305,7 +305,7 @@ _parser_next(struct massip_parser *p, const char *buf, size_t *r_offset, size_t 
                     case '#': case ';': case '/': case '-':
                         state = COMMENT;
                         continue;
-                        
+
                     case '0': case '1': case '2': case '3': case '4':
                     case '5': case '6': case '7': case '8': case '9':
                         p->tmp = (c - '0');
@@ -352,7 +352,7 @@ _parser_next(struct massip_parser *p, const char *buf, size_t *r_offset, size_t 
                         break;
                 }
                 break;
-                
+
             case IPV6_COLON:
                 p->digit_count = 0;
                 p->tmp = 0;
@@ -739,7 +739,7 @@ _parser_next(struct massip_parser *p, const char *buf, size_t *r_offset, size_t 
                         break;
                 }
                 break;
-                
+
             default:
             case ERROR:
             case NUMBER_ERR:
@@ -793,7 +793,7 @@ rangefile_test_error(const char *buf, unsigned long long in_line_number, unsigne
     offset = 0;
     out_begin = 0xa3a3a3a3;
     out_end  = 0xa3a3a3a3;
-    
+
     x = 0;
     while (offset < length) {
         x = _parser_next(p, buf, &offset, offset+1, &out_begin, &out_end);
@@ -905,7 +905,7 @@ massip_parse_file(struct MassIP *massip, const char *filename)
             }
         }
     }
-    
+
     /* Close the file, unless we are reading from <stdin> */
     if (fp != stdin && fp != NULL)
         fclose(fp);
@@ -1074,7 +1074,7 @@ massip_parse_range(const char *line, size_t *offset, size_t count, struct Range 
     int err;
     unsigned begin, end;
     size_t tmp_offset = 0;
-    
+
     /* The 'count' (length of the string) is an optional parameter. If
      * zero, and also the offset is NULL, then set it to the string length */
     if (count == 0 && offset == NULL)
@@ -1084,7 +1084,7 @@ massip_parse_range(const char *line, size_t *offset, size_t count, struct Range 
      * it to point to a value on the stack instead */
     if (offset == NULL)
         offset = &tmp_offset;
-    
+
     /* Create e parser object */
     _parser_init(p);
 
@@ -1145,14 +1145,14 @@ selftest_massip_parse_range(void)
         {0}
     };
     size_t i;
-    
+
     for (i=0; cases[i].line; i++) {
         size_t length = strlen(cases[i].line);
         size_t offset = 0;
         size_t j = 0;
         struct Range6 range6;
         struct Range range4;
-        
+
         while (offset < length) {
             int x;
             x = massip_parse_range(cases[i].line, &offset, length, &range4, &range6);
@@ -1181,7 +1181,7 @@ selftest_massip_parse_range(void)
             }
             j++;
         }
-        
+
         /* Make sure we have found all the expected cases */
         if (cases[i].list[j].ipv4.begin != 0) {
             LOG(LEVEL_ERROR, "[-] selftest_massip_parse_range[%u] fail\n", (unsigned)i);
@@ -1206,7 +1206,7 @@ rangefile6_test_buffer(struct massip_parser *parser,
     ipv6address found_end = {1,2};
     unsigned tmp1, tmp2;
     int err;
-    
+
     /* test the entire buffer */
     err = _parser_next(parser, buf, &offset, length, &tmp1, &tmp2);
     if (err == Still_Working)
@@ -1215,7 +1215,7 @@ rangefile6_test_buffer(struct massip_parser *parser,
     case Found_IPv6:
         /* Extract the resulting IPv6 address from the state structure */
         _parser_get_ipv6(parser, &found_begin, &found_end);
-    
+
         /* Test to see if the parsed address equals the expected address */
         if (!ipv6address_is_equal(found_begin, expected_begin)) {
             ipaddress_formatted_t fmt1 = ipv6address_fmt(found_begin);
@@ -1295,7 +1295,7 @@ int massip_parse_selftest()
     size_t i;
     struct massip_parser parser[1];
 
-    
+
     /* Run through the test cases, stopping at the first failure */
     _parser_init(parser);
     for (i=0; test_cases[i].string; i++) {
@@ -1310,12 +1310,12 @@ int massip_parse_selftest()
     }
     _parser_destroy(parser);
 
-    
+
     /* First, do the single line test */
     x += selftest_massip_parse_range();
     if (x)
         return x;
-    
+
 
     x += rangefile_test_error("#bad ipv4\n 257.1.1.1\n", 2, 5, __LINE__);
     x += rangefile_test_error("#bad ipv4\n 1.257.1.1.1\n", 2, 6, __LINE__);

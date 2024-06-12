@@ -359,7 +359,7 @@ tcpcon_create_table(size_t entry_count,
     tcpcon->expire = connection_timeout;
     if (tcpcon->expire == 0)
         tcpcon->expire = TCP_CORE_DEFAULT_EXPIRE; /* half a minute before destroying tcb */
-    
+
     bool is_found;
     tcpcon->mss_me = tcp_get_mss(syn_template->ipv4.packet,
         syn_template->ipv4.length, &is_found);
@@ -752,7 +752,7 @@ _tcpcon_send_raw_SYN(struct TCP_ConnectionTable *tcpcon,
                 uint32_t seqno_me)
 {
     struct PacketBuffer *response = 0;
-    
+
     assert(ip_me.version != 0 && ip_them.version != 0);
 
     response = stack_get_packetbuffer(tcpcon->stack);
@@ -764,7 +764,7 @@ _tcpcon_send_raw_SYN(struct TCP_ConnectionTable *tcpcon,
             is_warning_printed = 1;
         }
         fflush(stdout);
-        
+
         /* FIXME: This would result from a bug in the code,
          * but I'm not sure what should be done in response */
         pixie_usleep(100); /* no packet available */
@@ -838,7 +838,7 @@ _tcb_seg_send(
     struct TCP_Control_Block *tcb, 
     const void *buf, size_t length, 
     unsigned is_dynamic) {
-    
+
     if (!buf || !length) return;
 
     struct TCP_Segment    *seg;
@@ -933,7 +933,7 @@ _tcp_seg_acknowledge(
             tcb->segments    = seg->next;
             tcb->seqno_me   += seg->length;
             length          -= seg->length;
-            
+
             _LOGtcb(tcb, 1, "ACKed %u-bytes\n", seg->length);
 
             /* free the old segment */
@@ -970,7 +970,7 @@ _tcp_seg_acknowledge(
             }
         }
     }
-    
+
     /* Mark that this was a good ack */
     return true;
 }
@@ -1151,7 +1151,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
             return TCB__okay;
         }
     }
-    
+
     /* FILTER:
      * Reject out-of-order FINs.
      * Handle duplicate FINs here
@@ -1446,7 +1446,7 @@ again:
                         tcpapi_send_data(socket, pass.data, pass.len, pass.is_dynamic);
                     if (pass.is_close)
                         tcpapi_close(socket);
-                    
+
                     /**
                      * multi-probe Multi_AfterHandle.
                      * we use ip info from target because tcb maybe destroyed now
@@ -1460,7 +1460,7 @@ again:
                                 target.ip_me,
                                 socket->tcpcon->src_port_start+idx,
                                 socket->tcpcon->entropy);
-                            
+
                             _tcpcon_send_raw_SYN(socket->tcpcon, target.ip_them,
                                 target.port_them,
                                 target.ip_me,
@@ -1529,7 +1529,7 @@ again:
             struct DataPass pass = {0};
 
             probe->make_hello_cb(&pass, &socket->tcb->probe_state, &target);
-            
+
             /**
              * Split the semantic of DataPass into Sending Data & Closing.
              * Because our TCP API just handle one of each at a time.

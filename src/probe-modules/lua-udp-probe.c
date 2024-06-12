@@ -66,7 +66,7 @@ static enum ConfigRes SET_script(void *conf, const char *name, const char *value
 
     if (luaudp_conf.script)
         free(luaudp_conf.script);
-    
+
     luaudp_conf.script = STRDUP(value);
 
     return Conf_OK;

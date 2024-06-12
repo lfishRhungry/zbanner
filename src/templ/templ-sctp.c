@@ -114,7 +114,7 @@ sctp_create_by_template_ipv4(
     unsigned offset_tcp;
     uint64_t xsum;
     unsigned xsum2;
-    
+
     unsigned ip_id = ip_them ^ port_them ^ init_tag;
     unsigned r_len = sizeof_px;
 

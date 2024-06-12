@@ -5,7 +5,7 @@ unsigned char
 e_next_byte(struct ebuf_t *ebuf) {
     if (ebuf->offset + 1 > ebuf->max)
         return -1;
-    
+
     return ebuf->buf[ebuf->offset++];
 }
 
@@ -14,7 +14,7 @@ e_next_short16(struct ebuf_t *ebuf, int endian) {
     const unsigned char *buf = ebuf->buf;
     size_t offset = ebuf->offset;
     unsigned short result;
-    
+
     if (ebuf->offset + 2 > ebuf->max)
         return -1;
 
@@ -30,7 +30,7 @@ unsigned e_next_int32(struct ebuf_t *ebuf, int endian) {
     const unsigned char *buf = ebuf->buf;
     size_t offset = ebuf->offset;
     unsigned result;
-    
+
     if (ebuf->offset + 4 > ebuf->max)
         return -1;
 
@@ -50,7 +50,7 @@ e_next_long64(struct ebuf_t *ebuf, int endian) {
     size_t offset = ebuf->offset;
     unsigned long long hi;
     unsigned long long lo;
-    
+
     if (ebuf->offset + 8 > ebuf->max)
         return -1ll;
 

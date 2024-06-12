@@ -775,7 +775,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     tls_state->data              = data;
     tls_state->data_size         = TLS_DATA_INIT_SIZE;
     tls_state->handshake_state   = TLS_ST_BEFORE; /*state for openssl*/
- 
+
     state->data = tls_state;
 
     /**

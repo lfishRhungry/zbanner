@@ -640,7 +640,7 @@ static const unsigned long pop[256] = {
 uint64_t primegen_count(primegen *pg,uint64_t to)
 {
   uint64_t count = 0;
-  
+
   for (;;) {
     register int pos;
     register int j;

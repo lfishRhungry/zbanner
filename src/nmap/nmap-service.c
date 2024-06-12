@@ -50,7 +50,7 @@ parse_type(const char *line, size_t *r_offset, size_t line_length)
     size_t name_length;
     size_t name_offset;
     enum SvcP_RecordType result;
-    
+
     /* find length of command name */
     name_offset = offset;
     while (offset < line_length && !isspace(line[offset]))
@@ -59,7 +59,7 @@ parse_type(const char *line, size_t *r_offset, size_t line_length)
     while (offset < line_length && isspace(line[offset]))
         offset++; /* trim whitespace after name */
     *r_offset = offset;
-    
+
     /* Lookup the command name */
     for (i=0; name_to_types[i].name; i++) {
         if (name_length != name_to_types[i].length)
@@ -69,7 +69,7 @@ parse_type(const char *line, size_t *r_offset, size_t line_length)
         }
     }
     result = name_to_types[i].type;
-    
+
     /* return the type */
     return result;
 }
@@ -125,15 +125,15 @@ parse_ports(struct NmapServiceProbeList *list,
     struct RangeList ranges = {0};
 
     UNUSEDPARM(line_length);
-    
+
     p = rangelist_parse_ports(&ranges, line + offset, &is_error, 0);
-    
+
     if (is_error) {
         LOG(LEVEL_ERROR, "%s:%u:%u: bad port spec\n",
             list->filename, list->line_number, (unsigned)(p-line));
         rangelist_remove_all(&ranges);
     }
-    
+
     return ranges;
 }
 
@@ -149,7 +149,7 @@ parse_number(struct NmapServiceProbeList *list,
      rarity 6
      */
     unsigned number = 0;
-    
+
     while (offset < line_length && isdigit(line[offset])) {
         number = number * 10;
         number = number + (line[offset] - '0');
@@ -157,13 +157,13 @@ parse_number(struct NmapServiceProbeList *list,
     }
     while (offset < line_length && isspace(line[offset]))
         offset++;
-    
+
     if (offset != line_length) {
         LOG(LEVEL_ERROR, "%s:%u:%u: unexpected character '%c'\n",
             list->filename, list->line_number, (unsigned)offset,
             isprint(line[offset])?line[offset]:'.');
     }
-    
+
     return number;
 }
 
@@ -176,23 +176,23 @@ parse_name(const char *line, size_t *r_offset, size_t line_length)
     size_t name_offset = *r_offset;
     size_t name_length;
     char *result;
-    
+
     /* grab all characters until first space */
     while (*r_offset < line_length && !isspace(line[*r_offset]))
         (*r_offset)++;
     name_length = *r_offset - name_offset;
     if (name_length == 0)
         return 0;
-    
+
     /* trim trailing white space */
     while (*r_offset < line_length && isspace(line[*r_offset]))
         (*r_offset)++;
-    
+
     /* allocate result string */
     result = MALLOC(name_length+1);
     memcpy(result, line + name_offset, name_length+1);
     result[name_length] = '\0';
-    
+
     return result;
 }
 
@@ -205,13 +205,13 @@ parse_fallback(struct NmapServiceProbeList *list, const char *line, size_t offse
      fallback GetRequest,GenericLines
      */
     struct ServiceProbeFallback *result = 0;
-    
+
     while (offset < line_length) {
         size_t name_offset;
         size_t name_length;
         struct ServiceProbeFallback *fallback;
         struct ServiceProbeFallback **r_fallback;
-        
+
         /* grab all characters until first space */
         name_offset = offset;
         while (offset < line_length && !isspace(line[offset]) && line[offset] != ',')
@@ -224,14 +224,14 @@ parse_fallback(struct NmapServiceProbeList *list, const char *line, size_t offse
                 list->filename, list->line_number, (unsigned)name_offset);
             break;
         }
-        
+
         /* Allocate a record */
         fallback = CALLOC(1, sizeof(*fallback));
-        
+
         fallback->name = MALLOC(name_length+1);
         memcpy(fallback->name, line+name_offset, name_length+1);
         fallback->name[name_length] = '\0';
-        
+
         /* append to end of list */
         for (r_fallback=&result; *r_fallback; r_fallback = &(*r_fallback)->next)
             ;
@@ -239,7 +239,7 @@ parse_fallback(struct NmapServiceProbeList *list, const char *line, size_t offse
         *r_fallback = fallback;
 
     }
-    
+
     return result;
 }
 
@@ -257,7 +257,7 @@ parse_probe(struct NmapServiceProbeList *list,
     const char *filename = list->filename;
     unsigned line_number = list->line_number;
     struct NmapServiceProbe *probe;
-    
+
     /*
      * We have a new 'Probe', so append a blank record to the end of
      * our list
@@ -269,7 +269,7 @@ parse_probe(struct NmapServiceProbeList *list,
             sizeof(list->probes[0]), list->max_slot);
     }
     list->probes[list->count++] = probe;
-    
+
     /*
      * <protocol>
      */
@@ -295,7 +295,7 @@ parse_probe(struct NmapServiceProbeList *list,
     }
     while (offset < line_length && isspace(line[offset]))
         offset++;
-    
+
     /*
      * <probename>
      */
@@ -305,7 +305,7 @@ parse_probe(struct NmapServiceProbeList *list,
             filename, line_number, (unsigned)offset);
         goto parse_error;
     }
-    
+
     /*
      * <probestring>
      *  - must start with a 'q' character
@@ -317,7 +317,7 @@ parse_probe(struct NmapServiceProbeList *list,
         char delimiter;
         char *x;
         size_t x_offset;
-        
+
         if (line_length - offset <= 2) {
             LOG(LEVEL_ERROR, "%s:%u:%u: line too short\n",
                 filename, line_number, (unsigned)offset);
@@ -329,29 +329,29 @@ parse_probe(struct NmapServiceProbeList *list,
                 isprint(line[offset-1])?line[offset-1]:'.');
             goto parse_error;
         }
-        
+
         /* The next character is a 'delimiter' that starts and stops the next
          * string of characters, it it usually '|' but may be anything, like '/',
          * as long as the delimiter itself is not contained inside the string */
         delimiter = line[offset++];
-        
+
         /* allocate a buffer at least as long as the remainder of the line. This is
          * probably too large, but cannot be too small. It's okay if we waste a
          * few characters. */
         x = CALLOC(1, line_length - offset + 1);
         probe->hellostring = x;
-        
+
         /* Grab all the characters until the next delimiter, translating escaped
          * characters as needed */
         x_offset = 0;
         while (offset < line_length && line[offset] != delimiter) {
-            
+
             /* Normal case: unescaped characters */
             if (line[offset] != '\\') {
                 x[x_offset++] = line[offset++];
                 continue;
             }
-            
+
             /* skip escape character '\\' */
             offset++;
             if (offset >= line_length || line[offset] == delimiter) {
@@ -359,7 +359,7 @@ parse_probe(struct NmapServiceProbeList *list,
                     filename, line_number, (unsigned)offset);
                 goto parse_error;
             }
-            
+
             /* Handled escape sequence */
             switch (line[offset++]) {
                 default:
@@ -406,7 +406,7 @@ parse_probe(struct NmapServiceProbeList *list,
                             filename, line_number, (unsigned)offset);
                         goto parse_error;
                     }
-                    
+
                     /* make sure those two characters are hex digits */
                     if (!is_hexchar(line[offset+0])
                         || !is_hexchar(line[offset+1])) {
@@ -416,7 +416,7 @@ parse_probe(struct NmapServiceProbeList *list,
                             isprint(line[offset+2])?line[offset+2]:'.');
                         goto parse_error;
                     }
-                    
+
                     /* parse those two hex digits */
                     x[x_offset++] = (char)(hexval(line[offset+0])<< 4 | hexval(line[offset+1]));
                     offset += 2;
@@ -424,7 +424,7 @@ parse_probe(struct NmapServiceProbeList *list,
             }
         }
         probe->hellolength = x_offset;
-        
+
         if (offset >= line_length || line[offset] != delimiter) {
             LOG(LEVEL_ERROR, "%s:%u:%u: missing end delimiter '%c'\n",
                 filename, line_number, (unsigned)offset,
@@ -434,9 +434,9 @@ parse_probe(struct NmapServiceProbeList *list,
         //offset++;
     }
 
-    
+
     return;
-    
+
 parse_error:
     if (probe->name != 0)
         free(probe->name);
@@ -467,10 +467,10 @@ parse_match(struct NmapServiceProbeList *list,
     const char *filename = list->filename;
     unsigned line_number = list->line_number;
     struct ServiceProbeMatch *match;
-    
-    
+
+
     match = CALLOC(1, sizeof(*match));
-    
+
     /*
      * <servicename>
      */
@@ -482,7 +482,7 @@ parse_match(struct NmapServiceProbeList *list,
     }
 
     match->line = line_number;
-    
+
     /*
      * <pattern>
      *  - must start with a 'm' character
@@ -493,7 +493,7 @@ parse_match(struct NmapServiceProbeList *list,
         char delimiter;
         size_t regex_offset;
         size_t regex_length;
-        
+
         /* line must start with 'm' */
         if (line_length - offset <= 2) {
             LOG(LEVEL_ERROR, "%s:%u:%u: line too short\n",
@@ -507,10 +507,10 @@ parse_match(struct NmapServiceProbeList *list,
             goto parse_error;
         }
         offset++;
-        
+
         /* next character is the delimiter */
         delimiter = line[offset++];
-        
+
         /* Find the length of the regex */
         regex_offset = offset;
         while (offset < line_length && line[offset] != delimiter)
@@ -523,7 +523,7 @@ parse_match(struct NmapServiceProbeList *list,
             goto parse_error;
         } else
             offset++;
-        
+
         /* add regex pattern to record */
         match->regex_length = regex_length;
         match->regex = MALLOC(regex_length  + 1);
@@ -550,7 +550,7 @@ parse_match(struct NmapServiceProbeList *list,
         while (offset<line_length && isspace(line[offset]))
             offset++;
     }
-    
+
     /*
      * <versioninfo>
      *  - several optional fields
@@ -566,7 +566,7 @@ parse_match(struct NmapServiceProbeList *list,
         size_t value_offset;
         int is_a = 0;
         enum SvcV_InfoType type;
-        
+
         /* Make sure we have enough characters for a versioninfo string */
         if (offset >= line_length)
             break;
@@ -576,7 +576,7 @@ parse_match(struct NmapServiceProbeList *list,
                 isprint(line[offset])?line[offset]:'.');
             goto parse_error;
         }
-        
+
         /* grab the 'id' character, which is either singe letter or the string 'cpe:' */
         id = line[offset++];
         if (id == 'c') {
@@ -620,7 +620,7 @@ parse_match(struct NmapServiceProbeList *list,
                     filename, line_number, (unsigned)offset, isprint(id)?id:'.');
                 goto parse_error;
         }
-        
+
         /* grab the delimiter */
         if (offset + 2 >= line_length) {
             LOG(LEVEL_ERROR, "%s:%u:%u: line too short\n",
@@ -628,7 +628,7 @@ parse_match(struct NmapServiceProbeList *list,
             goto parse_error;
         }
         delimiter = line[offset++];
-        
+
         /* Grab the contents of this string */
         value_offset = offset;
         while (offset < line_length && line[offset] != delimiter)
@@ -658,27 +658,27 @@ parse_match(struct NmapServiceProbeList *list,
         {
             struct ServiceVersionInfo *v;
             struct ServiceVersionInfo **r_v;
-            
-            
+
+
             v = CALLOC(1, sizeof(*v));
             v->type = type;
             v->value = MALLOC(value_length + 1);
             memcpy(v->value, line+value_offset, value_length+1);
             v->value[value_length] = '\0';
             v->is_a = is_a;
-            
+
             /* insert at end of list */
             for (r_v = &match->versioninfo; *r_v; r_v = &(*r_v)->next)
                 ;
             v->next = *r_v;
             *r_v = v;
-            
+
         }
-        
+
     }
-    
+
     return match;
-    
+
 parse_error:
     free(match->regex);
     free(match->service);
@@ -705,8 +705,8 @@ parse_line(struct NmapServiceProbeList *list, const char *line)
     enum SvcP_RecordType type;
     struct RangeList ranges = {0};
     struct NmapServiceProbe *probe;
-    
-    
+
+
     /* trim whitespace */
     offset = 0;
     line_length = strlen(line);
@@ -714,18 +714,18 @@ parse_line(struct NmapServiceProbeList *list, const char *line)
         offset++;
     while (line_length && isspace(line[line_length-1]))
         line_length--;
-    
+
     /* Ignore comment lines */
     if (ispunct(line[offset]))
         return;
-    
+
     /* Ignore empty lines */
     if (offset >= line_length)
         return;
-    
+
     /* parse the type field field */
     type = parse_type(line, &offset, line_length);
-    
+
     /* parse the remainder of the line, depending upon the type */
     switch ((int)type) {
         case SvcP_Unknown:
@@ -755,7 +755,7 @@ parse_line(struct NmapServiceProbeList *list, const char *line)
             parse_probe(list, line, offset, line_length);
             return;
     }
-    
+
     /*
      * The remaining items only work in the context of the current 'Probe'
      * directive
@@ -766,7 +766,7 @@ parse_line(struct NmapServiceProbeList *list, const char *line)
         return;
     }
     probe = list->probes[list->count-1];
-    
+
     switch ((int)type) {
         case SvcP_Ports:
             ranges = parse_ports(list, line, offset, line_length);
@@ -792,11 +792,11 @@ parse_line(struct NmapServiceProbeList *list, const char *line)
         case SvcP_Softmatch:
             {
                 struct ServiceProbeMatch *match;
-            
+
                 match = parse_match(list, line, offset, line_length);
                 if (match) {
                     struct ServiceProbeMatch **r_match;
-                    
+
                     /* put at end of list */
                     for (r_match = &probe->match; *r_match; r_match = &(*r_match)->next)
                         ;
@@ -806,7 +806,7 @@ parse_line(struct NmapServiceProbeList *list, const char *line)
                 }
             }
             break;
-        
+
         case SvcP_Totalwaitms:
             probe->totalwaitms = parse_number(list, line, offset, line_length);
             break;
@@ -836,7 +836,7 @@ static struct NmapServiceProbeList *
 nmapserviceprobes_new(const char *filename)
 {
     struct NmapServiceProbeList *result;
-    
+
     result = CALLOC(1, sizeof(*result));
     result->filename = filename;
 
@@ -851,7 +851,7 @@ nmapservice_read_file(const char *filename)
     FILE *fp;
     char line[32768];
     struct NmapServiceProbeList *result;
-    
+
     /*
      * Open the file
      */
@@ -865,7 +865,7 @@ nmapservice_read_file(const char *filename)
      * Create the result structure
      */
     result = nmapserviceprobes_new(filename);
-    
+
     /*
      * parse all lines in the text file
      */
@@ -877,13 +877,13 @@ nmapservice_read_file(const char *filename)
         /* Parse this string into a record */
         parse_line(result, line);
     }
-    
+
     fclose(fp);
     result->filename = 0; /* name no longer valid after this point */
     result->line_number = (unsigned)~0; /* line number no longer valid after this point */
-    
+
     // nmapserviceprobes_print(result, stdout);
-    
+
     return result;
 }
 
@@ -914,7 +914,7 @@ nmapserviceprobes_free_record(struct NmapServiceProbe *probe)
     }
     while (probe->fallback) {
         struct ServiceProbeFallback *fallback;
-        
+
         fallback = probe->fallback;
         probe->fallback = fallback->next;
         if (fallback->name)
@@ -932,20 +932,20 @@ nmapserviceprobes_print_ports(const struct RangeList *ranges,
     FILE *fp, const char *prefix, unsigned default_proto)
 {
     unsigned i;
-    
+
     /* don't print anything if no ports */
     if (ranges == NULL || ranges->count == 0)
         return;
-    
+
     /* 'Exclude', 'ports', 'sslports' */
     fprintf(fp, "%s ", prefix);
-    
+
     /* print all ports */
     for (i=0; i<ranges->count; i++) {
         unsigned proto;
         int begin = ranges->list[i].begin;
         int end = ranges->list[i].end;
-        
+
         if (Range_TCP <= begin && begin < Range_UDP) {
             proto  = IP_PROTO_TCP;
             begin -= Range_TCP;
@@ -961,15 +961,15 @@ nmapserviceprobes_print_ports(const struct RangeList *ranges,
             begin -= Range_SCTP;
             end   -= Range_SCTP;
         }
-        
+
         /* If UDP, shift down */
         begin -= proto;
         end -= proto;
-        
+
         /* print comma between ports, but not for first port */
         if (i)
             fprintf(fp, ",");
-        
+
         /* Print either one number for a single port, or two numbers for a range */
         if (default_proto != proto) {
             default_proto = proto;
@@ -1006,31 +1006,31 @@ static void
 nmapserviceprobes_print_dstring(FILE *fp, const char *string, size_t length, int delimiter)
 {
     size_t i;
-    
+
     /* If the string contains the preferred delimiter, then choose a different
      * delimiter */
     if (contains_char(string, length, delimiter)) {
         static const char *delimiters = "|/\"'#*+-!@$%^&()_=";
-        
+
         for (i=0; delimiters[i]; i++) {
             delimiter = delimiters[i];
             if (!contains_char(string, length, delimiter))
                 break;
         }
     }
-    
+
     /* print start delimiter */
     fprintf(fp, "%c", delimiter);
-    
+
     /* print the string */
     for (i=0; i<length; i++) {
         char c = string[i];
         fprintf(fp, "%c", c);
     }
-    
+
     /* print end delimiter */
     fprintf(fp, "%c", delimiter);
-    
+
 }
 /*****************************************************************************
  *****************************************************************************/
@@ -1038,26 +1038,26 @@ static void
 nmapserviceprobes_print_hello(FILE *fp, const char *string, size_t length, int delimiter)
 {
     size_t i;
-    
+
     /* If the string contains the preferred delimiter, then choose a different
      * delimiter */
     if (contains_char(string, length, delimiter)) {
         static const char *delimiters = "|/\"'#*+-!@$%^&()_=";
-        
+
         for (i=0; delimiters[i]; i++) {
             delimiter = delimiters[i];
             if (!contains_char(string, length, delimiter))
                 break;
         }
     }
-    
+
     /* print start delimiter */
     fprintf(fp, "%c", delimiter);
-    
+
     /* print the string */
     for (i=0; i<length; i++) {
         char c = string[i];
-        
+
         switch (c) {
             case '\\':
                 fprintf(fp, "\\\\");
@@ -1092,13 +1092,13 @@ nmapserviceprobes_print_hello(FILE *fp, const char *string, size_t length, int d
                 else
                     fprintf(fp, "\\x%02x", ((unsigned)c)&0xFF);
                 break;
-                
+
         }
     }
-    
+
     /* print end delimiter */
     fprintf(fp, "%c", delimiter);
-    
+
 }
 
 /*****************************************************************************
@@ -1109,21 +1109,21 @@ nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp)
     unsigned i;
     if (list == NULL)
         return;
-    
+
     nmapserviceprobes_print_ports(&list->exclude, fp, "Exclude", ~0);
-    
+
     for (i=0; i<list->count; i++) {
         struct NmapServiceProbe *probe = list->probes[i];
         struct ServiceProbeMatch *match;
-        
+
         /* print the first part of the probe */
         fprintf(fp, "Probe %s %s q",
                 (probe->protocol==IP_PROTO_TCP)?"TCP":"UDP",
                 probe->name);
-        
+
         /* print the query/hello string */
         nmapserviceprobes_print_hello(fp, probe->hellostring, probe->hellolength, '|');
-        
+
         fprintf(fp, "\n");
         if (probe->rarity)
             fprintf(fp, "rarity %u\n", probe->rarity);
@@ -1166,7 +1166,7 @@ nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp)
             }
             fprintf(fp, "\n");
         }
-        
+
     }
 }
 
@@ -1282,14 +1282,14 @@ void
 nmapservice_free(struct NmapServiceProbeList *list)
 {
     unsigned i;
-    
+
     if (list == NULL)
         return;
-    
+
     for (i=0; i<list->count; i++) {
         nmapserviceprobes_free_record(list->probes[i]);
     }
-    
+
     if (list->probes)
         free(list->probes);
     free(list);
@@ -1436,7 +1436,7 @@ nmapservice_match_service(
 
     if (match_res)
         return match_res;
-    
+
     /*match with NULL probe at last if it's TCP and probe is not NULL*/
     if (protocol==IP_PROTO_TCP && probe_idx!=0) {
         match_res = match_service_in_one_probe(
@@ -1470,12 +1470,12 @@ int nmapservice_selftest()
     };
     unsigned i;
     struct NmapServiceProbeList *list = nmapserviceprobes_new("<selftest>");
-    
+
     for (i=0; lines[i]; i++) {
         list->line_number = i;
         parse_line(list, lines[i]);
     }
-    
+
     //nmapserviceprobes_print(list, stdout);
     return 0;
 }

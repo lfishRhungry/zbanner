@@ -324,7 +324,7 @@ __rte_ring_mp_do_enqueue(struct rte_ring *r, void * const *obj_table,
     /* move prod.head atomically */
     do {
         uint32_t cons_tail;
-        
+
         /* Reset n to the initial burst count */
         n = max;
 
@@ -507,7 +507,7 @@ __rte_ring_mc_do_dequeue(struct rte_ring *r, void **obj_table,
     do {
         uint32_t prod_tail;
         uint32_t entries;
-        
+
         /* Restore n as it may change every loop */
         n = max;
 

@@ -1,6 +1,6 @@
 /*
  RST filter
- 
+
  In theory, we should transmit a RST packet every time we receive an invalid
  TCP packet. In practice, this can lead to endless transmits when the other
  size continues to transmit bad packets. This may happen accidentally, or this
@@ -9,7 +9,7 @@
  to do that, replying back as fast as the scanner transmits (when running
  at 10,000 packets per-second). This halts the scan, as it's throttle limit
  is filled sending RSTs and not doing something useful.
- 
+
  The design is a simple non-deterministic algorithm. It hashes the
  IP/port combo, then updates a counter at that bucket. When it reaches
  its limit, it stops transmitting resets. However, it'll also slowly

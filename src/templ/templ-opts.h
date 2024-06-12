@@ -50,7 +50,7 @@ struct TemplateOptions {
         macaddress_t target_mac;
         ipaddress target_ip;
     } arp;
-    
+
     struct {
         addremove_t is_badsum:4; /* intentionally bad checksum */
         addremove_t is_tos:4;

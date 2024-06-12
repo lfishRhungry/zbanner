@@ -63,7 +63,7 @@ lzr_ipp_handle_reponse(
             return 0;
         }
     }
-    
+
 
     item->level = Output_FAILURE;
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not ipp");

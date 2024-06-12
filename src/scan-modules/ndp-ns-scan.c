@@ -76,7 +76,7 @@ ndpns_transmit(
     *len = ndp_create_ns_packet(
         target->ip_them, target->ip_me, src_mac,
         255, px, PKT_BUF_LEN);
-    
+
     /*add timeout*/
     event->need_timeout = 1;
     event->port_them    = 0;
@@ -132,7 +132,7 @@ ndpns_handle(
         recved->packet[recved->parsed.transport_offset+29],
         recved->packet[recved->parsed.transport_offset+30],
         recved->packet[recved->parsed.transport_offset+31]);
-    
+
     if (NDP_NA_HAS_FLAG(recved->packet, recved->parsed.transport_offset, NDP_NA_FLAG_ROUTER)) {
         dach_append(&item->report, "from_router", "true", sizeof("true")-1);
     } else {

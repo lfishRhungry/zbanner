@@ -100,7 +100,7 @@ parse_ipv4:
         info->src_ip.version = 4;
         info->dst_ip.ipv4    = BE_TO_U32(px+offset+16);
         info->dst_ip.version = 4;
-        
+
         info->ip_ttl      = px[offset+8];
         info->ip_protocol = px[offset+9];
         info->ip_length   = total_length;
@@ -143,7 +143,7 @@ parse_tcp:
 parse_udp:
     {
         VERIFY_REMAINING(8, FOUND_UDP);
-        
+
         info->port_src = BE_TO_U16(px+offset+0);
         info->port_dst = BE_TO_U16(px+offset+2);
         offset += 8;
@@ -254,7 +254,7 @@ parse_icmpv6:
         unsigned icmp_code;
 
         VERIFY_REMAINING(4, FOUND_ICMP);
-        
+
         icmp_type = px[offset+0];
         icmp_code = px[offset+1];
 
@@ -480,7 +480,7 @@ parse_linktype:
         case 127:   goto parse_radiotap_header;
         default:    return false;
     }
-    
+
 parse_linux_sll:
     /*
      +--------+--------+
@@ -509,20 +509,20 @@ parse_linux_sll:
             unsigned char mac_address[8];
             unsigned ethertype;
         } sll;
-        
+
         VERIFY_REMAINING(16, FOUND_SLL);
-        
+
         sll.packet_type = BE_TO_U16(px+offset+0);
         sll.arp_type    = BE_TO_U16(px+offset+2);
         sll.addr_length = BE_TO_U16(px+offset+4);
         memcpy(sll.mac_address, px+offset+6, 8);
         sll.ethertype = BE_TO_U16(px+offset+14);
-   
+
         offset += 16;
-        
+
         goto parse_ethertype;
     }
-    
+
 parse_arp:
     info->ip_version = 256;
     info->ip_offset = offset;

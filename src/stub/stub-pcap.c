@@ -6,26 +6,26 @@
 
 /*
     LIBPCAP INTERFACE
- 
+
  This VERY MESSY code is a hack to load the 'libpcap' library 
  at runtime rather than compile time.
- 
+
  This reason for this mess is that it gets rid of a dependency
  when compiling this project. Otherwise, developers would have
  to download the 'libpcap-dev' dependency in order to build
  this project.
- 
+
  Almost every platform these days (OpenBSD, FreeBSD, macOS,
  Debian, RedHat) comes with a "libpcap.so" library already
  installed by default with a known BINARY interface. Thus,
  we can include the data structures definitions directly
  in this project, then load the library dynamically.
- 
+
  For those systems without libpcap.so already installed, the
  user can either install those on the system, or compile
  this project in "STATIC" mode, which will link to the 
  static libpcap.a library.
- 
+
 */
 #include "../util-out/logger.h"
 
@@ -68,7 +68,7 @@ struct pcap_if {
 static void seterr(char *errbuf, const char *msg)
 {
     size_t length = strlen(msg);
-    
+
     if (length > PCAP_ERRBUF_SIZE-1)
     length = PCAP_ERRBUF_SIZE-1;
     memcpy(errbuf, msg, length);
@@ -200,7 +200,7 @@ static const char *null_PCAP_LIB_VERSION(void)
 #ifdef STATICPCAP
     return pcap_lib_version();
 #endif
-    
+
     return "stub/0.0";
 }
 
@@ -341,10 +341,10 @@ int pcap_init(void)
 #ifdef WIN32
     void * hPacket;
     void * hLibpcap;
-    
+
     pl->is_available = 0;
     pl->is_printing_debug = 1;
-    
+
     /* Look for the Packet.dll */
     hPacket = LoadLibraryA("NPcap\\Packet.dll");
     if (hPacket == NULL)
@@ -361,7 +361,7 @@ int pcap_init(void)
                 return -1;
         }
     }
-    
+
     /* Look for the winpcap.dll */
     hLibpcap = LoadLibraryA("Npcap\\wpcap.dll");
     if (hLibpcap == NULL)
@@ -371,21 +371,21 @@ int pcap_init(void)
             LOG(LEVEL_ERROR, "%s: couldn't load %d\n", "wpcap.dll", (int)GetLastError());
         return -1;
     }
-    
-    
+
+
 #define DOLINK(PCAP_DATALINK, datalink) \
 pl->datalink = (PCAP_DATALINK)GetProcAddress(hLibpcap, "pcap_"#datalink); \
 if (pl->datalink == NULL) pl->func_err=1, pl->datalink = null_##PCAP_DATALINK;
 #endif
-    
-    
+
+
 #ifndef WIN32
 #ifndef STATICPCAP
     void *hLibpcap;
-    
+
     pl->is_available = 0;
     pl->is_printing_debug = 1;
-    
+
     {
         static const char *possible_names[] = {
             "libpcap.so",
@@ -407,13 +407,13 @@ if (pl->datalink == NULL) pl->func_err=1, pl->datalink = null_##PCAP_DATALINK;
                 LOG(LEVEL_WARNING, "[-] pcap: failed to load: %s\n", possible_names[i]);
             }
         }
-     
+
         if (hLibpcap == NULL) {
             LOG(LEVEL_ERROR, "[-] FAIL: failed to load libpcap shared library\n");
             LOG(LEVEL_ERROR, "    [hint]: you must install libpcap or WinPcap\n");
         }
     }
-    
+
 #define DOLINK(PCAP_DATALINK, datalink) \
 pl->datalink = (PCAP_DATALINK)dlsym(hLibpcap, "pcap_"#datalink); \
     if (pl->datalink == NULL) LOG(LEVEL_WARNING, "pcap: pcap_%s: failed\n", #datalink); \
@@ -423,7 +423,7 @@ pl->datalink = (PCAP_DATALINK)dlsym(hLibpcap, "pcap_"#datalink); \
 pl->func_err=0, pl->datalink = null_##PCAP_DATALINK;
 #endif
 #endif
-    
+
     DOLINK(PCAP_CLOSE                     , close);
     DOLINK(PCAP_DATALINK                  , datalink);
     DOLINK(PCAP_DISPATCH                  , dispatch);
@@ -434,7 +434,7 @@ pl->func_err=0, pl->datalink = null_##PCAP_DATALINK;
     DOLINK(PCAP_MAJOR_VERSION             , major_version);
     DOLINK(PCAP_MINOR_VERSION             , minor_version);
     DOLINK(PCAP_OPEN_LIVE                 , open_live);
-    
+
     DOLINK(PCAP_OPEN_OFFLINE              , open_offline);
     DOLINK(PCAP_SENDPACKET                , sendpacket);
     DOLINK(PCAP_NEXT                      , next);
@@ -473,12 +473,12 @@ pl->func_err=0, pl->datalink = null_##PCAP_DATALINK;
     DOLINK(PCAP_SETNONBLOCK               , setnonblock);
     DOLINK(PCAP_NEXT_EX                   , next_ex);
 
-    
+
     if (!pl->func_err)
         pl->is_available = 1;
     else
         pl->is_available = 0;
-    
+
     return 0;
 }
 

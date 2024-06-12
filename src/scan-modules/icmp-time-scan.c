@@ -87,7 +87,7 @@ icmptime_transmit(
     *len = icmp_create_timestamp_packet(
         target->ip_them, target->ip_me,
         cookie, cookie, 255, px, PKT_BUF_LEN);
-    
+
     /*add timeout*/
     event->need_timeout = 1;
     event->port_them    = 0;
@@ -108,7 +108,7 @@ icmptime_validate(
         && recved->parsed.src_ip.version==4)
         pre->go_record = 1;
     else return;
-    
+
     ipaddress ip_them = recved->parsed.src_ip;
     ipaddress ip_me   = recved->parsed.dst_ip;
     unsigned cookie   = get_cookie(ip_them, 0, ip_me, 0, entropy);

@@ -43,7 +43,7 @@ arpreq_transmit(
     /*we do not need a cookie and actually cannot set it*/
     *len = arp_create_request_packet(
         target->ip_them, target->ip_me, px, PKT_BUF_LEN);
-    
+
     /*add timeout*/
     event->need_timeout = 1;
     event->port_them    = 0;
@@ -64,7 +64,7 @@ arpreq_validate(
         && recved->parsed.arp_opcode == ARP_OPCODE_REPLY)
         pre->go_record = 1;
     else return;
-    
+
     pre->dedup_port_them = 0;
     pre->dedup_port_me   = 0;
     pre->go_dedup  = 1;

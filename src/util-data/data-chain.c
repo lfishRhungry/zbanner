@@ -350,7 +350,7 @@ dach_append_unicode_by_link(struct DataLink *link, unsigned c)
         link = dach_append_char_by_link(link, c2);
     } else
         link = dach_append_char_by_link(link, c);
-    
+
     return link;
 }
 
@@ -479,7 +479,7 @@ dach_link_contains(struct DataLink *link, const char *string)
 
     if (string_length > string2_length)
         return false;
-    
+
     for (size_t i=0; i<string2_length-string_length+1; i++) {
         if (memcmp(string, string2+i, string_length) == 0)
             return true;
@@ -513,7 +513,7 @@ dach_link_equals(struct DataLink *link, const char *rhs)
 
     size_t lhs_length = link->data_len;
     size_t rhs_length = strlen(rhs);
-    
+
     if (lhs_length != rhs_length)
         return false;
 
@@ -560,7 +560,7 @@ dach_append_base64_by_link(struct DataLink *link,
     size_t i;
     unsigned x = base64->temp;
     unsigned state = base64->state;
-    
+
     for (i=0; i<length; i++) {
         switch (state) {
             case 0:
@@ -580,7 +580,7 @@ dach_append_base64_by_link(struct DataLink *link,
                 link = dach_append_char_by_link(link, b64[(x>> 0)&0x3F]);
         }
     }
-    
+
     base64->temp = x;
     base64->state = state;
 
@@ -754,10 +754,10 @@ datachain_selftest(void)
             line = __LINE__;
             goto fail;
         }
-        
+
         free(dach);
     }
-    
+
     /*
      * Test BASE64 encoding. We are going to do strings of various lengths
      * in order to test the boundary condition of finalizing various strings

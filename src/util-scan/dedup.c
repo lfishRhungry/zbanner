@@ -408,9 +408,9 @@ int dedup_selftest()
     size_t i;
     unsigned found_match = 0;
     unsigned line = 0;
-    
+
     dedup = dedup_create(1000000);
-    
+
     /* Deterministic test.
      *
      * The first time we check on a socket combo, there should
@@ -423,7 +423,7 @@ int dedup_selftest()
         unsigned  port_me;
         unsigned  port_them;
         unsigned  type;
-        
+
         ip_me.version   = 4;
         ip_them.version = 4;
         ip_me.ipv4      = 0x12345678;
@@ -431,7 +431,7 @@ int dedup_selftest()
         port_me         = 0x1234;
         port_them       = 0xfedc;
         type            = 0x8967;
-        
+
         if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me, type)) {
             line = __LINE__;
             goto fail;
@@ -440,7 +440,7 @@ int dedup_selftest()
             line = __LINE__;
             goto fail;
         }
-        
+
         ip_me.version   = 6;
         ip_them.version = 6;
         ip_me.ipv6.hi   = 0x12345678;
@@ -462,9 +462,9 @@ int dedup_selftest()
             line = __LINE__;
             goto fail;
         }
-        
+
     }
-    
+
     /* Test IPv4 addresses */
     for (i=0; i<100000; i++) {
         ipaddress ip_them;
@@ -472,10 +472,10 @@ int dedup_selftest()
         ipaddress ip_me;
         unsigned  port_me;
         unsigned  type;
-        
+
         ip_them.version = 4;
         ip_me.version   = 4;
-        
+
         /* Instead of completely random numbers over the entire
          * range, each port/IP is restricted to just 512
          * random combinations. This should statistically
@@ -485,21 +485,21 @@ int dedup_selftest()
         ip_me.ipv4   = _rand(&seed) & 0xFF800000;
         port_me      = _rand(&seed) & 0xFF80;
         type         = _rand(&seed) & 0B111;
-        
+
         if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me, type)) {
             found_match++;
         }
     }
-    
+
     if (found_match == 0 || found_match > 200) {
         line = __LINE__;
         goto fail;
     }
-    
+
     /* Now do IPv6 */
     found_match = 0;
     seed = 0;
-    
+
     /* Test IPv4 addresses */
     for (i=0; i<100000; i++) {
         ipaddress ip_them;
@@ -507,10 +507,10 @@ int dedup_selftest()
         ipaddress ip_me;
         unsigned  port_me;
         unsigned  type;
-        
+
         ip_them.version = 6;
         ip_me.version   = 6;
-        
+
         /* Instead of completely random numbers over the entire
          * range, each port/IP is restricted to just 512
          * random combinations. This should statistically
@@ -520,7 +520,7 @@ int dedup_selftest()
         port_me         = _rand(&seed) & 0xFF80;
         port_them       = _rand(&seed) & 0x1FF;
         type            = _rand(&seed) & 0B111;
-        
+
         if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me, type)) {
             found_match++;
         }
@@ -531,7 +531,7 @@ int dedup_selftest()
         line = __LINE__;
         goto fail;
     }
-    
+
     /* All tests have passed */
     return 0; /* success :) */
 

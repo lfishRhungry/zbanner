@@ -104,7 +104,7 @@ initialize_adapter(struct Xconf *xconf)
         fmt = macaddress_fmt(xconf->nic.source_mac);
         LOG(LEVEL_WARNING, "[+] source-mac = %s\n", fmt.string);
     }
-    
+
 
     /*
      * IPv4 ADDRESS
@@ -136,7 +136,7 @@ initialize_adapter(struct Xconf *xconf)
 
         if (adapter_ip != 0)
             is_usable_ipv4 = 1;
-        
+
         /*
          * ROUTER MAC ADDRESS
          */
@@ -162,7 +162,7 @@ initialize_adapter(struct Xconf *xconf)
                 fmt = ipv4address_fmt(router_ipv4);
                 LOG(LEVEL_WARNING, "[+] router-ip = %s\n", fmt.string);
                 LOG(LEVEL_INFO, "[+] if(%s):arp: resolving IPv4 address\n", ifname);
-                
+
                 stack_arp_resolve(
                         xconf->nic.adapter,
                         tmp_acache,
@@ -172,7 +172,7 @@ initialize_adapter(struct Xconf *xconf)
                         &xconf->nic.router_mac_ipv4);
                 rawsock_flush(xconf->nic.adapter, tmp_acache);
             }
-            
+
             fmt = macaddress_fmt(xconf->nic.router_mac_ipv4);
             LOG(LEVEL_WARNING, "[+] router-mac-ipv4 = %s\n", fmt.string);
             if (macaddress_is_zero(xconf->nic.router_mac_ipv4)) {
@@ -211,7 +211,7 @@ initialize_adapter(struct Xconf *xconf)
         fmt = ipv6address_fmt(adapter_ipv6);
         LOG(LEVEL_WARNING, "[+] source-ip = [%s]\n", fmt.string);
         is_usable_ipv6 = 1;
-        
+
         /*
          * ROUTER MAC ADDRESS
          */

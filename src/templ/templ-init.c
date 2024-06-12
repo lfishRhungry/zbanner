@@ -315,7 +315,7 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
     /* fill the IPv6 header with zeroes */
     memset(buf + offset_ip, 0, 40);
     tmpl->ipv6.length = offset_ip + 40 + payload_length;
-    
+
     switch (data_link_type) {
         case PCAP_DLT_NULL: /* Null VPN tunnel */
             /**
@@ -331,7 +331,7 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
             /* Reset the destination MAC address to be the IPv6 router
              * instead of the IPv4 router, which sometimes are different */
             memcpy(buf + 0, router_mac_ipv6.addr, 6);
-            
+
             /* Reset the Ethertype field to 0x86dd (meaning IPv6) */
             buf[12] = 0x86;
             buf[13] = 0xdd;
@@ -391,7 +391,7 @@ _template_init(
     unsigned char *px;
     struct PreprocessedInfo parsed;
     unsigned x;
-    
+
     /*
      * Create the new template structure:
      * - zero it out
@@ -674,25 +674,25 @@ void
 template_set_vlan(struct TemplateSet *tmplset, unsigned vlan)
 {
     unsigned i;
-    
+
     for (i=0; i<tmplset->count; i++) {
         struct TemplatePacket *tmpl = &tmplset->pkts[i];
         unsigned char *px;
 
         if (tmpl->ipv4.length < 14)
             continue;
-        
+
         px = MALLOC(tmpl->ipv4.length + 4);
         memcpy(px, tmpl->ipv4.packet, 12);
         memcpy(px+16, tmpl->ipv4.packet+12, tmpl->ipv4.length - 12);
-        
+
         px[12] = 0x81;
         px[13] = 0x00;
         U16_TO_BE(px+14, vlan);
-        
+
         tmpl->ipv4.packet = px;
         tmpl->ipv4.length += 4;
-        
+
         tmpl->ipv4.offset_ip  += 4;
         tmpl->ipv4.offset_tcp += 4;
         tmpl->ipv4.offset_app += 4;
@@ -706,18 +706,18 @@ template_packet_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan)
 
     if (tmpl_pkt->ipv4.length < 14)
         return;
-    
+
     px = MALLOC(tmpl_pkt->ipv4.length + 4);
     memcpy(px, tmpl_pkt->ipv4.packet, 12);
     memcpy(px+16, tmpl_pkt->ipv4.packet+12, tmpl_pkt->ipv4.length - 12);
-    
+
     px[12] = 0x81;
     px[13] = 0x00;
     U16_TO_BE(px+14, vlan);
-    
+
     tmpl_pkt->ipv4.packet = px;
     tmpl_pkt->ipv4.length += 4;
-    
+
     tmpl_pkt->ipv4.offset_ip  += 4;
     tmpl_pkt->ipv4.offset_tcp += 4;
     tmpl_pkt->ipv4.offset_app += 4;

@@ -201,12 +201,12 @@ rawsock_list_adapters(void)
 {
     pcap_if_t *alldevs;
     char errbuf[PCAP_ERRBUF_SIZE];
-    
+
     if (PCAP.findalldevs(&alldevs, errbuf) != -1) {
         int i;
         const pcap_if_t *d;
         i=0;
-        
+
         if (alldevs == NULL) {
             LOG(LEVEL_ERROR, "ERR:libpcap: no adapters found, are you sure you are root?\n");
         }
@@ -348,7 +348,7 @@ int rawsock_recv_packet(
     const unsigned char **packet)
 {
     int err;
- 
+
     if (adapter->ring) {
         /* This is for doing libpfring instead of libpcap */
         struct pfring_pkthdr hdr;
@@ -742,7 +742,7 @@ rawsock_init_adapter(const char *adapter_name,
 
         LOG(LEVEL_WARNING, "[+] if(%s): successfully opened\n", adapter_name);
 
-        
+
 
         /* Figure out the link-type. We suport Ethernet and IP */
         adapter->link_type = PCAP.datalink(adapter->pcap);
@@ -820,7 +820,7 @@ rawsock_set_filter(struct Adapter *adapter, const char *scan_filter,
         final_filter = MALLOC(filter_len);
         snprintf(final_filter, filter_len, "(%s) and (%s)",
             scan_filter, user_filter);
-        
+
     } else return;
 
     LOG(LEVEL_WARNING, "[+] Final bpf filter: %s\n", final_filter);
@@ -967,7 +967,7 @@ int rawsock_selftest_if(const char *ifname)
         /* IPv4 router MAC address */
         {
             macaddress_t router_mac = {{0,0,0,0,0,0}};
-            
+
             stack_arp_resolve(
                 adapter,
                 acache,
@@ -983,7 +983,7 @@ int rawsock_selftest_if(const char *ifname)
                 LOG(LEVEL_HINT, "[+] router-mac-ipv4 = %s\n", fmt.string);
             }
         }
-        
+
 
         /*
          * IPv6 router MAC address.
@@ -993,7 +993,7 @@ int rawsock_selftest_if(const char *ifname)
          */
         if (!ipv6address_is_zero(ipv6)) {
             macaddress_t router_mac = {{0,0,0,0,0,0}};
-            
+
             stack_ndpv6_resolve(
                 adapter,
                 acache,
@@ -1009,7 +1009,7 @@ int rawsock_selftest_if(const char *ifname)
             }
         }
     }
-    
+
     rawsock_close_cache(acache);
     rawsock_close_adapter(adapter);
     return 0;

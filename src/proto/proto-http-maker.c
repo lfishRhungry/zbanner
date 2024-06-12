@@ -78,7 +78,7 @@ _http_insert(unsigned char **r_hdr, size_t start, size_t end, size_t header_leng
 
     *r_hdr = REALLOC(*r_hdr, new_header_length + 1);
     hdr = *r_hdr;
-    
+
     /* Shrink/expand the field */
     memmove(&hdr[start + field_length], &hdr[end], header_length - end + 1);
 
@@ -190,7 +190,7 @@ http_change_requestline(
     if (item == http_req_payload) {
         return _http_insert(hdr, start, offset, header_length, field_length, field);
     }
-    
+
 
     return header_length;
 }
@@ -403,7 +403,7 @@ int proto_http_maker_selftest()
         size_t len1 = strlen((const char *)x);
         size_t len2;
         size_t len3 = strlen(urlsamples[i].to);
-        
+
         /* Replace whatever URL is in the header with this new one */
         len2 = http_change_requestline(&x, len1, "/foo.html", ~(size_t)0, 1);
 
@@ -419,7 +419,7 @@ int proto_http_maker_selftest()
         size_t len1 = strlen((const char *)x);
         size_t len2;
         size_t len3 = strlen(methodsamples[i].to);
-        
+
         len2 = http_change_requestline(&x, len1, "POST", ~(size_t)0, 0);
 
         if (len2 != len3 && memcmp(methodsamples[i].to, x, len3) != 0) {
@@ -434,7 +434,7 @@ int proto_http_maker_selftest()
         size_t len1 = strlen((const char *)x);
         size_t len2;
         size_t len3 = strlen(versionsamples[i].to);
-        
+
         len2 = http_change_requestline(&x, len1, "HTTP/1.1", ~(size_t)0, 2);
 
         if (len2 != len3 && memcmp(versionsamples[i].to, x, len3) != 0) {
@@ -449,7 +449,7 @@ int proto_http_maker_selftest()
         size_t len1 = strlen((const char *)x);
         size_t len2;
         size_t len3 = strlen(payloadsamples[i].to);
-        
+
         len2 = http_change_requestline(&x, len1, "foo", ~(size_t)0, 3);
 
         if (len2 != len3 && memcmp(payloadsamples[i].to, x, len3) != 0) {
@@ -464,7 +464,7 @@ int proto_http_maker_selftest()
         size_t len1 = strlen((const char *)fieldsamples[i].from);
         size_t len2;
         size_t len3 = strlen(fieldsamples[i].to);
-        
+
         /* Replace whatever URL is in the header with this new one */
         x = (unsigned char*)STRDUP(fieldsamples[i].from);
         len2 = http_change_field(&x, len1, "foo", (const unsigned char *)"bar", ~(size_t)0, http_field_replace);
@@ -500,7 +500,7 @@ int proto_http_maker_selftest()
         size_t len1 = strlen((const char *)x);
         size_t len2;
         size_t len3 = strlen(removesamples[i].to);
-        
+
         /* Replace whatever URL is in the header with this new one */
         len2 = http_change_field(&x, len1, "foo", (const unsigned char *)"bar", ~(size_t)0, http_field_remove);
 

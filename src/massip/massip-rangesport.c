@@ -37,7 +37,7 @@ rangelist_parse_ports(struct RangeList *ports, const char *string,
 
     if (is_error == NULL)
         is_error = &tmp;
-    
+
     *is_error = 0;
     while (*p) {
         unsigned port;
@@ -168,7 +168,7 @@ int rangesport_selftest()
     rangelist_parse_ports(&targets.ports, "22,s:8080-9090,o:9090-10000", &err, 0);
     if (err)
         goto fail;
-    
+
     return 0;
 
 fail:

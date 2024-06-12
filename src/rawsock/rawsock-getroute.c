@@ -122,7 +122,7 @@ rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
      */
     sizeof_buffer = sizeof(*rtm) + 512;
     rtm = CALLOC(1, sizeof_buffer);
-    
+
     /*
      * Create a socket for querying the kernel
      */

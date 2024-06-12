@@ -168,7 +168,7 @@ static bool tcpstate_global_init(const struct Xconf *xconf)
 {
     if (tcpstate_conf.conn_expire <= 0)
         tcpstate_conf.conn_expire = 30;
-    
+
     /*create rx_handler_count TCP tables for thread safe*/
     tcpcon_set.count   = xconf->rx_handler_count;
     tcpcon_set.tcpcons = 
@@ -184,7 +184,7 @@ static bool tcpstate_global_init(const struct Xconf *xconf)
             (struct Output *)(&xconf->out),
             tcpstate_conf.conn_expire, xconf->seed);
     }
- 
+
     tcb_count = &((struct Xconf *)xconf)->tcb_count;
 
     src_port_start = xconf->nic.src.port.first;
@@ -209,7 +209,7 @@ tcpstate_transmit(
     *len = tcp_create_packet(
         target->ip_them, target->port_them, target->ip_me, src_port_start+target->index,
         cookie, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_LEN);
- 
+
     /*multi-probe Multi_Direct*/
     if (TcpStateScan.probe->multi_mode==Multi_Direct
         && target->index+1<TcpStateScan.probe->multi_num)

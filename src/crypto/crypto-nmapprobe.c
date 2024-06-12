@@ -46,20 +46,20 @@ size_t nmapprobe_decode(const char *str, size_t slen, void *buf, size_t bufsize)
         size_t x_offset = 0;
 
         while (offset < slen && x_offset < bufsize) {
-            
+
             /* Normal case: unescaped characters */
             if (str[offset] != '\\') {
                 x[x_offset++] = str[offset++];
                 continue;
             }
-            
+
             /* skip escape character '\\' */
             offset++;
             if (offset >= slen) {
                 LOG(LEVEL_ERROR, "[-] premature end of field\n");
                 return 0;
             }
-            
+
             /* Handled escape sequence */
             switch (str[offset++]) {
                 default:
@@ -100,7 +100,7 @@ size_t nmapprobe_decode(const char *str, size_t slen, void *buf, size_t bufsize)
                         LOG(LEVEL_ERROR, "[-] line too short\n");
                         return 0;
                     }
-                    
+
                     /* make sure those two characters are hex digits */
                     if (!is_hexchar(str[offset+0])
                         || !is_hexchar(str[offset+1])) {
@@ -109,7 +109,7 @@ size_t nmapprobe_decode(const char *str, size_t slen, void *buf, size_t bufsize)
                             isprint(str[offset+2])?str[offset+2]:'.');
                         return 0;
                     }
-                    
+
                     /* parse those two hex digits */
                     x[x_offset++] = (char)(hexval(str[offset+0])<< 4 | hexval(str[offset+1]));
                     offset += 2;

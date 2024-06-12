@@ -20,7 +20,7 @@ lzr_telnet_handle_response(
         safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
         return 0;
     }
-    
+
     if (safe_memismem(px, sizeof_px, "telnet", strlen("telnet"))) {
         item->level = Output_SUCCESS;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "telnet");

@@ -340,7 +340,7 @@ zbanner_handle(
             size_t payload_len = 0; 
 
             payload_len = ZBannerScan.probe->make_payload_cb(&ptarget, payload);
-            
+
             struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
 
             pkt_buffer->length = tcp_create_packet(
@@ -348,7 +348,7 @@ zbanner_handle(
                 recved->parsed.dst_ip, recved->parsed.port_dst,
                 seqno_me, seqno_them+1, TCP_FLAG_ACK,
                 payload, payload_len, pkt_buffer->px, PKT_BUF_LEN);
-            
+
             stack_transmit_packetbuffer(stack, pkt_buffer);
 
             /*add timeout for banner*/

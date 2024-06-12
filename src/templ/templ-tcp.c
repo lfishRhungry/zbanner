@@ -1152,7 +1152,7 @@ tcp_create_by_template(
     }
 
     uint64_t xsum;
-  
+
     if (ip_them.version == 4) {
         unsigned ip_id          = ip_them.ipv4 ^ port_them ^ seqno;
         unsigned offset_ip      = tmpl->ipv4.offset_ip;
@@ -1378,7 +1378,7 @@ _replace_options(unsigned char **inout_buf, size_t *inout_length,
         buf = realloc(buf, length);
     }
 
-    
+
     /* Now that we've resized the options field, overright
      * it with then new field */
     memcpy(buf + offset, newnew_options, new_length);
@@ -1500,7 +1500,7 @@ tests[] = {
             40
         }
     },
-    
+
     /* Add a new value to full packet  */
     {{"\3\3\3", 3}, {TST_ADD, "\4\2", 2}, {"\3\3\3\4\2\0\0\0", 8}},
 

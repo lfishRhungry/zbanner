@@ -177,7 +177,7 @@ static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
         &pcre2_errcode,
         &pcre2_erroffset,
         NULL);
-    
+
     if (!httpstate_conf.compiled_re) {
         LOG(LEVEL_ERROR, "[-]Regex compiled failed.\n");
         return Conf_ERR;
@@ -212,7 +212,7 @@ static enum ConfigRes SET_method(void *conf, const char *name, const char *value
 
     if (httpstate_conf.method)
         free(httpstate_conf.method);
-    
+
     httpstate_conf.method_length = strlen(value);
     httpstate_conf.method = STRDUP(value);
 
@@ -226,7 +226,7 @@ static enum ConfigRes SET_url(void *conf, const char *name, const char *value)
 
     if (httpstate_conf.url)
         free(httpstate_conf.url);
-    
+
     httpstate_conf.url_length = strlen(value);
     httpstate_conf.url = STRDUP(value);
 
@@ -240,7 +240,7 @@ static enum ConfigRes SET_version(void *conf, const char *name, const char *valu
 
     if (httpstate_conf.version)
         free(httpstate_conf.version);
-    
+
     httpstate_conf.version_length = strlen(value);
     httpstate_conf.version = STRDUP(value);
 
@@ -254,7 +254,7 @@ static enum ConfigRes SET_host(void *conf, const char *name, const char *value)
 
     if (httpstate_conf.host)
         free(httpstate_conf.host);
-    
+
     httpstate_conf.host_length = strlen(value);
     httpstate_conf.host = STRDUP(value);
 
@@ -268,7 +268,7 @@ static enum ConfigRes SET_user_agent(void *conf, const char *name, const char *v
 
     if (httpstate_conf.user_agent)
         free(httpstate_conf.user_agent);
-    
+
     httpstate_conf.user_agent_length = strlen(value);
     httpstate_conf.user_agent = STRDUP(value);
 
@@ -282,7 +282,7 @@ static enum ConfigRes SET_payload(void *conf, const char *name, const char *valu
 
     if (httpstate_conf.payload)
         free(httpstate_conf.payload);
-    
+
     httpstate_conf.payload_length = strlen(value);
     httpstate_conf.payload = STRDUP(value);
 
@@ -316,7 +316,7 @@ static enum ConfigRes SET_header(void *conf, const char *name, const char *value
         name_length = INDEX_OF(value, ':');
         newname = MALLOC(name_length + 1);
         memcpy(newname, value, name_length + 1);
-            
+
         /* Trim the value */
         value = value + name_length + 1;
         while (*value && isspace(*value & 0xFF))
@@ -837,7 +837,7 @@ httpstate_parse_response(
             item.level = Output_FAILURE;
             safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "not matched");
         }
-        
+
         if (httpstate_conf.report_while_regex) {
             dach_append_normalized(&item.report, "banner", px, sizeof_px);
         }

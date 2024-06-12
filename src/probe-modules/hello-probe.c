@@ -98,7 +98,7 @@ static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
         &pcre2_errcode,
         &pcre2_erroffset,
         NULL);
-    
+
     if (!hello_conf.compiled_re) {
         LOG(LEVEL_ERROR, "[-]Regex compiled failed.\n");
         return Conf_ERR;
@@ -194,7 +194,7 @@ static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *v
 
     if (hello_conf.hello)
         free(hello_conf.hello);
-    
+
     FILE *fp = fopen(value, "rb");
     if (fp==NULL) {
         LOG(LEVEL_ERROR, "[-]Failed to open file %s.\n", value);
@@ -294,7 +294,7 @@ static struct ConfigParam hello_parameters[] = {
         "Show normalized banner in results if regex matching failed."
     },
 #endif
-    
+
     {0}
 };
 

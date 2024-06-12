@@ -355,10 +355,10 @@ bool
 is_integer(const char *value)
 {
     size_t i;
-    
+
     if (value == NULL)
         return false;
-    
+
     for (i=0; value[i]; i++)
         if (!isdigit(value[i]&0xFF))
             return false;
@@ -412,7 +412,7 @@ is_singleton(const struct ConfigParam *cp, const char *name)
             }
         }
     }
-    
+
     return false;
 }
 
@@ -420,7 +420,7 @@ void set_one_parameter(void *conf, struct ConfigParam *cp,
     const char *name, const char *value)
 {
     size_t i;
-    
+
     for (i=0; cp[i].name; i++) {
         if (EQUALS(cp[i].name, name)) {
             if (Conf_ERR == cp[i].setter(conf, name, value))
@@ -567,7 +567,7 @@ set_parameters_from_substring(void *conf, struct ConfigParam *cp, char *substrin
 {
     int     sub_argc;
     char ** sub_argv;
-    
+
     sub_argv = substring_to_args(substring, &sub_argc);
     if (!sub_argv) {
         return 1;

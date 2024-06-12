@@ -65,7 +65,7 @@ udp_transmit(
     /*we just handle udp target*/
     if (target->ip_proto != IP_PROTO_UDP)
         return false;
-    
+
     unsigned cookie = get_cookie(target->ip_them, target->port_them,
         target->ip_me, src_port_start+target->index, entropy);
 
@@ -91,13 +91,13 @@ udp_transmit(
     /*add timeout*/
     event->need_timeout = 1;
     event->port_me      = src_port_start+target->index;
-    
+
     /*for multi-probe*/
     if (UdpScan.probe->multi_mode==Multi_Direct
         && target->index+1 < UdpScan.probe->multi_num)
         return true;
     else return false;
-    
+
 }
 
 static void
@@ -232,7 +232,7 @@ udp_handle(
                     ft_add_event(handler, tm_event, global_now);
                     tm_event = NULL;
                 }
-        
+
             }
 
             return;

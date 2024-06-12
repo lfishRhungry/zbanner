@@ -29,7 +29,7 @@ lzr_newlines_handle_response(
     struct OutputItem *item)
 {
     item->level = Output_FAILURE;
-    
+
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "unknown");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
 

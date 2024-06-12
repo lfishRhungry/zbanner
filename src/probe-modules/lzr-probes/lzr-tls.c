@@ -124,7 +124,7 @@ lzr_tls_handle_reponse(
             return 0;
         }
     }
-    
+
     item->level = Output_FAILURE;
     safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not tls");
     safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");

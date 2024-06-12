@@ -39,9 +39,9 @@ arp_create_by_template(
             LOG(LEVEL_ERROR, "arp_create_by_template: need a Tmpl_Type_ARP TemplatePacket.\n");
             return 0;
     }
-    
+
     size_t r_len = 0;
-    
+
     if (ip_them.version == 4) {
         r_len = arp_create_by_template_ipv4(
             tmpl, ip_them.ipv4, ip_me.ipv4, px, sizeof_px);

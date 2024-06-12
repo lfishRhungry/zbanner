@@ -121,7 +121,7 @@ static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *v
 
     if (recogudp_conf.hello)
         free(recogudp_conf.hello);
-    
+
     FILE *fp = fopen(value, "rb");
     if (fp==NULL) {
         LOG(LEVEL_ERROR, "[-]Failed to open file %s.\n", value);
@@ -156,7 +156,7 @@ static enum ConfigRes SET_recog_file(void *conf, const char *name, const char *v
 
     if (recogudp_conf.xml_filename)
         free(recogudp_conf.xml_filename);
-    
+
     recogudp_conf.xml_filename = STRDUP(value);
 
     return Conf_OK;
@@ -225,7 +225,7 @@ static struct ConfigParam recogudp_parameters[] = {
         "Unprefix the '$' from the tail of all regex. It's useful if we cannot "
         "extract exactly the proper part of string for matching."
     },
-    
+
     {0}
 };
 
@@ -244,7 +244,7 @@ recogudp_global_init(const struct Xconf *xconf)
         LOG(LEVEL_ERROR, "[-]RecogUdpProbe: No Recog fingerprint xml file specified.\n");
         return false;
     }
-    
+
     recogudp_conf.recog_fp = load_recog_fp(recogudp_conf.xml_filename,
         recogudp_conf.unprefix, recogudp_conf.unsuffix);
     if (recogudp_conf.recog_fp==NULL) {

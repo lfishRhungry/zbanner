@@ -167,7 +167,7 @@ static const unsigned short top_udp_ports[] = {
     1813,     /* RADIUS */
     3343,     /* Microsoft Cluster Services */
     2535,     /* MADCAP rfc2730 TODO FIXME */
-    
+
 };
 
 static const unsigned short top_tcp_ports[] = {
@@ -195,7 +195,7 @@ static const unsigned short top_tcp_ports[] = {
     5060, 5061,             /* SIP - session initiation protocool */
     554,                    /* RTSP */
     548,                    /* AFP */
-    
+
 
     1,3,4,6,7,9,13,17,19,20,26,30,32,33,37,42,43,49,70,
     79,81,82,83,84,85,89,90,99,100,106,109,110,113,119,125,
@@ -284,7 +284,7 @@ count_cidr6_bits(struct Range6 *range, bool *exact)
 
     /* for the comments of this function, see  count_cidr_bits */
     *exact = false;
-    
+
     for (i=0; i<128; i++) {
         uint64_t mask_hi;
         uint64_t mask_lo;
@@ -341,7 +341,7 @@ xconf_save_state(struct Xconf *xconf)
         return;
     }
 
-    
+
     xconf_echo(xconf, fp);
 
     fclose(fp);
@@ -491,7 +491,7 @@ static enum ConfigRes SET_print_status(void *conf, const char *name, const char 
         return 0;
     }
 
-    
+
     if (EQUALS("queue",value)) {
         xconf->is_status_queue = true;
     } else if (EQUALS("info-num",value) || EQUALS("info",value)) {
@@ -1145,11 +1145,11 @@ static enum ConfigRes SET_target_output(void *conf, const char *name, const char
             bool exact = false;
             struct Range6 range = xconf->targets.ipv6.list[i];
             ipaddress_formatted_t fmt = ipv6address_fmt(range.begin);
-            
+
             fprintf(xconf->echo, "range = %s", fmt.string);
             if (!ipv6address_is_equal(range.begin, range.end)) {
                 unsigned cidr_bits = count_cidr6_bits(&range, &exact);
-                
+
                 if (exact && cidr_bits) {
                     fprintf(xconf->echo, "/%u", cidr_bits);
                 } else {
@@ -1171,7 +1171,7 @@ static enum ConfigRes SET_target_ip(void *conf, const char *name, const char *va
         /*echo in SET_target_output*/
         return 0;
     }
-    
+
     int err;
     err = massip_add_target_string(&xconf->targets, value);
     if (err) {
@@ -1195,7 +1195,7 @@ static enum ConfigRes SET_adapter_snaplen(void *conf, const char *name, const ch
         }
         return 0;
     }
-    
+
     xconf->nic.snaplen = (unsigned)parseInt(value);
     if (xconf->nic.snaplen > 65535) {
         LOG(LEVEL_ERROR, "FAIL: snaplen must be less than 65535.\n");
@@ -1215,7 +1215,7 @@ static enum ConfigRes SET_adapter_vlan(void *conf, const char *name, const char 
         }
         return 0;
     }
-    
+
     xconf->nic.is_vlan = 1;
     xconf->nic.vlan_id = (unsigned)parseInt(value);
 
@@ -1229,7 +1229,7 @@ static enum ConfigRes SET_target_port(void *conf, const char *name, const char *
         /*echo in SET_target_output*/
         return 0;
     }
-    
+
     unsigned is_error = 0;
 
     rangelist_parse_ports(&xconf->targets.ports, value, &is_error, 0);
@@ -1252,7 +1252,7 @@ static enum ConfigRes SET_top_port(void *conf, const char *name, const char *val
         /*echo in SET_target_output*/
         return 0;
     }
-    
+
     unsigned maxports = parseInt(value);
 
     if (!maxports) {
@@ -1302,7 +1302,7 @@ static enum ConfigRes SET_exclude_ip(void *conf, const char *name, const char *v
 
     if (xconf->op == Operation_Default)
         xconf->op = Operation_Scan;
-    
+
     return Conf_OK;
 }
 
@@ -1324,7 +1324,7 @@ static enum ConfigRes SET_exclude_port(void *conf, const char *name, const char 
     }
     if (xconf->op == Operation_Default)
         xconf->op = Operation_Scan;
-    
+
     return Conf_OK;
 }
 
@@ -1346,7 +1346,7 @@ static enum ConfigRes SET_include_file(void *conf, const char *name, const char 
     }
     if (xconf->op == Operation_Default)
         xconf->op = Operation_Scan;
-    
+
     return Conf_OK;
 }
 
@@ -1375,7 +1375,7 @@ static enum ConfigRes SET_exclude_file(void *conf, const char *name, const char 
     if (count2 - count1)
         LOG(LEVEL_HINT, "%s: excluding %u ranges from file\n",
             value, count2 - count1);
-    
+
     return Conf_OK;
 }
 
@@ -1505,7 +1505,7 @@ static enum ConfigRes SET_read_conf(void *conf, const char *name, const char *va
     if (fp == NULL) {
         char dir[512];
         char *x;
-        
+
         LOG(LEVEL_ERROR, "[-] FAIL: reading configuration file\n");
         LOG(LEVEL_ERROR, "[-] %s: %s\n", value, strerror(errno));
 
@@ -1698,14 +1698,14 @@ static enum ConfigRes SET_echo(void *conf, const char *name, const char *value)
     if (xconf->echo) {
         return 0;
     }
-    
+
     if (EQUALS("echo", name) && parseBoolean(value))
         xconf->op = Operation_Echo;
     else if (EQUALS("echo-all", name) && parseBoolean(value)) {
         xconf->op = Operation_Echo;
         xconf->echo_all = 1;
     }
-    
+
     return Conf_OK;
 }
 
@@ -1715,10 +1715,10 @@ static enum ConfigRes SET_debugif(void *conf, const char *name, const char *valu
     if (xconf->echo) {
         return 0;
     }
-    
+
     if (parseBoolean(value))
         xconf->op = Operation_DebugIF;
-    
+
     return Conf_OK;
 }
 
@@ -1728,10 +1728,10 @@ static enum ConfigRes SET_benchmark(void *conf, const char *name, const char *va
     if (xconf->echo) {
         return 0;
     }
-    
+
     if (parseBoolean(value))
         xconf->op = Operation_Benchmark;
-    
+
     return Conf_OK;
 }
 
@@ -1741,10 +1741,10 @@ static enum ConfigRes SET_selftest(void *conf, const char *name, const char *val
     if (xconf->echo) {
         return 0;
     }
-    
+
     if (parseBoolean(value))
         xconf->op = Operation_Selftest;
-    
+
     return Conf_OK;
 }
 
@@ -1754,10 +1754,10 @@ static enum ConfigRes SET_list_cidr(void *conf, const char *name, const char *va
     if (xconf->echo) {
         return 0;
     }
-    
+
     if (parseBoolean(value))
         xconf->op = Operation_ListCidr;
-    
+
     return Conf_OK;
 }
 
@@ -1769,11 +1769,11 @@ static enum ConfigRes SET_lan_mode(void *conf, const char *name, const char *val
     if (xconf->echo) {
         return 0;
     }
-    
+
     if (parseBoolean(value)) {
         SET_router_mac(xconf, "router-mac", "ff-ff-ff-ff-ff-ff");
     }
-    
+
     return Conf_OK;
 }
 
@@ -1788,9 +1788,9 @@ static enum ConfigRes SET_bypass_os(void *conf, const char *name, const char *va
                 xconf->is_bypass_os?"true":"false");
         return 0;
     }
-    
+
     xconf->is_bypass_os = parseBoolean(value);
-    
+
     return Conf_OK;
 }
 
@@ -1802,11 +1802,11 @@ static enum ConfigRes SET_fake_router_mac(void *conf, const char *name, const ch
     if (xconf->echo) {
         return 0;
     }
-    
+
     if (parseBoolean(value)) {
         SET_router_mac(xconf, "router-mac", "01-02-03-04-05-06");
     }
-    
+
     return Conf_OK;
 }
 
@@ -1816,7 +1816,7 @@ static enum ConfigRes SET_rate(void *conf, const char *name, const char *value)
     double rate = 0.0;
     double point = 10.0;
     unsigned i;
-    
+
     if (xconf->echo) {
         if ((unsigned)(xconf->max_rate * 100000) % 100000) {
             /* print as floating point number, which is rare */
@@ -1828,7 +1828,7 @@ static enum ConfigRes SET_rate(void *conf, const char *name, const char *value)
         }
         return 0;
     }
-    
+
     for (i=0; value[i] && value[i] != '.'; i++) {
         char c = value[i];
         if (c < '0' || '9' < c) {
@@ -1837,7 +1837,7 @@ static enum ConfigRes SET_rate(void *conf, const char *name, const char *value)
         }
         rate = rate * 10.0 + (c - '0');
     }
-    
+
     if (value[i] == '.') {
         i++;
         while (value[i]) {
@@ -1852,7 +1852,7 @@ static enum ConfigRes SET_rate(void *conf, const char *name, const char *value)
             value++;
         }
     }
-    
+
     xconf->max_rate = rate;
     return Conf_OK;
 }
@@ -1929,7 +1929,7 @@ static enum ConfigRes SET_bpf_filter(void *conf, const char *name, const char *v
         free(xconf->bpf_filter);
     xconf->bpf_filter = MALLOC(len);
     memcpy(xconf->bpf_filter, value, len);
-    
+
     return Conf_OK;
 }
 
@@ -2032,7 +2032,7 @@ static enum ConfigRes SET_log_level(void *conf, const char *name, const char *va
     }
 
     LOG_add_level(strlen(name));
-    
+
     return Conf_OK;
 }
 
@@ -2054,7 +2054,7 @@ static enum ConfigRes SET_shard(void *conf, const char *name, const char *value)
         value++;
     while (isdigit(*value))
         of = of*10 + (*(value++)) - '0';
-    
+
     if (one < 1) {
         LOG(LEVEL_ERROR, "FAIL: shard index can't be zero\n");
         LOG(LEVEL_ERROR, "hint   it goes like 1/4 2/4 3/4 4/4\n");
@@ -3169,7 +3169,7 @@ void
 xconf_echo(struct Xconf *xconf, FILE *fp)
 {
     unsigned i;
-    
+
     /*
      * Print all configuration parameters
      */
@@ -3621,7 +3621,7 @@ void xconf_print_help()
         printf("\n\n");
         xprint(config_parameters[i].help_text, 6, 80);
         printf("\n\n\n");
-        
+
         count++;
     }
 
@@ -3656,7 +3656,7 @@ static int xconf_self_selftest()
     {
         int argc = 6;
         char *argv[] = { "foo", "bar", "-ddd", "--readscan", "xxx", "--something" };
-    
+
         if (xconf_contains("--nothing", argc, argv))
             goto failure;
 

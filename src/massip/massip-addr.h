@@ -1,11 +1,11 @@
 /*
     Simple module for handling addresses (IPv6, IPv4, MAC).
     Also implements a 128-bit type for dealing with addresses.
- 
+
     This is the module that almost all the other code depends
     upon, because everything else deals with the IP address
     types defined here.
-    
+
 */
 #ifndef MASSIP_ADDR_H
 #define MASSIP_ADDR_H

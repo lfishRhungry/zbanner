@@ -19,7 +19,7 @@ lzr_bgp_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    
+
     if (sizeof_px<20) {
         item->level = Output_FAILURE;
         safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not bgp");

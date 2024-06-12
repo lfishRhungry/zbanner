@@ -18,21 +18,21 @@ static size_t
 next_pow2(size_t n)
 {
     size_t bit_count = 0;
-    
+
     /* Always have at least one bit */
     if (n == 0)
         return 1;
-    
+
     /* If already a power-of-two, then return that */
     if ((n & (n - 1)) == 0)
         return n;
-    
+
     /* Count the number of bits */
     while (n != 0) {
         n >>= 1;
         bit_count += 1;
     }
-    
+
     return (size_t)1 << (size_t)bit_count;
 }
 
@@ -40,13 +40,13 @@ struct ResetFilter *
 rstfilter_create(unsigned long long seed, size_t bucket_count)
 {
     struct ResetFilter *rf;
-    
+
     rf = CALLOC(1, sizeof(*rf));
     rf->seed = seed;
     rf->bucket_count = next_pow2(bucket_count);
     rf->bucket_mask = rf->bucket_count - 1;
     rf->buckets = CALLOC(rf->bucket_count/2, sizeof(*rf->buckets));
-    
+
     return rf;
 }
 
@@ -71,7 +71,7 @@ rstfilter_is_filter(struct ResetFilter *rf,
     size_t index;
     unsigned char *p;
     bool result = false;
-    
+
     /*
      * Setup the input
      */
@@ -92,13 +92,13 @@ rstfilter_is_filter(struct ResetFilter *rf,
     }
     key[0] = rf->seed;
     key[1] = rf->seed;
-    
+
     /*
      * Grab the bucket
      */
     hash = siphash24(input, sizeof(input), key);
     index = hash & rf->bucket_mask;
-    
+
     /*
      * Find the result (1=filterout, 0=sendrst)
      */
@@ -114,7 +114,7 @@ rstfilter_is_filter(struct ResetFilter *rf,
         else
             *p = (*p) + 0x10;
     }
-    
+
     /*
      * Empty a random bucket
      */
@@ -151,7 +151,7 @@ int rstfilter_selftest()
     dst.ipv4 = 3;
 
     rf = rstfilter_create(time(0), 64);
-    
+
     /* Verify the first 15 packets pass the filter */
     for (i=0; i<15; i++) {
         int x;
@@ -162,7 +162,7 @@ int rstfilter_selftest()
             return 1;
         }
     }
-    
+
     /* Now run 10000 more times */
     for (i=0; i<1000; i++) {
         int x;
@@ -170,13 +170,13 @@ int rstfilter_selftest()
         count_filtered += x;
         count_passed += !x;
     }
-    
+
     /* SOME must have passed, due to us emptying random buckets */
     if (count_passed == 0) {
         LOG(LEVEL_ERROR, "[-] rstfilter failed, line=%u\n", __LINE__);
         return 1;
     }
-    
+
     /* However, while some pass, the vast majority should be filtered */
     if (count_passed > count_filtered/10) {
         LOG(LEVEL_ERROR, "[-] rstfilter failed, line=%u\n", __LINE__);

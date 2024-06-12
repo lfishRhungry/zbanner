@@ -158,7 +158,7 @@ _append_decimal(stream_t *out, unsigned long long n)
         n /= 10;
         tmp[tmp_offset++] = (char)('0' + digit);
     }
-    
+
     /* the final digit, may be zero */
     tmp[tmp_offset++] = (char)('0' + n);
 
@@ -171,7 +171,7 @@ static void
 _append_hex2(stream_t *out, unsigned long long n)
 {
     static const char hex[17] = "0123456789abcdef";
-    
+
     _append_char(out, hex[(n>>4)&0xF]);
     _append_char(out, hex[(n>>0)&0xF]);
 }
@@ -413,7 +413,7 @@ ipv6address_t ipv6address_add(ipv6address_t lhs, ipv6address_t rhs) {
 bool ipv6address_is_equal_prefixed(ipv6address_t lhs, ipv6address_t rhs, unsigned prefix)
 {
     ipv6address mask;
-    
+
     /* If the prefix is bad, then the answer is 'no'. */
     if (prefix > 128) {
         return false;
@@ -426,7 +426,7 @@ bool ipv6address_is_equal_prefixed(ipv6address_t lhs, ipv6address_t rhs, unsigne
         mask.hi = 0;
     else
         mask.hi = ~0ULL << (64 - prefix);
-    
+
     if (prefix > 64)
         mask.lo = ~0ULL << (128 - prefix);
     else

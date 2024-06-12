@@ -114,7 +114,7 @@ struct Xconf
         unsigned one;
         unsigned of;
     } shard;
-    
+
     /**
      * Temporary file to echo parameters to, used for saving configuration
      * to a file

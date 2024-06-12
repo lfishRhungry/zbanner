@@ -76,7 +76,7 @@ static inline ipv6address_t
 _read_ipv6(const unsigned char *buf, size_t *offset, size_t max)
 {
     ipv6address_t result = {0,0};
-    
+
     if (*offset + 16 <= max) {
         result = ipv6address_from_bytes(buf + *offset);
         *offset += 16;
@@ -110,7 +110,7 @@ stack_ndpv6_incoming_request(struct stack_t *stack, struct PreprocessedInfo *par
     size_t offset_ip_src = offset_ip + 8; /* offset in packet to the source IPv6 address */
     size_t offset_ip_dst = offset_ip + 24;
     size_t offset_icmpv6 = parsed->transport_offset;
-    
+
     /* Verify it's a "Neighbor Solitication" opcode */
     if (parsed->icmp_type != ICMPv6_TYPE_NS)
         return -1;
@@ -135,7 +135,7 @@ stack_ndpv6_incoming_request(struct stack_t *stack, struct PreprocessedInfo *par
         ipaddress_formatted_t fmt2 = ipaddress_fmt(target_ip);
         LOG(LEVEL_WARNING, "[+] received NDP request from %s for %s\n", fmt1.string, fmt2.string);
     }
-    
+
     /* Get a buffer for sending the response packet. This thread doesn't
      * send the packet itself. Instead, it formats a packet, then hands
      * that packet off to a transmit thread for later transmission. */
@@ -147,7 +147,7 @@ stack_ndpv6_incoming_request(struct stack_t *stack, struct PreprocessedInfo *par
     /* Use the request packet as a template for the response */
     memcpy(response->px, px, length);
     buf2 = response->px;
-    
+
     /* Set the destination MAC address and destination IPv6 address*/
     memcpy(buf2 + 0, px + 6, 6);
     memcpy(buf2 + offset_ip_dst, px + offset_ip_src, 16);
@@ -155,7 +155,7 @@ stack_ndpv6_incoming_request(struct stack_t *stack, struct PreprocessedInfo *par
     /* Set the source MAC address and source IPv6 address */
     memcpy(buf2 + offset_ip_src, target_ip_buf, 16);
     memcpy(buf2 + 6, target_mac.addr, 6);
-    
+
     /* Format the response */
     _append(buf2, &offset, max, ICMPv6_TYPE_NA); /* type */
     _append(buf2, &offset, max, ICMPv6_CODE_NA); /* code */
@@ -201,13 +201,13 @@ _extract_router_advertisement(
 
     if (parsed->ip_version != 6)
         return 1;
-    
+
     *router_ip = parsed->src_ip.ipv6;
 
     if (parsed->ip_protocol != 58)
         return 1;
     offset = parsed->transport_offset;
-    
+
     /* type = Router Advertisement */
     if (_read_byte(buf, &offset, length) != 134)
         return 1;
@@ -246,14 +246,14 @@ _extract_router_advertisement(
                 unsigned prefix_len;
                 ipv6address prefix;
                 ipaddress_formatted_t fmt;
-                
+
                 prefix_len = _read_byte(buf2, &off2, len2);
                 _read_byte(buf2, &off2, len2); /* flags */
                 _read_number(buf2, &off2, len2); /* valid lifetime */
                 _read_number(buf2, &off2, len2); /* preferred lifetime */
                 _read_number(buf2, &off2, len2); /* reserved */
                 prefix = _read_ipv6(buf2, &off2, len2);
-                
+
                 fmt = ipv6address_fmt(prefix);
                 LOG(LEVEL_WARNING, "[+] IPv6.prefix = %s/%u\n", fmt.string, prefix_len);
                 if (ipv6address_is_equal_prefixed(my_ipv6, prefix, prefix_len)) {
@@ -261,7 +261,7 @@ _extract_router_advertisement(
                 } else {
                     ipaddress_formatted_t fmt1 = ipv6address_fmt(my_ipv6);
                     ipaddress_formatted_t fmt2 = ipv6address_fmt(prefix);
-                    
+
                     LOG(LEVEL_HINT, "[-] WARNING: our source-ip is %s, but router prefix announces %s/%u\n",
                             fmt1.string, fmt2.string, prefix_len);
                     is_same_prefix = 0;
@@ -272,7 +272,7 @@ _extract_router_advertisement(
             case 25: /* recursive DNS server */
                 _read_short(buf2, &off2, len2);
                 _read_number(buf2, &off2, len2);
-                
+
                 while (off2 + 16 <= len2) {
                     ipv6address resolver = _read_ipv6(buf2, &off2, len2);
                     ipaddress_formatted_t fmt = ipv6address_fmt(resolver);
@@ -296,7 +296,7 @@ _extract_router_advertisement(
          * the Ethernet header of the packet instead */
         memcpy(router_mac->addr, parsed->mac_src, 6);
     }
-    
+
     if (!is_same_prefix) {
         /* We had a valid router advertisement, but it didn't
          * match the IPv6 address we are using. This presumably
@@ -305,7 +305,7 @@ _extract_router_advertisement(
          * packet and wait for another one */
         return 1;
     }
-    
+
     return 0;
 }
 
@@ -342,13 +342,13 @@ stack_ndpv6_resolve(
         return 0; /* success */
     }
 
-    
+
     /*
      * Ethernet header
      */
     _append_bytes(buf, &offset, max, "\x33\x33\x00\x00\x00\x02", 6);
     _append_bytes(buf, &offset, max, my_mac_address.addr, 6);
-    
+
     if (adapter->is_vlan) {
         _append_short(buf, &offset, max, 0x8100);
         _append_short(buf, &offset, max, adapter->vlan_id);
@@ -387,7 +387,7 @@ stack_ndpv6_resolve(
     _append_short(buf, &offset, max, 0);
     _append_short(buf, &offset, max, 0);
     _append_short(buf, &offset, max, 2);
-    
+
     /* ICMPv6 Router Solicitation */
     offset_icmpv6 = offset;
     _append(buf, &offset, max, 133); /* type = Router Solicitation */
@@ -398,7 +398,7 @@ stack_ndpv6_resolve(
     _append(buf, &offset, max, 1); /* option = source link layer address */
     _append(buf, &offset, max, 1); /* length = 2 + 6 / 8*/
     _append_bytes(buf, &offset, max, my_mac_address.addr, 6);
-    
+
     buf[offset_ip + 4] = (unsigned char)( (offset - offset_icmpv6) >> 8);
     buf[offset_ip + 5] = (unsigned char)( (offset - offset_icmpv6) & 0xFF);
     xsum = checksum_ipv6(   buf + offset_ip_src, 
@@ -425,7 +425,7 @@ stack_ndpv6_resolve(
     buf[offset_icmpv6 + 2] = (unsigned char)(xsum >> 8);
     buf[offset_icmpv6 + 3] = (unsigned char)(xsum >> 0);
     rawsock_send_packet(adapter, acache, buf, (unsigned)offset);
-    
+
 
     start = time(0);
     i = 0;
@@ -473,12 +473,12 @@ stack_ndpv6_resolve(
             continue;
         if (parsed.found != FOUND_NDPv6)
             continue;
-        
+
         /* We've found a packet that may be the one we want, so parse it */
         err = _extract_router_advertisement(buf2, length2, &parsed, my_ipv6, &router_ip, router_mac);
         if (err)
             continue;
-        
+
         /* The previous call found 'router_mac", so now return */
         return 0;
     }

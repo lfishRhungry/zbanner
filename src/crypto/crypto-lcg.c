@@ -180,7 +180,7 @@ lcg_verify(uint64_t a, uint64_t c, uint64_t range, uint64_t max)
 
     /* Allocate a list of 1-byte counters */
     list = CALLOC(1, (size_t)((range<max)?range:max));
-    
+
     /* For all numbers in the range, verify increment the counter for the
      * the output. */
     for (i=0; i<range; i++) {

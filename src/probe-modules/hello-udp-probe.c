@@ -83,7 +83,7 @@ static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
         &pcre2_errcode,
         &pcre2_erroffset,
         NULL);
-    
+
     if (!helloudp_conf.compiled_re) {
         LOG(LEVEL_ERROR, "[-]Regex compiled failed.\n");
         return Conf_ERR;
@@ -177,7 +177,7 @@ static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *v
 
     if (helloudp_conf.hello)
         free(helloudp_conf.hello);
-    
+
     FILE *fp = fopen(value, "rb");
     if (fp==NULL) {
         LOG(LEVEL_ERROR, "[-]Failed to open file %s.\n", value);

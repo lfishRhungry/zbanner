@@ -22,7 +22,7 @@
 bool stublua_init(void)
 {
     void *lib = NULL;
-    
+
     {
 #if defined(__APPLE__)
         static const char *possible_names[] = {
@@ -66,7 +66,7 @@ bool stublua_init(void)
                 ;
             }
         }
-        
+
         if (lib == NULL) {
             LOG(LEVEL_ERROR, "liblua: failed to load Lua shared library\n");
             LOG(LEVEL_ERROR, "    HINT: you must install Lua library\n");
@@ -83,10 +83,10 @@ bool stublua_init(void)
     name = dlsym(lib, #name); \
     if (name == NULL) {fprintf(stderr, "liblua: %s: failed\n", #name); return false;}
 #endif
-    
+
     DOLINK(lua_version);
-    
-    
+
+
     DOLINK(lua_close)
     DOLINK(lua_getfield)
     DOLINK(lua_getglobal)
@@ -120,7 +120,7 @@ bool stublua_init(void)
     DOLINK(lua_version)
     DOLINK(lua_xmove)
     DOLINK(lua_yieldk)
-    
+
     DOLINK(luaL_checkinteger)
     DOLINK(luaL_checklstring)
     DOLINK(luaL_checkudata)

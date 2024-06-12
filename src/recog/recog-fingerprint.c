@@ -117,7 +117,7 @@ struct Recog_FP * load_recog_fp(const char *filename, bool unprefix, bool unsuff
             &pcre2_errcode,
             &pcre2_erroffset,
             NULL);
-        
+
         free(tmp_char);
 
         if (!match->compiled_re) {

@@ -25,7 +25,7 @@ REALLOCARRAY(void *p, size_t count, size_t size)
         LOG(LEVEL_ERROR, "[-] out of memory, aborting\n");
         abort();
     }
-    
+
     return ret;
 }
 
@@ -35,7 +35,7 @@ void *
 CALLOC(size_t count, size_t size)
 {
     void *p;
-    
+
     if (count >= MAXNUM || size >= MAXNUM) {
         if (size != 0 && count >= SIZE_MAX/size) {
             LOG(LEVEL_ERROR, "[-] alloc too large, aborting\n");
@@ -48,7 +48,7 @@ CALLOC(size_t count, size_t size)
         LOG(LEVEL_ERROR, "[-] out of memory, aborting\n");
         abort();
     }
-    
+
     return p;
 }
 
@@ -61,23 +61,23 @@ void *
 MALLOC(size_t size)
 {
     void *p;
-    
+
     /* If 'size' is zero, then the behavior of 'malloc()' is undefined.
      * I'm not sure which behavior would be best, to either always abort
      * or always succeed. I'm choosing "always succeed" by bumping the
      * length by one byte */
     if (size == 0)
         size = 1;
-    
+
     /* Do the original allocation */
     p = malloc(size);
-    
+
     /* Abort the program if we've run out of memory */
     if (p == NULL) {
         LOG(LEVEL_ERROR, "[-] out of memory, aborting\n");
         abort();
     }
-    
+
     /* At this point, we've either succeeded or aborted the program,
      * so this value is guaranteed to never be NULL */
     return p;
@@ -89,12 +89,12 @@ void *
 REALLOC(void *p, size_t size)
 {
     void *ret = realloc(p, size);
-    
+
     if (ret == NULL) {
         LOG(LEVEL_ERROR, "[-] out of memory, aborting\n");
         abort();
     }
-    
+
     return ret;
 }
 
@@ -108,12 +108,12 @@ STRDUP(const char *str)
 #else
     char *p = strdup(str);
 #endif
-    
+
     if (p == NULL && str != NULL) {
         LOG(LEVEL_ERROR, "[-] out of memory, aborting\n");
         abort();
     }
-    
+
     return p;
 }
 
@@ -133,7 +133,7 @@ duplicate_string(const char *str)
 
     /* Allocate memory for the string */
     result = MALLOC(length + 1);
-    
+
 
     /* Copy the string */
     if (str)

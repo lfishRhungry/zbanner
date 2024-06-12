@@ -27,7 +27,7 @@ static void
 _errmsgip(ipaddress ip, unsigned port, const char *fmt, va_list marker)
 {
     ipaddress_formatted_t fmted = ipaddress_fmt(ip);
-    
+
     fprintf(stderr, "[-] %s:%u: ", fmted.string, port);
     vfprintf(stderr, fmt, marker);
     fflush(stderr);
@@ -54,7 +54,7 @@ ERRMSG(const char *fmt, ...)
     else
         _table[index] = (size_t)fmt;
 
-   
+
     va_start(marker, fmt);
     _errmsg(fmt, marker);
     va_end(marker);
@@ -78,7 +78,7 @@ ERRMSGip(ipaddress ip, unsigned port, const char *fmt, ...)
     else
         _table[index] = (size_t)fmt;
 
-   
+
     va_start(marker, fmt);
     _errmsgip(ip, port, fmt, marker);
     va_end(marker);

@@ -153,7 +153,7 @@ static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
         &pcre2_errcode,
         &pcre2_erroffset,
         NULL);
-    
+
     if (!http_conf.compiled_re) {
         LOG(LEVEL_ERROR, "[-]Regex compiled failed.\n");
         return Conf_ERR;
@@ -188,7 +188,7 @@ static enum ConfigRes SET_method(void *conf, const char *name, const char *value
 
     if (http_conf.method)
         free(http_conf.method);
-    
+
     http_conf.method_length = strlen(value);
     http_conf.method = STRDUP(value);
 
@@ -202,7 +202,7 @@ static enum ConfigRes SET_url(void *conf, const char *name, const char *value)
 
     if (http_conf.url)
         free(http_conf.url);
-    
+
     http_conf.url_length = strlen(value);
     http_conf.url = STRDUP(value);
 
@@ -216,7 +216,7 @@ static enum ConfigRes SET_version(void *conf, const char *name, const char *valu
 
     if (http_conf.version)
         free(http_conf.version);
-    
+
     http_conf.version_length = strlen(value);
     http_conf.version = STRDUP(value);
 
@@ -230,7 +230,7 @@ static enum ConfigRes SET_host(void *conf, const char *name, const char *value)
 
     if (http_conf.host)
         free(http_conf.host);
-    
+
     http_conf.host_length = strlen(value);
     http_conf.host = STRDUP(value);
 
@@ -244,7 +244,7 @@ static enum ConfigRes SET_user_agent(void *conf, const char *name, const char *v
 
     if (http_conf.user_agent)
         free(http_conf.user_agent);
-    
+
     http_conf.user_agent_length = strlen(value);
     http_conf.user_agent = STRDUP(value);
 
@@ -258,7 +258,7 @@ static enum ConfigRes SET_payload(void *conf, const char *name, const char *valu
 
     if (http_conf.payload)
         free(http_conf.payload);
-    
+
     http_conf.payload_length = strlen(value);
     http_conf.payload = STRDUP(value);
 
@@ -292,7 +292,7 @@ static enum ConfigRes SET_header(void *conf, const char *name, const char *value
         name_length = INDEX_OF(value, ':');
         newname = MALLOC(name_length + 1);
         memcpy(newname, value, name_length + 1);
-            
+
         /* Trim the value */
         value = value + name_length + 1;
         while (*value && isspace(*value & 0xFF))
@@ -779,7 +779,7 @@ http_handle_response(
             item->level = Output_FAILURE;
             safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not matched");
         }
-        
+
         if (http_conf.report_while_regex) {
             dach_append_normalized(&item->report, "banner", px, sizeof_px);
         }

@@ -55,7 +55,7 @@ struct OutputModule *get_output_module_by_name(const char *name)
 void list_all_output_modules()
 {
     int len = (int)ARRAY_SIZE(output_modules_list);
-    
+
     printf("\n");
     printf(XPRINT_STAR_LINE);
     printf("\n");

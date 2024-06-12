@@ -3,7 +3,7 @@
 
     This is for the "safe" clib functions, where things like "strcpy()" is
     replaced with a safer version of the function, like "safe_strcpy()".
- 
+
     NOTE: I tried to based these on Microosft's `..._s()` functions proposed
     in Annex K, but it's become too hard trying to deal with both my own
     version and existing versions. Therefore, I've changed this code to

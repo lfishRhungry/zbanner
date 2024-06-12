@@ -30,7 +30,7 @@
                      corresponding to the target address, or the target
                      address. (The latter is for verifying the reachability
                      of a neighbor and We must know its mac addr.)
-    
+
       Target Address: The IP address of the target of the solicitation.
                       It MUST NOT be a multicast address.
 
@@ -74,7 +74,7 @@
 
                      For unsolicited advertisements typically the all-
                      nodes multicast address.
-    
+
       Target Address
                      For solicited advertisements, the Target Address
                      field in the Neighbor Solicitation message that

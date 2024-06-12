@@ -145,7 +145,7 @@ tcpsyn_transmit(
     *len = tcp_create_packet(
         target->ip_them, target->port_them, target->ip_me, target->port_me,
         cookie, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_LEN);
-    
+
     /*add timeout*/
     event->need_timeout = 1;
 

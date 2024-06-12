@@ -495,7 +495,7 @@ int checksum_selftest()
         "\x9e\x8d\x52\x25\x00\x00\x80\x00\x00\x0a\x08\x00\x46\x1a\xdf\x3d";
 
     xsum = checksum_sctp(sctp_testcase, 32);
-    
+
     if (xsum != 0x58e45d36)
         return 1;
 

@@ -132,7 +132,7 @@ static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *v
 
     if (recog_conf.hello)
         free(recog_conf.hello);
-    
+
     FILE *fp = fopen(value, "rb");
     if (fp==NULL) {
         LOG(LEVEL_ERROR, "[-]Failed to open file %s.\n", value);
@@ -167,7 +167,7 @@ static enum ConfigRes SET_recog_file(void *conf, const char *name, const char *v
 
     if (recog_conf.xml_filename)
         free(recog_conf.xml_filename);
-    
+
     recog_conf.xml_filename = STRDUP(value);
 
     return Conf_OK;
@@ -263,7 +263,7 @@ recog_global_init(const struct Xconf *xconf)
         LOG(LEVEL_ERROR, "[-]RecogProbe: No Recog fingerprint xml file specified.\n");
         return false;
     }
-    
+
     recog_conf.recog_fp = load_recog_fp(recog_conf.xml_filename,
         recog_conf.unprefix, recog_conf.unsuffix);
     if (recog_conf.recog_fp==NULL) {

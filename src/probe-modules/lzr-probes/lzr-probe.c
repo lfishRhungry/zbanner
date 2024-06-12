@@ -404,7 +404,7 @@ void lzr_close()
     /*do init for all handshakes*/
     for (unsigned i=0; i<lzr_conf.hs_count; i++)
         lzr_conf.handshake[i]->close_cb();
- 
+
     free(lzr_conf.handshake);
 }
 

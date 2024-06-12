@@ -56,13 +56,13 @@ _int128_mult64(massint128_t lhs, uint64_t rhs)
     uint64_t x;
     uint64_t b;
     uint64_t a;
-    
+
     /* low-order 32 */
     a = (rhs>>0) & 0xFFFFFFFFULL;
     b = (lhs.lo>>0) & 0xFFFFFFFFULL;
     x = (a * b);
     result.lo += x;
-    
+
     b = (lhs.lo>>32ULL) & 0xFFFFFFFFULL;
     x =  (a * b);
     result.lo += x<<32ULL;
@@ -109,7 +109,7 @@ LESSEQ(const ipv6address lhs, const ipv6address rhs)
         return true;
     if (lhs.hi > rhs.hi)
         return false;
-    
+
     if (lhs.lo <= rhs.lo)
         return true;
     else
@@ -132,7 +132,7 @@ static ipv6address
 MINUS_ONE(const ipv6address ip)
 {
     ipv6address result;
-    
+
     if (ip.lo == 0) {
         result.hi = ip.hi - 1;
         result.lo = ~0ULL;
@@ -147,7 +147,7 @@ MINUS_ONE(const ipv6address ip)
 static ipv6address PLUS_ONE(const ipv6address ip)
 {
     ipv6address result;
-    
+
     if (ip.lo == ~0) {
         result.hi = ip.hi + 1;
         result.lo = 0;
@@ -238,7 +238,7 @@ range6_is_overlap(const struct Range6 lhs, const struct Range6 rhs)
     static const ipv6address zero = {0, 0};
     ipv6address lhs_endm = MINUS_ONE(lhs.end);
     ipv6address rhs_endm = MINUS_ONE(rhs.end);
-    
+
     /* llll rrrr */
     if (LESS(zero, lhs.end) && LESS(lhs_endm, rhs.begin))
         return 0;
@@ -299,21 +299,21 @@ range6list_sort(struct Range6List *targets)
         targets->is_sorted = 1;
         return;
     }
-    
+
     /* If it's already sorted, then skip this */
     if (targets->is_sorted) {
         return;
     }
-    
-    
+
+
     /* First, sort the list */
     LOG(LEVEL_DEBUG, "[+] range6:sort: sorting...\n");
     qsort(  targets->list,              /* the array to sort */
             targets->count,             /* number of elements to sort */
             sizeof(targets->list[0]),   /* size of element */
             range6_compare);
-    
-    
+
+
     /* Second, combine all overlapping ranges. We do this by simply creating
      * a new list from a sorted list, so we don't have to remove things in the
      * middle when collapsing overlapping entries together, which is painfully
@@ -322,7 +322,7 @@ range6list_sort(struct Range6List *targets)
     for (i=0; i<targets->count; i++) {
         range6list_add_range(&newlist, targets->list[i].begin, targets->list[i].end);
     }
-    
+
     LOG(LEVEL_DEBUG, "[+] range:sort: combined from %u elements to %u elements\n", original_count, newlist.count);
     free(targets->list);
     targets->list = newlist.list;
@@ -391,7 +391,7 @@ void
 range6list_merge(struct Range6List *list1, const struct Range6List *list2)
 {
     unsigned i;
-    
+
     for (i=0; i<list2->count; i++) {
         range6list_add_range(list1, list2->list[i].begin, list2->list[i].end);
     }
@@ -464,18 +464,18 @@ range6list_exclude(  struct Range6List *targets,
 {
     ipv6address count = {0,0};
     unsigned i;
-    
+
     for (i=0; i<excludes->count; i++) {
         struct Range6 range = excludes->list[i];
         ipv6address x;
-        
+
         x = _int128_subtract(range.end, range.begin);
         x = _int128_add64(x, 1);
 
         count = _int128_add(count, x);
         range6list_remove_range(targets, range.begin, range.end);
     }
-    
+
     return count;
 }
 
@@ -572,7 +572,7 @@ range6list_optimize(struct Range6List *targets)
         x = _int128_add64(x, 1);
         total = _int128_add(total, x);
     }
-    
+
     targets->picker = picker;
 }
 
@@ -690,7 +690,7 @@ int ranges6_selftest()
     err = massip_parse_range("2001:0db8:85a3:0000:0000:8a2e:0370:7334", 0, 0, 0, &r);
     if (err != Ipv6_Address)
         ERROR();
-    
+
     /* test for the /0 CIDR block, since we'll be using that a lot to scan the entire
      * Internet */
     if (r.begin.hi != 0x20010db885a30000ULL)

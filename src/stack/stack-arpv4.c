@@ -132,17 +132,17 @@ stack_arp_resolve(
      */
     memcpy(arp_packet +  0, "\xFF\xFF\xFF\xFF\xFF\xFF", 6);
     memcpy(arp_packet +  6, my_mac_address.addr, 6);
-    
+
     if (adapter->is_vlan) {
         memcpy(arp_packet + 12, "\x81\x00", 2);
         arp_packet[14] = (unsigned char)(adapter->vlan_id>>8);
         arp_packet[15] = (unsigned char)(adapter->vlan_id&0xFF);
         arp_packet += 4;
     }
-    
+
     memcpy(arp_packet + 12, "\x08\x06", 2);
 
-    
+
     memcpy(arp_packet + 14,
             "\x00\x01" /* hardware = Ethernet */
             "\x08\x00" /* protocol = IPv4 */
@@ -167,7 +167,7 @@ stack_arp_resolve(
      * the wrong way to handle this. */
     if (adapter->is_vlan)
         arp_packet -= 4;
-    
+
     /*
      * Now loop for a few seconds looking for the response
      */
@@ -272,7 +272,7 @@ stack_arp_resolve(
     return 1;
 }
 
-    
+
 
 
 /****************************************************************************

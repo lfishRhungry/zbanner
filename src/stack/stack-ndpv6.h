@@ -1,9 +1,9 @@
 /*
     IPv6 Neighbor Discovery Protocol
- 
+
     This module is needed to talk to the local IPv6 router.
     It does two things:
- 
+
     1. find the local router, so that we can send packets to
        it
     2. response to Neighbor Discovery Requests, to the router

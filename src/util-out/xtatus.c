@@ -73,7 +73,7 @@ xtatus_print(
         "\"txq\":%.2f%%,"
         "\"rxq\":%.2f%%"
     "}\n";
-    
+
     const char *json_fmt_waiting = 
     "{"
         "\"state\":\"waiting\","
@@ -254,7 +254,7 @@ xtatus_print(
                 }
 
                 fprintf(stderr, "                \r");
-        
+
             }
         } else {
             if (json_status == 1) {
@@ -298,7 +298,7 @@ xtatus_print(
                 }
 
                 fprintf(stderr, "                \r");
-        
+
             }
         }
 

@@ -1,11 +1,11 @@
 /*
     Dynamically load libpcap at runtime
- 
+
  This library optionally loads the 'libpcap' library at runtime, rather
  than statically linked at compile time. The advantage of this is that
  the user can build this project with no dependencies -- although they
  may require this dependency in order to run the program.
- 
+
  As of 2017, libpcap shared libraries are standard on major Linux
  distributions (Debian, Readhat), FreeBSD, OpenBSD, and macOS. On
  Windows, "winpcap" must be downloaded. 
@@ -175,7 +175,7 @@ struct PcapFunctions {
     unsigned is_printing_debug:1;
     unsigned status;
     unsigned errcode;
-    
+
     PCAP_CLOSE              close;
     PCAP_DATALINK           datalink;
     PCAP_DISPATCH           dispatch;
@@ -186,8 +186,8 @@ struct PcapFunctions {
     PCAP_MAJOR_VERSION      major_version;
     PCAP_MINOR_VERSION      minor_version;
     PCAP_OPEN_LIVE          open_live;
-    
-    
+
+
     PCAP_OPEN_OFFLINE       open_offline;
     PCAP_SENDPACKET         sendpacket;
     PCAP_NEXT               next;
@@ -195,7 +195,7 @@ struct PcapFunctions {
     PCAP_DATALINK_VAL_TO_NAME datalink_val_to_name;
     PCAP_PERROR             perror;
     PCAP_GETERR             geterr;
-    
+
     /* Accessor functions for opaque data structure, don't really
      * exist in libpcap */
     PCAP_DEV_NAME           dev_name;

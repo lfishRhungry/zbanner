@@ -199,7 +199,7 @@ static size_t jarm_load_ext_supported_versions(struct JarmConfig *jc, unsigned c
     ext_len = sv_len + 1;
     U16_TO_BE(px+2, ext_len);
     r_len  += 2;
-    
+
     return r_len;
 }
 
@@ -274,7 +274,7 @@ static size_t jarm_load_extensions(struct JarmConfig *jc, unsigned char *px)
         ext_start[3] = 0;
         ext_start    += 4;
     }
-    
+
     /*
      *Load Extensions one by one
      */
@@ -285,33 +285,33 @@ static size_t jarm_load_extensions(struct JarmConfig *jc, unsigned char *px)
      */
     tmp_len    = tls_load_ext_sni(ext_start, jc->servername);
     ext_start += tmp_len;
- 
+
     U16_TO_BE(ext_start, TLSEXT_TYPE_extended_master_secret);
     ext_start   += 2;
     memcpy(ext_start, JARM_EXT_EXTENDED_MASTER_SECRET, sizeof(JARM_EXT_EXTENDED_MASTER_SECRET)-1);
     ext_start += (sizeof(JARM_EXT_EXTENDED_MASTER_SECRET)-1);
- 
+
     ext_start[0] = TLSEXT_TYPE_max_fragment_length >> 8 & 0xFF;
     ext_start[1] = TLSEXT_TYPE_max_fragment_length >> 0 & 0xFF;
     ext_start   += 2;
     memcpy(ext_start, JARM_EXT_MAX_FRAGMENT_LENGTH, sizeof(JARM_EXT_MAX_FRAGMENT_LENGTH)-1);
     ext_start += (sizeof(JARM_EXT_MAX_FRAGMENT_LENGTH)-1);
- 
+
     U16_TO_BE(ext_start, TLSEXT_TYPE_renegotiate);
     ext_start   += 2;
     memcpy(ext_start, JARM_EXT_RENEGOTIATION_INFO, sizeof(JARM_EXT_RENEGOTIATION_INFO)-1);
     ext_start += (sizeof(JARM_EXT_RENEGOTIATION_INFO)-1);
- 
+
     U16_TO_BE(ext_start, TLSEXT_TYPE_supported_groups);
     ext_start   += 2;
     memcpy(ext_start, JARM_EXT_SUPPORTED_GROUPS, sizeof(JARM_EXT_SUPPORTED_GROUPS)-1);
     ext_start += (sizeof(JARM_EXT_SUPPORTED_GROUPS)-1);
- 
+
     U16_TO_BE(ext_start, TLSEXT_TYPE_ec_point_formats);
     ext_start   += 2;
     memcpy(ext_start, JARM_EXT_EC_POINT_FORMATS, sizeof(JARM_EXT_EC_POINT_FORMATS)-1);
     ext_start += (sizeof(JARM_EXT_EC_POINT_FORMATS)-1);
- 
+
     U16_TO_BE(ext_start, TLSEXT_TYPE_session_ticket);
     ext_start   += 2;
     memcpy(ext_start, JARM_EXT_SESSION_TICKET, sizeof(JARM_EXT_SESSION_TICKET)-1);
@@ -331,7 +331,7 @@ static size_t jarm_load_extensions(struct JarmConfig *jc, unsigned char *px)
             ARRAY_SIZE(JarmAlpnReverseListRare));
     }
     ext_start += tmp_len;
- 
+
     U16_TO_BE(ext_start, TLSEXT_TYPE_signature_algorithms);
     ext_start   += 2;
     memcpy(ext_start, JARM_EXT_SIGNATURE_ALGORITHMS, sizeof(JARM_EXT_SIGNATURE_ALGORITHMS)-1);
@@ -339,7 +339,7 @@ static size_t jarm_load_extensions(struct JarmConfig *jc, unsigned char *px)
 
     tmp_len    = jarm_load_ext_key_share(jc, ext_start);
     ext_start += tmp_len;
- 
+
     U16_TO_BE(ext_start, TLSEXT_TYPE_psk_kex_modes);
     ext_start   += 2;
     memcpy(ext_start, JARM_EXT_PSK_KEY_EXCHANGE_MODES, sizeof(JARM_EXT_PSK_KEY_EXCHANGE_MODES)-1);
@@ -354,7 +354,7 @@ static size_t jarm_load_extensions(struct JarmConfig *jc, unsigned char *px)
     uint16_t ext_len;
     ext_len = ext_start - (px+2);
     U16_TO_BE(px, ext_len);
-    
+
     return (size_t)(ext_start-px);
 }
 
@@ -598,7 +598,7 @@ extract_ext(const unsigned char *payload, size_t payload_len,
         return snprintf(res_buf, res_max, "|");
     else if (counter+42 >= sh_len)
         return snprintf(res_buf, res_max, "|");
-    
+
     unsigned char *type;
     unsigned ext_length;
 

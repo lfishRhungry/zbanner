@@ -49,7 +49,7 @@ struct FHandler * ft_get_handler(struct FTable *table)
     handler->spec   = table->spec;
     handler->queue  = &table->queue_t;
     handler->oldest = NULL;
-    
+
     return handler;
 }
 
@@ -88,7 +88,7 @@ void ft_close_handler(struct FHandler *handler) {
         free(handler->oldest);
         handler->oldest = NULL;
     }
-    
+
     free(handler);
 }
 
