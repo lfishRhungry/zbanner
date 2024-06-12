@@ -446,7 +446,7 @@ _tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
 
         if (seg->is_dynamic) {
             free(seg->buf);
-            seg->buf = 0;
+            seg->buf = NULL;
         }
 
         free(seg);
@@ -550,9 +550,9 @@ tcpcon_create_tcb(
         tcb = tcpcon->freed_list;
         tcpcon->freed_list = tcb->next;
     } else {
-        tcb = MALLOC(sizeof(*tcb));
+        tcb = MALLOC(sizeof(struct TCP_Control_Block));
     }
-    memset(tcb, 0, sizeof(*tcb));
+    memset(tcb, 0, sizeof(struct TCP_Control_Block));
 
     tcb->next = tcpcon->entries[index & tcpcon->mask];
     tcpcon->entries[index & tcpcon->mask] = tcb;

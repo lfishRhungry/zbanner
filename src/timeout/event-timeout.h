@@ -35,7 +35,7 @@ struct TimeoutEntry {
  ***************************************************************************/
 static inline bool
 timeout_is_unlinked(const struct TimeoutEntry *entry) {
-    if (entry->prev == 0 || entry->next == 0)
+    if (entry->prev == NULL || entry->next == NULL)
         return true;
     else
         return false;
@@ -46,14 +46,16 @@ timeout_is_unlinked(const struct TimeoutEntry *entry) {
 static inline void
 timeout_unlink(struct TimeoutEntry *entry)
 {
-    if (entry->prev == 0 && entry->next == 0)
+    if (entry->prev == NULL && entry->next == NULL)
         return;
+
     if (entry->prev)
         *(entry->prev) = entry->next;
     if (entry->next)
         entry->next->prev = entry->prev;
-    entry->next = 0;
-    entry->prev = 0;
+
+    entry->next      = NULL;
+    entry->prev      = NULL;
     entry->timestamp = 0;
 }
 
@@ -62,8 +64,8 @@ timeout_unlink(struct TimeoutEntry *entry)
 static inline void
 timeout_init(struct TimeoutEntry *entry)
 {
-    entry->next = 0;
-    entry->prev = 0;
+    entry->next = NULL;
+    entry->prev = NULL;
 }
 
 /**

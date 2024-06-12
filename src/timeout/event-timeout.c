@@ -34,6 +34,8 @@
 #include "../util-misc/cross.h"
 
 
+#define EVENT_TM_SLOTS  1024*1024
+
 
 /***************************************************************************
  * The timeout system is a circular ring. We move an index around the 
@@ -60,9 +62,9 @@ struct Timeouts {
     unsigned mask;
 
     /**
-     * The ring of entries.
+     * The ring of entries, must be power of 2.
      */
-    struct TimeoutEntry *slots[1024*1024];
+    struct TimeoutEntry *slots[EVENT_TM_SLOTS];
 };
 
 /***************************************************************************
@@ -72,7 +74,7 @@ timeouts_create(uint64_t timestamp)
 {
     struct Timeouts *timeouts;
 
-    timeouts       = CALLOC(1, sizeof(*timeouts));
+    timeouts       = CALLOC(1, sizeof(struct Timeouts));
     timeouts->mask = ARRAY_SIZE(timeouts->slots)-1;
 
     /*
@@ -105,7 +107,7 @@ timeouts_add(struct Timeouts *timeouts, struct TimeoutEntry *entry,
 
     if (entry->prev) {
         LOG(LEVEL_WARNING, "***CHANGE %d-seconds\n", 
-                    (int)((timestamp-entry->timestamp)/TICKS_PER_SECOND));
+            (int)((timestamp-entry->timestamp)/TICKS_PER_SECOND));
     }
 
     /* Initialize the new entry */
