@@ -583,7 +583,7 @@ static bool output_tls_version(struct Output *out,
     return true;
 }
 
-static void extend_buffer(unsigned char **buf, size_t *buf_len)
+static void _extend_buffer(unsigned char **buf, size_t *buf_len)
 {
     LOG(LEVEL_DETAIL, "[TSP BUFFER extending...] >>>\n");
     unsigned char *tmp_ptr;
@@ -876,7 +876,7 @@ tlsstate_make_hello(
         while (true) {
             /*extend if buffer is not enough*/
             if (tls_state->data_size - offset <= 0) {
-                extend_buffer(&tls_state->data, &tls_state->data_size);
+                _extend_buffer(&tls_state->data, &tls_state->data_size);
             }
 
             /*get ClientHello here*/
@@ -1041,7 +1041,7 @@ tlsstate_parse_response(
 
                 while (true) {
                     if (tls_state->data_size - offset <= 0) {
-                        extend_buffer(&tls_state->data, &tls_state->data_size);
+                        _extend_buffer(&tls_state->data, &tls_state->data_size);
                     }
 
                     res = BIO_read(
@@ -1117,7 +1117,7 @@ tlsstate_parse_response(
                 size_t offset = 0;
                 while (true) {
                     if (tls_state->data_size - offset <= 0) {
-                        extend_buffer(&tls_state->data, &tls_state->data_size);
+                        _extend_buffer(&tls_state->data, &tls_state->data_size);
                     }
 
                     res = BIO_read(
@@ -1162,7 +1162,7 @@ tlsstate_parse_response(
                 offset += res;
                 /*maybe more data, extend buffer to read*/
                 if (res==tls_state->data_size-offset) {
-                    extend_buffer(&tls_state->data, &tls_state->data_size);
+                    _extend_buffer(&tls_state->data, &tls_state->data_size);
                     /*go on to read*/
                     continue;
                 } else if (res > 0) {
@@ -1205,7 +1205,7 @@ tlsstate_parse_response(
                         size_t offset = 0;
                         while (true) {
                             if (tls_state->data_size - offset <= 0) {
-                                extend_buffer(&tls_state->data, &tls_state->data_size);
+                                _extend_buffer(&tls_state->data, &tls_state->data_size);
                             }
 
                             res = BIO_read(tls_state->wbio, tls_state->data + offset,
