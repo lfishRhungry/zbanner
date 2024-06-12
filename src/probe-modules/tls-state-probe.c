@@ -952,13 +952,11 @@ tlsstate_parse_response(
             LOG(LEVEL_INFO, "[TSP Parse RESPONSE] BIO_write: %d \n", res);
             if (res > 0) {
                 offset += (size_t)res;
-                if (sizeof_px - offset <= 0)
-                    break;
             } else {
                 LOG(LEVEL_WARNING,
                     "[TSP Parse RESPONSE] BIO_write failed with error: %d\n", res);
                 /*close connection*/
-                pass->data    = NULL;
+                pass->data       = NULL;
                 pass->len        = 0;
                 pass->is_close   = 1;
                 return ret;
