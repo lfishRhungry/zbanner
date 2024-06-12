@@ -514,7 +514,7 @@ static bool output_cipher_suite(struct Output *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     const SSL_CIPHER *ssl_cipher;
-    uint16_t cipher_suite;
+    uint16_t          cipher_suite;
 
     ssl_cipher = SSL_get_current_cipher(ssl);
     if (ssl_cipher == NULL) {
@@ -536,7 +536,7 @@ static bool output_cipher_suite(struct Output *out,
     safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
 
     cipher_suite = SSL_CIPHER_get_protocol_id(ssl_cipher);
-    dach_printf(&item.report, "cipher", "0x%x", false, cipher_suite);
+    dach_printf(&item.report, "cipher", false, "0x%x", cipher_suite);
 
     output_result(_tls_out, &item);
 
@@ -985,7 +985,7 @@ tlsstate_parse_response(
         /*still in handshake*/
         case TSP_STATE_HANDSHAKE:
 
-            res = SSL_do_handshake(tls_state->ssl);
+            res    = SSL_do_handshake(tls_state->ssl);
             res_ex = SSL_ERROR_NONE;
 
             if (res < 0) {
@@ -994,16 +994,18 @@ tlsstate_parse_response(
 
             tls_state->handshake_state = SSL_get_state(tls_state->ssl);
 
-            /*output version*/
-            if (tlsstate_conf.dump_version && !tls_state->have_dump_version) {
-                if (output_tls_version(out, target, tls_state->ssl))
+            if (tls_state->handshake_state != TLS_ST_BEFORE
+                && tls_state->handshake_state != TLS_ST_CW_CLNT_HELLO) {
+                /*output version*/
+                if (tlsstate_conf.dump_version && !tls_state->have_dump_version) {
+                    output_tls_version(out, target, tls_state->ssl);
                     tls_state->have_dump_version = 1;
-            }
-
-            /*output cipher suites*/
-            if (tlsstate_conf.dump_cipher && !tls_state->have_dump_cipher) {
-                if (output_cipher_suite(out, target, tls_state->ssl))
-                    tls_state->have_dump_cipher = 1;
+                }
+                /*output cipher suites*/
+                if (tlsstate_conf.dump_cipher && !tls_state->have_dump_cipher) {
+                    if (output_cipher_suite(out, target, tls_state->ssl))
+                        tls_state->have_dump_cipher = 1;
+                }
             }
 
             /*output X.509 cert info*/
