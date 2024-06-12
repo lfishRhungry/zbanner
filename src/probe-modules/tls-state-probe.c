@@ -1152,103 +1152,111 @@ tlsstate_parse_response(
             break;
         }
 
-        //!Pass data to subprobe and send data again and maybe close.
+        //!Pass data to subprobe and go on to interact or close.
         case TSP_STATE_RECV_DATA: {
+            /*It's rational to read all decoded data of SSL record from the buffer.*/
             size_t offset = 0;
             while (true) {
-                /*We have to read all data in the SSL buffer.*/
+                if (tls_state->data_size - offset <= 0) {
+                    _extend_buffer(&tls_state->data, &tls_state->data_size);
+                }
+
                 res = SSL_read(tls_state->ssl, tls_state->data + offset,
                     tls_state->data_size - offset);
-                offset += res;
-                /*maybe more data, extend buffer to read*/
-                if (res==tls_state->data_size-offset) {
-                    _extend_buffer(&tls_state->data, &tls_state->data_size);
-                    /*go on to read*/
-                    continue;
-                } else if (res > 0) {
-                    /*got all data from SSL buffer, give it to subprobe*/
-                    LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] SSL_read: %d\n",
-                        _tsp_state_to_string(state->state), offset);
 
-                    struct DataPass subpass = {0};
-
-                    ret = tlsstate_conf.subprobe->parse_response_cb(&subpass,
-                        &tls_state->substate, out, target, tls_state->data, offset);
-
-                    /*Maybe no hello and maybe just close*/
-                    if (!subpass.data || !subpass.len) {
-                        pass->is_close = subpass.is_close;
-                        state->state   = TSP_STATE_RECV_DATA;
-                        return ret;
-                    }
-
-                    res = 1;
-                    /*have data to send, give it to SSL to encrypt*/
-                    if (subpass.data != NULL && subpass.len != 0) {
-                        res = SSL_write(tls_state->ssl, subpass.data, subpass.len);
-                        if (subpass.is_dynamic) {
-                            free(subpass.data);
-                            subpass.data = NULL;
-                            subpass.len  = 0;
-                        }
-                    }
-
-                    if (res <= 0) {
-                        res_ex = SSL_get_error(tls_state->ssl, res);
-                        LOG(LEVEL_WARNING, "[TSP Parse RESPONSE: %s] SSL_write error: %d %d\n",
-                            _tsp_state_to_string(state->state), res, res_ex);
-                        state->state = TSP_STATE_NEED_CLOSE;
-                        break;
-                    } else {
-                        LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] SSL_write: %d\n",
-                            _tsp_state_to_string(state->state), res);
-                        size_t offset = 0;
-                        while (true) {
-                            if (tls_state->data_size - offset <= 0) {
-                                _extend_buffer(&tls_state->data, &tls_state->data_size);
-                            }
-
-                            res = BIO_read(tls_state->wbio, tls_state->data + offset,
-                                (unsigned int)(tls_state->data_size - offset));
-                            if (res > 0) {
-                                LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
-                                    _tsp_state_to_string(state->state), res);
-                                offset += (size_t)res;
-                            } else if (res == 0 || res == -1) {
-                                LOG(LEVEL_DEBUG, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
-                                    _tsp_state_to_string(state->state), res);
-                                break;
-                            } else {
-                                LOG(LEVEL_WARNING,
-                                    "[TSP Parse RESPONSE: %s] BIO_read failed with error: %d\n",
-                                    _tsp_state_to_string(state->state), res);
-                                state->state = TSP_STATE_NEED_CLOSE;
-                                break;
-                            }
-                        }
-                        if (state->state != TSP_STATE_NEED_CLOSE) {
-                            datapass_set_data(pass, tls_state->data, offset, 1);
-                            pass->is_close = subpass.is_close;
-                            state->state   = TSP_STATE_RECV_DATA;
-                            return ret;
-                        }
-                    }
+                if (res > 0) {
+                    offset += res;
                 } else {
-                    res_ex = SSL_get_error(tls_state->ssl, res);
-                    if (res_ex == SSL_ERROR_WANT_READ) {
-                        is_continue = false;
-                    } else if (res_ex == SSL_ERROR_ZERO_RETURN) {
-                        state->state = TSP_STATE_NEED_CLOSE;
-                    } else {
-                        if (res_ex != SSL_ERROR_SSL) {
-                            LOG(LEVEL_WARNING, "[TSP Parse RESPONSE: %s] SSL_read error: %d %d\n",
-                                _tsp_state_to_string(state->state), res, res_ex);
-                            LOGopenssl(LEVEL_WARNING);
-                        }
-                        state->state = TSP_STATE_NEED_CLOSE;
-                    }
                     break;
                 }
+            }
+
+            /*have got decoded data from SSL record*/
+            if (offset > 0) {
+                LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] SSL_read: %d\n",
+                    _tsp_state_to_string(state->state), offset);
+
+                struct DataPass subpass = {0};
+
+                ret = tlsstate_conf.subprobe->parse_response_cb(&subpass,
+                    &tls_state->substate, out, target, tls_state->data, offset);
+
+                /*Maybe no data and maybe just close*/
+                if (!subpass.data || !subpass.len) {
+                    pass->is_close = subpass.is_close;
+                    state->state   = TSP_STATE_RECV_DATA;
+                    is_continue    = false;
+                    break;
+                }
+
+                /*Subprobe has further data to send, encode it first*/
+                int sub_res = SSL_write(tls_state->ssl, subpass.data, subpass.len);
+                if (subpass.is_dynamic) {
+                    free(subpass.data);
+                    subpass.data = NULL;
+                    subpass.len  = 0;
+                }
+
+                if (sub_res <= 0) {
+                    res_ex = SSL_get_error(tls_state->ssl, sub_res);
+                    LOG(LEVEL_WARNING, "[TSP Parse RESPONSE: %s] SSL_write error: %d %d\n",
+                        _tsp_state_to_string(state->state), sub_res, res_ex);
+                    state->state = TSP_STATE_NEED_CLOSE;
+                    break;
+                } else {
+                    LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] SSL_write: %d\n",
+                        _tsp_state_to_string(state->state), sub_res);
+                    size_t sub_offset = 0;
+                    while (true) {
+                        if (tls_state->data_size - sub_offset <= 0) {
+                            _extend_buffer(&tls_state->data, &tls_state->data_size);
+                        }
+
+                        sub_res = BIO_read(tls_state->wbio, tls_state->data + sub_offset,
+                            (unsigned int)(tls_state->data_size - sub_offset));
+                        if (sub_res > 0) {
+                            LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
+                                _tsp_state_to_string(state->state), sub_res);
+                            sub_offset += (size_t)sub_res;
+                        } else if (sub_res == 0 || sub_res == -1) {
+                            LOG(LEVEL_DEBUG, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
+                                _tsp_state_to_string(state->state), sub_res);
+                            break;
+                        } else {
+                            LOG(LEVEL_WARNING,
+                                "[TSP Parse RESPONSE: %s] BIO_read failed with error: %d\n",
+                                _tsp_state_to_string(state->state), sub_res);
+                            state->state = TSP_STATE_NEED_CLOSE;
+                            break;
+                        }
+                    }
+                    if (state->state != TSP_STATE_NEED_CLOSE) {
+                        datapass_set_data(pass, tls_state->data, sub_offset, 1);
+                        pass->is_close = subpass.is_close;
+                        state->state   = TSP_STATE_RECV_DATA;
+                        is_continue    = false;
+                        break;
+                    }
+                }
+            } else {
+                res_ex = SSL_get_error(tls_state->ssl, res);
+                if (res_ex == SSL_ERROR_WANT_READ) {
+                    /**
+                     * No data because SSL record is incomplete.
+                     * Go on to wait further data.
+                     * */
+                    is_continue = false;
+                } else if (res_ex == SSL_ERROR_ZERO_RETURN) {
+                    state->state = TSP_STATE_NEED_CLOSE;
+                } else {
+                    if (res_ex != SSL_ERROR_SSL) {
+                        LOG(LEVEL_WARNING, "[TSP Parse RESPONSE: %s] SSL_read error: %d %d\n",
+                            _tsp_state_to_string(state->state), res, res_ex);
+                        LOGopenssl(LEVEL_WARNING);
+                    }
+                    state->state = TSP_STATE_NEED_CLOSE;
+                }
+                break;
             }
             break;
         }
