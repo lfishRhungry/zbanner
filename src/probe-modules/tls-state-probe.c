@@ -701,7 +701,7 @@ static void tlsstate_close()
 }
 
 /*init SSL struct*/
-static void
+static bool
 tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
 {
     int                 res;
@@ -778,10 +778,12 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
  
     state->data = tls_state;
 
-    /*do conn init for subprobe*/
-    tlsstate_conf.subprobe->conn_init_cb(&tls_state->substate, target);
-
-    return;
+    /**
+     * Do conn init for subprobe.
+     * FIXME:
+     * This shouldn't be happened here but after TLS handshaking.
+     * */
+    return tlsstate_conf.subprobe->conn_init_cb(&tls_state->substate, target);
 
     // SSL_set_ex_data(ssl, 1, NULL);
 // error7:
@@ -789,25 +791,16 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
 error4:
     free(tgt);
     SSL_free(ssl);
-    ssl = NULL;
-    tgt = NULL;
 error3:
-    if (wbio != NULL) {
-        BIO_free(wbio);
-        wbio = NULL;
-    }
+    BIO_free(wbio);
 error2:
-    if (rbio != NULL) {
-        BIO_free(rbio);
-        rbio = NULL;
-    }
+    BIO_free(rbio);
 error1:
     free(data);
     free(tls_state);
-    state->data = NULL;
 error0:
 
-    return;
+    return false;
 }
 
 static void

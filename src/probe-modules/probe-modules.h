@@ -159,8 +159,9 @@ struct ProbeState {
  * 
  * @param state  probe state
  * @param target target info
+ * @return true if conn init success. conn will be terminated if returned false.
 */
-typedef void
+typedef bool
 (*probe_modules_conn_init)(struct ProbeState *state, struct ProbeTarget *target);
 
 /**
@@ -329,7 +330,7 @@ probe_just_report_banner(
 void
 probe_close_nothing();
 
-void
+bool
 probe_conn_init_nothing(struct ProbeState *state, struct ProbeTarget *target);
 
 void

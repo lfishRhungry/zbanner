@@ -620,18 +620,6 @@ tcpcon_create_tcb(
     tcb->is_active = 1;
     tcpcon->active_count++;
 
-    /*do connection init for probe*/
-    struct ProbeTarget target = {
-        .ip_proto  = IP_PROTO_TCP,
-        .ip_them   = ip_them,
-        .port_them = port_them,
-        .ip_me     = ip_me,
-        .port_me   = port_me,
-        .cookie    = 0,               /*ProbeType State doesn't need cookie*/
-        .index     = port_me-tcpcon->src_port_start,
-    };
-    probe->conn_init_cb(&tcb->probe_state, &target);
-
     return tcb;
 }
 
@@ -1223,9 +1211,32 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                         _what_to_string(what));
 
                     _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
+
+                    /**
+                     * Connection Established From Here.
+                     * */
+
                     _tcb_change_state_to(tcb, STATE_RECVING);
 
+                    /*do connection init for probe*/
+                    struct ProbeTarget target = {
+                        .ip_proto  = IP_PROTO_TCP,
+                        .ip_them   = tcb->ip_them,
+                        .port_them = tcb->port_them,
+                        .ip_me     = tcb->ip_me,
+                        .port_me   = tcb->port_me,
+                        .cookie    = 0,  /*ProbeType State doesn't need cookie*/
+                        .index     = tcb->port_me-tcpcon->src_port_start,
+                    };
+
+                    if (!tcb->probe->conn_init_cb(&tcb->probe_state, &target)) {
+                        _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
+                        _tcpcon_destroy_tcb(tcpcon, tcb, Reason_FIN);
+                        return TCB__destroyed;
+                    }
+
                     _application_notify(tcpcon, tcb, APP_WHAT_CONNECTED, 0, 0, secs, usecs);
+
                     break;
                 default:
                     ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 

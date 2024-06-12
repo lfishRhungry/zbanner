@@ -51,10 +51,11 @@ static void getstate_close()
     LOG(LEVEL_WARNING, "[GetState Probe closing] >>>\n");
 }
 
-static void
+static bool
 getstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
 {
     LOG(LEVEL_WARNING, "[GetState Probe conn initing] >>>\n");
+    return true;
 }
 
 static void

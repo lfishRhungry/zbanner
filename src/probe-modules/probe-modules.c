@@ -296,9 +296,9 @@ void probe_close_nothing()
     return;
 }
 
-void probe_conn_init_nothing(struct ProbeState *state, struct ProbeTarget *target)
+bool probe_conn_init_nothing(struct ProbeState *state, struct ProbeTarget *target)
 {
-    return;
+    return true;
 }
 
 void probe_conn_close_nothing(struct ProbeState *state, struct ProbeTarget *target)
