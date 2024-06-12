@@ -798,7 +798,8 @@ _tcb_seg_resend(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tc
         if (!seg->length || !seg->buf) return;
 
         if (tcb->seqno_me != seg->seqno) {
-            ERRMSG("SEQNO FAILURE diff=%d\n", tcb->seqno_me - seg->seqno);
+            ERRMSG("TCP.seqno: failure in diff=%d                                           \n",
+                tcb->seqno_me - seg->seqno);
             return;
         }
 
