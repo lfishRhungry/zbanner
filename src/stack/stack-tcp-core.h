@@ -19,11 +19,6 @@ enum TCP_What {
     TCP_WHAT_DATA,    /*Received DATA (just focus data)*/
 };
 
-enum TCB_result {
-    TCB__okay,
-    TCB__destroyed
-};
-
 enum   App_State;
 enum   App_Event;
 enum   SOCK_Res;
@@ -59,7 +54,7 @@ tcpcon_destroy_table(struct TCP_ConnectionTable *tcpcon);
 void
 tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usecs);
 
-enum TCB_result
+void
 stack_incoming_tcp(
     struct TCP_ConnectionTable *tcpcon,
     struct TCP_Control_Block *entry,

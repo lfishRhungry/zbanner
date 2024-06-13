@@ -282,18 +282,18 @@ _LOGtcb(const struct TCP_Control_Block *tcb, int dir, const char *fmt, ...)
 void
 tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usecs)
 {
+    struct TCP_Control_Block   *tcb;
+
     uint64_t timestamp = TICKS_FROM_TV(secs, usecs);
 
     for (;;) {
-        struct TCP_Control_Block *tcb;
-        enum TCB_result x;
 
         tcb = (struct TCP_Control_Block *)timeouts_remove(tcpcon->timeouts, timestamp);
 
         if (tcb == NULL)
             break;
 
-        x = stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_TIMEOUT,
+        stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_TIMEOUT,
             0, 0,
             secs, usecs,
             tcb->seqno_them,
@@ -307,7 +307,7 @@ tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usec
          *     deleting expired conns,
          *     etc.
          * */
-        if (x != TCB__destroyed && timeout_is_unlinked(tcb->timeout)) {
+        if (tcb->is_active && timeout_is_unlinked(tcb->timeout)) {
             timeouts_add(tcpcon->timeouts, tcb->timeout,
                          offsetof(struct TCP_Control_Block, timeout),
                          TICKS_FROM_TV(secs+2, usecs));
@@ -464,12 +464,15 @@ _tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
         r_entry = &(*r_entry)->next;
 
     if (*r_entry == NULL) {
-        LOG(LEVEL_WARNING, "tcb: double free\n");
+        LOG(LEVEL_WARNING, "TCP.tcb: double free\n");
         return;
     }
 
     _LOGtcb(tcb, 2, "--DESTROYED--\n");
 
+    /**
+     * clean segments
+     */
     while (tcb->segments) {
         struct TCP_Segment *seg = tcb->segments;
         tcb->segments           = seg->next;
@@ -481,18 +484,6 @@ _tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
 
         free(seg);
     }
-
-    /*
-     * Unlink this from the timeout system.
-     */
-    timeout_unlink(tcb->timeout);
-
-    tcb->ip_them.ipv4 = (unsigned)~0;
-    tcb->port_them    = (unsigned short)~0;
-    tcb->ip_me.ipv4   = (unsigned)~0;
-    tcb->port_me      = (unsigned short)~0;
-
-    tcb->is_active = 0;
 
     /*do connection close for probe*/
     struct ProbeTarget target = {
@@ -506,10 +497,21 @@ _tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
     };
     tcb->probe->conn_close_cb(&tcb->probe_state, &target);
 
+    /*
+     * Unlink this from the timeout system.
+     */
+    timeout_unlink(tcb->timeout);
 
-    (*r_entry) = tcb->next;
-    tcb->next  = tcpcon->freed_list;
+    tcb->ip_them.ipv4 = (unsigned)~0;
+    tcb->port_them    = (unsigned short)~0;
+    tcb->ip_me.ipv4   = (unsigned)~0;
+    tcb->port_me      = (unsigned short)~0;
+
+    (*r_entry)         = tcb->next;
+    tcb->next          = tcpcon->freed_list;
     tcpcon->freed_list = tcb;
+
+    tcb->is_active = 0;
     tcpcon->active_count--;
 }
 
@@ -1119,7 +1121,7 @@ _tcb_seg_recv(
  * Handles incoming events, like timeouts and packets, that cause a change
  * in the TCP control block "state".
  *****************************************************************************/
-enum TCB_result
+void
 stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
     struct TCP_Control_Block *tcb, enum TCP_What what,
     const unsigned char *payload, size_t payload_length,
@@ -1137,7 +1139,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
             /* This is a retransmission that we've already acknowledged */
             if (payload_offset <= 0 - (int)payload_length) {
                 /* Both begin and end are old, so simply discard it */
-                return TCB__okay;
+                return;
             } else {
                 /* Otherwise shorten the payload */
                 payload_length += payload_offset;
@@ -1149,7 +1151,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
             /* This is an out-of-order fragment in the future. an important design
              * of this light-weight stack is that we don't support this, and
              * force the other side to retransmit such packets */
-            return TCB__okay;
+            return;
         }
     }
 
@@ -1163,11 +1165,11 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
              * Because our data may be senting.*/
             _LOGtcb(tcb, 1, "duplicate FIN\n");
             _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
-            return TCB__okay;
+            return;
         } else if (seqno_them != tcb->seqno_them) {
             /* out of order FIN, so drop it */
             _LOGtcb(tcb, 1, "out-of-order FIN\n");
-            return TCB__okay;
+            return;
         }
     }
 
@@ -1182,7 +1184,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
             _LOGSEND(tcb, "peer(RST)");
             _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
             _tcpcon_destroy_tcb(tcpcon, tcb, Reason_Timeout);
-            return TCB__destroyed;
+            return;
         }
     }
 
@@ -1190,7 +1192,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
     if (what == TCP_WHAT_RST) {
         _LOGSEND(tcb, "tcb(destroy)");
         _tcpcon_destroy_tcb(tcpcon, tcb, Reason_RST);
-        return TCB__destroyed;
+        return;
     }
 
 
@@ -1233,7 +1235,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     if (!tcb->probe->conn_init_cb(&tcb->probe_state, &target)) {
                         _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
                         _tcpcon_destroy_tcb(tcpcon, tcb, Reason_FIN);
-                        return TCB__destroyed;
+                        return;
                     }
 
                     _application_notify(tcpcon, tcb, APP_WHAT_CONNECTED, 0, 0, secs, usecs);
@@ -1255,7 +1257,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                         /* I have ACKed all their data, so therefore process this */
                         _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
                         _tcpcon_destroy_tcb(tcpcon, tcb, Reason_FIN);
-                        return TCB__destroyed;
+                        return;
                     } else {
                         /* I haven't received all their data, so ignore it until I do */
                         _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
@@ -1302,7 +1304,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                         /* I have ACKed all their data, so therefore process this */
                         _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
                         _tcpcon_destroy_tcb(tcpcon, tcb, Reason_FIN);
-                        return TCB__destroyed;
+                        return;
                     } else {
                         /* I haven't received all their data, so ignore it until I do */
                         _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
@@ -1338,7 +1340,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
         }
     }
 
-    return TCB__okay;
+    return;
 }
 
 static const char *
