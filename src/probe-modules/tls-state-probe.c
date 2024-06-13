@@ -261,7 +261,8 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line)
     output_result(_tls_out, &item);
 }
 
-static void ssl_info_cb(const SSL *ssl, int where, int ret) {
+static void ssl_info_cb(const SSL *ssl, int where, int ret)
+{
     if (where & SSL_CB_ALERT) {
         struct ProbeTarget *tgt = SSL_get_ex_data(ssl, TLS_EXT_TGT);
         if (!tgt)

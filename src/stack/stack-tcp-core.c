@@ -405,7 +405,8 @@ _TCB_EQUALS(const struct TCP_Control_Block *lhs, const struct TCP_Control_Block 
 /***************************************************************************
  ***************************************************************************/
 static void
-_tcb_change_state_to(struct TCP_Control_Block *tcb, enum Tcp_State new_state) {
+_tcb_change_state_to(struct TCP_Control_Block *tcb, enum Tcp_State new_state)
+{
 
     _LOGtcb(tcb, 2, "to {%s}\n", _tcp_state_to_string(new_state));
     tcb->tcpstate = new_state;
@@ -791,8 +792,8 @@ _tcpcon_send_raw_SYN(struct TCP_ConnectionTable *tcpcon,
  * time. Will resend the segments.
  ***************************************************************************/
 static void
-_tcb_seg_resend(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tcb) {
-
+_tcb_seg_resend(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tcb)
+{
     struct TCP_Segment *seg = tcb->segments;
 
     if (seg) {
@@ -840,7 +841,8 @@ _tcb_seg_send(
     struct TCP_ConnectionTable *tcpcon,
     struct TCP_Control_Block *tcb, 
     const void *buf, size_t length, 
-    unsigned is_dynamic) {
+    unsigned is_dynamic)
+{
 
     if (!buf || !length) return;
 
@@ -981,7 +983,8 @@ _tcp_seg_acknowledge(
 /***************************************************************************
  ***************************************************************************/
 enum SOCK_Res
-tcpapi_set_timeout(struct StackHandler *socket, unsigned secs, unsigned usecs) {
+tcpapi_set_timeout(struct StackHandler *socket, unsigned secs, unsigned usecs)
+{
     struct TCP_ConnectionTable *tcpcon = socket->tcpcon;
     struct TCP_Control_Block *tcb = socket->tcb;
 
@@ -998,7 +1001,8 @@ tcpapi_set_timeout(struct StackHandler *socket, unsigned secs, unsigned usecs) {
 /***************************************************************************
  ***************************************************************************/
 enum SOCK_Res
-tcpapi_recv(struct StackHandler *socket) {
+tcpapi_recv(struct StackHandler *socket)
+{
     struct TCP_Control_Block *tcb;
 
     if (socket == 0 || socket->tcb == 0)
@@ -1015,10 +1019,10 @@ tcpapi_recv(struct StackHandler *socket) {
 }
 
 enum SOCK_Res
-tcpapi_send_data(
-    struct StackHandler *socket,
+tcpapi_send_data(struct StackHandler *socket,
     const void *buf, size_t length,
-    unsigned is_dynamic) {
+    unsigned is_dynamic)
+{
 
     /*no data*/
     if (!buf || !length) return 1;
@@ -1043,7 +1047,8 @@ tcpapi_send_data(
 }
 
 enum SOCK_Res
-tcpapi_change_app_state(struct StackHandler *socket, enum App_State new_app_state) {
+tcpapi_change_app_state(struct StackHandler *socket, enum App_State new_app_state)
+{
     struct TCP_Control_Block *tcb;
 
     if (socket == 0 || socket->tcb == 0)
@@ -1057,11 +1062,14 @@ tcpapi_change_app_state(struct StackHandler *socket, enum App_State new_app_stat
 
 
 enum SOCK_Res
-tcpapi_close(struct StackHandler *socket) {
+tcpapi_close(struct StackHandler *socket)
+{
     if (socket == NULL || socket->tcb == NULL)
         return SOCKERR_EBADF;
+
     _tcpcon_send_packet(socket->tcpcon, socket->tcb, TCP_FLAG_RST, 0, 0);
     _tcpcon_destroy_tcb(socket->tcpcon, socket->tcb, Reason_Close);
+
     return SOCKERR_NONE;
 }
 
@@ -1344,7 +1352,8 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 }
 
 static const char *
-_app_state_to_string(unsigned state) {
+_app_state_to_string(unsigned state)
+{
     switch (state) {
     case APP_STATE_INIT:          return "INIT";
     case APP_STATE_RECV_HELLO:    return "RECV_HELLO";
@@ -1355,7 +1364,8 @@ _app_state_to_string(unsigned state) {
     }
 }
 static const char *
-_event_to_string(enum App_Event ev) {
+_event_to_string(enum App_Event ev)
+{
     switch (ev) {
     case APP_WHAT_CONNECTED:      return "CONNECTED";
     case APP_WHAT_RECV_TIMEOUT:   return "RECV_TIMEOUT";
@@ -1368,7 +1378,8 @@ _event_to_string(enum App_Event ev) {
 
 void
 application_event(struct StackHandler *socket, enum App_Event cur_event,
-    const void *payload, size_t payload_length) {
+    const void *payload, size_t payload_length)
+{
 
     enum App_State cur_state         = socket->tcb->app_state;
     const struct ProbeModule *probe  = socket->tcb->probe;
