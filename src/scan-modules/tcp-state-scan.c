@@ -395,7 +395,7 @@ void tcpstate_poll()
     for (unsigned i=0; i<tcpcon_set.count; i++) {
         tcpcon_timeouts(tcpcon_set.tcpcons[i], (unsigned)time(0), 0);
         /*update tcb count*/
-        tcb += tcpcon_active_tcb(tcpcon_set.tcpcons[i]);
+        tcb += tcpcon_active_count(tcpcon_set.tcpcons[i]);
     }
 
     *(tcb_count) = tcb;

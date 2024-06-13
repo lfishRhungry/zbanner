@@ -214,7 +214,7 @@ enum DestroyReason {
 };
 
 uint64_t
-tcpcon_active_tcb(struct TCP_ConnectionTable *tcpcon)
+tcpcon_active_count(struct TCP_ConnectionTable *tcpcon)
 {
     return tcpcon->active_count;
 }

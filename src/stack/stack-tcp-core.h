@@ -28,7 +28,6 @@ struct TCP_Control_Block;
 struct TCP_ConnectionTable;
 
 
-
 struct TCP_ConnectionTable *
 tcpcon_create_table(size_t entry_count,
     struct stack_t *stack,
@@ -91,12 +90,11 @@ tcpcon_create_tcb(
  * get active tcb count
 */
 uint64_t
-tcpcon_active_tcb(struct TCP_ConnectionTable *tcpcon);
+tcpcon_active_count(struct TCP_ConnectionTable *tcpcon);
 
 
 enum SOCK_Res
-tcpapi_set_timeout(struct StackHandler *socket,
-    unsigned secs, unsigned usecs);
+tcpapi_set_timeout(struct StackHandler *socket, unsigned secs, unsigned usecs);
 
 /**
  * Change from the "send" state to the "receive" state.
