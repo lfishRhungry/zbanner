@@ -77,7 +77,7 @@ void transmit_thread(void *v)
      *     3.Rx handle threads
      * TODO: Make CPU locking be settable.
      */
-    if (pixie_cpu_get_count() > 1) {
+    if (pixie_cpu_get_count() > 1 && !xconf->is_no_cpu_bind) {
         unsigned cpu_count = pixie_cpu_get_count();
         unsigned cpu_index = parms->tx_index;
         /* I think it is better to make (cpu>=cpu_count) threads free */

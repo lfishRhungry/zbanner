@@ -1615,6 +1615,20 @@ static enum ConfigRes SET_offline(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
+static enum ConfigRes SET_no_cpu_bind(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->is_no_cpu_bind || xconf->echo_all)
+            fprintf(xconf->echo, "no-cpu-bind = %s\n", xconf->is_no_cpu_bind?"true":"false");
+        return 0;
+    }
+    xconf->is_no_cpu_bind = parseBoolean(value);
+    return Conf_OK;
+}
+
 static enum ConfigRes SET_static_seed(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
@@ -1622,7 +1636,7 @@ static enum ConfigRes SET_static_seed(void *conf, const char *name, const char *
 
     if (xconf->echo) {
         if (xconf->is_static_seed || xconf->echo_all)
-            fprintf(xconf->echo, "static-seed = %s\n", xconf->is_infinite?"true":"false");
+            fprintf(xconf->echo, "static-seed = %s\n", xconf->is_static_seed?"true":"false");
         return 0;
     }
     xconf->is_static_seed = parseBoolean(value);
@@ -3117,6 +3131,20 @@ struct ConfigParam config_parameters[] = {
         XTATE_FIRST_UPPER_NAME" changes seed for every round to make a different"
         " scan order while repeating. We can use static-seed to keep order of "
         "all rounds."
+    },
+    {
+        "no-cpu-bind",
+        SET_no_cpu_bind,
+        Type_BOOL,
+        {"no-bind", 0},
+        "In default, "XTATE_FIRST_UPPER_NAME" bind its threads to CPU kernels for"
+        " better performance if the number of kernels is great than 1. This "
+        "switch allows no CPU binding for all threads and is useful for computers"
+        " with outdated hardware.\n"
+        "NOTE: The default CPU-binding order is:\n"
+        "    1.Tx Threads\n"
+        "    2.Rx Threads\n"
+        "    3.Rx Handle Threads\n"
     },
     {
         "blackrock-rounds",
