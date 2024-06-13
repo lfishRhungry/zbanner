@@ -304,7 +304,7 @@ static bool output_subject_info(struct Output *out,
 
     bio = BIO_new(BIO_s_mem());
     if (bio == NULL) {
-        LOG(LEVEL_WARNING, "[output_subject]BIO_new failed\n");
+        LOG(LEVEL_WARNING, "[TSP output_subject_info] BIO_new failed\n");
         X509_free(x509_cert);
         return false;
     }
@@ -332,20 +332,20 @@ static bool output_subject_info(struct Output *out,
 
             name_entry = X509_NAME_get_entry(x509_subject_name, i_name);
             if (name_entry == NULL) {
-                LOG(LEVEL_WARNING, "[output_subject]X509_NAME_get_entry failed on %d\n",
+                LOG(LEVEL_WARNING, "[TSP output_subject_info] X509_NAME_get_entry failed on %d\n",
                     i_name);
                 continue;
             }
             fn = X509_NAME_ENTRY_get_object(name_entry);
             if (fn == NULL) {
                 LOG(LEVEL_WARNING,
-                    "[output_subject]X509_NAME_ENTRY_get_object failed on %d\n", i_name);
+                    "[TSP output_subject_info] X509_NAME_ENTRY_get_object failed on %d\n", i_name);
                 continue;
             }
             val = X509_NAME_ENTRY_get_data(name_entry);
             if (val == NULL) {
                 LOG(LEVEL_WARNING,
-                    "[output_subject]X509_NAME_ENTRY_get_data failed on %d\n", i_name);
+                    "[TSP output_subject_info] X509_NAME_ENTRY_get_data failed on %d\n", i_name);
                 continue;
             }
             if (NID_commonName == OBJ_obj2nid(fn)) {
@@ -356,14 +356,14 @@ static bool output_subject_info(struct Output *out,
                 res = ASN1_STRING_print_ex(bio, val, 0);
                 if (res < 0) {
                     LOG(LEVEL_WARNING,
-                        "[output_subject]ASN1_STRING_print_ex failed with error %d on %d\n",
+                        "[TSP output_subject_info] ASN1_STRING_print_ex failed with error %d on %d\n",
                         res, i_name);
                     BIO_printf(bio, "<can't get cn>");
                 }
             }
         }
     } else {
-        LOG(LEVEL_WARNING, "[output_subject]X509_get_subject_name failed\n");
+        LOG(LEVEL_WARNING, "[TSP output_subject_info] X509_get_subject_name failed\n");
     }
 
     link = dach_new_link(&item.report, "subject name", DACH_DEFAULT_DATA_SIZE, false);
@@ -375,7 +375,7 @@ static bool output_subject_info(struct Output *out,
         } else if (res == 0 || res == -1) {
             break;
         } else {
-            LOG(LEVEL_WARNING, "[output_subject]BIO_read failed with error: %d\n", res);
+            LOG(LEVEL_WARNING, "[TSP output_subject_info] BIO_read failed with error: %d\n", res);
             break;
         }
     }
@@ -389,7 +389,7 @@ static bool output_subject_info(struct Output *out,
 
             x509_alt_name = sk_GENERAL_NAME_value(x509_alt_names, i_name);
             if (x509_alt_name == NULL) {
-                LOG(LEVEL_WARNING, "[output_subject]sk_GENERAL_NAME_value failed on %d\n",
+                LOG(LEVEL_WARNING, "[TSP output_subject_info] sk_GENERAL_NAME_value failed on %d\n",
                     i_name);
                 continue;
             }
@@ -400,7 +400,7 @@ static bool output_subject_info(struct Output *out,
             res = GENERAL_NAME_simple_print(bio, x509_alt_name);
             if (res < 0) {
                 LOG(LEVEL_DEBUG,
-                    "[output_subject]GENERAL_NAME_simple_print failed with error %d on "
+                    "[TSP output_subject_info] GENERAL_NAME_simple_print failed with error %d on "
                     "%d\n",
                     res, i_name);
                 BIO_printf(bio, "<can't get alt>");
@@ -418,7 +418,7 @@ static bool output_subject_info(struct Output *out,
         } else if (res == 0 || res == -1) {
             break;
         } else {
-            LOG(LEVEL_WARNING, "[output_subject]BIO_read failed with error: %d\n", res);
+            LOG(LEVEL_WARNING, "[TSP output_subject_info] BIO_read failed with error: %d\n", res);
             break;
         }
     }
@@ -464,13 +464,13 @@ static bool output_x502_cert(struct Output *out,
 
         x509_cert = sk_X509_value(sk_x509_certs, i_cert);
         if (x509_cert == NULL) {
-            LOG(LEVEL_WARNING, "[output_cert]sk_X509_value failed on %d\n", i_cert);
+            LOG(LEVEL_WARNING, "[TSP output_x502_cert] sk_X509_value failed on %d\n", i_cert);
             continue;
         }
 
         bio_base64 = BIO_new(BIO_f_base64());
         if (bio_base64 == NULL) {
-            LOG(LEVEL_WARNING, "[output_cert]BIO_new(base64) failed on %d\n",
+            LOG(LEVEL_WARNING, "[TSP output_x502_cert] BIO_new(base64) failed on %d\n",
                 i_cert);
             continue;
         }
@@ -478,7 +478,7 @@ static bool output_x502_cert(struct Output *out,
 
         bio_mem = BIO_new(BIO_s_mem());
         if (bio_mem == NULL) {
-            LOG(LEVEL_WARNING, "[output_cert]BIO_new(bio_mem) failed on %d\n",
+            LOG(LEVEL_WARNING, "[TSP output_x502_cert] BIO_new(bio_mem) failed on %d\n",
                 i_cert);
             BIO_free(bio_base64);
             continue;
@@ -488,7 +488,7 @@ static bool output_x502_cert(struct Output *out,
         res = i2d_X509_bio(bio_base64, x509_cert);
         if (res != 1) {
             LOG(LEVEL_WARNING,
-                "[output_cert]i2d_X509_bio failed with error %d on %d\n", res,
+                "[TSP output_x502_cert] i2d_X509_bio failed with error %d on %d\n", res,
                 i_cert);
             BIO_free(bio_mem);
             BIO_free(bio_base64);
@@ -496,7 +496,7 @@ static bool output_x502_cert(struct Output *out,
         }
         res = BIO_flush(bio_base64);
         if (res != 1) {
-            LOG(LEVEL_WARNING, "[output_cert]BIO_flush failed with error %d on %d\n",
+            LOG(LEVEL_WARNING, "[TSP output_x502_cert] BIO_flush failed with error %d on %d\n",
                 res, i_cert);
             BIO_free(bio_mem);
             BIO_free(bio_base64);
@@ -513,7 +513,7 @@ static bool output_x502_cert(struct Output *out,
             } else if (res == 0 || res == -1) {
                 break;
             } else {
-                LOG(LEVEL_WARNING, "[output_cert]BIO_read failed with error: %d\n",
+                LOG(LEVEL_WARNING, "[TSP output_x502_cert] BIO_read failed with error: %d\n",
                     res);
                 break;
             }
@@ -766,10 +766,6 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     /*bind BIO interfaces and SSL obj*/
     SSL_set_bio(ssl, rbio, wbio);
 
-    /*set info cb to print status changing, alert and errors*/
-    SSL_set_info_callback(ssl, ssl_info_cb);
-
-
     /*save `target` to SSL object*/
     struct ProbeTarget *tgt;
     tgt              = MALLOC(sizeof(struct ProbeTarget));
@@ -786,6 +782,9 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
         LOG(LEVEL_WARNING, "[TSP Conn INIT] SSL_set_ex_data error\n");
         goto error4;
     }
+
+    /*set info cb to print status changing, alert and errors*/
+    SSL_set_info_callback(ssl, ssl_info_cb);
 
     /*keep important struct in probe state*/
     tls_state->ssl               = ssl;
