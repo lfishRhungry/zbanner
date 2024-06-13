@@ -144,7 +144,7 @@ icmptime_handle(
         dach_printf(&item->report, "ipid", true, "%d", recved->parsed.ip_v4_id);
 }
 
-void icmptime_timeout(
+static void icmptime_timeout(
     uint64_t entropy,
     struct ScanTmEvent *event,
     struct OutputItem *item,

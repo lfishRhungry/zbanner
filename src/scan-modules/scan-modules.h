@@ -185,12 +185,13 @@ typedef void (*scan_modules_timeout)(
 ****************************************************************************/
 
 /**
- * !Happens in Rx Thread.
- * Some internal status of ScanModules should be update in real time.
- * This func would be called in every loop of packet receiving just like
+ * !Happens in Rx Handle Thread.
+ * Some internal status of ScanModules should be updated in real time.
+ * This func would be called in every loop of packet handling just like
  * in real time.
+ * @param th_idx the index of receive handler thread.
 */
-typedef void (*scan_modules_poll)();
+typedef void (*scan_modules_poll)(unsigned th_idx);
 
 
 /***************************************************************************
@@ -241,7 +242,7 @@ Some useful implemented interfaces
 bool scan_global_init_nothing(const struct Xconf *params);
 
 /*implemented `scan_modules_poll`*/
-void scan_poll_nothing();
+void scan_poll_nothing(unsigned th_idx);
 
 /*implemented `scan_modules_close`*/
 void scan_close_nothing();

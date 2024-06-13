@@ -388,20 +388,12 @@ tcpstate_handle(
     }
 }
 
-void tcpstate_poll()
+static void tcpstate_poll(unsigned th_idx)
 {
-    uint64_t tcb = 0;
-    /*update timeout events and tcb count*/
-    for (unsigned i=0; i<tcpcon_set.count; i++) {
-        tcpcon_timeouts(tcpcon_set.tcpcons[i], (unsigned)time(0), 0);
-        /*update tcb count*/
-        tcb += tcpcon_active_count(tcpcon_set.tcpcons[i]);
-    }
-
-    *(tcb_count) = tcb;
+    tcpcon_timeouts(tcpcon_set.tcpcons[th_idx], (unsigned)time(0), 0);
 }
 
-void tcpstate_close()
+static void tcpstate_close()
 {
     for (unsigned i=0; i<tcpcon_set.count; i++) {
         tcpcon_destroy_table(tcpcon_set.tcpcons[i]);

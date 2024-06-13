@@ -259,7 +259,8 @@ tcpsyn_handle(
 
 }
 
-void tcpsyn_timeout(
+static void
+tcpsyn_timeout(
     uint64_t entropy,
     struct ScanTmEvent *event,
     struct OutputItem *item,

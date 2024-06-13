@@ -108,6 +108,11 @@ handle_thread(void *v)
     pixie_set_thread_name(th_name);
 
     while (!time_to_finish_rx) {
+        /**
+         * Do polling for scan module in each loop
+        */
+        parms->scan_module->poll_cb(parms->index);
+
         struct Received *recved = NULL;
         int err = rte_ring_sc_dequeue(parms->handle_queue, (void**)&recved);
         if (err != 0) {
@@ -268,11 +273,6 @@ void receive_thread(void *v) {
 
         if (xconf->is_fast_timeout)
             parms->total_tm_event = ft_event_count(ft_handler);
-
-        /**
-         * Do polling for scan module in each loop
-        */
-        scan_module->poll_cb();
 
         unsigned pkt_len, pkt_secs, pkt_usecs;
         const unsigned char *pkt_data;

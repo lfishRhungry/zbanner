@@ -97,7 +97,7 @@ bool scan_global_init_nothing(const struct Xconf *params)
 }
 
 
-void scan_poll_nothing(){}
+void scan_poll_nothing(unsigned th_idx){}
 
 void scan_close_nothing()
 {

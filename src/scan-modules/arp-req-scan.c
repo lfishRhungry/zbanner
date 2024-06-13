@@ -91,7 +91,7 @@ arpreq_handle(
         recved->parsed.mac_src[4], recved->parsed.mac_src[5]);
 }
 
-void arpreq_timeout(
+static void arpreq_timeout(
     uint64_t entropy,
     struct ScanTmEvent *event,
     struct OutputItem *item,

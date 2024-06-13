@@ -143,7 +143,7 @@ ndpns_handle(
         dach_printf(&item->report, "ttl", true, "%d", recved->parsed.ip_ttl);
 }
 
-void ndpns_timeout(
+static void ndpns_timeout(
     uint64_t entropy,
     struct ScanTmEvent *event,
     struct OutputItem *item,

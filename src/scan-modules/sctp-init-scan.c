@@ -141,7 +141,7 @@ sctpinit_handle(
         dach_printf(&item->report, "ipid", true, "%d", recved->parsed.ip_v4_id);
 }
 
-void sctpinit_timeout(
+static void sctpinit_timeout(
     uint64_t entropy,
     struct ScanTmEvent *event,
     struct OutputItem *item,
