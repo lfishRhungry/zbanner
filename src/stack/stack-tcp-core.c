@@ -97,6 +97,7 @@
 
 #define TCP_CORE_DEFAULT_EXPIRE          30
 #define TCP_CORE_DEFAULT_MSS           1460
+#define TCP_CORE_RTO_SECS                 1
 
 
 
@@ -310,7 +311,7 @@ tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usec
         if (tcb->is_active && timeout_is_unlinked(tcb->timeout)) {
             timeouts_add(tcpcon->timeouts, tcb->timeout,
                          offsetof(struct TCP_Control_Block, timeout),
-                         TICKS_FROM_TV(secs+2, usecs));
+                         TICKS_FROM_TV(secs+TCP_CORE_RTO_SECS, usecs));
         }
     }
 }
