@@ -412,7 +412,7 @@ static enum ConfigRes SET_output_filename(void *conf, const char *name, const ch
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
         if (xconf->out.output_filename[0]){
-            fprintf(xconf->echo, "output-file = %s\n",
+            fprintf(xconf->echo, "output-file = \"%s\"\n",
                 xconf->out.output_filename);
         }
         return 0;
@@ -510,7 +510,7 @@ static enum ConfigRes SET_scan_module_args(void *conf, const char *name, const c
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->scan_module_args){
-            fprintf(xconf->echo, "scan-module-args = %s\n", xconf->scan_module_args);
+            fprintf(xconf->echo, "scan-module-args = \"%s\"\n", xconf->scan_module_args);
         }
         return 0;
     }
@@ -530,7 +530,7 @@ static enum ConfigRes SET_probe_module_args(void *conf, const char *name, const 
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->probe_module_args){
-            fprintf(xconf->echo, "probe-module-args = %s\n", xconf->probe_module_args);
+            fprintf(xconf->echo, "probe-module-args = \"%s\"\n", xconf->probe_module_args);
         }
         return 0;
     }
@@ -550,7 +550,7 @@ static enum ConfigRes SET_output_module_args(void *conf, const char *name, const
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->out.output_args){
-            fprintf(xconf->echo, "output-module-args = %s\n", xconf->out.output_args);
+            fprintf(xconf->echo, "output-module-args = \"%s\"\n", xconf->out.output_args);
         }
         return 0;
     }
@@ -913,7 +913,7 @@ static enum ConfigRes SET_adapter(void *conf, const char *name, const char *valu
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->nic.ifname[0]) {
-            fprintf(xconf->echo, "adapter = %s\n", xconf->nic.ifname);
+            fprintf(xconf->echo, "adapter = \"%s\"\n", xconf->nic.ifname);
         }
         return 0;
     }
@@ -1698,7 +1698,7 @@ static enum ConfigRes SET_pcap_filename(void *conf, const char *name, const char
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->pcap_filename[0])
-            fprintf(xconf->echo, "pcap-filename = %s\n", xconf->pcap_filename);
+            fprintf(xconf->echo, "pcap-filename = \"%s\"\n", xconf->pcap_filename);
         return 0;
     }
     if (value)
@@ -1934,7 +1934,7 @@ static enum ConfigRes SET_bpf_filter(void *conf, const char *name, const char *v
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->bpf_filter)
-            fprintf(xconf->echo, "bpf-filter = %s\n", xconf->bpf_filter);
+            fprintf(xconf->echo, "bpf-filter = \"%s\"\n", xconf->bpf_filter);
         return 0;
     }
 
