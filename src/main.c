@@ -642,6 +642,7 @@ int main(int argc, char *argv[]) {
     /* a separate "raw socket" initialization step for Windows and PF_RING. */
     if (pcap_init() != 0)
         LOG(LEVEL_INFO, "libpcap: failed to load\n");
+
     rawsock_init();
 
     has_target_addresses = massip_has_ipv4_targets(&xconf->targets) ||
