@@ -620,7 +620,7 @@ tlsstate_global_init(const struct Xconf *xconf)
         return false;
     }
 
-    /*save `out`*/
+    /*save `out` handler*/
     _tls_out = &xconf->out;
 
     const SSL_METHOD *meth;
