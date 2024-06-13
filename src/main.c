@@ -376,13 +376,15 @@ static int _main_scan(struct Xconf *xconf) {
     while (!time_to_finish_tx) {
         unsigned       i;
         double         rate                      = 0;
-        double         tx_queue_ratio            = 100.0;
-        double         rx_queue_ratio            = 100.0;
         uint64_t       total_successed           = 0;
         uint64_t       total_failed              = 0;
         uint64_t       total_info                = 0;
         uint64_t       total_tm_event            = 0;
         uint64_t       total_sent                = 0;
+        double         tx_queue_ratio            = 100.0;
+        double         rx_queue_ratio            = 100.0;
+        double         rx_free_entries;
+        double         rx_queue_ratio_tmp;
 
         /* Find the minimum index */
         min_index  = UINT64_MAX;
@@ -408,15 +410,17 @@ static int _main_scan(struct Xconf *xconf) {
         total_tm_event  = rx_thread->total_tm_event;
 
         /**
-         * Rx handle queue is the bottle-neck
+         * Rx handle queue is the bottle-neck, we got the most severe one.
          */
         if (rx_thread->handle_q) {
-            double rx_free_entries = 0;
             for (unsigned i=0; i<xconf->rx_handler_count; i++) {
-                rx_free_entries += rte_ring_free_count(rx_thread->handle_q[i]);
+                rx_free_entries = rte_ring_free_count(rx_thread->handle_q[i]);
+                rx_queue_ratio_tmp = rx_free_entries*100.0 /
+                    (double)(xconf->dispatch_buf_count);
+
+                if (rx_queue_ratio>rx_queue_ratio_tmp)
+                    rx_queue_ratio = rx_queue_ratio_tmp;
             }
-            rx_queue_ratio = rx_free_entries*100.0 /
-                (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count));
         }
 
         double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
@@ -470,15 +474,17 @@ static int _main_scan(struct Xconf *xconf) {
      */
     now = time(0);
     for (;;) {
-        unsigned      i;
-        double        rate                        = 0;
-        double        tx_queue_ratio              = 100.0;
-        double        rx_queue_ratio              = 100.0;
-        uint64_t      total_successed             = 0;
-        uint64_t      total_failed                = 0;
-        uint64_t      total_info                  = 0;
-        uint64_t      total_tm_event              = 0;
-        uint64_t      total_sent                  = 0;
+        unsigned       i;
+        double         rate                      = 0;
+        uint64_t       total_successed           = 0;
+        uint64_t       total_failed              = 0;
+        uint64_t       total_info                = 0;
+        uint64_t       total_tm_event            = 0;
+        uint64_t       total_sent                = 0;
+        double         tx_queue_ratio            = 100.0;
+        double         rx_queue_ratio            = 100.0;
+        double         rx_free_entries;
+        double         rx_queue_ratio_tmp;
 
         /* Find the minimum index and repeat of all the threads */
         min_index  = UINT64_MAX;
@@ -504,15 +510,17 @@ static int _main_scan(struct Xconf *xconf) {
         total_tm_event  = rx_thread->total_tm_event;
 
         /**
-         * Rx handle queue is the bottle-neck
+         * Rx handle queue is the bottle-neck, we got the most severe one.
          */
         if (rx_thread->handle_q) {
-            double rx_free_entries = 0;
             for (unsigned i=0; i<xconf->rx_handler_count; i++) {
-                rx_free_entries += rte_ring_free_count(rx_thread->handle_q[i]);
+                rx_free_entries = rte_ring_free_count(rx_thread->handle_q[i]);
+                rx_queue_ratio_tmp = rx_free_entries*100.0 /
+                    (double)(xconf->dispatch_buf_count);
+
+                if (rx_queue_ratio>rx_queue_ratio_tmp)
+                    rx_queue_ratio = rx_queue_ratio_tmp;
             }
-            rx_queue_ratio = rx_free_entries*100.0 /
-                (double)(xconf->dispatch_buf_count * (xconf->rx_handler_count));
         }
 
         double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
