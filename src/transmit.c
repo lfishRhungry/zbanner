@@ -71,16 +71,18 @@ void transmit_thread(void *v)
     snprintf(th_name, sizeof(th_name), XTATE_NAME"-xmit #%u", parms->tx_index);
     pixie_set_thread_name(th_name);
 
-    /* Lock threads to the CPUs one by one.
-     * Tx threads follow  the only one Rx thread.
+    /* Lock threads to the CPUs one by one in this order:
+     *     1.Tx threads
+     *     2.Rx thread
+     *     3.Rx handle threads
      * TODO: Make CPU locking be settable.
      */
     if (pixie_cpu_get_count() > 1) {
         unsigned cpu_count = pixie_cpu_get_count();
-        unsigned cpu       = (parms->tx_index + 1) % cpu_count;
+        unsigned cpu_index = parms->tx_index;
         /* I think it is better to make (cpu>=cpu_count) threads free */
-        if (cpu < cpu_count)
-            pixie_cpu_set_affinity(cpu);
+        if (cpu_index < cpu_count)
+            pixie_cpu_set_affinity(cpu_index);
     }
 
     status_sent_count      = MALLOC(sizeof(uint64_t));

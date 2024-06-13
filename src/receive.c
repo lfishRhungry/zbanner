@@ -87,6 +87,10 @@ dispatch_thread(void *v)
 }
 
 struct RxHandle {
+    /** This points to the central configuration. Note that it's 'const',
+     * meaning that the thread cannot change the contents. That'd be
+     * unsafe */
+    const struct Xconf   *xconf;
     struct ScanModule    *scan_module;
     struct rte_ring      *handle_queue;
     struct FHandler      *ft_handler;
@@ -99,13 +103,28 @@ struct RxHandle {
 static void
 handle_thread(void *v)
 {
-    struct RxHandle *parms = v;
+    struct RxHandle    *parms = v;
+    const struct Xconf *xconf = parms->xconf;
 
     LOG(LEVEL_WARNING, "[+] starting handle thread #%u\n", parms->index);
 
     char th_name[30];
     snprintf(th_name, sizeof(th_name), XTATE_NAME"-hdl #%u", parms->index);
     pixie_set_thread_name(th_name);
+
+    /* Lock threads to the CPUs one by one in this order:
+     *     1.Tx threads
+     *     2.Rx thread
+     *     3.Rx handle threads
+     * TODO: Make CPU locking be settable.
+     */
+    if (pixie_cpu_get_count() > 1) {
+        unsigned cpu_count = pixie_cpu_get_count();
+        unsigned cpu_index = xconf->tx_thread_count+parms->index+1;
+        /* I think it is better to make (cpu>=cpu_count) threads free */
+        if (cpu_index < cpu_count)
+            pixie_cpu_set_affinity(cpu_index);
+    }
 
     while (!time_to_finish_rx) {
         /**
@@ -182,11 +201,18 @@ void receive_thread(void *v) {
         return;
     }
 
-    /* Lock threads to the CPUs one by one.
-     * Tx threads follow the only one Rx thread.
+    /* Lock threads to the CPUs one by one in this order:
+     *     1.Tx threads
+     *     2.Rx thread
+     *     3.Rx handle threads
+     * TODO: Make CPU locking be settable.
      */
     if (pixie_cpu_get_count() > 1) {
-        pixie_cpu_set_affinity(0);
+        unsigned cpu_count = pixie_cpu_get_count();
+        unsigned cpu_index = xconf->tx_thread_count;
+        /* I think it is better to make (cpu>=cpu_count) threads free */
+        if (cpu_index < cpu_count)
+            pixie_cpu_set_affinity(cpu_index);
     }
 
     if (xconf->pcap_filename[0]) {
@@ -227,6 +253,7 @@ void receive_thread(void *v) {
         handle_parms[i].ft_handler      = xconf->is_fast_timeout?ft_handler:NULL;
         handle_parms[i].scan_module     = xconf->scan_module;
         handle_parms[i].handle_queue    = handle_q[i];
+        handle_parms[i].xconf           = xconf;
         handle_parms[i].stack           = stack;
         handle_parms[i].out             = out;
         handle_parms[i].entropy         = entropy;
