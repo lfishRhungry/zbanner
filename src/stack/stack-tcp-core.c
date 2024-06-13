@@ -1116,11 +1116,11 @@ _tcb_seg_recv(
 
     tcb->seqno_them += payload_length;
 
-    _application_notify(tcpcon, tcb, APP_WHAT_RECV_PAYLOAD,
-                       payload, payload_length, secs, usecs);
-
     /* Send ack for the data */
     _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
+
+    _application_notify(tcpcon, tcb, APP_WHAT_RECV_PAYLOAD,
+        payload, payload_length, secs, usecs);
 
     return 0;
 }
@@ -1223,9 +1223,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
                     _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
 
-                    /**
-                     * Connection Established From Here.
-                     * */
+                    /*********** Connection Established From Here.*************/
 
                     _tcb_change_state_to(tcb, STATE_RECVING);
 
