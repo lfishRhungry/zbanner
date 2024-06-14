@@ -337,7 +337,7 @@ static int _main_scan(struct Xconf *xconf) {
     LOG(LEVEL_HINT,
         "\nStarting " XTATE_FIRST_UPPER_NAME " " XTATE_VERSION " at %s\n",
         buffer);
-    LOG(LEVEL_HINT, XTATE_GITHUB"\n\n");
+    LOG(LEVEL_HINT, "("XTATE_GITHUB")\n");
 
     LOG(LEVEL_HINT, "ScanModule  : %s\n", xconf->scan_module->name);
     if (xconf->probe_module)

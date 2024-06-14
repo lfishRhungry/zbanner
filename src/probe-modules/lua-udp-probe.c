@@ -212,7 +212,7 @@ luaudp_global_init(const struct Xconf *xconf)
     /* Get lua version*/
     lua_getglobal(luaudp_conf.Ltx, "_VERSION");
     const char *version = lua_tostring(luaudp_conf.Ltx, -1);
-    LOG(LEVEL_HINT, "[-] Loaded lua library in %s\n", version);
+    LOG(LEVEL_INFO, "[-] Loaded lua library in %s\n", version);
     lua_pop(luaudp_conf.Ltx, 1);
 
     /* Load the script. This will verify the syntax.*/
