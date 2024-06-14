@@ -164,7 +164,7 @@ static struct ConfigParam tcpstate_parameters[] = {
     {0}
 };
 
-static bool tcpstate_global_init(const struct Xconf *xconf)
+static bool tcpstate_init(const struct Xconf *xconf)
 {
     if (tcpstate_conf.conn_expire <= 0)
         tcpstate_conf.conn_expire = 30;
@@ -449,7 +449,7 @@ struct ScanModule TcpStateScan = {
         " on protocol itself with activate scanning.\n"
         "NOTE7: Slow send rate may cause target host's retransmition.",
 
-    .global_init_cb         = &tcpstate_global_init,
+    .init_cb                = &tcpstate_init,
     .transmit_cb            = &tcpstate_transmit,
     .validate_cb            = &tcpstate_validate,
     .handle_cb              = &tcpstate_handle,

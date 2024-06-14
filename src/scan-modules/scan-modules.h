@@ -41,7 +41,7 @@ struct Xconf;
  * @param xconf main conf of xtate
  * @return false for initing failed and exit process.
 */
-typedef bool (*scan_modules_global_init)(const struct Xconf *xconf);
+typedef bool (*scan_modules_init)(const struct Xconf *xconf);
 
 /***************************************************************************
  * * callback functions for Transmit
@@ -246,7 +246,7 @@ struct ScanModule
     const char                                 *desc;
 
     /*for init*/
-    scan_modules_global_init                    global_init_cb;
+    scan_modules_init                           init_cb;
     /*for transmit*/
     scan_modules_transmit                       transmit_cb;
     /*for receive*/
@@ -270,8 +270,8 @@ void list_all_scan_modules();
 Some useful implemented interfaces
 ************************************************************************/
 
-/*implemented `scan_modules_xxx_init`*/
-bool scan_global_init_nothing(const struct Xconf *params);
+/*implemented `scan_modules_init`*/
+bool scan_init_nothing(const struct Xconf *params);
 
 /*implemented `scan_modules_poll`*/
 void scan_poll_nothing(unsigned th_idx);

@@ -48,7 +48,7 @@ static struct ConfigParam udp_parameters[] = {
 static unsigned src_port_start;
 
 static bool
-udp_global_init(const struct Xconf *xconf)
+udp_init(const struct Xconf *xconf)
 {
     src_port_start = xconf->nic.src.port.first;
 
@@ -447,7 +447,7 @@ struct ScanModule UdpScan = {
         " from server side. We could add iptables rules displayed in `firewall` "
         "directory to ban this. Or we could observe some strange things.",
 
-    .global_init_cb         = &udp_global_init,
+    .init_cb                = &udp_init,
     .transmit_cb            = &udp_transmit,
     .validate_cb            = &udp_validate,
     .handle_cb              = &udp_handle,

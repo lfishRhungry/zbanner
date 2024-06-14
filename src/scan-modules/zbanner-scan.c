@@ -175,7 +175,7 @@ static struct ConfigParam zbanner_parameters[] = {
 static unsigned src_port_start;
 
 static bool
-zbanner_global_init(const struct Xconf *xconf)
+zbanner_init(const struct Xconf *xconf)
 {
     src_port_start = xconf->nic.src.port.first;
 
@@ -664,7 +664,7 @@ struct ScanModule ZBannerScan = {
         "`firewall` directory.\n"
         "NOTE3: Slow send rate may cause target host's retransmition.",
 
-    .global_init_cb         = &zbanner_global_init,
+    .init_cb                = &zbanner_init,
     .transmit_cb            = &zbanner_transmit,
     .validate_cb            = &zbanner_validate,
     .handle_cb              = &zbanner_handle,

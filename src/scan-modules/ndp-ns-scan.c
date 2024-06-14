@@ -41,7 +41,7 @@ static struct ConfigParam ndpns_parameters[] = {
 };
 
 static bool
-ndpns_global_init(const struct Xconf *xconf)
+ndpns_init(const struct Xconf *xconf)
 {
     if (xconf->targets.count_ports!=1) {
         LOG(LEVEL_ERROR, "[-] NdpNsScan doesn't need to specify any ports.\n");
@@ -179,7 +179,7 @@ struct ScanModule NdpNsScan = {
         "      ping -6 <dst-IPv6-addr> -S <src-IPv6-addr>%<interface-num>\n"
         "NOTE: Don't specify any ports for this module.",
 
-    .global_init_cb         = &ndpns_global_init,
+    .init_cb                = &ndpns_init,
     .transmit_cb            = &ndpns_transmit,
     .validate_cb            = &ndpns_validate,
     .handle_cb              = &ndpns_handle,

@@ -56,7 +56,7 @@ static struct ConfigParam icmptime_parameters[] = {
 };
 
 static bool
-icmptime_global_init(const struct Xconf *xconf)
+icmptime_init(const struct Xconf *xconf)
 {
     if (xconf->targets.count_ports!=1) {
         LOG(LEVEL_ERROR, "[-] IcmpTimeScan doesn't need to specify any ports.\n");
@@ -168,7 +168,7 @@ struct ScanModule IcmpTimeScan = {
         "ICMP Timestamp Reply to believe the host is alive.\n"
         "NOTE: Don't specify any ports for this module.",
 
-    .global_init_cb         = &icmptime_global_init,
+    .init_cb                = &icmptime_init,
     .transmit_cb            = &icmptime_transmit,
     .validate_cb            = &icmptime_validate,
     .handle_cb              = &icmptime_handle,

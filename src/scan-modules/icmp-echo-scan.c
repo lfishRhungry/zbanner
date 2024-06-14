@@ -56,7 +56,7 @@ static struct ConfigParam icmpecho_parameters[] = {
 };
 
 static bool
-icmpecho_global_init(const struct Xconf *xconf)
+icmpecho_init(const struct Xconf *xconf)
 {
     if (xconf->targets.count_ports!=1) {
         LOG(LEVEL_ERROR, "[-] IcmpEchoScan doesn't need to specify any ports.\n");
@@ -172,7 +172,7 @@ struct ScanModule IcmpEchoScan = {
         "ICMP ECHO Reply to believe the host is alive.\n"
         "NOTE: Don't specify any ports for this module.",
 
-    .global_init_cb         = &icmpecho_global_init,
+    .init_cb                = &icmpecho_init,
     .transmit_cb            = &icmpecho_transmit,
     .validate_cb            = &icmpecho_validate,
     .handle_cb              = &icmpecho_handle,

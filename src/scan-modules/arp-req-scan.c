@@ -11,7 +11,7 @@
 extern struct ScanModule ArpReqScan; /*for internal x-ref*/
 
 static bool
-arpreq_global_init(const struct Xconf *xconf)
+arpreq_init(const struct Xconf *xconf)
 {
     if (xconf->nic.link_type!=1) {
         LOG(LEVEL_ERROR, "[-] ArpReqScan cannot work on non-ethernet link type.\n");
@@ -123,7 +123,7 @@ struct ScanModule ArpReqScan = {
         "    `--router-mac ff-ff-ff-ff-ff-ff`.\n"
         "NOTE2: Don't specify any ports for this module.",
 
-    .global_init_cb         = &arpreq_global_init,
+    .init_cb                = &arpreq_init,
     .transmit_cb            = &arpreq_transmit,
     .validate_cb            = &arpreq_validate,
     .handle_cb              = &arpreq_handle,

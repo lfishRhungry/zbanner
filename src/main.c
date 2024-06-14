@@ -252,7 +252,7 @@ static int _main_scan(struct Xconf *xconf) {
             exit(1);
         }
     }
-    if (!xconf->scan_module->global_init_cb(xconf)) {
+    if (!xconf->scan_module->init_cb(xconf)) {
         LOG(LEVEL_ERROR, "FAIL: errors happened in global init of ScanModule.\n");
         exit(1);
     }
