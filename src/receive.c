@@ -34,6 +34,23 @@
 #include "timeout/fast-timeout.h"
 #include "output-modules/output-modules.h"
 
+static uint8_t _dispatch_hash(ipaddress addr)
+{
+    uint64_t ret = 0;
+
+    if (addr.version==4) {
+        ret = (addr.ipv4>>16) ^ addr.ipv4;
+        ret ^= (ret>> 8);
+    } else if (addr.version==6) {
+        ret = addr.ipv6.hi^addr.ipv6.lo;
+        ret ^= (ret>>32);
+        ret ^= (ret>>16);
+        ret ^= (ret>> 8);
+    }
+
+    return ret & 0xFF;
+}
+
 
 struct RxDispatch {
     struct rte_ring     **handle_queue;
@@ -67,13 +84,14 @@ dispatch_thread(void *v)
         }
 
         /**
-         * send packet to recv handle queue according to its cookie
+         * Send packet to recv handle queue according to ip_them.
+         * Ensure same target ip was dispatched to same handle thread.
         */
-        uint64_t cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
-            recved->parsed.dst_ip, recved->parsed.port_dst, parms->entropy);
+        uint8_t dsp_hash = _dispatch_hash(recved->parsed.src_ip);
 
         for (err=1; err!=0; ) {
-            unsigned i = cookie & parms->recv_handle_mask;
+            unsigned i = dsp_hash & parms->recv_handle_mask;
+        printf("handle idx=%u      \n", i);
             err = rte_ring_sp_enqueue(
                 parms->handle_queue[i], recved);
             if (err!=0) {
