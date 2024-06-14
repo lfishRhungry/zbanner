@@ -3141,10 +3141,12 @@ struct ConfigParam config_parameters[] = {
         " better performance if the number of kernels is great than 1. This "
         "switch allows no CPU binding for all threads and is useful for computers"
         " with outdated hardware.\n"
-        "NOTE: The default CPU-binding order is:\n"
+        "NOTE1: The default CPU-binding order is:\n"
         "    1.Tx Threads\n"
         "    2.Rx Threads\n"
         "    3.Rx Handle Threads\n"
+        "NOTE2: As you can see, 3 threads need to be binded at least. (1 tx "
+        "thread, 1 rx thread and 1 rx handle thread)"
     },
     {
         "blackrock-rounds",
