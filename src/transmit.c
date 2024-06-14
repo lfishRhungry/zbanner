@@ -216,7 +216,7 @@ infinite:;
             tm_event->port_them = target.port_them;
             tm_event->port_me   = target.port_me;
 
-            unsigned char pkt_buffer[PKT_BUF_LEN];
+            unsigned char pkt_buffer[PKT_BUF_SIZE];
             size_t pkt_len = 0;
 
             unsigned more = 0;

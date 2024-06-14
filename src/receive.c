@@ -91,7 +91,6 @@ dispatch_thread(void *v)
 
         for (err=1; err!=0; ) {
             unsigned i = dsp_hash & parms->recv_handle_mask;
-        printf("handle idx=%u      \n", i);
             err = rte_ring_sp_enqueue(
                 parms->handle_queue[i], recved);
             if (err!=0) {
@@ -402,7 +401,7 @@ void receive_thread(void *v) {
             .dedup_port_them = port_them,
             .dedup_ip_me     = ip_me,
             .dedup_port_me   = port_me,
-            .dedup_type      = SCAN_MODULE_DEFAULT_DEDUP_TYPE,
+            .dedup_type      = SM_DFT_DEDUP_TYPE,
         };
 
         scan_module->validate_cb(entropy, recved, &pre);

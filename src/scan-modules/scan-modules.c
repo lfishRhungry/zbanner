@@ -113,3 +113,8 @@ void scan_no_timeout(
 {
     item->no_output = 1;
 }
+
+void scan_no_status(char *status)
+{
+    status[0] = '\0';
+}

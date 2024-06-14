@@ -25,13 +25,15 @@
 
 struct Xconf;
 
-#define SCAN_MODULE_DEFAULT_DEDUP_TYPE     0
+#define SM_DFT_DEDUP_TYPE         0
+#define SM_STATUS_SIZE           25
 
 /***************************************************************************
  * * callback functions for Init
 ****************************************************************************/
 
 /**
+ * !Happens in Main Thread.
  * Do some initialization here if you have to.
  * 
  * !Must be implemented.
@@ -73,12 +75,12 @@ struct ScanTmEvent {
  * Do the first packet transmitting for every target.
  * 
  * !Must be implemented.
- * !Must be thread safe.
+ * !Must be thread safe for itself.
  * 
  * @param entropy a rand seed (generated or user-specified).
  * @param target info of target.
  * @param event fill it if we need to add a timeout event.
- * @param px packet buffer to transmit. (Max Length is PKT_BUF_LEN)
+ * @param px packet buffer to transmit. (Max Length is PKT_BUF_SIZE)
  * @param len length of packet data we filled.
  * @return true if need to transmit one more packet.
 */
@@ -121,7 +123,7 @@ struct PreHandle {
  *  2. Is and How to dedup or drop.
  * 
  * !Must be implemented.
- * !Must be thread safe.
+ * !Must be thread safe for other funcs.
  * 
  * @param entropy a rand seed (generated or user-specified).
  * @param recved info of received packet.
@@ -139,7 +141,7 @@ typedef void (*scan_modules_validate)(
  *  2. How and What packet to response.
  * 
  * !Must be implemented.
- * !Must be thread safe.
+ * !Must be thread safe for itself.
  * 
  * @param th_idx the index of receive handler thread.
  * @param entropy a rand seed (generated or user-specified).
@@ -166,6 +168,8 @@ typedef void (*scan_modules_handle)(
  * This func will be called only if a fast timeout event need to
  * be handled while using fast-timeout.
  * 
+ * !Must be implemented if support timeout.
+ * !Must be thread safe for other funcs.
  * 
  * @param entropy a rand seed (generated or user-specified).
  * @param event timeout event;
@@ -189,6 +193,11 @@ typedef void (*scan_modules_timeout)(
  * Some internal status of ScanModules should be updated in real time.
  * This func would be called in every loop of packet handling just like
  * in real time.
+ * NOTE: Don't block or waste time in this func.
+ * 
+ * !Must be implemented.
+ * !Must be thread safe for itself.
+ * 
  * @param th_idx the index of receive handler thread.
 */
 typedef void (*scan_modules_poll)(unsigned th_idx);
@@ -199,10 +208,31 @@ typedef void (*scan_modules_poll)(unsigned th_idx);
 ****************************************************************************/
 
 /**
+ * !Happens in Main Thread.
  * It happens before normal exit in mainscan function.
  * And we could do some clean-ups.
+ * 
+ * !Must be implemented.
 */
 typedef void (*scan_modules_close)();
+
+/***************************************************************************
+ * * callback functions for additional Status Update
+****************************************************************************/
+
+/**
+ * !Happens in Main Thread.
+ * Some scan modules need to add additional info in status print.
+ * This func allows it to return a C-string as additional status print.
+ * NOTE: Don't block or waste time in this func.
+ * 
+ * !Must be implemented.
+ * !Must be thread safe for other funcs.
+ * 
+ * @param status buf to set additional status data in max size of SM_STATUS_SIZE.
+ * Do nothing if additonal status data.
+*/
+typedef void (*scan_modules_status)(char *status);
 
 
 struct ScanModule
@@ -228,6 +258,8 @@ struct ScanModule
     scan_modules_poll                           poll_cb;
     /*for close*/
     scan_modules_close                          close_cb;
+    /*for status*/
+    scan_modules_status                         status_cb;
 };
 
 struct ScanModule *get_scan_module_by_name(const char *name);
@@ -253,5 +285,7 @@ void scan_no_timeout(
     struct OutputItem *item,
     struct stack_t *stack,
     struct FHandler *handler);
+
+void scan_no_status(char *status);
 
 #endif

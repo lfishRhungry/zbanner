@@ -117,6 +117,9 @@ static int _main_scan(struct Xconf *xconf) {
     uint64_t              count_ports; 
     uint64_t              count_ips;
     uint64_t              range;
+    char                  add_status[SM_STATUS_SIZE];
+
+    memset(add_status, 0, SM_STATUS_SIZE);
 
     tx_thread = CALLOC(xconf->tx_thread_count, sizeof(struct TxThread));
 
@@ -359,7 +362,6 @@ static int _main_scan(struct Xconf *xconf) {
      * set status outputing
     */
     xtatus_start(&status);
-    status.print_tcb         = xconf->scan_module->required_probe_type==ProbeType_STATE;
     status.print_ft_event    = xconf->is_fast_timeout;
     status.print_queue       = xconf->is_status_queue;
     status.print_info_num    = xconf->is_status_info_num;
@@ -435,6 +437,10 @@ static int _main_scan(struct Xconf *xconf) {
                 time_to_finish_tx = 1;
         }
 
+        /*additional status from scan module*/
+        add_status[0] = '\0';
+        xconf->scan_module->status_cb(add_status);
+
         xtatus_print(
             &status,
             min_index,
@@ -448,8 +454,8 @@ static int _main_scan(struct Xconf *xconf) {
             total_info,
             total_sent,
             total_tm_event,
-            xconf->tcb_count,
             0,
+            add_status,
             xconf->is_status_ndjson);
 
         /* Sleep for almost a second */
@@ -526,6 +532,10 @@ static int _main_scan(struct Xconf *xconf) {
         double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
         tx_queue_ratio = tx_free_entries*100.0/(double)xconf->stack_buf_count;
 
+        /*additional status from scan module*/
+        add_status[0] = '\0';
+        xconf->scan_module->status_cb(add_status);
+
         xtatus_print(
             &status,
             min_index,
@@ -539,8 +549,8 @@ static int _main_scan(struct Xconf *xconf) {
             total_info,
             total_sent,
             total_tm_event,
-            xconf->tcb_count,
             xconf->wait - (time(0) - now),
+            add_status,
             xconf->is_status_ndjson);
 
         /*no more waiting or too many <ctrl-c>*/

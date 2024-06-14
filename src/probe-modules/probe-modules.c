@@ -285,7 +285,7 @@ probe_just_report_banner(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    item->level = Output_SUCCESS;
+    item->level = OP_SUCCESS;
     dach_append_normalized(&item->report, "banner", px, sizeof_px);
 
     return 0;

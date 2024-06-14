@@ -28,18 +28,18 @@ lzr_http_make_payload(
 {
     if (target->ip_them.version==4)
         return snprintf((char *)payload_buf,
-            PROBE_PAYLOAD_MAX_LEN, lzr_http_fmt_ipv4,
+            PM_PAYLOAD_SIZE, lzr_http_fmt_ipv4,
             ipaddress_fmt(target->ip_them).string);
     else
         return snprintf((char *)payload_buf,
-            PROBE_PAYLOAD_MAX_LEN, lzr_http_fmt_ipv6,
+            PM_PAYLOAD_SIZE, lzr_http_fmt_ipv6,
             ipaddress_fmt(target->ip_them).string);
 }
 
 static size_t
 lzr_http_get_payload_length(struct ProbeTarget *target)
 {
-    unsigned char tmp_str[PROBE_PAYLOAD_MAX_LEN];
+    unsigned char tmp_str[PM_PAYLOAD_SIZE];
     return lzr_http_make_payload(target, tmp_str);
 }
 
@@ -57,15 +57,15 @@ lzr_http_handle_reponse(
             || safe_memmem(px, sizeof_px, "html", strlen("html"))
             || safe_memmem(px, sizeof_px, "HTML", strlen("HTML"))
             || safe_memmem(px, sizeof_px, "<h1>", strlen("<h1>")))) {
-        item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "http");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        item->level = OP_SUCCESS;
+        safe_strcpy(item->classification, OP_CLS_SIZE, "http");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
         return 0;
     }
 
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not http");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "not http");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -73,9 +73,9 @@ lzr_http_handle_reponse(
 static unsigned
 lzr_http_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not http");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "no response");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "not http");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "no response");
     return 0;
 }
 

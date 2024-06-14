@@ -69,7 +69,7 @@ sctpinit_transmit(
 
     *len = sctp_create_packet(target->ip_them, target->port_them,
         target->ip_me, target->port_me,
-        cookie, px, PKT_BUF_LEN);
+        cookie, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout = 1;
@@ -125,14 +125,14 @@ sctpinit_handle(
 {
     if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
         SCTP_CHUNK_TYPE_INIT_ACK)) {
-        item->level = Output_SUCCESS;
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "init-ack");
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "open");
+        item->level = OP_SUCCESS;
+        safe_strcpy(item->reason, OP_RSN_SIZE, "init-ack");
+        safe_strcpy(item->classification, OP_CLS_SIZE, "open");
     } else if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
         SCTP_CHUNK_TYPE_ABORT)) {
-        item->level = Output_FAILURE;
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "abort");
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "closed");
+        item->level = OP_FAILURE;
+        safe_strcpy(item->reason, OP_RSN_SIZE, "abort");
+        safe_strcpy(item->classification, OP_CLS_SIZE, "closed");
     }
 
     if (sctpinit_conf.record_ttl)
@@ -148,9 +148,9 @@ static void sctpinit_timeout(
     struct stack_t *stack,
     struct FHandler *handler)
 {
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "closed");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "closed");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
 }
 
 struct ScanModule SctpInitScan = {
@@ -166,11 +166,12 @@ struct ScanModule SctpInitScan = {
         "INIT ACK response to believe the port is open or an ABORT for closed in "
         "SCTP protocol.",
 
-    .global_init_cb          = &scan_global_init_nothing,
-    .transmit_cb             = &sctpinit_transmit,
-    .validate_cb             = &sctpinit_validate,
-    .handle_cb               = &sctpinit_handle,
-    .timeout_cb              = &sctpinit_timeout,
-    .poll_cb                 = &scan_poll_nothing,
-    .close_cb                = &scan_close_nothing,
+    .global_init_cb         = &scan_global_init_nothing,
+    .transmit_cb            = &sctpinit_transmit,
+    .validate_cb            = &sctpinit_validate,
+    .handle_cb              = &sctpinit_handle,
+    .timeout_cb             = &sctpinit_timeout,
+    .poll_cb                = &scan_poll_nothing,
+    .close_cb               = &scan_close_nothing,
+    .status_cb              = &scan_no_status,
 };

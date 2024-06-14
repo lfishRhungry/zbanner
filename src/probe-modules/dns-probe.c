@@ -179,7 +179,7 @@ dns_make_payload(
     struct ProbeTarget *target,
     unsigned char *payload_buf)
 {
-    memset(payload_buf, 0, PROBE_PAYLOAD_MAX_LEN);
+    memset(payload_buf, 0, PM_PAYLOAD_SIZE);
     int res_len = dns_question_create(payload_buf,
         dns_conf.req_name, dns_conf.req_type, target->cookie & 0xFFFF);
 
@@ -214,14 +214,14 @@ dns_handle_response(
     dns_pkt_t dns_pkt;
 
     if (!dns_parse_reply((uint8_t *)px, sizeof_px, &dns_pkt)) {
-        item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not dns");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "parse failed");
+        item->level = OP_FAILURE;
+        safe_strcpy(item->classification, OP_CLS_SIZE, "not dns");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "parse failed");
         return 0;
     }
 
-    item->level = Output_SUCCESS;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "dns reply");
+    item->level = OP_SUCCESS;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "dns reply");
 
     dns_record_t *rec;
     char tmp_data[50];
@@ -335,9 +335,9 @@ dns_handle_response(
 static unsigned
 dns_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "no response");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "no response");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
     return 0;
 }
 

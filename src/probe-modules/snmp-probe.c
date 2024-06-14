@@ -561,9 +561,9 @@ snmp_handle_response(
         }
     }
 
-    item->level = Output_SUCCESS;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "snmp");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+    item->level = OP_SUCCESS;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "snmp");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
 
     return 0;
 
@@ -575,8 +575,8 @@ error:
 static unsigned
 snmp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "unknown");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
+    safe_strcpy(item->classification, OP_CLS_SIZE, "unknown");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
     return 0;
 }
 

@@ -40,15 +40,15 @@ lzr_mongodb_handle_reponse(
 
     if (safe_memmem(px, sizeof_px, "maxBsonObjectSize", strlen( "maxBsonObjectSize"))
         && safe_memmem(px, sizeof_px, "MongoDB", strlen( "MongoDB"))) {
-        item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "mongodb");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        item->level = OP_SUCCESS;
+        safe_strcpy(item->classification, OP_CLS_SIZE, "mongodb");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
         return 0;
     }
 
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not mongodb");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "not mongodb");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -56,9 +56,9 @@ lzr_mongodb_handle_reponse(
 static unsigned
 lzr_mongodb_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not mongodb");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "no response");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "not mongodb");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "no response");
     return 0;
 }
 

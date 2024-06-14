@@ -208,7 +208,7 @@ tcpstate_transmit(
 
     *len = tcp_create_packet(
         target->ip_them, target->port_them, target->ip_me, src_port_start+target->index,
-        cookie, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_LEN);
+        cookie, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_SIZE);
 
     /*multi-probe Multi_Direct*/
     if (TcpStateScan.probe->multi_mode==Multi_Direct
@@ -285,7 +285,7 @@ tcpstate_handle(
 
         /*zerowin could be a kind of port open*/
         if (tcpstate_conf.is_port_success) {
-            item->level = Output_SUCCESS;
+            item->level = OP_SUCCESS;
         }
 
         win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
@@ -309,12 +309,12 @@ tcpstate_handle(
          * */
 
         if (win_them == 0) {
-            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "fake-open");
-            safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "zerowin");
+            safe_strcpy(item->classification, OP_CLS_SIZE, "fake-open");
+            safe_strcpy(item->reason, OP_RSN_SIZE, "zerowin");
             return;
         } else {
-            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "open");
-            safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "syn-ack");
+            safe_strcpy(item->classification, OP_CLS_SIZE, "open");
+            safe_strcpy(item->reason, OP_RSN_SIZE, "syn-ack");
         }
 
         if (tcb == NULL) {
@@ -343,7 +343,7 @@ tcpstate_handle(
                     recved->parsed.src_ip, recved->parsed.port_src,
                     recved->parsed.dst_ip, src_port_start+idx,
                     cookie, 0, TCP_FLAG_SYN,
-                    NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+                    NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
                 stack_transmit_packetbuffer(stack, pkt_buffer);
             }
@@ -403,6 +403,19 @@ static void tcpstate_close()
     tcpcon_set.tcpcons = NULL;
 }
 
+static void tcpstate_status(char *status)
+{
+    uint64_t tcb_count = 0;
+
+    if (tcpcon_set.tcpcons) {
+        for (unsigned i=0; i<tcpcon_set.count; i++) {
+            tcb_count += tcpcon_active_count(tcpcon_set.tcpcons[i]);
+        }
+    }
+
+    snprintf(status, SM_STATUS_SIZE, "tcb=%"PRIu64, tcb_count);
+}
+
 struct ScanModule TcpStateScan = {
     .name                = "tcp-state",
     .required_probe_type = ProbeType_STATE,
@@ -436,11 +449,12 @@ struct ScanModule TcpStateScan = {
         " on protocol itself with activate scanning.\n"
         "NOTE7: Slow send rate may cause target host's retransmition.",
 
-    .global_init_cb               = &tcpstate_global_init,
-    .transmit_cb                  = &tcpstate_transmit,
-    .validate_cb                  = &tcpstate_validate,
-    .handle_cb                    = &tcpstate_handle,
-    .timeout_cb                   = &scan_no_timeout,
-    .poll_cb                      = &tcpstate_poll,
-    .close_cb                     = &tcpstate_close,
+    .global_init_cb         = &tcpstate_global_init,
+    .transmit_cb            = &tcpstate_transmit,
+    .validate_cb            = &tcpstate_validate,
+    .handle_cb              = &tcpstate_handle,
+    .timeout_cb             = &scan_no_timeout,
+    .poll_cb                = &tcpstate_poll,
+    .close_cb               = &tcpstate_close,
+    .status_cb              = &tcpstate_status,
 };

@@ -187,8 +187,8 @@ static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *v
     /**
      * We may specify a large size file accidently, so limit the size by a buf.
     */
-    unsigned char buf[PROBE_PAYLOAD_MAX_LEN];
-    size_t bytes_read = fread(buf, 1, PROBE_PAYLOAD_MAX_LEN, fp);
+    unsigned char buf[PM_PAYLOAD_SIZE];
+    size_t bytes_read = fread(buf, 1, PM_PAYLOAD_SIZE, fp);
     if (bytes_read==0) {
         LOG(LEVEL_ERROR, "[-]Failed to read valid hello in file %s.\n", value);
         perror(value);
@@ -343,8 +343,8 @@ helloudp_handle_response(
     struct OutputItem *item)
 {
 
-    item->level = Output_SUCCESS;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "matched");
+    item->level = OP_SUCCESS;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "matched");
 
     if (helloudp_conf.show_banner)
         dach_append_normalized(&item->report, "banner", px, sizeof_px);
@@ -355,9 +355,9 @@ helloudp_handle_response(
 static unsigned
 helloudp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "no response");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "no response");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
     return 0;
 }
 

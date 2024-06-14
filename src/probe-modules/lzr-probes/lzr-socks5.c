@@ -33,37 +33,37 @@ lzr_socks5_handle_reponse(
     struct OutputItem *item)
 {
     if (sizeof_px==2 && px[0]=='\x05' && (px[1]=='\xff'||px[1]=='\x00')) {
-        item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "socks5");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        item->level = OP_FAILURE;
+        safe_strcpy(item->classification, OP_CLS_SIZE, "socks5");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
         return 0;
     }
 
     if (sizeof_px<4) {
-        item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not socks5");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
+        item->level = OP_FAILURE;
+        safe_strcpy(item->classification, OP_CLS_SIZE, "not socks5");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
         return 0;
     }
 
     if (px[0]=='\x05' && (px[1]=='\x01'||px[1]=='\x02')) {
-        item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "socks5");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        item->level = OP_SUCCESS;
+        safe_strcpy(item->classification, OP_CLS_SIZE, "socks5");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
         return 0;
     }
 
     if (bytes_equals(px, sizeof_px, "\x05\0\x05", sizeof("\x05\0\x05")-1)
         && px[3]<=8) {
-        item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "socks5");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        item->level = OP_SUCCESS;
+        safe_strcpy(item->classification, OP_CLS_SIZE, "socks5");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
         return 0;
     }
 
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not socks5");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "not socks5");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -71,9 +71,9 @@ lzr_socks5_handle_reponse(
 static unsigned
 lzr_socks5_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not socks5");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "no response");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "not socks5");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "no response");
     return 0;
 }
 

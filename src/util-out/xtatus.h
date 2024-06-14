@@ -18,7 +18,6 @@ struct Xtatus
     unsigned is_infinite:1;
     unsigned print_queue:1;
     unsigned print_info_num:1;
-    unsigned print_tcb:1;
     unsigned print_ft_event:1;
 
     uint64_t total_successed;
@@ -39,8 +38,8 @@ void xtatus_print(
     uint64_t       total_info,
     uint64_t       total_sent,
     uint64_t       total_tm_event,
-    uint64_t       total_tcb,
     uint64_t       exiting,
+    const char    *add_status,
     bool           json_status);
 
 void xtatus_finish(struct Xtatus *xtatus);

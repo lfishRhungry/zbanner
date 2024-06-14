@@ -21,8 +21,8 @@ xtatus_print(
     uint64_t       total_info,
     uint64_t       total_sent,
     uint64_t       total_tm_event,
-    uint64_t       total_tcb,
     uint64_t       exiting,
+    const char    *add_status,
     bool           json_status)
 {
     const char         *fmt;
@@ -50,9 +50,9 @@ xtatus_print(
         "\"sent\":%" PRIu64 ","
         "\"repeat\":%" PRIu64 ","
         "\"tm_event\":%" PRIu64 ","
-        "\"tcb\":%" PRIu64 ","
         "\"txq\":%.2f%%,"
-        "\"rxq\":%.2f%%"
+        "\"rxq\":%.2f%%,"
+        "\"add status\":\"%s\""
     "}\n";
 
     /*waiting state for infinite*/
@@ -69,9 +69,9 @@ xtatus_print(
         "},"
         "\"sent\":%" PRIu64 ","
         "\"tm_event\":%" PRIu64 ","
-        "\"tcb\":%" PRIu64 ","
         "\"txq\":%.2f%%,"
-        "\"rxq\":%.2f%%"
+        "\"rxq\":%.2f%%,"
+        "\"add status\":\"%s\""
     "}\n";
 
     const char *json_fmt_waiting = 
@@ -90,7 +90,6 @@ xtatus_print(
             "\"failed\":%" PRIu64 ","
             "\"info\":%" PRIu64 ","
             "\"tm_event\":%" PRIu64 ","
-            "\"tcb\":%" PRIu64 ","
             "\"txq\":%.2f%%,"
             "\"rxq\":%.2f%%,"
             "\"transmit\":"
@@ -99,7 +98,8 @@ xtatus_print(
                 "\"total\":%" PRIu64 ","
                 "\"remaining\":%" PRIu64
             "}" 
-        "}"
+        "},"
+        "\"add status\":\"%s\""
     "}\n";
 
     const char *json_fmt_running = 
@@ -129,10 +129,10 @@ xtatus_print(
             "\"failed\":%" PRIu64 ","
             "\"info\":%" PRIu64 ","
             "\"tm_event\":%" PRIu64
-            "\"tcb\":%" PRIu64 ","
             "\"txq\":%.2f%%,"
             "\"rxq\":%.2f%%"
-        "}"
+        "},"
+        "\"add status\":\"%s\""
     "}\n";
 
     /*
@@ -225,9 +225,9 @@ xtatus_print(
                         successed_rate,
                         count,
                         total_tm_event,
-                        total_tcb,
                         tx_q_ratio,
-                        rx_q_ratio);
+                        rx_q_ratio,
+                        add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, waiting %d-secs, sent/s=%.0f, [+]/s=%.0f";
 
@@ -243,14 +243,14 @@ xtatus_print(
                     fprintf(stderr, fmt, total_tm_event);
                 }
 
-                if (xtatus->print_tcb) {
-                    fmt = ", tcb=%6$" PRIu64;
-                    fprintf(stderr, fmt, total_tcb);
-                }
-
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
                     fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
+                }
+
+                if (add_status && add_status[0]) {
+                    fmt = ", %s";
+                    fprintf(stderr, fmt, add_status);
                 }
 
                 fprintf(stderr, "                \r");
@@ -269,9 +269,9 @@ xtatus_print(
                         count,
                         repeat,
                         total_tm_event,
-                        total_tcb,
                         tx_q_ratio,
-                        rx_q_ratio);
+                        rx_q_ratio,
+                        add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, round=%" PRIu64 ", sent/s=%.0f, [+]/s=%.0f";
 
@@ -287,14 +287,14 @@ xtatus_print(
                     fprintf(stderr, fmt, total_tm_event);
                 }
 
-                if (xtatus->print_tcb) {
-                    fmt = ", tcb=%6$" PRIu64;
-                    fprintf(stderr, fmt, total_tcb);
-                }
-
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
                     fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
+                }
+
+                if (add_status && add_status[0]) {
+                    fmt = ", %s";
+                    fprintf(stderr, fmt, add_status);
                 }
 
                 fprintf(stderr, "                \r");
@@ -317,12 +317,12 @@ xtatus_print(
                         total_failed,
                         total_info,
                         total_tm_event,
-                        total_tcb,
                         tx_q_ratio,
                         rx_q_ratio,
                         count,
                         max_count,
-                        max_count-count);
+                        max_count-count,
+                        add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, [+]=%" PRIu64 ", [x]=%" PRIu64;
 
@@ -344,14 +344,14 @@ xtatus_print(
                     fprintf(stderr, fmt, total_tm_event);
                 }
 
-                if (xtatus->print_tcb) {
-                    fmt = ", tcb=%" PRIu64;
-                    fprintf(stderr, fmt, total_tcb);
-                }
-
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
                     fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
+                }
+
+                if (add_status && add_status[0]) {
+                    fmt = ", %s";
+                    fprintf(stderr, fmt, add_status);
                 }
 
                 fprintf(stderr, "       \r");
@@ -377,9 +377,9 @@ xtatus_print(
                     total_failed,
                     total_info,
                     total_tm_event,
-                    total_tcb,
                     tx_q_ratio,
-                    rx_q_ratio);
+                    rx_q_ratio,
+                    add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, [+]=%" PRIu64 ", [x]=%" PRIu64;
 
@@ -403,14 +403,14 @@ xtatus_print(
                     fprintf(stderr, fmt, total_tm_event);
                 }
 
-                if (xtatus->print_tcb) {
-                    fmt = ", tcb=%" PRIu64;
-                    fprintf(stderr, fmt, total_tcb);
-                }
-
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
                     fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
+                }
+
+                if (add_status && add_status[0]) {
+                    fmt = ", %s";
+                    fprintf(stderr, fmt, add_status);
                 }
 
                 fprintf(stderr, "       \r");

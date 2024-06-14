@@ -724,11 +724,11 @@ http_make_payload(
     if (http_conf.dynamic_host) {
         if (target->ip_them.version==4)
             return snprintf((char *)payload_buf,
-                PROBE_PAYLOAD_MAX_LEN, http_conf.request4,
+                PM_PAYLOAD_SIZE, http_conf.request4,
                 ipaddress_fmt(target->ip_them).string);
         else
             return snprintf((char *)payload_buf,
-                PROBE_PAYLOAD_MAX_LEN, http_conf.request6,
+                PM_PAYLOAD_SIZE, http_conf.request6,
                 ipaddress_fmt(target->ip_them).string);
     }
 
@@ -740,7 +740,7 @@ static size_t
 http_get_payload_length(struct ProbeTarget *target)
 {
     if (http_conf.dynamic_host) {
-        unsigned char tmp_str[PROBE_PAYLOAD_MAX_LEN];
+        unsigned char tmp_str[PM_PAYLOAD_SIZE];
         return http_make_payload(target, tmp_str);
     }
     return http_conf.req4_len;
@@ -773,11 +773,11 @@ http_handle_response(
 
         /*matched one. ps: "offset is too small" means successful, too*/
         if (rc >= 0) {
-            item->level = Output_SUCCESS;
-            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "matched");
+            item->level = OP_SUCCESS;
+            safe_strcpy(item->classification, OP_CLS_SIZE, "matched");
         } else {
-            item->level = Output_FAILURE;
-            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not matched");
+            item->level = OP_FAILURE;
+            safe_strcpy(item->classification, OP_CLS_SIZE, "not matched");
         }
 
         if (http_conf.report_while_regex) {
@@ -788,7 +788,7 @@ http_handle_response(
 
 #endif
 
-        item->level = Output_SUCCESS;
+        item->level = OP_SUCCESS;
         dach_append_normalized(&item->report, "banner", px, sizeof_px);
 
 #ifndef NOT_FOUND_PCRE2
@@ -801,9 +801,9 @@ http_handle_response(
 static unsigned
 http_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "no response");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "no response");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
     return 0;
 }
 

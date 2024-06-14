@@ -42,7 +42,7 @@ arpreq_transmit(
 
     /*we do not need a cookie and actually cannot set it*/
     *len = arp_create_request_packet(
-        target->ip_them, target->ip_me, px, PKT_BUF_LEN);
+        target->ip_them, target->ip_me, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout = 1;
@@ -81,10 +81,10 @@ arpreq_handle(
 {
     item->port_them  = 0;
     item->port_me    = 0;
-    item->level      = Output_SUCCESS;
+    item->level      = OP_SUCCESS;
 
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "alive");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "arp reply");
+    safe_strcpy(item->classification, OP_CLS_SIZE, "alive");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "arp reply");
     dach_printf(&item->report, "mac addr", false, "%02X:%02X:%02X:%02X:%02X:%02X",
         recved->parsed.mac_src[0], recved->parsed.mac_src[1],
         recved->parsed.mac_src[2], recved->parsed.mac_src[3],
@@ -98,9 +98,9 @@ static void arpreq_timeout(
     struct stack_t *stack,
     struct FHandler *handler)
 {
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "down");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "down");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
 }
 
 struct ScanModule ArpReqScan = {
@@ -123,11 +123,12 @@ struct ScanModule ArpReqScan = {
         "    `--router-mac ff-ff-ff-ff-ff-ff`.\n"
         "NOTE2: Don't specify any ports for this module.",
 
-    .global_init_cb    = &arpreq_global_init,
-    .transmit_cb       = &arpreq_transmit,
-    .validate_cb       = &arpreq_validate,
-    .handle_cb         = &arpreq_handle,
-    .timeout_cb        = &arpreq_timeout,
-    .poll_cb           = &scan_poll_nothing,
-    .close_cb          = &scan_close_nothing,
+    .global_init_cb         = &arpreq_global_init,
+    .transmit_cb            = &arpreq_transmit,
+    .validate_cb            = &arpreq_validate,
+    .handle_cb              = &arpreq_handle,
+    .timeout_cb             = &arpreq_timeout,
+    .poll_cb                = &scan_poll_nothing,
+    .close_cb               = &scan_close_nothing,
+    .status_cb              = &scan_no_status,
 };

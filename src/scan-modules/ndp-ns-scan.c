@@ -75,7 +75,7 @@ ndpns_transmit(
 
     *len = ndp_create_ns_packet(
         target->ip_them, target->ip_me, src_mac,
-        255, px, PKT_BUF_LEN);
+        255, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout = 1;
@@ -120,10 +120,10 @@ ndpns_handle(
 {
     item->port_them  = 0;
     item->port_me    = 0;
-    item->level      = Output_SUCCESS;
+    item->level      = OP_SUCCESS;
 
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "ndp na");
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "alive");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "ndp na");
+    safe_strcpy(item->classification, OP_CLS_SIZE, "alive");
 
     dach_printf(&item->report, "mac_addr", false, "%02X:%02X:%02X:%02X:%02X:%02X",
         recved->packet[recved->parsed.transport_offset+26],
@@ -150,9 +150,9 @@ static void ndpns_timeout(
     struct stack_t *stack,
     struct FHandler *handler)
 {
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "down");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "down");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
 }
 
 struct ScanModule NdpNsScan = {
@@ -186,4 +186,5 @@ struct ScanModule NdpNsScan = {
     .timeout_cb             = &ndpns_timeout,
     .poll_cb                = &scan_poll_nothing,
     .close_cb               = &scan_close_nothing,
+    .status_cb              = &scan_no_status,
 };

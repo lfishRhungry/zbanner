@@ -204,8 +204,8 @@ static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *v
     /**
      * We may specify a large size file accidently, so limit the size by a buf.
     */
-    unsigned char buf[PROBE_PAYLOAD_MAX_LEN];
-    size_t bytes_read = fread(buf, 1, PROBE_PAYLOAD_MAX_LEN, fp);
+    unsigned char buf[PM_PAYLOAD_SIZE];
+    size_t bytes_read = fread(buf, 1, PM_PAYLOAD_SIZE, fp);
     if (bytes_read==0) {
         LOG(LEVEL_ERROR, "[-]Failed to read valid hello in file %s.\n", value);
         perror(value);
@@ -359,15 +359,15 @@ hello_handle_response(
 
         /*matched one. ps: "offset is too small" means successful, too*/
         if (rc >= 0) {
-            item->level = Output_SUCCESS;
-            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "matched");
+            item->level = OP_SUCCESS;
+            safe_strcpy(item->classification, OP_CLS_SIZE, "matched");
 
             if (hello_conf.banner_while_regex) {
                 dach_append_normalized(&item->report, "banner", px, sizeof_px);
             }
         } else {
-            item->level = Output_FAILURE;
-            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not matched");
+            item->level = OP_FAILURE;
+            safe_strcpy(item->classification, OP_CLS_SIZE, "not matched");
 
             if (hello_conf.banner_while_regex||hello_conf.banner_if_fail) {
                 dach_append_normalized(&item->report, "banner", px, sizeof_px);
@@ -379,7 +379,7 @@ hello_handle_response(
 
 #endif
 
-        item->level = Output_SUCCESS;
+        item->level = OP_SUCCESS;
         dach_append_normalized(&item->report, "banner", px, sizeof_px);
 
 #ifndef NOT_FOUND_PCRE2
@@ -392,9 +392,9 @@ hello_handle_response(
 static unsigned
 hello_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "no response");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "no response");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
     return 0;
 }
 

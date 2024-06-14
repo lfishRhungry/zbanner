@@ -252,10 +252,10 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line)
         .port_them = tgt->port_them,
         .ip_me     = tgt->ip_me,
         .port_me   = tgt->port_me,
-        .level     = Output_INFO,
+        .level     = OP_INFO,
     };
 
-    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
+    safe_strcpy(item.classification, OP_CLS_SIZE, "tls info");
     dach_append(&item.report, "key_log", line, strlen(line));
 
     output_result(_tls_out, &item);
@@ -274,10 +274,10 @@ static void ssl_info_cb(const SSL *ssl, int where, int ret)
             .port_them = tgt->port_them,
             .ip_me     = tgt->ip_me,
             .port_me   = tgt->port_me,
-            .level     = Output_INFO,
+            .level     = OP_INFO,
         };
 
-        safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
+        safe_strcpy(item.classification, OP_CLS_SIZE, "tls info");
         dach_printf(&item.report, "openssl alert", false, "0x%04x %s: %s",
             ret, SSL_alert_type_string_long(ret), SSL_alert_desc_string_long(ret));
 
@@ -315,9 +315,9 @@ static bool output_subject_info(struct Output *out,
         .port_them = target->port_them,
         .ip_me     = target->ip_me,
         .port_me   = target->port_me,
-        .level     = Output_INFO,
+        .level     = OP_INFO,
     };
-    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
+    safe_strcpy(item.classification, OP_CLS_SIZE, "tls info");
 
     x509_subject_name = X509_get_subject_name(x509_cert);
     if (x509_subject_name != NULL) {
@@ -453,10 +453,10 @@ static bool output_x502_cert(struct Output *out,
             .port_them = target->port_them,
             .ip_me     = target->ip_me,
             .port_me   = target->port_me,
-            .level     = Output_INFO,
+            .level     = OP_INFO,
         };
 
-        safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
+        safe_strcpy(item.classification, OP_CLS_SIZE, "tls info");
 
         X509 *x509_cert = NULL;
         BIO *bio_base64 = NULL;
@@ -549,10 +549,10 @@ static bool output_cipher_suite(struct Output *out,
         .port_them = target->port_them,
         .ip_me     = target->ip_me,
         .port_me   = target->port_me,
-        .level     = Output_INFO,
+        .level     = OP_INFO,
     };
 
-    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
+    safe_strcpy(item.classification, OP_CLS_SIZE, "tls info");
 
     cipher_suite = SSL_CIPHER_get_protocol_id(ssl_cipher);
     dach_printf(&item.report, "cipher", false, "0x%x", cipher_suite);
@@ -573,7 +573,7 @@ static bool output_tls_version(struct Output *out,
         .port_them = target->port_them,
         .ip_me     = target->ip_me,
         .port_me   = target->port_me,
-        .level     = Output_INFO,
+        .level     = OP_INFO,
     };
 
     switch (version) {
@@ -596,7 +596,7 @@ static bool output_tls_version(struct Output *out,
         dach_append(&item.report, "version", "Other", sizeof("Other")-1);
     }
 
-    safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls info");
+    safe_strcpy(item.classification, OP_CLS_SIZE, "tls info");
     output_result(_tls_out, &item);
 
     return true;
@@ -1098,10 +1098,10 @@ tlsstate_parse_response(
                     .port_them = target->port_them,
                     .ip_me     = target->ip_me,
                     .port_me   = target->port_me,
-                    .level     = tlsstate_conf.fail_handshake?Output_FAILURE:Output_INFO,
+                    .level     = tlsstate_conf.fail_handshake?OP_FAILURE:OP_INFO,
                 };
-                safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "tls error");
-                safe_strcpy(item.reason, OUTPUT_RSN_SIZE, "handshake failed");
+                safe_strcpy(item.classification, OP_CLS_SIZE, "tls error");
+                safe_strcpy(item.reason, OP_RSN_SIZE, "handshake failed");
                 output_result(_tls_out, &item);
             }
             break;

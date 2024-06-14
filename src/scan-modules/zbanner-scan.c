@@ -198,7 +198,7 @@ zbanner_transmit(
 
     *len = tcp_create_packet(
         target->ip_them, target->port_them, target->ip_me, src_port_start+target->index,
-        seqno, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_LEN);
+        seqno, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_SIZE);
 
     if (zbanner_conf.is_port_timeout) {
         event->need_timeout = 1;
@@ -300,7 +300,7 @@ zbanner_handle(
 
         /*zerowin could be a kind of port open*/
         if (zbanner_conf.is_port_success) {
-            item->level = Output_SUCCESS;
+            item->level = OP_SUCCESS;
         }
 
         win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
@@ -319,11 +319,11 @@ zbanner_handle(
         }
 
         if (win_them == 0) {
-            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "fake-open");
-            safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "zerowin");
+            safe_strcpy(item->classification, OP_CLS_SIZE, "fake-open");
+            safe_strcpy(item->reason, OP_RSN_SIZE, "zerowin");
         } else {
-            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "open");
-            safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "syn-ack");
+            safe_strcpy(item->classification, OP_CLS_SIZE, "open");
+            safe_strcpy(item->reason, OP_RSN_SIZE, "syn-ack");
 
             /*stack(send) ack with probe*/
             struct ProbeTarget ptarget = {
@@ -336,7 +336,7 @@ zbanner_handle(
                 .index     = recved->parsed.port_dst-src_port_start,
             };
 
-            unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
+            unsigned char payload[PM_PAYLOAD_SIZE];
             size_t payload_len = 0; 
 
             payload_len = ZBannerScan.probe->make_payload_cb(&ptarget, payload);
@@ -347,7 +347,7 @@ zbanner_handle(
                 recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, recved->parsed.port_dst,
                 seqno_me, seqno_them+1, TCP_FLAG_ACK,
-                payload, payload_len, pkt_buffer->px, PKT_BUF_LEN);
+                payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);
 
@@ -384,7 +384,7 @@ zbanner_handle(
                         recved->parsed.src_ip, recved->parsed.port_src,
                         recved->parsed.dst_ip, src_port_start+idx,
                         cookie, 0, TCP_FLAG_SYN,
-                        NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+                        NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
                     stack_transmit_packetbuffer(stack, pkt_buffer);
 
@@ -422,11 +422,11 @@ zbanner_handle(
         if (zbanner_conf.record_win)
             dach_printf(&item->report, "win", true, "%d", win_them);
 
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "rst");
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "closed");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "rst");
+        safe_strcpy(item->classification, OP_CLS_SIZE, "closed");
 
         if (zbanner_conf.is_port_failure) {
-            item->level = Output_FAILURE;
+            item->level = OP_FAILURE;
         }
     }
     /*Banner*/
@@ -439,7 +439,7 @@ zbanner_handle(
             recved->parsed.src_ip, recved->parsed.port_src,
             recved->parsed.dst_ip, recved->parsed.port_dst,
             seqno_me, seqno_them+1, TCP_FLAG_RST,
-            NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+            NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
         stack_transmit_packetbuffer(stack, pkt_buffer);
 
@@ -473,7 +473,7 @@ zbanner_handle(
                     recved->parsed.src_ip, recved->parsed.port_src,
                     recved->parsed.dst_ip, src_port_start+idx,
                     cookie, 0, TCP_FLAG_SYN,
-                    NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+                    NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
                 stack_transmit_packetbuffer(stack, pkt_buffer);
 
@@ -510,7 +510,7 @@ zbanner_handle(
                 recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, src_port_start+is_multi-1,
                 cookie, 0, TCP_FLAG_SYN,
-                NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+                NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);
 
@@ -545,10 +545,10 @@ zbanner_timeout(
 {
     /*event for port*/
     if (event->dedup_type==0) {
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "closed");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
+        safe_strcpy(item->classification, OP_CLS_SIZE, "closed");
         if (zbanner_conf.is_port_failure) {
-            item->level = Output_FAILURE;
+            item->level = OP_FAILURE;
         }
         return;
     }
@@ -581,7 +581,7 @@ zbanner_timeout(
                 event->ip_them, event->port_them,
                 event->ip_me,   src_port_start+idx,
                 cookie, 0, TCP_FLAG_SYN,
-                NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+                NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);
 
@@ -616,7 +616,7 @@ zbanner_timeout(
             event->ip_them, event->port_them,
             event->ip_me,   src_port_start+is_multi-1,
             cookie, 0, TCP_FLAG_SYN,
-            NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+            NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
         stack_transmit_packetbuffer(stack, pkt_buffer);
 
@@ -664,11 +664,12 @@ struct ScanModule ZBannerScan = {
         "`firewall` directory.\n"
         "NOTE3: Slow send rate may cause target host's retransmition.",
 
-    .global_init_cb               = &zbanner_global_init,
-    .transmit_cb                  = &zbanner_transmit,
-    .validate_cb                  = &zbanner_validate,
-    .handle_cb                    = &zbanner_handle,
-    .timeout_cb                   = &zbanner_timeout,
-    .poll_cb                      = &scan_poll_nothing,
-    .close_cb                     = &scan_close_nothing,
+    .global_init_cb         = &zbanner_global_init,
+    .transmit_cb            = &zbanner_transmit,
+    .validate_cb            = &zbanner_validate,
+    .handle_cb              = &zbanner_handle,
+    .timeout_cb             = &zbanner_timeout,
+    .poll_cb                = &scan_poll_nothing,
+    .close_cb               = &scan_close_nothing,
+    .status_cb              = &scan_no_status,
 };

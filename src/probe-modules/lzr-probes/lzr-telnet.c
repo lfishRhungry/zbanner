@@ -15,16 +15,16 @@ lzr_telnet_handle_response(
 {
 
     if (sizeof_px<2) {
-        item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not telnet");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
+        item->level = OP_FAILURE;
+        safe_strcpy(item->classification, OP_CLS_SIZE, "not telnet");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
         return 0;
     }
 
     if (safe_memismem(px, sizeof_px, "telnet", strlen("telnet"))) {
-        item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "telnet");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        item->level = OP_SUCCESS;
+        safe_strcpy(item->classification, OP_CLS_SIZE, "telnet");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
         return 0;
     }
 
@@ -33,16 +33,16 @@ lzr_telnet_handle_response(
      * by sharkocha 2024
     */
     if (px[0]==0xff && (px[1]==0xfe || px[1]==0xfd || px[1]==0xfc || px[1]==0xfb)) {
-        item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "telnet");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        item->level = OP_SUCCESS;
+        safe_strcpy(item->classification, OP_CLS_SIZE, "telnet");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
         return 0;
     }
 
 
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not telnet");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "not telnet");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -50,9 +50,9 @@ lzr_telnet_handle_response(
 static unsigned
 lzr_telnet_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not telnet");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "no response");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "not telnet");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "no response");
     return 0;
 }
 

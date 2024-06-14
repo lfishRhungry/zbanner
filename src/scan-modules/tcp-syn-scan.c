@@ -144,7 +144,7 @@ tcpsyn_transmit(
 
     *len = tcp_create_packet(
         target->ip_them, target->port_them, target->ip_me, target->port_me,
-        cookie, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_LEN);
+        cookie, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout = 1;
@@ -207,18 +207,18 @@ tcpsyn_handle(
     /*SYNACK*/
     if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
         TCP_FLAG_SYN|TCP_FLAG_ACK)) {
-        item->level = Output_SUCCESS;
+        item->level = OP_SUCCESS;
 
         if (win_them == 0) {
-            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "fake-open");
-            safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "zerowin");
+            safe_strcpy(item->classification, OP_CLS_SIZE, "fake-open");
+            safe_strcpy(item->reason, OP_RSN_SIZE, "zerowin");
 
             if (tcpsyn_conf.zero_fail)
-                item->level = Output_FAILURE;
+                item->level = OP_FAILURE;
 
         } else {
-            safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "open");
-            safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "syn-ack");
+            safe_strcpy(item->classification, OP_CLS_SIZE, "open");
+            safe_strcpy(item->reason, OP_RSN_SIZE, "syn-ack");
         }
 
         if (tcpsyn_conf.send_rst) {
@@ -231,7 +231,7 @@ tcpsyn_handle(
                 recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, recved->parsed.port_dst,
                 seqno_me, seqno_them+1, TCP_FLAG_RST,
-                NULL, 0, pkt_buffer->px, PKT_BUF_LEN);
+                NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);
         }
@@ -245,9 +245,9 @@ tcpsyn_handle(
     }
     /*RST*/
     else {
-        item->level = Output_FAILURE;
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "rst");
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "closed");
+        item->level = OP_FAILURE;
+        safe_strcpy(item->reason, OP_RSN_SIZE, "rst");
+        safe_strcpy(item->classification, OP_CLS_SIZE, "closed");
     }
 
     if (tcpsyn_conf.record_ttl)
@@ -267,9 +267,9 @@ tcpsyn_timeout(
     struct stack_t *stack,
     struct FHandler *handler)
 {
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "closed");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "closed");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
 }
 
 struct ScanModule TcpSynScan = {
@@ -285,11 +285,12 @@ struct ScanModule TcpSynScan = {
         "response to believe the port is open or an RST for closed in TCP protocol.\n"
         "TcpSynScan is the default ScanModule.",
 
-    .global_init_cb           = &scan_global_init_nothing,
-    .transmit_cb              = &tcpsyn_transmit,
-    .validate_cb              = &tcpsyn_validate,
-    .handle_cb                = &tcpsyn_handle,
-    .timeout_cb               = &tcpsyn_timeout,
-    .poll_cb                  = &scan_poll_nothing,
-    .close_cb                 = &scan_close_nothing,
+    .global_init_cb         = &scan_global_init_nothing,
+    .transmit_cb            = &tcpsyn_transmit,
+    .validate_cb            = &tcpsyn_validate,
+    .handle_cb              = &tcpsyn_handle,
+    .timeout_cb             = &tcpsyn_timeout,
+    .poll_cb                = &scan_poll_nothing,
+    .close_cb               = &scan_close_nothing,
+    .status_cb              = &scan_no_status,
 };

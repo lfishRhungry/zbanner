@@ -153,8 +153,8 @@ static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *v
     /**
      * We may specify a large size file accidently, so limit the size by a buf.
     */
-    unsigned char buf[PROBE_PAYLOAD_MAX_LEN];
-    size_t bytes_read = fread(buf, 1, PROBE_PAYLOAD_MAX_LEN, fp);
+    unsigned char buf[PM_PAYLOAD_SIZE];
+    size_t bytes_read = fread(buf, 1, PM_PAYLOAD_SIZE, fp);
     if (bytes_read==0) {
         LOG(LEVEL_ERROR, "[-]Failed to read valid hello in file %s.\n", value);
         perror(value);
@@ -329,16 +329,16 @@ recogstate_parse_response(
     const char *match_res = match_recog_fp(recogstate_conf.recog_fp, px, sizeof_px);
 
     if (match_res) {
-        item.level = Output_SUCCESS;
-        safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "matched");
+        item.level = OP_SUCCESS;
+        safe_strcpy(item.classification, OP_CLS_SIZE, "matched");
         dach_append(&item.report, "result", match_res, strlen(match_res));
 
         if (recogstate_conf.banner_while_regex) {
             dach_append_normalized(&item.report, "banner", px, sizeof_px);
         }
     } else {
-        item.level = Output_FAILURE;
-        safe_strcpy(item.classification, OUTPUT_CLS_SIZE, "not matched");
+        item.level = OP_FAILURE;
+        safe_strcpy(item.classification, OP_CLS_SIZE, "not matched");
 
         if (recogstate_conf.banner_while_regex||recogstate_conf.banner_if_fail) {
             dach_append_normalized(&item.report, "banner", px, sizeof_px);

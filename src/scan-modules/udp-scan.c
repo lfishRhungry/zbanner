@@ -79,14 +79,14 @@ udp_transmit(
         .index     = target->index,
     };
 
-    unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
+    unsigned char payload[PM_PAYLOAD_SIZE];
     size_t payload_len = 0;
 
     payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
 
     *len = udp_create_packet(target->ip_them, target->port_them,
         target->ip_me, src_port_start+target->index,
-        payload, payload_len, px, PKT_BUF_LEN);
+        payload, payload_len, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout = 1;
@@ -203,7 +203,7 @@ udp_handle(
                     .index     = idx,
                 };
 
-                unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
+                unsigned char payload[PM_PAYLOAD_SIZE];
                 size_t payload_len = 0;
 
                 payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
@@ -211,7 +211,7 @@ udp_handle(
                 pkt_buffer->length = udp_create_packet(
                     recved->parsed.src_ip, recved->parsed.port_src,
                     recved->parsed.dst_ip, src_port_start+idx,
-                    payload, payload_len, pkt_buffer->px, PKT_BUF_LEN);
+                    payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
                 stack_transmit_packetbuffer(stack, pkt_buffer);
 
@@ -254,7 +254,7 @@ udp_handle(
                 .index     = is_multi-1,
             };
 
-            unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
+            unsigned char payload[PM_PAYLOAD_SIZE];
             size_t payload_len = 0;
 
             payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
@@ -262,7 +262,7 @@ udp_handle(
             pkt_buffer->length = udp_create_packet(
                 recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, src_port_start+is_multi-1,
-                payload, payload_len, pkt_buffer->px, PKT_BUF_LEN);
+                payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);
 
@@ -287,8 +287,8 @@ udp_handle(
             return;
         }
     } else {
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "closed");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "port unreachable");
+        safe_strcpy(item->classification, OP_CLS_SIZE, "closed");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "port unreachable");
         unsigned proto;
         parse_icmp_port_unreachable(
             &recved->packet[recved->parsed.transport_offset],
@@ -341,7 +341,7 @@ udp_timeout(
                 .index     = idx,
             };
 
-            unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
+            unsigned char payload[PM_PAYLOAD_SIZE];
             size_t payload_len = 0;
 
             payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
@@ -349,7 +349,7 @@ udp_timeout(
             pkt_buffer->length = udp_create_packet(
                 event->ip_them, event->port_them,
                 event->ip_me,   src_port_start+idx,
-                payload, payload_len, pkt_buffer->px, PKT_BUF_LEN);
+                payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);
 
@@ -391,7 +391,7 @@ udp_timeout(
             .index     = is_multi-1,
         };
 
-        unsigned char payload[PROBE_PAYLOAD_MAX_LEN];
+        unsigned char payload[PM_PAYLOAD_SIZE];
         size_t payload_len = 0;
 
         payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
@@ -399,7 +399,7 @@ udp_timeout(
         pkt_buffer->length = udp_create_packet(
             event->ip_them, event->port_them,
             event->ip_me,   src_port_start+is_multi-1,
-            payload, payload_len, pkt_buffer->px, PKT_BUF_LEN);
+            payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
         stack_transmit_packetbuffer(stack, pkt_buffer);
 
@@ -447,11 +447,12 @@ struct ScanModule UdpScan = {
         " from server side. We could add iptables rules displayed in `firewall` "
         "directory to ban this. Or we could observe some strange things.",
 
-    .global_init_cb              = &udp_global_init,
-    .transmit_cb                 = &udp_transmit,
-    .validate_cb                 = &udp_validate,
-    .handle_cb                   = &udp_handle,
-    .timeout_cb                  = &udp_timeout,
-    .poll_cb                     = &scan_poll_nothing,
-    .close_cb                    = &scan_close_nothing,
+    .global_init_cb         = &udp_global_init,
+    .transmit_cb            = &udp_transmit,
+    .validate_cb            = &udp_validate,
+    .handle_cb              = &udp_handle,
+    .timeout_cb             = &udp_timeout,
+    .poll_cb                = &scan_poll_nothing,
+    .close_cb               = &scan_close_nothing,
+    .status_cb              = &scan_no_status,
 };

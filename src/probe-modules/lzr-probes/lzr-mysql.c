@@ -40,15 +40,15 @@ lzr_mysql_handle_reponse(
 {
 
     if (sizeof_px>=49 && px[3]==0x00 && px[4]==0x0a) {
-        item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "mysql");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        item->level = OP_SUCCESS;
+        safe_strcpy(item->classification, OP_CLS_SIZE, "mysql");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
         return 0;
     }
 
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not mysql");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "not mysql");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -56,9 +56,9 @@ lzr_mysql_handle_reponse(
 static unsigned
 lzr_mysql_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "not mysql");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "no response");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "not mysql");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "no response");
     return 0;
 }
 

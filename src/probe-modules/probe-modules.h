@@ -13,10 +13,10 @@
 struct Xconf;
 
 /**
- * It should be a value a little less than PKT_BUF_LEN, but I'm lazy to estimate
- * the actual number.
+ * FIXME: It should be a value a little less than PKT_BUF_SIZE,
+ * but I'm lazy to estimate the actual number.
 */
-#define PROBE_PAYLOAD_MAX_LEN 2048
+#define PM_PAYLOAD_SIZE        2048
 
 
 /***************************************************************************
@@ -56,10 +56,10 @@ struct ProbeTarget {
  * 
  * 
  * !Must be implemented.
- * !Must be thread safe.
+ * !Must be thread safe for itself.
  * 
  * @param target info of a target
- * @param payload_buf buffer to fill with payload. (Length is PROBE_PAYLOAD_MAX_LEN)
+ * @param payload_buf buffer to fill with payload. (Length is PM_PAYLOAD_SIZE)
  * @return paylaod length.
 */
 typedef size_t
@@ -71,7 +71,7 @@ typedef size_t
  * 
  * !Must be implemented for ProbeType_TCP.
  * !Must check index range in multi-probe
- * !Must be thread safe.
+ * !Must be thread safe for itself.
  * 
  * @param target info of a target
  * @return length of payload data
@@ -91,7 +91,7 @@ typedef size_t
  * packet attributes.
  * 
  * !Must be implemented for ProbeType_UDP.
- * !Must be thread safe.
+ * !Must be thread safe for other funcs.
  * 
  * @param target info of a target
  * @param px response data, it can be zero
@@ -108,7 +108,7 @@ typedef bool
  * Decide the results for the response
  * 
  * !Must be implemented in Non-STATE type.
- * !Must be thread safe.
+ * !Must be thread safe for other funcs.
  * 
  * @param th_idx the index of receive handler thread.
  * @param target info of a target
@@ -130,7 +130,7 @@ typedef unsigned
  * Handle response timeout
  * 
  * !Must be implemented in Non-STATE type.
- * !Must be thread safe.
+ * !Must be thread safe for other funcs.
  * 
  * @param target info of a target
  * @param item to define output content.
@@ -155,7 +155,7 @@ struct ProbeState {
  * Do init for a connection
  * 
  * !Must be implemented for ProbeType STATE
- * !Must be thread safe.
+ * !Must be thread safe for itself.
  * 
  * @param state  probe state
  * @param target target info
@@ -170,11 +170,11 @@ typedef bool
  * Make correspond hello payload data for a target.
  * 
  * !Must be implemented for ProbeType STATE
- * !Must be thread safe.
+ * !Must be thread safe for itself.
  * 
  * @param state probe state
  * @param target info of a target
- * @param payload_buf buffer to fill with payload. (Length is PROBE_PAYLOAD_MAX_LEN)
+ * @param payload_buf buffer to fill with payload. (Length is PM_PAYLOAD_SIZE)
  * @return paylaod length.
 */
 typedef void
@@ -190,7 +190,7 @@ typedef void
  * Interacting with target after receive data.
  * 
  * !Must be implemented for ProbeType_STATE.
- * !Must be thread safe.
+ * !Must be thread safe for itself.
  * 
  * @param pass   used for pass data(for sending) to down-layer protocol.
  * @param state  state that probe setted.
@@ -216,7 +216,7 @@ typedef unsigned
  * Do init for a connection
  * 
  * !Must be implemented for ProbeType STATE
- * !Must be thread safe.
+ * !Must be thread safe for itself.
  * 
  * @param state probe state
  * @param target target info

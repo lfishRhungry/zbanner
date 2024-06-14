@@ -5,9 +5,9 @@
 #include <limits.h>
 
 /**It limits the max size of packet we could send
- * and affects what value we set on PROBE_PAYLOAD_MAX_LEN
+ * and affects what value we set on PM_PAYLOAD_SIZE
 */
-#define PKT_BUF_LEN     2048
+#define PKT_BUF_SIZE            2048
 
 struct stack_src_t;
 struct Adapter;
@@ -17,7 +17,7 @@ typedef struct rte_ring PACKET_QUEUE;
 
 struct PacketBuffer {
     size_t length;
-    unsigned char px[PKT_BUF_LEN];
+    unsigned char px[PKT_BUF_SIZE];
 };
 
 struct stack_t {

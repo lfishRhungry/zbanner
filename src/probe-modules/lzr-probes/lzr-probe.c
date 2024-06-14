@@ -320,7 +320,7 @@ lzr_handle_response(
         lzr_handshakes[i]->handle_response_cb(
             th_idx, target, px, sizeof_px, item);
 
-        if (item->level==Output_SUCCESS) {
+        if (item->level==OP_SUCCESS) {
             res_link = dach_append_by_link(res_link, item->classification,
                 strlen(item->classification));
             identified = true;
@@ -333,7 +333,7 @@ lzr_handle_response(
             lzr_handshakes[i]->handle_response_cb(
                 th_idx, target, px, sizeof_px, item);
 
-            if (item->level==Output_SUCCESS) {
+            if (item->level==OP_SUCCESS) {
                 res_link = dach_printf_by_link(res_link, "-%s", item->classification);
             }
         }
@@ -344,9 +344,9 @@ lzr_handle_response(
         strlen(lzr_conf.handshake[target->index]->name));
 
     if (identified) {
-        item->level = Output_SUCCESS;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "identified");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "matched");
+        item->level = OP_SUCCESS;
+        safe_strcpy(item->classification, OP_CLS_SIZE, "identified");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
 
         if (lzr_conf.banner) {
             dach_append_normalized(&item->report, "banner", px, sizeof_px);
@@ -356,9 +356,9 @@ lzr_handle_response(
             return target->index+2;
         }
     } else {
-        item->level = Output_FAILURE;
-        safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "unknown");
-        safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
+        item->level = OP_FAILURE;
+        safe_strcpy(item->classification, OP_CLS_SIZE, "unknown");
+        safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
         dach_del_by_link(&item->report, res_link);
 
         if (lzr_conf.banner_if_fail || lzr_conf.banner) {
@@ -379,8 +379,8 @@ lzr_handle_response(
 static unsigned
 lzr_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "unknown");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "no response");
+    safe_strcpy(item->classification, OP_CLS_SIZE, "unknown");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "no response");
     dach_append(&item->report, "handshake",
         lzr_conf.handshake[target->index]->name,
         strlen(lzr_conf.handshake[target->index]->name));
@@ -389,7 +389,7 @@ lzr_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
      * Or all unmatching as failure if force-all-handshakes
      * */
     if (target->index == lzr_conf.hs_count-1 || lzr_conf.force_all_handshakes)
-        item->level = Output_FAILURE;
+        item->level = OP_FAILURE;
     /*last handshake*/
     if (target->index != lzr_conf.hs_count-1) {
         return target->index+2;

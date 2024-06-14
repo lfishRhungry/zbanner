@@ -30,10 +30,10 @@ lzr_newlines50_handle_response(
     const unsigned char *px, unsigned sizeof_px,
     struct OutputItem *item)
 {
-    item->level = Output_FAILURE;
+    item->level = OP_FAILURE;
 
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "unknown");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "not matched");
+    safe_strcpy(item->classification, OP_CLS_SIZE, "unknown");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -41,9 +41,9 @@ lzr_newlines50_handle_response(
 static unsigned
 lzr_newlines50_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "unknown");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "no response");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "unknown");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "no response");
     return 0;
 }
 

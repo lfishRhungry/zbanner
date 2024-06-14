@@ -86,7 +86,7 @@ icmptime_transmit(
 
     *len = icmp_create_timestamp_packet(
         target->ip_them, target->ip_me,
-        cookie, cookie, 255, px, PKT_BUF_LEN);
+        cookie, cookie, 255, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout = 1;
@@ -133,10 +133,10 @@ icmptime_handle(
 {
     item->port_them  = 0;
     item->port_me    = 0;
-    item->level      = Output_SUCCESS;
+    item->level      = OP_SUCCESS;
 
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timestamp reply");
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "alive");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "timestamp reply");
+    safe_strcpy(item->classification, OP_CLS_SIZE, "alive");
 
     if (icmptime_conf.record_ttl)
         dach_printf(&item->report, "ttl", true, "%d", recved->parsed.ip_ttl);
@@ -151,9 +151,9 @@ static void icmptime_timeout(
     struct stack_t *stack,
     struct FHandler *handler)
 {
-    item->level = Output_FAILURE;
-    safe_strcpy(item->classification, OUTPUT_CLS_SIZE, "down");
-    safe_strcpy(item->reason, OUTPUT_RSN_SIZE, "timeout");
+    item->level = OP_FAILURE;
+    safe_strcpy(item->classification, OP_CLS_SIZE, "down");
+    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
 }
 
 struct ScanModule IcmpTimeScan = {
@@ -175,4 +175,5 @@ struct ScanModule IcmpTimeScan = {
     .timeout_cb             = &icmptime_timeout,
     .poll_cb                = &scan_poll_nothing,
     .close_cb               = &scan_close_nothing,
+    .status_cb              = &scan_no_status,
 };

@@ -11,15 +11,15 @@
 #include "../massip/massip.h"
 #include "../massip/massip-addr.h"
 
-#define OUTPUT_RSN_SIZE          30
-#define OUTPUT_CLS_SIZE          30
+#define OP_RSN_SIZE          30
+#define OP_CLS_SIZE          30
 
 struct OutputModule;
 
 enum OutputLevel {
-    Output_INFO     = 0,
-    Output_FAILURE  = 1,
-    Output_SUCCESS  = 2,
+    OP_INFO     = 0,
+    OP_FAILURE  = 1,
+    OP_SUCCESS  = 2,
 };
 
 /**
@@ -51,11 +51,11 @@ struct OutputItem {
     /**Type of this result. It is recommended to set a value.
      * No double or single quotes in it for output format.
      * It won't be outputting in stdout and text if start with zero, suggest to set it*/
-    char                         classification[OUTPUT_CLS_SIZE];
+    char                         classification[OP_CLS_SIZE];
     /**Why we set this result to that classification.
      * No double or single quotes in it for output format.
      * It won't be outputting in stdout and text if start with zero, suggest to set it*/
-    char                         reason[OUTPUT_RSN_SIZE];
+    char                         reason[OP_RSN_SIZE];
     /**Other thing need to be report. It's a dynamic and user-defined field in
      * key-value format. You can set data link is_number to mention it is a num type.
      * No double or single quotes in it for output format.
