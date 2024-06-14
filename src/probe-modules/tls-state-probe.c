@@ -25,9 +25,9 @@
 #include "../util-misc/cross.h"
 #include "../xconf.h"
 
-#define TLS_BIO_MEM_LIMIT        16384
-#define TLS_DATA_INIT_SIZE       4096
-#define TLS_EXT_TGT              0
+#define TSP_BIO_MEM_LIMIT        16384
+#define TSP_DATA_INIT_SIZE        4096
+#define TSP_EXT_TGT_IDX              0
 
 /**
  * TlsStateProbe's internal state.
@@ -242,7 +242,7 @@ static struct ConfigParam tlsstate_parameters[] = {
 
 static void ssl_keylog_cb(const SSL *ssl, const char *line)
 {
-    struct ProbeTarget *tgt = SSL_get_ex_data(ssl, TLS_EXT_TGT);
+    struct ProbeTarget *tgt = SSL_get_ex_data(ssl, TSP_EXT_TGT_IDX);
     if (!tgt)
         return;
 
@@ -264,7 +264,7 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line)
 static void ssl_info_cb(const SSL *ssl, int where, int ret)
 {
     if (where & SSL_CB_ALERT) {
-        struct ProbeTarget *tgt = SSL_get_ex_data(ssl, TLS_EXT_TGT);
+        struct ProbeTarget *tgt = SSL_get_ex_data(ssl, TSP_EXT_TGT_IDX);
         if (!tgt)
             return;
 
@@ -737,7 +737,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     }
 
     /*buffer for BIO*/
-    data      = MALLOC(TLS_DATA_INIT_SIZE);
+    data      = MALLOC(TSP_DATA_INIT_SIZE);
     tls_state = CALLOC(1, sizeof(struct TlsState));
 
     rbio = BIO_new(BIO_s_mem());
@@ -777,7 +777,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     tgt->cookie      = target->cookie;
     tgt->index       = target->index;
 
-    res = SSL_set_ex_data(ssl, TLS_EXT_TGT, tgt);
+    res = SSL_set_ex_data(ssl, TSP_EXT_TGT_IDX, tgt);
     if (res != 1) {
         LOG(LEVEL_WARNING, "[TSP Conn INIT] SSL_set_ex_data error\n");
         goto error4;
@@ -791,7 +791,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     tls_state->rbio              = rbio;
     tls_state->wbio              = wbio;
     tls_state->data              = data;
-    tls_state->data_size         = TLS_DATA_INIT_SIZE;
+    tls_state->data_size         = TSP_DATA_INIT_SIZE;
     tls_state->handshake_state   = TLS_ST_BEFORE; /*state for openssl*/
 
     state->data = tls_state;
@@ -837,7 +837,7 @@ tlsstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
 
     if (tls_state->ssl) {
         /*cleanup ex data in SSL obj*/
-        void *ex_data = SSL_get_ex_data(tls_state->ssl, TLS_EXT_TGT);
+        void *ex_data = SSL_get_ex_data(tls_state->ssl, TSP_EXT_TGT_IDX);
         if (ex_data) {
             free(ex_data);
             ex_data = NULL;
@@ -958,7 +958,7 @@ tlsstate_parse_response(
         res = 0;
         while (offset < sizeof_px) {
             res = BIO_write(tls_state->rbio, px + offset,
-                (unsigned int)min(TLS_BIO_MEM_LIMIT, sizeof_px - offset));
+                (unsigned int)min(TSP_BIO_MEM_LIMIT, sizeof_px - offset));
             LOG(LEVEL_INFO, "[TSP Parse RESPONSE] BIO_write: %d \n", res);
             if (res > 0) {
                 offset += (size_t)res;
@@ -974,7 +974,7 @@ tlsstate_parse_response(
         }
 
         // now_time = pixie_gettime() - now_time;
-        // if (sizeof_px > TLS_BIO_MEM_LIMIT || now_time > 1000000) {
+        // if (sizeof_px > TSP_BIO_MEM_LIMIT || now_time > 1000000) {
         //     LOGip(LEVEL_WARNING, target->ip_them, target->port_them,
         //           "[TSP Parse RESPONSE] len px: 0x%" PRIxPTR ", time: " PRIu64
         //           " millis\n",

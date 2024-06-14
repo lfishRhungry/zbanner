@@ -19,9 +19,9 @@ enum TCP_What {
     TCP_WHAT_DATA,    /*Received DATA (just focus data)*/
 };
 
-enum   App_State;
-enum   App_Event;
-enum   SOCK_Res;
+enum App_State;
+enum App_Event;
+enum SOCK_Res;
 
 struct StackHandler;
 struct TCP_Control_Block;
@@ -40,7 +40,6 @@ tcpcon_create_table(size_t entry_count,
 
 void
 tcpcon_destroy_table(struct TCP_ConnectionTable *tcpcon);
-
 
 /**
  * Handle timeout event  for now time.
