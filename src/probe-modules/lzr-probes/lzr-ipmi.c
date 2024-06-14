@@ -81,7 +81,7 @@ struct ProbeModule LzrIpmiProbe = {
     .params     = NULL,
     .desc =
         "LzrIpmi Probe sends an IPMI probe and identifies IPMI service.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &lzr_ipmi_make_payload,
     .get_payload_length_cb                   = &lzr_ipmi_get_payload_length,
     .handle_response_cb                      = &lzr_ipmi_handle_reponse,

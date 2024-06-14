@@ -608,7 +608,7 @@ struct ProbeModule LuaUdpProbe = {
         "one tx thread or rx-handle thread well. Even through, it is mandatory "
         "to implement functions thread-seperately. However, we had 3 essential"
         " threads at least and should be careful to thread-safe problems.",
-    .global_init_cb                          = &luaudp_global_init,
+    .init_cb                                 = &luaudp_global_init,
     .make_payload_cb                         = &luaudp_make_payload,
     .validate_response_cb                    = &luaudp_validate_response,
     .handle_response_cb                      = &luaudp_handle_response,

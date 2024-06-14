@@ -92,7 +92,7 @@ struct ProbeModule LzrSmtpProbe = {
     .params     = NULL,
     .desc =
         "LzrSmtp Probe sends an SMTP probe and identifies SMTP service.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &lzr_smtp_make_payload,
     .get_payload_length_cb                   = &lzr_smtp_get_payload_length,
     .handle_response_cb                      = &lzr_smtp_handle_reponse,

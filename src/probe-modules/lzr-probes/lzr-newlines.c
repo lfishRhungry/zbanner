@@ -53,7 +53,7 @@ struct ProbeModule LzrNewlinesProbe = {
     .params     = NULL,
     .desc =
         "LzrNewlines Probe sends 2 newlines and identifies services by other probes.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &lzr_newlines_make_payload,
     .get_payload_length_cb                   = &lzr_newlines_get_payload_length,
     .handle_response_cb                      = &lzr_newlines_handle_response,

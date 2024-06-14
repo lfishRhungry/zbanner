@@ -845,7 +845,7 @@ struct ProbeModule HttpProbe = {
         "      `Accept: */*`\n\n"
         "We can use various args to change the default request and set a regex "
         "to match the response as successed.",
-    .global_init_cb                    = &http_global_init,
+    .init_cb                    = &http_global_init,
     .make_payload_cb                   = &http_make_payload,
     .get_payload_length_cb             = &http_get_payload_length,
     .handle_response_cb                = &http_handle_response,

@@ -271,7 +271,7 @@ static int _main_scan(struct Xconf *xconf) {
             }
         }
 
-        if (!xconf->probe_module->global_init_cb(xconf)) {
+        if (!xconf->probe_module->init_cb(xconf)) {
             LOG(LEVEL_ERROR, "FAIL: errors in ProbeModule global initializing\n");
             exit(1);
         }

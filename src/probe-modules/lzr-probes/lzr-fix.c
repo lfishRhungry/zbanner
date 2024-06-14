@@ -44,7 +44,7 @@ struct ProbeModule LzrFixProbe = {
     .params     = NULL,
     .desc =
         "LzrFix Probe sends no payload and identifies FIX protocol.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &probe_make_no_payload,
     .get_payload_length_cb                   = &probe_no_payload_length,
     .handle_response_cb                      = &lzr_fix_handle_response,

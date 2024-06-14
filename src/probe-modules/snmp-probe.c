@@ -602,7 +602,7 @@ struct ProbeModule SnmpProbe = {
         "NOTE: SnmpProbe is capable of obtaining the basic info on snmp(v1 or v2c)"
         " theoretically but cannot identifying whether the port is serving of snmp"
         " protocol.",
-    .global_init_cb                          = &snmp_global_init,
+    .init_cb                                 = &snmp_global_init,
     .make_payload_cb                         = &snmp_make_payload,
     .validate_response_cb                    = &probe_all_valid,
     .handle_response_cb                      = &snmp_handle_response,

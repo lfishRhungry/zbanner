@@ -699,7 +699,7 @@ tlsstate_global_init(const struct Xconf *xconf)
 
 
     /*init for subprobe*/
-    return tlsstate_conf.subprobe->global_init_cb(xconf);
+    return tlsstate_conf.subprobe->init_cb(xconf);
 
 error0:
     return false;
@@ -1311,7 +1311,7 @@ struct ProbeModule TlsStateProbe = {
         "NOTE: TlsState doesn't support initial waiting before hello for subprobe"
         " because the nesting.\n"
         "Dependencies: OpenSSL.",
-    .global_init_cb                    = &tlsstate_global_init,
+    .init_cb                    = &tlsstate_global_init,
     .conn_init_cb                      = &tlsstate_conn_init,
     .make_hello_cb                     = &tlsstate_make_hello,
     .parse_response_cb                 = &tlsstate_parse_response,

@@ -29,7 +29,7 @@ struct Xconf;
  * @param xconf main conf of xtate
  * @return FALSE to exit process if init failed
 */
-typedef bool (*probe_modules_global_init)(const struct Xconf *xconf);
+typedef bool (*probe_modules_init)(const struct Xconf *xconf);
 
 /***************************************************************************
  * * callback functions for probe(hello) payload making in Non-STATE type
@@ -261,7 +261,8 @@ struct ProbeModule
     struct ConfigParam                         *params;
 
     /*for init*/
-    probe_modules_global_init                   global_init_cb;
+    probe_modules_init                          init_cb;
+
     /*for stateless payload*/
     probe_modules_make_payload                  make_payload_cb;
     /*for stateless validate (tcp)*/
@@ -299,9 +300,9 @@ list_all_probe_modules();
 Some useful implemented interfaces
 ************************************************************************/
 
-/*implemented `probe_modules_xxx_init`*/
+/*implemented `probe_modules_init`*/
 bool
-probe_global_init_nothing(const struct Xconf *xconf);
+probe_init_nothing(const struct Xconf *xconf);
 
 size_t
 probe_make_no_payload(struct ProbeTarget *target, unsigned char *payload_buf);

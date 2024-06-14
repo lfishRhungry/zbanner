@@ -358,7 +358,7 @@ struct ProbeModule RecogUdpProbe = {
         " the identidying result because our probe just output the first matched"
         " result.\n"
         "Dependencies: PCRE2, LibXml2.",
-    .global_init_cb                          = &recogudp_global_init,
+    .init_cb                                 = &recogudp_global_init,
     .make_payload_cb                         = &recogudp_make_payload,
     .validate_response_cb                    = &recogudp_validate_response,
     .handle_response_cb                      = &recogudp_handle_response,

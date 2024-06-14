@@ -89,7 +89,7 @@ struct ProbeModule LzrIppProbe = {
     .params     = NULL,
     .desc =
         "LzrIpp Probe sends an IPP request and identifies IPP service.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &lzr_ipp_make_payload,
     .get_payload_length_cb                   = &lzr_ipp_get_payload_length,
     .handle_response_cb                      = &lzr_ipp_handle_reponse,

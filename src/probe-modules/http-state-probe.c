@@ -897,7 +897,7 @@ struct ProbeModule HttpStateProbe = {
         "We can use various args to change the default request and set a regex "
         "to match the response as successed.\n"
         "NOTE: HttpStateProbe could be used over TLS.",
-    .global_init_cb                    = &http_global_init,
+    .init_cb                    = &http_global_init,
     .conn_init_cb                      = &probe_conn_init_nothing,
     .make_hello_cb                     = &httpstate_make_hello,
     .parse_response_cb                 = &httpstate_parse_response,

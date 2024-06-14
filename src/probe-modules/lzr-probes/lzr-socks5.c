@@ -86,7 +86,7 @@ struct ProbeModule LzrSocks5Probe = {
     .desc =
         "LzrSocks5 Probe sends an socks5 probe with google.com http request and "
         "identifies socks5 service.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &lzr_socks5_make_payload,
     .get_payload_length_cb                   = &lzr_socks5_get_payload_length,
     .handle_response_cb                      = &lzr_socks5_handle_reponse,

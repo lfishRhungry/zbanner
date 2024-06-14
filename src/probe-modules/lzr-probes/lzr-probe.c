@@ -275,7 +275,7 @@ lzr_global_init(const struct Xconf *xconf)
 
     /*do init for all handshakes*/
     for (unsigned i=0; i<lzr_conf.hs_count; i++) {
-        if (!lzr_conf.handshake[i]->global_init_cb(xconf)) {
+        if (!lzr_conf.handshake[i]->init_cb(xconf)) {
             LOG(LEVEL_ERROR, "FAIL: Handshake [%s] initiating error in LzrProbe.\n",
                 lzr_conf.handshake[i]->name);
             return false;
@@ -429,7 +429,7 @@ struct ProbeModule LzrProbe = {
         "5.  pptp\n"
         "NOTE2: I had fixed some matching bugs and errors from original LZR and "
         "added more useful handshakes. So, enjoy it!",
-    .global_init_cb                          = &lzr_global_init,
+    .init_cb                                 = &lzr_global_init,
     .make_payload_cb                         = &lzr_make_payload,
     .get_payload_length_cb                   = &lzr_get_payload_length,
     .handle_response_cb                      = &lzr_handle_response,

@@ -68,7 +68,7 @@ struct ProbeModule LzrMqttProbe = {
     .params     = NULL,
     .desc =
         "LzrMqtt Probe sends an MQTT probe and identifies MQTT service.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &lzr_mqtt_make_payload,
     .get_payload_length_cb                   = &lzr_mqtt_get_payload_length,
     .handle_response_cb                      = &lzr_mqtt_handle_reponse,

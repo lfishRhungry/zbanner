@@ -70,7 +70,7 @@ struct ProbeModule LzrMysqlProbe = {
     .params     = NULL,
     .desc =
         "LzrMysql Probe sends an MYSQL probe and identifies MYSQL service.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &lzr_mysql_make_payload,
     .get_payload_length_cb                   = &lzr_mysql_get_payload_length,
     .handle_response_cb                      = &lzr_mysql_handle_reponse,

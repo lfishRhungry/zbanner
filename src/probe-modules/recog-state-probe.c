@@ -389,7 +389,7 @@ struct ProbeModule RecogStateProbe = {
         " the identidying result because our probe just output the first matched"
         " result.\n"
         "Dependencies: PCRE2, LibXml2.",
-    .global_init_cb                    = &recogstate_global_init,
+    .init_cb                    = &recogstate_global_init,
     .conn_init_cb                      = &probe_conn_init_nothing,
     .make_hello_cb                     = &recogstate_make_hello,
     .parse_response_cb                 = &recogstate_parse_response,

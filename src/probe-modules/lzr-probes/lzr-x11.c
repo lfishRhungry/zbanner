@@ -80,7 +80,7 @@ struct ProbeModule LzrX11Probe = {
     .params     = NULL,
     .desc =
         "LzrX11 Probe sends an X11 probe and identifies service by other probes.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &lzr_x11_make_payload,
     .get_payload_length_cb                   = &lzr_x11_get_payload_length,
     .handle_response_cb                      = &lzr_x11_handle_reponse,

@@ -603,7 +603,7 @@ struct ProbeModule LuaTcpProbe = {
         "one tx thread or rx-handle thread well. Even through, it is mandatory "
         "to implement functions thread-seperately. However, we had 3 essential"
         " threads at least and should be careful to thread-safe problems.",
-    .global_init_cb                          = &luatcp_global_init,
+    .init_cb                                 = &luatcp_global_init,
     .make_payload_cb                         = &luatcp_make_payload,
     .get_payload_length_cb                   = &luatcp_get_payload_length,
     .handle_response_cb                      = &luatcp_handle_response,

@@ -251,7 +251,7 @@ struct ProbeModule JarmProbe = {
         "be analyzed to get JARM fingerprint of the target TLS stack for different "
         "purposes.\n"
         "Dependencies: OpenSSL.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &jarm_make_payload,
     .get_payload_length_cb                   = &jarm_get_payload_length,
     .handle_response_cb                      = &jarm_handle_response,

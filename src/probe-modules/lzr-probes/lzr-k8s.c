@@ -115,7 +115,7 @@ struct ProbeModule LzrK8sProbe = {
     .params     = NULL,
     .desc =
         "LzrK8s Probe sends a kubernetes probe and identifies kubernetes service.",
-    .global_init_cb                          = &lzr_k8s_global_init,
+    .init_cb                                 = &lzr_k8s_global_init,
     .make_payload_cb                         = &lzr_k8s_make_payload,
     .get_payload_length_cb                   = &lzr_k8s_get_payload_length,
     .handle_response_cb                      = &lzr_k8s_handle_reponse,

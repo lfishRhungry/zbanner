@@ -50,7 +50,7 @@ struct ProbeModule EchoProbe = {
         "EchoProbe could be used for finding UDP echo service or alive hosts "
         "by icmp port unreachable messages. Its `validate_reponsed_cb` cannot be "
         "used when making a ScanModule if you like.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &echo_make_payload,
     .validate_response_cb                    = &echo_validate_response,
     .handle_response_cb                      = &probe_just_report_banner,

@@ -400,7 +400,7 @@ struct ProbeModule HelloUdpProbe = {
         " that user set. It is used to test POC immediatly under udp.\n"
         "NOTE: We must specify hello data and regex for HelloUdpProbe.\n"
         "Dependencies: PCRE2.",
-    .global_init_cb                          = &helloudp_global_init,
+    .init_cb                                 = &helloudp_global_init,
     .make_payload_cb                         = &helloudp_make_payload,
     .validate_response_cb                    = &helloudp_validate_response,
     .handle_response_cb                      = &helloudp_handle_response,

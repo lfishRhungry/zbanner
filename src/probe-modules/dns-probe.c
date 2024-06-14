@@ -364,7 +364,7 @@ struct ProbeModule DnsProbe = {
         " Unreachable sending, dns response retransmission will happen and waste"
         " resource both on scanner and targets. And an interesting thing will "
         "happen: every retransmited dns reply carries a different answer.",
-    .global_init_cb                          = &dns_global_init,
+    .init_cb                                 = &dns_global_init,
     .make_payload_cb                         = &dns_make_payload,
     .validate_response_cb                    = &dns_validate_response,
     .handle_response_cb                      = &dns_handle_response,

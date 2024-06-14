@@ -69,7 +69,7 @@ struct ProbeModule LzrMemcachedBinaryProbe = {
     .desc =
         "LzrMemcachedBinary Probe sends a Memcached Binary request and identifies"
         " Memcached Binary service.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &lzr_memb_make_payload,
     .get_payload_length_cb                   = &lzr_memb_get_payload_length,
     .handle_response_cb                      = &lzr_memb_handle_reponse,

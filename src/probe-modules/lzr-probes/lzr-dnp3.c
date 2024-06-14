@@ -127,7 +127,7 @@ struct ProbeModule LzrDnp3Probe = {
     .params     = NULL,
     .desc =
         "LzrDnp3 Probe sends an DNP3 probe and identifies DNP3 service.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &lzr_dnp3_make_payload,
     .get_payload_length_cb                   = &lzr_dnp3_get_payload_length,
     .handle_response_cb                      = &lzr_dnp3_handle_reponse,

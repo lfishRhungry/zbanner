@@ -67,7 +67,7 @@ struct ProbeModule LzrSiemensProbe = {
     .params     = NULL,
     .desc =
         "LzrSiemens Probe sends an Siemens probe and identifies Siemens service.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &lzr_siemens_make_payload,
     .get_payload_length_cb                   = &lzr_siemens_get_payload_length,
     .handle_response_cb                      = &lzr_siemens_handle_reponse,

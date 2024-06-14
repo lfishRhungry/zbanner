@@ -149,7 +149,7 @@ struct ProbeModule LzrTlsProbe = {
     .params     = NULL,
     .desc =
         "LzrTls Probe sends an simple TLS ClientHello and identifies TLS/SSL service.",
-    .global_init_cb                          = &lzr_tls_global_init,
+    .init_cb                                 = &lzr_tls_global_init,
     .make_payload_cb                         = &lzr_tls_make_payload,
     .get_payload_length_cb                   = &lzr_tls_get_payload_length,
     .handle_response_cb                      = &lzr_tls_handle_reponse,

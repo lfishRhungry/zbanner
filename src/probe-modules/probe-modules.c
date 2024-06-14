@@ -248,7 +248,7 @@ void list_all_probe_modules()
     printf("\n");
 }
 
-bool probe_global_init_nothing(const struct Xconf *xconf)
+bool probe_init_nothing(const struct Xconf *xconf)
 {
     return true;
 }

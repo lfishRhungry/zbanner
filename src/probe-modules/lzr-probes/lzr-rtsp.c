@@ -66,7 +66,7 @@ struct ProbeModule LzrRtspProbe = {
     .params     = NULL,
     .desc =
         "LzrRtsp Probe sends an RTSP probe and identifies RTSP service.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &lzr_rtsp_make_payload,
     .get_payload_length_cb                   = &lzr_rtsp_get_payload_length,
     .handle_response_cb                      = &lzr_rtsp_handle_reponse,

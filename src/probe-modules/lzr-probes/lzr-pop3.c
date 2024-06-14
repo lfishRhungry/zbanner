@@ -50,7 +50,7 @@ struct ProbeModule LzrPop3Probe = {
     .params     = NULL,
     .desc =
         "LzrPop3 Probe sends no payload and identifies POP3 service.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &probe_make_no_payload,
     .get_payload_length_cb                   = &probe_no_payload_length,
     .handle_response_cb                      = &lzr_pop3_handle_response,

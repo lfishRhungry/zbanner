@@ -73,7 +73,7 @@ struct ProbeModule LzrOracleProbe = {
     .params     = NULL,
     .desc =
         "LzrOracle Probe sends an Oracle SQL probe and identifies Oracle SQL service.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &lzr_oracle_make_payload,
     .get_payload_length_cb                   = &lzr_oracle_get_payload_length,
     .handle_response_cb                      = &lzr_oracle_handle_reponse,

@@ -63,7 +63,7 @@ struct ProbeModule LzrAmqpProbe = {
     .params     = NULL,
     .desc =
         "LzrAmqp Probe sends an AMQP probe and identifies AMQP service.",
-    .global_init_cb                          = &probe_global_init_nothing,
+    .init_cb                                 = &probe_init_nothing,
     .make_payload_cb                         = &lzr_amqp_make_payload,
     .get_payload_length_cb                   = &lzr_amqp_get_payload_length,
     .handle_response_cb                      = &lzr_amqp_handle_reponse,

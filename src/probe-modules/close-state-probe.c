@@ -42,7 +42,7 @@ struct ProbeModule CloseStateProbe = {
         "CloseState Probe does nothing but close after lower level connection "
         "established. It's useful when we just want to obtain some information "
         "of connection by lower level module.",
-    .global_init_cb                    = &probe_global_init_nothing,
+    .init_cb                           = &probe_init_nothing,
     .conn_init_cb                      = &probe_conn_init_nothing,
     .make_hello_cb                     = &closestate_make_hello,
     .parse_response_cb                 = &closestate_parse_response,

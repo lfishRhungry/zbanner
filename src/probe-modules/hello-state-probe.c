@@ -487,7 +487,7 @@ struct ProbeModule HelloStateProbe = {
         "NOTE: If no hello data was specified, HelloStateProbe would just wait "
         "banner(first packet with reponse).\n"
         "Dependencies: PCRE2 for regex.",
-    .global_init_cb                    = &hellostate_global_init,
+    .init_cb                    = &hellostate_global_init,
     .conn_init_cb                      = &probe_conn_init_nothing,
     .make_hello_cb                     = &hellostate_make_hello,
     .parse_response_cb                 = &hellostate_parse_response,
