@@ -140,9 +140,6 @@ stack_ndpv6_incoming_request(struct stack_t *stack, struct PreprocessedInfo *par
      * send the packet itself. Instead, it formats a packet, then hands
      * that packet off to a transmit thread for later transmission. */
     response = stack_get_packetbuffer(stack);
-    if (response == NULL)
-        return -1; 
-
 
     /* Use the request packet as a template for the response */
     memcpy(response->px, px, length);
@@ -181,6 +178,7 @@ stack_ndpv6_incoming_request(struct stack_t *stack, struct PreprocessedInfo *par
     /* Transmit the packet-buffer */
     response->length = offset;
     stack_transmit_packetbuffer(stack, response);
+
     return 0;
 }
 

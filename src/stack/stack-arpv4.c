@@ -290,8 +290,6 @@ stack_arp_incoming_request( struct stack_t *stack,
      * send the packet itself. Instead, it formats a packet, then hands
      * that packet off to a transmit thread for later transmission. */
     response = stack_get_packetbuffer(stack);
-    if (response == NULL)
-        return -1;
 
     /* ARP packets are too short, so increase the packet size to
      * the Ethernet minimum */

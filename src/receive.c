@@ -56,12 +56,12 @@ dispatch_thread(void *v)
 
         err = rte_ring_sc_dequeue(parms->dispatch_queue, (void**)&recved);
         if (err != 0) {
-            pixie_usleep(100);
+            pixie_usleep(RTE_XTATE_DEQ_USEC);
             continue;
         }
 
         if (recved==NULL) {
-            LOG(LEVEL_ERROR, "FAIL: recv empty from dispatch thread. (IMPOSSIBLE)\n");
+            LOG(LEVEL_ERROR, "FAIL: got empty Recved in dispatch thread. (IMPOSSIBLE)\n");
             fflush(stdout);
             exit(1);
         }
@@ -78,7 +78,7 @@ dispatch_thread(void *v)
                 parms->handle_queue[i], recved);
             if (err!=0) {
                 LOG(LEVEL_ERROR, "[-] handle queue #%d full from dispatch thread.\n", i);
-                pixie_usleep(1000);
+                pixie_usleep(RTE_XTATE_ENQ_USEC);
             }
         }
     }
@@ -135,12 +135,12 @@ handle_thread(void *v)
         struct Received *recved = NULL;
         int err = rte_ring_sc_dequeue(parms->handle_queue, (void**)&recved);
         if (err != 0) {
-            pixie_usleep(100);
+            pixie_usleep(RTE_XTATE_DEQ_USEC);
             continue;
         }
 
         if (recved==NULL) {
-            LOG(LEVEL_ERROR, "FAIL: recv empty from handle thread #%d. (IMPOSSIBLE)\n", parms->index);
+            LOG(LEVEL_ERROR, "FAIL: got empty Recved in handle thread #%d. (IMPOSSIBLE)\n", parms->index);
             fflush(stdout);
             exit(1);
         }
@@ -426,7 +426,7 @@ void receive_thread(void *v) {
             err = rte_ring_sp_enqueue(dispatch_q, recved);
             if (err != 0) {
                 LOG(LEVEL_ERROR, "[-] dispatch queue full from rx thread with too fast rate.\n");
-                pixie_usleep(1000);
+                pixie_usleep(RTE_XTATE_ENQ_USEC);
                 // exit(1);
             }
         }

@@ -9,22 +9,24 @@
 struct PacketBuffer *
 stack_get_packetbuffer(struct stack_t *stack)
 {
-    int err;
     struct PacketBuffer *response = NULL;
 
-    for (err=1; err; ) {
-        err = rte_ring_mc_dequeue(stack->packet_buffers, (void**)&response);
-        if (err != 0) {
-            /* Pause and wait for a buffer to become available */
-            pixie_usleep(1000);
-        }
-    }
+    int err = rte_ring_mc_dequeue(stack->packet_buffers, (void**)&response);
 
-    if (response == NULL) {
-        LOG(LEVEL_ERROR, "FAIL: packet buffers empty. (IMPOSSIBLE)\n");
+    if (err!=0) {
+        //!No need to proceed
+        LOG(LEVEL_ERROR, "[!] failed to get packet buffer. (IMPOSSIBLE)\n");
         fflush(stdout);
         exit(1);
     }
+
+    if (response == NULL) {
+        //!No need to proceed
+        LOG(LEVEL_ERROR, "[!] got empty packet buffer. (IMPOSSIBLE)\n");
+        fflush(stdout);
+        exit(1);
+    }
+
     return response;
 }
 
@@ -35,7 +37,7 @@ stack_transmit_packetbuffer(struct stack_t *stack, struct PacketBuffer *response
     for (err=1; err; ) {
         err = rte_ring_mp_enqueue(stack->transmit_queue, response);
         if (err) {
-            LOG(LEVEL_ERROR, "[-] transmit queue full (should be impossible)\n");
+            LOG(LEVEL_ERROR, "[!] transmit queue full (should be impossible)\n");
             pixie_usleep(1000);
         }
     }
@@ -71,7 +73,7 @@ stack_flush_packets(
          * an ACK or an HTTP request
          */
         err = rte_ring_mc_dequeue(stack->transmit_queue, (void**)&p);
-        if (err) {
+        if (err!=0) {
             break; /* queue is empty, nothing to send */
         }
 
@@ -86,12 +88,11 @@ stack_flush_packets(
          * Now that we are done with the packet, put it on the free list
          * of buffers that the transmit thread can reuse
          */
-        for (err=1; err; ) {
-            err = rte_ring_mp_enqueue(stack->packet_buffers, p);
-            if (err) {
-                LOG(LEVEL_ERROR, "[-] transmit queue full (should be impossible)\n");
-                pixie_usleep(10000);
-            }
+        err = rte_ring_mp_enqueue(stack->packet_buffers, p);
+        if (err!=0) {
+            //!No need to proceed
+            LOG(LEVEL_ERROR, "[!] transmit queue full from `stack_flush_packets` (should be impossible).\n");
+            exit(1);
         }
 
         /*
@@ -123,7 +124,7 @@ stack_create(macaddress_t source_mac, struct stack_src_t *src, unsigned buf_coun
         struct PacketBuffer *p;
         int err;
 
-        p = MALLOC(sizeof(*p));
+        p   = MALLOC(sizeof(*p));
         err = rte_ring_sp_enqueue(stack->packet_buffers, p);
         if (err) {
             /* I dunno why but I can't queue all 256 packets, just 255 */

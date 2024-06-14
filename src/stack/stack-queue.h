@@ -28,8 +28,8 @@ struct stack_t {
 };
 
 /**
- * Get a packet-buffer that we can use to create a packet before
- * sending
+ * Get a packet-buffer that we can use to create a packet for sending.
+ * NOTE: It would return a non-null value or exit our process.
  */
 struct PacketBuffer *
 stack_get_packetbuffer(struct stack_t *stack);

@@ -679,21 +679,6 @@ _tcpcon_send_packet(
 
     response = stack_get_packetbuffer(tcpcon->stack);
 
-    if (response == NULL) {
-        static int is_warning_printed = 0;
-        if (!is_warning_printed) {
-            LOG(LEVEL_ERROR, "packet buffers empty (should be impossible)\n");
-            is_warning_printed = 1;
-        }
-        fflush(stdout);
-
-        /* FIXME: This would result from a bug in the code,
-         * but I'm not sure what should be done in response */
-        pixie_usleep(100); /* no packet available */
-    }
-    if (response == NULL)
-        return;
-
     /*use different template according to flags*/
     if (is_syn) {
         response->length = tcp_create_by_template(
@@ -760,21 +745,6 @@ _tcpcon_send_raw_SYN(struct TCP_ConnectionTable *tcpcon,
     assert(ip_me.version != 0 && ip_them.version != 0);
 
     response = stack_get_packetbuffer(tcpcon->stack);
-
-    if (response == NULL) {
-        static int is_warning_printed = 0;
-        if (!is_warning_printed) {
-            LOG(LEVEL_ERROR, "packet buffers empty (should be impossible)\n");
-            is_warning_printed = 1;
-        }
-        fflush(stdout);
-
-        /* FIXME: This would result from a bug in the code,
-         * but I'm not sure what should be done in response */
-        pixie_usleep(100); /* no packet available */
-    }
-    if (response == NULL)
-        return;
 
     response->length = tcp_create_by_template(
         tcpcon->syn_template,

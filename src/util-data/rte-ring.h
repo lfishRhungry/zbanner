@@ -76,6 +76,9 @@
 #include "../pixie/pixie-threads.h"
 #include <errno.h>
 
+#define RTE_XTATE_DEQ_USEC 100
+#define RTE_XTATE_ENQ_USEC 1000
+
 #ifndef ENOBUFS
 #define ENOBUFS         119
 #endif
