@@ -7,32 +7,34 @@
 #include <openssl/err.h>
 #endif
 
-static int global_debug_level = 0; /* yea! a global variable!! */
+static int _debug_level = 0;
 
+/***************************************************************************
+ ***************************************************************************/
 void LOG_add_level(int x)
 {
-    global_debug_level += x;
+    _debug_level += x;
 }
 
+/***************************************************************************
+ ***************************************************************************/
 int LOG_get_level()
 {
-    return global_debug_level;
+    return _debug_level;
 }
 
 /***************************************************************************
  ***************************************************************************/
 static void
-vLOG(int level, const char *fmt, va_list marker)
+_vLOG(int level, const char *fmt, va_list marker)
 {
-    if (level <= global_debug_level) {
+    if (level <= _debug_level) {
         vfprintf(stderr, fmt, marker);
         fflush(stderr);
     }
 }
 
-
 /***************************************************************************
- * Prints the message if the global "verbosity" flag exceeds this level.
  ***************************************************************************/
 void
 LOG(int level, const char *fmt, ...)
@@ -40,14 +42,14 @@ LOG(int level, const char *fmt, ...)
     va_list marker;
 
     va_start(marker, fmt);
-    vLOG(level, fmt, marker);
+    _vLOG(level, fmt, marker);
     va_end(marker);
 }
 
 /***************************************************************************
  ***************************************************************************/
 static void
-vLOGnet(unsigned port_me, ipaddress ip_them, const char *fmt, va_list marker)
+_vLOGnet(unsigned port_me, ipaddress ip_them, const char *fmt, va_list marker)
 {
     char sz_ip[64];
     ipaddress_formatted_t fmt1 = ipaddress_fmt(ip_them);
@@ -57,24 +59,23 @@ vLOGnet(unsigned port_me, ipaddress ip_them, const char *fmt, va_list marker)
     vfprintf(stderr, fmt, marker);
     fflush(stderr);
 }
+
 void
 LOGnet(unsigned port_me, ipaddress ip_them, const char *fmt, ...)
 {
     va_list marker;
 
     va_start(marker, fmt);
-    vLOGnet(port_me, ip_them, fmt, marker);
+    _vLOGnet(port_me, ip_them, fmt, marker);
     va_end(marker);
 }
-
-
 
 /***************************************************************************
  ***************************************************************************/
 static void
-vLOGip(int level, ipaddress ip, unsigned port, const char *fmt, va_list marker)
+_vLOGip(int level, ipaddress ip, unsigned port, const char *fmt, va_list marker)
 {
-    if (level <= global_debug_level) {
+    if (level <= _debug_level) {
         char sz_ip[64];
         ipaddress_formatted_t fmt1 = ipaddress_fmt(ip);
 
@@ -84,20 +85,25 @@ vLOGip(int level, ipaddress ip, unsigned port, const char *fmt, va_list marker)
         fflush(stderr);
     }
 }
+
+/***************************************************************************
+ ***************************************************************************/
 void
 LOGip(int level, ipaddress ip, unsigned port, const char *fmt, ...)
 {
     va_list marker;
 
     va_start(marker, fmt);
-    vLOGip(level, ip, port, fmt, marker);
+    _vLOGip(level, ip, port, fmt, marker);
     va_end(marker);
 }
 
 #ifndef NOT_FOUND_OPENSSL
+
 /***************************************************************************
  ***************************************************************************/
-static int LOGopenssl_cb(const char *str, size_t len, void *bp) {
+static int
+_LOGopenssl_cb(const char *str, size_t len, void *bp) {
   if (len > INT16_MAX) {
     return -1;
   }
@@ -105,14 +111,18 @@ static int LOGopenssl_cb(const char *str, size_t len, void *bp) {
   return 1;
 }
 
-int LOGopenssl(int level) {
+/***************************************************************************
+ ***************************************************************************/
+int
+LOGopenssl(int level) {
   int res = 0;
-  if (level <= global_debug_level) {
+  if (level <= _debug_level) {
     fprintf(stderr, "[TSP OpenSSL error] ");
-    ERR_print_errors_cb(LOGopenssl_cb, NULL);
+    ERR_print_errors_cb(_LOGopenssl_cb, NULL);
     // fprintf(stderr, "\n");
     fflush(stderr);
   }
   return res;
 }
+
 #endif
