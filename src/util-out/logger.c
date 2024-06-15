@@ -55,7 +55,11 @@ _vLOGnet(unsigned port_me, ipaddress ip_them, const char *fmt, va_list marker)
     ipaddress_formatted_t fmt1 = ipaddress_fmt(ip_them);
 
     snprintf(sz_ip, sizeof(sz_ip), "%s", fmt1.string);
-    fprintf(stderr, "%u:%s: ", port_me, sz_ip);
+    if (ip_them.version==4) {
+        fprintf(stderr, "%u:%s: ", port_me, sz_ip);
+    } else {
+        fprintf(stderr, "%u:[%s]: ", port_me, sz_ip);
+    }
     vfprintf(stderr, fmt, marker);
     fflush(stderr);
 }
@@ -79,7 +83,11 @@ _vLOGip(int level, ipaddress ip, unsigned port, const char *fmt, va_list marker)
         char sz_ip[64];
         ipaddress_formatted_t fmt1 = ipaddress_fmt(ip);
 
-        snprintf(sz_ip, sizeof(sz_ip), "%s:%u: ", fmt1.string, port);
+        if (ip.version==4) {
+            snprintf(sz_ip, sizeof(sz_ip), "%s:%u: ", fmt1.string, port);
+        } else {
+            snprintf(sz_ip, sizeof(sz_ip), "[%s]:%u: ", fmt1.string, port);
+        }
         fprintf(stderr, "%s ", sz_ip);
         vfprintf(stderr, fmt, marker);
         fflush(stderr);
