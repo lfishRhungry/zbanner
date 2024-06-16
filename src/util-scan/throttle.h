@@ -2,6 +2,8 @@
 #define THROTTLE_H
 #include <stdint.h>
 
+#define THR_CACHE                256  /*must be power of 2*/
+
 struct Throttler
 {
     double max_rate;
@@ -13,7 +15,7 @@ struct Throttler
     struct {
         uint64_t timestamp;
         uint64_t packet_count;
-    } buckets[256];
+    } buckets[THR_CACHE];
 
     uint64_t test_timestamp;
     uint64_t test_packet_count;

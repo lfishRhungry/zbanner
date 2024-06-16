@@ -37,7 +37,7 @@ throttler_start(struct Throttler *throttler, double max_rate)
     throttler->max_rate = max_rate;
 
     for (i=0; i<ARRAY_SIZE(throttler->buckets); i++) {
-        throttler->buckets[i].timestamp = pixie_gettime();
+        throttler->buckets[i].timestamp    = pixie_gettime();
         throttler->buckets[i].packet_count = 0;
     }
 
@@ -64,8 +64,9 @@ throttler_next_batch(struct Throttler *throttler, uint64_t packet_count)
     uint64_t index;
     uint64_t old_timestamp;
     uint64_t old_packet_count;
-    double current_rate;
-    double max_rate = throttler->max_rate;
+
+    double   current_rate;
+    double   max_rate = throttler->max_rate;
 
 again:
 
@@ -74,15 +75,15 @@ again:
     timestamp = pixie_gettime();
 
     /*
-     * We record that last 256 buckets, and average the rate over all of
+     * We record that last batch of buckets, and average the rate over all of
      * them.
      */
-    index = (throttler->index) & 0xFF;
-    throttler->buckets[index].timestamp = timestamp;
+    index = (throttler->index) & (THR_CACHE-1);
+    throttler->buckets[index].timestamp    = timestamp;
     throttler->buckets[index].packet_count = packet_count;
 
-    index = (++throttler->index) & 0xFF;
-    old_timestamp = throttler->buckets[index].timestamp;
+    index = (++throttler->index) & (THR_CACHE-1);
+    old_timestamp    = throttler->buckets[index].timestamp;
     old_packet_count = throttler->buckets[index].packet_count;
 
     /*
@@ -159,7 +160,8 @@ again:
         throttler->batch_size = 10000;
     throttler->current_rate = current_rate;
 
-    throttler->test_timestamp = timestamp;
+    throttler->test_timestamp    = timestamp;
     throttler->test_packet_count = packet_count;
+
     return (uint64_t)throttler->batch_size;
 }

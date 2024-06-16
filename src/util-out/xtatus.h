@@ -12,7 +12,7 @@ struct XtatusItem
     uint64_t       cur_count;
     uint64_t       max_count;
     uint64_t       repeat_count;
-    double         cur_rate;
+    double         cur_pps;
     double         tx_queue_ratio;
     double         rx_queue_ratio;
     uint64_t       total_successed;
@@ -33,6 +33,9 @@ struct Xtatus
         uint64_t count;
     } last;
 
+    /**
+     * For smoothly calculate remaining secs.
+     */
     double   last_rates[XTS_RATE_CACHE];
     unsigned last_count;
 

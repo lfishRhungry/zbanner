@@ -20,7 +20,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
     uint64_t            current_sent          = 0;
     double              successed_rate        = 0.0;
     double              sent_rate             = 0.0;
-    double              kpps                  = item->cur_rate / 1000;
+    double              kpps                  = item->cur_pps / 1000;
 
     const char* json_fmt_infinite =
     "{"
@@ -153,8 +153,8 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
     /*
      * Smooth the number by averaging over the last several seconds
      */
-    rate = 0;
     xtatus->last_rates[xtatus->last_count++ & (XTS_RATE_CACHE-1)] = rate;
+    rate = 0;
     for (unsigned i=0; i<XTS_RATE_CACHE; i++) {
        rate += xtatus->last_rates[i];
     }
@@ -200,7 +200,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                         fmt,
                         (int)item->exiting_secs,
                         kpps,
-                        item->cur_rate,
+                        item->cur_pps,
                         sent_rate,
                         successed_rate,
                         item->cur_count,
@@ -243,7 +243,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                 LOG(LEVEL_OUT,
                         fmt,
                         kpps,
-                        item->cur_rate,
+                        item->cur_pps,
                         sent_rate,
                         successed_rate,
                         item->cur_count,
@@ -289,8 +289,8 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
 
                 LOG(LEVEL_OUT,
                         fmt,
-                        item->cur_rate/1000.0,
-                        item->cur_rate,
+                        item->cur_pps/1000.0,
+                        item->cur_pps,
                         percent_done,
                         (int)item->exiting_secs,
                         item->total_successed,
@@ -308,7 +308,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
 
                 LOG(LEVEL_OUT,
                         fmt,
-                        item->cur_rate/1000.0,
+                        item->cur_pps/1000.0,
                         percent_done,
                         (int)item->exiting_secs,
                         item->total_successed,
@@ -344,8 +344,8 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
 
                 LOG(LEVEL_OUT,
                     fmt,
-                    item->cur_rate/1000.0,
-                    item->cur_rate,
+                    item->cur_pps/1000.0,
+                    item->cur_pps,
                     percent_done,
                     (unsigned)(time_remaining/60/60),
                     (unsigned)(time_remaining/60)%60,
@@ -365,7 +365,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
 
                 LOG(LEVEL_OUT,
                     fmt,
-                    item->cur_rate/1000.0,
+                    item->cur_pps/1000.0,
                     percent_done,
                     (unsigned)(time_remaining/60/60),
                     (unsigned)(time_remaining/60)%60,

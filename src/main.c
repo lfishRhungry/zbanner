@@ -376,7 +376,7 @@ static int _main_scan(struct Xconf *xconf) {
     while (!time_to_finish_tx) {
 
         /* Find the min-index, repeat and rate */
-        status_item.cur_rate     = 0.0;
+        status_item.cur_pps      = 0.0;
         status_item.cur_count    = UINT64_MAX;
         status_item.repeat_count = UINT64_MAX;
         for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
@@ -388,7 +388,7 @@ static int _main_scan(struct Xconf *xconf) {
             if (status_item.repeat_count > parms->my_repeat)
                 status_item.repeat_count = parms->my_repeat;
 
-            status_item.cur_rate += parms->throttler->current_rate;
+            status_item.cur_pps += parms->throttler->current_rate;
 
             if (parms->total_sent)
                 status_item.total_sent += *parms->total_sent;
@@ -466,7 +466,7 @@ static int _main_scan(struct Xconf *xconf) {
     for (;;) {
 
         /* Find the min-index, repeat and rate */
-        status_item.cur_rate     = 0.0;
+        status_item.cur_pps      = 0.0;
         status_item.cur_count    = UINT64_MAX;
         status_item.repeat_count = UINT64_MAX;
         for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
@@ -478,7 +478,7 @@ static int _main_scan(struct Xconf *xconf) {
             if (status_item.repeat_count > parms->my_repeat)
                 status_item.repeat_count = parms->my_repeat;
 
-            status_item.cur_rate += parms->throttler->current_rate;
+            status_item.cur_pps += parms->throttler->current_rate;
 
             if (parms->total_sent)
                 status_item.total_sent += *parms->total_sent;
