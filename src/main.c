@@ -375,7 +375,8 @@ static int _main_scan(struct Xconf *xconf) {
     LOG(LEVEL_WARN, "waiting for threads to finish\n");
     while (!time_to_finish_tx) {
 
-        /* Find the minimum index */
+        /* Find the min-index, repeat and rate */
+        status_item.cur_rate     = 0.0;
         status_item.cur_count    = UINT64_MAX;
         status_item.repeat_count = UINT64_MAX;
         for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
@@ -464,7 +465,8 @@ static int _main_scan(struct Xconf *xconf) {
     now = time(0);
     for (;;) {
 
-        /* Find the minimum index */
+        /* Find the min-index, repeat and rate */
+        status_item.cur_rate     = 0.0;
         status_item.cur_count    = UINT64_MAX;
         status_item.repeat_count = UINT64_MAX;
         for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
