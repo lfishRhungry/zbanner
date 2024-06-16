@@ -7,7 +7,7 @@ struct Adapter
 {
     struct pcap                *pcap;
     struct __pfring            *ring;
-    unsigned                    is_packet_trace:1; /* is --packet-trace option set? */
+    unsigned                    is_packet_trace:1;
     unsigned                    is_vlan:1;
     unsigned                    vlan_id;
     double                      pt_start;
@@ -16,6 +16,7 @@ struct Adapter
 
 /**
  * For every Tx thread to maintain its own cache for sendqueue or sendmmsg.
+ * This solves the conflict while multiple Tx threads using sendqueue mechanism.
  */
 struct AdapterCache
 {
