@@ -25,6 +25,7 @@
 
 #include "crypto-json.h"
 #include "../util-data/fine-malloc.h"
+#include "../util-out/logger.h"
 
 #include <assert.h>
 #include <stdint.h>
@@ -33,7 +34,7 @@
 #include <string.h>
 
 #define out_of_memory() do {                    \
-        fprintf(stderr, "Out of memory.\n");    \
+        LOG(LEVEL_ERROR, "Out of memory.\n");    \
         exit(EXIT_FAILURE);                     \
     } while (0)
 

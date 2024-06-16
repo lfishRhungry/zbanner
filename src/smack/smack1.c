@@ -1634,7 +1634,7 @@ int smack_benchmark()
     /* Fill a buffer full of junk */
     buf = (char*)malloc(BUF_SIZE);
     if (buf == NULL) {
-        fprintf(stderr, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
         exit(1);
     }          
     for (i=0; i<BUF_SIZE; i++)
@@ -1729,7 +1729,7 @@ int smack_selftest()
     smack_compile(s);
 
     i = 0;
-#define TEST(pat, offset, str) if (pat != id || offset != i) return 1 + fprintf(stderr, "smack: fail %s\n", str)
+#define TEST(pat, offset, str) if (pat != id || offset != i) LOG(LEVEL_ERROR, "smack: fail %s\n", str)
     id = smack_search_next(s,&state,text, &i,text_length);
     TEST(  8,  10, "PROPFIND");
     id = smack_search_next(s,&state,text, &i,text_length);
@@ -1755,7 +1755,7 @@ int smack_selftest()
     if (id != SMACK_NOT_FOUND) {
         /* At this point, we should no more patterns, and reach the end
          * of the string */
-        fprintf(stderr, "[-] smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
+        LOG(LEVEL_ERROR, "[-] smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
         return 1;
     }
 

@@ -71,10 +71,9 @@ static void _control_c_handler(int x) {
     static unsigned control_c_pressed = 0;
 
     if (control_c_pressed == 0) {
-        fprintf(stderr,
+        LOG(LEVEL_OUT,
                 "waiting several seconds to exit..."
                 "                                                                           \n");
-        fflush(stderr);
         /*First time of <ctrl-c>, tell Tx to stop*/
         control_c_pressed = 1;
         time_to_finish_tx = 1;
@@ -82,7 +81,7 @@ static void _control_c_handler(int x) {
         if (time_to_finish_rx) {
             /*Not first time of <ctrl-c> */
             /*and Rx is exiting, we just warn*/
-            fprintf(stderr, "\nERROR: Rx Thread is still running\n");
+            LOG(LEVEL_OUT, "\nERROR: Rx Thread is still running\n");
             /*Exit many <ctrl-c>*/
             if (time_to_finish_rx++ > 1)
                 exit(1);

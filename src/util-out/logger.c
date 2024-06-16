@@ -10,12 +10,12 @@
 #endif
 
 #define PREFIX_OUT       ""
-#define PREFIX_HINT      "[Hint]"
-#define PREFIX_ERROR     "[Err]"
-#define PREFIX_WARN      "[Warn]"
-#define PREFIX_INFO      "[Info]"
-#define PREFIX_DEBUG     "[Debug]"
-#define PREFIX_DETAIL    "[Detail]"
+#define PREFIX_HINT      "[-] "
+#define PREFIX_ERROR     "[!] "
+#define PREFIX_WARN      "[W] "
+#define PREFIX_INFO      "[I] "
+#define PREFIX_DEBUG     "[D] "
+#define PREFIX_DETAIL    "[#] "
 
 static int   _debug_level = 0;
 static void *_log_mutex   = NULL;
@@ -34,7 +34,7 @@ _level_to_string(int level)
         case LEVEL_DEBUG  : return PREFIX_DEBUG;
         case LEVEL_DETAIL : return PREFIX_DETAIL;
         default:
-            return "[Unkn]";
+            return "[?]";
     }
 }
 

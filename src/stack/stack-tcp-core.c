@@ -244,22 +244,35 @@ _vLOGtcb(const struct TCP_Control_Block *tcb, int dir, const char *fmt, va_list 
     char sz[256];
     ipaddress_formatted_t fmt1 = ipaddress_fmt(tcb->ip_them);
 
-    snprintf(sz, sizeof(sz), "[%s:%u %4u,%4u] %s:%5u [%4u,%4u] {%s} ",
-             fmt1.string, tcb->port_them,
-             tcb->seqno_them - tcb->seqno_them_first,
-             tcb->ackno_me - tcb->seqno_them_first,
-             (dir > 0) ? "-->" : "<--",
-             tcb->port_me,
-             tcb->seqno_me - tcb->seqno_me_first,
-             tcb->ackno_them - tcb->seqno_me_first,
-             _tcp_state_to_string(tcb->tcpstate)
-             );
+    if (tcb->ip_them.ipv4==4) {
+        snprintf(sz, sizeof(sz), "(%s:%u %4u,%4u) %s:%5u (%4u,%4u) {%s} ",
+                 fmt1.string, tcb->port_them,
+                 tcb->seqno_them - tcb->seqno_them_first,
+                 tcb->ackno_me - tcb->seqno_them_first,
+                 (dir > 0) ? "-->" : "<--",
+                 tcb->port_me,
+                 tcb->seqno_me - tcb->seqno_me_first,
+                 tcb->ackno_them - tcb->seqno_me_first,
+                 _tcp_state_to_string(tcb->tcpstate)
+                 );
+    } else {
+        snprintf(sz, sizeof(sz), "([%s]:%u %4u,%4u) %s:%5u (%4u,%4u) {%s} ",
+                 fmt1.string, tcb->port_them,
+                 tcb->seqno_them - tcb->seqno_them_first,
+                 tcb->ackno_me - tcb->seqno_them_first,
+                 (dir > 0) ? "-->" : "<--",
+                 tcb->port_me,
+                 tcb->seqno_me - tcb->seqno_me_first,
+                 tcb->ackno_them - tcb->seqno_me_first,
+                 _tcp_state_to_string(tcb->tcpstate)
+                 );
+    }
     sz[255] = '\0';
     if (dir == 2) {
         char *brace = strchr(sz, '{');
         memset(sz, ' ', brace-sz);
     }
-    fprintf(stderr, "%s", sz);
+    fprintf(stderr, "[TCB] %s", sz);
     vfprintf(stderr, fmt, marker);
     fflush(stderr);
 }

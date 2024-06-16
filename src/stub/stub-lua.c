@@ -77,11 +77,11 @@ bool stublua_init(void)
 #if defined(WIN32)
 #define DOLINK(name) \
     name = (void (*)())GetProcAddress(lib, #name); \
-    if (name == NULL) {fprintf(stderr, "liblua: %s: failed\n", #name); return false;}
+    if (name == NULL) {LOG(LEVEL_ERROR, "liblua: %s: failed\n", #name); return false;}
 #else
 #define DOLINK(name) \
     name = dlsym(lib, #name); \
-    if (name == NULL) {fprintf(stderr, "liblua: %s: failed\n", #name); return false;}
+    if (name == NULL) {LOG(LEVEL_ERROR, "liblua: %s: failed\n", #name); return false;}
 #endif
 
     DOLINK(lua_version);

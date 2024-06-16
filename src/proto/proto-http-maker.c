@@ -505,7 +505,7 @@ int proto_http_maker_selftest()
         len2 = http_change_field(&x, len1, "foo", (const unsigned char *)"bar", ~(size_t)0, http_field_remove);
 
         if (len2 != len3 || memcmp(removesamples[i].to, x, len3) != 0) {
-            fprintf(stderr, "[-] HTTP.selftest: config remove field sample #%u\n", (unsigned)i);
+            LOG(LEVEL_ERROR, "HTTP.selftest: config remove field sample #%u\n", (unsigned)i);
             return 1;
         }
         free(x);

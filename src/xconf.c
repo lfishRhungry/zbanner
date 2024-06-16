@@ -330,7 +330,7 @@ xconf_save_state(struct Xconf *xconf)
     FILE *fp;
 
     safe_strcpy(filename, sizeof(filename), "paused.conf");
-    fprintf(stderr, "                                   "
+    LOG(LEVEL_OUT, "                                   "
                     "                                   \r");
     LOG(LEVEL_HINT, "saving resume file to: %s\n", filename);
 
