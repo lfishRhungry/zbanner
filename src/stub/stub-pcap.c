@@ -401,22 +401,22 @@ if (pl->datalink == NULL) pl->func_err=1, pl->datalink = null_##PCAP_DATALINK;
         for (i=0; possible_names[i]; i++) {
             hLibpcap = dlopen(possible_names[i], RTLD_LAZY);
             if (hLibpcap) {
-                LOG(LEVEL_WARNING, "[+] pcap: found library: %s\n", possible_names[i]);
+                LOG(LEVEL_WARN, "pcap: found library: %s\n", possible_names[i]);
                 break;
             } else {
-                LOG(LEVEL_WARNING, "[-] pcap: failed to load: %s\n", possible_names[i]);
+                LOG(LEVEL_WARN, "pcap: failed to load: %s\n", possible_names[i]);
             }
         }
 
         if (hLibpcap == NULL) {
-            LOG(LEVEL_ERROR, "[-] FAIL: failed to load libpcap shared library\n");
+            LOG(LEVEL_ERROR, "failed to load libpcap shared library\n");
             LOG(LEVEL_ERROR, "    [hint]: you must install libpcap or WinPcap\n");
         }
     }
 
 #define DOLINK(PCAP_DATALINK, datalink) \
 pl->datalink = (PCAP_DATALINK)dlsym(hLibpcap, "pcap_"#datalink); \
-    if (pl->datalink == NULL) LOG(LEVEL_WARNING, "pcap: pcap_%s: failed\n", #datalink); \
+    if (pl->datalink == NULL) LOG(LEVEL_WARN, "pcap: pcap_%s: failed\n", #datalink); \
     if (pl->datalink == NULL) pl->func_err=1, pl->datalink = null_##PCAP_DATALINK;
 #else
 #define DOLINK(PCAP_DATALINK, datalink) \

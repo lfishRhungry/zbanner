@@ -263,7 +263,7 @@ void pixie_set_thread_name(const char *name) {
 #pragma GCC diagnostic pop
 #endif
     if (FAILED(hr)) {
-        LOG(LEVEL_WARNING, "Set thread name %" PRIuPTR " %s. Error %ld\n",
+        LOG(LEVEL_WARN, "Set thread name %" PRIuPTR " %s. Error %ld\n",
             (size_t)thread_id, name, hr);
     }
 
@@ -293,7 +293,7 @@ __try {
     pthread_t thread_handle = pthread_self();
     err = pthread_setname_np(name);
     if (err != 0) {
-        LOG(LEVEL_WARNING, "Set thread name %" PRIuPTR " %s. Error %d\n",
+        LOG(LEVEL_WARN, "Set thread name %" PRIuPTR " %s. Error %d\n",
             thread_handle, name, err);
     }
 #else
@@ -301,7 +301,7 @@ __try {
     pthread_t thread_handle = pthread_self();
     err = pthread_setname_np(thread_handle, name);
     if (err != 0) {
-        LOG(LEVEL_WARNING, "Set thread name %" PRIuPTR " %s. Error %d\n",
+        LOG(LEVEL_WARN, "Set thread name %" PRIuPTR " %s. Error %d\n",
             thread_handle, name, err);
     }
 #endif

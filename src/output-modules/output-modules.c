@@ -120,13 +120,13 @@ bool output_init(struct Output *out)
         if (out->output_module->params && out->output_args) {
             if (set_parameters_from_substring(NULL,
                 out->output_module->params, out->output_args)) {
-                LOG(LEVEL_ERROR, "FAIL: errors happened in sub param parsing of OutputModule.\n");
+                LOG(LEVEL_ERROR, "errors happened in sub param parsing of OutputModule.\n");
                 return false;
             }
         }
 
         if (!out->output_module->init_cb(out)) {
-            LOG(LEVEL_ERROR, "[-] FAIL: errors happened in %s initing.\n",
+            LOG(LEVEL_ERROR, "errors happened in %s initing.\n",
                 out->output_module->name);
             return false;
         }

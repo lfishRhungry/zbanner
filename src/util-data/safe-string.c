@@ -255,7 +255,7 @@ char** string_to_args(char *string, int *arg_count)
     int    qcount, bcount;
 
     if(!arg_count || *string==0) {
-        LOG(LEVEL_ERROR, "FAIL: string_to_args has invalid parameter.\n");
+        LOG(LEVEL_ERROR, "string_to_args has invalid parameter.\n");
         return NULL;
     }
 
@@ -435,7 +435,7 @@ char** substring_to_args(char *substring, int *arg_count)
     int    qcount, bcount;
 
     if(!arg_count || *substring==0) {
-        LOG(LEVEL_ERROR, "FAIL: string_to_args has invalid parameter.\n");
+        LOG(LEVEL_ERROR, "string_to_args has invalid parameter.\n");
         return NULL;
     }
 

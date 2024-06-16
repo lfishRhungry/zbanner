@@ -103,7 +103,7 @@ rangelist_parse_ports(struct RangeList *ports, const char *string,
 
         /* Check for out-of-range */
         if (port > MASSIP_PORT_SPEC || end > MASSIP_PORT_SPEC || end < port) {
-            LOG(LEVEL_ERROR, "[-] FAIL: bad port range: %s\n", string);
+            LOG(LEVEL_ERROR, "bad port range: %s\n", string);
             *is_error = 2;
             return p;
         }
@@ -172,6 +172,6 @@ int rangesport_selftest()
     return 0;
 
 fail:
-    LOG(LEVEL_ERROR, "[-] rangesport: test fail, line=%d\n", line);
+    LOG(LEVEL_ERROR, "rangesport: test fail, line=%d\n", line);
     return 1;
 }

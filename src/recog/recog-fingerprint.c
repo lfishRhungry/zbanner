@@ -33,7 +33,7 @@ struct Recog_FP * load_recog_fp(const char *filename, bool unprefix, bool unsuff
 #ifndef NOT_FOUND_LIBXML2
 
     if (filename==NULL || filename[0]=='\0') {
-        LOG(LEVEL_ERROR, "[-] Invalid file name\n");
+        LOG(LEVEL_ERROR, "Invalid file name\n");
         return NULL;
     }
 
@@ -44,13 +44,13 @@ struct Recog_FP * load_recog_fp(const char *filename, bool unprefix, bool unsuff
 
     doc = xmlParseFile(filename);
     if (doc==NULL) {
-        LOG(LEVEL_ERROR, "[-] Failed to load xml file %s.\n", filename);
+        LOG(LEVEL_ERROR, "Failed to load xml file %s.\n", filename);
         return NULL;
     }
 
     cur_node = xmlDocGetRootElement(doc);
     if (cur_node==NULL) {
-        LOG(LEVEL_ERROR, "[-] empty xml file %s.\n", filename);
+        LOG(LEVEL_ERROR, "empty xml file %s.\n", filename);
         xmlFreeDoc(doc);
         return NULL;
     }
@@ -121,14 +121,14 @@ struct Recog_FP * load_recog_fp(const char *filename, bool unprefix, bool unsuff
         free(tmp_char);
 
         if (!match->compiled_re) {
-            LOG(LEVEL_HINT, "[-] regex compiled failed in %s.\n", tmp_xml_char);
+            LOG(LEVEL_HINT, "regex compiled failed in %s.\n", tmp_xml_char);
             xmlFree(tmp_xml_char);
             continue;
         }
 
         match->match_ctx = pcre2_match_context_create(NULL);
         if (!match->match_ctx) {
-            LOG(LEVEL_HINT, "[-] regex allocates match_ctx failed in %s.\n", tmp_xml_char);
+            LOG(LEVEL_HINT, "regex allocates match_ctx failed in %s.\n", tmp_xml_char);
             xmlFree(tmp_xml_char);
             pcre2_code_free(match->compiled_re);
             continue;
@@ -179,13 +179,13 @@ struct Recog_FP * load_recog_fp(const char *filename, bool unprefix, bool unsuff
     if (!fp->count)
         goto error;
 
-    LOG(LEVEL_HINT, "[-] Loaded %u recog fingerprints in file %s.\n",
+    LOG(LEVEL_HINT, "Loaded %u recog fingerprints in file %s.\n",
         fp->count, fp->filename);
 
     return fp;
 
 error:
-    LOG(LEVEL_ERROR, "[-] Failed to load fingerprints in file %s.\n", filename);
+    LOG(LEVEL_ERROR, "Failed to load fingerprints in file %s.\n", filename);
     xmlFreeDoc(doc);
     xmlCleanupParser();
     free(fp->filename);
@@ -196,7 +196,7 @@ error:
 
 #else
 
-    LOG(LEVEL_ERROR, "[-] Failed to load recog fingerprints because no libxml2 build with.\n");
+    LOG(LEVEL_ERROR, "Failed to load recog fingerprints because no libxml2 build with.\n");
     return NULL;
 
 #endif
@@ -218,7 +218,7 @@ match_recog_fp(struct Recog_FP *fp,
 
             match_data = pcre2_match_data_create_from_pattern(match->compiled_re, NULL);
             if (!match_data) {
-                LOG(LEVEL_ERROR, "FAIL: cannot allocate match_data when matching in probe %s.\n",
+                LOG(LEVEL_ERROR, "cannot allocate match_data when matching in probe %s.\n",
                     match->desc);
                 return NULL;
             }

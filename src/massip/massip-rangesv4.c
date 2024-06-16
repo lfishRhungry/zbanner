@@ -276,7 +276,7 @@ rangelist_sort(struct RangeList *targets)
 
 
     /* First, sort the list */
-    LOG(LEVEL_DEBUG, "[+] range:sort: sorting...\n");
+    LOG(LEVEL_DEBUG, "range:sort: sorting...\n");
     qsort(  targets->list,              /* the array to sort */
             targets->count,             /* number of elements to sort */
             sizeof(targets->list[0]),   /* size of element */
@@ -287,18 +287,18 @@ rangelist_sort(struct RangeList *targets)
      * a new list from a sorted list, so we don't have to remove things in the
      * middle when collapsing overlapping entries together, which is painfully
      * slow. */
-    LOG(LEVEL_DEBUG, "[+] range:sort: combining...\n");
+    LOG(LEVEL_DEBUG, "range:sort: combining...\n");
     for (i=0; i<targets->count; i++) {
         rangelist_add_range(&newlist, targets->list[i].begin, targets->list[i].end);
     }
 
-    LOG(LEVEL_DEBUG, "[+] range:sort: combined from %u elements to %u elements\n", original_count, newlist.count);
+    LOG(LEVEL_DEBUG, "range:sort: combined from %u elements to %u elements\n", original_count, newlist.count);
     free(targets->list);
     targets->list = newlist.list;
     targets->count = newlist.count;
     newlist.list = 0;
 
-    LOG(LEVEL_INFO, "[+] range:sort: done...\n");
+    LOG(LEVEL_INFO, "range:sort: done...\n");
 
     targets->is_sorted = 1;
 }

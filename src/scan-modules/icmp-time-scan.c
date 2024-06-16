@@ -59,7 +59,7 @@ static bool
 icmptime_init(const struct Xconf *xconf)
 {
     if (xconf->targets.count_ports!=1) {
-        LOG(LEVEL_ERROR, "[-] IcmpTimeScan doesn't need to specify any ports.\n");
+        LOG(LEVEL_ERROR, "IcmpTimeScan doesn't need to specify any ports.\n");
         return false;
     }
 

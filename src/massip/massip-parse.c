@@ -811,7 +811,7 @@ rangefile_test_error(const char *buf, unsigned long long in_line_number, unsigne
     return 0;
 fail:
     _parser_destroy(p);
-    LOG(LEVEL_ERROR, "[-] rangefile test fail, line=%u\n", which_test);
+    LOG(LEVEL_ERROR, "rangefile test fail, line=%u\n", which_test);
     return 1;
 }
 
@@ -832,7 +832,7 @@ massip_parse_file(struct MassIP *massip, const char *filename)
     /* Kludge: should never happen, should fix this when reading in
      * config, not this deep in the code. */
     if (filename == 0 || filename[0] == '\0') {
-        LOG(LEVEL_ERROR, "[-] missing filename for ranges\n");
+        LOG(LEVEL_ERROR, "missing filename for ranges\n");
         exit(1);
     }
 
@@ -845,8 +845,8 @@ massip_parse_file(struct MassIP *massip, const char *filename)
     } else {
         fp = fopen(filename, "rb");
         if (fp == NULL) {
-            LOG(LEVEL_ERROR, "[-] FAIL: parsing IP addresses\n");
-            LOG(LEVEL_ERROR, "[-] %s: %s\n", filename, strerror(errno));
+            LOG(LEVEL_ERROR, "parsing IP addresses\n");
+            LOG(LEVEL_ERROR, "%s: %s\n", filename, strerror(errno));
             exit(1);
         }
     }
@@ -880,13 +880,13 @@ massip_parse_file(struct MassIP *massip, const char *filename)
                 if (offset < count) {
                     /* We reached this somehow in the middle of the buffer, but
                      * this return is only possible at the end of the buffer */
-                    LOG(LEVEL_ERROR, "[-] rangeparse_next(): unknown coding failure\n");
+                    LOG(LEVEL_ERROR, "rangeparse_next(): unknown coding failure\n");
                 }
                 break;
             case Found_Error:
             default:
                 _parser_err(p, &line_number, &char_number);
-                LOG(LEVEL_ERROR, "[-] %s:%llu:%llu: invalid IP address on line #%llu\n", filename, line_number, char_number, line_number);
+                LOG(LEVEL_ERROR, "%s:%llu:%llu: invalid IP address on line #%llu\n", filename, line_number, char_number, line_number);
                 is_error = true;
                 count = offset;
                 break;
@@ -923,7 +923,7 @@ massip_parse_file(struct MassIP *massip, const char *filename)
         case Found_Error:
         default:
             _parser_err(p, &line_number, &char_number);
-            LOG(LEVEL_ERROR, "[-] %s:%llu:%llu: invalid IP address on line #%llu\n", filename, line_number, char_number, line_number);
+            LOG(LEVEL_ERROR, "%s:%llu:%llu: invalid IP address on line #%llu\n", filename, line_number, char_number, line_number);
             is_error = true;
             break;
         case Found_IPv4:
@@ -941,7 +941,7 @@ massip_parse_file(struct MassIP *massip, const char *filename)
         }
     }
 
-    LOG(LEVEL_WARNING, "[+] %s: %u addresses read\n", filename, addr_count);
+    LOG(LEVEL_WARN, "%s: %u addresses read\n", filename, addr_count);
 
     /* Target list must be sorted every time it's been changed, 
      * before it can be used */
@@ -973,12 +973,12 @@ again:
             if (offset < count) {
                 /* We reached this somehow in the middle of the buffer, but
                  * this return is only possible at the end of the buffer */
-                LOG(LEVEL_ERROR, "[-] _parser_next(): unknown coding failure\n");
+                LOG(LEVEL_ERROR, "_parser_next(): unknown coding failure\n");
                 goto fail;
             } else {
                 err = _parser_next(p, "\n", 0, 1, &begin, &end);
                 if (err == Still_Working) {
-                    LOG(LEVEL_ERROR, "[-] _parser_next(): unknown coding failure\n");
+                    LOG(LEVEL_ERROR, "_parser_next(): unknown coding failure\n");
                     goto fail;
                 } else {
                     goto again;
@@ -1020,12 +1020,12 @@ again:
             if (offset < count) {
                 /* We reached this somehow in the middle of the buffer, but
                  * this return is only possible at the end of the buffer */
-                LOG(LEVEL_ERROR, "[-] _parser_next(): unknown coding failure\n");
+                LOG(LEVEL_ERROR, "_parser_next(): unknown coding failure\n");
                 goto fail;
             } else {
                 err = _parser_next(p, "\n", 0, 1, &begin, &end);
                 if (err == Still_Working) {
-                    LOG(LEVEL_ERROR, "[-] _parser_next(): unknown coding failure\n");
+                    LOG(LEVEL_ERROR, "_parser_next(): unknown coding failure\n");
                     goto fail;
                 } else {
                     goto again;
@@ -1096,12 +1096,12 @@ again:
             if (*offset < count) {
                 /* We reached this somehow in the middle of the buffer, but
                  * this return is only possible at the end of the buffer */
-                LOG(LEVEL_ERROR, "[-] _parser_next(): unknown coding failure\n");
+                LOG(LEVEL_ERROR, "_parser_next(): unknown coding failure\n");
                 return Bad_Address;
             } else {
                 err = _parser_next(p, "\n", 0, 1, &begin, &end);
                 if (err == Still_Working) {
-                    LOG(LEVEL_ERROR, "[-] _parser_next(): unknown coding failure\n");
+                    LOG(LEVEL_ERROR, "_parser_next(): unknown coding failure\n");
                     return Bad_Address;
                 } else {
                     goto again;
@@ -1159,12 +1159,12 @@ selftest_massip_parse_range(void)
             switch (x) {
                 default:
                 case Bad_Address:
-                    LOG(LEVEL_ERROR, "[-] selftest_massip_parse_range[%u] fail\n", (unsigned)i);
+                    LOG(LEVEL_ERROR, "selftest_massip_parse_range[%u] fail\n", (unsigned)i);
                     return 1;
                 case Ipv4_Address:
                     if (cases[i].list[j].ipv4.begin != range4.begin
                         || cases[i].list[j].ipv4.end != range4.end) {
-                        LOG(LEVEL_ERROR, "[-] %u.%u.%u.%u - %u.%u.%u.%u\n",
+                        LOG(LEVEL_ERROR, "%u.%u.%u.%u - %u.%u.%u.%u\n",
                                 (unsigned char)(range4.begin>>24),
                                 (unsigned char)(range4.begin>>16),
                                 (unsigned char)(range4.begin>> 8),
@@ -1174,7 +1174,7 @@ selftest_massip_parse_range(void)
                                 (unsigned char)(range4.end>> 8),
                                 (unsigned char)(range4.end>> 0)
                                 );
-                        LOG(LEVEL_ERROR, "[-] selftest_massip_parse_range[%u] fail\n", (unsigned)i);
+                        LOG(LEVEL_ERROR, "selftest_massip_parse_range[%u] fail\n", (unsigned)i);
                         return 1;
                     }
                     break;
@@ -1184,7 +1184,7 @@ selftest_massip_parse_range(void)
 
         /* Make sure we have found all the expected cases */
         if (cases[i].list[j].ipv4.begin != 0) {
-            LOG(LEVEL_ERROR, "[-] selftest_massip_parse_range[%u] fail\n", (unsigned)i);
+            LOG(LEVEL_ERROR, "selftest_massip_parse_range[%u] fail\n", (unsigned)i);
             return 1;
         }
     }
@@ -1220,13 +1220,13 @@ rangefile6_test_buffer(struct massip_parser *parser,
         if (!ipv6address_is_equal(found_begin, expected_begin)) {
             ipaddress_formatted_t fmt1 = ipv6address_fmt(found_begin);
             ipaddress_formatted_t fmt2 = ipv6address_fmt(expected_begin);
-            LOG(LEVEL_ERROR, "[-] begin mismatch: found=[%s], expected=[%s]\n", fmt1.string, fmt2.string);
+            LOG(LEVEL_ERROR, "begin mismatch: found=[%s], expected=[%s]\n", fmt1.string, fmt2.string);
             goto fail;
         }
         if (!ipv6address_is_equal(found_end, expected_end)) {
             ipaddress_formatted_t fmt1 = ipv6address_fmt(found_end);
             ipaddress_formatted_t fmt2 = ipv6address_fmt(expected_end);
-            LOG(LEVEL_ERROR, "[-] end mismatch: found=[%s], expected=[%s]\n", fmt1.string, fmt2.string);
+            LOG(LEVEL_ERROR, "end mismatch: found=[%s], expected=[%s]\n", fmt1.string, fmt2.string);
             goto fail;
         }
         break;
@@ -1304,7 +1304,7 @@ int massip_parse_selftest()
                                     test_cases[i].begin,
                                     test_cases[i].end);
         if (x) {
-            LOG(LEVEL_ERROR, "[-] failed: %u: %s\n", (unsigned)i, test_cases[i].string);
+            LOG(LEVEL_ERROR, "failed: %u: %s\n", (unsigned)i, test_cases[i].string);
             break;
         }
     }
@@ -1324,6 +1324,6 @@ int massip_parse_selftest()
     x += rangefile_test_error("#bad ipv4\n 1.1.1.1.1\n", 2, 9, __LINE__);
 
     if (x)
-       LOG(LEVEL_ERROR, "[-] rangefile_selftest: fail\n");
+       LOG(LEVEL_ERROR, "rangefile_selftest: fail\n");
     return x;
 }

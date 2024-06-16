@@ -139,7 +139,7 @@ static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
 
     http_conf.regex_len = strlen(value);
     if (http_conf.regex_len==0) {
-        LOG(LEVEL_ERROR, "FAIL: Invalid regex.\n");
+        LOG(LEVEL_ERROR, "Invalid regex.\n");
         return Conf_ERR;
     }
 
@@ -155,13 +155,13 @@ static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
         NULL);
 
     if (!http_conf.compiled_re) {
-        LOG(LEVEL_ERROR, "[-]Regex compiled failed.\n");
+        LOG(LEVEL_ERROR, "Regex compiled failed.\n");
         return Conf_ERR;
     }
 
     http_conf.match_ctx = pcre2_match_context_create(NULL);
     if (!http_conf.match_ctx) {
-        LOG(LEVEL_ERROR, "[-]Regex allocates match_ctx failed.\n");
+        LOG(LEVEL_ERROR, "Regex allocates match_ctx failed.\n");
         return Conf_ERR;
     }
 
@@ -303,7 +303,7 @@ static enum ConfigRes SET_header(void *conf, const char *name, const char *value
             name_length--;
         newname[name_length] = '\0';
     } else {
-        LOG(LEVEL_ERROR, "[-] --header needs both a name and value\n");
+        LOG(LEVEL_ERROR, "--header needs both a name and value\n");
         LOG(LEVEL_ERROR, "    hint: \"--header Name:value\"\n");
         return Conf_ERR;
     }
@@ -762,7 +762,7 @@ http_handle_response(
 
         match_data = pcre2_match_data_create_from_pattern(http_conf.compiled_re, NULL);
         if (!match_data) {
-            LOG(LEVEL_ERROR, "FAIL: cannot allocate match_data when matching.\n");
+            LOG(LEVEL_ERROR, "cannot allocate match_data when matching.\n");
             item->no_output = 1;
             return 0;
         }

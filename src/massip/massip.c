@@ -179,6 +179,6 @@ int massip_selftest()
 
     return 0;
 fail:
-    LOG(LEVEL_ERROR, "[-] massip: test fail, line=%d\n", line);
+    LOG(LEVEL_ERROR, "massip: test fail, line=%d\n", line);
     return 1;
 }

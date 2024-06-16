@@ -173,7 +173,7 @@ _consistancy_check(const unsigned char *buf, size_t length,
                                   1 /*enet*/,
                                   &parsed);
     if (!is_success || parsed.found != FOUND_TCP) {
-        LOG(LEVEL_ERROR, "[-] check: TCP header not found\n");
+        LOG(LEVEL_ERROR, "check: TCP header not found\n");
         goto fail;
     }
 
@@ -181,14 +181,14 @@ _consistancy_check(const unsigned char *buf, size_t length,
     switch (parsed.ip_version) {
         case 4:
             if (parsed.ip_length + 14 != length) {
-                LOG(LEVEL_ERROR, "[-] check: IP length bad\n");
+                LOG(LEVEL_ERROR, "check: IP length bad\n");
                 goto fail;
             }
             break;
         case 6:
             break;
         default:
-            LOG(LEVEL_ERROR, "[-] check: IPv?\n");
+            LOG(LEVEL_ERROR, "check: IPv?\n");
             goto fail;
     }
 
@@ -331,7 +331,7 @@ _HEXDUMPopt(const unsigned char *buf, size_t length, const char *name) {
 
     hdr = _find_tcp_header(buf, length);
     if (!hdr.is_found) {
-        LOG(LEVEL_ERROR, "[-] templ.tcp.hdr: failure\n");
+        LOG(LEVEL_ERROR, "templ.tcp.hdr: failure\n");
     }
     _HEXDUMP(buf, hdr, _opt_begin(hdr), name);
 }
@@ -422,7 +422,7 @@ _adjust_length(unsigned char *buf, size_t length, int adjustment, struct tcp_hdr
     /* The adjustment should already have been aligned on an even 4 byte
      * boundary */
     if ((adjustment & 0x3) != 0) {
-        LOG(LEVEL_ERROR, "[-] templ.tcp: impossible alignment error\n");
+        LOG(LEVEL_ERROR, "templ.tcp: impossible alignment error\n");
         return;
     }
 
@@ -435,7 +435,7 @@ _adjust_length(unsigned char *buf, size_t length, int adjustment, struct tcp_hdr
             U16_TO_BE(buf+ip_offset+2, total_length);
             total_length  = BE_TO_U16(buf+ip_offset+2);
             if (total_length + 14 != length) {
-                LOG(LEVEL_ERROR, "[-] IP length mismatch\n");
+                LOG(LEVEL_ERROR, "IP length mismatch\n");
             }
             break;
         }
@@ -457,14 +457,14 @@ _adjust_length(unsigned char *buf, size_t length, int adjustment, struct tcp_hdr
         hdr_length += adjustment;
 
         if (hdr_length % 4 != 0) {
-            LOG(LEVEL_ERROR, "[-] templ.tcp corruptoin\n");
+            LOG(LEVEL_ERROR, "templ.tcp corruptoin\n");
         }
 
         buf[offset] = (unsigned char)((buf[offset] & 0x0F) | ((hdr_length/4) << 4));
 
         hdr_length = (buf[offset] >> 4) * 4;
         if (hdr.begin + hdr_length > length) {
-            LOG(LEVEL_ERROR, "[-] templ.tcp corruptoin\n");
+            LOG(LEVEL_ERROR, "templ.tcp corruptoin\n");
         }
     }
 }
@@ -834,7 +834,7 @@ tcp_add_opt(unsigned char **inout_buf,
      * rest of the header takes up 20 bytes. The [kind,length] takes up
      * another 2 bytes. Thus, the max option length is 38 bytes */
     if (opt_data_len > 38) {
-        LOG(LEVEL_ERROR, "[-] templ.tcp.add_opt: opt_len too large\n");
+        LOG(LEVEL_ERROR, "templ.tcp.add_opt: opt_len too large\n");
         goto fail;
     }
 
@@ -869,7 +869,7 @@ tcp_add_opt(unsigned char **inout_buf,
             size_t len = buf[offset + 1];
             old_end    = offset + len;
         } else {
-            LOG(LEVEL_ERROR, "[-] not possible i09670t\n");
+            LOG(LEVEL_ERROR, "not possible i09670t\n");
             return false;
         }
 
@@ -1603,7 +1603,7 @@ _selftests_run(void) {
         size_t field_length;
 
 
-        LOG(LEVEL_WARNING, "[+] templ-tcp: run #%u\n", (unsigned)i);
+        LOG(LEVEL_WARN, "templ-tcp: run #%u\n", (unsigned)i);
 
         /* Each tests creates its own copy of the test packet, which it
          * will then alter according to the pre-conditions. */
@@ -1738,7 +1738,7 @@ _selftests_run(void) {
 
     return 0; /* success */
 fail:
-    LOG(LEVEL_ERROR, "[-] templ.tcp.selftest failed, test #%u, file=%s, line=%u\n",
+    LOG(LEVEL_ERROR, "templ.tcp.selftest failed, test #%u, file=%s, line=%u\n",
             (unsigned)i, __FILE__, line);
     return 1;
 };
@@ -1854,7 +1854,7 @@ int templ_tcp_selftest()
     free(buf);
     return 0; /* success */
 fail:
-    LOG(LEVEL_ERROR, "[-] templ_tcp_selftest failed, file=%s, line=%u\n", __FILE__, line);
+    LOG(LEVEL_ERROR, "templ_tcp_selftest failed, file=%s, line=%u\n", __FILE__, line);
     free(buf);
     return 1; /* failure */
 }

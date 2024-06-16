@@ -58,7 +58,7 @@ ndjson_init(const struct Output *out)
         &file, out->output_filename, out->is_append);
 
     if (err != 0 || file == NULL) {
-        LOG(LEVEL_ERROR, "[-] NdjsonOutput: could not open file %s for %s.\n",
+        LOG(LEVEL_ERROR, "NdjsonOutput: could not open file %s for %s.\n",
             out->output_filename, out->is_append?"appending":"writing");
         perror(out->output_filename);
         return false;
@@ -126,7 +126,7 @@ ndjson_result(struct OutputItem *item)
     return;
 
 error:
-    LOG(LEVEL_ERROR, "[-] NdjsonOutput: could not write result to file.\n");
+    LOG(LEVEL_ERROR, "NdjsonOutput: could not write result to file.\n");
 }
 
 static void

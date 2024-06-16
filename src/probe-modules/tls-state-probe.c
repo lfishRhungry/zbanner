@@ -95,7 +95,7 @@ static enum ConfigRes SET_subprobe(void *conf, const char *name, const char *val
 
     tlsstate_conf.subprobe = get_probe_module_by_name(value);
     if (!tlsstate_conf.subprobe) {
-        LOG(LEVEL_ERROR, "[-] Invalid name of subprobe: %s.\n", value);
+        LOG(LEVEL_ERROR, "Invalid name of subprobe: %s.\n", value);
         return Conf_ERR;
     }
 
@@ -304,7 +304,7 @@ static bool output_subject_info(struct Output *out,
 
     bio = BIO_new(BIO_s_mem());
     if (bio == NULL) {
-        LOG(LEVEL_WARNING, "[TSP output_subject_info] BIO_new failed\n");
+        LOG(LEVEL_WARN, "(TSP output_subject_info) BIO_new failed\n");
         X509_free(x509_cert);
         return false;
     }
@@ -332,20 +332,20 @@ static bool output_subject_info(struct Output *out,
 
             name_entry = X509_NAME_get_entry(x509_subject_name, i_name);
             if (name_entry == NULL) {
-                LOG(LEVEL_WARNING, "[TSP output_subject_info] X509_NAME_get_entry failed on %d\n",
+                LOG(LEVEL_WARN, "(TSP output_subject_info) X509_NAME_get_entry failed on %d\n",
                     i_name);
                 continue;
             }
             fn = X509_NAME_ENTRY_get_object(name_entry);
             if (fn == NULL) {
-                LOG(LEVEL_WARNING,
-                    "[TSP output_subject_info] X509_NAME_ENTRY_get_object failed on %d\n", i_name);
+                LOG(LEVEL_WARN,
+                    "(TSP output_subject_info) X509_NAME_ENTRY_get_object failed on %d\n", i_name);
                 continue;
             }
             val = X509_NAME_ENTRY_get_data(name_entry);
             if (val == NULL) {
-                LOG(LEVEL_WARNING,
-                    "[TSP output_subject_info] X509_NAME_ENTRY_get_data failed on %d\n", i_name);
+                LOG(LEVEL_WARN,
+                    "(TSP output_subject_info) X509_NAME_ENTRY_get_data failed on %d\n", i_name);
                 continue;
             }
             if (NID_commonName == OBJ_obj2nid(fn)) {
@@ -355,15 +355,15 @@ static bool output_subject_info(struct Output *out,
                 count++;
                 res = ASN1_STRING_print_ex(bio, val, 0);
                 if (res < 0) {
-                    LOG(LEVEL_WARNING,
-                        "[TSP output_subject_info] ASN1_STRING_print_ex failed with error %d on %d\n",
+                    LOG(LEVEL_WARN,
+                        "(TSP output_subject_info) ASN1_STRING_print_ex failed with error %d on %d\n",
                         res, i_name);
                     BIO_printf(bio, "<can't get cn>");
                 }
             }
         }
     } else {
-        LOG(LEVEL_WARNING, "[TSP output_subject_info] X509_get_subject_name failed\n");
+        LOG(LEVEL_WARN, "(TSP output_subject_info) X509_get_subject_name failed\n");
     }
 
     link = dach_new_link(&item.report, "subject name", DACH_DEFAULT_DATA_SIZE, false);
@@ -375,7 +375,7 @@ static bool output_subject_info(struct Output *out,
         } else if (res == 0 || res == -1) {
             break;
         } else {
-            LOG(LEVEL_WARNING, "[TSP output_subject_info] BIO_read failed with error: %d\n", res);
+            LOG(LEVEL_WARN, "(TSP output_subject_info) BIO_read failed with error: %d\n", res);
             break;
         }
     }
@@ -389,7 +389,7 @@ static bool output_subject_info(struct Output *out,
 
             x509_alt_name = sk_GENERAL_NAME_value(x509_alt_names, i_name);
             if (x509_alt_name == NULL) {
-                LOG(LEVEL_WARNING, "[TSP output_subject_info] sk_GENERAL_NAME_value failed on %d\n",
+                LOG(LEVEL_WARN, "(TSP output_subject_info) sk_GENERAL_NAME_value failed on %d\n",
                     i_name);
                 continue;
             }
@@ -400,7 +400,7 @@ static bool output_subject_info(struct Output *out,
             res = GENERAL_NAME_simple_print(bio, x509_alt_name);
             if (res < 0) {
                 LOG(LEVEL_DEBUG,
-                    "[TSP output_subject_info] GENERAL_NAME_simple_print failed with error %d on "
+                    "(TSP output_subject_info) GENERAL_NAME_simple_print failed with error %d on "
                     "%d\n",
                     res, i_name);
                 BIO_printf(bio, "<can't get alt>");
@@ -418,7 +418,7 @@ static bool output_subject_info(struct Output *out,
         } else if (res == 0 || res == -1) {
             break;
         } else {
-            LOG(LEVEL_WARNING, "[TSP output_subject_info] BIO_read failed with error: %d\n", res);
+            LOG(LEVEL_WARN, "(TSP output_subject_info) BIO_read failed with error: %d\n", res);
             break;
         }
     }
@@ -464,13 +464,13 @@ static bool output_x502_cert(struct Output *out,
 
         x509_cert = sk_X509_value(sk_x509_certs, i_cert);
         if (x509_cert == NULL) {
-            LOG(LEVEL_WARNING, "[TSP output_x502_cert] sk_X509_value failed on %d\n", i_cert);
+            LOG(LEVEL_WARN, "(TSP output_x502_cert) sk_X509_value failed on %d\n", i_cert);
             continue;
         }
 
         bio_base64 = BIO_new(BIO_f_base64());
         if (bio_base64 == NULL) {
-            LOG(LEVEL_WARNING, "[TSP output_x502_cert] BIO_new(base64) failed on %d\n",
+            LOG(LEVEL_WARN, "(TSP output_x502_cert) BIO_new(base64) failed on %d\n",
                 i_cert);
             continue;
         }
@@ -478,7 +478,7 @@ static bool output_x502_cert(struct Output *out,
 
         bio_mem = BIO_new(BIO_s_mem());
         if (bio_mem == NULL) {
-            LOG(LEVEL_WARNING, "[TSP output_x502_cert] BIO_new(bio_mem) failed on %d\n",
+            LOG(LEVEL_WARN, "(TSP output_x502_cert) BIO_new(bio_mem) failed on %d\n",
                 i_cert);
             BIO_free(bio_base64);
             continue;
@@ -487,8 +487,8 @@ static bool output_x502_cert(struct Output *out,
 
         res = i2d_X509_bio(bio_base64, x509_cert);
         if (res != 1) {
-            LOG(LEVEL_WARNING,
-                "[TSP output_x502_cert] i2d_X509_bio failed with error %d on %d\n", res,
+            LOG(LEVEL_WARN,
+                "(TSP output_x502_cert) i2d_X509_bio failed with error %d on %d\n", res,
                 i_cert);
             BIO_free(bio_mem);
             BIO_free(bio_base64);
@@ -496,7 +496,7 @@ static bool output_x502_cert(struct Output *out,
         }
         res = BIO_flush(bio_base64);
         if (res != 1) {
-            LOG(LEVEL_WARNING, "[TSP output_x502_cert] BIO_flush failed with error %d on %d\n",
+            LOG(LEVEL_WARN, "(TSP output_x502_cert) BIO_flush failed with error %d on %d\n",
                 res, i_cert);
             BIO_free(bio_mem);
             BIO_free(bio_base64);
@@ -513,7 +513,7 @@ static bool output_x502_cert(struct Output *out,
             } else if (res == 0 || res == -1) {
                 break;
             } else {
-                LOG(LEVEL_WARNING, "[TSP output_x502_cert] BIO_read failed with error: %d\n",
+                LOG(LEVEL_WARN, "(TSP output_x502_cert) BIO_read failed with error: %d\n",
                     res);
                 break;
             }
@@ -604,7 +604,7 @@ static bool output_tls_version(struct Output *out,
 
 static void _extend_buffer(unsigned char **buf, size_t *buf_len)
 {
-    LOG(LEVEL_DETAIL, "[TSP BUFFER extending...] >>>\n");
+    LOG(LEVEL_DETAIL, "(TSP BUFFER extending...) >>>\n");
     unsigned char *tmp_ptr;
     tmp_ptr  = REALLOC(*buf, *buf_len * 2);
     *buf     = tmp_ptr;
@@ -616,7 +616,7 @@ static bool
 tlsstate_global_init(const struct Xconf *xconf)
 {
     if (tlsstate_conf.subprobe->type!=ProbeType_STATE) {
-        LOG(LEVEL_ERROR, "[-] TlsStateProbe need a subprobe in STATE type.\n");
+        LOG(LEVEL_ERROR, "TlsStateProbe need a subprobe in STATE type.\n");
         return false;
     }
 
@@ -627,20 +627,20 @@ tlsstate_global_init(const struct Xconf *xconf)
     SSL_CTX *ctx;
     int res;
 
-    LOG(LEVEL_DETAIL, "[TSP Global INIT] >>>\n");
+    LOG(LEVEL_DETAIL, "(TSP Global INIT) >>>\n");
 
     /*support cryptographic algorithms from SSLv3.0 to TLSv1.3*/
     meth = TLS_method();
     if (meth == NULL) {
-        LOG(LEVEL_WARNING, "[TSP Global INIT] TLS_method error\n");
-        LOGopenssl(LEVEL_WARNING);
+        LOG(LEVEL_WARN, "(TSP Global INIT) TLS_method error\n");
+        LOGopenssl(LEVEL_WARN);
         goto error0;
     }
 
     ctx = SSL_CTX_new(meth);
     if (ctx == NULL) {
-        LOG(LEVEL_WARNING, "[TSP Global INIT] SSL_CTX_new error\n");
-        LOGopenssl(LEVEL_WARNING);
+        LOG(LEVEL_WARN, "(TSP Global INIT) SSL_CTX_new error\n");
+        LOGopenssl(LEVEL_WARN);
         goto error0;
     }
 
@@ -657,7 +657,7 @@ tlsstate_global_init(const struct Xconf *xconf)
     /*ciphersuites allowed in TLSv1.2 or older*/
     res = SSL_CTX_set_cipher_list(ctx, "ALL:eNULL");
     if (res != 1) {
-        LOG(LEVEL_WARNING, "[TSP Global INIT] SSL_CTX_set_cipher_list error %d\n", res);
+        LOG(LEVEL_WARN, "(TSP Global INIT) SSL_CTX_set_cipher_list error %d\n", res);
     }
     /*ciphersuites allowed in TLSv1.3. (ALL & in order)*/
     res = SSL_CTX_set_ciphersuites(ctx, 
@@ -665,7 +665,7 @@ tlsstate_global_init(const struct Xconf *xconf)
         "TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_CCM_SHA256:"
         "TLS_AES_128_CCM_8_SHA256");
     if (res != 1) {
-        LOG(LEVEL_WARNING, "[TSP Global INIT] SSL_CTX_set_ciphersuites error %d\n", res);
+        LOG(LEVEL_WARN, "(TSP Global INIT) SSL_CTX_set_ciphersuites error %d\n", res);
     }
 
     /**
@@ -682,7 +682,7 @@ tlsstate_global_init(const struct Xconf *xconf)
         && tlsstate_conf.subprobe->params) {
         if (set_parameters_from_substring(NULL,
             tlsstate_conf.subprobe->params, tlsstate_conf.subprobe_args)) {
-            LOG(LEVEL_ERROR, "FAIL: errors happened in param parsing of subprobe of TlsState.\n");
+            LOG(LEVEL_ERROR, "errors happened in param parsing of subprobe of TlsState.\n");
             goto error0;
         }
     }
@@ -707,7 +707,7 @@ error0:
 
 static void tlsstate_close()
 {
-    LOG(LEVEL_DETAIL, "[TSP CLOSE] >>>\n");
+    LOG(LEVEL_DETAIL, "(TSP CLOSE) >>>\n");
 
     tlsstate_conf.subprobe->close_cb();
 
@@ -730,7 +730,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     unsigned char      *data;
     struct TlsState    *tls_state;
 
-    LOG(LEVEL_DETAIL, "[TSP Conn INIT] >>>\n");
+    LOG(LEVEL_DETAIL, "(TSP Conn INIT) >>>\n");
 
     if (_general_ssl_ctx == NULL) {
         goto error0;
@@ -742,22 +742,22 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
 
     rbio = BIO_new(BIO_s_mem());
     if (rbio == NULL) {
-        LOG(LEVEL_WARNING, "[TSP Conn INIT] BIO_new(read) error\n");
-        LOGopenssl(LEVEL_WARNING);
+        LOG(LEVEL_WARN, "(TSP Conn INIT) BIO_new(read) error\n");
+        LOGopenssl(LEVEL_WARN);
         goto error1;
     }
 
     wbio = BIO_new(BIO_s_mem());
     if (wbio == NULL) {
-        LOG(LEVEL_WARNING, "[TSP Conn INIT] BIO_new(write) error\n");
-        LOGopenssl(LEVEL_WARNING);
+        LOG(LEVEL_WARN, "(TSP Conn INIT) BIO_new(write) error\n");
+        LOGopenssl(LEVEL_WARN);
         goto error2;
     }
 
     ssl = SSL_new(_general_ssl_ctx);
     if (ssl == NULL) {
-        LOG(LEVEL_WARNING, "[TSP Conn INIT] SSL_new error\n");
-        LOGopenssl(LEVEL_WARNING);
+        LOG(LEVEL_WARN, "(TSP Conn INIT) SSL_new error\n");
+        LOGopenssl(LEVEL_WARN);
         goto error3;
     }
 
@@ -779,7 +779,7 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
 
     res = SSL_set_ex_data(ssl, TSP_EXT_TGT_IDX, tgt);
     if (res != 1) {
-        LOG(LEVEL_WARNING, "[TSP Conn INIT] SSL_set_ex_data error\n");
+        LOG(LEVEL_WARN, "(TSP Conn INIT) SSL_set_ex_data error\n");
         goto error4;
     }
 
@@ -824,7 +824,7 @@ error0:
 static void
 tlsstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
 {
-    LOG(LEVEL_DETAIL, "[TSP Conn CLOSE] >>>\n");
+    LOG(LEVEL_DETAIL, "(TSP Conn CLOSE) >>>\n");
 
     if (!state->data) return;
 
@@ -865,7 +865,7 @@ tlsstate_make_hello(
     struct ProbeState *state,
     struct ProbeTarget *target)
 {
-    LOG(LEVEL_DETAIL, "[TSP Make HELLO] >>>\n");
+    LOG(LEVEL_DETAIL, "(TSP Make HELLO) >>>\n");
 
     if (state->data==NULL)
         goto error1;
@@ -894,22 +894,22 @@ tlsstate_make_hello(
                            tls_state->data + offset,
                            (int)(tls_state->data_size - offset));
             if (res > 0) {
-                LOG(LEVEL_INFO, "[TSP Make HELLO] BIO_read: %d\n", res);
+                LOG(LEVEL_INFO, "(TSP Make HELLO) BIO_read: %d\n", res);
                 offset += (size_t)res;
             } else if (res == 0 || res == -1) {
-                LOG(LEVEL_INFO, "[TSP Make HELLO] BIO_read: %d\n", res);
+                LOG(LEVEL_INFO, "(TSP Make HELLO) BIO_read: %d\n", res);
                 break;
             } else {
-                LOG(LEVEL_WARNING,
-                    "[TSP Make HELLO] BIO_read failed with error: %d\n", res);
-                LOGopenssl(LEVEL_WARNING);
+                LOG(LEVEL_WARN,
+                    "(TSP Make HELLO) BIO_read failed with error: %d\n", res);
+                LOGopenssl(LEVEL_WARN);
                 goto error1;
             }
         }
     } else {
-        LOG(LEVEL_WARNING, "[TSP Make HELLO] SSL_do_handshake failed with error: %d, ex_error: %d\n",
+        LOG(LEVEL_WARN, "(TSP Make HELLO) SSL_do_handshake failed with error: %d, ex_error: %d\n",
             res, res_ex);
-        LOGopenssl(LEVEL_WARNING);
+        LOGopenssl(LEVEL_WARN);
         goto error1;
     }
 
@@ -936,7 +936,7 @@ tlsstate_parse_response(
     const unsigned char *px,
     unsigned sizeof_px)
 {
-    LOG(LEVEL_DETAIL, "[TSP Parse RESPONSE] >>>\n");
+    LOG(LEVEL_DETAIL, "(TSP Parse RESPONSE) >>>\n");
 
     struct TlsState *tls_state = state->data;
 
@@ -959,12 +959,12 @@ tlsstate_parse_response(
         while (offset < sizeof_px) {
             res = BIO_write(tls_state->rbio, px + offset,
                 (unsigned int)min(TSP_BIO_MEM_LIMIT, sizeof_px - offset));
-            LOG(LEVEL_INFO, "[TSP Parse RESPONSE] BIO_write: %d \n", res);
+            LOG(LEVEL_INFO, "(TSP Parse RESPONSE) BIO_write: %d \n", res);
             if (res > 0) {
                 offset += (size_t)res;
             } else {
-                LOG(LEVEL_WARNING,
-                    "[TSP Parse RESPONSE] BIO_write failed with error: %d\n", res);
+                LOG(LEVEL_WARN,
+                    "(TSP Parse RESPONSE) BIO_write failed with error: %d\n", res);
                 /*close connection*/
                 pass->data       = NULL;
                 pass->len        = 0;
@@ -975,14 +975,14 @@ tlsstate_parse_response(
 
         // now_time = pixie_gettime() - now_time;
         // if (sizeof_px > TSP_BIO_MEM_LIMIT || now_time > 1000000) {
-        //     LOGip(LEVEL_WARNING, target->ip_them, target->port_them,
-        //           "[TSP Parse RESPONSE] len px: 0x%" PRIxPTR ", time: " PRIu64
+        //     LOGip(LEVEL_WARN, target->ip_them, target->port_them,
+        //           "(TSP Parse RESPONSE) len px: 0x%" PRIxPTR ", time: " PRIu64
         //           " millis\n",
         //           sizeof_px, now_time * 1000);
-        //     LOG(LEVEL_WARNING, "[TSP Parse RESPONSE] offset: 0x%" PRIxPTR ", res = %d\n",
+        //     LOG(LEVEL_WARN, "(TSP Parse RESPONSE) offset: 0x%" PRIxPTR ", res = %d\n",
         //         offset, res);
         //     if (sizeof_px > 3) {
-        //         LOG(LEVEL_WARNING, "[TSP Parse RESPONSE] dump: %02X %02X %02X %02X\n",
+        //         LOG(LEVEL_WARN, "(TSP Parse RESPONSE) dump: %02X %02X %02X %02X\n",
         //             px[0], px[1], px[2], px[3]);
         //     }
         // }
@@ -1040,7 +1040,7 @@ tlsstate_parse_response(
                     state->state = TSP_STATE_SAY_HELLO;
 
                 } else {
-                    LOG(LEVEL_WARNING, "[TSP Parse RESPONSE] Unknown handshake state %d\n",
+                    LOG(LEVEL_WARN, "(TSP Parse RESPONSE) Unknown handshake state %d\n",
                         tls_state->handshake_state);
                     state->state = TSP_STATE_NEED_CLOSE;
                 }
@@ -1060,16 +1060,16 @@ tlsstate_parse_response(
                         (unsigned int)(tls_state->data_size - offset));
 
                     if (res > 0) {
-                        LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
+                        LOG(LEVEL_INFO, "(TSP Parse RESPONSE: %s) BIO_read: %d\n",
                             _tsp_state_to_string(state->state), res);
                         offset += (size_t)res;
                     } else if (res == 0 || res == -1) {
-                        LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
+                        LOG(LEVEL_INFO, "(TSP Parse RESPONSE: %s) BIO_read: %d\n",
                             _tsp_state_to_string(state->state), res);
                         break;
                     } else {
-                        LOG(LEVEL_WARNING,
-                            "[TSP Parse RESPONSE: %s] BIO_read failed with error: %d\n",
+                        LOG(LEVEL_WARN,
+                            "(TSP Parse RESPONSE: %s) BIO_read failed with error: %d\n",
                             _tsp_state_to_string(state->state), res);
                         state->state = TSP_STATE_NEED_CLOSE;
                         break;
@@ -1087,7 +1087,7 @@ tlsstate_parse_response(
                 state->state = TSP_STATE_NEED_CLOSE;
 
                 LOG(LEVEL_DEBUG,
-                    "[TSP Parse RESPONSE: %s] SSL_do_handshake failed with error: %d, "
+                    "(TSP Parse RESPONSE: %s) SSL_do_handshake failed with error: %d, "
                     "ex_error: %d\n",
                     _tsp_state_to_string(state->state), res, res_ex);
                 LOGopenssl(LEVEL_DEBUG);
@@ -1131,12 +1131,12 @@ tlsstate_parse_response(
 
             if (res <= 0) {
                 res_ex = SSL_get_error(tls_state->ssl, res);
-                LOG(LEVEL_WARNING, "[TSP Parse RESPONSE: %s] SSL_write error: %d %d\n",
+                LOG(LEVEL_WARN, "(TSP Parse RESPONSE: %s) SSL_write error: %d %d\n",
                     _tsp_state_to_string(state->state), res, res_ex);
-                LOGopenssl(LEVEL_WARNING);
+                LOGopenssl(LEVEL_WARN);
                 state->state = TSP_STATE_NEED_CLOSE;
             } else {
-                LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] SSL_write: %d\n",
+                LOG(LEVEL_INFO, "(TSP Parse RESPONSE: %s) SSL_write: %d\n",
                     _tsp_state_to_string(state->state), res);
                 size_t offset = 0;
                 while (true) {
@@ -1149,18 +1149,18 @@ tlsstate_parse_response(
                         tls_state->data + offset,
                         (unsigned int)(tls_state->data_size - offset));
                     if (res > 0) {
-                        LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
+                        LOG(LEVEL_INFO, "(TSP Parse RESPONSE: %s) BIO_read: %d\n",
                             _tsp_state_to_string(state->state), res);
                         offset += (size_t)res;
                     } else if (res == 0 || res == -1) {
-                        LOG(LEVEL_DEBUG, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
+                        LOG(LEVEL_DEBUG, "(TSP Parse RESPONSE: %s) BIO_read: %d\n",
                             _tsp_state_to_string(state->state), res);
                         break;
                     } else {
-                        LOG(LEVEL_WARNING,
-                            "[TSP Parse RESPONSE: %s] BIO_read failed with error: %d\n",
+                        LOG(LEVEL_WARN,
+                            "(TSP Parse RESPONSE: %s) BIO_read failed with error: %d\n",
                              _tsp_state_to_string(state->state), res);
-                        LOGopenssl(LEVEL_WARNING);
+                        LOGopenssl(LEVEL_WARN);
                         state->state = TSP_STATE_NEED_CLOSE;
                         break;
                     }
@@ -1197,7 +1197,7 @@ tlsstate_parse_response(
 
             /*have got decoded data from SSL record*/
             if (offset > 0) {
-                LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] SSL_read: %d\n",
+                LOG(LEVEL_INFO, "(TSP Parse RESPONSE: %s) SSL_read: %d\n",
                     _tsp_state_to_string(state->state), offset);
 
                 struct DataPass subpass = {0};
@@ -1223,12 +1223,12 @@ tlsstate_parse_response(
 
                 if (sub_res <= 0) {
                     res_ex = SSL_get_error(tls_state->ssl, sub_res);
-                    LOG(LEVEL_WARNING, "[TSP Parse RESPONSE: %s] SSL_write error: %d %d\n",
+                    LOG(LEVEL_WARN, "(TSP Parse RESPONSE: %s) SSL_write error: %d %d\n",
                         _tsp_state_to_string(state->state), sub_res, res_ex);
                     state->state = TSP_STATE_NEED_CLOSE;
                     break;
                 } else {
-                    LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] SSL_write: %d\n",
+                    LOG(LEVEL_INFO, "(TSP Parse RESPONSE: %s) SSL_write: %d\n",
                         _tsp_state_to_string(state->state), sub_res);
                     size_t sub_offset = 0;
                     while (true) {
@@ -1239,16 +1239,16 @@ tlsstate_parse_response(
                         sub_res = BIO_read(tls_state->wbio, tls_state->data + sub_offset,
                             (unsigned int)(tls_state->data_size - sub_offset));
                         if (sub_res > 0) {
-                            LOG(LEVEL_INFO, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
+                            LOG(LEVEL_INFO, "(TSP Parse RESPONSE: %s) BIO_read: %d\n",
                                 _tsp_state_to_string(state->state), sub_res);
                             sub_offset += (size_t)sub_res;
                         } else if (sub_res == 0 || sub_res == -1) {
-                            LOG(LEVEL_DEBUG, "[TSP Parse RESPONSE: %s] BIO_read: %d\n",
+                            LOG(LEVEL_DEBUG, "(TSP Parse RESPONSE: %s) BIO_read: %d\n",
                                 _tsp_state_to_string(state->state), sub_res);
                             break;
                         } else {
-                            LOG(LEVEL_WARNING,
-                                "[TSP Parse RESPONSE: %s] BIO_read failed with error: %d\n",
+                            LOG(LEVEL_WARN,
+                                "(TSP Parse RESPONSE: %s) BIO_read failed with error: %d\n",
                                 _tsp_state_to_string(state->state), sub_res);
                             state->state = TSP_STATE_NEED_CLOSE;
                             break;
@@ -1274,9 +1274,9 @@ tlsstate_parse_response(
                     state->state = TSP_STATE_NEED_CLOSE;
                 } else {
                     if (res_ex != SSL_ERROR_SSL) {
-                        LOG(LEVEL_WARNING, "[TSP Parse RESPONSE: %s] SSL_read error: %d %d\n",
+                        LOG(LEVEL_WARN, "(TSP Parse RESPONSE: %s) SSL_read error: %d %d\n",
                             _tsp_state_to_string(state->state), res, res_ex);
-                        LOGopenssl(LEVEL_WARNING);
+                        LOGopenssl(LEVEL_WARN);
                     }
                     state->state = TSP_STATE_NEED_CLOSE;
                 }

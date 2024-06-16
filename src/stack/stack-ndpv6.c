@@ -133,7 +133,7 @@ stack_ndpv6_incoming_request(struct stack_t *stack, struct PreprocessedInfo *par
         ipv6address_t a = ipv6address_from_bytes(px + offset_ip_src);
         ipaddress_formatted_t fmt1 = ipv6address_fmt(a);
         ipaddress_formatted_t fmt2 = ipaddress_fmt(target_ip);
-        LOG(LEVEL_WARNING, "[+] received NDP request from %s for %s\n", fmt1.string, fmt2.string);
+        LOG(LEVEL_WARN, "received NDP request from %s for %s\n", fmt1.string, fmt2.string);
     }
 
     /* Get a buffer for sending the response packet. This thread doesn't
@@ -253,14 +253,14 @@ _extract_router_advertisement(
                 prefix = _read_ipv6(buf2, &off2, len2);
 
                 fmt = ipv6address_fmt(prefix);
-                LOG(LEVEL_WARNING, "[+] IPv6.prefix = %s/%u\n", fmt.string, prefix_len);
+                LOG(LEVEL_WARN, "IPv6.prefix = %s/%u\n", fmt.string, prefix_len);
                 if (ipv6address_is_equal_prefixed(my_ipv6, prefix, prefix_len)) {
                     is_same_prefix = 1;
                 } else {
                     ipaddress_formatted_t fmt1 = ipv6address_fmt(my_ipv6);
                     ipaddress_formatted_t fmt2 = ipv6address_fmt(prefix);
 
-                    LOG(LEVEL_HINT, "[-] WARNING: our source-ip is %s, but router prefix announces %s/%u\n",
+                    LOG(LEVEL_HINT, "WARNING: our source-ip is %s, but router prefix announces %s/%u\n",
                             fmt1.string, fmt2.string, prefix_len);
                     is_same_prefix = 0;
                 }
@@ -274,7 +274,7 @@ _extract_router_advertisement(
                 while (off2 + 16 <= len2) {
                     ipv6address resolver = _read_ipv6(buf2, &off2, len2);
                     ipaddress_formatted_t fmt = ipv6address_fmt(resolver);
-                    LOG(LEVEL_WARNING, "[+] IPv6.DNS = %s\n", fmt.string);
+                    LOG(LEVEL_WARN, "IPv6.DNS = %s\n", fmt.string);
                 }
                 break;
             case 1:
@@ -444,7 +444,7 @@ stack_ndpv6_resolve(
 
             /* It's taking too long, so notify the user */
             if (!is_delay_reported) {
-                LOG(LEVEL_HINT, "[*] resolving IPv6 router MAC address (may take some time)...\n");
+                LOG(LEVEL_HINT, "resolving IPv6 router MAC address (may take some time)...\n");
                 is_delay_reported = 1;
             }
         }
@@ -452,7 +452,7 @@ stack_ndpv6_resolve(
         /* If we aren't getting a response back to our ARP, then print a
          * status message */
         if (time(0) > start+1 && !is_arp_notice_given) {
-            LOG(LEVEL_HINT, "[*] resolving local IPv6 router\n");
+            LOG(LEVEL_HINT, "resolving local IPv6 router\n");
             is_arp_notice_given = 1;
         }
 

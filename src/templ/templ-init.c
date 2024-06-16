@@ -364,7 +364,7 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
     /* Parse our newly construct IPv6 packet */
     x = preprocess_frame(buf, tmpl->ipv6.length, data_link_type, &parsed);
     if (!x || parsed.found == FOUND_NOTHING) {
-        LOG(LEVEL_ERROR, "[-] FAILED: bad packet template\n");
+        LOG(LEVEL_ERROR, "FAILED: bad packet template\n");
         exit(1);
     }
 
@@ -528,8 +528,8 @@ _template_init(
     } else if (data_link_type == PCAP_DLT_ETHERNET) {
     /* the default, do nothing */
     } else {
-    LOG(LEVEL_ERROR, "[-] FAILED: bad packet template, unknown data link type\n");
-    LOG(LEVEL_ERROR, "    [hint] "XTATE_FIRST_UPPER_NAME" doesn't know how to format packets for this interface\n");
+    LOG(LEVEL_ERROR, "FAILED: bad packet template, unknown data link type\n");
+    LOG(LEVEL_ERROR, "    "XTATE_FIRST_UPPER_NAME" doesn't know how to format packets for this interface\n");
     exit(1);
     }
 

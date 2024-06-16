@@ -129,17 +129,17 @@ static int _main_scan(struct Xconf *xconf) {
     count_ips = rangelist_count(&xconf->targets.ipv4) +
                 range6list_count(&xconf->targets.ipv6).lo;
     if (count_ips == 0) {
-        LOG(LEVEL_ERROR, "FAIL: target IP address list empty\n");
-        LOG(LEVEL_ERROR, " [hint] try something like \"--range 10.0.0.0/8\"\n");
+        LOG(LEVEL_ERROR, "target IP address list empty\n");
+        LOG(LEVEL_ERROR, " try something like \"--range 10.0.0.0/8\"\n");
         LOG(LEVEL_ERROR,
-            " [hint] try something like \"--range 192.168.0.100-192.168.0.200\"\n");
+            " try something like \"--range 192.168.0.100-192.168.0.200\"\n");
         return 1;
     }
     count_ports = rangelist_count(&xconf->targets.ports);
     if (count_ports == 0) {
-        LOG(LEVEL_ERROR, "FAIL: no ports were specified\n");
-        LOG(LEVEL_ERROR, " [hint] try something like \"-p80,8000-9000\"\n");
-        LOG(LEVEL_ERROR, " [hint] try something like \"--ports 0-65535\"\n");
+        LOG(LEVEL_ERROR, "no ports were specified\n");
+        LOG(LEVEL_ERROR, " try something like \"-p80,8000-9000\"\n");
+        LOG(LEVEL_ERROR, " try something like \"--ports 0-65535\"\n");
         return 1;
     }
     range = count_ips * count_ports;
@@ -149,20 +149,20 @@ static int _main_scan(struct Xconf *xconf) {
      * user apply an exclude range
      */
     if (count_ips > 1000000000ULL && rangelist_count(&xconf->exclude.ipv4) == 0) {
-        LOG(LEVEL_ERROR, "FAIL: range too big, need confirmation\n");
-        LOG(LEVEL_ERROR, " [hint] to prevent accidents, at least one --exclude must be "
+        LOG(LEVEL_ERROR, "range too big, need confirmation\n");
+        LOG(LEVEL_ERROR, " to prevent accidents, at least one --exclude must be "
                "specified\n");
         LOG(LEVEL_ERROR,
-            " [hint] use \"--exclude 255.255.255.255\" as a simple confirmation\n");
+            " use \"--exclude 255.255.255.255\" as a simple confirmation\n");
         exit(1);
     }
 
     if (initialize_adapter(xconf) != 0)
         exit(1);
     if (!xconf->nic.is_usable) {
-        LOG(LEVEL_ERROR, "FAIL: failed to detect IP of interface\n");
-        LOG(LEVEL_ERROR, " [hint] did you spell the name correctly?\n");
-        LOG(LEVEL_ERROR, " [hint] if it has no IP address, "
+        LOG(LEVEL_ERROR, "failed to detect IP of interface\n");
+        LOG(LEVEL_ERROR, " did you spell the name correctly?\n");
+        LOG(LEVEL_ERROR, " if it has no IP address, "
                "manually set with \"--adapter-ip 192.168.100.5\"\n");
         exit(1);
     }
@@ -218,21 +218,21 @@ static int _main_scan(struct Xconf *xconf) {
      */
     if (!xconf->scan_module) {
         xconf->scan_module = get_scan_module_by_name("tcp-syn");
-        LOG(LEVEL_ERROR, "[-] Default ScanModule `tcpsyn` is chosen because no ScanModule "
+        LOG(LEVEL_ERROR, "Default ScanModule `tcpsyn` is chosen because no ScanModule "
             "was specified.\n");
     }
 
     /*validate probe type*/
     if (xconf->scan_module->required_probe_type==ProbeType_NULL) {
         if (xconf->probe_module) {
-            LOG(LEVEL_ERROR, "FAIL: ScanModule %s does not support any probe.\n",
+            LOG(LEVEL_ERROR, "ScanModule %s does not support any probe.\n",
                 xconf->scan_module->name);
             exit(1);
         }
     } else {
         if (!xconf->probe_module
             || xconf->probe_module->type != xconf->scan_module->required_probe_type) {
-            LOG(LEVEL_ERROR, "FAIL: ScanModule %s needs probe of %s type.\n",
+            LOG(LEVEL_ERROR, "ScanModule %s needs probe of %s type.\n",
                 xconf->scan_module->name,
                 get_probe_type_name(xconf->scan_module->required_probe_type));
             exit(1);
@@ -248,12 +248,12 @@ static int _main_scan(struct Xconf *xconf) {
         && xconf->scan_module->params) {
         if (set_parameters_from_substring(NULL,
             xconf->scan_module->params, xconf->scan_module_args)) {
-            LOG(LEVEL_ERROR, "FAIL: errors happened in sub param parsing of ScanModule.\n");
+            LOG(LEVEL_ERROR, "errors happened in sub param parsing of ScanModule.\n");
             exit(1);
         }
     }
     if (!xconf->scan_module->init_cb(xconf)) {
-        LOG(LEVEL_ERROR, "FAIL: errors happened in global init of ScanModule.\n");
+        LOG(LEVEL_ERROR, "errors happened in global init of ScanModule.\n");
         exit(1);
     }
 
@@ -266,13 +266,13 @@ static int _main_scan(struct Xconf *xconf) {
             && xconf->probe_module->params) {
             if (set_parameters_from_substring(NULL,
                 xconf->probe_module->params, xconf->probe_module_args)) {
-                LOG(LEVEL_ERROR, "FAIL: errors happened in sub param parsing of ProbeModule.\n");
+                LOG(LEVEL_ERROR, "errors happened in sub param parsing of ProbeModule.\n");
                 exit(1);
             }
         }
 
         if (!xconf->probe_module->init_cb(xconf)) {
-            LOG(LEVEL_ERROR, "FAIL: errors in ProbeModule global initializing\n");
+            LOG(LEVEL_ERROR, "errors in ProbeModule global initializing\n");
             exit(1);
         }
     }
@@ -281,7 +281,7 @@ static int _main_scan(struct Xconf *xconf) {
      * Do init for OutputModule
      */
     if (!output_init(&xconf->out)) {
-        LOG(LEVEL_ERROR, "FAIL: errors in OutputModule initializing\n");
+        LOG(LEVEL_ERROR, "errors in OutputModule initializing\n");
         exit(1);
     }
 
@@ -334,18 +334,18 @@ static int _main_scan(struct Xconf *xconf) {
     now = time(0);
     safe_gmtime(&x, &now);
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S GMT", &x);
-    LOG(LEVEL_HINT,
+    LOG(LEVEL_OUT,
         "\nStarting " XTATE_FIRST_UPPER_NAME " " XTATE_VERSION " at %s\n",
         buffer);
-    LOG(LEVEL_HINT, "("XTATE_GITHUB")\n");
+    LOG(LEVEL_OUT, "("XTATE_GITHUB")\n");
 
-    LOG(LEVEL_HINT, "ScanModule  : %s\n", xconf->scan_module->name);
+    LOG(LEVEL_OUT, "ScanModule  : %s\n", xconf->scan_module->name);
     if (xconf->probe_module)
-        LOG(LEVEL_HINT, "ProbeModule : %s\n", xconf->probe_module->name);
+        LOG(LEVEL_OUT, "ProbeModule : %s\n", xconf->probe_module->name);
     if (xconf->out.output_module)
-        LOG(LEVEL_HINT, "OutputModule: %s\n", xconf->out.output_module->name);
+        LOG(LEVEL_OUT, "OutputModule: %s\n", xconf->out.output_module->name);
 
-    LOG(LEVEL_HINT, "Scanning %u hosts [%u port%s/host]\n\n", (unsigned)count_ips,
+    LOG(LEVEL_OUT, "Scanning %u hosts [%u port%s/host]\n\n", (unsigned)count_ips,
         (unsigned)count_ports, (count_ports == 1) ? "" : "s");
 
     /*
@@ -374,7 +374,7 @@ static int _main_scan(struct Xconf *xconf) {
      * All controls are decided by global variable `time_to_finish_tx`.
      */
     pixie_usleep(1000 * 100);
-    LOG(LEVEL_WARNING, "[+] waiting for threads to finish\n");
+    LOG(LEVEL_WARN, "waiting for threads to finish\n");
     while (!time_to_finish_tx) {
         unsigned       i;
         double         rate                      = 0;
@@ -555,7 +555,7 @@ static int _main_scan(struct Xconf *xconf) {
 
         /*no more waiting or too many <ctrl-c>*/
         if (time(0) - now >= xconf->wait || time_to_finish_rx) {
-            LOG(LEVEL_WARNING, "[+] telling threads to exit..."
+            LOG(LEVEL_WARN, "telling threads to exit..."
                 "                                           \n");
             time_to_finish_rx = 1;
             break;
@@ -596,7 +596,7 @@ static int _main_scan(struct Xconf *xconf) {
 
     rawsock_close_adapter(xconf->nic.adapter);
 
-    LOG(LEVEL_WARNING, "[+] all threads have exited                    \n");
+    LOG(LEVEL_WARN, "all threads have exited                    \n");
 
     return 0;
 }
@@ -604,6 +604,9 @@ static int _main_scan(struct Xconf *xconf) {
 /***************************************************************************
  ***************************************************************************/
 int main(int argc, char *argv[]) {
+
+    /*init logger*/
+    LOG_init();
 
     struct Xconf xconf[1];
     memset(xconf, 0, sizeof(xconf));
@@ -663,9 +666,9 @@ int main(int argc, char *argv[]) {
         massip_add_port_string(&xconf->targets, "o:0", 0);
 
         // LOG(LEVEL_HINT, "NOTE: no ports were specified, use default other proto port 0.\n");
-        // LOG(LEVEL_HINT, " [hint] ignored if the ScanModule does not need port. (eg. "
+        // LOG(LEVEL_HINT, " ignored if the ScanModule does not need port. (eg. "
         //     "icmp, arp, ndp, etc.)\n");
-        // LOG(LEVEL_HINT, " [hint] or try something like \"-p 80,8000-9000\"\n");
+        // LOG(LEVEL_HINT, " or try something like \"-p 80,8000-9000\"\n");
     }
 
     /* Optimize target selection so it's a quick binary search instead
@@ -696,21 +699,24 @@ int main(int argc, char *argv[]) {
     case Operation_Scan:
         if (rangelist_count(&xconf->targets.ipv4) == 0 &&
             massint128_is_zero(range6list_count(&xconf->targets.ipv6))) {
-            LOG(LEVEL_ERROR, "FAIL: target IP address list empty\n");
+            LOG(LEVEL_ERROR, "target IP address list empty\n");
             if (has_target_addresses) {
-                LOG(LEVEL_ERROR, " [hint] all addresses were removed by exclusion ranges\n");
+                LOG(LEVEL_ERROR, " all addresses were removed by exclusion ranges\n");
             } else {
-                LOG(LEVEL_ERROR, " [hint] try something like \"--range 10.0.0.0/8\"\n");
-                LOG(LEVEL_ERROR, " [hint] try something like \"--range "
+                LOG(LEVEL_HINT, "try something like \"--range 10.0.0.0/8\"\n");
+                LOG(LEVEL_HINT, "try something like \"--range "
                     "192.168.0.100-192.168.0.200\"\n");
             }
             exit(1);
         }
         if (rangelist_count(&xconf->targets.ports) == 0 && has_target_ports) {
-            LOG(LEVEL_ERROR, " [hint] all ports were removed by exclusion ranges\n");
-            return 1;
+            LOG(LEVEL_ERROR, " all ports were removed by exclusion ranges\n");
+            break;
         }
-        return _main_scan(xconf);
+
+        _main_scan(xconf);
+
+        break;
 
     case Operation_Echo:
         xconf_echo(xconf, stdout);
@@ -768,6 +774,9 @@ int main(int argc, char *argv[]) {
         xconf_benchmark(xconf->blackrock_rounds);
         break;
     }
+
+    /*close logger*/
+    LOG_close();
 
     return 0;
 }

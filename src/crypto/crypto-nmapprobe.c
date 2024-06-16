@@ -56,14 +56,14 @@ size_t nmapprobe_decode(const char *str, size_t slen, void *buf, size_t bufsize)
             /* skip escape character '\\' */
             offset++;
             if (offset >= slen) {
-                LOG(LEVEL_ERROR, "[-] premature end of field\n");
+                LOG(LEVEL_ERROR, "premature end of field\n");
                 return 0;
             }
 
             /* Handled escape sequence */
             switch (str[offset++]) {
                 default:
-                    LOG(LEVEL_ERROR, "[-] unexpected escape character '%c'\n",
+                    LOG(LEVEL_ERROR, "unexpected escape character '%c'\n",
                         isprint(str[offset-1])?str[offset-1]:'.');
                     return 0;
                 case '\\':
@@ -97,14 +97,14 @@ size_t nmapprobe_decode(const char *str, size_t slen, void *buf, size_t bufsize)
                     /* make sure at least 2 characters exist in input, either due
                      * to line-length or the delimiter */
                     if (offset + 2 >= slen) {
-                        LOG(LEVEL_ERROR, "[-] line too short\n");
+                        LOG(LEVEL_ERROR, "line too short\n");
                         return 0;
                     }
 
                     /* make sure those two characters are hex digits */
                     if (!is_hexchar(str[offset+0])
                         || !is_hexchar(str[offset+1])) {
-                        LOG(LEVEL_ERROR, "[-] expected hex, found '%c%c'\n",
+                        LOG(LEVEL_ERROR, "expected hex, found '%c%c'\n",
                             isprint(str[offset+1])?str[offset+1]:'.',
                             isprint(str[offset+2])?str[offset+2]:'.');
                         return 0;

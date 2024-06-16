@@ -158,7 +158,7 @@ int rstfilter_selftest()
 
         x = rstfilter_is_filter(rf, src, 2, dst, 4);
         if (x) {
-            LOG(LEVEL_ERROR, "[-] rstfilter failed, line=%u\n", __LINE__);
+            LOG(LEVEL_ERROR, "rstfilter failed, line=%u\n", __LINE__);
             return 1;
         }
     }
@@ -173,13 +173,13 @@ int rstfilter_selftest()
 
     /* SOME must have passed, due to us emptying random buckets */
     if (count_passed == 0) {
-        LOG(LEVEL_ERROR, "[-] rstfilter failed, line=%u\n", __LINE__);
+        LOG(LEVEL_ERROR, "rstfilter failed, line=%u\n", __LINE__);
         return 1;
     }
 
     /* However, while some pass, the vast majority should be filtered */
     if (count_passed > count_filtered/10) {
-        LOG(LEVEL_ERROR, "[-] rstfilter failed, line=%u\n", __LINE__);
+        LOG(LEVEL_ERROR, "rstfilter failed, line=%u\n", __LINE__);
         return 1;
     }
     //printf("filtered=%u passed=%u\n", count_filtered, count_passed);

@@ -86,7 +86,7 @@ static enum ConfigRes SET_rarity(void *conf, const char *name, const char *value
 
     unsigned rarity = parseBoolean(value);
     if (rarity < 1 || rarity > 9) {
-        LOG(LEVEL_ERROR, "[-] NmapTcpProbe: rarity must be in range 1-9.\n");
+        LOG(LEVEL_ERROR, "NmapTcpProbe: rarity must be in range 1-9.\n");
         return Conf_ERR;
     }
 
@@ -155,34 +155,34 @@ nmaptcp_global_init(const struct Xconf *xconf)
 {
     /*Use LzrWait if no subprobe specified*/
     if (!nmaptcp_conf.probe_file) {
-        LOG(LEVEL_ERROR, "[-] No nmap-service-probes file specified.\n");
+        LOG(LEVEL_ERROR, "No nmap-service-probes file specified.\n");
         return false;
     }
     nmaptcp_conf.service_probes =
         nmapservice_read_file(nmaptcp_conf.probe_file);
 
     if (!nmaptcp_conf.service_probes) {
-        LOG(LEVEL_ERROR, "[-] NmapTcpProbe: invalid nmap_service_probes file: %s\n",
+        LOG(LEVEL_ERROR, "NmapTcpProbe: invalid nmap_service_probes file: %s\n",
             nmaptcp_conf.probe_file);
         return false;
     }
 
     if (!nmaptcp_conf.service_probes->count) {
-        LOG(LEVEL_ERROR, "[-] NmapTcpProbe: no probe has been loaded from %s\n",
+        LOG(LEVEL_ERROR, "NmapTcpProbe: no probe has been loaded from %s\n",
             nmaptcp_conf.probe_file);
         nmapservice_free(nmaptcp_conf.service_probes);
         return false;
     }
 
     nmapservice_match_compile(nmaptcp_conf.service_probes);
-    LOG(LEVEL_HINT, "[hint] NmapTcpProbe: probes loaded and compiled.\n");
+    LOG(LEVEL_HINT, "NmapTcpProbe: probes loaded and compiled.\n");
 
     nmapservice_link_fallback(nmaptcp_conf.service_probes);
-    LOG(LEVEL_HINT, "[hint] NmapTcpProbe: probe fallbacks linked.\n");
+    LOG(LEVEL_HINT, "NmapTcpProbe: probe fallbacks linked.\n");
 
     if (nmaptcp_conf.rarity == 0) {
         nmaptcp_conf.rarity = 7;
-        LOG(LEVEL_HINT, "[hint] NmapTcpProbe: no rarity specified, use default 7.\n");
+        LOG(LEVEL_HINT, "NmapTcpProbe: no rarity specified, use default 7.\n");
     }
 
     return true;
@@ -193,10 +193,10 @@ nmaptcp_close()
 {
     if (nmaptcp_conf.service_probes) {
         nmapservice_match_free(nmaptcp_conf.service_probes);
-        LOG(LEVEL_INFO, "[hint] NmapTcpProbe: probes compilation freed.\n");
+        LOG(LEVEL_INFO, "NmapTcpProbe: probes compilation freed.\n");
 
         nmapservice_free(nmaptcp_conf.service_probes);
-        LOG(LEVEL_INFO, "[hint] NmapTcpProbe: probes freed.\n");
+        LOG(LEVEL_INFO, "NmapTcpProbe: probes freed.\n");
 
         nmaptcp_conf.service_probes = NULL;
     }

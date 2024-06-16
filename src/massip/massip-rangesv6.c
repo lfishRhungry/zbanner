@@ -17,7 +17,7 @@
 
 #define BUCKET_COUNT 16
 
-#define REGRESS(i,x) if (!(x)) {LOG(LEVEL_ERROR, "[-] %u: regression failed %s:%d\n", (unsigned)i, __FILE__, __LINE__); return 1;}
+#define REGRESS(i,x) if (!(x)) {LOG(LEVEL_ERROR, "%u: regression failed %s:%d\n", (unsigned)i, __FILE__, __LINE__); return 1;}
 
 #define EQUAL(x,y) ipv6address_is_equal(x,y)
 
@@ -307,7 +307,7 @@ range6list_sort(struct Range6List *targets)
 
 
     /* First, sort the list */
-    LOG(LEVEL_DEBUG, "[+] range6:sort: sorting...\n");
+    LOG(LEVEL_DEBUG, "range6:sort: sorting...\n");
     qsort(  targets->list,              /* the array to sort */
             targets->count,             /* number of elements to sort */
             sizeof(targets->list[0]),   /* size of element */
@@ -318,18 +318,18 @@ range6list_sort(struct Range6List *targets)
      * a new list from a sorted list, so we don't have to remove things in the
      * middle when collapsing overlapping entries together, which is painfully
      * slow. */
-    LOG(LEVEL_DEBUG, "[+] range:sort: combining...\n");
+    LOG(LEVEL_DEBUG, "range:sort: combining...\n");
     for (i=0; i<targets->count; i++) {
         range6list_add_range(&newlist, targets->list[i].begin, targets->list[i].end);
     }
 
-    LOG(LEVEL_DEBUG, "[+] range:sort: combined from %u elements to %u elements\n", original_count, newlist.count);
+    LOG(LEVEL_DEBUG, "range:sort: combined from %u elements to %u elements\n", original_count, newlist.count);
     free(targets->list);
     targets->list = newlist.list;
     targets->count = newlist.count;
     newlist.list = 0;
 
-    LOG(LEVEL_INFO, "[+] range:sort: done...\n");
+    LOG(LEVEL_INFO, "range:sort: done...\n");
 
     targets->is_sorted = 1;
 }
@@ -514,7 +514,7 @@ range6list_pick(const struct Range6List *targets, uint64_t index)
     const size_t *picker = targets->picker;
 
     if (picker == NULL) {
-        LOG(LEVEL_ERROR, "[-] ipv6 picker is null\n");
+        LOG(LEVEL_ERROR, "ipv6 picker is null\n");
         exit(1);
     }
 
@@ -620,7 +620,7 @@ regress_pick2()
         d = _int128_subtract(c, b);
 
         if (!_int128_is_equals(a, d)) {
-            LOG(LEVEL_ERROR, "[-] %s:%d: test failed (%u)\n", __FILE__, __LINE__, (unsigned)i);
+            LOG(LEVEL_ERROR, "%s:%d: test failed (%u)\n", __FILE__, __LINE__, (unsigned)i);
             return 1;
         }
     }
@@ -656,7 +656,7 @@ regress_pick2()
         /* Duplicate the targetlist using the picker */
         x = range6list_count(targets);
         if (x.hi) {
-            LOG(LEVEL_ERROR, "[-] range6: range too big\n");
+            LOG(LEVEL_ERROR, "range6: range too big\n");
             return 1;
         }
         range = x.lo;

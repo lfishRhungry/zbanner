@@ -63,7 +63,7 @@ struct RxDispatch {
 static void
 dispatch_thread(void *v)
 {
-    LOG(LEVEL_WARNING, "[+] starting dispatch thread\n");
+    LOG(LEVEL_WARN, "starting dispatch thread\n");
     pixie_set_thread_name(XTATE_NAME"-dsp");
 
     struct RxDispatch *parms = v;
@@ -78,7 +78,7 @@ dispatch_thread(void *v)
         }
 
         if (recved==NULL) {
-            LOG(LEVEL_ERROR, "FAIL: got empty Recved in dispatch thread. (IMPOSSIBLE)\n");
+            LOG(LEVEL_ERROR, "got empty Recved in dispatch thread. (IMPOSSIBLE)\n");
             fflush(stdout);
             exit(1);
         }
@@ -94,13 +94,13 @@ dispatch_thread(void *v)
             err = rte_ring_sp_enqueue(
                 parms->handle_queue[i], recved);
             if (err!=0) {
-                LOG(LEVEL_ERROR, "[-] handle queue #%d full from dispatch thread.\n", i);
+                LOG(LEVEL_ERROR, "handle queue #%d full from dispatch thread.\n", i);
                 pixie_usleep(RTE_XTATE_ENQ_USEC);
             }
         }
     }
 
-    LOG(LEVEL_WARNING, "[+] exiting dispatch thread\n");
+    LOG(LEVEL_WARN, "exiting dispatch thread\n");
 }
 
 struct RxHandle {
@@ -123,7 +123,7 @@ handle_thread(void *v)
     struct RxHandle    *parms = v;
     const struct Xconf *xconf = parms->xconf;
 
-    LOG(LEVEL_WARNING, "[+] starting handle thread #%u\n", parms->index);
+    LOG(LEVEL_WARN, "starting handle thread #%u\n", parms->index);
 
     char th_name[30];
     snprintf(th_name, sizeof(th_name), XTATE_NAME"-hdl #%u", parms->index);
@@ -157,7 +157,7 @@ handle_thread(void *v)
         }
 
         if (recved==NULL) {
-            LOG(LEVEL_ERROR, "FAIL: got empty Recved in handle thread #%d. (IMPOSSIBLE)\n", parms->index);
+            LOG(LEVEL_ERROR, "got empty Recved in handle thread #%d. (IMPOSSIBLE)\n", parms->index);
             fflush(stdout);
             exit(1);
         }
@@ -179,7 +179,7 @@ handle_thread(void *v)
         free(recved);
     }
 
-    LOG(LEVEL_WARNING, "[+] exiting handle thread #%u                    \n",
+    LOG(LEVEL_WARN, "exiting handle thread #%u                    \n",
         parms->index);
 }
 
@@ -207,7 +207,7 @@ void receive_thread(void *v) {
     struct Received               *recved;
 
 
-    LOG(LEVEL_WARNING, "[+] starting receive thread\n");
+    LOG(LEVEL_WARN, "starting receive thread\n");
 
     pixie_set_thread_name(XTATE_NAME"-recv");
 
@@ -279,7 +279,7 @@ void receive_thread(void *v) {
         handler[i] = pixie_begin_thread(handle_thread, 0, &handle_parms[i]);
     }
 
-    LOG(LEVEL_INFO, "[+] THREAD: recv: starting main loop\n");
+    LOG(LEVEL_INFO, "THREAD: recv: starting main loop\n");
     while (!time_to_finish_rx) {
 
         /*handle only one actual fast-timeout event to avoid blocking*/
@@ -442,14 +442,14 @@ void receive_thread(void *v) {
         for (err=1; err!=0; ) {
             err = rte_ring_sp_enqueue(dispatch_q, recved);
             if (err != 0) {
-                LOG(LEVEL_ERROR, "[-] dispatch queue full from rx thread with too fast rate.\n");
+                LOG(LEVEL_ERROR, "dispatch queue full from rx thread with too fast rate.\n");
                 pixie_usleep(RTE_XTATE_ENQ_USEC);
                 // exit(1);
             }
         }
     }
 
-    LOG(LEVEL_WARNING, "[+] exiting receive thread and joining handlers               \n");
+    LOG(LEVEL_WARN, "exiting receive thread and joining handlers               \n");
 
     /*
      * cleanup

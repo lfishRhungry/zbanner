@@ -303,7 +303,7 @@ rawsock_send_packet(
             err = PFRING.send(adapter->ring, packet, length, 0);
         }
         if (err < 0)
-            LOG(LEVEL_WARNING, "pfring:xmit: ERROR %d\n", err);
+            LOG(LEVEL_WARN, "pfring:xmit: ERROR %d\n", err);
         return err;
     }
 
@@ -619,14 +619,14 @@ rawsock_init_adapter(const char *adapter_name,
                 adapter_name, strerror(errno));
             return 0;
         } else
-            LOG(LEVEL_WARNING, "pfring:'%s': successfully opened\n", adapter_name);
+            LOG(LEVEL_WARN, "pfring:'%s': successfully opened\n", adapter_name);
 
         /*
          * Housekeeping
          */
         PFRING.set_application_name(adapter->ring, XTATE_NAME);
         PFRING.version(adapter->ring, &version);
-        LOG(LEVEL_WARNING, "pfring: version %d.%d.%d\n",
+        LOG(LEVEL_WARN, "pfring: version %d.%d.%d\n",
             (version >> 16) & 0xFFFF,
             (version >> 8) & 0xFF,
             (version >> 0) & 0xFF);
@@ -653,7 +653,7 @@ rawsock_init_adapter(const char *adapter_name,
             adapter->ring = 0;
             return 0;
         } else
-            LOG(LEVEL_WARNING, "pfring:'%s': successfully enabled\n", adapter_name);
+            LOG(LEVEL_WARN, "pfring:'%s': successfully enabled\n", adapter_name);
 
         return adapter;
     }
@@ -662,7 +662,7 @@ rawsock_init_adapter(const char *adapter_name,
      * Kludge: for using files
      *----------------------------------------------------------------*/
     if (memcmp(adapter_name, "file:", 5) == 0) {
-        LOG(LEVEL_WARNING, "pcap: file: %s\n", adapter_name+5);
+        LOG(LEVEL_WARN, "pcap: file: %s\n", adapter_name+5);
         is_pcap_file       = 1;
         adapter->pcap      = PCAP.open_offline(adapter_name+5, errbuf);
         adapter->link_type = PCAP.datalink(adapter->pcap);
@@ -674,8 +674,8 @@ rawsock_init_adapter(const char *adapter_name,
      *----------------------------------------------------------------*/
     {
         int err;
-        LOG(LEVEL_WARNING, "[+] if(%s): pcap: %s\n", adapter_name, PCAP.lib_version());
-        LOG(LEVEL_INFO, "[+] if(%s): opening...\n", adapter_name);
+        LOG(LEVEL_WARN, "if(%s): pcap: %s\n", adapter_name, PCAP.lib_version());
+        LOG(LEVEL_INFO, "if(%s): opening...\n", adapter_name);
 
         /* This reserves resources, but doesn't actually open the 
          * adapter until we call pcap_activate */
@@ -692,8 +692,8 @@ rawsock_init_adapter(const char *adapter_name,
             if (adapter->pcap == NULL) {
                 LOG(LEVEL_ERROR, "FAIL:%s: can't open adapter: %s\n", adapter_name, errbuf);
                 if (strstr(errbuf, "perm")) {
-                    LOG(LEVEL_ERROR, "FAIL: permission denied\n");
-                    LOG(LEVEL_ERROR, " [hint] need to sudo or run as root or administrator\n");
+                    LOG(LEVEL_ERROR, "permission denied\n");
+                    LOG(LEVEL_ERROR, " need to sudo or run as root or administrator\n");
                 }
                 return 0;
             }
@@ -730,17 +730,17 @@ rawsock_init_adapter(const char *adapter_name,
                 /* drop down below */
                 break;
             case PCAP_ERROR_PERM_DENIED:
-                LOG(LEVEL_ERROR, "[-] FAIL: permission denied\n");
-                LOG(LEVEL_ERROR, "    [hint] need to sudo or run as root or administrator\n");
+                LOG(LEVEL_ERROR, "permission denied\n");
+                LOG(LEVEL_ERROR, "    need to sudo or run as root or administrator\n");
                 goto pcap_error;
             default:
-                LOG(LEVEL_ERROR, "[-] if(%s): activate:%d: %s\n", adapter_name, err, PCAP.geterr(adapter->pcap));
+                LOG(LEVEL_ERROR, "if(%s): activate:%d: %s\n", adapter_name, err, PCAP.geterr(adapter->pcap));
                 if (err < 0)
                     goto pcap_error;
             }
         }
 
-        LOG(LEVEL_WARNING, "[+] if(%s): successfully opened\n", adapter_name);
+        LOG(LEVEL_WARN, "if(%s): successfully opened\n", adapter_name);
 
 
 
@@ -751,13 +751,13 @@ rawsock_init_adapter(const char *adapter_name,
                 PCAP.perror(adapter->pcap, "if: datalink");
                 goto pcap_error;
             case 0: /* Null/Loopback [VPN tunnel] */
-                LOG(LEVEL_WARNING, "[+] if(%s): VPN tunnel interface found\n", adapter_name);
+                LOG(LEVEL_WARN, "if(%s): VPN tunnel interface found\n", adapter_name);
                 break;
             case 1: /* Ethernet */
             case 12: /* IP Raw */
                 break;
             default:
-                LOG(LEVEL_ERROR, "[-] if(%s): unknown data link type: %u(%s)\n",
+                LOG(LEVEL_ERROR, "if(%s): unknown data link type: %u(%s)\n",
                     adapter_name,
                     adapter->link_type,
                     PCAP.datalink_val_to_name(adapter->link_type));
@@ -776,7 +776,7 @@ pcap_error:
     }
     if (adapter->pcap == NULL) {
         if (strcmp(adapter_name, "vmnet1") == 0) {
-            LOG(LEVEL_ERROR, " [hint] VMware on Macintosh doesn't support "XTATE_NAME"\n");
+            LOG(LEVEL_ERROR, " VMware on Macintosh doesn't support "XTATE_NAME"\n");
         }
         return 0;
     }
@@ -823,7 +823,7 @@ rawsock_set_filter(struct Adapter *adapter, const char *scan_filter,
 
     } else return;
 
-    LOG(LEVEL_WARNING, "[+] Final bpf filter: %s\n", final_filter);
+    LOG(LEVEL_WARN, "Final bpf filter: %s\n", final_filter);
 
     /**
      * set BPF filter
@@ -841,14 +841,14 @@ rawsock_set_filter(struct Adapter *adapter, const char *scan_filter,
     err = PCAP.compile(adapter->pcap, &bpfp, final_filter, 1, 0);
     if (err) {
         PCAP.perror(adapter->pcap, "if: pcap_compile");
-        LOG(LEVEL_ERROR, "FAIL: compile bpf filter error.\n");
+        LOG(LEVEL_ERROR, "compile bpf filter error.\n");
         exit(1);
     }
 
     err = PCAP.setfilter(adapter->pcap, &bpfp);
     if (err) {
         PCAP.perror(adapter->pcap, "if: setfilter");
-        LOG(LEVEL_ERROR, "FAIL: set bpf filter error.\n");
+        LOG(LEVEL_ERROR, "set bpf filter error.\n");
         exit(1);
     }
 }
@@ -862,7 +862,7 @@ void rawsock_set_nonblock(struct Adapter *adapter)
         err = PCAP.setnonblock(adapter->pcap, 1, errbuf);
         if (err) {
             PCAP.perror(adapter->pcap, "if: pcap_setnonblock");
-            LOG(LEVEL_ERROR, "FAIL: set nonblock error.\n");
+            LOG(LEVEL_ERROR, "set nonblock error.\n");
             exit(1);
         }
     }
@@ -902,22 +902,22 @@ int rawsock_selftest_if(const char *ifname)
     if (ifname == NULL || ifname[0] == 0) {
         err = rawsock_get_default_interface(ifname2, sizeof(ifname2));
         if (err) {
-            LOG(LEVEL_ERROR, "[-] if = not found (err=%d)\n", err);
+            LOG(LEVEL_ERROR, "if = not found (err=%d)\n", err);
             return -1;
         }
         ifname = ifname2;
     }
-    LOG(LEVEL_HINT, "[+] if = %s\n", ifname);
+    LOG(LEVEL_HINT, "if = %s\n", ifname);
 
     /*
      * Initialize the adapter.
      */
     adapter = rawsock_init_adapter(ifname, 0, 0, 0, 0, 0, 0, 65535);
     if (adapter == 0) {
-        LOG(LEVEL_ERROR, "[-] pcap = failed\n");
+        LOG(LEVEL_ERROR, "pcap = failed\n");
         return -1;
     } else {
-        LOG(LEVEL_HINT, "[+] pcap = opened\n");
+        LOG(LEVEL_HINT, "pcap = opened\n");
     }
 
     acache = rawsock_init_cache(false);
@@ -925,43 +925,43 @@ int rawsock_selftest_if(const char *ifname)
     /* IPv4 address */
     ipv4 = rawsock_get_adapter_ip(ifname);
     if (ipv4 == 0) {
-        LOG(LEVEL_ERROR, "[-] source-ipv4 = not found (err)\n");
+        LOG(LEVEL_ERROR, "source-ipv4 = not found (err)\n");
     } else {
         fmt = ipv4address_fmt(ipv4);
-        LOG(LEVEL_HINT, "[+] source-ipv4 = %s\n", fmt.string);
+        LOG(LEVEL_HINT, "source-ipv4 = %s\n", fmt.string);
     }
 
     /* IPv6 address */
     ipv6 = rawsock_get_adapter_ipv6(ifname);
     if (ipv6address_is_zero(ipv6)) {
-        LOG(LEVEL_ERROR, "[-] source-ipv6 = not found\n");
+        LOG(LEVEL_ERROR, "source-ipv6 = not found\n");
     } else {
         fmt = ipv6address_fmt(ipv6);
-        LOG(LEVEL_HINT, "[+] source-ipv6 = [%s]\n", fmt.string);
+        LOG(LEVEL_HINT, "source-ipv6 = [%s]\n", fmt.string);
     }
 
     /* MAC address */
     err = rawsock_get_adapter_mac(ifname, source_mac.addr);
     if (err) {
-        LOG(LEVEL_ERROR, "[-] source-mac = not found (err=%d)\n", err);
+        LOG(LEVEL_ERROR, "source-mac = not found (err=%d)\n", err);
     } else {
         fmt = macaddress_fmt(source_mac);
-        LOG(LEVEL_HINT, "[+] source-mac = %s\n", fmt.string);
+        LOG(LEVEL_HINT, "source-mac = %s\n", fmt.string);
     }
 
     switch (adapter->link_type) {
     case 0:
-        LOG(LEVEL_HINT, "[+] router-ip = implicit\n");
-        LOG(LEVEL_HINT, "[+] router-mac = implicit\n");
+        LOG(LEVEL_HINT, "router-ip = implicit\n");
+        LOG(LEVEL_HINT, "router-mac = implicit\n");
         break;
     default:
         /* IPv4 router IP address */
         err = rawsock_get_default_gateway(ifname, &router_ipv4);
         if (err) {
-            LOG(LEVEL_ERROR, "[-] router-ip = not found(err=%d)\n", err);
+            LOG(LEVEL_ERROR, "router-ip = not found(err=%d)\n", err);
         } else {
             fmt = ipv4address_fmt(router_ipv4);
-            LOG(LEVEL_HINT, "[+] router-ip = %s\n", fmt.string);
+            LOG(LEVEL_HINT, "router-ip = %s\n", fmt.string);
         }
 
         /* IPv4 router MAC address */
@@ -977,10 +977,10 @@ int rawsock_selftest_if(const char *ifname)
                 &router_mac);
 
             if (macaddress_is_zero(router_mac)) {
-                LOG(LEVEL_ERROR, "[-] router-mac-ipv4 = not found\n");
+                LOG(LEVEL_ERROR, "router-mac-ipv4 = not found\n");
             } else {
                 fmt = macaddress_fmt(router_mac);
-                LOG(LEVEL_HINT, "[+] router-mac-ipv4 = %s\n", fmt.string);
+                LOG(LEVEL_HINT, "router-mac-ipv4 = %s\n", fmt.string);
             }
         }
 
@@ -1002,10 +1002,10 @@ int rawsock_selftest_if(const char *ifname)
                 &router_mac);
 
             if (macaddress_is_zero(router_mac)) {
-                LOG(LEVEL_ERROR, "[-] router-mac-ipv6 = not found\n");
+                LOG(LEVEL_ERROR, "router-mac-ipv6 = not found\n");
             } else {
                 fmt = macaddress_fmt(router_mac);
-                LOG(LEVEL_HINT, "[+] router-mac-ipv6 = %s\n", fmt.string);
+                LOG(LEVEL_HINT, "router-mac-ipv6 = %s\n", fmt.string);
             }
         }
     }

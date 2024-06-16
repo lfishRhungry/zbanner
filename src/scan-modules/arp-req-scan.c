@@ -14,12 +14,12 @@ static bool
 arpreq_init(const struct Xconf *xconf)
 {
     if (xconf->nic.link_type!=1) {
-        LOG(LEVEL_ERROR, "[-] ArpReqScan cannot work on non-ethernet link type.\n");
+        LOG(LEVEL_ERROR, "ArpReqScan cannot work on non-ethernet link type.\n");
         return false;
     }
 
     if (xconf->targets.count_ports!=1) {
-        LOG(LEVEL_ERROR, "[-] ArpReqScan doesn't need to specify any ports.\n");
+        LOG(LEVEL_ERROR, "ArpReqScan doesn't need to specify any ports.\n");
         return false;
     }
 

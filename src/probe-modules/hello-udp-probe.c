@@ -69,7 +69,7 @@ static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
 
     helloudp_conf.regex_len = strlen(value);
     if (helloudp_conf.regex_len==0) {
-        LOG(LEVEL_ERROR, "FAIL: Invalid regex.\n");
+        LOG(LEVEL_ERROR, "Invalid regex.\n");
         return Conf_ERR;
     }
 
@@ -85,13 +85,13 @@ static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
         NULL);
 
     if (!helloudp_conf.compiled_re) {
-        LOG(LEVEL_ERROR, "[-]Regex compiled failed.\n");
+        LOG(LEVEL_ERROR, "Regex compiled failed.\n");
         return Conf_ERR;
     }
 
     helloudp_conf.match_ctx = pcre2_match_context_create(NULL);
     if (!helloudp_conf.match_ctx) {
-        LOG(LEVEL_ERROR, "[-]Regex allocates match_ctx failed.\n");
+        LOG(LEVEL_ERROR, "Regex allocates match_ctx failed.\n");
         return Conf_ERR;
     }
 
@@ -119,7 +119,7 @@ static enum ConfigRes SET_hello_string(void *conf, const char *name, const char 
 
     helloudp_conf.hello_len = strlen(value);
     if (helloudp_conf.hello_len==0) {
-        LOG(LEVEL_ERROR, "FAIL: Invalid hello string.\n");
+        LOG(LEVEL_ERROR, "Invalid hello string.\n");
         return Conf_ERR;
     }
     helloudp_conf.hello = MALLOC(helloudp_conf.hello_len);
@@ -138,7 +138,7 @@ static enum ConfigRes SET_hello_nmap(void *conf, const char *name, const char *v
 
     helloudp_conf.hello_len = strlen(value);
     if (helloudp_conf.hello_len==0) {
-        LOG(LEVEL_ERROR, "FAIL: Invalid hello string in nmap probe format.\n");
+        LOG(LEVEL_ERROR, "Invalid hello string in nmap probe format.\n");
         return Conf_ERR;
     }
 
@@ -159,7 +159,7 @@ static enum ConfigRes SET_hello_base64(void *conf, const char *name, const char 
 
     helloudp_conf.hello_len = strlen(value);
     if (helloudp_conf.hello_len==0) {
-        LOG(LEVEL_ERROR, "FAIL: Invalid hello string in base64 format.\n");
+        LOG(LEVEL_ERROR, "Invalid hello string in base64 format.\n");
         return Conf_ERR;
     }
 
@@ -180,7 +180,7 @@ static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *v
 
     FILE *fp = fopen(value, "rb");
     if (fp==NULL) {
-        LOG(LEVEL_ERROR, "[-]Failed to open file %s.\n", value);
+        LOG(LEVEL_ERROR, "Failed to open file %s.\n", value);
         return Conf_ERR;
     }
 
@@ -190,7 +190,7 @@ static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *v
     unsigned char buf[PM_PAYLOAD_SIZE];
     size_t bytes_read = fread(buf, 1, PM_PAYLOAD_SIZE, fp);
     if (bytes_read==0) {
-        LOG(LEVEL_ERROR, "[-]Failed to read valid hello in file %s.\n", value);
+        LOG(LEVEL_ERROR, "Failed to read valid hello in file %s.\n", value);
         perror(value);
         fclose(fp);
         return Conf_ERR;
@@ -278,12 +278,12 @@ static bool
 helloudp_global_init(const struct Xconf *xconf)
 {
     if (helloudp_conf.hello==NULL || helloudp_conf.hello_len==0) {
-        LOG(LEVEL_ERROR, "[-]HelloUdpProbe: No hello data specified.\n");
+        LOG(LEVEL_ERROR, "HelloUdpProbe: No hello data specified.\n");
         return false;
     }
 
     if (helloudp_conf.regex==NULL || helloudp_conf.regex_len==0) {
-        LOG(LEVEL_ERROR, "[-]HelloUdpProbe: No regex set.\n");
+        LOG(LEVEL_ERROR, "HelloUdpProbe: No regex set.\n");
         return false;
     }
 
@@ -317,7 +317,7 @@ helloudp_validate_response(
 
     match_data = pcre2_match_data_create_from_pattern(helloudp_conf.compiled_re, NULL);
     if (!match_data) {
-        LOG(LEVEL_ERROR, "FAIL: cannot allocate match_data when matching.\n");
+        LOG(LEVEL_ERROR, "cannot allocate match_data when matching.\n");
         return false;
     }
 

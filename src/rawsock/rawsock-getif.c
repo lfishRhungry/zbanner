@@ -77,7 +77,7 @@ rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
         free(rtm);
         return errno;
     }
-    LOG(LEVEL_INFO, "[+] getif: got socket handle\n");
+    LOG(LEVEL_INFO, "getif: got socket handle\n");
 
     /* Needs a timeout. Sometimes it'll hang indefinitely waiting for a 
      * response that will never arrive */
@@ -88,11 +88,11 @@ rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
 
         err = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
         if (err < 0)
-            LOG(LEVEL_ERROR, "[-] SO_RCVTIMEO: %d %s\n", errno, strerror(errno));
+            LOG(LEVEL_ERROR, "SO_RCVTIMEO: %d %s\n", errno, strerror(errno));
 
         err = setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout));
         if (err < 0)
-            LOG(LEVEL_ERROR, "[-] SO_SNDTIMEO: %d %s\n", errno, strerror(errno));
+            LOG(LEVEL_ERROR, "SO_SNDTIMEO: %d %s\n", errno, strerror(errno));
    }
 
     /*
@@ -121,7 +121,7 @@ rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
 
     err = write(fd, (char *)rtm, rtm->rtm_msglen);
     if (err <= 0) {
-        LOG(LEVEL_ERROR, "[-] getif: write(): returned %d %s\n", errno, strerror(errno));
+        LOG(LEVEL_ERROR, "getif: write(): returned %d %s\n", errno, strerror(errno));
         goto fail;
     }
 
@@ -131,11 +131,11 @@ rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
     for (;;) {
         err = read(fd, (char *)rtm, sizeof_buffer);
         if (err <= 0) {
-            LOG(LEVEL_ERROR, "[-] getif: read(): returned %d %s\n", errno, strerror(errno));
+            LOG(LEVEL_ERROR, "getif: read(): returned %d %s\n", errno, strerror(errno));
             goto fail;
         }
 
-        LOG(LEVEL_INFO, "[+] getif: got response, len=%d\n", err);
+        LOG(LEVEL_INFO, "getif: got response, len=%d\n", err);
 
         if (rtm->rtm_seq != seq) {
             printf("seq: %u %u\n", rtm->rtm_seq, seq);

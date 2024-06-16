@@ -1194,14 +1194,14 @@ nmapservice_match_compile(struct NmapServiceProbeList * service_probes)
                 NULL);
 
             if (!match->compiled_re) {
-                LOG(LEVEL_HINT, "[-] regex compiled failed.\n");
+                LOG(LEVEL_HINT, "regex compiled failed.\n");
                 continue;
             }
 
             match->match_ctx = pcre2_match_context_create(NULL);
 
             if (!match->match_ctx) {
-                LOG(LEVEL_HINT, "[-] regex allocates match_ctx failed.\n");
+                LOG(LEVEL_HINT, "regex allocates match_ctx failed.\n");
                 continue;
             }
 
@@ -1378,7 +1378,7 @@ match_service_in_one_probe(
 
             match_data = pcre2_match_data_create_from_pattern(m->compiled_re, NULL);
             if (!match_data) {
-                LOG(LEVEL_ERROR, "FAIL: cannot allocate match_data when matching in probe %s.\n",
+                LOG(LEVEL_ERROR, "cannot allocate match_data when matching in probe %s.\n",
                     probe->name);
                 match_res = NULL;
                 break;

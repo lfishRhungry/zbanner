@@ -86,7 +86,6 @@
 #include "../globals.h"
 #include "../crypto/crypto-base64.h"
 #include "../util-data/fine-malloc.h"
-#include "../util-out/errormsg.h"
 
 
 #ifdef _MSC_VER
@@ -237,6 +236,8 @@ _tcp_state_to_string(enum Tcp_State state)
     }
 }
 
+/***************************************************************************
+ ***************************************************************************/
 static void
 _vLOGtcb(const struct TCP_Control_Block *tcb, int dir, const char *fmt, va_list marker)
 {
@@ -263,6 +264,8 @@ _vLOGtcb(const struct TCP_Control_Block *tcb, int dir, const char *fmt, va_list 
     fflush(stderr);
 }
 
+/***************************************************************************
+ ***************************************************************************/
 static void
 _LOGtcb(const struct TCP_Control_Block *tcb, int dir, const char *fmt, ...)
 {
@@ -274,8 +277,6 @@ _LOGtcb(const struct TCP_Control_Block *tcb, int dir, const char *fmt, ...)
     _vLOGtcb(tcb, dir, fmt, marker);
     va_end(marker);
 }
-
-
 
 /***************************************************************************
  * Process all events, up to the current time, that need timing out.
@@ -316,6 +317,8 @@ tcpcon_timeouts(struct TCP_ConnectionTable *tcpcon, unsigned secs, unsigned usec
     }
 }
 
+/***************************************************************************
+ ***************************************************************************/
 struct TCP_ConnectionTable *
 tcpcon_create_table(size_t entry_count,
     struct stack_t *stack,
@@ -381,6 +384,8 @@ tcpcon_create_table(size_t entry_count,
     return tcpcon;
 }
 
+/***************************************************************************
+ ***************************************************************************/
 static int
 _TCB_EQUALS(const struct TCP_Control_Block *lhs, const struct TCP_Control_Block *rhs)
 {
@@ -466,7 +471,7 @@ _tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
         r_entry = &(*r_entry)->next;
 
     if (*r_entry == NULL) {
-        LOG(LEVEL_WARNING, "TCP.tcb: double free\n");
+        LOG(LEVEL_WARN, "TCP.tcb: double free\n");
         return;
     }
 
@@ -517,6 +522,8 @@ _tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
     tcpcon->active_count--;
 }
 
+/***************************************************************************
+ ***************************************************************************/
 void
 tcpcon_destroy_table(struct TCP_ConnectionTable *tcpcon)
 {
@@ -540,8 +547,6 @@ tcpcon_destroy_table(struct TCP_ConnectionTable *tcpcon)
     free(tcpcon->entries);
     free(tcpcon);
 }
-
-
 
 /***************************************************************************
  * Called when we receive a "SYN-ACK" packet with the correct SYN-cookie.
@@ -627,8 +632,6 @@ tcpcon_create_tcb(
     return tcb;
 }
 
-
-
 /***************************************************************************
  ***************************************************************************/
 struct TCP_Control_Block *
@@ -656,7 +659,6 @@ tcpcon_lookup_tcb(
 
     return tcb;
 }
-
 
 /***************************************************************************
  ***************************************************************************/
@@ -709,7 +711,6 @@ _tcpcon_send_packet(
     stack_transmit_packetbuffer(tcpcon->stack, response);
 }
 
-
 /***************************************************************************
  * DEBUG: when printing debug messages (-d option), this prints a string
  * for the given state.
@@ -728,7 +729,6 @@ _what_to_string(enum TCP_What state)
             return "UNKN_WHAT";
     }
 }
-
 
 /***************************************************************************
  * This function could be used without TCB.
@@ -757,7 +757,6 @@ _tcpcon_send_raw_SYN(struct TCP_ConnectionTable *tcpcon,
     stack_transmit_packetbuffer(tcpcon->stack, response);
 }
 
-
 /***************************************************************************
  * Called upon timeouts when an acknowledgement hasn't been received in
  * time. Will resend the segments.
@@ -772,7 +771,7 @@ _tcb_seg_resend(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tc
         if (!seg->length || !seg->buf) return;
 
         if (tcb->seqno_me != seg->seqno) {
-            ERRMSG("TCP.seqno: failure in diff=%d                                           \n",
+            LOG(LEVEL_ERROR, "TCP.seqno: failure in diff=%d                                           \n",
                 tcb->seqno_me - seg->seqno);
             return;
         }
@@ -801,7 +800,6 @@ _application_notify(
 
     application_event(&socket, event, payload, payload_length);
 }
-
 
 /***************************************************************************
  * !cannot do sending data and closing at same time
@@ -968,7 +966,6 @@ tcpapi_set_timeout(struct StackHandler *socket, unsigned secs, unsigned usecs)
     return SOCKERR_NONE;
 }
 
-
 /***************************************************************************
  ***************************************************************************/
 enum SOCK_Res
@@ -989,6 +986,8 @@ tcpapi_recv(struct StackHandler *socket)
     return SOCKERR_NONE;
 }
 
+/***************************************************************************
+ ***************************************************************************/
 enum SOCK_Res
 tcpapi_send_data(struct StackHandler *socket,
     const void *buf, size_t length,
@@ -1012,11 +1011,13 @@ tcpapi_send_data(struct StackHandler *socket,
             _tcb_seg_send(socket->tcpcon, tcb, buf, length, is_dynamic);
             return SOCKERR_NONE;
         default:
-            LOG(LEVEL_WARNING, "TCP app attempted SEND in wrong state\n");
+            LOG(LEVEL_WARN, "TCP app attempted SEND in wrong state\n");
             return SOCKERR_EBADF;
     }
 }
 
+/***************************************************************************
+ ***************************************************************************/
 enum SOCK_Res
 tcpapi_change_app_state(struct StackHandler *socket, enum App_State new_app_state)
 {
@@ -1031,7 +1032,8 @@ tcpapi_change_app_state(struct StackHandler *socket, enum App_State new_app_stat
     return SOCKERR_NONE;
 }
 
-
+/***************************************************************************
+ ***************************************************************************/
 enum SOCK_Res
 tcpapi_close(struct StackHandler *socket)
 {
@@ -1043,7 +1045,6 @@ tcpapi_close(struct StackHandler *socket)
 
     return SOCKERR_NONE;
 }
-
 
 /***************************************************************************
  ***************************************************************************/
@@ -1057,6 +1058,8 @@ _LOGSEND(struct TCP_Control_Block *tcb, const char *what)
         _tcp_state_to_string(tcb->tcpstate), what);
 }
 
+/***************************************************************************
+ ***************************************************************************/
 static int
 _tcb_seg_recv(
     struct TCP_ConnectionTable *tcpcon,
@@ -1219,7 +1222,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
 
                     break;
                 default:
-                    ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
+                    LOGnet(tcb->ip_them, tcb->port_them, "Unhandled Event>>> %s:%s\n", 
                         _tcp_state_to_string(tcb->tcpstate), _what_to_string(what));
 
                     break;
@@ -1267,7 +1270,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     */
                     break;
                 default:
-                    ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
+                    LOGnet(tcb->ip_them, tcb->port_them, "Unhandled Event>>> %s:%s\n", 
                         _tcp_state_to_string(tcb->tcpstate), _what_to_string(what));
                     break;
             }
@@ -1303,7 +1306,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     */
                     break;
                 default:
-                    ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
+                    LOGnet(tcb->ip_them, tcb->port_them, "Unhandled Event>>> %s:%s\n", 
                         _tcp_state_to_string(tcb->tcpstate), _what_to_string(what));
                     break;
             }
@@ -1311,7 +1314,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
         }
 
         default: {
-            ERRMSGip(tcb->ip_them, tcb->port_them, "%s:%s **** UNHANDLED EVENT ****\n", 
+            LOGnet(tcb->ip_them, tcb->port_them, "Unhandled Event>>> %s:%s\n", 
                 _tcp_state_to_string(tcb->tcpstate), _what_to_string(what));
             break;
         }
@@ -1320,6 +1323,8 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
     return;
 }
 
+/***************************************************************************
+ ***************************************************************************/
 static const char *
 _app_state_to_string(unsigned state)
 {
@@ -1332,6 +1337,9 @@ _app_state_to_string(unsigned state)
     default: return "unknown";
     }
 }
+
+/***************************************************************************
+ ***************************************************************************/
 static const char *
 _event_to_string(enum App_Event ev)
 {
@@ -1345,6 +1353,8 @@ _event_to_string(enum App_Event ev)
     }
 }
 
+/***************************************************************************
+ ***************************************************************************/
 void
 application_event(struct StackHandler *socket, enum App_Event cur_event,
     const void *payload, size_t payload_length)
@@ -1369,7 +1379,7 @@ again:
                     }
                     break;
                 default:
-                    ERRMSG("TCP.app: unhandled event: state=%s event=%s\n",
+                    LOG(LEVEL_ERROR, "TCP.app: unhandled event: state=%s event=%s\n",
                         _app_state_to_string(cur_state), _event_to_string(cur_event));
                     break;
             }
@@ -1393,7 +1403,7 @@ again:
                     cur_state = APP_STATE_RECVING;
                     goto again;
                 default:
-                    ERRMSG("TCP.app: unhandled event: state=%s event=%s\n",
+                    LOG(LEVEL_ERROR, "TCP.app: unhandled event: state=%s event=%s\n",
                         _app_state_to_string(cur_state), _event_to_string(cur_event));
                     break;
             }
@@ -1490,7 +1500,7 @@ again:
                     /* FIXME */
                     break;
                 default:
-                    ERRMSG("TCP.app: unhandled event: state=%s event=%s\n",
+                    LOG(LEVEL_ERROR, "TCP.app: unhandled event: state=%s event=%s\n",
                         _app_state_to_string(cur_state), _event_to_string(cur_event));
                     break;
             }
@@ -1540,7 +1550,7 @@ again:
                 case APP_WHAT_SENDING:
                     break;
                 default:
-                    ERRMSG("TCP.app: unhandled event: state=%s event=%s\n",
+                    LOG(LEVEL_ERROR, "TCP.app: unhandled event: state=%s event=%s\n",
                         _app_state_to_string(cur_state), _event_to_string(cur_event));
                     break;
             }
@@ -1548,7 +1558,7 @@ again:
         }
 
         default: {
-            ERRMSG("TCP.app: unhandled event: state=%s event=%s\n",
+            LOG(LEVEL_ERROR, "TCP.app: unhandled event: state=%s event=%s\n",
                 _app_state_to_string(cur_state), _event_to_string(cur_event));
             break;
         }

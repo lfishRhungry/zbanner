@@ -107,7 +107,7 @@ static enum ConfigRes SET_conn_expire(void *conf, const char *name, const char *
     unsigned tm = parseInt(value);
 
     if (tm <= 0) {
-        LOG(LEVEL_ERROR, "FAIL: %s must be positive.\n", name);
+        LOG(LEVEL_ERROR, "%s must be positive.\n", name);
         return Conf_ERR;
     }
 

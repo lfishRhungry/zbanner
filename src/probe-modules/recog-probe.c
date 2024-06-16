@@ -74,7 +74,7 @@ static enum ConfigRes SET_hello_string(void *conf, const char *name, const char 
 
     recog_conf.hello_len = strlen(value);
     if (recog_conf.hello_len==0) {
-        LOG(LEVEL_ERROR, "FAIL: Invalid hello string.\n");
+        LOG(LEVEL_ERROR, "Invalid hello string.\n");
         return Conf_ERR;
     }
     recog_conf.hello = MALLOC(recog_conf.hello_len);
@@ -93,7 +93,7 @@ static enum ConfigRes SET_hello_nmap(void *conf, const char *name, const char *v
 
     recog_conf.hello_len = strlen(value);
     if (recog_conf.hello_len==0) {
-        LOG(LEVEL_ERROR, "FAIL: Invalid hello string in nmap probe format.\n");
+        LOG(LEVEL_ERROR, "Invalid hello string in nmap probe format.\n");
         return Conf_ERR;
     }
 
@@ -114,7 +114,7 @@ static enum ConfigRes SET_hello_base64(void *conf, const char *name, const char 
 
     recog_conf.hello_len = strlen(value);
     if (recog_conf.hello_len==0) {
-        LOG(LEVEL_ERROR, "FAIL: Invalid hello string in base64 format.\n");
+        LOG(LEVEL_ERROR, "Invalid hello string in base64 format.\n");
         return Conf_ERR;
     }
 
@@ -135,7 +135,7 @@ static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *v
 
     FILE *fp = fopen(value, "rb");
     if (fp==NULL) {
-        LOG(LEVEL_ERROR, "[-]Failed to open file %s.\n", value);
+        LOG(LEVEL_ERROR, "Failed to open file %s.\n", value);
         return Conf_ERR;
     }
 
@@ -145,7 +145,7 @@ static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *v
     unsigned char buf[PM_PAYLOAD_SIZE];
     size_t bytes_read = fread(buf, 1, PM_PAYLOAD_SIZE, fp);
     if (bytes_read==0) {
-        LOG(LEVEL_ERROR, "[-]Failed to read valid hello in file %s.\n", value);
+        LOG(LEVEL_ERROR, "Failed to read valid hello in file %s.\n", value);
         perror(value);
         fclose(fp);
         return Conf_ERR;
@@ -256,18 +256,18 @@ recog_global_init(const struct Xconf *xconf)
     if (recog_conf.hello==NULL || recog_conf.hello_len==0) {
         recog_conf.hello     = NULL;
         recog_conf.hello_len = 0;
-        LOG(LEVEL_ERROR, "[-]RecogProbe: No hello data specified, just wait response.\n");
+        LOG(LEVEL_ERROR, "RecogProbe: No hello data specified, just wait response.\n");
     }
 
     if (recog_conf.xml_filename==NULL || recog_conf.xml_filename[0]=='\0') {
-        LOG(LEVEL_ERROR, "[-]RecogProbe: No Recog fingerprint xml file specified.\n");
+        LOG(LEVEL_ERROR, "RecogProbe: No Recog fingerprint xml file specified.\n");
         return false;
     }
 
     recog_conf.recog_fp = load_recog_fp(recog_conf.xml_filename,
         recog_conf.unprefix, recog_conf.unsuffix);
     if (recog_conf.recog_fp==NULL) {
-        LOG(LEVEL_ERROR, "[-]Failed to load recog xml file %s.\n", recog_conf.xml_filename);
+        LOG(LEVEL_ERROR, "Failed to load recog xml file %s.\n", recog_conf.xml_filename);
         return Conf_ERR;
     }
 

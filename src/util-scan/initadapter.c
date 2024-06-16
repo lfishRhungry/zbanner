@@ -44,14 +44,14 @@ initialize_adapter(struct Xconf *xconf)
         ifname2[0] = '\0';
         err = rawsock_get_default_interface(ifname2, sizeof(ifname2));
         if (err || ifname2[0] == '\0') {
-            LOG(LEVEL_ERROR, "[-] FAIL: could not determine default interface\n");
-            LOG(LEVEL_ERROR, "    [hint] try \"--interface ethX\"\n");
+            LOG(LEVEL_ERROR, "could not determine default interface\n");
+            LOG(LEVEL_ERROR, "    try \"--interface ethX\"\n");
             rawsock_close_cache(tmp_acache);
             return -1;
         }
         ifname = ifname2;
     }
-    LOG(LEVEL_WARNING, "[+] interface = %s\n", ifname);
+    LOG(LEVEL_WARN, "interface = %s\n", ifname);
 
     /*
      * START ADAPTER
@@ -66,12 +66,12 @@ initialize_adapter(struct Xconf *xconf)
                                             xconf->nic.vlan_id,
                                             xconf->nic.snaplen);
     if (xconf->nic.adapter == 0) {
-        LOG(LEVEL_ERROR, "[-] if:%s:init: failed\n", ifname);
+        LOG(LEVEL_ERROR, "if:%s:init: failed\n", ifname);
         rawsock_close_cache(tmp_acache);
         return -1;
     }
     xconf->nic.link_type = xconf->nic.adapter->link_type;
-    LOG(LEVEL_WARNING, "[+] interface-type = %u\n", xconf->nic.link_type);
+    LOG(LEVEL_WARN, "interface-type = %u\n", xconf->nic.link_type);
     rawsock_ignore_transmits(xconf->nic.adapter, ifname);
 
     /*
@@ -82,9 +82,9 @@ initialize_adapter(struct Xconf *xconf)
      * try to use the hardware address in the network card.
      */
     if (xconf->nic.link_type == PCAP_DLT_NULL) {
-        LOG(LEVEL_WARNING, "[+] source-mac = %s\n", "none");
+        LOG(LEVEL_WARN, "source-mac = %s\n", "none");
     } else if (xconf->nic.link_type == PCAP_DLT_RAW) {
-        LOG(LEVEL_WARNING, "[+] source-mac = %s\n", "none");
+        LOG(LEVEL_WARN, "source-mac = %s\n", "none");
     } else {
         if (xconf->nic.my_mac_count == 0) {
             if (macaddress_is_zero(xconf->nic.source_mac)) {
@@ -92,9 +92,9 @@ initialize_adapter(struct Xconf *xconf)
             }
             /* If still zero, then print error message */
             if (macaddress_is_zero(xconf->nic.source_mac)) {
-                LOG(LEVEL_ERROR, "[-] FAIL: failed to detect MAC address of interface:"
+                LOG(LEVEL_ERROR, "failed to detect MAC address of interface:"
                         " \"%s\"\n", ifname);
-                LOG(LEVEL_ERROR, " [hint] try something like "
+                LOG(LEVEL_ERROR, " try something like "
                         "\"--source-mac 00-11-22-33-44-55\"\n");
                 rawsock_close_cache(tmp_acache);
                 return -1;
@@ -102,7 +102,7 @@ initialize_adapter(struct Xconf *xconf)
         }
 
         fmt = macaddress_fmt(xconf->nic.source_mac);
-        LOG(LEVEL_WARNING, "[+] source-mac = %s\n", fmt.string);
+        LOG(LEVEL_WARN, "source-mac = %s\n", fmt.string);
     }
 
 
@@ -121,9 +121,9 @@ initialize_adapter(struct Xconf *xconf)
             /* We appear to have IPv4 targets, yet we cannot find an adapter
              * to use for those targets. We are having trouble querying the
              * operating system stack. */
-            LOG(LEVEL_ERROR, "[-] FAIL: failed to detect IP of interface \"%s\"\n", ifname);
-            LOG(LEVEL_ERROR, "    [hint] did you spell the name correctly?\n");
-            LOG(LEVEL_ERROR, "    [hint] if it has no IP address, manually set with something like "
+            LOG(LEVEL_ERROR, "failed to detect IP of interface \"%s\"\n", ifname);
+            LOG(LEVEL_ERROR, "    did you spell the name correctly?\n");
+            LOG(LEVEL_ERROR, "    if it has no IP address, manually set with something like "
                             "\"--source-ip 198.51.100.17\"\n");
             if (massip_has_ipv4_targets(&xconf->targets)) {
                 rawsock_close_cache(tmp_acache);
@@ -132,7 +132,7 @@ initialize_adapter(struct Xconf *xconf)
         }
 
         fmt = ipv4address_fmt(adapter_ip);
-        LOG(LEVEL_WARNING, "[+] source-ip = %s\n", fmt.string);
+        LOG(LEVEL_WARN, "source-ip = %s\n", fmt.string);
 
         if (adapter_ip != 0)
             is_usable_ipv4 = 1;
@@ -146,22 +146,22 @@ initialize_adapter(struct Xconf *xconf)
             memcpy(xconf->nic.router_mac_ipv4.addr, "\x66\x55\x44\x33\x22\x11", 6);
         } else if (xconf->nic.link_type == PCAP_DLT_NULL) {
             /* If it's a VPN tunnel, then there is no Ethernet MAC address */
-            LOG(LEVEL_WARNING, "[+] router-mac-ipv4 = %s\n", "implicit");
+            LOG(LEVEL_WARN, "router-mac-ipv4 = %s\n", "implicit");
     } else if (xconf->nic.link_type == PCAP_DLT_RAW) {
             /* If it's a VPN tunnel, then there is no Ethernet MAC address */
-            LOG(LEVEL_WARNING, "[+] router-mac-ipv4 = %s\n", "implicit");
+            LOG(LEVEL_WARN, "router-mac-ipv4 = %s\n", "implicit");
         } else if (macaddress_is_zero(xconf->nic.router_mac_ipv4)) {
             ipv4address_t router_ipv4 = xconf->nic.router_ip;
             int err = 0;
 
 
-            LOG(LEVEL_INFO, "[+] if(%s): looking for default gateway\n", ifname);
+            LOG(LEVEL_INFO, "if(%s): looking for default gateway\n", ifname);
             if (router_ipv4 == 0)
                 err = rawsock_get_default_gateway(ifname, &router_ipv4);
             if (err == 0) {
                 fmt = ipv4address_fmt(router_ipv4);
-                LOG(LEVEL_WARNING, "[+] router-ip = %s\n", fmt.string);
-                LOG(LEVEL_INFO, "[+] if(%s):arp: resolving IPv4 address\n", ifname);
+                LOG(LEVEL_WARN, "router-ip = %s\n", fmt.string);
+                LOG(LEVEL_INFO, "if(%s):arp: resolving IPv4 address\n", ifname);
 
                 stack_arp_resolve(
                         xconf->nic.adapter,
@@ -174,13 +174,13 @@ initialize_adapter(struct Xconf *xconf)
             }
 
             fmt = macaddress_fmt(xconf->nic.router_mac_ipv4);
-            LOG(LEVEL_WARNING, "[+] router-mac-ipv4 = %s\n", fmt.string);
+            LOG(LEVEL_WARN, "router-mac-ipv4 = %s\n", fmt.string);
             if (macaddress_is_zero(xconf->nic.router_mac_ipv4)) {
                 fmt = ipv4address_fmt(xconf->nic.router_ip);
-                LOG(LEVEL_ERROR, "[-] FAIL: ARP timed-out resolving MAC address for router %s: \"%s\"\n", ifname, fmt.string);
-                LOG(LEVEL_ERROR, "    [hint] try \"--router ip 192.0.2.1\" to specify different router\n");
-                LOG(LEVEL_ERROR, "    [hint] try \"--router-mac 66-55-44-33-22-11\" instead to bypass ARP\n");
-                LOG(LEVEL_ERROR, "    [hint] try \"--interface eth0\" to change interface\n");
+                LOG(LEVEL_ERROR, "ARP timed-out resolving MAC address for router %s: \"%s\"\n", ifname, fmt.string);
+                LOG(LEVEL_ERROR, "    try \"--router ip 192.0.2.1\" to specify different router\n");
+                LOG(LEVEL_ERROR, "    try \"--router-mac 66-55-44-33-22-11\" instead to bypass ARP\n");
+                LOG(LEVEL_ERROR, "    try \"--interface eth0\" to change interface\n");
                 rawsock_close_cache(tmp_acache);
                 return -1;
             }
@@ -200,16 +200,16 @@ initialize_adapter(struct Xconf *xconf)
             xconf->nic.src.ipv6.range          = 1;
         }
         if (ipv6address_is_zero(adapter_ipv6)) {
-            LOG(LEVEL_ERROR, "[-] FAIL: failed to detect IPv6 address of interface \"%s\"\n",
+            LOG(LEVEL_ERROR, "failed to detect IPv6 address of interface \"%s\"\n",
                             ifname);
-            LOG(LEVEL_ERROR, "    [hint] did you spell the name correctly?\n");
-            LOG(LEVEL_ERROR, "    [hint] if it has no IP address, manually set with something like "
+            LOG(LEVEL_ERROR, "    did you spell the name correctly?\n");
+            LOG(LEVEL_ERROR, "    if it has no IP address, manually set with something like "
                             "\"--source-ip 2001:3b8::1234\"\n");
             rawsock_close_cache(tmp_acache);
             return -1;
         }
         fmt = ipv6address_fmt(adapter_ipv6);
-        LOG(LEVEL_WARNING, "[+] source-ip = [%s]\n", fmt.string);
+        LOG(LEVEL_WARN, "source-ip = [%s]\n", fmt.string);
         is_usable_ipv6 = 1;
 
         /*
@@ -232,12 +232,12 @@ initialize_adapter(struct Xconf *xconf)
         }
 
         fmt = macaddress_fmt(xconf->nic.router_mac_ipv6);
-        LOG(LEVEL_WARNING, "[+] router-mac-ipv6 = %s\n", fmt.string);
+        LOG(LEVEL_WARN, "router-mac-ipv6 = %s\n", fmt.string);
         if (macaddress_is_zero(xconf->nic.router_mac_ipv6)) {
             fmt = ipv4address_fmt(xconf->nic.router_ip);
-            LOG(LEVEL_ERROR, "[-] FAIL: NDP timed-out resolving MAC address for router %s: \"%s\"\n", ifname, fmt.string);
-            LOG(LEVEL_ERROR, "    [hint] try \"--router-mac-ipv6 66-55-44-33-22-11\" instead to bypass ARP\n");
-            LOG(LEVEL_ERROR, "    [hint] try \"--interface eth0\" to change interface\n");
+            LOG(LEVEL_ERROR, "NDP timed-out resolving MAC address for router %s: \"%s\"\n", ifname, fmt.string);
+            LOG(LEVEL_ERROR, "    try \"--router-mac-ipv6 66-55-44-33-22-11\" instead to bypass ARP\n");
+            LOG(LEVEL_ERROR, "    try \"--interface eth0\" to change interface\n");
             rawsock_close_cache(tmp_acache);
             return -1;
         }
@@ -260,7 +260,7 @@ initialize_adapter(struct Xconf *xconf)
 
 
 
-    LOG(LEVEL_INFO, "[+] if(%s): initialization done.\n", ifname);
+    LOG(LEVEL_INFO, "if(%s): initialization done.\n", ifname);
     rawsock_close_cache(tmp_acache);
     return 0;
 }

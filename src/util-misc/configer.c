@@ -535,7 +535,7 @@ set_parameters_from_args(void *conf, struct ConfigParam *cp,
         }
 
         if (!isdigit(argv[i][0]) && argv[i][0] != ':' && argv[i][0] != '[') {
-            LOG(LEVEL_ERROR, "FAIL: unknown command-line parameter \"%s\"\n", argv[i]);
+            LOG(LEVEL_ERROR, "unknown command-line parameter \"%s\"\n", argv[i]);
             exit(1);
         }
 

@@ -408,7 +408,7 @@ int proto_http_maker_selftest()
         len2 = http_change_requestline(&x, len1, "/foo.html", ~(size_t)0, 1);
 
         if (len2 != len3 && memcmp(urlsamples[i].to, x, len3) != 0) {
-            LOG(LEVEL_ERROR, "[-] HTTP.selftest: config URL sample #%u\n", (unsigned)i);
+            LOG(LEVEL_ERROR, "HTTP.selftest: config URL sample #%u\n", (unsigned)i);
             return 1;
         }
     }
@@ -423,7 +423,7 @@ int proto_http_maker_selftest()
         len2 = http_change_requestline(&x, len1, "POST", ~(size_t)0, 0);
 
         if (len2 != len3 && memcmp(methodsamples[i].to, x, len3) != 0) {
-            LOG(LEVEL_ERROR, "[-] HTTP.selftest: config method sample #%u\n", (unsigned)i);
+            LOG(LEVEL_ERROR, "HTTP.selftest: config method sample #%u\n", (unsigned)i);
             return 1;
         }
     }
@@ -438,7 +438,7 @@ int proto_http_maker_selftest()
         len2 = http_change_requestline(&x, len1, "HTTP/1.1", ~(size_t)0, 2);
 
         if (len2 != len3 && memcmp(versionsamples[i].to, x, len3) != 0) {
-            LOG(LEVEL_ERROR, "[-] HTTP.selftest: config version sample #%u\n", (unsigned)i);
+            LOG(LEVEL_ERROR, "HTTP.selftest: config version sample #%u\n", (unsigned)i);
             return 1;
         }
     }
@@ -453,7 +453,7 @@ int proto_http_maker_selftest()
         len2 = http_change_requestline(&x, len1, "foo", ~(size_t)0, 3);
 
         if (len2 != len3 && memcmp(payloadsamples[i].to, x, len3) != 0) {
-            LOG(LEVEL_ERROR, "[-] HTTP.selftest: config payload sample #%u\n", (unsigned)i);
+            LOG(LEVEL_ERROR, "HTTP.selftest: config payload sample #%u\n", (unsigned)i);
             return 1;
         }
     }
@@ -469,7 +469,7 @@ int proto_http_maker_selftest()
         x = (unsigned char*)STRDUP(fieldsamples[i].from);
         len2 = http_change_field(&x, len1, "foo", (const unsigned char *)"bar", ~(size_t)0, http_field_replace);
         if (len2 != len3 || memcmp(fieldsamples[i].to, x, len3) != 0) {
-            LOG(LEVEL_ERROR, "[-] HTTP.selftest: config header field sample #%u\n", (unsigned)i);
+            LOG(LEVEL_ERROR, "HTTP.selftest: config header field sample #%u\n", (unsigned)i);
             return 1;
         }
         free(x);
@@ -478,7 +478,7 @@ int proto_http_maker_selftest()
         x = (unsigned char*)STRDUP(fieldsamples[i].from);
         len2 = http_change_field(&x, len1, "foo:", (const unsigned char *)"bar", ~(size_t)0, http_field_replace);
         if (len2 != len3 || memcmp(fieldsamples[i].to, x, len3) != 0) {
-            LOG(LEVEL_ERROR, "[-] HTTP.selftest: config header field sample #%u\n", (unsigned)i);
+            LOG(LEVEL_ERROR, "HTTP.selftest: config header field sample #%u\n", (unsigned)i);
             return 1;
         }
         free(x);
@@ -487,7 +487,7 @@ int proto_http_maker_selftest()
         x = (unsigned char*)STRDUP(fieldsamples[i].from);
         len2 = http_change_field(&x, len1, "foo : : ", (const unsigned char *)"bar", ~(size_t)0, http_field_replace);
         if (len2 != len3 || memcmp(fieldsamples[i].to, x, len3) != 0) {
-            LOG(LEVEL_ERROR, "[-] HTTP.selftest: config header field sample #%u\n", (unsigned)i);
+            LOG(LEVEL_ERROR, "HTTP.selftest: config header field sample #%u\n", (unsigned)i);
             return 1;
         }
         free(x);

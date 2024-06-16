@@ -142,11 +142,11 @@ rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
 
         err = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
         if (err < 0)
-            LOG(LEVEL_ERROR, "[-] SO_RCVTIMEO: %d %s\n", errno, strerror(errno));
+            LOG(LEVEL_ERROR, "SO_RCVTIMEO: %d %s\n", errno, strerror(errno));
 
         err = setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout));
         if (err < 0)
-            LOG(LEVEL_ERROR, "[-] SO_SNDTIMEO: %d %s\n", errno, strerror(errno));
+            LOG(LEVEL_ERROR, "SO_SNDTIMEO: %d %s\n", errno, strerror(errno));
    }
 
     /*
@@ -173,7 +173,7 @@ rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
 
     err = write(fd, (char *)rtm, rtm->rtm_msglen);
     if (err <= 0) {
-        LOG(LEVEL_ERROR, "[-] getroute: write(): returned %d %s\n", errno, strerror(errno));
+        LOG(LEVEL_ERROR, "getroute: write(): returned %d %s\n", errno, strerror(errno));
         goto fail;
     }
 

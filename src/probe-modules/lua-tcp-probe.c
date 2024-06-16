@@ -91,7 +91,7 @@ static bool check_func_exist(const char *func)
 {
     lua_getglobal(luatcp_conf.Ltx, func);
     if (lua_isfunction(luatcp_conf.Ltx, -1)==0) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": no `%s` func in script %s.\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": no `%s` func in script %s.\n",
             func, luatcp_conf.script);
         return false;
     }
@@ -104,7 +104,7 @@ static bool sync_probe_config()
     /*probe name*/
     lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_VAR_PROBENAME);
     if (lua_isstring(luatcp_conf.Ltx, -1)==0) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": no `"LUA_PROBE_VAR_PROBENAME"` setting in script %s.\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": no `"LUA_PROBE_VAR_PROBENAME"` setting in script %s.\n",
             luatcp_conf.script);
         return false;
     }
@@ -114,12 +114,12 @@ static bool sync_probe_config()
     /*probe type*/
     lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_VAR_PROBETYPE);
     if (lua_isstring(luatcp_conf.Ltx, -1)==0) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": no `"LUA_PROBE_VAR_PROBETYPE"` setting in script %s.\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": no `"LUA_PROBE_VAR_PROBETYPE"` setting in script %s.\n",
             luatcp_conf.script);
         return false;
     }
     if (strcmp(lua_tostring(luatcp_conf.Ltx, -1), LUA_PROBE_TYPE)!=0) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": need a "LUA_PROBE_TYPE" `"LUA_PROBE_VAR_PROBETYPE"` instead of %s type in %s.\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": need a "LUA_PROBE_TYPE" `"LUA_PROBE_VAR_PROBETYPE"` instead of %s type in %s.\n",
             lua_tostring(luatcp_conf.Ltx, -1), luatcp_conf.script);
         return false;
     }
@@ -129,7 +129,7 @@ static bool sync_probe_config()
     enum MultiMode *mode = (enum MultiMode *)&LuaTcpProbe.multi_mode;
     lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_VAR_MULTIMODE);
     if (lua_isstring(luatcp_conf.Ltx, -1)==0) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": no `"LUA_PROBE_VAR_MULTIMODE"` setting in script %s.\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": no `"LUA_PROBE_VAR_MULTIMODE"` setting in script %s.\n",
             luatcp_conf.script);
         return false;
     }
@@ -143,7 +143,7 @@ static bool sync_probe_config()
     } else if (strcmp(lua_tostring(luatcp_conf.Ltx, -1), LUA_PROBE_MULTI_DYNAMICNEXT)==0) {
         *mode = Multi_DynamicNext;
     } else {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": invalid `"LUA_PROBE_VAR_MULTIMODE"` setting in script %s.\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": invalid `"LUA_PROBE_VAR_MULTIMODE"` setting in script %s.\n",
             luatcp_conf.script);
         return false;
     }
@@ -153,14 +153,14 @@ static bool sync_probe_config()
     unsigned *num = (unsigned *)&LuaTcpProbe.multi_num;
     lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_VAR_MULTINUM);
     if (lua_isinteger(luatcp_conf.Ltx, -1)==0) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": no `"LUA_PROBE_VAR_MULTINUM"` setting in script %s.\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": no `"LUA_PROBE_VAR_MULTINUM"` setting in script %s.\n",
             luatcp_conf.script);
         return false;
     }
     if (lua_tointeger(luatcp_conf.Ltx, -1) > 1) {
         *num = lua_tointeger(luatcp_conf.Ltx, -1);
     } else if (lua_tointeger(luatcp_conf.Ltx, -1) < 0) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": invalid `"LUA_PROBE_VAR_MULTINUM"` setting in script %s.\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": invalid `"LUA_PROBE_VAR_MULTINUM"` setting in script %s.\n",
             luatcp_conf.script);
         return false;
     }
@@ -169,7 +169,7 @@ static bool sync_probe_config()
     /*probe desc*/
     lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_VAR_PROBEDESC);
     if (lua_isstring(luatcp_conf.Ltx, -1)==0) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": no `"LUA_PROBE_VAR_PROBEDESC"` setting in script %s.\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": no `"LUA_PROBE_VAR_PROBEDESC"` setting in script %s.\n",
             luatcp_conf.script);
         return false;
     }
@@ -182,18 +182,18 @@ static bool
 luatcp_global_init(const struct Xconf *xconf)
 {
     if (!luatcp_conf.script) {
-        LOG(LEVEL_ERROR, "[-] "LUA_PROBE_NAME": must specify a lua script as probe by `--script`.\n");
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": must specify a lua script as probe by `--script`.\n");
         return false;
     }
 
     if (xconf->tx_thread_count!=1 || xconf->rx_handler_count!=1) {
-        LOG(LEVEL_ERROR, "[-] "LUA_PROBE_NAME" doesn't support multi-tx-threads or multi-handle-threads now.\n");
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME" doesn't support multi-tx-threads or multi-handle-threads now.\n");
         return false;
     }
 
     /* Dynamically link the library*/
     if (!stublua_init()) {
-        LOG(LEVEL_ERROR, "[-]Failed to init lua library dynamicly.\n");
+        LOG(LEVEL_ERROR, "Failed to init lua library dynamicly.\n");
         LOG(LEVEL_ERROR, "    HINT: make sure lua library 5.3/5.4 was installed.\n");
         return false;
     }
@@ -211,13 +211,13 @@ luatcp_global_init(const struct Xconf *xconf)
     /* Get lua version*/
     lua_getglobal(luatcp_conf.Ltx, "_VERSION");
     const char *version = lua_tostring(luatcp_conf.Ltx, -1);
-    LOG(LEVEL_INFO, "[-] Loaded lua library in %s\n", version);
+    LOG(LEVEL_INFO, "Loaded lua library in %s\n", version);
     lua_pop(luatcp_conf.Ltx, 1);
 
     /* Load the script. This will verify the syntax.*/
     x = luaL_loadfile(luatcp_conf.Ltx, luatcp_conf.script);
     if (x != LUA_OK) {
-        LOG(LEVEL_ERROR, "FAIL: %s error loading: %s: %s for Tx\n", "SCRIPTING:",
+        LOG(LEVEL_ERROR, "%s error loading: %s: %s for Tx\n", "SCRIPTING:",
             luatcp_conf.script, lua_tostring(luatcp_conf.Ltx, -1));
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
@@ -227,7 +227,7 @@ luatcp_global_init(const struct Xconf *xconf)
     }
     x = luaL_loadfile(luatcp_conf.Lrx, luatcp_conf.script);
     if (x != LUA_OK) {
-        LOG(LEVEL_ERROR, "FAIL: %s error loading: %s: %s for Rx\n", "SCRIPTING:",
+        LOG(LEVEL_ERROR, "%s error loading: %s: %s for Rx\n", "SCRIPTING:",
             luatcp_conf.script, lua_tostring(luatcp_conf.Lrx, -1));
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
@@ -237,7 +237,7 @@ luatcp_global_init(const struct Xconf *xconf)
     }
     x = luaL_loadfile(luatcp_conf.Lhx, luatcp_conf.script);
     if (x != LUA_OK) {
-        LOG(LEVEL_ERROR, "FAIL: %s error loading: %s: %s for Handler\n", "SCRIPTING:",
+        LOG(LEVEL_ERROR, "%s error loading: %s: %s for Handler\n", "SCRIPTING:",
             luatcp_conf.script, lua_tostring(luatcp_conf.Lhx, -1));
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
@@ -250,10 +250,10 @@ luatcp_global_init(const struct Xconf *xconf)
      * Lua: Start running the script and we can see global variables and funcs.
      * Just need to check for one VM because of same script.
      */
-    LOG(LEVEL_WARNING, ""LUA_PROBE_NAME" running script: %s\n", luatcp_conf.script);
+    LOG(LEVEL_WARN, ""LUA_PROBE_NAME" running script: %s\n", luatcp_conf.script);
     x = lua_pcall(luatcp_conf.Ltx, 0, 0, 0);
     if (x != LUA_OK) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": error running %s: %s for Tx\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": error running %s: %s for Tx\n",
             luatcp_conf.script, lua_tostring(luatcp_conf.Ltx, -1));
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
@@ -263,7 +263,7 @@ luatcp_global_init(const struct Xconf *xconf)
     }
     x = lua_pcall(luatcp_conf.Lrx, 0, 0, 0);
     if (x != LUA_OK) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": error running %s: %s for Rx\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": error running %s: %s for Rx\n",
             luatcp_conf.script, lua_tostring(luatcp_conf.Lrx, -1));
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
@@ -273,7 +273,7 @@ luatcp_global_init(const struct Xconf *xconf)
     }
     x = lua_pcall(luatcp_conf.Lhx, 0, 0, 0);
     if (x != LUA_OK) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": error running %s: %s for Handler\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": error running %s: %s for Handler\n",
             luatcp_conf.script, lua_tostring(luatcp_conf.Lhx, -1));
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
@@ -345,7 +345,7 @@ luatcp_make_payload(
     lua_pushinteger(luatcp_conf.Ltx, target->index);
 
     if (lua_pcall(luatcp_conf.Ltx, 5, 1, 0) != LUA_OK) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_MAKE_PAYLOAD"` execute error in %s: %s\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_MAKE_PAYLOAD"` execute error in %s: %s\n",
             luatcp_conf.script, lua_tostring(luatcp_conf.Ltx, -1));
         lua_settop(luatcp_conf.Ltx, 0);
         return 0;
@@ -377,7 +377,7 @@ luatcp_get_payload_length(struct ProbeTarget *target)
     lua_pushinteger(luatcp_conf.Lrx, target->index);
 
     if (lua_pcall(luatcp_conf.Lrx, 5, 1, 0) != LUA_OK) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_GET_PAYLOAD_LEN"` execute error in %s: %s\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_GET_PAYLOAD_LEN"` execute error in %s: %s\n",
             luatcp_conf.script, lua_tostring(luatcp_conf.Lrx, -1));
         lua_settop(luatcp_conf.Lrx, 0);
         return 0;
@@ -416,7 +416,7 @@ luatcp_handle_response(
     lua_pushlstring(luatcp_conf.Lhx, (const char *)px, sizeof_px);
 
     if (lua_pcall(luatcp_conf.Lhx, 6, 5, 0) != LUA_OK) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_HANDLE_RESPONSE"` execute error in %s: %s\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_HANDLE_RESPONSE"` execute error in %s: %s\n",
             luatcp_conf.script, lua_tostring(luatcp_conf.Lhx, -1));
         lua_settop(luatcp_conf.Lhx, 0);
         return 0;
@@ -497,7 +497,7 @@ luatcp_handle_timeout(
     lua_pushinteger(luatcp_conf.Lrx, target->index);
 
     if (lua_pcall(luatcp_conf.Lrx, 5, 5, 0) != LUA_OK) {
-        LOG(LEVEL_ERROR, "[-]"LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_HANDLE_TIMEOUT"` execute error in %s: %s\n",
+        LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": func `"LUA_PROBE_FUNC_HANDLE_TIMEOUT"` execute error in %s: %s\n",
             luatcp_conf.script, lua_tostring(luatcp_conf.Lrx, -1));
         lua_settop(luatcp_conf.Lrx, 0);
         return 0;

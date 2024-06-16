@@ -25,7 +25,7 @@ static enum ConfigRes SET_ptr(void *conf, const char *name, const char *value)
 
     ipaddress ip = massip_parse_ip(value);
     if (ip.version==0) {
-        LOG(LEVEL_ERROR, "[-] PTR request ip is invalid: %s.\n", value);
+        LOG(LEVEL_ERROR, "PTR request ip is invalid: %s.\n", value);
         return Conf_ERR;
     }
 
@@ -35,7 +35,7 @@ static enum ConfigRes SET_ptr(void *conf, const char *name, const char *value)
     dns_conf.req_type = dns_str_to_record_type("ptr");
 
     if (dns_conf.req_type==DNS_REC_INVALID) {
-        LOG(LEVEL_ERROR, "[-] internal error: invalide request type of dns.\n");
+        LOG(LEVEL_ERROR, "internal error: invalide request type of dns.\n");
         return Conf_ERR;
     }
 
@@ -80,7 +80,7 @@ static enum ConfigRes SET_req_name(void *conf, const char *name, const char *val
     char  *str     = STRDUP(value);
     size_t str_len = strlen(str);
     if (str_len == 0) {
-        LOG(LEVEL_ERROR, "[-] request name of dns is error.\n");
+        LOG(LEVEL_ERROR, "request name of dns is error.\n");
         return Conf_ERR;
     }
 
@@ -96,14 +96,14 @@ static enum ConfigRes SET_req_type(void *conf, const char *name, const char *val
 
     size_t str_len = strlen(value);
     if (str_len == 0) {
-        LOG(LEVEL_ERROR, "[-] request type of dns is error.\n");
+        LOG(LEVEL_ERROR, "request type of dns is error.\n");
         return Conf_ERR;
     }
 
     dns_conf.req_type = dns_str_to_record_type(value);
 
     if (dns_conf.req_type==DNS_REC_INVALID) {
-        LOG(LEVEL_ERROR, "[-] invalide request type of dns.\n");
+        LOG(LEVEL_ERROR, "invalide request type of dns.\n");
         return Conf_ERR;
     }
 
@@ -162,12 +162,12 @@ static bool
 dns_global_init(const struct Xconf *xconf)
 {
     if (!dns_conf.req_name) {
-        LOG(LEVEL_ERROR, "[-] Please specify a dns request name by --req-name.\n");
+        LOG(LEVEL_ERROR, "Please specify a dns request name by --req-name.\n");
         return false;
     }
 
     if (dns_conf.req_type == 0) {
-        LOG(LEVEL_HINT, "[-] Use default dns A record type because no request type was specified by --req-type.\n");
+        LOG(LEVEL_HINT, "Use default dns A record type because no request type was specified by --req-type.\n");
         dns_conf.req_type = DNS_REC_A;
     }
 
