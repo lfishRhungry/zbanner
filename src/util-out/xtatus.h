@@ -4,7 +4,7 @@
 #include <time.h>
 #include "../util-misc/cross.h"
 
-#define XTS_RATE_CACHE              8
+#define XTS_RATE_CACHE              8 /*must be power of 2*/
 #define XTS_ADD_SIZE               30
 
 struct XtatusItem

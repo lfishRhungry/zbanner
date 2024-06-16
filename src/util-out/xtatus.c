@@ -153,11 +153,11 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
     /*
      * Smooth the number by averaging over the last several seconds
      */
-     rate = 0;
-     xtatus->last_rates[xtatus->last_count++ & XTS_RATE_CACHE-1] = rate;
-     for (unsigned i=0; i<XTS_RATE_CACHE; i++) {
-        rate += xtatus->last_rates[i];
-     }
+    rate = 0;
+    xtatus->last_rates[xtatus->last_count++ & (XTS_RATE_CACHE-1)] = rate;
+    for (unsigned i=0; i<XTS_RATE_CACHE; i++) {
+       rate += xtatus->last_rates[i];
+    }
     rate /= XTS_RATE_CACHE;
 
     /*
