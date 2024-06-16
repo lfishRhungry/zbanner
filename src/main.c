@@ -388,10 +388,8 @@ static int _main_scan(struct Xconf *xconf) {
             if (status_item.repeat_count > parms->my_repeat)
                 status_item.repeat_count = parms->my_repeat;
 
-            status_item.cur_pps += parms->throttler->current_rate;
-
-            if (parms->total_sent)
-                status_item.total_sent += *parms->total_sent;
+            status_item.cur_pps    += parms->throttler->current_rate;
+            status_item.total_sent += parms->total_sent;
         }
 
         /**
@@ -478,10 +476,8 @@ static int _main_scan(struct Xconf *xconf) {
             if (status_item.repeat_count > parms->my_repeat)
                 status_item.repeat_count = parms->my_repeat;
 
-            status_item.cur_pps += parms->throttler->current_rate;
-
-            if (parms->total_sent)
-                status_item.total_sent += *parms->total_sent;
+            status_item.cur_pps    += parms->throttler->current_rate;
+            status_item.total_sent += parms->total_sent;
         }
 
         /**

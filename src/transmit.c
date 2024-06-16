@@ -61,7 +61,6 @@ void transmit_thread(void *v)
     uint64_t                     entropy                  = xconf->seed;
     struct ScanTmEvent          *tm_event                 = NULL;
     struct FHandler             *ft_handler               = NULL;
-    uint64_t                    *status_sent_count;
 
     /* Wait to make sure receive_thread is ready */
     pixie_usleep(1000000);
@@ -84,10 +83,6 @@ void transmit_thread(void *v)
         if (cpu_index < cpu_count)
             pixie_cpu_set_affinity(cpu_index);
     }
-
-    status_sent_count      = MALLOC(sizeof(uint64_t));
-    *status_sent_count     = 0;
-    parms->total_sent      = status_sent_count;
 
     /* Normally, we have just one source address. In special cases, though
      * we can have multiple. */
@@ -233,7 +228,7 @@ infinite:;
 
                 batch_size--;
                 packets_sent++;
-                status_sent_count++;
+                parms->total_sent++;
 
                 /*add timeout event*/
                 if (xconf->is_fast_timeout && tm_event->need_timeout) {

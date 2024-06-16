@@ -24,7 +24,7 @@ struct TxThread {
 
     struct Throttler throttler[1];
 
-    uint64_t *total_sent;
+    uint64_t total_sent;
 
     size_t thread_handle_xmit;
 };
