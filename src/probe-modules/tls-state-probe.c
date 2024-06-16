@@ -375,7 +375,7 @@ static bool output_subject_info(struct Output *out,
         } else if (res == 0 || res == -1) {
             break;
         } else {
-            LOG(LEVEL_WARN, "(TSP output_subject_info) BIO_read failed with error: %d\n", res);
+            LOG(LEVEL_WARN, "(TSP output_subject_info) BIO_read failed: %d\n", res);
             break;
         }
     }
@@ -418,7 +418,7 @@ static bool output_subject_info(struct Output *out,
         } else if (res == 0 || res == -1) {
             break;
         } else {
-            LOG(LEVEL_WARN, "(TSP output_subject_info) BIO_read failed with error: %d\n", res);
+            LOG(LEVEL_WARN, "(TSP output_subject_info) BIO_read failed: %d\n", res);
             break;
         }
     }
@@ -513,7 +513,7 @@ static bool output_x502_cert(struct Output *out,
             } else if (res == 0 || res == -1) {
                 break;
             } else {
-                LOG(LEVEL_WARN, "(TSP output_x502_cert) BIO_read failed with error: %d\n",
+                LOG(LEVEL_WARN, "(TSP output_x502_cert) BIO_read failed: %d\n",
                     res);
                 break;
             }
@@ -901,13 +901,13 @@ tlsstate_make_hello(
                 break;
             } else {
                 LOG(LEVEL_WARN,
-                    "(TSP Make HELLO) BIO_read failed with error: %d\n", res);
+                    "(TSP Make HELLO) BIO_read failed: %d\n", res);
                 LOGopenssl(LEVEL_WARN);
                 goto error1;
             }
         }
     } else {
-        LOG(LEVEL_WARN, "(TSP Make HELLO) SSL_do_handshake failed with error: %d, ex_error: %d\n",
+        LOG(LEVEL_WARN, "(TSP Make HELLO) SSL_do_handshake failed: %d, ex_error: %d\n",
             res, res_ex);
         LOGopenssl(LEVEL_WARN);
         goto error1;
@@ -964,7 +964,7 @@ tlsstate_parse_response(
                 offset += (size_t)res;
             } else {
                 LOG(LEVEL_WARN,
-                    "(TSP Parse RESPONSE) BIO_write failed with error: %d\n", res);
+                    "(TSP Parse RESPONSE) BIO_write failed: %d\n", res);
                 /*close connection*/
                 pass->data       = NULL;
                 pass->len        = 0;
@@ -1069,7 +1069,7 @@ tlsstate_parse_response(
                         break;
                     } else {
                         LOG(LEVEL_WARN,
-                            "(TSP Parse RESPONSE: %s) BIO_read failed with error: %d\n",
+                            "(TSP Parse RESPONSE: %s) BIO_read failed: %d\n",
                             _tsp_state_to_string(state->state), res);
                         state->state = TSP_STATE_NEED_CLOSE;
                         break;
@@ -1087,7 +1087,7 @@ tlsstate_parse_response(
                 state->state = TSP_STATE_NEED_CLOSE;
 
                 LOG(LEVEL_DEBUG,
-                    "(TSP Parse RESPONSE: %s) SSL_do_handshake failed with error: %d, "
+                    "(TSP Parse RESPONSE: %s) SSL_do_handshake failed: %d, "
                     "ex_error: %d\n",
                     _tsp_state_to_string(state->state), res, res_ex);
                 LOGopenssl(LEVEL_DEBUG);
@@ -1158,7 +1158,7 @@ tlsstate_parse_response(
                         break;
                     } else {
                         LOG(LEVEL_WARN,
-                            "(TSP Parse RESPONSE: %s) BIO_read failed with error: %d\n",
+                            "(TSP Parse RESPONSE: %s) BIO_read failed: %d\n",
                              _tsp_state_to_string(state->state), res);
                         LOGopenssl(LEVEL_WARN);
                         state->state = TSP_STATE_NEED_CLOSE;
@@ -1248,7 +1248,7 @@ tlsstate_parse_response(
                             break;
                         } else {
                             LOG(LEVEL_WARN,
-                                "(TSP Parse RESPONSE: %s) BIO_read failed with error: %d\n",
+                                "(TSP Parse RESPONSE: %s) BIO_read failed: %d\n",
                                 _tsp_state_to_string(state->state), sub_res);
                             state->state = TSP_STATE_NEED_CLOSE;
                             break;

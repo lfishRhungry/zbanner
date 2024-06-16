@@ -486,8 +486,8 @@ void blackrock2_benchmark(unsigned rounds)
     uint64_t start, stop;
     static const uint64_t ITERATIONS = 5000000ULL;
 
-    LOG(LEVEL_HINT, "-- blackrock-2 -- \n");
-    LOG(LEVEL_HINT, "rounds = %u\n", rounds);
+    LOG(LEVEL_OUT, "-- blackrock-2 -- \n");
+    LOG(LEVEL_OUT, "rounds = %u\n", rounds);
     blackrock2_init(&br, range, 1, rounds);
 /*printf("range = 0x%10" PRIx64 "\n", range);
 printf("rangex= 0x%10" PRIx64 "\n", br.a*br.b);
@@ -512,11 +512,11 @@ printf("    b = 0x%10" PRIx64 "\n", br.b);*/
 
         rate /= 1000000.0;
 
-        LOG(LEVEL_HINT, "iterations/second = %5.3f-million\n", rate);
+        LOG(LEVEL_OUT, "iterations/second = %5.3f-million\n", rate);
 
     }
 
-    LOG(LEVEL_HINT, "\n");
+    LOG(LEVEL_OUT, "\n");
 
 }
 

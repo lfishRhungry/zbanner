@@ -127,7 +127,7 @@ again:
         goto again;
     }
     if (err != NO_ERROR) {
-        LOG(LEVEL_ERROR, "if: GetAdaptersInfo failed with error: %u\n", (unsigned)err);
+        LOG(LEVEL_ERROR, "if: GetAdaptersInfo failed: %u\n", (unsigned)err);
         return EFAULT;
     }
 

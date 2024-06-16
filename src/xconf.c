@@ -705,7 +705,7 @@ static enum ConfigRes SET_tcp_window(void *conf, const char *name, const char *v
 
     unsigned x = parseInt(value);
     if (x > 65535) {
-        LOG(LEVEL_ERROR, "error: %s=<n>: expected number less than 65535\n", name);
+        LOG(LEVEL_ERROR, "%s=<n>: expected number less than 65535\n", name);
         return Conf_ERR;
     } else {
         xconf->tcp_window = x;
@@ -725,7 +725,7 @@ static enum ConfigRes SET_tcp_init_window(void *conf, const char *name, const ch
 
     unsigned x = parseInt(value);
     if (x > 65535) {
-        LOG(LEVEL_ERROR, "error: %s=<n>: expected number less than 65535\n", name);
+        LOG(LEVEL_ERROR, "%s=<n>: expected number less than 65535\n", name);
         return Conf_ERR;
     } else {
         xconf->tcp_init_window = x;
@@ -745,7 +745,7 @@ static enum ConfigRes SET_packet_ttl(void *conf, const char *name, const char *v
 
     unsigned x = parseInt(value);
     if (x >= 256) {
-        LOG(LEVEL_ERROR, "error: %s=<n>: expected number less than 256\n", name);
+        LOG(LEVEL_ERROR, "%s=<n>: expected number less than 256\n", name);
         return Conf_ERR;
     } else {
         xconf->packet_ttl = x;
@@ -3664,7 +3664,7 @@ void xconf_print_help()
 
 void xconf_benchmark(unsigned blackrock_rounds)
 {
-    LOG(LEVEL_HINT, "=== benchmarking (%u-bits) ===\n\n", (unsigned)sizeof(void*)*8);
+    LOG(LEVEL_OUT, "=== benchmarking (%u-bits) ===\n\n", (unsigned)sizeof(void*)*8);
     blackrock_benchmark(blackrock_rounds);
     blackrock2_benchmark(blackrock_rounds);
     smack_benchmark();

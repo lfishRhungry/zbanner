@@ -180,8 +180,7 @@ rawsock_init(void)
 
         }
     } else {
-        printf("GetAdaptersInfo failed with error: %u\n", 
-                                                    (unsigned)dwRetVal);
+        LOG(LEVEL_ERROR, "GetAdaptersInfo failed: %u\n", (unsigned)dwRetVal);
 
     }
     if (pAdapterInfo)
