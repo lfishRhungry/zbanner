@@ -4,7 +4,8 @@
 #include <time.h>
 #include "../util-misc/cross.h"
 
-#define XTATUS_ADD_SIZE           30
+#define XTS_RATE_CACHE              8
+#define XTS_ADD_SIZE               30
 
 struct XtatusItem
 {
@@ -20,7 +21,7 @@ struct XtatusItem
     uint64_t       total_sent;
     uint64_t       total_tm_event;
     uint64_t       exiting_secs;
-    char           add_status[XTATUS_ADD_SIZE];
+    char           add_status[XTS_ADD_SIZE];
     unsigned       print_in_json:1;
 };
 
@@ -32,7 +33,7 @@ struct Xtatus
         uint64_t count;
     } last;
 
-    double   last_rates[8];
+    double   last_rates[XTS_RATE_CACHE];
     unsigned last_count;
 
     unsigned is_infinite:1;

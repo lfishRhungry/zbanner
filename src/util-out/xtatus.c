@@ -151,19 +151,14 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
     rate = (item->cur_count - xtatus->last.count)*1.0/elapsed_time;
 
     /*
-     * Smooth the number by averaging over the last 8 seconds
+     * Smooth the number by averaging over the last several seconds
      */
-     xtatus->last_rates[xtatus->last_count++ & 0x7] = rate;
-     rate =       xtatus->last_rates[0]
-                + xtatus->last_rates[1]
-                + xtatus->last_rates[2]
-                + xtatus->last_rates[3]
-                + xtatus->last_rates[4]
-                + xtatus->last_rates[5]
-                + xtatus->last_rates[6]
-                + xtatus->last_rates[7]
-                ;
-    rate /= 8;
+     rate = 0;
+     xtatus->last_rates[xtatus->last_count++ & XTS_RATE_CACHE-1] = rate;
+     for (unsigned i=0; i<XTS_RATE_CACHE; i++) {
+        rate += xtatus->last_rates[i];
+     }
+    rate /= XTS_RATE_CACHE;
 
     /*
      * Calculate "percent-done", which is just the total number of
