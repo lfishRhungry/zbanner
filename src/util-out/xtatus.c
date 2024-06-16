@@ -3,6 +3,7 @@
 #include "../util-misc/cross.h"
 #include "../globals.h"
 #include "../util-data/safe-string.h"
+#include "../util-out/logger.h"
 
 #include <stdio.h>
 
@@ -216,7 +217,7 @@ xtatus_print(
             if (json_status == 1) {
                 fmt = json_fmt_exiting;
 
-                fprintf(stderr,
+                LOG(LEVEL_OUT,
                         fmt,
                         (int)exiting,
                         kpps,
@@ -231,7 +232,7 @@ xtatus_print(
             } else {
                 fmt = "rate:%6.2f-kpps, waiting %d-secs, sent/s=%.0f, [+]/s=%.0f";
 
-                fprintf(stderr,
+                LOG(LEVEL_OUT,
                         fmt,
                         kpps,
                         (int)exiting,
@@ -240,27 +241,27 @@ xtatus_print(
 
                 if (xtatus->print_ft_event) {
                     fmt = ", tm_event=%6$" PRIu64;
-                    fprintf(stderr, fmt, total_tm_event);
+                    LOG(LEVEL_OUT, fmt, total_tm_event);
                 }
 
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
-                    fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
+                    LOG(LEVEL_OUT, fmt, tx_q_ratio, rx_q_ratio);
                 }
 
                 if (add_status && add_status[0]) {
                     fmt = ", %s";
-                    fprintf(stderr, fmt, add_status);
+                    LOG(LEVEL_OUT, fmt, add_status);
                 }
 
-                fprintf(stderr, "                \r");
+                LOG(LEVEL_OUT, "                \r");
 
             }
         } else {
             if (json_status == 1) {
                 fmt = json_fmt_infinite;
 
-                fprintf(stderr,
+                LOG(LEVEL_OUT,
                         fmt,
                         kpps,
                         pps,
@@ -275,7 +276,7 @@ xtatus_print(
             } else {
                 fmt = "rate:%6.2f-kpps, round=%" PRIu64 ", sent/s=%.0f, [+]/s=%.0f";
 
-                fprintf(stderr,
+                LOG(LEVEL_OUT,
                         fmt,
                         kpps,
                         repeat,
@@ -284,20 +285,20 @@ xtatus_print(
 
                 if (xtatus->print_ft_event) {
                     fmt = ", tm_event=%6$" PRIu64;
-                    fprintf(stderr, fmt, total_tm_event);
+                    LOG(LEVEL_OUT, fmt, total_tm_event);
                 }
 
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
-                    fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
+                    LOG(LEVEL_OUT, fmt, tx_q_ratio, rx_q_ratio);
                 }
 
                 if (add_status && add_status[0]) {
                     fmt = ", %s";
-                    fprintf(stderr, fmt, add_status);
+                    LOG(LEVEL_OUT, fmt, add_status);
                 }
 
-                fprintf(stderr, "                \r");
+                LOG(LEVEL_OUT, "                \r");
 
             }
         }
@@ -307,7 +308,7 @@ xtatus_print(
             if (json_status == 1) {
                 fmt = json_fmt_waiting;
 
-                fprintf(stderr,
+                LOG(LEVEL_OUT,
                         fmt,
                         pps/1000.0,
                         pps,
@@ -326,7 +327,7 @@ xtatus_print(
             } else {
                 fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, [+]=%" PRIu64 ", [x]=%" PRIu64;
 
-                fprintf(stderr,
+                LOG(LEVEL_OUT,
                         fmt,
                         pps/1000.0,
                         percent_done,
@@ -336,25 +337,25 @@ xtatus_print(
 
                 if (xtatus->print_info_num) {
                     fmt = ", [*]=%" PRIu64;
-                    fprintf(stderr, fmt, total_info);
+                    LOG(LEVEL_OUT, fmt, total_info);
                 }
 
                 if (xtatus->print_ft_event) {
                     fmt = ", tm_event=%" PRIu64;
-                    fprintf(stderr, fmt, total_tm_event);
+                    LOG(LEVEL_OUT, fmt, total_tm_event);
                 }
 
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
-                    fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
+                    LOG(LEVEL_OUT, fmt, tx_q_ratio, rx_q_ratio);
                 }
 
                 if (add_status && add_status[0]) {
                     fmt = ", %s";
-                    fprintf(stderr, fmt, add_status);
+                    LOG(LEVEL_OUT, fmt, add_status);
                 }
 
-                fprintf(stderr, "       \r");
+                LOG(LEVEL_OUT, "       \r");
 
             }
 
@@ -362,7 +363,7 @@ xtatus_print(
             if (json_status == 1) {
                 fmt = json_fmt_running;
 
-                fprintf(stderr,
+                LOG(LEVEL_OUT,
                     fmt,
                     pps/1000.0,
                     pps,
@@ -383,7 +384,7 @@ xtatus_print(
             } else {
                 fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, [+]=%" PRIu64 ", [x]=%" PRIu64;
 
-                fprintf(stderr,
+                LOG(LEVEL_OUT,
                     fmt,
                     pps/1000.0,
                     percent_done,
@@ -395,25 +396,25 @@ xtatus_print(
 
                 if (xtatus->print_info_num) {
                     fmt = ", [*]=%" PRIu64;
-                    fprintf(stderr, fmt, total_info);
+                    LOG(LEVEL_OUT, fmt, total_info);
                 }
 
                 if (xtatus->print_ft_event) {
                     fmt = ", tm_event=%" PRIu64;
-                    fprintf(stderr, fmt, total_tm_event);
+                    LOG(LEVEL_OUT, fmt, total_tm_event);
                 }
 
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
-                    fprintf(stderr, fmt, tx_q_ratio, rx_q_ratio);
+                    LOG(LEVEL_OUT, fmt, tx_q_ratio, rx_q_ratio);
                 }
 
                 if (add_status && add_status[0]) {
                     fmt = ", %s";
-                    fprintf(stderr, fmt, add_status);
+                    LOG(LEVEL_OUT, fmt, add_status);
                 }
 
-                fprintf(stderr, "       \r");
+                LOG(LEVEL_OUT, "       \r");
             }
         }
     }
@@ -432,7 +433,7 @@ void
 xtatus_finish(struct Xtatus *xtatus)
 {
     UNUSEDPARM(xtatus);
-    fprintf(stderr,"\n");
+    LOG(LEVEL_OUT, "\n");
 }
 
 /***************************************************************************

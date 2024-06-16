@@ -571,7 +571,7 @@ static int _main_scan(struct Xconf *xconf) {
     pixie_thread_join(rx_thread->thread_handle_recv);
 
     uint64_t usec_now = pixie_gettime();
-    fprintf(stderr, "\n%u milliseconds elapsed\n",
+    LOG(LEVEL_OUT, "\n%u milliseconds elapsed\n",
             (unsigned)((usec_now - usec_start) / 1000));
 
     /*
