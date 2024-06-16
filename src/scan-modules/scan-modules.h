@@ -14,6 +14,7 @@
 #include "../globals.h"
 #include "../util-misc/configer.h"
 #include "../util-misc/cross.h"
+#include "../util-out/xtatus.h"
 #include "../output-modules/output-modules.h"
 #include "../stack/stack-queue.h"
 #include "../massip/massip.h"
@@ -26,7 +27,6 @@
 struct Xconf;
 
 #define SM_DFT_DEDUP_TYPE         0
-#define SM_STATUS_SIZE           25
 
 /***************************************************************************
  * * callback functions for Init

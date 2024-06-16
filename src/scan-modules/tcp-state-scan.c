@@ -413,7 +413,7 @@ static void tcpstate_status(char *status)
         }
     }
 
-    snprintf(status, SM_STATUS_SIZE, "tcb=%"PRIu64, tcb_count);
+    snprintf(status, XTATUS_ADD_SIZE, "tcb=%"PRIu64, tcb_count);
 }
 
 struct ScanModule TcpStateScan = {

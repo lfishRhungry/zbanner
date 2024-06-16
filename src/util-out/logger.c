@@ -103,16 +103,16 @@ LOG(int level, const char *fmt, ...)
 /***************************************************************************
  ***************************************************************************/
 static void
-_vLOGnet(ipaddress ip_them, unsigned port_me, const char *fmt, va_list marker)
+_vLOGnet(ipaddress ip_them, unsigned port_them, const char *fmt, va_list marker)
 {
     ipaddress_formatted_t fmt1 = ipaddress_fmt(ip_them);
 
     pixie_acquire_mutex(_log_mutex);
 
     if (ip_them.version==4) {
-        fprintf(stderr, "[Net](%s:%u) ", fmt1.string, port_me);
+        fprintf(stderr, "[Net](%s:%u) ", fmt1.string, port_them);
     } else {
-        fprintf(stderr, "[Net]([%s]:%u) ", fmt1.string, port_me);
+        fprintf(stderr, "[Net]([%s]:%u) ", fmt1.string, port_them);
     }
     vfprintf(stderr, fmt, marker);
     fflush(stderr);
@@ -121,12 +121,12 @@ _vLOGnet(ipaddress ip_them, unsigned port_me, const char *fmt, va_list marker)
 }
 
 void
-LOGnet(ipaddress ip_them, unsigned port_me, const char *fmt, ...)
+LOGnet(ipaddress ip_them, unsigned port_them, const char *fmt, ...)
 {
     va_list marker;
 
     va_start(marker, fmt);
-    _vLOGnet(ip_them, port_me, fmt, marker);
+    _vLOGnet(ip_them, port_them, fmt, marker);
     va_end(marker);
 }
 

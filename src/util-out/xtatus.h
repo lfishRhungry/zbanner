@@ -4,6 +4,26 @@
 #include <time.h>
 #include "../util-misc/cross.h"
 
+#define XTATUS_ADD_SIZE           30
+
+struct XtatusItem
+{
+    uint64_t       cur_count;
+    uint64_t       max_count;
+    uint64_t       repeat_count;
+    double         cur_rate;
+    double         tx_queue_ratio;
+    double         rx_queue_ratio;
+    uint64_t       total_successed;
+    uint64_t       total_failed;
+    uint64_t       total_info;
+    uint64_t       total_sent;
+    uint64_t       total_tm_event;
+    uint64_t       exiting_secs;
+    char           add_status[XTATUS_ADD_SIZE];
+    unsigned       print_in_json:1;
+};
+
 struct Xtatus
 {
     struct {
@@ -25,22 +45,7 @@ struct Xtatus
 };
 
 
-void xtatus_print(
-    struct Xtatus *xtatus,
-    uint64_t       count,
-    uint64_t       max_count,
-    uint64_t       repeat,
-    double         pps,
-    double         tx_q_ratio,
-    double         rx_q_ratio,
-    uint64_t       total_successed,
-    uint64_t       total_failed,
-    uint64_t       total_info,
-    uint64_t       total_sent,
-    uint64_t       total_tm_event,
-    uint64_t       exiting,
-    const char    *add_status,
-    bool           json_status);
+void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item);
 
 void xtatus_finish(struct Xtatus *xtatus);
 

@@ -8,23 +8,7 @@
 #include <stdio.h>
 
 
-void
-xtatus_print(
-    struct Xtatus *xtatus,
-    uint64_t       count,
-    uint64_t       max_count,
-    uint64_t       repeat,
-    double         pps,
-    double         tx_q_ratio,
-    double         rx_q_ratio,
-    uint64_t       total_successed,
-    uint64_t       total_failed,
-    uint64_t       total_info,
-    uint64_t       total_sent,
-    uint64_t       total_tm_event,
-    uint64_t       exiting,
-    const char    *add_status,
-    bool           json_status)
+void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
 {
     const char         *fmt;
     double              elapsed_time;
@@ -36,7 +20,7 @@ xtatus_print(
     uint64_t            current_sent          = 0;
     double              successed_rate        = 0.0;
     double              sent_rate             = 0.0;
-    double              kpps                  = pps / 1000;
+    double              kpps                  = item->cur_rate / 1000;
 
     const char* json_fmt_infinite =
     "{"
@@ -164,7 +148,7 @@ xtatus_print(
      *
      *  rate = packets_sent / elapsed_time;
      */
-    rate = (count - xtatus->last.count)*1.0/elapsed_time;
+    rate = (item->cur_count - xtatus->last.count)*1.0/elapsed_time;
 
     /*
      * Smooth the number by averaging over the last 8 seconds
@@ -185,25 +169,25 @@ xtatus_print(
      * Calculate "percent-done", which is just the total number of
      * packets sent divided by the number we need to send.
      */
-    percent_done = (double)(count*100.0/max_count);
+    percent_done = (double)(item->cur_count*100.0/item->max_count);
 
 
     /*
      * Calculate the time remaining in the scan
      */
-    time_remaining  = (1.0 - percent_done/100.0) * (max_count / rate);
+    time_remaining  = (1.0 - percent_done/100.0) * (item->max_count / rate);
 
     /*
      * some other stats
      */
-    if (total_successed) {
-        current_successed           = total_successed - xtatus->total_successed;
-        xtatus->total_successed     = total_successed;
+    if (item->total_successed) {
+        current_successed           = item->total_successed - xtatus->total_successed;
+        xtatus->total_successed     = item->total_successed;
         successed_rate              = (1.0*current_successed)/elapsed_time;
     }
-    if (total_sent) {
-        current_sent                = total_sent - xtatus->total_sent;
-        xtatus->total_sent          = total_sent;
+    if (item->total_sent) {
+        current_sent                = item->total_sent - xtatus->total_sent;
+        xtatus->total_sent          = item->total_sent;
         sent_rate                   = (1.0*current_sent)/elapsed_time;
     }
 
@@ -214,88 +198,88 @@ xtatus_print(
 
     if (xtatus->is_infinite) {
         if (time_to_finish_tx) {
-            if (json_status == 1) {
+            if (item->print_in_json) {
                 fmt = json_fmt_exiting;
 
                 LOG(LEVEL_OUT,
                         fmt,
-                        (int)exiting,
+                        (int)item->exiting_secs,
                         kpps,
-                        pps,
+                        item->cur_rate,
                         sent_rate,
                         successed_rate,
-                        count,
-                        total_tm_event,
-                        tx_q_ratio,
-                        rx_q_ratio,
-                        add_status);
+                        item->cur_count,
+                        item->total_tm_event,
+                        item->tx_queue_ratio,
+                        item->rx_queue_ratio,
+                        item->add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, waiting %d-secs, sent/s=%.0f, [+]/s=%.0f";
 
                 LOG(LEVEL_OUT,
                         fmt,
                         kpps,
-                        (int)exiting,
+                        (int)item->exiting_secs,
                         sent_rate,
                         successed_rate);
 
                 if (xtatus->print_ft_event) {
                     fmt = ", tm_event=%6$" PRIu64;
-                    LOG(LEVEL_OUT, fmt, total_tm_event);
+                    LOG(LEVEL_OUT, fmt, item->total_tm_event);
                 }
 
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
-                    LOG(LEVEL_OUT, fmt, tx_q_ratio, rx_q_ratio);
+                    LOG(LEVEL_OUT, fmt, item->tx_queue_ratio, item->rx_queue_ratio);
                 }
 
-                if (add_status && add_status[0]) {
+                if (item->add_status && item->add_status[0]) {
                     fmt = ", %s";
-                    LOG(LEVEL_OUT, fmt, add_status);
+                    LOG(LEVEL_OUT, fmt, item->add_status);
                 }
 
                 LOG(LEVEL_OUT, "                \r");
 
             }
         } else {
-            if (json_status == 1) {
+            if (item->print_in_json) {
                 fmt = json_fmt_infinite;
 
                 LOG(LEVEL_OUT,
                         fmt,
                         kpps,
-                        pps,
+                        item->cur_rate,
                         sent_rate,
                         successed_rate,
-                        count,
-                        repeat,
-                        total_tm_event,
-                        tx_q_ratio,
-                        rx_q_ratio,
-                        add_status);
+                        item->cur_count,
+                        item->repeat_count,
+                        item->total_tm_event,
+                        item->tx_queue_ratio,
+                        item->rx_queue_ratio,
+                        item->add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, round=%" PRIu64 ", sent/s=%.0f, [+]/s=%.0f";
 
                 LOG(LEVEL_OUT,
                         fmt,
                         kpps,
-                        repeat,
+                        item->repeat_count,
                         sent_rate,
                         successed_rate);
 
                 if (xtatus->print_ft_event) {
                     fmt = ", tm_event=%6$" PRIu64;
-                    LOG(LEVEL_OUT, fmt, total_tm_event);
+                    LOG(LEVEL_OUT, fmt, item->total_tm_event);
                 }
 
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
-                    LOG(LEVEL_OUT, fmt, tx_q_ratio, rx_q_ratio);
+                    LOG(LEVEL_OUT, fmt, item->tx_queue_ratio, item->rx_queue_ratio);
                 }
 
-                if (add_status && add_status[0]) {
+                if (item->add_status && item->add_status[0]) {
                     fmt = ", %s";
-                    LOG(LEVEL_OUT, fmt, add_status);
+                    LOG(LEVEL_OUT, fmt, item->add_status);
                 }
 
                 LOG(LEVEL_OUT, "                \r");
@@ -305,54 +289,54 @@ xtatus_print(
 
     } else {
         if (time_to_finish_tx) {
-            if (json_status == 1) {
+            if (item->print_in_json) {
                 fmt = json_fmt_waiting;
 
                 LOG(LEVEL_OUT,
                         fmt,
-                        pps/1000.0,
-                        pps,
+                        item->cur_rate/1000.0,
+                        item->cur_rate,
                         percent_done,
-                        (int)exiting,
-                        total_successed,
-                        total_failed,
-                        total_info,
-                        total_tm_event,
-                        tx_q_ratio,
-                        rx_q_ratio,
-                        count,
-                        max_count,
-                        max_count-count,
-                        add_status);
+                        (int)item->exiting_secs,
+                        item->total_successed,
+                        item->total_failed,
+                        item->total_info,
+                        item->total_tm_event,
+                        item->tx_queue_ratio,
+                        item->rx_queue_ratio,
+                        item->cur_count,
+                        item->max_count,
+                        item->max_count-item->cur_count,
+                        item->add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, [+]=%" PRIu64 ", [x]=%" PRIu64;
 
                 LOG(LEVEL_OUT,
                         fmt,
-                        pps/1000.0,
+                        item->cur_rate/1000.0,
                         percent_done,
-                        (int)exiting,
-                        total_successed,
-                        total_failed);
+                        (int)item->exiting_secs,
+                        item->total_successed,
+                        item->total_failed);
 
                 if (xtatus->print_info_num) {
                     fmt = ", [*]=%" PRIu64;
-                    LOG(LEVEL_OUT, fmt, total_info);
+                    LOG(LEVEL_OUT, fmt, item->total_info);
                 }
 
                 if (xtatus->print_ft_event) {
                     fmt = ", tm_event=%" PRIu64;
-                    LOG(LEVEL_OUT, fmt, total_tm_event);
+                    LOG(LEVEL_OUT, fmt, item->total_tm_event);
                 }
 
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
-                    LOG(LEVEL_OUT, fmt, tx_q_ratio, rx_q_ratio);
+                    LOG(LEVEL_OUT, fmt, item->tx_queue_ratio, item->rx_queue_ratio);
                 }
 
-                if (add_status && add_status[0]) {
+                if (item->add_status && item->add_status[0]) {
                     fmt = ", %s";
-                    LOG(LEVEL_OUT, fmt, add_status);
+                    LOG(LEVEL_OUT, fmt, item->add_status);
                 }
 
                 LOG(LEVEL_OUT, "       \r");
@@ -360,58 +344,58 @@ xtatus_print(
             }
 
         } else {
-            if (json_status == 1) {
+            if (item->print_in_json) {
                 fmt = json_fmt_running;
 
                 LOG(LEVEL_OUT,
                     fmt,
-                    pps/1000.0,
-                    pps,
+                    item->cur_rate/1000.0,
+                    item->cur_rate,
                     percent_done,
                     (unsigned)(time_remaining/60/60),
                     (unsigned)(time_remaining/60)%60,
                     (unsigned)(time_remaining)%60,
-                    count,
-                    max_count,
-                    max_count-count,
-                    total_successed,
-                    total_failed,
-                    total_info,
-                    total_tm_event,
-                    tx_q_ratio,
-                    rx_q_ratio,
-                    add_status);
+                    item->cur_count,
+                    item->max_count,
+                    item->max_count-item->cur_count,
+                    item->total_successed,
+                    item->total_failed,
+                    item->total_info,
+                    item->total_tm_event,
+                    item->tx_queue_ratio,
+                    item->rx_queue_ratio,
+                    item->add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, [+]=%" PRIu64 ", [x]=%" PRIu64;
 
                 LOG(LEVEL_OUT,
                     fmt,
-                    pps/1000.0,
+                    item->cur_rate/1000.0,
                     percent_done,
                     (unsigned)(time_remaining/60/60),
                     (unsigned)(time_remaining/60)%60,
                     (unsigned)(time_remaining)%60,
-                    total_successed,
-                    total_failed);
+                    item->total_successed,
+                    item->total_failed);
 
                 if (xtatus->print_info_num) {
                     fmt = ", [*]=%" PRIu64;
-                    LOG(LEVEL_OUT, fmt, total_info);
+                    LOG(LEVEL_OUT, fmt, item->total_info);
                 }
 
                 if (xtatus->print_ft_event) {
                     fmt = ", tm_event=%" PRIu64;
-                    LOG(LEVEL_OUT, fmt, total_tm_event);
+                    LOG(LEVEL_OUT, fmt, item->total_tm_event);
                 }
 
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
-                    LOG(LEVEL_OUT, fmt, tx_q_ratio, rx_q_ratio);
+                    LOG(LEVEL_OUT, fmt, item->tx_queue_ratio, item->rx_queue_ratio);
                 }
 
-                if (add_status && add_status[0]) {
+                if (item->add_status && item->add_status[0]) {
                     fmt = ", %s";
-                    LOG(LEVEL_OUT, fmt, add_status);
+                    LOG(LEVEL_OUT, fmt, item->add_status);
                 }
 
                 LOG(LEVEL_OUT, "       \r");
@@ -424,7 +408,7 @@ xtatus_print(
      * Remember the values to be diffed against the next time around
      */
     xtatus->last.clock = now;
-    xtatus->last.count = count;
+    xtatus->last.count = item->cur_count;
 }
 
 /***************************************************************************

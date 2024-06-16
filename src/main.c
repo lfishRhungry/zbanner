@@ -107,18 +107,17 @@ static int _main_scan(struct Xconf *xconf) {
      * a partial-zero var conveniently.
      */
     time_t                now                   = time(0);
-    uint64_t              min_index             = UINT64_MAX;
-    uint64_t              min_repeat            = UINT64_MAX;
     struct TemplateSet    tmplset               = {0};
     struct Xtatus         status                = {.last={0}};
+    struct XtatusItem     status_item           = {0};
     struct RxThread       rx_thread[1]          = {{0}};
     struct TxThread      *tx_thread;
     uint64_t              count_ports; 
     uint64_t              count_ips;
     uint64_t              range;
-    char                  add_status[SM_STATUS_SIZE];
-
-    memset(add_status, 0, SM_STATUS_SIZE);
+    double                tx_free_entries;
+    double                rx_free_entries;
+    double                rx_queue_ratio_tmp;
 
     tx_thread = CALLOC(xconf->tx_thread_count, sizeof(struct TxThread));
 
@@ -375,87 +374,72 @@ static int _main_scan(struct Xconf *xconf) {
     pixie_usleep(1000 * 100);
     LOG(LEVEL_WARN, "waiting for threads to finish\n");
     while (!time_to_finish_tx) {
-        unsigned       i;
-        double         rate                      = 0;
-        uint64_t       total_successed           = 0;
-        uint64_t       total_failed              = 0;
-        uint64_t       total_info                = 0;
-        uint64_t       total_tm_event            = 0;
-        uint64_t       total_sent                = 0;
-        double         tx_queue_ratio            = 100.0;
-        double         rx_queue_ratio            = 100.0;
-        double         rx_free_entries;
-        double         rx_queue_ratio_tmp;
 
         /* Find the minimum index */
-        min_index  = UINT64_MAX;
-        min_repeat = UINT64_MAX;
-        for (i = 0; i < xconf->tx_thread_count; i++) {
+        status_item.cur_count    = UINT64_MAX;
+        status_item.repeat_count = UINT64_MAX;
+        for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
             struct TxThread *parms = &tx_thread[i];
 
-            if (min_index > parms->my_index)
-                min_index = parms->my_index;
+            if (status_item.cur_count > parms->my_index)
+                status_item.cur_count = parms->my_index;
 
-            if (min_repeat > parms->my_repeat)
-                min_repeat = parms->my_repeat;
+            if (status_item.repeat_count > parms->my_repeat)
+                status_item.repeat_count = parms->my_repeat;
 
-            rate += parms->throttler->current_rate;
+            status_item.cur_rate += parms->throttler->current_rate;
 
             if (parms->total_sent)
-                total_sent += *parms->total_sent;
+                status_item.total_sent += *parms->total_sent;
         }
-
-        total_successed = xconf->out.total_successed;
-        total_failed    = xconf->out.total_failed;
-        total_info      = xconf->out.total_info;
-        total_tm_event  = rx_thread->total_tm_event;
 
         /**
          * Rx handle queue is the bottle-neck, we got the most severe one.
          */
+        status_item.rx_queue_ratio = 100.0;
         if (rx_thread->handle_q) {
             for (unsigned i=0; i<xconf->rx_handler_count; i++) {
                 rx_free_entries = rte_ring_free_count(rx_thread->handle_q[i]);
                 rx_queue_ratio_tmp = rx_free_entries*100.0 /
                     (double)(xconf->dispatch_buf_count);
 
-                if (rx_queue_ratio>rx_queue_ratio_tmp)
-                    rx_queue_ratio = rx_queue_ratio_tmp;
+                if (status_item.rx_queue_ratio>rx_queue_ratio_tmp)
+                    status_item.rx_queue_ratio = rx_queue_ratio_tmp;
             }
         }
 
-        double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
-        tx_queue_ratio = tx_free_entries*100.0/(double)xconf->stack_buf_count;
+        /**
+         * Tx handle queue maybe short if something wrong.
+         */
+        tx_free_entries            = rte_ring_free_count(xconf->stack->transmit_queue);
+        status_item.tx_queue_ratio = tx_free_entries*100.0/(double)xconf->stack_buf_count;
 
         /* Note: This is how we tell the Tx has ended */
         if (xconf->is_infinite) {
-            if (xconf->repeat && min_repeat>=xconf->repeat)
+            if (xconf->repeat && status_item.repeat_count>=xconf->repeat)
                 time_to_finish_tx = 1;
         } else {
-            if (min_index >= range)
+            if (status_item.cur_count >= range)
                 time_to_finish_tx = 1;
         }
 
-        /*additional status from scan module*/
-        add_status[0] = '\0';
-        xconf->scan_module->status_cb(add_status);
+        /**
+         * additional status from scan module
+         */
+        status_item.add_status[0] = '\0';
+        xconf->scan_module->status_cb(status_item.add_status);
 
-        xtatus_print(
-            &status,
-            min_index,
-            range,
-            min_repeat,
-            rate,
-            tx_queue_ratio,
-            rx_queue_ratio,
-            total_successed,
-            total_failed,
-            total_info,
-            total_sent,
-            total_tm_event,
-            0,
-            add_status,
-            xconf->is_status_ndjson);
+        /**
+         * update other status item fields
+         */
+        status_item.total_successed = xconf->out.total_successed;
+        status_item.total_failed    = xconf->out.total_failed;
+        status_item.total_info      = xconf->out.total_info;
+        status_item.total_tm_event  = rx_thread->total_tm_event;
+        status_item.max_count       = range;
+        status_item.print_in_json   = xconf->is_status_ndjson;
+
+        xtatus_print(&status, &status_item);
 
         /* Sleep for almost a second */
         pixie_mssleep(500);
@@ -465,8 +449,8 @@ static int _main_scan(struct Xconf *xconf) {
      * If we haven't completed the scan, then save the resume
      * information.
      */
-    if (min_index < range && !xconf->is_infinite && !xconf->is_noresume) {
-        xconf->resume.index = min_index;
+    if (status_item.cur_count < range && !xconf->is_infinite && !xconf->is_noresume) {
+        xconf->resume.index = status_item.cur_count;
         xconf_save_state(xconf);
     }
 
@@ -479,78 +463,64 @@ static int _main_scan(struct Xconf *xconf) {
      */
     now = time(0);
     for (;;) {
-        unsigned       i;
-        double         rate                      = 0;
-        uint64_t       total_successed           = 0;
-        uint64_t       total_failed              = 0;
-        uint64_t       total_info                = 0;
-        uint64_t       total_tm_event            = 0;
-        uint64_t       total_sent                = 0;
-        double         tx_queue_ratio            = 100.0;
-        double         rx_queue_ratio            = 100.0;
-        double         rx_free_entries;
-        double         rx_queue_ratio_tmp;
 
-        /* Find the minimum index and repeat of all the threads */
-        min_index  = UINT64_MAX;
-        min_repeat = UINT64_MAX;
-        for (i = 0; i < xconf->tx_thread_count; i++) {
+        /* Find the minimum index */
+        status_item.cur_count    = UINT64_MAX;
+        status_item.repeat_count = UINT64_MAX;
+        for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
             struct TxThread *parms = &tx_thread[i];
 
-            if (min_index > parms->my_index)
-                min_index = parms->my_index;
+            if (status_item.cur_count > parms->my_index)
+                status_item.cur_count = parms->my_index;
 
-            if (min_repeat > parms->my_repeat)
-                min_repeat = parms->my_repeat;
+            if (status_item.repeat_count > parms->my_repeat)
+                status_item.repeat_count = parms->my_repeat;
 
-            rate += parms->throttler->current_rate;
+            status_item.cur_rate += parms->throttler->current_rate;
 
             if (parms->total_sent)
-                total_sent += *parms->total_sent;
+                status_item.total_sent += *parms->total_sent;
         }
-
-        total_successed = xconf->out.total_successed;
-        total_failed    = xconf->out.total_failed;
-        total_info      = xconf->out.total_info;
-        total_tm_event  = rx_thread->total_tm_event;
 
         /**
          * Rx handle queue is the bottle-neck, we got the most severe one.
          */
+        status_item.rx_queue_ratio = 100.0;
         if (rx_thread->handle_q) {
             for (unsigned i=0; i<xconf->rx_handler_count; i++) {
                 rx_free_entries = rte_ring_free_count(rx_thread->handle_q[i]);
                 rx_queue_ratio_tmp = rx_free_entries*100.0 /
                     (double)(xconf->dispatch_buf_count);
 
-                if (rx_queue_ratio>rx_queue_ratio_tmp)
-                    rx_queue_ratio = rx_queue_ratio_tmp;
+                if (status_item.rx_queue_ratio>rx_queue_ratio_tmp)
+                    status_item.rx_queue_ratio = rx_queue_ratio_tmp;
             }
         }
 
-        double tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
-        tx_queue_ratio = tx_free_entries*100.0/(double)xconf->stack_buf_count;
+        /**
+         * Tx handle queue maybe short if something wrong.
+         */
+        tx_free_entries            = rte_ring_free_count(xconf->stack->transmit_queue);
+        status_item.tx_queue_ratio = tx_free_entries*100.0/(double)xconf->stack_buf_count;
 
-        /*additional status from scan module*/
-        add_status[0] = '\0';
-        xconf->scan_module->status_cb(add_status);
+        /**
+         * additional status from scan module
+         */
+        status_item.add_status[0] = '\0';
+        xconf->scan_module->status_cb(status_item.add_status);
 
-        xtatus_print(
-            &status,
-            min_index,
-            range,
-            min_repeat,
-            rate,
-            tx_queue_ratio,
-            rx_queue_ratio,
-            total_successed,
-            total_failed,
-            total_info,
-            total_sent,
-            total_tm_event,
-            xconf->wait - (time(0) - now),
-            add_status,
-            xconf->is_status_ndjson);
+        /**
+         * update other status item fields
+         */
+        status_item.total_successed = xconf->out.total_successed;
+        status_item.total_failed    = xconf->out.total_failed;
+        status_item.total_info      = xconf->out.total_info;
+        status_item.total_tm_event  = rx_thread->total_tm_event;
+        status_item.max_count       = range;
+        status_item.print_in_json   = xconf->is_status_ndjson;
+        status_item.exiting_secs    = xconf->wait - (time(0) - now);
+
+        xtatus_print(&status, &status_item);
 
         /*no more waiting or too many <ctrl-c>*/
         if (time(0) - now >= xconf->wait || time_to_finish_rx) {

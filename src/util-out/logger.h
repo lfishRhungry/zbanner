@@ -11,7 +11,7 @@
 #define LEVEL_DETAIL    ( 4)
 
 /**
- * Use logger after initing.
+ * Use logger after inited.
  */
 void LOG_init();
 
@@ -21,7 +21,7 @@ void LOG(int level, const char *fmt, ...);
 
 void LOGip(int level, ipaddress ip, unsigned port, const char *fmt, ...);
 
-void LOGnet(ipaddress ip_them, unsigned port_me, const char *fmt, ...);
+void LOGnet(ipaddress ip_them, unsigned port_them, const char *fmt, ...);
 
 int LOGopenssl(int level);
 
