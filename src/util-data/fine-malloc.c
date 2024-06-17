@@ -117,9 +117,12 @@ STRDUP(const char *str)
     return p;
 }
 
-
+/*****************************************************************************
+ * strdup(): compilers don't like strdup(), so I just write my own here. I
+ * should probably find a better solution.
+ *****************************************************************************/
 char *
-duplicate_string(const char *str)
+DUP_STR(const char *str)
 {
     size_t length;
     char *result;

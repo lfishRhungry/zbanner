@@ -4,9 +4,12 @@
 
     Also, defines a REALLOCARRAY() function that checks for integer
     overflow before trying to allocate memory.
+
+    These wrappers allow to use non-default allocators in the future.
 */
 #ifndef FINE_MALLOC_H
 #define FINE_MALLOC_H
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -25,12 +28,8 @@ REALLOC(void *p, size_t size);
 char *
 STRDUP(const char *str);
 
-/*****************************************************************************
- * strdup(): compilers don't like strdup(), so I just write my own here. I
- * should probably find a better solution.
- *****************************************************************************/
 char *
-duplicate_string(const char *str);
+DUP_STR(const char *str);
 
 
 
