@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
 project(xtate VERSION 0.9)
 
-option(WITH_OPENSSL "Build with OpenSSL library" ON)
-option(WITH_PCRE2 "Build with PCRE2 library" ON)
-option(WITH_LIBXML2 "Build with LibXml2 library" ON)
+option(WITH_OPENSSL        "Build with OpenSSL library"                   ON)
+option(WITH_PCRE2          "Build with PCRE2 library"                     ON)
+option(WITH_LIBXML2        "Build with LibXml2 library"                   ON)
+# option(WITH_FANN           "Build with Fann library"                      ON)
 
 # According to C99 standards while using designated initializer:
 #     "Omitted fields are implicitly initialized the same as for objects
@@ -64,8 +65,8 @@ endif ()
 
 # --------------------openssl
 if (${WITH_OPENSSL})
-# set(OPENSSL_USE_STATIC_LIBS TRUE)
-find_package(OpenSSL 1.1.1)
+    # set(OPENSSL_USE_STATIC_LIBS TRUE)
+    find_package(OpenSSL 1.1.1)
 endif ()
 
 if (${OPENSSL_FOUND})
@@ -78,8 +79,8 @@ endif ()
 
 # --------------------pcre2
 if (${WITH_PCRE2})
-# set(PCRE2_USE_STATIC_LIBS TRUE)
-find_package(PCRE2 CONFIG COMPONENTS 8BIT)
+    # set(PCRE2_USE_STATIC_LIBS TRUE)
+    find_package(PCRE2 CONFIG COMPONENTS 8BIT)
 endif ()
 
 if (${PCRE2_FOUND})
@@ -91,8 +92,8 @@ endif ()
 
 # --------------------libxml2
 if (${WITH_LIBXML2})
-# set(LIBXML2_USE_STATIC_LIBS TRUE)
-find_package(LibXml2)
+    # set(LIBXML2_USE_STATIC_LIBS TRUE)
+    find_package(LibXml2)
 endif ()
 
 if (${LibXml2_FOUND})
@@ -102,12 +103,19 @@ else ()
     add_compile_definitions(NOT_FOUND_LIBXML2)
 endif ()
 
+# --------------------fann
+# if (${WITH_FANN})
+#     find_package(fann)
+# endif ()
+
+# if (${fann_FOUND})
+#     target_link_libraries(${exe_name} fann)
+# else ()
+#     add_compile_definitions(NOT_FOUND_FANN)
+# endif ()
+
 # --------------------lua5.3
 # set(LUA_USE_STATIC_LIBS TRUE)
 # find_package(Lua REQUIRED)
 # target_include_directories(${exe_name} PRIVATE ${LUA_INCLUDE_DIR})
 # target_link_libraries(${exe_name} ${LUA_LIBRARIES})
-
-# --------------------fann
-# find_package(fann REQUIRED)
-# target_link_libraries(${exe_name} fann)
