@@ -1515,12 +1515,13 @@ static enum ConfigRes SET_read_conf(void *conf, const char *name, const char *va
         return Conf_ERR;
     }
 
-    while (fgets(line, sizeof(line), fp)) {
+    while (fgets(line, 65535, fp)) {
         char *name;
         char *value;
 
-        trim(line, sizeof(line));
+        trim(line, 65535);
 
+        /*filter out comments*/
         if (ispunct(line[0] & 0xFF) || line[0] == '\0')
             continue;
 
@@ -1530,8 +1531,8 @@ static enum ConfigRes SET_read_conf(void *conf, const char *name, const char *va
             continue;
         *value = '\0';
         value++;
-        trim(name, sizeof(line));
-        trim(value, sizeof(line));
+        trim(name, 65535);
+        trim(value, 65535);
 
         xconf_set_parameter(xconf, name, value);
     }
