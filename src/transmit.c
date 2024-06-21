@@ -100,36 +100,42 @@ void transmit_thread(void *v)
 
     throttler_start(throttler, xconf->max_rate / xconf->tx_thread_count);
 
+    /*Declared out of infinite loop to keep balance of stack*/
+    struct BlackRock blackrock;
+    uint64_t         range;
+    uint64_t         range_ipv6;
+    uint64_t         start;
+    uint64_t         end;
+    uint64_t         ck;
+    uint64_t         batch_size;
+    unsigned         more_idx;
+
 infinite:;
 
-    uint64_t range      = count_ipv4 * rangelist_count(&xconf->targets.ports) +
-                          count_ipv6 * rangelist_count(&xconf->targets.ports);
-    uint64_t range_ipv6 = count_ipv6 * rangelist_count(&xconf->targets.ports);
+    range      = count_ipv4 * rangelist_count(&xconf->targets.ports) +
+                 count_ipv6 * rangelist_count(&xconf->targets.ports);
+    range_ipv6 = count_ipv6 * rangelist_count(&xconf->targets.ports);
 
-    struct BlackRock blackrock;
     blackrock_init(&blackrock, range, dynamic_seed, xconf->blackrock_rounds);
 
-    uint64_t start = xconf->resume.index +
-                     (xconf->shard.one - 1) * xconf->tx_thread_count +
-                     parms->tx_index;
-    uint64_t end = range;
+    start = xconf->resume.index + parms->tx_index +
+            (xconf->shard.one - 1) * xconf->tx_thread_count;
+    end   = range;
+
     if (xconf->resume.count && end > start + xconf->resume.count)
         end = start + xconf->resume.count;
 
     /**
      * NOTE: This init insures the stop of tx while the tx thread got no target to scan.
      */
-    parms->my_index   = start;
+    parms->my_index = start;
 
     LOG(LEVEL_DEBUG, "Tx Thread: starting main loop [%llu..%lu] inc: %llu\n", start, end, increment);
 
-    uint64_t i;
-    uint64_t ck;
-    unsigned more_idx = 0;
+    more_idx = 0;
+    for (uint64_t i = start; i < end;) {
 
-    for (i = start; i < end;) {
-
-        uint64_t batch_size = throttler_next_batch(throttler, packets_sent);
+        batch_size = throttler_next_batch(throttler, packets_sent);
 
         /*Transmit packets from stack first */
         stack_flush_packets(xconf->stack, adapter, acache, &packets_sent, &batch_size);
@@ -169,7 +175,7 @@ infinite:;
                     target.port_me        = src.port + (ck & src.port_mask);
                     target.ip_me.ipv6.lo += (ck & src.ipv6_mask);
                 } else {
-                    target.port_me    = src.port;
+                    target.port_me = src.port;
                 }
             } else {
                 xXx -= range_ipv6;
@@ -212,9 +218,8 @@ infinite:;
             tm_event->port_me   = target.port_me;
 
             unsigned char pkt_buffer[PKT_BUF_SIZE];
-            size_t pkt_len = 0;
-
-            unsigned more = 0;
+            size_t        pkt_len = 0;
+            unsigned      more    = 0;
             more = xconf->scan_module->transmit_cb(
                 entropy, &target, tm_event, pkt_buffer, &pkt_len);
 
@@ -286,7 +291,6 @@ infinite:;
      * Packets for sending here are not always enough to trigger implicit sock
      * flush. So do explicit flush for less latency.
      */
-    uint64_t batch_size;
     while (!time_to_finish_rx) {
         batch_size = throttler_next_batch(throttler, packets_sent);
         stack_flush_packets(xconf->stack, adapter, acache, &packets_sent, &batch_size);
