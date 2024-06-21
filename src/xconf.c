@@ -2357,7 +2357,7 @@ static enum ConfigRes SET_send_queue(void *conf, const char *name, const char *v
 }
 
 struct ConfigParam config_parameters[] = {
-    {"BASIC:", SET_nothing, 0, {0}, NULL},
+    {"BASIC PARAMITERS", SET_nothing, 0, {0}, NULL},
 
     {
         "seed",
@@ -2479,7 +2479,7 @@ struct ConfigParam config_parameters[] = {
         "Print the introduction of work flow."
     },
 
-    {"TARGET:", SET_nothing, 0, {0}, NULL},
+    {"TARGET SETTINGS", SET_nothing, 0, {0}, NULL},
 
     {
         "target-ip",
@@ -2559,7 +2559,7 @@ struct ConfigParam config_parameters[] = {
         "scanned."
     },
 
-    {"INTERFACE:", SET_nothing, 0, {0}, NULL},
+    {"INTERFACE ADJUSTMENT", SET_nothing, 0, {0}, NULL},
 
     {
         "adapter",
@@ -2678,7 +2678,7 @@ struct ConfigParam config_parameters[] = {
         "like responsing TCP RST or ICMP Port Unreachable."
     },
 
-    {"OPERATION:", SET_nothing, 0, {0}, NULL},
+    {"OPERATION SELECTION", SET_nothing, 0, {0}, NULL},
 
     {
         "echo",
@@ -2741,7 +2741,7 @@ struct ConfigParam config_parameters[] = {
         "Do not run, but instead print informations of all adapters in this machine."
     },
 
-    {"SCAN MODULES:", SET_nothing, 0, {0}, NULL},
+    {"SCAN MODULES CONFIG", SET_nothing, 0, {0}, NULL},
 
     {
         "scan-module",
@@ -2768,7 +2768,7 @@ struct ConfigParam config_parameters[] = {
         "of parameters for each ScanModule could be found in --list-scan."
     },
 
-    {"PROBE MODULES:", SET_nothing, 0, {0}, NULL},
+    {"PROBE MODULES CONFIG", SET_nothing, 0, {0}, NULL},
 
     {
         "probe-module",
@@ -2796,7 +2796,7 @@ struct ConfigParam config_parameters[] = {
         "of parameters for each ProbeModule could be found in --list-probe."
     },
 
-    {"OUTPUT MODULES:", SET_nothing, 0, {0}, NULL},
+    {"OUTPUT MODULES CONFIG", SET_nothing, 0, {0}, NULL},
 
     {
         "output-module",
@@ -2864,7 +2864,7 @@ struct ConfigParam config_parameters[] = {
         "'success', 'failed' or 'info'."
     },
 
-    {"XTATUS:", SET_nothing, 0, {0}, NULL},
+    {"STATUS PRINTING", SET_nothing, 0, {0}, NULL},
 
     {
         "print-status",
@@ -2884,7 +2884,7 @@ struct ConfigParam config_parameters[] = {
         " running."
     },
 
-    {"PACKET ATTRIBUTE:", SET_nothing, 0, {0}, NULL},
+    {"PACKET ATTRIBUTES", SET_nothing, 0, {0}, NULL},
 
     {
         "packet-ttl",
@@ -2988,7 +2988,7 @@ struct ConfigParam config_parameters[] = {
         "NOTE: Be cared to the interaction with --tcp-win and --snaplen."
     },
 
-    {"MISC:", SET_nothing, 0, {0}, NULL},
+    {"MISCELLANEOUS", SET_nothing, 0, {0}, NULL},
 
     {
         "conf",
@@ -3173,7 +3173,7 @@ struct ConfigParam config_parameters[] = {
 
 
     /*Put it at last for better "help" output*/
-    {"TARGET_OUTPUT:", SET_target_output, 0, {0}, NULL},
+    {"TARGET_OUTPUT", SET_target_output, 0, {0}, NULL},
 
     {0}
 };
