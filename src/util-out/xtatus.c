@@ -228,7 +228,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                     LOG(LEVEL_OUT, fmt, item->tx_queue_ratio, item->rx_queue_ratio);
                 }
 
-                if (item->add_status && item->add_status[0]) {
+                if (item->add_status[0]) {
                     fmt = ", %s";
                     LOG(LEVEL_OUT, fmt, item->add_status);
                 }
@@ -272,7 +272,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                     LOG(LEVEL_OUT, fmt, item->tx_queue_ratio, item->rx_queue_ratio);
                 }
 
-                if (item->add_status && item->add_status[0]) {
+                if (item->add_status[0]) {
                     fmt = ", %s";
                     LOG(LEVEL_OUT, fmt, item->add_status);
                 }
@@ -329,7 +329,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                     LOG(LEVEL_OUT, fmt, item->tx_queue_ratio, item->rx_queue_ratio);
                 }
 
-                if (item->add_status && item->add_status[0]) {
+                if (item->add_status[0]) {
                     fmt = ", %s";
                     LOG(LEVEL_OUT, fmt, item->add_status);
                 }
@@ -388,7 +388,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                     LOG(LEVEL_OUT, fmt, item->tx_queue_ratio, item->rx_queue_ratio);
                 }
 
-                if (item->add_status && item->add_status[0]) {
+                if (item->add_status[0]) {
                     fmt = ", %s";
                     LOG(LEVEL_OUT, fmt, item->add_status);
                 }
