@@ -160,6 +160,18 @@ trim(char *line, size_t sizeof_line)
         line[--sizeof_line] = '\0';
 }
 
+void
+trim_char(char *line, size_t sizeof_line, char c)
+{
+    if (sizeof_line > strlen(line))
+        sizeof_line = strlen(line);
+
+    while (*line==c)
+        memmove(line, line+1, sizeof_line--);
+    while (*line && line[sizeof_line-1]==c)
+        line[--sizeof_line] = '\0';
+}
+
 const char *
 normalize_string(const unsigned char *px, size_t length,
     char *buf, size_t buf_len)

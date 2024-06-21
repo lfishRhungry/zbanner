@@ -1525,14 +1525,26 @@ static enum ConfigRes SET_read_conf(void *conf, const char *name, const char *va
         if (ispunct(line[0] & 0xFF) || line[0] == '\0')
             continue;
 
-        name = line;
+        name  = line;
         value = strchr(line, '=');
         if (value == NULL)
             continue;
         *value = '\0';
         value++;
         trim(name, 65535);
+
+        /**
+         * For value, must consider wrapper of double quotes or single quotes.
+         * */
         trim(value, 65535);
+        if (value[0]=='"') {
+            trim_char(value, 65535, '"');
+            trim(value, 65535);
+        }
+        else if (value[0]=='\'') {
+            trim_char(value, 65535, '\'');
+            trim(value, 65535);
+        }
 
         xconf_set_parameter(xconf, name, value);
     }
