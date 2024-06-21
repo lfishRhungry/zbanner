@@ -260,7 +260,7 @@ _extract_router_advertisement(
                     ipaddress_formatted_t fmt1 = ipv6address_fmt(my_ipv6);
                     ipaddress_formatted_t fmt2 = ipv6address_fmt(prefix);
 
-                    LOG(LEVEL_HINT, "WARNING: our source-ip is %s, but router prefix announces %s/%u\n",
+                    LOG(LEVEL_HINT, "our source-ip is %s, but router prefix announces %s/%u\n",
                             fmt1.string, fmt2.string, prefix_len);
                     is_same_prefix = 0;
                 }

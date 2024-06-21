@@ -456,7 +456,7 @@ int dedup_selftest()
         if (!dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me, type)) {
             ipaddress_formatted_t fmt1 = ipaddress_fmt(ip_them);
             ipaddress_formatted_t fmt2 = ipaddress_fmt(ip_me);
-            LOG(LEVEL_ERROR, "[%s]:%u -> [%s]:%u\n", 
+            LOG(LEVEL_ERROR, "(%s):%u -> (%s):%u\n", 
                 fmt1.string, port_them,
                 fmt2.string, port_me);
             line = __LINE__;

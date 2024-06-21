@@ -113,7 +113,7 @@ _HEXDUMP(const void *v, struct tcp_hdr_t hdr, size_t offset, const char *name)
     size_t i;
     size_t len = hdr.max - hdr.begin + 8 - 20;
 
-    LOG(LEVEL_HINT, "%s:\n", name);
+    LOG(LEVEL_ERROR, "%s:\n", name);
     offset -= hdr.begin + 20;
 
     for (i=0; i<len; i += 16) {
@@ -125,11 +125,11 @@ _HEXDUMP(const void *v, struct tcp_hdr_t hdr, size_t offset, const char *name)
                 c = '>';
             if (j + 1 == offset)
                 c = '<';
-            LOG(LEVEL_HINT, "%02x%c", p[j], c);
+            LOG(LEVEL_OUT, "%02x%c", p[j], c);
         }
         for (;j<i+16; j++)
-            LOG(LEVEL_HINT, "   ");
-        LOG(LEVEL_HINT, "  ");
+            LOG(LEVEL_OUT, "   ");
+        LOG(LEVEL_OUT, "  ");
         for (j=i; j<i+16 && j<len; j++) {
             char c = p[j];
 
@@ -137,11 +137,11 @@ _HEXDUMP(const void *v, struct tcp_hdr_t hdr, size_t offset, const char *name)
                 c = '#';
 
             if (isprint(c&0xff) && !isspace(c&0xff))
-                LOG(LEVEL_HINT, "%c", c);
+                LOG(LEVEL_OUT, "%c", c);
             else
-                LOG(LEVEL_HINT, ".");
+                LOG(LEVEL_OUT, ".");
         }
-        LOG(LEVEL_HINT, "\n");
+        LOG(LEVEL_OUT, "\n");
     }
 }
 
@@ -1624,7 +1624,7 @@ _selftests_run(void) {
         }
 
 
-        //_HEXDUMPopt(buf, length, "[PRE]");
+        //_HEXDUMPopt(buf, length, "(PRE)");
 
         /*
          * Run the desired test
@@ -1694,7 +1694,7 @@ _selftests_run(void) {
                 return 1; /* fail */
         }
 
-        //_HEXDUMPopt(buf, length, "[POST]");
+        //_HEXDUMPopt(buf, length, "(POST)");
 
         if (_consistancy_check(buf, length, "DeadBeef", 8)) {
             line = __LINE__;
@@ -1727,7 +1727,7 @@ _selftests_run(void) {
             /* makre sure the contents of the field match expected */
             err = memcmp(tests[i].post.options, buf+offset, (hdr.max-offset));
             if (err) {
-                _HEXDUMPopt(buf, length, "[-] failed expectations");
+                _HEXDUMPopt(buf, length, "failed expectations");
                 line = __LINE__;
                 goto fail;
             }

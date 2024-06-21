@@ -680,7 +680,7 @@ rawsock_init_adapter(const char *adapter_name,
          * adapter until we call pcap_activate */
         adapter->pcap = PCAP.create(adapter_name, errbuf);
         if (adapter->pcap == NULL) {
-            LOG(LEVEL_HINT, "[PCAP] use `open_live` instead of `activate`, this may cause send rate a little slow.\n");
+            LOG(LEVEL_HINT, "(PCAP) use `open_live` instead of `activate`, this may cause send rate a little slow.\n");
             /*If going to this way, pcap will be a little bit slower, very strange*/
             adapter->pcap = PCAP.open_live(
                 adapter_name,

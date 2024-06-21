@@ -1412,7 +1412,7 @@ static enum ConfigRes SET_source_mac(void *conf, const char *name, const char *v
     if (xconf->nic.my_mac_count != 0) {
         ipaddress_formatted_t fmt1 = macaddress_fmt(xconf->nic.source_mac);
         ipaddress_formatted_t fmt2 = macaddress_fmt(source_mac);
-        LOG(LEVEL_HINT, "WARNING: overwriting MAC address, was %s, now %s\n",
+        LOG(LEVEL_HINT, "overwriting MAC address, was %s, now %s\n",
             fmt1.string,
             fmt2.string);
     }
@@ -3199,7 +3199,7 @@ xconf_command_line(struct Xconf *xconf, int argc, char *argv[])
     set_parameters_from_args(xconf, config_parameters, argc-1, argv+1);
 
     if (xconf->shard.of > 1 && xconf->seed == 0) {
-        LOG(LEVEL_ERROR, "WARNING: --seed <num> is not specified\n    HINT: all shards must share the same seed\n");
+        LOG(LEVEL_ERROR, "--seed <num> is not specified\n    HINT: all shards must share the same seed\n");
     }
 }
 

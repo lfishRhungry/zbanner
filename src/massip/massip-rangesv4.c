@@ -165,7 +165,7 @@ selftest_range_first_cidr(void) {
         if (out.begin != tests[i].out.begin
             || out.end != tests[i].out.end
             || prefix_bits != tests[i].prefix_bits) {
-            LOG(LEVEL_ERROR, "[%u] 0x%08x->0x%08x  /%u   0x%08x->0x%08x /%u\n",
+            LOG(LEVEL_ERROR, "(%u) 0x%08x->0x%08x  /%u   0x%08x->0x%08x /%u\n",
                     (unsigned)i,
                     out.begin,
                     out.end,

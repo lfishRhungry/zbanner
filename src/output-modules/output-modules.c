@@ -112,7 +112,7 @@ bool output_init(struct Output *out)
 
         if (out->output_module->need_file && !out->output_filename[0]) {
             LOG(LEVEL_ERROR,
-                "[-] OutputModule %s need to specify output file name by `--output-file`.\n",
+                "OutputModule %s need to specify output file name by `--output-file`.\n",
                 out->output_module->name);
             return false;
         }

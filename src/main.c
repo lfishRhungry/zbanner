@@ -128,16 +128,15 @@ static int _main_scan(struct Xconf *xconf) {
                 range6list_count(&xconf->targets.ipv6).lo;
     if (count_ips == 0) {
         LOG(LEVEL_ERROR, "target IP address list empty\n");
-        LOG(LEVEL_ERROR, " try something like \"--range 10.0.0.0/8\"\n");
-        LOG(LEVEL_ERROR,
-            " try something like \"--range 192.168.0.100-192.168.0.200\"\n");
+        LOG(LEVEL_OUT, "    try something like \"--range 10.0.0.0/8\"\n");
+        LOG(LEVEL_OUT, "    try something like \"--range 192.168.0.100-192.168.0.200\"\n");
         return 1;
     }
     count_ports = rangelist_count(&xconf->targets.ports);
     if (count_ports == 0) {
         LOG(LEVEL_ERROR, "no ports were specified\n");
-        LOG(LEVEL_ERROR, " try something like \"-p80,8000-9000\"\n");
-        LOG(LEVEL_ERROR, " try something like \"--ports 0-65535\"\n");
+        LOG(LEVEL_OUT, "    try something like \"-p80,8000-9000\"\n");
+        LOG(LEVEL_OUT, "    try something like \"--ports 0-65535\"\n");
         return 1;
     }
     range = count_ips * count_ports;
@@ -148,10 +147,9 @@ static int _main_scan(struct Xconf *xconf) {
      */
     if (count_ips > 1000000000ULL && rangelist_count(&xconf->exclude.ipv4) == 0) {
         LOG(LEVEL_ERROR, "range too big, need confirmation\n");
-        LOG(LEVEL_ERROR, " to prevent accidents, at least one --exclude must be "
+        LOG(LEVEL_OUT, "    to prevent accidents, at least one --exclude must be "
                "specified\n");
-        LOG(LEVEL_ERROR,
-            " use \"--exclude 255.255.255.255\" as a simple confirmation\n");
+        LOG(LEVEL_OUT, "    use \"--exclude 255.255.255.255\" as a simple confirmation\n");
         exit(1);
     }
 
@@ -159,8 +157,8 @@ static int _main_scan(struct Xconf *xconf) {
         exit(1);
     if (!xconf->nic.is_usable) {
         LOG(LEVEL_ERROR, "failed to detect IP of interface\n");
-        LOG(LEVEL_ERROR, " did you spell the name correctly?\n");
-        LOG(LEVEL_ERROR, " if it has no IP address, "
+        LOG(LEVEL_OUT, "    did you spell the name correctly?\n");
+        LOG(LEVEL_OUT, "    if it has no IP address, "
                "manually set with \"--adapter-ip 192.168.100.5\"\n");
         exit(1);
     }
@@ -627,7 +625,7 @@ int main(int argc, char *argv[]) {
 
     has_target_addresses = massip_has_ipv4_targets(&xconf->targets) ||
                            massip_has_ipv6_targets(&xconf->targets);
-    has_target_ports = massip_has_target_ports(&xconf->targets);
+    has_target_ports     = massip_has_target_ports(&xconf->targets);
     massip_apply_excludes(&xconf->targets, &xconf->exclude);
     if (!has_target_ports) {
         massip_add_port_string(&xconf->targets, "o:0", 0);
@@ -648,13 +646,13 @@ int main(int argc, char *argv[]) {
      */
     if (massint128_bitcount(massip_range(&xconf->targets)) > 63) {
         LOG(LEVEL_ERROR,
-            "[-] FAIL: scan range too large, max is 63-bits, requested is %u "
+            "scan range too large, max is 63-bits, requested is %u "
             "bits\n",
             massint128_bitcount(massip_range(&xconf->targets)));
-        LOG(LEVEL_ERROR,
+        LOG(LEVEL_OUT,
             "    Hint: scan range is number of IP addresses times "
             "number of ports\n");
-        LOG(LEVEL_ERROR, "    Hint: IPv6 subnet must be at least /66 \n");
+        LOG(LEVEL_OUT, "    Hint: IPv6 subnet must be at least /66 \n");
         exit(1);
     }
 
@@ -668,10 +666,10 @@ int main(int argc, char *argv[]) {
             massint128_is_zero(range6list_count(&xconf->targets.ipv6))) {
             LOG(LEVEL_ERROR, "target IP address list empty\n");
             if (has_target_addresses) {
-                LOG(LEVEL_ERROR, " all addresses were removed by exclusion ranges\n");
+                LOG(LEVEL_ERROR, "all addresses were removed by exclusion ranges\n");
             } else {
                 LOG(LEVEL_HINT, "try something like \"--range 10.0.0.0/8\"\n");
-                LOG(LEVEL_HINT, "try something like \"--range "
+                LOG(LEVEL_OUT, "    try something like \"--range "
                     "192.168.0.100-192.168.0.200\"\n");
             }
             exit(1);

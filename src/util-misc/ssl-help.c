@@ -110,7 +110,7 @@ int GENERAL_NAME_simple_print(BIO *out, GENERAL_NAME *gen) {
                 len_sz_obj =
                     OBJ_obj2txt(sz_obj, sizeof(sz_obj), gen->d.otherName->type_id, 0);
                 LOG(LEVEL_WARN,
-                    "[GENERAL_NAME_simple_print] unknown GEN_OTHERNAME oid %d(%.*s)\n",
+                    "(GENERAL_NAME_simple_print) unknown GEN_OTHERNAME oid %d(%.*s)\n",
                     nid, len_sz_obj, sz_obj);
             } else if (nid == nid_XmppAddr || nid == nid_NAIRealm ||
                        nid == nid_id_on_SmtpUTF8Mailbox) {
@@ -138,7 +138,7 @@ int GENERAL_NAME_simple_print(BIO *out, GENERAL_NAME *gen) {
                 len_sz_obj =
                     OBJ_obj2txt(sz_obj, sizeof(sz_obj), gen->d.otherName->type_id, 0);
                 LOG(LEVEL_INFO,
-                    "[GENERAL_NAME_simple_print] unknown GEN_OTHERNAME oid %d(%.*s)\n",
+                    "(GENERAL_NAME_simple_print) unknown GEN_OTHERNAME oid %d(%.*s)\n",
                     nid, len_sz_obj, sz_obj);
             } else {
                 char sz_obj[256];
@@ -146,7 +146,7 @@ int GENERAL_NAME_simple_print(BIO *out, GENERAL_NAME *gen) {
                 len_sz_obj =
                     OBJ_obj2txt(sz_obj, sizeof(sz_obj), gen->d.otherName->type_id, 0);
                 LOG(LEVEL_WARN,
-                    "[GENERAL_NAME_simple_print] unknown GEN_OTHERNAME oid %d(%.*s)\n",
+                    "(GENERAL_NAME_simple_print) unknown GEN_OTHERNAME oid %d(%.*s)\n",
                     nid, len_sz_obj, sz_obj);
             }
             break;
@@ -189,7 +189,7 @@ int GENERAL_NAME_simple_print(BIO *out, GENERAL_NAME *gen) {
         }
         break;
     default:
-        LOG(LEVEL_WARN, "[GENERAL_NAME_simple_print] unknown type %d",
+        LOG(LEVEL_WARN, "(GENERAL_NAME_simple_print) unknown type %d",
             gen->type);
     }
 

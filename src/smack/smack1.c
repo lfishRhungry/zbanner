@@ -1757,7 +1757,7 @@ int smack_selftest()
     if (id != SMACK_NOT_FOUND) {
         /* At this point, we should no more patterns, and reach the end
          * of the string */
-        LOG(LEVEL_ERROR, "[-] smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
+        LOG(LEVEL_ERROR, "smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
         return 1;
     }
 

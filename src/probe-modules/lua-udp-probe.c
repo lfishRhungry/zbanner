@@ -108,7 +108,7 @@ static bool sync_probe_config()
             luaudp_conf.script);
         return false;
     }
-    LOG(LEVEL_INFO, "["LUA_PROBE_NAME"] "LUA_PROBE_VAR_PROBENAME": %s.\n", lua_tostring(luaudp_conf.Ltx, -1));
+    LOG(LEVEL_INFO, "("LUA_PROBE_NAME") "LUA_PROBE_VAR_PROBENAME": %s.\n", lua_tostring(luaudp_conf.Ltx, -1));
     lua_pop(luaudp_conf.Ltx, 1);
 
     /*probe type*/
