@@ -692,7 +692,7 @@ rawsock_init_adapter(const char *adapter_name,
                 LOG(LEVEL_ERROR, "FAIL:%s: can't open adapter: %s\n", adapter_name, errbuf);
                 if (strstr(errbuf, "perm")) {
                     LOG(LEVEL_ERROR, "permission denied\n");
-                    LOG(LEVEL_ERROR, " need to sudo or run as root or administrator\n");
+                    LOG(LEVEL_OUT, "    need to sudo or run as root or administrator\n");
                 }
                 return 0;
             }
@@ -730,7 +730,7 @@ rawsock_init_adapter(const char *adapter_name,
                 break;
             case PCAP_ERROR_PERM_DENIED:
                 LOG(LEVEL_ERROR, "permission denied\n");
-                LOG(LEVEL_ERROR, "    need to sudo or run as root or administrator\n");
+                LOG(LEVEL_OUT, "    need to sudo or run as root or administrator\n");
                 goto pcap_error;
             default:
                 LOG(LEVEL_ERROR, "if(%s): activate:%d: %s\n", adapter_name, err, PCAP.geterr(adapter->pcap));
@@ -901,22 +901,22 @@ int rawsock_selftest_if(const char *ifname)
     if (ifname == NULL || ifname[0] == 0) {
         err = rawsock_get_default_interface(ifname2, sizeof(ifname2));
         if (err) {
-            LOG(LEVEL_ERROR, "if = not found (err=%d)\n", err);
+            printf("if = not found (err=%d)\n", err);
             return -1;
         }
         ifname = ifname2;
     }
-    LOG(LEVEL_HINT, "if = %s\n", ifname);
+    printf("if = %s\n", ifname);
 
     /*
      * Initialize the adapter.
      */
     adapter = rawsock_init_adapter(ifname, 0, 0, 0, 0, 0, 0, 65535);
     if (adapter == 0) {
-        LOG(LEVEL_ERROR, "pcap = failed\n");
+        puts("pcap = failed");
         return -1;
     } else {
-        LOG(LEVEL_HINT, "pcap = opened\n");
+        puts("pcap = opened");
     }
 
     acache = rawsock_init_cache(false);
@@ -924,43 +924,43 @@ int rawsock_selftest_if(const char *ifname)
     /* IPv4 address */
     ipv4 = rawsock_get_adapter_ip(ifname);
     if (ipv4 == 0) {
-        LOG(LEVEL_ERROR, "source-ipv4 = not found (err)\n");
+        puts("source-ipv4 = not found (err)");
     } else {
         fmt = ipv4address_fmt(ipv4);
-        LOG(LEVEL_HINT, "source-ipv4 = %s\n", fmt.string);
+        printf("source-ipv4 = %s\n", fmt.string);
     }
 
     /* IPv6 address */
     ipv6 = rawsock_get_adapter_ipv6(ifname);
     if (ipv6address_is_zero(ipv6)) {
-        LOG(LEVEL_ERROR, "source-ipv6 = not found\n");
+        puts("source-ipv6 = not found");
     } else {
         fmt = ipv6address_fmt(ipv6);
-        LOG(LEVEL_HINT, "source-ipv6 = [%s]\n", fmt.string);
+        printf("source-ipv6 = [%s]\n", fmt.string);
     }
 
     /* MAC address */
     err = rawsock_get_adapter_mac(ifname, source_mac.addr);
     if (err) {
-        LOG(LEVEL_ERROR, "source-mac = not found (err=%d)\n", err);
+        printf("source-mac = not found (err=%d)\n", err);
     } else {
         fmt = macaddress_fmt(source_mac);
-        LOG(LEVEL_HINT, "source-mac = %s\n", fmt.string);
+        printf("source-mac = %s\n", fmt.string);
     }
 
     switch (adapter->link_type) {
     case 0:
-        LOG(LEVEL_HINT, "router-ip = implicit\n");
-        LOG(LEVEL_HINT, "router-mac = implicit\n");
+        puts("router-ip = implicit");
+        puts("router-mac = implicit");
         break;
     default:
         /* IPv4 router IP address */
         err = rawsock_get_default_gateway(ifname, &router_ipv4);
         if (err) {
-            LOG(LEVEL_ERROR, "router-ip = not found(err=%d)\n", err);
+            printf("router-ip = not found(err=%d)\n", err);
         } else {
             fmt = ipv4address_fmt(router_ipv4);
-            LOG(LEVEL_HINT, "router-ip = %s\n", fmt.string);
+            printf("router-ip = %s\n", fmt.string);
         }
 
         /* IPv4 router MAC address */
@@ -976,10 +976,10 @@ int rawsock_selftest_if(const char *ifname)
                 &router_mac);
 
             if (macaddress_is_zero(router_mac)) {
-                LOG(LEVEL_ERROR, "router-mac-ipv4 = not found\n");
+                puts("router-mac-ipv4 = not found");
             } else {
                 fmt = macaddress_fmt(router_mac);
-                LOG(LEVEL_HINT, "router-mac-ipv4 = %s\n", fmt.string);
+                printf("router-mac-ipv4 = %s\n", fmt.string);
             }
         }
 
@@ -1001,10 +1001,10 @@ int rawsock_selftest_if(const char *ifname)
                 &router_mac);
 
             if (macaddress_is_zero(router_mac)) {
-                LOG(LEVEL_ERROR, "router-mac-ipv6 = not found\n");
+                puts("router-mac-ipv6 = not found");
             } else {
                 fmt = macaddress_fmt(router_mac);
-                LOG(LEVEL_HINT, "router-mac-ipv6 = %s\n", fmt.string);
+                printf("router-mac-ipv6 = %s\n", fmt.string);
             }
         }
     }

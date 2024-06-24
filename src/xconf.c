@@ -2450,7 +2450,7 @@ struct ConfigParam config_parameters[] = {
         {"dd", "ddd", 0},
         "Set the log level by the number of \"d\". You can set \"-d\", \"-dd\" "
         "or \"-ddd\" for:\n"
-        "Level 0 (default): print HINT, ERROR and WARN logs.\n"
+        "Level 0 (default): print OUT, HINT, ERROR and WARN logs.\n"
         "Level 1: print INFO logs in addition to level 0.\n"
         "Level 2: print DEBUG logs in addition to level 1.\n"
         "Level 3: print DETAIL logs in addition to level 2."
@@ -3236,7 +3236,8 @@ xconf_echo(struct Xconf *xconf, FILE *fp)
 
         config_parameters[i].setter(xconf, 0, 0);
     }
-    xconf->echo = 0;
+
+    xconf->echo     = 0;
     xconf->echo_all = 0;
 }
 

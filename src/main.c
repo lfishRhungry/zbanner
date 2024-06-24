@@ -650,9 +650,9 @@ int main(int argc, char *argv[]) {
             "bits\n",
             massint128_bitcount(massip_range(&xconf->targets)));
         LOG(LEVEL_OUT,
-            "    Hint: scan range is number of IP addresses times "
+            "    scan range is number of IP addresses times "
             "number of ports\n");
-        LOG(LEVEL_OUT, "    Hint: IPv6 subnet must be at least /66 \n");
+        LOG(LEVEL_OUT, "    IPv6 subnet must be at least /66 \n");
         exit(1);
     }
 
@@ -668,9 +668,8 @@ int main(int argc, char *argv[]) {
             if (has_target_addresses) {
                 LOG(LEVEL_ERROR, "all addresses were removed by exclusion ranges\n");
             } else {
-                LOG(LEVEL_HINT, "try something like \"--range 10.0.0.0/8\"\n");
-                LOG(LEVEL_OUT, "    try something like \"--range "
-                    "192.168.0.100-192.168.0.200\"\n");
+                LOG(LEVEL_ERROR, "try something like \"--range 10.0.0.0/8\"\n");
+                LOG(LEVEL_OUT, "    or \"--range 192.168.0.100-192.168.0.200\"\n");
             }
             exit(1);
         }

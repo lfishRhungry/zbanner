@@ -66,7 +66,7 @@ PFRING_init(void)
     LOG(LEVEL_DETAIL, "pfring: looking for 'libpfring.so'\n");
     h = dlopen("libpfring.so", RTLD_LAZY);
     if (h == NULL) {
-        LOG(LEVEL_WARN, "pfring: dlopen('libpfring.so'): %s\n", strerror(errno));
+        LOG(LEVEL_DEBUG, "pfring: dlopen('libpfring.so'): %s\n", strerror(errno));
         return 0;
     } else
         LOG(LEVEL_DETAIL, "pfring: found 'libpfring.so'!\n");
