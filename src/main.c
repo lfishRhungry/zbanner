@@ -710,12 +710,24 @@ int main(int argc, char *argv[]) {
         list_all_scan_modules();
         break;
 
+    case Operation_HelpScanModule:
+        help_scan_module(xconf->scan_module);
+        break;
+
     case Operation_ListProbeModules:
         list_all_probe_modules();
         break;
 
+    case Operation_HelpProbeModule:
+        help_probe_module(xconf->probe_module);
+        break;
+
     case Operation_ListOutputModules:
         list_all_output_modules();
+        break;
+
+    case Operation_HelpOutputModule:
+        help_output_module(xconf->out.output_module);
         break;
 
     case Operation_PrintHelp:

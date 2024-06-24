@@ -248,6 +248,46 @@ void list_all_probe_modules()
     printf("\n");
 }
 
+void help_probe_module(struct ProbeModule *module)
+{
+    if (!module) {
+        LOG(LEVEL_ERROR, "No specified probe module.\n");
+        return;
+    }
+
+    printf("\n");
+    printf(XPRINT_DASH_LINE);
+    printf("\n");
+    printf("\n");
+    printf("  ProbeModule Name: %s\n", module->name);
+    printf("\n");
+    printf("  ProbeModule Type: %s\n", get_probe_type_name(module->type));
+    printf("\n");
+    printf("  Description:\n");
+    xprint(module->desc, 6, 80);
+    printf("\n");
+    printf("\n");
+    if (module->params) {
+        for (unsigned j=0; module->params[j].name; j++) {
+
+            if (!module->params[j].help_text)
+                continue;
+
+            printf("  --%s", module->params[j].name);
+            for (unsigned k=0; module->params[j].alt_names[k]; k++) {
+                printf(", --%s", module->params[j].alt_names[k]);
+            }
+            printf("\n");
+            xprint(module->params[j].help_text, 6, 80);
+            printf("\n\n");
+        }
+    }
+    printf("\n");
+    printf(XPRINT_DASH_LINE);
+    printf("\n");
+    printf("\n");
+}
+
 bool probe_init_nothing(const struct Xconf *xconf)
 {
     return true;

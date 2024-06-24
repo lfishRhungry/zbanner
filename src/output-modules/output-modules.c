@@ -97,6 +97,44 @@ void list_all_output_modules()
     printf("\n");
 }
 
+void help_output_module(struct OutputModule *module)
+{
+    if (!module) {
+        LOG(LEVEL_ERROR, "No specified output module.\n");
+        return;
+    }
+
+    printf("\n");
+    printf(XPRINT_DASH_LINE);
+    printf("\n");
+    printf("\n");
+    printf("  Name of OutputModule: %s\n", module->name);
+    printf("  Need to Specify file: %s\n", module->need_file?"true":"false");
+    printf("\n");
+    printf("  Description:\n");
+    xprint(module->desc, 6, 80);
+    printf("\n");
+    printf("\n");
+    if (module->params) {
+        for (unsigned j=0; module->params[j].name; j++) {
+
+            if (!module->params[j].help_text)
+                continue;
+
+            printf("  --%s", module->params[j].name);
+            for (unsigned k=0; module->params[j].alt_names[k]; k++) {
+                printf(", --%s", module->params[j].alt_names[k]);
+            }
+            printf("\n");
+            xprint(module->params[j].help_text, 6, 80);
+            printf("\n\n");
+        }
+    }
+    printf("\n");
+    printf(XPRINT_DASH_LINE);
+    printf("\n");
+    printf("\n");
+}
 
 
 static const char fmt_host[]       = "%s host: %-15s";

@@ -91,6 +91,53 @@ void list_all_scan_modules()
     printf("\n");
 }
 
+void help_scan_module(struct ScanModule * module)
+{
+    if (!module) {
+        LOG(LEVEL_ERROR, "No specified scan module.\n");
+        return;
+    }
+
+    printf("\n");
+    printf(XPRINT_DASH_LINE);
+    printf("\n");
+    printf("\n");
+    printf("  Name of ScanModule:  %s\n", module->name);
+    // printf("\n");
+    printf("  Probe Type Required: %s\n", get_probe_type_name(module->required_probe_type));
+    // printf("\n");
+    printf("  Supports Timeout:    %s\n", module->support_timeout?"Yes\n":"No\n");
+    // printf("\n");
+    printf("  Default BPF Filter:\n");
+    xprint(module->bpf_filter?module->bpf_filter:"null", 6, 80);
+    printf("\n");
+    printf("\n");
+    printf("  Description:\n");
+    xprint(module->desc, 6, 80);
+    printf("\n");
+    printf("\n");
+    if (module->params) {
+        for (unsigned j=0; module->params[j].name; j++) {
+
+            if (!module->params[j].help_text)
+                continue;
+
+            printf("  --%s", module->params[j].name);
+            for (unsigned k=0; module->params[j].alt_names[k]; k++) {
+                printf(", --%s", module->params[j].alt_names[k]);
+            }
+            printf("\n");
+            xprint(module->params[j].help_text, 6, 80);
+            printf("\n\n");
+        }
+    }
+
+    printf("\n");
+    printf(XPRINT_DASH_LINE);
+    printf("\n");
+    printf("\n");
+}
+
 bool scan_init_nothing(const struct Xconf *params)
 {
     return true;

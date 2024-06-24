@@ -133,6 +133,8 @@ get_output_module_by_name(const char *name);
 
 void list_all_output_modules();
 
+void help_output_module(struct OutputModule *module);
+
 /************************************************************************
 Some useful implemented interfaces
 ************************************************************************/

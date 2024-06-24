@@ -266,6 +266,8 @@ struct ScanModule *get_scan_module_by_name(const char *name);
 
 void list_all_scan_modules();
 
+void help_scan_module(struct ScanModule * module);
+
 /************************************************************************
 Some useful implemented interfaces
 ************************************************************************/

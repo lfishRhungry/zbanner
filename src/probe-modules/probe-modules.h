@@ -296,6 +296,9 @@ probe_type_to_string(unsigned type, char *string, size_t str_len);
 void
 list_all_probe_modules();
 
+void
+help_probe_module(struct ProbeModule *module);
+
 /************************************************************************
 Some useful implemented interfaces
 ************************************************************************/

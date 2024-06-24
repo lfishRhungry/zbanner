@@ -369,6 +369,60 @@ static enum ConfigRes SET_scan_module(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
+static enum ConfigRes SET_help_scan_module(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+
+    xconf->scan_module = get_scan_module_by_name(value);
+    if(!xconf->scan_module){
+        LOG(LEVEL_ERROR, "FAIL %s: no such scan module named %s\n", name, value);
+        return Conf_ERR;
+    }
+
+    xconf->op = Operation_HelpScanModule;
+
+    return Conf_OK;
+}
+
+static enum ConfigRes SET_help_probe_module(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+
+    xconf->probe_module = get_probe_module_by_name(value);
+    if(!xconf->probe_module){
+        LOG(LEVEL_ERROR, "FAIL %s: no such probe module named %s\n", name, value);
+        return Conf_ERR;
+    }
+
+    xconf->op = Operation_HelpProbeModule;
+
+    return Conf_OK;
+}
+
+static enum ConfigRes SET_help_output_module(void *conf, const char *name, const char *value)
+{
+    struct Xconf *xconf = (struct Xconf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+
+    xconf->out.output_module = get_output_module_by_name(value);
+    if(!xconf->out.output_module){
+        LOG(LEVEL_ERROR, "FAIL %s: no such output module named %s\n", name, value);
+        return Conf_ERR;
+    }
+
+    xconf->op = Operation_HelpOutputModule;
+
+    return Conf_OK;
+}
+
 static enum ConfigRes SET_probe_module(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
@@ -2762,7 +2816,14 @@ struct ConfigParam config_parameters[] = {
         SET_list_scan_modules,
         Type_BOOL,
         {"list-scan-module", "list-scan", "list-scans", 0},
-        "List informations and helps of all ScanModules."
+        "List informations of all ScanModules."
+    },
+    {
+        "help-scan-module",
+        SET_help_scan_module,
+        Type_NONE,
+        {"help-scan", "scan-help", 0},
+        "Print information and help of specified ScanModule."
     },
     {
         "scan-module-args",
@@ -2790,7 +2851,14 @@ struct ConfigParam config_parameters[] = {
         SET_list_probe_modules,
         Type_BOOL,
         {"list-probe-module", "list-probe", "list-probes", 0},
-        "List informations and helps of all ProbeModules."
+        "List informations of all ProbeModules."
+    },
+    {
+        "help-probe-module",
+        SET_help_probe_module,
+        Type_NONE,
+        {"help-probe", "probe-help", 0},
+        "Print information and help of specified ProbeModule."
     },
     {
         "probe-module-args",
@@ -2820,7 +2888,14 @@ struct ConfigParam config_parameters[] = {
         SET_list_output_modules,
         Type_BOOL,
         {"list-output-module", "list-output", "list-out", 0},
-        "List informations and helps of all OutputModules."
+        "List informations of all OutputModules."
+    },
+    {
+        "help-output-module",
+        SET_help_output_module,
+        Type_NONE,
+        {"help-output", "output-help", "help-out", "out-help", 0},
+        "Print information and help of specified OutputModule."
     },
     {
         "output-module-args",

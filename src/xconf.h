@@ -53,8 +53,11 @@ enum Operation {
     Operation_ListTargets,                   /* list all target IPs uniquely in random */
     Operation_ListAdapters,                  /* list all usable interfaces */
     Operation_ListScanModules,               /* list all scan modules */
+    Operation_HelpScanModule,                /* print help of specified scan module */
     Operation_ListProbeModules,              /* list all probes */
+    Operation_HelpProbeModule,               /* print help of specified probe module */
     Operation_ListOutputModules,             /* list all probes */
+    Operation_HelpOutputModule,              /* print help of specified output module */
     Operation_PrintHelp,                     /* print help text for all parameters*/
     Operation_PrintIntro,                    /* print introduction text of work flow*/
     Operation_PrintVersion,                  /* print version and build info*/
