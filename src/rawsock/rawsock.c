@@ -618,14 +618,14 @@ rawsock_init_adapter(const char *adapter_name,
                 adapter_name, strerror(errno));
             return 0;
         } else
-            LOG(LEVEL_WARN, "pfring:'%s': successfully opened\n", adapter_name);
+            LOG(LEVEL_INFO, "pfring:'%s': successfully opened\n", adapter_name);
 
         /*
          * Housekeeping
          */
         PFRING.set_application_name(adapter->ring, XTATE_NAME);
         PFRING.version(adapter->ring, &version);
-        LOG(LEVEL_WARN, "pfring: version %d.%d.%d\n",
+        LOG(LEVEL_INFO, "pfring: version %d.%d.%d\n",
             (version >> 16) & 0xFFFF,
             (version >> 8) & 0xFF,
             (version >> 0) & 0xFF);
@@ -652,7 +652,7 @@ rawsock_init_adapter(const char *adapter_name,
             adapter->ring = 0;
             return 0;
         } else
-            LOG(LEVEL_WARN, "pfring:'%s': successfully enabled\n", adapter_name);
+            LOG(LEVEL_INFO, "pfring:'%s': successfully enabled\n", adapter_name);
 
         return adapter;
     }
@@ -661,7 +661,7 @@ rawsock_init_adapter(const char *adapter_name,
      * Kludge: for using files
      *----------------------------------------------------------------*/
     if (memcmp(adapter_name, "file:", 5) == 0) {
-        LOG(LEVEL_WARN, "pcap: file: %s\n", adapter_name+5);
+        LOG(LEVEL_INFO, "pcap: file: %s\n", adapter_name+5);
         is_pcap_file       = 1;
         adapter->pcap      = PCAP.open_offline(adapter_name+5, errbuf);
         adapter->link_type = PCAP.datalink(adapter->pcap);
@@ -673,7 +673,7 @@ rawsock_init_adapter(const char *adapter_name,
      *----------------------------------------------------------------*/
     {
         int err;
-        LOG(LEVEL_WARN, "if(%s): pcap: %s\n", adapter_name, PCAP.lib_version());
+        LOG(LEVEL_INFO, "if(%s): pcap: %s\n", adapter_name, PCAP.lib_version());
         LOG(LEVEL_INFO, "if(%s): opening...\n", adapter_name);
 
         /* This reserves resources, but doesn't actually open the 
@@ -739,7 +739,7 @@ rawsock_init_adapter(const char *adapter_name,
             }
         }
 
-        LOG(LEVEL_WARN, "if(%s): successfully opened\n", adapter_name);
+        LOG(LEVEL_INFO, "if(%s): successfully opened\n", adapter_name);
 
 
 
@@ -750,7 +750,7 @@ rawsock_init_adapter(const char *adapter_name,
                 PCAP.perror(adapter->pcap, "if: datalink");
                 goto pcap_error;
             case 0: /* Null/Loopback [VPN tunnel] */
-                LOG(LEVEL_WARN, "if(%s): VPN tunnel interface found\n", adapter_name);
+                LOG(LEVEL_INFO, "if(%s): VPN tunnel interface found\n", adapter_name);
                 break;
             case 1: /* Ethernet */
             case 12: /* IP Raw */
@@ -822,7 +822,7 @@ rawsock_set_filter(struct Adapter *adapter, const char *scan_filter,
 
     } else return;
 
-    LOG(LEVEL_WARN, "Final bpf filter: %s\n", final_filter);
+    LOG(LEVEL_INFO, "Final bpf filter: %s\n", final_filter);
 
     /**
      * set BPF filter

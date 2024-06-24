@@ -632,15 +632,15 @@ tlsstate_global_init(const struct Xconf *xconf)
     /*support cryptographic algorithms from SSLv3.0 to TLSv1.3*/
     meth = TLS_method();
     if (meth == NULL) {
-        LOG(LEVEL_WARN, "(TSP Global INIT) TLS_method error\n");
-        LOGopenssl(LEVEL_WARN);
+        LOG(LEVEL_ERROR, "(TSP Global INIT) TLS_method error\n");
+        LOGopenssl(LEVEL_ERROR);
         goto error0;
     }
 
     ctx = SSL_CTX_new(meth);
     if (ctx == NULL) {
-        LOG(LEVEL_WARN, "(TSP Global INIT) SSL_CTX_new error\n");
-        LOGopenssl(LEVEL_WARN);
+        LOG(LEVEL_ERROR, "(TSP Global INIT) SSL_CTX_new error\n");
+        LOGopenssl(LEVEL_ERROR);
         goto error0;
     }
 
@@ -742,22 +742,22 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
 
     rbio = BIO_new(BIO_s_mem());
     if (rbio == NULL) {
-        LOG(LEVEL_WARN, "(TSP Conn INIT) BIO_new(read) error\n");
-        LOGopenssl(LEVEL_WARN);
+        LOG(LEVEL_ERROR, "(TSP Conn INIT) BIO_new(read) error\n");
+        LOGopenssl(LEVEL_ERROR);
         goto error1;
     }
 
     wbio = BIO_new(BIO_s_mem());
     if (wbio == NULL) {
-        LOG(LEVEL_WARN, "(TSP Conn INIT) BIO_new(write) error\n");
-        LOGopenssl(LEVEL_WARN);
+        LOG(LEVEL_ERROR, "(TSP Conn INIT) BIO_new(write) error\n");
+        LOGopenssl(LEVEL_ERROR);
         goto error2;
     }
 
     ssl = SSL_new(_general_ssl_ctx);
     if (ssl == NULL) {
-        LOG(LEVEL_WARN, "(TSP Conn INIT) SSL_new error\n");
-        LOGopenssl(LEVEL_WARN);
+        LOG(LEVEL_ERROR, "(TSP Conn INIT) SSL_new error\n");
+        LOGopenssl(LEVEL_ERROR);
         goto error3;
     }
 

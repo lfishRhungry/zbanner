@@ -1709,7 +1709,7 @@ int smack_selftest()
     static const size_t END_TEST_THINGY1 = 9001;
     static const size_t END_TEST_THINGY2 = 9002;
 
-    LOG(LEVEL_WARN, "smack: selftest started\n");
+    LOG(LEVEL_INFO, "smack: selftest started\n");
 
     /*
      * using SMACK is 5 steps:
@@ -1800,6 +1800,6 @@ int smack_selftest()
     smack_destroy(s);
 
 
-    LOG(LEVEL_WARN, "smack: success!\n");
+    LOG(LEVEL_INFO, "smack: success!\n");
     return 0;
 }

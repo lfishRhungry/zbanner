@@ -63,7 +63,7 @@ struct RxDispatch {
 static void
 dispatch_thread(void *v)
 {
-    LOG(LEVEL_WARN, "starting dispatch thread\n");
+    LOG(LEVEL_INFO, "starting dispatch thread\n");
     pixie_set_thread_name(XTATE_NAME"-dsp");
 
     struct RxDispatch *parms = v;
@@ -100,7 +100,7 @@ dispatch_thread(void *v)
         }
     }
 
-    LOG(LEVEL_WARN, "exiting dispatch thread\n");
+    LOG(LEVEL_INFO, "exiting dispatch thread\n");
 }
 
 struct RxHandle {
@@ -123,7 +123,7 @@ handle_thread(void *v)
     struct RxHandle    *parms = v;
     const struct Xconf *xconf = parms->xconf;
 
-    LOG(LEVEL_WARN, "starting handle thread #%u\n", parms->index);
+    LOG(LEVEL_INFO, "starting handle thread #%u\n", parms->index);
 
     char th_name[30];
     snprintf(th_name, sizeof(th_name), XTATE_NAME"-hdl #%u", parms->index);
@@ -179,7 +179,7 @@ handle_thread(void *v)
         free(recved);
     }
 
-    LOG(LEVEL_WARN, "exiting handle thread #%u                    \n",
+    LOG(LEVEL_INFO, "exiting handle thread #%u                    \n",
         parms->index);
 }
 
@@ -207,7 +207,7 @@ void receive_thread(void *v) {
     struct Received               *recved;
 
 
-    LOG(LEVEL_WARN, "starting receive thread\n");
+    LOG(LEVEL_INFO, "starting receive thread\n");
 
     pixie_set_thread_name(XTATE_NAME"-recv");
 
@@ -449,7 +449,7 @@ void receive_thread(void *v) {
         }
     }
 
-    LOG(LEVEL_WARN, "exiting receive thread and joining handlers               \n");
+    LOG(LEVEL_INFO, "exiting receive thread and joining handlers               \n");
 
     /*
      * cleanup

@@ -10,9 +10,9 @@
 #endif
 
 #define PREFIX_OUT       ""
-#define PREFIX_HINT      "[-] "
+#define PREFIX_HINT      "[^] "
 #define PREFIX_ERROR     "[!] "
-#define PREFIX_WARN      "[~] "
+#define PREFIX_WARN      "[-] "
 #define PREFIX_INFO      "[=] "
 #define PREFIX_DEBUG     "[>] "
 #define PREFIX_DETAIL    "[#] "

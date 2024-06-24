@@ -264,7 +264,7 @@ stack_arp_resolve(
         {
             ipaddress_formatted_t fmt1 = ipv4address_fmt(response.ip_src);
             ipaddress_formatted_t fmt2 = macaddress_fmt(*your_mac_address);
-            LOG(LEVEL_WARN, "arp: %s == %s\n", fmt1.string, fmt2.string);
+            LOG(LEVEL_INFO, "arp: %s == %s\n", fmt1.string, fmt2.string);
         }
         return 0;
     }

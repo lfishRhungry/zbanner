@@ -64,7 +64,7 @@ void transmit_thread(void *v)
 
     /* Wait to make sure receive_thread is ready */
     pixie_usleep(1000000);
-    LOG(LEVEL_WARN, "starting transmit thread #%u\n", parms->tx_index);
+    LOG(LEVEL_INFO, "starting transmit thread #%u\n", parms->tx_index);
 
     char th_name[30];
     snprintf(th_name, sizeof(th_name), XTATE_NAME"-xmit #%u", parms->tx_index);
@@ -284,7 +284,7 @@ infinite:;
      */
     rawsock_flush(adapter, acache);
 
-    LOG(LEVEL_WARN, "transmit thread #%u complete\n", parms->tx_index);
+    LOG(LEVEL_INFO, "transmit thread #%u complete\n", parms->tx_index);
 
     /*
      * Help rx thread to do further response.
@@ -305,6 +305,6 @@ infinite:;
         ft_close_handler(ft_handler);
 
     parms->done_transmitting = true;
-    LOG(LEVEL_WARN, "exiting transmit thread #%u                    \n",
+    LOG(LEVEL_INFO, "exiting transmit thread #%u                    \n",
         parms->tx_index);
 }

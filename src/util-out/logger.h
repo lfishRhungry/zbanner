@@ -2,13 +2,16 @@
 #define LOGGER_H
 #include "../massip/massip-addr.h"
 
-#define LEVEL_OUT       (-2)
-#define LEVEL_HINT      (-1)
-#define LEVEL_ERROR     ( 0)
-#define LEVEL_WARN      ( 1)
-#define LEVEL_INFO      ( 2)
-#define LEVEL_DEBUG     ( 3)
-#define LEVEL_DETAIL    ( 4)
+/**
+ * Output warning level at least in default
+ */
+#define LEVEL_OUT       (-3)
+#define LEVEL_HINT      (-2)
+#define LEVEL_ERROR     (-1)
+#define LEVEL_WARN      ( 0)
+#define LEVEL_INFO      ( 1)
+#define LEVEL_DEBUG     ( 2)
+#define LEVEL_DETAIL    ( 3)
 
 /**
  * Use logger after inited.

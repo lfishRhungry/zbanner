@@ -42,26 +42,26 @@ static struct ConfigParam getstate_parameters[] = {
 
 static bool getstate_global_init(const struct Xconf *xconf)
 {
-    LOG(LEVEL_WARN, "(GetState Probe global initing) >>>\n");
+    LOG(LEVEL_INFO, "(GetState Probe global initing) >>>\n");
     return true;
 }
 
 static void getstate_close()
 {
-    LOG(LEVEL_WARN, "(GetState Probe closing) >>>\n");
+    LOG(LEVEL_INFO, "(GetState Probe closing) >>>\n");
 }
 
 static bool
 getstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
 {
-    LOG(LEVEL_WARN, "(GetState Probe conn initing) >>>\n");
+    LOG(LEVEL_INFO, "(GetState Probe conn initing) >>>\n");
     return true;
 }
 
 static void
 getstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
 {
-    LOG(LEVEL_WARN, "(GetState Probe conn closing) >>>\n");
+    LOG(LEVEL_INFO, "(GetState Probe conn closing) >>>\n");
 }
 
 static void
@@ -70,7 +70,7 @@ getstate_make_hello(
     struct ProbeState *state,
     struct ProbeTarget *target)
 {
-    LOG(LEVEL_WARN, "(GetState Probe making hello) >>>\n");
+    LOG(LEVEL_INFO, "(GetState Probe making hello) >>>\n");
     /*static data and don't close the conn*/
     datapass_set_data(pass, (unsigned char *)GET_STATE_PAYLOAD,
         strlen(GET_STATE_PAYLOAD), 0);
@@ -85,7 +85,7 @@ getstate_parse_response(
     const unsigned char *px,
     unsigned sizeof_px)
 {
-    LOG(LEVEL_WARN, "(GetState Probe parsing response) >>>\n");
+    LOG(LEVEL_INFO, "(GetState Probe parsing response) >>>\n");
     if (state->state) return 0;
 
     if (!getstate_conf.get_whole_page) {

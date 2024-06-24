@@ -941,7 +941,7 @@ massip_parse_file(struct MassIP *massip, const char *filename)
         }
     }
 
-    LOG(LEVEL_WARN, "%s: %u addresses read\n", filename, addr_count);
+    LOG(LEVEL_INFO, "%s: %u addresses read\n", filename, addr_count);
 
     /* Target list must be sorted every time it's been changed, 
      * before it can be used */

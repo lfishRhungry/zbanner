@@ -370,7 +370,7 @@ static int _main_scan(struct Xconf *xconf) {
      * All controls are decided by global variable `time_to_finish_tx`.
      */
     pixie_usleep(1000 * 100);
-    LOG(LEVEL_WARN, "waiting for threads to finish\n");
+    LOG(LEVEL_INFO, "waiting for threads to finish\n");
     while (!time_to_finish_tx) {
 
         /* Find the min-index, repeat and rate */
@@ -520,7 +520,7 @@ static int _main_scan(struct Xconf *xconf) {
 
         /*no more waiting or too many <ctrl-c>*/
         if (time(0) - now >= xconf->wait || time_to_finish_rx) {
-            LOG(LEVEL_WARN, "telling threads to exit..."
+            LOG(LEVEL_INFO, "telling threads to exit..."
                 "                                           \n");
             time_to_finish_rx = 1;
             break;
@@ -561,7 +561,7 @@ static int _main_scan(struct Xconf *xconf) {
 
     rawsock_close_adapter(xconf->nic.adapter);
 
-    LOG(LEVEL_WARN, "all threads have exited                    \n");
+    LOG(LEVEL_INFO, "all threads have exited                    \n");
 
     return 0;
 }

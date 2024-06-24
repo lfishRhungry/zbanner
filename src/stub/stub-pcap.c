@@ -401,7 +401,7 @@ if (pl->datalink == NULL) pl->func_err=1, pl->datalink = null_##PCAP_DATALINK;
         for (i=0; possible_names[i]; i++) {
             hLibpcap = dlopen(possible_names[i], RTLD_LAZY);
             if (hLibpcap) {
-                LOG(LEVEL_WARN, "pcap: found library: %s\n", possible_names[i]);
+                LOG(LEVEL_INFO, "pcap: found library: %s\n", possible_names[i]);
                 break;
             } else {
                 LOG(LEVEL_WARN, "pcap: failed to load: %s\n", possible_names[i]);
@@ -410,7 +410,7 @@ if (pl->datalink == NULL) pl->func_err=1, pl->datalink = null_##PCAP_DATALINK;
 
         if (hLibpcap == NULL) {
             LOG(LEVEL_ERROR, "failed to load libpcap shared library\n");
-            LOG(LEVEL_ERROR, "    [hint]: you must install libpcap or WinPcap\n");
+            LOG(LEVEL_OUT, "    you must install libpcap or WinPcap\n");
         }
     }
 

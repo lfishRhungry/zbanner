@@ -251,7 +251,7 @@ luaudp_global_init(const struct Xconf *xconf)
      * Lua: Start running the script and we can see global variables and funcs.
      * Just need to check for one VM because of same script.
      */
-    LOG(LEVEL_WARN, ""LUA_PROBE_NAME" running script: %s\n", luaudp_conf.script);
+    LOG(LEVEL_INFO, ""LUA_PROBE_NAME" running script: %s\n", luaudp_conf.script);
     x = lua_pcall(luaudp_conf.Ltx, 0, 0, 0);
     if (x != LUA_OK) {
         LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": error running %s: %s for Tx\n",
