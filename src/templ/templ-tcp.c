@@ -1603,7 +1603,7 @@ _selftests_run(void) {
         size_t field_length;
 
 
-        LOG(LEVEL_INFO, "templ-tcp: run #%u\n", (unsigned)i);
+        LOG(LEVEL_DEBUG, "templ-tcp: run #%u\n", (unsigned)i);
 
         /* Each tests creates its own copy of the test packet, which it
          * will then alter according to the pre-conditions. */

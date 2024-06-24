@@ -474,7 +474,7 @@ rawsock_ignore_transmits(struct Adapter *adapter, const char *ifname)
         if (err) {
             ; //PCAP.perror(adapter->pcap, "if: pcap_setdirection(IN)");
         } else {
-            LOG(LEVEL_INFO, "if:%s: not receiving transmits\n", ifname);
+            LOG(LEVEL_DEBUG, "if:%s: not receiving transmits\n", ifname);
         }
     }
 }
@@ -609,7 +609,7 @@ rawsock_init_adapter(const char *adapter_name,
          * NOTE: I don't think it needs the "re-entrant" flag, because it
          * transmit and receive are separate functions?
          */
-        LOG(LEVEL_INFO, "pfring:'%s': opening...\n", adapter_name);
+        LOG(LEVEL_DETAIL, "pfring:'%s': opening...\n", adapter_name);
         adapter->ring = PFRING.open(adapter_name, snaplen, 0);//1500, PF_RING_REENTRANT);
         adapter->pcap = (pcap_t*)adapter->ring;
         adapter->link_type = 1;
@@ -618,32 +618,32 @@ rawsock_init_adapter(const char *adapter_name,
                 adapter_name, strerror(errno));
             return 0;
         } else
-            LOG(LEVEL_INFO, "pfring:'%s': successfully opened\n", adapter_name);
+            LOG(LEVEL_DETAIL, "pfring:'%s': successfully opened\n", adapter_name);
 
         /*
          * Housekeeping
          */
         PFRING.set_application_name(adapter->ring, XTATE_NAME);
         PFRING.version(adapter->ring, &version);
-        LOG(LEVEL_INFO, "pfring: version %d.%d.%d\n",
+        LOG(LEVEL_DEBUG, "pfring: version %d.%d.%d\n",
             (version >> 16) & 0xFFFF,
             (version >> 8) & 0xFF,
             (version >> 0) & 0xFF);
 
-        LOG(LEVEL_INFO, "pfring:'%s': setting direction\n", adapter_name);
+        LOG(LEVEL_DETAIL, "pfring:'%s': setting direction\n", adapter_name);
         err = PFRING.set_direction(adapter->ring, rx_only_direction);
         if (err) {
             LOG(LEVEL_ERROR, "pfring:'%s': setdirection = %d\n",
                 adapter_name, err);
         } else
-            LOG(LEVEL_INFO, "pfring:'%s': direction success\n", adapter_name);
+            LOG(LEVEL_DETAIL, "pfring:'%s': direction success\n", adapter_name);
 
         /*
          * Activate
          *
          * PF_RING requires a separate activation step.
          */
-        LOG(LEVEL_INFO, "pfring:'%s': activating\n", adapter_name);
+        LOG(LEVEL_DETAIL, "pfring:'%s': activating\n", adapter_name);
         err = PFRING.enable_ring(adapter->ring);
         if (err != 0) {
             LOG(LEVEL_ERROR, "pfring: '%s': ENABLE ERROR: %s\n",
@@ -661,7 +661,7 @@ rawsock_init_adapter(const char *adapter_name,
      * Kludge: for using files
      *----------------------------------------------------------------*/
     if (memcmp(adapter_name, "file:", 5) == 0) {
-        LOG(LEVEL_INFO, "pcap: file: %s\n", adapter_name+5);
+        LOG(LEVEL_DETAIL, "pcap: file: %s\n", adapter_name+5);
         is_pcap_file       = 1;
         adapter->pcap      = PCAP.open_offline(adapter_name+5, errbuf);
         adapter->link_type = PCAP.datalink(adapter->pcap);
@@ -674,7 +674,7 @@ rawsock_init_adapter(const char *adapter_name,
     {
         int err;
         LOG(LEVEL_INFO, "if(%s): pcap: %s\n", adapter_name, PCAP.lib_version());
-        LOG(LEVEL_INFO, "if(%s): opening...\n", adapter_name);
+        LOG(LEVEL_DETAIL, "if(%s): opening...\n", adapter_name);
 
         /* This reserves resources, but doesn't actually open the 
          * adapter until we call pcap_activate */
@@ -750,7 +750,7 @@ rawsock_init_adapter(const char *adapter_name,
                 PCAP.perror(adapter->pcap, "if: datalink");
                 goto pcap_error;
             case 0: /* Null/Loopback [VPN tunnel] */
-                LOG(LEVEL_INFO, "if(%s): VPN tunnel interface found\n", adapter_name);
+                LOG(LEVEL_DEBUG, "if(%s): VPN tunnel interface found\n", adapter_name);
                 break;
             case 1: /* Ethernet */
             case 12: /* IP Raw */

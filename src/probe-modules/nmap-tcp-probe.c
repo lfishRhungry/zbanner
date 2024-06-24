@@ -193,10 +193,10 @@ nmaptcp_close()
 {
     if (nmaptcp_conf.service_probes) {
         nmapservice_match_free(nmaptcp_conf.service_probes);
-        LOG(LEVEL_INFO, "NmapTcpProbe: probes compilation freed.\n");
+        LOG(LEVEL_DETAIL, "NmapTcpProbe: probes compilation freed.\n");
 
         nmapservice_free(nmaptcp_conf.service_probes);
-        LOG(LEVEL_INFO, "NmapTcpProbe: probes freed.\n");
+        LOG(LEVEL_DETAIL, "NmapTcpProbe: probes freed.\n");
 
         nmaptcp_conf.service_probes = NULL;
     }

@@ -1266,13 +1266,13 @@ static enum ConfigRes SET_top_port(void *conf, const char *name, const char *val
 
     unsigned i;
     if (name[0]=='u') {
-        LOG(LEVEL_INFO, "adding UDP top-ports = %u\n", maxports);
+        LOG(LEVEL_DETAIL, "adding UDP top-ports = %u\n", maxports);
         for (i=0; i<maxports && i<max_udp_ports; i++)
             rangelist_add_range_udp(ports,
                                 top_udp_ports[i],
                                 top_udp_ports[i]);
     } else {
-        LOG(LEVEL_INFO, "adding TCP top-ports = %u\n", maxports);
+        LOG(LEVEL_DETAIL, "adding TCP top-ports = %u\n", maxports);
         for (i=0; i<maxports && i<max_tcp_ports; i++)
             rangelist_add_range_tcp(ports,
                                 top_tcp_ports[i],
@@ -1363,7 +1363,7 @@ static enum ConfigRes SET_exclude_file(void *conf, const char *name, const char 
     int err;
     const char *filename = value;
 
-    // LOG(LEVEL_INFO, "EXCLUDING: %s\n", value);
+    // LOG(LEVEL_DEBUG, "EXCLUDING: %s\n", value);
     err = massip_parse_file(&xconf->exclude, filename);
     if (err) {
         LOG(LEVEL_ERROR, "error reading from exclude file\n");
@@ -2447,8 +2447,13 @@ struct ConfigParam config_parameters[] = {
         "d",
         SET_log_level,
         Type_BOOL,
-        {"dd", "ddd", "dddd", "ddddd", 0},
-        "Set the log level. You can set \"-d\", \"-dd\", \"-ddd\" and etc."
+        {"dd", "ddd", 0},
+        "Set the log level by the number of \"d\". You can set \"-d\", \"-dd\" "
+        "or \"-ddd\" for:\n"
+        "Level 0 (default): print HINT, ERROR and WARN logs.\n"
+        "Level 1: print INFO logs in addition to level 0.\n"
+        "Level 2: print DEBUG logs in addition to level 1.\n"
+        "Level 3: print DETAIL logs in addition to level 2."
     },
     {
         "version",

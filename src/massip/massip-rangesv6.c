@@ -329,7 +329,7 @@ range6list_sort(struct Range6List *targets)
     targets->count = newlist.count;
     newlist.list = 0;
 
-    LOG(LEVEL_INFO, "range:sort: done...\n");
+    LOG(LEVEL_DETAIL, "range:sort: done...\n");
 
     targets->is_sorted = 1;
 }

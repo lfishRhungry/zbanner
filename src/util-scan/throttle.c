@@ -43,7 +43,7 @@ throttler_start(struct Throttler *throttler, double max_rate)
 
     throttler->batch_size = 1;
 
-    LOG(LEVEL_INFO, "starting throttler: rate = %0.2f-pps\n", throttler->max_rate);
+    LOG(LEVEL_DEBUG, "starting throttler: rate = %0.2f-pps\n", throttler->max_rate);
 }
 
 

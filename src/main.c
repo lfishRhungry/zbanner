@@ -520,7 +520,7 @@ static int _main_scan(struct Xconf *xconf) {
 
         /*no more waiting or too many <ctrl-c>*/
         if (time(0) - now >= xconf->wait || time_to_finish_rx) {
-            LOG(LEVEL_INFO, "telling threads to exit..."
+            LOG(LEVEL_DEBUG, "telling threads to exit..."
                 "                                           \n");
             time_to_finish_rx = 1;
             break;
@@ -619,7 +619,7 @@ int main(int argc, char *argv[]) {
 
     /* a separate "raw socket" initialization step for Windows and PF_RING. */
     if (pcap_init() != 0)
-        LOG(LEVEL_INFO, "libpcap: failed to load\n");
+        LOG(LEVEL_ERROR, "libpcap: failed to load\n");
 
     rawsock_init();
 

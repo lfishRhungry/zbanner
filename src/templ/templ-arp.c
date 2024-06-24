@@ -47,7 +47,7 @@ arp_create_by_template(
             tmpl, ip_them.ipv4, ip_me.ipv4, px, sizeof_px);
     } else {
         ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(ip_them);
-        LOG(LEVEL_INFO, "arp_create_by_template: cannot generate arp packet for ipv6: %s\n",
+        LOG(LEVEL_WARN, "arp_create_by_template: cannot generate arp packet for ipv6: %s\n",
             ip_them_fmt.string);
     }
 

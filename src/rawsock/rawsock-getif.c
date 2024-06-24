@@ -77,7 +77,7 @@ rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
         free(rtm);
         return errno;
     }
-    LOG(LEVEL_INFO, "getif: got socket handle\n");
+    LOG(LEVEL_DETAIL, "getif: got socket handle\n");
 
     /* Needs a timeout. Sometimes it'll hang indefinitely waiting for a 
      * response that will never arrive */
@@ -135,7 +135,7 @@ rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
             goto fail;
         }
 
-        LOG(LEVEL_INFO, "getif: got response, len=%d\n", err);
+        LOG(LEVEL_DETAIL, "getif: got response, len=%d\n", err);
 
         if (rtm->rtm_seq != seq) {
             printf("seq: %u %u\n", rtm->rtm_seq, seq);

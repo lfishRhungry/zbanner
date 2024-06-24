@@ -133,7 +133,7 @@ stack_ndpv6_incoming_request(struct stack_t *stack, struct PreprocessedInfo *par
         ipv6address_t a = ipv6address_from_bytes(px + offset_ip_src);
         ipaddress_formatted_t fmt1 = ipv6address_fmt(a);
         ipaddress_formatted_t fmt2 = ipaddress_fmt(target_ip);
-        LOG(LEVEL_INFO, "received NDP request from %s for %s\n", fmt1.string, fmt2.string);
+        LOG(LEVEL_DETAIL, "received NDP request from %s for %s\n", fmt1.string, fmt2.string);
     }
 
     /* Get a buffer for sending the response packet. This thread doesn't
@@ -253,7 +253,7 @@ _extract_router_advertisement(
                 prefix = _read_ipv6(buf2, &off2, len2);
 
                 fmt = ipv6address_fmt(prefix);
-                LOG(LEVEL_INFO, "IPv6.prefix = %s/%u\n", fmt.string, prefix_len);
+                LOG(LEVEL_DETAIL, "IPv6.prefix = %s/%u\n", fmt.string, prefix_len);
                 if (ipv6address_is_equal_prefixed(my_ipv6, prefix, prefix_len)) {
                     is_same_prefix = 1;
                 } else {
@@ -274,7 +274,7 @@ _extract_router_advertisement(
                 while (off2 + 16 <= len2) {
                     ipv6address resolver = _read_ipv6(buf2, &off2, len2);
                     ipaddress_formatted_t fmt = ipv6address_fmt(resolver);
-                    LOG(LEVEL_INFO, "IPv6.DNS = %s\n", fmt.string);
+                    LOG(LEVEL_DETAIL, "IPv6.DNS = %s\n", fmt.string);
                 }
                 break;
             case 1:

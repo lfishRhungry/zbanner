@@ -51,7 +51,7 @@ initialize_adapter(struct Xconf *xconf)
         }
         ifname = ifname2;
     }
-    LOG(LEVEL_INFO, "interface = %s\n", ifname);
+    LOG(LEVEL_DEBUG, "interface = %s\n", ifname);
 
     /*
      * START ADAPTER
@@ -71,7 +71,7 @@ initialize_adapter(struct Xconf *xconf)
         return -1;
     }
     xconf->nic.link_type = xconf->nic.adapter->link_type;
-    LOG(LEVEL_INFO, "interface-type = %u\n", xconf->nic.link_type);
+    LOG(LEVEL_DEBUG, "interface-type = %u\n", xconf->nic.link_type);
     rawsock_ignore_transmits(xconf->nic.adapter, ifname);
 
     /*
@@ -82,9 +82,9 @@ initialize_adapter(struct Xconf *xconf)
      * try to use the hardware address in the network card.
      */
     if (xconf->nic.link_type == PCAP_DLT_NULL) {
-        LOG(LEVEL_INFO, "source-mac = %s\n", "none");
+        LOG(LEVEL_DEBUG, "source-mac = %s\n", "none");
     } else if (xconf->nic.link_type == PCAP_DLT_RAW) {
-        LOG(LEVEL_INFO, "source-mac = %s\n", "none");
+        LOG(LEVEL_DEBUG, "source-mac = %s\n", "none");
     } else {
         if (xconf->nic.my_mac_count == 0) {
             if (macaddress_is_zero(xconf->nic.source_mac)) {
@@ -102,7 +102,7 @@ initialize_adapter(struct Xconf *xconf)
         }
 
         fmt = macaddress_fmt(xconf->nic.source_mac);
-        LOG(LEVEL_INFO, "source-mac = %s\n", fmt.string);
+        LOG(LEVEL_DEBUG, "source-mac = %s\n", fmt.string);
     }
 
 
@@ -132,7 +132,7 @@ initialize_adapter(struct Xconf *xconf)
         }
 
         fmt = ipv4address_fmt(adapter_ip);
-        LOG(LEVEL_INFO, "source-ip = %s\n", fmt.string);
+        LOG(LEVEL_DEBUG, "source-ip = %s\n", fmt.string);
 
         if (adapter_ip != 0)
             is_usable_ipv4 = 1;
@@ -146,22 +146,22 @@ initialize_adapter(struct Xconf *xconf)
             memcpy(xconf->nic.router_mac_ipv4.addr, "\x66\x55\x44\x33\x22\x11", 6);
         } else if (xconf->nic.link_type == PCAP_DLT_NULL) {
             /* If it's a VPN tunnel, then there is no Ethernet MAC address */
-            LOG(LEVEL_INFO, "router-mac-ipv4 = %s\n", "implicit");
+            LOG(LEVEL_DEBUG, "router-mac-ipv4 = %s\n", "implicit");
     } else if (xconf->nic.link_type == PCAP_DLT_RAW) {
             /* If it's a VPN tunnel, then there is no Ethernet MAC address */
-            LOG(LEVEL_INFO, "router-mac-ipv4 = %s\n", "implicit");
+            LOG(LEVEL_DEBUG, "router-mac-ipv4 = %s\n", "implicit");
         } else if (macaddress_is_zero(xconf->nic.router_mac_ipv4)) {
             ipv4address_t router_ipv4 = xconf->nic.router_ip;
             int err = 0;
 
 
-            LOG(LEVEL_INFO, "if(%s): looking for default gateway\n", ifname);
+            LOG(LEVEL_DETAIL, "if(%s): looking for default gateway\n", ifname);
             if (router_ipv4 == 0)
                 err = rawsock_get_default_gateway(ifname, &router_ipv4);
             if (err == 0) {
                 fmt = ipv4address_fmt(router_ipv4);
-                LOG(LEVEL_INFO, "router-ip = %s\n", fmt.string);
-                LOG(LEVEL_INFO, "if(%s):arp: resolving IPv4 address\n", ifname);
+                LOG(LEVEL_DEBUG, "router-ip = %s\n", fmt.string);
+                LOG(LEVEL_DETAIL, "if(%s):arp: resolving IPv4 address\n", ifname);
 
                 stack_arp_resolve(
                         xconf->nic.adapter,
@@ -174,7 +174,7 @@ initialize_adapter(struct Xconf *xconf)
             }
 
             fmt = macaddress_fmt(xconf->nic.router_mac_ipv4);
-            LOG(LEVEL_INFO, "router-mac-ipv4 = %s\n", fmt.string);
+            LOG(LEVEL_DEBUG, "router-mac-ipv4 = %s\n", fmt.string);
             if (macaddress_is_zero(xconf->nic.router_mac_ipv4)) {
                 fmt = ipv4address_fmt(xconf->nic.router_ip);
                 LOG(LEVEL_ERROR, "ARP timed-out resolving MAC address for router %s: \"%s\"\n", ifname, fmt.string);
@@ -209,7 +209,7 @@ initialize_adapter(struct Xconf *xconf)
             return -1;
         }
         fmt = ipv6address_fmt(adapter_ipv6);
-        LOG(LEVEL_INFO, "source-ip = [%s]\n", fmt.string);
+        LOG(LEVEL_DEBUG, "source-ip = [%s]\n", fmt.string);
         is_usable_ipv6 = 1;
 
         /*
@@ -232,7 +232,7 @@ initialize_adapter(struct Xconf *xconf)
         }
 
         fmt = macaddress_fmt(xconf->nic.router_mac_ipv6);
-        LOG(LEVEL_INFO, "router-mac-ipv6 = %s\n", fmt.string);
+        LOG(LEVEL_DEBUG, "router-mac-ipv6 = %s\n", fmt.string);
         if (macaddress_is_zero(xconf->nic.router_mac_ipv6)) {
             fmt = ipv4address_fmt(xconf->nic.router_ip);
             LOG(LEVEL_ERROR, "NDP timed-out resolving MAC address for router %s: \"%s\"\n", ifname, fmt.string);
@@ -260,7 +260,7 @@ initialize_adapter(struct Xconf *xconf)
 
 
 
-    LOG(LEVEL_INFO, "if(%s): initialization done.\n", ifname);
+    LOG(LEVEL_DETAIL, "if(%s): initialization done.\n", ifname);
     rawsock_close_cache(tmp_acache);
     return 0;
 }

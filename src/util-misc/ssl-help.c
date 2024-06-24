@@ -137,7 +137,7 @@ int GENERAL_NAME_simple_print(BIO *out, GENERAL_NAME *gen) {
                 int len_sz_obj;
                 len_sz_obj =
                     OBJ_obj2txt(sz_obj, sizeof(sz_obj), gen->d.otherName->type_id, 0);
-                LOG(LEVEL_INFO,
+                LOG(LEVEL_WARN,
                     "(GENERAL_NAME_simple_print) unknown GEN_OTHERNAME oid %d(%.*s)\n",
                     nid, len_sz_obj, sz_obj);
             } else {

@@ -894,10 +894,10 @@ tlsstate_make_hello(
                            tls_state->data + offset,
                            (int)(tls_state->data_size - offset));
             if (res > 0) {
-                LOG(LEVEL_INFO, "(TSP Make HELLO) BIO_read: %d\n", res);
+                LOG(LEVEL_DETAIL, "(TSP Make HELLO) BIO_read: %d\n", res);
                 offset += (size_t)res;
             } else if (res == 0 || res == -1) {
-                LOG(LEVEL_INFO, "(TSP Make HELLO) BIO_read: %d\n", res);
+                LOG(LEVEL_DETAIL, "(TSP Make HELLO) BIO_read: %d\n", res);
                 break;
             } else {
                 LOG(LEVEL_WARN,
@@ -959,7 +959,7 @@ tlsstate_parse_response(
         while (offset < sizeof_px) {
             res = BIO_write(tls_state->rbio, px + offset,
                 (unsigned int)min(TSP_BIO_MEM_LIMIT, sizeof_px - offset));
-            LOG(LEVEL_INFO, "(TSP Parse RESPONSE) BIO_write: %d \n", res);
+            LOG(LEVEL_DETAIL, "(TSP Parse RESPONSE) BIO_write: %d \n", res);
             if (res > 0) {
                 offset += (size_t)res;
             } else {
@@ -1060,11 +1060,11 @@ tlsstate_parse_response(
                         (unsigned int)(tls_state->data_size - offset));
 
                     if (res > 0) {
-                        LOG(LEVEL_INFO, "(TSP Parse RESPONSE: %s) BIO_read: %d\n",
+                        LOG(LEVEL_DETAIL, "(TSP Parse RESPONSE: %s) BIO_read: %d\n",
                             _tsp_state_to_string(state->state), res);
                         offset += (size_t)res;
                     } else if (res == 0 || res == -1) {
-                        LOG(LEVEL_INFO, "(TSP Parse RESPONSE: %s) BIO_read: %d\n",
+                        LOG(LEVEL_DETAIL, "(TSP Parse RESPONSE: %s) BIO_read: %d\n",
                             _tsp_state_to_string(state->state), res);
                         break;
                     } else {
@@ -1136,7 +1136,7 @@ tlsstate_parse_response(
                 LOGopenssl(LEVEL_WARN);
                 state->state = TSP_STATE_NEED_CLOSE;
             } else {
-                LOG(LEVEL_INFO, "(TSP Parse RESPONSE: %s) SSL_write: %d\n",
+                LOG(LEVEL_DETAIL, "(TSP Parse RESPONSE: %s) SSL_write: %d\n",
                     _tsp_state_to_string(state->state), res);
                 size_t offset = 0;
                 while (true) {
@@ -1149,7 +1149,7 @@ tlsstate_parse_response(
                         tls_state->data + offset,
                         (unsigned int)(tls_state->data_size - offset));
                     if (res > 0) {
-                        LOG(LEVEL_INFO, "(TSP Parse RESPONSE: %s) BIO_read: %d\n",
+                        LOG(LEVEL_DETAIL, "(TSP Parse RESPONSE: %s) BIO_read: %d\n",
                             _tsp_state_to_string(state->state), res);
                         offset += (size_t)res;
                     } else if (res == 0 || res == -1) {
@@ -1197,7 +1197,7 @@ tlsstate_parse_response(
 
             /*have got decoded data from SSL record*/
             if (offset > 0) {
-                LOG(LEVEL_INFO, "(TSP Parse RESPONSE: %s) SSL_read: %d\n",
+                LOG(LEVEL_DETAIL, "(TSP Parse RESPONSE: %s) SSL_read: %d\n",
                     _tsp_state_to_string(state->state), offset);
 
                 struct DataPass subpass = {0};
@@ -1228,7 +1228,7 @@ tlsstate_parse_response(
                     state->state = TSP_STATE_NEED_CLOSE;
                     break;
                 } else {
-                    LOG(LEVEL_INFO, "(TSP Parse RESPONSE: %s) SSL_write: %d\n",
+                    LOG(LEVEL_DETAIL, "(TSP Parse RESPONSE: %s) SSL_write: %d\n",
                         _tsp_state_to_string(state->state), sub_res);
                     size_t sub_offset = 0;
                     while (true) {
@@ -1239,7 +1239,7 @@ tlsstate_parse_response(
                         sub_res = BIO_read(tls_state->wbio, tls_state->data + sub_offset,
                             (unsigned int)(tls_state->data_size - sub_offset));
                         if (sub_res > 0) {
-                            LOG(LEVEL_INFO, "(TSP Parse RESPONSE: %s) BIO_read: %d\n",
+                            LOG(LEVEL_DETAIL, "(TSP Parse RESPONSE: %s) BIO_read: %d\n",
                                 _tsp_state_to_string(state->state), sub_res);
                             sub_offset += (size_t)sub_res;
                         } else if (sub_res == 0 || sub_res == -1) {

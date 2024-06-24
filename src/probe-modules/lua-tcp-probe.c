@@ -108,7 +108,7 @@ static bool sync_probe_config()
             luatcp_conf.script);
         return false;
     }
-    LOG(LEVEL_INFO, "("LUA_PROBE_NAME") "LUA_PROBE_VAR_PROBENAME": %s.\n", lua_tostring(luatcp_conf.Ltx, -1));
+    LOG(LEVEL_DEBUG, "("LUA_PROBE_NAME") "LUA_PROBE_VAR_PROBENAME": %s.\n", lua_tostring(luatcp_conf.Ltx, -1));
     lua_pop(luatcp_conf.Ltx, 1);
 
     /*probe type*/
@@ -250,7 +250,7 @@ luatcp_global_init(const struct Xconf *xconf)
      * Lua: Start running the script and we can see global variables and funcs.
      * Just need to check for one VM because of same script.
      */
-    LOG(LEVEL_INFO, ""LUA_PROBE_NAME" running script: %s\n", luatcp_conf.script);
+    LOG(LEVEL_DEBUG, ""LUA_PROBE_NAME" running script: %s\n", luatcp_conf.script);
     x = lua_pcall(luatcp_conf.Ltx, 0, 0, 0);
     if (x != LUA_OK) {
         LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": error running %s: %s for Tx\n",
