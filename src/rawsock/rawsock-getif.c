@@ -354,12 +354,12 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
         struct route_info rtInfo[1] = {{0}};
         int err;
 
-        //LOG(LEVEL_DEBUG, "if: nlmsg_type=%d nlmsg_flags=0x%x\n", nlMsg->nlmsg_type, nlMsg->nlmsg_flags);
+        //LOG(LEVEL_DETAIL, "if: nlmsg_type=%d nlmsg_flags=0x%x\n", nlMsg->nlmsg_type, nlMsg->nlmsg_flags);
         err = parseRoutes(nlMsg, rtInfo);
         if (err != 0)
             continue;
 
-        LOG(LEVEL_DEBUG, "if: route: '%12s' dst=%u.%u.%u.%u src=%u.%u.%u.%u gw=%u.%u.%u.%u priority=%d\n",
+        LOG(LEVEL_DETAIL, "if: route: '%12s' dst=%u.%u.%u.%u src=%u.%u.%u.%u gw=%u.%u.%u.%u priority=%d\n",
                 rtInfo->ifName,
                 FORMATADDR(rtInfo->dstAddr.s_addr),
                 FORMATADDR(rtInfo->srcAddr.s_addr),

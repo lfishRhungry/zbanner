@@ -1363,7 +1363,7 @@ static enum ConfigRes SET_exclude_file(void *conf, const char *name, const char 
     int err;
     const char *filename = value;
 
-    // LOG(LEVEL_DEBUG, "EXCLUDING: %s\n", value);
+    // LOG(LEVEL_DETAIL, "EXCLUDING: %s\n", value);
     err = massip_parse_file(&xconf->exclude, filename);
     if (err) {
         LOG(LEVEL_ERROR, "error reading from exclude file\n");

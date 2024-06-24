@@ -307,7 +307,7 @@ range6list_sort(struct Range6List *targets)
 
 
     /* First, sort the list */
-    LOG(LEVEL_DEBUG, "range6:sort: sorting...\n");
+    LOG(LEVEL_DETAIL, "range6:sort: sorting...\n");
     qsort(  targets->list,              /* the array to sort */
             targets->count,             /* number of elements to sort */
             sizeof(targets->list[0]),   /* size of element */
@@ -318,7 +318,7 @@ range6list_sort(struct Range6List *targets)
      * a new list from a sorted list, so we don't have to remove things in the
      * middle when collapsing overlapping entries together, which is painfully
      * slow. */
-    LOG(LEVEL_DEBUG, "range:sort: combining...\n");
+    LOG(LEVEL_DETAIL, "range:sort: combining...\n");
     for (i=0; i<targets->count; i++) {
         range6list_add_range(&newlist, targets->list[i].begin, targets->list[i].end);
     }
