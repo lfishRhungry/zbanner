@@ -182,6 +182,25 @@ get_probe_type_name(const enum ProbeType type)
     }
 }
 
+static const char *
+get_multi_mode_name(const enum MultiMode type)
+{
+    switch (type) {
+        case Multi_Null:
+            return "no multi-probe";
+        case Multi_Direct:
+            return "send directly";
+        case Multi_IfOpen:
+            return "send if port open";
+        case Multi_AfterHandle:
+            return "send after handled";
+        case Multi_DynamicNext:
+            return "send next dynamicly";
+        default:
+            return "";
+    }
+}
+
 int probe_type_to_string(unsigned type, char *string, size_t str_len)
 {
     int ret = 0;
@@ -219,29 +238,29 @@ void list_all_probe_modules()
         printf("\n");
         printf("\n");
         printf("  ProbeModule Name: %s\n", probe_modules_list[i]->name);
-        printf("\n");
-        printf("  ProbeModule Type: %s\n", get_probe_type_name(probe_modules_list[i]->type));
-        printf("\n");
+        // printf("\n");
+        // printf("  ProbeModule Type: %s\n", get_probe_type_name(probe_modules_list[i]->type));
+        // printf("\n");
         printf("  Description:\n");
         xprint(probe_modules_list[i]->desc, 6, 80);
         printf("\n");
         printf("\n");
-        if (probe_modules_list[i]->params) {
-            for (unsigned j=0; probe_modules_list[i]->params[j].name; j++) {
+        // if (probe_modules_list[i]->params) {
+        //     for (unsigned j=0; probe_modules_list[i]->params[j].name; j++) {
 
-                if (!probe_modules_list[i]->params[j].help_text)
-                    continue;
+        //         if (!probe_modules_list[i]->params[j].help_text)
+        //             continue;
 
-                printf("  --%s", probe_modules_list[i]->params[j].name);
-                for (unsigned k=0; probe_modules_list[i]->params[j].alt_names[k]; k++) {
-                    printf(", --%s", probe_modules_list[i]->params[j].alt_names[k]);
-                }
-                printf("\n");
-                xprint(probe_modules_list[i]->params[j].help_text, 6, 80);
-                printf("\n\n");
-            }
-        }
-        printf("\n");
+        //         printf("  --%s", probe_modules_list[i]->params[j].name);
+        //         for (unsigned k=0; probe_modules_list[i]->params[j].alt_names[k]; k++) {
+        //             printf(", --%s", probe_modules_list[i]->params[j].alt_names[k]);
+        //         }
+        //         printf("\n");
+        //         xprint(probe_modules_list[i]->params[j].help_text, 6, 80);
+        //         printf("\n\n");
+        //     }
+        // }
+        // printf("\n");
     }
     printf(XPRINT_DASH_LINE);
     printf("\n");
@@ -260,8 +279,10 @@ void help_probe_module(struct ProbeModule *module)
     printf("\n");
     printf("\n");
     printf("  ProbeModule Name: %s\n", module->name);
-    printf("\n");
     printf("  ProbeModule Type: %s\n", get_probe_type_name(module->type));
+    printf("  Multi-probe mode: %s\n", get_multi_mode_name(module->multi_mode));
+    printf("  Multi-probe count: %u\n", module->multi_num);
+    printf("  Hello wait second: %u (for stateful probe)\n", module->hello_wait);
     printf("\n");
     printf("  Description:\n");
     xprint(module->desc, 6, 80);
@@ -282,7 +303,6 @@ void help_probe_module(struct ProbeModule *module)
             printf("\n\n");
         }
     }
-    printf("\n");
     printf(XPRINT_DASH_LINE);
     printf("\n");
     printf("\n");

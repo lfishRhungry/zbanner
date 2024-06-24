@@ -56,35 +56,32 @@ void list_all_scan_modules()
         printf("\n");
         printf("\n");
         printf("  Name of ScanModule:  %s\n", scan_modules_list[i]->name);
+        // printf("  Probe Type Required: %s\n", get_probe_type_name(scan_modules_list[i]->required_probe_type));
+        // printf("  Supports Timeout:    %s\n", scan_modules_list[i]->support_timeout?"Yes\n":"No\n");
+        // printf("  Default BPF Filter:\n");
+        // xprint(scan_modules_list[i]->bpf_filter?scan_modules_list[i]->bpf_filter:"null", 6, 80);
         // printf("\n");
-        printf("  Probe Type Required: %s\n", get_probe_type_name(scan_modules_list[i]->required_probe_type));
         // printf("\n");
-        printf("  Supports Timeout:    %s\n", scan_modules_list[i]->support_timeout?"Yes\n":"No\n");
-        // printf("\n");
-        printf("  Default BPF Filter:\n");
-        xprint(scan_modules_list[i]->bpf_filter?scan_modules_list[i]->bpf_filter:"null", 6, 80);
-        printf("\n");
-        printf("\n");
         printf("  Description:\n");
         xprint(scan_modules_list[i]->desc, 6, 80);
         printf("\n");
         printf("\n");
-        if (scan_modules_list[i]->params) {
-            for (unsigned j=0; scan_modules_list[i]->params[j].name; j++) {
+        // if (scan_modules_list[i]->params) {
+        //     for (unsigned j=0; scan_modules_list[i]->params[j].name; j++) {
 
-                if (!scan_modules_list[i]->params[j].help_text)
-                    continue;
+        //         if (!scan_modules_list[i]->params[j].help_text)
+        //             continue;
 
-                printf("  --%s", scan_modules_list[i]->params[j].name);
-                for (unsigned k=0; scan_modules_list[i]->params[j].alt_names[k]; k++) {
-                    printf(", --%s", scan_modules_list[i]->params[j].alt_names[k]);
-                }
-                printf("\n");
-                xprint(scan_modules_list[i]->params[j].help_text, 6, 80);
-                printf("\n\n");
-            }
-        }
-        printf("\n");
+        //         printf("  --%s", scan_modules_list[i]->params[j].name);
+        //         for (unsigned k=0; scan_modules_list[i]->params[j].alt_names[k]; k++) {
+        //             printf(", --%s", scan_modules_list[i]->params[j].alt_names[k]);
+        //         }
+        //         printf("\n");
+        //         xprint(scan_modules_list[i]->params[j].help_text, 6, 80);
+        //         printf("\n\n");
+        //     }
+        // }
+        // printf("\n");
     }
     printf(XPRINT_DASH_LINE);
     printf("\n");
@@ -103,11 +100,8 @@ void help_scan_module(struct ScanModule * module)
     printf("\n");
     printf("\n");
     printf("  Name of ScanModule:  %s\n", module->name);
-    // printf("\n");
     printf("  Probe Type Required: %s\n", get_probe_type_name(module->required_probe_type));
-    // printf("\n");
     printf("  Supports Timeout:    %s\n", module->support_timeout?"Yes\n":"No\n");
-    // printf("\n");
     printf("  Default BPF Filter:\n");
     xprint(module->bpf_filter?module->bpf_filter:"null", 6, 80);
     printf("\n");

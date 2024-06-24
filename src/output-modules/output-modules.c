@@ -69,28 +69,28 @@ void list_all_output_modules()
         printf("\n");
         printf("\n");
         printf("  Name of OutputModule: %s\n", output_modules_list[i]->name);
-        printf("  Need to Specify file: %s\n", output_modules_list[i]->need_file?"true":"false");
-        printf("\n");
+        // printf("  Need to Specify file: %s\n", output_modules_list[i]->need_file?"true":"false");
+        // printf("\n");
         printf("  Description:\n");
         xprint(output_modules_list[i]->desc, 6, 80);
         printf("\n");
         printf("\n");
-        if (output_modules_list[i]->params) {
-            for (unsigned j=0; output_modules_list[i]->params[j].name; j++) {
+        // if (output_modules_list[i]->params) {
+        //     for (unsigned j=0; output_modules_list[i]->params[j].name; j++) {
 
-                if (!output_modules_list[i]->params[j].help_text)
-                    continue;
+        //         if (!output_modules_list[i]->params[j].help_text)
+        //             continue;
 
-                printf("  --%s", output_modules_list[i]->params[j].name);
-                for (unsigned k=0; output_modules_list[i]->params[j].alt_names[k]; k++) {
-                    printf(", --%s", output_modules_list[i]->params[j].alt_names[k]);
-                }
-                printf("\n");
-                xprint(output_modules_list[i]->params[j].help_text, 6, 80);
-                printf("\n\n");
-            }
-        }
-        printf("\n");
+        //         printf("  --%s", output_modules_list[i]->params[j].name);
+        //         for (unsigned k=0; output_modules_list[i]->params[j].alt_names[k]; k++) {
+        //             printf(", --%s", output_modules_list[i]->params[j].alt_names[k]);
+        //         }
+        //         printf("\n");
+        //         xprint(output_modules_list[i]->params[j].help_text, 6, 80);
+        //         printf("\n\n");
+        //     }
+        // }
+        // printf("\n");
     }
     printf(XPRINT_DASH_LINE);
     printf("\n");
