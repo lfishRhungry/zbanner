@@ -3683,7 +3683,7 @@ void xconf_print_help()
 
 void xconf_benchmark(unsigned blackrock_rounds)
 {
-    LOG(LEVEL_OUT, "=== benchmarking (%u-bits) ===\n\n", (unsigned)sizeof(void*)*8);
+    printf("=== benchmarking (%u-bits) ===\n\n", (unsigned)sizeof(void*)*8);
     blackrock_benchmark(blackrock_rounds);
     blackrock2_benchmark(blackrock_rounds);
     smack_benchmark();
@@ -3721,7 +3721,7 @@ failure:
 
 void xconf_selftest()
 {
-    LOG(LEVEL_HINT, "Regression test: start...\n");
+    puts("Regression test: start...");
 
     int x = 0;
 
@@ -3754,7 +3754,7 @@ void xconf_selftest()
     }
 
     if (x!=0)
-        LOG(LEVEL_ERROR, "Regression test: failed :(\n");
+        puts("Regression test: failed :(");
     else
-        LOG(LEVEL_HINT, "Regression test: success!\n");
+        puts("Regression test: success!");
 }

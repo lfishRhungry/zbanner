@@ -1627,7 +1627,7 @@ int smack_benchmark()
     uint64_t result = 0;
     uint64_t cycle1, cycle2;
 
-    LOG(LEVEL_OUT, "-- smack-1 -- \n");
+    puts("-- smack-1 --");
 
     s = smack_create("benchmark1", 1);
 
@@ -1674,14 +1674,14 @@ int smack_benchmark()
 
         rate /= 1000000.0;
 
-        LOG(LEVEL_OUT, "bits/second = %5.3f-million\n", rate);
-        LOG(LEVEL_OUT, "clocks/byte = %5.3f\n", (1.0/cycles));
-        LOG(LEVEL_OUT, "clockrate = %5.3f-GHz\n", ((cycle2-cycle1)*1.0/elapsed)/1000000000.0);
+        printf("bits/second = %5.3f-million\n", rate);
+        printf("clocks/byte = %5.3f\n", (1.0/cycles));
+        printf("clockrate = %5.3f-GHz\n", ((cycle2-cycle1)*1.0/elapsed)/1000000000.0);
 
 
     }
 
-    LOG(LEVEL_OUT, "\n");
+    putchar('\n');
 
     free(buf);
     return 0;
