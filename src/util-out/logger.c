@@ -10,11 +10,11 @@
 #endif
 
 #define PREFIX_OUT       ""
-#define PREFIX_HINT      "[^] "
-#define PREFIX_ERROR     "[!] "
-#define PREFIX_WARN      "[-] "
-#define PREFIX_INFO      "[=] "
-#define PREFIX_DEBUG     "[>] "
+#define PREFIX_HINT      "[HIN] "
+#define PREFIX_ERROR     "[ERR] "
+#define PREFIX_WARN      "[WRN] "
+#define PREFIX_INFO      "[-] "
+#define PREFIX_DEBUG     "[=] "
 #define PREFIX_DETAIL    "[#] "
 
 static int   _debug_level = 0;

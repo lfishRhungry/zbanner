@@ -410,7 +410,7 @@ if (pl->datalink == NULL) pl->func_err=1, pl->datalink = null_##PCAP_DATALINK;
 
         if (hLibpcap == NULL) {
             LOG(LEVEL_ERROR, "failed to load libpcap shared library\n");
-            LOG(LEVEL_OUT, "    you must install libpcap or WinPcap\n");
+            LOG(LEVEL_HINT, "you must install libpcap or WinPcap\n");
         }
     }
 

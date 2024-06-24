@@ -692,7 +692,7 @@ rawsock_init_adapter(const char *adapter_name,
                 LOG(LEVEL_ERROR, "FAIL:%s: can't open adapter: %s\n", adapter_name, errbuf);
                 if (strstr(errbuf, "perm")) {
                     LOG(LEVEL_ERROR, "permission denied\n");
-                    LOG(LEVEL_OUT, "    need to sudo or run as root or administrator\n");
+                    LOG(LEVEL_HINT, "need to sudo or run as root or administrator\n");
                 }
                 return 0;
             }
@@ -730,7 +730,7 @@ rawsock_init_adapter(const char *adapter_name,
                 break;
             case PCAP_ERROR_PERM_DENIED:
                 LOG(LEVEL_ERROR, "permission denied\n");
-                LOG(LEVEL_OUT, "    need to sudo or run as root or administrator\n");
+                LOG(LEVEL_HINT, "need to sudo or run as root or administrator\n");
                 goto pcap_error;
             default:
                 LOG(LEVEL_ERROR, "if(%s): activate:%d: %s\n", adapter_name, err, PCAP.geterr(adapter->pcap));
