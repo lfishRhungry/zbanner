@@ -6,7 +6,7 @@
 #include "../util-out/xprint.h"
 
 /*
-This is an Application Probe(or Request) Plugin System
+This is an Application-layer Probe(or Request) Plugin System
 */
 
 
