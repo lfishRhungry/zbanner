@@ -78,7 +78,7 @@ icmptime_transmit(
 
     /*icmp timestamp is just for ipv4*/
     if (target->ip_them.version!=4)
-        return 0; 
+        return 0;
 
     /*we do not care target port*/
     unsigned cookie = get_cookie(
