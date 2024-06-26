@@ -34,7 +34,7 @@ _level_to_string(int level)
         case LEVEL_DEBUG  : return PREFIX_DEBUG;
         case LEVEL_DETAIL : return PREFIX_DETAIL;
         default:
-            return "[?]";
+            return "[?] ";
     }
 }
 
