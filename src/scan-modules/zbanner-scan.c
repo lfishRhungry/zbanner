@@ -300,7 +300,7 @@ zbanner_handle(
 
         /*zerowin could be a kind of port open*/
         if (zbanner_conf.is_port_success) {
-            item->level = OP_SUCCESS;
+            item->level = OUT_SUCCESS;
         }
 
         win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
@@ -319,11 +319,11 @@ zbanner_handle(
         }
 
         if (win_them == 0) {
-            safe_strcpy(item->classification, OP_CLS_SIZE, "fake-open");
-            safe_strcpy(item->reason, OP_RSN_SIZE, "zerowin");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "fake-open");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "zerowin");
         } else {
-            safe_strcpy(item->classification, OP_CLS_SIZE, "open");
-            safe_strcpy(item->reason, OP_RSN_SIZE, "syn-ack");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "open");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "syn-ack");
 
             /*stack(send) ack with probe*/
             struct ProbeTarget ptarget = {
@@ -422,11 +422,11 @@ zbanner_handle(
         if (zbanner_conf.record_win)
             dach_printf(&item->report, "win", true, "%d", win_them);
 
-        safe_strcpy(item->reason, OP_RSN_SIZE, "rst");
-        safe_strcpy(item->classification, OP_CLS_SIZE, "closed");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "rst");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
 
         if (zbanner_conf.is_port_failure) {
-            item->level = OP_FAILURE;
+            item->level = OUT_FAILURE;
         }
     }
     /*Banner*/
@@ -545,10 +545,10 @@ zbanner_timeout(
 {
     /*event for port*/
     if (event->dedup_type==0) {
-        safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
-        safe_strcpy(item->classification, OP_CLS_SIZE, "closed");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
         if (zbanner_conf.is_port_failure) {
-            item->level = OP_FAILURE;
+            item->level = OUT_FAILURE;
         }
         return;
     }

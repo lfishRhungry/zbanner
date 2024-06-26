@@ -43,22 +43,22 @@ lzr_x11_handle_reponse(
     */
 
     if (sizeof_px<15) {
-        item->level = OP_FAILURE;
-        safe_strcpy(item->classification, OP_CLS_SIZE, "not x11");
-        safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
+        item->level = OUT_FAILURE;
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "not x11");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
     }
 
     if (bytes_equals(px, sizeof_px, "\x01\x00\x0b\x00\x00", 5)) {
         if (bytes_equals(px+11, sizeof_px-11, "\x00\x00\x00", 3)) {
-            item->level = OP_SUCCESS;
-            safe_strcpy(item->classification, OP_CLS_SIZE, "x11");
-            safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
+            item->level = OUT_SUCCESS;
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "x11");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
         }
     }
 
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "not x11");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not x11");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -66,9 +66,9 @@ lzr_x11_handle_reponse(
 static unsigned
 lzr_x11_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "not x11");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "no response");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not x11");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     return 0;
 }
 

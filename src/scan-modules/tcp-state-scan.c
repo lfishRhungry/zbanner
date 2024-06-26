@@ -285,7 +285,7 @@ tcpstate_handle(
 
         /*zerowin could be a kind of port open*/
         if (tcpstate_conf.is_port_success) {
-            item->level = OP_SUCCESS;
+            item->level = OUT_SUCCESS;
         }
 
         win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
@@ -309,12 +309,12 @@ tcpstate_handle(
          * */
 
         if (win_them == 0) {
-            safe_strcpy(item->classification, OP_CLS_SIZE, "fake-open");
-            safe_strcpy(item->reason, OP_RSN_SIZE, "zerowin");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "fake-open");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "zerowin");
             return;
         } else {
-            safe_strcpy(item->classification, OP_CLS_SIZE, "open");
-            safe_strcpy(item->reason, OP_RSN_SIZE, "syn-ack");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "open");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "syn-ack");
         }
 
         if (tcb == NULL) {

@@ -19,16 +19,16 @@ lzr_pop3_handle_response(
      * must be compatible with lzr-imap
     */
     if (safe_memismem(px, sizeof_px, "pop3", strlen("pop3"))) {
-        item->level = OP_SUCCESS;
-        safe_strcpy(item->classification, OP_CLS_SIZE, "pop3");
-        safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
+        item->level = OUT_SUCCESS;
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "pop3");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
         return 0;
     }
 
 
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "not pop3");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not pop3");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -36,9 +36,9 @@ lzr_pop3_handle_response(
 static unsigned
 lzr_pop3_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "not pop3");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "no response");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not pop3");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     return 0;
 }
 

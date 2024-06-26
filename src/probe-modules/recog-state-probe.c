@@ -329,16 +329,16 @@ recogstate_parse_response(
     const char *match_res = match_recog_fp(recogstate_conf.recog_fp, px, sizeof_px);
 
     if (match_res) {
-        item.level = OP_SUCCESS;
-        safe_strcpy(item.classification, OP_CLS_SIZE, "matched");
+        item.level = OUT_SUCCESS;
+        safe_strcpy(item.classification, OUT_CLS_SIZE, "matched");
         dach_append(&item.report, "result", match_res, strlen(match_res));
 
         if (recogstate_conf.banner_while_regex) {
             dach_append_normalized(&item.report, "banner", px, sizeof_px);
         }
     } else {
-        item.level = OP_FAILURE;
-        safe_strcpy(item.classification, OP_CLS_SIZE, "not matched");
+        item.level = OUT_FAILURE;
+        safe_strcpy(item.classification, OUT_CLS_SIZE, "not matched");
 
         if (recogstate_conf.banner_while_regex||recogstate_conf.banner_if_fail) {
             dach_append_normalized(&item.report, "banner", px, sizeof_px);

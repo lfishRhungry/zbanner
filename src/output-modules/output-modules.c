@@ -31,9 +31,9 @@ const char *
 output_level_to_string(enum OutputLevel level)
 {
     switch (level) {
-        case OP_INFO:       return "information";
-        case OP_FAILURE:    return "failed";
-        case OP_SUCCESS:    return "success";
+        case OUT_INFO:       return "information";
+        case OUT_FAILURE:    return "failed";
+        case OUT_SUCCESS:    return "success";
 
         default:
             return "unknown";
@@ -175,15 +175,15 @@ output_result_to_stdout(struct OutputItem *item)
 
     switch (item->level)
     {
-    case OP_SUCCESS:
+    case OUT_SUCCESS:
         count = fprintf(stdout, fmt_host,
             XPRINT_CH_COLOR_GREEN"[+]", ip_them_fmt.string);
         break;
-    case OP_FAILURE:
+    case OUT_FAILURE:
         count = fprintf(stdout, fmt_host,
             XPRINT_CH_COLOR_RED"[x]", ip_them_fmt.string);
         break;
-    case OP_INFO:
+    case OUT_INFO:
         count = fprintf(stdout, fmt_host,
             XPRINT_CH_COLOR_CYAN"[*]", ip_them_fmt.string);
         break;
@@ -228,29 +228,29 @@ output_result(const struct Output *out, struct OutputItem *item)
     if (!item->timestamp)
         ((struct OutputItem *)item)->timestamp = global_now;
 
-    if (item->level==OP_SUCCESS) {
+    if (item->level==OUT_SUCCESS) {
         pixie_acquire_mutex(out->succ_mutex);
         ((struct Output *)out)->total_successed++;
         pixie_release_mutex(out->succ_mutex);
     }
 
-    if (item->level==OP_FAILURE) {
+    if (item->level==OUT_FAILURE) {
         pixie_acquire_mutex(out->fail_mutex);
         ((struct Output *)out)->total_failed++;
         pixie_release_mutex(out->fail_mutex);
     }
 
-    if (item->level==OP_INFO) {
+    if (item->level==OUT_INFO) {
         pixie_acquire_mutex(out->info_mutex);
         ((struct Output *)out)->total_info++;
         pixie_release_mutex(out->info_mutex);
     }
 
-    if (item->level==OP_INFO && !out->is_show_info)
+    if (item->level==OUT_INFO && !out->is_show_info)
         goto error0;
-    if (item->level==OP_FAILURE && !out->is_show_failed)
+    if (item->level==OUT_FAILURE && !out->is_show_failed)
         goto error0;
-    if (item->level==OP_SUCCESS && out->no_show_success)
+    if (item->level==OUT_SUCCESS && out->no_show_success)
         goto error0;
 
     if (out->output_module) {

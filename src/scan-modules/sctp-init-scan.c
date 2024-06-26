@@ -125,14 +125,14 @@ sctpinit_handle(
 {
     if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
         SCTP_CHUNK_TYPE_INIT_ACK)) {
-        item->level = OP_SUCCESS;
-        safe_strcpy(item->reason, OP_RSN_SIZE, "init-ack");
-        safe_strcpy(item->classification, OP_CLS_SIZE, "open");
+        item->level = OUT_SUCCESS;
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "init-ack");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "open");
     } else if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
         SCTP_CHUNK_TYPE_ABORT)) {
-        item->level = OP_FAILURE;
-        safe_strcpy(item->reason, OP_RSN_SIZE, "abort");
-        safe_strcpy(item->classification, OP_CLS_SIZE, "closed");
+        item->level = OUT_FAILURE;
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "abort");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
     }
 
     if (sctpinit_conf.record_ttl)
@@ -148,9 +148,9 @@ static void sctpinit_timeout(
     struct stack_t *stack,
     struct FHandler *handler)
 {
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "closed");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
 }
 
 struct ScanModule SctpInitScan = {

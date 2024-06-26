@@ -449,9 +449,9 @@ luaudp_handle_response(
         return 0;
     }
     if (lua_toboolean(luaudp_conf.Lhx, -4)>0) {
-        item->level = OP_SUCCESS;
+        item->level = OUT_SUCCESS;
     } else {
-        item->level = OP_FAILURE;
+        item->level = OUT_FAILURE;
     }
 
     if (lua_isstring(luaudp_conf.Lhx, -3)==0) {
@@ -530,9 +530,9 @@ luaudp_handle_timeout(
         return 0;
     }
     if (lua_toboolean(luaudp_conf.Lrx, -4)>0) {
-        item->level = OP_SUCCESS;
+        item->level = OUT_SUCCESS;
     } else {
-        item->level = OP_FAILURE;
+        item->level = OUT_FAILURE;
     }
 
     if (lua_isstring(luaudp_conf.Lrx, -3)==0) {

@@ -207,18 +207,18 @@ tcpsyn_handle(
     /*SYNACK*/
     if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
         TCP_FLAG_SYN|TCP_FLAG_ACK)) {
-        item->level = OP_SUCCESS;
+        item->level = OUT_SUCCESS;
 
         if (win_them == 0) {
-            safe_strcpy(item->classification, OP_CLS_SIZE, "fake-open");
-            safe_strcpy(item->reason, OP_RSN_SIZE, "zerowin");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "fake-open");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "zerowin");
 
             if (tcpsyn_conf.zero_fail)
-                item->level = OP_FAILURE;
+                item->level = OUT_FAILURE;
 
         } else {
-            safe_strcpy(item->classification, OP_CLS_SIZE, "open");
-            safe_strcpy(item->reason, OP_RSN_SIZE, "syn-ack");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "open");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "syn-ack");
         }
 
         if (tcpsyn_conf.send_rst) {
@@ -245,9 +245,9 @@ tcpsyn_handle(
     }
     /*RST*/
     else {
-        item->level = OP_FAILURE;
-        safe_strcpy(item->reason, OP_RSN_SIZE, "rst");
-        safe_strcpy(item->classification, OP_CLS_SIZE, "closed");
+        item->level = OUT_FAILURE;
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "rst");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
     }
 
     if (tcpsyn_conf.record_ttl)
@@ -267,9 +267,9 @@ tcpsyn_timeout(
     struct stack_t *stack,
     struct FHandler *handler)
 {
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "closed");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
 }
 
 struct ScanModule TcpSynScan = {

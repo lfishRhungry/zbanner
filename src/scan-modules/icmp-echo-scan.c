@@ -136,10 +136,10 @@ icmpecho_handle(
 {
     item->port_them  = 0;
     item->port_me    = 0;
-    item->level      = OP_SUCCESS;
+    item->level      = OUT_SUCCESS;
 
-    safe_strcpy(item->reason, OP_RSN_SIZE, "echo reply");
-    safe_strcpy(item->classification, OP_CLS_SIZE, "alive");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "echo reply");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");
 
     if (icmpecho_conf.record_ttl)
         dach_printf(&item->report, "ttl", true, "%d", recved->parsed.ip_ttl);
@@ -154,9 +154,9 @@ static void icmpecho_timeout(
     struct stack_t *stack,
     struct FHandler *handler)
 {
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "down");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "down");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
 }
 
 struct ScanModule IcmpEchoScan = {

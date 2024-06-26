@@ -15,15 +15,15 @@ lzr_vnc_handle_response(
 {
 
     if (safe_memmem(px, sizeof_px, "RFB", strlen("RFB"))) {
-        item->level = OP_SUCCESS;
-        safe_strcpy(item->classification, OP_CLS_SIZE, "vnc");
-        safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
+        item->level = OUT_SUCCESS;
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "vnc");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
         return 0;
     }
 
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "not vnc");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not vnc");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -31,9 +31,9 @@ lzr_vnc_handle_response(
 static unsigned
 lzr_vnc_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "not vnc");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "no response");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not vnc");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     return 0;
 }
 

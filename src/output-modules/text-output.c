@@ -44,13 +44,13 @@ text_result(struct OutputItem *item)
 
     switch (item->level)
     {
-    case OP_SUCCESS:
+    case OUT_SUCCESS:
         err = fprintf(file, fmt_host, "[+]", ip_them_fmt.string);
         break;
-    case OP_FAILURE:
+    case OUT_FAILURE:
         err = fprintf(file, fmt_host, "[x]", ip_them_fmt.string);
         break;
-    case OP_INFO:
+    case OUT_INFO:
         err = fprintf(file, fmt_host, "[*]", ip_them_fmt.string);
         break;
     default:

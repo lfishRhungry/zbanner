@@ -304,16 +304,16 @@ recog_handle_response(
     const char *match_res = match_recog_fp(recog_conf.recog_fp, px, sizeof_px);
 
     if (match_res) {
-        item->level = OP_SUCCESS;
-        safe_strcpy(item->classification, OP_CLS_SIZE, "matched");
+        item->level = OUT_SUCCESS;
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "matched");
         dach_append(&item->report, "result", match_res, strlen(match_res));
 
         if (recog_conf.banner_while_regex) {
             dach_append_normalized(&item->report, "banner", px, sizeof_px);
         }
     } else {
-        item->level = OP_FAILURE;
-        safe_strcpy(item->classification, OP_CLS_SIZE, "not matched");
+        item->level = OUT_FAILURE;
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "not matched");
 
         if (recog_conf.banner_while_regex||recog_conf.banner_if_fail) {
             dach_append_normalized(&item->report, "banner", px, sizeof_px);
@@ -326,9 +326,9 @@ recog_handle_response(
 static unsigned
 recog_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "no response");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "no response");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
     return 0;
 }
 

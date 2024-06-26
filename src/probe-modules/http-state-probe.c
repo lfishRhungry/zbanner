@@ -825,8 +825,8 @@ httpstate_parse_response(
 
         /*matched one. ps: "offset is too small" means successful, too*/
         if (rc >= 0) {
-            item.level = OP_SUCCESS;
-            safe_strcpy(item.classification, OP_CLS_SIZE, "matched");
+            item.level = OUT_SUCCESS;
+            safe_strcpy(item.classification, OUT_CLS_SIZE, "matched");
 
             if (!httpstate_conf.match_whole_response) {
                 state->state   = 1;
@@ -834,8 +834,8 @@ httpstate_parse_response(
             }
 
         } else {
-            item.level = OP_FAILURE;
-            safe_strcpy(item.classification, OP_CLS_SIZE, "not matched");
+            item.level = OUT_FAILURE;
+            safe_strcpy(item.classification, OUT_CLS_SIZE, "not matched");
         }
 
         if (httpstate_conf.report_while_regex) {
@@ -846,7 +846,7 @@ httpstate_parse_response(
 
 #endif
 
-        item.level = OP_SUCCESS;
+        item.level = OUT_SUCCESS;
         dach_append_normalized(&item.report, "banner", px, sizeof_px);
 
 #ifndef NOT_FOUND_PCRE2

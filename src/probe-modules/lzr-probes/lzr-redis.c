@@ -37,29 +37,29 @@ lzr_redis_handle_reponse(
 
     if (sizeof_px==7
         && safe_memmem(px, sizeof_px, "PONG", strlen("PONG"))) {
-        item->level = OP_SUCCESS;
-        safe_strcpy(item->classification, OP_CLS_SIZE, "redis");
-        safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
+        item->level = OUT_SUCCESS;
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "redis");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
         return 0;
     }
 
     if (safe_memmem(px, sizeof_px, "Redis", strlen("Redis"))) {
-        item->level = OP_SUCCESS;
-        safe_strcpy(item->classification, OP_CLS_SIZE, "redis");
-        safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
+        item->level = OUT_SUCCESS;
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "redis");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
         return 0;
     }
 
     if (safe_memmem(px, sizeof_px, "-ERR unknown", strlen("-ERR unknown"))) {
-        item->level = OP_SUCCESS;
-        safe_strcpy(item->classification, OP_CLS_SIZE, "redis");
-        safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
+        item->level = OUT_SUCCESS;
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "redis");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
         return 0;
     }
 
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "not redis");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not redis");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -67,9 +67,9 @@ lzr_redis_handle_reponse(
 static unsigned
 lzr_redis_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "not redis");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "no response");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not redis");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     return 0;
 }
 

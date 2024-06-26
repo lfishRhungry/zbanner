@@ -44,22 +44,22 @@ lzr_ipmi_handle_reponse(
 {
 
     if (bytes_equals(px, sizeof_px, lzr_ipmi_pos_detect_unkn, sizeof(lzr_ipmi_pos_detect_unkn))) {
-        item->level = OP_SUCCESS;
-        safe_strcpy(item->classification, OP_CLS_SIZE, "ipmi");
-        safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
+        item->level = OUT_SUCCESS;
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "ipmi");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
         return 0;
     }
 
     if (sizeof_px>4) {
         if (px[0]==0x06 && px[1]==0x00 && px[2] == 0xff && px[3] == 0x07) {
-            safe_strcpy(item->classification, OP_CLS_SIZE, "ipmi");
-            safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "ipmi");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
         }
     }
 
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "not ipmi");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not ipmi");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -67,9 +67,9 @@ lzr_ipmi_handle_reponse(
 static unsigned
 lzr_ipmi_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "not ipmi");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "no response");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not ipmi");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     return 0;
 }
 

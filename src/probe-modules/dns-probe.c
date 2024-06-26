@@ -214,14 +214,14 @@ dns_handle_response(
     dns_pkt_t dns_pkt;
 
     if (!dns_parse_reply((uint8_t *)px, sizeof_px, &dns_pkt)) {
-        item->level = OP_FAILURE;
-        safe_strcpy(item->classification, OP_CLS_SIZE, "not dns");
-        safe_strcpy(item->reason, OP_RSN_SIZE, "parse failed");
+        item->level = OUT_FAILURE;
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "not dns");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "parse failed");
         return 0;
     }
 
-    item->level = OP_SUCCESS;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "dns reply");
+    item->level = OUT_SUCCESS;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "dns reply");
 
     dns_record_t *rec;
     char tmp_data[50];
@@ -335,9 +335,9 @@ dns_handle_response(
 static unsigned
 dns_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "no response");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "no response");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
     return 0;
 }
 

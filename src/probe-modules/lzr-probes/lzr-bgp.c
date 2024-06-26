@@ -21,9 +21,9 @@ lzr_bgp_handle_response(
 {
 
     if (sizeof_px<20) {
-        item->level = OP_FAILURE;
-        safe_strcpy(item->classification, OP_CLS_SIZE, "not bgp");
-        safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
+        item->level = OUT_FAILURE;
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "not bgp");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
         return 0;
     }
 
@@ -31,16 +31,16 @@ lzr_bgp_handle_response(
         if (bytes_equals(px+16, sizeof_px-16, "\x00\x15\x03\x06", 4)
             || bytes_equals(px+16, sizeof_px-16, "\x00\x1d\x01\x04", 4)
             || bytes_equals(px+18, sizeof_px-18, "\x01\x04", 2)) {
-            item->level = OP_SUCCESS;
-            safe_strcpy(item->classification, OP_CLS_SIZE, "bgp");
-            safe_strcpy(item->reason, OP_RSN_SIZE, "matched");
+            item->level = OUT_SUCCESS;
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "bgp");
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
             return 0;
         }
     }
 
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "not bgp");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not bgp");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
 
     return 0;
 }
@@ -48,9 +48,9 @@ lzr_bgp_handle_response(
 static unsigned
 lzr_bgp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "not bgp");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "no response");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "not bgp");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     return 0;
 }
 

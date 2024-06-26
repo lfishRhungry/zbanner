@@ -359,15 +359,15 @@ hello_handle_response(
 
         /*matched one. ps: "offset is too small" means successful, too*/
         if (rc >= 0) {
-            item->level = OP_SUCCESS;
-            safe_strcpy(item->classification, OP_CLS_SIZE, "matched");
+            item->level = OUT_SUCCESS;
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "matched");
 
             if (hello_conf.banner_while_regex) {
                 dach_append_normalized(&item->report, "banner", px, sizeof_px);
             }
         } else {
-            item->level = OP_FAILURE;
-            safe_strcpy(item->classification, OP_CLS_SIZE, "not matched");
+            item->level = OUT_FAILURE;
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "not matched");
 
             if (hello_conf.banner_while_regex||hello_conf.banner_if_fail) {
                 dach_append_normalized(&item->report, "banner", px, sizeof_px);
@@ -379,7 +379,7 @@ hello_handle_response(
 
 #endif
 
-        item->level = OP_SUCCESS;
+        item->level = OUT_SUCCESS;
         dach_append_normalized(&item->report, "banner", px, sizeof_px);
 
 #ifndef NOT_FOUND_PCRE2
@@ -392,9 +392,9 @@ hello_handle_response(
 static unsigned
 hello_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "no response");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "no response");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
     return 0;
 }
 

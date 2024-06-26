@@ -81,10 +81,10 @@ arpreq_handle(
 {
     item->port_them  = 0;
     item->port_me    = 0;
-    item->level      = OP_SUCCESS;
+    item->level      = OUT_SUCCESS;
 
-    safe_strcpy(item->classification, OP_CLS_SIZE, "alive");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "arp reply");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "arp reply");
     dach_printf(&item->report, "mac addr", false, "%02X:%02X:%02X:%02X:%02X:%02X",
         recved->parsed.mac_src[0], recved->parsed.mac_src[1],
         recved->parsed.mac_src[2], recved->parsed.mac_src[3],
@@ -98,9 +98,9 @@ static void arpreq_timeout(
     struct stack_t *stack,
     struct FHandler *handler)
 {
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "down");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "down");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
 }
 
 struct ScanModule ArpReqScan = {

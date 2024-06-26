@@ -188,9 +188,9 @@ jarm_handle_response(
      * eg. \x15\x03\x01\x00\x02\x02
      * */
     if (sizeof_px < 7) {
-        item->level = OP_FAILURE;
-        safe_strcpy(item->classification, OP_CLS_SIZE, "no jarm");
-        safe_strcpy(item->reason, OP_RSN_SIZE, "not tls");
+        item->level = OUT_FAILURE;
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "no jarm");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "not tls");
         return 0;
     }
 
@@ -203,8 +203,8 @@ jarm_handle_response(
         if (px[1]==0x03) {
             if (px[2]==0x00 || px[2]==0x01 || px[2]==0x02 || px[2]==0x03) {
 
-                item->level = OP_SUCCESS;
-                safe_strcpy(item->classification, OP_CLS_SIZE, "jarmed");
+                item->level = OUT_SUCCESS;
+                safe_strcpy(item->classification, OUT_CLS_SIZE, "jarmed");
                 jarm_decipher_one(px, sizeof_px, tmp_data, sizeof(tmp_data));
                 dach_append(&item->report, "fingerprint", tmp_data, strlen(tmp_data));
 
@@ -219,18 +219,18 @@ jarm_handle_response(
         }
     }
 
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "no jarm");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "not tls");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "no jarm");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not tls");
     return 0;
 }
 
 static unsigned
 jarm_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
-    item->level = OP_FAILURE;
-    safe_strcpy(item->classification, OP_CLS_SIZE, "no jarm");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "timeout");
+    item->level = OUT_FAILURE;
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "no jarm");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
     if (jarm_conf.probe_index) {
         dach_printf(&item->report, "index", true, "%d", jarm_conf.probe_index);
     } else {

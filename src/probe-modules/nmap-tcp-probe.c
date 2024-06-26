@@ -254,10 +254,10 @@ nmaptcp_handle_response(
         IP_PROTO_TCP, nmaptcp_conf.softmatch);
 
     if (match) {
-        item->level = OP_SUCCESS;
+        item->level = OUT_SUCCESS;
 
-        safe_strcpy(item->classification, OP_CLS_SIZE, "identified");
-        safe_strcpy(item->reason, OP_RSN_SIZE,
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "identified");
+        safe_strcpy(item->reason, OUT_RSN_SIZE,
             match->is_softmatch?"softmatch":"matched");
         dach_append(&item->report, "service", match->service, strlen(match->service));
 
@@ -277,8 +277,8 @@ nmaptcp_handle_response(
         return 0;
     }
 
-    safe_strcpy(item->classification, OP_CLS_SIZE, "unknown");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "not matched");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
     dach_append(&item->report, "probe", list->probes[target->index]->name,
         strlen(list->probes[target->index]->name));
 
@@ -290,7 +290,7 @@ nmaptcp_handle_response(
 
     /*no more probe, treat it as failure*/
     if (!next_probe) {
-        item->level = OP_FAILURE;
+        item->level = OUT_FAILURE;
 
         if (nmaptcp_conf.show_banner||nmaptcp_conf.banner_if_fail) {
             dach_append_normalized(&item->report, "banner", px, sizeof_px);
@@ -306,8 +306,8 @@ nmaptcp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
 {
     struct NmapServiceProbeList *list = nmaptcp_conf.service_probes;
 
-    safe_strcpy(item->classification, OP_CLS_SIZE, "unknown");
-    safe_strcpy(item->reason, OP_RSN_SIZE, "no response");
+    safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
+    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     dach_append(&item->report, "probe", list->probes[target->index]->name,
         strlen(list->probes[target->index]->name));
 
@@ -323,7 +323,7 @@ nmaptcp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
         return next_probe+1;
     } else {
         /*last availabe probe*/
-        item->level = OP_FAILURE;
+        item->level = OUT_FAILURE;
         return 0;
     }
 }
