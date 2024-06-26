@@ -1026,9 +1026,9 @@ static enum ConfigRes SET_source_ip(void *conf, const char *name, const char *va
     switch (err) {
         case Ipv4_Address:
             /* If more than one IP address given, make the range is
-                * an even power of two (1, 2, 4, 8, 16, ...) */
+                * a power of two (1, 2, 4, 8, 16, ...) */
             if (!is_power_of_two((uint64_t)range.end - range.begin + 1)) {
-                LOG(LEVEL_ERROR, "range must be even power of two: %s=%s\n",
+                LOG(LEVEL_ERROR, "range must be power of two: %s=%s\n",
                     name, value);
                 return Conf_ERR;
             }
@@ -1042,9 +1042,9 @@ static enum ConfigRes SET_source_ip(void *conf, const char *name, const char *va
                 return Conf_ERR;
             }
             /* If more than one IP address given, make the range is
-                * an even power of two (1, 2, 4, 8, 16, ...) */
+                * a power of two (1, 2, 4, 8, 16, ...) */
             if (!is_power_of_two(range6.end.lo - range6.begin.lo + 1)) {
-                LOG(LEVEL_ERROR, "range must be even power of two: %s=%s\n",
+                LOG(LEVEL_ERROR, "range must be power of two: %s=%s\n",
                     name, value);
                 return Conf_ERR;
             }
@@ -1096,9 +1096,9 @@ static enum ConfigRes SET_source_port(void *conf, const char *name, const char *
         return Conf_ERR;
     }
 
-    /* verify range is even power of 2 (1, 2, 4, 8, 16, ...) */
+    /* verify range is power of 2 (1, 2, 4, 8, 16, ...) */
     if (!is_power_of_two(ports.list[0].end - ports.list[0].begin + 1)) {
-        LOG(LEVEL_ERROR, "source port range must be even power of two: %s=%s\n",
+        LOG(LEVEL_ERROR, "source port range must be power of two: %s=%s\n",
             name, value);
         return Conf_ERR;
     }
@@ -2637,7 +2637,7 @@ struct ConfigParam config_parameters[] = {
         "Send packets using this IP address. If not specified, then the first IP"
         " address bound to the network interface will be used. Instead of a "
         "single IP address, a range may be specified.\n"
-        "NOTE1: The size of the range must be an even power of 2, such as "
+        "NOTE1: The size of the range must be a power of 2, such as "
         "1, 2, 4, 8, 16, 1024 etc.\n"
         "NOTE2: "XTATE_FIRST_UPPER_NAME" could get source ipv6 address with global"
         " scope include NAT6 network. But we need to specified manually if use "
@@ -2653,7 +2653,7 @@ struct ConfigParam config_parameters[] = {
         " should be filtered by the host firewall (like iptables) to prevent the"
         " host network stack from interfering with arriving packets. Instead of "
         "a single port, a range can be specified, like 40000-40003.\n"
-        "NOTE: The size of the range must be an even power of 2, such as "
+        "NOTE: The size of the range must be a power of 2, such as "
         "the example above that has a total of 4 addresses."
     },
     {
