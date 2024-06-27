@@ -24,6 +24,7 @@
 #include "../util-misc/checksum.h"
 #include "../stub/stub-pcap-dlt.h"
 #include "../templ/templ-arp.h"
+#include "../util-data/data-convert.h"
 
 #define VERIFY_REMAINING(n) if (offset+(n) > max) return;
 
@@ -61,19 +62,21 @@ proto_arp_parse(struct ARP_IncomingRequest *arp,
     VERIFY_REMAINING(8);
     arp->is_valid = 0; /* not valid yet */
 
-    arp->hardware_type = px[offset]<<8 | px[offset+1];
-    arp->protocol_type = px[offset+2]<<8 | px[offset+3];
-    arp->hardware_length = px[offset+4];
-    arp->protocol_length = px[offset+5];
-    arp->opcode = px[offset+6]<<8 | px[offset+7];
+    arp->hardware_type     = BE_TO_U16(px+offset+0);
+    arp->protocol_type     = BE_TO_U16(px+offset+2);
+    arp->hardware_length   = px[offset+4];
+    arp->protocol_length   = px[offset+5];
+    arp->opcode            = BE_TO_U16(px+offset+7);
     offset += 8;
 
     /* We only support IPv4 and Ethernet addresses */
-    if (arp->protocol_length != 4 && arp->hardware_length != 6)
+    if (arp->protocol_length != 4)
         return;
-    if (arp->protocol_type != 0x0800)
+    if (arp->hardware_length != 6)
         return;
-    if (arp->hardware_type != 1 && arp->hardware_type != 6)
+    if (arp->protocol_type != ETHERTYPE_IPv4)
+        return;
+    if (arp->hardware_type != 1)
         return;
 
     /*
@@ -83,13 +86,13 @@ proto_arp_parse(struct ARP_IncomingRequest *arp,
     arp->mac_src = px+offset;
     offset += arp->hardware_length;
 
-    arp->ip_src = px[offset+0]<<24 | px[offset+1]<<16 | px[offset+2]<<8 | px[offset+3];
+    arp->ip_src = BE_TO_U32(px+offset);
     offset += arp->protocol_length;
 
     arp->mac_dst = px+offset;
     offset += arp->hardware_length;
 
-    arp->ip_dst = px[offset+0]<<24 | px[offset+1]<<16 | px[offset+2]<<8 | px[offset+3];
+    arp->ip_dst = BE_TO_U32(px+offset);
     //offset += arp->protocol_length;
 
     arp->is_valid = 1;
@@ -153,16 +156,10 @@ stack_arp_resolve(
             , 8);
 
     memcpy(arp_packet + 22, my_mac_address.addr, 6);
-    arp_packet[28] = (unsigned char)(my_ipv4 >> 24);
-    arp_packet[29] = (unsigned char)(my_ipv4 >> 16);
-    arp_packet[30] = (unsigned char)(my_ipv4 >>  8);
-    arp_packet[31] = (unsigned char)(my_ipv4 >>  0);
+    U32_TO_BE(arp_packet+28, my_ipv4);
 
     memcpy(arp_packet + 32, "\x00\x00\x00\x00\x00\x00", 6);
-    arp_packet[38] = (unsigned char)(your_ipv4 >> 24);
-    arp_packet[39] = (unsigned char)(your_ipv4 >> 16);
-    arp_packet[40] = (unsigned char)(your_ipv4 >>  8);
-    arp_packet[41] = (unsigned char)(your_ipv4 >>  0);
+    U32_TO_BE(arp_packet+38, your_ipv4);
 
 
     /* Kludge: handle VLNA header if it exists. This is probably

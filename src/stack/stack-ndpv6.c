@@ -8,6 +8,7 @@
 #include "../util-out/logger.h"
 #include "../massip/massip.h"
 #include "../stub/stub-pcap-dlt.h"
+#include "../templ/templ-icmp.h"
 
 
 #include <string.h>
@@ -158,9 +159,9 @@ stack_ndpv6_incoming_request(struct stack_t *stack, struct PreprocessedInfo *par
     /* Format the response */
     _append(buf2, &offset, max, ICMPv6_TYPE_NA); /* type */
     _append(buf2, &offset, max, ICMPv6_CODE_NA); /* code */
-    _append(buf2, &offset, max, 0); /*checksum[hi] */
-    _append(buf2, &offset, max, 0); /*checksum[lo] */
-    _append(buf2, &offset, max, 0x60); /* flags*/ 
+    _append(buf2, &offset, max, 0);              /*checksum[hi] */
+    _append(buf2, &offset, max, 0);              /*checksum[lo] */
+    _append(buf2, &offset, max, 0x60);           /* flags*/ 
     _append(buf2, &offset, max, 0);
     _append(buf2, &offset, max, 0);
     _append(buf2, &offset, max, 0);
@@ -204,16 +205,16 @@ _extract_router_advertisement(
 
     *router_ip = parsed->src_ip.ipv6;
 
-    if (parsed->ip_protocol != 58)
+    if (parsed->ip_protocol != IP_PROTO_IPv6_ICMP)
         return 1;
     offset = parsed->transport_offset;
 
     /* type = Router Advertisement */
-    if (_read_byte(buf, &offset, length) != 134)
+    if (_read_byte(buf, &offset, length) != ICMPv6_TYPE_RA)
         return 1;
 
     /* code = 0 */
-    if (_read_byte(buf, &offset, length) != 0)
+    if (_read_byte(buf, &offset, length) != ICMPv6_CODE_RA)
         return 1;
 
     /* checksum */
@@ -248,10 +249,10 @@ _extract_router_advertisement(
                 ipaddress_formatted_t fmt;
 
                 prefix_len = _read_byte(buf2, &off2, len2);
-                _read_byte(buf2, &off2, len2); /* flags */
-                _read_number(buf2, &off2, len2); /* valid lifetime */
-                _read_number(buf2, &off2, len2); /* preferred lifetime */
-                _read_number(buf2, &off2, len2); /* reserved */
+                _read_byte(buf2, &off2, len2);       /* flags */
+                _read_number(buf2, &off2, len2);     /* valid lifetime */
+                _read_number(buf2, &off2, len2);     /* preferred lifetime */
+                _read_number(buf2, &off2, len2);     /* reserved */
                 prefix = _read_ipv6(buf2, &off2, len2);
 
                 fmt = ipv6address_fmt(prefix);
@@ -350,21 +351,21 @@ stack_ndpv6_resolve(
     _append_bytes(buf, &offset, max, my_mac_address.addr, 6);
 
     if (adapter->is_vlan) {
-        _append_short(buf, &offset, max, 0x8100);
+        _append_short(buf, &offset, max, ETHERTYPE_VLAN_8021Q);
         _append_short(buf, &offset, max, adapter->vlan_id);
     }
-    _append_short(buf, &offset, max, 0x86dd);
+    _append_short(buf, &offset, max, ETHERTYPE_IPv6);
 
     /*
      * Create IPv6 header
      */
     offset_ip = offset;
-    _append(buf, &offset, max, 0x60); /* version = 6 */
+    _append(buf, &offset, max, 0x60);        /* version = 6 */
     _append(buf, &offset, max, 0);
     _append_short(buf, &offset, max, 0);
-    _append_short(buf, &offset, max, 0); /* length = 0 */
-    _append(buf, &offset, max, 58); /* proto = ICMPv6 */
-    _append(buf, &offset, max, 255); /*hop limit = 255 */
+    _append_short(buf, &offset, max, 0);     /* length = 0 */
+    _append(buf, &offset, max, IP_PROTO_IPv6_ICMP);
+    _append(buf, &offset, max, 255);         /*hop limit = 255 */
 
     /* Link local source address based on MAC address */
     offset_ip_src = offset;
@@ -390,13 +391,13 @@ stack_ndpv6_resolve(
 
     /* ICMPv6 Router Solicitation */
     offset_icmpv6 = offset;
-    _append(buf, &offset, max, 133); /* type = Router Solicitation */
-    _append(buf, &offset, max, 0);
-    _append_short(buf, &offset, max, 0); /* checksum = 0 (for the moment) */
-    _append_short(buf, &offset, max, 0); /* reserved */
-    _append_short(buf, &offset, max, 0); /* reserved */
-    _append(buf, &offset, max, 1); /* option = source link layer address */
-    _append(buf, &offset, max, 1); /* length = 2 + 6 / 8*/
+    _append(buf, &offset, max, ICMPv6_TYPE_RS);
+    _append(buf, &offset, max, ICMPv6_CODE_RS);
+    _append_short(buf, &offset, max, 0);      /* checksum = 0 (for the moment) */
+    _append_short(buf, &offset, max, 0);      /* reserved */
+    _append_short(buf, &offset, max, 0);      /* reserved */
+    _append(buf, &offset, max, 1);            /* option = source link layer address */
+    _append(buf, &offset, max, 1);            /* length = 2 + 6 / 8*/
     _append_bytes(buf, &offset, max, my_mac_address.addr, 6);
 
     buf[offset_ip + 4] = (unsigned char)( (offset - offset_icmpv6) >> 8);

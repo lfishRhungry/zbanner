@@ -5,6 +5,19 @@
 #include "../massip/massip-addr.h"
 #include "../util-misc/cross.h"
 
+/**
+ * ref: https://en.wikipedia.org/wiki/EtherType
+ */
+#define ETHERTYPE_IPv4                  0x0800
+#define ETHERTYPE_ARP                   0x0806
+#define ETHERTYPE_WAKEonLAN             0x0842
+#define ETHERTYPE_CISCO_DIS             0x2000
+#define ETHERTYPE_VLAN_8021Q            0x8100
+#define ETHERTYPE_IPX                   0x8137
+#define ETHERTYPE_IPv6                  0x86dd
+#define ETHERTYPE_MLPS_UNI              0x8847
+#define ETHERTYPE_MLPS_MUL              0x8848
+
 
 enum {
     FOUND_NOTHING=0,

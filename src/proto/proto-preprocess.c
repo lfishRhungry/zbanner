@@ -55,7 +55,7 @@ parse_ethernet:
     offset += 14;
     if (ethertype < 2000)
         goto parse_llc;
-    if (ethertype != 0x0800)
+    if (ethertype != ETHERTYPE_IPv4)
         goto parse_ethertype;
 
 parse_ipv4:
@@ -93,18 +93,17 @@ parse_ipv4:
 
 
         /* Save off pseudo header for checksum calculation */
-        info->ip_v4_id       = BE_TO_U16(px+offset+4);
-        info->ip_version     = (px[offset]>>4)&0xF;
-        info->_ip_src        = px+offset+12;
-        info->_ip_dst        = px+offset+16;
-        info->src_ip.ipv4    = BE_TO_U32(px+offset+12);
-        info->src_ip.version = 4;
-        info->dst_ip.ipv4    = BE_TO_U32(px+offset+16);
-        info->dst_ip.version = 4;
-
-        info->ip_ttl      = px[offset+8];
-        info->ip_protocol = px[offset+9];
-        info->ip_length   = total_length;
+        info->ip_v4_id          = BE_TO_U16(px+offset+4);
+        info->ip_version        = (px[offset]>>4)&0xF;
+        info->_ip_src           = px+offset+12;
+        info->_ip_dst           = px+offset+16;
+        info->src_ip.ipv4       = BE_TO_U32(px+offset+12);
+        info->src_ip.version    = 4;
+        info->dst_ip.ipv4       = BE_TO_U32(px+offset+16);
+        info->dst_ip.version    = 4;
+        info->ip_ttl            = px[offset+8];
+        info->ip_protocol       = px[offset+9];
+        info->ip_length         = total_length;
 
         if (info->ip_version != 4)
             return false;
@@ -132,10 +131,10 @@ parse_tcp:
         VERIFY_REMAINING(20, FOUND_TCP);
         tcp_length = px[offset + 12]>>2;
         VERIFY_REMAINING(tcp_length, FOUND_TCP);
-        info->port_src   = BE_TO_U16(px+offset+0);
-        info->port_dst   = BE_TO_U16(px+offset+2);
-        info->app_offset = offset + tcp_length;
-        info->app_length = length - info->app_offset;
+        info->port_src       = BE_TO_U16(px+offset+0);
+        info->port_dst       = BE_TO_U16(px+offset+2);
+        info->app_offset     = offset + tcp_length;
+        info->app_length     = length - info->app_offset;
         //assert(info->app_length < 2000);
 
         return true;
@@ -147,6 +146,7 @@ parse_udp:
 
         info->port_src = BE_TO_U16(px+offset+0);
         info->port_dst = BE_TO_U16(px+offset+2);
+
         offset += 8;
         info->app_offset = offset;
         info->app_length = length - info->app_offset;
@@ -437,11 +437,11 @@ parse_llc:
 
 parse_ethertype:
     switch (ethertype) {
-    case 0x0800: goto parse_ipv4;
-    case 0x0806: goto parse_arp;
-    case 0x86dd: goto parse_ipv6;
-    case 0x8100: goto parse_vlan8021q;
-    case 0x8847: goto parse_vlanmpls;
+    case ETHERTYPE_IPv4:             goto parse_ipv4;
+    case ETHERTYPE_ARP:              goto parse_arp;
+    case ETHERTYPE_IPv6:             goto parse_ipv6;
+    case ETHERTYPE_VLAN_8021Q:       goto parse_vlan8021q;
+    case ETHERTYPE_MLPS_UNI:         goto parse_vlanmpls;
     default: return false;
     }
 
