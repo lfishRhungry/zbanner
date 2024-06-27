@@ -450,7 +450,6 @@ _tcb_hash(ipaddress ip_me, unsigned port_me,
             ipv6, port_me ^ port_them,
             ipv6, port_me ^ port_them,
             entropy);
-
     } else {
         index = (unsigned)get_cookie_ipv4(
             ip_me.ipv4 ^ ip_them.ipv4, port_me ^ port_them,

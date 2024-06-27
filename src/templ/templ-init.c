@@ -323,14 +323,15 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
         case PCAP_DLT_NULL: /* Null VPN tunnel */
             /**
              * !FIXME: insert platform dependent value here
+             * ref: https://www.tcpdump.org/linktypes/LINKTYPE_NULL.html
+             * Depending on operating system, these can have
+             * different values: 24, 28, or 30
              * */
-            /* Depending on operating system, these can have
-             different values: 24, 28, or 30 */
             *(int*)buf = 24;
             break;
-        case PCAP_DLT_RAW: /* Raw (nothing before IP header) */
+        case PCAP_DLT_RAW:
             break;
-        case PCAP_DLT_ETHERNET: /* Ethernet */
+        case PCAP_DLT_ETHERNET:
             /* Reset the destination MAC address to be the IPv6 router
              * instead of the IPv4 router, which sometimes are different */
             memcpy(buf + 0, router_mac_ipv6.addr, 6);
@@ -361,7 +362,7 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
         }
     }
 
-    /* Hop limit starts out as 255 */
+    /* Hop limit is equal to ttl of ipv4 in default */
     buf[offset_ip + 7] = tmpl->ipv4.ip_ttl&0xFF;
     tmpl->ipv6.ip_ttl  = tmpl->ipv4.ip_ttl;
 
@@ -490,15 +491,11 @@ _template_init(
     }
 
     /*
-     * DATALINK KLUDGE
-     *
-     * Adjust the data link header in case of Raw IP packets. This isn't
-     * the correct way to do this, but I'm too lazy to refactor code
-     * for the right way, so we'll do it this way now.
+     * Handle datalink, a little bit kludge...
      */
-    if (data_link_type == PCAP_DLT_NULL /* Null VPN tunnel */) {
+    if (data_link_type == PCAP_DLT_NULL) {
         /**
-         * !FIXME: How to set this cross-platform
+        * ref: https://www.tcpdump.org/linktypes/LINKTYPE_NULL.html
         */
         int linkproto = 2;
         tmpl->ipv4.length     -= tmpl->ipv4.offset_ip - sizeof(int);
@@ -509,7 +506,7 @@ _template_init(
                 tmpl->ipv4.length);
         tmpl->ipv4.offset_ip = 4;
         memcpy(tmpl->ipv4.packet, &linkproto, sizeof(int));
-    } else if (data_link_type == PCAP_DLT_RAW /* Raw IP */) {
+    } else if (data_link_type == PCAP_DLT_RAW) {
         tmpl->ipv4.length     -= tmpl->ipv4.offset_ip;
         tmpl->ipv4.offset_tcp -= tmpl->ipv4.offset_ip;
         tmpl->ipv4.offset_app -= tmpl->ipv4.offset_ip;
@@ -666,6 +663,9 @@ template_set_ttl(struct TemplateSet *tmplset, unsigned ttl)
     }
 }
 
+/**
+ * We don't calc checksum here but in pkt creating.
+ */
 void
 template_packet_set_ttl(struct TemplatePacket *tmpl_pkt, unsigned ttl)
 {
@@ -681,6 +681,9 @@ template_packet_set_ttl(struct TemplatePacket *tmpl_pkt, unsigned ttl)
     px[offset+7] = ttl&0xFF;
 }
 
+/**
+ * We don't calc checksum here but in pkt creating.
+ */
 void
 template_set_vlan(struct TemplateSet *tmplset, unsigned vlan)
 {
@@ -710,6 +713,9 @@ template_set_vlan(struct TemplateSet *tmplset, unsigned vlan)
     }
 }
 
+/**
+ * We don't calc checksum here but in pkt creating.
+ */
 void
 template_packet_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan)
 {

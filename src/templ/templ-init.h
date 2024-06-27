@@ -8,13 +8,6 @@
 
 struct TemplateOptions;
 
-
-struct TemplatePayload {
-    unsigned length;
-    unsigned checksum;
-    unsigned char buf[1500];
-};
-
 /**
  * Initialize the "template" packets. As we spew out probes, we simply make
  * minor adjustments to the template, such as changing the target IP
