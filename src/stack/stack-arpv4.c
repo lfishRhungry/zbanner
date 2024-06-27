@@ -66,7 +66,7 @@ proto_arp_parse(struct ARP_IncomingRequest *arp,
     arp->protocol_type     = BE_TO_U16(px+offset+2);
     arp->hardware_length   = px[offset+4];
     arp->protocol_length   = px[offset+5];
-    arp->opcode            = BE_TO_U16(px+offset+7);
+    arp->opcode            = BE_TO_U16(px+offset+6);
     offset += 8;
 
     /* We only support IPv4 and Ethernet addresses */
@@ -111,7 +111,9 @@ stack_arp_resolve(
     ipv4address_t my_ipv4, macaddress_t my_mac_address,
     ipv4address_t your_ipv4, macaddress_t *your_mac_address)
 {
-    unsigned char xarp_packet[64];
+    /* zero out bytes in packet to avoid leaking stuff in the padding
+     * (ARP is 42 byte packet, Ethernet is 60 byte minimum) */
+    unsigned char xarp_packet[64] = {0};
     unsigned char *arp_packet = &xarp_packet[0];
     unsigned i;
     time_t start;
@@ -121,16 +123,12 @@ stack_arp_resolve(
 
     /*
      * [KLUDGE]
-     *  If this is a VPN connection
+     *  If this is a raw ip connection
      */
-    if (stack_if_datalink(adapter) == PCAP_DLT_NULL) {
+    if (stack_if_datalink(adapter) == PCAP_DLT_RAW) {
         memcpy(your_mac_address->addr, "\0\0\0\0\0\2", 6);
         return 0; /* success */
     }
-
-    /* zero out bytes in packet to avoid leaking stuff in the padding
-     * (ARP is 42 byte packet, Ethernet is 60 byte minimum) */
-    memset(arp_packet, 0, sizeof(xarp_packet));
 
     /*
      * Create the request packet
@@ -282,8 +280,8 @@ stack_arp_incoming_request( struct stack_t *stack,
     ipv4address_t my_ip, macaddress_t my_mac,
     const unsigned char *px, unsigned length)
 {
-    struct PacketBuffer *response      = 0;
-    struct ARP_IncomingRequest request = {0};
+    struct PacketBuffer *response          = 0;
+    struct ARP_IncomingRequest request     = {0};
 
     /* Get a buffer for sending the response packet. This thread doesn't
      * send the packet itself. Instead, it formats a packet, then hands
@@ -335,16 +333,10 @@ stack_arp_incoming_request( struct stack_t *stack,
             , 8);
 
     memcpy(response->px + 22, my_mac.addr, 6);
-    response->px[28] = (unsigned char)(my_ip >> 24);
-    response->px[29] = (unsigned char)(my_ip >> 16);
-    response->px[30] = (unsigned char)(my_ip >>  8);
-    response->px[31] = (unsigned char)(my_ip >>  0);
+    U32_TO_BE(response->px+28, my_ip);
 
     memcpy(response->px + 32, request.mac_src, 6);
-    response->px[38] = (unsigned char)(request.ip_src >> 24);
-    response->px[39] = (unsigned char)(request.ip_src >> 16);
-    response->px[40] = (unsigned char)(request.ip_src >>  8);
-    response->px[41] = (unsigned char)(request.ip_src >>  0);
+    U32_TO_BE(response->px+38, request.ip_src);
 
 
     /*
