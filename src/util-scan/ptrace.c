@@ -2,13 +2,15 @@
 #include "../proto/proto-preprocess.h"
 #include "../pixie/pixie-timer.h"
 #include "../util-data/safe-string.h"
+#include "../stub/stub-pcap-dlt.h"
 
 
 /***************************************************************************
  * Print packet info, when using nmap-style --packet-trace option
  ***************************************************************************/
 void
-packet_trace(FILE *fp, double pt_start, const unsigned char *px, size_t length, unsigned is_sent)
+packet_trace(FILE *fp, double pt_start,
+    const unsigned char *px, size_t length, bool is_sent)
 {
     unsigned x;
     struct PreprocessedInfo parsed;
@@ -27,7 +29,7 @@ packet_trace(FILE *fp, double pt_start, const unsigned char *px, size_t length, 
         direction = "RCVD";
 
     /* parse the packet */
-    x = preprocess_frame(px, (unsigned)length, 1, &parsed);
+    x = preprocess_frame(px, (unsigned)length, PCAP_DLT_ETHERNET, &parsed);
     if (!x)
         return;
     offset = parsed.found_offset;

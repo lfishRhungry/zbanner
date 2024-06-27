@@ -61,7 +61,7 @@ arpreq_validate(
     /*do not care about any other types of arp packet.*/
     if (recved->parsed.found == FOUND_ARP
         && recved->is_myip
-        && recved->parsed.arp_opcode == ARP_OPCODE_REPLY)
+        && recved->parsed.arp_info.opcode == ARP_OPCODE_REPLY)
         pre->go_record = 1;
     else return;
 
@@ -86,9 +86,9 @@ arpreq_handle(
     safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");
     safe_strcpy(item->reason, OUT_RSN_SIZE, "arp reply");
     dach_printf(&item->report, "mac addr", false, "%02X:%02X:%02X:%02X:%02X:%02X",
-        recved->parsed.mac_src[0], recved->parsed.mac_src[1],
-        recved->parsed.mac_src[2], recved->parsed.mac_src[3],
-        recved->parsed.mac_src[4], recved->parsed.mac_src[5]);
+        recved->parsed.arp_info.sender_mac[0], recved->parsed.arp_info.sender_mac[1],
+        recved->parsed.arp_info.sender_mac[2], recved->parsed.arp_info.sender_mac[3],
+        recved->parsed.arp_info.sender_mac[4], recved->parsed.arp_info.sender_mac[5]);
 }
 
 static void arpreq_timeout(

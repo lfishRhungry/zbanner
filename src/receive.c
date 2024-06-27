@@ -383,7 +383,7 @@ void receive_thread(void *v) {
                         recved->packet, recved->length);
                 }
                 if (recved->parsed.found==FOUND_ARP
-                    &&recved->parsed.arp_opcode==ARP_OPCODE_REQUEST) {
+                    &&recved->parsed.arp_info.opcode==ARP_OPCODE_REQUEST) {
                     /* This function will transmit a "reply" to somebody's ARP request
                      * for our IP address (as part of our user-mode TCP/IP).
                      * Since we completely bypass the TCP/IP stack, we  have to handle ARPs
@@ -413,7 +413,7 @@ void receive_thread(void *v) {
         }
 
         if (parms->xconf->packet_trace)
-            packet_trace(stdout, parms->pt_start, recved->packet, recved->length, 0);
+            packet_trace(stdout, parms->pt_start, recved->packet, recved->length, false);
 
         /* Save raw packet in --pcap file */
         if (pcapfile) {

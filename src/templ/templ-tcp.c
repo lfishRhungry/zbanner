@@ -90,6 +90,7 @@ TCP pseudo header
 #include "../util-data/data-convert.h"
 #include "../proto/proto-preprocess.h"
 #include "../massip/massip.h"
+#include "../stub/stub-pcap-dlt.h"
 
 struct tcp_hdr_t {
     size_t begin;
@@ -268,7 +269,7 @@ _find_tcp_header(const unsigned char *buf, size_t length) {
      */
     is_success = preprocess_frame(buf, /* the packet, including Ethernet hdr */
                                   (unsigned)length,
-                                  1 /*enet*/,
+                                  PCAP_DLT_ETHERNET,
                                   &parsed);
     if (!is_success || parsed.found != FOUND_TCP) {
         /* We were unable to parse a well-formatted TCP packet. This
@@ -1104,7 +1105,7 @@ tcp_set_window(unsigned char *px, size_t px_length, unsigned window)
     unsigned                xsum;
 
     /* Parse the frame looking for the TCP header */
-    x = preprocess_frame(px, (unsigned)px_length, 1 /*enet*/, &parsed);
+    x = preprocess_frame(px, (unsigned)px_length, PCAP_DLT_ETHERNET, &parsed);
     if (!x || parsed.found == FOUND_NOTHING)
         return;
     if (parsed.ip_protocol != 6)

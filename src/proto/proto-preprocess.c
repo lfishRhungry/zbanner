@@ -17,6 +17,7 @@
 #include "../massip/massip.h"
 #include "../util-data/data-convert.h"
 #include "../stub/stub-pcap-dlt.h"
+#include "../templ/templ-icmp.h"
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -32,8 +33,8 @@
 /****************************************************************************
  ****************************************************************************/
 bool
-preprocess_frame(const unsigned char *px, unsigned length, unsigned link_type,
-                 struct PreprocessedInfo *info)
+preprocess_frame(const unsigned char *px, unsigned length,
+    unsigned link_type, struct PreprocessedInfo *info)
 {
     unsigned offset    = 0;
     unsigned ethertype = 0;
@@ -43,7 +44,7 @@ preprocess_frame(const unsigned char *px, unsigned length, unsigned link_type,
     info->found_offset     = 0;
 
     /* If not standard Ethernet, go do something else */
-    if (link_type != 1)
+    if (link_type != PCAP_DLT_ETHERNET)
         goto parse_linktype;
 
 parse_ethernet:
@@ -262,7 +263,7 @@ parse_icmpv6:
         info->icmp_type = icmp_type;
         info->icmp_code = icmp_code;
 
-        if (133 <= icmp_type && icmp_type <= 136) {
+        if (ICMPv6_TYPE_RS <= icmp_type && icmp_type <= ICMPv6_TYPE_NA) {
             info->found = FOUND_NDPv6;
         }
     }
@@ -529,34 +530,31 @@ parse_linux_sll:
     }
 
 parse_arp:
-    info->ip_version = 256;
-    info->ip_offset = offset;
+    info->ip_version = (px[offset]>>4)&0xF;
+    info->ip_offset  = offset;
     {
-        //unsigned hardware_type;
-        //unsigned protocol_type;
-        unsigned hardware_length;
-        unsigned protocol_length;
-        unsigned opcode;
-
         VERIFY_REMAINING(8, FOUND_ARP);
-        //hardware_type = px[offset]<<8 | px[offset+1];
-        //protocol_type = px[offset+2]<<8 | px[offset+3];
-        hardware_length = px[offset+4];
-        protocol_length = px[offset+5];
-        opcode = px[offset+6]<<8 | px[offset+7];
-        info->arp_opcode  = opcode;
-        info->ip_protocol = opcode;
+
+        info->arp_info.hardware_type = BE_TO_U16(px+offset);
+        info->arp_info.protocol_type = BE_TO_U16(px+offset+2);
+        info->arp_info.hardware_size = px[offset+4];
+        info->arp_info.protocol_size = px[offset+5];
+        info->arp_info.opcode        = BE_TO_U16(px+offset+6);
+        info->ip_protocol            = info->arp_info.opcode;   /*for convenient*/
         offset += 8;
 
-        VERIFY_REMAINING(2*hardware_length + 2*protocol_length, FOUND_ARP);
+        VERIFY_REMAINING(2*info->arp_info.hardware_size + 2*info->arp_info.protocol_size, FOUND_ARP);
 
-        info->_ip_src = px + offset + hardware_length;
-        info->_ip_dst = px + offset + 2*hardware_length + protocol_length;
+        info->arp_info.sender_mac = &px[offset + 0];
+        info->arp_info.target_mac = &px[offset + info->arp_info.hardware_size + info->arp_info.protocol_size];
+
+        info->_ip_src = px + offset + info->arp_info.hardware_size;
+        info->_ip_dst = px + offset + 2*info->arp_info.hardware_size + info->arp_info.protocol_size;
 
         info->src_ip.version = 4;
-        info->src_ip.ipv4    = BE_TO_U32(px+offset+hardware_length);
+        info->src_ip.ipv4    = BE_TO_U32(px+offset+info->arp_info.hardware_size);
         info->dst_ip.version = 4;
-        info->dst_ip.ipv4    = BE_TO_U32(px+offset+2*hardware_length+protocol_length);
+        info->dst_ip.ipv4    = BE_TO_U32(px+offset+2*info->arp_info.hardware_size+info->arp_info.protocol_size);
         info->found_offset   = info->ip_offset;
         return true;
     }

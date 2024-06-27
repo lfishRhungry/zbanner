@@ -245,7 +245,7 @@ static unsigned char default_ndp_ns_template[] =
 "\x00\x34"                         /* total length = 54 bytes */
 "\x00\x00"                         /* identification */
 "\x00\x00"                         /* fragmentation flags */
-"\xFF\x01"                         /* TTL=255, proto=ICMP (I know I know...) */
+"\xFF\x01"                         /* TTL=255, proto=ICMP (should be converted while initing...) */
 "\xFF\xFF"                         /* checksum */
 "\0\0\0\0"                         /* source address */
 "\0\0\0\0"                         /* destination address */
@@ -319,8 +319,11 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
     memset(buf + offset_ip, 0, 40);
     tmpl->ipv6.length = offset_ip + 40 + payload_length;
 
+    /**
+     * we have rm useless header in initing of ipv4.
+     */
     switch (data_link_type) {
-        case PCAP_DLT_NULL: /* Null VPN tunnel */
+        case PCAP_DLT_NULL:
             /**
              * !FIXME: insert platform dependent value here
              * ref: https://www.tcpdump.org/linktypes/LINKTYPE_NULL.html
@@ -336,9 +339,8 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
              * instead of the IPv4 router, which sometimes are different */
             memcpy(buf + 0, router_mac_ipv6.addr, 6);
 
-            /* Reset the Ethertype field to 0x86dd (meaning IPv6) */
-            buf[12] = 0x86;
-            buf[13] = 0xdd;
+            /* Reset the Ethertype field */
+            U16_TO_BE(buf+12, ETHERTYPE_IPv6);
             break;
     }
 
@@ -351,14 +353,16 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
      * it was total_length. */
     U16_TO_BE(buf+offset_ip+4, payload_length);
 
-    /* Set the "next header" field.
-     * TODO: need to fix ICMP */
+    /**
+     * set ip proto.
+     * NOTE: Some info about ip proto and icmp should be converted to ipv6 version.
+     * */
     buf[offset_ip + 6] = (unsigned char)parsed.ip_protocol;
-    if (parsed.ip_protocol == 1) {
-        buf[offset_ip + 6] = 58; /* ICMPv6 */
-        if (payload_length > 0 && buf[offset_tcp6 + 0] == 8) {
-            /* PING -> PINGv6 */
-            buf[offset_tcp6 + 0] = 128;
+
+    if (parsed.ip_protocol == IP_PROTO_ICMP) {
+        buf[offset_ip + 6] = IP_PROTO_IPv6_ICMP;
+        if (payload_length > 0 && buf[offset_tcp6 + 0] == ICMPv4_TYPE_ECHO_REQUEST) {
+            buf[offset_tcp6 + 0] = ICMPv6_TYPE_ECHO_REQUEST;
         }
     }
 
@@ -409,7 +413,7 @@ _template_init(
     memcpy(tmpl->ipv4.packet, packet_bytes, tmpl->ipv4.length);
     px = tmpl->ipv4.packet;
 
-    x = preprocess_frame(px, tmpl->ipv4.length, 1 /*enet*/, &parsed);
+    x = preprocess_frame(px, tmpl->ipv4.length, PCAP_DLT_ETHERNET, &parsed);
     if (!x || parsed.found == FOUND_NOTHING) {
         LOG(LEVEL_ERROR, "ERROR: bad packet template\n");
         exit(1);

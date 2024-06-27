@@ -46,14 +46,14 @@ enum {
 struct PreprocessedInfo {
     const unsigned char *mac_src;
     const unsigned char *mac_dst;
-    const unsigned char *mac_bss;
+    const unsigned char *mac_bss; /*for 802.11*/
 
     unsigned ip_offset;     /* 14 for normal Ethernet */
-    unsigned ip_version;
-    unsigned ip_protocol;
-    unsigned ip_length;     /* length of total packet */
-    unsigned ip_ttl;        /* ttl of ipv4 or hop limit of ipv6*/
-    unsigned ip_v4_id;
+    uint8_t  ip_version;
+    uint8_t  ip_protocol;
+    uint16_t ip_length;     /* length of total packet */
+    uint8_t  ip_ttl;        /* ttl of ipv4 or hop limit of ipv6*/
+    uint16_t ip_v4_id;
 
     const unsigned char *_ip_src;
     const unsigned char *_ip_dst;
@@ -64,15 +64,25 @@ struct PreprocessedInfo {
     unsigned transport_offset;  /* 34 for normal Ethernet */
     unsigned transport_length;
 
+    struct {
+        uint16_t   hardware_type;
+        uint16_t   protocol_type;
+        uint8_t    hardware_size;
+        uint8_t    protocol_size;
+        uint16_t   opcode;
+
+        const unsigned char *sender_mac;
+        const unsigned char *target_mac;
+    } arp_info;
+
     union {
-        unsigned port_src;
-        unsigned arp_opcode;
-        unsigned icmp_type;
+        uint16_t port_src;
+        uint16_t icmp_type;
     };
 
     union {
-        unsigned port_dst;
-        unsigned icmp_code;
+        uint16_t port_dst;
+        uint16_t icmp_code;
     };
 
     unsigned app_offset; /* start of TCP payload */
@@ -86,6 +96,7 @@ struct PreprocessedInfo {
  * @return true if useful stuff found, false otherwise
  */
 bool
-preprocess_frame(const unsigned char *px, unsigned length, unsigned link_type, struct PreprocessedInfo *info);
+preprocess_frame(const unsigned char *px, unsigned length,
+    unsigned link_type, struct PreprocessedInfo *info);
 
 #endif

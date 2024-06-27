@@ -469,7 +469,7 @@ stack_ndpv6_resolve(
          * in,so we'll just loop around and keep searching until we find
          * one.
          */
-        err = preprocess_frame(buf2, length2, 1, &parsed);
+        err = preprocess_frame(buf2, length2, PCAP_DLT_ETHERNET, &parsed);
         if (err != 1)
             continue;
         if (parsed.found != FOUND_NDPv6)

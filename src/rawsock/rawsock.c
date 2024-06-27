@@ -292,7 +292,7 @@ rawsock_send_packet(
 
     /* Print --packet-trace if debugging */
     if (adapter->is_packet_trace) {
-        packet_trace(stdout, adapter->pt_start, packet, length, 1);
+        packet_trace(stdout, adapter->pt_start, packet, length, true);
     }
 
     /* PF_RING */
