@@ -41,7 +41,7 @@ static unsigned src_port_start;
 
 struct TcpStateConf {
     unsigned conn_expire;
-    unsigned is_port_success:1;       /*--port-success*/
+    unsigned is_port_success:1;
     unsigned record_ttl:1;
     unsigned record_ipid:1;
     unsigned record_win:1;
@@ -350,6 +350,7 @@ tcpstate_handle(
         }
 
     } else if (tcb) {
+
         /* If this has an ACK, then handle that first */
         if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
             TCP_FLAG_ACK)) {
@@ -357,8 +358,15 @@ tcpstate_handle(
                 recved->secs, recved->usecs, seqno_them, seqno_me);
         }
 
+        /**
+         * tcb may be destroyed in some reason by our stack.
+         */
+
         /* If this contains payload, handle that second */
-        if (recved->parsed.app_length) {
+        if (tcb_is_active(tcb)
+            &&
+            recved->parsed.app_length) {
+
             stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_DATA,
                 recved->packet+recved->parsed.app_offset,
                 recved->parsed.app_length,
@@ -368,11 +376,14 @@ tcpstate_handle(
 
         /* If this is a FIN (also), handle that.
         Note that ACK + payload + FIN can come together */
-        if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
+        if (tcb_is_active(tcb)
+            &&
+            TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
             TCP_FLAG_FIN)
             &&
             !TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
             TCP_FLAG_RST)) {
+
             stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_FIN, 0, 0, 
                 recved->secs, recved->usecs, 
                 seqno_them + recved->parsed.app_length, /* the FIN comes after any data in the packet */
@@ -380,8 +391,11 @@ tcpstate_handle(
         }
 
         /* If this is a RST, then we'll be closing the connection */
-        if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
+        if (tcb_is_active(tcb)
+            &&
+            TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
             TCP_FLAG_RST)) {
+
             stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_RST, 0, 0,
                 recved->secs, recved->usecs, seqno_them, seqno_me);
         }

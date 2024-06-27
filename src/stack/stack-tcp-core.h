@@ -91,6 +91,8 @@ tcpcon_create_tcb(
 uint64_t
 tcpcon_active_count(struct TCP_ConnectionTable *tcpcon);
 
+bool
+tcb_is_active(struct TCP_Control_Block *tcb);
 
 enum SOCK_Res
 tcpapi_set_timeout(struct StackHandler *socket, unsigned secs, unsigned usecs);

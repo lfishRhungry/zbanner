@@ -18,10 +18,10 @@ struct TemplateOptions;
 #define TCP_FLAG_SYN 0B00000010
 #define TCP_FLAG_FIN 0B00000001
 
-#define TCP_SEQNO(px,i) ((px)[(i)+ 4]<<24|(px)[(i)+5]<<16|(px)[(i)+6]<< 8|(px)[(i)+ 7])
-#define TCP_ACKNO(px,i) ((px)[(i)+ 8]<<24|(px)[(i)+9]<<16|(px)[(i)+10]<<8|(px)[(i)+11])
-#define TCP_FLAGS(px,i) ((px)[(i)+13])
-#define TCP_WIN(px,i)   ((px)[(i)+14]<< 8|(px)[(i)+15]) /*calc TCP window size*/
+#define TCP_SEQNO(px,i)         ((px)[(i)+ 4]<<24|(px)[(i)+5]<<16|(px)[(i)+6]<< 8|(px)[(i)+ 7])
+#define TCP_ACKNO(px,i)         ((px)[(i)+ 8]<<24|(px)[(i)+9]<<16|(px)[(i)+10]<<8|(px)[(i)+11])
+#define TCP_FLAGS(px,i)         ((px)[(i)+13])
+#define TCP_WIN(px,i)           ((px)[(i)+14]<< 8|(px)[(i)+15]) /*calc TCP window size*/
 
 #define TCP_HAS_FLAG(px,i,flag) ((TCP_FLAGS((px),(i)) & (flag)) == (flag))
 

@@ -219,6 +219,12 @@ tcpcon_active_count(struct TCP_ConnectionTable *tcpcon)
     return tcpcon->active_count;
 }
 
+bool
+tcb_is_active(struct TCP_Control_Block *tcb)
+{
+    return tcb->is_active==1;
+}
+
 /***************************************************************************
  * DEBUG: when printing debug messages (-d option), this prints a string
  * for the given state.
@@ -363,14 +369,8 @@ tcpcon_create_table(size_t entry_count,
         entry_count = new_entry_count;
     }
 
-    /* Create the table. If we can't allocate enough memory, then shrink
-     * the desired size of the table */
-    while (tcpcon->entries == 0) {
-        tcpcon->entries = MALLOC(entry_count * sizeof(*tcpcon->entries));
-        if (tcpcon->entries == NULL) {
-            entry_count >>= 1;
-        }
-    }
+    /* Create the table. */
+    tcpcon->entries = MALLOC(entry_count * sizeof(*tcpcon->entries));
     memset(tcpcon->entries, 0, entry_count * sizeof(*tcpcon->entries));
 
     tcpcon->expire = connection_timeout;
@@ -469,7 +469,7 @@ _tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
     enum DestroyReason reason)
 {
     unsigned index;
-    struct TCP_Control_Block **r_entry;
+    struct TCP_Control_Block **one_entry;
 
     UNUSEDPARM(reason);
 
@@ -478,12 +478,17 @@ _tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
         tcb->ip_them, tcb->port_them, 
         tcpcon->entropy);
 
-    r_entry = &tcpcon->entries[index & tcpcon->mask];
-    while (*r_entry && *r_entry != tcb)
-        r_entry = &(*r_entry)->next;
+    one_entry = &tcpcon->entries[index & tcpcon->mask];
+    while (*one_entry && *one_entry != tcb)
+        one_entry = &(*one_entry)->next;
 
-    if (*r_entry == NULL) {
+    if (*one_entry == NULL) {
         LOG(LEVEL_WARN, "TCP.tcb: double free\n");
+        ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(tcb->ip_them);
+        ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(tcb->ip_me);
+        printf("ip them: %s, ip me: %s \n", ip_them_fmt.string, ip_me_fmt.string);
+        LOGnet(tcb->ip_them, tcb->port_them, "tcp state >>> %s\n", 
+            _tcp_state_to_string(tcb->tcpstate));
         return;
     }
 
@@ -521,14 +526,14 @@ _tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
      */
     timeout_unlink(tcb->timeout);
 
-    tcb->ip_them.ipv4 = (unsigned)~0;
-    tcb->port_them    = (unsigned short)~0;
-    tcb->ip_me.ipv4   = (unsigned)~0;
-    tcb->port_me      = (unsigned short)~0;
+    tcb->ip_them.ipv4    = (unsigned)~0;
+    tcb->port_them       = (unsigned short)~0;
+    tcb->ip_me.ipv4      = (unsigned)~0;
+    tcb->port_me         = (unsigned short)~0;
 
-    (*r_entry)         = tcb->next;
-    tcb->next          = tcpcon->freed_list;
-    tcpcon->freed_list = tcb;
+    (*one_entry)         = tcb->next;
+    tcb->next            = tcpcon->freed_list;
+    tcpcon->freed_list   = tcb;
 
     tcb->is_active = 0;
     tcpcon->active_count--;
@@ -667,7 +672,6 @@ tcpcon_lookup_tcb(
     while (tcb && !_TCB_EQUALS(tcb, &tmp)) {
         tcb = tcb->next;
     }
-
 
     return tcb;
 }
@@ -1156,7 +1160,7 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
     if (what == TCP_WHAT_FIN) {
         if (seqno_them == tcb->seqno_them - 1) {
             /**Duplicate FIN(retransmission), respond with ACK.
-             * Because our data may be senting.*/
+             * Because our data may be sending.*/
             _LOGtcb(tcb, 1, "duplicate FIN\n");
             _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
             return;
@@ -1249,7 +1253,6 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                         /* I have ACKed all their data, so therefore process this */
                         _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
                         _tcpcon_destroy_tcb(tcpcon, tcb, Reason_FIN);
-                        return;
                     } else {
                         /* I haven't received all their data, so ignore it until I do */
                         _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);
@@ -1296,7 +1299,6 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                         /* I have ACKed all their data, so therefore process this */
                         _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
                         _tcpcon_destroy_tcb(tcpcon, tcb, Reason_FIN);
-                        return;
                     } else {
                         /* I haven't received all their data, so ignore it until I do */
                         _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_ACK, 0, 0);

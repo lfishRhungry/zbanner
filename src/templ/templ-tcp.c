@@ -1197,10 +1197,8 @@ tcp_create_by_template(
 
         px[offset_tcp+13] = (unsigned char)flags;
 
-        if (win) {
-            px[offset_tcp+14] = (unsigned char)(win>>8);
-            px[offset_tcp+15] = (unsigned char)(win&0xFF);
-        }
+        if (win)
+            U16_TO_BE(px+offset_tcp+14, win);
 
         px[offset_tcp+16] = (unsigned char)(0 >>  8);
         px[offset_tcp+17] = (unsigned char)(0 >>  0);
@@ -1260,10 +1258,8 @@ tcp_create_by_template(
 
         px[offset_tcp+13] = (unsigned char)flags;
 
-        if (win) {
-            px[offset_tcp+14] = (unsigned char)(win>>8);
-            px[offset_tcp+15] = (unsigned char)(win&0xFF);
-        }
+        if (win)
+            U16_TO_BE(px+offset_tcp+14, win);
 
         px[offset_tcp+16] = (unsigned char)(0 >>  8);
         px[offset_tcp+17] = (unsigned char)(0 >>  0);
