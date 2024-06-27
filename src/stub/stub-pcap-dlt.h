@@ -6,15 +6,17 @@
  * ref: https://www.tcpdump.org/linktypes/LINKTYPE_NULL.html
  */
 typedef enum {
-    /* Packets are prefixed by an integer indicating
-     * the protocol type in host-byte-order (4-bytes)
-     * followed by the raw IPv4 or IPv6 header */
-    PCAP_DLT_NULL     = 0,
-    /* Ethernet */
-    PCAP_DLT_ETHERNET = 1,
-    /* Packets are 'raw' on the network. The first byte
-     * will be the first byte of the IPv4/IPv6 header */
-    PCAP_DLT_RAW      = 12,
+    /**
+     * prefixed by an 4-bytes integer indicating the protocol type
+     * in host-byte-order and followed by raw ip header.
+     */
+    PCAP_DLT_NULL                  = 0,   /*Null/Loopback [VPN tunnel] ref: https://www.tcpdump.org/linktypes/LINKTYPE_NULL.html*/
+    PCAP_DLT_ETHERNET              = 1,   /*ethernet*/
+    PCAP_DLT_RAW                   = 101, /*raw ip*/
+    PCAP_DLT_IEEE802_11            = 105, /*wifi, no radiotap headers*/
+    PCAP_DLT_LINUX_SLL             = 113, /*ref: https://www.tcpdump.org/linktypes/LINKTYPE_LINUX_SLL.html*/
+    PCAP_DLT_PRISM_HEADER          = 119, /*Prism II headers (also used for things like Atheros madwifi) ref: https://www.tcpdump.org/linktypes/LINKTYPE_IEEE802_11_PRISM.html*/
+    PCAP_DLT_IEEE802_11_RADIO      = 127, /*wifi, with radiotap headers*/
 } pcap_dlt_t;
 
 #endif

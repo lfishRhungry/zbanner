@@ -759,7 +759,7 @@ int template_selftest()
         macaddress_from_bytes("\x00\x11\x22\x33\x44\x55"),
         macaddress_from_bytes("\x66\x55\x44\x33\x22\x11"),
         macaddress_from_bytes("\x66\x55\x44\x33\x22\x11"),
-        1,  /* Ethernet */
+        PCAP_DLT_ETHERNET,
         0,  /* no entropy */
         &templ_opts);
     failures += tmplset->pkts[Tmpl_Type_TCP].tmpl_type         != Tmpl_Type_TCP;

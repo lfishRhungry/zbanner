@@ -1,6 +1,7 @@
 #include "rawsock.h"
 #include "rawsock-adapter.h"
 #include "../stub/stub-pcap.h"
+#include "../stub/stub-pcap-dlt.h"
 #include "../util-data/fine-malloc.h"
 
 /***************************************************************************
@@ -33,7 +34,7 @@ int
 stack_if_datalink(struct Adapter *adapter)
 {
     if (adapter->ring)
-        return 1; /* ethernet */
+        return PCAP_DLT_ETHERNET;
     else {
         return adapter->link_type;
     }

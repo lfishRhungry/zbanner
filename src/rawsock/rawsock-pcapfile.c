@@ -31,6 +31,7 @@
 #include "rawsock-pcapfile.h"
 #include "../util-misc/cross.h"
 #include "../util-out/logger.h"
+#include "../stub/stub-pcap-dlt.h"
 
 /****************************************************************************
  * <PORTABILITY BLOCK>
@@ -249,7 +250,7 @@ smells_like_valid_packet(const unsigned char *px, unsigned length, unsigned byte
         return true;
     } else
     switch (link_type) {
-    case 1: /*ethernet*/
+    case PCAP_DLT_ETHERNET:
         if (px[12] == 0x08 && px[13] == 0x00 && px[14] == 0x45)
             return true;
     }
@@ -599,10 +600,10 @@ struct PcapFile *pcapfile_openread(const char *capfilename)
     if (linktype == 0)
         linktype = 1;
     switch (linktype) {
-    case 0x7f:   /* WiFi, with radiotap headers */
-    case 1:       /*ethernet*/
-    case 0x69:   /* WiFi, no radiotap headers */
-    case 119:   /* Prism II headers (also used for things like Atheros madwifi) */
+    case PCAP_DLT_IEEE802_11_RADIO:
+    case PCAP_DLT_ETHERNET:
+    case PCAP_DLT_IEEE802_11:
+    case PCAP_DLT_PRISM_HEADER:
         break;
     default:
         LOG(LEVEL_ERROR, "%s: unknown cap file linktype = %d (expected Ethernet or wifi)\n", capfilename, linktype);

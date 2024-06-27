@@ -16,6 +16,7 @@
 #include "proto-preprocess.h"
 #include "../massip/massip.h"
 #include "../util-data/data-convert.h"
+#include "../stub/stub-pcap-dlt.h"
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -34,7 +35,7 @@ bool
 preprocess_frame(const unsigned char *px, unsigned length, unsigned link_type,
                  struct PreprocessedInfo *info)
 {
-    unsigned offset = 0;
+    unsigned offset    = 0;
     unsigned ethertype = 0;
 
     info->transport_offset = 0;
@@ -334,14 +335,14 @@ wifi_data:
 parse_wifi:
     VERIFY_REMAINING(2, FOUND_WIFI);
     switch (px[offset]) {
-    case 0x08:
-    case 0x88: /* QoS data */
-        if (px[1] & 0x40)
+        case 0x08:
+        case 0x88: /* QoS data */
+            if (px[1] & 0x40)
+                return false;
+            goto wifi_data;
+            break;
+        default:
             return false;
-        goto wifi_data;
-        break;
-    default:
-        return false;
     }
 
 parse_radiotap_header:
@@ -447,11 +448,15 @@ parse_ethertype:
 parse_linktype:
     /*
      * The "link-type" is the same as specified in "libpcap" headers
+     * ref: https://www.tcpdump.org/linktypes.html
      */
     switch (link_type) {
-        case 0:
+        case PCAP_DLT_NULL:
             offset += 4;
-            /*This can be different in LE or BE, too*/
+            /**
+             * This can be different in LE or BE, too.
+             * ref: https://www.tcpdump.org/linktypes/LINKTYPE_NULL.html
+             * */
             switch (BE_TO_U32(px)) {
                 case 0x02000000:
                 case 0x00000002:
@@ -467,17 +472,17 @@ parse_linktype:
                     goto parse_ipv6;
             }
             return false;
-        case 1:     goto parse_ethernet;
-        case 12:
+        case PCAP_DLT_ETHERNET:     goto parse_ethernet;
+        case PCAP_DLT_RAW:
             switch (px[offset]>>4) {
                 case 4: goto parse_ipv4;
                 case 6: goto parse_ipv6;
             }
             return false;
-        case 105:   goto parse_wifi;
-        case 113:   goto parse_linux_sll; /* LINKTYPE_LINUX_SLL DLT_LINUX_SLL */
-        case 119:   goto parse_prism_header;
-        case 127:   goto parse_radiotap_header;
+        case PCAP_DLT_IEEE802_11:               goto parse_wifi;
+        case PCAP_DLT_LINUX_SLL:                goto parse_linux_sll;
+        case PCAP_DLT_PRISM_HEADER:             goto parse_prism_header;
+        case PCAP_DLT_IEEE802_11_RADIO:         goto parse_radiotap_header;
         default:    return false;
     }
 

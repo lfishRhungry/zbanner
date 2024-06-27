@@ -11,6 +11,7 @@
 #include "../util-scan/ptrace.h"
 #include "../util-data/safe-string.h"
 #include "../stub/stub-pcap.h"
+#include "../stub/stub-pcap-dlt.h"
 #include "../stub/stub-pfring.h"
 #include "../pixie/pixie-timer.h"
 #include "../globals.h"
@@ -610,9 +611,11 @@ rawsock_init_adapter(const char *adapter_name,
          * transmit and receive are separate functions?
          */
         LOG(LEVEL_DETAIL, "pfring:'%s': opening...\n", adapter_name);
-        adapter->ring = PFRING.open(adapter_name, snaplen, 0);//1500, PF_RING_REENTRANT);
-        adapter->pcap = (pcap_t*)adapter->ring;
-        adapter->link_type = 1;
+
+        adapter->ring      = PFRING.open(adapter_name, snaplen, 0);//1500, PF_RING_REENTRANT);
+        adapter->pcap      = (pcap_t*)adapter->ring;
+        adapter->link_type = PCAP_DLT_ETHERNET;
+
         if (adapter->ring == NULL) {
             LOG(LEVEL_ERROR, "pfring:'%s': OPEN ERROR: %s\n",
                 adapter_name, strerror(errno));
@@ -749,11 +752,11 @@ rawsock_init_adapter(const char *adapter_name,
             case -1:
                 PCAP.perror(adapter->pcap, "if: datalink");
                 goto pcap_error;
-            case 0: /* Null/Loopback [VPN tunnel] */
+            case PCAP_DLT_NULL:
                 LOG(LEVEL_DEBUG, "if(%s): VPN tunnel interface found\n", adapter_name);
                 break;
-            case 1: /* Ethernet */
-            case 12: /* IP Raw */
+            case PCAP_DLT_ETHERNET:
+            case PCAP_DLT_RAW:
                 break;
             default:
                 LOG(LEVEL_ERROR, "if(%s): unknown data link type: %u(%s)\n",

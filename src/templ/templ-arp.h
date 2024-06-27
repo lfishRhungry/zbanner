@@ -6,8 +6,8 @@
 #include "../massip/massip-addr.h"
 #include "../proto/proto-preprocess.h"
 
-#define ARP_OPCODE_REQUEST 1
-#define ARP_OPCODE_REPLY   2
+#define ARP_OPCODE_REQUEST         1
+#define ARP_OPCODE_REPLY           2
 
 /**
  * NOTE: We just generate valid ARP request for IPv4

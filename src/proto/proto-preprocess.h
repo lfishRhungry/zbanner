@@ -36,8 +36,8 @@ struct PreprocessedInfo {
     const unsigned char *mac_bss;
 
     unsigned ip_offset;     /* 14 for normal Ethernet */
-    unsigned ip_version;    /* 4 or 6 */
-    unsigned ip_protocol;   /* 6 for TCP, 11 for UDP */
+    unsigned ip_version;
+    unsigned ip_protocol;
     unsigned ip_length;     /* length of total packet */
     unsigned ip_ttl;        /* ttl of ipv4 or hop limit of ipv6*/
     unsigned ip_v4_id;

@@ -27,9 +27,7 @@ struct TemplateOptions;
  *      the Ethernet destination address field. This is gotten by ARPing
  *      the local router, or by --router-mac configuration parameter.
  * @param data_link
- *      The OSI layer 2 protocol, as defined in <pcap.h> standard.
- *       1 = Ethernet
- *      12 = Raw IP (no data link)
+ *      The OSI layer 2 protocol, as defined in stub-pcap-dlt.h standard.
  */
 void
 template_packet_init(

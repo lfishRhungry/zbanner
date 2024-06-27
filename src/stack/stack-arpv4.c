@@ -22,6 +22,8 @@
 #include "../pixie/pixie-timer.h"
 #include "../proto/proto-preprocess.h"
 #include "../util-misc/checksum.h"
+#include "../stub/stub-pcap-dlt.h"
+#include "../templ/templ-arp.h"
 
 #define VERIFY_REMAINING(n) if (offset+(n) > max) return;
 
@@ -118,7 +120,7 @@ stack_arp_resolve(
      * [KLUDGE]
      *  If this is a VPN connection
      */
-    if (stack_if_datalink(adapter) == 12) {
+    if (stack_if_datalink(adapter) == PCAP_DLT_NULL) {
         memcpy(your_mac_address->addr, "\0\0\0\0\0\2", 6);
         return 0; /* success */
     }
@@ -234,7 +236,7 @@ stack_arp_resolve(
         }
 
         /* Is this an ARP "reply"? */
-        if (response.opcode != 2) {
+        if (response.opcode != ARP_OPCODE_REPLY) {
             LOG(LEVEL_DETAIL, "arp: opcode=%u, not reply(2)\n", response.opcode);
             continue;
         }
@@ -310,7 +312,7 @@ stack_arp_incoming_request( struct stack_t *stack,
     }
 
     /* Is this an ARP "request"? */
-    if (request.opcode != 1) {
+    if (request.opcode != ARP_OPCODE_REQUEST) {
         LOG(LEVEL_DETAIL, "arp: opcode=%u, not request(1)\n", request.opcode);
         return -1;
     }

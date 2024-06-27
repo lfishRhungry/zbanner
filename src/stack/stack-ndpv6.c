@@ -7,6 +7,7 @@
 #include "../util-misc/checksum.h"
 #include "../util-out/logger.h"
 #include "../massip/massip.h"
+#include "../stub/stub-pcap-dlt.h"
 
 
 #include <string.h>
@@ -336,7 +337,7 @@ stack_ndpv6_resolve(
      * [KLUDGE]
      *  If this is a VPN connection, then there is no answer
      */
-    if (stack_if_datalink(adapter) == 12) {
+    if (stack_if_datalink(adapter) == PCAP_DLT_NULL) {
         memcpy(router_mac->addr, "\0\0\0\0\0\2", 6);
         return 0; /* success */
     }
