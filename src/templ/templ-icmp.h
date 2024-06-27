@@ -68,7 +68,8 @@
  * @param tmpl TemplatePacket of ICMP.
  * @param cookie we set cookie on `Identifier` and `Sequence Number` fields.
  * @param ip_id just for ipv4 and could set it randomly.
- * @param ttl it is for ipv4's ttl or ipv6's hop limit.
+ * @param ttl it is for ipv4's ttl or ipv6's hop limit. use value in default
+ * template packet if set it to zero.
  * @return len of packet generated.
 */
 size_t
@@ -82,7 +83,8 @@ icmp_create_by_template(
  * This is a wrapped func that uses global_tmplset to create icmp echo packet.
  * @param cookie we set cookie on `Identifier` and `Sequence Number` fields.
  * @param ip_id just for ipv4 and could set it randomly.
- * @param ttl it is for ipv4's ttl or ipv6's hop limit.
+ * @param ttl it is for ipv4's ttl or ipv6's hop limit. use value in default
+ * template packet if set it to zero.
  * @return len of packet generated.
 */
 size_t
@@ -95,7 +97,8 @@ icmp_create_echo_packet(
  * This is a wrapped func that uses global_tmplset to create icmp icmp packet.
  * @param cookie we set cookie on `Identifier` and `Sequence Number` fields.
  * @param ip_id just for ipv4 and could set it randomly.
- * @param ttl it is for ipv4's ttl or ipv6's hop limit.
+ * @param ttl it is for ipv4's ttl or ipv6's hop limit. use value in default
+ * template packet if set it to zero.
  * @return len of packet generated.
 */
 size_t

@@ -89,6 +89,7 @@ TCP pseudo header
 #include "../util-data/fine-malloc.h"
 #include "../util-data/data-convert.h"
 #include "../proto/proto-preprocess.h"
+#include "../massip/massip.h"
 
 struct tcp_hdr_t {
     size_t begin;
@@ -1142,7 +1143,7 @@ tcp_create_by_template(
         ipaddress ip_them, unsigned port_them,
         ipaddress ip_me, unsigned port_me,
         unsigned seqno, unsigned ackno,
-        unsigned flags,
+        unsigned flags, unsigned ttl, unsigned win,
         const unsigned char *payload, size_t payload_length,
         unsigned char *px, size_t px_length)
 {
@@ -1151,7 +1152,8 @@ tcp_create_by_template(
             return 0;
     }
 
-    uint64_t xsum;
+    uint64_t xsum_ip;
+    unsigned xsum_tcp;
 
     if (ip_them.version == 4) {
         unsigned ip_id          = ip_them.ipv4 ^ port_them ^ seqno;
@@ -1160,7 +1162,6 @@ tcp_create_by_template(
         unsigned offset_payload = offset_tcp + ((tmpl->ipv4.packet[offset_tcp+12]&0xF0)>>2);
         size_t new_length       = offset_payload + payload_length;
         size_t ip_len           = (offset_payload - offset_ip) + payload_length;
-        unsigned old_len;
 
         if (new_length > px_length) {
             LOG(LEVEL_ERROR, "tcp: err generating packet: too much payload\n");
@@ -1169,7 +1170,6 @@ tcp_create_by_template(
 
         memcpy(px + 0, tmpl->ipv4.packet, tmpl->ipv4.length);
         memcpy(px + offset_payload, payload, payload_length);
-        old_len = px[offset_ip+2]<<8 | px[offset_ip+3];
 
         /*
          * Fill in the empty fields in the IP header and then re-calculate
@@ -1177,19 +1177,15 @@ tcp_create_by_template(
          */
         U16_TO_BE(px+offset_ip+ 2, ip_len);
         U16_TO_BE(px+offset_ip+ 4, ip_id);
+
+        if (ttl)
+            px[offset_ip+8] = (unsigned char)(ttl);
+
         U32_TO_BE(px+offset_ip+12, ip_me.ipv4);
         U32_TO_BE(px+offset_ip+16, ip_them.ipv4);
 
-        xsum  = tmpl->ipv4.checksum_ip;
-        xsum += (ip_id&0xFFFF);
-        xsum += ip_me.ipv4;
-        xsum += ip_them.ipv4;
-        xsum += ip_len - old_len;
-        xsum  = (xsum >> 16) + (xsum & 0xFFFF);
-        xsum  = (xsum >> 16) + (xsum & 0xFFFF);
-        xsum  = ~xsum;
-
-        U16_TO_BE(px+offset_ip+10, xsum);
+        xsum_ip = (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.length);
+        U16_TO_BE(px+offset_ip+10, xsum_ip);
 
         /*
          * now do the same for TCP
@@ -1201,18 +1197,19 @@ tcp_create_by_template(
 
         px[offset_tcp+13] = (unsigned char)flags;
 
-        /*tcp window: we have set in the default template*/
-        // px[offset_tcp+14] = (unsigned char)(1200>>8);
-        // px[offset_tcp+15] = (unsigned char)(1200 & 0xFF);
+        if (win) {
+            px[offset_tcp+14] = (unsigned char)(win>>8);
+            px[offset_tcp+15] = (unsigned char)(win&0xFF);
+        }
 
         px[offset_tcp+16] = (unsigned char)(0 >>  8);
         px[offset_tcp+17] = (unsigned char)(0 >>  0);
 
-        xsum = checksum_tcp(px, tmpl->ipv4.offset_ip, tmpl->ipv4.offset_tcp,
+        xsum_tcp = checksum_tcp(px, tmpl->ipv4.offset_ip, tmpl->ipv4.offset_tcp,
             new_length - tmpl->ipv4.offset_tcp);
-        xsum = ~xsum;
+        xsum_tcp = ~xsum_tcp;
 
-        U16_TO_BE(px+offset_tcp+16, xsum);
+        U16_TO_BE(px+offset_tcp+16, xsum_tcp);
 
         if (new_length < 60) {
             memset(px+new_length, 0, 60-new_length);
@@ -1244,6 +1241,8 @@ tcp_create_by_template(
             U16_TO_BE(px+offset_ip+ 4, len);
         }
 
+        if (ttl)
+            px[offset_ip+7] = (unsigned char)(ttl);
         /* Copy over the IP addresses */
         U64_TO_BE(px+offset_ip+ 8, ip_me.ipv6.hi);
         U64_TO_BE(px+offset_ip+16, ip_me.ipv6.lo);
@@ -1261,16 +1260,20 @@ tcp_create_by_template(
 
         px[offset_tcp+13] = (unsigned char)flags;
 
-        /*tcp window: we have set in the default template*/
-        // px[offset_tcp+14] = (unsigned char)(1200>>8);
-        // px[offset_tcp+15] = (unsigned char)(1200 & 0xFF);
+        if (win) {
+            px[offset_tcp+14] = (unsigned char)(win>>8);
+            px[offset_tcp+15] = (unsigned char)(win&0xFF);
+        }
 
         px[offset_tcp+16] = (unsigned char)(0 >>  8);
         px[offset_tcp+17] = (unsigned char)(0 >>  0);
 
-        xsum = checksum_ipv6(px + offset_ip + 8, px + offset_ip + 24, 6,
-            (offset_app - offset_tcp) + payload_length, px + offset_tcp);
-        U16_TO_BE(px+offset_tcp+16, xsum);
+        xsum_tcp = checksum_ipv6(px+offset_ip+8,
+                                 px+offset_ip+24,
+                                 IP_PROTO_TCP,
+                                 (offset_app-offset_tcp)+payload_length,
+                                 px + offset_tcp);
+        U16_TO_BE(px+offset_tcp+16, xsum_tcp);
 
         return offset_app + payload_length;
     }
@@ -1281,7 +1284,7 @@ tcp_create_packet(
         ipaddress ip_them, unsigned port_them,
         ipaddress ip_me, unsigned port_me,
         unsigned seqno, unsigned ackno,
-        unsigned flags,
+        unsigned flags, unsigned ttl, unsigned win,
         const unsigned char *payload, size_t payload_length,
         unsigned char *px, size_t px_length)
 {
@@ -1289,17 +1292,17 @@ tcp_create_packet(
     if (flags==TCP_FLAG_SYN) {
         return tcp_create_by_template(&global_tmplset->pkts[Tmpl_Type_TCP_SYN],
             ip_them, port_them, ip_me, port_me,
-            seqno, ackno, flags,
+            seqno, ackno, flags, ttl, win,
             payload, payload_length, px, px_length);
     } else if (flags&TCP_FLAG_RST) {
         return tcp_create_by_template(&global_tmplset->pkts[Tmpl_Type_TCP_RST],
             ip_them, port_them, ip_me, port_me,
-            seqno, ackno, flags,
+            seqno, ackno, flags, ttl, win,
             payload, payload_length, px, px_length);
     } else {
         return tcp_create_by_template(&global_tmplset->pkts[Tmpl_Type_TCP],
             ip_them, port_them, ip_me, port_me,
-            seqno, ackno, flags,
+            seqno, ackno, flags, ttl, win,
             payload, payload_length, px, px_length);
     }
 }

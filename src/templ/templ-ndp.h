@@ -16,6 +16,12 @@
 #define NDP_NA_HAS_FLAG(px,i,flag) ((NDP_NA_FLAGS((px),(i)) & (flag)) == (flag))
 
 
+/**
+ * This is a wrapped func that uses global_tmplset to create ndp neighbor solicit packet.
+ * @param ttl it is for ipv4's ttl or ipv6's hop limit. use value in default
+ * template packet if set it to zero.
+ * @return len of packet generated.
+*/
 size_t
 ndp_create_ns_packet(
     ipaddress ip_them, ipaddress ip_me, macaddress_t src_mac,

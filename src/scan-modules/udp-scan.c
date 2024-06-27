@@ -85,7 +85,7 @@ udp_transmit(
     payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
 
     *len = udp_create_packet(target->ip_them, target->port_them,
-        target->ip_me, src_port_start+target->index,
+        target->ip_me, src_port_start+target->index, 0,
         payload, payload_len, px, PKT_BUF_SIZE);
 
     /*add timeout*/
@@ -210,7 +210,7 @@ udp_handle(
 
                 pkt_buffer->length = udp_create_packet(
                     recved->parsed.src_ip, recved->parsed.port_src,
-                    recved->parsed.dst_ip, src_port_start+idx,
+                    recved->parsed.dst_ip, src_port_start+idx, 0,
                     payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
                 stack_transmit_packetbuffer(stack, pkt_buffer);
@@ -261,7 +261,7 @@ udp_handle(
 
             pkt_buffer->length = udp_create_packet(
                 recved->parsed.src_ip, recved->parsed.port_src,
-                recved->parsed.dst_ip, src_port_start+is_multi-1,
+                recved->parsed.dst_ip, src_port_start+is_multi-1, 0,
                 payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);
@@ -348,7 +348,7 @@ udp_timeout(
 
             pkt_buffer->length = udp_create_packet(
                 event->ip_them, event->port_them,
-                event->ip_me,   src_port_start+idx,
+                event->ip_me,   src_port_start+idx, 0,
                 payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);
@@ -398,7 +398,7 @@ udp_timeout(
 
         pkt_buffer->length = udp_create_packet(
             event->ip_them, event->port_them,
-            event->ip_me,   src_port_start+is_multi-1,
+            event->ip_me,   src_port_start+is_multi-1, 0,
             payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
         stack_transmit_packetbuffer(stack, pkt_buffer);

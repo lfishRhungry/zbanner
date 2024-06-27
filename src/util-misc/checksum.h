@@ -13,7 +13,7 @@
 #include <stddef.h>
 
 /**
- * Calculate a checksum for IPv4 packets.
+ * Calculate a checksum for IPv4 packets for generic pkts
  * @param ip_src
  *      The source IPv4 address, represented a standard way,
  *      as a 32-bit integer in host byte order.
@@ -34,11 +34,11 @@
  * @return
  *      the calculated checksum, which should equal the checksum found in the payload
  */
-unsigned 
+unsigned
 checksum_ipv4(unsigned ip_src, unsigned ip_dst,
     unsigned ip_proto, size_t payload_length, const void *payload);
 
-unsigned 
+unsigned
 checksum_ipv6(const unsigned char *ip_src, const unsigned char *ip_dst,
     unsigned ip_proto, size_t payload_length, const void *payload);
 

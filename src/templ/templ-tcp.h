@@ -109,8 +109,9 @@ tcp_set_window(unsigned char *px, size_t px_length, unsigned window);
 
 
 /**
- * Create a TCP packet containing a payload, based on the original
- * template used for the SYN
+ * Create a TCP packet containing a payload
+ * @param ttl use default value in packet template if set to zero
+ * @param win use default value in packet template if set to zero
  */
 size_t
 tcp_create_by_template(
@@ -118,19 +119,21 @@ tcp_create_by_template(
         ipaddress ip_them, unsigned port_them,
         ipaddress ip_me, unsigned port_me,
         unsigned seqno, unsigned ackno,
-        unsigned flags,
+        unsigned flags, unsigned ttl, unsigned win,
         const unsigned char *payload, size_t payload_length,
         unsigned char *px, size_t px_length);
 
 /**
  * This is a wrapped func that uses global_tmplset to create tcp packet.
+ * @param ttl use default value in packet template if set to zero
+ * @param win use default value in packet template if set to zero
 */
 size_t
 tcp_create_packet(
         ipaddress ip_them, unsigned port_them,
         ipaddress ip_me, unsigned port_me,
         unsigned seqno, unsigned ackno,
-        unsigned flags,
+        unsigned flags, unsigned ttl, unsigned win,
         const unsigned char *payload, size_t payload_length,
         unsigned char *px, size_t px_length);
 

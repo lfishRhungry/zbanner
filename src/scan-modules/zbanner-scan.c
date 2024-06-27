@@ -198,7 +198,7 @@ zbanner_transmit(
 
     *len = tcp_create_packet(
         target->ip_them, target->port_them, target->ip_me, src_port_start+target->index,
-        seqno, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_SIZE);
+        seqno, 0, TCP_FLAG_SYN, 0, 0, NULL, 0, px, PKT_BUF_SIZE);
 
     if (zbanner_conf.is_port_timeout) {
         event->need_timeout = 1;
@@ -346,7 +346,7 @@ zbanner_handle(
             pkt_buffer->length = tcp_create_packet(
                 recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, recved->parsed.port_dst,
-                seqno_me, seqno_them+1, TCP_FLAG_ACK,
+                seqno_me, seqno_them+1, TCP_FLAG_ACK, 0, 0,
                 payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);
@@ -383,7 +383,7 @@ zbanner_handle(
                     pkt_buffer->length = tcp_create_packet(
                         recved->parsed.src_ip, recved->parsed.port_src,
                         recved->parsed.dst_ip, src_port_start+idx,
-                        cookie, 0, TCP_FLAG_SYN,
+                        cookie, 0, TCP_FLAG_SYN, 0, 0,
                         NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
                     stack_transmit_packetbuffer(stack, pkt_buffer);
@@ -438,7 +438,7 @@ zbanner_handle(
         pkt_buffer->length = tcp_create_packet(
             recved->parsed.src_ip, recved->parsed.port_src,
             recved->parsed.dst_ip, recved->parsed.port_dst,
-            seqno_me, seqno_them+1, TCP_FLAG_RST,
+            seqno_me, seqno_them+1, TCP_FLAG_RST, 0, 0,
             NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
         stack_transmit_packetbuffer(stack, pkt_buffer);
@@ -472,7 +472,7 @@ zbanner_handle(
                 pkt_buffer->length = tcp_create_packet(
                     recved->parsed.src_ip, recved->parsed.port_src,
                     recved->parsed.dst_ip, src_port_start+idx,
-                    cookie, 0, TCP_FLAG_SYN,
+                    cookie, 0, TCP_FLAG_SYN, 0, 0,
                     NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
                 stack_transmit_packetbuffer(stack, pkt_buffer);
@@ -509,7 +509,7 @@ zbanner_handle(
             pkt_buffer->length = tcp_create_packet(
                 recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, src_port_start+is_multi-1,
-                cookie, 0, TCP_FLAG_SYN,
+                cookie, 0, TCP_FLAG_SYN, 0, 0,
                 NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);
@@ -580,7 +580,7 @@ zbanner_timeout(
             pkt_buffer->length = tcp_create_packet(
                 event->ip_them, event->port_them,
                 event->ip_me,   src_port_start+idx,
-                cookie, 0, TCP_FLAG_SYN,
+                cookie, 0, TCP_FLAG_SYN, 0, 0,
                 NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);
@@ -615,7 +615,7 @@ zbanner_timeout(
         pkt_buffer->length = tcp_create_packet(
             event->ip_them, event->port_them,
             event->ip_me,   src_port_start+is_multi-1,
-            cookie, 0, TCP_FLAG_SYN,
+            cookie, 0, TCP_FLAG_SYN, 0, 0,
             NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
         stack_transmit_packetbuffer(stack, pkt_buffer);

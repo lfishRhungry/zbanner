@@ -5,6 +5,7 @@
 #include "../globals.h"
 #include "../util-misc/checksum.h"
 #include "../util-data/data-convert.h"
+#include "../massip/massip.h"
 
 /* ICMPv6 NDP Nerghbor Solicitation according to RFC4861
       0                   1                   2                   3
@@ -167,7 +168,7 @@ ndp_create_ns_by_template_ipv6(
 
     unsigned offset_ip;
     unsigned offset_tcp;
-    uint64_t xsum;
+    uint64_t xsum_icmp;
     unsigned payload_length;
 
     unsigned r_len = sizeof_px;
@@ -218,7 +219,8 @@ ndp_create_ns_by_template_ipv6(
     payload_length = tmpl->ipv6.length - tmpl->ipv6.offset_ip - 40;
     U16_TO_BE(px+offset_ip+4, payload_length);
 
-    px[offset_ip+7] = (unsigned char)(ttl);
+    if (ttl)
+        px[offset_ip+7] = (unsigned char)(ttl);
 
     U64_TO_BE(px+offset_ip+ 8, ip_me.hi);
     U64_TO_BE(px+offset_ip+16, ip_me.lo);
@@ -257,9 +259,13 @@ ndp_create_ns_by_template_ipv6(
     /*
      * Now do the checksum for the higher layer protocols
      */
-    xsum = checksum_ipv6(px + offset_ip + 8, px + offset_ip + 24, 58,  tmpl->ipv6.length - offset_tcp, px + offset_tcp);
-    px[offset_tcp+2] = (unsigned char)(xsum >>  8);
-    px[offset_tcp+3] = (unsigned char)(xsum >>  0);
+    xsum_icmp = checksum_ipv6(px+offset_ip+8,
+                              px+offset_ip+24,
+                              IP_PROTO_IPv6_ICMP,
+                              tmpl->ipv6.length-offset_tcp,
+                              px+offset_tcp);
+    px[offset_tcp+2] = (unsigned char)(xsum_icmp >>  8);
+    px[offset_tcp+3] = (unsigned char)(xsum_icmp >>  0);
 
     return r_len;
 }

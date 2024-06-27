@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 #include "checksum.h"
+#include "../massip/massip.h"
 
 /**
  * Calculates the checksum over a buffer.
@@ -81,7 +82,7 @@ checksum_ipv4(unsigned ip_src, unsigned ip_dst,
 
     /* Calculate the sum of the pseudo-header. Note that all these fields
      * are assumed to be in host byte-order, not big-endian */
-    sum = (ip_src>>16) & 0xFFFF;
+    sum  = (ip_src>>16) & 0xFFFF;
     sum += (ip_src>> 0) & 0xFFFF;
     sum += (ip_dst>>16) & 0xFFFF;
     sum += (ip_dst>> 0) & 0xFFFF;
@@ -91,22 +92,22 @@ checksum_ipv4(unsigned ip_src, unsigned ip_dst,
 
     /* Remove the existing checksum field from the calculation. */
     switch (ip_proto) {
-    case 0: /* IP header -- has no pseudo header */
+    case IP_PROTO_Other:
         sum = _checksum_calculate(buf, payload_length);
         sum -= buf[10]<<8 | buf[11]; /* pretend the existing checksum field is zero */
         break;
-    case 1:
-        sum -= buf[2]<<8 | buf[3];
+    case IP_PROTO_ICMP:
+        sum -= buf[ 2]<<8 | buf[ 3];
         break;
-    case 2: /* IGMP - group message - has no pseudo header */
+    case IP_PROTO_IGMP: /* IGMP - group message - has no pseudo header */
         sum = _checksum_calculate(payload, payload_length);
-        sum -= buf[2]<<8 | buf[3];
+        sum -= buf[ 2]<<8 | buf[ 3];
         break;
-    case 6:
+    case IP_PROTO_TCP:
         sum -= buf[16]<<8 | buf[17];
         break;
-    case 17:
-        sum -= buf[6]<<8 | buf[7];
+    case IP_PROTO_UDP:
+        sum -= buf[ 6]<<8 | buf[ 7];
         break;
     default:
         return 0xFFFFFFFF;
@@ -124,7 +125,7 @@ checksum_ipv6(const unsigned char *ip_src, const unsigned char *ip_dst,
     unsigned sum;
 
     /* Calculate the pseudo-header */
-    sum = _checksum_calculate(ip_src, 16);
+    sum  = _checksum_calculate(ip_src, 16);
     sum += _checksum_calculate(ip_dst, 16);
     sum += (unsigned)payload_length;
     sum += ip_proto;
@@ -134,17 +135,17 @@ checksum_ipv6(const unsigned char *ip_src, const unsigned char *ip_dst,
 
     /* Remove the existing checksum field. */
     switch (ip_proto) {
-    case 0:
+    case IP_PROTO_Other:
         return 0;
-    case 1:
-    case 58:
-        sum -= buf[2]<<8 | buf[3];
+    case IP_PROTO_ICMP:
+    case IP_PROTO_IPv6_ICMP:
+        sum -= buf[ 2]<<8 | buf[ 3];
         break;
-    case 6:
+    case IP_PROTO_TCP:
         sum -= buf[16]<<8 | buf[17];
         break;
-    case 17:
-        sum -= buf[6]<<8 | buf[7];
+    case IP_PROTO_UDP:
+        sum -= buf[ 6]<<8 | buf[ 7];
         break;
     default:
         return 0xFFFFFFFF;
@@ -159,6 +160,7 @@ checksum_ipv6(const unsigned char *ip_src, const unsigned char *ip_dst,
 /***************************************************************************
  * Checksum the IP header. This is a "partial" checksum, so we
  * don't reverse the bits ~.
+ * NOTE: Just IPv4 has checksum in header
  ***************************************************************************/
 unsigned
 checksum_ip_header(const unsigned char *px, unsigned offset, unsigned max_offset)
@@ -439,7 +441,8 @@ static struct {
         "\xe6\x57\x00\x5c\x00\x08\x00\x02\x00\x00",
         "\xfe\x80\x00\x00\x00\x00\x00\x00\x02\x07\x32\xff\xfe\x42\x5e\x35",
         "\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x02",
-        50, 17 /* UDP */
+        50,
+        IP_PROTO_UDP
     }, {   0xbf3c,
         "\x8f\x00\xbf\x3c\x00\x00\x00\x04\x04\x00\x00\x00\xff\x02\x00\x00"
         "\x00\x00\x00\x00\x00\x00\x00\x01\xff\x03\x68\x4c\x04\x00\x00\x00"
@@ -449,13 +452,15 @@ static struct {
         "\x00\x00\x00\x01\xff\x2f\x65\x52",
         "\xfe\x80\x00\x00\x00\x00\x00\x00\x1c\x7b\x06\x42\x4e\x57\x19\xcc",
         "\xff\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x16",
-        88, 58 /* ICMPv6 */
+        88,
+        IP_PROTO_IPv6_ICMP
     }, {   0x0d0e,
         "\x8d\x59\x01\xbb\xed\xb8\x70\x8b\x91\x6c\x8d\x68\x50\x10\x04\x01"
         "\x0d\x0e\x00\x00",
         "\x20\x02\x18\x62\x5d\xeb\x00\x00\xac\xc3\x59\xad\x84\x6b\x97\x80",
         "\x26\x02\xff\x52\x00\x00\x00\x6a\x00\x00\x00\x00\x1f\xd2\x94\x5a",
-        20, 6 /* TCP */
+        20,
+        IP_PROTO_TCP
     }, {0}
 };
 

@@ -60,12 +60,12 @@ void template_set_tcp_syn_window_of_default(unsigned window);
 void template_set_tcp_window_of_default(unsigned window);
 
 /***************************************************************************
- * Overwrites the TTL of all packet in templateset
+ * Overwrites the TTL of all packet in templateset both IPv4&IPv6
  ***************************************************************************/
 void template_set_ttl(struct TemplateSet *tmplset, unsigned ttl);
 
 /***************************************************************************
- * Overwrites the TTL of the templatepacket
+ * Overwrites the TTL of the templatepacket both IPv4&IPv6
  ***************************************************************************/
 void template_packet_set_ttl(struct TemplatePacket *tmpl_pkt, unsigned ttl);
 

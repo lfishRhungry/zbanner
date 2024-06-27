@@ -82,7 +82,7 @@ icmpecho_transmit(
 
     *len = icmp_create_echo_packet(
         target->ip_them, target->ip_me,
-        cookie, cookie, 255, px, PKT_BUF_SIZE);
+        cookie, cookie, 0, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout = 1;

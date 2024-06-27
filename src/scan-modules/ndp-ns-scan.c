@@ -75,7 +75,7 @@ ndpns_transmit(
 
     *len = ndp_create_ns_packet(
         target->ip_them, target->ip_me, src_mac,
-        255, px, PKT_BUF_SIZE);
+        0, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout = 1;

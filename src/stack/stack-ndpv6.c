@@ -6,6 +6,7 @@
 #include "../rawsock/rawsock.h"
 #include "../util-misc/checksum.h"
 #include "../util-out/logger.h"
+#include "../massip/massip.h"
 
 
 #include <string.h>
@@ -167,11 +168,11 @@ stack_ndpv6_incoming_request(struct stack_t *stack, struct PreprocessedInfo *par
     _append(buf2, &offset, max, 1);
     _append_bytes(buf2, &offset, max, target_mac.addr, 6);
 
-    xsum = checksum_ipv6(   buf2 + offset_ip_src, 
-                            buf2 + offset_ip_dst, 
-                            58,  
-                            offset - offset_icmpv6, 
-                            buf2 +offset_icmpv6);
+    xsum = checksum_ipv6(buf2 + offset_ip_src, 
+                         buf2 + offset_ip_dst, 
+                         IP_PROTO_IPv6_ICMP,  
+                         offset - offset_icmpv6, 
+                         buf2 +offset_icmpv6);
     buf2[offset_icmpv6 + 2] = (unsigned char)(xsum >> 8);
     buf2[offset_icmpv6 + 3] = (unsigned char)(xsum >> 0);
 
@@ -399,11 +400,11 @@ stack_ndpv6_resolve(
 
     buf[offset_ip + 4] = (unsigned char)( (offset - offset_icmpv6) >> 8);
     buf[offset_ip + 5] = (unsigned char)( (offset - offset_icmpv6) & 0xFF);
-    xsum = checksum_ipv6(   buf + offset_ip_src, 
-                            buf + offset_ip_dst, 
-                            58,  
-                            offset - offset_icmpv6, 
-                            buf + offset_icmpv6);
+    xsum = checksum_ipv6(buf + offset_ip_src, 
+                         buf + offset_ip_dst, 
+                         IP_PROTO_IPv6_ICMP,  
+                         offset - offset_icmpv6, 
+                         buf + offset_icmpv6);
     buf[offset_icmpv6 + 2] = (unsigned char)(xsum >> 8);
     buf[offset_icmpv6 + 3] = (unsigned char)(xsum >> 0);
     rawsock_send_packet(adapter, acache, buf, (unsigned)offset);
@@ -415,11 +416,11 @@ stack_ndpv6_resolve(
     offset -= 8;
     buf[offset_ip + 4] = (unsigned char)( (offset - offset_icmpv6) >> 8);
     buf[offset_ip + 5] = (unsigned char)( (offset - offset_icmpv6) & 0xFF);
-    xsum = checksum_ipv6(   buf + offset_ip_src, 
-                            buf + offset_ip_dst, 
-                            58,  
-                            offset - offset_icmpv6, 
-                            buf + offset_icmpv6);
+    xsum = checksum_ipv6(buf + offset_ip_src, 
+                         buf + offset_ip_dst, 
+                         IP_PROTO_IPv6_ICMP,  
+                         offset - offset_icmpv6, 
+                         buf + offset_icmpv6);
     buf[offset_icmpv6 + 2] = (unsigned char)(xsum >> 8);
     buf[offset_icmpv6 + 3] = (unsigned char)(xsum >> 0);
     rawsock_send_packet(adapter, acache, buf, (unsigned)offset);

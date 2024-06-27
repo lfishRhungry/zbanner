@@ -27,19 +27,25 @@
 #define SCTP_CHUNK_TYPE(px,i) ((px)[(i)+12])
 #define SCTP_IS_CHUNK_TYPE(px,i,type) ((SCTP_CHUNK_TYPE((px),(i))) == (type))
 
+/**
+ * @param ttl use default value in packet template if set to zero.
+ */
 size_t
 sctp_create_by_template(
     struct TemplatePacket *tmpl,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
-    unsigned init_tag,
+    unsigned init_tag, unsigned ttl,
     unsigned char *px, size_t sizeof_px);
 
+/**
+ * @param ttl use default value in packet template if set to zero.
+ */
 size_t
 sctp_create_packet(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
-    unsigned init_tag,
+    unsigned init_tag, unsigned ttl,
     unsigned char *px, size_t sizeof_px);
 
 #endif

@@ -107,13 +107,13 @@ sctp_create_by_template_ipv4(
     struct TemplatePacket *tmpl,
     ipv4address ip_them, unsigned port_them,
     ipv4address ip_me, unsigned port_me,
-    unsigned init_tag,
+    unsigned init_tag, unsigned ttl,
     unsigned char *px, size_t sizeof_px)
 {
     unsigned offset_ip;
     unsigned offset_tcp;
-    uint64_t xsum;
-    unsigned xsum2;
+    uint64_t xsum_sctp;
+    unsigned xsum_ip;
 
     unsigned ip_id = ip_them ^ port_them ^ init_tag;
     unsigned r_len = sizeof_px;
@@ -155,27 +155,31 @@ sctp_create_by_template_ipv4(
         px[offset_ip+3] = (unsigned char)(total_length>>0);
     }
     U16_EQUAL_TO_BE(px+offset_ip+ 4, ip_id);
+
+    if (ttl)
+        px[offset_ip+8] = (unsigned char)(ttl);
+
     U32_EQUAL_TO_BE(px+offset_ip+12, ip_me);
     U32_EQUAL_TO_BE(px+offset_ip+16, ip_them);
 
     px[offset_ip+10] = (unsigned char)(0);
     px[offset_ip+11] = (unsigned char)(0);
 
-    xsum2 = (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.length);
+    xsum_ip = (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.length);
 
-    U16_EQUAL_TO_BE(px+offset_ip+10, xsum2);
+    U16_EQUAL_TO_BE(px+offset_ip+10, xsum_ip);
 
 
     /*
      * Now do the checksum for the higher layer protocols
      */
-    xsum = 0;
+    xsum_sctp = 0;
     U16_EQUAL_TO_BE(px+offset_tcp+ 0, port_me);
     U16_EQUAL_TO_BE(px+offset_tcp+ 2, port_them);
     U32_EQUAL_TO_BE(px+offset_tcp+16, init_tag);
 
-    xsum = checksum_sctp(px + offset_tcp, tmpl->ipv4.length - offset_tcp);
-    U32_EQUAL_TO_BE(px+offset_tcp+ 8, xsum);
+    xsum_sctp = checksum_sctp(px + offset_tcp, tmpl->ipv4.length - offset_tcp);
+    U32_EQUAL_TO_BE(px+offset_tcp+ 8, xsum_sctp);
 
     return r_len;
 }
@@ -185,12 +189,12 @@ sctp_create_by_template_ipv6(
     struct TemplatePacket *tmpl,
     ipv6address ip_them, unsigned port_them,
     ipv6address ip_me, unsigned port_me,
-    unsigned init_tag,
+    unsigned init_tag, unsigned ttl,
     unsigned char *px, size_t sizeof_px)
 {
     unsigned offset_ip;
     unsigned offset_tcp;
-    uint64_t xsum;
+    uint64_t xsum_sctp;
 
     unsigned r_len = sizeof_px;
 
@@ -200,7 +204,6 @@ sctp_create_by_template_ipv6(
     memcpy(px, tmpl->ipv6.packet, r_len);
     offset_ip = tmpl->ipv6.offset_ip;
     offset_tcp = tmpl->ipv6.offset_tcp;
-    //ip_id = ip_them ^ port_them ^ seqno;
 
 /*
 
@@ -233,6 +236,9 @@ sctp_create_by_template_ipv6(
     unsigned payload_length = tmpl->ipv6.length - tmpl->ipv6.offset_ip - 40;
     U16_TO_BE(px+offset_ip+4, payload_length);
 
+    if (ttl)
+        px[offset_ip+7] = (unsigned char)(ttl);
+
     U64_TO_BE(px+offset_ip+ 8, ip_me.hi);
     U64_TO_BE(px+offset_ip+16, ip_me.lo);
 
@@ -244,8 +250,8 @@ sctp_create_by_template_ipv6(
     U16_TO_BE(px+offset_tcp+ 2, port_them);
     U32_TO_BE(px+offset_tcp+16, init_tag);
 
-    xsum = checksum_sctp(px + offset_tcp, tmpl->ipv6.length - offset_tcp);
-    U32_TO_BE(px+offset_tcp+ 8, xsum);
+    xsum_sctp = checksum_sctp(px + offset_tcp, tmpl->ipv6.length - offset_tcp);
+    U32_TO_BE(px+offset_tcp+ 8, xsum_sctp);
 
     return r_len;
 }
@@ -255,7 +261,7 @@ sctp_create_by_template(
     struct TemplatePacket *tmpl,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
-    unsigned init_tag,
+    unsigned init_tag, unsigned ttl,
     unsigned char *px, size_t sizeof_px)
 {
     if (tmpl->tmpl_type != Tmpl_Type_SCTP) {
@@ -269,13 +275,13 @@ sctp_create_by_template(
         r_len = sctp_create_by_template_ipv4(tmpl,
             ip_them.ipv4, port_them,
             ip_me.ipv4, port_me,
-            init_tag,
+            init_tag, ttl,
             px, sizeof_px);
     } else {
         r_len = sctp_create_by_template_ipv6(tmpl,
             ip_them.ipv6, port_them,
             ip_me.ipv6, port_me,
-            init_tag,
+            init_tag, ttl,
             px, sizeof_px);
     }
     return r_len;
@@ -285,10 +291,11 @@ size_t
 sctp_create_packet(
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
-    unsigned init_tag,
+    unsigned init_tag, unsigned ttl,
     unsigned char *px, size_t sizeof_px)
 {
     return sctp_create_by_template(&global_tmplset->pkts[Tmpl_Type_SCTP],
         ip_them, port_them, ip_me, port_me,
-        init_tag, px, sizeof_px);
+        init_tag, ttl,
+        px, sizeof_px);
 }

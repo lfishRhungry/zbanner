@@ -2971,7 +2971,7 @@ struct ConfigParam config_parameters[] = {
         SET_packet_ttl,
         Type_NUM,
         {"ttl", 0},
-        "Specifies the TTL of outgoing packets, defaults to 255."
+        "Specifies the TTL of all default template packets, defaults to 255."
     },
     {
         "tcp-init-window",

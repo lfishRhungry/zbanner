@@ -208,7 +208,7 @@ tcpstate_transmit(
 
     *len = tcp_create_packet(
         target->ip_them, target->port_them, target->ip_me, src_port_start+target->index,
-        cookie, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_SIZE);
+        cookie, 0, TCP_FLAG_SYN, 0, 0, NULL, 0, px, PKT_BUF_SIZE);
 
     /*multi-probe Multi_Direct*/
     if (TcpStateScan.probe->multi_mode==Multi_Direct
@@ -342,7 +342,7 @@ tcpstate_handle(
                 pkt_buffer->length = tcp_create_packet(
                     recved->parsed.src_ip, recved->parsed.port_src,
                     recved->parsed.dst_ip, src_port_start+idx,
-                    cookie, 0, TCP_FLAG_SYN,
+                    cookie, 0, TCP_FLAG_SYN, 0, 0,
                     NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
                 stack_transmit_packetbuffer(stack, pkt_buffer);

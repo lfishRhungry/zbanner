@@ -701,7 +701,7 @@ _tcpcon_send_packet(
             tcb->ip_them, tcb->port_them,
             tcb->ip_me, tcb->port_me,
             tcb->seqno_me - 1, tcb->seqno_them, /*NOTE the seqno*/
-            tcp_flags, payload, payload_length,
+            tcp_flags, 0, 0, payload, payload_length,
             response->px, sizeof(response->px));
     } else if (tcp_flags&TCP_FLAG_RST) {
         response->length = tcp_create_by_template(
@@ -709,7 +709,7 @@ _tcpcon_send_packet(
             tcb->ip_them, tcb->port_them,
             tcb->ip_me, tcb->port_me,
             tcb->seqno_me, tcb->seqno_them,
-            tcp_flags, payload, payload_length,
+            tcp_flags, 0, 0, payload, payload_length,
             response->px, sizeof(response->px));
     } else {
         response->length = tcp_create_by_template(
@@ -717,7 +717,7 @@ _tcpcon_send_packet(
             tcb->ip_them, tcb->port_them,
             tcb->ip_me, tcb->port_me,
             tcb->seqno_me, tcb->seqno_them,
-            tcp_flags, payload, payload_length,
+            tcp_flags, 0, 0, payload, payload_length,
             response->px, sizeof(response->px));
     }
 
@@ -764,7 +764,7 @@ _tcpcon_send_raw_SYN(struct TCP_ConnectionTable *tcpcon,
         ip_them, port_them,
         ip_me, port_me,
         seqno_me, 0,
-        TCP_FLAG_SYN, NULL, 0,
+        TCP_FLAG_SYN, 0, 0, NULL, 0,
         response->px, sizeof(response->px));
 
     stack_transmit_packetbuffer(tcpcon->stack, response);

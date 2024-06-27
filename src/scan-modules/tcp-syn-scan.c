@@ -144,7 +144,7 @@ tcpsyn_transmit(
 
     *len = tcp_create_packet(
         target->ip_them, target->port_them, target->ip_me, target->port_me,
-        cookie, 0, TCP_FLAG_SYN, NULL, 0, px, PKT_BUF_SIZE);
+        cookie, 0, TCP_FLAG_SYN, 0, 0, NULL, 0, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout = 1;
@@ -230,7 +230,7 @@ tcpsyn_handle(
             pkt_buffer->length = tcp_create_packet(
                 recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, recved->parsed.port_dst,
-                seqno_me, seqno_them+1, TCP_FLAG_RST,
+                seqno_me, seqno_them+1, TCP_FLAG_RST, 0, 0,
                 NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_packetbuffer(stack, pkt_buffer);

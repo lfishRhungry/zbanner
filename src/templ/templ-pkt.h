@@ -9,7 +9,7 @@
 #include "../util-out/logger.h"
 
 enum TemplateType {
-    Tmpl_Type_TCP = 1,
+    Tmpl_Type_TCP = 0,
     Tmpl_Type_TCP_SYN,   /*for specific SYN settings and belongs to TCP*/
     Tmpl_Type_TCP_RST,   /*for specific RST settings and belongs to TCP*/
     Tmpl_Type_UDP,
@@ -27,20 +27,16 @@ struct TemplatePacket {
         unsigned offset_ip;
         unsigned offset_tcp;
         unsigned offset_app;
+        unsigned ip_ttl;
         unsigned char *packet;
-        unsigned checksum_ip;
-        unsigned checksum_tcp;
-        unsigned ip_id;
     } ipv4;
     struct {
         unsigned length;
         unsigned offset_ip;
         unsigned offset_tcp;
         unsigned offset_app;
+        unsigned ip_ttl;
         unsigned char *packet;
-        unsigned checksum_ip;
-        unsigned checksum_tcp;
-        unsigned ip_id;
     } ipv6;
     enum TemplateType tmpl_type;
 };

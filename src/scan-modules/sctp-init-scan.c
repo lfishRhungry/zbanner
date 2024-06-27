@@ -69,7 +69,7 @@ sctpinit_transmit(
 
     *len = sctp_create_packet(target->ip_them, target->port_them,
         target->ip_me, target->port_me,
-        cookie, px, PKT_BUF_SIZE);
+        cookie, 0, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout = 1;
