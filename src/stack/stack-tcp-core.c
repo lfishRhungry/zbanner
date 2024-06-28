@@ -1035,11 +1035,12 @@ tcpapi_send_data(struct StackHandler *socket,
         case STATE_SENDING:
             _tcb_seg_send(socket->tcpcon, tcb, buf, length, is_dynamic);
             return SOCKERR_NONE;
-        default:
+        default: {
             ipaddress_formatted_t fmt = ipaddress_fmt(tcb->ip_them);
             LOG(LEVEL_WARN, "TCP.app: (%s %u) attempted SEND in wrong state\n",
                 fmt.string, tcb->port_them);
             return SOCKERR_EBADF;
+        }
     }
 }
 
@@ -1407,12 +1408,13 @@ again:
                         tcpapi_change_app_state(socket, APP_STATE_RECV_HELLO);
                     }
                     break;
-                default:
+                default: {
                     ipaddress_formatted_t fmt = ipaddress_fmt(socket->tcb->ip_them);
                     LOG(LEVEL_WARN, "TCP.app: (%s %u) unhandled event: state=%s event=%s\n",
                         fmt.string, socket->tcb->port_them,
                         _app_state_to_string(cur_state), _event_to_string(cur_event));
                     break;
+                }
             }
             break;
         }
@@ -1433,12 +1435,13 @@ again:
                     tcpapi_change_app_state(socket, APP_STATE_RECVING);
                     cur_state = APP_STATE_RECVING;
                     goto again;
-                default:
+                default: {
                     ipaddress_formatted_t fmt = ipaddress_fmt(socket->tcb->ip_them);
                     LOG(LEVEL_WARN, "TCP.app: (%s %u) unhandled event: state=%s event=%s\n",
                         fmt.string, socket->tcb->port_them,
                         _app_state_to_string(cur_state), _event_to_string(cur_event));
                     break;
+                }
             }
             break;
         }
@@ -1532,12 +1535,13 @@ again:
                 case APP_WHAT_SEND_SENT:
                     /* FIXME */
                     break;
-                default:
+                default: {
                     ipaddress_formatted_t fmt = ipaddress_fmt(socket->tcb->ip_them);
                     LOG(LEVEL_WARN, "TCP.app: (%s %u) unhandled event: state=%s event=%s\n",
                         fmt.string, socket->tcb->port_them,
                         _app_state_to_string(cur_state), _event_to_string(cur_event));
                     break;
+                }
             }
             break;
         }
@@ -1584,12 +1588,13 @@ again:
                     break;
                 case APP_WHAT_SENDING:
                     break;
-                default:
+                default: {
                     ipaddress_formatted_t fmt = ipaddress_fmt(socket->tcb->ip_them);
                     LOG(LEVEL_WARN, "TCP.app: (%s %u) unhandled event: state=%s event=%s\n",
                         fmt.string, socket->tcb->port_them,
                         _app_state_to_string(cur_state), _event_to_string(cur_event));
                     break;
+                }
             }
             break;
         }
