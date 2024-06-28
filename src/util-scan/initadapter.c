@@ -246,9 +246,11 @@ initialize_adapter(struct Xconf *xconf)
     }
 
     /*
+     * NOTE:
+     *
      * Set to non-block mode will cause a weired sending latency on Windows.
      * Set to block mode will cause a weired recving latency finally on Linux.
-     * Actually I have not found the reason and explain, so just adapt it.
+     * Actually I have not found the reason and explain to it, so just adapt it.
      * 
      * The good news is xtate's tx/rx won't be affected by the mode.
      */
