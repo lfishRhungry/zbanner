@@ -124,7 +124,7 @@ rangelist_parse_ports(struct RangeList *ports, const char *string,
     return p;
 }
 
-unsigned
+uint8_t
 get_actual_proto_port(unsigned *raw_port)
 {
     if (*raw_port <= Range_TCP_last)
@@ -139,7 +139,7 @@ get_actual_proto_port(unsigned *raw_port)
         *raw_port &= 0xFFFF;
         return IP_PROTO_Other;
     } else {
-        return 0;
+        return IP_PROTO_Other;
     }
 }
 

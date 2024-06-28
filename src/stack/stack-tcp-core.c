@@ -141,8 +141,8 @@ struct TCP_Control_Block
 {
     ipaddress                         ip_me;
     ipaddress                         ip_them;
-    unsigned short                    port_me;
-    unsigned short                    port_them;
+    uint16_t                          port_me;
+    uint16_t                          port_them;
     union {
         uint32_t                      seqno_me;          /* next seqno I will use for transmit */
         uint32_t                      ackno_them;
@@ -159,9 +159,9 @@ struct TCP_Control_Block
     struct TCP_Segment               *segments;
     enum Tcp_State                    tcpstate;
     enum App_State                    app_state;
-    unsigned char                     ttl;
-    unsigned char                     syns_sent;         /* reconnect */
-    unsigned short                    mss;               /* maximum segment size 1460 TODO: maybe negotiate it */
+    uint8_t                           ttl;
+    uint8_t                           syns_sent;         /* reconnect */
+    uint16_t                          mss;               /* maximum segment size 1460 TODO: maybe negotiate it */
     time_t                            when_created;
     unsigned                          is_active:1;       /*in-use/allocated or to be del soon*/
 
@@ -183,11 +183,12 @@ struct TCP_ConnectionTable {
     struct stack_t                   *stack;
     struct Output                    *out;
 
-    unsigned                          mss_me;
-    unsigned                          expire;
     unsigned                          count;
     unsigned                          mask;
-    unsigned                          src_port_start;
+
+    uint16_t                          src_port_start;
+    uint16_t                          mss_me;
+    uint8_t                           expire;
 
     uint64_t                          active_count;
     uint64_t                          entropy;
@@ -346,7 +347,7 @@ tcpcon_create_table(size_t entry_count,
     struct TemplatePacket *syn_template,
     struct TemplatePacket *rst_template,
     struct Output *out,
-    unsigned connection_timeout,
+    uint8_t  expire,
     uint64_t entropy)
 {
     struct TCP_ConnectionTable *tcpcon = CALLOC(1, sizeof(*tcpcon));
@@ -374,7 +375,7 @@ tcpcon_create_table(size_t entry_count,
     tcpcon->entries = MALLOC(entry_count * sizeof(*tcpcon->entries));
     memset(tcpcon->entries, 0, entry_count * sizeof(*tcpcon->entries));
 
-    tcpcon->expire = connection_timeout;
+    tcpcon->expire = expire;
     if (tcpcon->expire == 0)
         tcpcon->expire = TCP_CORE_DEFAULT_EXPIRE; /* half a minute before destroying tcb */
 
@@ -888,9 +889,7 @@ _tcb_seg_send(
  * NOTE: conn may not be anomaly even returned false.
  ***************************************************************************/
 static bool
-_tcp_seg_acknowledge(
-    struct TCP_Control_Block *tcb,
-    uint32_t ackno)
+_tcp_seg_acknowledge(struct TCP_Control_Block *tcb, uint32_t ackno)
 {
     /* Normal: just discard repeats */
     if (ackno == tcb->seqno_me) {
@@ -901,7 +900,7 @@ _tcp_seg_acknowledge(
      * WRAPPING of 32-bit arithmetic happens here */
     if (ackno - tcb->seqno_me > 100000) {
         ipaddress_formatted_t fmt = ipaddress_fmt(tcb->ip_them);
-        LOG(LEVEL_INFO, "TCP.tcb: (%s %u) "
+        LOG(LEVEL_DEBUG, "TCP.tcb: (%s %u) "
             "ackno from past: "
             "old ackno = 0x%08x, this ackno = 0x%08x\n",
             fmt.string, tcb->port_them,
@@ -913,7 +912,7 @@ _tcp_seg_acknowledge(
      * WRAPPING of 32-bit arithmetic happens here */
     if (tcb->seqno_me - ackno < 100000) {
         ipaddress_formatted_t fmt = ipaddress_fmt(tcb->ip_them);
-        LOG(LEVEL_INFO, "TCP.tcb: (%s %u) "
+        LOG(LEVEL_DEBUG, "TCP.tcb: (%s %u) "
             "ackno from future: "
             "my seqno = 0x%08x, their ackno = 0x%08x\n",
             fmt.string, tcb->port_them,

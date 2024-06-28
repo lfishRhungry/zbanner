@@ -60,7 +60,7 @@ rangelist_parse_ports(struct RangeList *ports,
  * @param raw_port port Proto Port range format
  * @return ip proto number
 */
-unsigned
+uint8_t
 get_actual_proto_port(unsigned *raw_port);
 
 int rangesport_selftest();
