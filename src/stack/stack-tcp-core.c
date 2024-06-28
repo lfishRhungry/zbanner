@@ -487,7 +487,7 @@ _tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
     if (*one_entry == NULL) {
         ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(tcb->ip_them);
         LOG(LEVEL_WARN, "TCP.tcb: (%s %u) double freed, tcp state: %s.                      \n",
-            ip_them_fmt, tcb->port_them, _tcp_state_to_string(tcb->tcpstate));
+            ip_them_fmt.string, tcb->port_them, _tcp_state_to_string(tcb->tcpstate));
         return;
     }
 
@@ -788,14 +788,14 @@ _tcb_seg_resend(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tc
         if (!seg->length || !seg->buf) {
             ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(tcb->ip_them);
             LOG(LEVEL_WARN, "TCP.seqno: (%s %u) cannot resend packet without data, conn will be closed.    \n",
-                ip_them_fmt, tcb->port_them);
+                ip_them_fmt.string, tcb->port_them);
             return false;
         }
 
         if (tcb->seqno_me != seg->seqno) {
             ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(tcb->ip_them);
             LOG(LEVEL_WARN, "TCP.seqno: (%s %u) failed in diff=%d, conn will be closed.    \n",
-                ip_them_fmt, tcb->port_them ,tcb->seqno_me-seg->seqno);
+                ip_them_fmt.string, tcb->port_them ,tcb->seqno_me-seg->seqno);
             return false;
         }
 
