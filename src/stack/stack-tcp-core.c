@@ -206,11 +206,12 @@ enum SOCK_Res {
 };
 
 enum DestroyReason {
-    Reason_Timeout,
-    Reason_FIN,
-    Reason_RST,
-    Reason_Close,
-    Reason_Shutdown,
+    Reason_Timeout,     /*close because of timeout*/
+    Reason_FIN,         /*close because of FIN*/
+    Reason_RST,         /*close because of RST*/
+    Reason_Close,       /*close it actively*/
+    Reason_Anomaly,     /*close because of anomaly*/
+    Reason_Shutdown,    /*cleaning TCP connection*/
 };
 
 uint64_t
@@ -483,12 +484,9 @@ _tcpcon_destroy_tcb(struct TCP_ConnectionTable *tcpcon,
         one_entry = &(*one_entry)->next;
 
     if (*one_entry == NULL) {
-        LOG(LEVEL_WARN, "TCP.tcb: double free\n");
         ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(tcb->ip_them);
-        ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(tcb->ip_me);
-        printf("ip them: %s, ip me: %s \n", ip_them_fmt.string, ip_me_fmt.string);
-        LOGnet(tcb->ip_them, tcb->port_them, "tcp state >>> %s\n", 
-            _tcp_state_to_string(tcb->tcpstate));
+        LOG(LEVEL_WARN, "TCP.tcb: (%s %u) double freed, tcp state: %s.                      \n",
+            ip_them_fmt, tcb->port_them, _tcp_state_to_string(tcb->tcpstate));
         return;
     }
 
@@ -776,24 +774,34 @@ _tcpcon_send_raw_SYN(struct TCP_ConnectionTable *tcpcon,
 /***************************************************************************
  * Called upon timeouts when an acknowledgement hasn't been received in
  * time. Will resend the segments.
+ * 
+ * NOTE: The conn is anomaly and should be close if returned false.
  ***************************************************************************/
-static void
+static bool
 _tcb_seg_resend(struct TCP_ConnectionTable *tcpcon, struct TCP_Control_Block *tcb)
 {
     struct TCP_Segment *seg = tcb->segments;
 
     if (seg) {
         /*just handle packets with data (no data could be impossible)*/
-        if (!seg->length || !seg->buf) return;
+        if (!seg->length || !seg->buf) {
+            ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(tcb->ip_them);
+            LOG(LEVEL_WARN, "TCP.seqno: (%s %u) cannot resend packet without data, conn will be closed.    \n",
+                ip_them_fmt, tcb->port_them);
+            return false;
+        }
 
         if (tcb->seqno_me != seg->seqno) {
-            LOG(LEVEL_ERROR, "TCP.seqno: failure in diff=%d                                           \n",
-                tcb->seqno_me - seg->seqno);
-            return;
+            ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(tcb->ip_them);
+            LOG(LEVEL_WARN, "TCP.seqno: (%s %u) failed in diff=%d, conn will be closed.    \n",
+                ip_them_fmt, tcb->port_them ,tcb->seqno_me-seg->seqno);
+            return false;
         }
 
         _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_PSH | TCP_FLAG_ACK, seg->buf, seg->length);
     }
+
+    return true;
 
 }
 
@@ -876,6 +884,8 @@ _tcb_seg_send(
 
 /***************************************************************************
  * @return true for good ack.
+ * 
+ * NOTE: conn may not be anomaly even returned false.
  ***************************************************************************/
 static bool
 _tcp_seg_acknowledge(
@@ -891,10 +901,10 @@ _tcp_seg_acknowledge(
      * WRAPPING of 32-bit arithmetic happens here */
     if (ackno - tcb->seqno_me > 100000) {
         ipaddress_formatted_t fmt = ipaddress_fmt(tcb->ip_them);
-        LOG(LEVEL_DETAIL,  "%s - "
-            "tcb: ackno from past: "
+        LOG(LEVEL_INFO, "TCP.tcb: (%s %u) "
+            "ackno from past: "
             "old ackno = 0x%08x, this ackno = 0x%08x\n",
-            fmt.string,
+            fmt.string, tcb->port_them,
             tcb->ackno_me, ackno);
         return false;
     }
@@ -903,10 +913,10 @@ _tcp_seg_acknowledge(
      * WRAPPING of 32-bit arithmetic happens here */
     if (tcb->seqno_me - ackno < 100000) {
         ipaddress_formatted_t fmt = ipaddress_fmt(tcb->ip_them);
-        LOG(LEVEL_ERROR, "%s - "
-            "tcb: ackno from future: "
+        LOG(LEVEL_INFO, "TCP.tcb: (%s %u) "
+            "ackno from future: "
             "my seqno = 0x%08x, their ackno = 0x%08x\n",
-            fmt.string,
+            fmt.string, tcb->port_them,
             tcb->seqno_me, ackno);
         return false;
     }
@@ -1027,7 +1037,9 @@ tcpapi_send_data(struct StackHandler *socket,
             _tcb_seg_send(socket->tcpcon, tcb, buf, length, is_dynamic);
             return SOCKERR_NONE;
         default:
-            LOG(LEVEL_WARN, "TCP app attempted SEND in wrong state\n");
+            ipaddress_formatted_t fmt = ipaddress_fmt(tcb->ip_them);
+            LOG(LEVEL_WARN, "TCP.app: (%s %u) attempted SEND in wrong state\n",
+                fmt.string, tcb->port_them);
             return SOCKERR_EBADF;
     }
 }
@@ -1272,7 +1284,11 @@ stack_incoming_tcp(struct TCP_ConnectionTable *tcpcon,
                     }
                     break;
                 case TCP_WHAT_TIMEOUT:
-                    _tcb_seg_resend(tcpcon, tcb);
+                    if (!_tcb_seg_resend(tcpcon, tcb)) {
+                        _tcpcon_send_packet(tcpcon, tcb, TCP_FLAG_RST, 0, 0);
+                        _tcpcon_destroy_tcb(tcpcon, tcb, Reason_Anomaly);
+                    }
+
                     break;
                 case TCP_WHAT_DATA:
                     /* We don't receive data while in the sending state. We force them
@@ -1393,7 +1409,9 @@ again:
                     }
                     break;
                 default:
-                    LOG(LEVEL_ERROR, "TCP.app: unhandled event: state=%s event=%s\n",
+                    ipaddress_formatted_t fmt = ipaddress_fmt(socket->tcb->ip_them);
+                    LOG(LEVEL_WARN, "TCP.app: (%s %u) unhandled event: state=%s event=%s\n",
+                        fmt.string, socket->tcb->port_them,
                         _app_state_to_string(cur_state), _event_to_string(cur_event));
                     break;
             }
@@ -1417,7 +1435,9 @@ again:
                     cur_state = APP_STATE_RECVING;
                     goto again;
                 default:
-                    LOG(LEVEL_ERROR, "TCP.app: unhandled event: state=%s event=%s\n",
+                    ipaddress_formatted_t fmt = ipaddress_fmt(socket->tcb->ip_them);
+                    LOG(LEVEL_WARN, "TCP.app: (%s %u) unhandled event: state=%s event=%s\n",
+                        fmt.string, socket->tcb->port_them,
                         _app_state_to_string(cur_state), _event_to_string(cur_event));
                     break;
             }
@@ -1514,7 +1534,9 @@ again:
                     /* FIXME */
                     break;
                 default:
-                    LOG(LEVEL_ERROR, "TCP.app: unhandled event: state=%s event=%s\n",
+                    ipaddress_formatted_t fmt = ipaddress_fmt(socket->tcb->ip_them);
+                    LOG(LEVEL_WARN, "TCP.app: (%s %u) unhandled event: state=%s event=%s\n",
+                        fmt.string, socket->tcb->port_them,
                         _app_state_to_string(cur_state), _event_to_string(cur_event));
                     break;
             }
@@ -1564,7 +1586,9 @@ again:
                 case APP_WHAT_SENDING:
                     break;
                 default:
-                    LOG(LEVEL_ERROR, "TCP.app: unhandled event: state=%s event=%s\n",
+                    ipaddress_formatted_t fmt = ipaddress_fmt(socket->tcb->ip_them);
+                    LOG(LEVEL_WARN, "TCP.app: (%s %u) unhandled event: state=%s event=%s\n",
+                        fmt.string, socket->tcb->port_them,
                         _app_state_to_string(cur_state), _event_to_string(cur_event));
                     break;
             }
@@ -1572,7 +1596,9 @@ again:
         }
 
         default: {
-            LOG(LEVEL_ERROR, "TCP.app: unhandled event: state=%s event=%s\n",
+            ipaddress_formatted_t fmt = ipaddress_fmt(socket->tcb->ip_them);
+            LOG(LEVEL_WARN, "TCP.app: (%s %u) unhandled event: state=%s event=%s\n",
+                fmt.string, socket->tcb->port_them,
                 _app_state_to_string(cur_state), _event_to_string(cur_event));
             break;
         }
