@@ -1,7 +1,13 @@
 /**
- * This is a fast version of event-timeout. All expire time spec of events are
- * the same. So we just use a linked list to save and just pop events from head
- * instead of going around all the nodes.
+ * KLUDGE
+ * 
+ * This is a simple and fast version of event-timeout. All expire time spec of
+ * events are the same. So we just use a linked list to save and just pop events
+ * from head instead of going around all the nodes.
+ * 
+ * FIXME: It must has a better data sructure and algorithm to handle the timeout
+ * event in our complex condition(operating in multi-threads, etc). But I'm lazy
+ * to get a new one. I feel tired to fix new bugs in these days...
 */
 #include "fast-timeout.h"
 #include "../util-data/fine-malloc.h"
