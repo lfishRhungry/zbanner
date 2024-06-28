@@ -197,17 +197,17 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                 fmt = json_fmt_exiting;
 
                 LOG(LEVEL_OUT,
-                        fmt,
-                        (int)item->exiting_secs,
-                        kpps,
-                        item->cur_pps,
-                        sent_rate,
-                        successed_rate,
-                        item->cur_count,
-                        item->total_tm_event,
-                        item->tx_queue_ratio,
-                        item->rx_queue_ratio,
-                        item->add_status);
+                    fmt,
+                    (int)item->exiting_secs,
+                    kpps,
+                    item->cur_pps,
+                    sent_rate,
+                    successed_rate,
+                    item->cur_count,
+                    item->total_tm_event,
+                    item->tx_queue_ratio,
+                    item->rx_queue_ratio,
+                    item->add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, waiting %d-secs, sent/s=%.0f, [+]/s=%.0f";
 
@@ -241,17 +241,17 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                 fmt = json_fmt_infinite;
 
                 LOG(LEVEL_OUT,
-                        fmt,
-                        kpps,
-                        item->cur_pps,
-                        sent_rate,
-                        successed_rate,
-                        item->cur_count,
-                        item->repeat_count,
-                        item->total_tm_event,
-                        item->tx_queue_ratio,
-                        item->rx_queue_ratio,
-                        item->add_status);
+                    fmt,
+                    kpps,
+                    item->cur_pps,
+                    sent_rate,
+                    successed_rate,
+                    item->cur_count,
+                    item->repeat_count,
+                    item->total_tm_event,
+                    item->tx_queue_ratio,
+                    item->rx_queue_ratio,
+                    item->add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, round=%" PRIu64 ", sent/s=%.0f, [+]/s=%.0f";
 
@@ -288,31 +288,31 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                 fmt = json_fmt_waiting;
 
                 LOG(LEVEL_OUT,
-                        fmt,
-                        item->cur_pps/1000.0,
-                        item->cur_pps,
-                        percent_done,
-                        (int)item->exiting_secs,
-                        item->total_successed,
-                        item->total_failed,
-                        item->total_info,
-                        item->total_tm_event,
-                        item->tx_queue_ratio,
-                        item->rx_queue_ratio,
-                        item->cur_count,
-                        item->max_count,
-                        item->max_count-item->cur_count,
-                        item->add_status);
+                    fmt,
+                    item->cur_pps/1000.0,
+                    item->cur_pps,
+                    percent_done,
+                    (int)item->exiting_secs,
+                    item->total_successed,
+                    item->total_failed,
+                    item->total_info,
+                    item->total_tm_event,
+                    item->tx_queue_ratio,
+                    item->rx_queue_ratio,
+                    item->cur_count,
+                    item->max_count,
+                    item->max_count-item->cur_count,
+                    item->add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, [+]=%" PRIu64 ", [x]=%" PRIu64;
 
                 LOG(LEVEL_OUT,
-                        fmt,
-                        item->cur_pps/1000.0,
-                        percent_done,
-                        (int)item->exiting_secs,
-                        item->total_successed,
-                        item->total_failed);
+                    fmt,
+                    item->cur_pps/1000.0,
+                    percent_done,
+                    (int)item->exiting_secs,
+                    item->total_successed,
+                    item->total_failed);
 
                 if (xtatus->print_info_num) {
                     fmt = ", [*]=%" PRIu64;

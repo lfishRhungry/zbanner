@@ -39,13 +39,13 @@ typedef bool (*probe_modules_init)(const struct Xconf *xconf);
  * not modifiable in probe module internal, we can't change the actual target.
 */
 struct ProbeTarget {
-    unsigned  ip_proto;
-    ipaddress ip_them;
-    ipaddress ip_me;
-    unsigned  port_them;
-    unsigned  port_me;
-    unsigned  cookie;
-    unsigned  index;     /*use for identifying of multi probes per target*/
+    unsigned           ip_proto;
+    ipaddress          ip_them;
+    ipaddress          ip_me;
+    unsigned           port_them;
+    unsigned           port_me;
+    unsigned           cookie;
+    unsigned           index;     /*use for identifying of multi probes per target*/
 };
 
 /**
