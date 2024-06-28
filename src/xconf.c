@@ -3124,8 +3124,12 @@ struct ConfigParam config_parameters[] = {
         " --timeout true, --timeout 15. Some ScanModules could use timeout "
         "function of "XTATE_UPPER_NAME" to result some unresponsed targets and "
         "do some operation.\n"
-        "NOTE: Timeout mechanisim may use a lot memory and cause blocking on Rx"
-        " thread while in high-speed send rate."
+        "NOTE: Timeout mechanism may use a lot memory and cause blocking on Rx"
+        " thread while in high-speed send rate. Also the way I used to handle "
+        "the timeout event is kludge. I guesss that it can be not precise "
+        "sometimes because of the dedup mechanism. Although it can bring some "
+        "convenient effects in some scanning. But I recommend not to use it if "
+        "possible. However, "XTATE_UPPER_NAME" is born in stateless mode:)"
     },
     {
         "no-dedup",
