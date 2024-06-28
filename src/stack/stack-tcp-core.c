@@ -188,7 +188,7 @@ struct TCP_ConnectionTable {
 
     uint16_t                          src_port_start;
     uint16_t                          mss_me;
-    uint8_t                           expire;
+    unsigned                          expire;
 
     uint64_t                          active_count;
     uint64_t                          entropy;
@@ -347,7 +347,7 @@ tcpcon_create_table(size_t entry_count,
     struct TemplatePacket *syn_template,
     struct TemplatePacket *rst_template,
     struct Output *out,
-    uint8_t  expire,
+    unsigned expire,
     uint64_t entropy)
 {
     struct TCP_ConnectionTable *tcpcon = CALLOC(1, sizeof(*tcpcon));
