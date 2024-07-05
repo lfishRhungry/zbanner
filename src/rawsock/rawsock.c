@@ -730,12 +730,29 @@ rawsock_init_adapter(const char *adapter_name,
                 goto pcap_error;
             }
 
+            /**
+             * Pcap has packet buffer to store recved packets. It will return
+             * packets to caller just when the buffer is full or reaches `timeout`
+             * in pcap's default config.
+             * Not setting or set timeout to 0, negative will cause undefined
+             * action. It is recommended to set timeout to a non-zero value.
+             * NOTE: Manual says timeout will be disgarded if pcap is in
+             * immediate mode. But I saw it has effect while setting both block
+             * mode and immediate mode.
+             */
             err = PCAP.set_timeout(adapter->pcap, READ_TIMEOUT);
             if (err) {
                 PCAP.perror(adapter->pcap, "if: set_timeout");
                 goto pcap_error;
             }
 
+            /**
+             * Immediate mode means that pcap will use no buffer for recving and
+             * return it to caller just when recved.
+             * NOTE: Manual says this will cause timeout setting be disgarded.
+             * But I saw it has effect while setting both block mode and immediate
+             * mode.
+             */
             err = PCAP.set_immediate_mode(adapter->pcap, 1);
             if (err) {
                 PCAP.perror(adapter->pcap, "if: set_immediate_mode");
@@ -873,6 +890,9 @@ rawsock_set_filter(struct Adapter *adapter, const char *scan_filter,
     }
 }
 
+/**
+ * Nonblock mode means pcap will return immediatelly even if no packet recved.
+ */
 void rawsock_set_nonblock(struct Adapter *adapter)
 {
     if (adapter->pcap) {

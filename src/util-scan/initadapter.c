@@ -249,10 +249,12 @@ initialize_adapter(struct Xconf *xconf)
      * NOTE:
      *
      * Set to non-block mode will cause a weired sending latency on Windows.
-     * Set to block mode will cause a weired recving latency finally on Linux.
-     * Actually I have not found the reason and explain to it, so just adapt it.
+     * Set to block mode will cause disgarding of timeout while receiving packet
+     * after BPF filter set on Linux.
      * 
-     * The good news is xtate's tx/rx won't be affected by the mode.
+     * Actually I have not found actual reason to it, so just adapt it.
+     * 
+     * The good news is xtate's tx/rx mechanism won't be affected by the mode.
      */
 #ifndef WIN32
     rawsock_set_nonblock(xconf->nic.adapter);
