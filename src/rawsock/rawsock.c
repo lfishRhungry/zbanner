@@ -839,53 +839,22 @@ rawsock_set_filter(struct Adapter *adapter, const char *scan_filter,
 {
     if (!adapter->pcap) return;
 
-    int filter_num          = 0;
-    char *final_filter      = NULL;
-    const char *only_filter = NULL;
-    size_t filter_len       = 0;
-
-
-    /**
-     * process filters from ScanProbe and user setting
-    */
-    if (scan_filter && strlen(scan_filter)) {
-        filter_num++;
-        only_filter = scan_filter;
-    }
-    if (user_filter && strlen(user_filter)) {
-        filter_num++;
-        only_filter = user_filter;
-    }
-
-    if (filter_num==0) {
+    const char *final_filter;
+    if (user_filter && user_filter[0]) {
+        final_filter = user_filter;
+    } else if (scan_filter && scan_filter[0]) {
+        final_filter = scan_filter;
+    } else {
         return;
-    } else if (filter_num==1) {
-        /*Also copy the only filter for beautiful code*/
-        filter_len   = strlen(only_filter)+1;
-        final_filter = MALLOC(filter_len);
-        safe_strcpy(final_filter, filter_len, only_filter);
-    } else if (filter_num==2) {
-        filter_len   = strlen(scan_filter)+strlen(user_filter)+10;
-        final_filter = MALLOC(filter_len);
-        snprintf(final_filter, filter_len, "(%s) and (%s)",
-            scan_filter, user_filter);
+    }
 
-    } else return;
-
-    LOG(LEVEL_INFO, "Final bpf filter: %s\n", final_filter);
+    LOG(LEVEL_DEBUG, "Final BPF filter: %s\n", final_filter);
 
     /**
      * set BPF filter
     */
     int err;
     struct bpf_program bpfp;
-    // uint32_t net;
-    // uint32_t mask;
-    // err = PCAP.lookupnet(adapter_name, &net, &mask, errbuf);
-    // if (err) {
-    //     PCAP.perror(adapter->pcap, "if: pcap_lookupnet");
-    //     goto pcap_error;
-    // }
 
     err = PCAP.compile(adapter->pcap, &bpfp, final_filter, 1, 0);
     if (err) {

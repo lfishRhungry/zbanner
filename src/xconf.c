@@ -3043,11 +3043,12 @@ struct ConfigParam config_parameters[] = {
         "bpf-filter",
         SET_bpf_filter,
         Type_NONE,
-        {0},
-        "Specifies a string as BPF filter addition for ScanModule we use at pcap"
-        " mode. NOTE: Every ScanModule has its own BPF filter and we can observe"
-        " them with --list-scan. The BPF filter we set with --bpf-filter will "
-        "constrain the packets we receive with ScanModules'."
+        {"bpf", 0},
+        "Specifies a string as BPF filter for pcap to replace the default BPF "
+        "filter string in ScanModule.\n"
+        "NOTE: Every ScanModule has its own BPF filter and we can check them "
+        "with --help-scan <module>. The BPF filter we set with --bpf-filter will"
+        " constrain the packets we received with ScanModules."
     },
     {
         "no-bpf-filter",
