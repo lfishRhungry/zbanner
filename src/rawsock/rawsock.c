@@ -56,15 +56,23 @@ static int is_pcap_file = 0;
  * can perform a real time loop while pcap recv is blocked.
  * This may cause high CPU using while no packet recving. But this is useful in
  * fast-timeout handling. And I havn't feel any problem on it yet.
- * Anyway, this parameter is useless on Linux because I set pcap to non-block
- * mode on it.
+ * Anyway, this parameter is useless on Linux because I could set pcap to non-
+ * -block mode on it.
+ * PS: Set to non-block mode on Windows will cause a weird packet sending latency
+ * even if using sendqueue.
  * 
- * FIXME: An other way to solve this is to make fast-timeout to handle all possible
- * tm-events in one loop. As for the precision of fast-timeout is depend on xtatus
- * updating frequency(about half a second). So the READ_TIMEOUT can be set to a
- * bigger value like 500 or 1000.
- * But it may cause a bigger time spending on fast-timeout handling in every loop
- * of rx thread. It is a trade-off whatever.
+ * FIXME: Some ways may solve this:
+ * 
+ * 1.To make fast-timeout to handle all possible tm-events in one loop. As for
+ * the precision of fast-timeout is depend on xtatus updating frequency(about
+ * half a second). So the READ_TIMEOUT can be set to a bigger value like 500 or
+ * 1000. But it may cause a bigger time spending on fast-timeout handling in
+ * every loop of rx thread. It is a trade-off whatever.
+ * 
+ * 2.Handle tm-events in Rx handle threads. But this will move many operations
+ * from rx thread to handle threads and may cause some new bugs. Also, we cannot
+ * print the count of tm-events conveniently if fast-tm handlers are distributed
+ * in different places.
  */
 #define READ_TIMEOUT       1
 
