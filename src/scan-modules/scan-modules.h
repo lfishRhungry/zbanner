@@ -240,7 +240,7 @@ struct ScanModule
     const char                                 *name;
     const enum ProbeType                        required_probe_type; /*set zero if not using probe*/
     const unsigned                              support_timeout;
-    const char                                 *bpf_filter;          /*just for pcap*/
+    const char                                 *bpf_filter;          /*just for pcap to avoid copying uninteresting packets from the kernel to user mode.*/
     struct ConfigParam                         *params;
     struct ProbeModule                         *probe;
     const char                                 *desc;
