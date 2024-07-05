@@ -208,8 +208,8 @@ rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
             //hexdump(sdl, sdl->sdl_len);
             //printf("%.*s\n", sdl->sdl_nlen, sdl->sdl_data);
             if (memcmp(ifname, sdl->sdl_data, sdl->sdl_nlen) != 0) {
-                LOG(LEVEL_ERROR, "ERROR: ROUTE DOESN'T MATCH INTERFACE\n");
-                LOG(LEVEL_ERROR, "YOU'LL HAVE TO SET --router-mac MANUALLY\n");
+                LOG(LEVEL_ERROR, "Route doesn't match interface\n");
+                LOG(LEVEL_ERROR, "You'll have to set --router-mac manually\n");
                 exit(1);
             }
         }

@@ -42,8 +42,8 @@ rawsock_get_adapter_ip(const char *ifname)
 
     x = ioctl(fd, SIOCGIFADDR, &ifr);
     if (x < 0) {
-        LOG(LEVEL_ERROR, "ERROR:'%s': %s\n", ifname, strerror(errno));
-        //LOG(LEVEL_ERROR, "ERROR:'%s': couldn't discover IP address of network interface\n", ifname);
+        LOG(LEVEL_ERROR, "'%s': %s\n", ifname, strerror(errno));
+        //LOG(LEVEL_ERROR, "'%s': couldn't discover IP address of network interface\n", ifname);
         close(fd);
         return 0;
     }
@@ -89,7 +89,7 @@ rawsock_get_adapter_ip(const char *ifname)
      */
     pAdapterInfo = malloc(sizeof (IP_ADAPTER_INFO));
     if (pAdapterInfo == NULL) {
-        LOG(LEVEL_ERROR, "error:malloc(): for GetAdaptersinfo\n");
+        LOG(LEVEL_ERROR, "malloc(): for GetAdaptersinfo\n");
         return 0;
     }
 
@@ -103,7 +103,7 @@ again:
         free(pAdapterInfo);
         pAdapterInfo = (IP_ADAPTER_INFO *)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL) {
-            LOG(LEVEL_ERROR, "error:malloc(): for GetAdaptersinfo\n");
+            LOG(LEVEL_ERROR, "malloc(): for GetAdaptersinfo\n");
             return 0;
         }
         goto again;

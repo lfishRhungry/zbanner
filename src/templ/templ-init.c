@@ -293,7 +293,7 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
     /* Parse the existing IPv4 packet */
     x = preprocess_frame(tmpl->ipv4.packet, tmpl->ipv4.length, data_link_type, &parsed);
     if (!x || parsed.found == FOUND_NOTHING) {
-        LOG(LEVEL_ERROR, "ERROR: bad packet template\n");
+        LOG(LEVEL_ERROR, "Bad packet template\n");
         exit(1);
     }
 
@@ -415,7 +415,7 @@ _template_init(
 
     x = preprocess_frame(px, tmpl->ipv4.length, PCAP_DLT_ETHERNET, &parsed);
     if (!x || parsed.found == FOUND_NOTHING) {
-        LOG(LEVEL_ERROR, "ERROR: bad packet template\n");
+        LOG(LEVEL_ERROR, "Bad packet template\n");
         exit(1);
     }
     tmpl->ipv4.offset_ip  = parsed.ip_offset;

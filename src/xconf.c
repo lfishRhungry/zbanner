@@ -1055,7 +1055,7 @@ static enum ConfigRes SET_source_ip(void *conf, const char *name, const char *va
         default:
             LOG(LEVEL_ERROR, "bad source IP address: %s=%s\n",
                 name, value);
-            LOG(LEVEL_ERROR, "hint   addresses look like \"192.168.1.23\" or \"2001:db8:1::1ce9\".\n");
+            LOG(LEVEL_HINT, "Addresses looks like \"192.168.1.23\" or \"2001:db8:1::1ce9\".\n");
             return Conf_ERR;
     }
 
@@ -1229,7 +1229,7 @@ static enum ConfigRes SET_target_ip(void *conf, const char *name, const char *va
     int err;
     err = massip_add_target_string(&xconf->targets, value);
     if (err) {
-        LOG(LEVEL_ERROR, "ERROR: bad IP address/range: %s\n", value);
+        LOG(LEVEL_ERROR, "Bad IP address/range: %s\n", value);
         return Conf_ERR;
     }
 
@@ -1350,7 +1350,7 @@ static enum ConfigRes SET_exclude_ip(void *conf, const char *name, const char *v
     int err;
     err = massip_add_target_string(&xconf->exclude, value);
     if (err) {
-        LOG(LEVEL_ERROR, "ERROR: bad exclude address/range: %s\n", value);
+        LOG(LEVEL_ERROR, "Bad exclude address/range: %s\n", value);
         return Conf_ERR;
     }
 
@@ -1498,7 +1498,7 @@ static enum ConfigRes SET_router_ip(void *conf, const char *name, const char *va
     /* Check for bad format */
     if (range.begin != range.end) {
         LOG(LEVEL_ERROR, "bad source IPv4 address: %s=%s\n", name, value);
-        LOG(LEVEL_ERROR, "hint   addresses look like \"19.168.1.23\"\n");
+        LOG(LEVEL_HINT, "Addresses look like \"19.168.1.23\"\n");
         return Conf_ERR;
     }
 
@@ -2138,12 +2138,12 @@ static enum ConfigRes SET_shard(void *conf, const char *name, const char *value)
 
     if (one < 1) {
         LOG(LEVEL_ERROR, "shard index can't be zero\n");
-        LOG(LEVEL_ERROR, "hint   it goes like 1/4 2/4 3/4 4/4\n");
+        LOG(LEVEL_HINT, "shard goes like 1/4 2/4 3/4 4/4\n");
         return Conf_ERR;
     }
     if (one > of) {
         LOG(LEVEL_ERROR, "shard spec is wrong\n");
-        LOG(LEVEL_ERROR, "hint   it goes like 1/4 2/4 3/4 4/4\n");
+        LOG(LEVEL_HINT, "shard goes like 1/4 2/4 3/4 4/4\n");
         return Conf_ERR;
     }
     xconf->shard.one = one;

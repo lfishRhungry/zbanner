@@ -226,7 +226,7 @@ rawsock_list_adapters(void)
         i=0;
 
         if (alldevs == NULL) {
-            LOG(LEVEL_ERROR, "ERR:libpcap: no adapters found, are you sure you are root?\n");
+            LOG(LEVEL_ERROR, "libpcap: no adapters found, are you sure you are root?\n");
         }
         /* Print the list */
         for(d=alldevs; d; d=PCAP.dev_next(d)) {
@@ -257,7 +257,7 @@ adapter_from_index(unsigned index)
         const pcap_if_t *d;
 
         if (alldevs == NULL) {
-            LOG(LEVEL_ERROR, "ERR:libpcap: no adapters found, are you sure you are root?\n");
+            LOG(LEVEL_ERROR, "libpcap: no adapters found, are you sure you are root?\n");
         }
         /* Print the list */
         for(d=alldevs; d; d=PCAP.dev_next(d)) {
