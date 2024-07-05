@@ -116,9 +116,7 @@ again:
     /*
      * loop through all adapters looking for ours
      */
-    for (   pAdapter = pAdapterInfo;
-            pAdapter;
-            pAdapter = pAdapter->Next) {
+    for (pAdapter = pAdapterInfo; pAdapter; pAdapter = pAdapter->Next) {
         if (rawsock_is_adapter_names_equal(pAdapter->AdapterName, ifname))
             break;
     }
