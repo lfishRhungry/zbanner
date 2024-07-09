@@ -2959,7 +2959,8 @@ struct ConfigParam config_parameters[] = {
         "Tells which type of status should be printed explicitly, such as:\n"
         "'queue' for real-time capacity of transmit queue and receive queues.\n"
         "'info-num'/'info' for count of information type results.\n"
-        "'hit-rate'/'hit' for rate of hiting in terms of total sent for targets."
+        "'hit-rate'/'hit' for rate of hiting in terms of total sent for targets"
+        " without sent from packet queue. It could be non-sense in some conditions."
     },
     {
         "ndjson-status",
