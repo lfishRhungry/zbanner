@@ -361,6 +361,7 @@ static int _main_scan(struct Xconf *xconf) {
     status.print_ft_event    = xconf->is_fast_timeout;
     status.print_queue       = xconf->is_status_queue;
     status.print_info_num    = xconf->is_status_info_num;
+    status.print_hit_rate    = xconf->is_status_hit_rate;
     status.is_infinite       = xconf->is_infinite;
 
     /*
@@ -374,6 +375,7 @@ static int _main_scan(struct Xconf *xconf) {
     while (!time_to_finish_tx) {
 
         /* Find the min-index, repeat and rate */
+        status_item.total_sent   = 0;
         status_item.cur_pps      = 0.0;
         status_item.cur_count    = UINT64_MAX;
         status_item.repeat_count = UINT64_MAX;
@@ -462,6 +464,7 @@ static int _main_scan(struct Xconf *xconf) {
     for (;;) {
 
         /* Find the min-index, repeat and rate */
+        status_item.total_sent   = 0;
         status_item.cur_pps      = 0.0;
         status_item.cur_count    = UINT64_MAX;
         status_item.repeat_count = UINT64_MAX;

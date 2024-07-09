@@ -43,6 +43,7 @@ struct Xtatus
     unsigned print_queue:1;
     unsigned print_info_num:1;
     unsigned print_ft_event:1;
+    unsigned print_hit_rate:1;
 
     uint64_t total_successed;
     uint64_t total_sent;

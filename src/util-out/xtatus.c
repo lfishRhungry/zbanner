@@ -20,6 +20,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
     uint64_t            current_sent          = 0;
     double              successed_rate        = 0.0;
     double              sent_rate             = 0.0;
+    double              hit_rate              = 0.0;
     double              kpps                  = item->cur_pps / 1000;
 
     const char* json_fmt_infinite =
@@ -37,6 +38,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
         "\"tm_event\":%" PRIu64 ","
         "\"txq\":%.2f%%,"
         "\"rxq\":%.2f%%,"
+        "\"hit\":%.2f%%,"
         "\"add status\":\"%s\""
     "}\n";
 
@@ -56,6 +58,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
         "\"tm_event\":%" PRIu64 ","
         "\"txq\":%.2f%%,"
         "\"rxq\":%.2f%%,"
+        "\"hit\":%.2f%%,"
         "\"add status\":\"%s\""
     "}\n";
 
@@ -77,6 +80,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
             "\"tm_event\":%" PRIu64 ","
             "\"txq\":%.2f%%,"
             "\"rxq\":%.2f%%,"
+            "\"hit\":%.2f%%,"
             "\"transmit\":"
             "{"
                 "\"sent\":%" PRIu64 ","
@@ -115,7 +119,8 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
             "\"info\":%" PRIu64 ","
             "\"tm_event\":%" PRIu64
             "\"txq\":%.2f%%,"
-            "\"rxq\":%.2f%%"
+            "\"rxq\":%.2f%%,"
+            "\"hit\":%.2f%%"
         "},"
         "\"add status\":\"%s\""
     "}\n";
@@ -184,6 +189,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
         current_sent                = item->total_sent - xtatus->total_sent;
         xtatus->total_sent          = item->total_sent;
         sent_rate                   = (1.0*current_sent)/elapsed_time;
+        hit_rate                    = (100.0*item->total_successed)/((double)item->total_sent);
     }
 
     /*
@@ -207,6 +213,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                     item->total_tm_event,
                     item->tx_queue_ratio,
                     item->rx_queue_ratio,
+                    hit_rate,
                     item->add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, waiting %d-secs, sent/s=%.0f, [+]/s=%.0f";
@@ -226,6 +233,11 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
                     LOG(LEVEL_OUT, fmt, item->tx_queue_ratio, item->rx_queue_ratio);
+                }
+
+                if (xtatus->print_hit_rate) {
+                    fmt = ", %5.2f%%-hit";
+                    LOG(LEVEL_OUT, fmt, hit_rate);
                 }
 
                 if (item->add_status[0]) {
@@ -251,6 +263,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                     item->total_tm_event,
                     item->tx_queue_ratio,
                     item->rx_queue_ratio,
+                    hit_rate,
                     item->add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, round=%" PRIu64 ", sent/s=%.0f, [+]/s=%.0f";
@@ -270,6 +283,11 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
                     LOG(LEVEL_OUT, fmt, item->tx_queue_ratio, item->rx_queue_ratio);
+                }
+
+                if (xtatus->print_hit_rate) {
+                    fmt = ", %5.2f%%-hit";
+                    LOG(LEVEL_OUT, fmt, hit_rate);
                 }
 
                 if (item->add_status[0]) {
@@ -299,6 +317,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                     item->total_tm_event,
                     item->tx_queue_ratio,
                     item->rx_queue_ratio,
+                    hit_rate,
                     item->cur_count,
                     item->max_count,
                     item->max_count-item->cur_count,
@@ -327,6 +346,11 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
                     LOG(LEVEL_OUT, fmt, item->tx_queue_ratio, item->rx_queue_ratio);
+                }
+
+                if (xtatus->print_hit_rate) {
+                    fmt = ", %5.2f%%-hit";
+                    LOG(LEVEL_OUT, fmt, hit_rate);
                 }
 
                 if (item->add_status[0]) {
@@ -359,6 +383,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                     item->total_tm_event,
                     item->tx_queue_ratio,
                     item->rx_queue_ratio,
+                    hit_rate,
                     item->add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, [+]=%" PRIu64 ", [x]=%" PRIu64;
@@ -386,6 +411,11 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
                     LOG(LEVEL_OUT, fmt, item->tx_queue_ratio, item->rx_queue_ratio);
+                }
+
+                if (xtatus->print_hit_rate) {
+                    fmt = ", %5.2f%%-hit";
+                    LOG(LEVEL_OUT, fmt, hit_rate);
                 }
 
                 if (item->add_status[0]) {

@@ -542,6 +542,9 @@ static enum ConfigRes SET_print_status(void *conf, const char *name, const char 
         if (xconf->is_status_info_num){
             fprintf(xconf->echo, "print-status = info-num\n");
         }
+        if (xconf->is_status_hit_rate){
+            fprintf(xconf->echo, "print-status = hit-rate\n");
+        }
         return 0;
     }
 
@@ -550,6 +553,8 @@ static enum ConfigRes SET_print_status(void *conf, const char *name, const char 
         xconf->is_status_queue = true;
     } else if (EQUALS("info-num",value) || EQUALS("info",value)) {
         xconf->is_status_info_num = true;
+    } else if (EQUALS("hit-rate",value) || EQUALS("hit",value)) {
+        xconf->is_status_hit_rate = true;
     } else {
         LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
         return Conf_ERR;
@@ -2953,7 +2958,8 @@ struct ConfigParam config_parameters[] = {
         {"print-st", "print", 0},
         "Tells which type of status should be printed explicitly, such as:\n"
         "'queue' for real-time capacity of transmit queue and receive queues.\n"
-        "'info-num' for count of information type results."
+        "'info-num'/'info' for count of information type results.\n"
+        "'hit-rate'/'hit' for rate of hiting in terms of total sent for targets."
     },
     {
         "ndjson-status",
