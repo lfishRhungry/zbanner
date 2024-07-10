@@ -16,7 +16,7 @@ struct ListConf {
 
 static struct ListConf list_conf = {0};
 
-static enum ConfigRes SET_no_port(void *conf, const char *name, const char *value)
+static ConfRes SET_no_port(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -26,7 +26,7 @@ static enum ConfigRes SET_no_port(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static struct ConfigParam list_parameters[] = {
+static ConfParam list_parameters[] = {
     {
         "no-port",
         SET_no_port,

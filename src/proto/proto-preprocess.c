@@ -34,7 +34,7 @@
  ****************************************************************************/
 bool
 preprocess_frame(const unsigned char *px, unsigned length,
-    unsigned link_type, struct PreprocessedInfo *info)
+    unsigned link_type, PreInfo *info)
 {
     unsigned offset    = 0;
     unsigned ethertype = 0;

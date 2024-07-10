@@ -6,7 +6,7 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrSshProbe;
+extern Probe LzrSshProbe;
 
 static char lzr_ssh_payload[] =
 "SSH-2.0-Go\r\n";
@@ -14,7 +14,7 @@ static char lzr_ssh_payload[] =
 
 static size_t
 lzr_ssh_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, lzr_ssh_payload, strlen(lzr_ssh_payload));
@@ -22,7 +22,7 @@ lzr_ssh_make_payload(
 }
 
 static size_t
-lzr_ssh_get_payload_length(struct ProbeTarget *target)
+lzr_ssh_get_payload_length(ProbeTarget *target)
 {
     return strlen(lzr_ssh_payload);
 }
@@ -30,7 +30,7 @@ lzr_ssh_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_ssh_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -67,7 +67,7 @@ lzr_ssh_handle_reponse(
 }
 
 static unsigned
-lzr_ssh_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_ssh_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not ssh");
@@ -75,7 +75,7 @@ lzr_ssh_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrSshProbe = {
+Probe LzrSshProbe = {
     .name       = "lzr-ssh",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

@@ -98,7 +98,7 @@ _read_ipv6(const unsigned char *buf, size_t *offset, size_t max)
  * to which we must respond.
  */
 int
-stack_ndpv6_incoming_request(STACK *stack, struct PreprocessedInfo *parsed,  const unsigned char *px, size_t length)
+stack_ndpv6_incoming_request(STACK *stack, PreInfo *parsed,  const unsigned char *px, size_t length)
 {
     PktBuf *response = 0;
     size_t offset;
@@ -191,7 +191,7 @@ static int
 _extract_router_advertisement(
     const unsigned char *buf, 
     size_t length,
-    struct PreprocessedInfo *parsed,
+    PreInfo *parsed,
     ipv6address my_ipv6,
     ipv6address *router_ip, 
     macaddress_t *router_mac)
@@ -332,7 +332,7 @@ stack_ndpv6_resolve(
     size_t offset_ip_dst;
     size_t offset_icmpv6;
     unsigned xsum;
-    struct PreprocessedInfo parsed = {0};
+    PreInfo parsed = {0};
 
     /*
      * [KLUDGE]

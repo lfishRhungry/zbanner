@@ -7,7 +7,7 @@
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
 
-extern struct ScanModule IcmpEchoScan; /*for internal x-ref*/
+extern Scanner IcmpEchoScan; /*for internal x-ref*/
 
 struct IcmpEchoConf {
     unsigned record_ttl:1;
@@ -16,7 +16,7 @@ struct IcmpEchoConf {
 
 static struct IcmpEchoConf icmpecho_conf = {0};
 
-static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *value)
+static ConfRes SET_record_ttl(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -26,7 +26,7 @@ static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *value)
+static ConfRes SET_record_ipid(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -36,7 +36,7 @@ static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static struct ConfigParam icmpecho_parameters[] = {
+static ConfParam icmpecho_parameters[] = {
     {
         "record-ttl",
         SET_record_ttl,
@@ -69,7 +69,7 @@ icmpecho_init(const struct Xconf *xconf)
 static bool
 icmpecho_transmit(
     uint64_t entropy,
-    struct ScanTarget *target,
+    ScanTarget *target,
     struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
@@ -95,8 +95,8 @@ icmpecho_transmit(
 static void
 icmpecho_validate(
     uint64_t entropy,
-    struct Received *recved,
-    struct PreHandle *pre)
+    PktRecv *recved,
+    PreHandle *pre)
 {
     /*record icmp to my ip*/
     if (recved->parsed.found == FOUND_ICMP
@@ -129,7 +129,7 @@ static void
 icmpecho_handle(
     unsigned th_idx,
     uint64_t entropy,
-    struct Received *recved,
+    PktRecv *recved,
     OutItem *item,
     STACK *stack,
     FHandler *handler)
@@ -159,7 +159,7 @@ static void icmpecho_timeout(
     safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
 }
 
-struct ScanModule IcmpEchoScan = {
+Scanner IcmpEchoScan = {
     .name                = "icmp-echo",
     .required_probe_type = 0,
     .support_timeout     = 1,

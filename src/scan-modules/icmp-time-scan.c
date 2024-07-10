@@ -7,7 +7,7 @@
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
 
-extern struct ScanModule IcmpTimeScan; /*for internal x-ref*/
+extern Scanner IcmpTimeScan; /*for internal x-ref*/
 
 struct IcmpTimeConf {
     unsigned record_ttl:1;
@@ -16,7 +16,7 @@ struct IcmpTimeConf {
 
 static struct IcmpTimeConf icmptime_conf = {0};
 
-static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *value)
+static ConfRes SET_record_ttl(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -26,7 +26,7 @@ static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *value)
+static ConfRes SET_record_ipid(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -36,7 +36,7 @@ static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static struct ConfigParam icmptime_parameters[] = {
+static ConfParam icmptime_parameters[] = {
     {
         "record-ttl",
         SET_record_ttl,
@@ -69,7 +69,7 @@ icmptime_init(const struct Xconf *xconf)
 static bool
 icmptime_transmit(
     uint64_t entropy,
-    struct ScanTarget *target,
+    ScanTarget *target,
     struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
@@ -99,8 +99,8 @@ icmptime_transmit(
 static void
 icmptime_validate(
     uint64_t entropy,
-    struct Received *recved,
-    struct PreHandle *pre)
+    PktRecv *recved,
+    PreHandle *pre)
 {
     /*record icmpv4 to my ip*/
     if (recved->parsed.found == FOUND_ICMP
@@ -126,7 +126,7 @@ static void
 icmptime_handle(
     unsigned th_idx,
     uint64_t entropy,
-    struct Received *recved,
+    PktRecv *recved,
     OutItem *item,
     STACK *stack,
     FHandler *handler)
@@ -156,7 +156,7 @@ static void icmptime_timeout(
     safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
 }
 
-struct ScanModule IcmpTimeScan = {
+Scanner IcmpTimeScan = {
     .name                = "icmp-time",
     .required_probe_type = 0,
     .support_timeout     = 1,

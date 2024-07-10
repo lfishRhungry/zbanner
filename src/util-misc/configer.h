@@ -6,17 +6,17 @@
 #include "cross.h"
 #include "../massip/massip-addr.h"
 
-enum ConfigRes {
+typedef enum Config_RES {
     Conf_OK,
     Conf_WARN,
     Conf_ERR,
-};
+} ConfRes;
 
-enum ConfigParamType {
+typedef enum ConfigParam_TYPE {
     Type_NONE  = 0,
     Type_BOOL  = 1,
     Type_NUM   = 2,
-};
+} ConfType;
 
 /**
  * @param conf where parameters would be set
@@ -24,16 +24,16 @@ enum ConfigParamType {
  * @param value param value
  * @return enum ConfigRes or 0 in echo mode.
 */
-typedef enum ConfigRes (*CONFIG_SET_PARAM)(void *conf, const char *name, const char *value);
+typedef ConfRes (*CONFIG_SET_PARAM)(void *conf, const char *name, const char *value);
 
 
-struct ConfigParam {
+typedef struct ConfigParam {
     const char               *name;
     CONFIG_SET_PARAM          setter;
-    enum ConfigParamType      type;
+    ConfType                  type;
     const char               *alt_names[8];
     const char               *help_text;    /*set NULL if not normal prarameter*/
-};
+} ConfParam;
 
 uint64_t
 parseInt(const char *str);
@@ -97,7 +97,7 @@ bool
 is_integer(const char *value);
 
 bool
-is_numable(const struct ConfigParam *cp, const char *name);
+is_numable(const ConfParam *cp, const char *name);
 
 bool
 is_power_of_two(uint64_t x);
@@ -107,20 +107,20 @@ is_power_of_two(uint64_t x);
  * This is a list of the parameters that don't follow the default.
  ***************************************************************************/
 bool
-is_singleton(const struct ConfigParam *cp, const char *name);
+is_singleton(const ConfParam *cp, const char *name);
 
 /*
     * Go through configured list of parameters
 */
 void
-set_one_parameter(void *conf, struct ConfigParam *cp,
+set_one_parameter(void *conf, ConfParam *cp,
     const char *name, const char *value);
 
 /**
  * argc and argv do not contain process file name
 */
 void
-set_parameters_from_args(void *conf, struct ConfigParam *cp,
+set_parameters_from_args(void *conf, ConfParam *cp,
     int argc, char **argv);
 
 /**
@@ -132,7 +132,7 @@ set_parameters_from_args(void *conf, struct ConfigParam *cp,
  * @return 0 if success
 */
 int
-set_parameters_from_string(void *conf, struct ConfigParam *cp, char *string);
+set_parameters_from_string(void *conf, ConfParam *cp, char *string);
 
 /**
  * Parse string and set parameters
@@ -143,6 +143,6 @@ set_parameters_from_string(void *conf, struct ConfigParam *cp, char *string);
  * @return 0 if success
 */
 int
-set_parameters_from_substring(void *conf, struct ConfigParam *cp, char *substring);
+set_parameters_from_substring(void *conf, ConfParam *cp, char *substring);
 
 #endif

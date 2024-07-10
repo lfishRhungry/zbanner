@@ -6,7 +6,7 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrFoxProbe;
+extern Probe LzrFoxProbe;
 
 static unsigned char lzr_fox_payload[] = {
 0x66,0x6F,0x78,0x20,0x61,0x20,0x31,0x20,0x2D,0x31,0x20,0x66,0x6F,0x78,0x20,0x68,
@@ -49,7 +49,7 @@ static char lzr_fox_prefix[] = "fox a 0 -1 fox hello";
 
 static size_t
 lzr_fox_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, lzr_fox_payload, sizeof(lzr_fox_payload));
@@ -57,7 +57,7 @@ lzr_fox_make_payload(
 }
 
 static size_t
-lzr_fox_get_payload_length(struct ProbeTarget *target)
+lzr_fox_get_payload_length(ProbeTarget *target)
 {
     return sizeof(lzr_fox_payload);
 }
@@ -65,7 +65,7 @@ lzr_fox_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_fox_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -85,7 +85,7 @@ lzr_fox_handle_reponse(
 }
 
 static unsigned
-lzr_fox_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_fox_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not fox");
@@ -93,7 +93,7 @@ lzr_fox_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrFoxProbe = {
+Probe LzrFoxProbe = {
     .name       = "lzr-fox",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

@@ -6,13 +6,13 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrMemcachedAsciiProbe;
+extern Probe LzrMemcachedAsciiProbe;
 
 static char lzr_mema_payload[] = "stats\r\n";
 
 static size_t
 lzr_mema_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, lzr_mema_payload, strlen(lzr_mema_payload));
@@ -20,7 +20,7 @@ lzr_mema_make_payload(
 }
 
 static size_t
-lzr_mema_get_payload_length(struct ProbeTarget *target)
+lzr_mema_get_payload_length(ProbeTarget *target)
 {
     return strlen(lzr_mema_payload);
 }
@@ -28,7 +28,7 @@ lzr_mema_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_mema_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -49,7 +49,7 @@ lzr_mema_handle_reponse(
 }
 
 static unsigned
-lzr_mema_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_mema_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not memcached_ascii");
@@ -57,7 +57,7 @@ lzr_mema_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrMemcachedAsciiProbe = {
+Probe LzrMemcachedAsciiProbe = {
     .name       = "lzr-memcached_ascii",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

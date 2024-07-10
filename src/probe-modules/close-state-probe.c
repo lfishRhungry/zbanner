@@ -7,13 +7,13 @@
 #include "../util-out/logger.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule CloseStateProbe;
+extern Probe CloseStateProbe;
 
 static void
 closestate_make_hello(
     struct DataPass *pass,
-    struct ProbeState *state,
-    struct ProbeTarget *target)
+    ProbeState *state,
+    ProbeTarget *target)
 {
     pass->is_close = 1;
 }
@@ -21,9 +21,9 @@ closestate_make_hello(
 static unsigned
 closestate_parse_response(
     struct DataPass *pass,
-    struct ProbeState *state,
+    ProbeState *state,
     OutConf *out,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px,
     unsigned sizeof_px)
 {
@@ -31,7 +31,7 @@ closestate_parse_response(
     return 0;
 }
 
-struct ProbeModule CloseStateProbe = {
+Probe CloseStateProbe = {
     .name       = "close-state",
     .type       = ProbeType_STATE,
     .multi_mode = Multi_Null,

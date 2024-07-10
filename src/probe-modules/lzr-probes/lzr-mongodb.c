@@ -6,7 +6,7 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrMongodbProbe;
+extern Probe LzrMongodbProbe;
 
 static char lzr_mongodb_payload[] =
 ":\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -17,7 +17,7 @@ static char lzr_mongodb_payload[] =
 
 static size_t
 lzr_mongodb_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, lzr_mongodb_payload, sizeof(lzr_mongodb_payload)-1);
@@ -25,7 +25,7 @@ lzr_mongodb_make_payload(
 }
 
 static size_t
-lzr_mongodb_get_payload_length(struct ProbeTarget *target)
+lzr_mongodb_get_payload_length(ProbeTarget *target)
 {
     return sizeof(lzr_mongodb_payload)-1;
 }
@@ -33,7 +33,7 @@ lzr_mongodb_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_mongodb_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -54,7 +54,7 @@ lzr_mongodb_handle_reponse(
 }
 
 static unsigned
-lzr_mongodb_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_mongodb_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not mongodb");
@@ -62,7 +62,7 @@ lzr_mongodb_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrMongodbProbe = {
+Probe LzrMongodbProbe = {
     .name       = "lzr-mongodb",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

@@ -25,7 +25,7 @@ struct RecogStateConf {
 
 static struct RecogStateConf recogstate_conf = {0};
 
-static enum ConfigRes SET_unsuffix(void *conf, const char *name, const char *value)
+static ConfRes SET_unsuffix(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -35,7 +35,7 @@ static enum ConfigRes SET_unsuffix(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_unprefix(void *conf, const char *name, const char *value)
+static ConfRes SET_unprefix(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -45,7 +45,7 @@ static enum ConfigRes SET_unprefix(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_banner_if_fail(void *conf, const char *name, const char *value)
+static ConfRes SET_banner_if_fail(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -55,7 +55,7 @@ static enum ConfigRes SET_banner_if_fail(void *conf, const char *name, const cha
     return Conf_OK;
 }
 
-static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
+static ConfRes SET_show_banner(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -65,7 +65,7 @@ static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_get_whole_response(void *conf, const char *name, const char *value)
+static ConfRes SET_get_whole_response(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -75,7 +75,7 @@ static enum ConfigRes SET_get_whole_response(void *conf, const char *name, const
     return Conf_OK;
 }
 
-static enum ConfigRes SET_hello_string(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_string(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -94,7 +94,7 @@ static enum ConfigRes SET_hello_string(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_hello_nmap(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_nmap(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -115,7 +115,7 @@ static enum ConfigRes SET_hello_nmap(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_hello_base64(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_base64(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -136,7 +136,7 @@ static enum ConfigRes SET_hello_base64(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_file(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -171,7 +171,7 @@ static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_recog_file(void *conf, const char *name, const char *value)
+static ConfRes SET_recog_file(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -184,7 +184,7 @@ static enum ConfigRes SET_recog_file(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static struct ConfigParam recogstate_parameters[] = {
+static ConfParam recogstate_parameters[] = {
     {
         "string",
         SET_hello_string,
@@ -266,7 +266,7 @@ static struct ConfigParam recogstate_parameters[] = {
 };
 
 /*for internal x-ref*/
-extern struct ProbeModule RecogStateProbe;
+extern Probe RecogStateProbe;
 
 static bool
 recogstate_global_init(const struct Xconf *xconf)
@@ -296,8 +296,8 @@ recogstate_global_init(const struct Xconf *xconf)
 static void
 recogstate_make_hello(
     struct DataPass *pass,
-    struct ProbeState *state,
-    struct ProbeTarget *target)
+    ProbeState *state,
+    ProbeTarget *target)
 {
     datapass_set_data(pass, recogstate_conf.hello, recogstate_conf.hello_len, 0);
 }
@@ -305,9 +305,9 @@ recogstate_make_hello(
 static unsigned
 recogstate_parse_response(
     struct DataPass *pass,
-    struct ProbeState *state,
+    ProbeState *state,
     OutConf *out,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px,
     unsigned sizeof_px)
 {
@@ -366,7 +366,7 @@ recogstate_close()
 
 }
 
-struct ProbeModule RecogStateProbe = {
+Probe RecogStateProbe = {
     .name       = "recog-state",
     .type       = ProbeType_STATE,
     .multi_mode = Multi_Null,

@@ -9,7 +9,7 @@
 #define GET_STATE_PAYLOAD "GET / HTTP/1.0\r\n\r\n"
 
 /*for internal x-ref*/
-extern struct ProbeModule GetStateProbe;
+extern Probe GetStateProbe;
 
 struct GetStateConf {
     unsigned get_whole_page:1;
@@ -18,7 +18,7 @@ struct GetStateConf {
 static struct GetStateConf getstate_conf = {0};
 
 
-static enum ConfigRes SET_whole_page(void *conf, const char *name, const char *value)
+static ConfRes SET_whole_page(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -28,7 +28,7 @@ static enum ConfigRes SET_whole_page(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static struct ConfigParam getstate_parameters[] = {
+static ConfParam getstate_parameters[] = {
     {
         "whole-page",
         SET_whole_page,
@@ -52,14 +52,14 @@ static void getstate_close()
 }
 
 static bool
-getstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
+getstate_conn_init(ProbeState *state, ProbeTarget *target)
 {
     LOG(LEVEL_INFO, "(GetState Probe conn initing) >>>\n");
     return true;
 }
 
 static void
-getstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
+getstate_conn_close(ProbeState *state, ProbeTarget *target)
 {
     LOG(LEVEL_INFO, "(GetState Probe conn closing) >>>\n");
 }
@@ -67,8 +67,8 @@ getstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
 static void
 getstate_make_hello(
     struct DataPass *pass,
-    struct ProbeState *state,
-    struct ProbeTarget *target)
+    ProbeState *state,
+    ProbeTarget *target)
 {
     LOG(LEVEL_INFO, "(GetState Probe making hello) >>>\n");
     /*static data and don't close the conn*/
@@ -79,9 +79,9 @@ getstate_make_hello(
 static unsigned
 getstate_parse_response(
     struct DataPass *pass,
-    struct ProbeState *state,
+    ProbeState *state,
     OutConf *out,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px,
     unsigned sizeof_px)
 {
@@ -109,7 +109,7 @@ getstate_parse_response(
     return 0;
 }
 
-struct ProbeModule GetStateProbe = {
+Probe GetStateProbe = {
     .name       = "get-state",
     .type       = ProbeType_STATE,
     .multi_mode = Multi_Null,

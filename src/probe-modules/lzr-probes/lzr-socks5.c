@@ -6,13 +6,13 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrSocks5Probe;
+extern Probe LzrSocks5Probe;
 
 static char lzr_socks5_payload[] = "\x05\x04\x00\x01\x02\x80\x05\x01\x00\x03\x0agoogle.com\x00\x50GET / HTTP/1.0\r\n\r\n";
 
 static size_t
 lzr_socks5_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, lzr_socks5_payload, sizeof(lzr_socks5_payload)-1);
@@ -20,7 +20,7 @@ lzr_socks5_make_payload(
 }
 
 static size_t
-lzr_socks5_get_payload_length(struct ProbeTarget *target)
+lzr_socks5_get_payload_length(ProbeTarget *target)
 {
     return sizeof(lzr_socks5_payload)-1;
 }
@@ -28,7 +28,7 @@ lzr_socks5_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_socks5_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -69,7 +69,7 @@ lzr_socks5_handle_reponse(
 }
 
 static unsigned
-lzr_socks5_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_socks5_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not socks5");
@@ -77,7 +77,7 @@ lzr_socks5_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrSocks5Probe = {
+Probe LzrSocks5Probe = {
     .name       = "lzr-socks5",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

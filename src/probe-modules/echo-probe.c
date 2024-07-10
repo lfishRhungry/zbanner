@@ -2,11 +2,11 @@
 #include "../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule EchoProbe;
+extern Probe EchoProbe;
 
 static size_t
 echo_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     payload_buf[0] = target->cookie >> 24;
@@ -19,7 +19,7 @@ echo_make_payload(
 
 static bool
 echo_validate_response(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px)
 {
     if (sizeof_px==0) {
@@ -38,7 +38,7 @@ echo_validate_response(
     return false;
 }
 
-struct ProbeModule EchoProbe = {
+Probe EchoProbe = {
     .name       = "echo",
     .type       = ProbeType_UDP,
     .multi_mode = Multi_Null,

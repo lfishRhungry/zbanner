@@ -6,7 +6,7 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrDnp3Probe;
+extern Probe LzrDnp3Probe;
 
 static unsigned char lzr_dnp3_payload[] = {
 0x00,0x00,0x05,0x64,0x05,0xC9,0x00,0x00,0x00,0x00,0x36,0x4C,0x05,0x64,0x05,0xC9,
@@ -76,7 +76,7 @@ static unsigned char lzr_dnp3_payload[] = {
 
 static size_t
 lzr_dnp3_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, lzr_dnp3_payload, sizeof(lzr_dnp3_payload));
@@ -84,7 +84,7 @@ lzr_dnp3_make_payload(
 }
 
 static size_t
-lzr_dnp3_get_payload_length(struct ProbeTarget *target)
+lzr_dnp3_get_payload_length(ProbeTarget *target)
 {
     return sizeof(lzr_dnp3_payload);
 }
@@ -92,7 +92,7 @@ lzr_dnp3_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_dnp3_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -111,7 +111,7 @@ lzr_dnp3_handle_reponse(
 }
 
 static unsigned
-lzr_dnp3_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_dnp3_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not dnp3");
@@ -119,7 +119,7 @@ lzr_dnp3_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrDnp3Probe = {
+Probe LzrDnp3Probe = {
     .name       = "lzr-dnp3",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

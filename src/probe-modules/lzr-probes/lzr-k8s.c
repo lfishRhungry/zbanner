@@ -7,7 +7,7 @@
 #include "../../util-data/data-convert.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrK8sProbe;
+extern Probe LzrK8sProbe;
 
 static char lzr_k8s_payload[] =
 "\x16"                                                     /*handshake*/
@@ -63,7 +63,7 @@ static bool lzr_k8s_global_init(const struct Xconf *xconf)
 
 static size_t
 lzr_k8s_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, lzr_k8s_payload, sizeof(lzr_k8s_payload)-1);
@@ -71,7 +71,7 @@ lzr_k8s_make_payload(
 }
 
 static size_t
-lzr_k8s_get_payload_length(struct ProbeTarget *target)
+lzr_k8s_get_payload_length(ProbeTarget *target)
 {
     return sizeof(lzr_k8s_payload)-1;
 }
@@ -79,7 +79,7 @@ lzr_k8s_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_k8s_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -99,7 +99,7 @@ lzr_k8s_handle_reponse(
 }
 
 static unsigned
-lzr_k8s_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_k8s_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not k8s");
@@ -107,7 +107,7 @@ lzr_k8s_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrK8sProbe = {
+Probe LzrK8sProbe = {
     .name       = "lzr-k8s",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

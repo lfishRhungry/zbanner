@@ -12,70 +12,70 @@ This is an Application-layer Probe(or Request) Plugin System
 
 
 //! ADD YOUR PROBE HERE
-extern struct ProbeModule NullProbe;
-extern struct ProbeModule HttpProbe;
-extern struct ProbeModule HttpStateProbe;
-extern struct ProbeModule EchoProbe;
-extern struct ProbeModule GetStateProbe;
-extern struct ProbeModule JarmProbe;
-extern struct ProbeModule TlsStateProbe;
-extern struct ProbeModule NmapTcpProbe;
-extern struct ProbeModule DnsProbe;
-extern struct ProbeModule LuaTcpProbe;
-extern struct ProbeModule LuaUdpProbe;
-extern struct ProbeModule SnmpProbe;
-extern struct ProbeModule HelloProbe;
-extern struct ProbeModule HelloUdpProbe;
-extern struct ProbeModule HelloStateProbe;
-extern struct ProbeModule RecogProbe;
-extern struct ProbeModule RecogUdpProbe;
-extern struct ProbeModule RecogStateProbe;
-extern struct ProbeModule CloseStateProbe;
+extern Probe NullProbe;
+extern Probe HttpProbe;
+extern Probe HttpStateProbe;
+extern Probe EchoProbe;
+extern Probe GetStateProbe;
+extern Probe JarmProbe;
+extern Probe TlsStateProbe;
+extern Probe NmapTcpProbe;
+extern Probe DnsProbe;
+extern Probe LuaTcpProbe;
+extern Probe LuaUdpProbe;
+extern Probe SnmpProbe;
+extern Probe HelloProbe;
+extern Probe HelloUdpProbe;
+extern Probe HelloStateProbe;
+extern Probe RecogProbe;
+extern Probe RecogUdpProbe;
+extern Probe RecogStateProbe;
+extern Probe CloseStateProbe;
 /*for lzr probes*/
-extern struct ProbeModule LzrProbe;
-extern struct ProbeModule LzrHttpProbe;
-extern struct ProbeModule LzrTlsProbe;
-extern struct ProbeModule LzrFtpProbe;
-extern struct ProbeModule LzrPop3Probe;
-extern struct ProbeModule LzrImapProbe;
-extern struct ProbeModule LzrSmtpProbe;
-extern struct ProbeModule LzrSshProbe;
-extern struct ProbeModule LzrSocks5Probe;
-extern struct ProbeModule LzrTelnetProbe;
-extern struct ProbeModule LzrFixProbe;
-extern struct ProbeModule LzrSmbProbe;
-extern struct ProbeModule LzrMqttProbe;
-extern struct ProbeModule LzrAmqpProbe;
-extern struct ProbeModule LzrMysqlProbe;
-extern struct ProbeModule LzrMongodbProbe;
-extern struct ProbeModule LzrRedisProbe;
-extern struct ProbeModule LzrPostgresProbe;
-extern struct ProbeModule LzrMssqlProbe;
-extern struct ProbeModule LzrOracleProbe;
-extern struct ProbeModule LzrRdpProbe;
-extern struct ProbeModule LzrX11Probe;
-extern struct ProbeModule LzrVncProbe;
-extern struct ProbeModule LzrK8sProbe;
-extern struct ProbeModule LzrRtspProbe;
-extern struct ProbeModule LzrModbusProbe;
-extern struct ProbeModule LzrSiemensProbe;
-extern struct ProbeModule LzrBgpProbe;
-extern struct ProbeModule LzrPptpProbe;
-extern struct ProbeModule LzrDnsProbe;
-extern struct ProbeModule LzrIpmiProbe;
-extern struct ProbeModule LzrDnp3Probe;
-extern struct ProbeModule LzrFoxProbe;
-extern struct ProbeModule LzrMemcachedAsciiProbe;
-extern struct ProbeModule LzrMemcachedBinaryProbe;
-extern struct ProbeModule LzrIppProbe;
-extern struct ProbeModule LzrWaitProbe;
-extern struct ProbeModule LzrNewlinesProbe;
-extern struct ProbeModule LzrNewlines50Probe;
+extern Probe LzrProbe;
+extern Probe LzrHttpProbe;
+extern Probe LzrTlsProbe;
+extern Probe LzrFtpProbe;
+extern Probe LzrPop3Probe;
+extern Probe LzrImapProbe;
+extern Probe LzrSmtpProbe;
+extern Probe LzrSshProbe;
+extern Probe LzrSocks5Probe;
+extern Probe LzrTelnetProbe;
+extern Probe LzrFixProbe;
+extern Probe LzrSmbProbe;
+extern Probe LzrMqttProbe;
+extern Probe LzrAmqpProbe;
+extern Probe LzrMysqlProbe;
+extern Probe LzrMongodbProbe;
+extern Probe LzrRedisProbe;
+extern Probe LzrPostgresProbe;
+extern Probe LzrMssqlProbe;
+extern Probe LzrOracleProbe;
+extern Probe LzrRdpProbe;
+extern Probe LzrX11Probe;
+extern Probe LzrVncProbe;
+extern Probe LzrK8sProbe;
+extern Probe LzrRtspProbe;
+extern Probe LzrModbusProbe;
+extern Probe LzrSiemensProbe;
+extern Probe LzrBgpProbe;
+extern Probe LzrPptpProbe;
+extern Probe LzrDnsProbe;
+extern Probe LzrIpmiProbe;
+extern Probe LzrDnp3Probe;
+extern Probe LzrFoxProbe;
+extern Probe LzrMemcachedAsciiProbe;
+extern Probe LzrMemcachedBinaryProbe;
+extern Probe LzrIppProbe;
+extern Probe LzrWaitProbe;
+extern Probe LzrNewlinesProbe;
+extern Probe LzrNewlines50Probe;
 
 
 
 //! ADD YOUR PROBE HERE
-static struct ProbeModule *probe_modules_list[] = {
+static Probe *probe_modules_list[] = {
     &NullProbe, /* its also the default probe*/
     &HttpProbe,
     &HttpStateProbe,
@@ -154,7 +154,7 @@ static struct ProbeModule *probe_modules_list[] = {
 };
 
 
-struct ProbeModule *get_probe_module_by_name(const char *name)
+Probe *get_probe_module_by_name(const char *name)
 {
     int len = (int)ARRAY_SIZE(probe_modules_list);
     for (int i = 0; i < len; i++) {
@@ -166,7 +166,7 @@ struct ProbeModule *get_probe_module_by_name(const char *name)
 }
 
 const char *
-get_probe_type_name(const enum ProbeType type)
+get_probe_type_name(const ProbeType type)
 {
     switch (type) {
         case ProbeType_NULL:
@@ -183,7 +183,7 @@ get_probe_type_name(const enum ProbeType type)
 }
 
 static const char *
-get_multi_mode_name(const enum MultiMode type)
+get_multi_mode_name(const MultiMode type)
 {
     switch (type) {
         case Multi_Null:
@@ -248,7 +248,7 @@ void list_all_probe_modules()
     printf("\n");
 }
 
-void help_probe_module(struct ProbeModule *module)
+void help_probe_module(Probe *module)
 {
     if (!module) {
         LOG(LEVEL_ERROR, "No specified probe module.\n");
@@ -296,14 +296,14 @@ bool probe_init_nothing(const struct Xconf *xconf)
 
 size_t
 probe_make_no_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     return 0;
 }
 
 size_t
-probe_no_payload_length(struct ProbeTarget *target)
+probe_no_payload_length(ProbeTarget *target)
 {
     return 0;
 }
@@ -311,7 +311,7 @@ probe_no_payload_length(struct ProbeTarget *target)
 unsigned
 probe_report_nothing(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -322,7 +322,7 @@ probe_report_nothing(
 unsigned
 probe_just_report_banner(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -337,18 +337,18 @@ void probe_close_nothing()
     return;
 }
 
-bool probe_conn_init_nothing(struct ProbeState *state, struct ProbeTarget *target)
+bool probe_conn_init_nothing(ProbeState *state, ProbeTarget *target)
 {
     return true;
 }
 
-void probe_conn_close_nothing(struct ProbeState *state, struct ProbeTarget *target)
+void probe_conn_close_nothing(ProbeState *state, ProbeTarget *target)
 {
     return;
 }
 
 unsigned
-probe_no_timeout(struct ProbeTarget *target, OutItem *item)
+probe_no_timeout(ProbeTarget *target, OutItem *item)
 {
     item->no_output = 1;
     return 0;
@@ -356,7 +356,7 @@ probe_no_timeout(struct ProbeTarget *target, OutItem *item)
 
 
 bool probe_all_valid(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px)
 {
     return true;

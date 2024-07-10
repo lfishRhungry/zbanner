@@ -6,7 +6,7 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrPptpProbe;
+extern Probe LzrPptpProbe;
 
 static char lzr_pptp_payload[] =
 {
@@ -23,7 +23,7 @@ static char lzr_pptp_payload[] =
 
 static size_t
 lzr_pptp_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, lzr_pptp_payload, sizeof(lzr_pptp_payload));
@@ -31,7 +31,7 @@ lzr_pptp_make_payload(
 }
 
 static size_t
-lzr_pptp_get_payload_length(struct ProbeTarget *target)
+lzr_pptp_get_payload_length(ProbeTarget *target)
 {
     return sizeof(lzr_pptp_payload);
 }
@@ -39,7 +39,7 @@ lzr_pptp_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_pptp_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -59,7 +59,7 @@ lzr_pptp_handle_reponse(
 }
 
 static unsigned
-lzr_pptp_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_pptp_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not pptp");
@@ -67,7 +67,7 @@ lzr_pptp_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrPptpProbe = {
+Probe LzrPptpProbe = {
     .name       = "lzr-pptp",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

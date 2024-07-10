@@ -6,7 +6,7 @@
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
 
-extern struct ScanModule TcpSynScan; /*for internal x-ref*/
+extern Scanner TcpSynScan; /*for internal x-ref*/
 
 struct TcpSynConf {
     unsigned send_rst:1;
@@ -19,7 +19,7 @@ struct TcpSynConf {
 
 static struct TcpSynConf tcpsyn_conf = {0};
 
-static enum ConfigRes SET_record_mss(void *conf, const char *name, const char *value)
+static ConfRes SET_record_mss(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -29,7 +29,7 @@ static enum ConfigRes SET_record_mss(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *value)
+static ConfRes SET_record_ttl(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -39,7 +39,7 @@ static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *value)
+static ConfRes SET_record_ipid(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -49,7 +49,7 @@ static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_record_win(void *conf, const char *name, const char *value)
+static ConfRes SET_record_win(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -59,7 +59,7 @@ static enum ConfigRes SET_record_win(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_zero_fail(void *conf, const char *name, const char *value)
+static ConfRes SET_zero_fail(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -69,7 +69,7 @@ static enum ConfigRes SET_zero_fail(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static enum ConfigRes SET_send_rst(void *conf, const char *name, const char *value)
+static ConfRes SET_send_rst(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -79,7 +79,7 @@ static enum ConfigRes SET_send_rst(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static struct ConfigParam tcpsyn_parameters[] = {
+static ConfParam tcpsyn_parameters[] = {
     {
         "send-rst",
         SET_send_rst,
@@ -131,7 +131,7 @@ static struct ConfigParam tcpsyn_parameters[] = {
 static bool
 tcpsyn_transmit(
     uint64_t entropy,
-    struct ScanTarget *target,
+    ScanTarget *target,
     struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
@@ -155,8 +155,8 @@ tcpsyn_transmit(
 static void
 tcpsyn_validate(
     uint64_t entropy,
-    struct Received *recved,
-    struct PreHandle *pre)
+    PktRecv *recved,
+    PreHandle *pre)
 {
     /*record tcp packet to our source port*/
     if (recved->parsed.found == FOUND_TCP
@@ -193,7 +193,7 @@ static void
 tcpsyn_handle(
     unsigned th_idx,
     uint64_t entropy,
-    struct Received *recved,
+    PktRecv *recved,
     OutItem *item,
     STACK *stack,
     FHandler *handler)
@@ -272,7 +272,7 @@ tcpsyn_timeout(
     safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
 }
 
-struct ScanModule TcpSynScan = {
+Scanner TcpSynScan = {
     .name                = "tcp-syn",
     .required_probe_type = 0,
     .support_timeout     = 1,

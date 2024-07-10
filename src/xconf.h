@@ -125,32 +125,32 @@ typedef struct Xconf
     FILE      *echo;
     unsigned   echo_all;
 
-    STACK *stack;
-    unsigned stack_buf_count;
+    STACK     *stack;
+    unsigned   stack_buf_count;
 
-    char     *bpf_filter;
-    char      pcap_filename[256];
+    char      *bpf_filter;
+    char       pcap_filename[256];
 
     /**
      * template for packet making quickly.
     */
-    TmplSet       *tmplset;
+    TmplSet   *tmplset;
     TmplOpt   *templ_opts;
 
     /**
      * Use fast-timeout table to handle simple timeout events;
     */
-    FTable *ft_table;
-    time_t  ft_spec;          /*timeout seconds*/
+    FTable    *ft_table;
+    time_t     ft_spec;          /*timeout seconds*/
 
     struct MassIP targets;
     struct MassIP exclude;
 
-    struct ProbeModule *probe_module;
-    char *probe_module_args;
+    Probe     *probe_module;
+    char      *probe_module_args;
 
-    struct ScanModule *scan_module;
-    char *scan_module_args;
+    Scanner   *scan_module;
+    char      *scan_module_args;
 
     /**
      * We could set the number of transmit threads.
@@ -162,8 +162,8 @@ typedef struct Xconf
     unsigned tx_thread_count;
     unsigned rx_handler_count;
 
-    OutConf           out_conf;
     enum Operation    op;
+    OutConf           out_conf;
     uint64_t          seed;
     uint64_t          repeat;
     double            max_rate;

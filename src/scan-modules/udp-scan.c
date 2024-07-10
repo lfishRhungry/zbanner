@@ -9,7 +9,7 @@
 #include "../util-data/fine-malloc.h"
 #include "../util-out/logger.h"
 
-extern struct ScanModule UdpScan; /*for internal x-ref*/
+extern Scanner UdpScan; /*for internal x-ref*/
 
 struct UdpConf {
     unsigned no_icmp:1;
@@ -17,7 +17,7 @@ struct UdpConf {
 
 static struct UdpConf udp_conf = {0};
 
-static enum ConfigRes SET_no_icmp(void *conf, const char *name, const char *value)
+static ConfRes SET_no_icmp(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -27,7 +27,7 @@ static enum ConfigRes SET_no_icmp(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static struct ConfigParam udp_parameters[] = {
+static ConfParam udp_parameters[] = {
     {
         "no-icmp",
         SET_no_icmp,
@@ -58,7 +58,7 @@ udp_init(const struct Xconf *xconf)
 static bool
 udp_transmit(
     uint64_t entropy,
-    struct ScanTarget *target,
+    ScanTarget *target,
     struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
@@ -69,7 +69,7 @@ udp_transmit(
     unsigned cookie = get_cookie(target->ip_them, target->port_them,
         target->ip_me, src_port_start+target->index, entropy);
 
-    struct ProbeTarget ptarget = {
+    ProbeTarget ptarget = {
         .ip_proto  = target->ip_proto,
         .ip_them   = target->ip_them,
         .ip_me     = target->ip_me,
@@ -103,8 +103,8 @@ udp_transmit(
 static void
 udp_validate(
     uint64_t entropy,
-    struct Received *recved,
-    struct PreHandle *pre)
+    PktRecv *recved,
+    PreHandle *pre)
 {
     /*record packet to our source port*/
     if (recved->parsed.found == FOUND_UDP
@@ -112,7 +112,7 @@ udp_validate(
         && recved->is_myport) {
         pre->go_record = 1;
 
-        struct ProbeTarget ptarget = {
+        ProbeTarget ptarget = {
             .ip_proto  = recved->parsed.ip_protocol,
             .ip_them   = recved->parsed.src_ip,
             .ip_me     = recved->parsed.dst_ip,
@@ -159,14 +159,14 @@ static void
 udp_handle(
     unsigned th_idx,
     uint64_t entropy,
-    struct Received *recved,
+    PktRecv *recved,
     OutItem *item,
     STACK *stack,
     FHandler *handler)
 {
     if (recved->parsed.found == FOUND_UDP) {
 
-        struct ProbeTarget ptarget = {
+        ProbeTarget ptarget = {
             .ip_proto  = recved->parsed.ip_protocol,
             .ip_them   = recved->parsed.src_ip,
             .ip_me     = recved->parsed.dst_ip,
@@ -192,7 +192,7 @@ udp_handle(
 
                 PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
-                struct ProbeTarget ptarget = {
+                ProbeTarget ptarget = {
                     .ip_proto  = recved->parsed.ip_protocol,
                     .ip_them   = recved->parsed.src_ip,
                     .ip_me     = recved->parsed.dst_ip,
@@ -243,7 +243,7 @@ udp_handle(
 
             PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
-            struct ProbeTarget ptarget = {
+            ProbeTarget ptarget = {
                 .ip_proto  = recved->parsed.ip_protocol,
                 .ip_them   = recved->parsed.src_ip,
                 .ip_me     = recved->parsed.dst_ip,
@@ -308,7 +308,7 @@ udp_timeout(
 {
     /*all events is for banner*/
 
-    struct ProbeTarget ptarget = {
+    ProbeTarget ptarget = {
         .ip_proto  = event->ip_proto,
         .ip_them   = event->ip_them,
         .ip_me     = event->ip_me,
@@ -330,7 +330,7 @@ udp_timeout(
 
             PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
-            struct ProbeTarget ptarget = {
+            ProbeTarget ptarget = {
                 .ip_proto  = event->ip_proto,
                 .ip_them   = event->ip_them,
                 .ip_me     = event->ip_me,
@@ -380,7 +380,7 @@ udp_timeout(
 
         PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
-        struct ProbeTarget ptarget = {
+        ProbeTarget ptarget = {
             .ip_proto  = event->ip_proto,
             .ip_them   = event->ip_them,
             .ip_me     = event->ip_me,
@@ -426,7 +426,7 @@ udp_timeout(
 
 }
 
-struct ScanModule UdpScan = {
+Scanner UdpScan = {
     .name                = "udp",
     .required_probe_type = ProbeType_UDP,
     .support_timeout     = 1,

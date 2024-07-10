@@ -6,7 +6,7 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrSiemensProbe;
+extern Probe LzrSiemensProbe;
 
 static char lzr_siemens_payload[] =
 "\x03\x00\x00\x16\x11\xe0\x00\x00\x00\x04\x00\xc1"
@@ -15,7 +15,7 @@ static char lzr_siemens_payload[] =
 
 static size_t
 lzr_siemens_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, lzr_siemens_payload, sizeof(lzr_siemens_payload)-1);
@@ -23,7 +23,7 @@ lzr_siemens_make_payload(
 }
 
 static size_t
-lzr_siemens_get_payload_length(struct ProbeTarget *target)
+lzr_siemens_get_payload_length(ProbeTarget *target)
 {
     return sizeof(lzr_siemens_payload)-1;
 }
@@ -31,7 +31,7 @@ lzr_siemens_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_siemens_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -51,7 +51,7 @@ lzr_siemens_handle_reponse(
 }
 
 static unsigned
-lzr_siemens_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_siemens_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not siemens");
@@ -59,7 +59,7 @@ lzr_siemens_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrSiemensProbe = {
+Probe LzrSiemensProbe = {
     .name       = "lzr-siemens",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

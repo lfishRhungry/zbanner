@@ -43,7 +43,7 @@ enum {
     FOUND_NDPv6,
 };
 
-struct PreprocessedInfo {
+typedef struct PreprocessedInfo {
     const unsigned char *mac_src;
     const unsigned char *mac_dst;
     const unsigned char *mac_bss; /*for 802.11*/
@@ -90,13 +90,13 @@ struct PreprocessedInfo {
 
     int found;
     int found_offset;
-};
+} PreInfo;
 
 /**
  * @return true if useful stuff found, false otherwise
  */
 bool
 preprocess_frame(const unsigned char *px, unsigned length,
-    unsigned link_type, struct PreprocessedInfo *info);
+    unsigned link_type, PreInfo *info);
 
 #endif

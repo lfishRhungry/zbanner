@@ -6,7 +6,7 @@
 #include "../util-data/data-convert.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule DnsProbe;
+extern Probe DnsProbe;
 
 struct DnsConf {
     char *req_name;
@@ -18,7 +18,7 @@ struct DnsConf {
 
 static struct DnsConf dns_conf = {0};
 
-static enum ConfigRes SET_ptr(void *conf, const char *name, const char *value)
+static ConfRes SET_ptr(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -42,7 +42,7 @@ static enum ConfigRes SET_ptr(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static enum ConfigRes SET_print_all_add(void *conf, const char *name, const char *value)
+static ConfRes SET_print_all_add(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -52,7 +52,7 @@ static enum ConfigRes SET_print_all_add(void *conf, const char *name, const char
     return Conf_OK;
 }
 
-static enum ConfigRes SET_print_all_auth(void *conf, const char *name, const char *value)
+static ConfRes SET_print_all_auth(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -62,7 +62,7 @@ static enum ConfigRes SET_print_all_auth(void *conf, const char *name, const cha
     return Conf_OK;
 }
 
-static enum ConfigRes SET_print_all_answer(void *conf, const char *name, const char *value)
+static ConfRes SET_print_all_answer(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -72,7 +72,7 @@ static enum ConfigRes SET_print_all_answer(void *conf, const char *name, const c
     return Conf_OK;
 }
 
-static enum ConfigRes SET_req_name(void *conf, const char *name, const char *value)
+static ConfRes SET_req_name(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -89,7 +89,7 @@ static enum ConfigRes SET_req_name(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_req_type(void *conf, const char *name, const char *value)
+static ConfRes SET_req_type(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -110,7 +110,7 @@ static enum ConfigRes SET_req_type(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static struct ConfigParam dns_parameters[] = {
+static ConfParam dns_parameters[] = {
     {
         "req-name",
         SET_req_name,
@@ -176,7 +176,7 @@ dns_global_init(const struct Xconf *xconf)
 
 static size_t
 dns_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memset(payload_buf, 0, PM_PAYLOAD_SIZE);
@@ -188,7 +188,7 @@ dns_make_payload(
 
 static bool
 dns_validate_response(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px)
 {
     if (sizeof_px<2) {
@@ -206,7 +206,7 @@ dns_validate_response(
 static unsigned
 dns_handle_response(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -333,7 +333,7 @@ dns_handle_response(
 }
 
 static unsigned
-dns_handle_timeout(struct ProbeTarget *target, OutItem *item)
+dns_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "no response");
@@ -349,7 +349,7 @@ static void dns_close()
     }
 }
 
-struct ProbeModule DnsProbe = {
+Probe DnsProbe = {
     .name       = "dns",
     .type       = ProbeType_UDP,
     .multi_mode = Multi_Null,

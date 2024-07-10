@@ -6,7 +6,7 @@
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
 
-extern struct ScanModule SctpInitScan; /*for internal x-ref*/
+extern Scanner SctpInitScan; /*for internal x-ref*/
 
 struct SctpInitConf {
     unsigned record_ttl:1;
@@ -15,7 +15,7 @@ struct SctpInitConf {
 
 static struct SctpInitConf sctpinit_conf = {0};
 
-static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *value)
+static ConfRes SET_record_ttl(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -25,7 +25,7 @@ static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *value)
+static ConfRes SET_record_ipid(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -35,7 +35,7 @@ static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static struct ConfigParam sctpinit_parameters[] = {
+static ConfParam sctpinit_parameters[] = {
     {
         "record-ttl",
         SET_record_ttl,
@@ -56,7 +56,7 @@ static struct ConfigParam sctpinit_parameters[] = {
 static bool
 sctpinit_transmit(
     uint64_t entropy,
-    struct ScanTarget *target,
+    ScanTarget *target,
     struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
@@ -80,8 +80,8 @@ sctpinit_transmit(
 static void
 sctpinit_validate(
     uint64_t entropy,
-    struct Received *recved,
-    struct PreHandle *pre)
+    PktRecv *recved,
+    PreHandle *pre)
 {
     /*record all sctp to me*/
     if (recved->parsed.found == FOUND_SCTP
@@ -118,7 +118,7 @@ static void
 sctpinit_handle(
     unsigned th_idx,
     uint64_t entropy,
-    struct Received *recved,
+    PktRecv *recved,
     OutItem *item,
     STACK *stack,
     FHandler *handler)
@@ -153,7 +153,7 @@ static void sctpinit_timeout(
     safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
 }
 
-struct ScanModule SctpInitScan = {
+Scanner SctpInitScan = {
     .name                = "sctp-init",
     .required_probe_type = 0,
     .support_timeout     = 1,

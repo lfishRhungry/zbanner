@@ -7,7 +7,7 @@
 #include "../../util-data/data-convert.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrTlsProbe;
+extern Probe LzrTlsProbe;
 
 static char lzr_tls_payload[] =
 "\x16"                                                     /*handshake*/
@@ -62,7 +62,7 @@ static bool lzr_tls_global_init(const struct Xconf *xconf)
 
 static size_t
 lzr_tls_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, lzr_tls_payload, sizeof(lzr_tls_payload)-1);
@@ -70,7 +70,7 @@ lzr_tls_make_payload(
 }
 
 static size_t
-lzr_tls_get_payload_length(struct ProbeTarget *target)
+lzr_tls_get_payload_length(ProbeTarget *target)
 {
     return sizeof(lzr_tls_payload)-1;
 }
@@ -78,7 +78,7 @@ lzr_tls_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_tls_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -133,7 +133,7 @@ lzr_tls_handle_reponse(
 }
 
 static unsigned
-lzr_tls_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_tls_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not tls");
@@ -141,7 +141,7 @@ lzr_tls_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrTlsProbe = {
+Probe LzrTlsProbe = {
     .name       = "lzr-tls",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

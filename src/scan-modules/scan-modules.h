@@ -50,14 +50,14 @@ typedef bool (*scan_modules_init)(const struct Xconf *xconf);
 /**
  * modifiable in scan module internal to change target.
 */
-struct ScanTarget {
+typedef struct ScanModuleTarget {
     unsigned           ip_proto;
     ipaddress          ip_them;
     ipaddress          ip_me;
     unsigned           port_them;
     unsigned           port_me;
     unsigned           index;     /*use in tx thread for multi packets per target*/
-};
+} ScanTarget;
 
 /*a timeout event for scanning*/
 struct ScanTmEvent {
@@ -86,7 +86,7 @@ struct ScanTmEvent {
 */
 typedef bool (*scan_modules_transmit)(
     uint64_t entropy,
-    struct ScanTarget *target,
+    ScanTarget *target,
     struct ScanTmEvent *event,
     unsigned char *px, size_t *len);
 
@@ -94,18 +94,18 @@ typedef bool (*scan_modules_transmit)(
  * * callback functions for Receive
 ****************************************************************************/
 
-struct Received {
-    struct PreprocessedInfo     parsed;
+typedef struct PacketReceived {
+    PreInfo                     parsed;
     unsigned char              *packet;
     unsigned                    length;
     unsigned                    secs;
     unsigned                    usecs;
     unsigned                    is_myip:1;
     unsigned                    is_myport:1;
-};
+} PktRecv;
 
 /*How we do prehandling for a packet*/
-struct PreHandle {
+typedef struct PacketPreHandle {
     ipaddress                   dedup_ip_them;
     unsigned                    dedup_port_them;
     ipaddress                   dedup_ip_me;
@@ -114,7 +114,7 @@ struct PreHandle {
     unsigned                    go_record:1;       /*proceed to record or stop*/
     unsigned                    go_dedup:1;        /*proceed to dedup or stop*/
     unsigned                    no_dedup:1;        /*go on with(out) deduping*/
-};
+} PreHandle;
 
 /**
  * !First Step for recving. Happens in Rx Thread.
@@ -131,8 +131,8 @@ struct PreHandle {
 */
 typedef void (*scan_modules_validate)(
     uint64_t entropy,
-    struct Received *recved,
-    struct PreHandle *pre);
+    PktRecv *recved,
+    PreHandle *pre);
 
 /**
  * !Second Step for recving. Happens in Rx Handle Thread.
@@ -153,7 +153,7 @@ typedef void (*scan_modules_validate)(
 typedef void (*scan_modules_handle)(
     unsigned th_idx,
     uint64_t entropy,
-    struct Received *recved,
+    PktRecv *recved,
     OutItem *item,
     STACK *stack,
     FHandler *handler);
@@ -235,14 +235,14 @@ typedef void (*scan_modules_close)();
 typedef void (*scan_modules_status)(char *status);
 
 
-struct ScanModule
+typedef struct ScanModule
 {
     const char                                 *name;
-    const enum ProbeType                        required_probe_type; /*set zero if not using probe*/
+    const ProbeType                             required_probe_type; /*set zero if not using probe*/
     const unsigned                              support_timeout;
     const char                                 *bpf_filter;          /*just for pcap to avoid copying uninteresting packets from the kernel to user mode.*/
-    struct ConfigParam                         *params;
-    struct ProbeModule                         *probe;
+    ConfParam                                  *params;
+    Probe                                      *probe;
     const char                                 *desc;
 
     /*for init*/
@@ -260,13 +260,13 @@ struct ScanModule
     scan_modules_close                          close_cb;
     /*for status*/
     scan_modules_status                         status_cb;
-};
+} Scanner;
 
 struct ScanModule *get_scan_module_by_name(const char *name);
 
 void list_all_scan_modules();
 
-void help_scan_module(struct ScanModule * module);
+void help_scan_module(Scanner * module);
 
 /************************************************************************
 Some useful implemented interfaces

@@ -264,7 +264,7 @@ icmp_create_timestamp_packet(
 }
 
 unsigned
-get_icmp_cookie(const struct PreprocessedInfo *parsed,const unsigned char *px)
+get_icmp_cookie(const PreInfo *parsed,const unsigned char *px)
 {
     return BE_TO_U32(px+parsed->transport_offset+4);
 }

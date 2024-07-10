@@ -366,7 +366,7 @@ is_integer(const char *value)
 }
 
 bool
-is_numable(const struct ConfigParam *cp, const char *name)
+is_numable(const ConfParam *cp, const char *name)
 {
     size_t i;
 
@@ -398,7 +398,7 @@ is_power_of_two(uint64_t x)
  * This is a list of the parameters that don't follow the default.
  ***************************************************************************/
 bool
-is_singleton(const struct ConfigParam *cp, const char *name)
+is_singleton(const ConfParam *cp, const char *name)
 {
     for (size_t i=0; cp[i].name; i++) {
         if (EQUALS(cp[i].name, name)) {
@@ -416,7 +416,7 @@ is_singleton(const struct ConfigParam *cp, const char *name)
     return false;
 }
 
-void set_one_parameter(void *conf, struct ConfigParam *cp,
+void set_one_parameter(void *conf, ConfParam *cp,
     const char *name, const char *value)
 {
     size_t i;
@@ -443,7 +443,7 @@ void set_one_parameter(void *conf, struct ConfigParam *cp,
 }
 
 void
-set_parameters_from_args(void *conf, struct ConfigParam *cp,
+set_parameters_from_args(void *conf, ConfParam *cp,
     int argc, char **argv)
 {
     int i;
@@ -547,7 +547,7 @@ set_parameters_from_args(void *conf, struct ConfigParam *cp,
 }
 
 int
-set_parameters_from_string(void *conf, struct ConfigParam *cp, char *string)
+set_parameters_from_string(void *conf, ConfParam *cp, char *string)
 {
     int     sub_argc;
     char ** sub_argv;
@@ -563,7 +563,7 @@ set_parameters_from_string(void *conf, struct ConfigParam *cp, char *string)
 }
 
 int
-set_parameters_from_substring(void *conf, struct ConfigParam *cp, char *substring)
+set_parameters_from_substring(void *conf, ConfParam *cp, char *substring)
 {
     int     sub_argc;
     char ** sub_argv;

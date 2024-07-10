@@ -30,7 +30,7 @@
 #define LUA_PROBE_FUNC_HANDLE_TIMEOUT       "Handle_timeout"
 
 /*for internal x-ref*/
-extern struct ProbeModule LuaTcpProbe;
+extern Probe LuaTcpProbe;
 
 struct LuaTcpConf {
     char *script;
@@ -59,7 +59,7 @@ struct LuaTcpConf {
 
 static struct LuaTcpConf luatcp_conf = {0};
 
-static enum ConfigRes SET_script(void *conf, const char *name, const char *value)
+static ConfRes SET_script(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -72,7 +72,7 @@ static enum ConfigRes SET_script(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static struct ConfigParam luatcp_parameters[] = {
+static ConfParam luatcp_parameters[] = {
     {
         "script",
         SET_script,
@@ -126,7 +126,7 @@ static bool sync_probe_config()
     lua_pop(luatcp_conf.Ltx, 1);
 
     /*multi mode*/
-    enum MultiMode *mode = (enum MultiMode *)&LuaTcpProbe.multi_mode;
+    MultiMode *mode = (MultiMode *)&LuaTcpProbe.multi_mode;
     lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_VAR_MULTIMODE);
     if (lua_isstring(luatcp_conf.Ltx, -1)==0) {
         LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": no `"LUA_PROBE_VAR_MULTIMODE"` setting in script %s.\n",
@@ -331,7 +331,7 @@ luatcp_global_init(const struct Xconf *xconf)
 
 static size_t
 luatcp_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     const char *ret;
@@ -365,7 +365,7 @@ luatcp_make_payload(
 }
 
 static size_t
-luatcp_get_payload_length(struct ProbeTarget *target)
+luatcp_get_payload_length(ProbeTarget *target)
 {
     int ret_len;
 
@@ -399,7 +399,7 @@ luatcp_get_payload_length(struct ProbeTarget *target)
 static unsigned
 luatcp_handle_response(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -482,7 +482,7 @@ luatcp_handle_response(
 
 static unsigned
 luatcp_handle_timeout(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     OutItem *item)
 {
     const char *lua_ret;
@@ -577,7 +577,7 @@ void luatcp_close()
 
 }
 
-struct ProbeModule LuaTcpProbe = {
+Probe LuaTcpProbe = {
     .name       = "lua-tcp",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

@@ -165,8 +165,8 @@ struct TCP_Control_Block
     time_t                            when_created;
     unsigned                          is_active:1;       /*in-use/allocated or to be del soon*/
 
-    const struct ProbeModule         *probe;
-    struct ProbeState                 probe_state;
+    const Probe         *probe;
+    ProbeState                 probe_state;
 
     struct TimeoutEntry               timeout[1];        /*only one for this TCB*/
     TCB         *next;
@@ -509,13 +509,13 @@ _tcpcon_destroy_tcb(TCP_Table *tcpcon,
     }
 
     /*do connection close for probe*/
-    struct ProbeTarget target = {
+    ProbeTarget target = {
         .ip_proto  = IP_PROTO_TCP,
         .ip_them   = tcb->ip_them,
         .port_them = tcb->port_them,
         .ip_me     = tcb->ip_me,
         .port_me   = tcb->port_me,
-        .cookie    = 0,               /*ProbeType State doesn't need cookie*/
+        .cookie    = 0,               /*Probe_TYPE State doesn't need cookie*/
         .index     = tcb->port_me-tcpcon->src_port_start,
     };
     tcb->probe->conn_close_cb(&tcb->probe_state, &target);
@@ -574,7 +574,7 @@ tcpcon_create_tcb(
     unsigned port_me, unsigned port_them,
     unsigned seqno_me, unsigned seqno_them,
     unsigned ttl, unsigned mss,
-    const struct ProbeModule *probe,
+    const Probe *probe,
     unsigned secs, unsigned usecs)
 {
     unsigned index;
@@ -1230,13 +1230,13 @@ stack_incoming_tcp(TCP_Table *tcpcon,
                     _tcb_change_state_to(tcb, STATE_RECVING);
 
                     /*do connection init for probe*/
-                    struct ProbeTarget target = {
+                    ProbeTarget target = {
                         .ip_proto  = IP_PROTO_TCP,
                         .ip_them   = tcb->ip_them,
                         .port_them = tcb->port_them,
                         .ip_me     = tcb->ip_me,
                         .port_me   = tcb->port_me,
-                        .cookie    = 0,  /*ProbeType State doesn't need cookie*/
+                        .cookie    = 0,  /*Probe_TYPE State doesn't need cookie*/
                         .index     = tcb->port_me-tcpcon->src_port_start,
                     };
 
@@ -1391,7 +1391,7 @@ application_event(TCP_Stack *socket, AppEvent cur_event,
 {
 
     AppState cur_state         = socket->tcb->app_state;
-    const struct ProbeModule *probe  = socket->tcb->probe;
+    const Probe *probe  = socket->tcb->probe;
 
 again:
     switch (cur_state) {
@@ -1450,7 +1450,7 @@ again:
             switch (cur_event) {
                 case APP_WHAT_RECV_PAYLOAD: {
 
-                    struct ProbeTarget target = {
+                    ProbeTarget target = {
                         .ip_proto  = IP_PROTO_TCP,
                         .ip_them   = socket->tcb->ip_them,
                         .ip_me     = socket->tcb->ip_me,
@@ -1548,7 +1548,7 @@ again:
 
         case APP_STATE_SEND_FIRST: {
 
-            struct ProbeTarget target = {
+            ProbeTarget target = {
                 .ip_proto  = IP_PROTO_TCP,
                 .ip_them   = socket->tcb->ip_them,
                 .port_them = socket->tcb->port_them,

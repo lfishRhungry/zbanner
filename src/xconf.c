@@ -47,7 +47,7 @@
 #define strdup _strdup
 #endif
 
-extern struct ConfigParam config_parameters[];
+extern ConfParam config_parameters[];
 
 
 const char ascii_xtate1[] =
@@ -347,7 +347,7 @@ xconf_save_state(struct Xconf *xconf)
     fclose(fp);
 }
 
-static enum ConfigRes SET_scan_module(void *conf, const char *name, const char *value)
+static ConfRes SET_scan_module(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -369,7 +369,7 @@ static enum ConfigRes SET_scan_module(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_help_scan_module(void *conf, const char *name, const char *value)
+static ConfRes SET_help_scan_module(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -387,7 +387,7 @@ static enum ConfigRes SET_help_scan_module(void *conf, const char *name, const c
     return Conf_OK;
 }
 
-static enum ConfigRes SET_help_probe_module(void *conf, const char *name, const char *value)
+static ConfRes SET_help_probe_module(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -405,7 +405,7 @@ static enum ConfigRes SET_help_probe_module(void *conf, const char *name, const 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_help_output_module(void *conf, const char *name, const char *value)
+static ConfRes SET_help_output_module(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -423,7 +423,7 @@ static enum ConfigRes SET_help_output_module(void *conf, const char *name, const
     return Conf_OK;
 }
 
-static enum ConfigRes SET_probe_module(void *conf, const char *name, const char *value)
+static ConfRes SET_probe_module(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -442,7 +442,7 @@ static enum ConfigRes SET_probe_module(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_output_module(void *conf, const char *name, const char *value)
+static ConfRes SET_output_module(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -461,7 +461,7 @@ static enum ConfigRes SET_output_module(void *conf, const char *name, const char
     return Conf_OK;
 }
 
-static enum ConfigRes SET_output_filename(void *conf, const char *name, const char *value)
+static ConfRes SET_output_filename(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -478,7 +478,7 @@ static enum ConfigRes SET_output_filename(void *conf, const char *name, const ch
     return Conf_OK;
 }
 
-static enum ConfigRes SET_show_output(void *conf, const char *name, const char *value)
+static ConfRes SET_show_output(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -509,7 +509,7 @@ static enum ConfigRes SET_show_output(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_no_show_output(void *conf, const char *name, const char *value)
+static ConfRes SET_no_show_output(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -532,7 +532,7 @@ static enum ConfigRes SET_no_show_output(void *conf, const char *name, const cha
     return Conf_OK;
 }
 
-static enum ConfigRes SET_print_status(void *conf, const char *name, const char *value)
+static ConfRes SET_print_status(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -563,7 +563,7 @@ static enum ConfigRes SET_print_status(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_scan_module_args(void *conf, const char *name, const char *value)
+static ConfRes SET_scan_module_args(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -583,7 +583,7 @@ static enum ConfigRes SET_scan_module_args(void *conf, const char *name, const c
     return Conf_OK;
 }
 
-static enum ConfigRes SET_probe_module_args(void *conf, const char *name, const char *value)
+static ConfRes SET_probe_module_args(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -603,7 +603,7 @@ static enum ConfigRes SET_probe_module_args(void *conf, const char *name, const 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_output_module_args(void *conf, const char *name, const char *value)
+static ConfRes SET_output_module_args(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -623,7 +623,7 @@ static enum ConfigRes SET_output_module_args(void *conf, const char *name, const
     return Conf_OK;
 }
 
-static enum ConfigRes SET_list_scan_modules(void *conf, const char *name, const char *value)
+static ConfRes SET_list_scan_modules(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -635,7 +635,7 @@ static enum ConfigRes SET_list_scan_modules(void *conf, const char *name, const 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_list_probe_modules(void *conf, const char *name, const char *value)
+static ConfRes SET_list_probe_modules(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -647,7 +647,7 @@ static enum ConfigRes SET_list_probe_modules(void *conf, const char *name, const
     return Conf_OK;
 }
 
-static enum ConfigRes SET_list_output_modules(void *conf, const char *name, const char *value)
+static ConfRes SET_list_output_modules(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -659,7 +659,7 @@ static enum ConfigRes SET_list_output_modules(void *conf, const char *name, cons
     return Conf_OK;
 }
 
-static enum ConfigRes SET_listif(void *conf, const char *name, const char *value)
+static ConfRes SET_listif(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -676,7 +676,7 @@ static enum ConfigRes SET_listif(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static enum ConfigRes SET_list_target(void *conf, const char *name, const char *value)
+static ConfRes SET_list_target(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -692,7 +692,7 @@ static enum ConfigRes SET_list_target(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_list_range(void *conf, const char *name, const char *value)
+static ConfRes SET_list_range(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -707,7 +707,7 @@ static enum ConfigRes SET_list_range(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_pfring(void *conf, const char *name, const char *value)
+static ConfRes SET_pfring(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -723,7 +723,7 @@ static enum ConfigRes SET_pfring(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static enum ConfigRes SET_noresume(void *conf, const char *name, const char *value)
+static ConfRes SET_noresume(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -738,7 +738,7 @@ static enum ConfigRes SET_noresume(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_nodedup(void *conf, const char *name, const char *value)
+static ConfRes SET_nodedup(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -753,7 +753,7 @@ static enum ConfigRes SET_nodedup(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static enum ConfigRes SET_tcp_window(void *conf, const char *name, const char *value)
+static ConfRes SET_tcp_window(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -773,7 +773,7 @@ static enum ConfigRes SET_tcp_window(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_tcp_init_window(void *conf, const char *name, const char *value)
+static ConfRes SET_tcp_init_window(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -793,7 +793,7 @@ static enum ConfigRes SET_tcp_init_window(void *conf, const char *name, const ch
     return Conf_OK;
 }
 
-static enum ConfigRes SET_packet_ttl(void *conf, const char *name, const char *value)
+static ConfRes SET_packet_ttl(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -813,7 +813,7 @@ static enum ConfigRes SET_packet_ttl(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_dedup_win(void *conf, const char *name, const char *value)
+static ConfRes SET_dedup_win(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -832,7 +832,7 @@ static enum ConfigRes SET_dedup_win(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static enum ConfigRes SET_stack_buf_count(void *conf, const char *name, const char *value)
+static ConfRes SET_stack_buf_count(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -860,7 +860,7 @@ static enum ConfigRes SET_stack_buf_count(void *conf, const char *name, const ch
     return Conf_OK;
 }
 
-static enum ConfigRes SET_dispatch_buf_count(void *conf, const char *name, const char *value)
+static ConfRes SET_dispatch_buf_count(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -888,7 +888,7 @@ static enum ConfigRes SET_dispatch_buf_count(void *conf, const char *name, const
     return Conf_OK;
 }
 
-static enum ConfigRes SET_forever(void *conf, const char *name, const char *value)
+static ConfRes SET_forever(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
     UNUSEDPARM(value);
@@ -903,7 +903,7 @@ static enum ConfigRes SET_forever(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static enum ConfigRes SET_wait(void *conf, const char *name, const char *value)
+static ConfRes SET_wait(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -921,7 +921,7 @@ static enum ConfigRes SET_wait(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static enum ConfigRes SET_rx_handler_count(void *conf, const char *name, const char *value)
+static ConfRes SET_rx_handler_count(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -945,7 +945,7 @@ static enum ConfigRes SET_rx_handler_count(void *conf, const char *name, const c
     return Conf_OK;
 }
 
-static enum ConfigRes SET_tx_thread_count(void *conf, const char *name, const char *value)
+static ConfRes SET_tx_thread_count(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -966,7 +966,7 @@ static enum ConfigRes SET_tx_thread_count(void *conf, const char *name, const ch
     return Conf_OK;
 }
 
-static enum ConfigRes SET_adapter(void *conf, const char *name, const char *value)
+static ConfRes SET_adapter(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -986,7 +986,7 @@ static enum ConfigRes SET_adapter(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static enum ConfigRes SET_source_ip(void *conf, const char *name, const char *value)
+static ConfRes SET_source_ip(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1067,7 +1067,7 @@ static enum ConfigRes SET_source_ip(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static enum ConfigRes SET_source_port(void *conf, const char *name, const char *value)
+static ConfRes SET_source_port(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1115,7 +1115,7 @@ static enum ConfigRes SET_source_port(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_target_output(void *conf, const char *name, const char *value)
+static ConfRes SET_target_output(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1223,7 +1223,7 @@ static enum ConfigRes SET_target_output(void *conf, const char *name, const char
     return Conf_OK;
 }
 
-static enum ConfigRes SET_target_ip(void *conf, const char *name, const char *value)
+static ConfRes SET_target_ip(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1244,7 +1244,7 @@ static enum ConfigRes SET_target_ip(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static enum ConfigRes SET_adapter_snaplen(void *conf, const char *name, const char *value)
+static ConfRes SET_adapter_snaplen(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1264,7 +1264,7 @@ static enum ConfigRes SET_adapter_snaplen(void *conf, const char *name, const ch
     return Conf_OK;
 }
 
-static enum ConfigRes SET_adapter_vlan(void *conf, const char *name, const char *value)
+static ConfRes SET_adapter_vlan(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1281,7 +1281,7 @@ static enum ConfigRes SET_adapter_vlan(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_target_port(void *conf, const char *name, const char *value)
+static ConfRes SET_target_port(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1304,7 +1304,7 @@ static enum ConfigRes SET_target_port(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_top_port(void *conf, const char *name, const char *value)
+static ConfRes SET_top_port(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1344,7 +1344,7 @@ static enum ConfigRes SET_top_port(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_exclude_ip(void *conf, const char *name, const char *value)
+static ConfRes SET_exclude_ip(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1365,7 +1365,7 @@ static enum ConfigRes SET_exclude_ip(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_exclude_port(void *conf, const char *name, const char *value)
+static ConfRes SET_exclude_port(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1387,7 +1387,7 @@ static enum ConfigRes SET_exclude_port(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_include_file(void *conf, const char *name, const char *value)
+static ConfRes SET_include_file(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1409,7 +1409,7 @@ static enum ConfigRes SET_include_file(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_exclude_file(void *conf, const char *name, const char *value)
+static ConfRes SET_exclude_file(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1438,7 +1438,7 @@ static enum ConfigRes SET_exclude_file(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_source_mac(void *conf, const char *name, const char *value)
+static ConfRes SET_source_mac(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1482,7 +1482,7 @@ static enum ConfigRes SET_source_mac(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_router_ip(void *conf, const char *name, const char *value)
+static ConfRes SET_router_ip(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1512,7 +1512,7 @@ static enum ConfigRes SET_router_ip(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static enum ConfigRes SET_router_mac(void *conf, const char *name, const char *value)
+static ConfRes SET_router_mac(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1550,7 +1550,7 @@ static enum ConfigRes SET_router_mac(void *conf, const char *name, const char *v
 /**
  * read conf file and set params directly
 */
-static enum ConfigRes SET_read_conf(void *conf, const char *name, const char *value)
+static ConfRes SET_read_conf(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1614,7 +1614,7 @@ static enum ConfigRes SET_read_conf(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static enum ConfigRes SET_packet_trace(void *conf, const char *name, const char *value)
+static ConfRes SET_packet_trace(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1629,7 +1629,7 @@ static enum ConfigRes SET_packet_trace(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_ndjson_status(void *conf, const char *name, const char *value)
+static ConfRes SET_ndjson_status(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1643,7 +1643,7 @@ static enum ConfigRes SET_ndjson_status(void *conf, const char *name, const char
     return Conf_OK;
 }
 
-static enum ConfigRes SET_append(void *conf, const char *name, const char *value)
+static ConfRes SET_append(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1658,7 +1658,7 @@ static enum ConfigRes SET_append(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static enum ConfigRes SET_interactive(void *conf, const char *name, const char *value)
+static ConfRes SET_interactive(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1673,7 +1673,7 @@ static enum ConfigRes SET_interactive(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_offline(void *conf, const char *name, const char *value)
+static ConfRes SET_offline(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1687,7 +1687,7 @@ static enum ConfigRes SET_offline(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static enum ConfigRes SET_no_cpu_bind(void *conf, const char *name, const char *value)
+static ConfRes SET_no_cpu_bind(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1701,7 +1701,7 @@ static enum ConfigRes SET_no_cpu_bind(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_static_seed(void *conf, const char *name, const char *value)
+static ConfRes SET_static_seed(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1715,7 +1715,7 @@ static enum ConfigRes SET_static_seed(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_infinite(void *conf, const char *name, const char *value)
+static ConfRes SET_infinite(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1729,7 +1729,7 @@ static enum ConfigRes SET_infinite(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_fast_timeout(void *conf, const char *name, const char *value)
+static ConfRes SET_fast_timeout(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1764,7 +1764,7 @@ fail:
     return Conf_ERR;
 }
 
-static enum ConfigRes SET_pcap_filename(void *conf, const char *name, const char *value)
+static ConfRes SET_pcap_filename(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1778,7 +1778,7 @@ static enum ConfigRes SET_pcap_filename(void *conf, const char *name, const char
     return Conf_OK;
 }
 
-static enum ConfigRes SET_echo(void *conf, const char *name, const char *value)
+static ConfRes SET_echo(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1795,7 +1795,7 @@ static enum ConfigRes SET_echo(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static enum ConfigRes SET_debugif(void *conf, const char *name, const char *value)
+static ConfRes SET_debugif(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1808,7 +1808,7 @@ static enum ConfigRes SET_debugif(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static enum ConfigRes SET_benchmark(void *conf, const char *name, const char *value)
+static ConfRes SET_benchmark(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1821,7 +1821,7 @@ static enum ConfigRes SET_benchmark(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static enum ConfigRes SET_selftest(void *conf, const char *name, const char *value)
+static ConfRes SET_selftest(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1834,7 +1834,7 @@ static enum ConfigRes SET_selftest(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_list_cidr(void *conf, const char *name, const char *value)
+static ConfRes SET_list_cidr(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -1847,7 +1847,7 @@ static enum ConfigRes SET_list_cidr(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static enum ConfigRes SET_lan_mode(void *conf, const char *name, const char *value)
+static ConfRes SET_lan_mode(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1863,7 +1863,7 @@ static enum ConfigRes SET_lan_mode(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_bypass_os(void *conf, const char *name, const char *value)
+static ConfRes SET_bypass_os(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1880,7 +1880,7 @@ static enum ConfigRes SET_bypass_os(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static enum ConfigRes SET_fake_router_mac(void *conf, const char *name, const char *value)
+static ConfRes SET_fake_router_mac(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1896,7 +1896,7 @@ static enum ConfigRes SET_fake_router_mac(void *conf, const char *name, const ch
     return Conf_OK;
 }
 
-static enum ConfigRes SET_rate(void *conf, const char *name, const char *value)
+static ConfRes SET_rate(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     double rate = 0.0;
@@ -1943,7 +1943,7 @@ static enum ConfigRes SET_rate(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static enum ConfigRes SET_max_packet_len(void *conf, const char *name, const char *value)
+static ConfRes SET_max_packet_len(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1957,7 +1957,7 @@ static enum ConfigRes SET_max_packet_len(void *conf, const char *name, const cha
     return Conf_OK;
 }
 
-static enum ConfigRes SET_resume_count(void *conf, const char *name, const char *value)
+static ConfRes SET_resume_count(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1971,7 +1971,7 @@ static enum ConfigRes SET_resume_count(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_resume_index(void *conf, const char *name, const char *value)
+static ConfRes SET_resume_index(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -1985,7 +1985,7 @@ static enum ConfigRes SET_resume_index(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_no_bpf(void *conf, const char *name, const char *value)
+static ConfRes SET_no_bpf(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -2000,7 +2000,7 @@ static enum ConfigRes SET_no_bpf(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static enum ConfigRes SET_bpf_filter(void *conf, const char *name, const char *value)
+static ConfRes SET_bpf_filter(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -2020,7 +2020,7 @@ static enum ConfigRes SET_bpf_filter(void *conf, const char *name, const char *v
 }
 
 
-static enum ConfigRes SET_seed(void *conf, const char *name, const char *value)
+static ConfRes SET_seed(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -2035,7 +2035,7 @@ static enum ConfigRes SET_seed(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static enum ConfigRes SET_nothing(void *conf, const char *name, const char *value)
+static ConfRes SET_nothing(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -2046,7 +2046,7 @@ static enum ConfigRes SET_nothing(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static enum ConfigRes SET_version(void *conf, const char *name, const char *value)
+static ConfRes SET_version(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -2060,7 +2060,7 @@ static enum ConfigRes SET_version(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static enum ConfigRes SET_usage(void *conf, const char *name, const char *value)
+static ConfRes SET_usage(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -2074,7 +2074,7 @@ static enum ConfigRes SET_usage(void *conf, const char *name, const char *value)
     return Conf_ERR;
 }
 
-static enum ConfigRes SET_print_intro(void *conf, const char *name, const char *value)
+static ConfRes SET_print_intro(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -2088,7 +2088,7 @@ static enum ConfigRes SET_print_intro(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_print_help(void *conf, const char *name, const char *value)
+static ConfRes SET_print_help(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -2102,7 +2102,7 @@ static enum ConfigRes SET_print_help(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_log_level(void *conf, const char *name, const char *value)
+static ConfRes SET_log_level(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(value);
@@ -2122,7 +2122,7 @@ static enum ConfigRes SET_log_level(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static enum ConfigRes SET_shard(void *conf, const char *name, const char *value)
+static ConfRes SET_shard(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     unsigned one = 0;
@@ -2156,7 +2156,7 @@ static enum ConfigRes SET_shard(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static enum ConfigRes SET_tcp_mss(void *conf, const char *name, const char *value)
+static ConfRes SET_tcp_mss(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
 
@@ -2213,7 +2213,7 @@ fail:
     return Conf_ERR;
 }
 
-static enum ConfigRes SET_tcp_wscale(void *conf, const char *name, const char *value)
+static ConfRes SET_tcp_wscale(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     static const unsigned default_value = 3;
@@ -2267,7 +2267,7 @@ fail:
     return Conf_ERR;
 }
 
-static enum ConfigRes SET_tcp_tsecho(void *conf, const char *name, const char *value)
+static ConfRes SET_tcp_tsecho(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     static const unsigned default_value = 0x12345678;
@@ -2321,7 +2321,7 @@ fail:
     return Conf_ERR;
 }
 
-static enum ConfigRes SET_tcp_sackok(void *conf, const char *name, const char *value)
+static ConfRes SET_tcp_sackok(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     if (xconf->echo) {
@@ -2364,7 +2364,7 @@ fail:
     return Conf_ERR;
 }
 
-static enum ConfigRes SET_repeat(void *conf, const char *name, const char *value)
+static ConfRes SET_repeat(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -2385,7 +2385,7 @@ static enum ConfigRes SET_repeat(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static enum ConfigRes SET_blackrock_rounds(void *conf, const char *name, const char *value)
+static ConfRes SET_blackrock_rounds(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -2400,7 +2400,7 @@ static enum ConfigRes SET_blackrock_rounds(void *conf, const char *name, const c
     return Conf_OK;
 }
 
-static enum ConfigRes SET_send_queue(void *conf, const char *name, const char *value)
+static ConfRes SET_send_queue(void *conf, const char *name, const char *value)
 {
     struct Xconf *xconf = (struct Xconf *)conf;
     UNUSEDPARM(name);
@@ -2415,7 +2415,7 @@ static enum ConfigRes SET_send_queue(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-struct ConfigParam config_parameters[] = {
+ConfParam config_parameters[] = {
     {"BASIC PARAMITERS", SET_nothing, 0, {0}, NULL},
 
     {

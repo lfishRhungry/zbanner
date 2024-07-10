@@ -69,7 +69,7 @@ dispatch_thread(void *v)
     struct RxDispatch *parms = v;
     while (!time_to_finish_rx) {
         int err = 1;
-        struct Received *recved = NULL;
+        PktRecv *recved = NULL;
 
         err = rte_ring_sc_dequeue(parms->dispatch_queue, (void**)&recved);
         if (err != 0) {
@@ -108,7 +108,7 @@ struct RxHandle {
      * meaning that the thread cannot change the contents. That'd be
      * unsafe */
     const struct Xconf   *xconf;
-    struct ScanModule    *scan_module;
+    Scanner    *scan_module;
     PACKET_QUEUE         *handle_queue;
     FHandler             *ft_handler;
     STACK       *stack;
@@ -149,7 +149,7 @@ handle_thread(void *v)
         */
         parms->scan_module->poll_cb(parms->index);
 
-        struct Received *recved = NULL;
+        PktRecv *recved = NULL;
         int err = rte_ring_sc_dequeue(parms->handle_queue, (void**)&recved);
         if (err != 0) {
             pixie_usleep(RTE_XTATE_DEQ_USEC);
@@ -192,7 +192,7 @@ void receive_thread(void *v) {
     int                            data_link                   = stack_if_datalink(adapter);
     uint64_t                       entropy                     = xconf->seed;
     STACK                         *stack                       = xconf->stack;
-    struct ScanModule             *scan_module                 = xconf->scan_module;
+    Scanner             *scan_module                 = xconf->scan_module;
     struct DedupTable             *dedup                       = NULL;
     struct PcapFile               *pcapfile                    = NULL;
     struct ScanTmEvent            *tm_event                    = NULL;
@@ -204,7 +204,7 @@ void receive_thread(void *v) {
     size_t                         dispatcher;
     struct RxDispatch              dispatch_parms;
     PACKET_QUEUE                  *dispatch_q;
-    struct Received               *recved;
+    PktRecv               *recved;
 
 
     LOG(LEVEL_DEBUG, "starting receive thread\n");
@@ -333,7 +333,7 @@ void receive_thread(void *v) {
          * recved will not be handle in this thread.
          * and packet received from Adapters cannot exist too long.
         */
-        recved                = CALLOC(1, sizeof(struct Received));
+        recved                = CALLOC(1, sizeof(PktRecv));
         recved->packet        = MALLOC(pkt_len);
         recved->length        = pkt_len;
         recved->secs          = pkt_secs;
@@ -394,7 +394,7 @@ void receive_thread(void *v) {
             }
         }
 
-        struct PreHandle pre = {
+        PreHandle pre = {
             .go_record       = 0,
             .go_dedup        = 0,
             .dedup_ip_them   = ip_them,

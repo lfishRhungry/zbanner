@@ -8,7 +8,7 @@
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
 
-extern struct ScanModule NdpNsScan; /*for internal x-ref*/
+extern Scanner NdpNsScan; /*for internal x-ref*/
 
 static macaddress_t src_mac;
 
@@ -18,7 +18,7 @@ struct NdpNsConf {
 
 static struct NdpNsConf ndpns_conf = {0};
 
-static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *value)
+static ConfRes SET_record_ttl(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -28,7 +28,7 @@ static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static struct ConfigParam ndpns_parameters[] = {
+static ConfParam ndpns_parameters[] = {
     {
         "record-ttl",
         SET_record_ttl,
@@ -60,7 +60,7 @@ ndpns_init(const struct Xconf *xconf)
 static bool
 ndpns_transmit(
     uint64_t entropy,
-    struct ScanTarget *target,
+    ScanTarget *target,
     struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
@@ -88,8 +88,8 @@ ndpns_transmit(
 static void
 ndpns_validate(
     uint64_t entropy,
-    struct Received *recved,
-    struct PreHandle *pre)
+    PktRecv *recved,
+    PreHandle *pre)
 {
     /*record icmpv4 to my ip*/
     if (recved->parsed.found == FOUND_NDPv6
@@ -113,7 +113,7 @@ static void
 ndpns_handle(
     unsigned th_idx,
     uint64_t entropy,
-    struct Received *recved,
+    PktRecv *recved,
     OutItem *item,
     STACK *stack,
     FHandler *handler)
@@ -155,7 +155,7 @@ static void ndpns_timeout(
     safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
 }
 
-struct ScanModule NdpNsScan = {
+Scanner NdpNsScan = {
     .name                = "ndp-ns",
     .required_probe_type = 0,
     .support_timeout     = 1,

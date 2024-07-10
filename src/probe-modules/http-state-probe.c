@@ -98,7 +98,7 @@ struct HttpStateConf {
 
 static struct HttpStateConf httpstate_conf = {0};
 
-static enum ConfigRes SET_get_whole_response(void *conf, const char *name, const char *value)
+static ConfRes SET_get_whole_response(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -110,7 +110,7 @@ static enum ConfigRes SET_get_whole_response(void *conf, const char *name, const
 
 #ifndef NOT_FOUND_PCRE2
 
-static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
+static ConfRes SET_show_banner(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -121,7 +121,7 @@ static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *
 }
 
 
-static enum ConfigRes SET_match_whole_response(void *conf, const char *name, const char *value)
+static ConfRes SET_match_whole_response(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -131,7 +131,7 @@ static enum ConfigRes SET_match_whole_response(void *conf, const char *name, con
     return Conf_OK;
 }
 
-static enum ConfigRes SET_newlines(void *conf, const char *name, const char *value)
+static ConfRes SET_newlines(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -141,7 +141,7 @@ static enum ConfigRes SET_newlines(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_insensitive(void *conf, const char *name, const char *value)
+static ConfRes SET_insensitive(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -151,7 +151,7 @@ static enum ConfigRes SET_insensitive(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
+static ConfRes SET_regex(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -205,7 +205,7 @@ static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
 
 #endif
 
-static enum ConfigRes SET_method(void *conf, const char *name, const char *value)
+static ConfRes SET_method(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -219,7 +219,7 @@ static enum ConfigRes SET_method(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static enum ConfigRes SET_url(void *conf, const char *name, const char *value)
+static ConfRes SET_url(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -233,7 +233,7 @@ static enum ConfigRes SET_url(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static enum ConfigRes SET_version(void *conf, const char *name, const char *value)
+static ConfRes SET_version(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -247,7 +247,7 @@ static enum ConfigRes SET_version(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static enum ConfigRes SET_host(void *conf, const char *name, const char *value)
+static ConfRes SET_host(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -261,7 +261,7 @@ static enum ConfigRes SET_host(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static enum ConfigRes SET_user_agent(void *conf, const char *name, const char *value)
+static ConfRes SET_user_agent(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -275,7 +275,7 @@ static enum ConfigRes SET_user_agent(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_payload(void *conf, const char *name, const char *value)
+static ConfRes SET_payload(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -289,7 +289,7 @@ static enum ConfigRes SET_payload(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static enum ConfigRes SET_header(void *conf, const char *name, const char *value)
+static ConfRes SET_header(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
 
@@ -350,7 +350,7 @@ static enum ConfigRes SET_header(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static enum ConfigRes SET_cookie(void *conf, const char *name, const char *value)
+static ConfRes SET_cookie(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -375,7 +375,7 @@ static enum ConfigRes SET_cookie(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static enum ConfigRes SET_remove(void *conf, const char *name, const char *value)
+static ConfRes SET_remove(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -399,7 +399,7 @@ static enum ConfigRes SET_remove(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static enum ConfigRes SET_dynamic_host(void *conf, const char *name, const char *value)
+static ConfRes SET_dynamic_host(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -409,7 +409,7 @@ static enum ConfigRes SET_dynamic_host(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static struct ConfigParam httpstate_parameters[] = {
+static ConfParam httpstate_parameters[] = {
     {
         "method",
         SET_method,
@@ -547,7 +547,7 @@ static struct ConfigParam httpstate_parameters[] = {
 
 
 /*for internal x-ref*/
-extern struct ProbeModule HttpStateProbe;
+extern Probe HttpStateProbe;
 
 static bool
 http_global_init(const struct Xconf *xconf)
@@ -758,8 +758,8 @@ http_global_init(const struct Xconf *xconf)
 static void
 httpstate_make_hello(
     struct DataPass *pass,
-    struct ProbeState *state,
-    struct ProbeTarget *target)
+    ProbeState *state,
+    ProbeTarget *target)
 {
     if (httpstate_conf.dynamic_host) {
         if (target->ip_them.version==4) {
@@ -785,9 +785,9 @@ httpstate_make_hello(
 static unsigned
 httpstate_parse_response(
     struct DataPass *pass,
-    struct ProbeState *state,
+    ProbeState *state,
     OutConf *out,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px,
     unsigned sizeof_px)
 {
@@ -880,7 +880,7 @@ httpstate_close()
 #endif
 }
 
-struct ProbeModule HttpStateProbe = {
+Probe HttpStateProbe = {
     .name       = "http-state",
     .type       = ProbeType_STATE,
     .multi_mode = Multi_Null,

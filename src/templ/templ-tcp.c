@@ -166,7 +166,7 @@ static bool
 _consistancy_check(const unsigned char *buf, size_t length,
     const void *payload, size_t payload_length)
 {
-    struct PreprocessedInfo parsed;
+    PreInfo parsed;
     unsigned is_success;
 
     /* Parse the packet */
@@ -260,7 +260,7 @@ fail:
 static struct tcp_hdr_t
 _find_tcp_header(const unsigned char *buf, size_t length) {
     struct tcp_hdr_t hdr = {0};
-    struct PreprocessedInfo parsed;
+    PreInfo parsed;
     unsigned is_success;
 
     /*
@@ -1099,7 +1099,7 @@ templ_tcp_apply_options(unsigned char **inout_buf, size_t *inout_length,
 void
 tcp_set_window(unsigned char *px, size_t px_length, unsigned window)
 {
-    struct PreprocessedInfo parsed;
+    PreInfo parsed;
     unsigned                x;
     size_t                  offset;
     unsigned                xsum;

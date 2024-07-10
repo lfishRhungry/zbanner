@@ -28,50 +28,50 @@
 
 //! ADD NEW LZR SUBPROBES(HANDSHAKES) HERE
 //! ALSO ADD TO stateless-probes.c IF NEEDED
-extern struct ProbeModule LzrHttpProbe;
-extern struct ProbeModule LzrTlsProbe;
-extern struct ProbeModule LzrFtpProbe;
-extern struct ProbeModule LzrPop3Probe;
-extern struct ProbeModule LzrImapProbe;
-extern struct ProbeModule LzrSmtpProbe;
-extern struct ProbeModule LzrSshProbe;
-extern struct ProbeModule LzrSocks5Probe;
-extern struct ProbeModule LzrTelnetProbe;
-extern struct ProbeModule LzrFixProbe;
-extern struct ProbeModule LzrSmbProbe;
-extern struct ProbeModule LzrMqttProbe;
-extern struct ProbeModule LzrAmqpProbe;
-extern struct ProbeModule LzrMysqlProbe;
-extern struct ProbeModule LzrMongodbProbe;
-extern struct ProbeModule LzrRedisProbe;
-extern struct ProbeModule LzrPostgresProbe;
-extern struct ProbeModule LzrMssqlProbe;
-extern struct ProbeModule LzrOracleProbe;
-extern struct ProbeModule LzrRdpProbe;
-extern struct ProbeModule LzrX11Probe;
-extern struct ProbeModule LzrVncProbe;
-extern struct ProbeModule LzrK8sProbe;
-extern struct ProbeModule LzrRtspProbe;
-extern struct ProbeModule LzrModbusProbe;
-extern struct ProbeModule LzrSiemensProbe;
-extern struct ProbeModule LzrBgpProbe;
-extern struct ProbeModule LzrPptpProbe;
-extern struct ProbeModule LzrDnsProbe;
-extern struct ProbeModule LzrIpmiProbe;
-extern struct ProbeModule LzrDnp3Probe;
-extern struct ProbeModule LzrFoxProbe;
-extern struct ProbeModule LzrMemcachedAsciiProbe;
-extern struct ProbeModule LzrMemcachedBinaryProbe;
-extern struct ProbeModule LzrIppProbe;
-extern struct ProbeModule LzrWaitProbe;
-extern struct ProbeModule LzrNewlinesProbe;
-extern struct ProbeModule LzrNewlines50Probe;
+extern Probe LzrHttpProbe;
+extern Probe LzrTlsProbe;
+extern Probe LzrFtpProbe;
+extern Probe LzrPop3Probe;
+extern Probe LzrImapProbe;
+extern Probe LzrSmtpProbe;
+extern Probe LzrSshProbe;
+extern Probe LzrSocks5Probe;
+extern Probe LzrTelnetProbe;
+extern Probe LzrFixProbe;
+extern Probe LzrSmbProbe;
+extern Probe LzrMqttProbe;
+extern Probe LzrAmqpProbe;
+extern Probe LzrMysqlProbe;
+extern Probe LzrMongodbProbe;
+extern Probe LzrRedisProbe;
+extern Probe LzrPostgresProbe;
+extern Probe LzrMssqlProbe;
+extern Probe LzrOracleProbe;
+extern Probe LzrRdpProbe;
+extern Probe LzrX11Probe;
+extern Probe LzrVncProbe;
+extern Probe LzrK8sProbe;
+extern Probe LzrRtspProbe;
+extern Probe LzrModbusProbe;
+extern Probe LzrSiemensProbe;
+extern Probe LzrBgpProbe;
+extern Probe LzrPptpProbe;
+extern Probe LzrDnsProbe;
+extern Probe LzrIpmiProbe;
+extern Probe LzrDnp3Probe;
+extern Probe LzrFoxProbe;
+extern Probe LzrMemcachedAsciiProbe;
+extern Probe LzrMemcachedBinaryProbe;
+extern Probe LzrIppProbe;
+extern Probe LzrWaitProbe;
+extern Probe LzrNewlinesProbe;
+extern Probe LzrNewlines50Probe;
 
 
 
 //! ADD NEW LZR SUBPROBES(HANDSHAKES) HERE
 //! ALSO ADD TO probe-modules.c IF NEEDED
-static struct ProbeModule *lzr_handshakes[] = {
+static Probe *lzr_handshakes[] = {
     &LzrHttpProbe,
     &LzrTlsProbe,
     &LzrFtpProbe,
@@ -115,10 +115,10 @@ static struct ProbeModule *lzr_handshakes[] = {
 /******************************************************************/
 
 /*for x-refer*/
-extern struct ProbeModule LzrProbe;
+extern Probe LzrProbe;
 
 struct LzrConf {
-    struct ProbeModule **handshake;
+    Probe **handshake;
     unsigned hs_count;
     unsigned force_all_handshakes:1;
     unsigned force_all_match:1;
@@ -128,7 +128,7 @@ struct LzrConf {
 
 static struct LzrConf lzr_conf = {0};
 
-static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
+static ConfRes SET_show_banner(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -138,7 +138,7 @@ static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_banner_if_fail(void *conf, const char *name, const char *value)
+static ConfRes SET_banner_if_fail(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -148,7 +148,7 @@ static enum ConfigRes SET_banner_if_fail(void *conf, const char *name, const cha
     return Conf_OK;
 }
 
-static enum ConfigRes SET_force_all_match(void *conf, const char *name, const char *value)
+static ConfRes SET_force_all_match(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -158,7 +158,7 @@ static enum ConfigRes SET_force_all_match(void *conf, const char *name, const ch
     return Conf_OK;
 }
 
-static enum ConfigRes SET_force_all_handshake(void *conf, const char *name, const char *value)
+static ConfRes SET_force_all_handshake(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -168,7 +168,7 @@ static enum ConfigRes SET_force_all_handshake(void *conf, const char *name, cons
     return Conf_OK;
 }
 
-static enum ConfigRes SET_handshake(void *conf, const char *name, const char *value)
+static ConfRes SET_handshake(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -192,7 +192,7 @@ static enum ConfigRes SET_handshake(void *conf, const char *name, const char *va
     }
 
     lzr_conf.hs_count  = hs_count;
-    lzr_conf.handshake = MALLOC(sizeof(struct ProbeModule *)*hs_count);
+    lzr_conf.handshake = MALLOC(sizeof(Probe *)*hs_count);
     size_t hs_index = 0;
     p               = str;
     for (;p-str < str_len;p++) {
@@ -218,7 +218,7 @@ static enum ConfigRes SET_handshake(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static struct ConfigParam lzr_parameters[] = {
+static ConfParam lzr_parameters[] = {
     {
         "handshake",
         SET_handshake,
@@ -266,7 +266,7 @@ lzr_global_init(const struct Xconf *xconf)
 {
     /*Use LzrWait if no subprobe specified*/
     if (!lzr_conf.handshake) {
-        lzr_conf.handshake    = MALLOC(sizeof(struct ProbeModule *));
+        lzr_conf.handshake    = MALLOC(sizeof(Probe *));
         lzr_conf.handshake[0] = &LzrHttpProbe;
         lzr_conf.hs_count     = 1;
         LOG(LEVEL_HINT, "Use default LzrHttpProbe(http) as handshake of LzrProbe "
@@ -286,13 +286,13 @@ lzr_global_init(const struct Xconf *xconf)
 }
 
 static size_t
-lzr_make_payload(struct ProbeTarget *target, unsigned char *payload_buf)
+lzr_make_payload(ProbeTarget *target, unsigned char *payload_buf)
 {
     return lzr_conf.handshake[target->index]->make_payload_cb(target, payload_buf);
 }
 
 static size_t
-lzr_get_payload_length(struct ProbeTarget *target)
+lzr_get_payload_length(ProbeTarget *target)
 {
     if (target->index < lzr_conf.hs_count)
         return lzr_conf.handshake[target->index]->get_payload_length_cb(target);
@@ -303,7 +303,7 @@ lzr_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_handle_response(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -377,7 +377,7 @@ lzr_handle_response(
 }
 
 static unsigned
-lzr_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
     safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
@@ -408,7 +408,7 @@ void lzr_close()
     free(lzr_conf.handshake);
 }
 
-struct ProbeModule LzrProbe = {
+Probe LzrProbe = {
     .name       = "lzr",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_DynamicNext,

@@ -5,7 +5,7 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrHttpProbe;
+extern Probe LzrHttpProbe;
 
 static char lzr_http_fmt_ipv4[] = "GET / HTTP/1.1\r\n"
     "Host: %s\r\n"
@@ -23,7 +23,7 @@ static char lzr_http_fmt_ipv6[] = "GET / HTTP/1.1\r\n"
 
 static size_t
 lzr_http_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     if (target->ip_them.version==4)
@@ -37,7 +37,7 @@ lzr_http_make_payload(
 }
 
 static size_t
-lzr_http_get_payload_length(struct ProbeTarget *target)
+lzr_http_get_payload_length(ProbeTarget *target)
 {
     unsigned char tmp_str[PM_PAYLOAD_SIZE];
     return lzr_http_make_payload(target, tmp_str);
@@ -46,7 +46,7 @@ lzr_http_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_http_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -71,7 +71,7 @@ lzr_http_handle_reponse(
 }
 
 static unsigned
-lzr_http_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_http_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not http");
@@ -79,7 +79,7 @@ lzr_http_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrHttpProbe = {
+Probe LzrHttpProbe = {
     .name       = "lzr-http",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

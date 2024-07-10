@@ -12,7 +12,7 @@
 #include "../util-scan/rstfilter.h"
 #include "../util-out/logger.h"
 
-extern struct ScanModule TcpStateScan; /*for internal x-ref*/
+extern Scanner TcpStateScan; /*for internal x-ref*/
 
 /**
  * For compatible with multi-recv-handlers and keeping internal thread-safe of
@@ -50,7 +50,7 @@ struct TcpStateConf {
 
 static struct TcpStateConf tcpstate_conf = {0};
 
-static enum ConfigRes SET_record_mss(void *conf, const char *name, const char *value)
+static ConfRes SET_record_mss(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -60,7 +60,7 @@ static enum ConfigRes SET_record_mss(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *value)
+static ConfRes SET_record_ttl(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -70,7 +70,7 @@ static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *value)
+static ConfRes SET_record_ipid(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -80,7 +80,7 @@ static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_record_win(void *conf, const char *name, const char *value)
+static ConfRes SET_record_win(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -90,7 +90,7 @@ static enum ConfigRes SET_record_win(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_port_success(void *conf, const char *name, const char *value)
+static ConfRes SET_port_success(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -100,7 +100,7 @@ static enum ConfigRes SET_port_success(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_conn_expire(void *conf, const char *name, const char *value)
+static ConfRes SET_conn_expire(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
 
@@ -116,7 +116,7 @@ static enum ConfigRes SET_conn_expire(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static struct ConfigParam tcpstate_parameters[] = {
+static ConfParam tcpstate_parameters[] = {
     {
         "conn-expire",
         SET_conn_expire,
@@ -195,7 +195,7 @@ static bool tcpstate_init(const struct Xconf *xconf)
 static bool
 tcpstate_transmit(
     uint64_t entropy,
-    struct ScanTarget *target,
+    ScanTarget *target,
     struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
@@ -221,8 +221,8 @@ tcpstate_transmit(
 static void
 tcpstate_validate(
     uint64_t entropy,
-    struct Received *recved,
-    struct PreHandle *pre)
+    PktRecv *recved,
+    PreHandle *pre)
 {
     if (recved->parsed.found == FOUND_TCP
         && recved->is_myip
@@ -253,7 +253,7 @@ static void
 tcpstate_handle(
     unsigned th_idx,
     uint64_t entropy,
-    struct Received *recved,
+    PktRecv *recved,
     OutItem *item,
     STACK *stack,
     FHandler *handler)
@@ -430,7 +430,7 @@ static void tcpstate_status(char *status)
     snprintf(status, XTS_ADD_SIZE, "tcb=%"PRIu64, tcb_count);
 }
 
-struct ScanModule TcpStateScan = {
+Scanner TcpStateScan = {
     .name                = "tcp-state",
     .required_probe_type = ProbeType_STATE,
     .support_timeout     = 0,

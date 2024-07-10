@@ -276,7 +276,7 @@ static void
 _template_init_ipv6(TmplPkt *tmpl, macaddress_t router_mac_ipv6,
     unsigned data_link_type)
 {
-    struct PreprocessedInfo parsed;
+    PreInfo parsed;
     unsigned payload_length;
     unsigned offset_ip;
     unsigned offset_tcp;
@@ -398,7 +398,7 @@ _template_init(
     )
 {
     unsigned char *px;
-    struct PreprocessedInfo parsed;
+    PreInfo parsed;
     unsigned x;
 
     /*

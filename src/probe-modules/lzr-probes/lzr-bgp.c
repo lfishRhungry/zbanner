@@ -9,13 +9,13 @@
 #define BGP_PREFIX "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrBgpProbe;
+extern Probe LzrBgpProbe;
 
 
 static unsigned
 lzr_bgp_handle_response(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -46,7 +46,7 @@ lzr_bgp_handle_response(
 }
 
 static unsigned
-lzr_bgp_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_bgp_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not bgp");
@@ -54,7 +54,7 @@ lzr_bgp_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrBgpProbe = {
+Probe LzrBgpProbe = {
     .name       = "lzr-bgp",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

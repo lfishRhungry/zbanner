@@ -55,7 +55,7 @@ _tsp_state_to_string(enum TSP_State state)
 }
 
 /*for internal x-ref*/
-extern struct ProbeModule      TlsStateProbe;
+extern Probe      TlsStateProbe;
 /*save Output*/
 static const OutConf   *_tls_out;
 /*public SSL obj for all conn*/
@@ -63,7 +63,7 @@ static SSL_CTX                *_general_ssl_ctx;
 
 struct TlsState {
     OSSL_HANDSHAKE_STATE      handshake_state;
-    struct ProbeState         substate;
+    ProbeState         substate;
     unsigned char            *data;
     size_t                    data_size;
     SSL                      *ssl;
@@ -76,7 +76,7 @@ struct TlsState {
 };
 
 struct TlsStateConf {
-    struct ProbeModule       *subprobe;
+    Probe       *subprobe;
     char                     *subprobe_args;
     unsigned                  dump_subject:1;
     unsigned                  dump_version:1;
@@ -88,7 +88,7 @@ struct TlsStateConf {
 
 static struct TlsStateConf tlsstate_conf = {0};
 
-static enum ConfigRes SET_subprobe(void *conf, const char *name, const char *value)
+static ConfRes SET_subprobe(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -102,7 +102,7 @@ static enum ConfigRes SET_subprobe(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_subprobe_args(void *conf, const char *name, const char *value)
+static ConfRes SET_subprobe_args(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -116,7 +116,7 @@ static enum ConfigRes SET_subprobe_args(void *conf, const char *name, const char
     return Conf_OK;
 }
 
-static enum ConfigRes SET_ssl_keylog(void *conf, const char *name, const char *value)
+static ConfRes SET_ssl_keylog(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -126,7 +126,7 @@ static enum ConfigRes SET_ssl_keylog(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_dump_version(void *conf, const char *name, const char *value)
+static ConfRes SET_dump_version(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -136,7 +136,7 @@ static enum ConfigRes SET_dump_version(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_dump_cipher(void *conf, const char *name, const char *value)
+static ConfRes SET_dump_cipher(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -146,7 +146,7 @@ static enum ConfigRes SET_dump_cipher(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_dump_cert(void *conf, const char *name, const char *value)
+static ConfRes SET_dump_cert(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -156,7 +156,7 @@ static enum ConfigRes SET_dump_cert(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static enum ConfigRes SET_dump_subject(void *conf, const char *name, const char *value)
+static ConfRes SET_dump_subject(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -166,7 +166,7 @@ static enum ConfigRes SET_dump_subject(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_fail_handshake(void *conf, const char *name, const char *value)
+static ConfRes SET_fail_handshake(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -176,7 +176,7 @@ static enum ConfigRes SET_fail_handshake(void *conf, const char *name, const cha
     return Conf_OK;
 }
 
-static struct ConfigParam tlsstate_parameters[] = {
+static ConfParam tlsstate_parameters[] = {
     {
         "subprobe",
         SET_subprobe,
@@ -242,7 +242,7 @@ static struct ConfigParam tlsstate_parameters[] = {
 
 static void ssl_keylog_cb(const SSL *ssl, const char *line)
 {
-    struct ProbeTarget *tgt = SSL_get_ex_data(ssl, TSP_EXT_TGT_IDX);
+    ProbeTarget *tgt = SSL_get_ex_data(ssl, TSP_EXT_TGT_IDX);
     if (!tgt)
         return;
 
@@ -264,7 +264,7 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line)
 static void ssl_info_cb(const SSL *ssl, int where, int ret)
 {
     if (where & SSL_CB_ALERT) {
-        struct ProbeTarget *tgt = SSL_get_ex_data(ssl, TSP_EXT_TGT_IDX);
+        ProbeTarget *tgt = SSL_get_ex_data(ssl, TSP_EXT_TGT_IDX);
         if (!tgt)
             return;
 
@@ -286,7 +286,7 @@ static void ssl_info_cb(const SSL *ssl, int where, int ret)
 }
 
 static bool output_subject_info(OutConf *out,
-    struct ProbeTarget *target, SSL *ssl)
+    ProbeTarget *target, SSL *ssl)
 {
     int  res;
     unsigned count;
@@ -432,7 +432,7 @@ static bool output_subject_info(OutConf *out,
 }
 
 static bool output_x502_cert(OutConf *out,
-    struct ProbeTarget *target, SSL *ssl)
+    ProbeTarget *target, SSL *ssl)
 {
     STACK_OF(X509) * sk_x509_certs;
     DataLink *link;
@@ -530,7 +530,7 @@ static bool output_x502_cert(OutConf *out,
 }
 
 static bool output_cipher_suite(OutConf *out,
-    struct ProbeTarget *target, SSL *ssl)
+    ProbeTarget *target, SSL *ssl)
 {
     const SSL_CIPHER *ssl_cipher;
     uint16_t          cipher_suite;
@@ -563,7 +563,7 @@ static bool output_cipher_suite(OutConf *out,
 }
 
 static bool output_tls_version(OutConf *out,
-    struct ProbeTarget *target, SSL *ssl)
+    ProbeTarget *target, SSL *ssl)
 {
     int version = SSL_version(ssl);
 
@@ -692,7 +692,7 @@ tlsstate_global_init(const struct Xconf *xconf)
      * Pass multi-probe attributes of subprobe
      * Well...ugly but works.
      * */
-    enum MultiMode *mode = (enum MultiMode *)&TlsStateProbe.multi_mode;
+    MultiMode *mode = (MultiMode *)&TlsStateProbe.multi_mode;
     unsigned       *num  = (unsigned *)&TlsStateProbe.multi_num;
     *mode = tlsstate_conf.subprobe->multi_mode;
     *num  = tlsstate_conf.subprobe->multi_num;
@@ -721,7 +721,7 @@ static void tlsstate_close()
 
 /*init SSL struct*/
 static bool
-tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
+tlsstate_conn_init(ProbeState *state, ProbeTarget *target)
 {
     int                 res;
     SSL                *ssl;
@@ -767,8 +767,8 @@ tlsstate_conn_init(struct ProbeState *state, struct ProbeTarget *target)
     SSL_set_bio(ssl, rbio, wbio);
 
     /*save `target` to SSL object*/
-    struct ProbeTarget *tgt;
-    tgt              = MALLOC(sizeof(struct ProbeTarget));
+    ProbeTarget *tgt;
+    tgt              = MALLOC(sizeof(ProbeTarget));
     tgt->ip_proto    = target->ip_proto;
     tgt->ip_them     = target->ip_them;
     tgt->port_them   = target->port_them;
@@ -822,7 +822,7 @@ error0:
 }
 
 static void
-tlsstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
+tlsstate_conn_close(ProbeState *state, ProbeTarget *target)
 {
     LOG(LEVEL_DETAIL, "(TSP Conn CLOSE) >>>\n");
 
@@ -862,8 +862,8 @@ tlsstate_conn_close(struct ProbeState *state, struct ProbeTarget *target)
 static void
 tlsstate_make_hello(
     struct DataPass *pass,
-    struct ProbeState *state,
-    struct ProbeTarget *target)
+    ProbeState *state,
+    ProbeTarget *target)
 {
     LOG(LEVEL_DETAIL, "(TSP Make HELLO) >>>\n");
 
@@ -930,9 +930,9 @@ error1:
 static unsigned
 tlsstate_parse_response(
     struct DataPass *pass,
-    struct ProbeState *state,
+    ProbeState *state,
     OutConf *out,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px,
     unsigned sizeof_px)
 {
@@ -1296,7 +1296,7 @@ tlsstate_parse_response(
     return ret;
 }
 
-struct ProbeModule TlsStateProbe = {
+Probe TlsStateProbe = {
     .name       = "tls-state",
     .type       = ProbeType_STATE,
     .multi_mode = Multi_Null,

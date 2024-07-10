@@ -2,13 +2,13 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrNewlinesProbe;
+extern Probe LzrNewlinesProbe;
 
 static char lzr_newlines_payload[] = "\n\n";
 
 static size_t
 lzr_newlines_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, lzr_newlines_payload, strlen(lzr_newlines_payload));
@@ -16,7 +16,7 @@ lzr_newlines_make_payload(
 }
 
 static size_t
-lzr_newlines_get_payload_length(struct ProbeTarget *target)
+lzr_newlines_get_payload_length(ProbeTarget *target)
 {
     return strlen(lzr_newlines_payload);
 }
@@ -24,7 +24,7 @@ lzr_newlines_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_newlines_handle_response(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -37,7 +37,7 @@ lzr_newlines_handle_response(
 }
 
 static unsigned
-lzr_newlines_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_newlines_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
@@ -45,7 +45,7 @@ lzr_newlines_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrNewlinesProbe = {
+Probe LzrNewlinesProbe = {
     .name       = "lzr-newlines",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

@@ -13,7 +13,7 @@ packet_trace(FILE *fp, double pt_start,
     const unsigned char *px, size_t length, bool is_sent)
 {
     unsigned x;
-    struct PreprocessedInfo parsed;
+    PreInfo parsed;
     char from[64];
     char to[64];
     char sz_type[32];

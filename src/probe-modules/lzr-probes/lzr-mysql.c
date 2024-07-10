@@ -6,7 +6,7 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrMysqlProbe;
+extern Probe LzrMysqlProbe;
 
 //https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-tds/9420b4a3-eb9f-4f5e-90bd-3160444aa5a7
 static char lzr_mysql_payload[] =
@@ -18,7 +18,7 @@ static char lzr_mysql_payload[] =
 
 static size_t
 lzr_mysql_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, lzr_mysql_payload, sizeof(lzr_mysql_payload)-1);
@@ -26,7 +26,7 @@ lzr_mysql_make_payload(
 }
 
 static size_t
-lzr_mysql_get_payload_length(struct ProbeTarget *target)
+lzr_mysql_get_payload_length(ProbeTarget *target)
 {
     return sizeof(lzr_mysql_payload)-1;
 }
@@ -34,7 +34,7 @@ lzr_mysql_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_mysql_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -54,7 +54,7 @@ lzr_mysql_handle_reponse(
 }
 
 static unsigned
-lzr_mysql_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_mysql_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not mysql");
@@ -62,7 +62,7 @@ lzr_mysql_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrMysqlProbe = {
+Probe LzrMysqlProbe = {
     .name       = "lzr-mysql",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

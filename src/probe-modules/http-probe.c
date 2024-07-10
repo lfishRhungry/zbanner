@@ -97,7 +97,7 @@ static struct HttpConf http_conf = {0};
 
 #ifndef NOT_FOUND_PCRE2
 
-static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
+static ConfRes SET_show_banner(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -107,7 +107,7 @@ static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_newlines(void *conf, const char *name, const char *value)
+static ConfRes SET_newlines(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -117,7 +117,7 @@ static enum ConfigRes SET_newlines(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_insensitive(void *conf, const char *name, const char *value)
+static ConfRes SET_insensitive(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -127,7 +127,7 @@ static enum ConfigRes SET_insensitive(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
+static ConfRes SET_regex(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -181,7 +181,7 @@ static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
 
 #endif
 
-static enum ConfigRes SET_method(void *conf, const char *name, const char *value)
+static ConfRes SET_method(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -195,7 +195,7 @@ static enum ConfigRes SET_method(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static enum ConfigRes SET_url(void *conf, const char *name, const char *value)
+static ConfRes SET_url(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -209,7 +209,7 @@ static enum ConfigRes SET_url(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static enum ConfigRes SET_version(void *conf, const char *name, const char *value)
+static ConfRes SET_version(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -223,7 +223,7 @@ static enum ConfigRes SET_version(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static enum ConfigRes SET_host(void *conf, const char *name, const char *value)
+static ConfRes SET_host(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -237,7 +237,7 @@ static enum ConfigRes SET_host(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static enum ConfigRes SET_user_agent(void *conf, const char *name, const char *value)
+static ConfRes SET_user_agent(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -251,7 +251,7 @@ static enum ConfigRes SET_user_agent(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_payload(void *conf, const char *name, const char *value)
+static ConfRes SET_payload(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -265,7 +265,7 @@ static enum ConfigRes SET_payload(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static enum ConfigRes SET_header(void *conf, const char *name, const char *value)
+static ConfRes SET_header(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
 
@@ -326,7 +326,7 @@ static enum ConfigRes SET_header(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static enum ConfigRes SET_cookie(void *conf, const char *name, const char *value)
+static ConfRes SET_cookie(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -351,7 +351,7 @@ static enum ConfigRes SET_cookie(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static enum ConfigRes SET_remove(void *conf, const char *name, const char *value)
+static ConfRes SET_remove(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -375,7 +375,7 @@ static enum ConfigRes SET_remove(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static enum ConfigRes SET_dynamic_host(void *conf, const char *name, const char *value)
+static ConfRes SET_dynamic_host(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -385,7 +385,7 @@ static enum ConfigRes SET_dynamic_host(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static struct ConfigParam http_parameters[] = {
+static ConfParam http_parameters[] = {
     {
         "method",
         SET_method,
@@ -508,7 +508,7 @@ static struct ConfigParam http_parameters[] = {
 
 
 /*for internal x-ref*/
-extern struct ProbeModule HttpProbe;
+extern Probe HttpProbe;
 
 static bool
 http_global_init(const struct Xconf *xconf)
@@ -718,7 +718,7 @@ http_global_init(const struct Xconf *xconf)
 
 static size_t
 http_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     if (http_conf.dynamic_host) {
@@ -737,7 +737,7 @@ http_make_payload(
 }
 
 static size_t
-http_get_payload_length(struct ProbeTarget *target)
+http_get_payload_length(ProbeTarget *target)
 {
     if (http_conf.dynamic_host) {
         unsigned char tmp_str[PM_PAYLOAD_SIZE];
@@ -749,7 +749,7 @@ http_get_payload_length(struct ProbeTarget *target)
 static unsigned
 http_handle_response(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -799,7 +799,7 @@ http_handle_response(
 }
 
 static unsigned
-http_handle_timeout(struct ProbeTarget *target, OutItem *item)
+http_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "no response");
@@ -831,7 +831,7 @@ http_close()
 
 }
 
-struct ProbeModule HttpProbe = {
+Probe HttpProbe = {
     .name       = "http",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

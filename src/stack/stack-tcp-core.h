@@ -82,7 +82,7 @@ tcpcon_create_tcb(
     unsigned port_src, unsigned port_dst,
     unsigned my_seqno, unsigned their_seqno,
     unsigned ttl, unsigned mss,
-    const struct ProbeModule *probe,
+    const Probe *probe,
     unsigned secs, unsigned usecs);
 
 /**

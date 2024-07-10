@@ -4,12 +4,12 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrFtpProbe;
+extern Probe LzrFtpProbe;
 
 static unsigned
 lzr_ftp_handle_response(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -51,7 +51,7 @@ lzr_ftp_handle_response(
 }
 
 static unsigned
-lzr_ftp_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_ftp_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not ftp");
@@ -59,7 +59,7 @@ lzr_ftp_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrFtpProbe = {
+Probe LzrFtpProbe = {
     .name       = "lzr-ftp",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

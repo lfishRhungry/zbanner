@@ -4,18 +4,18 @@
 #include "scan-modules.h"
 #include "../util-out/xprint.h"
 
-extern struct ScanModule TcpSynScan;
-extern struct ScanModule IcmpEchoScan;
-extern struct ScanModule IcmpTimeScan;
-extern struct ScanModule ArpReqScan;
-extern struct ScanModule NdpNsScan;
-extern struct ScanModule SctpInitScan;
-extern struct ScanModule ZBannerScan;
-extern struct ScanModule UdpScan;
-extern struct ScanModule TcpStateScan;
+extern Scanner TcpSynScan;
+extern Scanner IcmpEchoScan;
+extern Scanner IcmpTimeScan;
+extern Scanner ArpReqScan;
+extern Scanner NdpNsScan;
+extern Scanner SctpInitScan;
+extern Scanner ZBannerScan;
+extern Scanner UdpScan;
+extern Scanner TcpStateScan;
 //! REGIST YOUR SCAN MODULE HERE
 
-static struct ScanModule *scan_modules_list[] = {
+static Scanner *scan_modules_list[] = {
     &TcpSynScan, /*default scan module*/
     &IcmpEchoScan,
     &IcmpTimeScan,
@@ -28,7 +28,7 @@ static struct ScanModule *scan_modules_list[] = {
     //! REGIST YOUR SCAN MODULE HERE
 };
 
-struct ScanModule *get_scan_module_by_name(const char *name)
+Scanner *get_scan_module_by_name(const char *name)
 {
     int len = (int)(ARRAY_SIZE(scan_modules_list));
     for (int i = 0; i < len; i++) {
@@ -66,7 +66,7 @@ void list_all_scan_modules()
     printf("\n");
 }
 
-void help_scan_module(struct ScanModule * module)
+void help_scan_module(Scanner * module)
 {
     if (!module) {
         LOG(LEVEL_ERROR, "No specified scan module.\n");

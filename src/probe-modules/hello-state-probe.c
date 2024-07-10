@@ -32,7 +32,7 @@ struct HelloStateConf {
 
 static struct HelloStateConf hellostate_conf = {0};
 
-static enum ConfigRes SET_get_whole_response(void *conf, const char *name, const char *value)
+static ConfRes SET_get_whole_response(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -44,7 +44,7 @@ static enum ConfigRes SET_get_whole_response(void *conf, const char *name, const
 
 #ifndef NOT_FOUND_PCRE2
 
-static enum ConfigRes SET_banner_if_fail(void *conf, const char *name, const char *value)
+static ConfRes SET_banner_if_fail(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -54,7 +54,7 @@ static enum ConfigRes SET_banner_if_fail(void *conf, const char *name, const cha
     return Conf_OK;
 }
 
-static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
+static ConfRes SET_show_banner(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -64,7 +64,7 @@ static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_match_whole_response(void *conf, const char *name, const char *value)
+static ConfRes SET_match_whole_response(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -74,7 +74,7 @@ static enum ConfigRes SET_match_whole_response(void *conf, const char *name, con
     return Conf_OK;
 }
 
-static enum ConfigRes SET_newlines(void *conf, const char *name, const char *value)
+static ConfRes SET_newlines(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -84,7 +84,7 @@ static enum ConfigRes SET_newlines(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_insensitive(void *conf, const char *name, const char *value)
+static ConfRes SET_insensitive(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -94,7 +94,7 @@ static enum ConfigRes SET_insensitive(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
+static ConfRes SET_regex(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -148,7 +148,7 @@ static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
 
 #endif
 
-static enum ConfigRes SET_hello_string(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_string(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -167,7 +167,7 @@ static enum ConfigRes SET_hello_string(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_hello_nmap(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_nmap(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -188,7 +188,7 @@ static enum ConfigRes SET_hello_nmap(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_hello_base64(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_base64(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -209,7 +209,7 @@ static enum ConfigRes SET_hello_base64(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_file(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -244,7 +244,7 @@ static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static struct ConfigParam hellostate_parameters[] = {
+static ConfParam hellostate_parameters[] = {
     {
         "string",
         SET_hello_string,
@@ -337,7 +337,7 @@ static struct ConfigParam hellostate_parameters[] = {
 };
 
 /*for internal x-ref*/
-extern struct ProbeModule HelloStateProbe;
+extern Probe HelloStateProbe;
 
 static bool
 hellostate_global_init(const struct Xconf *xconf)
@@ -354,8 +354,8 @@ hellostate_global_init(const struct Xconf *xconf)
 static void
 hellostate_make_hello(
     struct DataPass *pass,
-    struct ProbeState *state,
-    struct ProbeTarget *target)
+    ProbeState *state,
+    ProbeTarget *target)
 {
     datapass_set_data(pass, hellostate_conf.hello, hellostate_conf.hello_len, 0);
 }
@@ -363,9 +363,9 @@ hellostate_make_hello(
 static unsigned
 hellostate_parse_response(
     struct DataPass *pass,
-    struct ProbeState *state,
+    ProbeState *state,
     OutConf *out,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px,
     unsigned sizeof_px)
 {
@@ -470,7 +470,7 @@ hellostate_close()
 
 }
 
-struct ProbeModule HelloStateProbe = {
+Probe HelloStateProbe = {
     .name       = "hello-state",
     .type       = ProbeType_STATE,
     .multi_mode = Multi_Null,

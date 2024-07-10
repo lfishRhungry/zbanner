@@ -5,7 +5,7 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrIpmiProbe;
+extern Probe LzrIpmiProbe;
 
 static char lzr_ipmi_payload[] =
 "\x06\x00\xff\x07\x00\x00\x00\x00"
@@ -22,7 +22,7 @@ static char lzr_ipmi_pos_detect_unkn[] =
 
 static size_t
 lzr_ipmi_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, lzr_ipmi_payload, sizeof(lzr_ipmi_payload)-1);
@@ -30,7 +30,7 @@ lzr_ipmi_make_payload(
 }
 
 static size_t
-lzr_ipmi_get_payload_length(struct ProbeTarget *target)
+lzr_ipmi_get_payload_length(ProbeTarget *target)
 {
     return sizeof(lzr_ipmi_payload)-1;
 }
@@ -38,7 +38,7 @@ lzr_ipmi_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_ipmi_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -65,7 +65,7 @@ lzr_ipmi_handle_reponse(
 }
 
 static unsigned
-lzr_ipmi_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_ipmi_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not ipmi");
@@ -73,7 +73,7 @@ lzr_ipmi_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrIpmiProbe = {
+Probe LzrIpmiProbe = {
     .name       = "lzr-ipmi",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

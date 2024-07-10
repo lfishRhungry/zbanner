@@ -32,7 +32,7 @@ static struct HelloConf hello_conf = {0};
 
 #ifndef NOT_FOUND_PCRE2
 
-static enum ConfigRes SET_banner_if_fail(void *conf, const char *name, const char *value)
+static ConfRes SET_banner_if_fail(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -42,7 +42,7 @@ static enum ConfigRes SET_banner_if_fail(void *conf, const char *name, const cha
     return Conf_OK;
 }
 
-static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
+static ConfRes SET_show_banner(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -52,7 +52,7 @@ static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_newlines(void *conf, const char *name, const char *value)
+static ConfRes SET_newlines(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -62,7 +62,7 @@ static enum ConfigRes SET_newlines(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_insensitive(void *conf, const char *name, const char *value)
+static ConfRes SET_insensitive(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -72,7 +72,7 @@ static enum ConfigRes SET_insensitive(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
+static ConfRes SET_regex(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -126,7 +126,7 @@ static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
 
 #endif
 
-static enum ConfigRes SET_hello_string(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_string(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -145,7 +145,7 @@ static enum ConfigRes SET_hello_string(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_hello_nmap(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_nmap(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -166,7 +166,7 @@ static enum ConfigRes SET_hello_nmap(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_hello_base64(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_base64(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -187,7 +187,7 @@ static enum ConfigRes SET_hello_base64(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_file(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -222,7 +222,7 @@ static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static struct ConfigParam hello_parameters[] = {
+static ConfParam hello_parameters[] = {
     {
         "string",
         SET_hello_string,
@@ -299,7 +299,7 @@ static struct ConfigParam hello_parameters[] = {
 };
 
 /*for internal x-ref*/
-extern struct ProbeModule HelloProbe;
+extern Probe HelloProbe;
 
 static bool
 hello_global_init(const struct Xconf *xconf)
@@ -315,7 +315,7 @@ hello_global_init(const struct Xconf *xconf)
 
 static size_t
 hello_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     if (hello_conf.hello==NULL || hello_conf.hello_len==0) {
@@ -327,7 +327,7 @@ hello_make_payload(
 }
 
 static size_t
-hello_get_payload_length(struct ProbeTarget *target)
+hello_get_payload_length(ProbeTarget *target)
 {
     return hello_conf.hello_len;
 }
@@ -335,7 +335,7 @@ hello_get_payload_length(struct ProbeTarget *target)
 static unsigned
 hello_handle_response(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -390,7 +390,7 @@ hello_handle_response(
 }
 
 static unsigned
-hello_handle_timeout(struct ProbeTarget *target, OutItem *item)
+hello_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "no response");
@@ -427,7 +427,7 @@ hello_close()
 
 }
 
-struct ProbeModule HelloProbe = {
+Probe HelloProbe = {
     .name       = "hello",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

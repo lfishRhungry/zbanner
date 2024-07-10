@@ -151,7 +151,7 @@ infinite:;
             }
             xXx = blackrock_shuffle(&blackrock, xXx);
 
-            struct ScanTarget target = {.index = more_idx};
+            ScanTarget target = {.index = more_idx};
 
             /**
              * Pick up target & source

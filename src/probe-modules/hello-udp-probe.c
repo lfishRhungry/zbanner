@@ -27,7 +27,7 @@ struct HelloUdpConf {
 
 static struct HelloUdpConf helloudp_conf = {0};
 
-static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
+static ConfRes SET_show_banner(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -37,7 +37,7 @@ static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_newlines(void *conf, const char *name, const char *value)
+static ConfRes SET_newlines(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -47,7 +47,7 @@ static enum ConfigRes SET_newlines(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static enum ConfigRes SET_insensitive(void *conf, const char *name, const char *value)
+static ConfRes SET_insensitive(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -57,7 +57,7 @@ static enum ConfigRes SET_insensitive(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
+static ConfRes SET_regex(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -109,7 +109,7 @@ static enum ConfigRes SET_regex(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static enum ConfigRes SET_hello_string(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_string(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -128,7 +128,7 @@ static enum ConfigRes SET_hello_string(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_hello_nmap(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_nmap(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -149,7 +149,7 @@ static enum ConfigRes SET_hello_nmap(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_hello_base64(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_base64(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -170,7 +170,7 @@ static enum ConfigRes SET_hello_base64(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *value)
+static ConfRes SET_hello_file(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -205,7 +205,7 @@ static enum ConfigRes SET_hello_file(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static struct ConfigParam helloudp_parameters[] = {
+static ConfParam helloudp_parameters[] = {
     {
         "string",
         SET_hello_string,
@@ -272,7 +272,7 @@ static struct ConfigParam helloudp_parameters[] = {
 };
 
 /*for internal x-ref*/
-extern struct ProbeModule HelloUdpProbe;
+extern Probe HelloUdpProbe;
 
 static bool
 helloudp_global_init(const struct Xconf *xconf)
@@ -292,7 +292,7 @@ helloudp_global_init(const struct Xconf *xconf)
 
 static size_t
 helloudp_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     if (helloudp_conf.hello==NULL || helloudp_conf.hello_len==0) {
@@ -305,7 +305,7 @@ helloudp_make_payload(
 
 static bool
 helloudp_validate_response(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px)
 {
     if (sizeof_px==0) {
@@ -338,7 +338,7 @@ helloudp_validate_response(
 static unsigned
 helloudp_handle_response(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -353,7 +353,7 @@ helloudp_handle_response(
 }
 
 static unsigned
-helloudp_handle_timeout(struct ProbeTarget *target, OutItem *item)
+helloudp_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "no response");
@@ -388,7 +388,7 @@ helloudp_close()
 
 }
 
-struct ProbeModule HelloUdpProbe = {
+Probe HelloUdpProbe = {
     .name       = "hello-udp",
     .type       = ProbeType_UDP,
     .multi_mode = Multi_Null,

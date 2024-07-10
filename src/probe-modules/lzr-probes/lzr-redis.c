@@ -6,7 +6,7 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrRedisProbe;
+extern Probe LzrRedisProbe;
 
 static char lzr_redis_payload[] =
 "\x2a\x31\x0d\x0a\x24\x34\x0d\x0a\x50\x49\x4e\x47\x0d\x0a";
@@ -14,7 +14,7 @@ static char lzr_redis_payload[] =
 
 static size_t
 lzr_redis_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, lzr_redis_payload, sizeof(lzr_redis_payload)-1);
@@ -22,7 +22,7 @@ lzr_redis_make_payload(
 }
 
 static size_t
-lzr_redis_get_payload_length(struct ProbeTarget *target)
+lzr_redis_get_payload_length(ProbeTarget *target)
 {
     return sizeof(lzr_redis_payload)-1;
 }
@@ -30,7 +30,7 @@ lzr_redis_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_redis_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -65,7 +65,7 @@ lzr_redis_handle_reponse(
 }
 
 static unsigned
-lzr_redis_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_redis_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not redis");
@@ -73,7 +73,7 @@ lzr_redis_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrRedisProbe = {
+Probe LzrRedisProbe = {
     .name       = "lzr-redis",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

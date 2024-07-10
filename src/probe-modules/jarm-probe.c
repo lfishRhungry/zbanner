@@ -103,7 +103,7 @@ static struct JarmConfig jc_list[] = {
 /******************************************************************/
 
 /*for x-refer*/
-extern struct ProbeModule JarmProbe;
+extern Probe JarmProbe;
 
 struct JarmConf {
     unsigned probe_index;
@@ -111,7 +111,7 @@ struct JarmConf {
 
 static struct JarmConf jarm_conf = {0};
 
-static enum ConfigRes SET_probe_index(void *conf, const char *name, const char *value)
+static ConfRes SET_probe_index(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -126,7 +126,7 @@ static enum ConfigRes SET_probe_index(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static struct ConfigParam jarm_parameters[] = {
+static ConfParam jarm_parameters[] = {
     {
         "probe-index",
         SET_probe_index,
@@ -140,7 +140,7 @@ static struct ConfigParam jarm_parameters[] = {
 
 static size_t
 jarm_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     struct JarmConfig jc;
@@ -157,7 +157,7 @@ jarm_make_payload(
 }
 
 static size_t
-jarm_get_payload_length(struct ProbeTarget *target)
+jarm_get_payload_length(ProbeTarget *target)
 {
     if (target->index >= JarmProbe.multi_num)
         return 0;
@@ -179,7 +179,7 @@ jarm_get_payload_length(struct ProbeTarget *target)
 static unsigned
 jarm_handle_response(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -226,7 +226,7 @@ jarm_handle_response(
 }
 
 static unsigned
-jarm_handle_timeout(struct ProbeTarget *target, OutItem *item)
+jarm_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "no jarm");
@@ -239,7 +239,7 @@ jarm_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule JarmProbe = {
+Probe JarmProbe = {
     .name       = "jarm",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_AfterHandle,

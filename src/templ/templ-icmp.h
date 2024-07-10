@@ -111,7 +111,7 @@ icmp_create_timestamp_packet(
  * Try to get cookie from `Identifier` and `Sequence Number` fields.
 */
 unsigned
-get_icmp_cookie(const struct PreprocessedInfo *parsed,const unsigned char *px);
+get_icmp_cookie(const PreInfo *parsed,const unsigned char *px);
 
 /**
  * get detail of icmp port unreachable info

@@ -1,9 +1,9 @@
 #include "probe-modules.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule NullProbe;
+extern Probe NullProbe;
 
-struct ProbeModule NullProbe = {
+Probe NullProbe = {
     .name       = "null",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

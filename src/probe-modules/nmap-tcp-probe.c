@@ -11,7 +11,7 @@
 #include "../massip/massip.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule NmapTcpProbe;
+extern Probe NmapTcpProbe;
 
 struct NmapTcpConf {
     struct NmapServiceProbeList *service_probes;
@@ -25,7 +25,7 @@ struct NmapTcpConf {
 
 static struct NmapTcpConf nmaptcp_conf = {0};
 
-static enum ConfigRes SET_banner_if_fail(void *conf, const char *name, const char *value)
+static ConfRes SET_banner_if_fail(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -35,7 +35,7 @@ static enum ConfigRes SET_banner_if_fail(void *conf, const char *name, const cha
     return Conf_OK;
 }
 
-static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *value)
+static ConfRes SET_show_banner(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -45,7 +45,7 @@ static enum ConfigRes SET_show_banner(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_no_port_limit(void *conf, const char *name, const char *value)
+static ConfRes SET_no_port_limit(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -55,7 +55,7 @@ static enum ConfigRes SET_no_port_limit(void *conf, const char *name, const char
     return Conf_OK;
 }
 
-static enum ConfigRes SET_softmatch(void *conf, const char *name, const char *value)
+static ConfRes SET_softmatch(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
 
@@ -67,7 +67,7 @@ static enum ConfigRes SET_softmatch(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static enum ConfigRes SET_probe_file(void *conf, const char *name, const char *value)
+static ConfRes SET_probe_file(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(name);
 
@@ -79,7 +79,7 @@ static enum ConfigRes SET_probe_file(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_rarity(void *conf, const char *name, const char *value)
+static ConfRes SET_rarity(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -95,7 +95,7 @@ static enum ConfigRes SET_rarity(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static struct ConfigParam nmapservice_parameters[] = {
+static ConfParam nmapservice_parameters[] = {
     {
         "probe-file",
         SET_probe_file,
@@ -214,7 +214,7 @@ nmaptcp_close()
 
 static size_t
 nmaptcp_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf,
@@ -225,7 +225,7 @@ nmaptcp_make_payload(
 }
 
 static size_t
-nmaptcp_get_payload_length(struct ProbeTarget *target)
+nmaptcp_get_payload_length(ProbeTarget *target)
 {
     if (target->index >= nmaptcp_conf.service_probes->count)
         return 0;
@@ -242,7 +242,7 @@ nmaptcp_get_payload_length(struct ProbeTarget *target)
 unsigned
 nmaptcp_handle_response(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -302,7 +302,7 @@ nmaptcp_handle_response(
 }
 
 static unsigned
-nmaptcp_handle_timeout(struct ProbeTarget *target, OutItem *item)
+nmaptcp_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     struct NmapServiceProbeList *list = nmaptcp_conf.service_probes;
 
@@ -328,7 +328,7 @@ nmaptcp_handle_timeout(struct ProbeTarget *target, OutItem *item)
     }
 }
 
-struct ProbeModule NmapTcpProbe = {
+Probe NmapTcpProbe = {
     .name       = "nmap-tcp",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_DynamicNext,

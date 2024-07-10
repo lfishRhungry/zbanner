@@ -38,7 +38,7 @@ typedef bool (*probe_modules_init)(const struct Xconf *xconf);
 /**
  * not modifiable in probe module internal, we can't change the actual target.
 */
-struct ProbeTarget {
+typedef struct ProbeModuleTarget {
     unsigned           ip_proto;
     ipaddress          ip_them;
     ipaddress          ip_me;
@@ -46,7 +46,7 @@ struct ProbeTarget {
     unsigned           port_me;
     unsigned           cookie;
     unsigned           index;     /*use for identifying of multi probes per target*/
-};
+} ProbeTarget;
 
 /**
  * !Happens in Tx Thread or Rx Handle Thread for different ScanModules.
@@ -63,7 +63,7 @@ struct ProbeTarget {
  * @return paylaod length.
 */
 typedef size_t
-(*probe_modules_make_payload)(struct ProbeTarget *target, unsigned char *payload_buf);
+(*probe_modules_make_payload)(ProbeTarget *target, unsigned char *payload_buf);
 
 /**
  * !Happens in Tx Thread or Rx Thread for different ScanModules.
@@ -77,7 +77,7 @@ typedef size_t
  * @return length of payload data
 */
 typedef size_t
-(*probe_modules_get_payload_length)(struct ProbeTarget *target);
+(*probe_modules_get_payload_length)(ProbeTarget *target);
 
 /***************************************************************************
  * * callback functions for response processing in Non-STATE type
@@ -100,7 +100,7 @@ typedef size_t
 */
 typedef bool
 (*probe_modules_validate_response)(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px);
 
 /**
@@ -121,7 +121,7 @@ typedef bool
 typedef unsigned
 (*probe_modules_handle_response)(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item);
 
@@ -138,23 +138,23 @@ typedef unsigned
  * or num=index+1 to set next probe in Multi_DynamicNext mode.
 */
 typedef unsigned
-(*probe_modules_handle_timeout)(struct ProbeTarget *target, OutItem *item);
+(*probe_modules_handle_timeout)(ProbeTarget *target, OutItem *item);
 
 /***************************************************************************
  * * callback functions for ProbeType_STATE only
 ****************************************************************************/
 
-struct ProbeState {
+typedef struct StateOfProbe {
     uint8_t  state;  /*impossible to exceed the state limitation*/
     void     *data;  /*defined by probe itself in need*/
-};
+} ProbeState;
 
 /**
  * !Happens in Rx Handle Thread,
  * !Same (ip_them, port_them, ip_me, port_me) in same Thread
  * Do init for a connection
  * 
- * !Must be implemented for ProbeType STATE
+ * !Must be implemented for Probe_TYPE STATE
  * !Must be thread safe for itself.
  * 
  * @param state  probe state
@@ -162,14 +162,14 @@ struct ProbeState {
  * @return true if conn init success. conn will be terminated if returned false.
 */
 typedef bool
-(*probe_modules_conn_init)(struct ProbeState *state, struct ProbeTarget *target);
+(*probe_modules_conn_init)(ProbeState *state, ProbeTarget *target);
 
 /**
  * !Happens in Rx Handle Thread,
  * !Same (ip_them, port_them, ip_me, port_me) in same Thread
  * Make correspond hello payload data for a target.
  * 
- * !Must be implemented for ProbeType STATE
+ * !Must be implemented for Probe_TYPE STATE
  * !Must be thread safe for itself.
  * 
  * @param state probe state
@@ -180,8 +180,8 @@ typedef bool
 typedef void
 (*probe_modules_make_hello)(
     struct DataPass *pass,
-    struct ProbeState *state,
-    struct ProbeTarget *target);
+    ProbeState *state,
+    ProbeTarget *target);
 
 /**
  * 
@@ -204,9 +204,9 @@ typedef void
 typedef unsigned
 (*probe_modules_parse_response)(
     struct DataPass *pass,
-    struct ProbeState *state,
+    ProbeState *state,
     OutConf *out,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px,
     unsigned sizeof_px);
 
@@ -215,14 +215,14 @@ typedef unsigned
  * !Same (ip_them, port_them, ip_me, port_me) in same Thread
  * Do init for a connection
  * 
- * !Must be implemented for ProbeType STATE
+ * !Must be implemented for Probe_TYPE STATE
  * !Must be thread safe for itself.
  * 
  * @param state probe state
  * @param target target info
 */
 typedef void
-(*probe_modules_conn_close)(struct ProbeState *state, struct ProbeTarget *target);
+(*probe_modules_conn_close)(ProbeState *state, ProbeTarget *target);
 
 /***************************************************************************
  * * callback functions for Close
@@ -235,30 +235,30 @@ typedef void
 typedef void (*probe_modules_close)();
 
 /*a probe belongs to one type*/
-enum ProbeType {
+typedef enum Probe_TYPE {
     ProbeType_NULL        = 0,
     ProbeType_TCP         = 0B1,
     ProbeType_UDP         = 0B10,
     ProbeType_STATE       = 0B100,
-};
+} ProbeType;
 
-enum MultiMode {
+typedef enum MultiProbeMode {
     Multi_Null            = 0,
     Multi_Direct          = 1,         /*send multi_num probes(diff in index) from very beginning even don't know openness.*/
     Multi_IfOpen          = 2,         /*send multi_num probes(diff in index) if port is open. !Just for TCP*/
     Multi_AfterHandle     = 3,         /*send multi-num probes(diff in index) after first handled.*/
     Multi_DynamicNext     = 4,         /*send a specified probe(with index+1) after every time handled*/
-};
+} MultiMode;
 
-struct ProbeModule
+typedef struct ProbeModule
 {
     const char                                 *name;
-    const enum ProbeType                        type;
-    const enum MultiMode                        multi_mode;
+    const ProbeType                             type;
+    const MultiMode                             multi_mode;
     const unsigned                              multi_num;   /*useless for Multi_DynamicNext or Multi_Null*/
     unsigned                                    hello_wait;  /*just for statefull scan*/
     const char                                 *desc;
-    struct ConfigParam                         *params;
+    ConfParam                                  *params;
 
     /*for init*/
     probe_modules_init                          init_cb;
@@ -282,13 +282,13 @@ struct ProbeModule
 
     /*for close*/
     probe_modules_close                         close_cb;
-};
+} Probe;
 
-struct ProbeModule *
+Probe *
 get_probe_module_by_name(const char *name);
 
 const char *
-get_probe_type_name(const enum ProbeType type);
+get_probe_type_name(const ProbeType type);
 
 int
 probe_type_to_string(unsigned type, char *string, size_t str_len);
@@ -297,7 +297,7 @@ void
 list_all_probe_modules();
 
 void
-help_probe_module(struct ProbeModule *module);
+help_probe_module(Probe *module);
 
 /************************************************************************
 Some useful implemented interfaces
@@ -308,17 +308,17 @@ bool
 probe_init_nothing(const struct Xconf *xconf);
 
 size_t
-probe_make_no_payload(struct ProbeTarget *target, unsigned char *payload_buf);
+probe_make_no_payload(ProbeTarget *target, unsigned char *payload_buf);
 
 /*implemented `probe_modules_get_payload_length`*/
 size_t
-probe_no_payload_length(struct ProbeTarget *target);
+probe_no_payload_length(ProbeTarget *target);
 
 /*implemented `probe_modules_handle_reponse`*/
 unsigned
 probe_report_nothing(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item);
 
@@ -326,7 +326,7 @@ probe_report_nothing(
 unsigned
 probe_just_report_banner(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item);
 
@@ -335,15 +335,15 @@ void
 probe_close_nothing();
 
 bool
-probe_conn_init_nothing(struct ProbeState *state, struct ProbeTarget *target);
+probe_conn_init_nothing(ProbeState *state, ProbeTarget *target);
 
 void
-probe_conn_close_nothing(struct ProbeState *state, struct ProbeTarget *target);
+probe_conn_close_nothing(ProbeState *state, ProbeTarget *target);
 
 unsigned
-probe_no_timeout(struct ProbeTarget *target, OutItem *item);
+probe_no_timeout(ProbeTarget *target, OutItem *item);
 
 bool
-probe_all_valid(struct ProbeTarget *target, const unsigned char *px, unsigned sizeof_px);
+probe_all_valid(ProbeTarget *target, const unsigned char *px, unsigned sizeof_px);
 
 #endif

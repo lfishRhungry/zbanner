@@ -6,13 +6,13 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrImapProbe;
+extern Probe LzrImapProbe;
 
 
 static unsigned
 lzr_imap_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -45,7 +45,7 @@ lzr_imap_handle_reponse(
 }
 
 static unsigned
-lzr_imap_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_imap_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not imap");
@@ -53,7 +53,7 @@ lzr_imap_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrImapProbe = {
+Probe LzrImapProbe = {
     .name       = "lzr-imap",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

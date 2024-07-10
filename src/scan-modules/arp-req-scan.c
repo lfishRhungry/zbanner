@@ -8,7 +8,7 @@
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
 
-extern struct ScanModule ArpReqScan; /*for internal x-ref*/
+extern Scanner ArpReqScan; /*for internal x-ref*/
 
 static bool
 arpreq_init(const struct Xconf *xconf)
@@ -29,7 +29,7 @@ arpreq_init(const struct Xconf *xconf)
 static bool
 arpreq_transmit(
     uint64_t entropy,
-    struct ScanTarget *target,
+    ScanTarget *target,
     struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
@@ -55,8 +55,8 @@ arpreq_transmit(
 static void
 arpreq_validate(
     uint64_t entropy,
-    struct Received *recved,
-    struct PreHandle *pre)
+    PktRecv *recved,
+    PreHandle *pre)
 {
     /*do not care about any other types of arp packet.*/
     if (recved->parsed.found == FOUND_ARP
@@ -74,7 +74,7 @@ static void
 arpreq_handle(
     unsigned th_idx,
     uint64_t entropy,
-    struct Received *recved,
+    PktRecv *recved,
     OutItem *item,
     STACK *stack,
     FHandler *handler)
@@ -103,7 +103,7 @@ static void arpreq_timeout(
     safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
 }
 
-struct ScanModule ArpReqScan = {
+Scanner ArpReqScan = {
     .name                = "arp-req",
     .required_probe_type = 0,
     .support_timeout     = 1,

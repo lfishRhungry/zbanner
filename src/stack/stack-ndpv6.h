@@ -15,7 +15,8 @@
 #include <time.h>
 #include "stack-queue.h"
 #include "../massip/massip-addr.h"
-struct PreprocessedInfo;
+
+typedef struct PreprocessedInfo PreInfo;
 
 /**
  * Handle an incoming IPv6 neighbor notification request. We must send
@@ -23,7 +24,7 @@ struct PreprocessedInfo;
  */
 int
 stack_ndpv6_incoming_request(STACK *stack,
-    struct PreprocessedInfo *parsed,
+    PreInfo *parsed,
     const unsigned char *px,
     size_t length);
 

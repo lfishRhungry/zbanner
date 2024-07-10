@@ -6,7 +6,7 @@
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/
-extern struct ProbeModule LzrMqttProbe;
+extern Probe LzrMqttProbe;
 
 static char lzr_mqtt_payload[] = {
     0x10,0x0F,0x00,0x04,0x4d,0x51,0x54,
@@ -16,7 +16,7 @@ static char lzr_mqtt_payload[] = {
 
 static size_t
 lzr_mqtt_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, lzr_mqtt_payload, sizeof(lzr_mqtt_payload));
@@ -24,7 +24,7 @@ lzr_mqtt_make_payload(
 }
 
 static size_t
-lzr_mqtt_get_payload_length(struct ProbeTarget *target)
+lzr_mqtt_get_payload_length(ProbeTarget *target)
 {
     return sizeof(lzr_mqtt_payload);
 }
@@ -32,7 +32,7 @@ lzr_mqtt_get_payload_length(struct ProbeTarget *target)
 static unsigned
 lzr_mqtt_handle_reponse(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -52,7 +52,7 @@ lzr_mqtt_handle_reponse(
 }
 
 static unsigned
-lzr_mqtt_handle_timeout(struct ProbeTarget *target, OutItem *item)
+lzr_mqtt_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not mqtt");
@@ -60,7 +60,7 @@ lzr_mqtt_handle_timeout(struct ProbeTarget *target, OutItem *item)
     return 0;
 }
 
-struct ProbeModule LzrMqttProbe = {
+Probe LzrMqttProbe = {
     .name       = "lzr-mqtt",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,

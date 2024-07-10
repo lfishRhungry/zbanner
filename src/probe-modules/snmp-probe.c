@@ -9,7 +9,7 @@
 #define SNMP_DACH_NAME "result"
 
 /*for internal x-ref*/
-extern struct ProbeModule SnmpProbe;
+extern Probe SnmpProbe;
 
 static const unsigned char default_snmp_req[]=
 "\x30\x39"
@@ -436,7 +436,7 @@ snmp_global_init(const struct Xconf *xconf)
 
 static size_t
 snmp_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     memcpy(payload_buf, default_snmp_req, sizeof(default_snmp_req));
@@ -451,7 +451,7 @@ snmp_make_payload(
 static unsigned
 snmp_handle_response(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -573,7 +573,7 @@ error:
 }
 
 static unsigned
-snmp_handle_timeout(struct ProbeTarget *target, OutItem *item)
+snmp_handle_timeout(ProbeTarget *target, OutItem *item)
 {
     safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
     safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
@@ -590,7 +590,7 @@ static void snmp_close()
     snmp_conf.mib_count = 0;
 }
 
-struct ProbeModule SnmpProbe = {
+Probe SnmpProbe = {
     .name       = "snmp",
     .type       = ProbeType_UDP,
     .multi_mode = Multi_Null,

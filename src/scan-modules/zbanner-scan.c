@@ -8,7 +8,7 @@
 #include "../util-data/fine-malloc.h"
 #include "../util-out/logger.h"
 
-extern struct ScanModule ZBannerScan; /*for internal x-ref*/
+extern Scanner ZBannerScan; /*for internal x-ref*/
 
 struct ZBannerConf {
     unsigned no_banner_timeout:1;     /*--no-banner-tm*/
@@ -23,7 +23,7 @@ struct ZBannerConf {
 
 static struct ZBannerConf zbanner_conf = {0};
 
-static enum ConfigRes SET_record_mss(void *conf, const char *name, const char *value)
+static ConfRes SET_record_mss(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -33,7 +33,7 @@ static enum ConfigRes SET_record_mss(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *value)
+static ConfRes SET_record_ttl(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -43,7 +43,7 @@ static enum ConfigRes SET_record_ttl(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *value)
+static ConfRes SET_record_ipid(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -53,7 +53,7 @@ static enum ConfigRes SET_record_ipid(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static enum ConfigRes SET_record_win(void *conf, const char *name, const char *value)
+static ConfRes SET_record_win(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -63,7 +63,7 @@ static enum ConfigRes SET_record_win(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static enum ConfigRes SET_banner_timeout(void *conf, const char *name, const char *value)
+static ConfRes SET_banner_timeout(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -73,7 +73,7 @@ static enum ConfigRes SET_banner_timeout(void *conf, const char *name, const cha
     return Conf_OK;
 }
 
-static enum ConfigRes SET_port_timeout(void *conf, const char *name, const char *value)
+static ConfRes SET_port_timeout(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -83,7 +83,7 @@ static enum ConfigRes SET_port_timeout(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_port_success(void *conf, const char *name, const char *value)
+static ConfRes SET_port_success(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -93,7 +93,7 @@ static enum ConfigRes SET_port_success(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static enum ConfigRes SET_port_failure(void *conf, const char *name, const char *value)
+static ConfRes SET_port_failure(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -103,7 +103,7 @@ static enum ConfigRes SET_port_failure(void *conf, const char *name, const char 
     return Conf_OK;
 }
 
-static struct ConfigParam zbanner_parameters[] = {
+static ConfParam zbanner_parameters[] = {
     {
         "no-banner-timeout",
         SET_banner_timeout,
@@ -185,7 +185,7 @@ zbanner_init(const struct Xconf *xconf)
 static bool
 zbanner_transmit(
     uint64_t entropy,
-    struct ScanTarget *target,
+    ScanTarget *target,
     struct ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
@@ -217,8 +217,8 @@ zbanner_transmit(
 static void
 zbanner_validate(
     uint64_t entropy,
-    struct Received *recved,
-    struct PreHandle *pre)
+    PktRecv *recved,
+    PreHandle *pre)
 {
     if (recved->parsed.found == FOUND_TCP
         && recved->is_myip
@@ -250,7 +250,7 @@ zbanner_validate(
     else if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset, TCP_FLAG_ACK)
         && recved->parsed.app_length) {
 
-        struct ProbeTarget ptarget = {
+        ProbeTarget ptarget = {
             .ip_proto  = recved->parsed.ip_protocol,
             .ip_them   = recved->parsed.src_ip,
             .ip_me     = recved->parsed.dst_ip,
@@ -282,7 +282,7 @@ static void
 zbanner_handle(
     unsigned th_idx,
     uint64_t entropy,
-    struct Received *recved,
+    PktRecv *recved,
     OutItem *item,
     STACK *stack,
     FHandler *handler)
@@ -326,7 +326,7 @@ zbanner_handle(
             safe_strcpy(item->reason, OUT_RSN_SIZE, "syn-ack");
 
             /*stack(send) ack with probe*/
-            struct ProbeTarget ptarget = {
+            ProbeTarget ptarget = {
                 .ip_proto  = recved->parsed.ip_protocol,
                 .ip_them   = recved->parsed.src_ip,
                 .ip_me     = recved->parsed.dst_ip,
@@ -443,7 +443,7 @@ zbanner_handle(
 
         stack_transmit_pktbuf(stack, pkt_buffer);
 
-        struct ProbeTarget ptarget = {
+        ProbeTarget ptarget = {
             .ip_proto  = recved->parsed.ip_protocol,
             .ip_them   = recved->parsed.src_ip,
             .ip_me     = recved->parsed.dst_ip,
@@ -555,7 +555,7 @@ zbanner_timeout(
 
     /*event for banner*/
 
-    struct ProbeTarget ptarget = {
+    ProbeTarget ptarget = {
         .ip_proto  = event->ip_proto,
         .ip_them   = event->ip_them,
         .ip_me     = event->ip_me,
@@ -640,7 +640,7 @@ zbanner_timeout(
     }
 }
 
-struct ScanModule ZBannerScan = {
+Scanner ZBannerScan = {
     .name                = "zbanner",
     .required_probe_type = ProbeType_TCP,
     .support_timeout     = 1,

@@ -30,7 +30,7 @@
 #define LUA_PROBE_FUNC_HANDLE_TIMEOUT       "Handle_timeout"
 
 /*for internal x-ref*/
-extern struct ProbeModule LuaUdpProbe;
+extern Probe LuaUdpProbe;
 
 struct LuaUdpConf {
     char *script;
@@ -59,7 +59,7 @@ struct LuaUdpConf {
 
 static struct LuaUdpConf luaudp_conf = {0};
 
-static enum ConfigRes SET_script(void *conf, const char *name, const char *value)
+static ConfRes SET_script(void *conf, const char *name, const char *value)
 {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
@@ -72,7 +72,7 @@ static enum ConfigRes SET_script(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static struct ConfigParam luaudp_parameters[] = {
+static ConfParam luaudp_parameters[] = {
     {
         "script",
         SET_script,
@@ -126,7 +126,7 @@ static bool sync_probe_config()
     lua_pop(luaudp_conf.Ltx, 1);
 
     /*multi mode*/
-    enum MultiMode *mode = (enum MultiMode *)&LuaUdpProbe.multi_mode;
+    MultiMode *mode = (MultiMode *)&LuaUdpProbe.multi_mode;
     lua_getglobal(luaudp_conf.Ltx, LUA_PROBE_VAR_MULTIMODE);
     if (lua_isstring(luaudp_conf.Ltx, -1)==0) {
         LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": no `"LUA_PROBE_VAR_MULTIMODE"` setting in script %s.\n",
@@ -332,7 +332,7 @@ luaudp_global_init(const struct Xconf *xconf)
 
 static size_t
 luaudp_make_payload(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     unsigned char *payload_buf)
 {
     const char *ret;
@@ -367,7 +367,7 @@ luaudp_make_payload(
 }
 
 static bool
-luaudp_validate_response(struct ProbeTarget *target,
+luaudp_validate_response(ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px)
 {
     bool ret;
@@ -404,7 +404,7 @@ luaudp_validate_response(struct ProbeTarget *target,
 static unsigned
 luaudp_handle_response(
     unsigned th_idx,
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
     OutItem *item)
 {
@@ -487,7 +487,7 @@ luaudp_handle_response(
 
 static unsigned
 luaudp_handle_timeout(
-    struct ProbeTarget *target,
+    ProbeTarget *target,
     OutItem *item)
 {
     const char *lua_ret;
@@ -582,7 +582,7 @@ void luaudp_close()
 
 }
 
-struct ProbeModule LuaUdpProbe = {
+Probe LuaUdpProbe = {
     .name       = "lua-udp",
     .type       = ProbeType_UDP,
     .multi_mode = Multi_Null,
