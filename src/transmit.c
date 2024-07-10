@@ -60,7 +60,7 @@ void transmit_thread(void *v)
     uint64_t                     dynamic_seed             = xconf->seed;
     uint64_t                     entropy                  = xconf->seed;
     struct ScanTmEvent          *tm_event                 = NULL;
-    struct FHandler             *ft_handler               = NULL;
+    FHandler                    *ft_handler               = NULL;
 
     /* Wait to make sure receive_thread is ready */
     pixie_usleep(1000000);

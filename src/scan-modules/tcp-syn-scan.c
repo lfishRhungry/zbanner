@@ -196,7 +196,7 @@ tcpsyn_handle(
     struct Received *recved,
     OutItem *item,
     struct stack_t *stack,
-    struct FHandler *handler)
+    FHandler *handler)
 {
     unsigned mss_them;
     bool     mss_found;
@@ -265,7 +265,7 @@ tcpsyn_timeout(
     struct ScanTmEvent *event,
     OutItem *item,
     struct stack_t *stack,
-    struct FHandler *handler)
+    FHandler *handler)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");

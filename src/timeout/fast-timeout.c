@@ -12,13 +12,15 @@
 #include "fast-timeout.h"
 #include "../util-data/fine-malloc.h"
 
-struct FHandler {
+typedef struct FastTmEntry FEntry;
+
+struct FastTmHandler {
     time_t            spec;
     lfqueue_t        *queue;
-    struct FEntry    *oldest; /*oldest event poped from queue*/
+    FEntry           *oldest; /*oldest event poped from queue*/
 };
 
-struct FEntry {
+struct FastTmEntry {
     /**
      * time the Entry was create
     */
@@ -29,7 +31,7 @@ struct FEntry {
     void *event;
 };
 
-struct FTable {
+struct FastTmTable {
     /**
      * What time spec elapses before now should an event be timeout
     */
@@ -38,18 +40,18 @@ struct FTable {
 };
 
 
-struct FTable * ft_init_table(time_t spec)
+FTable * ft_init_table(time_t spec)
 {
-    struct FTable *table = MALLOC(sizeof(struct FTable));
+    FTable *table = MALLOC(sizeof(FTable));
     lfqueue_init(&table->queue_t);
     table->spec = spec;
 
     return table;
 }
 
-struct FHandler * ft_get_handler(struct FTable *table)
+FHandler * ft_get_handler(FTable *table)
 {
-    struct FHandler *handler = MALLOC(sizeof(struct FHandler));
+    FHandler *handler = MALLOC(sizeof(FHandler));
     handler->spec   = table->spec;
     handler->queue  = &table->queue_t;
     handler->oldest = NULL;
@@ -57,16 +59,16 @@ struct FHandler * ft_get_handler(struct FTable *table)
     return handler;
 }
 
-void ft_add_event(struct FHandler *handler, void *event, time_t now)
+void ft_add_event(FHandler *handler, void *event, time_t now)
 {
-    struct FEntry *entry = MALLOC(sizeof(struct FEntry));
+    FEntry *entry = MALLOC(sizeof(FEntry));
     entry->timestamp     = now;
     entry->event         = event;
 
     lfqueue_enq(handler->queue, entry);
 }
 
-void * ft_pop_event(struct FHandler *handler, time_t now)
+void * ft_pop_event(FHandler *handler, time_t now)
 {
     if (!handler->oldest) {
         handler->oldest = lfqueue_deq(handler->queue);
@@ -85,7 +87,7 @@ void * ft_pop_event(struct FHandler *handler, time_t now)
     return NULL;
 }
 
-void ft_close_handler(struct FHandler *handler) {
+void ft_close_handler(FHandler *handler) {
     if (handler->oldest) {
         if (handler->oldest->event)
             free(handler->oldest->event);
@@ -96,9 +98,9 @@ void ft_close_handler(struct FHandler *handler) {
     free(handler);
 }
 
-void ft_close_table(struct FTable *table)
+void ft_close_table(FTable *table)
 {
-    struct FEntry *entry = lfqueue_deq(&table->queue_t);
+    FEntry *entry = lfqueue_deq(&table->queue_t);
     while (entry) {
         free(entry->event);
         free(entry);
@@ -108,7 +110,7 @@ void ft_close_table(struct FTable *table)
     free(table);
 }
 
-uint64_t ft_event_count(struct FHandler *handler)
+uint64_t ft_event_count(FHandler *handler)
 {
     uint64_t ret;
     ret = lfqueue_size(handler->queue);

@@ -256,7 +256,7 @@ tcpstate_handle(
     struct Received *recved,
     OutItem *item,
     struct stack_t *stack,
-    struct FHandler *handler)
+    FHandler *handler)
 {
     /*in default*/
     item->no_output = 1;

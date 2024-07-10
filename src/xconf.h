@@ -140,7 +140,7 @@ struct Xconf
     /**
      * Use fast-timeout table to handle simple timeout events;
     */
-    struct FTable    *ft_table;
+    FTable    *ft_table;
     time_t            ft_spec;          /*timeout seconds*/
 
     struct MassIP targets;

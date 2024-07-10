@@ -77,7 +77,7 @@ arpreq_handle(
     struct Received *recved,
     OutItem *item,
     struct stack_t *stack,
-    struct FHandler *handler)
+    FHandler *handler)
 {
     item->port_them  = 0;
     item->port_me    = 0;
@@ -96,7 +96,7 @@ static void arpreq_timeout(
     struct ScanTmEvent *event,
     OutItem *item,
     struct stack_t *stack,
-    struct FHandler *handler)
+    FHandler *handler)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "down");

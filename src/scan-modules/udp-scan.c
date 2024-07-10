@@ -162,7 +162,7 @@ udp_handle(
     struct Received *recved,
     OutItem *item,
     struct stack_t *stack,
-    struct FHandler *handler)
+    FHandler *handler)
 {
     if (recved->parsed.found == FOUND_UDP) {
 
@@ -304,7 +304,7 @@ udp_timeout(
     struct ScanTmEvent *event,
     OutItem *item,
     struct stack_t *stack,
-    struct FHandler *handler)
+    FHandler *handler)
 {
     /*all events is for banner*/
 

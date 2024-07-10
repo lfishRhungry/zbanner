@@ -285,7 +285,7 @@ zbanner_handle(
     struct Received *recved,
     OutItem *item,
     struct stack_t *stack,
-    struct FHandler *handler)
+    FHandler *handler)
 {
     unsigned mss_them;
     bool     mss_found;
@@ -541,7 +541,7 @@ zbanner_timeout(
     struct ScanTmEvent *event,
     OutItem *item,
     struct stack_t *stack,
-    struct FHandler *handler)
+    FHandler *handler)
 {
     /*event for port*/
     if (event->dedup_type==0) {

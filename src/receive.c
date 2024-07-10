@@ -110,9 +110,9 @@ struct RxHandle {
     const struct Xconf   *xconf;
     struct ScanModule    *scan_module;
     struct rte_ring      *handle_queue;
-    struct FHandler      *ft_handler;
+    FHandler             *ft_handler;
     struct stack_t       *stack;
-    OutConf        *out;
+    OutConf              *out;
     uint64_t              entropy;
     unsigned              index;
 };
@@ -187,7 +187,7 @@ handle_thread(void *v)
 void receive_thread(void *v) {
     struct RxThread               *parms                       = (struct RxThread *)v;
     const struct Xconf            *xconf                       = parms->xconf;
-    OutConf                 *out                         = (OutConf *)(&xconf->out);
+    OutConf                       *out                         = (OutConf *)(&xconf->out);
     struct Adapter                *adapter                     = xconf->nic.adapter;
     int                            data_link                   = stack_if_datalink(adapter);
     uint64_t                       entropy                     = xconf->seed;
@@ -196,7 +196,7 @@ void receive_thread(void *v) {
     struct DedupTable             *dedup                       = NULL;
     struct PcapFile               *pcapfile                    = NULL;
     struct ScanTmEvent            *tm_event                    = NULL;
-    struct FHandler               *ft_handler                  = NULL;
+    FHandler                      *ft_handler                  = NULL;
     unsigned                       handler_num                 = xconf->rx_handler_count;
     size_t                        *handler                     = MALLOC(handler_num * sizeof(size_t));
     struct RxHandle               *handle_parms                = MALLOC(handler_num * sizeof(struct RxHandle));

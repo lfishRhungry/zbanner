@@ -156,7 +156,7 @@ typedef void (*scan_modules_handle)(
     struct Received *recved,
     OutItem *item,
     struct stack_t *stack,
-    struct FHandler *handler);
+    FHandler *handler);
 
 /***************************************************************************
  * * callback functions for Timeout
@@ -182,7 +182,7 @@ typedef void (*scan_modules_timeout)(
     struct ScanTmEvent *event,
     OutItem *item,
     struct stack_t *stack,
-    struct FHandler *handler);
+    FHandler *handler);
 
 /***************************************************************************
  * * callback functions for Polling
@@ -286,7 +286,7 @@ void scan_no_timeout(
     struct ScanTmEvent *event,
     OutItem *item,
     struct stack_t *stack,
-    struct FHandler *handler);
+    FHandler *handler);
 
 void scan_no_status(char *status);
 

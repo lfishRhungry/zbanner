@@ -128,7 +128,7 @@ void scan_no_timeout(
     struct ScanTmEvent *event,
     OutItem *item,
     struct stack_t *stack,
-    struct FHandler *handler)
+    FHandler *handler)
 {
     item->no_output = 1;
 }
