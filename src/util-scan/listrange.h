@@ -4,6 +4,6 @@
 #include "../xconf.h"
 
 void
-listrange(Xconf *xconf);
+listrange(XConf *xconf);
 
 #endif

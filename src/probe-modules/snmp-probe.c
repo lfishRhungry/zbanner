@@ -410,7 +410,7 @@ convert_oid(unsigned char *dst, size_t sizeof_dst, const char *src)
  ****************************************************************************/
 
 static bool
-snmp_global_init(const Xconf *xconf)
+snmp_init(const XConf *xconf)
 {
 
     snmp_conf.mib_count = xconf->rx_handler_count;
@@ -602,7 +602,7 @@ Probe SnmpProbe = {
         "NOTE: SnmpProbe is capable of obtaining the basic info on snmp(v1 or v2c)"
         " theoretically but cannot identifying whether the port is serving of snmp"
         " protocol.",
-    .init_cb                                 = &snmp_global_init,
+    .init_cb                                 = &snmp_init,
     .make_payload_cb                         = &snmp_make_payload,
     .validate_response_cb                    = &probe_all_valid,
     .handle_response_cb                      = &snmp_handle_response,

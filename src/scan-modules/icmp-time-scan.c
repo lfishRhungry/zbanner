@@ -56,7 +56,7 @@ static ConfParam icmptime_parameters[] = {
 };
 
 static bool
-icmptime_init(const Xconf *xconf)
+icmptime_init(const XConf *xconf)
 {
     if (xconf->targets.count_ports!=1) {
         LOG(LEVEL_ERROR, "IcmpTimeScan doesn't need to specify any ports.\n");

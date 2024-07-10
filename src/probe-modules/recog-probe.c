@@ -251,7 +251,7 @@ static ConfParam recog_parameters[] = {
 extern Probe RecogProbe;
 
 static bool
-recog_global_init(const Xconf *xconf)
+recog_init(const XConf *xconf)
 {
     if (recog_conf.hello==NULL || recog_conf.hello_len==0) {
         recog_conf.hello     = NULL;
@@ -369,7 +369,7 @@ Probe RecogProbe = {
         " the identidying result because our probe just output the first matched"
         " result.\n"
         "Dependencies: PCRE2, LibXml2.",
-    .init_cb                                 = &recog_global_init,
+    .init_cb                                 = &recog_init,
     .make_payload_cb                         = &recog_make_payload,
     .get_payload_length_cb                   = &recog_get_payload_length,
     .handle_response_cb                      = &recog_handle_response,

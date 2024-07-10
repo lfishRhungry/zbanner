@@ -151,7 +151,7 @@ static ConfParam nmapservice_parameters[] = {
 };
 
 static bool
-nmaptcp_global_init(const Xconf *xconf)
+nmaptcp_init(const XConf *xconf)
 {
     /*Use LzrWait if no subprobe specified*/
     if (!nmaptcp_conf.probe_file) {
@@ -349,7 +349,7 @@ Probe NmapTcpProbe = {
         "NmapTcp Probe cannot do this type of hard matching because stateless "
         "mechanism doesn't support \"Hello Wait\".\n"
         "Dependencies: PCRE2.",
-    .init_cb                                 = &nmaptcp_global_init,
+    .init_cb                                 = &nmaptcp_init,
     .make_payload_cb                         = &nmaptcp_make_payload,
     .get_payload_length_cb                   = &nmaptcp_get_payload_length,
     .handle_response_cb                      = &nmaptcp_handle_response,

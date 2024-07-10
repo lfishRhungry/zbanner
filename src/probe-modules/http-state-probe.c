@@ -550,7 +550,7 @@ static ConfParam httpstate_parameters[] = {
 extern Probe HttpStateProbe;
 
 static bool
-http_global_init(const Xconf *xconf)
+http_init(const XConf *xconf)
 {
     httpstate_conf.req4_len = sizeof(default_http_header);
     httpstate_conf.request4 = MALLOC(httpstate_conf.req4_len);
@@ -897,7 +897,7 @@ Probe HttpStateProbe = {
         "We can use various args to change the default request and set a regex "
         "to match the response as successed.\n"
         "NOTE: HttpStateProbe could be used over TLS.",
-    .init_cb                    = &http_global_init,
+    .init_cb                           = &http_init,
     .conn_init_cb                      = &probe_conn_init_nothing,
     .make_hello_cb                     = &httpstate_make_hello,
     .parse_response_cb                 = &httpstate_parse_response,

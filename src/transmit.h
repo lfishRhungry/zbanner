@@ -9,7 +9,7 @@
  ***************************************************************************/
 typedef struct TxThreadConfig {
 
-    const Xconf *xconf;
+    const XConf *xconf;
 
     unsigned tx_index;
 

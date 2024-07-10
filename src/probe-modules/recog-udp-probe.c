@@ -233,7 +233,7 @@ static ConfParam recogudp_parameters[] = {
 extern Probe HelloUdpProbe;
 
 static bool
-recogudp_global_init(const Xconf *xconf)
+recogudp_init(const XConf *xconf)
 {
     if (recogudp_conf.hello==NULL || recogudp_conf.hello_len==0) {
         LOG(LEVEL_ERROR, "RecogUdpProbe: No hello data specified.\n");
@@ -358,7 +358,7 @@ Probe RecogUdpProbe = {
         " the identidying result because our probe just output the first matched"
         " result.\n"
         "Dependencies: PCRE2, LibXml2.",
-    .init_cb                                 = &recogudp_global_init,
+    .init_cb                                 = &recogudp_init,
     .make_payload_cb                         = &recogudp_make_payload,
     .validate_response_cb                    = &recogudp_validate_response,
     .handle_response_cb                      = &recogudp_handle_response,

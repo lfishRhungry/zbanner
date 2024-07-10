@@ -107,7 +107,7 @@ typedef struct RxHandleConfig {
     /** This points to the central configuration. Note that it's 'const',
      * meaning that the thread cannot change the contents. That'd be
      * unsafe */
-    const Xconf          *xconf;
+    const XConf          *xconf;
     Scanner              *scanner;
     PACKET_QUEUE         *handle_queue;
     FHandler             *ft_handler;
@@ -121,7 +121,7 @@ static void
 handle_thread(void *v)
 {
     HandleConf  *parms = v;
-    const Xconf *xconf = parms->xconf;
+    const XConf *xconf = parms->xconf;
 
     LOG(LEVEL_DEBUG, "starting handle thread #%u\n", parms->index);
 
@@ -186,7 +186,7 @@ handle_thread(void *v)
 
 void receive_thread(void *v) {
     RxThread                      *parms                       = (RxThread *)v;
-    const Xconf                   *xconf                       = parms->xconf;
+    const XConf                   *xconf                       = parms->xconf;
     OutConf                       *out_conf                    = (OutConf *)(&xconf->out_conf);
     Adapter                       *adapter                     = xconf->nic.adapter;
     int                            data_link                   = stack_if_datalink(adapter);

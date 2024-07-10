@@ -164,7 +164,7 @@ static ConfParam tcpstate_parameters[] = {
     {0}
 };
 
-static bool tcpstate_init(const Xconf *xconf)
+static bool tcpstate_init(const XConf *xconf)
 {
     if (tcpstate_conf.conn_expire <= 0)
         tcpstate_conf.conn_expire = 30;
@@ -185,7 +185,7 @@ static bool tcpstate_init(const Xconf *xconf)
             tcpstate_conf.conn_expire, xconf->seed);
     }
 
-    tcb_count = &((Xconf *)xconf)->tcb_count;
+    tcb_count = &((XConf *)xconf)->tcb_count;
 
     src_port_start = xconf->nic.src.port.first;
 

@@ -94,7 +94,7 @@ static void _control_c_handler(int x) {
     }
 }
 
-static int _main_scan(Xconf *xconf) {
+static int _main_scan(XConf *xconf) {
     /**
      * According to C99 standards while using designated initializer:
      * 
@@ -576,7 +576,7 @@ int main(int argc, char *argv[]) {
     /*init logger*/
     LOG_init();
 
-    Xconf xconf[1];
+    XConf xconf[1];
     memset(xconf, 0, sizeof(xconf));
 
     int has_target_addresses = 0;

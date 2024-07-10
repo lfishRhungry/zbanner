@@ -46,7 +46,7 @@ static char lzr_k8s_payload[] =
 "\xff\x01\x00\x01\x00"                                     /*ext renegotiation info*/
 ;
 
-static bool lzr_k8s_global_init(const Xconf *xconf)
+static bool lzr_k8s_init(const XConf *xconf)
 {
     /*fill the random bytes in payload*/
     unsigned r;
@@ -115,7 +115,7 @@ Probe LzrK8sProbe = {
     .params     = NULL,
     .desc =
         "LzrK8s Probe sends a kubernetes probe and identifies kubernetes service.",
-    .init_cb                                 = &lzr_k8s_global_init,
+    .init_cb                                 = &lzr_k8s_init,
     .make_payload_cb                         = &lzr_k8s_make_payload,
     .get_payload_length_cb                   = &lzr_k8s_get_payload_length,
     .handle_response_cb                      = &lzr_k8s_handle_reponse,

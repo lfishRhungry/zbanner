@@ -107,7 +107,7 @@ const unsigned char sbox[256] = {
 /***************************************************************************
  ***************************************************************************/
 void
-blackrock_init(BlackRock *br, uint64_t range, uint64_t seed, unsigned rounds)
+blackrock1_init(BlackRock *br, uint64_t range, uint64_t seed, unsigned rounds)
 {
     double foo = sqrt(range * 1.0);
 
@@ -266,7 +266,7 @@ UNENCRYPT(unsigned r, uint64_t a, uint64_t b, uint64_t m, uint64_t seed)
 /***************************************************************************
  ***************************************************************************/
 uint64_t
-blackrock_shuffle(const BlackRock *br, uint64_t m)
+blackrock1_shuffle(const BlackRock *br, uint64_t m)
 {
     uint64_t c;
 
@@ -280,7 +280,7 @@ blackrock_shuffle(const BlackRock *br, uint64_t m)
 /***************************************************************************
  ***************************************************************************/
 uint64_t
-blackrock_unshuffle(const BlackRock *br, uint64_t m)
+blackrock1_unshuffle(const BlackRock *br, uint64_t m)
 {
     uint64_t c;
 
@@ -309,7 +309,7 @@ blackrock_verify(BlackRock *br, uint64_t max)
     /* For all numbers in the range, verify increment the counter for
      * the output. */
     for (i=0; i<range; i++) {
-        uint64_t x = blackrock_shuffle(br, i);
+        uint64_t x = blackrock1_shuffle(br, i);
         if (x < max)
             list[x]++;
     }
@@ -328,7 +328,7 @@ blackrock_verify(BlackRock *br, uint64_t max)
 
 /***************************************************************************
  ***************************************************************************/
-void blackrock_benchmark(unsigned rounds)
+void blackrock1_benchmark(unsigned rounds)
 {
     BlackRock br;
     uint64_t range = 0x012356789123ULL;
@@ -339,14 +339,14 @@ void blackrock_benchmark(unsigned rounds)
 
     puts("-- blackrock-1 --");
     printf("rounds = %u\n", rounds);
-    blackrock_init(&br, range, 1, rounds);
+    blackrock1_init(&br, range, 1, rounds);
 
     /*
      * Time the algorithm
      */
     start = pixie_nanotime();
     for (i=0; i<ITERATIONS; i++) {
-        result += blackrock_shuffle(&br, i);
+        result += blackrock1_shuffle(&br, i);
     }
     stop = pixie_nanotime();
 
@@ -369,7 +369,7 @@ void blackrock_benchmark(unsigned rounds)
 
 /***************************************************************************
  ***************************************************************************/
-int blackrock_selftest()
+int blackrock1_selftest()
 {
     uint64_t i;
     uint64_t range;
@@ -384,12 +384,12 @@ int blackrock_selftest()
     {
         BlackRock br;
 
-        blackrock_init(&br, 1000, 0, 4);
+        blackrock1_init(&br, 1000, 0, 4);
 
         for (i=0; i<10; i++) {
             uint64_t result, result2;
-            result = blackrock_shuffle(&br, i);
-            result2 = blackrock_unshuffle(&br, result);
+            result = blackrock1_shuffle(&br, i);
+            result2 = blackrock1_unshuffle(&br, result);
             if (i != result2)
                 return 1; /*fail*/
         }
@@ -406,7 +406,7 @@ int blackrock_selftest()
         range += 10 + i;
         range *= 2;
 
-        blackrock_init(&br, range, time(0), 4);
+        blackrock1_init(&br, range, time(0), 4);
 
         is_success = blackrock_verify(&br, range);
         if (!is_success) {

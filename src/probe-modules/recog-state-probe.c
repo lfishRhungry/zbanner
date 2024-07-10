@@ -269,7 +269,7 @@ static ConfParam recogstate_parameters[] = {
 extern Probe RecogStateProbe;
 
 static bool
-recogstate_global_init(const Xconf *xconf)
+recogstate_init(const XConf *xconf)
 {
     if (recogstate_conf.hello==NULL || recogstate_conf.hello_len==0) {
         recogstate_conf.hello     = NULL;
@@ -389,7 +389,7 @@ Probe RecogStateProbe = {
         " the identidying result because our probe just output the first matched"
         " result.\n"
         "Dependencies: PCRE2, LibXml2.",
-    .init_cb                    = &recogstate_global_init,
+    .init_cb                    = &recogstate_init,
     .conn_init_cb                      = &probe_conn_init_nothing,
     .make_hello_cb                     = &recogstate_make_hello,
     .parse_response_cb                 = &recogstate_parse_response,

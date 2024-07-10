@@ -179,7 +179,7 @@ static bool sync_probe_config()
 }
 
 static bool
-luaudp_global_init(const Xconf *xconf)
+luaudp_init(const XConf *xconf)
 {
     if (!luaudp_conf.script) {
         LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": must specify a lua script as probe by `--script`.\n");
@@ -608,7 +608,7 @@ Probe LuaUdpProbe = {
         "one tx thread or rx-handle thread well. Even through, it is mandatory "
         "to implement functions thread-seperately. However, we had 3 essential"
         " threads at least and should be careful to thread-safe problems.",
-    .init_cb                                 = &luaudp_global_init,
+    .init_cb                                 = &luaudp_init,
     .make_payload_cb                         = &luaudp_make_payload,
     .validate_response_cb                    = &luaudp_validate_response,
     .handle_response_cb                      = &luaudp_handle_response,

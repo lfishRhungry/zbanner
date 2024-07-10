@@ -262,7 +262,7 @@ static ConfParam lzr_parameters[] = {
 };
 
 static bool
-lzr_global_init(const Xconf *xconf)
+lzr_init(const XConf *xconf)
 {
     /*Use LzrWait if no subprobe specified*/
     if (!lzr_conf.handshake) {
@@ -429,7 +429,7 @@ Probe LzrProbe = {
         "5.  pptp\n"
         "NOTE2: I had fixed some matching bugs and errors from original LZR and "
         "added more useful handshakes. So, enjoy it!",
-    .init_cb                                 = &lzr_global_init,
+    .init_cb                                 = &lzr_init,
     .make_payload_cb                         = &lzr_make_payload,
     .get_payload_length_cb                   = &lzr_get_payload_length,
     .handle_response_cb                      = &lzr_handle_response,

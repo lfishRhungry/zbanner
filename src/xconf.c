@@ -324,7 +324,7 @@ count_cidr6_bits(struct Range6 *range, bool *exact)
 /***************************************************************************
  ***************************************************************************/
 void
-xconf_save_state(Xconf *xconf)
+xconf_save_state(XConf *xconf)
 {
     char filename[512];
     FILE *fp;
@@ -349,7 +349,7 @@ xconf_save_state(Xconf *xconf)
 
 static ConfRes SET_scan_module(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->scanner || xconf->echo_all){
             if (xconf->scanner)
@@ -371,7 +371,7 @@ static ConfRes SET_scan_module(void *conf, const char *name, const char *value)
 
 static ConfRes SET_help_scan_module(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
     }
@@ -389,7 +389,7 @@ static ConfRes SET_help_scan_module(void *conf, const char *name, const char *va
 
 static ConfRes SET_help_probe_module(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
     }
@@ -407,7 +407,7 @@ static ConfRes SET_help_probe_module(void *conf, const char *name, const char *v
 
 static ConfRes SET_help_output_module(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
     }
@@ -425,7 +425,7 @@ static ConfRes SET_help_output_module(void *conf, const char *name, const char *
 
 static ConfRes SET_probe_module(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->probe){
             fprintf(xconf->echo, "probe-module = %s\n", xconf->probe->name);
@@ -444,7 +444,7 @@ static ConfRes SET_probe_module(void *conf, const char *name, const char *value)
 
 static ConfRes SET_output_module(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->out_conf.output_module){
             fprintf(xconf->echo, "output-module = %s\n", xconf->out_conf.output_module->name);
@@ -463,7 +463,7 @@ static ConfRes SET_output_module(void *conf, const char *name, const char *value
 
 static ConfRes SET_output_filename(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->out_conf.output_filename[0]){
             fprintf(xconf->echo, "output-file = \"%s\"\n",
@@ -480,7 +480,7 @@ static ConfRes SET_output_filename(void *conf, const char *name, const char *val
 
 static ConfRes SET_show_output(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->out_conf.is_show_failed){
             fprintf(xconf->echo, "show-output = failed\n");
@@ -511,7 +511,7 @@ static ConfRes SET_show_output(void *conf, const char *name, const char *value)
 
 static ConfRes SET_no_show_output(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_show_output*/
         return 0;
@@ -534,7 +534,7 @@ static ConfRes SET_no_show_output(void *conf, const char *name, const char *valu
 
 static ConfRes SET_print_status(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->is_status_queue){
             fprintf(xconf->echo, "print-status = queue\n");
@@ -565,7 +565,7 @@ static ConfRes SET_print_status(void *conf, const char *name, const char *value)
 
 static ConfRes SET_scan_module_args(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->scanner_args){
@@ -585,7 +585,7 @@ static ConfRes SET_scan_module_args(void *conf, const char *name, const char *va
 
 static ConfRes SET_probe_module_args(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->probe_args){
@@ -605,7 +605,7 @@ static ConfRes SET_probe_module_args(void *conf, const char *name, const char *v
 
 static ConfRes SET_output_module_args(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->out_conf.output_args){
@@ -625,7 +625,7 @@ static ConfRes SET_output_module_args(void *conf, const char *name, const char *
 
 static ConfRes SET_list_scan_modules(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -637,7 +637,7 @@ static ConfRes SET_list_scan_modules(void *conf, const char *name, const char *v
 
 static ConfRes SET_list_probe_modules(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -649,7 +649,7 @@ static ConfRes SET_list_probe_modules(void *conf, const char *name, const char *
 
 static ConfRes SET_list_output_modules(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -661,7 +661,7 @@ static ConfRes SET_list_output_modules(void *conf, const char *name, const char 
 
 static ConfRes SET_listif(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -678,7 +678,7 @@ static ConfRes SET_listif(void *conf, const char *name, const char *value)
 
 static ConfRes SET_list_target(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
 
@@ -694,7 +694,7 @@ static ConfRes SET_list_target(void *conf, const char *name, const char *value)
 
 static ConfRes SET_list_range(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -709,7 +709,7 @@ static ConfRes SET_list_range(void *conf, const char *name, const char *value)
 
 static ConfRes SET_pfring(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -725,7 +725,7 @@ static ConfRes SET_pfring(void *conf, const char *name, const char *value)
 
 static ConfRes SET_noresume(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->is_nodedup || xconf->echo_all) {
             fprintf(xconf->echo, "no-resume = %s\n", xconf->is_noresume?"true":"false");
@@ -740,7 +740,7 @@ static ConfRes SET_noresume(void *conf, const char *name, const char *value)
 
 static ConfRes SET_nodedup(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->is_nodedup || xconf->echo_all) {
             fprintf(xconf->echo, "no-dedup = %s\n", xconf->is_nodedup?"true":"false");
@@ -755,7 +755,7 @@ static ConfRes SET_nodedup(void *conf, const char *name, const char *value)
 
 static ConfRes SET_tcp_window(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->tcp_window!=0)
             fprintf(xconf->echo, "tcp-window = %u\n", xconf->tcp_window);
@@ -775,7 +775,7 @@ static ConfRes SET_tcp_window(void *conf, const char *name, const char *value)
 
 static ConfRes SET_tcp_init_window(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->tcp_init_window!=0)
             fprintf(xconf->echo, "tcp-init-window = %u\n", xconf->tcp_init_window);
@@ -795,7 +795,7 @@ static ConfRes SET_tcp_init_window(void *conf, const char *name, const char *val
 
 static ConfRes SET_packet_ttl(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->packet_ttl!=0)
             fprintf(xconf->echo, "packet-ttl = %u\n", xconf->packet_ttl);
@@ -815,7 +815,7 @@ static ConfRes SET_packet_ttl(void *conf, const char *name, const char *value)
 
 static ConfRes SET_dedup_win(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->dedup_win!=XCONF_DFT_DEDUP_WIN || xconf->echo_all)
             fprintf(xconf->echo, "dedup-win = %u\n", xconf->dedup_win);
@@ -834,7 +834,7 @@ static ConfRes SET_dedup_win(void *conf, const char *name, const char *value)
 
 static ConfRes SET_stack_buf_count(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->stack_buf_count!=XCONF_DFT_STACK_BUF_COUNT || xconf->echo_all) {
@@ -862,7 +862,7 @@ static ConfRes SET_stack_buf_count(void *conf, const char *name, const char *val
 
 static ConfRes SET_dispatch_buf_count(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->dispatch_buf_count!=XCONF_DFT_DISPATCH_BUF_COUNT || xconf->echo_all) {
@@ -893,7 +893,7 @@ static ConfRes SET_forever(void *conf, const char *name, const char *value)
     UNUSEDPARM(name);
     UNUSEDPARM(value);
 
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
     }
@@ -905,7 +905,7 @@ static ConfRes SET_forever(void *conf, const char *name, const char *value)
 
 static ConfRes SET_wait(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->wait!=XCONF_DFT_WAIT || xconf->echo_all) {
             if (xconf->wait==INT_MAX)
@@ -923,7 +923,7 @@ static ConfRes SET_wait(void *conf, const char *name, const char *value)
 
 static ConfRes SET_rx_handler_count(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->rx_handler_count>1 || xconf->echo_all) {
             fprintf(xconf->echo, "rx-handler-count = %u\n", xconf->rx_handler_count);
@@ -947,7 +947,7 @@ static ConfRes SET_rx_handler_count(void *conf, const char *name, const char *va
 
 static ConfRes SET_tx_thread_count(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->tx_thread_count>1 || xconf->echo_all) {
             fprintf(xconf->echo, "tx-thread-count = %u\n", xconf->tx_thread_count);
@@ -968,7 +968,7 @@ static ConfRes SET_tx_thread_count(void *conf, const char *name, const char *val
 
 static ConfRes SET_adapter(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->nic.ifname[0]) {
@@ -988,7 +988,7 @@ static ConfRes SET_adapter(void *conf, const char *name, const char *value)
 
 static ConfRes SET_source_ip(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
 
@@ -1069,7 +1069,7 @@ static ConfRes SET_source_ip(void *conf, const char *name, const char *value)
 
 static ConfRes SET_source_port(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->nic.src.port.first) {
             fprintf(xconf->echo, "source-port = %d", xconf->nic.src.port.first);
@@ -1117,7 +1117,7 @@ static ConfRes SET_source_port(void *conf, const char *name, const char *value)
 
 static ConfRes SET_target_output(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /* Disable comma generation for the first element */
         unsigned i = 0;
@@ -1225,7 +1225,7 @@ static ConfRes SET_target_output(void *conf, const char *name, const char *value
 
 static ConfRes SET_target_ip(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
@@ -1246,7 +1246,7 @@ static ConfRes SET_target_ip(void *conf, const char *name, const char *value)
 
 static ConfRes SET_adapter_snaplen(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->nic.snaplen!=XCONF_DFT_SNAPLEN || xconf->echo_all) {
@@ -1266,7 +1266,7 @@ static ConfRes SET_adapter_snaplen(void *conf, const char *name, const char *val
 
 static ConfRes SET_adapter_vlan(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->nic.is_vlan) {
@@ -1283,7 +1283,7 @@ static ConfRes SET_adapter_vlan(void *conf, const char *name, const char *value)
 
 static ConfRes SET_target_port(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
@@ -1306,7 +1306,7 @@ static ConfRes SET_target_port(void *conf, const char *name, const char *value)
 
 static ConfRes SET_top_port(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
@@ -1346,7 +1346,7 @@ static ConfRes SET_top_port(void *conf, const char *name, const char *value)
 
 static ConfRes SET_exclude_ip(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
@@ -1367,7 +1367,7 @@ static ConfRes SET_exclude_ip(void *conf, const char *name, const char *value)
 
 static ConfRes SET_exclude_port(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
@@ -1389,7 +1389,7 @@ static ConfRes SET_exclude_port(void *conf, const char *name, const char *value)
 
 static ConfRes SET_include_file(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
@@ -1411,7 +1411,7 @@ static ConfRes SET_include_file(void *conf, const char *name, const char *value)
 
 static ConfRes SET_exclude_file(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
@@ -1440,7 +1440,7 @@ static ConfRes SET_exclude_file(void *conf, const char *name, const char *value)
 
 static ConfRes SET_source_mac(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->nic.my_mac_count) {
             ipaddress_formatted_t fmt = macaddress_fmt(xconf->nic.source_mac);
@@ -1484,7 +1484,7 @@ static ConfRes SET_source_mac(void *conf, const char *name, const char *value)
 
 static ConfRes SET_router_ip(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->nic.router_ip) {
             ipaddress_formatted_t router_ip =
@@ -1514,7 +1514,7 @@ static ConfRes SET_router_ip(void *conf, const char *name, const char *value)
 
 static ConfRes SET_router_mac(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (!macaddress_is_zero(xconf->nic.router_mac_ipv4)) {
             ipaddress_formatted_t fmt =  macaddress_fmt(xconf->nic.router_mac_ipv4);
@@ -1552,7 +1552,7 @@ static ConfRes SET_router_mac(void *conf, const char *name, const char *value)
 */
 static ConfRes SET_read_conf(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
     }
@@ -1616,7 +1616,7 @@ static ConfRes SET_read_conf(void *conf, const char *name, const char *value)
 
 static ConfRes SET_packet_trace(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1631,7 +1631,7 @@ static ConfRes SET_packet_trace(void *conf, const char *name, const char *value)
 
 static ConfRes SET_ndjson_status(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1645,7 +1645,7 @@ static ConfRes SET_ndjson_status(void *conf, const char *name, const char *value
 
 static ConfRes SET_append(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1660,7 +1660,7 @@ static ConfRes SET_append(void *conf, const char *name, const char *value)
 
 static ConfRes SET_interactive(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1675,7 +1675,7 @@ static ConfRes SET_interactive(void *conf, const char *name, const char *value)
 
 static ConfRes SET_offline(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1689,7 +1689,7 @@ static ConfRes SET_offline(void *conf, const char *name, const char *value)
 
 static ConfRes SET_no_cpu_bind(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1703,7 +1703,7 @@ static ConfRes SET_no_cpu_bind(void *conf, const char *name, const char *value)
 
 static ConfRes SET_static_seed(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1717,7 +1717,7 @@ static ConfRes SET_static_seed(void *conf, const char *name, const char *value)
 
 static ConfRes SET_infinite(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1731,7 +1731,7 @@ static ConfRes SET_infinite(void *conf, const char *name, const char *value)
 
 static ConfRes SET_fast_timeout(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->is_fast_timeout || xconf->echo_all) {
             if (xconf->is_fast_timeout) {
@@ -1766,7 +1766,7 @@ fail:
 
 static ConfRes SET_pcap_filename(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->pcap_filename[0])
@@ -1780,7 +1780,7 @@ static ConfRes SET_pcap_filename(void *conf, const char *name, const char *value
 
 static ConfRes SET_echo(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
     }
@@ -1797,7 +1797,7 @@ static ConfRes SET_echo(void *conf, const char *name, const char *value)
 
 static ConfRes SET_debugif(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
     }
@@ -1810,7 +1810,7 @@ static ConfRes SET_debugif(void *conf, const char *name, const char *value)
 
 static ConfRes SET_benchmark(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
     }
@@ -1823,7 +1823,7 @@ static ConfRes SET_benchmark(void *conf, const char *name, const char *value)
 
 static ConfRes SET_selftest(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
     }
@@ -1836,7 +1836,7 @@ static ConfRes SET_selftest(void *conf, const char *name, const char *value)
 
 static ConfRes SET_list_cidr(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
     }
@@ -1849,7 +1849,7 @@ static ConfRes SET_list_cidr(void *conf, const char *name, const char *value)
 
 static ConfRes SET_lan_mode(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1865,7 +1865,7 @@ static ConfRes SET_lan_mode(void *conf, const char *name, const char *value)
 
 static ConfRes SET_bypass_os(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1882,7 +1882,7 @@ static ConfRes SET_bypass_os(void *conf, const char *name, const char *value)
 
 static ConfRes SET_fake_router_mac(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -1898,7 +1898,7 @@ static ConfRes SET_fake_router_mac(void *conf, const char *name, const char *val
 
 static ConfRes SET_rate(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     double rate = 0.0;
     double point = 10.0;
     unsigned i;
@@ -1945,7 +1945,7 @@ static ConfRes SET_rate(void *conf, const char *name, const char *value)
 
 static ConfRes SET_max_packet_len(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->max_packet_len!=XCONF_DFT_MAX_PKT_LEN || xconf->echo_all) {
@@ -1959,7 +1959,7 @@ static ConfRes SET_max_packet_len(void *conf, const char *name, const char *valu
 
 static ConfRes SET_resume_count(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->resume.count!=0 || xconf->echo_all) {
@@ -1973,7 +1973,7 @@ static ConfRes SET_resume_count(void *conf, const char *name, const char *value)
 
 static ConfRes SET_resume_index(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->resume.index!=0 || xconf->echo_all) {
@@ -1987,7 +1987,7 @@ static ConfRes SET_resume_index(void *conf, const char *name, const char *value)
 
 static ConfRes SET_no_bpf(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -2002,7 +2002,7 @@ static ConfRes SET_no_bpf(void *conf, const char *name, const char *value)
 
 static ConfRes SET_bpf_filter(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->bpf_filter)
@@ -2022,7 +2022,7 @@ static ConfRes SET_bpf_filter(void *conf, const char *name, const char *value)
 
 static ConfRes SET_seed(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         fprintf(xconf->echo, "seed = %" PRIu64 "\n", xconf->seed);
@@ -2037,7 +2037,7 @@ static ConfRes SET_seed(void *conf, const char *name, const char *value)
 
 static ConfRes SET_nothing(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
     if (xconf->echo) {
@@ -2048,7 +2048,7 @@ static ConfRes SET_nothing(void *conf, const char *name, const char *value)
 
 static ConfRes SET_version(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
     if (xconf->echo) {
@@ -2062,7 +2062,7 @@ static ConfRes SET_version(void *conf, const char *name, const char *value)
 
 static ConfRes SET_usage(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
     if (xconf->echo) {
@@ -2076,7 +2076,7 @@ static ConfRes SET_usage(void *conf, const char *name, const char *value)
 
 static ConfRes SET_print_intro(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
     if (xconf->echo) {
@@ -2090,7 +2090,7 @@ static ConfRes SET_print_intro(void *conf, const char *name, const char *value)
 
 static ConfRes SET_print_help(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
     if (xconf->echo) {
@@ -2104,7 +2104,7 @@ static ConfRes SET_print_help(void *conf, const char *name, const char *value)
 
 static ConfRes SET_log_level(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(value);
     if (xconf->echo) {
         int level = LOG_get_level();
@@ -2124,7 +2124,7 @@ static ConfRes SET_log_level(void *conf, const char *name, const char *value)
 
 static ConfRes SET_shard(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     unsigned one = 0;
     unsigned of = 0;
 
@@ -2158,7 +2158,7 @@ static ConfRes SET_shard(void *conf, const char *name, const char *value)
 
 static ConfRes SET_tcp_mss(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
 
     if (xconf->echo) {
         if (xconf->templ_opts) {
@@ -2215,7 +2215,7 @@ fail:
 
 static ConfRes SET_tcp_wscale(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     static const unsigned default_value = 3;
 
     if (xconf->echo) {
@@ -2269,7 +2269,7 @@ fail:
 
 static ConfRes SET_tcp_tsecho(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     static const unsigned default_value = 0x12345678;
 
     if (xconf->echo) {
@@ -2323,7 +2323,7 @@ fail:
 
 static ConfRes SET_tcp_sackok(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->templ_opts) {
             switch (xconf->templ_opts->tcp.is_sackok) {
@@ -2366,7 +2366,7 @@ fail:
 
 static ConfRes SET_repeat(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -2387,7 +2387,7 @@ static ConfRes SET_repeat(void *conf, const char *name, const char *value)
 
 static ConfRes SET_blackrock_rounds(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -2402,7 +2402,7 @@ static ConfRes SET_blackrock_rounds(void *conf, const char *name, const char *va
 
 static ConfRes SET_send_queue(void *conf, const char *name, const char *value)
 {
-    Xconf *xconf = (Xconf *)conf;
+    XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
@@ -3275,7 +3275,7 @@ ConfParam config_parameters[] = {
  * Exit process if CONF_ERR happens.
  ***************************************************************************/
 void
-xconf_set_parameter(Xconf *xconf,
+xconf_set_parameter(XConf *xconf,
                       const char *name, const char *value)
 {
     set_one_parameter(xconf, config_parameters, name, value);
@@ -3287,7 +3287,7 @@ xconf_set_parameter(Xconf *xconf,
  * Called by 'main()' when starting up.
  ***************************************************************************/
 void
-xconf_command_line(Xconf *xconf, int argc, char *argv[])
+xconf_command_line(XConf *xconf, int argc, char *argv[])
 {
     set_parameters_from_args(xconf, config_parameters, argc-1, argv+1);
 
@@ -3302,7 +3302,7 @@ xconf_command_line(Xconf *xconf, int argc, char *argv[])
  * Use#2: make sure your configuration was interpreted correctly.
  ***************************************************************************/
 void
-xconf_echo(Xconf *xconf, FILE *fp)
+xconf_echo(XConf *xconf, FILE *fp)
 {
     unsigned i;
 
@@ -3346,7 +3346,7 @@ xconf_echo(Xconf *xconf, FILE *fp)
  *  10.0.0.128/25
  ***************************************************************************/
 void
-xconf_echo_cidr(Xconf *xconf, FILE *fp)
+xconf_echo_cidr(XConf *xconf, FILE *fp)
 {
     unsigned i;
 
@@ -3772,7 +3772,7 @@ void xconf_print_help()
 void xconf_benchmark(unsigned blackrock_rounds)
 {
     printf("=== benchmarking (%u-bits) ===\n\n", (unsigned)sizeof(void*)*8);
-    blackrock_benchmark(blackrock_rounds);
+    blackrock1_benchmark(blackrock_rounds);
     blackrock2_benchmark(blackrock_rounds);
     smack_benchmark();
 }
@@ -3824,7 +3824,7 @@ void xconf_selftest()
         x += dedup_selftest();
         x += checksum_selftest();
         x += smack_selftest();
-        x += blackrock_selftest();
+        x += blackrock1_selftest();
         x += blackrock2_selftest();
 #ifndef NOT_FOUND_PCRE2
         x += nmapservice_selftest();

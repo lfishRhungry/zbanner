@@ -4,7 +4,7 @@
 
 
 void
-listip(Xconf *xconf)
+listip(XConf *xconf)
 {
     uint64_t i;
     uint64_t range;
@@ -26,7 +26,7 @@ listip(Xconf *xconf)
 
 
 infinite:
-    blackrock_init(&blackrock, range, dynamic_seed, xconf->blackrock_rounds);
+    blackrock1_init(&blackrock, range, dynamic_seed, xconf->blackrock_rounds);
 
     start = xconf->resume.index + (xconf->shard.one-1);
     end = range;
@@ -39,7 +39,7 @@ infinite:
         unsigned ip_proto;
         ipaddress addr;
 
-        xXx = blackrock_shuffle(&blackrock,  i);
+        xXx = blackrock1_shuffle(&blackrock,  i);
 
         targetip_pick(&xconf->targets, xXx, &addr, &port);
 

@@ -4,6 +4,6 @@
 #include "../xconf.h"
 
 
-void listip(Xconf *xconf);
+void listip(XConf *xconf);
 
 #endif

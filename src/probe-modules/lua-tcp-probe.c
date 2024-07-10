@@ -179,7 +179,7 @@ static bool sync_probe_config()
 }
 
 static bool
-luatcp_global_init(const Xconf *xconf)
+luatcp_init(const XConf *xconf)
 {
     if (!luatcp_conf.script) {
         LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": must specify a lua script as probe by `--script`.\n");
@@ -603,7 +603,7 @@ Probe LuaTcpProbe = {
         "one tx thread or rx-handle thread well. Even through, it is mandatory "
         "to implement functions thread-seperately. However, we had 3 essential"
         " threads at least and should be careful to thread-safe problems.",
-    .init_cb                                 = &luatcp_global_init,
+    .init_cb                                 = &luatcp_init,
     .make_payload_cb                         = &luatcp_make_payload,
     .get_payload_length_cb                   = &luatcp_get_payload_length,
     .handle_response_cb                      = &luatcp_handle_response,

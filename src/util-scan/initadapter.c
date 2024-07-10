@@ -19,13 +19,13 @@
  * in the configuration file.
  ***************************************************************************/
 int
-initialize_adapter(Xconf *xconf)
+initialize_adapter(XConf *xconf)
 {
     ipaddress_formatted_t    fmt;
     char                    *ifname;
     char                     ifname2[256];
     unsigned                 adapter_ip        = 0;
-    AdapterCache     *tmp_acache        = rawsock_init_cache(false);
+    AdapterCache            *tmp_acache        = rawsock_init_cache(false);
     unsigned                 is_usable_ipv4    = !targetip_has_ipv4_targets(&xconf->targets);
     unsigned                 is_usable_ipv6    = !targetip_has_ipv6_targets(&xconf->targets);
 

@@ -27,7 +27,7 @@ count_cidr6_bits(struct Range6 range)
 /***************************************************************************
  ***************************************************************************/
 void
-listrange(Xconf *xconf)
+listrange(XConf *xconf)
 {
     struct RangeList  *list4 = &xconf->targets.ipv4;
     struct Range6List *list6 = &xconf->targets.ipv6;

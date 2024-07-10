@@ -14,6 +14,7 @@
 #include "target/target-ip.h"
 #include "stack/stack-src.h"
 #include "stack/stack-queue.h"
+#include "generate-modules/generate-modules.h"
 #include "output-modules/output-modules.h"
 #include "probe-modules/probe-modules.h"
 #include "scan-modules/scan-modules.h"
@@ -118,8 +119,8 @@ typedef struct XtateConf
         unsigned of;
     } shard;
 
-    TargetIP targets;
-    TargetIP exclude;
+    TargetIP      targets;
+    TargetIP      exclude;
 
     /**
      * Temporary file to echo parameters to, used for saving configuration
@@ -152,6 +153,11 @@ typedef struct XtateConf
     Scanner      *scanner;
     char         *scanner_args;
 
+    Generator    *generator;
+    char         *generator_args;
+
+    OutConf       out_conf;
+
     /**
      * We could set the number of transmit threads.
      * NOTE: Always only one receiving thread for consistency of dedup, timeout
@@ -163,7 +169,6 @@ typedef struct XtateConf
     unsigned      rx_handler_count;
 
     enum Operation    op;
-    OutConf           out_conf;
     uint64_t          seed;
     uint64_t          repeat;
     double            max_rate;
@@ -193,12 +198,12 @@ typedef struct XtateConf
     unsigned          is_no_cpu_bind:1;
     unsigned          is_static_seed:1;
 
-} Xconf;
+} XConf;
 
 
-void xconf_command_line(Xconf *xconf, int argc, char *argv[]);
+void xconf_command_line(XConf *xconf, int argc, char *argv[]);
 
-void xconf_save_state(Xconf *xconf);
+void xconf_save_state(XConf *xconf);
 
 /**
  * Pre-scan the command-line looking for options that may affect how
@@ -209,19 +214,19 @@ bool xconf_contains(const char *x, int argc, char **argv);
 /**
  * Called to set a <name=value> pair.
  */
-void xconf_set_parameter(Xconf *xconf,
+void xconf_set_parameter(XConf *xconf,
     const char *name, const char *value);
 
 /**
  * Echoes the settings to the command-line. By default, echoes only
  * non-default values. With "echo-all", everything is echoed.
  */
-void xconf_echo(Xconf *xconf, FILE *fp);
+void xconf_echo(XConf *xconf, FILE *fp);
 
 /**
  * Echoes the list of CIDR ranges to scan.
  */
-void xconf_echo_cidr(Xconf *xconf, FILE *fp);
+void xconf_echo_cidr(XConf *xconf, FILE *fp);
 
 void xconf_print_intro();
 

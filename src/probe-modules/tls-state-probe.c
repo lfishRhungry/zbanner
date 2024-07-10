@@ -613,7 +613,7 @@ static void _extend_buffer(unsigned char **buf, size_t *buf_len)
 
 /*init public SSL_CTX*/
 static bool
-tlsstate_global_init(const Xconf *xconf)
+tlsstate_init(const XConf *xconf)
 {
     if (tlsstate_conf.subprobe->type!=ProbeType_STATE) {
         LOG(LEVEL_ERROR, "TlsStateProbe need a subprobe in STATE type.\n");
@@ -1311,7 +1311,7 @@ Probe TlsStateProbe = {
         "NOTE: TlsState doesn't support initial waiting before hello for subprobe"
         " because the nesting.\n"
         "Dependencies: OpenSSL.",
-    .init_cb                           = &tlsstate_global_init,
+    .init_cb                           = &tlsstate_init,
     .conn_init_cb                      = &tlsstate_conn_init,
     .make_hello_cb                     = &tlsstate_make_hello,
     .parse_response_cb                 = &tlsstate_parse_response,

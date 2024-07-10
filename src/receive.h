@@ -10,7 +10,7 @@ typedef struct RxThreadConfig {
     /** This points to the central configuration. Note that it's 'const',
      * meaning that the thread cannot change the contents. That'd be
      * unsafe */
-    const Xconf *xconf;
+    const XConf *xconf;
 
     bool done_receiving;
 

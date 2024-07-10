@@ -289,7 +289,7 @@ void help_probe_module(Probe *module)
     printf("\n");
 }
 
-bool probe_init_nothing(const Xconf *xconf)
+bool probe_init_nothing(const XConf *xconf)
 {
     return true;
 }

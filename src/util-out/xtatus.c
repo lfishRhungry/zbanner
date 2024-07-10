@@ -14,8 +14,8 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item)
     double              elapsed_time;
     double              rate;
     double              now;
-    double              percent_done;
-    double              time_remaining;
+    double              percent_done          = 0.0;
+    double              time_remaining        = 0.0;
     uint64_t            current_successed     = 0;
     uint64_t            current_sent          = 0;
     double              successed_rate        = 0.0;
@@ -169,13 +169,15 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item)
      * Calculate "percent-done", which is just the total number of
      * packets sent divided by the number we need to send.
      */
-    percent_done = (double)(item->cur_count*100.0/item->max_count);
+    if (item->max_count)
+        percent_done = (double)(item->cur_count*100.0/item->max_count);
 
 
     /*
      * Calculate the time remaining in the scan
      */
-    time_remaining  = (1.0 - percent_done/100.0) * (item->max_count / rate);
+    if (item->max_count)
+        time_remaining  = (1.0 - percent_done/100.0) * (item->max_count / rate);
 
     /*
      * some other stats

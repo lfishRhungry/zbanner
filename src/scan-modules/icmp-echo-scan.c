@@ -56,7 +56,7 @@ static ConfParam icmpecho_parameters[] = {
 };
 
 static bool
-icmpecho_init(const Xconf *xconf)
+icmpecho_init(const XConf *xconf)
 {
     if (xconf->targets.count_ports!=1) {
         LOG(LEVEL_ERROR, "IcmpEchoScan doesn't need to specify any ports.\n");

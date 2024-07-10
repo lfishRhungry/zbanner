@@ -23,7 +23,7 @@ typedef struct BlackRock {
  *      shuffled/randomized.
  */
 void
-blackrock_init(BlackRock *br, uint64_t range, uint64_t seed, unsigned rounds);
+blackrock1_init(BlackRock *br, uint64_t range, uint64_t seed, unsigned rounds);
 void
 blackrock2_init(BlackRock *br, uint64_t range, uint64_t seed, unsigned rounds);
 
@@ -33,18 +33,18 @@ blackrock2_init(BlackRock *br, uint64_t range, uint64_t seed, unsigned rounds);
  * so when linearly incrementing through the range, the output
  * of this function won't repeat. In other words, encrypt the index variable.
  * @param br
- *      The randomization parameters created with 'blackrock_init()'
+ *      The randomization parameters created with 'blackrock1_init()'
  * @param index
  *      An input within the specified range. We call it an 'index' variable
  *      because that's how we intend to use this function, shuffling a
  *      monotonically increasing index variable, but in truth, any sort
  *      of integer can be used. This must be within the 'range' specified
- *      during the call to blackrock_init(), or the results are undefined.
+ *      during the call to blackrock1_init(), or the results are undefined.
  * @return
  *      A one-to-one matching index that's in the same range.
  */
 uint64_t
-blackrock_shuffle(const BlackRock *br, uint64_t index);
+blackrock1_shuffle(const BlackRock *br, uint64_t index);
 uint64_t
 blackrock2_shuffle(const BlackRock *br, uint64_t index);
 
@@ -53,13 +53,13 @@ blackrock2_shuffle(const BlackRock *br, uint64_t index);
  * integer, return the original index value before the shuffling/encryption.
  */
 uint64_t
-blackrock_unshuffle(const BlackRock *br, uint64_t m);
+blackrock1_unshuffle(const BlackRock *br, uint64_t m);
 uint64_t
 blackrock2_unshuffle(const BlackRock *br, uint64_t m);
 
-void blackrock_benchmark(unsigned rounds);
+void blackrock1_benchmark(unsigned rounds);
 
-int blackrock_selftest();
+int blackrock1_selftest();
 
 void blackrock2_benchmark(unsigned rounds);
 

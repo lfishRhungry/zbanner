@@ -11,7 +11,7 @@
 extern Scanner ArpReqScan; /*for internal x-ref*/
 
 static bool
-arpreq_init(const Xconf *xconf)
+arpreq_init(const XConf *xconf)
 {
     if (xconf->nic.link_type!=1) {
         LOG(LEVEL_ERROR, "ArpReqScan cannot work on non-ethernet link type.\n");

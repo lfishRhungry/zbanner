@@ -340,7 +340,7 @@ static ConfParam hellostate_parameters[] = {
 extern Probe HelloStateProbe;
 
 static bool
-hellostate_global_init(const Xconf *xconf)
+hellostate_init(const XConf *xconf)
 {
     if (hellostate_conf.hello==NULL || hellostate_conf.hello_len==0) {
         hellostate_conf.hello     = NULL;
@@ -487,7 +487,7 @@ Probe HelloStateProbe = {
         "NOTE: If no hello data was specified, HelloStateProbe would just wait "
         "banner(first packet with reponse).\n"
         "Dependencies: PCRE2 for regex.",
-    .init_cb                    = &hellostate_global_init,
+    .init_cb                    = &hellostate_init,
     .conn_init_cb                      = &probe_conn_init_nothing,
     .make_hello_cb                     = &hellostate_make_hello,
     .parse_response_cb                 = &hellostate_parse_response,

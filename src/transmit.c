@@ -31,7 +31,7 @@
 #include "util-scan/throttle.h"
 
 static void
-_adapter_get_source_addresses(const Xconf *xconf, struct source_t *src)
+_adapter_get_source_addresses(const XConf *xconf, struct source_t *src)
 {
     const StackSrc *ifsrc = &xconf->nic.src;
 
@@ -48,7 +48,7 @@ _adapter_get_source_addresses(const Xconf *xconf, struct source_t *src)
 void transmit_thread(void *v)
 {
     TxThread                    *parms                    = (TxThread *)v;
-    const Xconf                 *xconf                    = parms->xconf;
+    const XConf                 *xconf                    = parms->xconf;
     uint64_t                     rate                     = (uint64_t)xconf->max_rate;
     uint64_t                     count_ipv4               = rangelist_count(&xconf->targets.ipv4);
     uint64_t                     count_ipv6               = range6list_count(&xconf->targets.ipv6).lo;
@@ -116,7 +116,7 @@ infinite:;
                  count_ipv6 * rangelist_count(&xconf->targets.ports);
     range_ipv6 = count_ipv6 * rangelist_count(&xconf->targets.ports);
 
-    blackrock_init(&blackrock, range, dynamic_seed, xconf->blackrock_rounds);
+    blackrock1_init(&blackrock, range, dynamic_seed, xconf->blackrock_rounds);
 
     start = xconf->resume.index + parms->tx_index +
             (xconf->shard.one - 1) * xconf->tx_thread_count;
@@ -149,7 +149,7 @@ infinite:;
                     xXx -= range;
                 }
             }
-            xXx = blackrock_shuffle(&blackrock, xXx);
+            xXx = blackrock1_shuffle(&blackrock, xXx);
 
             ScanTarget target = {.index = more_idx};
 

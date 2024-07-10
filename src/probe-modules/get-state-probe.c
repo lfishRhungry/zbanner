@@ -40,7 +40,7 @@ static ConfParam getstate_parameters[] = {
     {0}
 };
 
-static bool getstate_global_init(const Xconf *xconf)
+static bool getstate_init(const XConf *xconf)
 {
     LOG(LEVEL_INFO, "(GetState Probe global initing) >>>\n");
     return true;
@@ -122,7 +122,7 @@ Probe GetStateProbe = {
         "And could get a simple result from http server fastly. GetState is the "
         "state version of GetRequest Probe for testing ScanModules that needs a"
         " probe of state type.",
-    .init_cb                    = &getstate_global_init,
+    .init_cb                           = &getstate_init,
     .conn_init_cb                      = &getstate_conn_init,
     .make_hello_cb                     = &getstate_make_hello,
     .parse_response_cb                 = &getstate_parse_response,

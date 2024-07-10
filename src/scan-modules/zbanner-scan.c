@@ -175,7 +175,7 @@ static ConfParam zbanner_parameters[] = {
 static unsigned src_port_start;
 
 static bool
-zbanner_init(const Xconf *xconf)
+zbanner_init(const XConf *xconf)
 {
     src_port_start = xconf->nic.src.port.first;
 
