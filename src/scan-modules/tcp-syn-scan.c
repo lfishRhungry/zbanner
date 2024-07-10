@@ -132,7 +132,7 @@ static bool
 tcpsyn_transmit(
     uint64_t entropy,
     ScanTarget *target,
-    struct ScanTmEvent *event,
+    ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
@@ -262,7 +262,7 @@ tcpsyn_handle(
 static void
 tcpsyn_timeout(
     uint64_t entropy,
-    struct ScanTmEvent *event,
+    ScanTmEvent *event,
     OutItem *item,
     STACK *stack,
     FHandler *handler)

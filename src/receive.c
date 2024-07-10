@@ -52,13 +52,13 @@ static uint8_t _dispatch_hash(ipaddress addr)
 }
 
 
-struct RxDispatch {
+typedef struct RxDispatchConfig {
     PACKET_QUEUE        **handle_queue;
     PACKET_QUEUE         *dispatch_queue;
     unsigned              recv_handle_num;
     unsigned              recv_handle_mask;
     uint64_t              entropy;
-};
+} DispatchConf;
 
 static void
 dispatch_thread(void *v)
@@ -66,7 +66,7 @@ dispatch_thread(void *v)
     LOG(LEVEL_DEBUG, "starting dispatch thread\n");
     pixie_set_thread_name(XTATE_NAME"-dsp");
 
-    struct RxDispatch *parms = v;
+    DispatchConf *parms = v;
     while (!time_to_finish_rx) {
         int err = 1;
         PktRecv *recved = NULL;
@@ -107,7 +107,7 @@ typedef struct RxHandleConfig {
     /** This points to the central configuration. Note that it's 'const',
      * meaning that the thread cannot change the contents. That'd be
      * unsafe */
-    const Xconf   *xconf;
+    const Xconf          *xconf;
     Scanner              *scanner;
     PACKET_QUEUE         *handle_queue;
     FHandler             *ft_handler;
@@ -120,7 +120,7 @@ typedef struct RxHandleConfig {
 static void
 handle_thread(void *v)
 {
-    HandleConf    *parms = v;
+    HandleConf  *parms = v;
     const Xconf *xconf = parms->xconf;
 
     LOG(LEVEL_DEBUG, "starting handle thread #%u\n", parms->index);
@@ -186,23 +186,23 @@ handle_thread(void *v)
 
 void receive_thread(void *v) {
     RxThread                      *parms                       = (RxThread *)v;
-    const Xconf            *xconf                       = parms->xconf;
+    const Xconf                   *xconf                       = parms->xconf;
     OutConf                       *out_conf                    = (OutConf *)(&xconf->out_conf);
     Adapter                       *adapter                     = xconf->nic.adapter;
     int                            data_link                   = stack_if_datalink(adapter);
     uint64_t                       entropy                     = xconf->seed;
     STACK                         *stack                       = xconf->stack;
     Scanner                       *scan_module                 = xconf->scanner;
-    struct DedupTable             *dedup                       = NULL;
+    DedupTable                    *dedup                       = NULL;
     struct PcapFile               *pcapfile                    = NULL;
-    struct ScanTmEvent            *tm_event                    = NULL;
+    ScanTmEvent                   *tm_event                    = NULL;
     FHandler                      *ft_handler                  = NULL;
     unsigned                       handler_num                 = xconf->rx_handler_count;
     size_t                        *handler                     = MALLOC(handler_num * sizeof(size_t));
-    HandleConf               *handle_parms                = MALLOC(handler_num * sizeof(HandleConf));
+    HandleConf                    *handle_parms                = MALLOC(handler_num * sizeof(HandleConf));
     PACKET_QUEUE                 **handle_q                    = MALLOC(handler_num * sizeof(PACKET_QUEUE *));
     size_t                         dispatcher;
-    struct RxDispatch              dispatch_parms;
+    DispatchConf                   dispatch_parms;
     PACKET_QUEUE                  *dispatch_q;
     PktRecv                       *recved;
 
@@ -268,11 +268,11 @@ void receive_thread(void *v) {
     for (unsigned i=0; i<handler_num; i++) {
         /*handle threads just add tm_event, it's thread safe*/
         handle_parms[i].ft_handler      = xconf->is_fast_timeout?ft_handler:NULL;
-        handle_parms[i].scanner     = xconf->scanner;
+        handle_parms[i].scanner         = xconf->scanner;
         handle_parms[i].handle_queue    = handle_q[i];
         handle_parms[i].xconf           = xconf;
         handle_parms[i].stack           = stack;
-        handle_parms[i].out_conf             = out_conf;
+        handle_parms[i].out_conf        = out_conf;
         handle_parms[i].entropy         = entropy;
         handle_parms[i].index           = i;
 

@@ -3,14 +3,16 @@
 #include "../massip/massip-addr.h"
 #include "../util-misc/cross.h"
 
-struct DedupTable *
+typedef struct DeduplicateTable DedupTable;
+
+DedupTable *
 dedup_create(unsigned dedup_win);
 
 void
-dedup_destroy(struct DedupTable *table);
+dedup_destroy(DedupTable *table);
 
 bool
-dedup_is_duplicate(struct DedupTable *dedup,
+dedup_is_duplicate(DedupTable *dedup,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me, unsigned type);
 

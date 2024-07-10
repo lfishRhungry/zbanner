@@ -23,7 +23,7 @@ typedef struct TxThreadConfig {
 
     bool done_transmitting;
 
-    struct Throttler throttler[1];
+    Throttler throttler[1];
 
     uint64_t total_sent;
 

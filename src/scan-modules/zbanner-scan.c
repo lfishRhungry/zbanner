@@ -186,7 +186,7 @@ static bool
 zbanner_transmit(
     uint64_t entropy,
     ScanTarget *target,
-    struct ScanTmEvent *event,
+    ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
@@ -353,8 +353,8 @@ zbanner_handle(
 
             /*add timeout for banner*/
             if (handler && !zbanner_conf.no_banner_timeout) {
-                struct ScanTmEvent *tm_event =
-                    CALLOC(1, sizeof(struct ScanTmEvent));
+                ScanTmEvent *tm_event =
+                    CALLOC(1, sizeof(ScanTmEvent));
 
                 tm_event->ip_proto  = IP_PROTO_TCP;
                 tm_event->ip_them   = recved->parsed.src_ip;
@@ -390,8 +390,8 @@ zbanner_handle(
 
                     /*add timeout for port*/
                     if (handler && zbanner_conf.is_port_timeout) {
-                        struct ScanTmEvent *tm_event =
-                            CALLOC(1, sizeof(struct ScanTmEvent));
+                        ScanTmEvent *tm_event =
+                            CALLOC(1, sizeof(ScanTmEvent));
 
                         tm_event->ip_proto  = IP_PROTO_TCP;
                         tm_event->ip_them   = recved->parsed.src_ip;
@@ -479,8 +479,8 @@ zbanner_handle(
 
                 /*add timeout for port*/
                 if (handler && zbanner_conf.is_port_timeout) {
-                    struct ScanTmEvent *tm_event =
-                        CALLOC(1, sizeof(struct ScanTmEvent));
+                    ScanTmEvent *tm_event =
+                        CALLOC(1, sizeof(ScanTmEvent));
 
                     tm_event->ip_proto  = IP_PROTO_TCP;
                     tm_event->ip_them   = recved->parsed.src_ip;
@@ -516,8 +516,8 @@ zbanner_handle(
 
             /*add timeout for port*/
             if (handler && zbanner_conf.is_port_timeout) {
-                struct ScanTmEvent *tm_event =
-                    CALLOC(1, sizeof(struct ScanTmEvent));
+                ScanTmEvent *tm_event =
+                    CALLOC(1, sizeof(ScanTmEvent));
 
                 tm_event->ip_proto  = IP_PROTO_TCP;
                 tm_event->ip_them   = recved->parsed.src_ip;
@@ -538,7 +538,7 @@ zbanner_handle(
 static void
 zbanner_timeout(
     uint64_t entropy,
-    struct ScanTmEvent *event,
+    ScanTmEvent *event,
     OutItem *item,
     STACK *stack,
     FHandler *handler)
@@ -587,8 +587,8 @@ zbanner_timeout(
 
             /*add timeout for port*/
             if (handler && zbanner_conf.is_port_timeout) {
-                struct ScanTmEvent *tm_event =
-                    CALLOC(1, sizeof(struct ScanTmEvent));
+                ScanTmEvent *tm_event =
+                    CALLOC(1, sizeof(ScanTmEvent));
 
                 tm_event->ip_proto  = IP_PROTO_TCP;
                 tm_event->ip_them   = event->ip_them;
@@ -622,8 +622,8 @@ zbanner_timeout(
 
         /*add timeout for port*/
         if (handler && zbanner_conf.is_port_timeout) {
-            struct ScanTmEvent *tm_event =
-                CALLOC(1, sizeof(struct ScanTmEvent));
+            ScanTmEvent *tm_event =
+                CALLOC(1, sizeof(ScanTmEvent));
 
             tm_event->ip_proto  = IP_PROTO_TCP;
             tm_event->ip_them   = event->ip_them;

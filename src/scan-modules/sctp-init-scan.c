@@ -57,7 +57,7 @@ static bool
 sctpinit_transmit(
     uint64_t entropy,
     ScanTarget *target,
-    struct ScanTmEvent *event,
+    ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
@@ -143,7 +143,7 @@ sctpinit_handle(
 
 static void sctpinit_timeout(
     uint64_t entropy,
-    struct ScanTmEvent *event,
+    ScanTmEvent *event,
     OutItem *item,
     STACK *stack,
     FHandler *handler)

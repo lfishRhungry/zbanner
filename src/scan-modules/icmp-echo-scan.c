@@ -70,7 +70,7 @@ static bool
 icmpecho_transmit(
     uint64_t entropy,
     ScanTarget *target,
-    struct ScanTmEvent *event,
+    ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
     if (target->ip_proto != IP_PROTO_Other)
@@ -149,7 +149,7 @@ icmpecho_handle(
 
 static void icmpecho_timeout(
     uint64_t entropy,
-    struct ScanTmEvent *event,
+    ScanTmEvent *event,
     OutItem *item,
     STACK *stack,
     FHandler *handler)

@@ -59,7 +59,7 @@ static bool
 udp_transmit(
     uint64_t entropy,
     ScanTarget *target,
-    struct ScanTmEvent *event,
+    ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
     /*we just handle udp target*/
@@ -217,8 +217,8 @@ udp_handle(
 
                 /*add timeout*/
                 if (handler) {
-                    struct ScanTmEvent *tm_event =
-                        CALLOC(1, sizeof(struct ScanTmEvent));
+                    ScanTmEvent *tm_event =
+                        CALLOC(1, sizeof(ScanTmEvent));
 
                     tm_event->ip_proto  = IP_PROTO_UDP;
                     tm_event->ip_them   = recved->parsed.src_ip;
@@ -268,8 +268,8 @@ udp_handle(
 
             /*add timeout*/
             if (handler) {
-                struct ScanTmEvent *tm_event =
-                    CALLOC(1, sizeof(struct ScanTmEvent));
+                ScanTmEvent *tm_event =
+                    CALLOC(1, sizeof(ScanTmEvent));
 
                 tm_event->ip_proto  = IP_PROTO_UDP;
                 tm_event->ip_them   = recved->parsed.src_ip;
@@ -301,7 +301,7 @@ udp_handle(
 static void
 udp_timeout(
     uint64_t entropy,
-    struct ScanTmEvent *event,
+    ScanTmEvent *event,
     OutItem *item,
     STACK *stack,
     FHandler *handler)
@@ -355,8 +355,8 @@ udp_timeout(
 
             /*add timeout*/
             if (handler) {
-                struct ScanTmEvent *tm_event =
-                    CALLOC(1, sizeof(struct ScanTmEvent));
+                ScanTmEvent *tm_event =
+                    CALLOC(1, sizeof(ScanTmEvent));
 
                 tm_event->ip_proto  = IP_PROTO_UDP;
                 tm_event->ip_them   = event->ip_them;
@@ -405,8 +405,8 @@ udp_timeout(
 
         /*add timeout*/
         if (handler) {
-            struct ScanTmEvent *tm_event =
-                CALLOC(1, sizeof(struct ScanTmEvent));
+            ScanTmEvent *tm_event =
+                CALLOC(1, sizeof(ScanTmEvent));
 
             tm_event->ip_proto  = IP_PROTO_UDP;
             tm_event->ip_them   = event->ip_them;

@@ -4,7 +4,7 @@
 
 #define THR_CACHE                256  /*must be power of 2*/
 
-typedef struct Throttler
+typedef struct RateThrottler
 {
     double max_rate;
     double current_rate;
@@ -24,13 +24,13 @@ typedef struct Throttler
 
 
 void 
-throttler_start(struct Throttler *status, double max_rate);
+throttler_start(Throttler *status, double max_rate);
 
 /**
  * @param throttler throttler that has been started
  * @param count how many packets we have sent
 */
 uint64_t
-throttler_next_batch(struct Throttler *throttler, uint64_t packet_count);
+throttler_next_batch(Throttler *throttler, uint64_t packet_count);
 
 #endif

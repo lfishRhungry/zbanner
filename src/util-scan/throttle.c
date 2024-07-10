@@ -28,7 +28,7 @@
 /***************************************************************************
  ***************************************************************************/
 void
-throttler_start(struct Throttler *throttler, double max_rate)
+throttler_start(Throttler *throttler, double max_rate)
 {
     unsigned i;
 
@@ -58,7 +58,7 @@ throttler_start(struct Throttler *throttler, double max_rate)
  * it'll pause and wait until it's ready to send a packet.
  ***************************************************************************/
 uint64_t
-throttler_next_batch(struct Throttler *throttler, uint64_t packet_count)
+throttler_next_batch(Throttler *throttler, uint64_t packet_count)
 {
     uint64_t timestamp;
     uint64_t index;

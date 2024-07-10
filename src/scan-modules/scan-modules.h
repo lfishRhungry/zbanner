@@ -60,7 +60,7 @@ typedef struct ScanModuleTarget {
 } ScanTarget;
 
 /*a timeout event for scanning*/
-struct ScanTmEvent {
+typedef struct ScanTimeoutEvent {
     unsigned           ip_proto;
     ipaddress          ip_them;
     ipaddress          ip_me;
@@ -68,7 +68,7 @@ struct ScanTmEvent {
     unsigned           port_me;
     unsigned           dedup_type;
     unsigned           need_timeout:1;
-};
+} ScanTmEvent;
 
 /**
  * !Only step for transmitting. Happens in Tx Thread.
@@ -87,7 +87,7 @@ struct ScanTmEvent {
 typedef bool (*scan_modules_transmit)(
     uint64_t entropy,
     ScanTarget *target,
-    struct ScanTmEvent *event,
+    ScanTmEvent *event,
     unsigned char *px, size_t *len);
 
 /***************************************************************************
@@ -179,7 +179,7 @@ typedef void (*scan_modules_handle)(
 */
 typedef void (*scan_modules_timeout)(
     uint64_t entropy,
-    struct ScanTmEvent *event,
+    ScanTmEvent *event,
     OutItem *item,
     STACK *stack,
     FHandler *handler);
@@ -283,7 +283,7 @@ void scan_close_nothing();
 
 void scan_no_timeout(
     uint64_t entropy,
-    struct ScanTmEvent *event,
+    ScanTmEvent *event,
     OutItem *item,
     STACK *stack,
     FHandler *handler);

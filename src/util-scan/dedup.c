@@ -37,7 +37,7 @@ struct DedupEntry
  * This is simply the array of entries. We have two arrays, one for IPv4
  * and another for IPv6.
  */
-struct DedupTable
+struct DeduplicateTable
 {
     /*num of entries(power of 2) - 1*/
     unsigned mask;
@@ -86,7 +86,7 @@ static inline unsigned fnv1a_longlong(unsigned long long data, unsigned hash)
  * Create a new table, which means simply allocating the object
  * and setting it to zero.
  */
-struct DedupTable *
+DedupTable *
 dedup_create(unsigned dedup_win)
 {
     //transfer dedup_win to real entries count
@@ -111,9 +111,9 @@ dedup_create(unsigned dedup_win)
         entries_count = new_entry_count;
     }
 
-    struct DedupTable *dedup;
+    DedupTable *dedup;
     dedup = CALLOC(1,
-        sizeof(struct DedupTable) + sizeof(struct DedupEntry) * entries_count);
+        sizeof(DedupTable) + sizeof(struct DedupEntry) * entries_count);
     dedup->mask = entries_count - 1;
 
     return dedup;
@@ -124,7 +124,7 @@ dedup_create(unsigned dedup_win)
  * since it's all contained in the single allocation.
  */
 void
-dedup_destroy(struct DedupTable *dedup)
+dedup_destroy(DedupTable *dedup)
 {
     free(dedup);
 }
@@ -203,7 +203,7 @@ swap6(struct DedupEntry_IPv6 *lhs, struct DedupEntry_IPv6 *rhs)
  * IPv6 addresses instead.
  */
 static bool
-dedup_is_duplicate_ipv6(struct DedupTable *dedup,
+dedup_is_duplicate_ipv6(DedupTable *dedup,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me, unsigned type)
 {
@@ -310,7 +310,7 @@ swap4(struct DedupEntry_IPv4 *lhs, struct DedupEntry_IPv4 *rhs)
 /***************************************************************************
  ***************************************************************************/
 static bool
-dedup_is_duplicate_ipv4(struct DedupTable *dedup,
+dedup_is_duplicate_ipv4(DedupTable *dedup,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me, unsigned type)
 {
@@ -361,7 +361,7 @@ dedup_is_duplicate_ipv4(struct DedupTable *dedup,
 /***************************************************************************
  ***************************************************************************/
 bool
-dedup_is_duplicate(struct DedupTable *dedup,
+dedup_is_duplicate(DedupTable *dedup,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me, unsigned type)
 {
@@ -403,7 +403,7 @@ _rand(unsigned *seed)
  */
 int dedup_selftest()
 {
-    struct DedupTable *dedup;
+    DedupTable *dedup;
     unsigned seed = 0;
     size_t i;
     unsigned found_match = 0;

@@ -107,7 +107,7 @@ const unsigned char sbox[256] = {
 /***************************************************************************
  ***************************************************************************/
 void
-blackrock_init(struct BlackRock *br, uint64_t range, uint64_t seed, unsigned rounds)
+blackrock_init(BlackRock *br, uint64_t range, uint64_t seed, unsigned rounds)
 {
     double foo = sqrt(range * 1.0);
 
@@ -266,7 +266,7 @@ UNENCRYPT(unsigned r, uint64_t a, uint64_t b, uint64_t m, uint64_t seed)
 /***************************************************************************
  ***************************************************************************/
 uint64_t
-blackrock_shuffle(const struct BlackRock *br, uint64_t m)
+blackrock_shuffle(const BlackRock *br, uint64_t m)
 {
     uint64_t c;
 
@@ -280,7 +280,7 @@ blackrock_shuffle(const struct BlackRock *br, uint64_t m)
 /***************************************************************************
  ***************************************************************************/
 uint64_t
-blackrock_unshuffle(const struct BlackRock *br, uint64_t m)
+blackrock_unshuffle(const BlackRock *br, uint64_t m)
 {
     uint64_t c;
 
@@ -296,7 +296,7 @@ blackrock_unshuffle(const struct BlackRock *br, uint64_t m)
  * This function called only during selftest/regression-test.
  ***************************************************************************/
 static unsigned
-blackrock_verify(struct BlackRock *br, uint64_t max)
+blackrock_verify(BlackRock *br, uint64_t max)
 {
     unsigned char *list;
     uint64_t i;
@@ -330,7 +330,7 @@ blackrock_verify(struct BlackRock *br, uint64_t max)
  ***************************************************************************/
 void blackrock_benchmark(unsigned rounds)
 {
-    struct BlackRock br;
+    BlackRock br;
     uint64_t range = 0x012356789123ULL;
     uint64_t i;
     uint64_t result = 0;
@@ -382,7 +382,7 @@ int blackrock_selftest()
      * function above.
      */
     {
-        struct BlackRock br;
+        BlackRock br;
 
         blackrock_init(&br, 1000, 0, 4);
 
@@ -400,7 +400,7 @@ int blackrock_selftest()
     range = 3015 * 3;
 
     for (i=0; i<5; i++) {
-        struct BlackRock br;
+        BlackRock br;
         int is_success;
 
         range += 10 + i;

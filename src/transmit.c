@@ -47,19 +47,19 @@ _adapter_get_source_addresses(const Xconf *xconf, struct source_t *src)
 
 void transmit_thread(void *v)
 {
-    TxThread             *parms                    = (TxThread *)v;
-    const Xconf          *xconf                    = parms->xconf;
+    TxThread                    *parms                    = (TxThread *)v;
+    const Xconf                 *xconf                    = parms->xconf;
     uint64_t                     rate                     = (uint64_t)xconf->max_rate;
     uint64_t                     count_ipv4               = rangelist_count(&xconf->targets.ipv4);
     uint64_t                     count_ipv6               = range6list_count(&xconf->targets.ipv6).lo;
-    struct Throttler            *throttler                = parms->throttler;
+    Throttler                   *throttler                = parms->throttler;
     Adapter                     *adapter                  = xconf->nic.adapter;
     AdapterCache                *acache                   = NULL;
     uint64_t                     packets_sent             = 0;
     unsigned                     increment                = xconf->shard.of * xconf->tx_thread_count;
     uint64_t                     dynamic_seed             = xconf->seed;
     uint64_t                     entropy                  = xconf->seed;
-    struct ScanTmEvent          *tm_event                 = NULL;
+    ScanTmEvent                 *tm_event                 = NULL;
     FHandler                    *ft_handler               = NULL;
 
     /* Wait to make sure receive_thread is ready */
@@ -101,7 +101,7 @@ void transmit_thread(void *v)
     throttler_start(throttler, xconf->max_rate / xconf->tx_thread_count);
 
     /*Declared out of infinite loop to keep balance of stack*/
-    struct BlackRock blackrock;
+    BlackRock        blackrock;
     uint64_t         range;
     uint64_t         range_ipv6;
     uint64_t         start;
@@ -208,7 +208,7 @@ infinite:;
 
             /*if we don't use fast-timeout, do not malloc more memory*/
             if (!tm_event) {
-                tm_event = CALLOC(1, sizeof(struct ScanTmEvent));
+                tm_event = CALLOC(1, sizeof(ScanTmEvent));
             }
 
             tm_event->ip_proto  = target.ip_proto;
