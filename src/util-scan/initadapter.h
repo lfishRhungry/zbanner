@@ -10,6 +10,6 @@
  * local routers.
  */
 int
-initialize_adapter(XConf *xconf);
+initialize_adapter(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets);
 
 #endif

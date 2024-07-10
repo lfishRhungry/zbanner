@@ -19,15 +19,15 @@
  * in the configuration file.
  ***************************************************************************/
 int
-initialize_adapter(XConf *xconf)
+initialize_adapter(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets)
 {
     ipaddress_formatted_t    fmt;
     char                    *ifname;
     char                     ifname2[256];
     unsigned                 adapter_ip        = 0;
     AdapterCache            *tmp_acache        = rawsock_init_cache(false);
-    unsigned                 is_usable_ipv4    = !targetip_has_ipv4_targets(&xconf->targets);
-    unsigned                 is_usable_ipv6    = !targetip_has_ipv6_targets(&xconf->targets);
+    bool                     is_usable_ipv4    = !has_ipv4_targets;
+    bool                     is_usable_ipv6    = !has_ipv6_targets;
 
     /*
      * ADAPTER/NETWORK-INTERFACE
@@ -109,7 +109,7 @@ initialize_adapter(XConf *xconf)
     /*
      * IPv4 ADDRESS
      */
-    if (targetip_has_ipv4_targets(&xconf->targets)) {
+    if (has_ipv4_targets) {
         adapter_ip = xconf->nic.src.ipv4.first;
         if (adapter_ip == 0) {
             adapter_ip                        = rawsock_get_adapter_ip(ifname);
@@ -191,7 +191,7 @@ initialize_adapter(XConf *xconf)
     /*
      * IPv6 ADDRESS
      */
-    if (targetip_has_ipv6_targets(&xconf->targets)) {
+    if (has_ipv6_targets) {
         ipv6address adapter_ipv6 = xconf->nic.src.ipv6.first;
         if (ipv6address_is_zero(adapter_ipv6)) {
             adapter_ipv6                       = rawsock_get_adapter_ipv6(ifname);

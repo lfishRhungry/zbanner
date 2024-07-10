@@ -49,18 +49,15 @@ void transmit_thread(void *v)
 {
     TxThread                    *parms                    = (TxThread *)v;
     const XConf                 *xconf                    = parms->xconf;
-    uint64_t                     rate                     = (uint64_t)xconf->max_rate;
-    uint64_t                     count_ipv4               = rangelist_count(&xconf->targets.ipv4);
-    uint64_t                     count_ipv6               = range6list_count(&xconf->targets.ipv6).lo;
     Throttler                   *throttler                = parms->throttler;
     Adapter                     *adapter                  = xconf->nic.adapter;
     AdapterCache                *acache                   = NULL;
     uint64_t                     packets_sent             = 0;
     unsigned                     increment                = xconf->shard.of * xconf->tx_thread_count;
-    uint64_t                     dynamic_seed             = xconf->seed;
     uint64_t                     entropy                  = xconf->seed;
     ScanTmEvent                 *tm_event                 = NULL;
     FHandler                    *ft_handler               = NULL;
+    Generator                   *generator                = xconf->generator;
 
     /* Wait to make sure receive_thread is ready */
     pixie_usleep(1000000);
@@ -101,110 +98,37 @@ void transmit_thread(void *v)
     throttler_start(throttler, xconf->max_rate / xconf->tx_thread_count);
 
     /*Declared out of infinite loop to keep balance of stack*/
-    BlackRock        blackrock;
-    uint64_t         range;
-    uint64_t         range_ipv6;
     uint64_t         start;
-    uint64_t         end;
-    uint64_t         ck;
     uint64_t         batch_size;
     unsigned         more_idx;
 
 infinite:;
 
-    range      = count_ipv4 * rangelist_count(&xconf->targets.ports) +
-                 count_ipv6 * rangelist_count(&xconf->targets.ports);
-    range_ipv6 = count_ipv6 * rangelist_count(&xconf->targets.ports);
-
-    blackrock1_init(&blackrock, range, dynamic_seed, xconf->blackrock_rounds);
-
     start = xconf->resume.index + parms->tx_index +
             (xconf->shard.one - 1) * xconf->tx_thread_count;
-    end   = range;
 
-    if (xconf->resume.count && end > start + xconf->resume.count)
-        end = start + xconf->resume.count;
 
     /**
      * NOTE: This init insures the stop of tx while the tx thread got no target to scan.
      */
     parms->my_index = start;
 
-    LOG(LEVEL_DEBUG, "Tx Thread: starting main loop [%llu..%lu] inc: %llu\n", start, end, increment);
+    LOG(LEVEL_DEBUG, "Tx Thread: starting main loop [%llu..%lu] inc: %llu\n",
+        start, generator->target_range, increment);
 
     more_idx = 0;
-    for (uint64_t i = start; i < end;) {
+    for (uint64_t i = start; generator->hasmore_cb(parms->tx_index, i);) {
 
         batch_size = throttler_next_batch(throttler, packets_sent);
 
         /*Transmit packets from stack first */
         stack_flush_packets(xconf->stack, adapter, acache, &packets_sent, &batch_size);
 
-        while (batch_size && i < end) {
-            uint64_t xXx = i;
-            if (rate > range) {
-                xXx %= range;
-            } else {
-                while (xXx >= range) {
-                    xXx -= range;
-                }
-            }
-            xXx = blackrock1_shuffle(&blackrock, xXx);
+        while (batch_size && generator->hasmore_cb(parms->tx_index, i)) {
 
             ScanTarget target = {.index = more_idx};
 
-            /**
-             * Pick up target & source
-            */
-            if (xXx < range_ipv6) {
-                target.target.ip_them.version = 6;
-                target.target.ip_me.version   = 6;
-
-                target.target.ip_them.ipv6 =
-                    range6list_pick(&xconf->targets.ipv6, xXx % count_ipv6);
-                target.target.port_them =
-                    rangelist_pick(&xconf->targets.ports, xXx / count_ipv6);
-
-                target.target.ip_me.ipv6 = src.ipv6;
-
-                if (src.ipv6_mask > 1 || src.port_mask > 1) {
-                    ck = get_cookie_ipv4(
-                        (unsigned)( i + parms->my_repeat),
-                        (unsigned)((i + parms->my_repeat) >> 32),
-                        (unsigned)xXx, (unsigned)(xXx >> 32), dynamic_seed);
-                    target.target.port_me        = src.port + (ck & src.port_mask);
-                    target.target.ip_me.ipv6.lo += (ck & src.ipv6_mask);
-                } else {
-                    target.target.port_me = src.port;
-                }
-            } else {
-                xXx -= range_ipv6;
-
-                target.target.ip_them.version = 4;
-                target.target.ip_me.version   = 4;
-
-                target.target.ip_them.ipv4 =
-                    rangelist_pick(&xconf->targets.ipv4, xXx % count_ipv4);
-                target.target.port_them =
-                    rangelist_pick(&xconf->targets.ports, xXx / count_ipv4);
-
-                if (src.ipv4_mask > 1 || src.port_mask > 1) {
-                    ck = get_cookie_ipv4(
-                        (unsigned)( i + parms->my_repeat),
-                        (unsigned)((i + parms->my_repeat) >> 32),
-                        (unsigned)xXx, (unsigned)(xXx >> 32), dynamic_seed);
-                    target.target.port_me    = src.port + (ck & src.port_mask);
-                    target.target.ip_me.ipv4 = src.ipv4 + ((ck>>16) & src.ipv4_mask);
-                } else {
-                    target.target.port_me    = src.port;
-                    target.target.ip_me.ipv4 = src.ipv4;
-                }
-            }
-
-            /**
-             * Due to flexible port store method.
-             */
-            target.target.ip_proto = get_actual_proto_port(&(target.target.port_them));
+            target.target = generator->generate_cb(parms->tx_index, i, parms->my_repeat, &src);
 
             /*if we don't use fast-timeout, do not malloc more memory*/
             if (!tm_event) {
@@ -270,10 +194,6 @@ infinite:;
     if (xconf->is_infinite && !time_to_finish_tx) {
         if ((xconf->repeat && parms->my_repeat<xconf->repeat)
             || !xconf->repeat) {
-            /* update dynamic_seed and my_repeat while going again*/
-            if (!xconf->is_static_seed) {
-                dynamic_seed++;
-            }
             parms->my_repeat++;
             goto infinite;
         }

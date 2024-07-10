@@ -106,15 +106,13 @@ static int _main_scan(XConf *xconf) {
      * This is more efficient to got an all-zero var than memset and could got
      * a partial-zero var conveniently.
      */
+    bool                  stop_tx               = true;
     time_t                now                   = time(0);
     TmplSet               tmplset               = {0};
     Xtatus                status                = {.last={0}};
     XtatusItem            status_item           = {0};
     RxThread              rx_thread[1]          = {{0}};
     TxThread             *tx_thread;
-    uint64_t              count_ports; 
-    uint64_t              count_ips;
-    uint64_t              range;
     double                tx_free_entries;
     double                rx_free_entries;
     double                rx_queue_ratio_tmp;
@@ -122,38 +120,32 @@ static int _main_scan(XConf *xconf) {
     tx_thread = CALLOC(xconf->tx_thread_count, sizeof(TxThread));
 
     /*
-     * Initialize the task size
+     * Choose a default GenerateModule if not specified.
+     * Wrong specification will be handled in SET_generate_module in xconf.c
      */
-    count_ips = rangelist_count(&xconf->targets.ipv4) +
-                range6list_count(&xconf->targets.ipv6).lo;
-    if (count_ips == 0) {
-        LOG(LEVEL_ERROR, "target IP address list empty\n");
-        LOG(LEVEL_HINT, "try something like \"--range 10.0.0.0/8\"\n");
-        LOG(LEVEL_HINT, "try something like \"--range 192.168.0.100-192.168.0.200\"\n");
-        return 1;
+    if (!xconf->generator) {
+        xconf->generator = get_generate_module_by_name("blackrock");
+        LOG(LEVEL_DEBUG, "Default GenerateModule `blackrock` is chosen because no GenerateModule "
+            "was specified.\n");
     }
-    count_ports = rangelist_count(&xconf->targets.ports);
-    if (count_ports == 0) {
-        LOG(LEVEL_ERROR, "no ports were specified\n");
-        LOG(LEVEL_HINT, "try something like \"-p80,8000-9000\"\n");
-        LOG(LEVEL_HINT, "try something like \"--ports 0-65535\"\n");
-        return 1;
-    }
-    range = count_ips * count_ports;
-
     /*
-     * If the IP address range is very big, then require the
-     * user apply an exclude range
+     * Config params & Do global init for GenerateModule
      */
-    if (count_ips > 1000000000ULL && rangelist_count(&xconf->exclude.ipv4) == 0) {
-        LOG(LEVEL_ERROR, "range too big, need confirmation\n");
-        LOG(LEVEL_OUT, "    to prevent accidents, at least one --exclude must be "
-               "specified\n");
-        LOG(LEVEL_HINT, "use \"--exclude 255.255.255.255\" as a simple confirmation\n");
+    if (xconf->generator_args
+        && xconf->generator->params) {
+        if (set_parameters_from_substring(NULL,
+            xconf->generator->params, xconf->generator_args)) {
+            LOG(LEVEL_ERROR, "errors happened in sub param parsing of GenerateModule.\n");
+            exit(1);
+        }
+    }
+    if (!xconf->generator->init_cb(xconf)) {
+        LOG(LEVEL_ERROR, "errors happened in global init of GenerateModule.\n");
         exit(1);
     }
 
-    if (initialize_adapter(xconf) != 0)
+    if (initialize_adapter(xconf, xconf->generator->has_ipv4_targets,
+        xconf->generator->has_ipv6_targets) != 0)
         exit(1);
     if (!xconf->nic.is_usable) {
         LOG(LEVEL_ERROR, "failed to detect IP of interface\n");
@@ -214,7 +206,7 @@ static int _main_scan(XConf *xconf) {
      */
     if (!xconf->scanner) {
         xconf->scanner = get_scan_module_by_name("tcp-syn");
-        LOG(LEVEL_ERROR, "Default ScanModule `tcpsyn` is chosen because no ScanModule "
+        LOG(LEVEL_DEBUG, "Default ScanModule `tcpsyn` is chosen because no ScanModule "
             "was specified.\n");
     }
 
@@ -335,14 +327,15 @@ static int _main_scan(XConf *xconf) {
         buffer);
     LOG(LEVEL_OUT, "("XTATE_GITHUB")\n");
 
-    LOG(LEVEL_OUT, "ScanModule  : %s\n", xconf->scanner->name);
+    LOG(LEVEL_OUT, "Scanner:   %s\n", xconf->scanner->name);
     if (xconf->probe)
-        LOG(LEVEL_OUT, "ProbeModule : %s\n", xconf->probe->name);
+        LOG(LEVEL_OUT, "Probe:     %s\n", xconf->probe->name);
+    LOG(LEVEL_OUT, "Generator: %s\n", xconf->generator->name);
     if (xconf->out_conf.output_module)
-        LOG(LEVEL_OUT, "OutputModule: %s\n", xconf->out_conf.output_module->name);
+        LOG(LEVEL_OUT, "Output:    %s\n", xconf->out_conf.output_module->name);
 
-    LOG(LEVEL_OUT, "Scanning %u hosts [%u port%s/host]\n\n", (unsigned)count_ips,
-        (unsigned)count_ports, (count_ports == 1) ? "" : "s");
+    LOG(LEVEL_OUT, "Scanning %u hosts [%u ports/host]\n\n", (unsigned)xconf->generator->count_ips,
+        (unsigned)xconf->generator->count_ports);
 
     /*
      * Start tx & rx threads
@@ -379,6 +372,7 @@ static int _main_scan(XConf *xconf) {
         status_item.cur_pps      = 0.0;
         status_item.cur_count    = UINT64_MAX;
         status_item.repeat_count = UINT64_MAX;
+        stop_tx                  = true;
         for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
             TxThread *parms = &tx_thread[i];
 
@@ -390,6 +384,8 @@ static int _main_scan(XConf *xconf) {
 
             status_item.cur_pps    += parms->throttler->current_rate;
             status_item.total_sent += parms->total_sent;
+
+            stop_tx &= (!xconf->generator->hasmore_cb(i, parms->my_index));
         }
 
         /**
@@ -418,7 +414,7 @@ static int _main_scan(XConf *xconf) {
             if (xconf->repeat && status_item.repeat_count>=xconf->repeat)
                 time_to_finish_tx = 1;
         } else {
-            if (status_item.cur_count >= range)
+            if (stop_tx)
                 time_to_finish_tx = 1;
         }
 
@@ -435,7 +431,7 @@ static int _main_scan(XConf *xconf) {
         status_item.total_failed    = xconf->out_conf.total_failed;
         status_item.total_info      = xconf->out_conf.total_info;
         status_item.total_tm_event  = rx_thread->total_tm_event;
-        status_item.max_count       = range;
+        status_item.max_count       = xconf->generator->target_range;
         status_item.print_in_json   = xconf->is_status_ndjson;
 
         xtatus_print(&status, &status_item);
@@ -448,7 +444,9 @@ static int _main_scan(XConf *xconf) {
      * If we haven't completed the scan, then save the resume
      * information.
      */
-    if (status_item.cur_count < range && !xconf->is_infinite && !xconf->is_noresume) {
+    if (status_item.cur_count < xconf->generator->target_range
+        && !xconf->is_infinite
+        && !xconf->is_noresume) {
         xconf->resume.index = status_item.cur_count;
         xconf_save_state(xconf);
     }
@@ -515,7 +513,7 @@ static int _main_scan(XConf *xconf) {
         status_item.total_failed    = xconf->out_conf.total_failed;
         status_item.total_info      = xconf->out_conf.total_info;
         status_item.total_tm_event  = rx_thread->total_tm_event;
-        status_item.max_count       = range;
+        status_item.max_count       = xconf->generator->target_range;
         status_item.print_in_json   = xconf->is_status_ndjson;
         status_item.exiting_secs    = xconf->wait - (time(0) - now);
 
@@ -553,6 +551,8 @@ static int _main_scan(XConf *xconf) {
         xconf->probe->close_cb();
     }
 
+    xconf->generator->close_cb();
+
     output_close(&xconf->out_conf);
 
     free(tx_thread);
@@ -579,7 +579,6 @@ int main(int argc, char *argv[]) {
     XConf xconf[1];
     memset(xconf, 0, sizeof(xconf));
 
-    int has_target_addresses = 0;
     int has_target_ports     = 0;
 
 #if defined(WIN32)
@@ -602,7 +601,6 @@ int main(int argc, char *argv[]) {
         pixie_backtrace_init(argv[0]);
 
     //=================================================Define default params
-    xconf->blackrock_rounds                 = XCONF_DFT_BLACKROCK_ROUND;
     xconf->tx_thread_count                  = XCONF_DFT_TX_THD_COUNT;
     xconf->rx_handler_count                 = XCONF_DFT_RX_HDL_COUNT;
     xconf->stack_buf_count                  = XCONF_DFT_STACK_BUF_COUNT;
@@ -626,8 +624,6 @@ int main(int argc, char *argv[]) {
 
     rawsock_init();
 
-    has_target_addresses = targetip_has_ipv4_targets(&xconf->targets) ||
-                           targetip_has_ipv6_targets(&xconf->targets);
     has_target_ports     = targetip_has_target_ports(&xconf->targets);
     targetip_apply_excludes(&xconf->targets, &xconf->exclude);
     if (!has_target_ports) {
@@ -665,24 +661,7 @@ int main(int argc, char *argv[]) {
         break;
 
     case Operation_Scan:
-        if (rangelist_count(&xconf->targets.ipv4) == 0 &&
-            int128_is_zero(range6list_count(&xconf->targets.ipv6))) {
-            LOG(LEVEL_ERROR, "target IP address list empty\n");
-            if (has_target_addresses) {
-                LOG(LEVEL_ERROR, "all addresses were removed by exclusion ranges\n");
-            } else {
-                LOG(LEVEL_HINT, "try something like \"--range 10.0.0.0/8\"\n");
-                LOG(LEVEL_OUT, "    or \"--range 192.168.0.100-192.168.0.200\"\n");
-            }
-            exit(1);
-        }
-        if (rangelist_count(&xconf->targets.ports) == 0 && has_target_ports) {
-            LOG(LEVEL_ERROR, " all ports were removed by exclusion ranges\n");
-            break;
-        }
-
         _main_scan(xconf);
-
         break;
 
     case Operation_Echo:
@@ -733,6 +712,14 @@ int main(int argc, char *argv[]) {
         help_output_module(xconf->out_conf.output_module);
         break;
 
+    case Operation_ListGenerateModules:
+        list_all_generate_modules();
+        break;
+
+    case Operation_HelpGenerateModule:
+        help_generate_module(xconf->generator);
+        break;
+
     case Operation_PrintHelp:
         xconf_print_help();
         break;
@@ -750,7 +737,7 @@ int main(int argc, char *argv[]) {
         break;
 
     case Operation_Benchmark:
-        xconf_benchmark(xconf->blackrock_rounds);
+        xconf_benchmark(14);
         break;
     }
 

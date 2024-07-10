@@ -405,6 +405,24 @@ static ConfRes SET_help_probe_module(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
+static ConfRes SET_help_generate_module(void *conf, const char *name, const char *value)
+{
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+
+    xconf->generator = get_generate_module_by_name(value);
+    if(!xconf->generator){
+        LOG(LEVEL_ERROR, "FAIL %s: no such generate module named %s\n", name, value);
+        return Conf_ERR;
+    }
+
+    xconf->op = Operation_HelpGenerateModule;
+
+    return Conf_OK;
+}
+
 static ConfRes SET_help_output_module(void *conf, const char *name, const char *value)
 {
     XConf *xconf = (XConf *)conf;
@@ -436,6 +454,25 @@ static ConfRes SET_probe_module(void *conf, const char *name, const char *value)
     xconf->probe = get_probe_module_by_name(value);
     if(!xconf->probe){
         LOG(LEVEL_ERROR, "FAIL %s: no such probe module\n", value);
+        return Conf_ERR;
+    }
+
+    return Conf_OK;
+}
+
+static ConfRes SET_generate_module(void *conf, const char *name, const char *value)
+{
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        if (xconf->generator){
+            fprintf(xconf->echo, "generate-module = %s\n", xconf->generator->name);
+        }
+        return 0;
+    }
+
+    xconf->generator = get_generate_module_by_name(value);
+    if(!xconf->generator){
+        LOG(LEVEL_ERROR, "FAIL %s: no such generate module\n", value);
         return Conf_ERR;
     }
 
@@ -603,6 +640,26 @@ static ConfRes SET_probe_module_args(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
+static ConfRes SET_generate_module_args(void *conf, const char *name, const char *value)
+{
+    XConf *xconf = (XConf *)conf;
+    UNUSEDPARM(name);
+    if (xconf->echo) {
+        if (xconf->generator_args){
+            fprintf(xconf->echo, "generate-module-args = \"%s\"\n", xconf->generator_args);
+        }
+        return 0;
+    }
+
+    size_t len = strlen(value) + 1;
+    if (xconf->generator_args)
+        free(xconf->generator_args);
+    xconf->generator_args = CALLOC(1, len);
+    memcpy(xconf->generator_args, value, len);
+
+    return Conf_OK;
+}
+
 static ConfRes SET_output_module_args(void *conf, const char *name, const char *value)
 {
     XConf *xconf = (XConf *)conf;
@@ -644,6 +701,18 @@ static ConfRes SET_list_probe_modules(void *conf, const char *name, const char *
        return 0;
     }
     xconf->op = parseBoolean(value)?Operation_ListProbeModules:xconf->op;
+    return Conf_OK;
+}
+
+static ConfRes SET_list_generate_modules(void *conf, const char *name, const char *value)
+{
+    XConf *xconf = (XConf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+       return 0;
+    }
+    xconf->op = parseBoolean(value)?Operation_ListGenerateModules:xconf->op;
     return Conf_OK;
 }
 
@@ -1957,20 +2026,6 @@ static ConfRes SET_max_packet_len(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static ConfRes SET_resume_count(void *conf, const char *name, const char *value)
-{
-    XConf *xconf = (XConf *)conf;
-    UNUSEDPARM(name);
-    if (xconf->echo) {
-        if (xconf->resume.count!=0 || xconf->echo_all) {
-            fprintf(xconf->echo, "resume-count = %" PRIu64 "\n", xconf->resume.count);
-        }
-        return 0;
-    }
-    xconf->resume.count = parseInt(value);
-    return Conf_OK;
-}
-
 static ConfRes SET_resume_index(void *conf, const char *name, const char *value)
 {
     XConf *xconf = (XConf *)conf;
@@ -2382,21 +2437,6 @@ static ConfRes SET_repeat(void *conf, const char *name, const char *value)
         LOG(LEVEL_ERROR, "repeat must > 0.\n");
         return Conf_ERR;
     }
-    return Conf_OK;
-}
-
-static ConfRes SET_blackrock_rounds(void *conf, const char *name, const char *value)
-{
-    XConf *xconf = (XConf *)conf;
-    UNUSEDPARM(name);
-
-    if (xconf->echo) {
-        if (xconf->blackrock_rounds!=XCONF_DFT_BLACKROCK_ROUND || xconf->echo_all)
-            fprintf(xconf->echo, "blackrock-rounds = %u\n", xconf->blackrock_rounds);
-        return 0;
-    }
-
-    xconf->blackrock_rounds = (unsigned)parseInt(value);
     return Conf_OK;
 }
 
@@ -2949,6 +2989,41 @@ ConfParam config_parameters[] = {
         "'success', 'failed' or 'info'."
     },
 
+    {"GENERATE MODULES CONFIG", SET_nothing, 0, {0}, NULL},
+
+    {
+        "generate-module",
+        SET_generate_module,
+        Type_NONE,
+        {"generate", "gen", "generator", 0},
+        "Specifies a GenerateModule to generate targets for scanning. Use "
+        "--list-gen to get informations of all GenerateModules.\n"
+        "NOTE: A GenerateModule must be used in every time we scan. BlackRock "
+        " module will be default if we did not specify."
+    },
+    {
+        "list-generate-modules",
+        SET_list_generate_modules,
+        Type_BOOL,
+        {"list-generate-module", "list-generator", "list-gen", 0},
+        "List informations of all GenerateModules."
+    },
+    {
+        "help-generate-module",
+        SET_help_generate_module,
+        Type_NONE,
+        {"help-generate", "help-generator", "help-gen", "gen-help", 0},
+        "Print information and help of specified GenerateModule."
+    },
+    {
+        "generate-module-args",
+        SET_generate_module_args,
+        Type_NONE,
+        {"generate-module-arg", "gen-args", "gen-arg", 0},
+        "Specifies module-specific parameters for used GenerateModule. Information "
+        "of parameters for each GenerateModule could be found in --help-gen."
+    },
+
     {"STATUS PRINTING", SET_nothing, 0, {0}, NULL},
 
     {
@@ -3094,17 +3169,6 @@ ConfParam config_parameters[] = {
         Type_NUM,
         {0},
         "The point in the scan at when it was paused."
-    },
-    {
-        "resume-count",
-        SET_resume_count,
-        Type_NUM,
-        {"target-count", 0},
-        "The maximum number of targets to scan before exiting. This is useful "
-        "with the --resume-index to chop up a scan and split it among multiple "
-        "instances, though the --shards option might be better.\n"
-        "NOTE: This causes inifinite pause after finished resume-count and waits"
-        " user input <ctrl-c> to exit."
     },
     {
         "no-resume",
@@ -3253,15 +3317,6 @@ ConfParam config_parameters[] = {
         "    3.Rx Handle Threads\n"
         "NOTE2: As you can see, 3 threads need to be binded at least. (1 tx "
         "thread, 1 rx thread and 1 rx handle thread)"
-    },
-    {
-        "blackrock-rounds",
-        SET_blackrock_rounds,
-        Type_NUM,
-        {"blackrock-round", 0},
-        "Specifies the number of round in blackrock algorithm for targets "
-        "randomization. It's 14 rounds in default to give a better statistical "
-        "distribution with a low impact on scan rate."
     },
 
 

@@ -26,12 +26,10 @@ listip(XConf *xconf)
 
 
 infinite:
-    blackrock1_init(&blackrock, range, dynamic_seed, xconf->blackrock_rounds);
+    blackrock1_init(&blackrock, range, dynamic_seed, 14);
 
     start = xconf->resume.index + (xconf->shard.one-1);
-    end = range;
-    if (xconf->resume.count && end > start + xconf->resume.count)
-        end = start + xconf->resume.count;
+    end   = range;
 
     for (i=start; i<end; ) {
         uint64_t xXx;

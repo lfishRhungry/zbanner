@@ -24,7 +24,6 @@
 */
 /* 14 rounds seem to give way better statistical distribution than 4 with a
 very low impact on scan rate */
-#define XCONF_DFT_BLACKROCK_ROUND                  14
 #define XCONF_DFT_TX_THD_COUNT                      4
 #define XCONF_DFT_RX_HDL_COUNT                      1
 #define XCONF_DFT_STACK_BUF_COUNT               16384
@@ -59,6 +58,8 @@ enum Operation {
     Operation_HelpProbeModule,               /* print help of specified probe module */
     Operation_ListOutputModules,             /* list all probes */
     Operation_HelpOutputModule,              /* print help of specified output module */
+    Operation_ListGenerateModules,           /* list all generate modules */
+    Operation_HelpGenerateModule,            /* print help of specified generate module */
     Operation_PrintHelp,                     /* print help text for all parameters*/
     Operation_PrintIntro,                    /* print introduction text of work flow*/
     Operation_PrintVersion,                  /* print version and build info*/
@@ -106,7 +107,6 @@ typedef struct XtateConf
 
     struct {
         uint64_t index;
-        uint64_t count;
         /** Derives the --resume-index from the target ip:port */
         struct {
             unsigned ip;
@@ -174,7 +174,6 @@ typedef struct XtateConf
     double            max_rate;
     unsigned          wait;
     unsigned          dedup_win;
-    unsigned          blackrock_rounds;
     unsigned          dispatch_buf_count;
     uint64_t          tcb_count;
     unsigned          tcp_init_window;
