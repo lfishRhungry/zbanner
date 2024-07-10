@@ -131,7 +131,7 @@ icmpecho_handle(
     uint64_t entropy,
     struct Received *recved,
     OutItem *item,
-    struct stack_t *stack,
+    STACK *stack,
     FHandler *handler)
 {
     item->port_them  = 0;
@@ -151,7 +151,7 @@ static void icmpecho_timeout(
     uint64_t entropy,
     struct ScanTmEvent *event,
     OutItem *item,
-    struct stack_t *stack,
+    STACK *stack,
     FHandler *handler)
 {
     item->level = OUT_FAILURE;

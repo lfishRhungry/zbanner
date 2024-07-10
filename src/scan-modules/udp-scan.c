@@ -161,7 +161,7 @@ udp_handle(
     uint64_t entropy,
     struct Received *recved,
     OutItem *item,
-    struct stack_t *stack,
+    STACK *stack,
     FHandler *handler)
 {
     if (recved->parsed.found == FOUND_UDP) {
@@ -190,7 +190,7 @@ udp_handle(
 
             for (unsigned idx=1; idx<UdpScan.probe->multi_num; idx++) {
 
-                struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+                PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
                 struct ProbeTarget ptarget = {
                     .ip_proto  = recved->parsed.ip_protocol,
@@ -213,7 +213,7 @@ udp_handle(
                     recved->parsed.dst_ip, src_port_start+idx, 0,
                     payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
-                stack_transmit_packetbuffer(stack, pkt_buffer);
+                stack_transmit_pktbuf(stack, pkt_buffer);
 
                 /*add timeout*/
                 if (handler) {
@@ -241,7 +241,7 @@ udp_handle(
         /*for multi-probe Multi_DynamicNext*/
         if (UdpScan.probe->multi_mode==Multi_DynamicNext && is_multi) {
 
-            struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+            PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
             struct ProbeTarget ptarget = {
                 .ip_proto  = recved->parsed.ip_protocol,
@@ -264,7 +264,7 @@ udp_handle(
                 recved->parsed.dst_ip, src_port_start+is_multi-1, 0,
                 payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
-            stack_transmit_packetbuffer(stack, pkt_buffer);
+            stack_transmit_pktbuf(stack, pkt_buffer);
 
             /*add timeout*/
             if (handler) {
@@ -303,7 +303,7 @@ udp_timeout(
     uint64_t entropy,
     struct ScanTmEvent *event,
     OutItem *item,
-    struct stack_t *stack,
+    STACK *stack,
     FHandler *handler)
 {
     /*all events is for banner*/
@@ -328,7 +328,7 @@ udp_timeout(
 
         for (unsigned idx=1; idx<UdpScan.probe->multi_num; idx++) {
 
-            struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+            PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
             struct ProbeTarget ptarget = {
                 .ip_proto  = event->ip_proto,
@@ -351,7 +351,7 @@ udp_timeout(
                 event->ip_me,   src_port_start+idx, 0,
                 payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
-            stack_transmit_packetbuffer(stack, pkt_buffer);
+            stack_transmit_pktbuf(stack, pkt_buffer);
 
             /*add timeout*/
             if (handler) {
@@ -378,7 +378,7 @@ udp_timeout(
     /*for multi-probe Multi_DynamicNext*/
     if (UdpScan.probe->multi_mode==Multi_DynamicNext && is_multi) {
 
-        struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+        PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
         struct ProbeTarget ptarget = {
             .ip_proto  = event->ip_proto,
@@ -401,7 +401,7 @@ udp_timeout(
             event->ip_me,   src_port_start+is_multi-1, 0,
             payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
-        stack_transmit_packetbuffer(stack, pkt_buffer);
+        stack_transmit_pktbuf(stack, pkt_buffer);
 
         /*add timeout*/
         if (handler) {

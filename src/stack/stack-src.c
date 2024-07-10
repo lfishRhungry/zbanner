@@ -1,11 +1,11 @@
 #include "stack-src.h"
 
-bool is_myself(const struct stack_src_t *src, ipaddress ip, unsigned port)
+bool is_myself(const StackSrc *src, ipaddress ip, unsigned port)
 {
     return is_my_ip(src, ip) && is_my_port(src, port);
 }
 
-bool is_my_ip(const struct stack_src_t *src, ipaddress ip)
+bool is_my_ip(const StackSrc *src, ipaddress ip)
 {
     switch (ip.version) {
     case 4:
@@ -20,7 +20,7 @@ bool is_my_ip(const struct stack_src_t *src, ipaddress ip)
     }
 }
 
-bool is_my_port(const struct stack_src_t *src, unsigned port)
+bool is_my_port(const StackSrc *src, unsigned port)
 {
     return src->port.first <= port && port <= src->port.last;
 }

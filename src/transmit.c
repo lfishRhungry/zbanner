@@ -33,7 +33,7 @@
 static void
 _adapter_get_source_addresses(const struct Xconf *xconf, struct source_t *src)
 {
-    const struct stack_src_t *ifsrc = &xconf->nic.src;
+    const StackSrc *ifsrc = &xconf->nic.src;
 
     src->ipv4      = ifsrc->ipv4.first;
     src->ipv4_mask = ifsrc->ipv4.last - ifsrc->ipv4.first;
@@ -53,8 +53,8 @@ void transmit_thread(void *v)
     uint64_t                     count_ipv4               = rangelist_count(&xconf->targets.ipv4);
     uint64_t                     count_ipv6               = range6list_count(&xconf->targets.ipv6).lo;
     struct Throttler            *throttler                = parms->throttler;
-    struct Adapter              *adapter                  = xconf->nic.adapter;
-    struct AdapterCache         *acache                   = NULL;
+    Adapter                     *adapter                  = xconf->nic.adapter;
+    AdapterCache                *acache                   = NULL;
     uint64_t                     packets_sent             = 0;
     unsigned                     increment                = xconf->shard.of * xconf->tx_thread_count;
     uint64_t                     dynamic_seed             = xconf->seed;

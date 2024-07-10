@@ -13,7 +13,7 @@
  */
 typedef enum {Default, Add, Remove} addremove_t;
 
-struct TemplateOptions {
+typedef struct TemplateOptions {
     struct {
         addremove_t is_badsum:4;         /* intentionally bad checksum */
         addremove_t is_tsecho:4;         /* enable timestamp echo */
@@ -64,7 +64,7 @@ struct TemplateOptions {
         unsigned packet_ttl;
 
     } ipv4;
-};
+} TmplOpt;
 
 #endif
 

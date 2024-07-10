@@ -3,7 +3,7 @@
 
 #define SENDQ_SIZE      65536 * 8
 
-struct Adapter
+typedef struct Adapter
 {
     struct pcap                *pcap;
     struct __pfring            *ring;
@@ -12,28 +12,28 @@ struct Adapter
     unsigned                    vlan_id;
     double                      pt_start;
     int                         link_type;
-};
+} Adapter;
 
 /**
  * For every Tx thread to maintain its own cache for sendqueue or sendmmsg.
  * This solves the conflict while multiple Tx threads using sendqueue mechanism.
  */
-struct AdapterCache
+typedef struct Adapter_Cache
 {
     struct pcap_send_queue     *sendq;
-};
+} AdapterCache;
 
-struct AdapterCache *
+AdapterCache *
 rawsock_init_cache(bool is_sendq);
 
 void
-rawsock_close_cache(struct AdapterCache *acache);
+rawsock_close_cache(AdapterCache *acache);
 
 
 /**
  * Retrieve the datalink type of the adapter
  */
 int
-stack_if_datalink(struct Adapter *adapter);
+stack_if_datalink(Adapter *adapter);
 
 #endif

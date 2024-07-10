@@ -126,37 +126,37 @@ static const char fmt_reason[]     = " because \"%s\"";
 static const char fmt_report_str[] = ",  "XPRINT_CH_COLOR_YELLOW"%s: \"%s\"";
 static const char fmt_report_num[] = ",  "XPRINT_CH_COLOR_YELLOW"%s: %s";
 
-bool output_init(OutConf *out)
+bool output_init(OutConf *out_conf)
 {
-    if (out->output_module) {
+    if (out_conf->output_module) {
 
-        if (out->output_module->need_file && !out->output_filename[0]) {
+        if (out_conf->output_module->need_file && !out_conf->output_filename[0]) {
             LOG(LEVEL_ERROR,
                 "OutputModule %s need to specify output file name by `--output-file`.\n",
-                out->output_module->name);
+                out_conf->output_module->name);
             return false;
         }
 
-        if (out->output_module->params && out->output_args) {
+        if (out_conf->output_module->params && out_conf->output_args) {
             if (set_parameters_from_substring(NULL,
-                out->output_module->params, out->output_args)) {
+                out_conf->output_module->params, out_conf->output_args)) {
                 LOG(LEVEL_ERROR, "errors happened in sub param parsing of OutputModule.\n");
                 return false;
             }
         }
 
-        if (!out->output_module->init_cb(out)) {
+        if (!out_conf->output_module->init_cb(out_conf)) {
             LOG(LEVEL_ERROR, "errors happened in %s initing.\n",
-                out->output_module->name);
+                out_conf->output_module->name);
             return false;
         }
     }
 
-    out->stdout_mutex = pixie_create_mutex();
-    out->module_mutex = pixie_create_mutex();
-    out->succ_mutex   = pixie_create_mutex();
-    out->fail_mutex   = pixie_create_mutex();
-    out->info_mutex   = pixie_create_mutex();
+    out_conf->stdout_mutex = pixie_create_mutex();
+    out_conf->module_mutex = pixie_create_mutex();
+    out_conf->succ_mutex   = pixie_create_mutex();
+    out_conf->fail_mutex   = pixie_create_mutex();
+    out_conf->info_mutex   = pixie_create_mutex();
 
     return true;
 }
@@ -272,24 +272,24 @@ error0:
     dach_release(&item->report);
 }
 
-void output_close(OutConf *out)
+void output_close(OutConf *out_conf)
 {
-    if (out->output_module) {
-        out->output_module->close_cb(out);
+    if (out_conf->output_module) {
+        out_conf->output_module->close_cb(out_conf);
     }
 
-    pixie_delete_mutex(out->stdout_mutex);
-    pixie_delete_mutex(out->module_mutex);
-    pixie_delete_mutex(out->succ_mutex);
-    pixie_delete_mutex(out->fail_mutex);
-    pixie_delete_mutex(out->info_mutex);
+    pixie_delete_mutex(out_conf->stdout_mutex);
+    pixie_delete_mutex(out_conf->module_mutex);
+    pixie_delete_mutex(out_conf->succ_mutex);
+    pixie_delete_mutex(out_conf->fail_mutex);
+    pixie_delete_mutex(out_conf->info_mutex);
 }
 
-bool output_init_nothing(const OutConf *out)
+bool output_init_nothing(const OutConf *out_conf)
 {
     return true;
 }
 
 void output_result_nothing(OutItem *item) {}
 
-void output_close_nothing(const OutConf *out) {}
+void output_close_nothing(const OutConf *out_conf) {}

@@ -1043,7 +1043,7 @@ tcp_get_sackperm(const unsigned char *buf, size_t length, bool *is_found) {
  ***************************************************************************/
 void
 templ_tcp_apply_options(unsigned char **inout_buf, size_t *inout_length,
-                  const struct TemplateOptions *templ_opts) {
+                  const TmplOpt *templ_opts) {
     unsigned char *buf = *inout_buf;
     size_t length = *inout_length;
 
@@ -1140,7 +1140,7 @@ tcp_set_window(unsigned char *px, size_t px_length, unsigned window)
 
 size_t
 tcp_create_by_template(
-        const struct TemplatePacket *tmpl,
+        const TmplPkt *tmpl,
         ipaddress ip_them, unsigned port_them,
         ipaddress ip_me, unsigned port_me,
         unsigned seqno, unsigned ackno,
@@ -1148,8 +1148,8 @@ tcp_create_by_template(
         const unsigned char *payload, size_t payload_length,
         unsigned char *px, size_t px_length)
 {
-    if (tmpl->tmpl_type != Tmpl_Type_TCP) {
-            LOG(LEVEL_ERROR, "tcp_create_by_template: need a Tmpl_Type_TCP TemplatePacket.\n");
+    if (tmpl->tmpl_type != TmplType_TCP) {
+            LOG(LEVEL_ERROR, "tcp_create_by_template: need a TmplType_TCP TemplatePacket.\n");
             return 0;
     }
 
@@ -1287,17 +1287,17 @@ tcp_create_packet(
 {
     /*use different template according to flags*/
     if (flags==TCP_FLAG_SYN) {
-        return tcp_create_by_template(&global_tmplset->pkts[Tmpl_Type_TCP_SYN],
+        return tcp_create_by_template(&global_tmplset->pkts[TmplType_TCP_SYN],
             ip_them, port_them, ip_me, port_me,
             seqno, ackno, flags, ttl, win,
             payload, payload_length, px, px_length);
     } else if (flags&TCP_FLAG_RST) {
-        return tcp_create_by_template(&global_tmplset->pkts[Tmpl_Type_TCP_RST],
+        return tcp_create_by_template(&global_tmplset->pkts[TmplType_TCP_RST],
             ip_them, port_them, ip_me, port_me,
             seqno, ackno, flags, ttl, win,
             payload, payload_length, px, px_length);
     } else {
-        return tcp_create_by_template(&global_tmplset->pkts[Tmpl_Type_TCP],
+        return tcp_create_by_template(&global_tmplset->pkts[TmplType_TCP],
             ip_them, port_them, ip_me, port_me,
             seqno, ackno, flags, ttl, win,
             payload, payload_length, px, px_length);

@@ -104,7 +104,7 @@
 
 static size_t
 sctp_create_by_template_ipv4(
-    struct TemplatePacket *tmpl,
+    TmplPkt *tmpl,
     ipv4address ip_them, unsigned port_them,
     ipv4address ip_me, unsigned port_me,
     unsigned init_tag, unsigned ttl,
@@ -186,7 +186,7 @@ sctp_create_by_template_ipv4(
 
 static size_t
 sctp_create_by_template_ipv6(
-    struct TemplatePacket *tmpl,
+    TmplPkt *tmpl,
     ipv6address ip_them, unsigned port_them,
     ipv6address ip_me, unsigned port_me,
     unsigned init_tag, unsigned ttl,
@@ -258,14 +258,14 @@ sctp_create_by_template_ipv6(
 
 size_t
 sctp_create_by_template(
-    struct TemplatePacket *tmpl,
+    TmplPkt *tmpl,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
     unsigned init_tag, unsigned ttl,
     unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->tmpl_type != Tmpl_Type_SCTP) {
-            LOG(LEVEL_ERROR, "sctp_create_by_template: need a Tmpl_Type_SCTP TemplatePacket.\n");
+    if (tmpl->tmpl_type != TmplType_SCTP) {
+            LOG(LEVEL_ERROR, "sctp_create_by_template: need a TmplType_SCTP TemplatePacket.\n");
             return 0;
     }
 
@@ -294,7 +294,7 @@ sctp_create_packet(
     unsigned init_tag, unsigned ttl,
     unsigned char *px, size_t sizeof_px)
 {
-    return sctp_create_by_template(&global_tmplset->pkts[Tmpl_Type_SCTP],
+    return sctp_create_by_template(&global_tmplset->pkts[TmplType_SCTP],
         ip_them, port_them, ip_me, port_me,
         init_tag, ttl,
         px, sizeof_px);

@@ -127,7 +127,7 @@ void scan_no_timeout(
     uint64_t entropy,
     struct ScanTmEvent *event,
     OutItem *item,
-    struct stack_t *stack,
+    STACK *stack,
     FHandler *handler)
 {
     item->no_output = 1;

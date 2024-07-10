@@ -42,7 +42,7 @@
 
 static size_t
 udp_create_by_template_ipv4(
-    struct TemplatePacket *tmpl,
+    TmplPkt *tmpl,
     ipv4address ip_them, unsigned port_them,
     ipv4address ip_me, unsigned port_me,
     unsigned ttl,
@@ -128,7 +128,7 @@ udp_create_by_template_ipv4(
 
 static size_t
 udp_create_by_template_ipv6(
-    struct TemplatePacket *tmpl,
+    TmplPkt *tmpl,
     ipv6address ip_them, unsigned port_them,
     ipv6address ip_me, unsigned port_me,
     unsigned ttl,
@@ -210,15 +210,15 @@ udp_create_by_template_ipv6(
 
 size_t
 udp_create_by_template(
-    struct TemplatePacket *tmpl,
+    TmplPkt *tmpl,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
     unsigned ttl,
     unsigned char *payload, size_t payload_length,
     unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->tmpl_type != Tmpl_Type_UDP) {
-            LOG(LEVEL_ERROR, "udp_create_by_template: need a Tmpl_Type_UDP TemplatePacket.\n");
+    if (tmpl->tmpl_type != TmplType_UDP) {
+            LOG(LEVEL_ERROR, "udp_create_by_template: need a TmplType_UDP TemplatePacket.\n");
             return 0;
     }
 
@@ -246,7 +246,7 @@ udp_create_packet(
     unsigned char *payload, size_t payload_length,
     unsigned char *px, size_t sizeof_px)
 {
-    return udp_create_by_template(&global_tmplset->pkts[Tmpl_Type_UDP],
+    return udp_create_by_template(&global_tmplset->pkts[TmplType_UDP],
         ip_them, port_them, ip_me, port_me, ttl,
         payload, payload_length, px, sizeof_px);
 }

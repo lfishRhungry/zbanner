@@ -6,10 +6,10 @@
 #include <string.h>
 #include <stdio.h>
 
-struct PacketBuffer *
-stack_get_packetbuffer(struct stack_t *stack)
+PktBuf *
+stack_get_pktbuf(STACK *stack)
 {
-    struct PacketBuffer *response = NULL;
+    PktBuf *response = NULL;
 
     int err = rte_ring_mc_dequeue(stack->packet_buffers, (void**)&response);
 
@@ -31,7 +31,7 @@ stack_get_packetbuffer(struct stack_t *stack)
 }
 
 void
-stack_transmit_packetbuffer(struct stack_t *stack, struct PacketBuffer *response)
+stack_transmit_pktbuf(STACK *stack, PktBuf *response)
 {
     int err;
     for (err=1; err; ) {
@@ -54,9 +54,9 @@ stack_transmit_packetbuffer(struct stack_t *stack, struct PacketBuffer *response
  ***************************************************************************/
 void
 stack_flush_packets(
-    struct stack_t *stack,
-    struct Adapter *adapter,
-    struct AdapterCache *acache,
+    STACK *stack,
+    Adapter *adapter,
+    AdapterCache *acache,
     uint64_t *packets_sent,
     uint64_t *batchsize)
 {
@@ -65,7 +65,7 @@ stack_flush_packets(
      */
     for ( ; (*batchsize); (*batchsize)--) {
         int err;
-        struct PacketBuffer *p;
+        PktBuf *p;
 
         /*
          * Get the next packet from the transmit queue. This packet was
@@ -104,10 +104,10 @@ stack_flush_packets(
 
 }
 
-struct stack_t *
-stack_create(macaddress_t source_mac, struct stack_src_t *src, unsigned buf_count)
+STACK *
+stack_create(macaddress_t source_mac, StackSrc *src, unsigned buf_count)
 {
-    struct stack_t *stack;
+    STACK *stack;
     size_t i;
 
     stack = CALLOC(1, sizeof(*stack));
@@ -121,7 +121,7 @@ stack_create(macaddress_t source_mac, struct stack_src_t *src, unsigned buf_coun
     stack->packet_buffers = rte_ring_create(buf_count, 0);
     stack->transmit_queue = rte_ring_create(buf_count, 0);
     for (i=0; i<buf_count-1; i++) {
-        struct PacketBuffer *p;
+        PktBuf *p;
         int err;
 
         p   = MALLOC(sizeof(*p));

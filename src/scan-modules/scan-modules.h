@@ -155,7 +155,7 @@ typedef void (*scan_modules_handle)(
     uint64_t entropy,
     struct Received *recved,
     OutItem *item,
-    struct stack_t *stack,
+    STACK *stack,
     FHandler *handler);
 
 /***************************************************************************
@@ -181,7 +181,7 @@ typedef void (*scan_modules_timeout)(
     uint64_t entropy,
     struct ScanTmEvent *event,
     OutItem *item,
-    struct stack_t *stack,
+    STACK *stack,
     FHandler *handler);
 
 /***************************************************************************
@@ -285,7 +285,7 @@ void scan_no_timeout(
     uint64_t entropy,
     struct ScanTmEvent *event,
     OutItem *item,
-    struct stack_t *stack,
+    STACK *stack,
     FHandler *handler);
 
 void scan_no_status(char *status);

@@ -6,7 +6,7 @@
 #include "../massip/massip-addr.h"
 #include "templ-pkt.h"
 
-struct TemplateOptions;
+typedef struct TemplateOptions TmplOpt;
 
 /**
  * Initialize the "template" packets. As we spew out probes, we simply make
@@ -31,13 +31,13 @@ struct TemplateOptions;
  */
 void
 template_packet_init(
-    struct TemplateSet *templset,
+    TmplSet *templset,
     macaddress_t source_mac,
     macaddress_t router_mac_ipv4,
     macaddress_t router_mac_ipv6,
     int data_link,
     uint64_t entropy,
-    const struct TemplateOptions *templ_opts);
+    const TmplOpt *templ_opts);
 
 
 /***************************************************************************
@@ -53,22 +53,22 @@ void template_set_tcp_window_of_default(unsigned window);
 /***************************************************************************
  * Overwrites the TTL of all packet in templateset both IPv4&IPv6
  ***************************************************************************/
-void template_set_ttl(struct TemplateSet *tmplset, unsigned ttl);
+void template_set_ttl(TmplSet *tmplset, unsigned ttl);
 
 /***************************************************************************
  * Overwrites the TTL of the templatepacket both IPv4&IPv6
  ***************************************************************************/
-void template_packet_set_ttl(struct TemplatePacket *tmpl_pkt, unsigned ttl);
+void template_packet_set_ttl(TmplPkt *tmpl_pkt, unsigned ttl);
 
 /***************************************************************************
  * Overwrites the vlan of all packet in templateset
  ***************************************************************************/
-void template_set_vlan(struct TemplateSet *tmplset, unsigned vlan);
+void template_set_vlan(TmplSet *tmplset, unsigned vlan);
 
 /***************************************************************************
  * Overwrites the vlan of the templatepacket
  ***************************************************************************/
-void template_packet_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan);
+void template_packet_set_vlan(TmplPkt *tmpl_pkt, unsigned vlan);
 
 int template_selftest();
 

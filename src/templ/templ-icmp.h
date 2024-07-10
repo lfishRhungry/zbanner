@@ -74,7 +74,7 @@
 */
 size_t
 icmp_create_by_template(
-    const struct TemplatePacket *tmpl,
+    const TmplPkt *tmpl,
     ipaddress ip_them, ipaddress ip_me,
     unsigned cookie, uint16_t ip_id, uint8_t ttl,
     unsigned char *px, size_t sizeof_px);

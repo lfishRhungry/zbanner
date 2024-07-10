@@ -9,12 +9,12 @@
 
 static size_t
 arp_create_by_template_ipv4(
-    const struct TemplatePacket *tmpl,
+    const TmplPkt *tmpl,
     ipv4address ip_them, ipv4address ip_me,
     unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->tmpl_type != Tmpl_Type_ARP) {
-            LOG(LEVEL_ERROR, "arp_create_by_template_ipv4: need a Tmpl_Type_ARP TemplatePacket.\n");
+    if (tmpl->tmpl_type != TmplType_ARP) {
+            LOG(LEVEL_ERROR, "arp_create_by_template_ipv4: need a TmplType_ARP TemplatePacket.\n");
             return 0;
     }
     unsigned r_len = sizeof_px;
@@ -31,12 +31,12 @@ arp_create_by_template_ipv4(
 
 size_t
 arp_create_by_template(
-    const struct TemplatePacket *tmpl,
+    const TmplPkt *tmpl,
     ipaddress ip_them, ipaddress ip_me,
     unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->tmpl_type != Tmpl_Type_ARP) {
-            LOG(LEVEL_ERROR, "arp_create_by_template: need a Tmpl_Type_ARP TemplatePacket.\n");
+    if (tmpl->tmpl_type != TmplType_ARP) {
+            LOG(LEVEL_ERROR, "arp_create_by_template: need a TmplType_ARP TemplatePacket.\n");
             return 0;
     }
 
@@ -59,6 +59,6 @@ arp_create_request_packet(
     ipaddress ip_them, ipaddress ip_me,
     unsigned char *px, size_t sizeof_px)
 {
-    return arp_create_by_template(&global_tmplset->pkts[Tmpl_Type_ARP],
+    return arp_create_by_template(&global_tmplset->pkts[TmplType_ARP],
         ip_them, ip_me, px, sizeof_px);
 }

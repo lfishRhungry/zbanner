@@ -6,7 +6,7 @@
  * These the source IP addresses that we'll be spoofing. IP addresses
  * and port numbers come from this list.
  */
-struct stack_src_t
+typedef struct StackOfSource
 {
     struct {
         unsigned first;
@@ -24,11 +24,11 @@ struct stack_src_t
         ipv6address last;
         uint64_t    range;
     } ipv6;
-};
+} StackSrc;
 
-bool is_myself(const struct stack_src_t *src, ipaddress ip, unsigned port);
-bool is_my_ip(const struct stack_src_t *src, ipaddress ip);
-bool is_my_port(const struct stack_src_t *src, unsigned port);
+bool is_myself(const StackSrc *src, ipaddress ip, unsigned port);
+bool is_my_ip(const StackSrc *src, ipaddress ip);
+bool is_my_port(const StackSrc *src, unsigned port);
 
 
 

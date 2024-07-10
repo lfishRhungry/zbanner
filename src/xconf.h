@@ -39,9 +39,9 @@ very low impact on scan rate */
 #define XCONF_DFT_MAX_PKT_LEN                    1514
 
 
-struct Adapter;
-struct TemplateSet;
-struct TemplateOptions;
+typedef struct Adapter           Adapter;
+typedef struct TemplateSet       TmplSet;
+typedef struct TemplateOptions   TmplOpt;
 
 enum Operation {
     Operation_Default = 0,                   /* nothing specified, so print usage */
@@ -80,7 +80,7 @@ struct source_t {
  * is happenning.
  * The transmit and receive threads have only a "const" pointer to this structure.
  */
-struct Xconf
+typedef struct Xconf
 {
     /**
      * Just one network adapters that we'll use for scanning. Adapter
@@ -89,8 +89,8 @@ struct Xconf
      */
     struct {
         char                     ifname[256];
-        struct Adapter          *adapter;
-        struct stack_src_t       src;
+        Adapter                 *adapter;
+        StackSrc                 src;
         macaddress_t             source_mac;
         macaddress_t             router_mac_ipv4;
         macaddress_t             router_mac_ipv6;
@@ -125,7 +125,7 @@ struct Xconf
     FILE      *echo;
     unsigned   echo_all;
 
-    struct stack_t *stack;
+    STACK *stack;
     unsigned stack_buf_count;
 
     char     *bpf_filter;
@@ -134,14 +134,14 @@ struct Xconf
     /**
      * template for packet making quickly.
     */
-    struct TemplateSet       *tmplset;
-    struct TemplateOptions   *templ_opts;
+    TmplSet       *tmplset;
+    TmplOpt   *templ_opts;
 
     /**
      * Use fast-timeout table to handle simple timeout events;
     */
-    FTable    *ft_table;
-    time_t            ft_spec;          /*timeout seconds*/
+    FTable *ft_table;
+    time_t  ft_spec;          /*timeout seconds*/
 
     struct MassIP targets;
     struct MassIP exclude;
@@ -162,7 +162,7 @@ struct Xconf
     unsigned tx_thread_count;
     unsigned rx_handler_count;
 
-    OutConf           out;
+    OutConf           out_conf;
     enum Operation    op;
     uint64_t          seed;
     uint64_t          repeat;
@@ -193,7 +193,7 @@ struct Xconf
     unsigned          is_no_cpu_bind:1;
     unsigned          is_static_seed:1;
 
-};
+} Xconf;
 
 
 void xconf_command_line(struct Xconf *xconf, int argc, char *argv[]);

@@ -23,7 +23,7 @@ extern struct ScanModule TcpStateScan; /*for internal x-ref*/
  * !NOTE: Never CRUD a conn by a TCB if the conn does not belong to this table.
  * */
 struct TCP_ConSet {
-    struct TCP_ConnectionTable **tcpcons;
+    TCP_Table **tcpcons;
     unsigned count;
 };
 
@@ -172,16 +172,16 @@ static bool tcpstate_init(const struct Xconf *xconf)
     /*create rx_handler_count TCP tables for thread safe*/
     tcpcon_set.count   = xconf->rx_handler_count;
     tcpcon_set.tcpcons = 
-        MALLOC(tcpcon_set.count * sizeof(struct TCP_ConnectionTable *));
+        MALLOC(tcpcon_set.count * sizeof(TCP_Table *));
 
     for (unsigned i=0; i<tcpcon_set.count; i++) {
         size_t entry_count = (size_t)(xconf->max_rate/5)/xconf->rx_handler_count;
         tcpcon_set.tcpcons[i] = tcpcon_create_table(
             entry_count>=10?entry_count:10, xconf->stack,
-            &global_tmplset->pkts[Tmpl_Type_TCP],
-            &global_tmplset->pkts[Tmpl_Type_TCP_SYN],
-            &global_tmplset->pkts[Tmpl_Type_TCP_RST],
-            (OutConf *)(&xconf->out),
+            &global_tmplset->pkts[TmplType_TCP],
+            &global_tmplset->pkts[TmplType_TCP_SYN],
+            &global_tmplset->pkts[TmplType_TCP_RST],
+            (OutConf *)(&xconf->out_conf),
             tcpstate_conf.conn_expire, xconf->seed);
     }
 
@@ -255,7 +255,7 @@ tcpstate_handle(
     uint64_t entropy,
     struct Received *recved,
     OutItem *item,
-    struct stack_t *stack,
+    STACK *stack,
     FHandler *handler)
 {
     /*in default*/
@@ -265,8 +265,8 @@ tcpstate_handle(
     bool     mss_found;
     uint16_t win_them;
 
-    struct TCP_Control_Block   *tcb;
-    struct TCP_ConnectionTable *tcpcon;
+    TCB   *tcb;
+    TCP_Table *tcpcon;
 
     ipaddress ip_them    = recved->parsed.src_ip;
     ipaddress ip_me      = recved->parsed.dst_ip;
@@ -337,7 +337,7 @@ tcpstate_handle(
                 unsigned cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                     recved->parsed.dst_ip, src_port_start+idx, entropy);
 
-                struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+                PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
                 pkt_buffer->length = tcp_create_packet(
                     recved->parsed.src_ip, recved->parsed.port_src,
@@ -345,7 +345,7 @@ tcpstate_handle(
                     cookie, 0, TCP_FLAG_SYN, 0, 0,
                     NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
-                stack_transmit_packetbuffer(stack, pkt_buffer);
+                stack_transmit_pktbuf(stack, pkt_buffer);
             }
         }
 

@@ -4,7 +4,7 @@
 
 #define THR_CACHE                256  /*must be power of 2*/
 
-struct Throttler
+typedef struct Throttler
 {
     double max_rate;
     double current_rate;
@@ -20,7 +20,7 @@ struct Throttler
     uint64_t test_timestamp;
     uint64_t test_packet_count;
 
-};
+} Throttler;
 
 
 void 

@@ -64,7 +64,7 @@ ICMPv4 Timestamp or Timestamp Reply Message according to RFC792
 
 static size_t
 icmp_create_by_template_ipv4(
-    const struct TemplatePacket *tmpl,
+    const TmplPkt *tmpl,
     ipv4address ip_them, ipv4address ip_me,
     unsigned cookie, uint16_t ip_id, uint8_t ttl,
     unsigned char *px, size_t sizeof_px)
@@ -144,7 +144,7 @@ icmp_create_by_template_ipv4(
 
 static size_t
 icmp_create_by_template_ipv6(
-    const struct TemplatePacket *tmpl,
+    const TmplPkt *tmpl,
     ipv6address ip_them, ipv6address ip_me,
     unsigned cookie, uint8_t ttl,
     unsigned char *px, size_t sizeof_px)
@@ -220,14 +220,14 @@ icmp_create_by_template_ipv6(
 
 size_t
 icmp_create_by_template(
-    const struct TemplatePacket *tmpl,
+    const TmplPkt *tmpl,
     ipaddress ip_them, ipaddress ip_me,
     unsigned cookie, uint16_t ip_id, uint8_t ttl,
     unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->tmpl_type != Tmpl_Type_ICMP_ECHO
-        && tmpl->tmpl_type != Tmpl_Type_ICMP_TS) {
-            LOG(LEVEL_ERROR, "icmp_create_by_template: need a Tmpl_Type_ICMP_ECHO or Tmpl_Type_ICMP_TS TemplatePacket.\n");
+    if (tmpl->tmpl_type != TmplType_ICMP_ECHO
+        && tmpl->tmpl_type != TmplType_ICMP_TS) {
+            LOG(LEVEL_ERROR, "icmp_create_by_template: need a TmplType_ICMP_ECHO or TmplType_ICMP_TS TemplatePacket.\n");
             return 0;
     }
 
@@ -249,7 +249,7 @@ icmp_create_echo_packet(
     unsigned cookie, uint16_t ip_id, uint8_t ttl,
     unsigned char *px, size_t sizeof_px)
 {
-    return icmp_create_by_template(&global_tmplset->pkts[Tmpl_Type_ICMP_ECHO],
+    return icmp_create_by_template(&global_tmplset->pkts[TmplType_ICMP_ECHO],
         ip_them, ip_me, cookie, ip_id, ttl, px, sizeof_px);
 }
 
@@ -259,7 +259,7 @@ icmp_create_timestamp_packet(
     unsigned cookie, uint16_t ip_id, uint8_t ttl,
     unsigned char *px, size_t sizeof_px)
 {
-    return icmp_create_by_template(&global_tmplset->pkts[Tmpl_Type_ICMP_TS],
+    return icmp_create_by_template(&global_tmplset->pkts[TmplType_ICMP_TS],
         ip_them, ip_me, cookie, ip_id, ttl, px, sizeof_px);
 }
 

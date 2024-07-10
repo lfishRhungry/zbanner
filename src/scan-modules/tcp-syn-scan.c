@@ -195,7 +195,7 @@ tcpsyn_handle(
     uint64_t entropy,
     struct Received *recved,
     OutItem *item,
-    struct stack_t *stack,
+    STACK *stack,
     FHandler *handler)
 {
     unsigned mss_them;
@@ -225,7 +225,7 @@ tcpsyn_handle(
             unsigned seqno_me   = TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
             unsigned seqno_them = TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
 
-            struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+            PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
             pkt_buffer->length = tcp_create_packet(
                 recved->parsed.src_ip, recved->parsed.port_src,
@@ -233,7 +233,7 @@ tcpsyn_handle(
                 seqno_me, seqno_them+1, TCP_FLAG_RST, 0, 0,
                 NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
-            stack_transmit_packetbuffer(stack, pkt_buffer);
+            stack_transmit_pktbuf(stack, pkt_buffer);
         }
 
         if (tcpsyn_conf.record_mss) {
@@ -264,7 +264,7 @@ tcpsyn_timeout(
     uint64_t entropy,
     struct ScanTmEvent *event,
     OutItem *item,
-    struct stack_t *stack,
+    STACK *stack,
     FHandler *handler)
 {
     item->level = OUT_FAILURE;

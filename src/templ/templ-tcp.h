@@ -7,7 +7,7 @@
 #include "../util-misc/cross.h"
 #include "../massip/massip-addr.h"
 
-struct TemplateOptions;
+typedef struct TemplateOptions TmplOpt;
 
 #define TCP_FLAG_CWR 0B10000000
 #define TCP_FLAG_ECE 0B01000000
@@ -99,7 +99,7 @@ struct TcpOption {
  */
 void
 templ_tcp_apply_options(unsigned char **inout_buf, size_t *inout_length,
-                  const struct TemplateOptions *templ_opts);
+                  const TmplOpt *templ_opts);
 
 /**
  * Set's the TCP "window" field in raw.
@@ -115,7 +115,7 @@ tcp_set_window(unsigned char *px, size_t px_length, unsigned window);
  */
 size_t
 tcp_create_by_template(
-        const struct TemplatePacket *tmpl,
+        const TmplPkt *tmpl,
         ipaddress ip_them, unsigned port_them,
         ipaddress ip_me, unsigned port_me,
         unsigned seqno, unsigned ackno,

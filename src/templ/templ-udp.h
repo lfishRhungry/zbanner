@@ -12,7 +12,7 @@
  */
 size_t
 udp_create_by_template(
-    struct TemplatePacket *tmpl,
+    TmplPkt *tmpl,
     ipaddress ip_them, unsigned port_them,
     ipaddress ip_me, unsigned port_me,
     unsigned ttl,

@@ -120,7 +120,7 @@ sctpinit_handle(
     uint64_t entropy,
     struct Received *recved,
     OutItem *item,
-    struct stack_t *stack,
+    STACK *stack,
     FHandler *handler)
 {
     if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
@@ -145,7 +145,7 @@ static void sctpinit_timeout(
     uint64_t entropy,
     struct ScanTmEvent *event,
     OutItem *item,
-    struct stack_t *stack,
+    STACK *stack,
     FHandler *handler)
 {
     item->level = OUT_FAILURE;

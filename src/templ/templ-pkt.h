@@ -8,20 +8,20 @@
 
 #include "../util-out/logger.h"
 
-enum TemplateType {
-    Tmpl_Type_TCP = 0,
-    Tmpl_Type_TCP_SYN,   /*for specific SYN settings and belongs to TCP*/
-    Tmpl_Type_TCP_RST,   /*for specific RST settings and belongs to TCP*/
-    Tmpl_Type_UDP,
-    Tmpl_Type_SCTP,
-    Tmpl_Type_ICMP_ECHO,
-    Tmpl_Type_ICMP_TS,
-    Tmpl_Type_ARP,
-    Tmpl_Type_NDP_NS,
-    Tmpl_Type_Count,
-};
+typedef enum Template_TYPE {
+    TmplType_TCP = 0,
+    TmplType_TCP_SYN,   /*for specific SYN settings and belongs to TCP*/
+    TmplType_TCP_RST,   /*for specific RST settings and belongs to TCP*/
+    TmplType_UDP,
+    TmplType_SCTP,
+    TmplType_ICMP_ECHO,
+    TmplType_ICMP_TS,
+    TmplType_ARP,
+    TmplType_NDP_NS,
+    TmplType_Count,
+} TmplType;
 
-struct TemplatePacket {
+typedef struct TemplatePacket {
     struct {
         unsigned length;
         unsigned offset_ip;
@@ -38,18 +38,18 @@ struct TemplatePacket {
         unsigned ip_ttl;
         unsigned char *packet;
     } ipv6;
-    enum TemplateType tmpl_type;
-};
+    TmplType tmpl_type;
+} TmplPkt;
 
-struct TemplateSet
+typedef struct TemplateSet
 {
     unsigned count;
     uint64_t entropy;
-    struct TemplatePacket pkts[Tmpl_Type_Count];
-};
+    TmplPkt pkts[TmplType_Count];
+} TmplSet;
 
-struct TemplateSet templ_copy(const struct TemplateSet *templset);
+TmplSet templ_copy(const TmplSet *templset);
 
-struct TemplatePacket templ_packet_copy(const struct TemplatePacket *tmpl_pkt);
+TmplPkt templ_packet_copy(const TmplPkt *tmpl_pkt);
 
 #endif

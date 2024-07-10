@@ -106,8 +106,8 @@ proto_arp_parse(struct ARP_IncomingRequest *arp,
  ****************************************************************************/
 int
 stack_arp_resolve(
-    struct Adapter *adapter,
-    struct AdapterCache *acache,
+    Adapter *adapter,
+    AdapterCache *acache,
     ipv4address_t my_ipv4, macaddress_t my_mac_address,
     ipv4address_t your_ipv4, macaddress_t *your_mac_address)
 {
@@ -276,17 +276,17 @@ stack_arp_resolve(
  * Handle an incoming ARP request.
  ****************************************************************************/
 int
-stack_arp_incoming_request( struct stack_t *stack,
+stack_arp_incoming_request( STACK *stack,
     ipv4address_t my_ip, macaddress_t my_mac,
     const unsigned char *px, unsigned length)
 {
-    struct PacketBuffer *response          = 0;
+    PktBuf *response          = 0;
     struct ARP_IncomingRequest request     = {0};
 
     /* Get a buffer for sending the response packet. This thread doesn't
      * send the packet itself. Instead, it formats a packet, then hands
      * that packet off to a transmit thread for later transmission. */
-    response = stack_get_packetbuffer(stack);
+    response = stack_get_pktbuf(stack);
 
     /* ARP packets are too short, so increase the packet size to
      * the Ethernet minimum */
@@ -342,7 +342,7 @@ stack_arp_incoming_request( struct stack_t *stack,
     /*
      * Now queue the packet up for transmission
      */
-    stack_transmit_packetbuffer(stack, response);
+    stack_transmit_pktbuf(stack, response);
 
     return 0;
 }

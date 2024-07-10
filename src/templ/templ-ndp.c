@@ -157,12 +157,12 @@ Source/Target Link-layer Address
 
 static size_t
 ndp_create_ns_by_template_ipv6(
-    const struct TemplatePacket *tmpl,
+    const TmplPkt *tmpl,
     ipv6address ip_them, ipv6address ip_me, macaddress_t src_mac,
     uint8_t ttl, unsigned char *px, size_t sizeof_px)
 {
-    if (tmpl->tmpl_type != Tmpl_Type_NDP_NS) {
-            LOG(LEVEL_ERROR, "ndp_create_by_template_ipv6: need a Tmpl_Type_NDP_NS TemplatePacket.\n");
+    if (tmpl->tmpl_type != TmplType_NDP_NS) {
+            LOG(LEVEL_ERROR, "ndp_create_by_template_ipv6: need a TmplType_NDP_NS TemplatePacket.\n");
             return 0;
     }
 
@@ -278,7 +278,7 @@ ndp_create_ns_packet(
     /*just for IPv6*/
     if (ip_them.version == 4) return 0;
 
-    return ndp_create_ns_by_template_ipv6(&global_tmplset->pkts[Tmpl_Type_NDP_NS],
+    return ndp_create_ns_by_template_ipv6(&global_tmplset->pkts[TmplType_NDP_NS],
         ip_them.ipv6, ip_me.ipv6, src_mac, ttl, px, sizeof_px);
 }
 

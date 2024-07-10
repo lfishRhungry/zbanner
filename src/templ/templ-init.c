@@ -273,7 +273,7 @@ static unsigned char default_ndp_ns_template[] =
  * the IPv4 header with the IPv6 header.
  ***************************************************************************/
 static void
-_template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
+_template_init_ipv6(TmplPkt *tmpl, macaddress_t router_mac_ipv6,
     unsigned data_link_type)
 {
     struct PreprocessedInfo parsed;
@@ -388,7 +388,7 @@ _template_init_ipv6(struct TemplatePacket *tmpl, macaddress_t router_mac_ipv6,
  ***************************************************************************/
 static void
 _template_init(
-    struct TemplatePacket *tmpl,
+    TmplPkt *tmpl,
     macaddress_t source_mac,
     macaddress_t router_mac_ipv4,
     macaddress_t router_mac_ipv6,
@@ -443,7 +443,7 @@ _template_init(
      */
     if (parsed.found == FOUND_ARP) {
         memcpy((char*)parsed._ip_src - 6, source_mac.addr, 6);
-        tmpl->tmpl_type = Tmpl_Type_ARP;
+        tmpl->tmpl_type = TmplType_ARP;
         return;
     }
 
@@ -469,13 +469,13 @@ _template_init(
         tmpl->ipv4.offset_app   = tmpl->ipv4.length;
         switch (px[tmpl->ipv4.offset_tcp]) {
             case ICMPv4_TYPE_ECHO_REQUEST:
-                tmpl->tmpl_type = Tmpl_Type_ICMP_ECHO;
+                tmpl->tmpl_type = TmplType_ICMP_ECHO;
                 break;
             case ICMPv4_TYPE_TIMESTAMP_MSG:
-                tmpl->tmpl_type = Tmpl_Type_ICMP_TS;
+                tmpl->tmpl_type = TmplType_ICMP_TS;
                 break;
             case ICMPv6_TYPE_NS:
-                tmpl->tmpl_type = Tmpl_Type_NDP_NS;
+                tmpl->tmpl_type = TmplType_NDP_NS;
                 break;
         }
         break;
@@ -483,14 +483,14 @@ _template_init(
         /* zero out fields that'll be overwritten */
         memset(px + tmpl->ipv4.offset_tcp +  0, 0, 8); /* destination port and seqno */
         memset(px + tmpl->ipv4.offset_tcp + 16, 0, 2); /* checksum */
-        tmpl->tmpl_type = Tmpl_Type_TCP;
+        tmpl->tmpl_type = TmplType_TCP;
         break;
     case IP_PROTO_UDP:
         memset(px + tmpl->ipv4.offset_tcp + 6, 0, 2); /* checksum */
-        tmpl->tmpl_type = Tmpl_Type_UDP;
+        tmpl->tmpl_type = TmplType_UDP;
         break;
     case IP_PROTO_SCTP:
-        tmpl->tmpl_type = Tmpl_Type_SCTP;
+        tmpl->tmpl_type = TmplType_SCTP;
         break;
     }
 
@@ -534,13 +534,13 @@ _template_init(
  ***************************************************************************/
 void
 template_packet_init(
-    struct TemplateSet *templset,
+    TmplSet *templset,
     macaddress_t source_mac,
     macaddress_t router_mac_ipv4,
     macaddress_t router_mac_ipv6,
     int data_link,
     uint64_t entropy,
-    const struct TemplateOptions *templ_opts)
+    const TmplOpt *templ_opts)
 {
     unsigned char *buf;
     size_t length;
@@ -549,7 +549,7 @@ template_packet_init(
 
 
     /* [SCTP] */
-    _template_init(&templset->pkts[Tmpl_Type_SCTP],
+    _template_init(&templset->pkts[TmplType_SCTP],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    default_sctp_template,
                    sizeof(default_sctp_template)-1,
@@ -557,7 +557,7 @@ template_packet_init(
     templset->count++;
 
     /* [TCP] */
-    _template_init(&templset->pkts[Tmpl_Type_TCP],
+    _template_init(&templset->pkts[TmplType_TCP],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    default_tcp_template,
                    sizeof(default_tcp_template)-1,
@@ -569,7 +569,7 @@ template_packet_init(
     buf    = MALLOC(length);
     memcpy(buf, default_tcp_syn_template, length);
     templ_tcp_apply_options(&buf, &length, templ_opts); /*set options for syn*/
-    _template_init(&templset->pkts[Tmpl_Type_TCP_SYN],
+    _template_init(&templset->pkts[TmplType_TCP_SYN],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    buf,
                    length,
@@ -578,7 +578,7 @@ template_packet_init(
     free(buf);
 
     /* [TCP] */
-    _template_init(&templset->pkts[Tmpl_Type_TCP_RST],
+    _template_init(&templset->pkts[TmplType_TCP_RST],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    default_tcp_rst_template,
                    sizeof(default_tcp_rst_template)-1,
@@ -586,7 +586,7 @@ template_packet_init(
     templset->count++;
 
     /* [UDP] */
-    _template_init(&templset->pkts[Tmpl_Type_UDP],
+    _template_init(&templset->pkts[TmplType_UDP],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    default_udp_template,
                    sizeof(default_udp_template)-1,
@@ -594,7 +594,7 @@ template_packet_init(
     templset->count++;
 
     /* [ICMP ping] */
-    _template_init(&templset->pkts[Tmpl_Type_ICMP_ECHO],
+    _template_init(&templset->pkts[TmplType_ICMP_ECHO],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    default_icmp_ping_template,
                    sizeof(default_icmp_ping_template)-1,
@@ -602,7 +602,7 @@ template_packet_init(
     templset->count++;
 
     /* [ICMP timestamp] */
-    _template_init(&templset->pkts[Tmpl_Type_ICMP_TS],
+    _template_init(&templset->pkts[TmplType_ICMP_TS],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    default_icmp_timestamp_template,
                    sizeof(default_icmp_timestamp_template)-1,
@@ -610,7 +610,7 @@ template_packet_init(
     templset->count++;
 
     /* [ARP] */
-    _template_init(&templset->pkts[Tmpl_Type_ARP],
+    _template_init(&templset->pkts[TmplType_ARP],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    default_arp_template,
                    sizeof(default_arp_template)-1,
@@ -618,7 +618,7 @@ template_packet_init(
     templset->count++;
 
     /* [NDP NS] */
-    _template_init(&templset->pkts[Tmpl_Type_NDP_NS],
+    _template_init(&templset->pkts[TmplType_NDP_NS],
                    source_mac, router_mac_ipv4, router_mac_ipv6,
                    default_ndp_ns_template,
                    sizeof(default_ndp_ns_template)-1,
@@ -640,10 +640,10 @@ void template_set_tcp_window_of_default(unsigned window)
  * We don't calc checksum here but in pkt creating.
  */
 void
-template_set_ttl(struct TemplateSet *tmplset, unsigned ttl)
+template_set_ttl(TmplSet *tmplset, unsigned ttl)
 {
     unsigned i;
-    struct TemplatePacket *tmpl_pkt;
+    TmplPkt *tmpl_pkt;
     unsigned char         *px;
     unsigned               offset;
 
@@ -652,7 +652,7 @@ template_set_ttl(struct TemplateSet *tmplset, unsigned ttl)
         /**
          * Kludge, very kludge...
          */
-        if (i==Tmpl_Type_ARP) continue;
+        if (i==TmplType_ARP) continue;
 
         tmpl_pkt     = &tmplset->pkts[i];
 
@@ -671,7 +671,7 @@ template_set_ttl(struct TemplateSet *tmplset, unsigned ttl)
  * We don't calc checksum here but in pkt creating.
  */
 void
-template_packet_set_ttl(struct TemplatePacket *tmpl_pkt, unsigned ttl)
+template_packet_set_ttl(TmplPkt *tmpl_pkt, unsigned ttl)
 {
     unsigned char         *px;
     unsigned               offset;
@@ -689,12 +689,12 @@ template_packet_set_ttl(struct TemplatePacket *tmpl_pkt, unsigned ttl)
  * We don't calc checksum here but in pkt creating.
  */
 void
-template_set_vlan(struct TemplateSet *tmplset, unsigned vlan)
+template_set_vlan(TmplSet *tmplset, unsigned vlan)
 {
     unsigned i;
 
     for (i=0; i<tmplset->count; i++) {
-        struct TemplatePacket *tmpl = &tmplset->pkts[i];
+        TmplPkt *tmpl = &tmplset->pkts[i];
         unsigned char *px;
 
         if (tmpl->ipv4.length < 14)
@@ -721,7 +721,7 @@ template_set_vlan(struct TemplateSet *tmplset, unsigned vlan)
  * We don't calc checksum here but in pkt creating.
  */
 void
-template_packet_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan)
+template_packet_set_vlan(TmplPkt *tmpl_pkt, unsigned vlan)
 {
     unsigned char *px;
 
@@ -749,8 +749,8 @@ template_packet_set_vlan(struct TemplatePacket *tmpl_pkt, unsigned vlan)
  ***************************************************************************/
 int template_selftest()
 {
-    struct TemplateSet tmplset[1]     = {{0}};
-    struct TemplateOptions templ_opts = {{0}};
+    TmplSet tmplset[1]     = {{0}};
+    TmplOpt templ_opts = {{0}};
     int failures                      = 0;
 
     /* Test the module that edits TCP headers */
@@ -766,15 +766,15 @@ int template_selftest()
         PCAP_DLT_ETHERNET,
         0,  /* no entropy */
         &templ_opts);
-    failures += tmplset->pkts[Tmpl_Type_TCP].tmpl_type         != Tmpl_Type_TCP;
-    failures += tmplset->pkts[Tmpl_Type_TCP_SYN].tmpl_type     != Tmpl_Type_TCP;
-    failures += tmplset->pkts[Tmpl_Type_TCP_RST].tmpl_type     != Tmpl_Type_TCP;
-    failures += tmplset->pkts[Tmpl_Type_UDP].tmpl_type         != Tmpl_Type_UDP;
-    failures += tmplset->pkts[Tmpl_Type_SCTP].tmpl_type        != Tmpl_Type_SCTP;
-    failures += tmplset->pkts[Tmpl_Type_ICMP_ECHO].tmpl_type   != Tmpl_Type_ICMP_ECHO;
-    failures += tmplset->pkts[Tmpl_Type_ICMP_TS].tmpl_type     != Tmpl_Type_ICMP_TS;
-    failures += tmplset->pkts[Tmpl_Type_ARP].tmpl_type         != Tmpl_Type_ARP;
-    failures += tmplset->pkts[Tmpl_Type_NDP_NS].tmpl_type      != Tmpl_Type_NDP_NS;
+    failures += tmplset->pkts[TmplType_TCP].tmpl_type         != TmplType_TCP;
+    failures += tmplset->pkts[TmplType_TCP_SYN].tmpl_type     != TmplType_TCP;
+    failures += tmplset->pkts[TmplType_TCP_RST].tmpl_type     != TmplType_TCP;
+    failures += tmplset->pkts[TmplType_UDP].tmpl_type         != TmplType_UDP;
+    failures += tmplset->pkts[TmplType_SCTP].tmpl_type        != TmplType_SCTP;
+    failures += tmplset->pkts[TmplType_ICMP_ECHO].tmpl_type   != TmplType_ICMP_ECHO;
+    failures += tmplset->pkts[TmplType_ICMP_TS].tmpl_type     != TmplType_ICMP_TS;
+    failures += tmplset->pkts[TmplType_ARP].tmpl_type         != TmplType_ARP;
+    failures += tmplset->pkts[TmplType_NDP_NS].tmpl_type      != TmplType_NDP_NS;
 
     if (failures)
         LOG(LEVEL_ERROR, "template: failed\n");

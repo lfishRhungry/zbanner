@@ -64,7 +64,7 @@ static uint64_t usec_start;
  * This is for some wrappered functions that use TemplateSet to create packets.
  * !Do not modify it unless u know what u are doing.
  */
-struct TemplateSet *global_tmplset;
+TmplSet *global_tmplset;
 
 static void _control_c_handler(int x) {
 
@@ -107,7 +107,7 @@ static int _main_scan(struct Xconf *xconf) {
      * a partial-zero var conveniently.
      */
     time_t                now                   = time(0);
-    struct TemplateSet    tmplset               = {0};
+    TmplSet    tmplset               = {0};
     struct Xtatus         status                = {.last={0}};
     struct XtatusItem     status_item           = {0};
     struct RxThread       rx_thread[1]          = {{0}};
@@ -276,7 +276,7 @@ static int _main_scan(struct Xconf *xconf) {
     /*
      * Do init for OutputModule
      */
-    if (!output_init(&xconf->out)) {
+    if (!output_init(&xconf->out_conf)) {
         LOG(LEVEL_ERROR, "errors in OutputModule initializing\n");
         exit(1);
     }
@@ -338,8 +338,8 @@ static int _main_scan(struct Xconf *xconf) {
     LOG(LEVEL_OUT, "ScanModule  : %s\n", xconf->scan_module->name);
     if (xconf->probe_module)
         LOG(LEVEL_OUT, "ProbeModule : %s\n", xconf->probe_module->name);
-    if (xconf->out.output_module)
-        LOG(LEVEL_OUT, "OutputModule: %s\n", xconf->out.output_module->name);
+    if (xconf->out_conf.output_module)
+        LOG(LEVEL_OUT, "OutputModule: %s\n", xconf->out_conf.output_module->name);
 
     LOG(LEVEL_OUT, "Scanning %u hosts [%u port%s/host]\n\n", (unsigned)count_ips,
         (unsigned)count_ports, (count_ports == 1) ? "" : "s");
@@ -431,9 +431,9 @@ static int _main_scan(struct Xconf *xconf) {
         /**
          * update other status item fields
          */
-        status_item.total_successed = xconf->out.total_successed;
-        status_item.total_failed    = xconf->out.total_failed;
-        status_item.total_info      = xconf->out.total_info;
+        status_item.total_successed = xconf->out_conf.total_successed;
+        status_item.total_failed    = xconf->out_conf.total_failed;
+        status_item.total_info      = xconf->out_conf.total_info;
         status_item.total_tm_event  = rx_thread->total_tm_event;
         status_item.max_count       = range;
         status_item.print_in_json   = xconf->is_status_ndjson;
@@ -511,9 +511,9 @@ static int _main_scan(struct Xconf *xconf) {
         /**
          * update other status item fields
          */
-        status_item.total_successed = xconf->out.total_successed;
-        status_item.total_failed    = xconf->out.total_failed;
-        status_item.total_info      = xconf->out.total_info;
+        status_item.total_successed = xconf->out_conf.total_successed;
+        status_item.total_failed    = xconf->out_conf.total_failed;
+        status_item.total_info      = xconf->out_conf.total_info;
         status_item.total_tm_event  = rx_thread->total_tm_event;
         status_item.max_count       = range;
         status_item.print_in_json   = xconf->is_status_ndjson;
@@ -553,7 +553,7 @@ static int _main_scan(struct Xconf *xconf) {
         xconf->probe_module->close_cb();
     }
 
-    output_close(&xconf->out);
+    output_close(&xconf->out_conf);
 
     free(tx_thread);
 
@@ -730,7 +730,7 @@ int main(int argc, char *argv[]) {
         break;
 
     case Operation_HelpOutputModule:
-        help_output_module(xconf->out.output_module);
+        help_output_module(xconf->out_conf.output_module);
         break;
 
     case Operation_PrintHelp:

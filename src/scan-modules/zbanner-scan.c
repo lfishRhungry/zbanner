@@ -284,7 +284,7 @@ zbanner_handle(
     uint64_t entropy,
     struct Received *recved,
     OutItem *item,
-    struct stack_t *stack,
+    STACK *stack,
     FHandler *handler)
 {
     unsigned mss_them;
@@ -341,7 +341,7 @@ zbanner_handle(
 
             payload_len = ZBannerScan.probe->make_payload_cb(&ptarget, payload);
 
-            struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+            PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
             pkt_buffer->length = tcp_create_packet(
                 recved->parsed.src_ip, recved->parsed.port_src,
@@ -349,7 +349,7 @@ zbanner_handle(
                 seqno_me, seqno_them+1, TCP_FLAG_ACK, 0, 0,
                 payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
-            stack_transmit_packetbuffer(stack, pkt_buffer);
+            stack_transmit_pktbuf(stack, pkt_buffer);
 
             /*add timeout for banner*/
             if (handler && !zbanner_conf.no_banner_timeout) {
@@ -378,7 +378,7 @@ zbanner_handle(
                     unsigned cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                         recved->parsed.dst_ip, src_port_start+idx, entropy);
 
-                    struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+                    PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
                     pkt_buffer->length = tcp_create_packet(
                         recved->parsed.src_ip, recved->parsed.port_src,
@@ -386,7 +386,7 @@ zbanner_handle(
                         cookie, 0, TCP_FLAG_SYN, 0, 0,
                         NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
-                    stack_transmit_packetbuffer(stack, pkt_buffer);
+                    stack_transmit_pktbuf(stack, pkt_buffer);
 
                     /*add timeout for port*/
                     if (handler && zbanner_conf.is_port_timeout) {
@@ -433,7 +433,7 @@ zbanner_handle(
     else {
 
         /*send rst first to disconn*/
-        struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+        PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
         pkt_buffer->length = tcp_create_packet(
             recved->parsed.src_ip, recved->parsed.port_src,
@@ -441,7 +441,7 @@ zbanner_handle(
             seqno_me, seqno_them+1, TCP_FLAG_RST, 0, 0,
             NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
-        stack_transmit_packetbuffer(stack, pkt_buffer);
+        stack_transmit_pktbuf(stack, pkt_buffer);
 
         struct ProbeTarget ptarget = {
             .ip_proto  = recved->parsed.ip_protocol,
@@ -467,7 +467,7 @@ zbanner_handle(
                 unsigned cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                     recved->parsed.dst_ip, src_port_start+idx, entropy);
 
-                struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+                PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
                 pkt_buffer->length = tcp_create_packet(
                     recved->parsed.src_ip, recved->parsed.port_src,
@@ -475,7 +475,7 @@ zbanner_handle(
                     cookie, 0, TCP_FLAG_SYN, 0, 0,
                     NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
-                stack_transmit_packetbuffer(stack, pkt_buffer);
+                stack_transmit_pktbuf(stack, pkt_buffer);
 
                 /*add timeout for port*/
                 if (handler && zbanner_conf.is_port_timeout) {
@@ -504,7 +504,7 @@ zbanner_handle(
             unsigned cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, src_port_start+is_multi-1, entropy);
 
-            struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+            PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
             pkt_buffer->length = tcp_create_packet(
                 recved->parsed.src_ip, recved->parsed.port_src,
@@ -512,7 +512,7 @@ zbanner_handle(
                 cookie, 0, TCP_FLAG_SYN, 0, 0,
                 NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
-            stack_transmit_packetbuffer(stack, pkt_buffer);
+            stack_transmit_pktbuf(stack, pkt_buffer);
 
             /*add timeout for port*/
             if (handler && zbanner_conf.is_port_timeout) {
@@ -540,7 +540,7 @@ zbanner_timeout(
     uint64_t entropy,
     struct ScanTmEvent *event,
     OutItem *item,
-    struct stack_t *stack,
+    STACK *stack,
     FHandler *handler)
 {
     /*event for port*/
@@ -575,7 +575,7 @@ zbanner_timeout(
             unsigned cookie = get_cookie(event->ip_them, event->port_them,
                 event->ip_me, src_port_start+idx, entropy);
 
-            struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+            PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
             pkt_buffer->length = tcp_create_packet(
                 event->ip_them, event->port_them,
@@ -583,7 +583,7 @@ zbanner_timeout(
                 cookie, 0, TCP_FLAG_SYN, 0, 0,
                 NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
-            stack_transmit_packetbuffer(stack, pkt_buffer);
+            stack_transmit_pktbuf(stack, pkt_buffer);
 
             /*add timeout for port*/
             if (handler && zbanner_conf.is_port_timeout) {
@@ -610,7 +610,7 @@ zbanner_timeout(
         unsigned cookie = get_cookie(event->ip_them, event->port_them,
             event->ip_me, src_port_start+is_multi-1, entropy);
 
-        struct PacketBuffer *pkt_buffer = stack_get_packetbuffer(stack);
+        PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
         pkt_buffer->length = tcp_create_packet(
             event->ip_them, event->port_them,
@@ -618,7 +618,7 @@ zbanner_timeout(
             cookie, 0, TCP_FLAG_SYN, 0, 0,
             NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
-        stack_transmit_packetbuffer(stack, pkt_buffer);
+        stack_transmit_pktbuf(stack, pkt_buffer);
 
         /*add timeout for port*/
         if (handler && zbanner_conf.is_port_timeout) {

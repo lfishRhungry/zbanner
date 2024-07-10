@@ -53,8 +53,8 @@ static uint8_t _dispatch_hash(ipaddress addr)
 
 
 struct RxDispatch {
-    struct rte_ring     **handle_queue;
-    struct rte_ring      *dispatch_queue;
+    PACKET_QUEUE        **handle_queue;
+    PACKET_QUEUE         *dispatch_queue;
     unsigned              recv_handle_num;
     unsigned              recv_handle_mask;
     uint64_t              entropy;
@@ -109,10 +109,10 @@ struct RxHandle {
      * unsafe */
     const struct Xconf   *xconf;
     struct ScanModule    *scan_module;
-    struct rte_ring      *handle_queue;
+    PACKET_QUEUE         *handle_queue;
     FHandler             *ft_handler;
-    struct stack_t       *stack;
-    OutConf              *out;
+    STACK       *stack;
+    OutConf              *out_conf;
     uint64_t              entropy;
     unsigned              index;
 };
@@ -173,7 +173,7 @@ handle_thread(void *v)
         parms->scan_module->handle_cb(parms->index, parms->entropy, recved, &item,
             parms->stack, parms->ft_handler);
 
-        output_result(parms->out, &item);
+        output_result(parms->out_conf, &item);
 
         free(recved->packet);
         free(recved);
@@ -187,11 +187,11 @@ handle_thread(void *v)
 void receive_thread(void *v) {
     struct RxThread               *parms                       = (struct RxThread *)v;
     const struct Xconf            *xconf                       = parms->xconf;
-    OutConf                       *out                         = (OutConf *)(&xconf->out);
-    struct Adapter                *adapter                     = xconf->nic.adapter;
+    OutConf                       *out_conf                    = (OutConf *)(&xconf->out_conf);
+    Adapter                       *adapter                     = xconf->nic.adapter;
     int                            data_link                   = stack_if_datalink(adapter);
     uint64_t                       entropy                     = xconf->seed;
-    struct stack_t                *stack                       = xconf->stack;
+    STACK                         *stack                       = xconf->stack;
     struct ScanModule             *scan_module                 = xconf->scan_module;
     struct DedupTable             *dedup                       = NULL;
     struct PcapFile               *pcapfile                    = NULL;
@@ -200,10 +200,10 @@ void receive_thread(void *v) {
     unsigned                       handler_num                 = xconf->rx_handler_count;
     size_t                        *handler                     = MALLOC(handler_num * sizeof(size_t));
     struct RxHandle               *handle_parms                = MALLOC(handler_num * sizeof(struct RxHandle));
-    struct rte_ring              **handle_q                    = MALLOC(handler_num * sizeof(struct rte_ring *));
+    PACKET_QUEUE                 **handle_q                    = MALLOC(handler_num * sizeof(PACKET_QUEUE *));
     size_t                         dispatcher;
     struct RxDispatch              dispatch_parms;
-    struct rte_ring               *dispatch_q;
+    PACKET_QUEUE                  *dispatch_q;
     struct Received               *recved;
 
 
@@ -272,7 +272,7 @@ void receive_thread(void *v) {
         handle_parms[i].handle_queue    = handle_q[i];
         handle_parms[i].xconf           = xconf;
         handle_parms[i].stack           = stack;
-        handle_parms[i].out             = out;
+        handle_parms[i].out_conf             = out_conf;
         handle_parms[i].entropy         = entropy;
         handle_parms[i].index           = i;
 
@@ -304,7 +304,7 @@ void receive_thread(void *v) {
                 };
 
                 scan_module->timeout_cb(entropy, tm_event, &item, stack, ft_handler);
-                output_result(out, &item);
+                output_result(out_conf, &item);
 
                 free(tm_event);
                 tm_event = NULL;

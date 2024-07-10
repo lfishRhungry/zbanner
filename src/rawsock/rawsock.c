@@ -285,7 +285,7 @@ adapter_from_index(unsigned index)
  * we'll have to flush them.
  ***************************************************************************/
 void
-rawsock_flush(struct Adapter *adapter, struct AdapterCache *acache)
+rawsock_flush(Adapter *adapter, AdapterCache *acache)
 {
     if (adapter->ring) {
         PFRING.flush(adapter->ring);
@@ -305,8 +305,8 @@ rawsock_flush(struct Adapter *adapter, struct AdapterCache *acache)
 
 int
 rawsock_send_packet(
-    struct Adapter *adapter,
-    struct AdapterCache *acache,
+    Adapter *adapter,
+    AdapterCache *acache,
     const unsigned char *packet,
     unsigned length)
 {
@@ -367,7 +367,7 @@ rawsock_send_packet(
 /***************************************************************************
  ***************************************************************************/
 int rawsock_recv_packet(
-    struct Adapter *adapter,
+    Adapter *adapter,
     unsigned *length,
     unsigned *secs,
     unsigned *usecs,
@@ -486,7 +486,7 @@ rawsock_win_name(const char *ifname)
  * still get filtered at a low level.
  ***************************************************************************/
 void
-rawsock_ignore_transmits(struct Adapter *adapter, const char *ifname)
+rawsock_ignore_transmits(Adapter *adapter, const char *ifname)
 {
     if (adapter->ring) {
         /* PORTABILITY: don't do anything for PF_RING, because it's
@@ -509,7 +509,7 @@ rawsock_ignore_transmits(struct Adapter *adapter, const char *ifname)
 /***************************************************************************
  ***************************************************************************/
 void
-rawsock_close_adapter(struct Adapter *adapter)
+rawsock_close_adapter(Adapter *adapter)
 {
     if (adapter->ring) {
         PFRING.close(adapter->ring);
@@ -570,7 +570,7 @@ is_pfring_dna(const char *name)
 
 /***************************************************************************
  ***************************************************************************/
-struct Adapter *
+Adapter *
 rawsock_init_adapter(const char *adapter_name,
                      unsigned is_pfring,
                      unsigned is_sendq,
@@ -580,7 +580,7 @@ rawsock_init_adapter(const char *adapter_name,
                      unsigned vlan_id,
                      unsigned snaplen)
 {
-    struct Adapter *adapter;
+    Adapter *adapter;
     char errbuf[PCAP_ERRBUF_SIZE] = "pcap";
 
     adapter = CALLOC(1, sizeof(*adapter));
@@ -834,7 +834,7 @@ pcap_error:
 }
 
 void
-rawsock_set_filter(struct Adapter *adapter, const char *scan_filter,
+rawsock_set_filter(Adapter *adapter, const char *scan_filter,
     const char *user_filter)
 {
     if (!adapter->pcap) return;
@@ -874,7 +874,7 @@ rawsock_set_filter(struct Adapter *adapter, const char *scan_filter,
 /**
  * Nonblock mode means pcap will return immediatelly even if no packet recved.
  */
-void rawsock_set_nonblock(struct Adapter *adapter)
+void rawsock_set_nonblock(Adapter *adapter)
 {
     if (adapter->pcap) {
         int err;
@@ -912,8 +912,8 @@ int rawsock_selftest_if(const char *ifname)
     ipv6address_t                  ipv6;
     ipv4address_t                  router_ipv4     = 0;
     macaddress_t                   source_mac      = {{0,0,0,0,0,0}};
-    struct Adapter                *adapter;
-    struct AdapterCache           *acache;
+    Adapter                *adapter;
+    AdapterCache           *acache;
     char                           ifname2[246];
     ipaddress_formatted_t          fmt;
 

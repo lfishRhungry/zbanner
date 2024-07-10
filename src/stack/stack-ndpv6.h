@@ -22,7 +22,7 @@ struct PreprocessedInfo;
  * back our MAC address.
  */
 int
-stack_ndpv6_incoming_request(struct stack_t *stack,
+stack_ndpv6_incoming_request(STACK *stack,
     struct PreprocessedInfo *parsed,
     const unsigned char *px,
     size_t length);
@@ -32,8 +32,8 @@ stack_ndpv6_incoming_request(struct stack_t *stack,
  */
 int
 stack_ndpv6_resolve(
-    struct Adapter *adapter,
-    struct AdapterCache *acache,
+    Adapter *adapter,
+    AdapterCache *acache,
     ipv6address my_ipv6,
     macaddress_t my_mac_address,
     macaddress_t *your_mac_address);

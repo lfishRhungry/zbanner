@@ -98,9 +98,9 @@ _read_ipv6(const unsigned char *buf, size_t *offset, size_t max)
  * to which we must respond.
  */
 int
-stack_ndpv6_incoming_request(struct stack_t *stack, struct PreprocessedInfo *parsed,  const unsigned char *px, size_t length)
+stack_ndpv6_incoming_request(STACK *stack, struct PreprocessedInfo *parsed,  const unsigned char *px, size_t length)
 {
-    struct PacketBuffer *response = 0;
+    PktBuf *response = 0;
     size_t offset;
     size_t remaining;
     ipaddress target_ip;
@@ -142,7 +142,7 @@ stack_ndpv6_incoming_request(struct stack_t *stack, struct PreprocessedInfo *par
     /* Get a buffer for sending the response packet. This thread doesn't
      * send the packet itself. Instead, it formats a packet, then hands
      * that packet off to a transmit thread for later transmission. */
-    response = stack_get_packetbuffer(stack);
+    response = stack_get_pktbuf(stack);
 
     /* Use the request packet as a template for the response */
     memcpy(response->px, px, length);
@@ -180,7 +180,7 @@ stack_ndpv6_incoming_request(struct stack_t *stack, struct PreprocessedInfo *par
 
     /* Transmit the packet-buffer */
     response->length = offset;
-    stack_transmit_packetbuffer(stack, response);
+    stack_transmit_pktbuf(stack, response);
 
     return 0;
 }
@@ -314,8 +314,8 @@ _extract_router_advertisement(
  ****************************************************************************/
 int
 stack_ndpv6_resolve(
-    struct Adapter *adapter,
-    struct AdapterCache *acache,
+    Adapter *adapter,
+    AdapterCache *acache,
     ipv6address my_ipv6,
     macaddress_t my_mac_address,
     macaddress_t *router_mac)

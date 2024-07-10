@@ -11,9 +11,9 @@
 
 
 
-struct Adapter;
-struct AdapterCache;
-struct TemplateSet;
+typedef struct Adapter       Adapter;
+typedef struct Adapter_Cache Adapter_Cache;
+typedef struct TemplateSet   TmplSet;
 
 
 void rawsock_init(void);
@@ -39,7 +39,7 @@ void rawsock_init(void);
  * @return
  *      a fully instantiated network adapter
  */
-struct Adapter *
+Adapter *
 rawsock_init_adapter(const char *adapter_name,
                      unsigned is_pfring,
                      unsigned is_sendq,
@@ -50,7 +50,7 @@ rawsock_init_adapter(const char *adapter_name,
                      unsigned snaplen);
 
 void
-rawsock_set_filter(struct Adapter *adapter, const char *scan_filter,
+rawsock_set_filter(Adapter *adapter, const char *scan_filter,
     const char *user_filter);
 
 
@@ -94,7 +94,7 @@ int rawsock_is_adapter_names_equal(const char *lhs, const char *rhs);
  * cases, like when shutting down.
  */
 void
-rawsock_flush(struct Adapter *adapter, struct AdapterCache *acache);
+rawsock_flush(Adapter *adapter, AdapterCache *acache);
 
 /***************************************************************************
  * wrapper for libpcap's sendpacket
@@ -108,8 +108,8 @@ rawsock_flush(struct Adapter *adapter, struct AdapterCache *acache);
  * operation is in `rawsock_flush` function.
  ***************************************************************************/
 int rawsock_send_packet(
-    struct Adapter *adapter,
-    struct AdapterCache *acache,
+    Adapter *adapter,
+    AdapterCache *acache,
     const unsigned char *packet,
     unsigned length);
 
@@ -134,7 +134,7 @@ int rawsock_send_packet(
  *
  */
 int rawsock_recv_packet(
-    struct Adapter *adapter,
+    Adapter *adapter,
     unsigned *length,
     unsigned *secs,
     unsigned *usecs,
@@ -148,13 +148,13 @@ int rawsock_recv_packet(
  * adapters receive the packets they send, which will cause us a lot
  * of work requiring us to process the flood of packets we generate.
  */
-void rawsock_ignore_transmits(struct Adapter *adapter,
+void rawsock_ignore_transmits(Adapter *adapter,
                               const char *ifname);
 
-void rawsock_set_nonblock(struct Adapter *adapter);
+void rawsock_set_nonblock(Adapter *adapter);
 
 void
-rawsock_close_adapter(struct Adapter *adapter);
+rawsock_close_adapter(Adapter *adapter);
 
 int rawsock_selftest_if(const char *ifname);
 

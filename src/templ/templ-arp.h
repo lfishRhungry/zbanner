@@ -16,7 +16,7 @@
 */
 size_t
 arp_create_by_template(
-    const struct TemplatePacket *tmpl,
+    const TmplPkt *tmpl,
     ipaddress ip_them, ipaddress ip_me,
     unsigned char *px, size_t sizeof_px);
 
