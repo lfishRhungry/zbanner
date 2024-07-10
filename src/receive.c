@@ -103,25 +103,25 @@ dispatch_thread(void *v)
     LOG(LEVEL_DEBUG, "exiting dispatch thread\n");
 }
 
-struct RxHandle {
+typedef struct RxHandleConfig {
     /** This points to the central configuration. Note that it's 'const',
      * meaning that the thread cannot change the contents. That'd be
      * unsafe */
-    const struct Xconf   *xconf;
-    Scanner    *scan_module;
+    const Xconf   *xconf;
+    Scanner              *scanner;
     PACKET_QUEUE         *handle_queue;
     FHandler             *ft_handler;
-    STACK       *stack;
+    STACK                *stack;
     OutConf              *out_conf;
     uint64_t              entropy;
     unsigned              index;
-};
+} HandleConf;
 
 static void
 handle_thread(void *v)
 {
-    struct RxHandle    *parms = v;
-    const struct Xconf *xconf = parms->xconf;
+    HandleConf    *parms = v;
+    const Xconf *xconf = parms->xconf;
 
     LOG(LEVEL_DEBUG, "starting handle thread #%u\n", parms->index);
 
@@ -147,7 +147,7 @@ handle_thread(void *v)
         /**
          * Do polling for scan module in each loop
         */
-        parms->scan_module->poll_cb(parms->index);
+        parms->scanner->poll_cb(parms->index);
 
         PktRecv *recved = NULL;
         int err = rte_ring_sc_dequeue(parms->handle_queue, (void**)&recved);
@@ -170,7 +170,7 @@ handle_thread(void *v)
             .port_me   = recved->parsed.port_dst,
         };
 
-        parms->scan_module->handle_cb(parms->index, parms->entropy, recved, &item,
+        parms->scanner->handle_cb(parms->index, parms->entropy, recved, &item,
             parms->stack, parms->ft_handler);
 
         output_result(parms->out_conf, &item);
@@ -185,26 +185,26 @@ handle_thread(void *v)
 
 
 void receive_thread(void *v) {
-    struct RxThread               *parms                       = (struct RxThread *)v;
-    const struct Xconf            *xconf                       = parms->xconf;
+    RxThread                      *parms                       = (RxThread *)v;
+    const Xconf            *xconf                       = parms->xconf;
     OutConf                       *out_conf                    = (OutConf *)(&xconf->out_conf);
     Adapter                       *adapter                     = xconf->nic.adapter;
     int                            data_link                   = stack_if_datalink(adapter);
     uint64_t                       entropy                     = xconf->seed;
     STACK                         *stack                       = xconf->stack;
-    Scanner             *scan_module                 = xconf->scan_module;
+    Scanner                       *scan_module                 = xconf->scanner;
     struct DedupTable             *dedup                       = NULL;
     struct PcapFile               *pcapfile                    = NULL;
     struct ScanTmEvent            *tm_event                    = NULL;
     FHandler                      *ft_handler                  = NULL;
     unsigned                       handler_num                 = xconf->rx_handler_count;
     size_t                        *handler                     = MALLOC(handler_num * sizeof(size_t));
-    struct RxHandle               *handle_parms                = MALLOC(handler_num * sizeof(struct RxHandle));
+    HandleConf               *handle_parms                = MALLOC(handler_num * sizeof(HandleConf));
     PACKET_QUEUE                 **handle_q                    = MALLOC(handler_num * sizeof(PACKET_QUEUE *));
     size_t                         dispatcher;
     struct RxDispatch              dispatch_parms;
     PACKET_QUEUE                  *dispatch_q;
-    PktRecv               *recved;
+    PktRecv                       *recved;
 
 
     LOG(LEVEL_DEBUG, "starting receive thread\n");
@@ -268,7 +268,7 @@ void receive_thread(void *v) {
     for (unsigned i=0; i<handler_num; i++) {
         /*handle threads just add tm_event, it's thread safe*/
         handle_parms[i].ft_handler      = xconf->is_fast_timeout?ft_handler:NULL;
-        handle_parms[i].scan_module     = xconf->scan_module;
+        handle_parms[i].scanner     = xconf->scanner;
         handle_parms[i].handle_queue    = handle_q[i];
         handle_parms[i].xconf           = xconf;
         handle_parms[i].stack           = stack;

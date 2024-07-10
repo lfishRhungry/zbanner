@@ -19,7 +19,7 @@
  * in the configuration file.
  ***************************************************************************/
 int
-initialize_adapter(struct Xconf *xconf)
+initialize_adapter(Xconf *xconf)
 {
     ipaddress_formatted_t    fmt;
     char                    *ifname;

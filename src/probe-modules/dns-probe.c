@@ -159,7 +159,7 @@ static ConfParam dns_parameters[] = {
 };
 
 static bool
-dns_global_init(const struct Xconf *xconf)
+dns_global_init(const Xconf *xconf)
 {
     if (!dns_conf.req_name) {
         LOG(LEVEL_ERROR, "Please specify a dns request name by --req-name.\n");

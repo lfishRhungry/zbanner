@@ -179,7 +179,7 @@ static bool sync_probe_config()
 }
 
 static bool
-luaudp_global_init(const struct Xconf *xconf)
+luaudp_global_init(const Xconf *xconf)
 {
     if (!luaudp_conf.script) {
         LOG(LEVEL_ERROR, ""LUA_PROBE_NAME": must specify a lua script as probe by `--script`.\n");

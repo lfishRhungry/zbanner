@@ -151,7 +151,7 @@ static ConfParam nmapservice_parameters[] = {
 };
 
 static bool
-nmaptcp_global_init(const struct Xconf *xconf)
+nmaptcp_global_init(const Xconf *xconf)
 {
     /*Use LzrWait if no subprobe specified*/
     if (!nmaptcp_conf.probe_file) {

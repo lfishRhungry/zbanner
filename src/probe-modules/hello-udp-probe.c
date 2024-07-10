@@ -275,7 +275,7 @@ static ConfParam helloudp_parameters[] = {
 extern Probe HelloUdpProbe;
 
 static bool
-helloudp_global_init(const struct Xconf *xconf)
+helloudp_global_init(const Xconf *xconf)
 {
     if (helloudp_conf.hello==NULL || helloudp_conf.hello_len==0) {
         LOG(LEVEL_ERROR, "HelloUdpProbe: No hello data specified.\n");

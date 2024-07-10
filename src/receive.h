@@ -6,11 +6,11 @@
 /***************************************************************************
  * Correspond to a receive thread.
  ***************************************************************************/
-struct RxThread {
+typedef struct RxThreadConfig {
     /** This points to the central configuration. Note that it's 'const',
      * meaning that the thread cannot change the contents. That'd be
      * unsafe */
-    const struct Xconf *xconf;
+    const Xconf *xconf;
 
     bool done_receiving;
 
@@ -23,7 +23,7 @@ struct RxThread {
     PACKET_QUEUE  *dispatch_q;
 
     size_t thread_handle_recv;
-};
+} RxThread;
 
 
 /***************************************************************************

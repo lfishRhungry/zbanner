@@ -110,7 +110,7 @@ void help_scan_module(Scanner * module)
     printf("\n");
 }
 
-bool scan_init_nothing(const struct Xconf *params)
+bool scan_init_nothing(const Xconf *params)
 {
     return true;
 }

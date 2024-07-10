@@ -340,7 +340,7 @@ static ConfParam hellostate_parameters[] = {
 extern Probe HelloStateProbe;
 
 static bool
-hellostate_global_init(const struct Xconf *xconf)
+hellostate_global_init(const Xconf *xconf)
 {
     if (hellostate_conf.hello==NULL || hellostate_conf.hello_len==0) {
         hellostate_conf.hello     = NULL;
@@ -353,7 +353,7 @@ hellostate_global_init(const struct Xconf *xconf)
 
 static void
 hellostate_make_hello(
-    struct DataPass *pass,
+    DataPass *pass,
     ProbeState *state,
     ProbeTarget *target)
 {
@@ -362,7 +362,7 @@ hellostate_make_hello(
 
 static unsigned
 hellostate_parse_response(
-    struct DataPass *pass,
+    DataPass *pass,
     ProbeState *state,
     OutConf *out,
     ProbeTarget *target,

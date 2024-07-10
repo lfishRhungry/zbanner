@@ -233,7 +233,7 @@ static ConfParam recogudp_parameters[] = {
 extern Probe HelloUdpProbe;
 
 static bool
-recogudp_global_init(const struct Xconf *xconf)
+recogudp_global_init(const Xconf *xconf)
 {
     if (recogudp_conf.hello==NULL || recogudp_conf.hello_len==0) {
         LOG(LEVEL_ERROR, "RecogUdpProbe: No hello data specified.\n");

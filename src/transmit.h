@@ -7,8 +7,9 @@
 /***************************************************************************
  * Correspond to a transmit thread.
  ***************************************************************************/
-struct TxThread {
-    const struct Xconf *xconf;
+typedef struct TxThreadConfig {
+
+    const Xconf *xconf;
 
     unsigned tx_index;
 
@@ -27,7 +28,7 @@ struct TxThread {
     uint64_t total_sent;
 
     size_t thread_handle_xmit;
-};
+} TxThread;
 
 
 /***************************************************************************

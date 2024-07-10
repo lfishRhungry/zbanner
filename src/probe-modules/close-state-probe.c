@@ -11,7 +11,7 @@ extern Probe CloseStateProbe;
 
 static void
 closestate_make_hello(
-    struct DataPass *pass,
+    DataPass *pass,
     ProbeState *state,
     ProbeTarget *target)
 {
@@ -20,7 +20,7 @@ closestate_make_hello(
 
 static unsigned
 closestate_parse_response(
-    struct DataPass *pass,
+    DataPass *pass,
     ProbeState *state,
     OutConf *out,
     ProbeTarget *target,

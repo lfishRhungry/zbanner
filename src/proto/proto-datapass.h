@@ -13,18 +13,18 @@
  * 2.dynamic data: we copy it to a MALLOC addr, and who got the datapass will
  * free it for responsibility.
  * */
-struct DataPass {
+typedef struct PassedData {
     unsigned char *data;
     size_t         len;
     unsigned       is_dynamic:1;
     unsigned       is_close:1;
-};
+} DataPass;
 
 /**
  * Just a wrapper to set dynamic or static data.
  * !set `is_close` by yourself
 */
-void datapass_set_data(struct DataPass *pass, unsigned char *data,
+void datapass_set_data(DataPass *pass, unsigned char *data,
     size_t len, unsigned is_dynamic);
 
 #endif

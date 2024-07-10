@@ -165,22 +165,22 @@ struct TCP_Control_Block
     time_t                            when_created;
     unsigned                          is_active:1;       /*in-use/allocated or to be del soon*/
 
-    const Probe         *probe;
-    ProbeState                 probe_state;
+    const Probe                      *probe;
+    ProbeState                        probe_state;
 
-    struct TimeoutEntry               timeout[1];        /*only one for this TCB*/
-    TCB         *next;
+    TmEntry                           timeout[1];        /*only one for this TCB*/
+    TCB                              *next;
 };
 
 struct TCP_ConnectionTable {
-    TCB        **entries;
-    TCB         *freed_list;
+    TCB                             **entries;
+    TCB                              *freed_list;
 
-    TmplPkt            *tcp_template;
-    TmplPkt            *syn_template;
-    TmplPkt            *rst_template;
-    struct Timeouts                  *timeouts;
-    STACK                   *stack;
+    TmplPkt                          *tcp_template;
+    TmplPkt                          *syn_template;
+    TmplPkt                          *rst_template;
+    Timeouts                         *timeouts;
+    STACK                            *stack;
     OutConf                          *out_conf;
 
     unsigned                          count;
@@ -393,7 +393,7 @@ tcpcon_create_table(size_t entry_count,
     tcpcon->mask                 = (unsigned)(entry_count-1);
     tcpcon->timeouts             = timeouts_create(TICKS_FROM_SECS(time(0)));
     tcpcon->stack                = stack;
-    tcpcon->out_conf                  = out;
+    tcpcon->out_conf             = out;
     tcpcon->src_port_start       = stack->src->port.first;
 
     return tcpcon;
@@ -1460,7 +1460,7 @@ again:
                         .index     = socket->tcb->port_me-socket->tcpcon->src_port_start,
                     };
 
-                    struct DataPass pass = {0};
+                    DataPass pass = {0};
 
                     unsigned is_multi =
                         probe->parse_response_cb(&pass, &socket->tcb->probe_state,
@@ -1558,7 +1558,7 @@ again:
                 .index     = socket->tcb->port_me-socket->tcpcon->src_port_start,
             };
 
-            struct DataPass pass = {0};
+            DataPass pass = {0};
 
             probe->make_hello_cb(&pass, &socket->tcb->probe_state, &target);
 

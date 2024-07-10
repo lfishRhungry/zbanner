@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 
-void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
+void xtatus_print(Xtatus *xtatus, XtatusItem *item)
 {
     const char         *fmt;
     double              elapsed_time;
@@ -439,7 +439,7 @@ void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item)
 /***************************************************************************
  ***************************************************************************/
 void
-xtatus_finish(struct Xtatus *xtatus)
+xtatus_finish(Xtatus *xtatus)
 {
     UNUSEDPARM(xtatus);
     LOG(LEVEL_OUT, "\n");
@@ -448,7 +448,7 @@ xtatus_finish(struct Xtatus *xtatus)
 /***************************************************************************
  ***************************************************************************/
 void
-xtatus_start(struct Xtatus *xtatus)
+xtatus_start(Xtatus *xtatus)
 {
     memset(xtatus, 0, sizeof(*xtatus));
     xtatus->last.clock    = clock();

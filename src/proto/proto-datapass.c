@@ -4,7 +4,7 @@
 
 #include <string.h>
 
-void datapass_set_data(struct DataPass *pass, unsigned char *data,
+void datapass_set_data(DataPass *pass, unsigned char *data,
     size_t len, unsigned is_dynamic)
 {
     /*do a safe check for no payload*/

@@ -94,7 +94,7 @@ static void _control_c_handler(int x) {
     }
 }
 
-static int _main_scan(struct Xconf *xconf) {
+static int _main_scan(Xconf *xconf) {
     /**
      * According to C99 standards while using designated initializer:
      * 
@@ -107,11 +107,11 @@ static int _main_scan(struct Xconf *xconf) {
      * a partial-zero var conveniently.
      */
     time_t                now                   = time(0);
-    TmplSet    tmplset               = {0};
-    struct Xtatus         status                = {.last={0}};
-    struct XtatusItem     status_item           = {0};
-    struct RxThread       rx_thread[1]          = {{0}};
-    struct TxThread      *tx_thread;
+    TmplSet               tmplset               = {0};
+    Xtatus                status                = {.last={0}};
+    XtatusItem            status_item           = {0};
+    RxThread              rx_thread[1]          = {{0}};
+    TxThread             *tx_thread;
     uint64_t              count_ports; 
     uint64_t              count_ips;
     uint64_t              range;
@@ -119,7 +119,7 @@ static int _main_scan(struct Xconf *xconf) {
     double                rx_free_entries;
     double                rx_queue_ratio_tmp;
 
-    tx_thread = CALLOC(xconf->tx_thread_count, sizeof(struct TxThread));
+    tx_thread = CALLOC(xconf->tx_thread_count, sizeof(TxThread));
 
     /*
      * Initialize the task size
@@ -212,25 +212,25 @@ static int _main_scan(struct Xconf *xconf) {
      * Choose a default ScanModule if not specified.
      * Wrong specification will be handled in SET_scan_module in xconf.c
      */
-    if (!xconf->scan_module) {
-        xconf->scan_module = get_scan_module_by_name("tcp-syn");
+    if (!xconf->scanner) {
+        xconf->scanner = get_scan_module_by_name("tcp-syn");
         LOG(LEVEL_ERROR, "Default ScanModule `tcpsyn` is chosen because no ScanModule "
             "was specified.\n");
     }
 
     /*validate probe type*/
-    if (xconf->scan_module->required_probe_type==ProbeType_NULL) {
-        if (xconf->probe_module) {
+    if (xconf->scanner->required_probe_type==ProbeType_NULL) {
+        if (xconf->probe) {
             LOG(LEVEL_ERROR, "ScanModule %s does not support any probe.\n",
-                xconf->scan_module->name);
+                xconf->scanner->name);
             exit(1);
         }
     } else {
-        if (!xconf->probe_module
-            || xconf->probe_module->type != xconf->scan_module->required_probe_type) {
+        if (!xconf->probe
+            || xconf->probe->type != xconf->scanner->required_probe_type) {
             LOG(LEVEL_ERROR, "ScanModule %s needs probe of %s type.\n",
-                xconf->scan_module->name,
-                get_probe_type_name(xconf->scan_module->required_probe_type));
+                xconf->scanner->name,
+                get_probe_type_name(xconf->scanner->required_probe_type));
             exit(1);
         }
     }
@@ -238,17 +238,17 @@ static int _main_scan(struct Xconf *xconf) {
     /*
      * Config params & Do global init for ScanModule
      */
-    xconf->scan_module->probe = xconf->probe_module;
+    xconf->scanner->probe = xconf->probe;
 
-    if (xconf->scan_module_args
-        && xconf->scan_module->params) {
+    if (xconf->scanner_args
+        && xconf->scanner->params) {
         if (set_parameters_from_substring(NULL,
-            xconf->scan_module->params, xconf->scan_module_args)) {
+            xconf->scanner->params, xconf->scanner_args)) {
             LOG(LEVEL_ERROR, "errors happened in sub param parsing of ScanModule.\n");
             exit(1);
         }
     }
-    if (!xconf->scan_module->init_cb(xconf)) {
+    if (!xconf->scanner->init_cb(xconf)) {
         LOG(LEVEL_ERROR, "errors happened in global init of ScanModule.\n");
         exit(1);
     }
@@ -256,18 +256,18 @@ static int _main_scan(struct Xconf *xconf) {
     /*
      * Config params & Do global init for ProbeModule
      */
-    if (xconf->probe_module) {
+    if (xconf->probe) {
 
-        if (xconf->probe_module_args
-            && xconf->probe_module->params) {
+        if (xconf->probe_args
+            && xconf->probe->params) {
             if (set_parameters_from_substring(NULL,
-                xconf->probe_module->params, xconf->probe_module_args)) {
+                xconf->probe->params, xconf->probe_args)) {
                 LOG(LEVEL_ERROR, "errors happened in sub param parsing of ProbeModule.\n");
                 exit(1);
             }
         }
 
-        if (!xconf->probe_module->init_cb(xconf)) {
+        if (!xconf->probe->init_cb(xconf)) {
             LOG(LEVEL_ERROR, "errors in ProbeModule global initializing\n");
             exit(1);
         }
@@ -290,7 +290,7 @@ static int _main_scan(struct Xconf *xconf) {
     if (!xconf->is_no_bpf) {
         rawsock_set_filter(
             xconf->nic.adapter,
-            xconf->scan_module->bpf_filter,
+            xconf->scanner->bpf_filter,
             xconf->bpf_filter);
     }
 
@@ -303,7 +303,7 @@ static int _main_scan(struct Xconf *xconf) {
      * Prepare for tx threads
      */
     for (unsigned index = 0; index < xconf->tx_thread_count; index++) {
-        struct TxThread *parms          = &tx_thread[index];
+        TxThread *parms                 = &tx_thread[index];
         parms->xconf                    = xconf;
         parms->tx_index                 = index;
         parms->my_index                 = xconf->resume.index;
@@ -335,9 +335,9 @@ static int _main_scan(struct Xconf *xconf) {
         buffer);
     LOG(LEVEL_OUT, "("XTATE_GITHUB")\n");
 
-    LOG(LEVEL_OUT, "ScanModule  : %s\n", xconf->scan_module->name);
-    if (xconf->probe_module)
-        LOG(LEVEL_OUT, "ProbeModule : %s\n", xconf->probe_module->name);
+    LOG(LEVEL_OUT, "ScanModule  : %s\n", xconf->scanner->name);
+    if (xconf->probe)
+        LOG(LEVEL_OUT, "ProbeModule : %s\n", xconf->probe->name);
     if (xconf->out_conf.output_module)
         LOG(LEVEL_OUT, "OutputModule: %s\n", xconf->out_conf.output_module->name);
 
@@ -350,7 +350,7 @@ static int _main_scan(struct Xconf *xconf) {
     rx_thread->thread_handle_recv =
         pixie_begin_thread(receive_thread, 0, rx_thread);
     for (unsigned index = 0; index < xconf->tx_thread_count; index++) {
-        struct TxThread *parms    = &tx_thread[index];
+        TxThread *parms    = &tx_thread[index];
         parms->thread_handle_xmit = pixie_begin_thread(transmit_thread, 0, parms);
     }
 
@@ -380,7 +380,7 @@ static int _main_scan(struct Xconf *xconf) {
         status_item.cur_count    = UINT64_MAX;
         status_item.repeat_count = UINT64_MAX;
         for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
-            struct TxThread *parms = &tx_thread[i];
+            TxThread *parms = &tx_thread[i];
 
             if (status_item.cur_count > parms->my_index)
                 status_item.cur_count = parms->my_index;
@@ -426,7 +426,7 @@ static int _main_scan(struct Xconf *xconf) {
          * additional status from scan module
          */
         status_item.add_status[0] = '\0';
-        xconf->scan_module->status_cb(status_item.add_status);
+        xconf->scanner->status_cb(status_item.add_status);
 
         /**
          * update other status item fields
@@ -469,7 +469,7 @@ static int _main_scan(struct Xconf *xconf) {
         status_item.cur_count    = UINT64_MAX;
         status_item.repeat_count = UINT64_MAX;
         for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
-            struct TxThread *parms = &tx_thread[i];
+            TxThread *parms = &tx_thread[i];
 
             if (status_item.cur_count > parms->my_index)
                 status_item.cur_count = parms->my_index;
@@ -506,7 +506,7 @@ static int _main_scan(struct Xconf *xconf) {
          * additional status from scan module
          */
         status_item.add_status[0] = '\0';
-        xconf->scan_module->status_cb(status_item.add_status);
+        xconf->scanner->status_cb(status_item.add_status);
 
         /**
          * update other status item fields
@@ -533,7 +533,7 @@ static int _main_scan(struct Xconf *xconf) {
     }
 
     for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
-        struct TxThread *parms = &tx_thread[i];
+        TxThread *parms = &tx_thread[i];
         pixie_thread_join(parms->thread_handle_xmit);
     }
     pixie_thread_join(rx_thread->thread_handle_recv);
@@ -547,10 +547,10 @@ static int _main_scan(struct Xconf *xconf) {
      */
     xtatus_finish(&status);
 
-    xconf->scan_module->close_cb();
+    xconf->scanner->close_cb();
 
-    if (xconf->probe_module) {
-        xconf->probe_module->close_cb();
+    if (xconf->probe) {
+        xconf->probe->close_cb();
     }
 
     output_close(&xconf->out_conf);
@@ -576,7 +576,7 @@ int main(int argc, char *argv[]) {
     /*init logger*/
     LOG_init();
 
-    struct Xconf xconf[1];
+    Xconf xconf[1];
     memset(xconf, 0, sizeof(xconf));
 
     int has_target_addresses = 0;
@@ -714,7 +714,7 @@ int main(int argc, char *argv[]) {
         break;
 
     case Operation_HelpScanModule:
-        help_scan_module(xconf->scan_module);
+        help_scan_module(xconf->scanner);
         break;
 
     case Operation_ListProbeModules:
@@ -722,7 +722,7 @@ int main(int argc, char *argv[]) {
         break;
 
     case Operation_HelpProbeModule:
-        help_probe_module(xconf->probe_module);
+        help_probe_module(xconf->probe);
         break;
 
     case Operation_ListOutputModules:

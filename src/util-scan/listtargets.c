@@ -4,7 +4,7 @@
 
 
 void
-listip(struct Xconf *xconf)
+listip(Xconf *xconf)
 {
     uint64_t i;
     uint64_t range;

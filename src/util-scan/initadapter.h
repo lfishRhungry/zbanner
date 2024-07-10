@@ -10,6 +10,6 @@
  * local routers.
  */
 int
-initialize_adapter(struct Xconf *xconf);
+initialize_adapter(Xconf *xconf);
 
 #endif

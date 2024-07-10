@@ -31,7 +31,7 @@
 #include "util-scan/throttle.h"
 
 static void
-_adapter_get_source_addresses(const struct Xconf *xconf, struct source_t *src)
+_adapter_get_source_addresses(const Xconf *xconf, struct source_t *src)
 {
     const StackSrc *ifsrc = &xconf->nic.src;
 
@@ -47,8 +47,8 @@ _adapter_get_source_addresses(const struct Xconf *xconf, struct source_t *src)
 
 void transmit_thread(void *v)
 {
-    struct TxThread             *parms                    = (struct TxThread *)v;
-    const struct Xconf          *xconf                    = parms->xconf;
+    TxThread             *parms                    = (TxThread *)v;
+    const Xconf          *xconf                    = parms->xconf;
     uint64_t                     rate                     = (uint64_t)xconf->max_rate;
     uint64_t                     count_ipv4               = rangelist_count(&xconf->targets.ipv4);
     uint64_t                     count_ipv6               = range6list_count(&xconf->targets.ipv6).lo;
@@ -220,7 +220,7 @@ infinite:;
             unsigned char pkt_buffer[PKT_BUF_SIZE];
             size_t        pkt_len = 0;
             unsigned      more    = 0;
-            more = xconf->scan_module->transmit_cb(
+            more = xconf->scanner->transmit_cb(
                 entropy, &target, tm_event, pkt_buffer, &pkt_len);
 
             /*

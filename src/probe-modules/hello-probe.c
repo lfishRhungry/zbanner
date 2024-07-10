@@ -302,7 +302,7 @@ static ConfParam hello_parameters[] = {
 extern Probe HelloProbe;
 
 static bool
-hello_global_init(const struct Xconf *xconf)
+hello_global_init(const Xconf *xconf)
 {
     if (hello_conf.hello==NULL || hello_conf.hello_len==0) {
         hello_conf.hello     = NULL;

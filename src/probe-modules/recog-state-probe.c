@@ -269,7 +269,7 @@ static ConfParam recogstate_parameters[] = {
 extern Probe RecogStateProbe;
 
 static bool
-recogstate_global_init(const struct Xconf *xconf)
+recogstate_global_init(const Xconf *xconf)
 {
     if (recogstate_conf.hello==NULL || recogstate_conf.hello_len==0) {
         recogstate_conf.hello     = NULL;
@@ -295,7 +295,7 @@ recogstate_global_init(const struct Xconf *xconf)
 
 static void
 recogstate_make_hello(
-    struct DataPass *pass,
+    DataPass *pass,
     ProbeState *state,
     ProbeTarget *target)
 {
@@ -304,7 +304,7 @@ recogstate_make_hello(
 
 static unsigned
 recogstate_parse_response(
-    struct DataPass *pass,
+    DataPass *pass,
     ProbeState *state,
     OutConf *out,
     ProbeTarget *target,

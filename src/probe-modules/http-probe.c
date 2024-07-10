@@ -511,7 +511,7 @@ static ConfParam http_parameters[] = {
 extern Probe HttpProbe;
 
 static bool
-http_global_init(const struct Xconf *xconf)
+http_global_init(const Xconf *xconf)
 {
     http_conf.req4_len = sizeof(default_http_header);
     http_conf.request4 = MALLOC(http_conf.req4_len);

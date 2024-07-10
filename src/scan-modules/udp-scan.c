@@ -48,7 +48,7 @@ static ConfParam udp_parameters[] = {
 static unsigned src_port_start;
 
 static bool
-udp_init(const struct Xconf *xconf)
+udp_init(const Xconf *xconf)
 {
     src_port_start = xconf->nic.src.port.first;
 

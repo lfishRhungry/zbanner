@@ -3,9 +3,7 @@
 
 #include "../xconf.h"
 
-struct Xconf;
-
 void
-listrange(struct Xconf *xconf);
+listrange(Xconf *xconf);
 
 #endif

@@ -40,7 +40,7 @@ static ConfParam getstate_parameters[] = {
     {0}
 };
 
-static bool getstate_global_init(const struct Xconf *xconf)
+static bool getstate_global_init(const Xconf *xconf)
 {
     LOG(LEVEL_INFO, "(GetState Probe global initing) >>>\n");
     return true;
@@ -66,7 +66,7 @@ getstate_conn_close(ProbeState *state, ProbeTarget *target)
 
 static void
 getstate_make_hello(
-    struct DataPass *pass,
+    DataPass *pass,
     ProbeState *state,
     ProbeTarget *target)
 {
@@ -78,7 +78,7 @@ getstate_make_hello(
 
 static unsigned
 getstate_parse_response(
-    struct DataPass *pass,
+    DataPass *pass,
     ProbeState *state,
     OutConf *out,
     ProbeTarget *target,

@@ -550,7 +550,7 @@ static ConfParam httpstate_parameters[] = {
 extern Probe HttpStateProbe;
 
 static bool
-http_global_init(const struct Xconf *xconf)
+http_global_init(const Xconf *xconf)
 {
     httpstate_conf.req4_len = sizeof(default_http_header);
     httpstate_conf.request4 = MALLOC(httpstate_conf.req4_len);
@@ -757,7 +757,7 @@ http_global_init(const struct Xconf *xconf)
 
 static void
 httpstate_make_hello(
-    struct DataPass *pass,
+    DataPass *pass,
     ProbeState *state,
     ProbeTarget *target)
 {
@@ -784,7 +784,7 @@ httpstate_make_hello(
 
 static unsigned
 httpstate_parse_response(
-    struct DataPass *pass,
+    DataPass *pass,
     ProbeState *state,
     OutConf *out,
     ProbeTarget *target,

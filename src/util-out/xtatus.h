@@ -7,7 +7,7 @@
 #define XTS_RATE_CACHE              8 /*must be power of 2*/
 #define XTS_ADD_SIZE               30
 
-struct XtatusItem
+typedef struct XtatusPrintItem
 {
     uint64_t       cur_count;
     uint64_t       max_count;
@@ -23,9 +23,9 @@ struct XtatusItem
     uint64_t       exiting_secs;
     char           add_status[XTS_ADD_SIZE];
     unsigned       print_in_json:1;
-};
+} XtatusItem;
 
-struct Xtatus
+typedef struct XtatusPrinter
 {
     struct {
         double   clock;
@@ -47,14 +47,14 @@ struct Xtatus
 
     uint64_t total_successed;
     uint64_t total_sent;
-};
+} Xtatus;
 
 
-void xtatus_print(struct Xtatus *xtatus, struct XtatusItem *item);
+void xtatus_print(Xtatus *xtatus, XtatusItem *item);
 
-void xtatus_finish(struct Xtatus *xtatus);
+void xtatus_finish(Xtatus *xtatus);
 
-void xtatus_start(struct Xtatus *xtatus);
+void xtatus_start(Xtatus *xtatus);
 
 
 #endif

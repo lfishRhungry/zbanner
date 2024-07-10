@@ -410,7 +410,7 @@ convert_oid(unsigned char *dst, size_t sizeof_dst, const char *src)
  ****************************************************************************/
 
 static bool
-snmp_global_init(const struct Xconf *xconf)
+snmp_global_init(const Xconf *xconf)
 {
 
     snmp_conf.mib_count = xconf->rx_handler_count;

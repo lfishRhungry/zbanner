@@ -55,15 +55,15 @@ _tsp_state_to_string(enum TSP_State state)
 }
 
 /*for internal x-ref*/
-extern Probe      TlsStateProbe;
+extern Probe            TlsStateProbe;
 /*save Output*/
 static const OutConf   *_tls_out;
 /*public SSL obj for all conn*/
-static SSL_CTX                *_general_ssl_ctx;
+static SSL_CTX         *_general_ssl_ctx;
 
 struct TlsState {
     OSSL_HANDSHAKE_STATE      handshake_state;
-    ProbeState         substate;
+    ProbeState                substate;
     unsigned char            *data;
     size_t                    data_size;
     SSL                      *ssl;
@@ -76,7 +76,7 @@ struct TlsState {
 };
 
 struct TlsStateConf {
-    Probe       *subprobe;
+    Probe                    *subprobe;
     char                     *subprobe_args;
     unsigned                  dump_subject:1;
     unsigned                  dump_version:1;
@@ -613,7 +613,7 @@ static void _extend_buffer(unsigned char **buf, size_t *buf_len)
 
 /*init public SSL_CTX*/
 static bool
-tlsstate_global_init(const struct Xconf *xconf)
+tlsstate_global_init(const Xconf *xconf)
 {
     if (tlsstate_conf.subprobe->type!=ProbeType_STATE) {
         LOG(LEVEL_ERROR, "TlsStateProbe need a subprobe in STATE type.\n");
@@ -861,7 +861,7 @@ tlsstate_conn_close(ProbeState *state, ProbeTarget *target)
 
 static void
 tlsstate_make_hello(
-    struct DataPass *pass,
+    DataPass *pass,
     ProbeState *state,
     ProbeTarget *target)
 {
@@ -929,7 +929,7 @@ error1:
 
 static unsigned
 tlsstate_parse_response(
-    struct DataPass *pass,
+    DataPass *pass,
     ProbeState *state,
     OutConf *out,
     ProbeTarget *target,
@@ -1109,7 +1109,7 @@ tlsstate_parse_response(
         //!It's time for subprobe to say hello
         case TSP_STATE_SAY_HELLO: {
 
-            struct DataPass subpass = {0};
+            DataPass subpass = {0};
             tlsstate_conf.subprobe->make_hello_cb(&subpass, &tls_state->substate, target);
 
             /**
@@ -1200,7 +1200,7 @@ tlsstate_parse_response(
                 LOG(LEVEL_DETAIL, "(TSP Parse RESPONSE: %s) SSL_read: %d\n",
                     _tsp_state_to_string(state->state), offset);
 
-                struct DataPass subpass = {0};
+                DataPass subpass = {0};
 
                 ret = tlsstate_conf.subprobe->parse_response_cb(&subpass,
                     &tls_state->substate, out, target, tls_state->data, offset);
@@ -1311,7 +1311,7 @@ Probe TlsStateProbe = {
         "NOTE: TlsState doesn't support initial waiting before hello for subprobe"
         " because the nesting.\n"
         "Dependencies: OpenSSL.",
-    .init_cb                    = &tlsstate_global_init,
+    .init_cb                           = &tlsstate_global_init,
     .conn_init_cb                      = &tlsstate_conn_init,
     .make_hello_cb                     = &tlsstate_make_hello,
     .parse_response_cb                 = &tlsstate_parse_response,

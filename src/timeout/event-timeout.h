@@ -6,12 +6,12 @@
 
 #include "../util-misc/cross.h"
 
-struct Timeouts;
+typedef struct TimeoutTables Timeouts;
 
 
 /***************************************************************************
  ***************************************************************************/
-struct TimeoutEntry {
+typedef struct TimeoutEntry {
     /**
      * In units of 1/16384 of a second. We use power-of-two units here
      * to make the "modulus" operation a simple binary "and".
@@ -29,12 +29,12 @@ struct TimeoutEntry {
      * 'offsetof()', so given a pointer to this structure, we can find
      * the original structure that contains it */
     unsigned offset;
-};
+} TmEntry;
 
 /***************************************************************************
  ***************************************************************************/
 static inline bool
-timeout_is_unlinked(const struct TimeoutEntry *entry) {
+timeout_is_unlinked(const TmEntry *entry) {
     if (entry->prev == NULL || entry->next == NULL)
         return true;
     else
@@ -44,7 +44,7 @@ timeout_is_unlinked(const struct TimeoutEntry *entry) {
 /***************************************************************************
  ***************************************************************************/
 static inline void
-timeout_unlink(struct TimeoutEntry *entry)
+timeout_unlink(TmEntry *entry)
 {
     if (entry->prev == NULL && entry->next == NULL)
         return;
@@ -62,7 +62,7 @@ timeout_unlink(struct TimeoutEntry *entry)
 /***************************************************************************
  ***************************************************************************/
 static inline void
-timeout_init(struct TimeoutEntry *entry)
+timeout_init(TmEntry *entry)
 {
     entry->next = NULL;
     entry->prev = NULL;
@@ -74,7 +74,7 @@ timeout_init(struct TimeoutEntry *entry)
  *      The current timestamp indicating "now" when the thing starts.
  *      This should be 'time(0) * TICKS_PER_SECOND'.
  */
-struct Timeouts *
+Timeouts *
 timeouts_create(uint64_t timestamp_now);
 
 /**
@@ -99,8 +99,8 @@ timeouts_create(uint64_t timestamp_now);
  *      ticks, which in units of TICKS_PER_SECOND.
  */
 void
-timeouts_add(struct Timeouts *timeouts, struct TimeoutEntry *entry,
-                  size_t offset, uint64_t timestamp_expires);
+timeouts_add(Timeouts *timeouts, TmEntry *entry,
+    size_t offset, uint64_t timestamp_expires);
 
 /**
  * Remove an object from the timestamp system that is older than than
@@ -118,7 +118,7 @@ timeouts_add(struct Timeouts *timeouts, struct TimeoutEntry *entry,
  *      if there are no more objects to be found
  */
 void *
-timeouts_remove(struct Timeouts *timeouts, uint64_t timestamp_now);
+timeouts_remove(Timeouts *timeouts, uint64_t timestamp_now);
 
 /*
  * This macros convert a normal "timeval" structure into the timestamp

@@ -251,7 +251,7 @@ static ConfParam recog_parameters[] = {
 extern Probe RecogProbe;
 
 static bool
-recog_global_init(const struct Xconf *xconf)
+recog_global_init(const Xconf *xconf)
 {
     if (recog_conf.hello==NULL || recog_conf.hello_len==0) {
         recog_conf.hello     = NULL;

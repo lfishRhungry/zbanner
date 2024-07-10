@@ -45,7 +45,7 @@
  * logic at a slot, we have to doublecheck the actual timestamp, and skip
  * those things that are further in the future.
  ***************************************************************************/
-struct Timeouts {
+struct TimeoutTables {
     /**
      * This index is a monotonically increasing number, modulus the slot_count.
      * Every time we check timeouts, we simply move it forward in time.
@@ -64,17 +64,17 @@ struct Timeouts {
     /**
      * The ring of entries, must be power of 2.
      */
-    struct TimeoutEntry *slots[EVENT_TM_SLOTS];
+    TmEntry *slots[EVENT_TM_SLOTS];
 };
 
 /***************************************************************************
  ***************************************************************************/
-struct Timeouts *
+Timeouts *
 timeouts_create(uint64_t timestamp)
 {
-    struct Timeouts *timeouts;
+    Timeouts *timeouts;
 
-    timeouts       = CALLOC(1, sizeof(struct Timeouts));
+    timeouts       = CALLOC(1, sizeof(Timeouts));
     timeouts->mask = ARRAY_SIZE(timeouts->slots)-1;
 
     /*
@@ -95,7 +95,7 @@ timeouts_create(uint64_t timestamp)
  * timeout ring.
  ***************************************************************************/
 void
-timeouts_add(struct Timeouts *timeouts, struct TimeoutEntry *entry,
+timeouts_add(Timeouts *timeouts, TmEntry *entry,
              size_t offset, uint64_t timestamp)
 {
     unsigned index;
@@ -129,9 +129,9 @@ timeouts_add(struct Timeouts *timeouts, struct TimeoutEntry *entry,
  * Remove the next event that it older than the specified timestamp
  ***************************************************************************/
 void *
-timeouts_remove(struct Timeouts *timeouts, uint64_t timestamp)
+timeouts_remove(Timeouts *timeouts, uint64_t timestamp)
 {
-    struct TimeoutEntry *entry = NULL;
+    TmEntry *entry = NULL;
 
     /* Search until we find one */
     while (timeouts->current_index <= timestamp) {

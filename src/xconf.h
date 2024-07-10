@@ -80,7 +80,7 @@ struct source_t {
  * is happenning.
  * The transmit and receive threads have only a "const" pointer to this structure.
  */
-typedef struct Xconf
+typedef struct XtateConf
 {
     /**
      * Just one network adapters that we'll use for scanning. Adapter
@@ -118,39 +118,39 @@ typedef struct Xconf
         unsigned of;
     } shard;
 
+    struct MassIP targets;
+    struct MassIP exclude;
+
     /**
      * Temporary file to echo parameters to, used for saving configuration
      * to a file
      */
-    FILE      *echo;
-    unsigned   echo_all;
+    FILE         *echo;
+    unsigned      echo_all;
 
-    STACK     *stack;
-    unsigned   stack_buf_count;
+    STACK        *stack;
+    unsigned      stack_buf_count;
 
-    char      *bpf_filter;
-    char       pcap_filename[256];
+    char         *bpf_filter;
+    char          pcap_filename[256];
 
     /**
      * template for packet making quickly.
     */
-    TmplSet   *tmplset;
-    TmplOpt   *templ_opts;
+    TmplSet      *tmplset;
+    TmplOpt      *templ_opts;
 
     /**
      * Use fast-timeout table to handle simple timeout events;
     */
-    FTable    *ft_table;
-    time_t     ft_spec;          /*timeout seconds*/
+    FTable       *ft_table;
+    time_t        ft_spec;          /*timeout seconds*/
 
-    struct MassIP targets;
-    struct MassIP exclude;
+    Probe        *probe;
+    char         *probe_args;
 
-    Probe     *probe_module;
-    char      *probe_module_args;
-
-    Scanner   *scan_module;
-    char      *scan_module_args;
+    Scanner      *scanner;
+    char         *scanner_args;
 
     /**
      * We could set the number of transmit threads.
@@ -159,8 +159,8 @@ typedef struct Xconf
      * But, we have recv-handlers in multi threads to exec handle_cb of ScanModule.
      * Now we could set the number of recv-handlers in the power of 2.
      */
-    unsigned tx_thread_count;
-    unsigned rx_handler_count;
+    unsigned      tx_thread_count;
+    unsigned      rx_handler_count;
 
     enum Operation    op;
     OutConf           out_conf;
@@ -196,9 +196,9 @@ typedef struct Xconf
 } Xconf;
 
 
-void xconf_command_line(struct Xconf *xconf, int argc, char *argv[]);
+void xconf_command_line(Xconf *xconf, int argc, char *argv[]);
 
-void xconf_save_state(struct Xconf *xconf);
+void xconf_save_state(Xconf *xconf);
 
 /**
  * Pre-scan the command-line looking for options that may affect how
@@ -209,19 +209,19 @@ bool xconf_contains(const char *x, int argc, char **argv);
 /**
  * Called to set a <name=value> pair.
  */
-void xconf_set_parameter(struct Xconf *xconf,
+void xconf_set_parameter(Xconf *xconf,
     const char *name, const char *value);
 
 /**
  * Echoes the settings to the command-line. By default, echoes only
  * non-default values. With "echo-all", everything is echoed.
  */
-void xconf_echo(struct Xconf *xconf, FILE *fp);
+void xconf_echo(Xconf *xconf, FILE *fp);
 
 /**
  * Echoes the list of CIDR ranges to scan.
  */
-void xconf_echo_cidr(struct Xconf *xconf, FILE *fp);
+void xconf_echo_cidr(Xconf *xconf, FILE *fp);
 
 void xconf_print_intro();
 

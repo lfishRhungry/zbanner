@@ -41,7 +41,7 @@ static ConfParam ndpns_parameters[] = {
 };
 
 static bool
-ndpns_init(const struct Xconf *xconf)
+ndpns_init(const Xconf *xconf)
 {
     if (xconf->targets.count_ports!=1) {
         LOG(LEVEL_ERROR, "NdpNsScan doesn't need to specify any ports.\n");
