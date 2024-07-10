@@ -9,9 +9,9 @@
 #include "util-data/safe-string.h"
 #include "util-misc/cross.h"
 #include "timeout/fast-timeout.h"
-#include "massip/massip-addr.h"
-#include "massip/massip.h"
-#include "massip/massip.h"
+#include "target/target-addr.h"
+#include "target/target-ip.h"
+#include "target/target-ip.h"
 #include "stack/stack-src.h"
 #include "stack/stack-queue.h"
 #include "output-modules/output-modules.h"
@@ -118,8 +118,8 @@ typedef struct XtateConf
         unsigned of;
     } shard;
 
-    struct MassIP targets;
-    struct MassIP exclude;
+    TargetIP targets;
+    TargetIP exclude;
 
     /**
      * Temporary file to echo parameters to, used for saving configuration

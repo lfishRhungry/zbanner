@@ -89,7 +89,7 @@ TCP pseudo header
 #include "../util-data/fine-malloc.h"
 #include "../util-data/data-convert.h"
 #include "../proto/proto-preprocess.h"
-#include "../massip/massip.h"
+#include "../target/target-ip.h"
 #include "../stub/stub-pcap-dlt.h"
 
 struct tcp_hdr_t {

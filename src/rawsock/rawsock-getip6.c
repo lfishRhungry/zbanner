@@ -14,7 +14,7 @@
 #include "rawsock.h"
 #include "../util-data/safe-string.h"
 #include "../util-out/logger.h"
-#include "../massip/massip-parse.h"
+#include "../target/target-parse.h"
 
 /*****************************************************************************
  *****************************************************************************/

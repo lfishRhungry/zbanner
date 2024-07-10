@@ -1,7 +1,11 @@
-#ifndef MASSIP_COOKIE_H
-#define MASSIP_COOKIE_H
+/*
+    Born from Masscan
+    Modified by lishRhungry 2024
+*/
+#ifndef TARGET_COOKIE_H
+#define TARGET_COOKIE_H
 #include <stdint.h>
-#include "massip-addr.h"
+#include "target-addr.h"
 
 /**
  * Create a hash of the src/dst IP/port combination. This allows us to match

@@ -13,7 +13,7 @@
 */
 #include "rawsock.h"
 #include "../util-data/safe-string.h"
-#include "../massip/massip-parse.h"
+#include "../target/target-parse.h"
 #include "../util-out/logger.h"
 
 /*****************************************************************************
@@ -127,7 +127,7 @@ again:
         for (addr = &pAdapter->IpAddressList; addr; addr = addr->Next) {
             unsigned x;
 
-            x = massip_parse_ipv4(addr->IpAddress.String);
+            x = targetip_parse_ipv4(addr->IpAddress.String);
             if (x != 0xFFFFFFFF) {
                 result = x;
                 goto end;

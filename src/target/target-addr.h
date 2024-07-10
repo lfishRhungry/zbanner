@@ -1,4 +1,8 @@
 /*
+    Born from Masscan
+    Modified by lishRhungry 2024
+*/
+/*
     Simple module for handling addresses (IPv6, IPv4, MAC).
     Also implements a 128-bit type for dealing with addresses.
 
@@ -7,8 +11,8 @@
     types defined here.
 
 */
-#ifndef MASSIP_ADDR_H
-#define MASSIP_ADDR_H
+#ifndef TARGET_ADDR_H
+#define TARGET_ADDR_H
 #include <stdint.h>
 #include <stddef.h>
 #include "../util-misc/cross.h"
@@ -43,7 +47,7 @@ typedef struct macaddress_t macaddress_t;
  * integer type (and some accompanying math functions). But it's
  * still just the same as a 128-bit integer.
  */
-typedef ipv6address massint128_t;
+typedef ipv6address int128_t;
 
 
 /**
@@ -65,7 +69,7 @@ typedef struct ipaddress ipaddress;
 static inline bool ipv6address_is_zero(ipv6address_t a) {
     return a.hi == 0 && a.lo == 0;
 }
-#define massint128_is_zero ipv6address_is_zero
+#define int128_is_zero ipv6address_is_zero
 
 /** The IPv6 address [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]
  * is invalid */
@@ -196,7 +200,7 @@ struct ipaddress_ptr ipv6address_ptr_fmt(ipv6address a);
 struct ipaddress_ptr ipv4address_ptr_fmt(ipv4address a);
 struct ipaddress_ptr ipaddress_ptr_fmt(ipaddress a);
 
-unsigned massint128_bitcount(massint128_t num);
+unsigned int128_bitcount(int128_t num);
 
 int ipv6address_selftest();
 

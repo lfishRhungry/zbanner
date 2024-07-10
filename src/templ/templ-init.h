@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "../massip/massip-addr.h"
+#include "../target/target-addr.h"
 #include "templ-pkt.h"
 
 typedef struct TemplateOptions TmplOpt;

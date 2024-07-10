@@ -5,7 +5,7 @@
 #include "../util-misc/cross.h"
 #include "../output-modules/output-modules.h"
 #include "../templ/templ-tcp.h"
-#include "../massip/massip-addr.h"
+#include "../target/target-addr.h"
 #include "../proto/proto-datapass.h"
 #include "../timeout/event-timeout.h"
 #include "../probe-modules/probe-modules.h"

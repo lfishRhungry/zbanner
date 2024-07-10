@@ -1,7 +1,7 @@
 #ifndef STACK_ARP_H
 #define STACK_ARP_H
 #include "stack-queue.h"
-#include "../massip/massip-addr.h"
+#include "../target/target-addr.h"
 
 /**
  * Response to an ARP request for our IP address.

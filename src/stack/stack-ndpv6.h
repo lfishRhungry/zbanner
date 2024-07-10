@@ -14,7 +14,7 @@
 #include <stddef.h>
 #include <time.h>
 #include "stack-queue.h"
-#include "../massip/massip-addr.h"
+#include "../target/target-addr.h"
 
 typedef struct PreprocessedInfo PreInfo;
 

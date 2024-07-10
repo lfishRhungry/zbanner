@@ -6,7 +6,7 @@
 #include "../rawsock/rawsock.h"
 #include "../util-misc/checksum.h"
 #include "../util-out/logger.h"
-#include "../massip/massip.h"
+#include "../target/target-ip.h"
 #include "../stub/stub-pcap-dlt.h"
 #include "../templ/templ-icmp.h"
 

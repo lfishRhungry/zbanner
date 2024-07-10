@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 #include "checksum.h"
-#include "../massip/massip.h"
+#include "../target/target-ip.h"
 
 /**
  * Calculates the checksum over a buffer.

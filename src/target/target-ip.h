@@ -1,12 +1,15 @@
-#ifndef MASSIP_H
-#define MASSIP_H
+/*
+    Born from Masscan
+    Modified by lishRhungry 2024
+*/
+#ifndef TARGET_IP_H
+#define TARGET_IP_H
 #include <stddef.h>
-#include "massip-rangesv4.h"
-#include "massip-rangesv6.h"
+#include "target-rangesv4.h"
+#include "target-rangesv6.h"
 
 
-
-struct MassIP {
+typedef struct Target_IPs_Ports {
     struct RangeList  ipv4;
     struct Range6List ipv6;
 
@@ -17,7 +20,7 @@ struct MassIP {
      * NOTE: TCP ports are stored 0-64k, but UDP ports are stored in the
      * range 64k-128k, thus, allowing us to scan both at the same time.
      */
-    struct RangeList  ports;
+    struct RangeList ports;
 
     /**
      * Used internally to differentiate between indexes selecting an
@@ -28,7 +31,8 @@ struct MassIP {
     uint64_t count_ports;
     uint64_t count_ipv4s;
     uint64_t count_ipv6s;
-};
+} TargetIP;
+
 
 
 /**
@@ -68,7 +72,7 @@ const char *ip_proto_to_string(unsigned ip_proto);
  * the (IPv6 addresses * IPv4 addresses * ports). This can produce
  * a 128-bit number (larger, actually).
  */
-massint128_t massip_range(struct MassIP *massip);
+int128_t targetip_range(TargetIP *targetip);
 
 /**
  * Remove everything in "targets" that's listed in the "exclude"
@@ -77,7 +81,7 @@ massint128_t massip_range(struct MassIP *massip);
  * Then, each time we run a scan with different targets, we
  * apply this policy file.
  */
-void massip_apply_excludes(struct MassIP *targets, struct MassIP *exclude);
+void targetip_apply_excludes(TargetIP *targets, TargetIP *exclude);
 
 /**
  * The last step after processing the configuration, setting up the 
@@ -85,12 +89,12 @@ void massip_apply_excludes(struct MassIP *targets, struct MassIP *exclude);
  * duplicates, and creates an optimized 'picker' system to easily
  * find an address given an index, or find an index given an address.
  */
-void massip_optimize(struct MassIP *targets);
+void targetip_optimize(TargetIP *targets);
 
 /**
  * This selects an IP+port combination given an index whose value
  * is [0..range], where 'range' is the value returned by the function
- * `massip_range()`. Since the optimization step (`massip_optimized()`)
+ * `targetip_range()`. Since the optimization step (`targetip_optimized()`)
  * sorted all addresses/ports, a monotonically increasing index will
  * list everything in sorted order. The intent, however, is to use the
  * "blackrock" algorithm to randomize the index before calling this function.
@@ -98,19 +102,19 @@ void massip_optimize(struct MassIP *targets);
  * It is this function, plus the 'blackrock' randomization algorithm, that
  * is at the heart of Xconf. 
  */
-void massip_pick(const struct MassIP *massip, uint64_t index, ipaddress *addr, unsigned *port);
+void targetip_pick(const TargetIP *targetip, uint64_t index, ipaddress *addr, unsigned *port);
 
 
-bool massip_has_ip(const struct MassIP *massip, ipaddress ip);
+bool targetip_has_ip(const TargetIP *targetip, ipaddress ip);
 
-bool massip_has_port(const struct MassIP *massip, unsigned port);
+bool targetip_has_port(const TargetIP *targetip, unsigned port);
 
-int massip_add_target_string(struct MassIP *massip, const char *string);
+int targetip_add_target_string(TargetIP *targetip, const char *string);
 
 /**
  * Parse the string contain port specifier.
  */
-int massip_add_port_string(struct MassIP *massip, const char *string, unsigned proto);
+int targetip_add_port_string(TargetIP *targetip, const char *string, unsigned proto);
 
 
 /**
@@ -119,8 +123,8 @@ int massip_add_port_string(struct MassIP *massip, const char *string, unsigned p
  * @return true if there are IPv4 targets to be scanned, false
  * otherwise
  */
-bool massip_has_ipv4_targets(const struct MassIP *massip);
-bool massip_has_target_ports(const struct MassIP *massip);
+bool targetip_has_ipv4_targets(const TargetIP *targetip);
+bool targetip_has_target_ports(const TargetIP *targetip);
 
 /**
  * Indicates whether there are IPv6 targets. If so, we'll have to 
@@ -128,8 +132,8 @@ bool massip_has_target_ports(const struct MassIP *massip);
  * @return true if there are IPv6 targets to be scanned, false
  * otherwise
  */
-bool massip_has_ipv6_targets(const struct MassIP *massip);
+bool targetip_has_ipv6_targets(const TargetIP *targetip);
 
-int massip_selftest();
+int targetip_selftest();
 
 #endif

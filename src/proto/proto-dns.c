@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "../massip/massip-parse.h"
+#include "../target/target-parse.h"
 #include "../util-data/data-convert.h"
 #include "../util-data/safe-string.h"
 

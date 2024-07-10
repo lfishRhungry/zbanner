@@ -8,8 +8,8 @@
 #include "../util-data/data-chain.h"
 #include "../util-misc/configer.h"
 #include "../util-misc/cross.h"
-#include "../massip/massip.h"
-#include "../massip/massip-addr.h"
+#include "../target/target-ip.h"
+#include "../target/target-addr.h"
 
 #define OUT_RSN_SIZE          30
 #define OUT_CLS_SIZE          30

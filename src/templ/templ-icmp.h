@@ -3,7 +3,7 @@
 
 #include "templ-pkt.h"
 #include "../util-misc/cross.h"
-#include "../massip/massip-addr.h"
+#include "../target/target-addr.h"
 #include "../proto/proto-preprocess.h"
 
 /**

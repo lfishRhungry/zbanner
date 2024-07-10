@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #include "cross.h"
-#include "../massip/massip-addr.h"
+#include "../target/target-addr.h"
 
 typedef enum Config_RES {
     Conf_OK,

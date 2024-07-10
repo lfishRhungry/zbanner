@@ -14,7 +14,7 @@
 
  ****************************************************************************/
 #include "proto-preprocess.h"
-#include "../massip/massip.h"
+#include "../target/target-ip.h"
 #include "../util-data/data-convert.h"
 #include "../stub/stub-pcap-dlt.h"
 #include "../templ/templ-icmp.h"

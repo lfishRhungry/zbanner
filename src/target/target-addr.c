@@ -1,4 +1,4 @@
-#include "massip-addr.h"
+#include "target-addr.h"
 #include <string.h>
 
 
@@ -371,7 +371,7 @@ static unsigned _count_long(uint64_t number)
  * We use this to count the size of scans. We currently only support
  * scan sizes up to 63 bits.
  */
-unsigned massint128_bitcount(massint128_t number)
+unsigned int128_bitcount(int128_t number)
 {
     if (number.hi)
         return _count_long(number.hi) + 64;

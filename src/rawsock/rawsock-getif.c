@@ -402,7 +402,7 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname)
 
 #include <winsock2.h>
 #include <iphlpapi.h>
-#include "../massip/massip-parse.h"
+#include "../target/target-parse.h"
 
 #ifdef _MSC_VER
 #pragma comment(lib, "IPHLPAPI.lib")
@@ -466,7 +466,7 @@ again:
             for (addr = &pAdapter->GatewayList; addr; addr = addr->Next) {
                 unsigned x;
 
-                x = massip_parse_ipv4(addr->IpAddress.String);
+                x = targetip_parse_ipv4(addr->IpAddress.String);
                 if (x != 0xFFFFFFFF) {
                     ipv4 = x;
                     break;

@@ -1,3 +1,7 @@
+/*
+    Born from Masscan
+    Modified by lishRhungry 2024
+*/
 #ifndef RANGES_H
 #define RANGES_H
 #include <stdint.h>

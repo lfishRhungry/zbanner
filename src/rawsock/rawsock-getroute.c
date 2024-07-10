@@ -7,7 +7,7 @@
 #include "rawsock.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
-#include "../massip/massip-parse.h"
+#include "../target/target-parse.h"
 #include "../util-out/logger.h"
 
 #if defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__sun__)
@@ -547,7 +547,7 @@ again:
             const IP_ADDR_STRING *addr;
 
             for (addr = &pAdapter->GatewayList; addr; addr = addr->Next) {
-                unsigned x = massip_parse_ipv4(addr->IpAddress.String);
+                unsigned x = targetip_parse_ipv4(addr->IpAddress.String);
                 if (x != 0xFFFFFFFF) {
                     *ipv4 = x;
                     goto end;

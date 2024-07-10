@@ -1,6 +1,6 @@
-#include "massip.h"
-#include "massip-rangesport.h"
-#include "massip-rangesv4.h"
+#include "target-ip.h"
+#include "target-rangesport.h"
+#include "target-rangesv4.h"
 
 #include "../util-out/logger.h"
 
@@ -94,7 +94,7 @@ rangelist_parse_ports(struct RangeList *ports, const char *string,
             p++;
             if (!isdigit(*p)) {
                 /* nmap style range spec meaning end with 65535 */
-                end = MASSIP_PORT_SPEC;
+                end = TARGET_PORT_SPEC;
             } else {
                 end = (unsigned)strtoul(p, &p, 0);
             }
@@ -102,7 +102,7 @@ rangelist_parse_ports(struct RangeList *ports, const char *string,
             end = port;
 
         /* Check for out-of-range */
-        if (port > MASSIP_PORT_SPEC || end > MASSIP_PORT_SPEC || end < port) {
+        if (port > TARGET_PORT_SPEC || end > TARGET_PORT_SPEC || end < port) {
             LOG(LEVEL_ERROR, "bad port range: %s\n", string);
             *is_error = 2;
             return p;
@@ -145,7 +145,7 @@ get_actual_proto_port(unsigned *raw_port)
 
 int rangesport_selftest()
 {
-    struct MassIP targets = {.ipv4={0}, .ipv6={0}, .ports={0}};
+    TargetIP targets = {.ipv4={0}, .ipv6={0}, .ports={0}};
 
     unsigned err;
     int line;

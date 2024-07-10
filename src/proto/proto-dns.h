@@ -18,7 +18,7 @@
 #include <ctype.h>
 #include <stdio.h>
 
-#include "../massip/massip-addr.h"
+#include "../target/target-addr.h"
 #include "../util-misc/cross.h"
 #include "../pixie/pixie-sockets.h"
 

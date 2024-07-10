@@ -1,9 +1,13 @@
-#ifndef MASSIP_RANGESPORT_H
-#define MASSIP_RANGESPORT_H
+/*
+    Born from Masscan
+    Modified by lishRhungry 2024
+*/
+#ifndef TARGET_RANGESPORT_H
+#define TARGET_RANGESPORT_H
 
 struct RangeList;
 
-#define MASSIP_PORT_SPEC 65535
+#define TARGET_PORT_SPEC 65535
 
 /*
  * Ports are 16-bit numbers ([0..65535], but different
@@ -14,14 +18,14 @@ struct RangeList;
  * things we scan for, such as ICMP pings or ARP requests.
  */
 enum Proto_Port_range{
-    Range_TCP                = (MASSIP_PORT_SPEC+1)*0,
-    Range_TCP_last           = (MASSIP_PORT_SPEC+1)*0 + MASSIP_PORT_SPEC,
-    Range_UDP                = (MASSIP_PORT_SPEC+1)*1,
-    Range_UDP_last           = (MASSIP_PORT_SPEC+1)*1 + MASSIP_PORT_SPEC,
-    Range_SCTP               = (MASSIP_PORT_SPEC+1)*2,
-    Range_SCTP_last          = (MASSIP_PORT_SPEC+1)*2 + MASSIP_PORT_SPEC,
-    Range_Oproto             = (MASSIP_PORT_SPEC+1)*3,
-    Range_Oproto_last        = (MASSIP_PORT_SPEC+1)*3 + MASSIP_PORT_SPEC,
+    Range_TCP                = (TARGET_PORT_SPEC+1)*0,
+    Range_TCP_last           = (TARGET_PORT_SPEC+1)*0 + TARGET_PORT_SPEC,
+    Range_UDP                = (TARGET_PORT_SPEC+1)*1,
+    Range_UDP_last           = (TARGET_PORT_SPEC+1)*1 + TARGET_PORT_SPEC,
+    Range_SCTP               = (TARGET_PORT_SPEC+1)*2,
+    Range_SCTP_last          = (TARGET_PORT_SPEC+1)*2 + TARGET_PORT_SPEC,
+    Range_Oproto             = (TARGET_PORT_SPEC+1)*3,
+    Range_Oproto_last        = (TARGET_PORT_SPEC+1)*3 + TARGET_PORT_SPEC,
 };
 
 void

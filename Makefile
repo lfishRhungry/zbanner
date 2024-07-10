@@ -98,8 +98,8 @@ tmp/%.o: \
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
-	src/massip/%.c \
-	src/massip/*.h
+	src/target/%.c \
+	src/target/*.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 tmp/%.o: \
@@ -201,7 +201,7 @@ tmp/%.o: \
 SRC = $(sort $(wildcard \
 	src/*.c \
 	src/crypto/*.c \
-	src/massip/*.c \
+	src/target/*.c \
 	src/pixie/*.c \
 	src/proto/*.c \
 	src/rawsock/*.c \

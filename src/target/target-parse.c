@@ -1,5 +1,5 @@
 /*
-    massip-parse
+    targetip-parse
 
     This module parses IPv4 and IPv6 addresses.
 
@@ -7,10 +7,10 @@
     files containing millions of addresses and ranges using a 
     "state-machine parser".
 */
-#include "massip.h"
-#include "massip-parse.h"
-#include "massip-rangesv4.h"
-#include "massip-rangesv6.h"
+#include "target-ip.h"
+#include "target-parse.h"
+#include "target-rangesv4.h"
+#include "target-rangesv6.h"
 #include "../util-out/logger.h"
 #include "../util-misc/cross.h"
 #include "../util-data/fine-malloc.h"
@@ -18,7 +18,7 @@
 
 #include <string.h>
 
-struct massip_parser
+struct targetip_parser
 {
     unsigned long long line_number;
     unsigned long long char_number;
@@ -41,8 +41,8 @@ struct massip_parser
 
 /***************************************************************************
  ***************************************************************************/
-static struct massip_parser *
-_parser_init(struct massip_parser *p)
+static struct targetip_parser *
+_parser_init(struct targetip_parser *p)
 {
     memset(p, 0, sizeof(*p));
     p->line_number = 1;
@@ -53,7 +53,7 @@ _parser_init(struct massip_parser *p)
 /***************************************************************************
  ***************************************************************************/
 static void
-_parser_destroy(struct massip_parser *p)
+_parser_destroy(struct targetip_parser *p)
 {
     UNUSEDPARM(p);
 }
@@ -61,7 +61,7 @@ _parser_destroy(struct massip_parser *p)
 /***************************************************************************
  ***************************************************************************/
 static void
-_parser_err(struct massip_parser *p, unsigned long long *line_number, unsigned long long *charindex)
+_parser_err(struct targetip_parser *p, unsigned long long *line_number, unsigned long long *charindex)
 {
     *line_number = p->line_number;
     *charindex = p->char_number;
@@ -73,7 +73,7 @@ _parser_err(struct massip_parser *p, unsigned long long *line_number, unsigned l
  * address
  */
 static void
-_init_next_address(struct massip_parser *p, int is_second)
+_init_next_address(struct targetip_parser *p, int is_second)
 {
     p->tmp = 0;
     p->ipv6.ellision_index = 8;
@@ -86,7 +86,7 @@ _init_next_address(struct massip_parser *p, int is_second)
 
 
 static unsigned
-_parser_finish_ipv6(struct massip_parser *p)
+_parser_finish_ipv6(struct targetip_parser *p)
 {
     unsigned index    = p->ipv6.index;
     unsigned ellision = p->ipv6.ellision_index;
@@ -142,7 +142,7 @@ _parser_finish_ipv6(struct massip_parser *p)
  * state into discrete values.
  ***************************************************************************/
 static void
-_parser_get_ipv6(struct massip_parser *state, ipv6address *begin, ipv6address *end)
+_parser_get_ipv6(struct targetip_parser *state, ipv6address *begin, ipv6address *end)
 {
     *begin = state->ipv6._begin;
     *end = state->ipv6._end;
@@ -169,7 +169,7 @@ enum parser_state_t {
  * parsing an IPv4 address to the middle of parsing an IPv6 address.
  ***************************************************************************/
 static int
-_switch_to_ipv6(struct massip_parser *p, int old_state)
+_switch_to_ipv6(struct targetip_parser *p, int old_state)
 {
     unsigned num = p->tmp;
 
@@ -271,7 +271,7 @@ _ipv6_apply_cidr(ipv6address *begin, ipv6address *end, unsigned prefix)
  * 'state-machine parser'.
  ***************************************************************************/
 static enum {Still_Working, Found_Error, Found_IPv4, Found_IPv6}
-_parser_next(struct massip_parser *p, const char *buf, size_t *r_offset, size_t length,
+_parser_next(struct targetip_parser *p, const char *buf, size_t *r_offset, size_t length,
                 unsigned *r_begin, unsigned *r_end)
 { 
     size_t i;
@@ -771,7 +771,7 @@ rangefile_test_error(const char *buf, unsigned long long in_line_number, unsigne
 {
     size_t length = strlen(buf);
     size_t offset = 0;
-    struct massip_parser p[1];
+    struct targetip_parser p[1];
     unsigned out_begin = 0xa3a3a3a3;
     unsigned out_end  = 0xa3a3a3a3;
     unsigned long long out_line_number;
@@ -818,11 +818,11 @@ fail:
 /***************************************************************************
  ***************************************************************************/
 int
-massip_parse_file(struct MassIP *massip, const char *filename)
+targetip_parse_file(TargetIP *targetip, const char *filename)
 {
-    struct RangeList *targets_ipv4 = &massip->ipv4;
-    struct Range6List *targets_ipv6 = &massip->ipv6;
-    struct massip_parser p[1];
+    struct RangeList *targets_ipv4 = &targetip->ipv4;
+    struct Range6List *targets_ipv6 = &targetip->ipv6;
+    struct targetip_parser p[1];
     char buf[65536];
     FILE *fp = NULL;
     bool is_error = false;
@@ -955,9 +955,9 @@ massip_parse_file(struct MassIP *massip, const char *filename)
 
 
 ipv6address
-massip_parse_ipv6(const char *line)
+targetip_parse_ipv6(const char *line)
 {
-    struct massip_parser p[1];
+    struct targetip_parser p[1];
     size_t count = strlen(line);
     size_t offset = 0;
     int err;
@@ -1003,9 +1003,9 @@ fail:
 }
 
 unsigned
-massip_parse_ipv4(const char *line)
+targetip_parse_ipv4(const char *line)
 {
-    struct massip_parser p[1];
+    struct targetip_parser p[1];
     size_t count = strlen(line);
     size_t offset = 0;
     int err;
@@ -1047,14 +1047,14 @@ fail:
 }
 
 ipaddress
-massip_parse_ip(const char *line)
+targetip_parse_ip(const char *line)
 {
     ipaddress out;
     out.version = 0;
 
-    out.ipv4 = massip_parse_ipv4(line);
+    out.ipv4 = targetip_parse_ipv4(line);
     if (out.ipv4 == ~0) {
-        out.ipv6 = massip_parse_ipv6(line);
+        out.ipv6 = targetip_parse_ipv6(line);
         if (out.ipv6.hi==~0 && out.ipv6.lo==~0) {
             return out;
         } else {
@@ -1068,9 +1068,9 @@ massip_parse_ip(const char *line)
 }
 
 enum RangeParseResult
-massip_parse_range(const char *line, size_t *offset, size_t count, struct Range *ipv4, struct Range6 *ipv6)
+targetip_parse_range(const char *line, size_t *offset, size_t count, struct Range *ipv4, struct Range6 *ipv6)
 {
-    struct massip_parser p[1];
+    struct targetip_parser p[1];
     int err;
     unsigned begin, end;
     size_t tmp_offset = 0;
@@ -1130,7 +1130,7 @@ again:
  * commas and spaces.
  */
 static int
-selftest_massip_parse_range(void)
+selftest_targetip_parse_range(void)
 {
     struct testcases {
         const char *line;
@@ -1155,11 +1155,11 @@ selftest_massip_parse_range(void)
 
         while (offset < length) {
             int x;
-            x = massip_parse_range(cases[i].line, &offset, length, &range4, &range6);
+            x = targetip_parse_range(cases[i].line, &offset, length, &range4, &range6);
             switch (x) {
                 default:
                 case Bad_Address:
-                    LOG(LEVEL_ERROR, "selftest_massip_parse_range[%u] fail\n", (unsigned)i);
+                    LOG(LEVEL_ERROR, "selftest_targetip_parse_range[%u] fail\n", (unsigned)i);
                     return 1;
                 case Ipv4_Address:
                     if (cases[i].list[j].ipv4.begin != range4.begin
@@ -1174,7 +1174,7 @@ selftest_massip_parse_range(void)
                                 (unsigned char)(range4.end>> 8),
                                 (unsigned char)(range4.end>> 0)
                                 );
-                        LOG(LEVEL_ERROR, "selftest_massip_parse_range[%u] fail\n", (unsigned)i);
+                        LOG(LEVEL_ERROR, "selftest_targetip_parse_range[%u] fail\n", (unsigned)i);
                         return 1;
                     }
                     break;
@@ -1184,7 +1184,7 @@ selftest_massip_parse_range(void)
 
         /* Make sure we have found all the expected cases */
         if (cases[i].list[j].ipv4.begin != 0) {
-            LOG(LEVEL_ERROR, "selftest_massip_parse_range[%u] fail\n", (unsigned)i);
+            LOG(LEVEL_ERROR, "selftest_targetip_parse_range[%u] fail\n", (unsigned)i);
             return 1;
         }
     }
@@ -1195,7 +1195,7 @@ selftest_massip_parse_range(void)
 /***************************************************************************
  ***************************************************************************/
 static int
-rangefile6_test_buffer(struct massip_parser *parser,
+rangefile6_test_buffer(struct targetip_parser *parser,
                        const char *buf,
                        ipv6address expected_begin,
                        ipv6address expected_end)
@@ -1289,11 +1289,11 @@ struct {
     {0,{0,0},{0,0}}
 };
 
-int massip_parse_selftest()
+int targetip_parse_selftest()
 {
     int x = 0;
     size_t i;
-    struct massip_parser parser[1];
+    struct targetip_parser parser[1];
 
 
     /* Run through the test cases, stopping at the first failure */
@@ -1312,7 +1312,7 @@ int massip_parse_selftest()
 
 
     /* First, do the single line test */
-    x += selftest_massip_parse_range();
+    x += selftest_targetip_parse_range();
     if (x)
         return x;
 

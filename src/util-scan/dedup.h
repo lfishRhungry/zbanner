@@ -1,6 +1,10 @@
+/*
+    Born from Masscan
+    Modified by lishRhungry 2024
+*/
 #ifndef DEDUP_H
 #define DEDUP_H
-#include "../massip/massip-addr.h"
+#include "../target/target-addr.h"
 #include "../util-misc/cross.h"
 
 typedef struct DeduplicateTable DedupTable;

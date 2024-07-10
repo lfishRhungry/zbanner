@@ -3,7 +3,7 @@
 
 #include "scan-modules.h"
 #include "../xconf.h"
-#include "../massip/massip-cookie.h"
+#include "../target/target-cookie.h"
 #include "../templ/templ-arp.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"

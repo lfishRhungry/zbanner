@@ -3,7 +3,7 @@
 
 #include "templ-icmp.h"
 #include "../globals.h"
-#include "../massip/massip.h"
+#include "../target/target-ip.h"
 #include "../util-misc/checksum.h"
 #include "../util-data/data-convert.h"
 

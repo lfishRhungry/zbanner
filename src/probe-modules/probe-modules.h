@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-#include "../massip/massip-addr.h"
+#include "../target/target-addr.h"
 #include "../output-modules/output-modules.h"
 #include "../util-misc/configer.h"
 #include "../util-misc/cross.h"

@@ -1,5 +1,9 @@
+/*
+    Born from Masscan
+    Modified by lishRhungry 2024
+*/
 #include "dedup.h"
-#include "../massip/massip-cookie.h"
+#include "../target/target-cookie.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-out/logger.h"
 

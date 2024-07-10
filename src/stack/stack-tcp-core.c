@@ -75,8 +75,8 @@
 
 #include "stack-queue.h"
 #include "stack-src.h"
-#include "../massip/massip.h"
-#include "../massip/massip-cookie.h"
+#include "../target/target-ip.h"
+#include "../target/target-cookie.h"
 #include "../timeout/event-timeout.h"
 #include "../rawsock/rawsock.h"
 #include "../util-out/logger.h"

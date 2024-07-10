@@ -5,13 +5,13 @@
 #include <string.h>
 #include <time.h>
 
-#include "massip/massip-cookie.h"
+#include "target/target-cookie.h"
 #include "globals.h"
 #include "xconf.h"
 #include "version.h"
 
-#include "massip/massip-parse.h"
-#include "massip/massip-rangesport.h"
+#include "target/target-parse.h"
+#include "target/target-rangesport.h"
 
 #include "templ/templ-init.h"
 

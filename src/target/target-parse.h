@@ -1,5 +1,9 @@
 /*
-    massip-parse
+    Born from Masscan
+    Modified by lishRhungry 2024
+*/
+/*
+    target-parse
 
     This module parses IPv4 and IPv6 addresses.
 
@@ -7,11 +11,11 @@
     files containing millions of addresses and ranges using a 
     "state-machine parser".
 */
-#ifndef MASSIP_PARSE_H
-#define MASSIP_PARSE_H
-#include "massip-addr.h"
+#ifndef TARGET_PARSE_H
+#define TARGET_PARSE_H
+#include "target-addr.h"
 
-struct MassIP;
+typedef struct Target_IPs_Ports TargetIP;
 struct Range;
 struct Range6;
 
@@ -31,7 +35,7 @@ struct Range6;
         0 on success, any other number on failure.
  */
 int
-massip_parse_file(struct MassIP *massip, const char *filename);
+targetip_parse_file(TargetIP *targetip, const char *filename);
 
 
 enum RangeParseResult {
@@ -45,7 +49,7 @@ enum RangeParseResult {
  * when parsing strings from the command-line.
  */
 enum RangeParseResult
-massip_parse_range(const char *line, size_t *inout_offset, size_t max, struct Range *ipv4, struct Range6 *ipv6);
+targetip_parse_range(const char *line, size_t *inout_offset, size_t max, struct Range *ipv4, struct Range6 *ipv6);
 
 
 
@@ -55,18 +59,18 @@ massip_parse_range(const char *line, size_t *inout_offset, size_t max, struct Ra
  * the local network adapters.
  */
 ipv6address_t
-massip_parse_ipv6(const char *buf);
+targetip_parse_ipv6(const char *buf);
 
 ipv4address_t
-massip_parse_ipv4(const char *buf);
+targetip_parse_ipv4(const char *buf);
 
 /**
  * got version 0 if failed
 */
 ipaddress
-massip_parse_ip(const char *line);
+targetip_parse_ip(const char *line);
 
-int massip_parse_selftest();
+int targetip_parse_selftest();
 
 #endif
 

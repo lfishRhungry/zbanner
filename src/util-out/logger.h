@@ -1,6 +1,6 @@
 #ifndef LOGGER_H
 #define LOGGER_H
-#include "../massip/massip-addr.h"
+#include "../target/target-addr.h"
 
 /**
  * Output warning level at least in default

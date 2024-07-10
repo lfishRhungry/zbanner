@@ -14,8 +14,8 @@
 #include "stub/stub-pcap.h"
 #include "templ/templ-init.h"
 
-#include "massip/massip-cookie.h"
-#include "massip/massip-parse.h"
+#include "target/target-cookie.h"
+#include "target/target-parse.h"
 
 #include "rawsock/rawsock-adapter.h"
 #include "rawsock/rawsock.h"
@@ -626,12 +626,12 @@ int main(int argc, char *argv[]) {
 
     rawsock_init();
 
-    has_target_addresses = massip_has_ipv4_targets(&xconf->targets) ||
-                           massip_has_ipv6_targets(&xconf->targets);
-    has_target_ports     = massip_has_target_ports(&xconf->targets);
-    massip_apply_excludes(&xconf->targets, &xconf->exclude);
+    has_target_addresses = targetip_has_ipv4_targets(&xconf->targets) ||
+                           targetip_has_ipv6_targets(&xconf->targets);
+    has_target_ports     = targetip_has_target_ports(&xconf->targets);
+    targetip_apply_excludes(&xconf->targets, &xconf->exclude);
     if (!has_target_ports) {
-        massip_add_port_string(&xconf->targets, "o:0", 0);
+        targetip_add_port_string(&xconf->targets, "o:0", 0);
 
         // LOG(LEVEL_HINT, "NOTE: no ports were specified, use default other proto port 0.\n");
         // LOG(LEVEL_HINT, " ignored if the ScanModule does not need port. (eg. "
@@ -643,15 +643,15 @@ int main(int argc, char *argv[]) {
      * of walking large memory tables. When we scan the entire Internet
      * our --excludefile will chop up our pristine 0.0.0.0/0 range into
      * hundreds of subranges. This allows us to grab addresses faster. */
-    massip_optimize(&xconf->targets);
+    targetip_optimize(&xconf->targets);
 
     /* FIXME: we only support 63-bit scans at the current time.
      */
-    if (massint128_bitcount(massip_range(&xconf->targets)) > 63) {
+    if (int128_bitcount(targetip_range(&xconf->targets)) > 63) {
         LOG(LEVEL_ERROR,
             "scan range too large, max is 63-bits, requested is %u "
             "bits\n",
-            massint128_bitcount(massip_range(&xconf->targets)));
+            int128_bitcount(targetip_range(&xconf->targets)));
         LOG(LEVEL_HINT,
             "scan range is number of IP addresses times "
             "number of ports\n");
@@ -666,7 +666,7 @@ int main(int argc, char *argv[]) {
 
     case Operation_Scan:
         if (rangelist_count(&xconf->targets.ipv4) == 0 &&
-            massint128_is_zero(range6list_count(&xconf->targets.ipv6))) {
+            int128_is_zero(range6list_count(&xconf->targets.ipv6))) {
             LOG(LEVEL_ERROR, "target IP address list empty\n");
             if (has_target_addresses) {
                 LOG(LEVEL_ERROR, "all addresses were removed by exclusion ranges\n");

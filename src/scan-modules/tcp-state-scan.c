@@ -4,7 +4,7 @@
 #include "scan-modules.h"
 #include "../xconf.h"
 #include "../version.h"
-#include "../massip/massip-cookie.h"
+#include "../target/target-cookie.h"
 #include "../templ/templ-tcp.h"
 #include "../stack/stack-tcp-core.h"
 #include "../util-data/safe-string.h"

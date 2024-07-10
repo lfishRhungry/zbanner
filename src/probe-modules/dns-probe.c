@@ -1,6 +1,6 @@
 #include "probe-modules.h"
 #include "../proto/proto-dns.h"
-#include "../massip/massip-parse.h"
+#include "../target/target-parse.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/data-convert.h"
@@ -23,7 +23,7 @@ static ConfRes SET_ptr(void *conf, const char *name, const char *value)
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    ipaddress ip = massip_parse_ip(value);
+    ipaddress ip = targetip_parse_ip(value);
     if (ip.version==0) {
         LOG(LEVEL_ERROR, "PTR request ip is invalid: %s.\n", value);
         return Conf_ERR;

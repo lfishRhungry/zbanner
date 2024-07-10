@@ -1,11 +1,15 @@
 /*
+    Born from Masscan
+    Modified by lishRhungry 2024
+*/
+/*
     List of IPv6 ranges.
 
     Sames as the "ranges.h" module, but for IPv6 instead of IPv4.
 */
 #ifndef RANGES6_H
 #define RANGES6_H
-#include "massip-addr.h"
+#include "target-addr.h"
 #include <stdio.h>
 #include <stdint.h>
 struct Range;
@@ -115,7 +119,7 @@ range6list_exclude( struct Range6List *targets,
  * @return
  *      The total number of address or ports.
  */
-massint128_t
+int128_t
 range6list_count(const struct Range6List *targets);
 
 /**

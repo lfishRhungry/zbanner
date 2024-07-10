@@ -1,12 +1,12 @@
 /*
     for tracking IP/port ranges
 */
-#include "massip-rangesv6.h"
-#include "massip-rangesv4.h"
+#include "target-rangesv6.h"
+#include "target-rangesv4.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-out/logger.h"
-#include "massip.h"
-#include "massip-parse.h"
+#include "target-ip.h"
+#include "target-parse.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -49,10 +49,10 @@ _int128_add64(const ipv6address lhs, uint64_t rhs)
     return result;
 }
 
-static inline massint128_t
-_int128_mult64(massint128_t lhs, uint64_t rhs)
+static inline int128_t
+_int128_mult64(int128_t lhs, uint64_t rhs)
 {
-    massint128_t result = {0,0};
+    int128_t result = {0,0};
     uint64_t x;
     uint64_t b;
     uint64_t a;
@@ -161,15 +161,15 @@ static ipv6address PLUS_ONE(const ipv6address ip)
 
 /***************************************************************************
  ***************************************************************************/
-massint128_t 
-massip_range(struct MassIP *massip)
+int128_t 
+targetip_range(TargetIP *targetip)
 {
-    massint128_t result;
+    int128_t result;
 
 
-    result = range6list_count(&massip->ipv6);
-    result = _int128_add64(result, rangelist_count(&massip->ipv4));
-    result = _int128_mult64(result, rangelist_count(&massip->ports));
+    result = range6list_count(&targetip->ipv6);
+    result = _int128_add64(result, rangelist_count(&targetip->ipv4));
+    result = _int128_mult64(result, rangelist_count(&targetip->ports));
 
     return result;
 }
@@ -482,7 +482,7 @@ range6list_exclude(  struct Range6List *targets,
 
 /***************************************************************************
  ***************************************************************************/
-massint128_t
+int128_t
 range6list_count(const struct Range6List *targets)
 {
     unsigned i;
@@ -687,7 +687,7 @@ int ranges6_selftest()
 
 #define ERROR() LOG(LEVEL_ERROR, "selftest: failed %s:%u\n", __FILE__, __LINE__);
 
-    err = massip_parse_range("2001:0db8:85a3:0000:0000:8a2e:0370:7334", 0, 0, 0, &r);
+    err = targetip_parse_range("2001:0db8:85a3:0000:0000:8a2e:0370:7334", 0, 0, 0, &r);
     if (err != Ipv6_Address)
         ERROR();
 

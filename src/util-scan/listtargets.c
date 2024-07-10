@@ -16,13 +16,13 @@ listip(Xconf *xconf)
 
     /* If called with no ports, then create a pseudo-port needed
      * for the internal algorithm. */
-    if (!massip_has_target_ports(&xconf->targets))
-        massip_add_port_string(&xconf->targets, "o:0", 0);
-    massip_optimize(&xconf->targets);
+    if (!targetip_has_target_ports(&xconf->targets))
+        targetip_add_port_string(&xconf->targets, "o:0", 0);
+    targetip_optimize(&xconf->targets);
 
     /* The "range" is the total number of IP/port combinations that
      * the scan can produce */
-    range = massip_range(&xconf->targets).lo;
+    range = targetip_range(&xconf->targets).lo;
 
 
 infinite:
@@ -41,7 +41,7 @@ infinite:
 
         xXx = blackrock_shuffle(&blackrock,  i);
 
-        massip_pick(&xconf->targets, xXx, &addr, &port);
+        targetip_pick(&xconf->targets, xXx, &addr, &port);
 
         ip_proto = get_actual_proto_port(&port);
 

@@ -18,7 +18,7 @@
 #ifndef RSTFILTER_H
 #define RSTFILTER_H
 #include <stdio.h>
-#include "../massip/massip-addr.h"
+#include "../target/target-addr.h"
 
 struct ResetFilter;
 

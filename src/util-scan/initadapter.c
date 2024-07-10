@@ -26,8 +26,8 @@ initialize_adapter(Xconf *xconf)
     char                     ifname2[256];
     unsigned                 adapter_ip        = 0;
     AdapterCache     *tmp_acache        = rawsock_init_cache(false);
-    unsigned                 is_usable_ipv4    = !massip_has_ipv4_targets(&xconf->targets);
-    unsigned                 is_usable_ipv6    = !massip_has_ipv6_targets(&xconf->targets);
+    unsigned                 is_usable_ipv4    = !targetip_has_ipv4_targets(&xconf->targets);
+    unsigned                 is_usable_ipv6    = !targetip_has_ipv6_targets(&xconf->targets);
 
     /*
      * ADAPTER/NETWORK-INTERFACE
@@ -109,7 +109,7 @@ initialize_adapter(Xconf *xconf)
     /*
      * IPv4 ADDRESS
      */
-    if (massip_has_ipv4_targets(&xconf->targets)) {
+    if (targetip_has_ipv4_targets(&xconf->targets)) {
         adapter_ip = xconf->nic.src.ipv4.first;
         if (adapter_ip == 0) {
             adapter_ip                        = rawsock_get_adapter_ip(ifname);
@@ -125,7 +125,7 @@ initialize_adapter(Xconf *xconf)
             LOG(LEVEL_ERROR, "    did you spell the name correctly?\n");
             LOG(LEVEL_ERROR, "    if it has no IP address, manually set with something like "
                             "\"--source-ip 198.51.100.17\"\n");
-            if (massip_has_ipv4_targets(&xconf->targets)) {
+            if (targetip_has_ipv4_targets(&xconf->targets)) {
                 rawsock_close_cache(tmp_acache);
                 return -1;
             }
@@ -191,7 +191,7 @@ initialize_adapter(Xconf *xconf)
     /*
      * IPv6 ADDRESS
      */
-    if (massip_has_ipv6_targets(&xconf->targets)) {
+    if (targetip_has_ipv6_targets(&xconf->targets)) {
         ipv6address adapter_ipv6 = xconf->nic.src.ipv6.first;
         if (ipv6address_is_zero(adapter_ipv6)) {
             adapter_ipv6                       = rawsock_get_adapter_ipv6(ifname);

@@ -8,7 +8,7 @@
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
 #include "../nmap/nmap-service.h"
-#include "../massip/massip.h"
+#include "../target/target-ip.h"
 
 /*for internal x-ref*/
 extern Probe NmapTcpProbe;

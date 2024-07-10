@@ -1,6 +1,6 @@
 #ifndef STACK_SOURCE_H
 #define STACK_SOURCE_H
-#include "../massip/massip-addr.h"
+#include "../target/target-addr.h"
 
 /**
  * These the source IP addresses that we'll be spoofing. IP addresses

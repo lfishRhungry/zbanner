@@ -1,6 +1,6 @@
 #ifndef TEMPL_OPTS_H
 #define TEMPL_OPTS_H
-#include "../massip/massip-addr.h"
+#include "../target/target-addr.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4214)
