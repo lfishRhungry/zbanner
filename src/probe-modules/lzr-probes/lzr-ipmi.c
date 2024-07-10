@@ -40,7 +40,7 @@ lzr_ipmi_handle_reponse(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
 
     if (bytes_equals(px, sizeof_px, lzr_ipmi_pos_detect_unkn, sizeof(lzr_ipmi_pos_detect_unkn))) {
@@ -65,7 +65,7 @@ lzr_ipmi_handle_reponse(
 }
 
 static unsigned
-lzr_ipmi_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+lzr_ipmi_handle_timeout(struct ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not ipmi");

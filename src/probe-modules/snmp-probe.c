@@ -453,7 +453,7 @@ snmp_handle_response(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
     unsigned request_id      = 0;
     uint64_t length          = sizeof_px;
@@ -573,7 +573,7 @@ error:
 }
 
 static unsigned
-snmp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+snmp_handle_timeout(struct ProbeTarget *target, OutItem *item)
 {
     safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
     safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");

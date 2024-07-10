@@ -33,7 +33,7 @@ lzr_memb_handle_reponse(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
 
     if (px[0]==0x81
@@ -52,7 +52,7 @@ lzr_memb_handle_reponse(
 }
 
 static unsigned
-lzr_memb_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+lzr_memb_handle_timeout(struct ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not memcached_binary");

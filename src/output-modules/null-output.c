@@ -4,9 +4,9 @@
 #include "../util-data/safe-string.h"
 #include "../pixie/pixie-file.h"
 
-extern struct OutputModule NullOutput; /*for internal x-ref*/
+extern Output NullOutput; /*for internal x-ref*/
 
-struct OutputModule NullOutput = {
+Output NullOutput = {
     .name               = "null",
     .need_file          = 0,
     .params             = NULL,

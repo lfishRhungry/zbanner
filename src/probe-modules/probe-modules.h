@@ -123,7 +123,7 @@ typedef unsigned
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item);
+    OutItem *item);
 
 /**
  * !Happens in Rx Thread,
@@ -138,7 +138,7 @@ typedef unsigned
  * or num=index+1 to set next probe in Multi_DynamicNext mode.
 */
 typedef unsigned
-(*probe_modules_handle_timeout)(struct ProbeTarget *target, struct OutputItem *item);
+(*probe_modules_handle_timeout)(struct ProbeTarget *target, OutItem *item);
 
 /***************************************************************************
  * * callback functions for ProbeType_STATE only
@@ -205,7 +205,7 @@ typedef unsigned
 (*probe_modules_parse_response)(
     struct DataPass *pass,
     struct ProbeState *state,
-    struct Output *out,
+    OutConf *out,
     struct ProbeTarget *target,
     const unsigned char *px,
     unsigned sizeof_px);
@@ -320,7 +320,7 @@ probe_report_nothing(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item);
+    OutItem *item);
 
 /*implemented `probe_modules_handle_reponse`*/
 unsigned
@@ -328,7 +328,7 @@ probe_just_report_banner(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item);
+    OutItem *item);
 
 /*implemented `probe_modules_close`*/
 void
@@ -341,7 +341,7 @@ void
 probe_conn_close_nothing(struct ProbeState *state, struct ProbeTarget *target);
 
 unsigned
-probe_no_timeout(struct ProbeTarget *target, struct OutputItem *item);
+probe_no_timeout(struct ProbeTarget *target, OutItem *item);
 
 bool
 probe_all_valid(struct ProbeTarget *target, const unsigned char *px, unsigned sizeof_px);

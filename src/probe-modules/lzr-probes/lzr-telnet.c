@@ -11,7 +11,7 @@ lzr_telnet_handle_response(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
 
     if (sizeof_px<2) {
@@ -48,7 +48,7 @@ lzr_telnet_handle_response(
 }
 
 static unsigned
-lzr_telnet_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+lzr_telnet_handle_timeout(struct ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not telnet");

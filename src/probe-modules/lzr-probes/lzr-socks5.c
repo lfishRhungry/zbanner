@@ -30,7 +30,7 @@ lzr_socks5_handle_reponse(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
     if (sizeof_px==2 && px[0]=='\x05' && (px[1]=='\xff'||px[1]=='\x00')) {
         item->level = OUT_FAILURE;
@@ -69,7 +69,7 @@ lzr_socks5_handle_reponse(
 }
 
 static unsigned
-lzr_socks5_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+lzr_socks5_handle_timeout(struct ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not socks5");

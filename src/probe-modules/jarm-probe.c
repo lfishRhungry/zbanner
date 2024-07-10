@@ -181,7 +181,7 @@ jarm_handle_response(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
     /**
      * The min length for ALERT
@@ -226,7 +226,7 @@ jarm_handle_response(
 }
 
 static unsigned
-jarm_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+jarm_handle_timeout(struct ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "no jarm");

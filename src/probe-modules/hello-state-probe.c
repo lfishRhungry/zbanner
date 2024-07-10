@@ -364,7 +364,7 @@ static unsigned
 hellostate_parse_response(
     struct DataPass *pass,
     struct ProbeState *state,
-    struct Output *out,
+    OutConf *out,
     struct ProbeTarget *target,
     const unsigned char *px,
     unsigned sizeof_px)
@@ -376,7 +376,7 @@ hellostate_parse_response(
         pass->is_close = 1;
     }
 
-    struct OutputItem item = {
+    OutItem item = {
         .ip_proto  = target->ip_proto,
         .ip_them   = target->ip_them,
         .ip_me     = target->ip_me,

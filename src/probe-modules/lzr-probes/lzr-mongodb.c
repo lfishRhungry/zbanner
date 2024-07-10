@@ -35,7 +35,7 @@ lzr_mongodb_handle_reponse(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
 
     if (safe_memmem(px, sizeof_px, "maxBsonObjectSize", strlen( "maxBsonObjectSize"))
@@ -54,7 +54,7 @@ lzr_mongodb_handle_reponse(
 }
 
 static unsigned
-lzr_mongodb_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+lzr_mongodb_handle_timeout(struct ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not mongodb");

@@ -57,7 +57,7 @@ _tsp_state_to_string(enum TSP_State state)
 /*for internal x-ref*/
 extern struct ProbeModule      TlsStateProbe;
 /*save Output*/
-static const struct Output    *_tls_out;
+static const OutConf   *_tls_out;
 /*public SSL obj for all conn*/
 static SSL_CTX                *_general_ssl_ctx;
 
@@ -246,7 +246,7 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line)
     if (!tgt)
         return;
 
-    struct OutputItem item = {
+    OutItem item = {
         .ip_proto  = tgt->ip_proto,
         .ip_them   = tgt->ip_them,
         .port_them = tgt->port_them,
@@ -268,7 +268,7 @@ static void ssl_info_cb(const SSL *ssl, int where, int ret)
         if (!tgt)
             return;
 
-        struct OutputItem item = {
+        OutItem item = {
             .ip_proto  = tgt->ip_proto,
             .ip_them   = tgt->ip_them,
             .port_them = tgt->port_them,
@@ -285,7 +285,7 @@ static void ssl_info_cb(const SSL *ssl, int where, int ret)
     }
 }
 
-static bool output_subject_info(struct Output *out,
+static bool output_subject_info(OutConf *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     int  res;
@@ -309,7 +309,7 @@ static bool output_subject_info(struct Output *out,
         return false;
     }
 
-    struct OutputItem item = {
+    OutItem item = {
         .ip_proto  = target->ip_proto,
         .ip_them   = target->ip_them,
         .port_them = target->port_them,
@@ -431,7 +431,7 @@ static bool output_subject_info(struct Output *out,
     return true;
 }
 
-static bool output_x502_cert(struct Output *out,
+static bool output_x502_cert(OutConf *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     STACK_OF(X509) * sk_x509_certs;
@@ -447,7 +447,7 @@ static bool output_x502_cert(struct Output *out,
 
     for (i_cert = 0; i_cert < sk_X509_num(sk_x509_certs); i_cert++) {
 
-        struct OutputItem item = {
+        OutItem item = {
             .ip_proto  = target->ip_proto,
             .ip_them   = target->ip_them,
             .port_them = target->port_them,
@@ -529,7 +529,7 @@ static bool output_x502_cert(struct Output *out,
     return true;
 }
 
-static bool output_cipher_suite(struct Output *out,
+static bool output_cipher_suite(OutConf *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     const SSL_CIPHER *ssl_cipher;
@@ -543,7 +543,7 @@ static bool output_cipher_suite(struct Output *out,
         }
     }
 
-    struct OutputItem item = {
+    OutItem item = {
         .ip_proto  = target->ip_proto,
         .ip_them   = target->ip_them,
         .port_them = target->port_them,
@@ -562,12 +562,12 @@ static bool output_cipher_suite(struct Output *out,
     return true;
 }
 
-static bool output_tls_version(struct Output *out,
+static bool output_tls_version(OutConf *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     int version = SSL_version(ssl);
 
-    struct OutputItem item = {
+    OutItem item = {
         .ip_proto  = target->ip_proto,
         .ip_them   = target->ip_them,
         .port_them = target->port_them,
@@ -931,7 +931,7 @@ static unsigned
 tlsstate_parse_response(
     struct DataPass *pass,
     struct ProbeState *state,
-    struct Output *out,
+    OutConf *out,
     struct ProbeTarget *target,
     const unsigned char *px,
     unsigned sizeof_px)
@@ -1092,7 +1092,7 @@ tlsstate_parse_response(
                     _tsp_state_to_string(state->state), res, res_ex);
                 LOGopenssl(LEVEL_DEBUG);
 
-                struct OutputItem item = {
+                OutItem item = {
                     .ip_proto  = target->ip_proto,
                     .ip_them   = target->ip_them,
                     .port_them = target->port_them,

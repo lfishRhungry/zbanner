@@ -112,7 +112,7 @@ struct RxHandle {
     struct rte_ring      *handle_queue;
     struct FHandler      *ft_handler;
     struct stack_t       *stack;
-    struct Output        *out;
+    OutConf        *out;
     uint64_t              entropy;
     unsigned              index;
 };
@@ -162,7 +162,7 @@ handle_thread(void *v)
             exit(1);
         }
 
-        struct OutputItem item = {
+        OutItem item = {
             .ip_proto  = recved->parsed.ip_protocol,
             .ip_them   = recved->parsed.src_ip,
             .ip_me     = recved->parsed.dst_ip,
@@ -187,7 +187,7 @@ handle_thread(void *v)
 void receive_thread(void *v) {
     struct RxThread               *parms                       = (struct RxThread *)v;
     const struct Xconf            *xconf                       = parms->xconf;
-    struct Output                 *out                         = (struct Output *)(&xconf->out);
+    OutConf                 *out                         = (OutConf *)(&xconf->out);
     struct Adapter                *adapter                     = xconf->nic.adapter;
     int                            data_link                   = stack_if_datalink(adapter);
     uint64_t                       entropy                     = xconf->seed;
@@ -295,7 +295,7 @@ void receive_thread(void *v) {
                                         tm_event->dedup_type))
                 || xconf->is_nodedup) {
 
-                struct OutputItem item = {
+                OutItem item = {
                     .ip_proto  = tm_event->ip_proto,
                     .ip_them   = tm_event->ip_them,
                     .ip_me     = tm_event->ip_me,

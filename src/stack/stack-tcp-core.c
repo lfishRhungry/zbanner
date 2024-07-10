@@ -181,7 +181,7 @@ struct TCP_ConnectionTable {
     struct TemplatePacket            *rst_template;
     struct Timeouts                  *timeouts;
     struct stack_t                   *stack;
-    struct Output                    *out;
+    OutConf                    *out;
 
     unsigned                          count;
     unsigned                          mask;
@@ -346,7 +346,7 @@ tcpcon_create_table(size_t entry_count,
     struct TemplatePacket *tcp_template,
     struct TemplatePacket *syn_template,
     struct TemplatePacket *rst_template,
-    struct Output *out,
+    OutConf *out,
     unsigned expire,
     uint64_t entropy)
 {

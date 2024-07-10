@@ -11,12 +11,12 @@ static const char fmt_reason[]     = " because \"%s\"";
 static const char fmt_report_str[] = ",  %s: \"%s\"";
 static const char fmt_report_num[] = ",  %s: %s";
 
-extern struct OutputModule TextOutput; /*for internal x-ref*/
+extern Output TextOutput; /*for internal x-ref*/
 
 static FILE *file;
 
 static bool
-text_init(const struct Output *out)
+text_init(const OutConf *out)
 {
 
     int err = pixie_fopen_shareable(
@@ -33,7 +33,7 @@ text_init(const struct Output *out)
 }
 
 static void
-text_result(struct OutputItem *item)
+text_result(OutItem *item)
 {
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->ip_them);
 
@@ -95,13 +95,13 @@ error:
 }
 
 static void
-text_close(const struct Output *out)
+text_close(const OutConf *out)
 {
     fflush(file);
     fclose(file);
 }
 
-struct OutputModule TextOutput = {
+Output TextOutput = {
     .name               = "text",
     .need_file          = 1,
     .params             = NULL,

@@ -26,7 +26,7 @@ lzr_newlines_handle_response(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
     item->level = OUT_FAILURE;
 
@@ -37,7 +37,7 @@ lzr_newlines_handle_response(
 }
 
 static unsigned
-lzr_newlines_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+lzr_newlines_handle_timeout(struct ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");

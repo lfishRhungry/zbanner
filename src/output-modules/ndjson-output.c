@@ -4,7 +4,7 @@
 #include "../util-data/safe-string.h"
 #include "../pixie/pixie-file.h"
 
-extern struct OutputModule NdjsonOutput; /*for internal x-ref*/
+extern Output NdjsonOutput; /*for internal x-ref*/
 
 static FILE *file;
 
@@ -51,7 +51,7 @@ static const char fmt_ndjson_suffix[] =
 static char format_time[32];
 
 static bool
-ndjson_init(const struct Output *out)
+ndjson_init(const OutConf *out)
 {
 
     int err = pixie_fopen_shareable(
@@ -68,7 +68,7 @@ ndjson_init(const struct Output *out)
 }
 
 static void
-ndjson_result(struct OutputItem *item)
+ndjson_result(OutItem *item)
 {
     int err;
 
@@ -130,13 +130,13 @@ error:
 }
 
 static void
-ndjson_close(const struct Output *out)
+ndjson_close(const OutConf *out)
 {
     fflush(file);
     fclose(file);
 }
 
-struct OutputModule NdjsonOutput = {
+Output NdjsonOutput = {
     .name               = "ndjson",
     .need_file          = 1,
     .params             = NULL,

@@ -94,7 +94,7 @@ lzr_dnp3_handle_reponse(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
     if (sizeof_px>=10 && px[0]==0x05 && px[1]==0x64) {
         item->level = OUT_SUCCESS;
@@ -111,7 +111,7 @@ lzr_dnp3_handle_reponse(
 }
 
 static unsigned
-lzr_dnp3_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+lzr_dnp3_handle_timeout(struct ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not dnp3");

@@ -313,7 +313,7 @@ probe_report_nothing(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
     item->no_output = 1;
     return 0;
@@ -324,7 +324,7 @@ probe_just_report_banner(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
     item->level = OUT_SUCCESS;
     dach_append_normalized(&item->report, "banner", px, sizeof_px);
@@ -348,7 +348,7 @@ void probe_conn_close_nothing(struct ProbeState *state, struct ProbeTarget *targ
 }
 
 unsigned
-probe_no_timeout(struct ProbeTarget *target, struct OutputItem *item)
+probe_no_timeout(struct ProbeTarget *target, OutItem *item)
 {
     item->no_output = 1;
     return 0;

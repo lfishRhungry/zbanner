@@ -119,7 +119,7 @@ sctpinit_handle(
     unsigned th_idx,
     uint64_t entropy,
     struct Received *recved,
-    struct OutputItem *item,
+    OutItem *item,
     struct stack_t *stack,
     struct FHandler *handler)
 {
@@ -144,7 +144,7 @@ sctpinit_handle(
 static void sctpinit_timeout(
     uint64_t entropy,
     struct ScanTmEvent *event,
-    struct OutputItem *item,
+    OutItem *item,
     struct stack_t *stack,
     struct FHandler *handler)
 {

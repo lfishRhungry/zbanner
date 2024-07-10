@@ -6,7 +6,7 @@
 static const char fmt_host[]       = "%s";
 static const char fmt_port[]       = " %s%u";
 
-extern struct OutputModule ListOutput; /*for internal x-ref*/
+extern Output ListOutput; /*for internal x-ref*/
 
 static FILE *file;
 
@@ -39,7 +39,7 @@ static struct ConfigParam list_parameters[] = {
 };
 
 static bool
-list_init(const struct Output *out)
+list_init(const OutConf *out)
 {
 
     int err = pixie_fopen_shareable(
@@ -56,7 +56,7 @@ list_init(const struct Output *out)
 }
 
 static void
-list_result(struct OutputItem *item)
+list_result(OutItem *item)
 {
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->ip_them);
 
@@ -97,13 +97,13 @@ error:
 }
 
 static void
-list_close(const struct Output *out)
+list_close(const OutConf *out)
 {
     fflush(file);
     fclose(file);
 }
 
-struct OutputModule ListOutput = {
+Output ListOutput = {
     .name               = "list",
     .need_file          = 1,
     .params             = list_parameters,

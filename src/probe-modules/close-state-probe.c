@@ -22,7 +22,7 @@ static unsigned
 closestate_parse_response(
     struct DataPass *pass,
     struct ProbeState *state,
-    struct Output *out,
+    OutConf *out,
     struct ProbeTarget *target,
     const unsigned char *px,
     unsigned sizeof_px)

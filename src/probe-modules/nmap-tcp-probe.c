@@ -244,7 +244,7 @@ nmaptcp_handle_response(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
     struct NmapServiceProbeList *list = nmaptcp_conf.service_probes;
     unsigned next_probe = 0;
@@ -302,7 +302,7 @@ nmaptcp_handle_response(
 }
 
 static unsigned
-nmaptcp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+nmaptcp_handle_timeout(struct ProbeTarget *target, OutItem *item)
 {
     struct NmapServiceProbeList *list = nmaptcp_conf.service_probes;
 

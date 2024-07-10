@@ -181,7 +181,7 @@ static bool tcpstate_init(const struct Xconf *xconf)
             &global_tmplset->pkts[Tmpl_Type_TCP],
             &global_tmplset->pkts[Tmpl_Type_TCP_SYN],
             &global_tmplset->pkts[Tmpl_Type_TCP_RST],
-            (struct Output *)(&xconf->out),
+            (OutConf *)(&xconf->out),
             tcpstate_conf.conn_expire, xconf->seed);
     }
 
@@ -254,7 +254,7 @@ tcpstate_handle(
     unsigned th_idx,
     uint64_t entropy,
     struct Received *recved,
-    struct OutputItem *item,
+    OutItem *item,
     struct stack_t *stack,
     struct FHandler *handler)
 {

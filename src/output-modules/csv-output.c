@@ -4,7 +4,7 @@
 #include "../util-data/safe-string.h"
 #include "../pixie/pixie-file.h"
 
-extern struct OutputModule CsvOutput; /*for internal x-ref*/
+extern Output CsvOutput; /*for internal x-ref*/
 
 static FILE *file;
 
@@ -51,7 +51,7 @@ static const char fmt_csv_suffix[] =
 static char format_time[32];
 
 static bool
-csv_init(const struct Output *out)
+csv_init(const OutConf *out)
 {
 
     int err = pixie_fopen_shareable(
@@ -74,7 +74,7 @@ csv_init(const struct Output *out)
 }
 
 static void
-csv_result(struct OutputItem *item)
+csv_result(OutItem *item)
 {
     bool output_port = (item->ip_proto==IP_PROTO_TCP
         || item->ip_proto==IP_PROTO_UDP || item->ip_proto==IP_PROTO_SCTP);
@@ -120,13 +120,13 @@ error:
 }
 
 static void
-csv_close(const struct Output *out)
+csv_close(const OutConf *out)
 {
     fflush(file);
     fclose(file);
 }
 
-struct OutputModule CsvOutput = {
+Output CsvOutput = {
     .name               = "csv",
     .need_file          = 1,
     .params             = NULL,

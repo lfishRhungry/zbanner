@@ -305,7 +305,7 @@ lzr_handle_response(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
     /**
      * print results just like lzr:
@@ -377,7 +377,7 @@ lzr_handle_response(
 }
 
 static unsigned
-lzr_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+lzr_handle_timeout(struct ProbeTarget *target, OutItem *item)
 {
     safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
     safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");

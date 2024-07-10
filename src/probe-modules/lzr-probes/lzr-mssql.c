@@ -35,7 +35,7 @@ lzr_mssql_handle_reponse(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
 
     if (sizeof_px>=6 && px[0]==0x04 && px[1]==0x01) {
@@ -53,7 +53,7 @@ lzr_mssql_handle_reponse(
 }
 
 static unsigned
-lzr_mssql_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+lzr_mssql_handle_timeout(struct ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not mssql");

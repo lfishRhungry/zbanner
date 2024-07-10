@@ -162,7 +162,7 @@ struct Xconf
     unsigned tx_thread_count;
     unsigned rx_handler_count;
 
-    struct Output     out;
+    OutConf           out;
     enum Operation    op;
     uint64_t          seed;
     uint64_t          repeat;

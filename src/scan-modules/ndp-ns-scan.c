@@ -114,7 +114,7 @@ ndpns_handle(
     unsigned th_idx,
     uint64_t entropy,
     struct Received *recved,
-    struct OutputItem *item,
+    OutItem *item,
     struct stack_t *stack,
     struct FHandler *handler)
 {
@@ -146,7 +146,7 @@ ndpns_handle(
 static void ndpns_timeout(
     uint64_t entropy,
     struct ScanTmEvent *event,
-    struct OutputItem *item,
+    OutItem *item,
     struct stack_t *stack,
     struct FHandler *handler)
 {

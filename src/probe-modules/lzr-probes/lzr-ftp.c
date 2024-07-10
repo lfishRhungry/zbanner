@@ -11,7 +11,7 @@ lzr_ftp_handle_response(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
     if (safe_memismem(px, sizeof_px, "ftp", strlen("ftp"))
         || safe_memmem(px, sizeof_px, "conv_code ret failed", strlen( "conv_code ret failed"))) {
@@ -51,7 +51,7 @@ lzr_ftp_handle_response(
 }
 
 static unsigned
-lzr_ftp_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+lzr_ftp_handle_timeout(struct ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not ftp");

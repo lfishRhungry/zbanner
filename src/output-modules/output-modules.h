@@ -16,23 +16,23 @@
 
 struct OutputModule;
 
-enum OutputLevel {
+typedef enum OutputLevel {
     OUT_INFO        = 0,
     OUT_FAILURE     = 1,
     OUT_SUCCESS     = 2,
-};
+} OutLevel;
 
 /**
  * modifiable to change target.
 */
-struct OutputItem {
+typedef struct OutputItem {
     /**This timestamp can be set in diff meanings by yourself like time of receiving
      * packet or time of result generated.
      * It will be set in output func by global time if hasn't be set by any module.*/
     time_t                       timestamp;
     /**Type of result item itself. INFO and FAILURE are not to be output by default
      * unless using `--show fail` or `--show info`.*/
-    enum OutputLevel             level;
+    OutLevel                     level;
     /**IP proto number to mention whether it is TCP, UDP, etc.*/
     unsigned                     ip_proto;
     /**IP of target*/
@@ -63,9 +63,9 @@ struct OutputItem {
     struct DataChain             report;
     /**This result item won't be output if it set to true*/
     unsigned                     no_output:1;
-};
+} OutItem;
 
-struct Output {
+typedef struct OutputConfig {
     struct OutputModule         *output_module;
     char                        *output_args;
     char                         output_filename[256];
@@ -83,27 +83,27 @@ struct Output {
     unsigned                     is_show_failed:1;
     unsigned                     is_show_info:1;
     unsigned                     no_show_success:1;
-};
+} OutConf;
 
 /**
  * Do init for outputing
 */
 typedef bool
-(*output_modules_init)(const struct Output *out);
+(*output_modules_init)(const OutConf *out);
 
 /**
  * Output one result
 */
 typedef void
-(*output_modules_result)(struct OutputItem *item);
+(*output_modules_result)(OutItem *item);
 
 /**
  * Do close for outputing
 */
 typedef void
-(*output_modules_close)(const struct Output *out);
+(*output_modules_close)(const OutConf *out);
 
-struct OutputModule {
+typedef struct OutputModule {
     const char                               *name;
     const char                               *desc;
     unsigned                                  need_file:1;
@@ -111,38 +111,38 @@ struct OutputModule {
     output_modules_init                       init_cb;
     output_modules_result                     result_cb;
     output_modules_close                      close_cb;
-};
+} Output;
 
 const char *
-output_level_to_string(enum OutputLevel level);
+output_level_to_string(OutLevel level);
 
 /*prepare for outputing results*/
-bool output_init(struct Output *out);
+bool output_init(OutConf *out);
 
 /**
  * output a result within item and release datachain(report) in it.
 */
 void
-output_result(const struct Output *out, struct OutputItem *item);
+output_result(const OutConf *out, OutItem *item);
 
 /*destroy resources of output*/
-void output_close(struct Output *out);
+void output_close(OutConf *out);
 
-struct OutputModule *
+Output *
 get_output_module_by_name(const char *name);
 
 void list_all_output_modules();
 
-void help_output_module(struct OutputModule *module);
+void help_output_module(Output *module);
 
 /************************************************************************
 Some useful implemented interfaces
 ************************************************************************/
 
-bool output_init_nothing(const struct Output *out);
+bool output_init_nothing(const OutConf *out);
 
-void output_result_nothing(struct OutputItem *item);
+void output_result_nothing(OutItem *item);
 
-void output_close_nothing(const struct Output *out);
+void output_close_nothing(const OutConf *out);
 
 #endif

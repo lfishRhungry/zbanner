@@ -36,7 +36,7 @@ lzr_mysql_handle_reponse(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
 
     if (sizeof_px>=49 && px[3]==0x00 && px[4]==0x0a) {
@@ -54,7 +54,7 @@ lzr_mysql_handle_reponse(
 }
 
 static unsigned
-lzr_mysql_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+lzr_mysql_handle_timeout(struct ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not mysql");

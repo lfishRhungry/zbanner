@@ -67,7 +67,7 @@ lzr_fox_handle_reponse(
     unsigned th_idx,
     struct ProbeTarget *target,
     const unsigned char *px, unsigned sizeof_px,
-    struct OutputItem *item)
+    OutItem *item)
 {
 
     if (bytes_equals(px, sizeof_px, lzr_fox_prefix, strlen(lzr_fox_prefix))) {
@@ -85,7 +85,7 @@ lzr_fox_handle_reponse(
 }
 
 static unsigned
-lzr_fox_handle_timeout(struct ProbeTarget *target, struct OutputItem *item)
+lzr_fox_handle_timeout(struct ProbeTarget *target, OutItem *item)
 {
     item->level = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "not fox");
