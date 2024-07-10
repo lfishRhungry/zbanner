@@ -41,7 +41,7 @@
  * Why not be a ring? I'd like it to be used out-of-the-box.
  * NOTE: name length
  */
-struct DataLink {
+typedef struct DataLink {
     struct DataLink     *next;
     struct DataLink     *prev;
     char                 name[DACH_MAX_NAME_SIZE];
@@ -50,21 +50,21 @@ struct DataLink {
     unsigned             data_size;
     bool                 is_number; /*is this value a number or bool string(true/false)*/
     unsigned char        data[1];   /*visual studio doesn't support zero size array as member*/
-};
+} DataLink;
 
 /**
  * wrapper of a bunch of data links, must be initiated in all zero
  * */
-struct DataChain {
-    struct DataLink      link[1]; /*dummy node for using out of the box*/
+typedef struct DataChain {
+    DataLink             link[1]; /*dummy node for using out of the box*/
     unsigned             count;
-};
+} DataChain;
 
-struct DachBase64
+typedef struct DachBase64
 {
     unsigned state:2;
     unsigned temp:24;
-};
+} DachBase64;
 
 /**
  * Create a data link with specified capacity by yourself.
@@ -73,23 +73,23 @@ struct DachBase64
  * @param is_number is the link a number type or bool string(true/false)
  * @return link of new link or already existed link
  */
-struct DataLink *
-dach_new_link(struct DataChain *dach, const char *name, size_t data_size, bool is_number);
+DataLink *
+dach_new_link(DataChain *dach, const char *name, size_t data_size, bool is_number);
 
 /**
  * Get data link by name
  * @return the expected link, or NULL if it doesn't exist.
 */
-struct DataLink *
-dach_find_link(struct DataChain *dach, const char *name);
+DataLink *
+dach_find_link(DataChain *dach, const char *name);
 
 /**
  * Get data link by name
  * If the target link doesn't exist then create it.
  * @return the expected link
 */
-inline struct DataLink *
-dach_get_link(struct DataChain *dach, const char *name)
+inline DataLink *
+dach_get_link(DataChain *dach, const char *name)
 {
     return dach_new_link(dach, name, 1, false);
 }
@@ -101,15 +101,15 @@ dach_get_link(struct DataChain *dach, const char *name)
  * @param is_number is the link a number type or bool string(true/false)
  * @return new link or already existed link
  */
-struct DataLink *
-dach_new_link_printf(struct DataChain *dach, size_t data_size,
+DataLink *
+dach_new_link_printf(DataChain *dach, size_t data_size,
     bool is_number, const char *fmt_name, ...);
 
 /**
  * Release all memory.
  */
 void
-dach_release(struct DataChain *dach);
+dach_release(DataChain *dach);
 
 /**
  * Delete a link.
@@ -117,14 +117,14 @@ dach_release(struct DataChain *dach);
  * @param link link to be deleted.
 */
 void
-dach_del_by_link(struct DataChain *dach, struct DataLink *link);
+dach_del_by_link(DataChain *dach, DataLink *link);
 
 /**
  * Delete a link by its name.
  * Do nothing if it doesn't exist.
 */
 inline void
-dach_del_link(struct DataChain *dach, const char *name)
+dach_del_link(DataChain *dach, const char *name)
 {
     dach_del_by_link(dach, dach_find_link(dach, name));
 }
@@ -135,8 +135,8 @@ dach_del_link(struct DataChain *dach, const char *name)
  * @param length len of px, can be DACH_AUTO_LEN if px is c string.
  * @return target link after append.
 */
-struct DataLink *
-dach_append_by_link(struct DataLink *pre, const void *px, size_t length);
+DataLink *
+dach_append_by_link(DataLink *pre, const void *px, size_t length);
 
 /**
  * Append text onto the data.
@@ -145,8 +145,8 @@ dach_append_by_link(struct DataLink *pre, const void *px, size_t length);
  * @param length len of px, can be DACH_AUTO_LEN if px is c string.
  * @return target link after append.
  */
-struct DataLink *
-dach_append(struct DataChain *dach, const char *name, const void *px, size_t length);
+DataLink *
+dach_append(DataChain *dach, const char *name, const void *px, size_t length);
 
 /**
  * Append a char to target link.
@@ -154,8 +154,8 @@ dach_append(struct DataChain *dach, const char *name, const void *px, size_t len
  * @param link expected link and must not be NULL
  * @return target link after append.
 */
-struct DataLink *
-dach_append_char_by_link(struct DataLink *link, int c);
+DataLink *
+dach_append_char_by_link(DataLink *link, int c);
 
 
 /**
@@ -164,8 +164,8 @@ dach_append_char_by_link(struct DataLink *link, int c);
  * If data with this name doesn't exist, it'll be create.
  * @return target link after append.
 */
-struct DataLink *
-dach_append_char(struct DataChain *dach, const char *name, int c);
+DataLink *
+dach_append_char(DataChain *dach, const char *name, int c);
 
 /**
  * Append an integer, with hex digits, with the specified number of
@@ -174,8 +174,8 @@ dach_append_char(struct DataChain *dach, const char *name, int c);
  * @param link expected link and must not be NULL
  * @return target link after append.
  */
-struct DataLink *
-dach_append_hexint_by_link(struct DataLink *link,
+DataLink *
+dach_append_hexint_by_link(DataLink *link,
     unsigned long long number, int digits);
 
 /**
@@ -185,8 +185,8 @@ dach_append_hexint_by_link(struct DataLink *link,
  * If data with this name doesn't exist, it'll be create.
  * @return target link after append.
  */
-struct DataLink *
-dach_append_hexint(struct DataChain *dach, const char *name,
+DataLink *
+dach_append_hexint(DataChain *dach, const char *name,
     unsigned long long number, int digits);
 
 /**
@@ -195,8 +195,8 @@ dach_append_hexint(struct DataChain *dach, const char *name,
  * @param link expected link and must not be NULL
  * @return target link after append.
 */
-struct DataLink *
-dach_append_unicode_by_link(struct DataLink *link, unsigned c);
+DataLink *
+dach_append_unicode_by_link(DataLink *link, unsigned c);
 
 /**
  * Append either a normal character, or the hex form of a UTF-8 string
@@ -204,8 +204,8 @@ dach_append_unicode_by_link(struct DataLink *link, unsigned c);
  * If data with this name doesn't exist, it'll be create.
  * @return target link after append.
 */
-struct DataLink *
-dach_append_unicode(struct DataChain *dach, const char *name, unsigned c);
+DataLink *
+dach_append_unicode(DataChain *dach, const char *name, unsigned c);
 
 /**
  * Printf in datachain version
@@ -213,8 +213,8 @@ dach_append_unicode(struct DataChain *dach, const char *name, unsigned c);
  * @param link expected link and must not be NULL
  * @return target link after append.
 */
-struct DataLink *
-dach_printf_by_link(struct DataLink *link, const char *fmt, ...);
+DataLink *
+dach_printf_by_link(DataLink *link, const char *fmt, ...);
 
 /**
  * Printf in datachain version
@@ -223,8 +223,8 @@ dach_printf_by_link(struct DataLink *link, const char *fmt, ...);
  * @param is_number set link number type or bool string(true/false) if create it.
  * @return target link after append.
 */
-struct DataLink *
-dach_printf(struct DataChain *dach, const char *name, bool is_number, const char *fmt, ...);
+DataLink *
+dach_printf(DataChain *dach, const char *name, bool is_number, const char *fmt, ...);
 
 /**
  * Append after removing bad characters, especially new lines and HTML
@@ -234,8 +234,8 @@ dach_printf(struct DataChain *dach, const char *name, bool is_number, const char
  * @param length len of px, can be DACH_AUTO_LEN if px is c string.
  * @return target link after append.
 */
-struct DataLink *
-dach_append_normalized_by_link(struct DataLink *link, const void *px, size_t length);
+DataLink *
+dach_append_normalized_by_link(DataLink *link, const void *px, size_t length);
 
 /**
  * Append after removing bad characters, especially new lines and HTML
@@ -245,33 +245,33 @@ dach_append_normalized_by_link(struct DataLink *link, const void *px, size_t len
  * @param length len of px, can be DACH_AUTO_LEN if px is c string.
  * @return target link after append.
 */
-struct DataLink *
-dach_append_normalized(struct DataChain *dach, const char *name,
+DataLink *
+dach_append_normalized(DataChain *dach, const char *name,
     const void *px, size_t length);
 
 /**
  * @param link target link and must not be NULL
 */
 bool
-dach_link_contains(struct DataLink *link, const char *string);
+dach_link_contains(DataLink *link, const char *string);
 
 /**
  * @return if contains or NULL if name doesn't exist
 */
 bool
-dach_contains(struct DataChain *dach, const char *name, const char *string);
+dach_contains(DataChain *dach, const char *name, const char *string);
 
 /**
  * @param link target link and must not be NULL
  */
 bool
-dach_link_equals(struct DataLink *link, const char *rhs);
+dach_link_equals(DataLink *link, const char *rhs);
 
 /**
  * @return if equals or NULL if name doesn't exist
 */
 bool
-dach_equals(struct DataChain *dach, const char *name, const char *string);
+dach_equals(DataChain *dach, const char *name, const char *string);
 
 /**
  * Prepare to start calling dach_append_base64()
@@ -290,8 +290,8 @@ dach_init_base64(struct DachBase64 *base64);
  * @param length len of vpx, can be DACH_AUTO_LEN if px is c string.
  * @return target link after append.
 */
-struct DataLink *
-dach_append_base64_by_link(struct DataLink *link,
+DataLink *
+dach_append_base64_by_link(DataLink *link,
     const void *vpx, size_t length, struct DachBase64 *base64);
 
 /**
@@ -304,8 +304,8 @@ dach_append_base64_by_link(struct DataLink *link,
  * @param length len of vpx, can be DACH_AUTO_LEN if px is c string.
  * @return target link after append.
  */
-struct DataLink *
-dach_append_base64(struct DataChain *dach, const char *name,
+DataLink *
+dach_append_base64(DataChain *dach, const char *name,
     const void *vpx, size_t length, struct DachBase64 *base64);
 
 /**
@@ -314,8 +314,8 @@ dach_append_base64(struct DataChain *dach, const char *name,
  * @param link expected link and must not be NULL
  * @return target link after append.
 */
-struct DataLink *
-dach_finalize_base64_by_link(struct DataLink *link, struct DachBase64 *base64);
+DataLink *
+dach_finalize_base64_by_link(DataLink *link, struct DachBase64 *base64);
 
 /**
  * Finish encoding the BASE64 string, appending the '==' things on the
@@ -323,7 +323,7 @@ dach_finalize_base64_by_link(struct DataLink *link, struct DachBase64 *base64);
  * Nothing happens if target link doesn't exist
  */
 void
-dach_finalize_base64(struct DataChain *dach, const char *name,
+dach_finalize_base64(DataChain *dach, const char *name,
     struct DachBase64 *base64);
 
 /**

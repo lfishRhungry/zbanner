@@ -97,7 +97,7 @@ csv_result(OutItem *item)
 
     if (err<0) goto error;
 
-    struct DataLink *pre = item->report.link;
+    DataLink *pre = item->report.link;
     while (pre->next) {
         err = fprintf(file,
             pre->next->is_number?fmt_csv_num_inffix:fmt_csv_str_inffix,

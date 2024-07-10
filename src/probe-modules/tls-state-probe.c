@@ -291,7 +291,7 @@ static bool output_subject_info(OutConf *out,
     int  res;
     unsigned count;
     char s_names[512];
-    struct DataLink *link;
+    DataLink *link;
     BIO *bio        = NULL;
     X509 *x509_cert = NULL;
     X509_NAME *x509_subject_name           = NULL;
@@ -435,7 +435,7 @@ static bool output_x502_cert(OutConf *out,
     struct ProbeTarget *target, SSL *ssl)
 {
     STACK_OF(X509) * sk_x509_certs;
-    struct DataLink *link;
+    DataLink *link;
     int i_cert;
     int res;
     char s_base64[2048];

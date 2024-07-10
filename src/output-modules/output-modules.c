@@ -204,7 +204,7 @@ output_result_to_stdout(OutItem *item)
         count += fprintf(stdout, fmt_reason, item->reason);
     }
 
-    struct DataLink *pre = item->report.link;
+    DataLink *pre = item->report.link;
     while (pre->next) {
         count += fprintf(stdout,
             pre->next->is_number?fmt_report_num:fmt_report_str,

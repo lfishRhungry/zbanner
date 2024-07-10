@@ -77,7 +77,7 @@ text_result(OutItem *item)
         if (err<0) goto error;
     }
 
-    struct DataLink *pre = item->report.link;
+    DataLink *pre = item->report.link;
     while (pre->next) {
         fprintf(file,
             pre->next->is_number?fmt_report_num:fmt_report_str,

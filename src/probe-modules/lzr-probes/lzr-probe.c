@@ -312,7 +312,7 @@ lzr_handle_response(
      *     pop3-smtp-http
     */
     bool identified = false;
-    struct DataLink *res_link;
+    DataLink *res_link;
     res_link = dach_new_link(&item->report, "result", 1, false);
 
     size_t i = 0;

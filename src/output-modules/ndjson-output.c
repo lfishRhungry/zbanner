@@ -106,7 +106,7 @@ ndjson_result(OutItem *item)
         item->reason);
     if (err<0) goto error;
 
-    struct DataLink *pre = item->report.link;
+    DataLink *pre = item->report.link;
     while (pre->next) {
         err = fprintf(file,
             pre->next->is_number?fmt_ndjson_num_inffix:fmt_ndjson_str_inffix,

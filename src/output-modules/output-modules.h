@@ -60,7 +60,7 @@ typedef struct OutputItem {
      * key-value format. You can set data link is_number to mention it is a num type.
      * No double or single quotes in it for output format.
      * It won't be outputting in stdout and text if start with zero, suggest to set it*/
-    struct DataChain             report;
+    DataChain                    report;
     /**This result item won't be output if it set to true*/
     unsigned                     no_output:1;
 } OutItem;

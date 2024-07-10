@@ -187,7 +187,7 @@ next_id(const unsigned char *oid, unsigned *offset, uint64_t oid_length)
  ****************************************************************************/
 static void
 snmp_banner_oid(struct SMACK *global_mib, const unsigned char *oid,
-    size_t oid_length, struct DataChain *dach)
+    size_t oid_length, DataChain *dach)
 {
     unsigned i;
     size_t id;
@@ -237,7 +237,7 @@ snmp_banner(
     uint64_t var_tag,
     const unsigned char *var,
     size_t var_length,
-    struct DataChain *dach)
+    DataChain *dach)
 {
     size_t i;
 

@@ -225,7 +225,7 @@ dns_handle_response(
 
     dns_record_t *rec;
     char tmp_data[50];
-    struct DataLink *link;
+    DataLink *link;
 
     if (dns_pkt.head.header.ans_count > 0) {
         rec = &dns_pkt.body.ans[0];
