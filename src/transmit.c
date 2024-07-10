@@ -157,35 +157,35 @@ infinite:;
              * Pick up target & source
             */
             if (xXx < range_ipv6) {
-                target.ip_them.version = 6;
-                target.ip_me.version   = 6;
+                target.target.ip_them.version = 6;
+                target.target.ip_me.version   = 6;
 
-                target.ip_them.ipv6 =
+                target.target.ip_them.ipv6 =
                     range6list_pick(&xconf->targets.ipv6, xXx % count_ipv6);
-                target.port_them =
+                target.target.port_them =
                     rangelist_pick(&xconf->targets.ports, xXx / count_ipv6);
 
-                target.ip_me.ipv6 = src.ipv6;
+                target.target.ip_me.ipv6 = src.ipv6;
 
                 if (src.ipv6_mask > 1 || src.port_mask > 1) {
                     ck = get_cookie_ipv4(
                         (unsigned)( i + parms->my_repeat),
                         (unsigned)((i + parms->my_repeat) >> 32),
                         (unsigned)xXx, (unsigned)(xXx >> 32), dynamic_seed);
-                    target.port_me        = src.port + (ck & src.port_mask);
-                    target.ip_me.ipv6.lo += (ck & src.ipv6_mask);
+                    target.target.port_me        = src.port + (ck & src.port_mask);
+                    target.target.ip_me.ipv6.lo += (ck & src.ipv6_mask);
                 } else {
-                    target.port_me = src.port;
+                    target.target.port_me = src.port;
                 }
             } else {
                 xXx -= range_ipv6;
 
-                target.ip_them.version = 4;
-                target.ip_me.version   = 4;
+                target.target.ip_them.version = 4;
+                target.target.ip_me.version   = 4;
 
-                target.ip_them.ipv4 =
+                target.target.ip_them.ipv4 =
                     rangelist_pick(&xconf->targets.ipv4, xXx % count_ipv4);
-                target.port_them =
+                target.target.port_them =
                     rangelist_pick(&xconf->targets.ports, xXx / count_ipv4);
 
                 if (src.ipv4_mask > 1 || src.port_mask > 1) {
@@ -193,29 +193,29 @@ infinite:;
                         (unsigned)( i + parms->my_repeat),
                         (unsigned)((i + parms->my_repeat) >> 32),
                         (unsigned)xXx, (unsigned)(xXx >> 32), dynamic_seed);
-                    target.port_me    = src.port + (ck & src.port_mask);
-                    target.ip_me.ipv4 = src.ipv4 + ((ck>>16) & src.ipv4_mask);
+                    target.target.port_me    = src.port + (ck & src.port_mask);
+                    target.target.ip_me.ipv4 = src.ipv4 + ((ck>>16) & src.ipv4_mask);
                 } else {
-                    target.port_me    = src.port;
-                    target.ip_me.ipv4 = src.ipv4;
+                    target.target.port_me    = src.port;
+                    target.target.ip_me.ipv4 = src.ipv4;
                 }
             }
 
             /**
              * Due to flexible port store method.
              */
-            target.ip_proto = get_actual_proto_port(&(target.port_them));
+            target.target.ip_proto = get_actual_proto_port(&(target.target.port_them));
 
             /*if we don't use fast-timeout, do not malloc more memory*/
             if (!tm_event) {
                 tm_event = CALLOC(1, sizeof(ScanTmEvent));
             }
 
-            tm_event->ip_proto  = target.ip_proto;
-            tm_event->ip_them   = target.ip_them;
-            tm_event->ip_me     = target.ip_me;
-            tm_event->port_them = target.port_them;
-            tm_event->port_me   = target.port_me;
+            tm_event->target.ip_proto  = target.target.ip_proto;
+            tm_event->target.ip_them   = target.target.ip_them;
+            tm_event->target.ip_me     = target.target.ip_me;
+            tm_event->target.port_them = target.target.port_them;
+            tm_event->target.port_me   = target.target.port_me;
 
             unsigned char pkt_buffer[PKT_BUF_SIZE];
             size_t        pkt_len = 0;

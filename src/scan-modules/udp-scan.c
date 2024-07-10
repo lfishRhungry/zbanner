@@ -63,18 +63,18 @@ udp_transmit(
     unsigned char *px, size_t *len)
 {
     /*we just handle udp target*/
-    if (target->ip_proto != IP_PROTO_UDP)
+    if (target->target.ip_proto != IP_PROTO_UDP)
         return false;
 
-    unsigned cookie = get_cookie(target->ip_them, target->port_them,
-        target->ip_me, src_port_start+target->index, entropy);
+    unsigned cookie = get_cookie(target->target.ip_them, target->target.port_them,
+        target->target.ip_me, src_port_start+target->index, entropy);
 
     ProbeTarget ptarget = {
-        .ip_proto  = target->ip_proto,
-        .ip_them   = target->ip_them,
-        .ip_me     = target->ip_me,
-        .port_them = target->port_them,
-        .port_me   = src_port_start+target->index,
+        .target.ip_proto  = target->target.ip_proto,
+        .target.ip_them   = target->target.ip_them,
+        .target.ip_me     = target->target.ip_me,
+        .target.port_them = target->target.port_them,
+        .target.port_me   = src_port_start+target->index,
         .cookie    = cookie,
         .index     = target->index,
     };
@@ -84,13 +84,13 @@ udp_transmit(
 
     payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
 
-    *len = udp_create_packet(target->ip_them, target->port_them,
-        target->ip_me, src_port_start+target->index, 0,
+    *len = udp_create_packet(target->target.ip_them, target->target.port_them,
+        target->target.ip_me, src_port_start+target->index, 0,
         payload, payload_len, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout = 1;
-    event->port_me      = src_port_start+target->index;
+    event->target.port_me      = src_port_start+target->index;
 
     /*for multi-probe*/
     if (UdpScan.probe->multi_mode==Multi_Direct
@@ -113,11 +113,11 @@ udp_validate(
         pre->go_record = 1;
 
         ProbeTarget ptarget = {
-            .ip_proto  = recved->parsed.ip_protocol,
-            .ip_them   = recved->parsed.src_ip,
-            .ip_me     = recved->parsed.dst_ip,
-            .port_them = recved->parsed.port_src,
-            .port_me   = recved->parsed.port_dst,
+            .target.ip_proto  = recved->parsed.ip_protocol,
+            .target.ip_them   = recved->parsed.src_ip,
+            .target.ip_me     = recved->parsed.dst_ip,
+            .target.port_them = recved->parsed.port_src,
+            .target.port_me   = recved->parsed.port_dst,
             .cookie    = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, recved->parsed.port_dst, entropy),
             .index     = recved->parsed.port_dst-src_port_start,
@@ -167,11 +167,11 @@ udp_handle(
     if (recved->parsed.found == FOUND_UDP) {
 
         ProbeTarget ptarget = {
-            .ip_proto  = recved->parsed.ip_protocol,
-            .ip_them   = recved->parsed.src_ip,
-            .ip_me     = recved->parsed.dst_ip,
-            .port_them = recved->parsed.port_src,
-            .port_me   = recved->parsed.port_dst,
+            .target.ip_proto  = recved->parsed.ip_protocol,
+            .target.ip_them   = recved->parsed.src_ip,
+            .target.ip_me     = recved->parsed.dst_ip,
+            .target.port_them = recved->parsed.port_src,
+            .target.port_me   = recved->parsed.port_dst,
             .cookie    = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, recved->parsed.port_dst, entropy),
             .index     = recved->parsed.port_dst-src_port_start,
@@ -193,11 +193,11 @@ udp_handle(
                 PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
                 ProbeTarget ptarget = {
-                    .ip_proto  = recved->parsed.ip_protocol,
-                    .ip_them   = recved->parsed.src_ip,
-                    .ip_me     = recved->parsed.dst_ip,
-                    .port_them = recved->parsed.port_src,
-                    .port_me   = src_port_start+idx,
+                    .target.ip_proto  = recved->parsed.ip_protocol,
+                    .target.ip_them   = recved->parsed.src_ip,
+                    .target.ip_me     = recved->parsed.dst_ip,
+                    .target.port_them = recved->parsed.port_src,
+                    .target.port_me   = src_port_start+idx,
                     .cookie    = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                         recved->parsed.dst_ip, src_port_start+idx, entropy),
                     .index     = idx,
@@ -220,11 +220,11 @@ udp_handle(
                     ScanTmEvent *tm_event =
                         CALLOC(1, sizeof(ScanTmEvent));
 
-                    tm_event->ip_proto  = IP_PROTO_UDP;
-                    tm_event->ip_them   = recved->parsed.src_ip;
-                    tm_event->ip_me     = recved->parsed.dst_ip;
-                    tm_event->port_them = recved->parsed.port_src;
-                    tm_event->port_me   = src_port_start+idx;
+                    tm_event->target.ip_proto  = IP_PROTO_UDP;
+                    tm_event->target.ip_them   = recved->parsed.src_ip;
+                    tm_event->target.ip_me     = recved->parsed.dst_ip;
+                    tm_event->target.port_them = recved->parsed.port_src;
+                    tm_event->target.port_me   = src_port_start+idx;
 
                     tm_event->need_timeout = 1;
                     tm_event->dedup_type   = 0;
@@ -244,11 +244,11 @@ udp_handle(
             PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
             ProbeTarget ptarget = {
-                .ip_proto  = recved->parsed.ip_protocol,
-                .ip_them   = recved->parsed.src_ip,
-                .ip_me     = recved->parsed.dst_ip,
-                .port_them = recved->parsed.port_src,
-                .port_me   = src_port_start+is_multi-1,
+                .target.ip_proto  = recved->parsed.ip_protocol,
+                .target.ip_them   = recved->parsed.src_ip,
+                .target.ip_me     = recved->parsed.dst_ip,
+                .target.port_them = recved->parsed.port_src,
+                .target.port_me   = src_port_start+is_multi-1,
                 .cookie    = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                     recved->parsed.dst_ip, src_port_start+is_multi-1, entropy),
                 .index     = is_multi-1,
@@ -271,11 +271,11 @@ udp_handle(
                 ScanTmEvent *tm_event =
                     CALLOC(1, sizeof(ScanTmEvent));
 
-                tm_event->ip_proto  = IP_PROTO_UDP;
-                tm_event->ip_them   = recved->parsed.src_ip;
-                tm_event->ip_me     = recved->parsed.dst_ip;
-                tm_event->port_them = recved->parsed.port_src;
-                tm_event->port_me   = src_port_start+is_multi-1;
+                tm_event->target.ip_proto  = IP_PROTO_UDP;
+                tm_event->target.ip_them   = recved->parsed.src_ip;
+                tm_event->target.ip_me     = recved->parsed.dst_ip;
+                tm_event->target.port_them = recved->parsed.port_src;
+                tm_event->target.port_me   = src_port_start+is_multi-1;
 
                 tm_event->need_timeout = 1;
                 tm_event->dedup_type   = 0;
@@ -293,8 +293,8 @@ udp_handle(
         parse_icmp_port_unreachable(
             &recved->packet[recved->parsed.transport_offset],
             recved->parsed.transport_length,
-            &item->ip_them, &item->port_them,
-            &item->ip_me, &item->port_me, &proto);
+            &item->target.ip_them, &item->target.port_them,
+            &item->target.ip_me, &item->target.port_me, &proto);
     }
 }
 
@@ -309,21 +309,21 @@ udp_timeout(
     /*all events is for banner*/
 
     ProbeTarget ptarget = {
-        .ip_proto  = event->ip_proto,
-        .ip_them   = event->ip_them,
-        .ip_me     = event->ip_me,
-        .port_them = event->port_them,
-        .port_me   = event->port_me,
-        .cookie    = get_cookie(event->ip_them, event->port_them,
-            event->ip_me, event->port_me, entropy),
-        .index     = event->port_me-src_port_start,
+        .target.ip_proto  = event->target.ip_proto,
+        .target.ip_them   = event->target.ip_them,
+        .target.ip_me     = event->target.ip_me,
+        .target.port_them = event->target.port_them,
+        .target.port_me   = event->target.port_me,
+        .cookie    = get_cookie(event->target.ip_them, event->target.port_them,
+            event->target.ip_me, event->target.port_me, entropy),
+        .index     = event->target.port_me-src_port_start,
     };
 
     unsigned is_multi = UdpScan.probe->handle_timeout_cb(&ptarget, item);
 
     /*for multi-probe Multi_AfterHandle*/
     if (UdpScan.probe->multi_mode==Multi_AfterHandle&&is_multi
-        && event->port_me==src_port_start
+        && event->target.port_me==src_port_start
         && UdpScan.probe->multi_num) {
 
         for (unsigned idx=1; idx<UdpScan.probe->multi_num; idx++) {
@@ -331,13 +331,13 @@ udp_timeout(
             PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
             ProbeTarget ptarget = {
-                .ip_proto  = event->ip_proto,
-                .ip_them   = event->ip_them,
-                .ip_me     = event->ip_me,
-                .port_them = event->port_them,
-                .port_me   = src_port_start+idx,
-                .cookie    = get_cookie(event->ip_them, event->port_them,
-                    event->ip_me, src_port_start+idx, entropy),
+                .target.ip_proto  = event->target.ip_proto,
+                .target.ip_them   = event->target.ip_them,
+                .target.ip_me     = event->target.ip_me,
+                .target.port_them = event->target.port_them,
+                .target.port_me   = src_port_start+idx,
+                .cookie    = get_cookie(event->target.ip_them, event->target.port_them,
+                    event->target.ip_me, src_port_start+idx, entropy),
                 .index     = idx,
             };
 
@@ -347,8 +347,8 @@ udp_timeout(
             payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
 
             pkt_buffer->length = udp_create_packet(
-                event->ip_them, event->port_them,
-                event->ip_me,   src_port_start+idx, 0,
+                event->target.ip_them, event->target.port_them,
+                event->target.ip_me,   src_port_start+idx, 0,
                 payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_pktbuf(stack, pkt_buffer);
@@ -358,11 +358,11 @@ udp_timeout(
                 ScanTmEvent *tm_event =
                     CALLOC(1, sizeof(ScanTmEvent));
 
-                tm_event->ip_proto  = IP_PROTO_UDP;
-                tm_event->ip_them   = event->ip_them;
-                tm_event->ip_me     = event->ip_me;
-                tm_event->port_them = event->port_them;
-                tm_event->port_me   = src_port_start+idx;
+                tm_event->target.ip_proto  = IP_PROTO_UDP;
+                tm_event->target.ip_them   = event->target.ip_them;
+                tm_event->target.ip_me     = event->target.ip_me;
+                tm_event->target.port_them = event->target.port_them;
+                tm_event->target.port_me   = src_port_start+idx;
 
                 tm_event->need_timeout = 1;
                 tm_event->dedup_type   = 0;
@@ -381,13 +381,13 @@ udp_timeout(
         PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
         ProbeTarget ptarget = {
-            .ip_proto  = event->ip_proto,
-            .ip_them   = event->ip_them,
-            .ip_me     = event->ip_me,
-            .port_them = event->port_them,
-            .port_me   = src_port_start+is_multi-1,
-            .cookie    = get_cookie(event->ip_them, event->port_them,
-                event->ip_me, src_port_start+is_multi-1, entropy),
+            .target.ip_proto  = event->target.ip_proto,
+            .target.ip_them   = event->target.ip_them,
+            .target.ip_me     = event->target.ip_me,
+            .target.port_them = event->target.port_them,
+            .target.port_me   = src_port_start+is_multi-1,
+            .cookie    = get_cookie(event->target.ip_them, event->target.port_them,
+                event->target.ip_me, src_port_start+is_multi-1, entropy),
             .index     = is_multi-1,
         };
 
@@ -397,8 +397,8 @@ udp_timeout(
         payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
 
         pkt_buffer->length = udp_create_packet(
-            event->ip_them, event->port_them,
-            event->ip_me,   src_port_start+is_multi-1, 0,
+            event->target.ip_them, event->target.port_them,
+            event->target.ip_me,   src_port_start+is_multi-1, 0,
             payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
         stack_transmit_pktbuf(stack, pkt_buffer);
@@ -408,11 +408,11 @@ udp_timeout(
             ScanTmEvent *tm_event =
                 CALLOC(1, sizeof(ScanTmEvent));
 
-            tm_event->ip_proto  = IP_PROTO_UDP;
-            tm_event->ip_them   = event->ip_them;
-            tm_event->ip_me     = event->ip_me;
-            tm_event->port_them = event->port_them;
-            tm_event->port_me   = src_port_start+is_multi-1;
+            tm_event->target.ip_proto  = IP_PROTO_UDP;
+            tm_event->target.ip_them   = event->target.ip_them;
+            tm_event->target.ip_me     = event->target.ip_me;
+            tm_event->target.port_them = event->target.port_them;
+            tm_event->target.port_me   = src_port_start+is_multi-1;
 
             tm_event->need_timeout = 1;
             tm_event->dedup_type   = 0;

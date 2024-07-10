@@ -73,21 +73,21 @@ icmpecho_transmit(
     ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
-    if (target->ip_proto != IP_PROTO_Other)
+    if (target->target.ip_proto != IP_PROTO_Other)
         return false;
 
     /*we do not care target port*/
     unsigned cookie = get_cookie(
-        target->ip_them, 0, target->ip_me, 0, entropy);
+        target->target.ip_them, 0, target->target.ip_me, 0, entropy);
 
     *len = icmp_create_echo_packet(
-        target->ip_them, target->ip_me,
+        target->target.ip_them, target->target.ip_me,
         cookie, cookie, 0, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout = 1;
-    event->port_them    = 0;
-    event->port_me      = 0;
+    event->target.port_them    = 0;
+    event->target.port_me      = 0;
 
     return false;
 }
@@ -134,8 +134,8 @@ icmpecho_handle(
     STACK *stack,
     FHandler *handler)
 {
-    item->port_them  = 0;
-    item->port_me    = 0;
+    item->target.port_them  = 0;
+    item->target.port_me    = 0;
     item->level      = OUT_SUCCESS;
 
     safe_strcpy(item->reason, OUT_RSN_SIZE, "echo reply");

@@ -72,24 +72,24 @@ ndjson_result(OutItem *item)
 {
     int err;
 
-    bool output_port = (item->ip_proto==IP_PROTO_TCP
-        || item->ip_proto==IP_PROTO_UDP || item->ip_proto==IP_PROTO_SCTP);
+    bool output_port = (item->target.ip_proto==IP_PROTO_TCP
+        || item->target.ip_proto==IP_PROTO_UDP || item->target.ip_proto==IP_PROTO_SCTP);
 
-    ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->ip_them);
-    ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(item->ip_me);
+    ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
+    ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(item->target.ip_me);
 
     iso8601_time_str(format_time, sizeof(format_time), &item->timestamp);
 
     err = fprintf(file, fmt_ndjson_prefix,
         format_time,
         output_level_to_string(item->level),
-        ip_proto_to_string(item->ip_proto),
+        ip_proto_to_string(item->target.ip_proto),
         ip_them_fmt.string);
 
     if (err<0) goto error;
 
     if (output_port) {
-        err = fprintf(file, fmt_ndjson_port_them, item->port_them);
+        err = fprintf(file, fmt_ndjson_port_them, item->target.port_them);
         if (err<0) goto error;
     }
 
@@ -97,7 +97,7 @@ ndjson_result(OutItem *item)
     if (err<0) goto error;
 
     if (output_port) {
-        err = fprintf(file, fmt_ndjson_port_me, item->port_me);
+        err = fprintf(file, fmt_ndjson_port_me, item->target.port_me);
         if (err<0) goto error;
     }
 

@@ -510,11 +510,11 @@ _tcpcon_destroy_tcb(TCP_Table *tcpcon,
 
     /*do connection close for probe*/
     ProbeTarget target = {
-        .ip_proto  = IP_PROTO_TCP,
-        .ip_them   = tcb->ip_them,
-        .port_them = tcb->port_them,
-        .ip_me     = tcb->ip_me,
-        .port_me   = tcb->port_me,
+        .target.ip_proto  = IP_PROTO_TCP,
+        .target.ip_them   = tcb->ip_them,
+        .target.port_them = tcb->port_them,
+        .target.ip_me     = tcb->ip_me,
+        .target.port_me   = tcb->port_me,
         .cookie    = 0,               /*Probe_TYPE State doesn't need cookie*/
         .index     = tcb->port_me-tcpcon->src_port_start,
     };
@@ -1231,11 +1231,11 @@ stack_incoming_tcp(TCP_Table *tcpcon,
 
                     /*do connection init for probe*/
                     ProbeTarget target = {
-                        .ip_proto  = IP_PROTO_TCP,
-                        .ip_them   = tcb->ip_them,
-                        .port_them = tcb->port_them,
-                        .ip_me     = tcb->ip_me,
-                        .port_me   = tcb->port_me,
+                        .target.ip_proto  = IP_PROTO_TCP,
+                        .target.ip_them   = tcb->ip_them,
+                        .target.port_them = tcb->port_them,
+                        .target.ip_me     = tcb->ip_me,
+                        .target.port_me   = tcb->port_me,
                         .cookie    = 0,  /*Probe_TYPE State doesn't need cookie*/
                         .index     = tcb->port_me-tcpcon->src_port_start,
                     };
@@ -1451,11 +1451,11 @@ again:
                 case APP_WHAT_RECV_PAYLOAD: {
 
                     ProbeTarget target = {
-                        .ip_proto  = IP_PROTO_TCP,
-                        .ip_them   = socket->tcb->ip_them,
-                        .ip_me     = socket->tcb->ip_me,
-                        .port_them = socket->tcb->port_them,
-                        .port_me   = socket->tcb->port_me,
+                        .target.ip_proto  = IP_PROTO_TCP,
+                        .target.ip_them   = socket->tcb->ip_them,
+                        .target.ip_me     = socket->tcb->ip_me,
+                        .target.port_them = socket->tcb->port_them,
+                        .target.port_me   = socket->tcb->port_me,
                         .cookie    = 0, /*state mode does not need cookie*/
                         .index     = socket->tcb->port_me-socket->tcpcon->src_port_start,
                     };
@@ -1481,18 +1481,18 @@ again:
                      * we use ip info from target because tcb maybe destroyed now
                      * */
                     if (probe->multi_mode==Multi_AfterHandle && is_multi
-                        && target.port_me==socket->tcpcon->src_port_start) {
+                        && target.target.port_me==socket->tcpcon->src_port_start) {
                         for (unsigned idx=1; idx<probe->multi_num; idx++) {
 
-                            unsigned cookie = get_cookie(target.ip_them,
-                                target.port_them,
-                                target.ip_me,
+                            unsigned cookie = get_cookie(target.target.ip_them,
+                                target.target.port_them,
+                                target.target.ip_me,
                                 socket->tcpcon->src_port_start+idx,
                                 socket->tcpcon->entropy);
 
-                            _tcpcon_send_raw_SYN(socket->tcpcon, target.ip_them,
-                                target.port_them,
-                                target.ip_me,
+                            _tcpcon_send_raw_SYN(socket->tcpcon, target.target.ip_them,
+                                target.target.port_them,
+                                target.target.ip_me,
                                 socket->tcpcon->src_port_start+idx,
                                 cookie);
                         }
@@ -1504,15 +1504,15 @@ again:
                      * */
                     if (probe->multi_mode==Multi_DynamicNext && is_multi) {
 
-                        unsigned cookie = get_cookie(target.ip_them,
-                            target.port_them,
-                            target.ip_me,
+                        unsigned cookie = get_cookie(target.target.ip_them,
+                            target.target.port_them,
+                            target.target.ip_me,
                             socket->tcpcon->src_port_start+is_multi-1,
                             socket->tcpcon->entropy);
 
-                        _tcpcon_send_raw_SYN(socket->tcpcon, target.ip_them,
-                            target.port_them,
-                            target.ip_me,
+                        _tcpcon_send_raw_SYN(socket->tcpcon, target.target.ip_them,
+                            target.target.port_them,
+                            target.target.ip_me,
                             socket->tcpcon->src_port_start+is_multi-1,
                             cookie);
                     }
@@ -1549,11 +1549,11 @@ again:
         case APP_STATE_SEND_FIRST: {
 
             ProbeTarget target = {
-                .ip_proto  = IP_PROTO_TCP,
-                .ip_them   = socket->tcb->ip_them,
-                .port_them = socket->tcb->port_them,
-                .ip_me     = socket->tcb->ip_me,
-                .port_me   = socket->tcb->port_me,
+                .target.ip_proto  = IP_PROTO_TCP,
+                .target.ip_them   = socket->tcb->ip_them,
+                .target.port_them = socket->tcb->port_them,
+                .target.ip_me     = socket->tcb->ip_me,
+                .target.port_me   = socket->tcb->port_me,
                 .cookie    = 0,          /*does not support cookie now*/
                 .index     = socket->tcb->port_me-socket->tcpcon->src_port_start,
             };

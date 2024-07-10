@@ -61,14 +61,14 @@ sctpinit_transmit(
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
-    if (target->ip_proto != IP_PROTO_SCTP)
+    if (target->target.ip_proto != IP_PROTO_SCTP)
         return false;
 
-    unsigned cookie = get_cookie(target->ip_them, target->port_them,
-        target->ip_me, target->port_me, entropy);
+    unsigned cookie = get_cookie(target->target.ip_them, target->target.port_them,
+        target->target.ip_me, target->target.port_me, entropy);
 
-    *len = sctp_create_packet(target->ip_them, target->port_them,
-        target->ip_me, target->port_me,
+    *len = sctp_create_packet(target->target.ip_them, target->target.port_them,
+        target->target.ip_me, target->target.port_me,
         cookie, 0, px, PKT_BUF_SIZE);
 
     /*add timeout*/

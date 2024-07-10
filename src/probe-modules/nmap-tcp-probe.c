@@ -284,7 +284,7 @@ nmaptcp_handle_response(
 
     /*fail to match or in softmatch mode, try to send next possible probe*/
     next_probe = nmapservice_next_probe_index(list, target->index,
-        nmaptcp_conf.no_port_limit?0:target->port_them,
+        nmaptcp_conf.no_port_limit?0:target->target.port_them,
         nmaptcp_conf.rarity, IP_PROTO_TCP,
         nmaptcp_conf.softmatch);
 
@@ -315,7 +315,7 @@ nmaptcp_handle_timeout(ProbeTarget *target, OutItem *item)
      * We have to check whether it is the last available probe.
      * */
     unsigned next_probe = nmapservice_next_probe_index(list, target->index,
-        nmaptcp_conf.no_port_limit?0:target->port_them,
+        nmaptcp_conf.no_port_limit?0:target->target.port_them,
         nmaptcp_conf.rarity, IP_PROTO_TCP,
         nmaptcp_conf.softmatch);
 

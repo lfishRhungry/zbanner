@@ -7,6 +7,7 @@
  * Abstract common attributes for a single scanning target
  */
 typedef struct Target {
+    /**IP proto number to mention whether it is TCP, UDP, etc.*/
     unsigned           ip_proto;
     ipaddress          ip_them;
     ipaddress          ip_me;

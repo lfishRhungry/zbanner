@@ -338,10 +338,10 @@ luatcp_make_payload(
     size_t ret_len;
 
     lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_FUNC_MAKE_PAYLOAD);
-    lua_pushstring(luatcp_conf.Ltx, ipaddress_fmt(target->ip_them).string);
-    lua_pushinteger(luatcp_conf.Ltx, target->port_them);
-    lua_pushstring(luatcp_conf.Ltx, ipaddress_fmt(target->ip_me).string);
-    lua_pushinteger(luatcp_conf.Ltx, target->port_me);
+    lua_pushstring(luatcp_conf.Ltx, ipaddress_fmt(target->target.ip_them).string);
+    lua_pushinteger(luatcp_conf.Ltx, target->target.port_them);
+    lua_pushstring(luatcp_conf.Ltx, ipaddress_fmt(target->target.ip_me).string);
+    lua_pushinteger(luatcp_conf.Ltx, target->target.port_me);
     lua_pushinteger(luatcp_conf.Ltx, target->index);
 
     if (lua_pcall(luatcp_conf.Ltx, 5, 1, 0) != LUA_OK) {
@@ -370,10 +370,10 @@ luatcp_get_payload_length(ProbeTarget *target)
     int ret_len;
 
     lua_getglobal(luatcp_conf.Lrx, LUA_PROBE_FUNC_GET_PAYLOAD_LEN);
-    lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->ip_them).string);
-    lua_pushinteger(luatcp_conf.Lrx, target->port_them);
-    lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->ip_me).string);
-    lua_pushinteger(luatcp_conf.Lrx, target->port_me);
+    lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->target.ip_them).string);
+    lua_pushinteger(luatcp_conf.Lrx, target->target.port_them);
+    lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->target.ip_me).string);
+    lua_pushinteger(luatcp_conf.Lrx, target->target.port_me);
     lua_pushinteger(luatcp_conf.Lrx, target->index);
 
     if (lua_pcall(luatcp_conf.Lrx, 5, 1, 0) != LUA_OK) {
@@ -408,10 +408,10 @@ luatcp_handle_response(
     unsigned ret = 0;
 
     lua_getglobal(luatcp_conf.Lhx, LUA_PROBE_FUNC_HANDLE_RESPONSE);
-    lua_pushstring(luatcp_conf.Lhx, ipaddress_fmt(target->ip_them).string);
-    lua_pushinteger(luatcp_conf.Lhx, target->port_them);
-    lua_pushstring(luatcp_conf.Lhx, ipaddress_fmt(target->ip_me).string);
-    lua_pushinteger(luatcp_conf.Lhx, target->port_me);
+    lua_pushstring(luatcp_conf.Lhx, ipaddress_fmt(target->target.ip_them).string);
+    lua_pushinteger(luatcp_conf.Lhx, target->target.port_them);
+    lua_pushstring(luatcp_conf.Lhx, ipaddress_fmt(target->target.ip_me).string);
+    lua_pushinteger(luatcp_conf.Lhx, target->target.port_me);
     lua_pushinteger(luatcp_conf.Lhx, target->index);
     lua_pushlstring(luatcp_conf.Lhx, (const char *)px, sizeof_px);
 
@@ -490,10 +490,10 @@ luatcp_handle_timeout(
     unsigned ret = 0;
 
     lua_getglobal(luatcp_conf.Lrx, LUA_PROBE_FUNC_HANDLE_TIMEOUT);
-    lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->ip_them).string);
-    lua_pushinteger(luatcp_conf.Lrx, target->port_them);
-    lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->ip_me).string);
-    lua_pushinteger(luatcp_conf.Lrx, target->port_me);
+    lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->target.ip_them).string);
+    lua_pushinteger(luatcp_conf.Lrx, target->target.port_them);
+    lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->target.ip_me).string);
+    lua_pushinteger(luatcp_conf.Lrx, target->target.port_me);
     lua_pushinteger(luatcp_conf.Lrx, target->index);
 
     if (lua_pcall(luatcp_conf.Lrx, 5, 5, 0) != LUA_OK) {

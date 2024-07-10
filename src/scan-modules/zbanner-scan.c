@@ -190,20 +190,20 @@ zbanner_transmit(
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
-    if (target->ip_proto != IP_PROTO_TCP)
+    if (target->target.ip_proto != IP_PROTO_TCP)
         return false;
 
-    unsigned seqno = get_cookie(target->ip_them, target->port_them, target->ip_me,
+    unsigned seqno = get_cookie(target->target.ip_them, target->target.port_them, target->target.ip_me,
         src_port_start+target->index, entropy);
 
     *len = tcp_create_packet(
-        target->ip_them, target->port_them, target->ip_me, src_port_start+target->index,
+        target->target.ip_them, target->target.port_them, target->target.ip_me, src_port_start+target->index,
         seqno, 0, TCP_FLAG_SYN, 0, 0, NULL, 0, px, PKT_BUF_SIZE);
 
     if (zbanner_conf.is_port_timeout) {
         event->need_timeout = 1;
         event->dedup_type   = 0;
-        event->port_me      = src_port_start+target->index;
+        event->target.port_me      = src_port_start+target->index;
     }
 
     /*multi-probe Multi_Direct*/
@@ -251,11 +251,11 @@ zbanner_validate(
         && recved->parsed.app_length) {
 
         ProbeTarget ptarget = {
-            .ip_proto  = recved->parsed.ip_protocol,
-            .ip_them   = recved->parsed.src_ip,
-            .ip_me     = recved->parsed.dst_ip,
-            .port_them = recved->parsed.port_src,
-            .port_me   = recved->parsed.port_dst,
+            .target.ip_proto  = recved->parsed.ip_protocol,
+            .target.ip_them   = recved->parsed.src_ip,
+            .target.ip_me     = recved->parsed.dst_ip,
+            .target.port_them = recved->parsed.port_src,
+            .target.port_me   = recved->parsed.port_dst,
             .cookie    = 0, /*zbanner can recognize reponse by itself*/
             .index     = recved->parsed.port_dst-src_port_start,
         };
@@ -327,11 +327,11 @@ zbanner_handle(
 
             /*stack(send) ack with probe*/
             ProbeTarget ptarget = {
-                .ip_proto  = recved->parsed.ip_protocol,
-                .ip_them   = recved->parsed.src_ip,
-                .ip_me     = recved->parsed.dst_ip,
-                .port_them = recved->parsed.port_src,
-                .port_me   = recved->parsed.port_dst,
+                .target.ip_proto  = recved->parsed.ip_protocol,
+                .target.ip_them   = recved->parsed.src_ip,
+                .target.ip_me     = recved->parsed.dst_ip,
+                .target.port_them = recved->parsed.port_src,
+                .target.port_me   = recved->parsed.port_dst,
                 .cookie    = 0, /*zbanner can recognize reponse by itself*/
                 .index     = recved->parsed.port_dst-src_port_start,
             };
@@ -356,11 +356,11 @@ zbanner_handle(
                 ScanTmEvent *tm_event =
                     CALLOC(1, sizeof(ScanTmEvent));
 
-                tm_event->ip_proto  = IP_PROTO_TCP;
-                tm_event->ip_them   = recved->parsed.src_ip;
-                tm_event->ip_me     = recved->parsed.dst_ip;
-                tm_event->port_them = recved->parsed.port_src;
-                tm_event->port_me   = recved->parsed.port_dst;
+                tm_event->target.ip_proto  = IP_PROTO_TCP;
+                tm_event->target.ip_them   = recved->parsed.src_ip;
+                tm_event->target.ip_me     = recved->parsed.dst_ip;
+                tm_event->target.port_them = recved->parsed.port_src;
+                tm_event->target.port_me   = recved->parsed.port_dst;
 
                 tm_event->need_timeout = 1;
                 tm_event->dedup_type   = 1; /*1 for banner*/
@@ -393,11 +393,11 @@ zbanner_handle(
                         ScanTmEvent *tm_event =
                             CALLOC(1, sizeof(ScanTmEvent));
 
-                        tm_event->ip_proto  = IP_PROTO_TCP;
-                        tm_event->ip_them   = recved->parsed.src_ip;
-                        tm_event->ip_me     = recved->parsed.dst_ip;
-                        tm_event->port_them = recved->parsed.port_src;
-                        tm_event->port_me   = src_port_start+idx;
+                        tm_event->target.ip_proto  = IP_PROTO_TCP;
+                        tm_event->target.ip_them   = recved->parsed.src_ip;
+                        tm_event->target.ip_me     = recved->parsed.dst_ip;
+                        tm_event->target.port_them = recved->parsed.port_src;
+                        tm_event->target.port_me   = src_port_start+idx;
 
                         tm_event->need_timeout = 1;
                         tm_event->dedup_type   = 0; /*0 for port*/
@@ -444,11 +444,11 @@ zbanner_handle(
         stack_transmit_pktbuf(stack, pkt_buffer);
 
         ProbeTarget ptarget = {
-            .ip_proto  = recved->parsed.ip_protocol,
-            .ip_them   = recved->parsed.src_ip,
-            .ip_me     = recved->parsed.dst_ip,
-            .port_them = recved->parsed.port_src,
-            .port_me   = recved->parsed.port_dst,
+            .target.ip_proto  = recved->parsed.ip_protocol,
+            .target.ip_them   = recved->parsed.src_ip,
+            .target.ip_me     = recved->parsed.dst_ip,
+            .target.port_them = recved->parsed.port_src,
+            .target.port_me   = recved->parsed.port_dst,
             .cookie    = 0, /*zbanner can recognize reponse by itself*/
             .index     = recved->parsed.port_dst-src_port_start,
         };
@@ -482,11 +482,11 @@ zbanner_handle(
                     ScanTmEvent *tm_event =
                         CALLOC(1, sizeof(ScanTmEvent));
 
-                    tm_event->ip_proto  = IP_PROTO_TCP;
-                    tm_event->ip_them   = recved->parsed.src_ip;
-                    tm_event->ip_me     = recved->parsed.dst_ip;
-                    tm_event->port_them = recved->parsed.port_src;
-                    tm_event->port_me   = src_port_start+idx;
+                    tm_event->target.ip_proto  = IP_PROTO_TCP;
+                    tm_event->target.ip_them   = recved->parsed.src_ip;
+                    tm_event->target.ip_me     = recved->parsed.dst_ip;
+                    tm_event->target.port_them = recved->parsed.port_src;
+                    tm_event->target.port_me   = src_port_start+idx;
 
                     tm_event->need_timeout = 1;
                     tm_event->dedup_type   = 0; /*0 for port*/
@@ -519,11 +519,11 @@ zbanner_handle(
                 ScanTmEvent *tm_event =
                     CALLOC(1, sizeof(ScanTmEvent));
 
-                tm_event->ip_proto  = IP_PROTO_TCP;
-                tm_event->ip_them   = recved->parsed.src_ip;
-                tm_event->ip_me     = recved->parsed.dst_ip;
-                tm_event->port_them = recved->parsed.port_src;
-                tm_event->port_me   = src_port_start+is_multi-1;
+                tm_event->target.ip_proto  = IP_PROTO_TCP;
+                tm_event->target.ip_them   = recved->parsed.src_ip;
+                tm_event->target.ip_me     = recved->parsed.dst_ip;
+                tm_event->target.port_them = recved->parsed.port_src;
+                tm_event->target.port_me   = src_port_start+is_multi-1;
 
                 tm_event->need_timeout = 1;
                 tm_event->dedup_type   = 0; /*0 for port*/
@@ -556,30 +556,30 @@ zbanner_timeout(
     /*event for banner*/
 
     ProbeTarget ptarget = {
-        .ip_proto  = event->ip_proto,
-        .ip_them   = event->ip_them,
-        .ip_me     = event->ip_me,
-        .port_them = event->port_them,
-        .port_me   = event->port_me,
+        .target.ip_proto  = event->target.ip_proto,
+        .target.ip_them   = event->target.ip_them,
+        .target.ip_me     = event->target.ip_me,
+        .target.port_them = event->target.port_them,
+        .target.port_me   = event->target.port_me,
         .cookie    = 0, /*zbanner can recognize reponse by itself*/
-        .index     = event->port_me-src_port_start,
+        .index     = event->target.port_me-src_port_start,
     };
 
     unsigned is_multi = ZBannerScan.probe->handle_timeout_cb(&ptarget, item);
 
     /*multi-probe Multi_AfterHandle*/
     if (ZBannerScan.probe->multi_mode==Multi_AfterHandle
-        && is_multi && event->port_me==src_port_start) {
+        && is_multi && event->target.port_me==src_port_start) {
         for (unsigned idx=1; idx<ZBannerScan.probe->multi_num; idx++) {
 
-            unsigned cookie = get_cookie(event->ip_them, event->port_them,
-                event->ip_me, src_port_start+idx, entropy);
+            unsigned cookie = get_cookie(event->target.ip_them, event->target.port_them,
+                event->target.ip_me, src_port_start+idx, entropy);
 
             PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
             pkt_buffer->length = tcp_create_packet(
-                event->ip_them, event->port_them,
-                event->ip_me,   src_port_start+idx,
+                event->target.ip_them, event->target.port_them,
+                event->target.ip_me,   src_port_start+idx,
                 cookie, 0, TCP_FLAG_SYN, 0, 0,
                 NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
@@ -590,11 +590,11 @@ zbanner_timeout(
                 ScanTmEvent *tm_event =
                     CALLOC(1, sizeof(ScanTmEvent));
 
-                tm_event->ip_proto  = IP_PROTO_TCP;
-                tm_event->ip_them   = event->ip_them;
-                tm_event->ip_me     = event->ip_me;
-                tm_event->port_them = event->port_them;
-                tm_event->port_me   = src_port_start+idx;
+                tm_event->target.ip_proto  = IP_PROTO_TCP;
+                tm_event->target.ip_them   = event->target.ip_them;
+                tm_event->target.ip_me     = event->target.ip_me;
+                tm_event->target.port_them = event->target.port_them;
+                tm_event->target.port_me   = src_port_start+idx;
 
                 tm_event->need_timeout = 1;
                 tm_event->dedup_type   = 0; /*0 for port*/
@@ -607,14 +607,14 @@ zbanner_timeout(
 
     /*multi-probe Multi_DynamicNext*/
     if (ZBannerScan.probe->multi_mode==Multi_DynamicNext && is_multi) {
-        unsigned cookie = get_cookie(event->ip_them, event->port_them,
-            event->ip_me, src_port_start+is_multi-1, entropy);
+        unsigned cookie = get_cookie(event->target.ip_them, event->target.port_them,
+            event->target.ip_me, src_port_start+is_multi-1, entropy);
 
         PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
         pkt_buffer->length = tcp_create_packet(
-            event->ip_them, event->port_them,
-            event->ip_me,   src_port_start+is_multi-1,
+            event->target.ip_them, event->target.port_them,
+            event->target.ip_me,   src_port_start+is_multi-1,
             cookie, 0, TCP_FLAG_SYN, 0, 0,
             NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
@@ -625,11 +625,11 @@ zbanner_timeout(
             ScanTmEvent *tm_event =
                 CALLOC(1, sizeof(ScanTmEvent));
 
-            tm_event->ip_proto  = IP_PROTO_TCP;
-            tm_event->ip_them   = event->ip_them;
-            tm_event->ip_me     = event->ip_me;
-            tm_event->port_them = event->port_them;
-            tm_event->port_me   = src_port_start+is_multi-1;
+            tm_event->target.ip_proto  = IP_PROTO_TCP;
+            tm_event->target.ip_them   = event->target.ip_them;
+            tm_event->target.ip_me     = event->target.ip_me;
+            tm_event->target.port_them = event->target.port_them;
+            tm_event->target.port_me   = src_port_start+is_multi-1;
 
             tm_event->need_timeout = 1;
             tm_event->dedup_type   = 0; /*0 for port*/

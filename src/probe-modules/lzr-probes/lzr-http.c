@@ -26,14 +26,14 @@ lzr_http_make_payload(
     ProbeTarget *target,
     unsigned char *payload_buf)
 {
-    if (target->ip_them.version==4)
+    if (target->target.ip_them.version==4)
         return snprintf((char *)payload_buf,
             PM_PAYLOAD_SIZE, lzr_http_fmt_ipv4,
-            ipaddress_fmt(target->ip_them).string);
+            ipaddress_fmt(target->target.ip_them).string);
     else
         return snprintf((char *)payload_buf,
             PM_PAYLOAD_SIZE, lzr_http_fmt_ipv6,
-            ipaddress_fmt(target->ip_them).string);
+            ipaddress_fmt(target->target.ip_them).string);
 }
 
 static size_t

@@ -722,14 +722,14 @@ http_make_payload(
     unsigned char *payload_buf)
 {
     if (http_conf.dynamic_host) {
-        if (target->ip_them.version==4)
+        if (target->target.ip_them.version==4)
             return snprintf((char *)payload_buf,
                 PM_PAYLOAD_SIZE, http_conf.request4,
-                ipaddress_fmt(target->ip_them).string);
+                ipaddress_fmt(target->target.ip_them).string);
         else
             return snprintf((char *)payload_buf,
                 PM_PAYLOAD_SIZE, http_conf.request6,
-                ipaddress_fmt(target->ip_them).string);
+                ipaddress_fmt(target->target.ip_them).string);
     }
 
     memcpy(payload_buf, http_conf.request4, http_conf.req4_len);

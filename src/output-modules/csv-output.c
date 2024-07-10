@@ -76,22 +76,22 @@ csv_init(const OutConf *out)
 static void
 csv_result(OutItem *item)
 {
-    bool output_port = (item->ip_proto==IP_PROTO_TCP
-        || item->ip_proto==IP_PROTO_UDP || item->ip_proto==IP_PROTO_SCTP);
+    bool output_port = (item->target.ip_proto==IP_PROTO_TCP
+        || item->target.ip_proto==IP_PROTO_UDP || item->target.ip_proto==IP_PROTO_SCTP);
 
-    ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->ip_them);
-    ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(item->ip_me);
+    ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
+    ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(item->target.ip_me);
 
     iso8601_time_str(format_time, sizeof(format_time), &item->timestamp);
 
     int err = fprintf(file, fmt_csv_prefix,
         format_time,
         output_level_to_string(item->level),
-        ip_proto_to_string(item->ip_proto),
+        ip_proto_to_string(item->target.ip_proto),
         ip_them_fmt.string,
-        output_port?item->port_them:0,
+        output_port?item->target.port_them:0,
         ip_me_fmt.string,
-        output_port?item->port_me:0,
+        output_port?item->target.port_me:0,
         item->classification,
         item->reason);
 

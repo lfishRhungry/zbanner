@@ -163,11 +163,11 @@ handle_thread(void *v)
         }
 
         OutItem item = {
-            .ip_proto  = recved->parsed.ip_protocol,
-            .ip_them   = recved->parsed.src_ip,
-            .ip_me     = recved->parsed.dst_ip,
-            .port_them = recved->parsed.port_src,
-            .port_me   = recved->parsed.port_dst,
+            .target.ip_proto  = recved->parsed.ip_protocol,
+            .target.ip_them   = recved->parsed.src_ip,
+            .target.ip_me     = recved->parsed.dst_ip,
+            .target.port_them = recved->parsed.port_src,
+            .target.port_me   = recved->parsed.port_dst,
         };
 
         parms->scanner->handle_cb(parms->index, parms->entropy, recved, &item,
@@ -290,17 +290,17 @@ void receive_thread(void *v) {
             if (tm_event==NULL) break;
 
             if ((!xconf->is_nodedup && !dedup_is_duplicate(dedup,
-                                        tm_event->ip_them, tm_event->port_them,
-                                        tm_event->ip_me, tm_event->port_me,
+                                        tm_event->target.ip_them, tm_event->target.port_them,
+                                        tm_event->target.ip_me, tm_event->target.port_me,
                                         tm_event->dedup_type))
                 || xconf->is_nodedup) {
 
                 OutItem item = {
-                    .ip_proto  = tm_event->ip_proto,
-                    .ip_them   = tm_event->ip_them,
-                    .ip_me     = tm_event->ip_me,
-                    .port_them = tm_event->port_them,
-                    .port_me   = tm_event->port_me,
+                    .target.ip_proto  = tm_event->target.ip_proto,
+                    .target.ip_them   = tm_event->target.ip_them,
+                    .target.ip_me     = tm_event->target.ip_me,
+                    .target.port_them = tm_event->target.port_them,
+                    .target.port_me   = tm_event->target.port_me,
                 };
 
                 scan_module->timeout_cb(entropy, tm_event, &item, stack, ft_handler);

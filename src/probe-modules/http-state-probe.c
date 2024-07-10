@@ -762,16 +762,16 @@ httpstate_make_hello(
     ProbeTarget *target)
 {
     if (httpstate_conf.dynamic_host) {
-        if (target->ip_them.version==4) {
+        if (target->target.ip_them.version==4) {
             pass->data = MALLOC(httpstate_conf.req4_len+20);
             pass->len = snprintf((char *)pass->data,
                 httpstate_conf.req4_len+20, httpstate_conf.request4,
-                ipaddress_fmt(target->ip_them).string);
+                ipaddress_fmt(target->target.ip_them).string);
         } else {
             pass->data = MALLOC(httpstate_conf.req6_len+50);
             pass->len = snprintf((char *)pass->data,
                 httpstate_conf.req6_len+50, httpstate_conf.request6,
-                ipaddress_fmt(target->ip_them).string);
+                ipaddress_fmt(target->target.ip_them).string);
         }
 
         pass->is_dynamic = 1;
@@ -799,11 +799,11 @@ httpstate_parse_response(
     }
 
     OutItem item = {
-        .ip_proto  = target->ip_proto,
-        .ip_them   = target->ip_them,
-        .ip_me     = target->ip_me,
-        .port_them = target->port_them,
-        .port_me   = target->port_me,
+        .target.ip_proto  = target->target.ip_proto,
+        .target.ip_them   = target->target.ip_them,
+        .target.ip_me     = target->target.ip_me,
+        .target.port_them = target->target.port_them,
+        .target.port_me   = target->target.port_me,
     };
 
 #ifndef NOT_FOUND_PCRE2

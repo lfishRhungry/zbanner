@@ -58,10 +58,10 @@ list_init(const OutConf *out)
 static void
 list_result(OutItem *item)
 {
-    ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->ip_them);
+    ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
 
-    bool output_port = (item->ip_proto==IP_PROTO_TCP
-        || item->ip_proto==IP_PROTO_UDP || item->ip_proto==IP_PROTO_SCTP);
+    bool output_port = (item->target.ip_proto==IP_PROTO_TCP
+        || item->target.ip_proto==IP_PROTO_UDP || item->target.ip_proto==IP_PROTO_SCTP);
 
     int err = 0;
 
@@ -70,18 +70,18 @@ list_result(OutItem *item)
     if (err<0) goto error;
 
     if (output_port && !list_conf.no_port) {
-        switch (item->ip_proto) {
+        switch (item->target.ip_proto) {
             case IP_PROTO_TCP:
-                err = fprintf(file, fmt_port, "", item->port_them);
+                err = fprintf(file, fmt_port, "", item->target.port_them);
                 break;
             case IP_PROTO_UDP:
-                err = fprintf(file, fmt_port, "u:", item->port_them);
+                err = fprintf(file, fmt_port, "u:", item->target.port_them);
                 break;
             case IP_PROTO_SCTP:
-                err = fprintf(file, fmt_port, "s:", item->port_them);
+                err = fprintf(file, fmt_port, "s:", item->target.port_them);
                 break;
             default:
-                err = fprintf(file, fmt_port, "o:", item->port_them);
+                err = fprintf(file, fmt_port, "o:", item->target.port_them);
                 break;
         }
         if (err<0) goto error;

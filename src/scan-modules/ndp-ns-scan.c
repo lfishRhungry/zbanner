@@ -64,23 +64,23 @@ ndpns_transmit(
     ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
-    if (target->ip_proto != IP_PROTO_Other)
+    if (target->target.ip_proto != IP_PROTO_Other)
         return false;
 
     /*ndp ns is just for ipv6*/
-    if (target->ip_them.version!=6)
+    if (target->target.ip_them.version!=6)
         return false; 
 
     /*no cookie for NDP NS*/
 
     *len = ndp_create_ns_packet(
-        target->ip_them, target->ip_me, src_mac,
+        target->target.ip_them, target->target.ip_me, src_mac,
         0, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout = 1;
-    event->port_them    = 0;
-    event->port_me      = 0;
+    event->target.port_them    = 0;
+    event->target.port_me      = 0;
 
     return false;
 }
@@ -118,8 +118,8 @@ ndpns_handle(
     STACK *stack,
     FHandler *handler)
 {
-    item->port_them  = 0;
-    item->port_me    = 0;
+    item->target.port_them  = 0;
+    item->target.port_me    = 0;
     item->level      = OUT_SUCCESS;
 
     safe_strcpy(item->reason, OUT_RSN_SIZE, "ndp na");

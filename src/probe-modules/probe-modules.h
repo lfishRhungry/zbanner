@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 
+#include "../target/target.h"
 #include "../target/target-addr.h"
 #include "../output-modules/output-modules.h"
 #include "../util-misc/configer.h"
@@ -39,11 +40,7 @@ typedef bool (*probe_modules_init)(const Xconf *xconf);
  * not modifiable in probe module internal, we can't change the actual target.
 */
 typedef struct ProbeModuleTarget {
-    unsigned           ip_proto;
-    ipaddress          ip_them;
-    ipaddress          ip_me;
-    unsigned           port_them;
-    unsigned           port_me;
+    Target             target;
     unsigned           cookie;
     unsigned           index;     /*use for identifying of multi probes per target*/
 } ProbeTarget;

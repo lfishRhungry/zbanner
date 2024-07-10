@@ -17,6 +17,7 @@
 #include "../util-out/xtatus.h"
 #include "../output-modules/output-modules.h"
 #include "../stack/stack-queue.h"
+#include "../target/target.h"
 #include "../target/target-ip.h"
 #include "../target/target-addr.h"
 #include "../target/target-rangesport.h"
@@ -51,21 +52,13 @@ typedef bool (*scan_modules_init)(const Xconf *xconf);
  * modifiable in scan module internal to change target.
 */
 typedef struct ScanModuleTarget {
-    unsigned           ip_proto;
-    ipaddress          ip_them;
-    ipaddress          ip_me;
-    unsigned           port_them;
-    unsigned           port_me;
+    Target             target;
     unsigned           index;     /*use in tx thread for multi packets per target*/
 } ScanTarget;
 
 /*a timeout event for scanning*/
 typedef struct ScanTimeoutEvent {
-    unsigned           ip_proto;
-    ipaddress          ip_them;
-    ipaddress          ip_me;
-    unsigned           port_them;
-    unsigned           port_me;
+    Target             target;
     unsigned           dedup_type;
     unsigned           need_timeout:1;
 } ScanTmEvent;

@@ -8,6 +8,7 @@
 #include "../util-data/data-chain.h"
 #include "../util-misc/configer.h"
 #include "../util-misc/cross.h"
+#include "../target/target.h"
 #include "../target/target-ip.h"
 #include "../target/target-addr.h"
 
@@ -33,21 +34,9 @@ typedef struct OutputItem {
     /**Type of result item itself. INFO and FAILURE are not to be output by default
      * unless using `--show fail` or `--show info`.*/
     OutLevel                     level;
-    /**IP proto number to mention whether it is TCP, UDP, etc.*/
-    unsigned                     ip_proto;
-    /**IP of target*/
-    ipaddress                    ip_them;
-    /**Port of target.
-     * It won't be outputting in stdout and text if start with zero, suggest to set it*/
-    unsigned                     port_them;
-    /**IP of target.
-     * Our ip can be random when multi src ip set.
-     * It won't be showed in default stdout and text outputing.*/
-    ipaddress                    ip_me;
-    /**IP of target.
-     * Our ip can be random when multi src ip set.
-     * It won't be showed in default stdout and text outputing.*/
-    unsigned                     port_me;
+    /**
+     * Info of target */
+    Target                       target;
     /**Type of this result. It is recommended to set a value.
      * No double or single quotes in it for output format.
      * It won't be outputting in stdout and text if start with zero, suggest to set it*/

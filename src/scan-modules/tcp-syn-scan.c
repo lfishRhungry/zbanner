@@ -136,14 +136,14 @@ tcpsyn_transmit(
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
-    if (target->ip_proto != IP_PROTO_TCP)
+    if (target->target.ip_proto != IP_PROTO_TCP)
         return false;
 
-    unsigned cookie = get_cookie(target->ip_them, target->port_them,
-        target->ip_me, target->port_me, entropy);
+    unsigned cookie = get_cookie(target->target.ip_them, target->target.port_them,
+        target->target.ip_me, target->target.port_me, entropy);
 
     *len = tcp_create_packet(
-        target->ip_them, target->port_them, target->ip_me, target->port_me,
+        target->target.ip_them, target->target.port_them, target->target.ip_me, target->target.port_me,
         cookie, 0, TCP_FLAG_SYN, 0, 0, NULL, 0, px, PKT_BUF_SIZE);
 
     /*add timeout*/

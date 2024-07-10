@@ -247,11 +247,11 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line)
         return;
 
     OutItem item = {
-        .ip_proto  = tgt->ip_proto,
-        .ip_them   = tgt->ip_them,
-        .port_them = tgt->port_them,
-        .ip_me     = tgt->ip_me,
-        .port_me   = tgt->port_me,
+        .target.ip_proto  = tgt->target.ip_proto,
+        .target.ip_them   = tgt->target.ip_them,
+        .target.port_them = tgt->target.port_them,
+        .target.ip_me     = tgt->target.ip_me,
+        .target.port_me   = tgt->target.port_me,
         .level     = OUT_INFO,
     };
 
@@ -269,11 +269,11 @@ static void ssl_info_cb(const SSL *ssl, int where, int ret)
             return;
 
         OutItem item = {
-            .ip_proto  = tgt->ip_proto,
-            .ip_them   = tgt->ip_them,
-            .port_them = tgt->port_them,
-            .ip_me     = tgt->ip_me,
-            .port_me   = tgt->port_me,
+            .target.ip_proto  = tgt->target.ip_proto,
+            .target.ip_them   = tgt->target.ip_them,
+            .target.port_them = tgt->target.port_them,
+            .target.ip_me     = tgt->target.ip_me,
+            .target.port_me   = tgt->target.port_me,
             .level     = OUT_INFO,
         };
 
@@ -310,11 +310,11 @@ static bool output_subject_info(OutConf *out,
     }
 
     OutItem item = {
-        .ip_proto  = target->ip_proto,
-        .ip_them   = target->ip_them,
-        .port_them = target->port_them,
-        .ip_me     = target->ip_me,
-        .port_me   = target->port_me,
+        .target.ip_proto  = target->target.ip_proto,
+        .target.ip_them   = target->target.ip_them,
+        .target.port_them = target->target.port_them,
+        .target.ip_me     = target->target.ip_me,
+        .target.port_me   = target->target.port_me,
         .level     = OUT_INFO,
     };
     safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
@@ -448,11 +448,11 @@ static bool output_x502_cert(OutConf *out,
     for (i_cert = 0; i_cert < sk_X509_num(sk_x509_certs); i_cert++) {
 
         OutItem item = {
-            .ip_proto  = target->ip_proto,
-            .ip_them   = target->ip_them,
-            .port_them = target->port_them,
-            .ip_me     = target->ip_me,
-            .port_me   = target->port_me,
+            .target.ip_proto  = target->target.ip_proto,
+            .target.ip_them   = target->target.ip_them,
+            .target.port_them = target->target.port_them,
+            .target.ip_me     = target->target.ip_me,
+            .target.port_me   = target->target.port_me,
             .level     = OUT_INFO,
         };
 
@@ -544,11 +544,11 @@ static bool output_cipher_suite(OutConf *out,
     }
 
     OutItem item = {
-        .ip_proto  = target->ip_proto,
-        .ip_them   = target->ip_them,
-        .port_them = target->port_them,
-        .ip_me     = target->ip_me,
-        .port_me   = target->port_me,
+        .target.ip_proto  = target->target.ip_proto,
+        .target.ip_them   = target->target.ip_them,
+        .target.port_them = target->target.port_them,
+        .target.ip_me     = target->target.ip_me,
+        .target.port_me   = target->target.port_me,
         .level     = OUT_INFO,
     };
 
@@ -568,11 +568,11 @@ static bool output_tls_version(OutConf *out,
     int version = SSL_version(ssl);
 
     OutItem item = {
-        .ip_proto  = target->ip_proto,
-        .ip_them   = target->ip_them,
-        .port_them = target->port_them,
-        .ip_me     = target->ip_me,
-        .port_me   = target->port_me,
+        .target.ip_proto  = target->target.ip_proto,
+        .target.ip_them   = target->target.ip_them,
+        .target.port_them = target->target.port_them,
+        .target.ip_me     = target->target.ip_me,
+        .target.port_me   = target->target.port_me,
         .level     = OUT_INFO,
     };
 
@@ -769,11 +769,11 @@ tlsstate_conn_init(ProbeState *state, ProbeTarget *target)
     /*save `target` to SSL object*/
     ProbeTarget *tgt;
     tgt              = MALLOC(sizeof(ProbeTarget));
-    tgt->ip_proto    = target->ip_proto;
-    tgt->ip_them     = target->ip_them;
-    tgt->port_them   = target->port_them;
-    tgt->ip_me       = target->ip_me;
-    tgt->port_me     = target->port_me;
+    tgt->target.ip_proto    = target->target.ip_proto;
+    tgt->target.ip_them     = target->target.ip_them;
+    tgt->target.port_them   = target->target.port_them;
+    tgt->target.ip_me       = target->target.ip_me;
+    tgt->target.port_me     = target->target.port_me;
     tgt->cookie      = target->cookie;
     tgt->index       = target->index;
 
@@ -975,7 +975,7 @@ tlsstate_parse_response(
 
         // now_time = pixie_gettime() - now_time;
         // if (sizeof_px > TSP_BIO_MEM_LIMIT || now_time > 1000000) {
-        //     LOGip(LEVEL_WARN, target->ip_them, target->port_them,
+        //     LOGip(LEVEL_WARN, target->target.ip_them, target->target.port_them,
         //           "(TSP Parse RESPONSE) len px: 0x%" PRIxPTR ", time: " PRIu64
         //           " millis\n",
         //           sizeof_px, now_time * 1000);
@@ -1093,11 +1093,11 @@ tlsstate_parse_response(
                 LOGopenssl(LEVEL_DEBUG);
 
                 OutItem item = {
-                    .ip_proto  = target->ip_proto,
-                    .ip_them   = target->ip_them,
-                    .port_them = target->port_them,
-                    .ip_me     = target->ip_me,
-                    .port_me   = target->port_me,
+                    .target.ip_proto  = target->target.ip_proto,
+                    .target.ip_them   = target->target.ip_them,
+                    .target.port_them = target->target.port_them,
+                    .target.ip_me     = target->target.ip_me,
+                    .target.port_me   = target->target.port_me,
                     .level     = tlsstate_conf.fail_handshake?OUT_FAILURE:OUT_INFO,
                 };
                 safe_strcpy(item.classification, OUT_CLS_SIZE, "tls error");

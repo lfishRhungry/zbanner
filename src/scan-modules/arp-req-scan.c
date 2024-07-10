@@ -33,21 +33,21 @@ arpreq_transmit(
     ScanTmEvent *event,
     unsigned char *px, size_t *len)
 {
-    if (target->ip_proto != IP_PROTO_Other)
+    if (target->target.ip_proto != IP_PROTO_Other)
         return false;
 
     /*arp is just for ipv4*/
-    if (target->ip_them.version!=4)
+    if (target->target.ip_them.version!=4)
         return false; 
 
     /*we do not need a cookie and actually cannot set it*/
     *len = arp_create_request_packet(
-        target->ip_them, target->ip_me, px, PKT_BUF_SIZE);
+        target->target.ip_them, target->target.ip_me, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout = 1;
-    event->port_them    = 0;
-    event->port_me      = 0;
+    event->target.port_them    = 0;
+    event->target.port_me      = 0;
 
     return false;
 }
@@ -79,8 +79,8 @@ arpreq_handle(
     STACK *stack,
     FHandler *handler)
 {
-    item->port_them  = 0;
-    item->port_me    = 0;
+    item->target.port_them  = 0;
+    item->target.port_me    = 0;
     item->level      = OUT_SUCCESS;
 
     safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");

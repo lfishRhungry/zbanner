@@ -319,11 +319,11 @@ recogstate_parse_response(
     }
 
     OutItem item = {
-        .ip_proto  = target->ip_proto,
-        .ip_them   = target->ip_them,
-        .ip_me     = target->ip_me,
-        .port_them = target->port_them,
-        .port_me   = target->port_me,
+        .target.ip_proto  = target->target.ip_proto,
+        .target.ip_them   = target->target.ip_them,
+        .target.ip_me     = target->target.ip_me,
+        .target.port_them = target->target.port_them,
+        .target.port_me   = target->target.port_me,
     };
 
     const char *match_res = match_recog_fp(recogstate_conf.recog_fp, px, sizeof_px);

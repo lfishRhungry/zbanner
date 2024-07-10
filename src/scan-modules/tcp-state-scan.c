@@ -200,14 +200,14 @@ tcpstate_transmit(
     unsigned char *px, size_t *len)
 {
     /*we just handle tcp target*/
-    if (target->ip_proto != IP_PROTO_TCP)
+    if (target->target.ip_proto != IP_PROTO_TCP)
         return false;
 
-    unsigned cookie = get_cookie(target->ip_them, target->port_them,
-        target->ip_me, src_port_start+target->index, entropy);
+    unsigned cookie = get_cookie(target->target.ip_them, target->target.port_them,
+        target->target.ip_me, src_port_start+target->index, entropy);
 
     *len = tcp_create_packet(
-        target->ip_them, target->port_them, target->ip_me, src_port_start+target->index,
+        target->target.ip_them, target->target.port_them, target->target.ip_me, src_port_start+target->index,
         cookie, 0, TCP_FLAG_SYN, 0, 0, NULL, 0, px, PKT_BUF_SIZE);
 
     /*multi-probe Multi_Direct*/

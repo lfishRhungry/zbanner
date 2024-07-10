@@ -35,10 +35,10 @@ text_init(const OutConf *out)
 static void
 text_result(OutItem *item)
 {
-    ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->ip_them);
+    ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
 
-    bool output_port = (item->ip_proto==IP_PROTO_TCP
-        || item->ip_proto==IP_PROTO_UDP || item->ip_proto==IP_PROTO_SCTP);
+    bool output_port = (item->target.ip_proto==IP_PROTO_TCP
+        || item->target.ip_proto==IP_PROTO_UDP || item->target.ip_proto==IP_PROTO_SCTP);
 
     int err = 0;
 
@@ -60,11 +60,11 @@ text_result(OutItem *item)
     if (err<0) goto error;
 
     if (output_port) {
-        err = fprintf(file, fmt_port, item->port_them);
+        err = fprintf(file, fmt_port, item->target.port_them);
         if (err<0) goto error;
     }
 
-    err = fprintf(file, fmt_proto, ip_proto_to_string(item->ip_proto));
+    err = fprintf(file, fmt_proto, ip_proto_to_string(item->target.ip_proto));
     if (err<0) goto error;
 
     if (item->classification[0]) {
