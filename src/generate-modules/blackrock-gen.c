@@ -65,8 +65,10 @@ blackrock_init(const XConf *xconf)
     }
     uint64_t count_ports = rangelist_count(&xconf->targets.ports);
     if (count_ports == 0) {
-        LOG(LEVEL_ERROR, "no ports were specified or remained\n");
-        return false;
+        targetip_add_port_string((TargetIP *)(&xconf->targets), "o:0", 0);
+        LOG(LEVEL_WARN, "(BlackRock) no ports were specified or remained, a fake port o:0 was"
+        " specified automaticlly.\n");
+        count_ports = 1;
     }
 
     /**

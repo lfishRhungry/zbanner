@@ -144,6 +144,11 @@ static int _main_scan(XConf *xconf) {
         exit(1);
     }
 
+    /**
+     * Optimize target again because generator may add new targets.
+     */
+    targetip_optimize(&xconf->targets);
+
     if (initialize_adapter(xconf, xconf->generator->has_ipv4_targets,
         xconf->generator->has_ipv6_targets) != 0)
         exit(1);
@@ -579,8 +584,6 @@ int main(int argc, char *argv[]) {
     XConf xconf[1];
     memset(xconf, 0, sizeof(xconf));
 
-    int has_target_ports     = 0;
-
 #if defined(WIN32)
   {
     WSADATA x;
@@ -624,16 +627,7 @@ int main(int argc, char *argv[]) {
 
     rawsock_init();
 
-    has_target_ports     = targetip_has_target_ports(&xconf->targets);
     targetip_apply_excludes(&xconf->targets, &xconf->exclude);
-    if (!has_target_ports) {
-        targetip_add_port_string(&xconf->targets, "o:0", 0);
-
-        // LOG(LEVEL_HINT, "NOTE: no ports were specified, use default other proto port 0.\n");
-        // LOG(LEVEL_HINT, " ignored if the ScanModule does not need port. (eg. "
-        //     "icmp, arp, ndp, etc.)\n");
-        // LOG(LEVEL_HINT, " or try something like \"-p 80,8000-9000\"\n");
-    }
 
     /* Optimize target selection so it's a quick binary search instead
      * of walking large memory tables. When we scan the entire Internet

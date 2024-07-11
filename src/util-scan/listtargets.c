@@ -6,21 +6,25 @@
 void
 listip(XConf *xconf)
 {
-    uint64_t i;
-    uint64_t range;
-    uint64_t start;
-    uint64_t end;
-    struct   BlackRock blackrock;
-    unsigned increment    = xconf->shard.of;
-    uint64_t dynamic_seed = xconf->seed;
+    uint64_t  i;
+    uint64_t  range;
+    uint64_t  start;
+    uint64_t  end;
+    BlackRock blackrock;
+    unsigned  increment    = xconf->shard.of;
+    uint64_t  dynamic_seed = xconf->seed;
 
     /* If called with no ports, then create a pseudo-port needed
      * for the internal algorithm. */
-    if (!targetip_has_target_ports(&xconf->targets))
+    if (!targetip_has_target_ports(&xconf->targets)) {
         targetip_add_port_string(&xconf->targets, "o:0", 0);
+        // LOG(LEVEL_WARN, "no ports were specified or remained, a fake port o:0 was"
+        // " specified automaticlly.\n");
+    }
     targetip_optimize(&xconf->targets);
 
-    /* The "range" is the total number of IP/port combinations that
+    /**
+     * The "range" is the total number of IP/port combinations that
      * the scan can produce */
     range = targetip_range(&xconf->targets).lo;
 
@@ -37,7 +41,7 @@ infinite:
         unsigned ip_proto;
         ipaddress addr;
 
-        xXx = blackrock1_shuffle(&blackrock,  i);
+        xXx = blackrock1_shuffle(&blackrock, i);
 
         targetip_pick(&xconf->targets, xXx, &addr, &port);
 

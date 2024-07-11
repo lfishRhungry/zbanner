@@ -366,6 +366,9 @@ static ConfRes SET_scan_module(void *conf, const char *name, const char *value)
         return Conf_ERR;
     }
 
+    if (xconf->op == Operation_Default)
+        xconf->op = Operation_Scan;
+
     return Conf_OK;
 }
 
