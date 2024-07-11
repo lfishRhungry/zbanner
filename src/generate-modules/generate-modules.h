@@ -1,3 +1,16 @@
+/**
+ * GenerateModule or Generator is an abstraction for scan targets generation. It
+ * makes target generation extensible and flexible. I expect that users can design
+ * their own target generation algorithms, or method like gererating from database
+ * or files, even design it with OutputModule together.
+ * Unlike ProbeModule or ScanModule, Gererator is a low-level module. It's a big
+ * challenge to write one. So Xtate provide usable functions in possible. For 
+ * example, getting address set from command line or file will be automaticlly
+ * finished.
+ * 
+ * NOTE: It's better to understand the process of Tx Thread before writing a 
+ * Generator.
+ */
 #ifndef GENERATE_MODULES_H
 #define GENERATE_MODULES_H
 
@@ -30,8 +43,11 @@ typedef bool
  * !Must be thread safe for itself.
  * !Happens in Tx Threads & main Thread.
  * 
- * Test if has more target for this index.
- * It's the condition of stoping tx threads.
+ * Test if generator has more target for this index on tx_index thread. It's also
+ *  the condition to stop tx threads.
+ * Tx Thread will jump out send loop if generator has no more target.
+ * Main Thread will stop all Tx Threads if generatror has no more target for every
+ * Tx Threads.
  * 
  * @param tx_index index of tx thread
  * @param index index of target traveling
@@ -45,7 +61,7 @@ typedef bool
  * !Must be thread safe for itself.
  * !Happens in Tx Threads.
  * 
- * generate a target for this index.
+ * generate a target for this index on tx_index thread.
  * 
  * @param tx_index index of tx thread
  * @param index index of target traveling

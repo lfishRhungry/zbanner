@@ -60,30 +60,30 @@ Unlike existing high-speed asynchronous scanners, Xtate enables richer scanning 
 This is how Xtate working internally (or you can check it by `xtate --intro`):
 
 ```
-+---------------------------------------------------------------------------------------------+
-|                                                                                             |
-|    New Targets Generation       Tx Threads         ScanModule Transmit         Tx Threads   |
-|  +-------------------------+  ------------->  +---------------------------+   ----------->  |
-|  | 1.Address Randomization |  ------------->  |(ProbeModule Hello Making) |   ----------->  |
-|  | 2.Scan Rate Control     |  ------------->  |(Timeout Event Creating)   |   ----------->  |
-|  +-------------------------+                  +---------------------------+                 |
-|                                                                                             |
-|                                                                             ^               |
-|                                                                             |               |
-|      Packets need to be send   +-----------------------+  Send in priority  |               |
-|  +---------------------------->| Pakcets Sending Queue +--------------------+               |
-|  |                             +-----------------------+                                    |
-|  |                                                                                          |
-|  |                                                                                          |
-|  |          ScanModule Handling                        ScanModule Validation                |
-|  |   +-----------------------------+                +-----------------------+               |
-|  |   | 1.ProbeModule Handling      | Handle Threads | 1.Packet Record       |   Rx  Thread  |
-|  |   | 2.OutputModule save results | <------------- | 2.Deduplication       | <-----------  |
-|  +---| 3.More packets to send      | <------------- | 3.Timeout handling    |               |
-|      |  (ProbeModule Hello Making) | <------------- | 4.ProbeModule Validate|               |
-|      +-----------------------------+                +-----------------------+               |
-|                                                                                             |
-+---------------------------------------------------------------------------------------------+
++--------------------------------------------------------------------------------------------+
+|                                                                                            |
+|      New Targets Generation     Tx Threads         ScanModule Transmit        Tx Threads   |
+|     +----------------------+  ------------->  +---------------------------+  ----------->  |
+|     | 1.GenerateModule     |  ------------->  |(ProbeModule Hello Making) |  ----------->  |
+|     | 2.Scan Rate Control  |  ------------->  |(Timeout Event Creating)   |  ----------->  |
+|     +----------------------+                  +---------------------------+                |
+|                                                                                            |
+|                                                                            ^               |
+|                                                                            |               |
+|     Packets need to be send   +-----------------------+  Send in priority  |               |
+|  +--------------------------->| Pakcets Sending Queue +--------------------+               |
+|  |                            +-----------------------+                                    |
+|  |                                                                                         |
+|  |                                                                                         |
+|  |         ScanModule Handling                        ScanModule Validation                |
+|  |  +-----------------------------+                +-----------------------+               |
+|  |  | 1.ProbeModule Handling      | Handle Threads | 1.Packet Record       |   Rx  Thread  |
+|  |  | 2.OutputModule save results | <------------- | 2.Deduplication       | <-----------  |
+|  +--| 3.More packets to send      | <------------- | 3.Timeout handling    |               |
+|     |  (ProbeModule Hello Making) | <------------- | 4.ProbeModule Validate|               |
+|     +-----------------------------+                +-----------------------+               |
+|                                                                                            |
++--------------------------------------------------------------------------------------------+
 ```
 
 The most important of these are the Scan module and the Probe module.
@@ -166,9 +166,9 @@ original examples of xtate:
       do NDP NS scan with a link-local source IP in local network.
 ```
 
-## Typical Modules
+## Modules
 
-### Typical Scan Modules
+### Some Typical Scan Modules
 
 Some scan modules would carry probe modules in same type for different performing.
 
@@ -187,7 +187,7 @@ It has basic tcp funtions in large-scale scanning scenario and could touch upper
 - `udp`: Send probe payload in type of udp and try to grab valid response.
 
 
-### Generalizable Probe Modules
+### Some Generalizable Probe Modules
 
 However, writing modules in C is not an easy task although it helps writter understand more about principle.
 So I try to provide some highly generalizable Scan and Probe modules.
@@ -214,6 +214,13 @@ This makes output modules to save results in various ways.
 
 Xtate could save results in text, csv and ndjson, etc.
 You can write your own output module for better saving.
+
+### Generate Modules
+
+GenerateModule or Generator is an abstraction for scan targets generation. It makes target generation extensible and flexible.
+I expect that users can design their own target generation algorithms, or method like gererating from database or files, even design it with OutputModule together.
+
+The default Generator is the one extracted from Masscan.
 
 
 ## Helps in Detail
@@ -340,14 +347,9 @@ Original code was written in:
 - College of Electronic Engineering, [National University of Defense Technology](https://english.nudt.edu.cn/).
 - Anhui Province Key Laboratory of Cyberspace Security Situation Awareness and Evaluation.
 
-And referenced:
-
-- [ZMap](https://github.com/zmap/zmap)
-- [Masscan](https://github.com/robertdavidgraham/masscan/tree/master)
-- [Masscan-ng](https://github.com/bi-zone/masscan-ng)
-- Other excellent open-source projects (noted in the code).
-
-Thanks to Robert Graham, Zakir Durumeric and Konstantin Molodyakov for their greate code and rigorous style.
+The initial version of Xtate was born from [Masscan](https://github.com/robertdavidgraham/masscan/tree/master).
+Thanks to Robert Grahm for providing valued programing throughts and code infrastructures.
+Also thanks to other excellent open-source projects I refered to and noted in the code.
 I've learned more than just finishing my worthless graduate thesis.
 
 # License

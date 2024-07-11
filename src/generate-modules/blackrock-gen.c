@@ -1,5 +1,6 @@
 #include "generate-modules.h"
 #include "../xconf.h"
+#include "../version.h"
 #include "../crypto/crypto-blackrock.h"
 #include "../util-data/fine-malloc.h"
 #include "../target/target-cookie.h"
@@ -210,9 +211,15 @@ Generator BlackRockGen = {
     .name       = "blackrock",
     .params     = blackrock_parameters,
     .desc =
-        "BlackRock generate module randomizes ip/port that user set by commandline"
-        " or file and generates ip/port in a dispersed way to reduce the pressure"
-        " of target networks.",
+        "BlackRock module randomizes ip*port that user set through commandline "
+        "or file and generates ip:port in a dispersed way to reduce the pressure"
+        " of target networks. It's the most classic permutation way from Masscan."
+        " BlackRock implements an encryption algorithm based on DES and shuffles"
+        " the index in stateless.\n"
+        "NOTE1: BlackRock is the default generator of "XTATE_FIRST_UPPER_NAME" if"
+        " no other generator was specified.\n"
+        "NOTE2: BlackRock generates targets in product of ip*port. So it cannot"
+        " keep any relation between ip and port.",
     .init_cb                                 = &blackrock_init,
     .hasmore_cb                              = &blackrock_hasmore,
     .generate_cb                             = &blackrock_generate,

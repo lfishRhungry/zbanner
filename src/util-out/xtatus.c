@@ -273,7 +273,7 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item)
                 LOG(LEVEL_OUT,
                         fmt,
                         kpps,
-                        item->repeat_count,
+                        item->repeat_count+1,
                         sent_rate,
                         successed_rate);
 
