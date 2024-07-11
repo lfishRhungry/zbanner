@@ -30,7 +30,7 @@ In other words, Xtate is not good at being a crawler or concentrating on content
 Xtate was originally designed to do all scans for UDP and TCP in complete stateless manner, even obtaining responses over TCP with our **ZBanner** tech.
 But some new added features and modules make it be more than stateless.
 
-For example, Xtate could do stateful TCP connection and even get HTTPS reponses after finishing TLS handshake with an improved user space stack what we called **HLTCP(hybrid-state lightweight TCP stack)** that optimized for large-scale scanning.
+For example, Xtate could do stateful TCP connection and even get HTTPS reponses after finishing TLS handshake with an improved user space stack what we called **HLTCP(hybrid-state lightweight TCP stack)** which optimized for large-scale scanning.
 However, being fast and concise is always our target.
 
 In addition, Xtate supports IPv6 addresses and can be built on Windows and Linux with optional dependencies.

@@ -86,24 +86,31 @@ typedef struct GenerateModule {
     const char                               *desc;
     ConfParam                                *params; 
     /**
-     * could be dynamicly updated after inited.
-     * could be zero if don't know.
+     * This is for outer Xtatus to print better status of scanning.
+     * It could be dynamicly updated after inited or you can set it to zero
+     * if the actual value cannot be known.
      */
     uint64_t                                  target_range;
     /**
-     * could be dynamicly updated after inited.
+     * This is for main thread to print some info about scanning.
+     * It could be dynamicly updated after inited. The value of it won't affect
+     * our scan process.
      */
     uint64_t                                  count_ips;
     /**
-     * could be dynamicly updated after inited.
+     * This is for main thread to print some info about scanning.
+     * It could be dynamicly updated after inited. The value of it won't affect
+     * our scan process.
      */
     uint64_t                                  count_ports;
     /**
-     * could be dynamicly updated after inited.
+     * This is for main thread to init adapter for ipv4 optionally.
+     * It could be dynamicly updated after inited.
      */
     bool                                      has_ipv4_targets;
     /**
-     * could be dynamicly updated after inited.
+     * This is for main thread to init adapter for ipv6 optionally.
+     * It could be dynamicly updated after inited.
      */
     bool                                      has_ipv6_targets;
 
