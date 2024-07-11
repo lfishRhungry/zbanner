@@ -5,18 +5,15 @@
 #include "../util-data/fine-malloc.h"
 #include "../util-out/logger.h"
 
-struct ResetFilter
-{
+struct ResetFilter {
     unsigned long long seed;
-    size_t bucket_count;
-    size_t bucket_mask;
-    unsigned counter;
-    unsigned char *buckets;
+    size_t             bucket_count;
+    size_t             bucket_mask;
+    unsigned           counter;
+    unsigned char     *buckets;
 };
 
-static size_t
-next_pow2(size_t n)
-{
+static size_t next_pow2(size_t n) {
     size_t bit_count = 0;
 
     /* Always have at least one bit */
@@ -36,59 +33,53 @@ next_pow2(size_t n)
     return (size_t)1 << (size_t)bit_count;
 }
 
-struct ResetFilter *
-rstfilter_create(unsigned long long seed, size_t bucket_count)
-{
+struct ResetFilter *rstfilter_create(unsigned long long seed,
+                                     size_t             bucket_count) {
     struct ResetFilter *rf;
 
-    rf = CALLOC(1, sizeof(*rf));
-    rf->seed = seed;
+    rf               = CALLOC(1, sizeof(*rf));
+    rf->seed         = seed;
     rf->bucket_count = next_pow2(bucket_count);
-    rf->bucket_mask = rf->bucket_count - 1;
-    rf->buckets = CALLOC(rf->bucket_count/2, sizeof(*rf->buckets));
+    rf->bucket_mask  = rf->bucket_count - 1;
+    rf->buckets      = CALLOC(rf->bucket_count / 2, sizeof(*rf->buckets));
 
     return rf;
 }
 
-
-void
-rstfilter_destroy(struct ResetFilter *rf)
-{
+void rstfilter_destroy(struct ResetFilter *rf) {
     if (rf == NULL)
         return;
     free(rf->buckets);
     free(rf);
 }
 
-bool
-rstfilter_is_filter(struct ResetFilter *rf,
-                    ipaddress src_ip, unsigned src_port,
-                    ipaddress dst_ip, unsigned dst_port)
-{
-    uint64_t hash;
-    uint64_t input[5];
-    uint64_t key[2];
-    size_t index;
+bool rstfilter_is_filter(struct ResetFilter *rf, ipaddress src_ip,
+                         unsigned src_port, ipaddress dst_ip,
+                         unsigned dst_port) {
+    uint64_t       hash;
+    uint64_t       input[5];
+    uint64_t       key[2];
+    size_t         index;
     unsigned char *p;
-    bool result = false;
+    bool           result = false;
 
     /*
      * Setup the input
      */
     switch (src_ip.version) {
-    case 4:
-        input[0] = src_ip.ipv4;
-        input[1] = src_port;
-        input[2] = dst_ip.ipv4;
-        input[3] = dst_port;
-        break;
-    case 6:
-        input[0] = src_ip.ipv6.hi;
-        input[1] = src_ip.ipv6.lo;
-        input[2] = dst_ip.ipv6.hi;
-        input[3] = dst_ip.ipv6.lo;
-        input[4] = src_port<<16 | dst_port;
-        break;
+        case 4:
+            input[0] = src_ip.ipv4;
+            input[1] = src_port;
+            input[2] = dst_ip.ipv4;
+            input[3] = dst_port;
+            break;
+        case 6:
+            input[0] = src_ip.ipv6.hi;
+            input[1] = src_ip.ipv6.lo;
+            input[2] = dst_ip.ipv6.hi;
+            input[3] = dst_ip.ipv6.lo;
+            input[4] = src_port << 16 | dst_port;
+            break;
     }
     key[0] = rf->seed;
     key[1] = rf->seed;
@@ -96,13 +87,13 @@ rstfilter_is_filter(struct ResetFilter *rf,
     /*
      * Grab the bucket
      */
-    hash = siphash24(input, sizeof(input), key);
+    hash  = siphash24(input, sizeof(input), key);
     index = hash & rf->bucket_mask;
 
     /*
      * Find the result (1=filterout, 0=sendrst)
      */
-    p = &rf->buckets[index/2];
+    p = &rf->buckets[index / 2];
     if (index & 1) {
         if ((*p & 0x0F) == 0x0F)
             result = true; /* filter out */
@@ -120,9 +111,9 @@ rstfilter_is_filter(struct ResetFilter *rf,
      */
     input[0] = (unsigned)hash;
     input[1] = rf->counter++;
-    hash = siphash24(input, sizeof(input), key);
-    index = hash & rf->bucket_mask;
-    p = &rf->buckets[index/2];
+    hash     = siphash24(input, sizeof(input), key);
+    index    = hash & rf->bucket_mask;
+    p        = &rf->buckets[index / 2];
     if (index & 1) {
         if ((*p & 0x0F))
             *p = (*p) - 0x01;
@@ -134,26 +125,24 @@ rstfilter_is_filter(struct ResetFilter *rf,
     return result;
 }
 
-
-int rstfilter_selftest()
-{
+int rstfilter_selftest() {
     struct ResetFilter *rf;
-    size_t i;
-    unsigned count_filtered = 0;
-    unsigned count_passed = 0;
+    size_t              i;
+    unsigned            count_filtered = 0;
+    unsigned            count_passed   = 0;
 
     ipaddress src;
     ipaddress dst;
 
     src.version = 4;
-    src.ipv4 = 1;
+    src.ipv4    = 1;
     dst.version = 4;
-    dst.ipv4 = 3;
+    dst.ipv4    = 3;
 
     rf = rstfilter_create(time(0), 64);
 
     /* Verify the first 15 packets pass the filter */
-    for (i=0; i<15; i++) {
+    for (i = 0; i < 15; i++) {
         int x;
 
         x = rstfilter_is_filter(rf, src, 2, dst, 4);
@@ -164,7 +153,7 @@ int rstfilter_selftest()
     }
 
     /* Now run 10000 more times */
-    for (i=0; i<1000; i++) {
+    for (i = 0; i < 1000; i++) {
         int x;
         x = rstfilter_is_filter(rf, src, 2, dst, 4);
         count_filtered += x;
@@ -178,10 +167,10 @@ int rstfilter_selftest()
     }
 
     /* However, while some pass, the vast majority should be filtered */
-    if (count_passed > count_filtered/10) {
+    if (count_passed > count_filtered / 10) {
         LOG(LEVEL_ERROR, "rstfilter failed, line=%u\n", __LINE__);
         return 1;
     }
-    //printf("filtered=%u passed=%u\n", count_filtered, count_passed);
+    // printf("filtered=%u passed=%u\n", count_filtered, count_passed);
     return 0;
 }

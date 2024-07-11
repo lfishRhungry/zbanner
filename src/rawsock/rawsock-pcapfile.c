@@ -38,14 +38,13 @@
  ****************************************************************************/
 #ifdef _MSC_VER
 #define snprintf _snprintf
-#define PRId64 "I64d"
-#define PRIu64 "I64u"
-#define PRIx64 "I64x"
+#define PRId64   "I64d"
+#define PRIu64   "I64u"
+#define PRIx64   "I64x"
 #else
 #include <inttypes.h>
 #endif
-static int64_t ftell_x(FILE *fp)
-{
+static int64_t ftell_x(FILE *fp) {
 #if defined(WIN32) && defined(__GNUC__)
     return ftello64(fp);
 #elif defined(WIN32) && defined(_MSC_VER)
@@ -54,8 +53,7 @@ static int64_t ftell_x(FILE *fp)
     return ftello(fp);
 #endif
 }
-static int fseek_x(FILE *fp, int64_t offset, int origin)
-{
+static int fseek_x(FILE *fp, int64_t offset, int origin) {
 #if defined(WIN32) && defined(__GNUC__)
     return fseeko64(fp, offset, origin);
 #elif defined(WIN32) && defined(_MSC_VER)
@@ -68,9 +66,6 @@ static int fseek_x(FILE *fp, int64_t offset, int origin)
  * </PORTABILITY BLOCK>
  ****************************************************************************/
 
-
-
-
 /* PCAP file-format
 
 typedef struct pcap_hdr_s {
@@ -79,9 +74,8 @@ typedef struct pcap_hdr_s {
         guint16 version_minor;  / * minor version number * /
         gint32  thiszone;       / * GMT to local correction * /
         guint32 sigfigs;        / * accuracy of timestamps * /
-        guint32 snaplen;        / * max length of captured packets, in octets * /
-        guint32 network;        / * data link type * /
-} pcap_hdr_t;
+        guint32 snaplen;        / * max length of captured packets, in octets *
+/ guint32 network;        / * data link type * / } pcap_hdr_t;
 
 
  0  32-bits - "magic number"
@@ -135,19 +129,18 @@ Link-layer type:
 
  */
 
-struct PcapFile
-{
+struct PcapFile {
     FILE *fp;
 
-    unsigned is_file_header_written:1;
+    unsigned is_file_header_written : 1;
 
-    unsigned start_sec;
-    unsigned start_usec;
-    unsigned end_sec;
-    unsigned end_usec;
-    char filename[256];
-    int byte_order;
-    int linktype;
+    unsigned  start_sec;
+    unsigned  start_usec;
+    unsigned  end_sec;
+    unsigned  end_usec;
+    char      filename[256];
+    int       byte_order;
+    int       linktype;
     long long frame_number;
 
     uint64_t file_size;
@@ -157,81 +150,87 @@ struct PcapFile
      * This is for asynchronous reading of the file.
      */
     unsigned char *aio_buffer;
-    size_t aio_buffer_size;
+    size_t         aio_buffer_size;
 };
 
-#define CAPFILE_BIGENDIAN       1
-#define CAPFILE_LITTLEENDIAN   2
-#define CAPFILE_ENDIANUNKNOWN   3
-
+#define CAPFILE_BIGENDIAN     1
+#define CAPFILE_LITTLEENDIAN  2
+#define CAPFILE_ENDIANUNKNOWN 3
 
 /** Read a 16-bit value from a capture file, depending upon the byte
  * order within that file */
-static unsigned PCAP16(unsigned byte_order, const unsigned char *buf)
-{
+static unsigned PCAP16(unsigned byte_order, const unsigned char *buf) {
     switch (byte_order) {
-    case CAPFILE_BIGENDIAN: return buf[0]*256 + buf[1];
-    case CAPFILE_LITTLEENDIAN: return buf[1]*256 + buf[0];
-    default: return (unsigned)0xa3a3;
+        case CAPFILE_BIGENDIAN:
+            return buf[0] * 256 + buf[1];
+        case CAPFILE_LITTLEENDIAN:
+            return buf[1] * 256 + buf[0];
+        default:
+            return (unsigned)0xa3a3;
     }
 }
 /** Read a 32-bit value from a capture file, depending upon the byte
  * order within that file */
-static unsigned PCAP32(unsigned byte_order, const unsigned char *buf)
-{
+static unsigned PCAP32(unsigned byte_order, const unsigned char *buf) {
     switch (byte_order) {
-    case CAPFILE_BIGENDIAN: return buf[0]<<24 | buf[1]<<16 | buf[2] << 8 | buf[3];
-    case CAPFILE_LITTLEENDIAN: return buf[3]<<24 | buf[2]<<16 | buf[1] << 8 | buf[0];
-    default: return (unsigned)0xa3a3;
+        case CAPFILE_BIGENDIAN:
+            return buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3];
+        case CAPFILE_LITTLEENDIAN:
+            return buf[3] << 24 | buf[2] << 16 | buf[1] << 8 | buf[0];
+        default:
+            return (unsigned)0xa3a3;
     }
 }
 
 /**
  * Return the "link" type, such as Ethernet, WiFi, Token Ring, etc.
  */
-int
-pcapfile_datalink(struct PcapFile *handle)
-{
+int pcapfile_datalink(struct PcapFile *handle) {
     if (handle)
         return handle->linktype;
     else
         return 0;
 }
 
-
 /**
  * Determine if the blob (the chunk of from the file read at a certain offset)
  * looks like a valid packet
  */
-static bool
-smells_like_valid_packet(const unsigned char *px, unsigned length, unsigned byte_order, unsigned link_type)
-{
+static bool smells_like_valid_packet(const unsigned char *px, unsigned length,
+                                     unsigned byte_order, unsigned link_type) {
     unsigned secs, usecs, original_length, captured_length;
 
     if (length < 16)
         return false;
 
-    secs            = PCAP32(byte_order, px+0);
-    usecs           = PCAP32(byte_order, px+4);
-    captured_length = PCAP32(byte_order, px+8);
-    original_length = PCAP32(byte_order, px+12);
+    secs            = PCAP32(byte_order, px + 0);
+    usecs           = PCAP32(byte_order, px + 4);
+    captured_length = PCAP32(byte_order, px + 8);
+    original_length = PCAP32(byte_order, px + 12);
 
-    if (secs > 0x50000000)                      return false; /* after 2010 */
-    if (secs < 0x26000000)                      return false; /* before 1990 */
-    if (usecs > 1000000)                        return false;
-    if (captured_length > 10000)                return false;
-    if (captured_length < 16)                   return false;
-    if (original_length < captured_length)      return false;
-    if (original_length > 10000)                return false;
+    if (secs > 0x50000000)
+        return false; /* after 2010 */
+    if (secs < 0x26000000)
+        return false; /* before 1990 */
+    if (usecs > 1000000)
+        return false;
+    if (captured_length > 10000)
+        return false;
+    if (captured_length < 16)
+        return false;
+    if (original_length < captured_length)
+        return false;
+    if (original_length > 10000)
+        return false;
 
     if (captured_length + 16 < length) {
-        unsigned secs2, usecs2, original_length2, captured_length2;
+        unsigned             secs2, usecs2, original_length2, captured_length2;
         const unsigned char *px2 = px + captured_length + 16;
 
-        secs2                 = PCAP32(byte_order, px2+0);
-        usecs2                = PCAP32(byte_order, px2+4);
-        captured_length2      = PCAP32(byte_order, px2+8);
-        original_length2      = PCAP32(byte_order, px2+12);
+        secs2            = PCAP32(byte_order, px2 + 0);
+        usecs2           = PCAP32(byte_order, px2 + 4);
+        captured_length2 = PCAP32(byte_order, px2 + 8);
+        original_length2 = PCAP32(byte_order, px2 + 12);
 
         if (secs2 > 0x50000000)
             return false;
@@ -249,52 +248,44 @@ smells_like_valid_packet(const unsigned char *px, unsigned length, unsigned byte
             return false;
         return true;
     } else
-    switch (link_type) {
-    case PCAP_DLT_ETHERNET:
-        if (px[12] == 0x08 && px[13] == 0x00 && px[14] == 0x45)
-            return true;
-    }
+        switch (link_type) {
+            case PCAP_DLT_ETHERNET:
+                if (px[12] == 0x08 && px[13] == 0x00 && px[14] == 0x45)
+                    return true;
+        }
 
     return false;
 }
 
-
-unsigned pcapfile_percentdone(struct PcapFile *capfile, uint64_t *r_bytes_read)
-{
+unsigned pcapfile_percentdone(struct PcapFile *capfile,
+                              uint64_t        *r_bytes_read) {
     if (r_bytes_read)
         *r_bytes_read = capfile->bytes_read;
 
     if (capfile->fp == NULL)
         return 100;
-    return (unsigned)(capfile->bytes_read*100/capfile->file_size);
+    return (unsigned)(capfile->bytes_read * 100 / capfile->file_size);
 }
-
 
 /**
  * Read the next packet from the file stream.
  */
-int pcapfile_readframe(
-    struct PcapFile *capfile,
-    unsigned *r_time_secs,
-    unsigned *r_time_usecs,
-    unsigned *r_original_length,
-    unsigned *r_captured_length,
-    unsigned char *buf,
-    unsigned sizeof_buf
-    )
-{
-    size_t bytes_read;
+int pcapfile_readframe(struct PcapFile *capfile, unsigned *r_time_secs,
+                       unsigned *r_time_usecs, unsigned *r_original_length,
+                       unsigned *r_captured_length, unsigned char *buf,
+                       unsigned sizeof_buf) {
+    size_t        bytes_read;
     unsigned char header[16];
-    unsigned byte_order = capfile->byte_order;
-    unsigned is_corrupt = 0;
+    unsigned      byte_order = capfile->byte_order;
+    unsigned      is_corrupt = 0;
 
-    again:
+again:
     /* Read in the 16-byte frame header. */
     bytes_read = fread(header, 1, 16, capfile->fp);
     if (bytes_read < 16) {
         if (bytes_read <= 0) {
-            //LOG(LEVEL_ERROR, "%s: failed to read header\n", capfile->filename);
-            //perror(capfile->filename);
+            // LOG(LEVEL_ERROR, "%s: failed to read header\n",
+            // capfile->filename); perror(capfile->filename);
         } else if (bytes_read == 0)
             ; /* normal end-of-file */
         else
@@ -304,11 +295,10 @@ int pcapfile_readframe(
     capfile->bytes_read += bytes_read;
 
     /* Parse the frame header into its four fields */
-    *r_time_secs = PCAP32(byte_order, header);
-    *r_time_usecs = PCAP32(byte_order, header+4);
-    *r_captured_length = PCAP32(byte_order, header+8);
-    *r_original_length = PCAP32(byte_order, header+12);
-
+    *r_time_secs       = PCAP32(byte_order, header);
+    *r_time_usecs      = PCAP32(byte_order, header + 4);
+    *r_captured_length = PCAP32(byte_order, header + 8);
+    *r_original_length = PCAP32(byte_order, header + 12);
 
     /* Test the frame heade fields to make sure they are sane */
     if (*r_time_usecs > 1000100) {
@@ -320,12 +310,11 @@ int pcapfile_readframe(
             *r_time_usecs += 1000000;
             *r_time_usecs &= 0xFFFFFFFF; /* mask off in case of 64-bit ints */
         } else
-            is_corrupt = 1; /* shouldn't be more than 1-second, but some capture programs erroneously do that */
+            is_corrupt = 1; /* shouldn't be more than 1-second, but some capture
+                               programs erroneously do that */
     }
-    if (*r_time_usecs == 0
-        && *r_time_secs == 0
-        && *r_original_length == 0
-        && *r_captured_length == 0)
+    if (*r_time_usecs == 0 && *r_time_secs == 0 && *r_original_length == 0 &&
+        *r_captured_length == 0)
         goto again;
 
     if (*r_captured_length > sizeof_buf)
@@ -337,7 +326,6 @@ int pcapfile_readframe(
     if (*r_original_length > 160000)
         is_corrupt = 1;
 
-
     /*
      * If the file is corrupted, let's move forward in the
      * stream and look for packets that aren't corrupted
@@ -345,17 +333,16 @@ int pcapfile_readframe(
     while (is_corrupt) {
         /* TODO: we should go backwards a bit in the file */
         unsigned char tmp[16384];
-        int64_t position;
-        unsigned i;
-
-
+        int64_t       position;
+        unsigned      i;
 
         /* Remember the current location. We are going to seek
          * back to an offset from this location once we find a good
          * packet.*/
         position = ftell_x(capfile->fp);
         if (position == -1) {
-            LOG(LEVEL_ERROR, "%s:%lld: could not resolve file corruption (ftell)\n",
+            LOG(LEVEL_ERROR,
+                "%s:%lld: could not resolve file corruption (ftell)\n",
                 capfile->filename, capfile->frame_number);
             perror(capfile->filename);
             fseek_x(capfile->fp, 0, SEEK_END);
@@ -365,14 +352,9 @@ int pcapfile_readframe(
         /* Print an error message indicating corruption was found. Note
          * that if corruption happens past 4-gigs on a 32-bit system, this
          * will print an inaccurate number */
-        LOG(LEVEL_ERROR, "%s:%lld: corruption found at 0x%08" PRIx64 " (%" PRId64 ")\n",
-            capfile->filename,
-            capfile->frame_number,
-            position,
-            position
-            );
-
-
+        LOG(LEVEL_ERROR,
+            "%s:%lld: corruption found at 0x%08" PRIx64 " (%" PRId64 ")\n",
+            capfile->filename, capfile->frame_number, position, position);
 
         /* Read in the next chunk of data following the corruption. We'll search
          * this chunk looking for a non-corrupt packet */
@@ -381,20 +363,22 @@ int pcapfile_readframe(
         /* If we reach the end without finding a good frame, then stop */
         if (bytes_read == 0) {
             if (bytes_read <= 0) {
-                LOG(LEVEL_ERROR, "%s: error at end of file\n", capfile->filename);
+                LOG(LEVEL_ERROR, "%s: error at end of file\n",
+                    capfile->filename);
                 perror(capfile->filename);
             } else
-                LOG(LEVEL_ERROR, "%s: premature end of file\n", capfile->filename);
+                LOG(LEVEL_ERROR, "%s: premature end of file\n",
+                    capfile->filename);
             return 0;
         }
         capfile->bytes_read += bytes_read;
 
         /* Scan forward (one byte at a time ) looking for a non-corrupt
          * packet located at that spot */
-        for (i=0; i<bytes_read; i++) {
-
+        for (i = 0; i < bytes_read; i++) {
             /* Test the current location */
-            if (!smells_like_valid_packet(tmp+i, (unsigned)(bytes_read-i), byte_order, capfile->linktype))
+            if (!smells_like_valid_packet(tmp + i, (unsigned)(bytes_read - i),
+                                          byte_order, capfile->linktype))
                 continue;
 
             /* Woot! We have a non-corrupt packet. Let's now change
@@ -408,7 +392,9 @@ int pcapfile_readframe(
              * known-good spot */
             position = position + i;
             if (fseek_x(capfile->fp, position, SEEK_SET) != 0) {
-                LOG(LEVEL_ERROR, "%s: could not resolve file corruption (seek forward)\n", capfile->filename);
+                LOG(LEVEL_ERROR,
+                    "%s: could not resolve file corruption (seek forward)\n",
+                    capfile->filename);
                 perror(capfile->filename);
                 fseek_x(capfile->fp, 0, SEEK_END);
                 return 0;
@@ -474,16 +460,15 @@ int pcapfile_readframe(
              * help people figure out where in the file the corruption
              * happened, so they can figure out why it was corrupt.*/
             position = ftell_x(capfile->fp);
-            LOG(LEVEL_ERROR, "%s:%lld: good packet found at 0x%08" PRIx64 " (%" PRId64 ")\n",
-                capfile->filename,
-                capfile->frame_number,
-                position,
-                position
-                );
+            LOG(LEVEL_ERROR,
+                "%s:%lld: good packet found at 0x%08" PRIx64 " (%" PRId64 ")\n",
+                capfile->filename, capfile->frame_number, position, position);
 
             /* Recurse, continue reading from where we know a good
              * packet is within the file */
-            return pcapfile_readframe(capfile, r_time_secs, r_time_usecs, r_original_length, r_captured_length, buf, sizeof_buf);
+            return pcapfile_readframe(capfile, r_time_secs, r_time_usecs,
+                                      r_original_length, r_captured_length, buf,
+                                      sizeof_buf);
         }
 
         /* If we get to this point, we are totally hosed and the corruption
@@ -498,8 +483,7 @@ int pcapfile_readframe(
     if (bytes_read < *r_captured_length) {
         if (bytes_read <= 0) {
             LOG(LEVEL_ERROR, "%s: could not read packet data, frame #%lld\n",
-                capfile->filename,
-                    (long long)capfile->frame_number);
+                capfile->filename, (long long)capfile->frame_number);
             perror(capfile->filename);
         } else
             LOG(LEVEL_ERROR, "%s: premature end of file\n", capfile->filename);
@@ -508,33 +492,31 @@ int pcapfile_readframe(
     capfile->bytes_read += bytes_read;
 
     if (capfile->frame_number == 0) {
-        capfile->start_sec = *r_time_secs;
+        capfile->start_sec  = *r_time_secs;
         capfile->start_usec = *r_time_usecs;
     }
-    capfile->end_sec = *r_time_secs;
+    capfile->end_sec  = *r_time_secs;
     capfile->end_usec = *r_time_usecs;
     capfile->frame_number++;
     return 1;
 }
 
-void pcapfile_get_timestamps(struct PcapFile *capfile, time_t *start, time_t *end)
-{
+void pcapfile_get_timestamps(struct PcapFile *capfile, time_t *start,
+                             time_t *end) {
     *start = capfile->start_sec;
-    *end = capfile->end_sec;
+    *end   = capfile->end_sec;
 }
-
 
 /**
  * Open a capture file for reading.
  */
-struct PcapFile *pcapfile_openread(const char *capfilename)
-{
-    FILE *fp;
-    size_t bytes_read;
+struct PcapFile *pcapfile_openread(const char *capfilename) {
+    FILE         *fp;
+    size_t        bytes_read;
     unsigned char buf[24];
-    unsigned byte_order;
-    unsigned linktype;
-    uint64_t file_size = 0xFFFFffff;
+    unsigned      byte_order;
+    unsigned      linktype;
+    uint64_t      file_size = 0xFFFFffff;
 
     if (capfilename == NULL)
         return 0;
@@ -577,50 +559,62 @@ struct PcapFile *pcapfile_openread(const char *capfilename)
      * speciality systems that hint at other features, such as a 64-bit
      * version of the file.
      */
-    switch (buf[0]<<24 | buf[1]<<16 | buf[2]<<8 | buf[3]) {
-    case 0xa1b2c3d4:   byte_order = CAPFILE_BIGENDIAN; break;
-    case 0xd4c3b2a1:   byte_order = CAPFILE_LITTLEENDIAN; break;
-    default:
-        LOG(LEVEL_ERROR, "%s: unknown byte-order in cap file\n", capfilename);
-        byte_order = CAPFILE_ENDIANUNKNOWN; break;
+    switch (buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3]) {
+        case 0xa1b2c3d4:
+            byte_order = CAPFILE_BIGENDIAN;
+            break;
+        case 0xd4c3b2a1:
+            byte_order = CAPFILE_LITTLEENDIAN;
+            break;
+        default:
+            LOG(LEVEL_ERROR, "%s: unknown byte-order in cap file\n",
+                capfilename);
+            byte_order = CAPFILE_ENDIANUNKNOWN;
+            break;
     }
-
 
     /* Version (of the libpcap standard) */
     {
-        unsigned major = PCAP16(byte_order, buf+4);
-        unsigned minor = PCAP16(byte_order, buf+6);
+        unsigned major = PCAP16(byte_order, buf + 4);
+        unsigned minor = PCAP16(byte_order, buf + 6);
 
         if (major != 2 || minor != 4)
-            LOG(LEVEL_ERROR, "%s: unknown version %d.%d\n", capfilename, major, minor);
+            LOG(LEVEL_ERROR, "%s: unknown version %d.%d\n", capfilename, major,
+                minor);
     }
 
     /* Protocol (ethernet, wifi, etc.) */
-    linktype = PCAP32(byte_order, buf+20);
+    linktype = PCAP32(byte_order, buf + 20);
     if (linktype == 0)
         linktype = 1;
     switch (linktype) {
-    case PCAP_DLT_IEEE802_11_RADIO:
-    case PCAP_DLT_ETHERNET:
-    case PCAP_DLT_IEEE802_11:
-    case PCAP_DLT_PRISM_HEADER:
-        break;
-    default:
-        LOG(LEVEL_ERROR, "%s: unknown cap file linktype = %d (expected Ethernet or wifi)\n", capfilename, linktype);
-        fclose(fp);
-        return 0;
-        break;
+        case PCAP_DLT_IEEE802_11_RADIO:
+        case PCAP_DLT_ETHERNET:
+        case PCAP_DLT_IEEE802_11:
+        case PCAP_DLT_PRISM_HEADER:
+            break;
+        default:
+            LOG(LEVEL_ERROR,
+                "%s: unknown cap file linktype = %d (expected Ethernet or "
+                "wifi)\n",
+                capfilename, linktype);
+            fclose(fp);
+            return 0;
+            break;
     }
 
     /* Read the first frame's timestamp */
     {
-        long loc;
-        char tsbuf[8];
+        long   loc;
+        char   tsbuf[8];
         size_t x;
 
         loc = ftell(fp);
         if (loc == -1) {
-            LOG(LEVEL_ERROR, "%s: ftell failed (file system error? seen with VMware HGFS bug)\n", capfilename);
+            LOG(LEVEL_ERROR,
+                "%s: ftell failed (file system error? seen with VMware HGFS "
+                "bug)\n",
+                capfilename);
             perror(capfilename);
             fclose(fp);
             return 0;
@@ -633,7 +627,8 @@ struct PcapFile *pcapfile_openread(const char *capfilename)
         }
 
         if (fseek(fp, loc, SEEK_SET) != 0) {
-            LOG(LEVEL_ERROR, "%s: fseek failed (file system error?)\n", capfilename);
+            LOG(LEVEL_ERROR, "%s: fseek failed (file system error?)\n",
+                capfilename);
             perror(capfilename);
             fclose(fp);
             return 0;
@@ -647,38 +642,35 @@ struct PcapFile *pcapfile_openread(const char *capfilename)
      */
     {
         struct PcapFile *capfile = 0;
-        capfile = (struct PcapFile*)malloc(sizeof(*capfile));
+        capfile                  = (struct PcapFile *)malloc(sizeof(*capfile));
         if (capfile == NULL)
             exit(1);
-        memset(capfile,0,sizeof(*capfile));
+        memset(capfile, 0, sizeof(*capfile));
         capfile->byte_order = byte_order;
 
-        snprintf(capfile->filename, sizeof(capfile->filename),
-                 "%s", capfilename);
-        capfile->fp = fp;
+        snprintf(capfile->filename, sizeof(capfile->filename), "%s",
+                 capfilename);
+        capfile->fp         = fp;
         capfile->byte_order = byte_order;
-        capfile->linktype = linktype;
-        capfile->file_size = file_size;
+        capfile->linktype   = linktype;
+        capfile->file_size  = file_size;
         capfile->bytes_read = 24; /*from the header*/
         return capfile;
     }
 }
 
-
 /**
  * Open a capture file for writing
  */
-struct PcapFile *pcapfile_openwrite(const char *capfilename, unsigned linktype)
-{
-    char buf[] =
-            "\xd4\xc3\xb2\xa1\x02\x00\x04\x00"
-            "\x00\x00\x00\x00\x00\x00\x00\x00"
-            "\xff\xff\x00\x00\x69\x00\x00\x00";
+struct PcapFile *pcapfile_openwrite(const char *capfilename,
+                                    unsigned    linktype) {
+    char  buf[] = "\xd4\xc3\xb2\xa1\x02\x00\x04\x00"
+                  "\x00\x00\x00\x00\x00\x00\x00\x00"
+                  "\xff\xff\x00\x00\x69\x00\x00\x00";
     FILE *fp;
 
-    buf[20] = (char)(linktype>>0);
-    buf[21] = (char)(linktype>>8);
-
+    buf[20] = (char)(linktype >> 0);
+    buf[21] = (char)(linktype >> 8);
 
     fp = fopen(capfilename, "wb");
     if (fp == NULL) {
@@ -686,7 +678,6 @@ struct PcapFile *pcapfile_openwrite(const char *capfilename, unsigned linktype)
         perror(capfilename);
         return 0;
     }
-
 
     if (fwrite(buf, 1, 24, fp) != 24) {
         LOG(LEVEL_ERROR, "Could not write capture file header\n");
@@ -697,20 +688,19 @@ struct PcapFile *pcapfile_openwrite(const char *capfilename, unsigned linktype)
 
     {
         struct PcapFile *capfile = 0;
-        capfile = (struct PcapFile*)malloc(sizeof(*capfile));
+        capfile                  = (struct PcapFile *)malloc(sizeof(*capfile));
         if (capfile == NULL)
             exit(1);
-        memset(capfile,0,sizeof(*capfile));
+        memset(capfile, 0, sizeof(*capfile));
 
-        snprintf(capfile->filename, sizeof(capfile->filename),
-                 "%s", capfilename);
+        snprintf(capfile->filename, sizeof(capfile->filename), "%s",
+                 capfilename);
 
-        capfile->fp = fp;
+        capfile->fp         = fp;
         capfile->byte_order = CAPFILE_LITTLEENDIAN;
-        capfile->linktype = linktype;
+        capfile->linktype   = linktype;
         return capfile;
     }
-
 }
 
 /**
@@ -719,15 +709,13 @@ struct PcapFile *pcapfile_openwrite(const char *capfilename, unsigned linktype)
  * where the end of the file is so that we can start adding
  * packets at that point.
  */
-struct PcapFile *pcapfile_openappend(const char *capfilename, unsigned linktype)
-{
+struct PcapFile *pcapfile_openappend(const char *capfilename,
+                                     unsigned    linktype) {
     struct PcapFile *capfile;
-    unsigned char buf[24];
-    unsigned byte_order;
-    unsigned file_linktype;
-    FILE *fp;
-
-
+    unsigned char    buf[24];
+    unsigned         byte_order;
+    unsigned         file_linktype;
+    FILE            *fp;
 
     /* open the file for appending and reading */
     fp = fopen(capfilename, "ab+");
@@ -759,60 +747,69 @@ struct PcapFile *pcapfile_openappend(const char *capfilename, unsigned linktype)
         return 0;
     }
 
-
     /* Find out the byte order */
-    switch (buf[0]<<24 | buf[1]<<16 | buf[2]<<8 | buf[3]) {
-    case 0xa1b2c3d4:   byte_order = CAPFILE_BIGENDIAN; break;
-    case 0xd4c3b2a1:   byte_order = CAPFILE_LITTLEENDIAN; break;
-    default:
-        LOG(LEVEL_ERROR, "%s: unknown byte-order in cap file\n", capfilename);
-        fclose(fp);
-        return pcapfile_openappend(capfilename, linktype);
+    switch (buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3]) {
+        case 0xa1b2c3d4:
+            byte_order = CAPFILE_BIGENDIAN;
+            break;
+        case 0xd4c3b2a1:
+            byte_order = CAPFILE_LITTLEENDIAN;
+            break;
+        default:
+            LOG(LEVEL_ERROR, "%s: unknown byte-order in cap file\n",
+                capfilename);
+            fclose(fp);
+            return pcapfile_openappend(capfilename, linktype);
     }
-
 
     /* Version */
     {
-        unsigned major = PCAP16(byte_order, buf+4);
-        unsigned minor = PCAP16(byte_order, buf+6);
+        unsigned major = PCAP16(byte_order, buf + 4);
+        unsigned minor = PCAP16(byte_order, buf + 6);
 
         if (major != 2 || minor != 4)
-            LOG(LEVEL_ERROR, "%s: unknown version %u.%u\n", capfilename, major, minor);
+            LOG(LEVEL_ERROR, "%s: unknown version %u.%u\n", capfilename, major,
+                minor);
     }
 
     /* Protocol */
-    file_linktype = PCAP32(byte_order, buf+20);
+    file_linktype = PCAP32(byte_order, buf + 20);
     if (linktype != file_linktype) {
-        /* oops, the link types do not agree. Since we want a program to generate
-         * dumps while simultaneously processing multiple inputs, we are going to
-         * create a kludge. Instead of writing to the originally specified file,
-         * we are going to create a new file with the linktype added to it's name */
-        char linkspec[32];
+        /* oops, the link types do not agree. Since we want a program to
+         * generate dumps while simultaneously processing multiple inputs, we
+         * are going to create a kludge. Instead of writing to the originally
+         * specified file, we are going to create a new file with the linktype
+         * added to it's name */
+        char   linkspec[32];
         size_t linkspec_length;
-        char newname[sizeof(capfile->filename)];
+        char   newname[sizeof(capfile->filename)];
         size_t i;
 
         fclose(fp);
 
-        linkspec_length = snprintf(linkspec, sizeof(linkspec), "-linktype%d", linktype);
+        linkspec_length =
+            snprintf(linkspec, sizeof(linkspec), "-linktype%d", linktype);
 
-        if (strstr(capfilename, linkspec) || strlen(capfilename) + linkspec_length + 1 > sizeof(newname)) {
+        if (strstr(capfilename, linkspec) ||
+            strlen(capfilename) + linkspec_length + 1 > sizeof(newname)) {
             /* Oops, we have a problem, it looks like the filename already
              * has the previous linktype in its name for some reason. At this
              * unlikely point, we just give up */
-            LOG(LEVEL_ERROR, "Giving up on appending %u-type frames onto a %u-type file\n",
-                    linktype, file_linktype);
+            LOG(LEVEL_ERROR,
+                "Giving up on appending %u-type frames onto a %u-type file\n",
+                linktype, file_linktype);
             return 0;
         }
 
         if (strchr(capfilename, '.'))
-            i = strchr(capfilename, '.')-capfilename;
+            i = strchr(capfilename, '.') - capfilename;
         else
             i = strlen(capfilename);
 
         memcpy(newname, capfilename, i);
-        memcpy(newname+i, linkspec, linkspec_length);
-        memcpy(newname+i+linkspec_length, capfilename+i, strlen(capfilename+i)+1);
+        memcpy(newname + i, linkspec, linkspec_length);
+        memcpy(newname + i + linkspec_length, capfilename + i,
+               strlen(capfilename + i) + 1);
 
         return pcapfile_openappend(newname, linktype);
     }
@@ -820,30 +817,27 @@ struct PcapFile *pcapfile_openappend(const char *capfilename, unsigned linktype)
     /* Now that everything has checked out, create a file structure and
      * return it */
     {
-
-        capfile = (struct PcapFile*)malloc(sizeof(*capfile));
+        capfile = (struct PcapFile *)malloc(sizeof(*capfile));
         if (capfile == NULL)
             exit(1);
-        memset(capfile,0,sizeof(*capfile));
+        memset(capfile, 0, sizeof(*capfile));
         capfile->byte_order = byte_order;
-        snprintf(capfile->filename, sizeof(capfile->filename),
-                 "%s", capfilename);
-        capfile->fp = fp;
+        snprintf(capfile->filename, sizeof(capfile->filename), "%s",
+                 capfilename);
+        capfile->fp         = fp;
         capfile->byte_order = byte_order;
-        capfile->linktype = linktype;
+        capfile->linktype   = linktype;
     }
 
     return capfile;
 }
-
 
 /**
  * Close a capture file created by one of the open functions
  * such as 'pcapfile_openread()', 'pcapfile_openwrite()', or
  * 'pcapfile_openappend()'.
  */
-void pcapfile_close(struct PcapFile *handle)
-{
+void pcapfile_close(struct PcapFile *handle) {
     if (handle == NULL)
         return;
     if (handle->fp)
@@ -851,19 +845,13 @@ void pcapfile_close(struct PcapFile *handle)
     free(handle);
 }
 
-
 /**
  * Called to write a frame of data in libpcap format. This format has a
  * 16-byte header (microseconds, seconds, sliced-length, original-length)
  * followed by the captured data */
-void pcapfile_writeframe(
-    struct PcapFile *capfile,
-    const void *buffer,
-    unsigned buffer_size,
-    unsigned original_length,
-    unsigned time_sec,
-    unsigned time_usec)
-{
+void pcapfile_writeframe(struct PcapFile *capfile, const void *buffer,
+                         unsigned buffer_size, unsigned original_length,
+                         unsigned time_sec, unsigned time_usec) {
     unsigned char header[16];
 
     if (capfile == NULL || capfile->fp == NULL)
@@ -873,47 +861,45 @@ void pcapfile_writeframe(
      * Write timestamp
      */
     if (capfile->byte_order == CAPFILE_BIGENDIAN) {
-        header[ 0] = (unsigned char)(time_sec>>24);
-        header[ 1] = (unsigned char)(time_sec>>16);
-        header[ 2] = (unsigned char)(time_sec>> 8);
-        header[ 3] = (unsigned char)(time_sec>> 0);
+        header[0] = (unsigned char)(time_sec >> 24);
+        header[1] = (unsigned char)(time_sec >> 16);
+        header[2] = (unsigned char)(time_sec >> 8);
+        header[3] = (unsigned char)(time_sec >> 0);
 
-        header[ 4] = (unsigned char)(time_usec>>24);
-        header[ 5] = (unsigned char)(time_usec>>16);
-        header[ 6] = (unsigned char)(time_usec>> 8);
-        header[ 7] = (unsigned char)(time_usec>> 0);
+        header[4] = (unsigned char)(time_usec >> 24);
+        header[5] = (unsigned char)(time_usec >> 16);
+        header[6] = (unsigned char)(time_usec >> 8);
+        header[7] = (unsigned char)(time_usec >> 0);
 
-        header[ 8] = (unsigned char)(buffer_size>>24);
-        header[ 9] = (unsigned char)(buffer_size>>16);
-        header[10] = (unsigned char)(buffer_size>> 8);
-        header[11] = (unsigned char)(buffer_size>> 0);
+        header[8]  = (unsigned char)(buffer_size >> 24);
+        header[9]  = (unsigned char)(buffer_size >> 16);
+        header[10] = (unsigned char)(buffer_size >> 8);
+        header[11] = (unsigned char)(buffer_size >> 0);
 
-        header[12] = (unsigned char)(original_length>>24);
-        header[13] = (unsigned char)(original_length>>16);
-        header[14] = (unsigned char)(original_length>> 8);
-        header[15] = (unsigned char)(original_length>> 0);
-
+        header[12] = (unsigned char)(original_length >> 24);
+        header[13] = (unsigned char)(original_length >> 16);
+        header[14] = (unsigned char)(original_length >> 8);
+        header[15] = (unsigned char)(original_length >> 0);
     } else {
-        header[ 0] = (unsigned char)(time_sec>> 0);
-        header[ 1] = (unsigned char)(time_sec>> 8);
-        header[ 2] = (unsigned char)(time_sec>>16);
-        header[ 3] = (unsigned char)(time_sec>>24);
+        header[0] = (unsigned char)(time_sec >> 0);
+        header[1] = (unsigned char)(time_sec >> 8);
+        header[2] = (unsigned char)(time_sec >> 16);
+        header[3] = (unsigned char)(time_sec >> 24);
 
-        header[ 4] = (unsigned char)(time_usec>> 0);
-        header[ 5] = (unsigned char)(time_usec>> 8);
-        header[ 6] = (unsigned char)(time_usec>>16);
-        header[ 7] = (unsigned char)(time_usec>>24);
+        header[4] = (unsigned char)(time_usec >> 0);
+        header[5] = (unsigned char)(time_usec >> 8);
+        header[6] = (unsigned char)(time_usec >> 16);
+        header[7] = (unsigned char)(time_usec >> 24);
 
-        header[ 8] = (unsigned char)(buffer_size>> 0);
-        header[ 9] = (unsigned char)(buffer_size>> 8);
-        header[10] = (unsigned char)(buffer_size>>16);
-        header[11] = (unsigned char)(buffer_size>>24);
+        header[8]  = (unsigned char)(buffer_size >> 0);
+        header[9]  = (unsigned char)(buffer_size >> 8);
+        header[10] = (unsigned char)(buffer_size >> 16);
+        header[11] = (unsigned char)(buffer_size >> 24);
 
-        header[12] = (unsigned char)(original_length>> 0);
-        header[13] = (unsigned char)(original_length>> 8);
-        header[14] = (unsigned char)(original_length>>16);
-        header[15] = (unsigned char)(original_length>>24);
-
+        header[12] = (unsigned char)(original_length >> 0);
+        header[13] = (unsigned char)(original_length >> 8);
+        header[14] = (unsigned char)(original_length >> 16);
+        header[15] = (unsigned char)(original_length >> 24);
     }
 
     if (fwrite(header, 1, 16, capfile->fp) != 16) {
@@ -932,4 +918,3 @@ void pcapfile_writeframe(
         capfile->fp = NULL;
     }
 }
-

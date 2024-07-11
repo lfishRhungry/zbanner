@@ -22,10 +22,10 @@ typedef struct BlackRock {
  *      The size of the range of numbers needing to be
  *      shuffled/randomized.
  */
-void
-blackrock1_init(BlackRock *br, uint64_t range, uint64_t seed, unsigned rounds);
-void
-blackrock2_init(BlackRock *br, uint64_t range, uint64_t seed, unsigned rounds);
+void blackrock1_init(BlackRock *br, uint64_t range, uint64_t seed,
+                     unsigned rounds);
+void blackrock2_init(BlackRock *br, uint64_t range, uint64_t seed,
+                     unsigned rounds);
 
 /**
  * Given a number within a range, produce a different number with
@@ -43,19 +43,15 @@ blackrock2_init(BlackRock *br, uint64_t range, uint64_t seed, unsigned rounds);
  * @return
  *      A one-to-one matching index that's in the same range.
  */
-uint64_t
-blackrock1_shuffle(const BlackRock *br, uint64_t index);
-uint64_t
-blackrock2_shuffle(const BlackRock *br, uint64_t index);
+uint64_t blackrock1_shuffle(const BlackRock *br, uint64_t index);
+uint64_t blackrock2_shuffle(const BlackRock *br, uint64_t index);
 
 /**
  * The reverse of the shuffle function above: given the shuffled/encrypted
  * integer, return the original index value before the shuffling/encryption.
  */
-uint64_t
-blackrock1_unshuffle(const BlackRock *br, uint64_t m);
-uint64_t
-blackrock2_unshuffle(const BlackRock *br, uint64_t m);
+uint64_t blackrock1_unshuffle(const BlackRock *br, uint64_t m);
+uint64_t blackrock2_unshuffle(const BlackRock *br, uint64_t m);
 
 void blackrock1_benchmark(unsigned rounds);
 

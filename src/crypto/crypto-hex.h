@@ -1,7 +1,7 @@
 /**
  * From ccan https://ccodearchive.net/list.html
  * Licensed under BSD-MIT
-*/
+ */
 /**
  * str/hex - hex-to-string conversions and vice-versa
  *
@@ -77,10 +77,7 @@ bool hex_encode(const void *buf, size_t bufsize, char *dest, size_t destsize);
  *
  *    hex_encode(buf, sizeof(buf), str, sizeof(str));
  */
-static inline size_t hex_str_size(size_t bytes)
-{
-    return 2 * bytes + 1;
-}
+static inline size_t hex_str_size(size_t bytes) { return 2 * bytes + 1; }
 
 /**
  * hex_data_size - Calculate how many bytes of data in a hex string
@@ -92,9 +89,6 @@ static inline size_t hex_str_size(size_t bytes)
  *
  *    hex_decode(str, strlen(str), buf, sizeof(buf));
  */
-static inline size_t hex_data_size(size_t strlen)
-{
-    return strlen / 2;
-}
+static inline size_t hex_data_size(size_t strlen) { return strlen / 2; }
 
 #endif

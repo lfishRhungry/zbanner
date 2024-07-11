@@ -63,19 +63,15 @@ ICMPv4 Timestamp or Timestamp Reply Message according to RFC792
 */
 
 static size_t
-icmp_create_by_template_ipv4(
-    const TmplPkt *tmpl,
-    ipv4address ip_them, ipv4address ip_me,
-    unsigned cookie, uint16_t ip_id, uint8_t ttl,
-    unsigned char *px, size_t sizeof_px)
-{
+icmp_create_by_template_ipv4(const TmplPkt *tmpl, ipv4address ip_them,
+                             ipv4address ip_me, unsigned cookie, uint16_t ip_id,
+                             uint8_t ttl, unsigned char *px, size_t sizeof_px) {
     unsigned offset_ip;
     unsigned offset_tcp;
     uint64_t xsum_icmp;
     unsigned xsum_ip;
     unsigned payload_length;
     unsigned r_len = sizeof_px;
-
 
     /* Create some shorter local variables to work with */
     if (r_len > tmpl->ipv4.length)
@@ -84,24 +80,24 @@ icmp_create_by_template_ipv4(
     offset_ip  = tmpl->ipv4.offset_ip;
     offset_tcp = tmpl->ipv4.offset_tcp;
 
-/*
-    0                   1                   2                   3
-    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |Version|  IHL  |Type of Service|          Total Length         |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |         Identification        |Flags|      Fragment Offset    |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |  Time to Live |    Protocol   |         Header Checksum       |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                       Source Address                          |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                    Destination Address                        |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                    Options                    |    Padding    |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    /*
+        0                   1                   2                   3
+        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |Version|  IHL  |Type of Service|          Total Length         |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |         Identification        |Flags|      Fragment Offset    |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |  Time to Live |    Protocol   |         Header Checksum       |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                       Source Address                          |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                    Destination Address                        |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                    Options                    |    Padding    |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-*/
+    */
 
     /*
      * Fill in the empty fields in the IP header and then re-calculate
@@ -109,46 +105,43 @@ icmp_create_by_template_ipv4(
      */
 
     unsigned total_length = tmpl->ipv4.length - tmpl->ipv4.offset_ip;
-    U16_TO_BE(px+offset_ip+2, total_length);
+    U16_TO_BE(px + offset_ip + 2, total_length);
 
-    U16_TO_BE(px+offset_ip+4, ip_id);
+    U16_TO_BE(px + offset_ip + 4, ip_id);
 
     if (ttl)
-        px[offset_ip+8] = (unsigned char)(ttl);
+        px[offset_ip + 8] = (unsigned char)(ttl);
 
-    U32_TO_BE(px+offset_ip+12, ip_me);
-    U32_TO_BE(px+offset_ip+16, ip_them);
+    U32_TO_BE(px + offset_ip + 12, ip_me);
+    U32_TO_BE(px + offset_ip + 16, ip_them);
 
-
-    px[offset_ip+10] = (unsigned char)(0);
-    px[offset_ip+11] = (unsigned char)(0);
+    px[offset_ip + 10] = (unsigned char)(0);
+    px[offset_ip + 11] = (unsigned char)(0);
 
     xsum_ip = (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.length);
 
-    U16_TO_BE(px+offset_ip+10, xsum_ip);
-
+    U16_TO_BE(px + offset_ip + 10, xsum_ip);
 
     /*
      * Now do the checksum for the higher layer protocols
      */
     xsum_icmp = 0;
 
-    U32_TO_BE(px+offset_tcp+4, cookie);
+    U32_TO_BE(px + offset_tcp + 4, cookie);
 
-    payload_length = total_length - (tmpl->ipv4.offset_tcp-tmpl->ipv4.offset_ip);
+    payload_length =
+        total_length - (tmpl->ipv4.offset_tcp - tmpl->ipv4.offset_ip);
     xsum_icmp = (unsigned)~checksum_icmp(px, offset_tcp, payload_length);
-    U16_TO_BE(px+offset_tcp+2, xsum_icmp);
+    U16_TO_BE(px + offset_tcp + 2, xsum_icmp);
 
     return r_len;
 }
 
-static size_t
-icmp_create_by_template_ipv6(
-    const TmplPkt *tmpl,
-    ipv6address ip_them, ipv6address ip_me,
-    unsigned cookie, uint8_t ttl,
-    unsigned char *px, size_t sizeof_px)
-{
+static size_t icmp_create_by_template_ipv6(const TmplPkt *tmpl,
+                                           ipv6address    ip_them,
+                                           ipv6address ip_me, unsigned cookie,
+                                           uint8_t ttl, unsigned char *px,
+                                           size_t sizeof_px) {
     unsigned offset_ip;
     unsigned offset_tcp;
     uint64_t xsum_icmp;
@@ -163,169 +156,157 @@ icmp_create_by_template_ipv6(
     offset_ip  = tmpl->ipv6.offset_ip;
     offset_tcp = tmpl->ipv6.offset_tcp;
 
-/*
+    /*
 
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |Version| Traffic Class |           Flow Label                  |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |         Payload Length        |  Next Header  |   Hop Limit   |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +                         Source Address                        +
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +                      Destination Address                      +
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-*/
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |Version| Traffic Class |           Flow Label                  |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |         Payload Length        |  Next Header  |   Hop Limit   |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                                                               |
+       +                                                               +
+       |                                                               |
+       +                         Source Address                        +
+       |                                                               |
+       +                                                               +
+       |                                                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                                                               |
+       +                                                               +
+       |                                                               |
+       +                      Destination Address                      +
+       |                                                               |
+       +                                                               +
+       |                                                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    */
     /*
      * Fill in the empty fields in the IP header and then re-calculate
      * the checksum.
      */
     payload_length = tmpl->ipv6.length - tmpl->ipv6.offset_ip - 40;
-    U16_TO_BE(px+offset_ip+4, payload_length);
+    U16_TO_BE(px + offset_ip + 4, payload_length);
 
     if (ttl)
-        px[offset_ip+7] = (unsigned char)(ttl);
+        px[offset_ip + 7] = (unsigned char)(ttl);
 
-    U64_TO_BE(px+offset_ip+ 8, ip_me.hi);
-    U64_TO_BE(px+offset_ip+16, ip_me.lo);
+    U64_TO_BE(px + offset_ip + 8, ip_me.hi);
+    U64_TO_BE(px + offset_ip + 16, ip_me.lo);
 
-    U64_TO_BE(px+offset_ip+24, ip_them.hi);
-    U64_TO_BE(px+offset_ip+32, ip_them.lo);
+    U64_TO_BE(px + offset_ip + 24, ip_them.hi);
+    U64_TO_BE(px + offset_ip + 32, ip_them.lo);
 
     /*
      * Now do the checksum for the higher layer protocols
      */
     /* TODO: IPv6 */
-    U32_TO_BE(px+offset_tcp+4, cookie);
-    xsum_icmp = checksum_ipv6(px+offset_ip+8,
-                              px+offset_ip+24,
+    U32_TO_BE(px + offset_tcp + 4, cookie);
+    xsum_icmp = checksum_ipv6(px + offset_ip + 8, px + offset_ip + 24,
                               IP_PROTO_IPv6_ICMP,
-                              tmpl->ipv6.length-offset_tcp,
-                              px+offset_tcp);
-    U16_TO_BE(px+offset_tcp+2, xsum_icmp);
+                              tmpl->ipv6.length - offset_tcp, px + offset_tcp);
+    U16_TO_BE(px + offset_tcp + 2, xsum_icmp);
 
     return r_len;
 }
 
-size_t
-icmp_create_by_template(
-    const TmplPkt *tmpl,
-    ipaddress ip_them, ipaddress ip_me,
-    unsigned cookie, uint16_t ip_id, uint8_t ttl,
-    unsigned char *px, size_t sizeof_px)
-{
-    if (tmpl->tmpl_type != TmplType_ICMP_ECHO
-        && tmpl->tmpl_type != TmplType_ICMP_TS) {
-            LOG(LEVEL_ERROR, "icmp_create_by_template: need a TmplType_ICMP_ECHO or TmplType_ICMP_TS TemplatePacket.\n");
-            return 0;
+size_t icmp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
+                               ipaddress ip_me, unsigned cookie, uint16_t ip_id,
+                               uint8_t ttl, unsigned char *px,
+                               size_t sizeof_px) {
+    if (tmpl->tmpl_type != TmplType_ICMP_ECHO &&
+        tmpl->tmpl_type != TmplType_ICMP_TS) {
+        LOG(LEVEL_ERROR, "icmp_create_by_template: need a TmplType_ICMP_ECHO "
+                         "or TmplType_ICMP_TS TemplatePacket.\n");
+        return 0;
     }
 
     size_t r_len = 0;
 
     if (ip_them.version == 4) {
         r_len = icmp_create_by_template_ipv4(tmpl, ip_them.ipv4, ip_me.ipv4,
-            cookie, ip_id, ttl, px, sizeof_px);
+                                             cookie, ip_id, ttl, px, sizeof_px);
     } else {
         r_len = icmp_create_by_template_ipv6(tmpl, ip_them.ipv6, ip_me.ipv6,
-            cookie, ttl, px, sizeof_px);
+                                             cookie, ttl, px, sizeof_px);
     }
     return r_len;
 }
 
-size_t
-icmp_create_echo_packet(
-    ipaddress ip_them, const ipaddress ip_me,
-    unsigned cookie, uint16_t ip_id, uint8_t ttl,
-    unsigned char *px, size_t sizeof_px)
-{
+size_t icmp_create_echo_packet(ipaddress ip_them, const ipaddress ip_me,
+                               unsigned cookie, uint16_t ip_id, uint8_t ttl,
+                               unsigned char *px, size_t sizeof_px) {
     return icmp_create_by_template(&global_tmplset->pkts[TmplType_ICMP_ECHO],
-        ip_them, ip_me, cookie, ip_id, ttl, px, sizeof_px);
+                                   ip_them, ip_me, cookie, ip_id, ttl, px,
+                                   sizeof_px);
 }
 
-size_t
-icmp_create_timestamp_packet(
-    ipaddress ip_them, const ipaddress ip_me,
-    unsigned cookie, uint16_t ip_id, uint8_t ttl,
-    unsigned char *px, size_t sizeof_px)
-{
+size_t icmp_create_timestamp_packet(ipaddress ip_them, const ipaddress ip_me,
+                                    unsigned cookie, uint16_t ip_id,
+                                    uint8_t ttl, unsigned char *px,
+                                    size_t sizeof_px) {
     return icmp_create_by_template(&global_tmplset->pkts[TmplType_ICMP_TS],
-        ip_them, ip_me, cookie, ip_id, ttl, px, sizeof_px);
+                                   ip_them, ip_me, cookie, ip_id, ttl, px,
+                                   sizeof_px);
 }
 
-unsigned
-get_icmp_cookie(const PreInfo *parsed,const unsigned char *px)
-{
-    return BE_TO_U32(px+parsed->transport_offset+4);
+unsigned get_icmp_cookie(const PreInfo *parsed, const unsigned char *px) {
+    return BE_TO_U32(px + parsed->transport_offset + 4);
 }
 
 /***************************************************************************
  ***************************************************************************/
-bool
-parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
-    ipaddress *r_ip_them, unsigned *r_port_them,
-    ipaddress *r_ip_me, unsigned *r_port_me,
-    unsigned *r_ip_proto)
-{
+bool parse_icmp_port_unreachable(const unsigned char *transport_px,
+                                 unsigned length, ipaddress *r_ip_them,
+                                 unsigned *r_port_them, ipaddress *r_ip_me,
+                                 unsigned *r_port_me, unsigned *r_ip_proto) {
     const unsigned char *ip_header_in_icmp = transport_px + 8;
-    unsigned data_length_in_icmp           = length - (ip_header_in_icmp - transport_px);
+    unsigned data_length_in_icmp = length - (ip_header_in_icmp - transport_px);
     unsigned ipv4_header_len;
 
-    if (ip_header_in_icmp[0]>>4 == 4) {
+    if (ip_header_in_icmp[0] >> 4 == 4) {
         /*ipv4*/
         r_ip_them->version = 4;
         r_ip_me->version   = 4;
 
-        r_ip_me->ipv4   = BE_TO_U32(ip_header_in_icmp+12);
-        r_ip_them->ipv4 = BE_TO_U32(ip_header_in_icmp+16);
+        r_ip_me->ipv4   = BE_TO_U32(ip_header_in_icmp + 12);
+        r_ip_them->ipv4 = BE_TO_U32(ip_header_in_icmp + 16);
 
         *r_ip_proto = ip_header_in_icmp[9];
-        if (*r_ip_proto!=IP_PROTO_TCP||*r_ip_proto!=IP_PROTO_UDP)
+        if (*r_ip_proto != IP_PROTO_TCP || *r_ip_proto != IP_PROTO_UDP)
             return false;
 
-        ipv4_header_len      = (ip_header_in_icmp[0]&0xF)<<2;
-        ip_header_in_icmp   += ipv4_header_len;
+        ipv4_header_len = (ip_header_in_icmp[0] & 0xF) << 2;
+        ip_header_in_icmp += ipv4_header_len;
         data_length_in_icmp -= ipv4_header_len;
 
         if (data_length_in_icmp < 4)
             return false;
 
         *r_port_me   = BE_TO_U16(ip_header_in_icmp);
-        *r_port_them = BE_TO_U16(ip_header_in_icmp+2);
-
-    } else if (ip_header_in_icmp[0]>>4 == 6) {
+        *r_port_them = BE_TO_U16(ip_header_in_icmp + 2);
+    } else if (ip_header_in_icmp[0] >> 4 == 6) {
         /*ipv6*/
-        r_ip_them->version   = 6;
-        r_ip_me->version     = 6;
+        r_ip_them->version = 6;
+        r_ip_me->version   = 6;
 
-        r_ip_me->ipv6.hi     = BE_TO_U64(ip_header_in_icmp+ 8);
-        r_ip_me->ipv6.lo     = BE_TO_U64(ip_header_in_icmp+16);
-        r_ip_them->ipv6.hi   = BE_TO_U64(ip_header_in_icmp+24);
-        r_ip_them->ipv6.lo   = BE_TO_U64(ip_header_in_icmp+32);
+        r_ip_me->ipv6.hi   = BE_TO_U64(ip_header_in_icmp + 8);
+        r_ip_me->ipv6.lo   = BE_TO_U64(ip_header_in_icmp + 16);
+        r_ip_them->ipv6.hi = BE_TO_U64(ip_header_in_icmp + 24);
+        r_ip_them->ipv6.lo = BE_TO_U64(ip_header_in_icmp + 32);
 
         *r_ip_proto = ip_header_in_icmp[6];
-        if (*r_ip_proto!=IP_PROTO_TCP||*r_ip_proto!=IP_PROTO_UDP)
+        if (*r_ip_proto != IP_PROTO_TCP || *r_ip_proto != IP_PROTO_UDP)
             return false;
 
         /*length of ipv6 header is fixed*/
-        ip_header_in_icmp   += 40;
+        ip_header_in_icmp += 40;
         data_length_in_icmp -= 40;
 
         if (data_length_in_icmp < 4)
             return false;
 
         *r_port_me   = BE_TO_U16(ip_header_in_icmp);
-        *r_port_them = BE_TO_U16(ip_header_in_icmp+2);
+        *r_port_them = BE_TO_U16(ip_header_in_icmp + 2);
     }
 
     return true;
@@ -333,14 +314,13 @@ parse_icmp_port_unreachable(const unsigned char *transport_px, unsigned length,
 
 /***************************************************************************
  ***************************************************************************/
-unsigned
-get_icmp_port_unreachable_proto(const unsigned char *transport_px, unsigned length)
-{
+unsigned get_icmp_port_unreachable_proto(const unsigned char *transport_px,
+                                         unsigned             length) {
     const unsigned char *ip_header_in_icmp = transport_px + 8;
 
-    if (ip_header_in_icmp[0]>>4 == 4) {
+    if (ip_header_in_icmp[0] >> 4 == 4) {
         return ip_header_in_icmp[9];
-    } else if (ip_header_in_icmp[0]>>4 == 6) {
+    } else if (ip_header_in_icmp[0] >> 4 == 6) {
         return ip_header_in_icmp[6];
     }
 

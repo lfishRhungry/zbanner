@@ -13,8 +13,7 @@
 
 #define DEDUP_BUCKET_SIZE 4
 
-struct DedupEntry_IPv4
-{
+struct DedupEntry_IPv4 {
     unsigned ip_them;
     unsigned port_them;
     unsigned ip_me;
@@ -22,8 +21,7 @@ struct DedupEntry_IPv4
     unsigned type; /*for more flexible dedup*/
 };
 
-struct DedupEntry_IPv6
-{
+struct DedupEntry_IPv6 {
     ipv6address ip_them;
     ipv6address ip_me;
     unsigned    port_them;
@@ -31,8 +29,7 @@ struct DedupEntry_IPv6
     unsigned    type; /*for more flexible dedup*/
 };
 
-struct DedupEntry
-{
+struct DedupEntry {
     struct DedupEntry_IPv4 entries[DEDUP_BUCKET_SIZE];
     struct DedupEntry_IPv6 entries6[DEDUP_BUCKET_SIZE];
 };
@@ -41,48 +38,44 @@ struct DedupEntry
  * This is simply the array of entries. We have two arrays, one for IPv4
  * and another for IPv6.
  */
-struct DeduplicateTable
-{
+struct DeduplicateTable {
     /*num of entries(power of 2) - 1*/
-    unsigned mask;
+    unsigned          mask;
     struct DedupEntry all_entries[0];
 };
 
 /**
  * We use the FNv1a hash algorithm, which starts with this seed value.
  */
-const unsigned fnv1a_seed  = 0x811C9DC5; /* 2166136261 */
+const unsigned fnv1a_seed = 0x811C9DC5; /* 2166136261 */
 
 /**
- * Hash one byte, the other hash functions of multiple bytes call this function.
+ * Hash one byte, the other hash functions of multiple bytes call this
+ * function.
  * @param hash
  *      The current hash value that we keep updating as we repeatedly
  *      call this function, or the `fnv1a_seed   value on the first call to
  *      this function.
  */
-static inline unsigned fnv1a(unsigned char c, unsigned hash)
-{
-  const unsigned prime = 0x01000193; /* 16777619 */
-  return (c ^ hash) * prime;
+static inline unsigned fnv1a(unsigned char c, unsigned hash) {
+    const unsigned prime = 0x01000193; /* 16777619 */
+    return (c ^ hash) * prime;
 }
 
-static unsigned fnv1a_string(const void *v_buf, size_t length, unsigned hash)
-{
+static unsigned fnv1a_string(const void *v_buf, size_t length, unsigned hash) {
     const unsigned char *buf = (const unsigned char *)v_buf;
-    size_t i;
-    for (i=0; i<length; i++)
+    size_t               i;
+    for (i = 0; i < length; i++)
         hash = fnv1a(buf[i], hash);
     return hash;
 }
 
-static inline unsigned fnv1a_short(unsigned data, unsigned hash)
-{
-    hash = fnv1a((data>>0)&0xFF, hash);
-    hash = fnv1a((data>>8)&0xFF, hash);
+static inline unsigned fnv1a_short(unsigned data, unsigned hash) {
+    hash = fnv1a((data >> 0) & 0xFF, hash);
+    hash = fnv1a((data >> 8) & 0xFF, hash);
     return hash;
 }
-static inline unsigned fnv1a_longlong(unsigned long long data, unsigned hash)
-{
+static inline unsigned fnv1a_longlong(unsigned long long data, unsigned hash) {
     return fnv1a_string(&data, 8, hash);
 }
 
@@ -90,12 +83,10 @@ static inline unsigned fnv1a_longlong(unsigned long long data, unsigned hash)
  * Create a new table, which means simply allocating the object
  * and setting it to zero.
  */
-DedupTable *
-dedup_create(unsigned dedup_win)
-{
-    //transfer dedup_win to real entries count
+DedupTable *dedup_create(unsigned dedup_win) {
+    // transfer dedup_win to real entries count
     unsigned entries_count =
-        dedup_win/DEDUP_BUCKET_SIZE>0?dedup_win/DEDUP_BUCKET_SIZE:1;
+        dedup_win / DEDUP_BUCKET_SIZE > 0 ? dedup_win / DEDUP_BUCKET_SIZE : 1;
 
     /* Find nearest power of 2 to entry count */
     {
@@ -104,7 +95,7 @@ dedup_create(unsigned dedup_win)
         while (new_entry_count < entries_count) {
             new_entry_count *= 2;
             if (new_entry_count == 0) {
-                new_entry_count = (1<<24);
+                new_entry_count = (1 << 24);
                 break;
             }
         }
@@ -116,8 +107,8 @@ dedup_create(unsigned dedup_win)
     }
 
     DedupTable *dedup;
-    dedup = CALLOC(1,
-        sizeof(DedupTable) + sizeof(struct DedupEntry) * entries_count);
+    dedup       = CALLOC(1, sizeof(DedupTable) +
+                                sizeof(struct DedupEntry) * entries_count);
     dedup->mask = entries_count - 1;
 
     return dedup;
@@ -127,37 +118,30 @@ dedup_create(unsigned dedup_win)
  * There's nothing special we need to do to free the structure
  * since it's all contained in the single allocation.
  */
-void
-dedup_destroy(DedupTable *dedup)
-{
-    free(dedup);
-}
+void dedup_destroy(DedupTable *dedup) { free(dedup); }
 
 /**
  * Create a hash of the IPv6 socket. This doesn't have to be
  * cryptographically secure, so we are going to use the FNv1a algorithm.
  */
-static inline unsigned
-dedup_hash_ipv6(ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me, unsigned type)
-{
+static inline unsigned dedup_hash_ipv6(ipaddress ip_them, unsigned port_them,
+                                       ipaddress ip_me, unsigned port_me,
+                                       unsigned type) {
     unsigned hash = fnv1a_seed;
-    hash = fnv1a_longlong(ip_them.ipv6.hi, hash);
-    hash = fnv1a_longlong(ip_them.ipv6.lo, hash);
-    hash = fnv1a_short(port_them, hash);
-    hash = fnv1a_longlong(ip_me.ipv6.hi, hash);
-    hash = fnv1a_longlong(ip_me.ipv6.lo, hash);
-    hash = fnv1a_short(port_me, hash);
-    hash = fnv1a_short(type, hash);
+    hash          = fnv1a_longlong(ip_them.ipv6.hi, hash);
+    hash          = fnv1a_longlong(ip_them.ipv6.lo, hash);
+    hash          = fnv1a_short(port_them, hash);
+    hash          = fnv1a_longlong(ip_me.ipv6.hi, hash);
+    hash          = fnv1a_longlong(ip_me.ipv6.lo, hash);
+    hash          = fnv1a_short(port_me, hash);
+    hash          = fnv1a_short(type, hash);
     return hash;
 }
 
 /**
  * If two IPv6 addresses are equal.
  */
-static inline int
-is_equal6(ipv6address lhs, ipv6address rhs)
-{
+static inline int is_equal6(ipv6address lhs, ipv6address rhs) {
     return lhs.hi == rhs.hi && lhs.lo == rhs.lo;
 }
 
@@ -170,32 +154,31 @@ is_equal6(ipv6address lhs, ipv6address rhs)
  * Swap two addresses in the table. This uses the classic XOR trick
  * rather than using a swap variable.
  */
-static inline void
-swap6(struct DedupEntry_IPv6 *lhs, struct DedupEntry_IPv6 *rhs)
-{
+static inline void swap6(struct DedupEntry_IPv6 *lhs,
+                         struct DedupEntry_IPv6 *rhs) {
     lhs->ip_them.hi ^= rhs->ip_them.hi;
     lhs->ip_them.lo ^= rhs->ip_them.lo;
-    lhs->port_them  ^= rhs->port_them;
-    lhs->ip_me.hi   ^= rhs->ip_me.hi;
-    lhs->ip_me.lo   ^= rhs->ip_me.lo;
-    lhs->port_me    ^= rhs->port_me;
-    lhs->type       ^= rhs->type;
+    lhs->port_them ^= rhs->port_them;
+    lhs->ip_me.hi ^= rhs->ip_me.hi;
+    lhs->ip_me.lo ^= rhs->ip_me.lo;
+    lhs->port_me ^= rhs->port_me;
+    lhs->type ^= rhs->type;
 
     rhs->ip_them.hi ^= lhs->ip_them.hi;
     rhs->ip_them.lo ^= lhs->ip_them.lo;
-    rhs->port_them  ^= lhs->port_them;
-    rhs->ip_me.hi   ^= lhs->ip_me.hi;
-    rhs->ip_me.lo   ^= lhs->ip_me.lo;
-    rhs->port_me    ^= lhs->port_me;
-    rhs->type       ^= lhs->type;
+    rhs->port_them ^= lhs->port_them;
+    rhs->ip_me.hi ^= lhs->ip_me.hi;
+    rhs->ip_me.lo ^= lhs->ip_me.lo;
+    rhs->port_me ^= lhs->port_me;
+    rhs->type ^= lhs->type;
 
     lhs->ip_them.hi ^= rhs->ip_them.hi;
     lhs->ip_them.lo ^= rhs->ip_them.lo;
-    lhs->port_them  ^= rhs->port_them;
-    lhs->ip_me.hi   ^= rhs->ip_me.hi;
-    lhs->ip_me.lo   ^= rhs->ip_me.lo;
-    lhs->port_me    ^= rhs->port_me;
-    lhs->type       ^= rhs->type;
+    lhs->port_them ^= rhs->port_them;
+    lhs->ip_me.hi ^= rhs->ip_me.hi;
+    lhs->ip_me.lo ^= rhs->ip_me.lo;
+    lhs->port_me ^= rhs->port_me;
+    lhs->type ^= rhs->type;
 }
 
 #ifdef __clang__
@@ -206,14 +189,12 @@ swap6(struct DedupEntry_IPv6 *lhs, struct DedupEntry_IPv6 *rhs)
  * This implements the same algorithm as for IPv4 addresses, but for
  * IPv6 addresses instead.
  */
-static bool
-dedup_is_duplicate_ipv6(DedupTable *dedup,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me, unsigned type)
-{
-    unsigned hash;
+static bool dedup_is_duplicate_ipv6(DedupTable *dedup, ipaddress ip_them,
+                                    unsigned port_them, ipaddress ip_me,
+                                    unsigned port_me, unsigned type) {
+    unsigned                hash;
     struct DedupEntry_IPv6 *bucket;
-    unsigned i;
+    unsigned                i;
 
     hash   = dedup_hash_ipv6(ip_them, port_them, ip_me, port_me, type);
     bucket = dedup->all_entries[hash & dedup->mask].entries6;
@@ -223,13 +204,14 @@ dedup_is_duplicate_ipv6(DedupTable *dedup,
      * addresses to front, aging older addresses that haven't been
      * seen in a while. */
     for (i = 0; i < 4; i++) {
-        if (is_equal6(bucket[i].ip_them, ip_them.ipv6) && bucket[i].port_them == port_them
-            && is_equal6(bucket[i].ip_me, ip_me.ipv6) && bucket[i].port_me == port_me
-            && bucket[i].type == type) {
+        if (is_equal6(bucket[i].ip_them, ip_them.ipv6) &&
+            bucket[i].port_them == port_them &&
+            is_equal6(bucket[i].ip_me, ip_me.ipv6) &&
+            bucket[i].port_me == port_me && bucket[i].type == type) {
             /* move to head of list so constant repeats get attention */
             if (i > 0) {
                 // swap6(&bucket[0], &bucket[i]);
-                memmove(bucket+1, bucket, i*sizeof(*bucket));
+                memmove(bucket + 1, bucket, i * sizeof(*bucket));
                 bucket[0].ip_them.hi = ip_them.ipv6.hi;
                 bucket[0].ip_them.lo = ip_them.ipv6.lo;
                 bucket[0].port_them  = (unsigned short)port_them;
@@ -246,7 +228,7 @@ dedup_is_duplicate_ipv6(DedupTable *dedup,
      * older entries at this bucket off the list
      * NOTE the paramter order of memmove
      */
-    memmove(bucket+1, bucket, (DEDUP_BUCKET_SIZE-1)*sizeof(*bucket));
+    memmove(bucket + 1, bucket, (DEDUP_BUCKET_SIZE - 1) * sizeof(*bucket));
     bucket[0].ip_them.hi = ip_them.ipv6.hi;
     bucket[0].ip_them.lo = ip_them.ipv6.lo;
     bucket[0].port_them  = (unsigned short)port_them;
@@ -256,23 +238,21 @@ dedup_is_duplicate_ipv6(DedupTable *dedup,
     bucket[0].type       = type;
 
     return false;
-
 }
 
 /**
  * Create a hash of the IPv6 socket. This doesn't have to be
  * cryptographically secure, so we are going to use the FNv1a algorithm.
  */
-static inline unsigned
-dedup_hash_ipv4(ipaddress ip_them, unsigned port_them,
-        ipaddress ip_me, unsigned port_me, unsigned type)
-{
+static inline unsigned dedup_hash_ipv4(ipaddress ip_them, unsigned port_them,
+                                       ipaddress ip_me, unsigned port_me,
+                                       unsigned type) {
     unsigned hash = fnv1a_seed;
-    hash = fnv1a_short(ip_them.ipv4, hash);
-    hash = fnv1a_short(port_them, hash);
-    hash = fnv1a_short(ip_me.ipv4, hash);
-    hash = fnv1a_short(port_me, hash);
-    hash = fnv1a_short(type, hash);
+    hash          = fnv1a_short(ip_them.ipv4, hash);
+    hash          = fnv1a_short(port_them, hash);
+    hash          = fnv1a_short(ip_me.ipv4, hash);
+    hash          = fnv1a_short(port_me, hash);
+    hash          = fnv1a_short(type, hash);
     return hash;
 }
 
@@ -285,26 +265,25 @@ dedup_hash_ipv4(ipaddress ip_them, unsigned port_them,
  * Swap two addresses in the table. This uses the classic XOR trick
  * rather than using a swap variable.
  */
-static inline void
-swap4(struct DedupEntry_IPv4 *lhs, struct DedupEntry_IPv4 *rhs)
-{
-    lhs->ip_them   ^= rhs->ip_them;
+static inline void swap4(struct DedupEntry_IPv4 *lhs,
+                         struct DedupEntry_IPv4 *rhs) {
+    lhs->ip_them ^= rhs->ip_them;
     lhs->port_them ^= rhs->port_them;
-    lhs->ip_me     ^= rhs->ip_me;
-    lhs->port_me   ^= rhs->port_me;
-    lhs->type      ^= rhs->type;
+    lhs->ip_me ^= rhs->ip_me;
+    lhs->port_me ^= rhs->port_me;
+    lhs->type ^= rhs->type;
 
-    rhs->ip_them   ^= lhs->ip_them;
+    rhs->ip_them ^= lhs->ip_them;
     rhs->port_them ^= lhs->port_them;
-    rhs->ip_me     ^= lhs->ip_me;
-    rhs->port_me   ^= lhs->port_me;
-    rhs->type      ^= lhs->type;
+    rhs->ip_me ^= lhs->ip_me;
+    rhs->port_me ^= lhs->port_me;
+    rhs->type ^= lhs->type;
 
-    lhs->ip_them   ^= rhs->ip_them;
+    lhs->ip_them ^= rhs->ip_them;
     lhs->port_them ^= rhs->port_them;
-    lhs->ip_me     ^= rhs->ip_me;
-    lhs->port_me   ^= rhs->port_me;
-    lhs->type      ^= rhs->type;
+    lhs->ip_me ^= rhs->ip_me;
+    lhs->port_me ^= rhs->port_me;
+    lhs->type ^= rhs->type;
 }
 
 #ifdef __clang__
@@ -313,14 +292,12 @@ swap4(struct DedupEntry_IPv4 *lhs, struct DedupEntry_IPv4 *rhs)
 
 /***************************************************************************
  ***************************************************************************/
-static bool
-dedup_is_duplicate_ipv4(DedupTable *dedup,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me, unsigned type)
-{
-    unsigned hash;
+static bool dedup_is_duplicate_ipv4(DedupTable *dedup, ipaddress ip_them,
+                                    unsigned port_them, ipaddress ip_me,
+                                    unsigned port_me, unsigned type) {
+    unsigned                hash;
     struct DedupEntry_IPv4 *bucket;
-    unsigned i;
+    unsigned                i;
 
     hash   = dedup_hash_ipv4(ip_them, port_them, ip_me, port_me, type);
     bucket = dedup->all_entries[hash & dedup->mask].entries;
@@ -330,13 +307,13 @@ dedup_is_duplicate_ipv4(DedupTable *dedup,
      * addresses to front, aging older addresses that haven't been
      * seen in a while. */
     for (i = 0; i < 4; i++) {
-        if (bucket[i].ip_them == ip_them.ipv4 && bucket[i].port_them == port_them
-            && bucket[i].ip_me == ip_me.ipv4 && bucket[i].port_me == port_me
-            && bucket[i].type == type) {
+        if (bucket[i].ip_them == ip_them.ipv4 &&
+            bucket[i].port_them == port_them && bucket[i].ip_me == ip_me.ipv4 &&
+            bucket[i].port_me == port_me && bucket[i].type == type) {
             /* move to head of list so constant repeats get attention */
             if (i > 0) {
                 // swap4(&bucket[0], &bucket[i]);
-                memmove(bucket+1, bucket, i*sizeof(*bucket));
+                memmove(bucket + 1, bucket, i * sizeof(*bucket));
                 bucket[0].ip_them   = ip_them.ipv4;
                 bucket[0].port_them = port_them;
                 bucket[0].ip_me     = ip_me.ipv4;
@@ -351,7 +328,7 @@ dedup_is_duplicate_ipv4(DedupTable *dedup,
      * older entries at this bucket off the list
      * NOTE the paramter order of memmove
      */
-    memmove(bucket+1, bucket, (DEDUP_BUCKET_SIZE-1)*sizeof(*bucket));
+    memmove(bucket + 1, bucket, (DEDUP_BUCKET_SIZE - 1) * sizeof(*bucket));
     bucket[0].ip_them   = ip_them.ipv4;
     bucket[0].port_them = port_them;
     bucket[0].ip_me     = ip_me.ipv4;
@@ -359,34 +336,30 @@ dedup_is_duplicate_ipv4(DedupTable *dedup,
     bucket[0].type      = type;
 
     return false;
-
 }
 
 /***************************************************************************
  ***************************************************************************/
-bool
-dedup_is_duplicate(DedupTable *dedup,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me, unsigned type)
-{
+bool dedup_is_duplicate(DedupTable *dedup, ipaddress ip_them,
+                        unsigned port_them, ipaddress ip_me, unsigned port_me,
+                        unsigned type) {
     if (ip_them.version == 6)
-        return dedup_is_duplicate_ipv6(dedup, ip_them, port_them, ip_me, port_me, type);
+        return dedup_is_duplicate_ipv6(dedup, ip_them, port_them, ip_me,
+                                       port_me, type);
     else
-        return dedup_is_duplicate_ipv4(dedup, ip_them, port_them, ip_me, port_me, type);
+        return dedup_is_duplicate_ipv4(dedup, ip_them, port_them, ip_me,
+                                       port_me, type);
 }
-
 
 /**
  * My own deterministic rand() function for testing this module
  */
-static unsigned
-_rand(unsigned *seed)
-{
+static unsigned _rand(unsigned *seed) {
     static const unsigned a = 214013;
     static const unsigned c = 2531011;
 
     *seed = (*seed) * a + c;
-    return (*seed)>>16 & 0x7fff;
+    return (*seed) >> 16 & 0x7fff;
 }
 
 /*
@@ -405,13 +378,12 @@ _rand(unsigned *seed)
  * We also do a simple deterministic test, but this still
  * is insufficient testing how duplicates age out and such.
  */
-int dedup_selftest()
-{
+int dedup_selftest() {
     DedupTable *dedup;
-    unsigned seed = 0;
-    size_t i;
-    unsigned found_match = 0;
-    unsigned line = 0;
+    unsigned    seed = 0;
+    size_t      i;
+    unsigned    found_match = 0;
+    unsigned    line        = 0;
 
     dedup = dedup_create(1000000);
 
@@ -436,11 +408,13 @@ int dedup_selftest()
         port_them       = 0xfedc;
         type            = 0x8967;
 
-        if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me, type)) {
+        if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me,
+                               type)) {
             line = __LINE__;
             goto fail;
         }
-        if (!dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me, type)) {
+        if (!dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me,
+                                type)) {
             line = __LINE__;
             goto fail;
         }
@@ -451,26 +425,26 @@ int dedup_selftest()
         ip_me.ipv6.lo   = 0x12345678;
         ip_them.ipv6.hi = 0xabcdef0;
         ip_them.ipv6.lo = 0xabcdef0;
-        type = 0x7654;
+        type            = 0x7654;
 
-        if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me, type)) {
+        if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me,
+                               type)) {
             line = __LINE__;
             goto fail;
         }
-        if (!dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me, type)) {
+        if (!dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me,
+                                type)) {
             ipaddress_formatted_t fmt1 = ipaddress_fmt(ip_them);
             ipaddress_formatted_t fmt2 = ipaddress_fmt(ip_me);
-            LOG(LEVEL_ERROR, "(%s):%u -> (%s):%u\n", 
-                fmt1.string, port_them,
+            LOG(LEVEL_ERROR, "(%s):%u -> (%s):%u\n", fmt1.string, port_them,
                 fmt2.string, port_me);
             line = __LINE__;
             goto fail;
         }
-
     }
 
     /* Test IPv4 addresses */
-    for (i=0; i<100000; i++) {
+    for (i = 0; i < 100000; i++) {
         ipaddress ip_them;
         unsigned  port_them;
         ipaddress ip_me;
@@ -490,7 +464,8 @@ int dedup_selftest()
         port_me      = _rand(&seed) & 0xFF80;
         type         = _rand(&seed) & 0B111;
 
-        if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me, type)) {
+        if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me,
+                               type)) {
             found_match++;
         }
     }
@@ -502,10 +477,10 @@ int dedup_selftest()
 
     /* Now do IPv6 */
     found_match = 0;
-    seed = 0;
+    seed        = 0;
 
     /* Test IPv4 addresses */
-    for (i=0; i<100000; i++) {
+    for (i = 0; i < 100000; i++) {
         ipaddress ip_them;
         unsigned  port_them;
         ipaddress ip_me;
@@ -525,7 +500,8 @@ int dedup_selftest()
         port_them       = _rand(&seed) & 0x1FF;
         type            = _rand(&seed) & 0B111;
 
-        if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me, type)) {
+        if (dedup_is_duplicate(dedup, ip_them, port_them, ip_me, port_me,
+                               type)) {
             found_match++;
         }
     }
@@ -540,6 +516,7 @@ int dedup_selftest()
     return 0; /* success :) */
 
 fail:
-    LOG(LEVEL_ERROR, "selftest: 'dedup' failed, file=%s, line=%u\n", __FILE__, line);
+    LOG(LEVEL_ERROR, "selftest: 'dedup' failed, file=%s, line=%u\n", __FILE__,
+        line);
     return 1;
 }

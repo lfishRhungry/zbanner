@@ -7,8 +7,6 @@
  * print debug information to the console, such as the line numbers where
  * the program crashes.
  */
-void
-pixie_backtrace_init(const char *self);
+void pixie_backtrace_init(const char *self);
 
 #endif
-

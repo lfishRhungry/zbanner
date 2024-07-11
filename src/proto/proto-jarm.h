@@ -13,9 +13,9 @@ enum JarmCipherChoice {
 enum JarmCipherOrder {
     CipherOrder_FORWARD,
     CipherOrder_REVERSE,
-    CipherOrder_TOP_HALF,         /*from middle to top*/
-    CipherOrder_BOTTOM_HALF,      /*from middle to bottom (without middle)*/
-    CipherOrder_MIDDLE_OUT,       /*from middle to both edge (contains middle)*/
+    CipherOrder_TOP_HALF,    /*from middle to top*/
+    CipherOrder_BOTTOM_HALF, /*from middle to bottom (without middle)*/
+    CipherOrder_MIDDLE_OUT,  /*from middle to both edge (contains middle)*/
 };
 
 enum JarmGreaseUse {
@@ -35,21 +35,21 @@ enum JarmExtensionOrder {
 };
 
 enum JarmSupportVersionsExtension {
-    SupportVerExt_1_2_SUPPORT,    /*Only support up to TLSv1.2*/
-    SupportVerExt_NO_SUPPORT,     /*No Supported Version Extension*/
-    SupportVerExt_1_3_SUPPORT,    /*Support up to TLSv1.3*/
+    SupportVerExt_1_2_SUPPORT, /*Only support up to TLSv1.2*/
+    SupportVerExt_NO_SUPPORT,  /*No Supported Version Extension*/
+    SupportVerExt_1_3_SUPPORT, /*Support up to TLSv1.3*/
 };
 
 struct JarmConfig {
-    char                                    *servername; /* end with zero */
-    unsigned                                 dst_port;
-    uint16_t                                 version;
-    enum JarmCipherChoice                    cipher_list;
-    enum JarmCipherOrder                     cipher_order;
-    enum JarmGreaseUse                       grease_use;
-    enum JarmAlpnUse                         alpn_use;
-    enum JarmSupportVersionsExtension        support_ver_ext;
-    enum JarmExtensionOrder                  ext_order;
+    char                             *servername; /* end with zero */
+    unsigned                          dst_port;
+    uint16_t                          version;
+    enum JarmCipherChoice             cipher_list;
+    enum JarmCipherOrder              cipher_order;
+    enum JarmGreaseUse                grease_use;
+    enum JarmAlpnUse                  alpn_use;
+    enum JarmSupportVersionsExtension support_ver_ext;
+    enum JarmExtensionOrder           ext_order;
 };
 
 /**
@@ -58,16 +58,16 @@ struct JarmConfig {
  * @param buf buffer to load CH probe.
  * @param buf_len length of buffer.
  * @return length of CH probe or 0 if error happened.
-*/
-size_t jarm_create_ch(struct JarmConfig *jc, unsigned char *buf, unsigned buf_len);
-
+ */
+size_t jarm_create_ch(struct JarmConfig *jc, unsigned char *buf,
+                      unsigned buf_len);
 
 /**
  * Decpher ServerHello in JARM format to c string
  * We should insure the payload is a valid ServerHello.(include ALERT)
-*/
+ */
 size_t jarm_decipher_one(const unsigned char *payload, size_t payload_len,
-    char *res_buf, size_t res_max);
+                         char *res_buf, size_t res_max);
 
 #endif
 

@@ -33,12 +33,10 @@
 #include "../util-data/fine-malloc.h"
 #include "../util-misc/cross.h"
 
-
-#define EVENT_TM_SLOTS  1024*1024
-
+#define EVENT_TM_SLOTS 1024 * 1024
 
 /***************************************************************************
- * The timeout system is a circular ring. We move an index around the 
+ * The timeout system is a circular ring. We move an index around the
  * ring. At each slot in the ring is a linked-list of all entries at
  * that time index. Because the ring can wrap, not everything at a given
  * entry will be the same timestamp. Therefore, when doing the timeout
@@ -69,13 +67,11 @@ struct TimeoutTables {
 
 /***************************************************************************
  ***************************************************************************/
-Timeouts *
-timeouts_create(uint64_t timestamp)
-{
+Timeouts *timeouts_create(uint64_t timestamp) {
     Timeouts *timeouts;
 
     timeouts       = CALLOC(1, sizeof(Timeouts));
-    timeouts->mask = ARRAY_SIZE(timeouts->slots)-1;
+    timeouts->mask = ARRAY_SIZE(timeouts->slots) - 1;
 
     /*
      * Set the index to the current time. Note that this timestamp is
@@ -86,7 +82,6 @@ timeouts_create(uint64_t timestamp)
      */
     timeouts->current_index = timestamp;
 
-
     return timeouts;
 }
 
@@ -94,10 +89,8 @@ timeouts_create(uint64_t timestamp)
  * This inserts the timeout entry into the appropriate place in the
  * timeout ring.
  ***************************************************************************/
-void
-timeouts_add(Timeouts *timeouts, TmEntry *entry,
-             size_t offset, uint64_t timestamp)
-{
+void timeouts_add(Timeouts *timeouts, TmEntry *entry, size_t offset,
+                  uint64_t timestamp) {
     unsigned index;
 
     /* Unlink from wherever the entry came from */
@@ -106,8 +99,8 @@ timeouts_add(Timeouts *timeouts, TmEntry *entry,
     timeout_unlink(entry);
 
     if (entry->prev) {
-        LOG(LEVEL_DETAIL, "EVENT-TM CHANGE %d-seconds\n", 
-            (int)((timestamp-entry->timestamp)/TICKS_PER_SECOND));
+        LOG(LEVEL_DETAIL, "EVENT-TM CHANGE %d-seconds\n",
+            (int)((timestamp - entry->timestamp) / TICKS_PER_SECOND));
     }
 
     /* Initialize the new entry */
@@ -128,14 +121,11 @@ timeouts_add(Timeouts *timeouts, TmEntry *entry,
 /***************************************************************************
  * Remove the next event that it older than the specified timestamp
  ***************************************************************************/
-void *
-timeouts_remove(Timeouts *timeouts, uint64_t timestamp)
-{
+void *timeouts_remove(Timeouts *timeouts, uint64_t timestamp) {
     TmEntry *entry = NULL;
 
     /* Search until we find one */
     while (timeouts->current_index <= timestamp) {
-
         /* Start at the current slot */
         entry = timeouts->slots[timeouts->current_index & timeouts->mask];
 
@@ -160,7 +150,5 @@ timeouts_remove(Timeouts *timeouts, uint64_t timestamp)
     timeout_unlink(entry);
 
     /* return a pointer to the structure holding this entry */
-    return ((char*)entry) - entry->offset;
+    return ((char *)entry) - entry->offset;
 }
-
-

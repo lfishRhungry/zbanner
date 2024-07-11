@@ -29,16 +29,10 @@ typedef struct TemplateOptions TmplOpt;
  * @param data_link
  *      The OSI layer 2 protocol, as defined in stub-pcap-dlt.h standard.
  */
-void
-template_packet_init(
-    TmplSet *templset,
-    macaddress_t source_mac,
-    macaddress_t router_mac_ipv4,
-    macaddress_t router_mac_ipv6,
-    int data_link,
-    uint64_t entropy,
-    const TmplOpt *templ_opts);
-
+void template_packet_init(TmplSet *templset, macaddress_t source_mac,
+                          macaddress_t router_mac_ipv4,
+                          macaddress_t router_mac_ipv6, int data_link,
+                          uint64_t entropy, const TmplOpt *templ_opts);
 
 /***************************************************************************
  * Overwrites the Window of default tcp syn template

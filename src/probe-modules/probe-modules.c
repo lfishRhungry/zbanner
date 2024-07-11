@@ -9,8 +9,6 @@
 This is an Application-layer Probe(or Request) Plugin System
 */
 
-
-
 //! ADD YOUR PROBE HERE
 extern Probe NullProbe;
 extern Probe HttpProbe;
@@ -71,8 +69,6 @@ extern Probe LzrIppProbe;
 extern Probe LzrWaitProbe;
 extern Probe LzrNewlinesProbe;
 extern Probe LzrNewlines50Probe;
-
-
 
 //! ADD YOUR PROBE HERE
 static Probe *probe_modules_list[] = {
@@ -153,9 +149,7 @@ static Probe *probe_modules_list[] = {
     &LzrNewlines50Probe,
 };
 
-
-Probe *get_probe_module_by_name(const char *name)
-{
+Probe *get_probe_module_by_name(const char *name) {
     int len = (int)ARRAY_SIZE(probe_modules_list);
     for (int i = 0; i < len; i++) {
         if (!strcmp(probe_modules_list[i]->name, name)) {
@@ -165,9 +159,7 @@ Probe *get_probe_module_by_name(const char *name)
     return NULL;
 }
 
-const char *
-get_probe_type_name(const ProbeType type)
-{
+const char *get_probe_type_name(const ProbeType type) {
     switch (type) {
         case ProbeType_NULL:
             return "null";
@@ -182,9 +174,7 @@ get_probe_type_name(const ProbeType type)
     }
 }
 
-static const char *
-get_multi_mode_name(const MultiMode type)
-{
+static const char *get_multi_mode_name(const MultiMode type) {
     switch (type) {
         case Multi_Null:
             return "no multi-probe";
@@ -201,28 +191,24 @@ get_multi_mode_name(const MultiMode type)
     }
 }
 
-int probe_type_to_string(unsigned type, char *string, size_t str_len)
-{
+int probe_type_to_string(unsigned type, char *string, size_t str_len) {
     int ret = 0;
 
     ret = snprintf(string, str_len, "%s%s%s",
-            (type&ProbeType_TCP)?"tcp|":"",
-            (type&ProbeType_UDP)?"udp|":"",
-            (type&ProbeType_STATE)?"state|":""
-            );
+                   (type & ProbeType_TCP) ? "tcp|" : "",
+                   (type & ProbeType_UDP) ? "udp|" : "",
+                   (type & ProbeType_STATE) ? "state|" : "");
     if (string[0] == '\0') {
         ret = snprintf(string, str_len, "no probe");
-    }
-    else {
-        string[strlen(string)-1] = '\0';
+    } else {
+        string[strlen(string) - 1] = '\0';
         ret--;
     }
 
     return ret;
 }
 
-void list_all_probe_modules()
-{
+void list_all_probe_modules() {
     int len = (int)ARRAY_SIZE(probe_modules_list);
 
     printf("\n");
@@ -248,8 +234,7 @@ void list_all_probe_modules()
     printf("\n");
 }
 
-void help_probe_module(Probe *module)
-{
+void help_probe_module(Probe *module) {
     if (!module) {
         LOG(LEVEL_ERROR, "No specified probe module.\n");
         return;
@@ -263,20 +248,20 @@ void help_probe_module(Probe *module)
     printf("  ProbeModule Type: %s\n", get_probe_type_name(module->type));
     printf("  Multi-probe mode: %s\n", get_multi_mode_name(module->multi_mode));
     printf("  Multi-probe count: %u\n", module->multi_num);
-    printf("  Hello wait second: %u (for stateful probe)\n", module->hello_wait);
+    printf("  Hello wait second: %u (for stateful probe)\n",
+           module->hello_wait);
     printf("\n");
     printf("  Description:\n");
     xprint(module->desc, 6, 80);
     printf("\n");
     printf("\n");
     if (module->params) {
-        for (unsigned j=0; module->params[j].name; j++) {
-
+        for (unsigned j = 0; module->params[j].name; j++) {
             if (!module->params[j].help_text)
                 continue;
 
             printf("  --%s", module->params[j].name);
-            for (unsigned k=0; module->params[j].alt_names[k]; k++) {
+            for (unsigned k = 0; module->params[j].alt_names[k]; k++) {
                 printf(", --%s", module->params[j].alt_names[k]);
             }
             printf("\n");
@@ -289,75 +274,46 @@ void help_probe_module(Probe *module)
     printf("\n");
 }
 
-bool probe_init_nothing(const XConf *xconf)
-{
-    return true;
-}
+bool probe_init_nothing(const XConf *xconf) { return true; }
 
-size_t
-probe_make_no_payload(
-    ProbeTarget *target,
-    unsigned char *payload_buf)
-{
+size_t probe_make_no_payload(ProbeTarget *target, unsigned char *payload_buf) {
     return 0;
 }
 
-size_t
-probe_no_payload_length(ProbeTarget *target)
-{
-    return 0;
-}
+size_t probe_no_payload_length(ProbeTarget *target) { return 0; }
 
-unsigned
-probe_report_nothing(
-    unsigned th_idx,
-    ProbeTarget *target,
-    const unsigned char *px, unsigned sizeof_px,
-    OutItem *item)
-{
+unsigned probe_report_nothing(unsigned th_idx, ProbeTarget *target,
+                              const unsigned char *px, unsigned sizeof_px,
+                              OutItem *item) {
     item->no_output = 1;
     return 0;
 }
 
-unsigned
-probe_just_report_banner(
-    unsigned th_idx,
-    ProbeTarget *target,
-    const unsigned char *px, unsigned sizeof_px,
-    OutItem *item)
-{
+unsigned probe_just_report_banner(unsigned th_idx, ProbeTarget *target,
+                                  const unsigned char *px, unsigned sizeof_px,
+                                  OutItem *item) {
     item->level = OUT_SUCCESS;
     dach_append_normalized(&item->report, "banner", px, sizeof_px);
 
     return 0;
 }
 
-void probe_close_nothing()
-{
-    return;
-}
+void probe_close_nothing() { return; }
 
-bool probe_conn_init_nothing(ProbeState *state, ProbeTarget *target)
-{
+bool probe_conn_init_nothing(ProbeState *state, ProbeTarget *target) {
     return true;
 }
 
-void probe_conn_close_nothing(ProbeState *state, ProbeTarget *target)
-{
+void probe_conn_close_nothing(ProbeState *state, ProbeTarget *target) {
     return;
 }
 
-unsigned
-probe_no_timeout(ProbeTarget *target, OutItem *item)
-{
+unsigned probe_no_timeout(ProbeTarget *target, OutItem *item) {
     item->no_output = 1;
     return 0;
 }
 
-
-bool probe_all_valid(
-    ProbeTarget *target,
-    const unsigned char *px, unsigned sizeof_px)
-{
+bool probe_all_valid(ProbeTarget *target, const unsigned char *px,
+                     unsigned sizeof_px) {
     return true;
 }

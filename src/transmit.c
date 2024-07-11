@@ -30,9 +30,8 @@
 #include "util-scan/listrange.h"
 #include "util-scan/throttle.h"
 
-static void
-_adapter_get_source_addresses(const XConf *xconf, struct source_t *src)
-{
+static void _adapter_get_source_addresses(const XConf     *xconf,
+                                          struct source_t *src) {
     const StackSrc *ifsrc = &xconf->nic.src;
 
     src->ipv4      = ifsrc->ipv4.first;
@@ -45,26 +44,25 @@ _adapter_get_source_addresses(const XConf *xconf, struct source_t *src)
     src->port_mask = ifsrc->port.last - ifsrc->port.first;
 }
 
-void transmit_thread(void *v)
-{
-    TxThread                    *parms                    = (TxThread *)v;
-    const XConf                 *xconf                    = parms->xconf;
-    Throttler                   *throttler                = parms->throttler;
-    Adapter                     *adapter                  = xconf->nic.adapter;
-    AdapterCache                *acache                   = NULL;
-    uint64_t                     packets_sent             = 0;
-    unsigned                     increment                = xconf->shard.of * xconf->tx_thread_count;
-    uint64_t                     entropy                  = xconf->seed;
-    ScanTmEvent                 *tm_event                 = NULL;
-    FHandler                    *ft_handler               = NULL;
-    Generator                   *generator                = xconf->generator;
+void transmit_thread(void *v) {
+    TxThread     *parms        = (TxThread *)v;
+    const XConf  *xconf        = parms->xconf;
+    Throttler    *throttler    = parms->throttler;
+    Adapter      *adapter      = xconf->nic.adapter;
+    AdapterCache *acache       = NULL;
+    uint64_t      packets_sent = 0;
+    unsigned      increment    = xconf->shard.of * xconf->tx_thread_count;
+    uint64_t      entropy      = xconf->seed;
+    ScanTmEvent  *tm_event     = NULL;
+    FHandler     *ft_handler   = NULL;
+    Generator    *generator    = xconf->generator;
 
     /* Wait to make sure receive_thread is ready */
     pixie_usleep(1000000);
     LOG(LEVEL_DEBUG, "starting transmit thread #%u\n", parms->tx_index);
 
     char th_name[30];
-    snprintf(th_name, sizeof(th_name), XTATE_NAME"-xmit #%u", parms->tx_index);
+    snprintf(th_name, sizeof(th_name), XTATE_NAME "-xmit #%u", parms->tx_index);
     pixie_set_thread_name(th_name);
 
     /* Lock threads to the CPUs one by one in this order:
@@ -98,18 +96,18 @@ void transmit_thread(void *v)
     throttler_start(throttler, xconf->max_rate / xconf->tx_thread_count);
 
     /*Declared out of infinite loop to keep balance of stack*/
-    uint64_t         start;
-    uint64_t         batch_size;
-    unsigned         more_idx;
+    uint64_t start;
+    uint64_t batch_size;
+    unsigned more_idx;
 
 infinite:;
 
     start = xconf->resume.index + parms->tx_index +
             (xconf->shard.one - 1) * xconf->tx_thread_count;
 
-
     /**
-     * NOTE: This init insures the stop of tx while the tx thread got no target to scan.
+     * NOTE: This init insures the stop of tx while the tx thread got no target
+     * to scan.
      */
     parms->my_index = start;
 
@@ -118,17 +116,17 @@ infinite:;
 
     more_idx = 0;
     for (uint64_t i = start; generator->hasmore_cb(parms->tx_index, i);) {
-
         batch_size = throttler_next_batch(throttler, packets_sent);
 
         /*Transmit packets from stack first */
-        stack_flush_packets(xconf->stack, adapter, acache, &packets_sent, &batch_size);
+        stack_flush_packets(xconf->stack, adapter, acache, &packets_sent,
+                            &batch_size);
 
         while (batch_size && generator->hasmore_cb(parms->tx_index, i)) {
-
             ScanTarget target = {.index = more_idx};
 
-            target.target = generator->generate_cb(parms->tx_index, i, parms->my_repeat, &src);
+            target.target = generator->generate_cb(parms->tx_index, i,
+                                                   parms->my_repeat, &src);
 
             /*if we don't use fast-timeout, do not malloc more memory*/
             if (!tm_event) {
@@ -144,8 +142,8 @@ infinite:;
             unsigned char pkt_buffer[PKT_BUF_SIZE];
             size_t        pkt_len = 0;
             unsigned      more    = 0;
-            more = xconf->scanner->transmit_cb(
-                entropy, &target, tm_event, pkt_buffer, &pkt_len);
+            more = xconf->scanner->transmit_cb(entropy, &target, tm_event,
+                                               pkt_buffer, &pkt_len);
 
             /*
              * Send packet actually.
@@ -153,7 +151,8 @@ infinite:;
              * always enough packets here to trigger implicit flushing.
              */
             if (pkt_len) {
-                rawsock_send_packet(adapter, acache, pkt_buffer, (unsigned)pkt_len);
+                rawsock_send_packet(adapter, acache, pkt_buffer,
+                                    (unsigned)pkt_len);
 
                 batch_size--;
                 packets_sent++;
@@ -192,8 +191,8 @@ infinite:;
      * Set repeat as condition to avoid more packets sending.
      */
     if (xconf->is_infinite && !time_to_finish_tx) {
-        if ((xconf->repeat && parms->my_repeat<xconf->repeat)
-            || !xconf->repeat) {
+        if ((xconf->repeat && parms->my_repeat < xconf->repeat) ||
+            !xconf->repeat) {
             parms->my_repeat++;
             goto infinite;
         }
@@ -213,7 +212,8 @@ infinite:;
      */
     while (!time_to_finish_rx) {
         batch_size = throttler_next_batch(throttler, packets_sent);
-        stack_flush_packets(xconf->stack, adapter, acache, &packets_sent, &batch_size);
+        stack_flush_packets(xconf->stack, adapter, acache, &packets_sent,
+                            &batch_size);
         rawsock_flush(adapter, acache);
     }
 

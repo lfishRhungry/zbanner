@@ -37,13 +37,11 @@
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 
-ipv6address
-rawsock_get_adapter_ipv6(const char *ifname)
-{
+ipv6address rawsock_get_adapter_ipv6(const char *ifname) {
     struct ifaddrs *list = NULL;
     struct ifaddrs *ifa;
-    int err;
-    ipv6address result = {0,0};
+    int             err;
+    ipv6address     result = {0, 0};
 
     /* Fetch the list of addresses */
     err = getifaddrs(&list);
@@ -64,15 +62,17 @@ rawsock_get_adapter_ipv6(const char *ifname)
         if (ifa->ifa_addr->sa_family != AF_INET6)
             continue;
 
-        addr = ipv6address_from_bytes((const unsigned char *)&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr);
+        addr = ipv6address_from_bytes(
+            (const unsigned char *)&((struct sockaddr_in6 *)ifa->ifa_addr)
+                ->sin6_addr);
 
         /**
          * Supports single-cast and NAT6(fdXX) scenarios
          * Set source ip if use local(feXX) mode */
-        if (addr.hi>>56ULL >= 0xFE)
+        if (addr.hi >> 56ULL >= 0xFE)
             continue;
 
-        if (addr.hi>>32ULL == 0x20010db8)
+        if (addr.hi >> 32ULL == 0x20010db8)
             continue;
 
         result = addr;
@@ -102,31 +102,25 @@ rawsock_get_adapter_ipv6(const char *ifname)
 #pragma comment(lib, "IPHLPAPI.lib")
 #endif
 
-
-ipv6address
-rawsock_get_adapter_ipv6(const char *ifname)
-{
-    ULONG err;
-    ipv6address result = {0,0};
-    IP_ADAPTER_ADDRESSES *adapters = NULL;
-    IP_ADAPTER_ADDRESSES *adapter;
+ipv6address rawsock_get_adapter_ipv6(const char *ifname) {
+    ULONG                       err;
+    ipv6address                 result   = {0, 0};
+    IP_ADAPTER_ADDRESSES       *adapters = NULL;
+    IP_ADAPTER_ADDRESSES       *adapter;
     IP_ADAPTER_UNICAST_ADDRESS *addr;
-    ULONG sizeof_addrs = 0;
+    ULONG                       sizeof_addrs = 0;
 
     ifname = rawsock_win_name(ifname);
 
 again:
-    err = GetAdaptersAddresses(
-                        AF_INET6, /* Get IPv6 addresses only */
-                        0,
-                        0,
-                        adapters,
-                        &sizeof_addrs);
+    err = GetAdaptersAddresses(AF_INET6, /* Get IPv6 addresses only */
+                               0, 0, adapters, &sizeof_addrs);
     if (err == ERROR_BUFFER_OVERFLOW) {
         free(adapters);
         adapters = malloc(sizeof_addrs);
         if (adapters == NULL) {
-            LOG(LEVEL_ERROR, "GetAdaptersAddresses():malloc(): failed: out of memory\n");
+            LOG(LEVEL_ERROR,
+                "GetAdaptersAddresses():malloc(): failed: out of memory\n");
             return result;
         }
         goto again;
@@ -152,16 +146,15 @@ again:
         goto end;
     }
 
-
     /*
      * Search through the list of returned addresses looking for the first
      * that matches an IPv6 address.
      */
     for (addr = adapter->FirstUnicastAddress; addr; addr = addr->Next) {
-        struct sockaddr_in6 *sa = (struct sockaddr_in6 *)addr->Address.lpSockaddr;
-        //char  buf[64];
+        struct sockaddr_in6 *sa =
+            (struct sockaddr_in6 *)addr->Address.lpSockaddr;
+        // char  buf[64];
         ipv6address ipv6;
-
 
         /* Ignore any address that isn't IPv6 */
         if (sa->sin6_family != AF_INET6)
@@ -176,11 +169,13 @@ again:
         ipv6 = ipv6address_from_bytes((const unsigned char *)&sa->sin6_addr);
 
         if (addr->PrefixOrigin == IpPrefixOriginWellKnown) {
-             /* This value applies to an IPv6 link-local address or an IPv6 loopback address */
+            /* This value applies to an IPv6 link-local address or an IPv6
+             * loopback address */
             continue;
         }
 
-        if (addr->PrefixOrigin == IpPrefixOriginRouterAdvertisement && addr->SuffixOrigin == IpSuffixOriginRandom) {
+        if (addr->PrefixOrigin == IpPrefixOriginRouterAdvertisement &&
+            addr->SuffixOrigin == IpSuffixOriginRandom) {
             /* This is a temporary IPv6 address
              * See: http://technet.microsoft.com/en-us/ff568768(v=vs.60).aspx */
             continue;
@@ -189,10 +184,10 @@ again:
         /**
          * Supports single-cast and NAT6(fdXX) scenarios
          * Set source ip if use local(feXX) mode */
-        if (ipv6.hi>>56ULL >= 0xFE)
+        if (ipv6.hi >> 56ULL >= 0xFE)
             continue;
 
-        if (ipv6.hi>>32ULL == 0x20010db8)
+        if (ipv6.hi >> 32ULL == 0x20010db8)
             continue;
 
         result = ipv6;
@@ -214,19 +209,17 @@ end:
 #include <netinet/in.h>
 
 #ifdef AF_LINK
-#   include <net/if_dl.h>
+#include <net/if_dl.h>
 #endif
 #ifdef AF_PACKET
-#   include <netpacket/packet.h>
+#include <netpacket/packet.h>
 #endif
 
-ipv6address
-rawsock_get_adapter_ipv6(const char *ifname)
-{
+ipv6address rawsock_get_adapter_ipv6(const char *ifname) {
     struct ifaddrs *list = NULL;
     struct ifaddrs *ifa;
-    int err;
-    ipv6address result = {0,0};
+    int             err;
+    ipv6address     result = {0, 0};
 
     /* Fetch the list of addresses */
     err = getifaddrs(&list);
@@ -247,14 +240,16 @@ rawsock_get_adapter_ipv6(const char *ifname)
         if (ifa->ifa_addr->sa_family != AF_INET6)
             continue;
 
-        addr = ipv6address_from_bytes((const unsigned char *)&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr);
+        addr = ipv6address_from_bytes(
+            (const unsigned char *)&((struct sockaddr_in6 *)ifa->ifa_addr)
+                ->sin6_addr);
 
         /**
          * Supports single-cast and NAT6(fdXX) scenarios
          * Set source ip if use local(feXX) mode */
-        if (addr.hi>>56ULL >= 0xFE)
+        if (addr.hi >> 56ULL >= 0xFE)
             continue;
-        if (addr.hi>>32ULL == 0x20010db8)
+        if (addr.hi >> 32ULL == 0x20010db8)
             continue;
 
         result = addr;
@@ -266,4 +261,3 @@ rawsock_get_adapter_ipv6(const char *ifname)
 }
 
 #endif
-

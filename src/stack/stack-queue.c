@@ -6,22 +6,20 @@
 #include <string.h>
 #include <stdio.h>
 
-PktBuf *
-stack_get_pktbuf(STACK *stack)
-{
+PktBuf *stack_get_pktbuf(STACK *stack) {
     PktBuf *response = NULL;
 
-    int err = rte_ring_mc_dequeue(stack->packet_buffers, (void**)&response);
+    int err = rte_ring_mc_dequeue(stack->packet_buffers, (void **)&response);
 
-    if (err!=0) {
-        //!No need to proceed
+    if (err != 0) {
+        //! No need to proceed
         LOG(LEVEL_ERROR, "failed to get packet buffer. (IMPOSSIBLE)\n");
         fflush(stdout);
         exit(1);
     }
 
     if (response == NULL) {
-        //!No need to proceed
+        //! No need to proceed
         LOG(LEVEL_ERROR, "got empty packet buffer. (IMPOSSIBLE)\n");
         fflush(stdout);
         exit(1);
@@ -30,11 +28,9 @@ stack_get_pktbuf(STACK *stack)
     return response;
 }
 
-void
-stack_transmit_pktbuf(STACK *stack, PktBuf *response)
-{
+void stack_transmit_pktbuf(STACK *stack, PktBuf *response) {
     int err;
-    for (err=1; err; ) {
+    for (err = 1; err;) {
         err = rte_ring_mp_enqueue(stack->transmit_queue, response);
         if (err) {
             LOG(LEVEL_ERROR, "transmit queue full (should be impossible)\n");
@@ -52,19 +48,13 @@ stack_transmit_pktbuf(STACK *stack, PktBuf *response)
  * than individually. It increases latency, but increases performance. We
  * don't really care about latency.
  ***************************************************************************/
-void
-stack_flush_packets(
-    STACK *stack,
-    Adapter *adapter,
-    AdapterCache *acache,
-    uint64_t *packets_sent,
-    uint64_t *batchsize)
-{
+void stack_flush_packets(STACK *stack, Adapter *adapter, AdapterCache *acache,
+                         uint64_t *packets_sent, uint64_t *batchsize) {
     /*
      * Send a batch of queued packets
      */
-    for ( ; (*batchsize); (*batchsize)--) {
-        int err;
+    for (; (*batchsize); (*batchsize)--) {
+        int     err;
         PktBuf *p;
 
         /*
@@ -72,11 +62,10 @@ stack_flush_packets(
          * put there by a receive thread, and will contain things like
          * an ACK or an HTTP request
          */
-        err = rte_ring_mc_dequeue(stack->transmit_queue, (void**)&p);
-        if (err!=0) {
+        err = rte_ring_mc_dequeue(stack->transmit_queue, (void **)&p);
+        if (err != 0) {
             break; /* queue is empty, nothing to send */
         }
-
 
         /*
          * Actually send the packet.
@@ -89,9 +78,10 @@ stack_flush_packets(
          * of buffers that the transmit thread can reuse
          */
         err = rte_ring_mp_enqueue(stack->packet_buffers, p);
-        if (err!=0) {
-            //!No need to proceed
-            LOG(LEVEL_ERROR, "transmit queue full from `stack_flush_packets` (should be impossible).\n");
+        if (err != 0) {
+            //! No need to proceed
+            LOG(LEVEL_ERROR, "transmit queue full from `stack_flush_packets` "
+                             "(should be impossible).\n");
             exit(1);
         }
 
@@ -101,18 +91,16 @@ stack_flush_packets(
          */
         (*packets_sent)++;
     }
-
 }
 
-STACK *
-stack_create(macaddress_t source_mac, StackSrc *src, unsigned buf_count)
-{
+STACK *stack_create(macaddress_t source_mac, StackSrc *src,
+                    unsigned buf_count) {
     STACK *stack;
     size_t i;
 
-    stack = CALLOC(1, sizeof(*stack));
+    stack             = CALLOC(1, sizeof(*stack));
     stack->source_mac = source_mac;
-    stack->src = src;
+    stack->src        = src;
 
     /*
      * NOTE:
@@ -120,9 +108,9 @@ stack_create(macaddress_t source_mac, StackSrc *src, unsigned buf_count)
      */
     stack->packet_buffers = rte_ring_create(buf_count, 0);
     stack->transmit_queue = rte_ring_create(buf_count, 0);
-    for (i=0; i<buf_count-1; i++) {
+    for (i = 0; i < buf_count - 1; i++) {
         PktBuf *p;
-        int err;
+        int     err;
 
         p   = MALLOC(sizeof(*p));
         err = rte_ring_sp_enqueue(stack->packet_buffers, p);
@@ -134,6 +122,3 @@ stack_create(macaddress_t source_mac, StackSrc *src, unsigned buf_count)
 
     return stack;
 }
-
-
-

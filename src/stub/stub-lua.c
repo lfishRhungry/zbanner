@@ -3,7 +3,7 @@
 #include "../util-out/logger.h"
 
 #ifdef _MSC_VER
-#pragma warning(disable: 4133 4113 4047)
+#pragma warning(disable : 4133 4113 4047)
 #endif
 
 #if defined(WIN32)
@@ -18,43 +18,30 @@
 #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
 #endif
 
-
-bool stublua_init(void)
-{
+bool stublua_init(void) {
     void *lib = NULL;
 
     {
 #if defined(__APPLE__)
         static const char *possible_names[] = {
-            "liblua.5.4.5.dylib",
-            "liblua.5.4.dylib",
-            "liblua5.4.dylib",
-            "liblua.5.3.5.dylib",
-            "liblua.5.3.dylib",
-            "liblua5.3.dylib",
-            "liblua.dylib",
-            0
-        };
+            "liblua.5.4.5.dylib", "liblua.5.4.dylib",
+            "liblua5.4.dylib",    "liblua.5.3.5.dylib",
+            "liblua.5.3.dylib",   "liblua5.3.dylib",
+            "liblua.dylib",       0};
 #elif defined(WIN32) || defined(WIN64) || defined(_WIN32) || defined(_WIN64)
-        static const char *possible_names[] = {
-            "lua53.dll",
-            "lua54.dll",
-            "lua.dll",
-            0
-        };
+        static const char *possible_names[] = {"lua53.dll", "lua54.dll",
+                                               "lua.dll", 0};
 #else
-        static const char *possible_names[] = {
-            "liblua5.3.so",
-            "liblua5.3.so.0",
-            "liblua5.3.so.0.0.0",
-            "liblua5.4.so",
-            "liblua5.4.so.0",
-            "liblua5.4.so.0.0.0",
-            0
-        };
+        static const char *possible_names[] = {"liblua5.3.so",
+                                               "liblua5.3.so.0",
+                                               "liblua5.3.so.0.0.0",
+                                               "liblua5.4.so",
+                                               "liblua5.4.so.0",
+                                               "liblua5.4.so.0.0.0",
+                                               0};
 #endif
         unsigned i;
-        for (i=0; possible_names[i]; i++) {
+        for (i = 0; possible_names[i]; i++) {
 #if defined(WIN32)
             lib = LoadLibraryA(possible_names[i]);
 #else
@@ -75,17 +62,22 @@ bool stublua_init(void)
     }
 
 #if defined(WIN32)
-#define DOLINK(name) \
-    name = (void (*)())GetProcAddress(lib, #name); \
-    if (name == NULL) {LOG(LEVEL_ERROR, "liblua: %s: failed\n", #name); return false;}
+#define DOLINK(name)                                                           \
+    name = (void (*)())GetProcAddress(lib, #name);                             \
+    if (name == NULL) {                                                        \
+        LOG(LEVEL_ERROR, "liblua: %s: failed\n", #name);                       \
+        return false;                                                          \
+    }
 #else
-#define DOLINK(name) \
-    name = dlsym(lib, #name); \
-    if (name == NULL) {LOG(LEVEL_ERROR, "liblua: %s: failed\n", #name); return false;}
+#define DOLINK(name)                                                           \
+    name = dlsym(lib, #name);                                                  \
+    if (name == NULL) {                                                        \
+        LOG(LEVEL_ERROR, "liblua: %s: failed\n", #name);                       \
+        return false;                                                          \
+    }
 #endif
 
     DOLINK(lua_version);
-
 
     DOLINK(lua_close)
     DOLINK(lua_getfield)

@@ -7,9 +7,7 @@
 #include "../util-data/safe-string.h"
 #include "../util-out/logger.h"
 
-uint64_t
-parseInt(const char *str)
-{
+uint64_t parseInt(const char *str) {
     uint64_t result = 0;
 
     while (*str && isdigit(*str & 0xFF)) {
@@ -22,18 +20,17 @@ parseInt(const char *str)
 /**
  * a stricter function for determining if something is boolean.
  */
-bool
-isBoolean(const char *str) {
-    size_t length = str?strlen(str):0;
+bool isBoolean(const char *str) {
+    size_t length = str ? strlen(str) : 0;
 
     if (length == 0)
         return false;
 
     /* "0" or "1" is boolean */
     if (isdigit(str[0])) {
-        if (strtoul(str,0,0) == 0)
+        if (strtoul(str, 0, 0) == 0)
             return true;
-        else if (strtoul(str,0,0) == 1)
+        else if (strtoul(str, 0, 0) == 1)
             return true;
         else
             return false;
@@ -42,45 +39,45 @@ isBoolean(const char *str) {
     switch (str[0]) {
         case 'e':
         case 'E':
-            if (memcasecmp("enable", str, length)==0)
+            if (memcasecmp("enable", str, length) == 0)
                 return true;
-            if (memcasecmp("enabled", str, length)==0)
+            if (memcasecmp("enabled", str, length) == 0)
                 return true;
             return false;
         case 'd':
         case 'D':
-            if (memcasecmp("disable", str, length)==0)
+            if (memcasecmp("disable", str, length) == 0)
                 return true;
-            if (memcasecmp("disabled", str, length)==0)
+            if (memcasecmp("disabled", str, length) == 0)
                 return true;
             return false;
 
         case 't':
         case 'T':
-            if (memcasecmp("true", str, length)==0)
+            if (memcasecmp("true", str, length) == 0)
                 return true;
             return false;
         case 'f':
         case 'F':
-            if (memcasecmp("false", str, length)==0)
+            if (memcasecmp("false", str, length) == 0)
                 return true;
             return false;
 
         case 'o':
         case 'O':
-            if (memcasecmp("on", str, length)==0)
+            if (memcasecmp("on", str, length) == 0)
                 return true;
-            if (memcasecmp("off", str, length)==0)
+            if (memcasecmp("off", str, length) == 0)
                 return true;
             return false;
         case 'Y':
         case 'y':
-            if (memcasecmp("yes", str, length)==0)
+            if (memcasecmp("yes", str, length) == 0)
                 return true;
             return false;
         case 'n':
         case 'N':
-            if (memcasecmp("no", str, length)==0)
+            if (memcasecmp("no", str, length) == 0)
                 return true;
             return false;
         default:
@@ -88,54 +85,50 @@ isBoolean(const char *str) {
     }
 }
 
-bool
-parseBoolean(const char *str)
-{
+bool parseBoolean(const char *str) {
     if (str == NULL || str[0] == 0)
         return true;
     if (isdigit(str[0])) {
-        if (strtoul(str,0,0) == 0)
+        if (strtoul(str, 0, 0) == 0)
             return false;
         else
             return true;
     }
     switch (str[0]) {
-    case 'e': /* enable */
-    case 'E':
-        return true;
-    case 'd': /* disable */
-    case 'D':
-        return false;
-
-    case 't': /* true */
-    case 'T':
-        return true;
-    case 'f': /* false */
-    case 'F':
-        return false;
-
-    case 'o': /* on or off */
-    case 'O':
-        if (str[1] == 'f' || str[1] == 'F')
-            return false;
-        else
+        case 'e': /* enable */
+        case 'E':
             return true;
-        break;
+        case 'd': /* disable */
+        case 'D':
+            return false;
 
-    case 'Y': /* yes */
-    case 'y':
-        return true;
-    case 'n': /* no */
-    case 'N':
-        return false;
+        case 't': /* true */
+        case 'T':
+            return true;
+        case 'f': /* false */
+        case 'F':
+            return false;
+
+        case 'o': /* on or off */
+        case 'O':
+            if (str[1] == 'f' || str[1] == 'F')
+                return false;
+            else
+                return true;
+            break;
+
+        case 'Y': /* yes */
+        case 'y':
+            return true;
+        case 'n': /* no */
+        case 'N':
+            return false;
     }
     return true;
 }
 
-uint64_t
-parseTime(const char *value)
-{
-    uint64_t num = 0;
+uint64_t parseTime(const char *value) {
+    uint64_t num         = 0;
     unsigned is_negative = 0;
 
     while (*value == '-') {
@@ -143,8 +136,8 @@ parseTime(const char *value)
         value++;
     }
 
-    while (isdigit(value[0]&0xFF)) {
-        num = num*10 + (value[0] - '0');
+    while (isdigit(value[0] & 0xFF)) {
+        num = num * 10 + (value[0] - '0');
         value++;
     }
     while (ispunct(value[0]) || isspace(value[0]))
@@ -157,42 +150,40 @@ parseTime(const char *value)
         return num;
 
     switch (tolower(value[0])) {
-    case 's':
-        num *= 1;
-        break;
-    case 'm':
-        num *= 60;
-        break;
-    case 'h':
-        num *= 60*60;
-        break;
-    case 'd':
-        num *= 24*60*60;
-        break;
-    case 'w':
-        num *= 24*60*60*7;
-        break;
-    default:
-        LOG(LEVEL_ERROR, "unknown character\n");
-        exit(1);
+        case 's':
+            num *= 1;
+            break;
+        case 'm':
+            num *= 60;
+            break;
+        case 'h':
+            num *= 60 * 60;
+            break;
+        case 'd':
+            num *= 24 * 60 * 60;
+            break;
+        case 'w':
+            num *= 24 * 60 * 60 * 7;
+            break;
+        default:
+            LOG(LEVEL_ERROR, "unknown character\n");
+            exit(1);
     }
-    if (num >= 24*60*60) {
+    if (num >= 24 * 60 * 60) {
         LOG(LEVEL_ERROR, "value is greater than 1 day\n");
         exit(1);
     }
     if (is_negative)
-        num = 24*60*60 - num;
+        num = 24 * 60 * 60 - num;
 
     return num;
 }
 
-uint64_t
-parseSize(const char *value)
-{
+uint64_t parseSize(const char *value) {
     uint64_t num = 0;
 
-    while (isdigit(value[0]&0xFF)) {
-        num = num*10 + (value[0] - '0');
+    while (isdigit(value[0] & 0xFF)) {
+        num = num * 10 + (value[0] - '0');
         value++;
     }
     while (ispunct(value[0]) || isspace(value[0]))
@@ -205,34 +196,32 @@ parseSize(const char *value)
         return num;
 
     switch (tolower(value[0])) {
-    case 'k': /* kilobyte */
-        num *= 1024ULL;
-        break;
-    case 'm': /* megabyte */
-        num *= 1024ULL * 1024ULL;
-        break;
-    case 'g': /* gigabyte */
-        num *= 1024ULL * 1024ULL * 1024ULL;
-        break;
-    case 't': /* terabyte, 'cause we roll that way */
-        num *=  1024ULL * 1024ULL * 1024ULL * 1024ULL;
-        break;
-    case 'p': /* petabyte, 'cause we are awesome */
-        num *=  1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL;
-        break;
-    case 'e': /* exabyte, now that's just silly */
-        num *=  1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL;
-        break;
-    default:
-        LOG(LEVEL_ERROR, "unknown character\n");
-        exit(1);
+        case 'k': /* kilobyte */
+            num *= 1024ULL;
+            break;
+        case 'm': /* megabyte */
+            num *= 1024ULL * 1024ULL;
+            break;
+        case 'g': /* gigabyte */
+            num *= 1024ULL * 1024ULL * 1024ULL;
+            break;
+        case 't': /* terabyte, 'cause we roll that way */
+            num *= 1024ULL * 1024ULL * 1024ULL * 1024ULL;
+            break;
+        case 'p': /* petabyte, 'cause we are awesome */
+            num *= 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL;
+            break;
+        case 'e': /* exabyte, now that's just silly */
+            num *= 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL * 1024ULL;
+            break;
+        default:
+            LOG(LEVEL_ERROR, "unknown character\n");
+            exit(1);
     }
     return num;
 }
 
-unsigned
-parseHexChar(char c)
-{
+unsigned parseHexChar(char c) {
     if ('0' <= c && c <= '9')
         return (unsigned)(c - '0');
     if ('a' <= c && c <= 'f')
@@ -242,26 +231,24 @@ parseHexChar(char c)
     return 0xFF;
 }
 
-int
-parseMacAddress(const char *text, macaddress_t *mac)
-{
+int parseMacAddress(const char *text, macaddress_t *mac) {
     unsigned i;
 
-    for (i=0; i<6; i++) {
+    for (i = 0; i < 6; i++) {
         unsigned x;
-        char c;
+        char     c;
 
         while (isspace(*text & 0xFF) && ispunct(*text & 0xFF))
             text++;
 
         c = *text;
-        if (!isxdigit(c&0xFF))
+        if (!isxdigit(c & 0xFF))
             return -1;
-        x = parseHexChar(c)<<4;
+        x = parseHexChar(c) << 4;
         text++;
 
         c = *text;
-        if (!isxdigit(c&0xFF))
+        if (!isxdigit(c & 0xFF))
             return -1;
         x |= parseHexChar(c);
         text++;
@@ -275,9 +262,7 @@ parseMacAddress(const char *text, macaddress_t *mac)
     return 0;
 }
 
-unsigned
-parseOptionInt(const char *name)
-{
+unsigned parseOptionInt(const char *name) {
     const char *p = strchr(name, '[');
     if (p == NULL)
         return 0;
@@ -286,25 +271,21 @@ parseOptionInt(const char *name)
     return (unsigned)parseInt(p);
 }
 
-char *
-parseOptionStr(const char *name)
-{
+char *parseOptionStr(const char *name) {
     const char *p1 = strchr(name, '[');
     const char *p2 = strchr(name, ']');
 
-    if (p1==NULL || p2==NULL || p2<=p1+1)
+    if (p1 == NULL || p2 == NULL || p2 <= p1 + 1)
         return NULL;
 
-    char *ret = MALLOC(p2-p1);
-    memcpy(ret, p1+1, p2-p1-1);
-    ret[p2-p1-2] = '\0';
+    char *ret = MALLOC(p2 - p1);
+    memcpy(ret, p1 + 1, p2 - p1 - 1);
+    ret[p2 - p1 - 2] = '\0';
 
     return ret;
 }
 
-bool
-EQUALS(const char *lhs, const char *rhs)
-{
+bool EQUALS(const char *lhs, const char *rhs) {
     for (;;) {
         while (*lhs == '-' || *lhs == '.' || *lhs == '_')
             lhs++;
@@ -321,9 +302,7 @@ EQUALS(const char *lhs, const char *rhs)
     }
 }
 
-bool
-EQUALSx(const char *lhs, const char *rhs, size_t rhs_length)
-{
+bool EQUALSx(const char *lhs, const char *rhs, size_t rhs_length) {
     for (;;) {
         while (*lhs == '-' || *lhs == '.' || *lhs == '_')
             lhs++;
@@ -342,40 +321,34 @@ EQUALSx(const char *lhs, const char *rhs, size_t rhs_length)
     }
 }
 
-unsigned
-INDEX_OF(const char *str, char c)
-{
+unsigned INDEX_OF(const char *str, char c) {
     unsigned i;
-    for (i=0; str[i] && str[i] != c; i++)
+    for (i = 0; str[i] && str[i] != c; i++)
         ;
     return i;
 }
 
-bool
-is_integer(const char *value)
-{
+bool is_integer(const char *value) {
     size_t i;
 
     if (value == NULL)
         return false;
 
-    for (i=0; value[i]; i++)
-        if (!isdigit(value[i]&0xFF))
+    for (i = 0; value[i]; i++)
+        if (!isdigit(value[i] & 0xFF))
             return false;
     return true;
 }
 
-bool
-is_numable(const ConfParam *cp, const char *name)
-{
+bool is_numable(const ConfParam *cp, const char *name) {
     size_t i;
 
-    for (i=0; cp[i].name; i++) {
+    for (i = 0; cp[i].name; i++) {
         if (EQUALS(cp[i].name, name)) {
             return (cp[i].type & Type_NUM) == Type_NUM;
         } else {
             size_t j;
-            for (j=0; cp[i].alt_names[j]; j++) {
+            for (j = 0; cp[i].alt_names[j]; j++) {
                 if (EQUALS(cp[i].alt_names[j], name)) {
                     return (cp[i].type & Type_NUM) == Type_NUM;
                 }
@@ -385,10 +358,8 @@ is_numable(const ConfParam *cp, const char *name)
     return false;
 }
 
-bool
-is_power_of_two(uint64_t x)
-{
-    while ((x&1) == 0)
+bool is_power_of_two(uint64_t x) {
+    while ((x & 1) == 0)
         x >>= 1;
     return x == 1;
 }
@@ -397,15 +368,13 @@ is_power_of_two(uint64_t x)
  * Command-line parsing code assumes every --parm is followed by a value.
  * This is a list of the parameters that don't follow the default.
  ***************************************************************************/
-bool
-is_singleton(const ConfParam *cp, const char *name)
-{
-    for (size_t i=0; cp[i].name; i++) {
+bool is_singleton(const ConfParam *cp, const char *name) {
+    for (size_t i = 0; cp[i].name; i++) {
         if (EQUALS(cp[i].name, name)) {
             return (cp[i].type & Type_BOOL) == Type_BOOL;
         } else {
             size_t j;
-            for (j=0; cp[i].alt_names[j]; j++) {
+            for (j = 0; cp[i].alt_names[j]; j++) {
                 if (EQUALS(cp[i].alt_names[j], name)) {
                     return (cp[i].type & Type_BOOL) == Type_BOOL;
                 }
@@ -416,19 +385,18 @@ is_singleton(const ConfParam *cp, const char *name)
     return false;
 }
 
-void set_one_parameter(void *conf, ConfParam *cp,
-    const char *name, const char *value)
-{
+void set_one_parameter(void *conf, ConfParam *cp, const char *name,
+                       const char *value) {
     size_t i;
 
-    for (i=0; cp[i].name; i++) {
+    for (i = 0; cp[i].name; i++) {
         if (EQUALS(cp[i].name, name)) {
             if (Conf_ERR == cp[i].setter(conf, name, value))
                 exit(0);
             return;
         } else {
             size_t j;
-            for (j=0; cp[i].alt_names[j]; j++) {
+            for (j = 0; cp[i].alt_names[j]; j++) {
                 if (EQUALS(cp[i].alt_names[j], name)) {
                     if (Conf_ERR == cp[i].setter(conf, name, value))
                         exit(0);
@@ -442,15 +410,12 @@ void set_one_parameter(void *conf, ConfParam *cp,
     exit(1);
 }
 
-void
-set_parameters_from_args(void *conf, ConfParam *cp,
-    int argc, char **argv)
-{
-    int i;
+void set_parameters_from_args(void *conf, ConfParam *cp, int argc,
+                              char **argv) {
+    int      i;
     unsigned name_length;
 
-    for (i=0; i<argc; i++) {
-
+    for (i = 0; i < argc; i++) {
         /*
          * -(-)name=value
          * -(-)name:value
@@ -459,14 +424,14 @@ set_parameters_from_args(void *conf, ConfParam *cp,
         if (argv[i][0] == '-') {
             unsigned tmp_step = 1;
             /*true:double dashes, false:single dash*/
-            if (argv[i][1]=='-')
+            if (argv[i][1] == '-')
                 tmp_step++;
 
             const char *argname = argv[i] + tmp_step;
-            char name2[64];
+            char        name2[64];
             const char *value;
 
-            if (is_numable(cp,argname)) {
+            if (is_numable(cp, argname)) {
                 /* May exist by itself like a bool or take an additional
                  * numeric argument */
 
@@ -480,8 +445,8 @@ set_parameters_from_args(void *conf, ConfParam *cp,
                     name_length = (unsigned)(value - argname);
                 } else {
                     /* The next parameter contains the name */
-                    if (i+1 < argc) {
-                        value = argv[i+1];
+                    if (i + 1 < argc) {
+                        value = argv[i + 1];
                         if (is_integer(value) || isBoolean(value))
                             i++;
                         else
@@ -493,7 +458,8 @@ set_parameters_from_args(void *conf, ConfParam *cp,
 
                 /* create a copy of the name */
                 if (name_length > sizeof(name2) - 1) {
-                    LOG(LEVEL_ERROR, "%.*s: name too long\n", name_length, argname);
+                    LOG(LEVEL_ERROR, "%.*s: name too long\n", name_length,
+                        argname);
                     name_length = sizeof(name2) - 1;
                 }
                 memcpy(name2, argname, name_length);
@@ -505,7 +471,7 @@ set_parameters_from_args(void *conf, ConfParam *cp,
                 if (value == NULL)
                     value = strchr(&argv[i][2], ':');
                 if (value == NULL) {
-                    if (is_singleton(cp,argname))
+                    if (is_singleton(cp, argname))
                         value = "";
                     else
                         value = argv[++i];
@@ -516,13 +482,15 @@ set_parameters_from_args(void *conf, ConfParam *cp,
                 }
 
                 if (i >= argc) {
-                    LOG(LEVEL_ERROR, "%.*s: empty parameter\n", name_length, argname);
+                    LOG(LEVEL_ERROR, "%.*s: empty parameter\n", name_length,
+                        argname);
                     // break;
                     exit(1);
                 }
 
                 if (name_length > sizeof(name2) - 1) {
-                    LOG(LEVEL_ERROR, "%.*s: name too long\n", name_length, argname);
+                    LOG(LEVEL_ERROR, "%.*s: name too long\n", name_length,
+                        argname);
                     name_length = sizeof(name2) - 1;
                 }
 
@@ -535,7 +503,8 @@ set_parameters_from_args(void *conf, ConfParam *cp,
         }
 
         if (!isdigit(argv[i][0]) && argv[i][0] != ':' && argv[i][0] != '[') {
-            LOG(LEVEL_ERROR, "unknown command-line parameter \"%s\"\n", argv[i]);
+            LOG(LEVEL_ERROR, "unknown command-line parameter \"%s\"\n",
+                argv[i]);
             exit(1);
         }
 
@@ -546,11 +515,9 @@ set_parameters_from_args(void *conf, ConfParam *cp,
     }
 }
 
-int
-set_parameters_from_string(void *conf, ConfParam *cp, char *string)
-{
-    int     sub_argc;
-    char ** sub_argv;
+int set_parameters_from_string(void *conf, ConfParam *cp, char *string) {
+    int    sub_argc;
+    char **sub_argv;
 
     sub_argv = string_to_args(string, &sub_argc);
     if (!sub_argv) {
@@ -562,11 +529,9 @@ set_parameters_from_string(void *conf, ConfParam *cp, char *string)
     return 0;
 }
 
-int
-set_parameters_from_substring(void *conf, ConfParam *cp, char *substring)
-{
-    int     sub_argc;
-    char ** sub_argv;
+int set_parameters_from_substring(void *conf, ConfParam *cp, char *substring) {
+    int    sub_argc;
+    char **sub_argv;
 
     sub_argv = substring_to_args(substring, &sub_argc);
     if (!sub_argv) {

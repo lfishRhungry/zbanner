@@ -155,15 +155,13 @@ Source/Target Link-layer Address
 
 */
 
-static size_t
-ndp_create_ns_by_template_ipv6(
-    const TmplPkt *tmpl,
-    ipv6address ip_them, ipv6address ip_me, macaddress_t src_mac,
-    uint8_t ttl, unsigned char *px, size_t sizeof_px)
-{
+static size_t ndp_create_ns_by_template_ipv6(
+    const TmplPkt *tmpl, ipv6address ip_them, ipv6address ip_me,
+    macaddress_t src_mac, uint8_t ttl, unsigned char *px, size_t sizeof_px) {
     if (tmpl->tmpl_type != TmplType_NDP_NS) {
-            LOG(LEVEL_ERROR, "ndp_create_by_template_ipv6: need a TmplType_NDP_NS TemplatePacket.\n");
-            return 0;
+        LOG(LEVEL_ERROR, "ndp_create_by_template_ipv6: need a TmplType_NDP_NS "
+                         "TemplatePacket.\n");
+        return 0;
     }
 
     unsigned offset_ip;
@@ -180,113 +178,110 @@ ndp_create_ns_by_template_ipv6(
     offset_ip  = tmpl->ipv6.offset_ip;
     offset_tcp = tmpl->ipv6.offset_tcp;
 
-/*
+    /*
 
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |Version| Traffic Class |           Flow Label                  |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |         Payload Length        |  Next Header  |   Hop Limit   |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +                         Source Address                        +
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +                      Destination Address                      +
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-*/
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |Version| Traffic Class |           Flow Label                  |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |         Payload Length        |  Next Header  |   Hop Limit   |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                                                               |
+       +                                                               +
+       |                                                               |
+       +                         Source Address                        +
+       |                                                               |
+       +                                                               +
+       |                                                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                                                               |
+       +                                                               +
+       |                                                               |
+       +                      Destination Address                      +
+       |                                                               |
+       +                                                               +
+       |                                                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    */
     /*set dst mac as multicast addr*/
     px[0] = 0x33;
     px[1] = 0x33;
     px[2] = 0xFF;
     px[3] = (unsigned char)((ip_them.lo >> 16ULL) & 0xFF);
-    px[4] = (unsigned char)((ip_them.lo >>  8ULL) & 0xFF);
-    px[5] = (unsigned char)((ip_them.lo >>  0ULL) & 0xFF);
+    px[4] = (unsigned char)((ip_them.lo >> 8ULL) & 0xFF);
+    px[5] = (unsigned char)((ip_them.lo >> 0ULL) & 0xFF);
 
     /*
      * Fill in the empty fields in the IP header and then re-calculate
      * the checksum.
      */
     payload_length = tmpl->ipv6.length - tmpl->ipv6.offset_ip - 40;
-    U16_TO_BE(px+offset_ip+4, payload_length);
+    U16_TO_BE(px + offset_ip + 4, payload_length);
 
     if (ttl)
-        px[offset_ip+7] = (unsigned char)(ttl);
+        px[offset_ip + 7] = (unsigned char)(ttl);
 
-    U64_TO_BE(px+offset_ip+ 8, ip_me.hi);
-    U64_TO_BE(px+offset_ip+16, ip_me.lo);
+    U64_TO_BE(px + offset_ip + 8, ip_me.hi);
+    U64_TO_BE(px + offset_ip + 16, ip_me.lo);
 
     /*set solicited-node addr*/
-    px[offset_ip+24] = 0xFF;
-    px[offset_ip+25] = 0x02;
-    px[offset_ip+26] = 0x00;
-    px[offset_ip+27] = 0x00;
-    px[offset_ip+28] = 0x00;
-    px[offset_ip+29] = 0x00;
-    px[offset_ip+30] = 0x00;
-    px[offset_ip+31] = 0x00;
+    px[offset_ip + 24] = 0xFF;
+    px[offset_ip + 25] = 0x02;
+    px[offset_ip + 26] = 0x00;
+    px[offset_ip + 27] = 0x00;
+    px[offset_ip + 28] = 0x00;
+    px[offset_ip + 29] = 0x00;
+    px[offset_ip + 30] = 0x00;
+    px[offset_ip + 31] = 0x00;
 
-    px[offset_ip+32] = 0x00;
-    px[offset_ip+33] = 0x00;
-    px[offset_ip+34] = 0x00;
-    px[offset_ip+35] = 0x01;
-    px[offset_ip+36] = 0xFF;
-    px[offset_ip+37] = (unsigned char)((ip_them.lo >> 16ULL) & 0xFF);
-    px[offset_ip+38] = (unsigned char)((ip_them.lo >>  8ULL) & 0xFF);
-    px[offset_ip+39] = (unsigned char)((ip_them.lo >>  0ULL) & 0xFF);
+    px[offset_ip + 32] = 0x00;
+    px[offset_ip + 33] = 0x00;
+    px[offset_ip + 34] = 0x00;
+    px[offset_ip + 35] = 0x01;
+    px[offset_ip + 36] = 0xFF;
+    px[offset_ip + 37] = (unsigned char)((ip_them.lo >> 16ULL) & 0xFF);
+    px[offset_ip + 38] = (unsigned char)((ip_them.lo >> 8ULL) & 0xFF);
+    px[offset_ip + 39] = (unsigned char)((ip_them.lo >> 0ULL) & 0xFF);
 
     /*set Target Address in NDP*/
-    U64_TO_BE(px+offset_tcp+ 8, ip_them.hi);
-    U64_TO_BE(px+offset_tcp+16, ip_them.lo);
+    U64_TO_BE(px + offset_tcp + 8, ip_them.hi);
+    U64_TO_BE(px + offset_tcp + 16, ip_them.lo);
 
     /*set src link addr in NDP*/
-    px[offset_tcp+26] = src_mac.addr[0];
-    px[offset_tcp+27] = src_mac.addr[1];
-    px[offset_tcp+28] = src_mac.addr[2];
-    px[offset_tcp+29] = src_mac.addr[3];
-    px[offset_tcp+30] = src_mac.addr[4];
-    px[offset_tcp+31] = src_mac.addr[5];
+    px[offset_tcp + 26] = src_mac.addr[0];
+    px[offset_tcp + 27] = src_mac.addr[1];
+    px[offset_tcp + 28] = src_mac.addr[2];
+    px[offset_tcp + 29] = src_mac.addr[3];
+    px[offset_tcp + 30] = src_mac.addr[4];
+    px[offset_tcp + 31] = src_mac.addr[5];
 
     /*
      * Now do the checksum for the higher layer protocols
      */
-    xsum_icmp = checksum_ipv6(px+offset_ip+8,
-                              px+offset_ip+24,
-                              IP_PROTO_IPv6_ICMP,
-                              tmpl->ipv6.length-offset_tcp,
-                              px+offset_tcp);
-    px[offset_tcp+2] = (unsigned char)(xsum_icmp >>  8);
-    px[offset_tcp+3] = (unsigned char)(xsum_icmp >>  0);
+    xsum_icmp          = checksum_ipv6(px + offset_ip + 8, px + offset_ip + 24,
+                                       IP_PROTO_IPv6_ICMP,
+                                       tmpl->ipv6.length - offset_tcp, px + offset_tcp);
+    px[offset_tcp + 2] = (unsigned char)(xsum_icmp >> 8);
+    px[offset_tcp + 3] = (unsigned char)(xsum_icmp >> 0);
 
     return r_len;
 }
 
-size_t
-ndp_create_ns_packet(
-    ipaddress ip_them, ipaddress ip_me, macaddress_t src_mac,
-    uint8_t ttl, unsigned char *px, size_t sizeof_px)
-{
+size_t ndp_create_ns_packet(ipaddress ip_them, ipaddress ip_me,
+                            macaddress_t src_mac, uint8_t ttl,
+                            unsigned char *px, size_t sizeof_px) {
     /*just for IPv6*/
-    if (ip_them.version == 4) return 0;
+    if (ip_them.version == 4)
+        return 0;
 
-    return ndp_create_ns_by_template_ipv6(&global_tmplset->pkts[TmplType_NDP_NS],
-        ip_them.ipv6, ip_me.ipv6, src_mac, ttl, px, sizeof_px);
+    return ndp_create_ns_by_template_ipv6(
+        &global_tmplset->pkts[TmplType_NDP_NS], ip_them.ipv6, ip_me.ipv6,
+        src_mac, ttl, px, sizeof_px);
 }
 
-bool ndp_is_solicited_advertise(ipv6address ip_them,
-    const unsigned char *px, unsigned icmpv6_offset)
-{
-    if (U64_EQUAL_TO_BE(px+icmpv6_offset+8, ip_them.hi)
-        && U64_EQUAL_TO_BE(px+icmpv6_offset+16, ip_them.lo))
+bool ndp_is_solicited_advertise(ipv6address ip_them, const unsigned char *px,
+                                unsigned icmpv6_offset) {
+    if (U64_EQUAL_TO_BE(px + icmpv6_offset + 8, ip_them.hi) &&
+        U64_EQUAL_TO_BE(px + icmpv6_offset + 16, ip_them.lo))
         return true;
 
     return false;

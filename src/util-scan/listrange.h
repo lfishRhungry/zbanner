@@ -3,7 +3,6 @@
 
 #include "../xconf.h"
 
-void
-listrange(XConf *xconf);
+void listrange(XConf *xconf);
 
 #endif

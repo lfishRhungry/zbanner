@@ -26,14 +26,12 @@
 #include <netinet/in.h>
 #include <net/if.h>
 #include <arpa/inet.h>
-unsigned
-rawsock_get_adapter_ip(const char *ifname)
-{
-    int fd;
-    struct ifreq ifr;
+unsigned rawsock_get_adapter_ip(const char *ifname) {
+    int                 fd;
+    struct ifreq        ifr;
     struct sockaddr_in *sin;
-    struct sockaddr *sa;
-    int x;
+    struct sockaddr    *sa;
+    int                 x;
 
     fd = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -43,14 +41,15 @@ rawsock_get_adapter_ip(const char *ifname)
     x = ioctl(fd, SIOCGIFADDR, &ifr);
     if (x < 0) {
         LOG(LEVEL_ERROR, "'%s': %s\n", ifname, strerror(errno));
-        //LOG(LEVEL_ERROR, "'%s': couldn't discover IP address of network interface\n", ifname);
+        // LOG(LEVEL_ERROR, "'%s': couldn't discover IP address of network
+        // interface\n", ifname);
         close(fd);
         return 0;
     }
 
     close(fd);
 
-    sa = &ifr.ifr_addr;
+    sa  = &ifr.ifr_addr;
     sin = (struct sockaddr_in *)sa;
     return ntohl(sin->sin_addr.s_addr);
 }
@@ -58,10 +57,10 @@ rawsock_get_adapter_ip(const char *ifname)
 /*****************************************************************************
  *****************************************************************************/
 #elif defined(WIN32)
- /* From:
-  * https://stackoverflow.com/questions/10972794/undefined-reference-to-getadaptersaddresses20-but-i-included-liphlpapi
-  * I think this fixes issue #734
-  */
+/* From:
+ * https://stackoverflow.com/questions/10972794/undefined-reference-to-getadaptersaddresses20-but-i-included-liphlpapi
+ * I think this fixes issue #734
+ */
 #if !defined(_WIN32_WINNT) || _WIN32_WINNT < 0x501
 #undef _WIN32_WINNT
 #define _WIN32_WINNT 0x501
@@ -73,21 +72,19 @@ rawsock_get_adapter_ip(const char *ifname)
 #pragma comment(lib, "IPHLPAPI.lib")
 #endif
 
-unsigned
-rawsock_get_adapter_ip(const char *ifname)
-{
+unsigned rawsock_get_adapter_ip(const char *ifname) {
     PIP_ADAPTER_INFO pAdapterInfo;
     PIP_ADAPTER_INFO pAdapter = NULL;
-    DWORD err;
-    ULONG ulOutBufLen = sizeof (IP_ADAPTER_INFO);
-    unsigned result = 0;
+    DWORD            err;
+    ULONG            ulOutBufLen = sizeof(IP_ADAPTER_INFO);
+    unsigned         result      = 0;
 
     ifname = rawsock_win_name(ifname);
 
     /*
      * Allocate a proper sized buffer
      */
-    pAdapterInfo = malloc(sizeof (IP_ADAPTER_INFO));
+    pAdapterInfo = malloc(sizeof(IP_ADAPTER_INFO));
     if (pAdapterInfo == NULL) {
         LOG(LEVEL_ERROR, "malloc(): for GetAdaptersinfo\n");
         return 0;
@@ -152,20 +149,17 @@ end:
 #include <netinet/in.h>
 
 #ifdef AF_LINK
-#   include <net/if_dl.h>
+#include <net/if_dl.h>
 #endif
 #ifdef AF_PACKET
-#   include <netpacket/packet.h>
+#include <netpacket/packet.h>
 #endif
 
-unsigned
-rawsock_get_adapter_ip(const char *ifname)
-{
-    int err;
+unsigned rawsock_get_adapter_ip(const char *ifname) {
+    int             err;
     struct ifaddrs *ifap;
     struct ifaddrs *p;
-    unsigned ip;
-
+    unsigned        ip;
 
     /* Get the list of all network adapters */
     err = getifaddrs(&ifap);
@@ -176,9 +170,8 @@ rawsock_get_adapter_ip(const char *ifname)
 
     /* Look through the list until we get our adapter */
     for (p = ifap; p; p = p->ifa_next) {
-        if (strcmp(ifname, p->ifa_name) == 0
-            && p->ifa_addr
-            && p->ifa_addr->sa_family == AF_INET)
+        if (strcmp(ifname, p->ifa_name) == 0 && p->ifa_addr &&
+            p->ifa_addr->sa_family == AF_INET)
             break;
     }
     if (p == NULL)
@@ -199,4 +192,3 @@ error:
 }
 
 #endif
-

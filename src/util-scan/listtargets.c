@@ -2,10 +2,7 @@
 #include "../util-out/logger.h"
 #include "../crypto/crypto-blackrock.h"
 
-
-void
-listip(XConf *xconf)
-{
+void listip(XConf *xconf) {
     uint64_t  i;
     uint64_t  range;
     uint64_t  start;
@@ -18,8 +15,8 @@ listip(XConf *xconf)
      * for the internal algorithm. */
     if (!targetip_has_target_ports(&xconf->targets)) {
         targetip_add_port_string(&xconf->targets, "o:0", 0);
-        // LOG(LEVEL_WARN, "no ports were specified or remained, a fake port o:0 was"
-        // " specified automaticlly.\n");
+        // LOG(LEVEL_WARN, "no ports were specified or remained, a fake port o:0
+        // was" " specified automaticlly.\n");
     }
     targetip_optimize(&xconf->targets);
 
@@ -28,17 +25,16 @@ listip(XConf *xconf)
      * the scan can produce */
     range = targetip_range(&xconf->targets).lo;
 
-
 infinite:
     blackrock1_init(&blackrock, range, dynamic_seed, 14);
 
-    start = xconf->resume.index + (xconf->shard.one-1);
+    start = xconf->resume.index + (xconf->shard.one - 1);
     end   = range;
 
-    for (i=start; i<end; ) {
-        uint64_t xXx;
-        unsigned port;
-        unsigned ip_proto;
+    for (i = start; i < end;) {
+        uint64_t  xXx;
+        unsigned  port;
+        unsigned  ip_proto;
         ipaddress addr;
 
         xXx = blackrock1_shuffle(&blackrock, i);
@@ -76,7 +72,8 @@ infinite:
             printf("\n");
         }
 
-        i += increment; /* <------ increment by 1 normally, more with shards/NICs */
+        i += increment; /* <------ increment by 1 normally, more with
+                           shards/NICs */
     }
 
     if (xconf->is_infinite) {

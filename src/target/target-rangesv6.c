@@ -17,31 +17,30 @@
 
 #define BUCKET_COUNT 16
 
-#define REGRESS(i,x) if (!(x)) {LOG(LEVEL_ERROR, "%u: regression failed %s:%d\n", (unsigned)i, __FILE__, __LINE__); return 1;}
+#define REGRESS(i, x)                                                          \
+    if (!(x)) {                                                                \
+        LOG(LEVEL_ERROR, "%u: regression failed %s:%d\n", (unsigned)i,         \
+            __FILE__, __LINE__);                                               \
+        return 1;                                                              \
+    }
 
-#define EQUAL(x,y) ipv6address_is_equal(x,y)
+#define EQUAL(x, y) ipv6address_is_equal(x, y)
 
-static inline ipv6address
-_int128_add(ipv6address x, ipv6address y)
-{
-  ipv6address result;
-  result.lo = x.lo + y.lo;
-  result.hi = x.hi + y.hi + (result.lo < x.lo);
-  return result;
+static inline ipv6address _int128_add(ipv6address x, ipv6address y) {
+    ipv6address result;
+    result.lo = x.lo + y.lo;
+    result.hi = x.hi + y.hi + (result.lo < x.lo);
+    return result;
 }
 
-static inline ipv6address
-_int128_subtract(ipv6address x, ipv6address y)
-{
-  ipv6address result;
-  result.lo = x.lo - y.lo;
-  result.hi = x.hi - y.hi - (result.lo > x.lo);
-  return result;
+static inline ipv6address _int128_subtract(ipv6address x, ipv6address y) {
+    ipv6address result;
+    result.lo = x.lo - y.lo;
+    result.hi = x.hi - y.hi - (result.lo > x.lo);
+    return result;
 }
 
-static ipv6address 
-_int128_add64(const ipv6address lhs, uint64_t rhs)
-{
+static ipv6address _int128_add64(const ipv6address lhs, uint64_t rhs) {
     ipv6address result = lhs;
     result.lo += rhs;
     if (result.lo < lhs.lo)
@@ -49,50 +48,46 @@ _int128_add64(const ipv6address lhs, uint64_t rhs)
     return result;
 }
 
-static inline int128_t
-_int128_mult64(int128_t lhs, uint64_t rhs)
-{
-    int128_t result = {0,0};
+static inline int128_t _int128_mult64(int128_t lhs, uint64_t rhs) {
+    int128_t result = {0, 0};
     uint64_t x;
     uint64_t b;
     uint64_t a;
 
     /* low-order 32 */
-    a = (rhs>>0) & 0xFFFFFFFFULL;
-    b = (lhs.lo>>0) & 0xFFFFFFFFULL;
+    a = (rhs >> 0) & 0xFFFFFFFFULL;
+    b = (lhs.lo >> 0) & 0xFFFFFFFFULL;
     x = (a * b);
     result.lo += x;
 
-    b = (lhs.lo>>32ULL) & 0xFFFFFFFFULL;
-    x =  (a * b);
-    result.lo += x<<32ULL;
-    result.hi += x>>32ULL;
+    b = (lhs.lo >> 32ULL) & 0xFFFFFFFFULL;
+    x = (a * b);
+    result.lo += x << 32ULL;
+    result.hi += x >> 32ULL;
 
     b = lhs.hi;
     x = (a * b);
     result.hi += x;
 
     /* next 32 */
-    a = (rhs>>32ULL) & 0xFFFFFFFFULL;
-    b = (lhs.lo>>0ULL) & 0xFFFFFFFFULL;
+    a = (rhs >> 32ULL) & 0xFFFFFFFFULL;
+    b = (lhs.lo >> 0ULL) & 0xFFFFFFFFULL;
     x = (a * b);
-    result.lo += x<<32ULL;
-    result.hi += (x>>32ULL) + (result.lo < (x<<32ULL));
+    result.lo += x << 32ULL;
+    result.hi += (x >> 32ULL) + (result.lo < (x << 32ULL));
 
-    b = (lhs.lo>>32ULL) & 0xFFFFFFFFULL;
-    x =  (a * b);
+    b = (lhs.lo >> 32ULL) & 0xFFFFFFFFULL;
+    x = (a * b);
     result.hi += x;
 
     b = lhs.hi;
-    x =  (a * b);
-    result.hi += x<<32ULL;
+    x = (a * b);
+    result.hi += x << 32ULL;
 
     return result;
 }
 
-static bool
-LESS(const ipv6address lhs, const ipv6address rhs)
-{
+static bool LESS(const ipv6address lhs, const ipv6address rhs) {
     if (lhs.hi < rhs.hi)
         return true;
     else if (lhs.hi == rhs.hi && lhs.lo < rhs.lo)
@@ -100,11 +95,9 @@ LESS(const ipv6address lhs, const ipv6address rhs)
     else
         return false;
 }
-#define GREATEREQ(x,y) (!LESS(x,y))
+#define GREATEREQ(x, y) (!LESS(x, y))
 
-static bool
-LESSEQ(const ipv6address lhs, const ipv6address rhs)
-{
+static bool LESSEQ(const ipv6address lhs, const ipv6address rhs) {
     if (lhs.hi < rhs.hi)
         return true;
     if (lhs.hi > rhs.hi)
@@ -116,21 +109,15 @@ LESSEQ(const ipv6address lhs, const ipv6address rhs)
         return false;
 }
 
-bool range6_is_bad_address(const struct Range6 *range)
-{
+bool range6_is_bad_address(const struct Range6 *range) {
     return LESS(range->end, range->begin);
 }
 
-
-static bool
-_int128_is_equals(const ipv6address lhs, const ipv6address rhs)
-{
+static bool _int128_is_equals(const ipv6address lhs, const ipv6address rhs) {
     return lhs.hi == rhs.hi && lhs.lo == rhs.lo;
 }
 
-static ipv6address
-MINUS_ONE(const ipv6address ip)
-{
+static ipv6address MINUS_ONE(const ipv6address ip) {
     ipv6address result;
 
     if (ip.lo == 0) {
@@ -144,8 +131,7 @@ MINUS_ONE(const ipv6address ip)
     return result;
 }
 
-static ipv6address PLUS_ONE(const ipv6address ip)
-{
+static ipv6address PLUS_ONE(const ipv6address ip) {
     ipv6address result;
 
     if (ip.lo == ~0) {
@@ -161,11 +147,8 @@ static ipv6address PLUS_ONE(const ipv6address ip)
 
 /***************************************************************************
  ***************************************************************************/
-int128_t 
-targetip_range(TargetIP *targetip)
-{
+int128_t targetip_range(TargetIP *targetip) {
     int128_t result;
-
 
     result = range6list_count(&targetip->ipv6);
     result = _int128_add64(result, rangelist_count(&targetip->ipv4));
@@ -176,12 +159,11 @@ targetip_range(TargetIP *targetip)
 
 /***************************************************************************
  ***************************************************************************/
-bool
-range6list_is_contains(const struct Range6List *targets, const ipv6address ip)
-{
+bool range6list_is_contains(const struct Range6List *targets,
+                            const ipv6address        ip) {
     unsigned i;
 
-    for (i=0; i<targets->count; i++) {
+    for (i = 0; i < targets->count; i++) {
         struct Range6 *range = &targets->list[i];
 
         if (LESSEQ(range->begin, ip) && LESSEQ(ip, range->end))
@@ -193,16 +175,11 @@ range6list_is_contains(const struct Range6List *targets, const ipv6address ip)
 /***************************************************************************
  * ???
  ***************************************************************************/
-static void
-todo_remove_at(struct Range6List *targets, unsigned index)
-{
-    memmove(&targets->list[index],
-            &targets->list[index+1],
-            (targets->count - index) * sizeof(targets->list[index])
-            );
+static void todo_remove_at(struct Range6List *targets, unsigned index) {
+    memmove(&targets->list[index], &targets->list[index + 1],
+            (targets->count - index) * sizeof(targets->list[index]));
     targets->count--;
 }
-
 
 /***************************************************************************
  * Test if two ranges overlap.
@@ -210,9 +187,7 @@ todo_remove_at(struct Range6List *targets, unsigned index)
  * the result.
  * Note that adjacent addresses overlap.
  ***************************************************************************/
-static int
-range6_is_overlap(const struct Range6 lhs, const struct Range6 rhs)
-{
+static int range6_is_overlap(const struct Range6 lhs, const struct Range6 rhs) {
     static const ipv6address FFFF = {~0ULL, ~0ULL};
 
     if (LESS(lhs.begin, rhs.begin)) {
@@ -251,46 +226,37 @@ range6_is_overlap(const struct Range6 lhs, const struct Range6 rhs)
 #endif
 }
 
-
 /***************************************************************************
  * Combine two ranges, such as when they overlap.
  ***************************************************************************/
-static void
-range6_combine(struct Range6 *lhs, const struct Range6 rhs)
-{
+static void range6_combine(struct Range6 *lhs, const struct Range6 rhs) {
     if (LESSEQ(rhs.begin, lhs->begin))
         lhs->begin = rhs.begin;
     if (LESSEQ(lhs->end, rhs.end))
         lhs->end = rhs.end;
 }
 
-
 /***************************************************************************
  * Callback for qsort() for comparing two ranges
  ***************************************************************************/
-static int
-range6_compare(const void *lhs, const void *rhs)
-{
-    struct Range6 *left = (struct Range6 *)lhs;
+static int range6_compare(const void *lhs, const void *rhs) {
+    struct Range6 *left  = (struct Range6 *)lhs;
     struct Range6 *right = (struct Range6 *)rhs;
 
     if (ipv6address_is_equal(left->begin, right->begin))
         return 0;
     else if (LESS(left->begin, right->begin))
         return -1;
-    else 
+    else
         return 1;
 }
 
-
 /***************************************************************************
  ***************************************************************************/
-void
-range6list_sort(struct Range6List *targets)
-{
-    size_t i;
-    struct Range6List newlist = {0};
-    size_t original_count = targets->count;
+void range6list_sort(struct Range6List *targets) {
+    size_t            i;
+    struct Range6List newlist        = {0};
+    size_t            original_count = targets->count;
 
     /* Empty lists are, of course, sorted. We need to set this
      * to avoid an error later on in the code which asserts that
@@ -305,49 +271,47 @@ range6list_sort(struct Range6List *targets)
         return;
     }
 
-
     /* First, sort the list */
     LOG(LEVEL_DETAIL, "range6:sort: sorting...\n");
-    qsort(  targets->list,              /* the array to sort */
-            targets->count,             /* number of elements to sort */
-            sizeof(targets->list[0]),   /* size of element */
-            range6_compare);
-
+    qsort(targets->list,            /* the array to sort */
+          targets->count,           /* number of elements to sort */
+          sizeof(targets->list[0]), /* size of element */
+          range6_compare);
 
     /* Second, combine all overlapping ranges. We do this by simply creating
      * a new list from a sorted list, so we don't have to remove things in the
      * middle when collapsing overlapping entries together, which is painfully
      * slow. */
     LOG(LEVEL_DETAIL, "range:sort: combining...\n");
-    for (i=0; i<targets->count; i++) {
-        range6list_add_range(&newlist, targets->list[i].begin, targets->list[i].end);
+    for (i = 0; i < targets->count; i++) {
+        range6list_add_range(&newlist, targets->list[i].begin,
+                             targets->list[i].end);
     }
 
-    LOG(LEVEL_DEBUG, "range:sort: combined from %u elements to %u elements\n", original_count, newlist.count);
+    LOG(LEVEL_DEBUG, "range:sort: combined from %u elements to %u elements\n",
+        original_count, newlist.count);
     free(targets->list);
-    targets->list = newlist.list;
+    targets->list  = newlist.list;
     targets->count = newlist.count;
-    newlist.list = 0;
+    newlist.list   = 0;
 
     LOG(LEVEL_DETAIL, "range:sort: done...\n");
 
     targets->is_sorted = 1;
 }
 
-
-
-void
-range6list_add_range(struct Range6List *targets, ipv6address begin, ipv6address end)
-{
+void range6list_add_range(struct Range6List *targets, ipv6address begin,
+                          ipv6address end) {
     struct Range6 range;
 
     range.begin = begin;
-    range.end = end;
+    range.end   = end;
 
     /* auto-expand the list if necessary */
     if (targets->count + 1 >= targets->max) {
         targets->max = targets->max * 2 + 1;
-        targets->list = REALLOCARRAY(targets->list, targets->max, sizeof(targets->list[0]));
+        targets->list =
+            REALLOCARRAY(targets->list, targets->max, sizeof(targets->list[0]));
     }
 
     /* If empty list, then add this one */
@@ -375,9 +339,7 @@ range6list_add_range(struct Range6List *targets, ipv6address begin, ipv6address 
 
 /***************************************************************************
  ***************************************************************************/
-void
-range6list_remove_all(struct Range6List *targets)
-{
+void range6list_remove_all(struct Range6List *targets) {
     if (targets->list)
         free(targets->list);
     if (targets->picker)
@@ -387,26 +349,24 @@ range6list_remove_all(struct Range6List *targets)
 
 /***************************************************************************
  ***************************************************************************/
-void
-range6list_merge(struct Range6List *list1, const struct Range6List *list2)
-{
+void range6list_merge(struct Range6List       *list1,
+                      const struct Range6List *list2) {
     unsigned i;
 
-    for (i=0; i<list2->count; i++) {
+    for (i = 0; i < list2->count; i++) {
         range6list_add_range(list1, list2->list[i].begin, list2->list[i].end);
     }
 }
 
 /***************************************************************************
  ***************************************************************************/
-void
-range6list_remove_range(struct Range6List *targets, const ipv6address begin, const ipv6address end)
-{
-    unsigned i;
+void range6list_remove_range(struct Range6List *targets,
+                             const ipv6address begin, const ipv6address end) {
+    unsigned      i;
     struct Range6 x;
 
     x.begin = begin;
-    x.end = end;
+    x.end   = end;
 
     /* See if the range overlaps any exist range already in the
      * list */
@@ -416,7 +376,8 @@ range6list_remove_range(struct Range6List *targets, const ipv6address begin, con
 
         /* If the removal-range wholly covers the range, delete
          * it completely */
-        if (LESSEQ(begin, targets->list[i].begin) && LESSEQ(targets->list[i].end, end)) {
+        if (LESSEQ(begin, targets->list[i].begin) &&
+            LESSEQ(targets->list[i].end, end)) {
             todo_remove_at(targets, i);
             i--;
             continue;
@@ -424,12 +385,12 @@ range6list_remove_range(struct Range6List *targets, const ipv6address begin, con
 
         /* If the removal-range bisects the target-rage, truncate
          * the lower end and add a new high-end */
-        if (LESSEQ(targets->list[i].begin, begin) && LESSEQ(end, targets->list[i].end)) {
+        if (LESSEQ(targets->list[i].begin, begin) &&
+            LESSEQ(end, targets->list[i].end)) {
             struct Range6 newrange;
 
             newrange.begin = PLUS_ONE(end);
-            newrange.end = targets->list[i].end;
-
+            newrange.end   = targets->list[i].end;
 
             targets->list[i].end = MINUS_ONE(begin);
 
@@ -439,35 +400,33 @@ range6list_remove_range(struct Range6List *targets, const ipv6address begin, con
         }
 
         /* If overlap on the lower side */
-        if (LESSEQ(targets->list[i].begin, end) && LESSEQ(end, targets->list[i].end)) {
+        if (LESSEQ(targets->list[i].begin, end) &&
+            LESSEQ(end, targets->list[i].end)) {
             targets->list[i].begin = PLUS_ONE(end);
         }
 
         /* If overlap on the upper side */
-        if (LESSEQ(targets->list[i].begin, begin) && LESSEQ(begin, targets->list[i].end)) {
-             targets->list[i].end = MINUS_ONE(begin);
+        if (LESSEQ(targets->list[i].begin, begin) &&
+            LESSEQ(begin, targets->list[i].end)) {
+            targets->list[i].end = MINUS_ONE(begin);
         }
     }
 }
 
-void
-range6list_remove_range2(struct Range6List *targets, struct Range6 range)
-{
+void range6list_remove_range2(struct Range6List *targets, struct Range6 range) {
     range6list_remove_range(targets, range.begin, range.end);
 }
 
 /***************************************************************************
  ***************************************************************************/
-ipv6address
-range6list_exclude(  struct Range6List *targets,
-                  const struct Range6List *excludes)
-{
-    ipv6address count = {0,0};
-    unsigned i;
+ipv6address range6list_exclude(struct Range6List       *targets,
+                               const struct Range6List *excludes) {
+    ipv6address count = {0, 0};
+    unsigned    i;
 
-    for (i=0; i<excludes->count; i++) {
+    for (i = 0; i < excludes->count; i++) {
         struct Range6 range = excludes->list[i];
-        ipv6address x;
+        ipv6address   x;
 
         x = _int128_subtract(range.end, range.begin);
         x = _int128_add64(x, 1);
@@ -479,38 +438,32 @@ range6list_exclude(  struct Range6List *targets,
     return count;
 }
 
-
 /***************************************************************************
  ***************************************************************************/
-int128_t
-range6list_count(const struct Range6List *targets)
-{
-    unsigned i;
-    ipv6address result = {0,0};
+int128_t range6list_count(const struct Range6List *targets) {
+    unsigned    i;
+    ipv6address result = {0, 0};
 
-    for (i=0; i<targets->count; i++) {
+    for (i = 0; i < targets->count; i++) {
         ipv6address x;
 
         x = _int128_subtract(targets->list[i].end, targets->list[i].begin);
         if (x.hi == ~0ULL && x.lo == ~0ULL)
             return x; /* overflow */
-        x = _int128_add64(x, 1);
+        x      = _int128_add64(x, 1);
         result = _int128_add(result, x);
     }
 
     return result;
 }
 
-
 /***************************************************************************
  ***************************************************************************/
-ipv6address
-range6list_pick(const struct Range6List *targets, uint64_t index)
-{
-    size_t maxmax = targets->count;
-    size_t min = 0;
-    size_t max = targets->count;
-    size_t mid;
+ipv6address range6list_pick(const struct Range6List *targets, uint64_t index) {
+    size_t        maxmax = targets->count;
+    size_t        min    = 0;
+    size_t        max    = targets->count;
+    size_t        mid;
     const size_t *picker = targets->picker;
 
     if (picker == NULL) {
@@ -518,25 +471,24 @@ range6list_pick(const struct Range6List *targets, uint64_t index)
         exit(1);
     }
 
-
     for (;;) {
-        mid = min + (max-min)/2;
+        mid = min + (max - min) / 2;
         if (index < picker[mid]) {
             max = mid;
             continue;
-        } if (index >= picker[mid]) {
+        }
+        if (index >= picker[mid]) {
             if (mid + 1 == maxmax)
                 break;
-            else if (index < picker[mid+1])
+            else if (index < picker[mid + 1])
                 break;
             else
-                min = mid+1;
+                min = mid + 1;
         }
     }
 
     return _int128_add64(targets->list[mid].begin, (index - picker[mid]));
 }
-
 
 /***************************************************************************
  * The normal "pick" function is a linear search, which is slow when there
@@ -545,12 +497,10 @@ range6list_pick(const struct Range6List *targets, uint64_t index)
  * it's the most cache-efficient, having the least overhead to fit within
  * the cache.
  ***************************************************************************/
-void
-range6list_optimize(struct Range6List *targets)
-{
-    size_t *picker;
-    size_t i;
-    ipv6address total = {0,0};
+void range6list_optimize(struct Range6List *targets) {
+    size_t     *picker;
+    size_t      i;
+    ipv6address total = {0, 0};
 
     if (targets->count == 0)
         return;
@@ -565,54 +515,46 @@ range6list_optimize(struct Range6List *targets)
 
     picker = REALLOCARRAY(NULL, targets->count, sizeof(*picker));
 
-    for (i=0; i<targets->count; i++) {
+    for (i = 0; i < targets->count; i++) {
         ipv6address x;
         picker[i] = (size_t)total.lo;
-        x = _int128_subtract(targets->list[i].end, targets->list[i].begin);
-        x = _int128_add64(x, 1);
+        x     = _int128_subtract(targets->list[i].end, targets->list[i].begin);
+        x     = _int128_add64(x, 1);
         total = _int128_add(total, x);
     }
 
     targets->picker = picker;
 }
 
-
-
 /***************************************************************************
  * Provide my own rand() simply to avoid static-analysis warning me that
  * 'rand()' is unrandom, when in fact we want the non-random properties of
  * rand() for regression testing.
  ***************************************************************************/
-static unsigned
-r_rand(unsigned *seed)
-{
+static unsigned r_rand(unsigned *seed) {
     static const unsigned a = 214013;
     static const unsigned c = 2531011;
 
     *seed = (*seed) * a + c;
-    return (*seed)>>16 & 0x7fff;
+    return (*seed) >> 16 & 0x7fff;
 }
-
 
 /***************************************************************************
  ***************************************************************************/
-static int
-regress_pick2()
-{
+static int regress_pick2() {
     unsigned i;
     unsigned seed = 0;
 
     /*
-    */
-    for (i=0; i<65536; i++)
-    {
+     */
+    for (i = 0; i < 65536; i++) {
         ipv6address a;
         ipv6address b;
         ipv6address c;
         ipv6address d;
 
         a.hi = r_rand(&seed);
-        a.lo = (unsigned long long)r_rand(&seed)<<49ULL;
+        a.lo = (unsigned long long)r_rand(&seed) << 49ULL;
         b.hi = r_rand(&seed);
         b.lo = 0x8765432100000000ULL;
 
@@ -620,7 +562,8 @@ regress_pick2()
         d = _int128_subtract(c, b);
 
         if (!_int128_is_equals(a, d)) {
-            LOG(LEVEL_ERROR, "%s:%d: test failed (%u)\n", __FILE__, __LINE__, (unsigned)i);
+            LOG(LEVEL_ERROR, "%s:%d: test failed (%u)\n", __FILE__, __LINE__,
+                (unsigned)i);
             return 1;
         }
     }
@@ -628,30 +571,29 @@ regress_pick2()
     /*
      * Run 100 randomized regression tests
      */
-    for (i=3; i<100; i++) {
-        unsigned j;
-        unsigned num_targets;
-        ipv6address begin = {0};
-        ipv6address end = {0};
+    for (i = 3; i < 100; i++) {
+        unsigned          j;
+        unsigned          num_targets;
+        ipv6address       begin        = {0};
+        ipv6address       end          = {0};
         struct Range6List targets[1]   = {{0}};
         struct Range6List duplicate[1] = {{0}};
-        uint64_t range;
-        ipv6address x;
+        uint64_t          range;
+        ipv6address       x;
 
         seed = i;
 
         /* fill the target list with random ranges */
-        num_targets = r_rand(&seed)%5 + 1;
-        for (j=0; j<num_targets; j++) {
-            begin.lo += r_rand(&seed)%10;
-            end.lo = begin.lo + r_rand(&seed)%10;
+        num_targets = r_rand(&seed) % 5 + 1;
+        for (j = 0; j < num_targets; j++) {
+            begin.lo += r_rand(&seed) % 10;
+            end.lo = begin.lo + r_rand(&seed) % 10;
 
             range6list_add_range(targets, begin, end);
         }
 
         /* Optimize for faster 'picking' addresses from an index */
         range6list_optimize(targets);
-
 
         /* Duplicate the targetlist using the picker */
         x = range6list_count(targets);
@@ -660,7 +602,7 @@ regress_pick2()
             return 1;
         }
         range = x.lo;
-        for (j=0; j<range; j++) {
+        for (j = 0; j < range; j++) {
             ipv6address addr;
 
             addr = range6list_pick(targets, j);
@@ -669,7 +611,8 @@ regress_pick2()
 
         /* at this point, the two range lists should be identical */
         REGRESS(i, targets->count == duplicate->count);
-        REGRESS(i, memcmp(targets->list, duplicate->list, targets->count*sizeof(targets->list[0])) == 0);
+        REGRESS(i, memcmp(targets->list, duplicate->list,
+                          targets->count * sizeof(targets->list[0])) == 0);
 
         range6list_remove_all(targets);
         range6list_remove_all(duplicate);
@@ -678,21 +621,22 @@ regress_pick2()
     return 0;
 }
 
-int ranges6_selftest()
-{
+int ranges6_selftest() {
     struct Range6 r;
-    int err;
+    int           err;
 
     REGRESS(0, regress_pick2() == 0);
 
-#define ERROR() LOG(LEVEL_ERROR, "selftest: failed %s:%u\n", __FILE__, __LINE__);
+#define ERROR()                                                                \
+    LOG(LEVEL_ERROR, "selftest: failed %s:%u\n", __FILE__, __LINE__);
 
-    err = targetip_parse_range("2001:0db8:85a3:0000:0000:8a2e:0370:7334", 0, 0, 0, &r);
+    err = targetip_parse_range("2001:0db8:85a3:0000:0000:8a2e:0370:7334", 0, 0,
+                               0, &r);
     if (err != Ipv6_Address)
         ERROR();
 
-    /* test for the /0 CIDR block, since we'll be using that a lot to scan the entire
-     * Internet */
+    /* test for the /0 CIDR block, since we'll be using that a lot to scan the
+     * entire Internet */
     if (r.begin.hi != 0x20010db885a30000ULL)
         return 1;
     if (r.begin.lo != 0x00008a2e03707334ULL)

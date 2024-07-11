@@ -3,16 +3,14 @@
 
 /***************************************************************************
  ***************************************************************************/
-static unsigned
-count_cidr6_bits(struct Range6 range)
-{
+static unsigned count_cidr6_bits(struct Range6 range) {
     uint64_t i;
 
     /* Kludge: can't handle more than 64-bits of CIDR ranges */
     if (range.begin.hi != range.begin.lo)
         return 0;
 
-    for (i=0; i<64; i++) {
+    for (i = 0; i < 64; i++) {
         uint64_t mask = 0xFFFFFFFFffffffffull >> i;
 
         if ((range.begin.lo & ~mask) == (range.end.lo & ~mask)) {
@@ -26,50 +24,36 @@ count_cidr6_bits(struct Range6 range)
 
 /***************************************************************************
  ***************************************************************************/
-void
-listrange(XConf *xconf)
-{
+void listrange(XConf *xconf) {
     struct RangeList  *list4 = &xconf->targets.ipv4;
     struct Range6List *list6 = &xconf->targets.ipv6;
-    unsigned i;
-    FILE *fp = stdout;
+    unsigned           i;
+    FILE              *fp = stdout;
 
-    for (i=0; i<list4->count; i++) {
-        unsigned prefix_length;
+    for (i = 0; i < list4->count; i++) {
+        unsigned     prefix_length;
         struct Range range = list4->list[i];
 
         if (range.begin == range.end) {
-            fprintf(fp, "%u.%u.%u.%u\n",
-                (range.begin>>24)&0xFF,
-                (range.begin>>16)&0xFF,
-                (range.begin>> 8)&0xFF,
-                (range.begin>> 0)&0xFF
-                );
+            fprintf(fp, "%u.%u.%u.%u\n", (range.begin >> 24) & 0xFF,
+                    (range.begin >> 16) & 0xFF, (range.begin >> 8) & 0xFF,
+                    (range.begin >> 0) & 0xFF);
         } else if (range_is_cidr(range, &prefix_length)) {
-            fprintf(fp, "%u.%u.%u.%u/%u\n",
-                    (range.begin>>24)&0xFF,
-                    (range.begin>>16)&0xFF,
-                    (range.begin>> 8)&0xFF,
-                    (range.begin>> 0)&0xFF,
-                    prefix_length
-                    );
+            fprintf(fp, "%u.%u.%u.%u/%u\n", (range.begin >> 24) & 0xFF,
+                    (range.begin >> 16) & 0xFF, (range.begin >> 8) & 0xFF,
+                    (range.begin >> 0) & 0xFF, prefix_length);
         } else {
-            fprintf(fp, "%u.%u.%u.%u-%u.%u.%u.%u\n",
-                    (range.begin>>24)&0xFF,
-                    (range.begin>>16)&0xFF,
-                    (range.begin>> 8)&0xFF,
-                    (range.begin>> 0)&0xFF,
-                    (range.end>>24)&0xFF,
-                    (range.end>>16)&0xFF,
-                    (range.end>> 8)&0xFF,
-                    (range.end>> 0)&0xFF
-                    );
+            fprintf(fp, "%u.%u.%u.%u-%u.%u.%u.%u\n", (range.begin >> 24) & 0xFF,
+                    (range.begin >> 16) & 0xFF, (range.begin >> 8) & 0xFF,
+                    (range.begin >> 0) & 0xFF, (range.end >> 24) & 0xFF,
+                    (range.end >> 16) & 0xFF, (range.end >> 8) & 0xFF,
+                    (range.end >> 0) & 0xFF);
         }
     }
 
-    for (i=0; i<list6->count; i++) {
-        struct Range6 range = list6->list[i];
-        ipaddress_formatted_t fmt = ipv6address_fmt(range.begin);
+    for (i = 0; i < list6->count; i++) {
+        struct Range6         range = list6->list[i];
+        ipaddress_formatted_t fmt   = ipv6address_fmt(range.begin);
         fprintf(fp, "%s", fmt.string);
         if (!ipv6address_is_equal(range.begin, range.end)) {
             unsigned cidr_bits = count_cidr6_bits(range);
@@ -82,5 +66,4 @@ listrange(XConf *xconf)
         }
         fprintf(fp, "\n");
     }
-
 }

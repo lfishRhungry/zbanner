@@ -1,14 +1,13 @@
 #include "target-addr.h"
 #include <string.h>
 
-
 /**
  * Holds the output string, so that we can append to it without
  * overflowing buffers. The _append_xxx() functions below append
  * to this string.
  */
 typedef struct stream_t {
-    char *buf;
+    char  *buf;
     size_t offset;
     size_t length;
 } stream_t;
@@ -18,9 +17,7 @@ typedef struct stream_t {
  * functions call _append_char or _append_str, so they must do buffer-overflow
  * check.
  */
-static void
-_append_char(stream_t *out, char c)
-{
+static void _append_char(stream_t *out, char c) {
     if (out->offset < out->length)
         out->buf[out->offset++] = c;
 
@@ -34,12 +31,10 @@ _append_char(stream_t *out, char c)
  * functions call _append_char or _append_str, so they must do buffer-overflow
  * check.
  */
-static void
-_append_str(stream_t *out, char *str)
-{
+static void _append_str(stream_t *out, char *str) {
     size_t len = strlen(str);
 
-    for (size_t i=0;i<len;i++) {
+    for (size_t i = 0; i < len; i++) {
         if (out->offset < out->length) {
             out->buf[out->offset++] = str[i];
         } else {
@@ -52,12 +47,10 @@ _append_str(stream_t *out, char *str)
         out->buf[out->offset] = '\0';
 }
 
-static void
-_append_ipv6(stream_t *out, const unsigned char *ipv6)
-{
+static void _append_ipv6(stream_t *out, const unsigned char *ipv6) {
     static const char hex[] = "0123456789abcdef";
-    size_t i;
-    int is_ellision = 0;
+    size_t            i;
+    int               is_ellision = 0;
 
     /* An IPv6 address is printed as a series of 2-byte hex words
      * separated by colons :, for a total of 16-bytes */
@@ -74,8 +67,8 @@ _append_ipv6(stream_t *out, const unsigned char *ipv6)
 
             /* test for all-zero address, in which case the output
              * will be "::". */
-            while (i == 14 && ipv6[i] == 0 && ipv6[i + 1] == 0){
-                i=16;
+            while (i == 14 && ipv6[i] == 0 && ipv6[i + 1] == 0) {
+                i = 16;
                 _append_char(out, ':');
             }
             continue;
@@ -98,11 +91,10 @@ _append_ipv6(stream_t *out, const unsigned char *ipv6)
     }
 }
 
-size_t ipv6_byte2str(const unsigned char *bytes, char *buf, size_t buf_len)
-{
+size_t ipv6_byte2str(const unsigned char *bytes, char *buf, size_t buf_len) {
     stream_t s;
     /* Call the formatting function */
-    s.buf = buf;
+    s.buf    = buf;
     s.offset = 0;
     s.length = buf_len;
     _append_ipv6(&s, bytes);
@@ -110,12 +102,11 @@ size_t ipv6_byte2str(const unsigned char *bytes, char *buf, size_t buf_len)
     return s.offset;
 }
 
-struct ipaddress_formatted ipv6address_fmt(ipv6address a)
-{
+struct ipaddress_formatted ipv6address_fmt(ipv6address a) {
     struct ipaddress_formatted out;
-    unsigned char tmp[16];
-    size_t i;
-    stream_t s;
+    unsigned char              tmp[16];
+    size_t                     i;
+    stream_t                   s;
 
     /*
      * Convert address into a sequence of bytes. Our code
@@ -123,19 +114,19 @@ struct ipaddress_formatted ipv6address_fmt(ipv6address a)
      * the formatting code above that we copied from a different
      * project represents it as an array of bytes.
      */
-    for (i=0; i<16; i++) {
+    for (i = 0; i < 16; i++) {
         uint64_t x;
-        if (i<8)
+        if (i < 8)
             x = a.hi;
         else
             x = a.lo;
-        x >>= (7 - (i%8)) * 8;
+        x >>= (7 - (i % 8)) * 8;
 
         tmp[i] = (unsigned char)(x & 0xFF);
     }
 
     /* Call the formatting function */
-    s.buf = out.string;
+    s.buf    = out.string;
     s.offset = 0;
     s.length = sizeof(out.string);
     _append_ipv6(&s, tmp);
@@ -146,10 +137,8 @@ struct ipaddress_formatted ipv6address_fmt(ipv6address a)
 /**
  * Append a decimal integer.
  */
-static void
-_append_decimal(stream_t *out, unsigned long long n)
-{
-    char tmp[64];
+static void _append_decimal(stream_t *out, unsigned long long n) {
+    char   tmp[64];
     size_t tmp_offset = 0;
 
     /* Create temporary string */
@@ -167,20 +156,17 @@ _append_decimal(stream_t *out, unsigned long long n)
         _append_char(out, tmp[--tmp_offset]);
 }
 
-static void
-_append_hex2(stream_t *out, unsigned long long n)
-{
+static void _append_hex2(stream_t *out, unsigned long long n) {
     static const char hex[17] = "0123456789abcdef";
 
-    _append_char(out, hex[(n>>4)&0xF]);
-    _append_char(out, hex[(n>>0)&0xF]);
+    _append_char(out, hex[(n >> 4) & 0xF]);
+    _append_char(out, hex[(n >> 0) & 0xF]);
 }
 
-size_t ipv4_byte2str(const unsigned char *bytes, char *buf, size_t buf_len)
-{
+size_t ipv4_byte2str(const unsigned char *bytes, char *buf, size_t buf_len) {
     stream_t s;
     /* Call the formatting function */
-    s.buf = buf;
+    s.buf    = buf;
     s.offset = 0;
     s.length = buf_len;
     _append_decimal(&s, buf[0]);
@@ -194,14 +180,12 @@ size_t ipv4_byte2str(const unsigned char *bytes, char *buf, size_t buf_len)
     return s.offset;
 }
 
-struct ipaddress_formatted ipv4address_fmt(ipv4address ip)
-{
+struct ipaddress_formatted ipv4address_fmt(ipv4address ip) {
     struct ipaddress_formatted out;
-    stream_t s;
-
+    stream_t                   s;
 
     /* Call the formatting function */
-    s.buf = out.string;
+    s.buf    = out.string;
     s.offset = 0;
     s.length = sizeof(out.string);
 
@@ -216,14 +200,12 @@ struct ipaddress_formatted ipv4address_fmt(ipv4address ip)
     return out;
 }
 
-struct ipaddress_formatted macaddress_fmt(macaddress_t mac)
-{
+struct ipaddress_formatted macaddress_fmt(macaddress_t mac) {
     struct ipaddress_formatted out;
-    stream_t s;
-
+    stream_t                   s;
 
     /* Call the formatting function */
-    s.buf = out.string;
+    s.buf    = out.string;
     s.offset = 0;
     s.length = sizeof(out.string);
 
@@ -242,17 +224,16 @@ struct ipaddress_formatted macaddress_fmt(macaddress_t mac)
     return out;
 }
 
-struct ipaddress_formatted ipaddress_fmt(ipaddress a)
-{
+struct ipaddress_formatted ipaddress_fmt(ipaddress a) {
     struct ipaddress_formatted out;
-    stream_t s;
-    ipv4address ip = a.ipv4;
+    stream_t                   s;
+    ipv4address                ip = a.ipv4;
 
     if (a.version == 6) {
         return ipv6address_fmt(a.ipv6);
     } else if (a.version == 4) {
         /* Call the formatting function */
-        s.buf = out.string;
+        s.buf    = out.string;
         s.offset = 0;
         s.length = sizeof(out.string);
 
@@ -270,28 +251,27 @@ struct ipaddress_formatted ipaddress_fmt(ipaddress a)
     return out;
 }
 
-struct ipaddress_ptr ipv6address_ptr_fmt(ipv6address a)
-{
+struct ipaddress_ptr ipv6address_ptr_fmt(ipv6address a) {
     struct ipaddress_ptr out;
-    stream_t s;
+    stream_t             s;
 
-    s.buf = out.string;
+    s.buf    = out.string;
     s.offset = 0;
     s.length = sizeof(out.string);
 
     static const char hex[17] = "0123456789abcdef";
 
-    for (int i=15; i>=0; i--) {
+    for (int i = 15; i >= 0; i--) {
         uint64_t x;
-        if (i<8)
+        if (i < 8)
             x = a.hi;
         else
             x = a.lo;
-        x >>= (7 - (i%8)) * 8;
+        x >>= (7 - (i % 8)) * 8;
 
-        _append_char(&s, hex[(x>>0)&0xF]);
+        _append_char(&s, hex[(x >> 0) & 0xF]);
         _append_char(&s, '.');
-        _append_char(&s, hex[(x>>4)&0xF]);
+        _append_char(&s, hex[(x >> 4) & 0xF]);
         _append_char(&s, '.');
     }
 
@@ -300,13 +280,12 @@ struct ipaddress_ptr ipv6address_ptr_fmt(ipv6address a)
     return out;
 }
 
-struct ipaddress_ptr ipv4address_ptr_fmt(ipv4address ip)
-{
+struct ipaddress_ptr ipv4address_ptr_fmt(ipv4address ip) {
     struct ipaddress_ptr out;
-    stream_t s;
+    stream_t             s;
 
     /* Call the formatting function */
-    s.buf = out.string;
+    s.buf    = out.string;
     s.offset = 0;
     s.length = sizeof(out.string);
 
@@ -322,17 +301,16 @@ struct ipaddress_ptr ipv4address_ptr_fmt(ipv4address ip)
     return out;
 }
 
-struct ipaddress_ptr ipaddress_ptr_fmt(ipaddress a)
-{
+struct ipaddress_ptr ipaddress_ptr_fmt(ipaddress a) {
     struct ipaddress_ptr out;
-    stream_t s;
-    ipv4address ip = a.ipv4;
+    stream_t             s;
+    ipv4address          ip = a.ipv4;
 
     if (a.version == 6) {
         return ipv6address_ptr_fmt(a.ipv6);
     } else if (a.version == 4) {
         /* Call the formatting function */
-        s.buf = out.string;
+        s.buf    = out.string;
         s.offset = 0;
         s.length = sizeof(out.string);
 
@@ -348,16 +326,13 @@ struct ipaddress_ptr ipaddress_ptr_fmt(ipaddress a)
         out.string[0] = '\0';
     }
 
-
     return out;
 }
 
-
-static unsigned _count_long(uint64_t number)
-{
+static unsigned _count_long(uint64_t number) {
     unsigned i;
     unsigned count = 0;
-    for (i=0; i<64; i++) {
+    for (i = 0; i < 64; i++) {
         if ((number >> i) & 1)
             count = i + 1;
     }
@@ -371,8 +346,7 @@ static unsigned _count_long(uint64_t number)
  * We use this to count the size of scans. We currently only support
  * scan sizes up to 63 bits.
  */
-unsigned int128_bitcount(int128_t number)
-{
+unsigned int128_bitcount(int128_t number) {
     if (number.hi)
         return _count_long(number.hi) + 64;
     else
@@ -409,9 +383,8 @@ ipv6address_t ipv6address_add(ipv6address_t lhs, ipv6address_t rhs) {
     return sum;
 }
 
-
-bool ipv6address_is_equal_prefixed(ipv6address_t lhs, ipv6address_t rhs, unsigned prefix)
-{
+bool ipv6address_is_equal_prefixed(ipv6address_t lhs, ipv6address_t rhs,
+                                   unsigned prefix) {
     ipv6address mask;
 
     /* If the prefix is bad, then the answer is 'no'. */
@@ -442,14 +415,13 @@ bool ipv6address_is_equal_prefixed(ipv6address_t lhs, ipv6address_t rhs, unsigne
     return ipv6address_is_equal(lhs, rhs);
 }
 
-int ipv6address_selftest()
-{
-    int x = 0;
-    ipaddress ip;
+int ipv6address_selftest() {
+    int                        x = 0;
+    ipaddress                  ip;
     struct ipaddress_formatted fmt;
 
     ip.version = 4;
-    ip.ipv4 = 0x01FF00A3;
+    ip.ipv4    = 0x01FF00A3;
 
     fmt = ipaddress_fmt(ip);
     if (strcmp(fmt.string, "1.255.0.163") != 0)

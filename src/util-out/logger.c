@@ -9,30 +9,35 @@
 #include <openssl/err.h>
 #endif
 
-#define PREFIX_OUT       ""
-#define PREFIX_HINT      "[HIN] "
-#define PREFIX_ERROR     "[ERR] "
-#define PREFIX_WARN      "[WRN] "
-#define PREFIX_INFO      "[-] "
-#define PREFIX_DEBUG     "[=] "
-#define PREFIX_DETAIL    "[#] "
+#define PREFIX_OUT    ""
+#define PREFIX_HINT   "[HIN] "
+#define PREFIX_ERROR  "[ERR] "
+#define PREFIX_WARN   "[WRN] "
+#define PREFIX_INFO   "[-] "
+#define PREFIX_DEBUG  "[=] "
+#define PREFIX_DETAIL "[#] "
 
 static int   _debug_level = 0;
 static void *_log_mutex   = NULL;
 
 /***************************************************************************
  ***************************************************************************/
-static const char *
-_level_to_string(int level)
-{
+static const char *_level_to_string(int level) {
     switch (level) {
-        case LEVEL_OUT    : return PREFIX_OUT;
-        case LEVEL_HINT   : return PREFIX_HINT;
-        case LEVEL_ERROR  : return PREFIX_ERROR;
-        case LEVEL_WARN   : return PREFIX_WARN;
-        case LEVEL_INFO   : return PREFIX_INFO;
-        case LEVEL_DEBUG  : return PREFIX_DEBUG;
-        case LEVEL_DETAIL : return PREFIX_DETAIL;
+        case LEVEL_OUT:
+            return PREFIX_OUT;
+        case LEVEL_HINT:
+            return PREFIX_HINT;
+        case LEVEL_ERROR:
+            return PREFIX_ERROR;
+        case LEVEL_WARN:
+            return PREFIX_WARN;
+        case LEVEL_INFO:
+            return PREFIX_INFO;
+        case LEVEL_DEBUG:
+            return PREFIX_DEBUG;
+        case LEVEL_DETAIL:
+            return PREFIX_DETAIL;
         default:
             return "[?] ";
     }
@@ -40,8 +45,7 @@ _level_to_string(int level)
 
 /***************************************************************************
  ***************************************************************************/
-void LOG_init()
-{
+void LOG_init() {
     if (_log_mutex) {
         pixie_delete_mutex(_log_mutex);
     }
@@ -50,8 +54,7 @@ void LOG_init()
 
 /***************************************************************************
  ***************************************************************************/
-void LOG_close()
-{
+void LOG_close() {
     if (_log_mutex) {
         pixie_delete_mutex(_log_mutex);
     }
@@ -60,23 +63,15 @@ void LOG_close()
 
 /***************************************************************************
  ***************************************************************************/
-void LOG_add_level(int x)
-{
-    _debug_level += x;
-}
+void LOG_add_level(int x) { _debug_level += x; }
 
 /***************************************************************************
  ***************************************************************************/
-int LOG_get_level()
-{
-    return _debug_level;
-}
+int LOG_get_level() { return _debug_level; }
 
 /***************************************************************************
  ***************************************************************************/
-static void
-_vLOG(int level, const char *fmt, va_list marker)
-{
+static void _vLOG(int level, const char *fmt, va_list marker) {
     if (level <= _debug_level) {
         pixie_acquire_mutex(_log_mutex);
 
@@ -90,9 +85,7 @@ _vLOG(int level, const char *fmt, va_list marker)
 
 /***************************************************************************
  ***************************************************************************/
-void
-LOG(int level, const char *fmt, ...)
-{
+void LOG(int level, const char *fmt, ...) {
     va_list marker;
 
     va_start(marker, fmt);
@@ -102,14 +95,13 @@ LOG(int level, const char *fmt, ...)
 
 /***************************************************************************
  ***************************************************************************/
-static void
-_vLOGnet(ipaddress ip_them, unsigned port_them, const char *fmt, va_list marker)
-{
+static void _vLOGnet(ipaddress ip_them, unsigned port_them, const char *fmt,
+                     va_list marker) {
     ipaddress_formatted_t fmt1 = ipaddress_fmt(ip_them);
 
     pixie_acquire_mutex(_log_mutex);
 
-    if (ip_them.version==4) {
+    if (ip_them.version == 4) {
         fprintf(stderr, "[Net](%s:%u) ", fmt1.string, port_them);
     } else {
         fprintf(stderr, "[Net]([%s]:%u) ", fmt1.string, port_them);
@@ -120,9 +112,7 @@ _vLOGnet(ipaddress ip_them, unsigned port_them, const char *fmt, va_list marker)
     pixie_release_mutex(_log_mutex);
 }
 
-void
-LOGnet(ipaddress ip_them, unsigned port_them, const char *fmt, ...)
-{
+void LOGnet(ipaddress ip_them, unsigned port_them, const char *fmt, ...) {
     va_list marker;
 
     va_start(marker, fmt);
@@ -132,17 +122,16 @@ LOGnet(ipaddress ip_them, unsigned port_them, const char *fmt, ...)
 
 /***************************************************************************
  ***************************************************************************/
-static void
-_vLOGip(int level, ipaddress ip, unsigned port, const char *fmt, va_list marker)
-{
+static void _vLOGip(int level, ipaddress ip, unsigned port, const char *fmt,
+                    va_list marker) {
     if (level <= _debug_level) {
-        char sz_ip[64];
+        char                  sz_ip[64];
         ipaddress_formatted_t fmt1 = ipaddress_fmt(ip);
 
         pixie_acquire_mutex(_log_mutex);
 
         fputs(_level_to_string(level), stderr);
-        if (ip.version==4) {
+        if (ip.version == 4) {
             snprintf(sz_ip, sizeof(sz_ip), "(%s:%u) ", fmt1.string, port);
         } else {
             snprintf(sz_ip, sizeof(sz_ip), "([%s]:%u) ", fmt1.string, port);
@@ -157,9 +146,7 @@ _vLOGip(int level, ipaddress ip, unsigned port, const char *fmt, va_list marker)
 
 /***************************************************************************
  ***************************************************************************/
-void
-LOGip(int level, ipaddress ip, unsigned port, const char *fmt, ...)
-{
+void LOGip(int level, ipaddress ip, unsigned port, const char *fmt, ...) {
     va_list marker;
 
     va_start(marker, fmt);
@@ -171,10 +158,9 @@ LOGip(int level, ipaddress ip, unsigned port, const char *fmt, ...)
 
 /***************************************************************************
  ***************************************************************************/
-static int
-_LOGopenssl_cb(const char *str, size_t len, void *bp) {
+static int _LOGopenssl_cb(const char *str, size_t len, void *bp) {
     if (len > INT16_MAX) {
-      fputs("Error string is too long\n", stderr);
+        fputs("Error string is too long\n", stderr);
     }
     fprintf(stderr, "%.*s", (int)len, str);
     return 1;
@@ -182,8 +168,7 @@ _LOGopenssl_cb(const char *str, size_t len, void *bp) {
 
 /***************************************************************************
  ***************************************************************************/
-int
-LOGopenssl(int level) {
+int LOGopenssl(int level) {
     int res = 0;
     if (level <= _debug_level) {
         pixie_acquire_mutex(_log_mutex);

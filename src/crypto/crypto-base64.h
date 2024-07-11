@@ -1,7 +1,7 @@
 /**
  * From ccan https://ccodearchive.net/list.html
  * Licensed under BSD-MIT
-*/
+ */
 /**
  * base64 - base64 encoding and decoding (rfc4648).
  *
@@ -21,9 +21,9 @@
  *          // print the base64-encoded form of the program arguments
  *          for(i=1;i<argc;i++) {
  *                size_t unencoded_length = strlen(argv[i]);
- *                size_t encoded_length = base64_encoded_length(unencoded_length);
- *                base64_encoded_string = malloc(encoded_length);
- *                base64_encode(base64_encoded_string, encoded_length,
+ *                size_t encoded_length =
+ * base64_encoded_length(unencoded_length); base64_encoded_string =
+ * malloc(encoded_length); base64_encode(base64_encoded_string, encoded_length,
  *                    argv[i], unencoded_length);
  *                printf("%s\n", base64_encoded_string);
  *                free(base64_encoded_string);
@@ -37,7 +37,6 @@
 #ifndef CRYPTO_BASE64_H
 #define CRYPTO_BASE64_H
 
-
 #include "../util-misc/cross.h"
 #include <stddef.h>
 
@@ -45,7 +44,7 @@
  * base64_maps_t - structure to hold maps for encode/decode
  */
 typedef struct {
-    char encode_map[64];
+    char        encode_map[64];
     signed char decode_map[256];
 } base64_maps_t;
 
@@ -72,28 +71,30 @@ size_t base64_decoded_length(size_t srclen);
  */
 void base64_init_maps(base64_maps_t *dest, const char src[64]);
 
-
 /**
- * base64_encode_triplet_using_maps - encode 3 bytes into base64 using a specific alphabet
+ * base64_encode_triplet_using_maps - encode 3 bytes into base64 using a
+ * specific alphabet
  * @param maps Maps to use for encoding (see base64_init_maps)
  * @param dest Buffer containing 3 bytes
  * @param src Buffer containing 4 characters
  */
-void base64_encode_triplet_using_maps(const base64_maps_t *maps,
-                      char dest[4], const char src[3]);
+void base64_encode_triplet_using_maps(const base64_maps_t *maps, char dest[4],
+                                      const char src[3]);
 
 /**
- * base64_encode_tail_using_maps - encode the final bytes of a source using a specific alphabet
+ * base64_encode_tail_using_maps - encode the final bytes of a source using a
+ * specific alphabet
  * @param maps Maps to use for encoding (see base64_init_maps)
  * @param dest Buffer containing 4 bytes
  * @param src Buffer containing srclen bytes
  * @param srclen Number of bytes (<= 3) to encode in src
  */
 void base64_encode_tail_using_maps(const base64_maps_t *maps, char dest[4],
-                   const char *src, size_t srclen);
+                                   const char *src, size_t srclen);
 
 /**
- * base64_encode_using_maps - encode a buffer into base64 using a specific alphabet
+ * base64_encode_using_maps - encode a buffer into base64 using a specific
+ * alphabet
  * @param maps Maps to use for encoding (see base64_init_maps)
  * @param dest Buffer to encode into
  * @param destlen Length of dest
@@ -103,19 +104,20 @@ void base64_encode_tail_using_maps(const base64_maps_t *maps, char dest[4],
  * @note dest will be nul-padded to destlen (past any required padding)
  * @note sets errno = EOVERFLOW if destlen is too small
  */
-size_t base64_encode_using_maps(const base64_maps_t *maps,
-                 char *dest, size_t destlen,
-                 const char *src, size_t srclen);
+size_t base64_encode_using_maps(const base64_maps_t *maps, char *dest,
+                                size_t destlen, const char *src, size_t srclen);
 
 /*
- * base64_char_in_alphabet - returns true if character can be part of an encoded string
+ * base64_char_in_alphabet - returns true if character can be part of an
+ * encoded string
  * @param maps A base64 maps object (see base64_init_maps)
  * @param b64char Character to check
  */
 bool base64_char_in_alphabet(const base64_maps_t *maps, char b64char);
 
 /**
- * base64_decode_using_maps - decode a base64-encoded string using a specific alphabet
+ * base64_decode_using_maps - decode a base64-encoded string using a specific
+ * alphabet
  * @param maps A base64 maps object (see base64_init_maps)
  * @param dest Buffer to decode into
  * @param destlen length of dest
@@ -126,23 +128,24 @@ bool base64_char_in_alphabet(const base64_maps_t *maps, char b64char);
  * @note sets errno = EOVERFLOW if destlen is too small
  * @note sets errno = EDOM if src contains invalid characters
  */
-size_t base64_decode_using_maps(const base64_maps_t *maps,
-                 char *dest, size_t destlen,
-                 const char *src, size_t srclen);
+size_t base64_decode_using_maps(const base64_maps_t *maps, char *dest,
+                                size_t destlen, const char *src, size_t srclen);
 
 /**
- * base64_decode_quartet_using_maps - decode 4 bytes from base64 using a specific alphabet
+ * base64_decode_quartet_using_maps - decode 4 bytes from base64 using a
+ * specific alphabet
  * @param maps A base64 maps object (see base64_init_maps)
  * @param dest Buffer containing 3 bytes
  * @param src Buffer containing 4 bytes
  * @return Number of decoded bytes set in dest. -1 on error (and errno set)
  * @note sets errno = EDOM if src contains invalid characters
  */
-int base64_decode_quartet_using_maps(const base64_maps_t *maps,
-                     char dest[3], const char src[4]);
+int base64_decode_quartet_using_maps(const base64_maps_t *maps, char dest[3],
+                                     const char src[4]);
 
 /**
- * base64_decode_tail_using_maps - decode the final bytes of a base64 string using a specific alphabet
+ * base64_decode_tail_using_maps - decode the final bytes of a base64 string
+ * using a specific alphabet
  * @param maps A base64 maps object (see base64_init_maps)
  * @param dest Buffer containing 3 bytes
  * @param src Buffer containing 4 bytes - padded with '=' as required
@@ -152,8 +155,7 @@ int base64_decode_quartet_using_maps(const base64_maps_t *maps,
  * @note sets errno = EINVAL if src is an invalid base64 tail
  */
 int base64_decode_tail_using_maps(const base64_maps_t *maps, char *dest,
-                  const char *src, size_t srclen);
-
+                                  const char *src, size_t srclen);
 
 /* the rfc4648 functions: */
 
@@ -178,12 +180,10 @@ extern const base64_maps_t base64_maps_rfc4648;
  *    encoded_length = base64_encode(dest, sizeof(dest), src, strlen(src));
  *    printf("Returned data of length %zd @%p\n", encoded_length, &dest);
  */
-static inline
-size_t base64_encode(char *dest, size_t destlen,
-              const char *src, size_t srclen)
-{
-    return base64_encode_using_maps(&base64_maps_rfc4648,
-                    dest, destlen, src, srclen);
+static inline size_t base64_encode(char *dest, size_t destlen, const char *src,
+                                   size_t srclen) {
+    return base64_encode_using_maps(&base64_maps_rfc4648, dest, destlen, src,
+                                    srclen);
 }
 
 /**
@@ -191,9 +191,7 @@ size_t base64_encode(char *dest, size_t destlen,
  * @param dest Buffer containing 4 bytes
  * @param src Buffer containing 3 bytes
  */
-static inline
-void base64_encode_triplet(char dest[4], const char src[3])
-{
+static inline void base64_encode_triplet(char dest[4], const char src[3]) {
     base64_encode_triplet_using_maps(&base64_maps_rfc4648, dest, src);
 }
 
@@ -203,12 +201,10 @@ void base64_encode_triplet(char dest[4], const char src[3])
  * @param src Buffer containing srclen bytes
  * @param srclen Number of bytes (<= 3) to encode in src
  */
-static inline
-void base64_encode_tail(char dest[4], const char *src, size_t srclen)
-{
+static inline void base64_encode_tail(char dest[4], const char *src,
+                                      size_t srclen) {
     base64_encode_tail_using_maps(&base64_maps_rfc4648, dest, src, srclen);
 }
-
 
 /**
  * base64_decode - decode An rfc4648 base64-encoded string
@@ -231,12 +227,10 @@ void base64_encode_tail(char dest[4], const char *src, size_t srclen)
  *    decoded_length = base64_decode(ret, sizeof(ret), src, strlen(src));
  *    printf("Returned data of length %zd @%p\n", decoded_length, &ret);
  */
-static inline
-size_t base64_decode(char *dest, size_t destlen,
-              const char *src, size_t srclen)
-{
-    return base64_decode_using_maps(&base64_maps_rfc4648,
-                    dest, destlen, src, srclen);
+static inline size_t base64_decode(char *dest, size_t destlen, const char *src,
+                                   size_t srclen) {
+    return base64_decode_using_maps(&base64_maps_rfc4648, dest, destlen, src,
+                                    srclen);
 }
 
 /**
@@ -246,11 +240,8 @@ size_t base64_decode(char *dest, size_t destlen,
  * @return Number of decoded bytes set in dest. -1 on error (and errno set)
  * @note sets errno = EDOM if src contains invalid characters
  */
-static inline
-int base64_decode_quartet(char dest[3], const char src[4])
-{
-    return base64_decode_quartet_using_maps(&base64_maps_rfc4648,
-                        dest, src);
+static inline int base64_decode_quartet(char dest[3], const char src[4]) {
+    return base64_decode_quartet_using_maps(&base64_maps_rfc4648, dest, src);
 }
 
 /**
@@ -262,17 +253,14 @@ int base64_decode_quartet(char dest[3], const char src[4])
  * @note sets errno = EDOM if src contains invalid characters
  * @note sets errno = EINVAL if src is an invalid base64 tail
  */
-static inline
-size_t base64_decode_tail(char dest[3], const char *src, size_t srclen)
-{
-    return base64_decode_tail_using_maps(&base64_maps_rfc4648,
-                         dest, src, srclen);
+static inline size_t base64_decode_tail(char dest[3], const char *src,
+                                        size_t srclen) {
+    return base64_decode_tail_using_maps(&base64_maps_rfc4648, dest, src,
+                                         srclen);
 }
 
 /* end rfc4648 functions */
 
-
 int base64_selftest();
-
 
 #endif /* CCAN_BASE64_H */

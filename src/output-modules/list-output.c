@@ -3,21 +3,20 @@
 #include "../util-out/logger.h"
 #include "../pixie/pixie-file.h"
 
-static const char fmt_host[]       = "%s";
-static const char fmt_port[]       = " %s%u";
+static const char fmt_host[] = "%s";
+static const char fmt_port[] = " %s%u";
 
 extern Output ListOutput; /*for internal x-ref*/
 
 static FILE *file;
 
 struct ListConf {
-    unsigned no_port:1;
+    unsigned no_port : 1;
 };
 
 static struct ListConf list_conf = {0};
 
-static ConfRes SET_no_port(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_no_port(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
@@ -27,27 +26,21 @@ static ConfRes SET_no_port(void *conf, const char *name, const char *value)
 }
 
 static ConfParam list_parameters[] = {
-    {
-        "no-port",
-        SET_no_port,
-        Type_BOOL,
-        {0},
-        "Just output IP list in any time.\n"
-        "NOTE: No deduplicating will be used for IP."
-    },
-    {0}
-};
+    {"no-port",
+     SET_no_port,
+     Type_BOOL,
+     {0},
+     "Just output IP list in any time.\n"
+     "NOTE: No deduplicating will be used for IP."},
+    {0}};
 
-static bool
-list_init(const OutConf *out)
-{
-
-    int err = pixie_fopen_shareable(
-        &file, out->output_filename, out->is_append);
+static bool list_init(const OutConf *out) {
+    int err =
+        pixie_fopen_shareable(&file, out->output_filename, out->is_append);
 
     if (err != 0 || file == NULL) {
         LOG(LEVEL_ERROR, "ListOutput: could not open file %s for %s.\n",
-            out->output_filename, out->is_append?"appending":"writing");
+            out->output_filename, out->is_append ? "appending" : "writing");
         perror(out->output_filename);
         return false;
     }
@@ -55,19 +48,19 @@ list_init(const OutConf *out)
     return true;
 }
 
-static void
-list_result(OutItem *item)
-{
+static void list_result(OutItem *item) {
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
 
-    bool output_port = (item->target.ip_proto==IP_PROTO_TCP
-        || item->target.ip_proto==IP_PROTO_UDP || item->target.ip_proto==IP_PROTO_SCTP);
+    bool output_port = (item->target.ip_proto == IP_PROTO_TCP ||
+                        item->target.ip_proto == IP_PROTO_UDP ||
+                        item->target.ip_proto == IP_PROTO_SCTP);
 
     int err = 0;
 
     err = fprintf(file, fmt_host, ip_them_fmt.string);
 
-    if (err<0) goto error;
+    if (err < 0)
+        goto error;
 
     if (output_port && !list_conf.no_port) {
         switch (item->target.ip_proto) {
@@ -84,11 +77,13 @@ list_result(OutItem *item)
                 err = fprintf(file, fmt_port, "o:", item->target.port_them);
                 break;
         }
-        if (err<0) goto error;
+        if (err < 0)
+            goto error;
     }
 
     err = fprintf(file, "\n");
-    if (err<0) goto error;
+    if (err < 0)
+        goto error;
 
     return;
 
@@ -96,21 +91,20 @@ error:
     LOG(LEVEL_ERROR, "ListOutput: could not write result to file.\n");
 }
 
-static void
-list_close(const OutConf *out)
-{
+static void list_close(const OutConf *out) {
     fflush(file);
     fclose(file);
 }
 
 Output ListOutput = {
-    .name               = "list",
-    .need_file          = 1,
-    .params             = list_parameters,
-    .init_cb            = &list_init,
-    .result_cb          = &list_result,
-    .close_cb           = &list_close,
+    .name      = "list",
+    .need_file = 1,
+    .params    = list_parameters,
     .desc =
         "ListOutput save results just in \"IP port\" format to specified file "
         "without any other information.",
+
+    .init_cb   = &list_init,
+    .result_cb = &list_result,
+    .close_cb  = &list_close,
 };

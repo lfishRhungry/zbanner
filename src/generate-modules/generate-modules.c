@@ -6,19 +6,12 @@
 //! ADD YOUR GENERATOR HERE
 extern Generator BlackRockGen;
 
-
-
-
 //! ADD YOUR GENERATOR HERE
 static Generator *generate_modules_list[] = {
     &BlackRockGen, /* its also the default generator*/
 };
 
-
-
-
-Generator *get_generate_module_by_name(const char *name)
-{
+Generator *get_generate_module_by_name(const char *name) {
     int len = (int)ARRAY_SIZE(generate_modules_list);
     for (int i = 0; i < len; i++) {
         if (!strcmp(generate_modules_list[i]->name, name)) {
@@ -28,8 +21,7 @@ Generator *get_generate_module_by_name(const char *name)
     return NULL;
 }
 
-void list_all_generate_modules()
-{
+void list_all_generate_modules() {
     int len = (int)ARRAY_SIZE(generate_modules_list);
 
     printf("\n");
@@ -55,8 +47,7 @@ void list_all_generate_modules()
     printf("\n");
 }
 
-void help_generate_module(Generator *module)
-{
+void help_generate_module(Generator *module) {
     if (!module) {
         LOG(LEVEL_ERROR, "No specified generate module.\n");
         return;
@@ -73,13 +64,12 @@ void help_generate_module(Generator *module)
     printf("\n");
     printf("\n");
     if (module->params) {
-        for (unsigned j=0; module->params[j].name; j++) {
-
+        for (unsigned j = 0; module->params[j].name; j++) {
             if (!module->params[j].help_text)
                 continue;
 
             printf("  --%s", module->params[j].name);
-            for (unsigned k=0; module->params[j].alt_names[k]; k++) {
+            for (unsigned k = 0; module->params[j].alt_names[k]; k++) {
                 printf(", --%s", module->params[j].alt_names[k]);
             }
             printf("\n");
@@ -92,12 +82,7 @@ void help_generate_module(Generator *module)
     printf("\n");
 }
 
-bool
-generate_init_nothing(const XConf *xconf)
-{
-    return true;
-}
+bool generate_init_nothing(const XConf *xconf) { return true; }
 
 /*implemented `generate_modules_close`*/
-void
-generate_close_nothing(const XConf *xconf) {}
+void generate_close_nothing(const XConf *xconf) {}

@@ -11,29 +11,27 @@
 #define NDP_NA_FLAG_SOLICITED 0B01000000
 #define NDP_NA_FLAG_OVERRIDE  0B00100000
 
-#define NDP_NA_FLAGS(px,i) ((px)[(i)+4])
+#define NDP_NA_FLAGS(px, i) ((px)[(i) + 4])
 
-#define NDP_NA_HAS_FLAG(px,i,flag) ((NDP_NA_FLAGS((px),(i)) & (flag)) == (flag))
-
+#define NDP_NA_HAS_FLAG(px, i, flag)                                           \
+    ((NDP_NA_FLAGS((px), (i)) & (flag)) == (flag))
 
 /**
- * This is a wrapped func that uses global_tmplset to create ndp neighbor solicit packet.
+ * This is a wrapped func that uses global_tmplset to create ndp neighbor
+ * solicit packet.
  * @param ttl it is for ipv4's ttl or ipv6's hop limit. use value in default
  * template packet if set it to zero.
  * @return len of packet generated.
-*/
-size_t
-ndp_create_ns_packet(
-    ipaddress ip_them, ipaddress ip_me, macaddress_t src_mac,
-    uint8_t ttl, unsigned char *px, size_t sizeof_px);
-
+ */
+size_t ndp_create_ns_packet(ipaddress ip_them, ipaddress ip_me,
+                            macaddress_t src_mac, uint8_t ttl,
+                            unsigned char *px, size_t sizeof_px);
 
 /**
  * Check if an NA is for solicitation by checking the target IP in IP header is
  * equal to target ip in ICMPv6
-*/
-bool ndp_is_solicited_advertise(ipv6address ip_them,
-    const unsigned char *px, unsigned icmpv6_offset);
-
+ */
+bool ndp_is_solicited_advertise(ipv6address ip_them, const unsigned char *px,
+                                unsigned icmpv6_offset);
 
 #endif

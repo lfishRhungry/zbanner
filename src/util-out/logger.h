@@ -5,13 +5,13 @@
 /**
  * Output warning level at least in default
  */
-#define LEVEL_OUT       (-3)  /*no prefix added auto and will be print in default*/
-#define LEVEL_HINT      (-2)
-#define LEVEL_ERROR     (-1)
-#define LEVEL_WARN      ( 0)
-#define LEVEL_INFO      ( 1)
-#define LEVEL_DEBUG     ( 2)
-#define LEVEL_DETAIL    ( 3)
+#define LEVEL_OUT    (-3) /*no prefix added auto and will be print in default*/
+#define LEVEL_HINT   (-2)
+#define LEVEL_ERROR  (-1)
+#define LEVEL_WARN   (0)
+#define LEVEL_INFO   (1)
+#define LEVEL_DEBUG  (2)
+#define LEVEL_DETAIL (3)
 
 /**
  * Use logger after inited.

@@ -93,13 +93,12 @@ TCP pseudo header
 #include "../stub/stub-pcap-dlt.h"
 
 struct tcp_hdr_t {
-    size_t begin;
-    size_t max;
-    size_t ip_offset;
+    size_t        begin;
+    size_t        max;
+    size_t        ip_offset;
     unsigned char ip_version;
-    bool is_found;
+    bool          is_found;
 };
-
 
 /***************************************************************************
  * A typical hexdump function, but dumps specifically the <options-list>
@@ -108,20 +107,19 @@ struct tcp_hdr_t {
  * as I'm stepping through code. You'll see this commented-out throughout
  * the code.
  ***************************************************************************/
-static void
-_HEXDUMP(const void *v, struct tcp_hdr_t hdr, size_t offset, const char *name)
-{
+static void _HEXDUMP(const void *v, struct tcp_hdr_t hdr, size_t offset,
+                     const char *name) {
     const unsigned char *p = ((const unsigned char *)v) + hdr.begin + 20;
-    size_t i;
-    size_t len = hdr.max - hdr.begin + 8 - 20;
+    size_t               i;
+    size_t               len = hdr.max - hdr.begin + 8 - 20;
 
     LOG(LEVEL_ERROR, "%s:\n", name);
     offset -= hdr.begin + 20;
 
-    for (i=0; i<len; i += 16) {
+    for (i = 0; i < len; i += 16) {
         size_t j;
 
-        for (j=i; j<i+16 && j<len; j++) {
+        for (j = i; j < i + 16 && j < len; j++) {
             char c = ' ';
             if (j == offset)
                 c = '>';
@@ -129,16 +127,16 @@ _HEXDUMP(const void *v, struct tcp_hdr_t hdr, size_t offset, const char *name)
                 c = '<';
             LOG(LEVEL_OUT, "%02x%c", p[j], c);
         }
-        for (;j<i+16; j++)
+        for (; j < i + 16; j++)
             LOG(LEVEL_OUT, "   ");
         LOG(LEVEL_OUT, "  ");
-        for (j=i; j<i+16 && j<len; j++) {
+        for (j = i; j < i + 16 && j < len; j++) {
             char c = p[j];
 
             if (j == offset)
                 c = '#';
 
-            if (isprint(c&0xff) && !isspace(c&0xff))
+            if (isprint(c & 0xff) && !isspace(c & 0xff))
                 LOG(LEVEL_OUT, "%c", c);
             else
                 LOG(LEVEL_OUT, ".");
@@ -151,8 +149,8 @@ _HEXDUMP(const void *v, struct tcp_hdr_t hdr, size_t offset, const char *name)
  * A quick macro to calculate the TCP header length, given a buffer
  * and an offset to the start of the TCP header.
  ***************************************************************************/
-static unsigned inline
-_tcp_header_length(const unsigned char *buf, size_t offset) {
+static unsigned inline _tcp_header_length(const unsigned char *buf,
+                                          size_t               offset) {
     return (buf[offset + 12] >> 4) * 4;
 }
 
@@ -162,18 +160,13 @@ _tcp_header_length(const unsigned char *buf, size_t offset) {
  * in the self-test feature after test cases, to make sure the packet
  * hasn't bee corrupted.
  ***************************************************************************/
-static bool
-_consistancy_check(const unsigned char *buf, size_t length,
-    const void *payload, size_t payload_length)
-{
-    PreInfo parsed;
+static bool _consistancy_check(const unsigned char *buf, size_t length,
+                               const void *payload, size_t payload_length) {
+    PreInfo  parsed;
     unsigned is_success;
 
     /* Parse the packet */
-    is_success = preprocess_frame(buf,
-                                  (unsigned)length,
-                                  1 /*enet*/,
-                                  &parsed);
+    is_success = preprocess_frame(buf, (unsigned)length, 1 /*enet*/, &parsed);
     if (!is_success || parsed.found != FOUND_TCP) {
         LOG(LEVEL_ERROR, "check: TCP header not found\n");
         goto fail;
@@ -233,7 +226,7 @@ _consistancy_check(const unsigned char *buf, size_t length,
             /* Check for corruption, the lenth field is inclusive, so should
              * equal at least two. It's maximum length should be bfore the end
              * of the packet */
-            if (len < 2 || len > (max-offset+2)) {
+            if (len < 2 || len > (max - offset + 2)) {
                 goto fail;
             }
 
@@ -257,20 +250,18 @@ fail:
  * current template because it could've been provided by the user, so
  * we instead parse it as if we've received it from the network wire.
  ***************************************************************************/
-static struct tcp_hdr_t
-_find_tcp_header(const unsigned char *buf, size_t length) {
+static struct tcp_hdr_t _find_tcp_header(const unsigned char *buf,
+                                         size_t               length) {
     struct tcp_hdr_t hdr = {0};
-    PreInfo parsed;
-    unsigned is_success;
+    PreInfo          parsed;
+    unsigned         is_success;
 
     /*
      * Parse the packet, telling us where the TCP header is. This works
      * for both IPv4 and IPv6, we care only about the TCP header portion.
      */
     is_success = preprocess_frame(buf, /* the packet, including Ethernet hdr */
-                                  (unsigned)length,
-                                  PCAP_DLT_ETHERNET,
-                                  &parsed);
+                                  (unsigned)length, PCAP_DLT_ETHERNET, &parsed);
     if (!is_success || parsed.found != FOUND_TCP) {
         /* We were unable to parse a well-formatted TCP packet. This
          * might've been UDP or something. */
@@ -293,8 +284,7 @@ fail:
  * A quick macro at the start of for(;;) loops that enumerate all the
  * options in the <option-list>
  ***************************************************************************/
-static inline size_t
-_opt_begin(struct tcp_hdr_t hdr) {
+static inline size_t _opt_begin(struct tcp_hdr_t hdr) {
     return hdr.begin + 20; /* start of <options> field */
 }
 
@@ -306,8 +296,8 @@ _opt_begin(struct tcp_hdr_t hdr) {
  * 0x?? - some option, the following byte is the length. We skip
  *        that `len` bytes.
  ***************************************************************************/
-static inline size_t
-_opt_next(struct tcp_hdr_t hdr, size_t offset, const unsigned char *buf) {
+static inline size_t _opt_next(struct tcp_hdr_t hdr, size_t offset,
+                               const unsigned char *buf) {
     unsigned kind = buf[offset];
     if (kind == 0x00) {
         return hdr.max;
@@ -316,7 +306,7 @@ _opt_next(struct tcp_hdr_t hdr, size_t offset, const unsigned char *buf) {
     } else if (offset + 2 > hdr.max) {
         return hdr.max; /* corruption */
     } else {
-        unsigned len = buf[offset+1];
+        unsigned len = buf[offset + 1];
         if (len < 2 || offset + len > hdr.max)
             return hdr.max; /* corruption */
         else
@@ -324,11 +314,10 @@ _opt_next(struct tcp_hdr_t hdr, size_t offset, const unsigned char *buf) {
     }
 }
 
-
 /***************************************************************************
  ***************************************************************************/
-static void
-_HEXDUMPopt(const unsigned char *buf, size_t length, const char *name) {
+static void _HEXDUMPopt(const unsigned char *buf, size_t length,
+                        const char *name) {
     struct tcp_hdr_t hdr;
 
     hdr = _find_tcp_header(buf, length);
@@ -338,15 +327,13 @@ _HEXDUMPopt(const unsigned char *buf, size_t length, const char *name) {
     _HEXDUMP(buf, hdr, _opt_begin(hdr), name);
 }
 
-
 /***************************************************************************
  * Search throgh the <option-list> until we find the specified option,
  * 'kind', or reach the end of the list. An impossible 'kind', like 0x100,
  * will force finding the end of the list before padding starts.
  ***************************************************************************/
-static size_t
-_find_opt(const unsigned char *buf, struct tcp_hdr_t hdr, unsigned in_kind,
-          unsigned *nop_count) {
+static size_t _find_opt(const unsigned char *buf, struct tcp_hdr_t hdr,
+                        unsigned in_kind, unsigned *nop_count) {
     size_t offset;
 
     /* This field is optional, if used, set it to zero */
@@ -354,8 +341,7 @@ _find_opt(const unsigned char *buf, struct tcp_hdr_t hdr, unsigned in_kind,
         *nop_count = 0;
 
     /* enumerate all <options> looking for a match */
-    for (offset = _opt_begin(hdr);
-         offset < hdr.max;
+    for (offset = _opt_begin(hdr); offset < hdr.max;
          offset = _opt_next(hdr, offset, buf)) {
         unsigned kind;
 
@@ -381,11 +367,11 @@ _find_opt(const unsigned char *buf, struct tcp_hdr_t hdr, unsigned in_kind,
     return offset;
 }
 
-struct TcpOption
-tcp_find_opt(const unsigned char *buf, size_t length, unsigned in_kind) {
+struct TcpOption tcp_find_opt(const unsigned char *buf, size_t length,
+                              unsigned in_kind) {
     struct TcpOption result = {0};
     struct tcp_hdr_t hdr;
-    size_t offset;
+    size_t           offset;
 
     /* Get the TCP header in the packet */
     hdr = _find_tcp_header(buf, length);
@@ -399,10 +385,10 @@ tcp_find_opt(const unsigned char *buf, size_t length, unsigned in_kind) {
 
     /* We've found it! If we've passed all the checks above, we have
      * a well formatted field, so just return it. */
-    result.kind   = in_kind;
-    result.buf    = buf + offset + 2;
-    result.raw_len = buf[offset+1] - 2;
-    result.opt_len = buf[offset+1];
+    result.kind    = in_kind;
+    result.buf     = buf + offset + 2;
+    result.raw_len = buf[offset + 1] - 2;
+    result.opt_len = buf[offset + 1];
     if (offset + result.raw_len >= hdr.max)
         goto fail;
     result.is_found = true;
@@ -417,8 +403,8 @@ fail:
  * Adjusts the IP "total length" and TCP "header length" fields to match
  * recent additions/removals of options in the <option-list>
  ***************************************************************************/
-static void
-_adjust_length(unsigned char *buf, size_t length, int adjustment, struct tcp_hdr_t hdr) {
+static void _adjust_length(unsigned char *buf, size_t length, int adjustment,
+                           struct tcp_hdr_t hdr) {
     size_t ip_offset = hdr.ip_offset;
 
     /* The adjustment should already have been aligned on an even 4 byte
@@ -432,10 +418,10 @@ _adjust_length(unsigned char *buf, size_t length, int adjustment, struct tcp_hdr
     switch (hdr.ip_version) {
         case 4: {
             unsigned total_length;
-            total_length  = BE_TO_U16(buf+ip_offset+2);
+            total_length = BE_TO_U16(buf + ip_offset + 2);
             total_length += adjustment;
-            U16_TO_BE(buf+ip_offset+2, total_length);
-            total_length  = BE_TO_U16(buf+ip_offset+2);
+            U16_TO_BE(buf + ip_offset + 2, total_length);
+            total_length = BE_TO_U16(buf + ip_offset + 2);
             if (total_length + 14 != length) {
                 LOG(LEVEL_ERROR, "IP length mismatch\n");
             }
@@ -443,9 +429,9 @@ _adjust_length(unsigned char *buf, size_t length, int adjustment, struct tcp_hdr
         }
         case 6: {
             unsigned payload_length;
-            payload_length  = BE_TO_U16(buf+ip_offset+4);
+            payload_length = BE_TO_U16(buf + ip_offset + 4);
             payload_length += adjustment;
-            U16_TO_BE(buf+ip_offset+4, payload_length);
+            U16_TO_BE(buf + ip_offset + 4, payload_length);
             break;
         }
     }
@@ -455,14 +441,15 @@ _adjust_length(unsigned char *buf, size_t length, int adjustment, struct tcp_hdr
         size_t hdr_length;
         size_t offset = hdr.begin + 12;
 
-        hdr_length  = (buf[offset] >> 4) * 4;
+        hdr_length = (buf[offset] >> 4) * 4;
         hdr_length += adjustment;
 
         if (hdr_length % 4 != 0) {
             LOG(LEVEL_ERROR, "templ.tcp corruptoin\n");
         }
 
-        buf[offset] = (unsigned char)((buf[offset] & 0x0F) | ((hdr_length/4) << 4));
+        buf[offset] =
+            (unsigned char)((buf[offset] & 0x0F) | ((hdr_length / 4) << 4));
 
         hdr_length = (buf[offset] >> 4) * 4;
         if (hdr.begin + hdr_length > length) {
@@ -476,26 +463,23 @@ _adjust_length(unsigned char *buf, size_t length, int adjustment, struct tcp_hdr
  * aligned on an even 4-byte boundary as required. This function
  * adds padding as necessary to align to the boundary.
  ***************************************************************************/
-static void
-_add_padding(unsigned char **inout_buf, size_t *inout_length, size_t offset, unsigned pad_count) {
-    unsigned char *buf = *inout_buf;
-    size_t length = *inout_length;
+static void _add_padding(unsigned char **inout_buf, size_t *inout_length,
+                         size_t offset, unsigned pad_count) {
+    unsigned char *buf    = *inout_buf;
+    size_t         length = *inout_length;
 
     length += pad_count;
     buf = realloc(buf, length);
 
     /* open space between headers and payload */
-    safe_memmove(buf, length,
-                offset + pad_count,
-                offset,
-                (length - pad_count) - offset);
+    safe_memmove(buf, length, offset + pad_count, offset,
+                 (length - pad_count) - offset);
 
     /* set padding to zero */
-    safe_memset(buf, length,
-                offset, 0, pad_count);
+    safe_memset(buf, length, offset, 0, pad_count);
 
     /* Set the out parameters */
-    *inout_buf = buf;
+    *inout_buf    = buf;
     *inout_length = length;
 }
 
@@ -504,19 +488,18 @@ _add_padding(unsigned char **inout_buf, size_t *inout_length, size_t offset, uns
  * reduces the number to 3 or less. Also, it changes any trailing NOPs
  * to EOL bytes, since there are no more options after that point.
  ***************************************************************************/
-static bool
-_normalize_padding(unsigned char **inout_buf, size_t *inout_length) {
-    unsigned char     *buf         = *inout_buf;
-    size_t             length      = *inout_length;
-    unsigned           nop_count   = 0;
-    size_t             offset;
-    struct tcp_hdr_t   hdr;
+static bool _normalize_padding(unsigned char **inout_buf,
+                               size_t         *inout_length) {
+    unsigned char   *buf       = *inout_buf;
+    size_t           length    = *inout_length;
+    unsigned         nop_count = 0;
+    size_t           offset;
+    struct tcp_hdr_t hdr;
 
     /* find TCP header */
     hdr = _find_tcp_header(buf, length);
     if (!hdr.is_found)
         goto fail;
-
 
     /* find the start of the padding field  */
     offset = _find_opt(buf, hdr, 0x100, &nop_count);
@@ -541,10 +524,8 @@ _normalize_padding(unsigned char **inout_buf, size_t *inout_length) {
 
         //_HEXDUMP(buf, hdr, offset, "before padding removal");
 
-        safe_memmove(buf, length,
-                        offset,
-                        offset + remove_count,
-                        length - (offset + remove_count));
+        safe_memmove(buf, length, offset, offset + remove_count,
+                     length - (offset + remove_count));
         hdr.max -= remove_count;
         length -= remove_count;
 
@@ -565,20 +546,17 @@ fail:
     *inout_buf    = buf;
     *inout_length = length;
     return false; /* failure */
-
 }
-
 
 /***************************************************************************
  ***************************************************************************/
-static bool
-tcp_remove_opt(unsigned char **inout_buf, size_t *inout_length, unsigned in_kind)
-{
-    unsigned char      *buf         = *inout_buf;
-    size_t              length      = *inout_length;
-    unsigned            nop_count   = 0;
-    size_t              offset;
-    struct tcp_hdr_t    hdr;
+static bool tcp_remove_opt(unsigned char **inout_buf, size_t *inout_length,
+                           unsigned in_kind) {
+    unsigned char   *buf       = *inout_buf;
+    size_t           length    = *inout_length;
+    unsigned         nop_count = 0;
+    size_t           offset;
+    struct tcp_hdr_t hdr;
 
     /* find the TCP header */
     hdr = _find_tcp_header(buf, length);
@@ -590,21 +568,20 @@ tcp_remove_opt(unsigned char **inout_buf, size_t *inout_length, unsigned in_kind
     if (offset + 2 >= hdr.max)
         goto success; /* not found, no matching option type/kind */
 
-
     {
-        unsigned opt_len       = buf[offset+1];
+        unsigned opt_len       = buf[offset + 1];
         unsigned remove_length = opt_len;
 
         if (offset + opt_len > hdr.max)
             goto fail;
 
         /* Remove any trailing NOPs */
-        while (offset + remove_length < hdr.max
-               && buf[offset + remove_length] == 1)
+        while (offset + remove_length < hdr.max &&
+               buf[offset + remove_length] == 1)
             remove_length++;
 
         /* Remove any leading NOPs */
-        offset        -= nop_count;
+        offset -= nop_count;
         remove_length += nop_count;
 
         /* Remove the bytes from the current packet buffer.
@@ -614,22 +591,19 @@ tcp_remove_opt(unsigned char **inout_buf, size_t *inout_length, unsigned in_kind
 
         //_HEXDUMP(buf, hdr, offset, "before removal");
 
-        safe_memmove(buf, length,
-                        offset,
-                        offset + remove_length,
-                        length - (offset + remove_length));
+        safe_memmove(buf, length, offset, offset + remove_length,
+                     length - (offset + remove_length));
         hdr.max -= remove_length;
-        length  -= remove_length;
+        length -= remove_length;
 
         //_HEXDUMP(buf, hdr, offset, "after removal");
-
 
         /* Now we may need to add back padding  */
         if (remove_length % 4) {
             unsigned add_length = (remove_length % 4);
             _add_padding(&buf, &length, hdr.max, add_length);
             remove_length -= add_length;
-            hdr.max       += add_length;
+            hdr.max += add_length;
         }
 
         //_HEXDUMP(buf, hdr, offset, "padding added");
@@ -655,43 +629,32 @@ fail:
 
 /***************************************************************************
  ***************************************************************************/
-static int
-_insert_field(unsigned char **inout_buf,
-              size_t *inout_length,
-              size_t offset_begin,
-              size_t offset_end,
-              const unsigned char *new_data,
-              size_t new_length
-              ) {
-    unsigned char *buf       = *inout_buf;
-    size_t         length    = *inout_length;
-    int            adjust    = 0;
+static int _insert_field(unsigned char **inout_buf, size_t *inout_length,
+                         size_t offset_begin, size_t offset_end,
+                         const unsigned char *new_data, size_t new_length) {
+    unsigned char *buf    = *inout_buf;
+    size_t         length = *inout_length;
+    int            adjust = 0;
 
     /* can theoreitcally be negative, but that's ok */
     adjust = (int)new_length - ((int)offset_end - (int)offset_begin);
     if (adjust > 0) {
         length += adjust;
-        buf     = realloc(buf, length);
-        safe_memmove(buf, length,
-                        offset_begin + new_length,
-                        offset_end,
-                        (length - adjust) - offset_end);
+        buf = realloc(buf, length);
+        safe_memmove(buf, length, offset_begin + new_length, offset_end,
+                     (length - adjust) - offset_end);
     }
     if (adjust < 0) {
-        safe_memmove(buf, length,
-                        offset_begin + new_length,
-                        offset_end,
-                        length - offset_end);
+        safe_memmove(buf, length, offset_begin + new_length, offset_end,
+                     length - offset_end);
         length += adjust;
-        buf     = realloc(buf, length);
+        buf = realloc(buf, length);
     }
 
     /**/
-    memcpy(buf + offset_begin,
-           new_data,
-           new_length);
+    memcpy(buf + offset_begin, new_data, new_length);
 
-    *inout_buf = buf;
+    *inout_buf    = buf;
     *inout_length = length;
 
     return adjust;
@@ -735,13 +698,12 @@ _calc_padding(const unsigned char *buf, struct tcp_hdr_t hdr) {
  * Remove all the padding bytes, and return an offset to the beginning
  * of the rest of the option field.
  ***************************************************************************/
-static size_t
-_squeeze_padding(unsigned char *buf, size_t length, struct tcp_hdr_t hdr, unsigned in_kind) {
-    size_t offset;
+static size_t _squeeze_padding(unsigned char *buf, size_t length,
+                               struct tcp_hdr_t hdr, unsigned in_kind) {
+    size_t   offset;
     unsigned nop_count = 0;
 
-    for (offset = _opt_begin(hdr);
-         offset < hdr.max;
+    for (offset = _opt_begin(hdr); offset < hdr.max;
          offset = _opt_next(hdr, offset, buf)) {
         unsigned kind;
         unsigned len;
@@ -771,7 +733,7 @@ _squeeze_padding(unsigned char *buf, size_t length, struct tcp_hdr_t hdr, unsign
 
         /* If we match an existing field, all those bytes become padding */
         if (kind == in_kind) {
-            len = buf[offset+1];
+            len = buf[offset + 1];
             safe_memset(buf, length, offset, 0x01, len);
             nop_count++;
 
@@ -784,29 +746,24 @@ _squeeze_padding(unsigned char *buf, size_t length, struct tcp_hdr_t hdr, unsign
             continue; /*no squeezing needed */
 
         /* move this field backward overwriting NOPs */
-        len = buf[offset+1];
-        safe_memmove(buf, length,
-                        offset - nop_count,
-                        offset,
-                        len);
+        len = buf[offset + 1];
+        safe_memmove(buf, length, offset - nop_count, offset, len);
 
         //_HEXDUMP(buf, hdr, offset - nop_count, "<<<<");
 
         /* now write NOPs where this field used to be */
-        safe_memset(buf, length, 
-                    offset + len - nop_count, 0x01, nop_count);
+        safe_memset(buf, length, offset + len - nop_count, 0x01, nop_count);
 
         //_HEXDUMP(buf, hdr, offset + len - nop_count, "!!!!!");
 
         /* reset the <offset> to the end of this relocated field */
-        offset    -= nop_count;
-        nop_count  = 0;
+        offset -= nop_count;
+        nop_count = 0;
     }
 
     /* if we reach the end, then there were only NOPs at the end and no
      * EOL byte, so simply zero them out */
-    safe_memset(buf, length, 
-                offset - nop_count, 0x00, nop_count);
+    safe_memset(buf, length, offset - nop_count, 0x00, nop_count);
     offset -= nop_count;
 
     //_HEXDUMP(buf, hdr, offset, "");
@@ -814,22 +771,17 @@ _squeeze_padding(unsigned char *buf, size_t length, struct tcp_hdr_t hdr, unsign
     return offset;
 }
 
-
 /***************************************************************************
  ***************************************************************************/
-static bool
-tcp_add_opt(unsigned char **inout_buf,
-            size_t *inout_length,
-            unsigned opt_kind,
-            unsigned opt_data_len,
-            const unsigned char *opt_data) {
-    unsigned char      *buf          = *inout_buf;
-    size_t              length       = *inout_length;
-    unsigned            nop_count    = 0;
-    int                 adjust       = 0;
-    size_t              offset;
-    struct tcp_hdr_t    hdr;
-
+static bool tcp_add_opt(unsigned char **inout_buf, size_t *inout_length,
+                        unsigned opt_kind, unsigned opt_data_len,
+                        const unsigned char *opt_data) {
+    unsigned char   *buf       = *inout_buf;
+    size_t           length    = *inout_length;
+    unsigned         nop_count = 0;
+    int              adjust    = 0;
+    size_t           offset;
+    struct tcp_hdr_t hdr;
 
     /* Check for corruption:
      * The maximum size of a TCP header is 60 bytes (0x0F * 4), and the
@@ -839,7 +791,6 @@ tcp_add_opt(unsigned char **inout_buf,
         LOG(LEVEL_ERROR, "templ.tcp.add_opt: opt_len too large\n");
         goto fail;
     }
-
 
     /* find TCP header */
     hdr = _find_tcp_header(buf, length);
@@ -866,7 +817,7 @@ tcp_add_opt(unsigned char **inout_buf,
         if (old_begin >= hdr.max)
             old_end = hdr.max; /* will insert end of header */
         else if (buf[offset] == 0x00)
-            old_end = hdr.max; /* will insert start of padding */
+            old_end = hdr.max;              /* will insert start of padding */
         else if (buf[offset] == opt_kind) { /* will replace old field */
             size_t len = buf[offset + 1];
             old_end    = offset + len;
@@ -877,7 +828,7 @@ tcp_add_opt(unsigned char **inout_buf,
 
         /* If the existing space is too small, try to expand it by
          * using neighboring (leading, trailing) NOPs */
-        while ((old_end-old_begin) < new_length) {
+        while ((old_end - old_begin) < new_length) {
             if (nop_count) {
                 nop_count--;
                 old_begin--;
@@ -889,13 +840,13 @@ tcp_add_opt(unsigned char **inout_buf,
 
         /* If the existing space is too small, and we are at the end,
          * and there's pading, then try to use the padding */
-        if ((old_end-old_begin) < new_length) {
+        if ((old_end - old_begin) < new_length) {
             if (old_end < hdr.max) {
                 if (buf[old_end] == 0x00) {
                     /* normalize padding to all zeroes */
                     safe_memset(buf, length, old_end, 0, hdr.max - old_end);
 
-                    while ((old_end-old_begin) < new_length) {
+                    while ((old_end - old_begin) < new_length) {
                         if (old_end >= hdr.max)
                             break;
                         old_end++;
@@ -906,26 +857,23 @@ tcp_add_opt(unsigned char **inout_buf,
 
         /* Make sure we have enough space in the header */
         {
-            static const size_t max_tcp_hdr = (0xF0>>4) * 4; /* 60 */
-            size_t added = new_length - (old_end - old_begin);
+            static const size_t max_tcp_hdr = (0xF0 >> 4) * 4; /* 60 */
+            size_t              added = new_length - (old_end - old_begin);
             if (hdr.max + added > hdr.begin + max_tcp_hdr) {
-                //unsigned total_padding = _calc_padding(buf, hdr);
+                // unsigned total_padding = _calc_padding(buf, hdr);
                 old_begin = _squeeze_padding(buf, length, hdr, opt_kind);
                 old_end   = hdr.max;
             }
         }
 
-
         /* Now insert the option field into packet. This may change the
          * sizeof the packet. The amount changed is indicated by 'adjust' */
-        adjust   = _insert_field(&buf, &length,
-                                 old_begin, old_end,
-                                 new_field, new_length);
+        adjust = _insert_field(&buf, &length, old_begin, old_end, new_field,
+                               new_length);
         hdr.max += adjust;
     }
 
     if (adjust) {
-
         /* TCP headers have to be aligned to 4 byte boundaries, so we may need
          * to add padding of 0 at the end of the header to handle this */
         if (adjust % 4 && adjust > 0) {
@@ -939,7 +887,7 @@ tcp_add_opt(unsigned char **inout_buf,
             //_HEXDUMP(buf, hdr, hdr.max, "pad before");
             _add_padding(&buf, &length, hdr.max, add_length);
             hdr.max += add_length;
-            adjust  += add_length;
+            adjust += add_length;
 
             //_HEXDUMP(buf, hdr, hdr.max, "pad after");
         }
@@ -965,10 +913,9 @@ fail:
 
 /***************************************************************************
  ***************************************************************************/
-unsigned
-tcp_get_mss(const unsigned char *buf, size_t length, bool *is_found) {
+unsigned tcp_get_mss(const unsigned char *buf, size_t length, bool *is_found) {
     struct TcpOption opt;
-    unsigned result = 0;
+    unsigned         result = 0;
 
     opt = tcp_find_opt(buf, length, TCP_OPT_TYPE_MSS);
     if (is_found)
@@ -990,10 +937,10 @@ tcp_get_mss(const unsigned char *buf, size_t length, bool *is_found) {
 
 /***************************************************************************
  ***************************************************************************/
-unsigned
-tcp_get_wscale(const unsigned char *buf, size_t length, bool *is_found) {
+unsigned tcp_get_wscale(const unsigned char *buf, size_t length,
+                        bool *is_found) {
     struct TcpOption opt;
-    unsigned result = 0;
+    unsigned         result = 0;
 
     opt = tcp_find_opt(buf, length, TCP_OPT_TYPE_WS);
     if (is_found)
@@ -1016,8 +963,8 @@ tcp_get_wscale(const unsigned char *buf, size_t length, bool *is_found) {
 
 /***************************************************************************
  ***************************************************************************/
-unsigned
-tcp_get_sackperm(const unsigned char *buf, size_t length, bool *is_found) {
+unsigned tcp_get_sackperm(const unsigned char *buf, size_t length,
+                          bool *is_found) {
     struct TcpOption opt;
 
     opt = tcp_find_opt(buf, length, TCP_OPT_TYPE_SACK_PERM);
@@ -1041,11 +988,10 @@ tcp_get_sackperm(const unsigned char *buf, size_t length, bool *is_found) {
  * according to configuration. For example, we might add a "sackperm" field,
  * or delete an "mss" field, or change the value of "mss".
  ***************************************************************************/
-void
-templ_tcp_apply_options(unsigned char **inout_buf, size_t *inout_length,
-                  const TmplOpt *templ_opts) {
-    unsigned char *buf = *inout_buf;
-    size_t length = *inout_length;
+void templ_tcp_apply_options(unsigned char **inout_buf, size_t *inout_length,
+                             const TmplOpt *templ_opts) {
+    unsigned char *buf    = *inout_buf;
+    size_t         length = *inout_length;
 
     if (templ_opts == NULL)
         return;
@@ -1055,9 +1001,10 @@ templ_tcp_apply_options(unsigned char **inout_buf, size_t *inout_length,
     if (templ_opts->tcp.is_mss == Remove) {
         tcp_remove_opt(&buf, &length, TCP_OPT_TYPE_MSS);
     } else if (templ_opts->tcp.is_mss == Add) {
-        unsigned char field[TCP_OPT_LEN_MSS-2];
+        unsigned char field[TCP_OPT_LEN_MSS - 2];
         U16_TO_BE(field, templ_opts->tcp.mss);
-        tcp_add_opt(&buf, &length, TCP_OPT_TYPE_MSS, TCP_OPT_LEN_MSS-2, field);
+        tcp_add_opt(&buf, &length, TCP_OPT_TYPE_MSS, TCP_OPT_LEN_MSS - 2,
+                    field);
     }
 
     /* --tcp-sackok
@@ -1066,7 +1013,7 @@ templ_tcp_apply_options(unsigned char **inout_buf, size_t *inout_length,
         tcp_remove_opt(&buf, &length, TCP_OPT_TYPE_SACK_PERM);
     } else if (templ_opts->tcp.is_sackok == Add) {
         tcp_add_opt(&buf, &length, TCP_OPT_TYPE_SACK_PERM,
-            TCP_OPT_LEN_SACK_PERM-2, (const unsigned char*)"");
+                    TCP_OPT_LEN_SACK_PERM - 2, (const unsigned char *)"");
     }
 
     /* --tcp-wscale <num>
@@ -1074,9 +1021,9 @@ templ_tcp_apply_options(unsigned char **inout_buf, size_t *inout_length,
     if (templ_opts->tcp.is_wscale == Remove) {
         tcp_remove_opt(&buf, &length, TCP_OPT_TYPE_WS);
     } else if (templ_opts->tcp.is_wscale == Add) {
-        unsigned char field[TCP_OPT_LEN_WS-2];
+        unsigned char field[TCP_OPT_LEN_WS - 2];
         field[0] = (unsigned char)templ_opts->tcp.wscale;
-        tcp_add_opt(&buf, &length, TCP_OPT_TYPE_WS, TCP_OPT_LEN_WS-2, field);
+        tcp_add_opt(&buf, &length, TCP_OPT_TYPE_WS, TCP_OPT_LEN_WS - 2, field);
     }
 
     /* --tcp-ts <num>
@@ -1084,25 +1031,22 @@ templ_tcp_apply_options(unsigned char **inout_buf, size_t *inout_length,
     if (templ_opts->tcp.is_tsecho == Remove) {
         tcp_remove_opt(&buf, &length, TCP_OPT_TYPE_TS);
     } else if (templ_opts->tcp.is_tsecho == Add) {
-        unsigned char field[TCP_OPT_LEN_TS-2] = {0};
+        unsigned char field[TCP_OPT_LEN_TS - 2] = {0};
         U32_TO_BE(field, templ_opts->tcp.tsecho);
-        tcp_add_opt(&buf, &length, TCP_OPT_TYPE_TS, TCP_OPT_LEN_TS-2, field);
+        tcp_add_opt(&buf, &length, TCP_OPT_TYPE_TS, TCP_OPT_LEN_TS - 2, field);
     }
 
     *inout_buf    = buf;
     *inout_length = length;
 }
 
-
 /***************************************************************************
  ***************************************************************************/
-void
-tcp_set_window(unsigned char *px, size_t px_length, unsigned window)
-{
-    PreInfo parsed;
-    unsigned                x;
-    size_t                  offset;
-    unsigned                xsum;
+void tcp_set_window(unsigned char *px, size_t px_length, unsigned window) {
+    PreInfo  parsed;
+    unsigned x;
+    size_t   offset;
+    unsigned xsum;
 
     /* Parse the frame looking for the TCP header */
     x = preprocess_frame(px, (unsigned)px_length, PCAP_DLT_ETHERNET, &parsed);
@@ -1114,8 +1058,7 @@ tcp_set_window(unsigned char *px, size_t px_length, unsigned window)
     if (offset + 20 > px_length)
         return;
 
-
-    /* set the new window */
+        /* set the new window */
 #if 0
     xsum = px[offset + 16] << 8 | px[offset + 17];
     xsum = (~xsum)&0xFFFF;
@@ -1127,42 +1070,40 @@ tcp_set_window(unsigned char *px, size_t px_length, unsigned window)
     xsum = (~xsum)&0xFFFF;
 #endif
 
-    U16_TO_BE(px+offset+14, window);
+    U16_TO_BE(px + offset + 14, window);
     px[offset + 16] = (unsigned char)(0);
     px[offset + 17] = (unsigned char)(0);
 
-
     xsum = ~checksum_tcp(px, parsed.ip_offset, parsed.transport_offset,
-        parsed.transport_length);
+                         parsed.transport_length);
 
-    U16_TO_BE(px+offset+16, xsum);
+    U16_TO_BE(px + offset + 16, xsum);
 }
 
-size_t
-tcp_create_by_template(
-        const TmplPkt *tmpl,
-        ipaddress ip_them, unsigned port_them,
-        ipaddress ip_me, unsigned port_me,
-        unsigned seqno, unsigned ackno,
-        unsigned flags, unsigned ttl, unsigned win,
-        const unsigned char *payload, size_t payload_length,
-        unsigned char *px, size_t px_length)
-{
+size_t tcp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
+                              unsigned port_them, ipaddress ip_me,
+                              unsigned port_me, unsigned seqno, unsigned ackno,
+                              unsigned flags, unsigned ttl, unsigned win,
+                              const unsigned char *payload,
+                              size_t payload_length, unsigned char *px,
+                              size_t px_length) {
     if (tmpl->tmpl_type != TmplType_TCP) {
-            LOG(LEVEL_ERROR, "tcp_create_by_template: need a TmplType_TCP TemplatePacket.\n");
-            return 0;
+        LOG(LEVEL_ERROR,
+            "tcp_create_by_template: need a TmplType_TCP TemplatePacket.\n");
+        return 0;
     }
 
     uint64_t xsum_ip;
     unsigned xsum_tcp;
 
     if (ip_them.version == 4) {
-        unsigned ip_id          = ip_them.ipv4 ^ port_them ^ seqno;
-        unsigned offset_ip      = tmpl->ipv4.offset_ip;
-        unsigned offset_tcp     = tmpl->ipv4. offset_tcp;
-        unsigned offset_payload = offset_tcp + ((tmpl->ipv4.packet[offset_tcp+12]&0xF0)>>2);
-        size_t new_length       = offset_payload + payload_length;
-        size_t ip_len           = (offset_payload - offset_ip) + payload_length;
+        unsigned ip_id      = ip_them.ipv4 ^ port_them ^ seqno;
+        unsigned offset_ip  = tmpl->ipv4.offset_ip;
+        unsigned offset_tcp = tmpl->ipv4.offset_tcp;
+        unsigned offset_payload =
+            offset_tcp + ((tmpl->ipv4.packet[offset_tcp + 12] & 0xF0) >> 2);
+        size_t new_length = offset_payload + payload_length;
+        size_t ip_len     = (offset_payload - offset_ip) + payload_length;
 
         if (new_length > px_length) {
             LOG(LEVEL_ERROR, "tcp: err generating packet: too much payload\n");
@@ -1176,42 +1117,43 @@ tcp_create_by_template(
          * Fill in the empty fields in the IP header and then re-calculate
          * the checksum.
          */
-        U16_TO_BE(px+offset_ip+ 2, ip_len);
-        U16_TO_BE(px+offset_ip+ 4, ip_id);
+        U16_TO_BE(px + offset_ip + 2, ip_len);
+        U16_TO_BE(px + offset_ip + 4, ip_id);
 
         if (ttl)
-            px[offset_ip+8] = (unsigned char)(ttl);
+            px[offset_ip + 8] = (unsigned char)(ttl);
 
-        U32_TO_BE(px+offset_ip+12, ip_me.ipv4);
-        U32_TO_BE(px+offset_ip+16, ip_them.ipv4);
+        U32_TO_BE(px + offset_ip + 12, ip_me.ipv4);
+        U32_TO_BE(px + offset_ip + 16, ip_them.ipv4);
 
-        xsum_ip = (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.length);
-        U16_TO_BE(px+offset_ip+10, xsum_ip);
+        xsum_ip =
+            (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.length);
+        U16_TO_BE(px + offset_ip + 10, xsum_ip);
 
         /*
          * now do the same for TCP
          */
-        U16_TO_BE(px+offset_tcp+ 0, port_me);
-        U16_TO_BE(px+offset_tcp+ 2, port_them);
-        U32_TO_BE(px+offset_tcp+ 4, seqno);
-        U32_TO_BE(px+offset_tcp+ 8, ackno);
+        U16_TO_BE(px + offset_tcp + 0, port_me);
+        U16_TO_BE(px + offset_tcp + 2, port_them);
+        U32_TO_BE(px + offset_tcp + 4, seqno);
+        U32_TO_BE(px + offset_tcp + 8, ackno);
 
-        px[offset_tcp+13] = (unsigned char)flags;
+        px[offset_tcp + 13] = (unsigned char)flags;
 
         if (win)
-            U16_TO_BE(px+offset_tcp+14, win);
+            U16_TO_BE(px + offset_tcp + 14, win);
 
-        px[offset_tcp+16] = (unsigned char)(0 >>  8);
-        px[offset_tcp+17] = (unsigned char)(0 >>  0);
+        px[offset_tcp + 16] = (unsigned char)(0 >> 8);
+        px[offset_tcp + 17] = (unsigned char)(0 >> 0);
 
         xsum_tcp = checksum_tcp(px, tmpl->ipv4.offset_ip, tmpl->ipv4.offset_tcp,
-            new_length - tmpl->ipv4.offset_tcp);
+                                new_length - tmpl->ipv4.offset_tcp);
         xsum_tcp = ~xsum_tcp;
 
-        U16_TO_BE(px+offset_tcp+16, xsum_tcp);
+        U16_TO_BE(px + offset_tcp + 16, xsum_tcp);
 
         if (new_length < 60) {
-            memset(px+new_length, 0, 60-new_length);
+            memset(px + new_length, 0, 60 - new_length);
             new_length = 60;
         }
         return new_length;
@@ -1229,116 +1171,108 @@ tcp_create_by_template(
         /* Copy over everything up to the new application-layer-payload */
         memcpy(px, tmpl->ipv6.packet, tmpl->ipv6.offset_app);
 
-        /* Replace the template's application-layer-payload with the new app-payload */
+        /* Replace the template's application-layer-payload with the new
+         * app-payload */
         memcpy(px + tmpl->ipv6.offset_app, payload, payload_length);
 
-        /* Fixup the "payload length" field in the IPv6 header. This is everything
-         * after the IPv6 header. There may be additional headers between the IPv6
-         * and TCP headers, so the calculation isn't simply the length of the TCP portion */
+        /* Fixup the "payload length" field in the IPv6 header. This is
+         * everything after the IPv6 header. There may be additional headers
+         * between the IPv6 and TCP headers, so the calculation isn't simply the
+         * length of the TCP portion */
         {
-            size_t len = tmpl->ipv6.offset_app + payload_length - tmpl->ipv6.offset_ip - 40;
-            U16_TO_BE(px+offset_ip+ 4, len);
+            size_t len = tmpl->ipv6.offset_app + payload_length -
+                         tmpl->ipv6.offset_ip - 40;
+            U16_TO_BE(px + offset_ip + 4, len);
         }
 
         if (ttl)
-            px[offset_ip+7] = (unsigned char)(ttl);
+            px[offset_ip + 7] = (unsigned char)(ttl);
         /* Copy over the IP addresses */
-        U64_TO_BE(px+offset_ip+ 8, ip_me.ipv6.hi);
-        U64_TO_BE(px+offset_ip+16, ip_me.ipv6.lo);
+        U64_TO_BE(px + offset_ip + 8, ip_me.ipv6.hi);
+        U64_TO_BE(px + offset_ip + 16, ip_me.ipv6.lo);
 
-        U64_TO_BE(px+offset_ip+24, ip_them.ipv6.hi);
-        U64_TO_BE(px+offset_ip+32, ip_them.ipv6.lo);
+        U64_TO_BE(px + offset_ip + 24, ip_them.ipv6.hi);
+        U64_TO_BE(px + offset_ip + 32, ip_them.ipv6.lo);
 
         /*
          * now do the same for TCP
          */
-        U16_TO_BE(px+offset_tcp+ 0, port_me);
-        U16_TO_BE(px+offset_tcp+ 2, port_them);
-        U32_TO_BE(px+offset_tcp+ 4, seqno);
-        U32_TO_BE(px+offset_tcp+ 8, ackno);
+        U16_TO_BE(px + offset_tcp + 0, port_me);
+        U16_TO_BE(px + offset_tcp + 2, port_them);
+        U32_TO_BE(px + offset_tcp + 4, seqno);
+        U32_TO_BE(px + offset_tcp + 8, ackno);
 
-        px[offset_tcp+13] = (unsigned char)flags;
+        px[offset_tcp + 13] = (unsigned char)flags;
 
         if (win)
-            U16_TO_BE(px+offset_tcp+14, win);
+            U16_TO_BE(px + offset_tcp + 14, win);
 
-        px[offset_tcp+16] = (unsigned char)(0 >>  8);
-        px[offset_tcp+17] = (unsigned char)(0 >>  0);
+        px[offset_tcp + 16] = (unsigned char)(0 >> 8);
+        px[offset_tcp + 17] = (unsigned char)(0 >> 0);
 
-        xsum_tcp = checksum_ipv6(px+offset_ip+8,
-                                 px+offset_ip+24,
-                                 IP_PROTO_TCP,
-                                 (offset_app-offset_tcp)+payload_length,
-                                 px + offset_tcp);
-        U16_TO_BE(px+offset_tcp+16, xsum_tcp);
+        xsum_tcp = checksum_ipv6(
+            px + offset_ip + 8, px + offset_ip + 24, IP_PROTO_TCP,
+            (offset_app - offset_tcp) + payload_length, px + offset_tcp);
+        U16_TO_BE(px + offset_tcp + 16, xsum_tcp);
 
         return offset_app + payload_length;
     }
 }
 
-size_t
-tcp_create_packet(
-        ipaddress ip_them, unsigned port_them,
-        ipaddress ip_me, unsigned port_me,
-        unsigned seqno, unsigned ackno,
-        unsigned flags, unsigned ttl, unsigned win,
-        const unsigned char *payload, size_t payload_length,
-        unsigned char *px, size_t px_length)
-{
+size_t tcp_create_packet(ipaddress ip_them, unsigned port_them, ipaddress ip_me,
+                         unsigned port_me, unsigned seqno, unsigned ackno,
+                         unsigned flags, unsigned ttl, unsigned win,
+                         const unsigned char *payload, size_t payload_length,
+                         unsigned char *px, size_t px_length) {
     /*use different template according to flags*/
-    if (flags==TCP_FLAG_SYN) {
+    if (flags == TCP_FLAG_SYN) {
         return tcp_create_by_template(&global_tmplset->pkts[TmplType_TCP_SYN],
-            ip_them, port_them, ip_me, port_me,
-            seqno, ackno, flags, ttl, win,
-            payload, payload_length, px, px_length);
-    } else if (flags&TCP_FLAG_RST) {
+                                      ip_them, port_them, ip_me, port_me, seqno,
+                                      ackno, flags, ttl, win, payload,
+                                      payload_length, px, px_length);
+    } else if (flags & TCP_FLAG_RST) {
         return tcp_create_by_template(&global_tmplset->pkts[TmplType_TCP_RST],
-            ip_them, port_them, ip_me, port_me,
-            seqno, ackno, flags, ttl, win,
-            payload, payload_length, px, px_length);
+                                      ip_them, port_them, ip_me, port_me, seqno,
+                                      ackno, flags, ttl, win, payload,
+                                      payload_length, px, px_length);
     } else {
         return tcp_create_by_template(&global_tmplset->pkts[TmplType_TCP],
-            ip_them, port_them, ip_me, port_me,
-            seqno, ackno, flags, ttl, win,
-            payload, payload_length, px, px_length);
+                                      ip_them, port_them, ip_me, port_me, seqno,
+                                      ackno, flags, ttl, win, payload,
+                                      payload_length, px, px_length);
     }
 }
 
-void
-tcp_flags_to_string(unsigned flag, char *string, size_t str_len)
-{
+void tcp_flags_to_string(unsigned flag, char *string, size_t str_len) {
     snprintf(string, str_len, "%s%s%s%s%s%s%s%s",
-            (flag&TCP_FLAG_FIN)?"fin-":"",
-            (flag&TCP_FLAG_SYN)?"syn-":"",
-            (flag&TCP_FLAG_RST)?"rst-":"",
-            (flag&TCP_FLAG_PSH)?"psh-":"",
-            (flag&TCP_FLAG_ACK)?"ack-":"",
-            (flag&TCP_FLAG_URG)?"urg-":"",
-            (flag&TCP_FLAG_ECE)?"ece-":"",
-            (flag&TCP_FLAG_CWR)?"cwr-":""
-            );
+             (flag & TCP_FLAG_FIN) ? "fin-" : "",
+             (flag & TCP_FLAG_SYN) ? "syn-" : "",
+             (flag & TCP_FLAG_RST) ? "rst-" : "",
+             (flag & TCP_FLAG_PSH) ? "psh-" : "",
+             (flag & TCP_FLAG_ACK) ? "ack-" : "",
+             (flag & TCP_FLAG_URG) ? "urg-" : "",
+             (flag & TCP_FLAG_ECE) ? "ece-" : "",
+             (flag & TCP_FLAG_CWR) ? "cwr-" : "");
     if (string[0] == '\0')
         snprintf(string, str_len, "none");
     else
-        string[strlen(string)-1] = '\0';
+        string[strlen(string) - 1] = '\0';
 }
-
 
 /***************************************************************************
  * Used during selftests in order to create a known options field as the
  * starting before before changing it somehow, followed by using
  * _compare_options() to test whether the change succeeded.
  ***************************************************************************/
-static bool
-_replace_options(unsigned char **inout_buf, size_t *inout_length,
-                        const char *new_options, size_t new_length) {
-    unsigned char *buf = *inout_buf;
-    size_t length = *inout_length;
+static bool _replace_options(unsigned char **inout_buf, size_t *inout_length,
+                             const char *new_options, size_t new_length) {
+    unsigned char   *buf    = *inout_buf;
+    size_t           length = *inout_length;
     struct tcp_hdr_t hdr;
-    size_t offset;
-    size_t old_length;
-    char newnew_options[40] = {0};
-    int adjust = 0;
+    size_t           offset;
+    size_t           old_length;
+    char             newnew_options[40] = {0};
+    int              adjust             = 0;
 
     /* Maximum length of the options field is 40 bytes */
     if (new_length > 40)
@@ -1355,7 +1289,7 @@ _replace_options(unsigned char **inout_buf, size_t *inout_length,
         goto fail;
 
     /* Find start of options field */
-    offset = _opt_begin(hdr);
+    offset     = _opt_begin(hdr);
     old_length = hdr.max - offset;
 
     /* Either increase or decrease the old length appropriately */
@@ -1364,20 +1298,14 @@ _replace_options(unsigned char **inout_buf, size_t *inout_length,
     if (adjust > 0) {
         length += adjust;
         buf = realloc(buf, length);
-        safe_memmove(buf, length,
-                        hdr.max + adjust,
-                        hdr.max,
-                        (length - adjust) - hdr.max);
+        safe_memmove(buf, length, hdr.max + adjust, hdr.max,
+                     (length - adjust) - hdr.max);
     }
     if (adjust < 0) {
-        safe_memmove(   buf, length,
-                        hdr.max + adjust,
-                        hdr.max,
-                        length - hdr.max);
+        safe_memmove(buf, length, hdr.max + adjust, hdr.max, length - hdr.max);
         length += adjust;
         buf = realloc(buf, length);
     }
-
 
     /* Now that we've resized the options field, overright
      * it with then new field */
@@ -1388,12 +1316,11 @@ _replace_options(unsigned char **inout_buf, size_t *inout_length,
 
     //_HEXDUMPopt(buf, length, "resize after");
 
-
-    *inout_buf = buf;
+    *inout_buf    = buf;
     *inout_length = length;
     return true;
 fail:
-    *inout_buf = buf;
+    *inout_buf    = buf;
     *inout_length = length;
     return false;
 }
@@ -1415,16 +1342,16 @@ enum {
 struct mytests_t {
     struct {
         const char *options;
-        size_t length;
+        size_t      length;
     } pre;
     struct {
-        int opcode;
+        int         opcode;
         const char *data;
-        size_t length;
+        size_t      length;
     } test;
     struct {
         const char *options;
-        size_t length;
+        size_t      length;
     } post;
 };
 
@@ -1434,8 +1361,7 @@ struct mytests_t {
  * all the boundary cases. Every code path that produces success is tested,
  * plus many code paths that produce failures.
  ***************************************************************************/
-static struct mytests_t
-tests[] = {
+static struct mytests_t tests[] = {
     /* A lot of these tests use 2-byte (\4\2) and 3-byte (\3\3\3) options.
      * The "\4\2" is "SACK permitted, kind=4, len=2, with no extra data.
      * The "\3\3\3" is "Window Scale, kind=3, len=3, data=3.
@@ -1445,70 +1371,67 @@ tests[] = {
     /* Attempt removal of an option that doesn't exist. This is not
      * a failure, but a success, though nothing is changed*/
 
-    {   {"\3\3\3\0", 4},
-        {TST_REMOVE, "\x08", 1},
-        {"\3\3\3\0", 4}
-    },
-
+    {{"\3\3\3\0", 4}, {TST_REMOVE, "\x08", 1}, {"\3\3\3\0", 4}},
 
     /* Test removal of an option. This will also involve removing
      the now unnecessary padding */
-    {   {"\3\3\3\1\1\1\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00", 16},
-        {TST_REMOVE, "\x08", 1},
-        {"\3\3\3\0", 4}
-    },
+    {{"\3\3\3\1\1\1\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00", 16},
+     {TST_REMOVE, "\x08", 1},
+     {"\3\3\3\0", 4}},
 
     /* Test when trying to add a big option that won't fit unless we get
      * rid of all the padding */
-    {   {   "\x02\x04\x05\xb4"
-            "\x01\x03\x03\x06"
-            "\x01\x01\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
-            "\x04\x02\x00\x00"
-            "\0\0\0\0",
-            28},
-        {   TST_ADD,
-            "\7\x14" "AAAAAAAAAAAAAAAAAAAA",
-            20
-        },
-        {   "\x02\x04\x05\xb4"
-            "\x03\x03\x06"
-            "\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
-            "\x04\x02"
-            "\7\x14" "AAAAAAAAAAAAAAAAAA"
-            "\0",
-            40
-        }
-    },
+    {{"\x02\x04\x05\xb4"
+      "\x01\x03\x03\x06"
+      "\x01\x01\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
+      "\x04\x02\x00\x00"
+      "\0\0\0\0",
+      28},
+     {TST_ADD,
+      "\7\x14"
+      "AAAAAAAAAAAAAAAAAAAA",
+      20},
+     {"\x02\x04\x05\xb4"
+      "\x03\x03\x06"
+      "\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
+      "\x04\x02"
+      "\7\x14"
+      "AAAAAAAAAAAAAAAAAA"
+      "\0",
+      40}},
 
     /* same as a bove, but field exists*/
-    {{  "\x02\x04\x05\xb4"
-        "\x01\x03\x03\x06"
-        "\x01\x01\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
-        "\7\4\1\1"
-        "\x04\x02\x00\x00",
-        28},
-        {   TST_ADD,
-            "\7\x14" "AAAAAAAAAAAAAAAAAAAA",
-            20
-        },
-        {   "\x02\x04\x05\xb4"
-            "\x03\x03\x06"
-            "\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
-            "\x04\x02"
-            "\7\x14" "AAAAAAAAAAAAAAAAAA"
-            "\0",
-            40
-        }
-    },
+    {{"\x02\x04\x05\xb4"
+      "\x01\x03\x03\x06"
+      "\x01\x01\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
+      "\7\4\1\1"
+      "\x04\x02\x00\x00",
+      28},
+     {TST_ADD,
+      "\7\x14"
+      "AAAAAAAAAAAAAAAAAAAA",
+      20},
+     {"\x02\x04\x05\xb4"
+      "\x03\x03\x06"
+      "\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
+      "\x04\x02"
+      "\7\x14"
+      "AAAAAAAAAAAAAAAAAA"
+      "\0",
+      40}},
 
     /* Add a new value to full packet  */
     {{"\3\3\3", 3}, {TST_ADD, "\4\2", 2}, {"\3\3\3\4\2\0\0\0", 8}},
 
     /* Change a 3 byte to 5 byte in middle of packet  */
-    {{"\1\7\3\3\1\1\4\2", 8}, {TST_ADD, "\7\5\5\5\5", 5}, {"\7\5\5\5\5\1\4\2", 8}},
+    {{"\1\7\3\3\1\1\4\2", 8},
+     {TST_ADD, "\7\5\5\5\5", 5},
+     {"\7\5\5\5\5\1\4\2", 8}},
 
     /* Change 3 to 4 byte at start */
-    {{"\7\3\3\1\2\4\5\6", 8}, {TST_ADD, "\7\4\4\4", 4}, {"\7\4\4\4\2\4\5\6", 8}},
+    {{"\7\3\3\1\2\4\5\6", 8},
+     {TST_ADD, "\7\4\4\4", 4},
+     {"\7\4\4\4\2\4\5\6", 8}},
 
     /* Change a 2-byte option */
     {{"\4\2", 2}, {TST_ADD, "\4\2", 2}, {"\4\2\0\0", 4}},
@@ -1529,26 +1452,24 @@ tests[] = {
     {{"", 0}, {TST_ADD, "\2\4\5\6", 4}, {"\2\4\5\6", 4}},
 
     /* Empty packet: padding normalization should make no changes */
-    {{"", 0}, {TST_PADDING,0,0}, {"", 0}},
+    {{"", 0}, {TST_PADDING, 0, 0}, {"", 0}},
 
     /* Empty packet plus 4 bytes of padding, should be removed */
-    {{"\0", 1}, {TST_PADDING,0,0}, {"", 0}},
+    {{"\0", 1}, {TST_PADDING, 0, 0}, {"", 0}},
 
     /* 8 bytes of padding, should only remove all of them */
-    {{"\0\0\0\0\0\0\0\0", 8}, {TST_PADDING,0,0}, {"", 0}},
+    {{"\0\0\0\0\0\0\0\0", 8}, {TST_PADDING, 0, 0}, {"", 0}},
 
     /* some padding is nops, should remove all  */
-    {{"\1\1\0\0\0\0\0\0", 8}, {TST_PADDING,0,0}, {"", 0}},
+    {{"\1\1\0\0\0\0\0\0", 8}, {TST_PADDING, 0, 0}, {"", 0}},
 
     /* any trailing NOPs should be converted to EOLs  */
-    {{"\3\3\3\1\0\0\0\0", 8}, {TST_PADDING,0,0}, {"\3\3\3\0", 4}},
+    {{"\3\3\3\1\0\0\0\0", 8}, {TST_PADDING, 0, 0}, {"\3\3\3\0", 4}},
 
     /* only NOPs should still be removed */
-    {{"\3\3\3\1\1\1\1\1", 8}, {TST_PADDING,0,0}, {"\3\3\3\0", 4}},
+    {{"\3\3\3\1\1\1\1\1", 8}, {TST_PADDING, 0, 0}, {"\3\3\3\0", 4}},
 
-    {{0}}
-};
-
+    {{0}}};
 
 /***************************************************************************
  * This function runs through the tests in the [tests] array above. It
@@ -1558,50 +1479,47 @@ tests[] = {
  * <option-list> field now matches the post-condition. Along the way,
  * we look for any errors are consistency failures.
  ***************************************************************************/
-static int
-_selftests_run(void) {
+static int _selftests_run(void) {
     static unsigned char templ[] =
-    "\0\1\2\3\4\5"  /* Ethernet: destination */
-    "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-    "\x08\x00"      /* Ethernet type: IPv4 */
-    "\x45"          /* IP type */
-    "\x00"
-    "\x00\x48"      /* total length = 64 bytes */
-    "\x00\x00"      /* identification */
-    "\x00\x00"      /* fragmentation flags */
-    "\xFF\x06"      /* TTL=255, proto=TCP */
-    "\xFF\xFF"      /* checksum */
-    "\0\0\0\0"      /* source address */
-    "\0\0\0\0"      /* destination address */
+        "\0\1\2\3\4\5"     /* Ethernet: destination */
+        "\6\7\x8\x9\xa\xb" /* Ethernet: source */
+        "\x08\x00"         /* Ethernet type: IPv4 */
+        "\x45"             /* IP type */
+        "\x00"
+        "\x00\x48" /* total length = 64 bytes */
+        "\x00\x00" /* identification */
+        "\x00\x00" /* fragmentation flags */
+        "\xFF\x06" /* TTL=255, proto=TCP */
+        "\xFF\xFF" /* checksum */
+        "\0\0\0\0" /* source address */
+        "\0\0\0\0" /* destination address */
 
-    "\0\0"          /* source port */
-    "\0\0"          /* destination port */
-    "\0\0\0\0"      /* sequence number */
-    "\0\0\0\0"      /* ACK number */
-    "\xB0"          /* header length */
-    "\x02"          /* SYN */
-    "\x04\x01"      /* window fixed to 1024 */
-    "\xFF\xFF"      /* checksum */
-    "\x00\x00"      /* urgent pointer */
+        "\0\0"     /* source port */
+        "\0\0"     /* destination port */
+        "\0\0\0\0" /* sequence number */
+        "\0\0\0\0" /* ACK number */
+        "\xB0"     /* header length */
+        "\x02"     /* SYN */
+        "\x04\x01" /* window fixed to 1024 */
+        "\xFF\xFF" /* checksum */
+        "\x00\x00" /* urgent pointer */
 
-    "\x02\x04\x05\xb4"
-    "\x01\x03\x03\x06"
-    "\x01\x01\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
-    "\x04\x02\x00\x00"
-    "DeadBeef"
-    ;
-    size_t i;
+        "\x02\x04\x05\xb4"
+        "\x01\x03\x03\x06"
+        "\x01\x01\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
+        "\x04\x02\x00\x00"
+        "DeadBeef";
+    size_t   i;
     unsigned line = 0;
 
     /* execute all tests */
-    for (i=0; tests[i].pre.options; i++) {
-        unsigned char *buf;
-        size_t length = sizeof(templ) - 1;
-        bool success;
-        struct tcp_hdr_t hdr;
+    for (i = 0; tests[i].pre.options; i++) {
+        unsigned char       *buf;
+        size_t               length = sizeof(templ) - 1;
+        bool                 success;
+        struct tcp_hdr_t     hdr;
         const unsigned char *field;
-        size_t field_length;
-
+        size_t               field_length;
 
         LOG(LEVEL_DEBUG, "templ-tcp: run #%u\n", (unsigned)i);
 
@@ -1612,8 +1530,8 @@ _selftests_run(void) {
 
         /* Set the pre-condition <option-list> field by replacing what
          * was there with a completely new field */
-        success = _replace_options(&buf, &length,
-                         tests[i].pre.options, tests[i].pre.length);
+        success = _replace_options(&buf, &length, tests[i].pre.options,
+                                   tests[i].pre.length);
         if (!success) {
             line = __LINE__;
             goto fail; /* this should never happen */
@@ -1622,7 +1540,6 @@ _selftests_run(void) {
             line = __LINE__;
             goto fail; /* this shoiuld never happen*/
         }
-
 
         //_HEXDUMPopt(buf, length, "(PRE)");
 
@@ -1646,15 +1563,15 @@ _selftests_run(void) {
             case TST_ADD:
                 /* We are testing `tcp_add_opt()` function, which is called
                  * to either 'add' or 'change' an existing option. */
-                field = (const unsigned char*)tests[i].test.data;
+                field        = (const unsigned char *)tests[i].test.data;
                 field_length = tests[i].test.length;
                 if (field_length < 2) {
                     line = __LINE__;
                     goto fail;
                 } else {
-                    unsigned opt_kind = field[0];
-                    unsigned opt_length = field[1];
-                    const unsigned char *opt_data = field + 2;
+                    unsigned             opt_kind   = field[0];
+                    unsigned             opt_length = field[1];
+                    const unsigned char *opt_data   = field + 2;
 
                     if (field_length != opt_length) {
                         line = __LINE__;
@@ -1664,7 +1581,8 @@ _selftests_run(void) {
                     /* skip the KIND and LENGTH fields, justa DATA length */
                     opt_length -= 2;
 
-                    success = tcp_add_opt(&buf, &length, opt_kind, opt_length, opt_data);
+                    success = tcp_add_opt(&buf, &length, opt_kind, opt_length,
+                                          opt_data);
                     if (!success) {
                         line = __LINE__;
                         goto fail;
@@ -1674,7 +1592,7 @@ _selftests_run(void) {
             case TST_REMOVE:
                 /* We are testing `tcp_add_opt()` function, which is called
                  * to either 'add' or 'change' an existing option. */
-                field = (const unsigned char*)tests[i].test.data;
+                field        = (const unsigned char *)tests[i].test.data;
                 field_length = tests[i].test.length;
                 if (field_length != 1) {
                     line = __LINE__;
@@ -1706,7 +1624,7 @@ _selftests_run(void) {
          */
         {
             size_t offset;
-            int err;
+            int    err;
             size_t post_length;
 
             /* Find the <options-list> field */
@@ -1725,7 +1643,8 @@ _selftests_run(void) {
             }
 
             /* makre sure the contents of the field match expected */
-            err = memcmp(tests[i].post.options, buf+offset, (hdr.max-offset));
+            err =
+                memcmp(tests[i].post.options, buf + offset, (hdr.max - offset));
             if (err) {
                 _HEXDUMPopt(buf, length, "failed expectations");
                 line = __LINE__;
@@ -1739,7 +1658,7 @@ _selftests_run(void) {
     return 0; /* success */
 fail:
     LOG(LEVEL_ERROR, "templ.tcp.selftest failed, test #%u, file=%s, line=%u\n",
-            (unsigned)i, __FILE__, line);
+        (unsigned)i, __FILE__, line);
     return 1;
 };
 
@@ -1751,42 +1670,39 @@ fail:
  * end-user might try to add an option that overflows the <option-list>
  * field, which is rather small (only 40 bytes long).
  ***************************************************************************/
-int templ_tcp_selftest()
-{
-
+int templ_tcp_selftest() {
     static unsigned char templ[] =
-    "\0\1\2\3\4\5"  /* Ethernet: destination */
-    "\6\7\x8\x9\xa\xb"  /* Ethernet: source */
-    "\x08\x00"      /* Ethernet type: IPv4 */
-    "\x45"          /* IP type */
-    "\x00"
-    "\x00\x48"      /* total length = 64 bytes */
-    "\x00\x00"      /* identification */
-    "\x00\x00"      /* fragmentation flags */
-    "\xFF\x06"      /* TTL=255, proto=TCP */
-    "\xFF\xFF"      /* checksum */
-    "\0\0\0\0"      /* source address */
-    "\0\0\0\0"      /* destination address */
+        "\0\1\2\3\4\5"     /* Ethernet: destination */
+        "\6\7\x8\x9\xa\xb" /* Ethernet: source */
+        "\x08\x00"         /* Ethernet type: IPv4 */
+        "\x45"             /* IP type */
+        "\x00"
+        "\x00\x48" /* total length = 64 bytes */
+        "\x00\x00" /* identification */
+        "\x00\x00" /* fragmentation flags */
+        "\xFF\x06" /* TTL=255, proto=TCP */
+        "\xFF\xFF" /* checksum */
+        "\0\0\0\0" /* source address */
+        "\0\0\0\0" /* destination address */
 
-    "\0\0"          /* source port */
-    "\0\0"          /* destination port */
-    "\0\0\0\0"      /* sequence number */
-    "\0\0\0\0"      /* ACK number */
-    "\xB0"          /* header length */
-    "\x02"          /* SYN */
-    "\x04\x01"      /* window fixed to 1024 */
-    "\xFF\xFF"      /* checksum */
-    "\x00\x00"      /* urgent pointer */
+        "\0\0"     /* source port */
+        "\0\0"     /* destination port */
+        "\0\0\0\0" /* sequence number */
+        "\0\0\0\0" /* ACK number */
+        "\xB0"     /* header length */
+        "\x02"     /* SYN */
+        "\x04\x01" /* window fixed to 1024 */
+        "\xFF\xFF" /* checksum */
+        "\x00\x00" /* urgent pointer */
 
-    "\x02\x04\x05\xb4"
-    "\x01\x03\x03\x06"
-    "\x01\x01\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
-    "\x04\x02\x00\x00"
-    "DeadBeef"
-    ;
-    size_t length = sizeof(templ) - 1;
+        "\x02\x04\x05\xb4"
+        "\x01\x03\x03\x06"
+        "\x01\x01\x08\x0a\x1d\xe9\xb2\x98\x00\x00\x00\x00"
+        "\x04\x02\x00\x00"
+        "DeadBeef";
+    size_t         length = sizeof(templ) - 1;
     unsigned char *buf;
-    unsigned line = 0;
+    unsigned       line = 0;
 
     /* Execute planned selftests */
     if (_selftests_run())
@@ -1820,8 +1736,8 @@ int templ_tcp_selftest()
         goto fail;
     }
 
-    tcp_add_opt(&buf, &length, TCP_OPT_TYPE_MSS, TCP_OPT_LEN_MSS-2,
-        (const unsigned char*)"\x12\x34");
+    tcp_add_opt(&buf, &length, TCP_OPT_TYPE_MSS, TCP_OPT_LEN_MSS - 2,
+                (const unsigned char *)"\x12\x34");
 
     if (0x1234 != tcp_get_mss(buf, length, NULL)) {
         line = __LINE__;
@@ -1850,11 +1766,11 @@ int templ_tcp_selftest()
         goto fail;
     }
 
-
     free(buf);
     return 0; /* success */
 fail:
-    LOG(LEVEL_ERROR, "templ_tcp_selftest failed, file=%s, line=%u\n", __FILE__, line);
+    LOG(LEVEL_ERROR, "templ_tcp_selftest failed, file=%s, line=%u\n", __FILE__,
+        line);
     free(buf);
     return 1; /* failure */
 }

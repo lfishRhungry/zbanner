@@ -4,24 +4,26 @@
 
 #include "xprint.h"
 
-void xprint(const char *text, unsigned indent, unsigned count)
-{
+void xprint(const char *text, unsigned indent, unsigned count) {
     size_t len = strlen(text);
-    if (len==0) return;
-    if (count==0) return;
-    if (count<=indent) return;
+    if (len == 0)
+        return;
+    if (count == 0)
+        return;
+    if (count <= indent)
+        return;
 
     /*count in one line*/
     unsigned c = 0;
-    for (unsigned i=0; i<len; i++) {
-        if (c==0) {
+    for (unsigned i = 0; i < len; i++) {
+        if (c == 0) {
             printf("%*s", indent, "");
             c += indent;
         }
 
-        if (c==indent) {
+        if (c == indent) {
             /*no space in head of line*/
-            if (text[i]==' ') {
+            if (text[i] == ' ') {
                 continue;
             }
         }
@@ -41,7 +43,7 @@ void xprint(const char *text, unsigned indent, unsigned count)
         //     }
         // }
 
-        if (text[i]=='\n') {
+        if (text[i] == '\n') {
             printf("\n%*s", indent, "");
             c = indent;
         } else {
@@ -49,24 +51,26 @@ void xprint(const char *text, unsigned indent, unsigned count)
             c++;
         }
 
-        if (c==count) {
+        if (c == count) {
             printf("\n");
             c = 0;
         }
     }
 }
 
-void xprint_with_head(const char *text, unsigned indent, unsigned count)
-{
+void xprint_with_head(const char *text, unsigned indent, unsigned count) {
     size_t len = strlen(text);
-    if (len==0) return;
-    if (count==0) return;
-    if (count<=indent) return;
+    if (len == 0)
+        return;
+    if (count == 0)
+        return;
+    if (count <= indent)
+        return;
 
     /*count in one line*/
     unsigned c = 0;
-    for (unsigned i=0; i<len; i++) {
-        if (c==0) {
+    for (unsigned i = 0; i < len; i++) {
+        if (c == 0) {
             printf("%*s", indent, "");
             c += indent;
         }
@@ -93,7 +97,7 @@ void xprint_with_head(const char *text, unsigned indent, unsigned count)
         //     }
         // }
 
-        if (text[i]=='\n') {
+        if (text[i] == '\n') {
             printf("\n%*s", indent, "");
             c = indent;
         } else {
@@ -101,7 +105,7 @@ void xprint_with_head(const char *text, unsigned indent, unsigned count)
             c++;
         }
 
-        if (c==count) {
+        if (c == count) {
             printf("\n");
             c = 0;
         }

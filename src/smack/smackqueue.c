@@ -9,20 +9,16 @@
  * Build a queue so that we can do a breadth-first enumeration of the
  * sub-patterns
  ****************************************************************************/
-struct QueueElement
-{
-    unsigned m_data;
+struct QueueElement {
+    unsigned             m_data;
     struct QueueElement *m_next;
 };
-struct Queue
-{
+struct Queue {
     struct QueueElement *m_head;
     struct QueueElement *m_tail;
 };
 
-struct Queue *
-queue_create(void)
-{
+struct Queue *queue_create(void) {
     struct Queue *queue;
     queue = (struct Queue *)malloc(sizeof(*queue));
     if (queue == NULL) {
@@ -33,9 +29,7 @@ queue_create(void)
     return queue;
 }
 
-void
-queue_destroy(struct Queue * queue)
-{
+void queue_destroy(struct Queue *queue) {
     if (queue == NULL)
         return;
     while (queue_has_more_items(queue))
@@ -43,12 +37,10 @@ queue_destroy(struct Queue * queue)
     free(queue);
 }
 
-void
-enqueue(struct Queue *queue, unsigned data)
-{
+void enqueue(struct Queue *queue, unsigned data) {
     struct QueueElement *element;
 
-    element = (struct QueueElement *)malloc(sizeof (struct QueueElement));
+    element = (struct QueueElement *)malloc(sizeof(struct QueueElement));
     if (element == NULL) {
         LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
         exit(1);
@@ -65,20 +57,18 @@ enqueue(struct Queue *queue, unsigned data)
 
     element->m_data = data;
     element->m_next = NULL;
-    queue->m_tail = element;
+    queue->m_tail   = element;
 }
 
-unsigned
-dequeue(struct Queue *queue)
-{
+unsigned dequeue(struct Queue *queue) {
     if (queue->m_head == NULL)
         return 0;
     else {
         struct QueueElement *element;
-        unsigned result;
+        unsigned             result;
 
-        element = queue->m_head;
-        result = element->m_data;
+        element       = queue->m_head;
+        result        = element->m_data;
         queue->m_head = element->m_next;
 
         free(element);
@@ -86,7 +76,6 @@ dequeue(struct Queue *queue)
     }
 }
 
-unsigned queue_has_more_items(struct Queue * queue)
-{
-  return queue->m_head != NULL;
+unsigned queue_has_more_items(struct Queue *queue) {
+    return queue->m_head != NULL;
 }

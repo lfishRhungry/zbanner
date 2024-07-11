@@ -11,7 +11,6 @@
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
 
-
 struct ServiceProbeMatch;
 
 /*
@@ -52,78 +51,71 @@ enum SvcV_InfoType {
 };
 
 struct ServiceVersionInfo {
-    enum SvcV_InfoType                  type;
-    char                               *value;
-    struct ServiceVersionInfo          *next;
-    unsigned                            is_a:1;
+    enum SvcV_InfoType         type;
+    char                      *value;
+    struct ServiceVersionInfo *next;
+    unsigned                   is_a : 1;
 };
 
 struct ServiceProbeFallback {
-    char                               *name;
-    struct NmapServiceProbe            *probe;
-    struct ServiceProbeFallback        *next;
+    char                        *name;
+    struct NmapServiceProbe     *probe;
+    struct ServiceProbeFallback *next;
 };
 
 struct ServiceProbeMatch {
-    struct ServiceProbeMatch           *next;
-    char                               *service;
-    unsigned                            line;
+    struct ServiceProbeMatch *next;
+    char                     *service;
+    unsigned                  line;
 
-    char                               *regex;
-    size_t                              regex_length;
-    pcre2_code                         *compiled_re;
-    pcre2_match_context                *match_ctx;
+    char                *regex;
+    size_t               regex_length;
+    pcre2_code          *compiled_re;
+    pcre2_match_context *match_ctx;
 
-    struct ServiceVersionInfo          *versioninfo;
-    unsigned                            is_case_insensitive:1;
-    unsigned                            is_include_newlines:1;
-    unsigned                            is_softmatch:1;
+    struct ServiceVersionInfo *versioninfo;
+    unsigned                   is_case_insensitive : 1;
+    unsigned                   is_include_newlines : 1;
+    unsigned                   is_softmatch        : 1;
 };
 
 struct NmapServiceProbe {
-    char                               *name;
-    char                               *hellostring;
-    size_t                              hellolength;
-    unsigned                            protocol;
-    unsigned                            totalwaitms;
-    unsigned                            tcpwrappedms;
-    unsigned                            rarity;
-    struct RangeList                    ports;
-    struct RangeList                    sslports;
-    struct ServiceProbeMatch           *match;
-    struct ServiceProbeFallback        *fallback;
+    char                        *name;
+    char                        *hellostring;
+    size_t                       hellolength;
+    unsigned                     protocol;
+    unsigned                     totalwaitms;
+    unsigned                     tcpwrappedms;
+    unsigned                     rarity;
+    struct RangeList             ports;
+    struct RangeList             sslports;
+    struct ServiceProbeMatch    *match;
+    struct ServiceProbeFallback *fallback;
 };
 
 struct NmapServiceProbeList {
-    struct NmapServiceProbe           **probes;
-    struct RangeList                    exclude;
-    unsigned                            count;
-    unsigned                            max_slot;
-    const char                         *filename;
-    unsigned                            line_number;
+    struct NmapServiceProbe **probes;
+    struct RangeList          exclude;
+    unsigned                  count;
+    unsigned                  max_slot;
+    const char               *filename;
+    unsigned                  line_number;
 };
 
+struct NmapServiceProbeList *nmapservice_read_file(const char *filename);
 
-struct NmapServiceProbeList *
-nmapservice_read_file(const char *filename);
+void nmapservice_match_compile(struct NmapServiceProbeList *list);
 
-void
-nmapservice_match_compile(struct NmapServiceProbeList * list);
+void nmapservice_link_fallback(struct NmapServiceProbeList *list);
 
-void
-nmapservice_link_fallback(struct NmapServiceProbeList *list);
+void nmapservice_match_free(struct NmapServiceProbeList *list);
 
-void
-nmapservice_match_free(struct NmapServiceProbeList * list);
-
-void
-nmapservice_free(struct NmapServiceProbeList *service_probes);
+void nmapservice_free(struct NmapServiceProbeList *service_probes);
 
 /**
  * Print to a file for testing purposes
  */
-void
-nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp);
+void nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp);
 
 /**
  * @param list loaded NmapServiceProbeList
@@ -133,17 +125,15 @@ nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp);
  * @param protocol NMAP_IPPROTO_TCP or NMAP_IPPROTO_UDP
  * @param softmatch specify service name after softmatched
  * @return next available tcp probe index or 0 if no available
-*/
-unsigned
-nmapservice_next_probe_index(
-    const struct NmapServiceProbeList *list,
-    unsigned idx_now, unsigned port_them,
-    unsigned rarity, unsigned protocol,
-    const char *softmatch);
+ */
+unsigned nmapservice_next_probe_index(const struct NmapServiceProbeList *list,
+                                      unsigned idx_now, unsigned port_them,
+                                      unsigned rarity, unsigned protocol,
+                                      const char *softmatch);
 
 struct NmapServiceProbe *
 nmapservice_get_probe_by_name(struct NmapServiceProbeList *list,
-    const char *name, unsigned protocol);
+                              const char *name, unsigned protocol);
 
 /**
  * Match service from matches in specified probe with fallback and null match.
@@ -155,15 +145,12 @@ nmapservice_get_probe_by_name(struct NmapServiceProbeList *list,
  * @param protocol NMAP_IPPROTO_TCP or NMAP_IPPROTO_UDP
  * @param softmatch just do hardmatching for this softmatch service
  * @return matched struct from service_probes or NULL if not matched.
-*/
+ */
 struct ServiceProbeMatch *
-nmapservice_match_service(
-    const struct NmapServiceProbeList *list,
-    unsigned probe_idx,
-    const unsigned char *payload,
-    size_t payload_len,
-    unsigned protocol,
-    const char *hardmatch);
+nmapservice_match_service(const struct NmapServiceProbeList *list,
+                          unsigned probe_idx, const unsigned char *payload,
+                          size_t payload_len, unsigned protocol,
+                          const char *hardmatch);
 
 int nmapservice_selftest();
 

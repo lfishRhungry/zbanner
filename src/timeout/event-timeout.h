@@ -8,7 +8,6 @@
 
 typedef struct TimeoutTables Timeouts;
 
-
 /***************************************************************************
  ***************************************************************************/
 typedef struct TimeoutEntry {
@@ -33,8 +32,7 @@ typedef struct TimeoutEntry {
 
 /***************************************************************************
  ***************************************************************************/
-static inline bool
-timeout_is_unlinked(const TmEntry *entry) {
+static inline bool timeout_is_unlinked(const TmEntry *entry) {
     if (entry->prev == NULL || entry->next == NULL)
         return true;
     else
@@ -43,9 +41,7 @@ timeout_is_unlinked(const TmEntry *entry) {
 
 /***************************************************************************
  ***************************************************************************/
-static inline void
-timeout_unlink(TmEntry *entry)
-{
+static inline void timeout_unlink(TmEntry *entry) {
     if (entry->prev == NULL && entry->next == NULL)
         return;
 
@@ -61,9 +57,7 @@ timeout_unlink(TmEntry *entry)
 
 /***************************************************************************
  ***************************************************************************/
-static inline void
-timeout_init(TmEntry *entry)
-{
+static inline void timeout_init(TmEntry *entry) {
     entry->next = NULL;
     entry->prev = NULL;
 }
@@ -74,14 +68,13 @@ timeout_init(TmEntry *entry)
  *      The current timestamp indicating "now" when the thing starts.
  *      This should be 'time(0) * TICKS_PER_SECOND'.
  */
-Timeouts *
-timeouts_create(uint64_t timestamp_now);
+Timeouts *timeouts_create(uint64_t timestamp_now);
 
 /**
  * Insert the timeout 'entry' into the future location in the timeout
  * ring, as determined by the timestamp.
  * NOTE: It's not insert a new timeout but moving existing entry to future.
- * 
+ *
  * @param timeouts
  *      A ring of timeouts, with each slot corresponding to a specific
  *      time in the future.
@@ -91,16 +84,15 @@ timeouts_create(uint64_t timestamp_now);
  *      first before inserting into the new location.
  * @param offset
  *      The 'entry' field above is part of an existing structure. This
- *      tells the offset_of() from the beginning of that structure. 
+ *      tells the offset_of() from the beginning of that structure.
  *      In other words, this tells us the pointer to the object that
  *      that is the subject of the timeout.
  * @param timestamp_expires
  *      When this timeout will expire. This is in terms of internal
  *      ticks, which in units of TICKS_PER_SECOND.
  */
-void
-timeouts_add(Timeouts *timeouts, TmEntry *entry,
-    size_t offset, uint64_t timestamp_expires);
+void timeouts_add(Timeouts *timeouts, TmEntry *entry, size_t offset,
+                  uint64_t timestamp_expires);
 
 /**
  * Remove an object from the timestamp system that is older than than
@@ -117,17 +109,17 @@ timeouts_add(Timeouts *timeouts, TmEntry *entry,
  *      an object older than the specified timestamp, or NULL
  *      if there are no more objects to be found
  */
-void *
-timeouts_remove(Timeouts *timeouts, uint64_t timestamp_now);
+void *timeouts_remove(Timeouts *timeouts, uint64_t timestamp_now);
 
 /*
  * This macros convert a normal "timeval" structure into the timestamp
  * that we use for timeouts. The timeval structure probably will come
  * from the packets that we are capturing.
  */
-#define TICKS_PER_SECOND             (16384ULL)
-#define TICKS_FROM_SECS(secs)        ((secs)*TICKS_PER_SECOND)
-#define TICKS_FROM_USECS(usecs)      ((usecs) / 64ULL)
-#define TICKS_FROM_TV(secs,usecs)    (TICKS_FROM_SECS(secs)+TICKS_FROM_USECS(usecs))
+#define TICKS_PER_SECOND        (16384ULL)
+#define TICKS_FROM_SECS(secs)   ((secs)*TICKS_PER_SECOND)
+#define TICKS_FROM_USECS(usecs) ((usecs) / 64ULL)
+#define TICKS_FROM_TV(secs, usecs)                                             \
+    (TICKS_FROM_SECS(secs) + TICKS_FROM_USECS(usecs))
 
 #endif

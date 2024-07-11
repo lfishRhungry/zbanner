@@ -12,5 +12,4 @@
 typedef int SOCKET;
 #endif
 
-
 #endif

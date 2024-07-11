@@ -33,15 +33,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define out_of_memory() do {                    \
-        LOG(LEVEL_ERROR, "Out of memory.\n");    \
-        exit(EXIT_FAILURE);                     \
+#define out_of_memory()                                                        \
+    do {                                                                       \
+        LOG(LEVEL_ERROR, "Out of memory.\n");                                  \
+        exit(EXIT_FAILURE);                                                    \
     } while (0)
 
 /* Sadly, strdup is not portable. */
-static char *json_strdup(const char *str)
-{
-    char *ret = (char*) malloc(strlen(str) + 1);
+static char *json_strdup(const char *str) {
+    char *ret = (char *)malloc(strlen(str) + 1);
     if (ret == NULL)
         out_of_memory();
     strcpy(ret, str);
@@ -50,16 +50,14 @@ static char *json_strdup(const char *str)
 
 /* String buffer */
 
-typedef struct
-{
+typedef struct {
     char *cur;
     char *end;
     char *start;
 } SB;
 
-static void sb_init(SB *sb)
-{
-    sb->start = (char*) malloc(17);
+static void sb_init(SB *sb) {
+    sb->start = (char *)malloc(17);
     if (sb->start == NULL)
         out_of_memory();
     sb->cur = sb->start;
@@ -67,56 +65,50 @@ static void sb_init(SB *sb)
 }
 
 /* sb and need may be evaluated multiple times. */
-#define sb_need(sb, need) do {                  \
-        if ((sb)->end - (sb)->cur < (need))     \
-            sb_grow(sb, need);                  \
+#define sb_need(sb, need)                                                      \
+    do {                                                                       \
+        if ((sb)->end - (sb)->cur < (need))                                    \
+            sb_grow(sb, need);                                                 \
     } while (0)
 
-static void sb_grow(SB *sb, int need)
-{
+static void sb_grow(SB *sb, int need) {
     size_t length = sb->cur - sb->start;
-    size_t alloc = sb->end - sb->start;
+    size_t alloc  = sb->end - sb->start;
 
     do {
         alloc *= 2;
     } while (alloc < length + need);
 
-    sb->start = (char*) realloc(sb->start, alloc + 1);
+    sb->start = (char *)realloc(sb->start, alloc + 1);
     if (sb->start == NULL)
         out_of_memory();
     sb->cur = sb->start + length;
     sb->end = sb->start + alloc;
 }
 
-static void sb_put(SB *sb, const char *bytes, int count)
-{
+static void sb_put(SB *sb, const char *bytes, int count) {
     sb_need(sb, count);
     memcpy(sb->cur, bytes, count);
     sb->cur += count;
 }
 
-#define sb_putc(sb, c) do {         \
-        if ((sb)->cur >= (sb)->end) \
-            sb_grow(sb, 1);         \
-        *(sb)->cur++ = (c);         \
+#define sb_putc(sb, c)                                                         \
+    do {                                                                       \
+        if ((sb)->cur >= (sb)->end)                                            \
+            sb_grow(sb, 1);                                                    \
+        *(sb)->cur++ = (c);                                                    \
     } while (0)
 
-static void sb_puts(SB *sb, const char *str)
-{
-    sb_put(sb, str, strlen(str));
-}
+static void sb_puts(SB *sb, const char *str) { sb_put(sb, str, strlen(str)); }
 
-static char *sb_finish(SB *sb)
-{
+static char *sb_finish(SB *sb) {
     *sb->cur = 0;
-    assert(sb->start <= sb->cur && strlen(sb->start) == (size_t)(sb->cur - sb->start));
+    assert(sb->start <= sb->cur &&
+           strlen(sb->start) == (size_t)(sb->cur - sb->start));
     return sb->start;
 }
 
-static void sb_free(SB *sb)
-{
-    free(sb->start);
-}
+static void sb_free(SB *sb) { free(sb->start); }
 
 /*
  * Unicode helper functions
@@ -152,11 +144,10 @@ typedef uint32_t uchar_t;
  *  * The sixty-six Unicode "non-characters" are permitted
  *    (namely, U+FDD0..U+FDEF, U+xxFFFE, and U+xxFFFF).
  */
-static int utf8_validate_cz(const char *s)
-{
+static int utf8_validate_cz(const char *s) {
     unsigned char c = *s++;
 
-    if (c <= 0x7F) {        /* 00..7F */
+    if (c <= 0x7F) { /* 00..7F */
         return 1;
     } else if (c <= 0xC1) { /* 80..C1 */
         /* Disallow overlong 2-byte sequence. */
@@ -201,14 +192,13 @@ static int utf8_validate_cz(const char *s)
             return 0;
 
         return 4;
-    } else {                /* F5..FF */
+    } else { /* F5..FF */
         return 0;
     }
 }
 
 /* Validate a null-terminated UTF-8 string. */
-static bool utf8_validate(const char *s)
-{
+static bool utf8_validate(const char *s) {
     int len;
 
     for (; *s != 0; s += len) {
@@ -227,9 +217,8 @@ static bool utf8_validate(const char *s)
  * This function assumes input is valid UTF-8,
  * and that there are enough characters in front of @s.
  */
-static int utf8_read_char(const char *s, uchar_t *out)
-{
-    const unsigned char *c = (const unsigned char*) s;
+static int utf8_read_char(const char *s, uchar_t *out) {
+    const unsigned char *c = (const unsigned char *)s;
 
     assert(utf8_validate_cz(s));
 
@@ -239,21 +228,17 @@ static int utf8_read_char(const char *s, uchar_t *out)
         return 1;
     } else if (c[0] <= 0xDF) {
         /* C2..DF (unless input is invalid) */
-        *out = ((uchar_t)c[0] & 0x1F) << 6 |
-               ((uchar_t)c[1] & 0x3F);
+        *out = ((uchar_t)c[0] & 0x1F) << 6 | ((uchar_t)c[1] & 0x3F);
         return 2;
     } else if (c[0] <= 0xEF) {
         /* E0..EF */
-        *out = ((uchar_t)c[0] &  0xF) << 12 |
-               ((uchar_t)c[1] & 0x3F) << 6  |
+        *out = ((uchar_t)c[0] & 0xF) << 12 | ((uchar_t)c[1] & 0x3F) << 6 |
                ((uchar_t)c[2] & 0x3F);
         return 3;
     } else {
         /* F0..F4 (unless input is invalid) */
-        *out = ((uchar_t)c[0] &  0x7) << 18 |
-               ((uchar_t)c[1] & 0x3F) << 12 |
-               ((uchar_t)c[2] & 0x3F) << 6  |
-               ((uchar_t)c[3] & 0x3F);
+        *out = ((uchar_t)c[0] & 0x7) << 18 | ((uchar_t)c[1] & 0x3F) << 12 |
+               ((uchar_t)c[2] & 0x3F) << 6 | ((uchar_t)c[3] & 0x3F);
         return 4;
     }
 }
@@ -266,9 +251,8 @@ static int utf8_read_char(const char *s, uchar_t *out)
  *
  * This function will write up to 4 bytes to @out.
  */
-static int utf8_write_char(uchar_t unicode, char *out)
-{
-    unsigned char *o = (unsigned char*) out;
+static int utf8_write_char(uchar_t unicode, char *out) {
+    unsigned char *o = (unsigned char *)out;
 
     assert(unicode <= 0x10FFFF && !(unicode >= 0xD800 && unicode <= 0xDFFF));
 
@@ -303,8 +287,7 @@ static int utf8_write_char(uchar_t unicode, char *out)
  * @uc should be 0xD800..0xDBFF, and @lc should be 0xDC00..0xDFFF.
  * If they aren't, this function returns false.
  */
-static bool from_surrogate_pair(uint16_t uc, uint16_t lc, uchar_t *unicode)
-{
+static bool from_surrogate_pair(uint16_t uc, uint16_t lc, uchar_t *unicode) {
     if (uc >= 0xD800 && uc <= 0xDBFF && lc >= 0xDC00 && lc <= 0xDFFF) {
         *unicode = 0x10000 + ((((uchar_t)uc & 0x3FF) << 10) | (lc & 0x3FF));
         return true;
@@ -318,13 +301,12 @@ static bool from_surrogate_pair(uint16_t uc, uint16_t lc, uchar_t *unicode)
  *
  * @unicode must be U+10000..U+10FFFF.
  */
-static void to_surrogate_pair(uchar_t unicode, uint16_t *uc, uint16_t *lc)
-{
+static void to_surrogate_pair(uchar_t unicode, uint16_t *uc, uint16_t *lc) {
     uchar_t n;
 
     assert(unicode >= 0x10000 && unicode <= 0x10FFFF);
 
-    n = unicode - 0x10000;
+    n   = unicode - 0x10000;
     *uc = ((n >> 10) & 0x3FF) | 0xD800;
     *lc = (n & 0x3FF) | 0xDC00;
 }
@@ -332,40 +314,42 @@ static void to_surrogate_pair(uchar_t unicode, uint16_t *uc, uint16_t *lc)
 #define is_space(c) ((c) == '\t' || (c) == '\n' || (c) == '\r' || (c) == ' ')
 #define is_digit(c) ((c) >= '0' && (c) <= '9')
 
-static bool parse_value     (const char **sp, JsonNode        **out);
-static bool parse_string    (const char **sp, char            **out);
-static bool parse_number    (const char **sp, double           *out);
-static bool parse_array     (const char **sp, JsonNode        **out);
-static bool parse_object    (const char **sp, JsonNode        **out);
-static bool parse_hex16     (const char **sp, uint16_t         *out);
+static bool parse_value(const char **sp, JsonNode **out);
+static bool parse_string(const char **sp, char **out);
+static bool parse_number(const char **sp, double *out);
+static bool parse_array(const char **sp, JsonNode **out);
+static bool parse_object(const char **sp, JsonNode **out);
+static bool parse_hex16(const char **sp, uint16_t *out);
 
-static bool expect_literal  (const char **sp, const char *str);
-static void skip_space      (const char **sp);
+static bool expect_literal(const char **sp, const char *str);
+static void skip_space(const char **sp);
 
-static void emit_value              (SB *out, const JsonNode *node);
-static void emit_value_indented     (SB *out, const JsonNode *node, const char *space, int indent_level);
-static void emit_string             (SB *out, const char *str);
-static void emit_number             (SB *out, double num);
-static void emit_array              (SB *out, const JsonNode *array);
-static void emit_array_indented     (SB *out, const JsonNode *array, const char *space, int indent_level);
-static void emit_object             (SB *out, const JsonNode *object);
-static void emit_object_indented    (SB *out, const JsonNode *object, const char *space, int indent_level);
+static void emit_value(SB *out, const JsonNode *node);
+static void emit_value_indented(SB *out, const JsonNode *node,
+                                const char *space, int indent_level);
+static void emit_string(SB *out, const char *str);
+static void emit_number(SB *out, double num);
+static void emit_array(SB *out, const JsonNode *array);
+static void emit_array_indented(SB *out, const JsonNode *array,
+                                const char *space, int indent_level);
+static void emit_object(SB *out, const JsonNode *object);
+static void emit_object_indented(SB *out, const JsonNode *object,
+                                 const char *space, int indent_level);
 
 static int write_hex16(char *out, uint16_t val);
 
 static JsonNode *mknode(JsonTag tag);
-static void append_node(JsonNode *parent, JsonNode *child);
-static void prepend_node(JsonNode *parent, JsonNode *child);
-static void append_member(JsonNode *object, char *key, JsonNode *value);
+static void      append_node(JsonNode *parent, JsonNode *child);
+static void      prepend_node(JsonNode *parent, JsonNode *child);
+static void      append_member(JsonNode *object, char *key, JsonNode *value);
 
 /* Assertion-friendly validity checks */
 static bool tag_is_valid(unsigned int tag);
 static bool number_is_valid(const char *num);
 
-JsonNode *json_decode(const char *json)
-{
+JsonNode *json_decode(const char *json) {
     const char *s = json;
-    JsonNode *ret;
+    JsonNode   *ret;
 
     skip_space(&s);
     if (!parse_value(&s, &ret))
@@ -380,13 +364,9 @@ JsonNode *json_decode(const char *json)
     return ret;
 }
 
-char *json_encode(const JsonNode *node)
-{
-    return json_stringify(node, NULL);
-}
+char *json_encode(const JsonNode *node) { return json_stringify(node, NULL); }
 
-char *json_encode_string(const char *str)
-{
+char *json_encode_string(const char *str) {
     SB sb;
     sb_init(&sb);
 
@@ -395,8 +375,7 @@ char *json_encode_string(const char *str)
     return sb_finish(&sb);
 }
 
-char *json_stringify(const JsonNode *node, const char *space)
-{
+char *json_stringify(const JsonNode *node, const char *space) {
     SB sb;
     sb_init(&sb);
 
@@ -408,8 +387,7 @@ char *json_stringify(const JsonNode *node, const char *space)
     return sb_finish(&sb);
 }
 
-void json_delete(JsonNode *node)
-{
+void json_delete(JsonNode *node) {
     if (node != NULL) {
         json_remove_from_parent(node);
 
@@ -418,8 +396,7 @@ void json_delete(JsonNode *node)
                 free(node->string_);
                 break;
             case JSON_ARRAY:
-            case JSON_OBJECT:
-            {
+            case JSON_OBJECT: {
                 JsonNode *child, *next;
                 for (child = node->children.head; child != NULL; child = next) {
                     next = child->next;
@@ -434,8 +411,7 @@ void json_delete(JsonNode *node)
     }
 }
 
-bool json_validate(const char *json)
-{
+bool json_validate(const char *json) {
     const char *s = json;
 
     skip_space(&s);
@@ -449,10 +425,9 @@ bool json_validate(const char *json)
     return true;
 }
 
-JsonNode *json_find_element(JsonNode *array, int index)
-{
+JsonNode *json_find_element(JsonNode *array, int index) {
     JsonNode *element;
-    int i = 0;
+    int       i = 0;
 
     if (array == NULL || array->tag != JSON_ARRAY)
         return NULL;
@@ -466,82 +441,62 @@ JsonNode *json_find_element(JsonNode *array, int index)
     return NULL;
 }
 
-JsonNode *json_find_member(JsonNode *object, const char *name)
-{
+JsonNode *json_find_member(JsonNode *object, const char *name) {
     JsonNode *member;
 
     if (object == NULL || object->tag != JSON_OBJECT)
         return NULL;
 
-    json_foreach(member, object)
-        if (strcmp(member->key, name) == 0)
-            return member;
+    json_foreach(member,
+                 object) if (strcmp(member->key, name) == 0) return member;
 
     return NULL;
 }
 
-JsonNode *json_first_child(const JsonNode *node)
-{
+JsonNode *json_first_child(const JsonNode *node) {
     if (node != NULL && (node->tag == JSON_ARRAY || node->tag == JSON_OBJECT))
         return node->children.head;
     return NULL;
 }
 
-static JsonNode *mknode(JsonTag tag)
-{
-    JsonNode *ret = (JsonNode*) CALLOC(1, sizeof(JsonNode));
+static JsonNode *mknode(JsonTag tag) {
+    JsonNode *ret = (JsonNode *)CALLOC(1, sizeof(JsonNode));
     if (ret == NULL)
         out_of_memory();
     ret->tag = tag;
     return ret;
 }
 
-JsonNode *json_mknull(void)
-{
-    return mknode(JSON_NULL);
-}
+JsonNode *json_mknull(void) { return mknode(JSON_NULL); }
 
-JsonNode *json_mkbool(bool b)
-{
+JsonNode *json_mkbool(bool b) {
     JsonNode *ret = mknode(JSON_BOOL);
-    ret->bool_ = b;
+    ret->bool_    = b;
     return ret;
 }
 
-static JsonNode *mkstring(char *s)
-{
+static JsonNode *mkstring(char *s) {
     JsonNode *ret = mknode(JSON_STRING);
-    ret->string_ = s;
+    ret->string_  = s;
     return ret;
 }
 
-JsonNode *json_mkstring(const char *s)
-{
-    return mkstring(json_strdup(s));
-}
+JsonNode *json_mkstring(const char *s) { return mkstring(json_strdup(s)); }
 
-JsonNode *json_mknumber(double n)
-{
+JsonNode *json_mknumber(double n) {
     JsonNode *node = mknode(JSON_NUMBER);
-    node->number_ = n;
+    node->number_  = n;
     return node;
 }
 
-JsonNode *json_mkarray(void)
-{
-    return mknode(JSON_ARRAY);
-}
+JsonNode *json_mkarray(void) { return mknode(JSON_ARRAY); }
 
-JsonNode *json_mkobject(void)
-{
-    return mknode(JSON_OBJECT);
-}
+JsonNode *json_mkobject(void) { return mknode(JSON_OBJECT); }
 
-static void append_node(JsonNode *parent, JsonNode *child)
-{
+static void append_node(JsonNode *parent, JsonNode *child) {
     child->parent = parent;
-    child->prev = parent->children.tail;
-    child->next = NULL;
+    child->prev   = parent->children.tail;
+    child->next   = NULL;
 
     if (parent->children.tail != NULL)
         parent->children.tail->next = child;
@@ -550,11 +505,10 @@ static void append_node(JsonNode *parent, JsonNode *child)
     parent->children.tail = child;
 }
 
-static void prepend_node(JsonNode *parent, JsonNode *child)
-{
+static void prepend_node(JsonNode *parent, JsonNode *child) {
     child->parent = parent;
-    child->prev = NULL;
-    child->next = parent->children.head;
+    child->prev   = NULL;
+    child->next   = parent->children.head;
 
     if (parent->children.head != NULL)
         parent->children.head->prev = child;
@@ -563,38 +517,33 @@ static void prepend_node(JsonNode *parent, JsonNode *child)
     parent->children.head = child;
 }
 
-static void append_member(JsonNode *object, char *key, JsonNode *value)
-{
+static void append_member(JsonNode *object, char *key, JsonNode *value) {
     value->key = key;
     append_node(object, value);
 }
 
-void json_append_element(JsonNode *array, JsonNode *element)
-{
+void json_append_element(JsonNode *array, JsonNode *element) {
     assert(array->tag == JSON_ARRAY);
     assert(element->parent == NULL);
 
     append_node(array, element);
 }
 
-void json_prepend_element(JsonNode *array, JsonNode *element)
-{
+void json_prepend_element(JsonNode *array, JsonNode *element) {
     assert(array->tag == JSON_ARRAY);
     assert(element->parent == NULL);
 
     prepend_node(array, element);
 }
 
-void json_append_member(JsonNode *object, const char *key, JsonNode *value)
-{
+void json_append_member(JsonNode *object, const char *key, JsonNode *value) {
     assert(object->tag == JSON_OBJECT);
     assert(value->parent == NULL);
 
     append_member(object, json_strdup(key), value);
 }
 
-void json_prepend_member(JsonNode *object, const char *key, JsonNode *value)
-{
+void json_prepend_member(JsonNode *object, const char *key, JsonNode *value) {
     assert(object->tag == JSON_OBJECT);
     assert(value->parent == NULL);
 
@@ -602,8 +551,7 @@ void json_prepend_member(JsonNode *object, const char *key, JsonNode *value)
     prepend_node(object, value);
 }
 
-void json_remove_from_parent(JsonNode *node)
-{
+void json_remove_from_parent(JsonNode *node) {
     JsonNode *parent = node->parent;
 
     if (parent != NULL) {
@@ -620,12 +568,11 @@ void json_remove_from_parent(JsonNode *node)
 
         node->parent = NULL;
         node->prev = node->next = NULL;
-        node->key = NULL;
+        node->key               = NULL;
     }
 }
 
-static bool parse_value(const char **sp, JsonNode **out)
-{
+static bool parse_value(const char **sp, JsonNode **out) {
     const char *s = *sp;
 
     switch (*s) {
@@ -694,11 +641,10 @@ static bool parse_value(const char **sp, JsonNode **out)
     }
 }
 
-static bool parse_array(const char **sp, JsonNode **out)
-{
-    const char *s = *sp;
-    JsonNode *ret = out ? json_mkarray() : NULL;
-    JsonNode *element;
+static bool parse_array(const char **sp, JsonNode **out) {
+    const char *s   = *sp;
+    JsonNode   *ret = out ? json_mkarray() : NULL;
+    JsonNode   *element;
 
     if (*s++ != '[')
         goto failure;
@@ -738,12 +684,11 @@ failure:
     return false;
 }
 
-static bool parse_object(const char **sp, JsonNode **out)
-{
-    const char *s = *sp;
-    JsonNode *ret = out ? json_mkobject() : NULL;
-    char *key;
-    JsonNode *value;
+static bool parse_object(const char **sp, JsonNode **out) {
+    const char *s   = *sp;
+    JsonNode   *ret = out ? json_mkobject() : NULL;
+    char       *key;
+    JsonNode   *value;
 
     if (*s++ != '{')
         goto failure;
@@ -794,13 +739,12 @@ failure:
     return false;
 }
 
-bool parse_string(const char **sp, char **out)
-{
-    const char *s = *sp;
-    SB sb = {0};
-    char throwaway_buffer[4];
-        /* enough space for a UTF-8 character */
-    char *b;
+bool parse_string(const char **sp, char **out) {
+    const char *s  = *sp;
+    SB          sb = {0};
+    char        throwaway_buffer[4];
+    /* enough space for a UTF-8 character */
+    char       *b;
 
     if (*s++ != '"')
         return false;
@@ -840,17 +784,17 @@ bool parse_string(const char **sp, char **out)
                 case 't':
                     *b++ = '\t';
                     break;
-                case 'u':
-                {
+                case 'u': {
                     uint16_t uc, lc;
-                    uchar_t unicode;
+                    uchar_t  unicode;
 
                     if (!parse_hex16(&s, &uc))
                         goto failed;
 
                     if (uc >= 0xD800 && uc <= 0xDFFF) {
                         /* Handle UTF-16 surrogate pair. */
-                        if (*s++ != '\\' || *s++ != 'u' || !parse_hex16(&s, &lc))
+                        if (*s++ != '\\' || *s++ != 'u' ||
+                            !parse_hex16(&s, &lc))
                             goto failed; /* Incomplete surrogate pair. */
                         if (!from_surrogate_pair(uc, lc, &unicode))
                             goto failed; /* Invalid surrogate pair. */
@@ -919,8 +863,7 @@ failed:
  *
  * This function takes the strict approach.
  */
-bool parse_number(const char **sp, double *out)
-{
+bool parse_number(const char **sp, double *out) {
     const char *s = *sp;
 
     /* '-'? */
@@ -967,16 +910,14 @@ bool parse_number(const char **sp, double *out)
     return true;
 }
 
-static void skip_space(const char **sp)
-{
+static void skip_space(const char **sp) {
     const char *s = *sp;
     while (is_space(*s))
         s++;
     *sp = s;
 }
 
-static void emit_value(SB *out, const JsonNode *node)
-{
+static void emit_value(SB *out, const JsonNode *node) {
     assert(tag_is_valid(node->tag));
     switch (node->tag) {
         case JSON_NULL:
@@ -1002,8 +943,8 @@ static void emit_value(SB *out, const JsonNode *node)
     }
 }
 
-void emit_value_indented(SB *out, const JsonNode *node, const char *space, int indent_level)
-{
+void emit_value_indented(SB *out, const JsonNode *node, const char *space,
+                         int indent_level) {
     assert(tag_is_valid(node->tag));
     switch (node->tag) {
         case JSON_NULL:
@@ -1029,8 +970,7 @@ void emit_value_indented(SB *out, const JsonNode *node, const char *space, int i
     }
 }
 
-static void emit_array(SB *out, const JsonNode *array)
-{
+static void emit_array(SB *out, const JsonNode *array) {
     const JsonNode *element;
 
     sb_putc(out, '[');
@@ -1042,10 +982,10 @@ static void emit_array(SB *out, const JsonNode *array)
     sb_putc(out, ']');
 }
 
-static void emit_array_indented(SB *out, const JsonNode *array, const char *space, int indent_level)
-{
+static void emit_array_indented(SB *out, const JsonNode *array,
+                                const char *space, int indent_level) {
     const JsonNode *element = array->children.head;
-    int i;
+    int             i;
 
     if (element == NULL) {
         sb_puts(out, "[]");
@@ -1066,8 +1006,7 @@ static void emit_array_indented(SB *out, const JsonNode *array, const char *spac
     sb_putc(out, ']');
 }
 
-static void emit_object(SB *out, const JsonNode *object)
-{
+static void emit_object(SB *out, const JsonNode *object) {
     const JsonNode *member;
 
     sb_putc(out, '{');
@@ -1081,10 +1020,10 @@ static void emit_object(SB *out, const JsonNode *object)
     sb_putc(out, '}');
 }
 
-static void emit_object_indented(SB *out, const JsonNode *object, const char *space, int indent_level)
-{
+static void emit_object_indented(SB *out, const JsonNode *object,
+                                 const char *space, int indent_level) {
     const JsonNode *member = object->children.head;
-    int i;
+    int             i;
 
     if (member == NULL) {
         sb_puts(out, "{}");
@@ -1107,11 +1046,10 @@ static void emit_object_indented(SB *out, const JsonNode *object, const char *sp
     sb_putc(out, '}');
 }
 
-void emit_string(SB *out, const char *str)
-{
-    bool escape_unicode = false;
-    const char *s = str;
-    char *b;
+void emit_string(SB *out, const char *str) {
+    bool        escape_unicode = false;
+    const char *s              = str;
+    char       *b;
 
     assert(utf8_validate(str));
 
@@ -1226,8 +1164,7 @@ void emit_string(SB *out, const char *str)
     out->cur = b;
 }
 
-static void emit_number(SB *out, double num)
-{
+static void emit_number(SB *out, double num) {
     /*
      * This isn't exactly how JavaScript renders numbers,
      * but it should produce valid JSON for reasonable numbers
@@ -1243,18 +1180,15 @@ static void emit_number(SB *out, double num)
         sb_puts(out, "null");
 }
 
-static bool tag_is_valid(unsigned int tag)
-{
+static bool tag_is_valid(unsigned int tag) {
     return (/* tag >= JSON_NULL && */ tag <= JSON_OBJECT);
 }
 
-static bool number_is_valid(const char *num)
-{
+static bool number_is_valid(const char *num) {
     return (parse_number(&num, NULL) && *num == '\0');
 }
 
-static bool expect_literal(const char **sp, const char *str)
-{
+static bool expect_literal(const char **sp, const char *str) {
     const char *s = *sp;
 
     while (*str != '\0')
@@ -1269,13 +1203,12 @@ static bool expect_literal(const char **sp, const char *str)
  * Parses exactly 4 hex characters (capital or lowercase).
  * Fails if any input chars are not [0-9A-Fa-f].
  */
-static bool parse_hex16(const char **sp, uint16_t *out)
-{
-    const char *s = *sp;
-    uint16_t ret = 0;
-    uint16_t i;
-    uint16_t tmp;
-    char c;
+static bool parse_hex16(const char **sp, uint16_t *out) {
+    const char *s   = *sp;
+    uint16_t    ret = 0;
+    uint16_t    i;
+    uint16_t    tmp;
+    char        c;
 
     for (i = 0; i < 4; i++) {
         c = *s++;
@@ -1302,25 +1235,24 @@ static bool parse_hex16(const char **sp, uint16_t *out)
  * Encodes a 16-bit number into hexadecimal,
  * writing exactly 4 hex chars.
  */
-static int write_hex16(char *out, uint16_t val)
-{
+static int write_hex16(char *out, uint16_t val) {
     const char *hex = "0123456789ABCDEF";
 
     *out++ = hex[(val >> 12) & 0xF];
-    *out++ = hex[(val >> 8)  & 0xF];
-    *out++ = hex[(val >> 4)  & 0xF];
-    *out++ = hex[ val        & 0xF];
+    *out++ = hex[(val >> 8) & 0xF];
+    *out++ = hex[(val >> 4) & 0xF];
+    *out++ = hex[val & 0xF];
 
     return 4;
 }
 
-bool json_check(const JsonNode *node, char errmsg[256])
-{
-    #define problem(...) do { \
-            if (errmsg != NULL) \
-                snprintf(errmsg, 256, __VA_ARGS__); \
-            return false; \
-        } while (0)
+bool json_check(const JsonNode *node, char errmsg[256]) {
+#define problem(...)                                                           \
+    do {                                                                       \
+        if (errmsg != NULL)                                                    \
+            snprintf(errmsg, 256, __VA_ARGS__);                                \
+        return false;                                                          \
+    } while (0)
 
     if (node->key != NULL && !utf8_validate(node->key))
         problem("key contains invalid UTF-8");
@@ -1330,7 +1262,8 @@ bool json_check(const JsonNode *node, char errmsg[256])
 
     if (node->tag == JSON_BOOL) {
         if (node->bool_ != false && node->bool_ != true)
-            problem("bool_ is neither false (%d) nor true (%d)", (int)false, (int)true);
+            problem("bool_ is neither false (%d) nor true (%d)", (int)false,
+                    (int)true);
     } else if (node->tag == JSON_STRING) {
         if (node->string_ == NULL)
             problem("string_ is NULL");
@@ -1352,7 +1285,8 @@ bool json_check(const JsonNode *node, char errmsg[256])
             if (head->prev != NULL)
                 problem("First child's prev pointer is not NULL");
 
-            for (child = head; child != NULL; last = child, child = child->next) {
+            for (child = head; child != NULL;
+                 last = child, child = child->next) {
                 if (child == node)
                     problem("node is its own child");
                 if (child->next == child)
@@ -1375,11 +1309,12 @@ bool json_check(const JsonNode *node, char errmsg[256])
             }
 
             if (last != tail)
-                problem("tail does not match pointer found by starting at head and following next links");
+                problem("tail does not match pointer found by starting at head "
+                        "and following next links");
         }
     }
 
     return true;
 
-    #undef problem
+#undef problem
 }

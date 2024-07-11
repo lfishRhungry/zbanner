@@ -8,7 +8,6 @@
 #include "target-rangesv4.h"
 #include "target-rangesv6.h"
 
-
 typedef struct Target_IPs_Ports {
     struct RangeList  ipv4;
     struct Range6List ipv6;
@@ -33,37 +32,37 @@ typedef struct Target_IPs_Ports {
     uint64_t count_ipv6s;
 } TargetIP;
 
-
-
 /**
  * For showing ip protocol and diffing port type.
- * Ref: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
-*/
-#define IP_PROTO_HOPOPT                 0    /*IPv6 Hop-by-Hop Option*/
-#define IP_PROTO_ICMP                   1    /*Internet Control Message*/
-#define IP_PROTO_IGMP                   2    /*Internet Group Management*/
-#define IP_PROTO_GGP                    3    /*Gateway-to-Gateway*/
-#define IP_PROTO_IPv4                   4    /*IPv4 encapsulation*/
-#define IP_PROTO_TCP                    6    /*Transmission Control*/
-#define IP_PROTO_EGP                    8    /*Exterior Gateway Protocol*/
-#define IP_PROTO_IGP                    9    /*any private interior gateway (used by Cisco for their IGRP)*/
-#define IP_PROTO_UDP                   17    /*User Datagram*/
-#define IP_PROTO_IPv6                  41    /*IPv6 encapsulation*/
-#define IP_PROTO_IPv6_Route            43    /*Routing Header for IPv6*/
-#define IP_PROTO_IPv6_Frag             44    /*Fragment Header for IPv6*/
-#define IP_PROTO_IDRP                  45    /*Inter-Domain Routing Protocol*/
-#define IP_PROTO_GRE                   47    /*Generic Routing Encapsulation*/
-#define IP_PROTO_Min_IPv4              55    /*Minimal IPv4 Encapsulation (for mobile)*/
-#define IP_PROTO_IPv6_ICMP             58    /*ICMP for IPv6*/
-#define IP_PROTO_IPv6_NoNxt            59    /*No Next Header for IPv6*/
-#define IP_PROTO_IPv6_Opts             60    /*Destination Options for IPv6*/
-#define IP_PROTO_OSPFIGP               89    /*OSPF*/
-#define IP_PROTO_ETHERIP               97    /*Ethernet-within-IP Encapsulation*/
-#define IP_PROTO_L2TP                 115    /*Layer Two Tunneling Protocol*/
-#define IP_PROTO_ISIS_over_IPv4       124
-#define IP_PROTO_SCTP                 132    /*Stream Control Transmission Protocol*/
-#define IP_PROTO_MPLS_in_IP           137
-#define IP_PROTO_Other                255    /*For unregisted here or unknown type*/
+ * Ref:
+ * https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
+ */
+#define IP_PROTO_HOPOPT 0 /*IPv6 Hop-by-Hop Option*/
+#define IP_PROTO_ICMP   1 /*Internet Control Message*/
+#define IP_PROTO_IGMP   2 /*Internet Group Management*/
+#define IP_PROTO_GGP    3 /*Gateway-to-Gateway*/
+#define IP_PROTO_IPv4   4 /*IPv4 encapsulation*/
+#define IP_PROTO_TCP    6 /*Transmission Control*/
+#define IP_PROTO_EGP    8 /*Exterior Gateway Protocol*/
+#define IP_PROTO_IGP                                                           \
+    9 /*any private interior gateway (used by Cisco for their IGRP)*/
+#define IP_PROTO_UDP            17  /*User Datagram*/
+#define IP_PROTO_IPv6           41  /*IPv6 encapsulation*/
+#define IP_PROTO_IPv6_Route     43  /*Routing Header for IPv6*/
+#define IP_PROTO_IPv6_Frag      44  /*Fragment Header for IPv6*/
+#define IP_PROTO_IDRP           45  /*Inter-Domain Routing Protocol*/
+#define IP_PROTO_GRE            47  /*Generic Routing Encapsulation*/
+#define IP_PROTO_Min_IPv4       55  /*Minimal IPv4 Encapsulation (for mobile)*/
+#define IP_PROTO_IPv6_ICMP      58  /*ICMP for IPv6*/
+#define IP_PROTO_IPv6_NoNxt     59  /*No Next Header for IPv6*/
+#define IP_PROTO_IPv6_Opts      60  /*Destination Options for IPv6*/
+#define IP_PROTO_OSPFIGP        89  /*OSPF*/
+#define IP_PROTO_ETHERIP        97  /*Ethernet-within-IP Encapsulation*/
+#define IP_PROTO_L2TP           115 /*Layer Two Tunneling Protocol*/
+#define IP_PROTO_ISIS_over_IPv4 124
+#define IP_PROTO_SCTP           132 /*Stream Control Transmission Protocol*/
+#define IP_PROTO_MPLS_in_IP     137
+#define IP_PROTO_Other          255 /*For unregisted here or unknown type*/
 
 const char *ip_proto_to_string(unsigned ip_proto);
 
@@ -84,7 +83,7 @@ int128_t targetip_range(TargetIP *targetip);
 void targetip_apply_excludes(TargetIP *targets, TargetIP *exclude);
 
 /**
- * The last step after processing the configuration, setting up the 
+ * The last step after processing the configuration, setting up the
  * state to be used for scanning. This sorts the address, removes
  * duplicates, and creates an optimized 'picker' system to easily
  * find an address given an index, or find an index given an address.
@@ -100,10 +99,10 @@ void targetip_optimize(TargetIP *targets);
  * "blackrock" algorithm to randomize the index before calling this function.
  *
  * It is this function, plus the 'blackrock' randomization algorithm, that
- * is at the heart of Xconf. 
+ * is at the heart of Xconf.
  */
-void targetip_pick(const TargetIP *targetip, uint64_t index, ipaddress *addr, unsigned *port);
-
+void targetip_pick(const TargetIP *targetip, uint64_t index, ipaddress *addr,
+                   unsigned *port);
 
 bool targetip_has_ip(const TargetIP *targetip, ipaddress ip);
 
@@ -114,11 +113,11 @@ int targetip_add_target_string(TargetIP *targetip, const char *string);
 /**
  * Parse the string contain port specifier.
  */
-int targetip_add_port_string(TargetIP *targetip, const char *string, unsigned proto);
-
+int targetip_add_port_string(TargetIP *targetip, const char *string,
+                             unsigned proto);
 
 /**
- * Indicates whether there are IPv4 targets. If so, we'll have to 
+ * Indicates whether there are IPv4 targets. If so, we'll have to
  * initialize the IPv4 portion of the stack.
  * @return true if there are IPv4 targets to be scanned, false
  * otherwise
@@ -127,7 +126,7 @@ bool targetip_has_ipv4_targets(const TargetIP *targetip);
 bool targetip_has_target_ports(const TargetIP *targetip);
 
 /**
- * Indicates whether there are IPv6 targets. If so, we'll have to 
+ * Indicates whether there are IPv6 targets. If so, we'll have to
  * initialize the IPv6 portion of the stack.
  * @return true if there are IPv6 targets to be scanned, false
  * otherwise

@@ -11,17 +11,16 @@
  * respectively.
  */
 enum {
-    SMACK_ANCHOR_BEGIN  = 0x01,
-    SMACK_ANCHOR_END    = 0x02,
-    SMACK_SNMP_HACK     = 0x04,
-    SMACK_WILDCARDS     = 0x08,
+    SMACK_ANCHOR_BEGIN = 0x01,
+    SMACK_ANCHOR_END   = 0x02,
+    SMACK_SNMP_HACK    = 0x04,
+    SMACK_WILDCARDS    = 0x08,
 };
 
 enum {
-    SMACK_CASE_SENSITIVE = 0,
+    SMACK_CASE_SENSITIVE   = 0,
     SMACK_CASE_INSENSITIVE = 1,
 };
-
 
 /**
  * This is the function that will be called whenever SMACK
@@ -29,22 +28,17 @@ enum {
  */
 typedef int (*FOUND_CALLBACK)(size_t id, int offset, void *data);
 
-
 /**
  * Create the Aho-Corasick search object. After creation, you can start
  * adding patterns, but you cannot use it for searching until you've
  * compiled the patterns.
  */
-struct SMACK *
-smack_create(const char *name, unsigned nocase);
-
+struct SMACK *smack_create(const char *name, unsigned nocase);
 
 /**
  * Cleans up and frees an object created with smack_create().
  */
-void
-smack_destroy(struct SMACK *smack);
-
+void smack_destroy(struct SMACK *smack);
 
 /**
  * Registers a pattern with the search engine. The 'smack' object
@@ -53,12 +47,8 @@ smack_destroy(struct SMACK *smack);
  * "id" field can contain a pointer (size_t is 64-bit on 64-bit
  * systems).
  */
-void
-smack_add_pattern(        struct SMACK *  smack,
-                        const void *    pattern,
-                        unsigned        pattern_length,
-                        size_t          id,
-                        unsigned        flags);
+void smack_add_pattern(struct SMACK *smack, const void *pattern,
+                       unsigned pattern_length, size_t id, unsigned flags);
 
 /**
  * You call this function after you have registered all the patterns
@@ -66,9 +56,7 @@ smack_add_pattern(        struct SMACK *  smack,
  * Don't use the state-machine with 'smack_search()' until you have
  * compiled all the patterns with this function.
  */
-void
-smack_compile(struct SMACK *smack);
-
+void smack_compile(struct SMACK *smack);
 
 /**
  * Run the state-machine, searching for the compiled patterns within
@@ -85,21 +73,11 @@ smack_compile(struct SMACK *smack);
  * to zero between each fragment, then patterns that cross fragment
  * boundaries cannot be detected).
  */
-unsigned
-smack_search(           struct SMACK *  smack,
-                        const void *    px,
-                        unsigned        length,
-                        FOUND_CALLBACK  cb_found,
-                        void *          cb_data,
-                        unsigned *      state);
+unsigned smack_search(struct SMACK *smack, const void *px, unsigned length,
+                      FOUND_CALLBACK cb_found, void *cb_data, unsigned *state);
 
-size_t
-smack_search_next(      struct SMACK *  smack,
-                        unsigned *      state,
-                        const void *    px,
-                        unsigned *       offset,
-                        unsigned        length
-                        );
+size_t smack_search_next(struct SMACK *smack, unsigned *state, const void *px,
+                         unsigned *offset, unsigned length);
 
 /**
  * Called to terminate a search (after multiple calls to `smack_search_next()`.
@@ -110,10 +88,7 @@ smack_search_next(      struct SMACK *  smack,
  * @return The 'id' field of a pattenr registered with the SMACK_ANCHOR_END
  *      attribute if that was found in the searched buffer, or SMACK_NOT_FOUND.
  */
-size_t
-smack_search_next_end(      struct SMACK *  smack,
-                        unsigned *      state
-                     );
+size_t smack_search_next_end(struct SMACK *smack, unsigned *state);
 
 #define smack_search_start(state) (*(state)) = 0
 
@@ -121,9 +96,7 @@ smack_search_next_end(      struct SMACK *  smack,
  * If there are multiple matches at the current state, returns the next
  * one. Otherwise, returns NOT_FOUND. Used with "smack_search_next()".
  */
-size_t
-smack_next_match(      struct SMACK *  smack,
-                        unsigned *      state);
+size_t smack_next_match(struct SMACK *smack, unsigned *state);
 
 /**
  * Call this after search is done. This is not generally necessary.
@@ -131,11 +104,8 @@ smack_next_match(      struct SMACK *  smack,
  * SMACK_ANCHOR_END flag set. If no pattern has that flag, then
  * this function will do nothing.
  */
-unsigned
-smack_search_end(       struct SMACK *  smack,
-                        FOUND_CALLBACK  cb_found,
-                        void *          cb_data,
-                        unsigned *      state);
+unsigned smack_search_end(struct SMACK *smack, FOUND_CALLBACK cb_found,
+                          void *cb_data, unsigned *state);
 
 int smack_benchmark();
 

@@ -102,14 +102,12 @@
 #include "../util-data/data-convert.h"
 #include "../proto/proto-preprocess.h"
 
-static size_t
-sctp_create_by_template_ipv4(
-    TmplPkt *tmpl,
-    ipv4address ip_them, unsigned port_them,
-    ipv4address ip_me, unsigned port_me,
-    unsigned init_tag, unsigned ttl,
-    unsigned char *px, size_t sizeof_px)
-{
+static size_t sctp_create_by_template_ipv4(TmplPkt *tmpl, ipv4address ip_them,
+                                           unsigned    port_them,
+                                           ipv4address ip_me, unsigned port_me,
+                                           unsigned init_tag, unsigned ttl,
+                                           unsigned char *px,
+                                           size_t         sizeof_px) {
     unsigned offset_ip;
     unsigned offset_tcp;
     uint64_t xsum_sctp;
@@ -143,7 +141,7 @@ sctp_create_by_template_ipv4(
    |                    Options                    |    Padding    |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-*/
+  */
 
     /*
      * Fill in the empty fields in the IP header and then re-calculate
@@ -151,47 +149,44 @@ sctp_create_by_template_ipv4(
      */
     {
         unsigned total_length = tmpl->ipv4.length - tmpl->ipv4.offset_ip;
-        px[offset_ip+2] = (unsigned char)(total_length>>8);
-        px[offset_ip+3] = (unsigned char)(total_length>>0);
+        px[offset_ip + 2]     = (unsigned char)(total_length >> 8);
+        px[offset_ip + 3]     = (unsigned char)(total_length >> 0);
     }
-    U16_EQUAL_TO_BE(px+offset_ip+ 4, ip_id);
+    U16_EQUAL_TO_BE(px + offset_ip + 4, ip_id);
 
     if (ttl)
-        px[offset_ip+8] = (unsigned char)(ttl);
+        px[offset_ip + 8] = (unsigned char)(ttl);
 
-    U32_EQUAL_TO_BE(px+offset_ip+12, ip_me);
-    U32_EQUAL_TO_BE(px+offset_ip+16, ip_them);
+    U32_EQUAL_TO_BE(px + offset_ip + 12, ip_me);
+    U32_EQUAL_TO_BE(px + offset_ip + 16, ip_them);
 
-    px[offset_ip+10] = (unsigned char)(0);
-    px[offset_ip+11] = (unsigned char)(0);
+    px[offset_ip + 10] = (unsigned char)(0);
+    px[offset_ip + 11] = (unsigned char)(0);
 
     xsum_ip = (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.length);
 
-    U16_EQUAL_TO_BE(px+offset_ip+10, xsum_ip);
-
+    U16_EQUAL_TO_BE(px + offset_ip + 10, xsum_ip);
 
     /*
      * Now do the checksum for the higher layer protocols
      */
     xsum_sctp = 0;
-    U16_EQUAL_TO_BE(px+offset_tcp+ 0, port_me);
-    U16_EQUAL_TO_BE(px+offset_tcp+ 2, port_them);
-    U32_EQUAL_TO_BE(px+offset_tcp+16, init_tag);
+    U16_EQUAL_TO_BE(px + offset_tcp + 0, port_me);
+    U16_EQUAL_TO_BE(px + offset_tcp + 2, port_them);
+    U32_EQUAL_TO_BE(px + offset_tcp + 16, init_tag);
 
     xsum_sctp = checksum_sctp(px + offset_tcp, tmpl->ipv4.length - offset_tcp);
-    U32_EQUAL_TO_BE(px+offset_tcp+ 8, xsum_sctp);
+    U32_EQUAL_TO_BE(px + offset_tcp + 8, xsum_sctp);
 
     return r_len;
 }
 
-static size_t
-sctp_create_by_template_ipv6(
-    TmplPkt *tmpl,
-    ipv6address ip_them, unsigned port_them,
-    ipv6address ip_me, unsigned port_me,
-    unsigned init_tag, unsigned ttl,
-    unsigned char *px, size_t sizeof_px)
-{
+static size_t sctp_create_by_template_ipv6(TmplPkt *tmpl, ipv6address ip_them,
+                                           unsigned    port_them,
+                                           ipv6address ip_me, unsigned port_me,
+                                           unsigned init_tag, unsigned ttl,
+                                           unsigned char *px,
+                                           size_t         sizeof_px) {
     unsigned offset_ip;
     unsigned offset_tcp;
     uint64_t xsum_sctp;
@@ -202,100 +197,89 @@ sctp_create_by_template_ipv6(
     if (r_len > tmpl->ipv6.length)
         r_len = tmpl->ipv6.length;
     memcpy(px, tmpl->ipv6.packet, r_len);
-    offset_ip = tmpl->ipv6.offset_ip;
+    offset_ip  = tmpl->ipv6.offset_ip;
     offset_tcp = tmpl->ipv6.offset_tcp;
 
-/*
+    /*
 
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |Version| Traffic Class |           Flow Label                  |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |         Payload Length        |  Next Header  |   Hop Limit   |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +                         Source Address                        +
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +                      Destination Address                      +
-   |                                                               |
-   +                                                               +
-   |                                                               |
-   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-*/
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |Version| Traffic Class |           Flow Label                  |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |         Payload Length        |  Next Header  |   Hop Limit   |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                                                               |
+       +                                                               +
+       |                                                               |
+       +                         Source Address                        +
+       |                                                               |
+       +                                                               +
+       |                                                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                                                               |
+       +                                                               +
+       |                                                               |
+       +                      Destination Address                      +
+       |                                                               |
+       +                                                               +
+       |                                                               |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    */
     /*
      * Fill in the empty fields in the IP header and then re-calculate
      * the checksum.
      */
     unsigned payload_length = tmpl->ipv6.length - tmpl->ipv6.offset_ip - 40;
-    U16_TO_BE(px+offset_ip+4, payload_length);
+    U16_TO_BE(px + offset_ip + 4, payload_length);
 
     if (ttl)
-        px[offset_ip+7] = (unsigned char)(ttl);
+        px[offset_ip + 7] = (unsigned char)(ttl);
 
-    U64_TO_BE(px+offset_ip+ 8, ip_me.hi);
-    U64_TO_BE(px+offset_ip+16, ip_me.lo);
+    U64_TO_BE(px + offset_ip + 8, ip_me.hi);
+    U64_TO_BE(px + offset_ip + 16, ip_me.lo);
 
-    U64_TO_BE(px+offset_ip+24, ip_them.hi);
-    U64_TO_BE(px+offset_ip+32, ip_them.lo);
+    U64_TO_BE(px + offset_ip + 24, ip_them.hi);
+    U64_TO_BE(px + offset_ip + 32, ip_them.lo);
 
-        /* TODO: IPv6 */
-    U16_TO_BE(px+offset_tcp+ 0, port_me);
-    U16_TO_BE(px+offset_tcp+ 2, port_them);
-    U32_TO_BE(px+offset_tcp+16, init_tag);
+    /* TODO: IPv6 */
+    U16_TO_BE(px + offset_tcp + 0, port_me);
+    U16_TO_BE(px + offset_tcp + 2, port_them);
+    U32_TO_BE(px + offset_tcp + 16, init_tag);
 
     xsum_sctp = checksum_sctp(px + offset_tcp, tmpl->ipv6.length - offset_tcp);
-    U32_TO_BE(px+offset_tcp+ 8, xsum_sctp);
+    U32_TO_BE(px + offset_tcp + 8, xsum_sctp);
 
     return r_len;
 }
 
-size_t
-sctp_create_by_template(
-    TmplPkt *tmpl,
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned init_tag, unsigned ttl,
-    unsigned char *px, size_t sizeof_px)
-{
+size_t sctp_create_by_template(TmplPkt *tmpl, ipaddress ip_them,
+                               unsigned port_them, ipaddress ip_me,
+                               unsigned port_me, unsigned init_tag,
+                               unsigned ttl, unsigned char *px,
+                               size_t sizeof_px) {
     if (tmpl->tmpl_type != TmplType_SCTP) {
-            LOG(LEVEL_ERROR, "sctp_create_by_template: need a TmplType_SCTP TemplatePacket.\n");
-            return 0;
+        LOG(LEVEL_ERROR,
+            "sctp_create_by_template: need a TmplType_SCTP TemplatePacket.\n");
+        return 0;
     }
 
     size_t r_len = 0;
 
     if (ip_them.version == 4) {
-        r_len = sctp_create_by_template_ipv4(tmpl,
-            ip_them.ipv4, port_them,
-            ip_me.ipv4, port_me,
-            init_tag, ttl,
-            px, sizeof_px);
+        r_len = sctp_create_by_template_ipv4(tmpl, ip_them.ipv4, port_them,
+                                             ip_me.ipv4, port_me, init_tag, ttl,
+                                             px, sizeof_px);
     } else {
-        r_len = sctp_create_by_template_ipv6(tmpl,
-            ip_them.ipv6, port_them,
-            ip_me.ipv6, port_me,
-            init_tag, ttl,
-            px, sizeof_px);
+        r_len = sctp_create_by_template_ipv6(tmpl, ip_them.ipv6, port_them,
+                                             ip_me.ipv6, port_me, init_tag, ttl,
+                                             px, sizeof_px);
     }
     return r_len;
 }
 
-size_t
-sctp_create_packet(
-    ipaddress ip_them, unsigned port_them,
-    ipaddress ip_me, unsigned port_me,
-    unsigned init_tag, unsigned ttl,
-    unsigned char *px, size_t sizeof_px)
-{
+size_t sctp_create_packet(ipaddress ip_them, unsigned port_them,
+                          ipaddress ip_me, unsigned port_me, unsigned init_tag,
+                          unsigned ttl, unsigned char *px, size_t sizeof_px) {
     return sctp_create_by_template(&global_tmplset->pkts[TmplType_SCTP],
-        ip_them, port_them, ip_me, port_me,
-        init_tag, ttl,
-        px, sizeof_px);
+                                   ip_them, port_them, ip_me, port_me, init_tag,
+                                   ttl, px, sizeof_px);
 }

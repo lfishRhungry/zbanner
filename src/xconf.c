@@ -49,7 +49,7 @@
 
 extern ConfParam config_parameters[];
 
-
+// clang-format off
 const char ascii_xtate1[] =
 " /$$   /$$ /$$$$$$$$ /$$$$$$  /$$$$$$$$ /$$$$$$$$\n"
 "| $$  / $$|__  $$__//$$__  $$|__  $$__/| $$_____/\n"
@@ -134,158 +134,168 @@ const char scan_probe_module_rela[] =
 "|                                                                      |\n"
 "+----------------------------------------------------------------------+\n"
 ;
+// clang-format on
 
 static const unsigned short top_udp_ports[] = {
-    161,      /* SNMP - should be found on all network equipment */
-    135,      /* MS-RPC - should be found on all modern Windows */
-    500,      /* ISAKMP - for establishing IPsec tunnels */
-    137,      /* NetBIOS-NameService - should be found on old Windows */
-    138,      /* NetBIOS-Datagram - should be found on old Windows */
-    445,      /* SMB datagram service */
-    67,       /* DHCP */
-    53,       /* DNS */
-    1900,     /* UPnP - Microsoft-focused local discovery */
-    5353,     /* mDNS - Apple-focused local discovery */
-    4500,     /* nat-t-ike - IPsec NAT traversal */
-    514,      /* syslog - all Unix machiens */
-    69,       /* TFTP */
-    49152,    /* first of modern ephemeral ports */
-    631,      /* IPP - printing protocol for Linux */
-    123,      /* NTP network time protocol */
-    1434,     /* MS-SQL server*/
-    520,      /* RIP - routers use this protocol sometimes */
-    7,        /* Echo */
-    111,      /* SunRPC portmapper */
-    2049,     /* SunRPC NFS */
-    5683,     /* COAP */
-    11211,    /* memcached */
-    1701,     /* L2TP */
-    27960,    /* quaked amplifier */
-    1645,     /* RADIUS */
-    1812,     /* RADIUS */
-    1646,     /* RADIUS */
-    1813,     /* RADIUS */
-    3343,     /* Microsoft Cluster Services */
-    2535,     /* MADCAP rfc2730 TODO FIXME */
+    161,   /* SNMP - should be found on all network equipment */
+    135,   /* MS-RPC - should be found on all modern Windows */
+    500,   /* ISAKMP - for establishing IPsec tunnels */
+    137,   /* NetBIOS-NameService - should be found on old Windows */
+    138,   /* NetBIOS-Datagram - should be found on old Windows */
+    445,   /* SMB datagram service */
+    67,    /* DHCP */
+    53,    /* DNS */
+    1900,  /* UPnP - Microsoft-focused local discovery */
+    5353,  /* mDNS - Apple-focused local discovery */
+    4500,  /* nat-t-ike - IPsec NAT traversal */
+    514,   /* syslog - all Unix machiens */
+    69,    /* TFTP */
+    49152, /* first of modern ephemeral ports */
+    631,   /* IPP - printing protocol for Linux */
+    123,   /* NTP network time protocol */
+    1434,  /* MS-SQL server*/
+    520,   /* RIP - routers use this protocol sometimes */
+    7,     /* Echo */
+    111,   /* SunRPC portmapper */
+    2049,  /* SunRPC NFS */
+    5683,  /* COAP */
+    11211, /* memcached */
+    1701,  /* L2TP */
+    27960, /* quaked amplifier */
+    1645,  /* RADIUS */
+    1812,  /* RADIUS */
+    1646,  /* RADIUS */
+    1813,  /* RADIUS */
+    3343,  /* Microsoft Cluster Services */
+    2535,  /* MADCAP rfc2730 TODO FIXME */
 
 };
 
 static const unsigned short top_tcp_ports[] = {
-    80, 443, 8080,          /* also web */
-    21, 990,                /* FTP, oldie but goodie */
-    22,                     /* SSH, so much infrastructure */
-    23, 992,                /* Telnet, oldie but still around*/
-    24,                     /* people put things here instead of TelnetSSH*/
-    25, 465, 587, 2525,     /* SMTP email*/
-    5800, 5900, 5901,       /* VNC */
-    111,                    /* SunRPC */
-    139, 445,               /* Microsoft Windows networking */
-    135,                    /* DCEPRC, more Microsoft Windows */
-    3389,                   /* Microsoft Windows RDP */
-    88,                     /* Kerberos, also Microsoft windows */
-    389, 636,               /* LDAP and MS Win */
-    1433,                   /* MS SQL */
-    53,                     /* DNS */
-    2083, 2096,             /* cPanel */
-    9050,                   /* ToR */
-    8140,                   /* Puppet */
-    11211,                  /* memcached */
-    1098, 1099,             /* Java RMI */
-    6000, 6001,             /* XWindows */
-    5060, 5061,             /* SIP - session initiation protocool */
-    554,                    /* RTSP */
-    548,                    /* AFP */
+    80,    443,   8080,        /* also web */
+    21,    990,                /* FTP, oldie but goodie */
+    22,                        /* SSH, so much infrastructure */
+    23,    992,                /* Telnet, oldie but still around*/
+    24,                        /* people put things here instead of TelnetSSH*/
+    25,    465,   587,   2525, /* SMTP email*/
+    5800,  5900,  5901,        /* VNC */
+    111,                       /* SunRPC */
+    139,   445,                /* Microsoft Windows networking */
+    135,                       /* DCEPRC, more Microsoft Windows */
+    3389,                      /* Microsoft Windows RDP */
+    88,                        /* Kerberos, also Microsoft windows */
+    389,   636,                /* LDAP and MS Win */
+    1433,                      /* MS SQL */
+    53,                        /* DNS */
+    2083,  2096,               /* cPanel */
+    9050,                      /* ToR */
+    8140,                      /* Puppet */
+    11211,                     /* memcached */
+    1098,  1099,               /* Java RMI */
+    6000,  6001,               /* XWindows */
+    5060,  5061,               /* SIP - session initiation protocool */
+    554,                       /* RTSP */
+    548,                       /* AFP */
 
-
-    1,3,4,6,7,9,13,17,19,20,26,30,32,33,37,42,43,49,70,
-    79,81,82,83,84,85,89,90,99,100,106,109,110,113,119,125,
-    143,144,146,161,163,179,199,211,212,222,254,255,256,259,264,280,
-    301,306,311,340,366,406,407,416,417,425,427,444,458,464,
-    465,481,497,500,512,513,514,515,524,541,543,544,545,554,555,563,
-    593,616,617,625,631,646,648,666,667,668,683,687,691,700,705,
-    711,714,720,722,726,749,765,777,783,787,800,801,808,843,873,880,888,
-    898,900,901,902,903,911,912,981,987,993,995,999,1000,1001,
-    1002,1007,1009,1010,1011,1021,1022,1023,1024,1025,1026,1027,1028,
-    1029,1030,1031,1032,1033,1034,1035,1036,1037,1038,1039,1040,1041,
-    1042,1043,1044,1045,1046,1047,1048,1049,1050,1051,1052,1053,1054,
-    1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,
-    1068,1069,1070,1071,1072,1073,1074,1075,1076,1077,1078,1079,1080,
-    1081,1082,1083,1084,1085,1086,1087,1088,1089,1090,1091,1092,1093,
-    1094,1095,1096,1097,1100,1102,1104,1105,1106,1107,1108,
-    1110,1111,1112,1113,1114,1117,1119,1121,1122,1123,1124,1126,1130,
-    1131,1132,1137,1138,1141,1145,1147,1148,1149,1151,1152,1154,1163,
-    1164,1165,1166,1169,1174,1175,1183,1185,1186,1187,1192,1198,1199,
-    1201,1213,1216,1217,1218,1233,1234,1236,1244,1247,1248,1259,1271,
-    1272,1277,1287,1296,1300,1301,1309,1310,1311,1322,1328,1334,1352,
-    1417,1434,1443,1455,1461,1494,1500,1501,1503,1521,1524,1533,
-    1556,1580,1583,1594,1600,1641,1658,1666,1687,1688,1700,1717,1718,
-    1719,1720,1721,1723,1755,1761,1782,1783,1801,1805,1812,1839,1840,
-    1862,1863,1864,1875,1900,1914,1935,1947,1971,1972,1974,1984,1998,
-    1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2013,
-    2020,2021,2022,2030,2033,2034,2035,2038,2040,2041,2042,2043,2045,
-    2046,2047,2048,2049,2065,2068,2099,2100,2103,2105,2106,2107,2111,
-    2119,2121,2126,2135,2144,2160,2161,2170,2179,2190,2191,2196,2200,
-    2222,2251,2260,2288,2301,2323,2366,2381,2382,2383,2393,2394,2399,
-    2401,2492,2500,2522,2557,2601,2602,2604,2605,2607,2608,2638,
-    2701,2702,2710,2717,2718,2725,2800,2809,2811,2869,2875,2909,2910,
-    2920,2967,2968,2998,3000,3001,3003,3005,3006,3007,3011,3013,3017,
-    3030,3031,3052,3071,3077,3128,3168,3211,3221,3260,3261,3268,3269,
-    3283,3300,3301,3306,3322,3323,3324,3325,3333,3351,3367,3369,3370,
-    3371,3372,3389,3390,3404,3476,3493,3517,3527,3546,3551,3580,3659,
-    3689,3690,3703,3737,3766,3784,3800,3801,3809,3814,3826,3827,3828,
-    3851,3869,3871,3878,3880,3889,3905,3914,3918,3920,3945,3971,3986,
-    3995,3998,4000,4001,4002,4003,4004,4005,4006,4045,4111,4125,4126,
-    4129,4224,4242,4279,4321,4343,4443,4444,4445,4446,4449,4550,4567,
-    4662,4848,4899,4900,4998,5000,5001,5002,5003,5004,5009,5030,5033,
-    5050,5051,5054,5080,5087,5100,5101,5102,5120,5190,5200,
-    5214,5221,5222,5225,5226,5269,5280,5298,5357,5405,5414,5431,5432,
-    5440,5500,5510,5544,5550,5555,5560,5566,5631,5633,5666,5678,5679,
-    5718,5730,5801,5802,5810,5811,5815,5822,5825,5850,5859,5862,
-    5877,5902,5903,5904,5906,5907,5910,5911,5915,5922,5925,
-    5950,5952,5959,5960,5961,5962,5963,5987,5988,5989,5998,5999,
-    6002,6003,6004,6005,6006,6007,6009,6025,6059,6100,6101,6106,
-    6112,6123,6129,6156,6346,6389,6502,6510,6543,6547,6565,6566,6567,
-    6580,6646,6666,6667,6668,6669,6689,6692,6699,6779,6788,6789,6792,
-    6839,6881,6901,6969,7000,7001,7002,7004,7007,7019,7025,7070,7100,
-    7103,7106,7200,7201,7402,7435,7443,7496,7512,7625,7627,7676,7741,
-    7777,7778,7800,7911,7920,7921,7937,7938,7999,8000,8001,8002,8007,
-    8008,8009,8010,8011,8021,8022,8031,8042,8045,8080,8081,8082,8083,
-    8084,8085,8086,8087,8088,8089,8090,8093,8099,8100,8180,8181,8192,
-    8193,8194,8200,8222,8254,8290,8291,8292,8300,8333,8383,8400,8402,
-    8443,8500,8600,8649,8651,8652,8654,8701,8800,8873,8888,8899,8994,
-    9000,9001,9002,9003,9009,9010,9011,9040,9071,9080,9081,9090,
-    9091,9099,9100,9101,9102,9103,9110,9111,9200,9207,9220,9290,9415,
-    9418,9485,9500,9502,9503,9535,9575,9593,9594,9595,9618,9666,9876,
-    9877,9878,9898,9900,9917,9929,9943,9944,9968,9998,9999,10000,10001,
-    10002,10003,10004,10009,10010,10012,10024,10025,10082,10180,10215,
-    10243,10566,10616,10617,10621,10626,10628,10629,10778,11110,11111,
-    11967,12000,12174,12265,12345,13456,13722,13782,13783,14000,14238,
-    14441,14442,15000,15002,15003,15004,15660,15742,16000,16001,16012,
-    16016,16018,16080,16113,16992,16993,17877,17988,18040,18101,18988,
-    19101,19283,19315,19350,19780,19801,19842,20000,20005,20031,20221,
-    20222,20828,21571,22939,23502,24444,24800,25734,25735,26214,27000,
-    27352,27353,27355,27356,27715,28201,30000,30718,30951,31038,31337,
-    32768,32769,32770,32771,32772,32773,32774,32775,32776,32777,32778,
-    32779,32780,32781,32782,32783,32784,32785,33354,33899,34571,34572,
-    34573,35500,38292,40193,40911,41511,42510,44176,44442,44443,44501,
-    45100,48080,49152,49153,49154,49155,49156,49157,49158,49159,49160,
-    49161,49163,49165,49167,49175,49176,49400,49999,50000,50001,50002,
-    50003,50006,50300,50389,50500,50636,50800,51103,51493,52673,52822,
-    52848,52869,54045,54328,55055,55056,55555,55600,56737,56738,57294,
-    57797,58080,60020,60443,61532,61900,62078,63331,64623,64680,65000,
-    65129,65389};
+    1,     3,     4,     6,     7,     9,     13,    17,    19,    20,    26,
+    30,    32,    33,    37,    42,    43,    49,    70,    79,    81,    82,
+    83,    84,    85,    89,    90,    99,    100,   106,   109,   110,   113,
+    119,   125,   143,   144,   146,   161,   163,   179,   199,   211,   212,
+    222,   254,   255,   256,   259,   264,   280,   301,   306,   311,   340,
+    366,   406,   407,   416,   417,   425,   427,   444,   458,   464,   465,
+    481,   497,   500,   512,   513,   514,   515,   524,   541,   543,   544,
+    545,   554,   555,   563,   593,   616,   617,   625,   631,   646,   648,
+    666,   667,   668,   683,   687,   691,   700,   705,   711,   714,   720,
+    722,   726,   749,   765,   777,   783,   787,   800,   801,   808,   843,
+    873,   880,   888,   898,   900,   901,   902,   903,   911,   912,   981,
+    987,   993,   995,   999,   1000,  1001,  1002,  1007,  1009,  1010,  1011,
+    1021,  1022,  1023,  1024,  1025,  1026,  1027,  1028,  1029,  1030,  1031,
+    1032,  1033,  1034,  1035,  1036,  1037,  1038,  1039,  1040,  1041,  1042,
+    1043,  1044,  1045,  1046,  1047,  1048,  1049,  1050,  1051,  1052,  1053,
+    1054,  1055,  1056,  1057,  1058,  1059,  1060,  1061,  1062,  1063,  1064,
+    1065,  1066,  1067,  1068,  1069,  1070,  1071,  1072,  1073,  1074,  1075,
+    1076,  1077,  1078,  1079,  1080,  1081,  1082,  1083,  1084,  1085,  1086,
+    1087,  1088,  1089,  1090,  1091,  1092,  1093,  1094,  1095,  1096,  1097,
+    1100,  1102,  1104,  1105,  1106,  1107,  1108,  1110,  1111,  1112,  1113,
+    1114,  1117,  1119,  1121,  1122,  1123,  1124,  1126,  1130,  1131,  1132,
+    1137,  1138,  1141,  1145,  1147,  1148,  1149,  1151,  1152,  1154,  1163,
+    1164,  1165,  1166,  1169,  1174,  1175,  1183,  1185,  1186,  1187,  1192,
+    1198,  1199,  1201,  1213,  1216,  1217,  1218,  1233,  1234,  1236,  1244,
+    1247,  1248,  1259,  1271,  1272,  1277,  1287,  1296,  1300,  1301,  1309,
+    1310,  1311,  1322,  1328,  1334,  1352,  1417,  1434,  1443,  1455,  1461,
+    1494,  1500,  1501,  1503,  1521,  1524,  1533,  1556,  1580,  1583,  1594,
+    1600,  1641,  1658,  1666,  1687,  1688,  1700,  1717,  1718,  1719,  1720,
+    1721,  1723,  1755,  1761,  1782,  1783,  1801,  1805,  1812,  1839,  1840,
+    1862,  1863,  1864,  1875,  1900,  1914,  1935,  1947,  1971,  1972,  1974,
+    1984,  1998,  1999,  2000,  2001,  2002,  2003,  2004,  2005,  2006,  2007,
+    2008,  2009,  2010,  2013,  2020,  2021,  2022,  2030,  2033,  2034,  2035,
+    2038,  2040,  2041,  2042,  2043,  2045,  2046,  2047,  2048,  2049,  2065,
+    2068,  2099,  2100,  2103,  2105,  2106,  2107,  2111,  2119,  2121,  2126,
+    2135,  2144,  2160,  2161,  2170,  2179,  2190,  2191,  2196,  2200,  2222,
+    2251,  2260,  2288,  2301,  2323,  2366,  2381,  2382,  2383,  2393,  2394,
+    2399,  2401,  2492,  2500,  2522,  2557,  2601,  2602,  2604,  2605,  2607,
+    2608,  2638,  2701,  2702,  2710,  2717,  2718,  2725,  2800,  2809,  2811,
+    2869,  2875,  2909,  2910,  2920,  2967,  2968,  2998,  3000,  3001,  3003,
+    3005,  3006,  3007,  3011,  3013,  3017,  3030,  3031,  3052,  3071,  3077,
+    3128,  3168,  3211,  3221,  3260,  3261,  3268,  3269,  3283,  3300,  3301,
+    3306,  3322,  3323,  3324,  3325,  3333,  3351,  3367,  3369,  3370,  3371,
+    3372,  3389,  3390,  3404,  3476,  3493,  3517,  3527,  3546,  3551,  3580,
+    3659,  3689,  3690,  3703,  3737,  3766,  3784,  3800,  3801,  3809,  3814,
+    3826,  3827,  3828,  3851,  3869,  3871,  3878,  3880,  3889,  3905,  3914,
+    3918,  3920,  3945,  3971,  3986,  3995,  3998,  4000,  4001,  4002,  4003,
+    4004,  4005,  4006,  4045,  4111,  4125,  4126,  4129,  4224,  4242,  4279,
+    4321,  4343,  4443,  4444,  4445,  4446,  4449,  4550,  4567,  4662,  4848,
+    4899,  4900,  4998,  5000,  5001,  5002,  5003,  5004,  5009,  5030,  5033,
+    5050,  5051,  5054,  5080,  5087,  5100,  5101,  5102,  5120,  5190,  5200,
+    5214,  5221,  5222,  5225,  5226,  5269,  5280,  5298,  5357,  5405,  5414,
+    5431,  5432,  5440,  5500,  5510,  5544,  5550,  5555,  5560,  5566,  5631,
+    5633,  5666,  5678,  5679,  5718,  5730,  5801,  5802,  5810,  5811,  5815,
+    5822,  5825,  5850,  5859,  5862,  5877,  5902,  5903,  5904,  5906,  5907,
+    5910,  5911,  5915,  5922,  5925,  5950,  5952,  5959,  5960,  5961,  5962,
+    5963,  5987,  5988,  5989,  5998,  5999,  6002,  6003,  6004,  6005,  6006,
+    6007,  6009,  6025,  6059,  6100,  6101,  6106,  6112,  6123,  6129,  6156,
+    6346,  6389,  6502,  6510,  6543,  6547,  6565,  6566,  6567,  6580,  6646,
+    6666,  6667,  6668,  6669,  6689,  6692,  6699,  6779,  6788,  6789,  6792,
+    6839,  6881,  6901,  6969,  7000,  7001,  7002,  7004,  7007,  7019,  7025,
+    7070,  7100,  7103,  7106,  7200,  7201,  7402,  7435,  7443,  7496,  7512,
+    7625,  7627,  7676,  7741,  7777,  7778,  7800,  7911,  7920,  7921,  7937,
+    7938,  7999,  8000,  8001,  8002,  8007,  8008,  8009,  8010,  8011,  8021,
+    8022,  8031,  8042,  8045,  8080,  8081,  8082,  8083,  8084,  8085,  8086,
+    8087,  8088,  8089,  8090,  8093,  8099,  8100,  8180,  8181,  8192,  8193,
+    8194,  8200,  8222,  8254,  8290,  8291,  8292,  8300,  8333,  8383,  8400,
+    8402,  8443,  8500,  8600,  8649,  8651,  8652,  8654,  8701,  8800,  8873,
+    8888,  8899,  8994,  9000,  9001,  9002,  9003,  9009,  9010,  9011,  9040,
+    9071,  9080,  9081,  9090,  9091,  9099,  9100,  9101,  9102,  9103,  9110,
+    9111,  9200,  9207,  9220,  9290,  9415,  9418,  9485,  9500,  9502,  9503,
+    9535,  9575,  9593,  9594,  9595,  9618,  9666,  9876,  9877,  9878,  9898,
+    9900,  9917,  9929,  9943,  9944,  9968,  9998,  9999,  10000, 10001, 10002,
+    10003, 10004, 10009, 10010, 10012, 10024, 10025, 10082, 10180, 10215, 10243,
+    10566, 10616, 10617, 10621, 10626, 10628, 10629, 10778, 11110, 11111, 11967,
+    12000, 12174, 12265, 12345, 13456, 13722, 13782, 13783, 14000, 14238, 14441,
+    14442, 15000, 15002, 15003, 15004, 15660, 15742, 16000, 16001, 16012, 16016,
+    16018, 16080, 16113, 16992, 16993, 17877, 17988, 18040, 18101, 18988, 19101,
+    19283, 19315, 19350, 19780, 19801, 19842, 20000, 20005, 20031, 20221, 20222,
+    20828, 21571, 22939, 23502, 24444, 24800, 25734, 25735, 26214, 27000, 27352,
+    27353, 27355, 27356, 27715, 28201, 30000, 30718, 30951, 31038, 31337, 32768,
+    32769, 32770, 32771, 32772, 32773, 32774, 32775, 32776, 32777, 32778, 32779,
+    32780, 32781, 32782, 32783, 32784, 32785, 33354, 33899, 34571, 34572, 34573,
+    35500, 38292, 40193, 40911, 41511, 42510, 44176, 44442, 44443, 44501, 45100,
+    48080, 49152, 49153, 49154, 49155, 49156, 49157, 49158, 49159, 49160, 49161,
+    49163, 49165, 49167, 49175, 49176, 49400, 49999, 50000, 50001, 50002, 50003,
+    50006, 50300, 50389, 50500, 50636, 50800, 51103, 51493, 52673, 52822, 52848,
+    52869, 54045, 54328, 55055, 55056, 55555, 55600, 56737, 56738, 57294, 57797,
+    58080, 60020, 60443, 61532, 61900, 62078, 63331, 64623, 64680, 65000, 65129,
+    65389};
 
 /***************************************************************************
  ***************************************************************************/
-static unsigned
-count_cidr6_bits(struct Range6 *range, bool *exact)
-{
+static unsigned count_cidr6_bits(struct Range6 *range, bool *exact) {
     uint64_t i;
 
     /* for the comments of this function, see  count_cidr_bits */
     *exact = false;
 
-    for (i=0; i<128; i++) {
+    for (i = 0; i < 128; i++) {
         uint64_t mask_hi;
         uint64_t mask_lo;
         if (i < 64) {
@@ -295,23 +305,25 @@ count_cidr6_bits(struct Range6 *range, bool *exact)
             mask_hi = 0;
             mask_lo = 0xFFFFFFFFffffffffull >> (i - 64);
         }
-        if ((range->begin.hi & mask_hi) != 0 || (range->begin.lo & mask_lo) != 0) {
+        if ((range->begin.hi & mask_hi) != 0 ||
+            (range->begin.lo & mask_lo) != 0) {
             continue;
         }
         if ((range->begin.hi & ~mask_hi) == (range->end.hi & ~mask_hi) &&
-                (range->begin.lo & ~mask_lo) == (range->end.lo & ~mask_lo)) {
-            if (((range->end.hi & mask_hi) == mask_hi) && ((range->end.lo & mask_lo) == mask_lo)) {
+            (range->begin.lo & ~mask_lo) == (range->end.lo & ~mask_lo)) {
+            if (((range->end.hi & mask_hi) == mask_hi) &&
+                ((range->end.lo & mask_lo) == mask_lo)) {
                 *exact = true;
-                return (unsigned) i;
+                return (unsigned)i;
             }
         } else {
-            *exact = false;
+            *exact          = false;
             range->begin.hi = range->begin.hi + mask_hi;
             if (range->begin.lo >= 0xffffffffffffffff - 1 - mask_lo) {
                 range->begin.hi += 1;
             }
             range->begin.lo = range->begin.lo + mask_lo + 1;
-            return (unsigned) i;
+            return (unsigned)i;
         }
     }
     range->begin.lo = range->begin.lo + 1;
@@ -323,15 +335,13 @@ count_cidr6_bits(struct Range6 *range, bool *exact)
 
 /***************************************************************************
  ***************************************************************************/
-void
-xconf_save_state(XConf *xconf)
-{
-    char filename[512];
+void xconf_save_state(XConf *xconf) {
+    char  filename[512];
     FILE *fp;
 
     safe_strcpy(filename, sizeof(filename), "paused.conf");
     LOG(LEVEL_OUT, "                                   "
-                    "                                   \r");
+                   "                                   \r");
     LOG(LEVEL_HINT, "saving resume file to: %s\n", filename);
 
     fp = fopen(filename, "wt");
@@ -341,19 +351,19 @@ xconf_save_state(XConf *xconf)
         return;
     }
 
-
     xconf_echo(xconf, fp);
 
     fclose(fp);
 }
 
-static ConfRes SET_scan_module(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_scan_module(void *conf, const char *name,
+                               const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->scanner || xconf->echo_all){
+        if (xconf->scanner || xconf->echo_all) {
             if (xconf->scanner)
-                fprintf(xconf->echo, "scan-module = %s\n", xconf->scanner->name);
+                fprintf(xconf->echo, "scan-module = %s\n",
+                        xconf->scanner->name);
             else
                 fprintf(xconf->echo, "scan-module = TcpSyn\n");
         }
@@ -361,8 +371,9 @@ static ConfRes SET_scan_module(void *conf, const char *name, const char *value)
     }
 
     xconf->scanner = get_scan_module_by_name(value);
-    if(!xconf->scanner){
-        LOG(LEVEL_ERROR, "FAIL %s: no such scan module named %s\n", name, value);
+    if (!xconf->scanner) {
+        LOG(LEVEL_ERROR, "FAIL %s: no such scan module named %s\n", name,
+            value);
         return Conf_ERR;
     }
 
@@ -372,16 +383,17 @@ static ConfRes SET_scan_module(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_help_scan_module(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_help_scan_module(void *conf, const char *name,
+                                    const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
     }
 
     xconf->scanner = get_scan_module_by_name(value);
-    if(!xconf->scanner){
-        LOG(LEVEL_ERROR, "FAIL %s: no such scan module named %s\n", name, value);
+    if (!xconf->scanner) {
+        LOG(LEVEL_ERROR, "FAIL %s: no such scan module named %s\n", name,
+            value);
         return Conf_ERR;
     }
 
@@ -390,16 +402,17 @@ static ConfRes SET_help_scan_module(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static ConfRes SET_help_probe_module(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_help_probe_module(void *conf, const char *name,
+                                     const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
     }
 
     xconf->probe = get_probe_module_by_name(value);
-    if(!xconf->probe){
-        LOG(LEVEL_ERROR, "FAIL %s: no such probe module named %s\n", name, value);
+    if (!xconf->probe) {
+        LOG(LEVEL_ERROR, "FAIL %s: no such probe module named %s\n", name,
+            value);
         return Conf_ERR;
     }
 
@@ -408,16 +421,17 @@ static ConfRes SET_help_probe_module(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static ConfRes SET_help_generate_module(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_help_generate_module(void *conf, const char *name,
+                                        const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
     }
 
     xconf->generator = get_generate_module_by_name(value);
-    if(!xconf->generator){
-        LOG(LEVEL_ERROR, "FAIL %s: no such generate module named %s\n", name, value);
+    if (!xconf->generator) {
+        LOG(LEVEL_ERROR, "FAIL %s: no such generate module named %s\n", name,
+            value);
         return Conf_ERR;
     }
 
@@ -426,16 +440,17 @@ static ConfRes SET_help_generate_module(void *conf, const char *name, const char
     return Conf_OK;
 }
 
-static ConfRes SET_help_output_module(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_help_output_module(void *conf, const char *name,
+                                      const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
     }
 
     xconf->out_conf.output_module = get_output_module_by_name(value);
-    if(!xconf->out_conf.output_module){
-        LOG(LEVEL_ERROR, "FAIL %s: no such output module named %s\n", name, value);
+    if (!xconf->out_conf.output_module) {
+        LOG(LEVEL_ERROR, "FAIL %s: no such output module named %s\n", name,
+            value);
         return Conf_ERR;
     }
 
@@ -444,18 +459,18 @@ static ConfRes SET_help_output_module(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static ConfRes SET_probe_module(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_probe_module(void *conf, const char *name,
+                                const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->probe){
+        if (xconf->probe) {
             fprintf(xconf->echo, "probe-module = %s\n", xconf->probe->name);
         }
         return 0;
     }
 
     xconf->probe = get_probe_module_by_name(value);
-    if(!xconf->probe){
+    if (!xconf->probe) {
         LOG(LEVEL_ERROR, "FAIL %s: no such probe module\n", value);
         return Conf_ERR;
     }
@@ -463,18 +478,19 @@ static ConfRes SET_probe_module(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_generate_module(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_generate_module(void *conf, const char *name,
+                                   const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->generator){
-            fprintf(xconf->echo, "generate-module = %s\n", xconf->generator->name);
+        if (xconf->generator) {
+            fprintf(xconf->echo, "generate-module = %s\n",
+                    xconf->generator->name);
         }
         return 0;
     }
 
     xconf->generator = get_generate_module_by_name(value);
-    if(!xconf->generator){
+    if (!xconf->generator) {
         LOG(LEVEL_ERROR, "FAIL %s: no such generate module\n", value);
         return Conf_ERR;
     }
@@ -482,18 +498,19 @@ static ConfRes SET_generate_module(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static ConfRes SET_output_module(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_output_module(void *conf, const char *name,
+                                 const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->out_conf.output_module){
-            fprintf(xconf->echo, "output-module = %s\n", xconf->out_conf.output_module->name);
+        if (xconf->out_conf.output_module) {
+            fprintf(xconf->echo, "output-module = %s\n",
+                    xconf->out_conf.output_module->name);
         }
         return 0;
     }
 
     xconf->out_conf.output_module = get_output_module_by_name(value);
-    if(!xconf->out_conf.output_module){
+    if (!xconf->out_conf.output_module) {
         LOG(LEVEL_ERROR, "FAIL %s: no such output module\n", value);
         return Conf_ERR;
     }
@@ -501,45 +518,45 @@ static ConfRes SET_output_module(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static ConfRes SET_output_filename(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_output_filename(void *conf, const char *name,
+                                   const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->out_conf.output_filename[0]){
+        if (xconf->out_conf.output_filename[0]) {
             fprintf(xconf->echo, "output-file = \"%s\"\n",
-                xconf->out_conf.output_filename);
+                    xconf->out_conf.output_filename);
         }
         return 0;
     }
 
     safe_strcpy(xconf->out_conf.output_filename,
-        sizeof(xconf->out_conf.output_filename), value);
+                sizeof(xconf->out_conf.output_filename), value);
 
     return Conf_OK;
 }
 
-static ConfRes SET_show_output(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_show_output(void *conf, const char *name,
+                               const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->out_conf.is_show_failed){
+        if (xconf->out_conf.is_show_failed) {
             fprintf(xconf->echo, "show-output = failed\n");
         }
-        if (xconf->out_conf.is_show_info){
+        if (xconf->out_conf.is_show_info) {
             fprintf(xconf->echo, "show-output = info\n");
         }
-        if (xconf->out_conf.no_show_success){
+        if (xconf->out_conf.no_show_success) {
             fprintf(xconf->echo, "no-show-output = success\n");
         }
         return 0;
     }
 
-
-    if (EQUALS("failed",value)||EQUALS("fail",value)||EQUALS("error",value)) {
+    if (EQUALS("failed", value) || EQUALS("fail", value) ||
+        EQUALS("error", value)) {
         xconf->out_conf.is_show_failed = true;
-    } else if (EQUALS("info",value)||EQUALS("information",value)) {
+    } else if (EQUALS("info", value) || EQUALS("information", value)) {
         xconf->out_conf.is_show_info = true;
-    } else if (EQUALS("success",value)) {
+    } else if (EQUALS("success", value)) {
         xconf->out_conf.no_show_success = false;
     } else {
         LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
@@ -549,20 +566,19 @@ static ConfRes SET_show_output(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_no_show_output(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_no_show_output(void *conf, const char *name,
+                                  const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_show_output*/
         return 0;
     }
 
-
-    if (EQUALS("failed",value)||EQUALS("fail",value)) {
+    if (EQUALS("failed", value) || EQUALS("fail", value)) {
         xconf->out_conf.is_show_failed = false;
-    } else if (EQUALS("info",value)||EQUALS("information",value)) {
+    } else if (EQUALS("info", value) || EQUALS("information", value)) {
         xconf->out_conf.is_show_info = false;
-    } else if (EQUALS("success",value)) {
+    } else if (EQUALS("success", value)) {
         xconf->out_conf.no_show_success = true;
     } else {
         LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
@@ -572,28 +588,27 @@ static ConfRes SET_no_show_output(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static ConfRes SET_print_status(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_print_status(void *conf, const char *name,
+                                const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->is_status_queue){
+        if (xconf->is_status_queue) {
             fprintf(xconf->echo, "print-status = queue\n");
         }
-        if (xconf->is_status_info_num){
+        if (xconf->is_status_info_num) {
             fprintf(xconf->echo, "print-status = info-num\n");
         }
-        if (xconf->is_status_hit_rate){
+        if (xconf->is_status_hit_rate) {
             fprintf(xconf->echo, "print-status = hit-rate\n");
         }
         return 0;
     }
 
-
-    if (EQUALS("queue",value)) {
+    if (EQUALS("queue", value)) {
         xconf->is_status_queue = true;
-    } else if (EQUALS("info-num",value) || EQUALS("info",value)) {
+    } else if (EQUALS("info-num", value) || EQUALS("info", value)) {
         xconf->is_status_info_num = true;
-    } else if (EQUALS("hit-rate",value) || EQUALS("hit",value)) {
+    } else if (EQUALS("hit-rate", value) || EQUALS("hit", value)) {
         xconf->is_status_hit_rate = true;
     } else {
         LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
@@ -603,13 +618,14 @@ static ConfRes SET_print_status(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_scan_module_args(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_scan_module_args(void *conf, const char *name,
+                                    const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->scanner_args){
-            fprintf(xconf->echo, "scan-module-args = \"%s\"\n", xconf->scanner_args);
+        if (xconf->scanner_args) {
+            fprintf(xconf->echo, "scan-module-args = \"%s\"\n",
+                    xconf->scanner_args);
         }
         return 0;
     }
@@ -623,13 +639,14 @@ static ConfRes SET_scan_module_args(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static ConfRes SET_probe_module_args(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_probe_module_args(void *conf, const char *name,
+                                     const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->probe_args){
-            fprintf(xconf->echo, "probe-module-args = \"%s\"\n", xconf->probe_args);
+        if (xconf->probe_args) {
+            fprintf(xconf->echo, "probe-module-args = \"%s\"\n",
+                    xconf->probe_args);
         }
         return 0;
     }
@@ -643,13 +660,14 @@ static ConfRes SET_probe_module_args(void *conf, const char *name, const char *v
     return Conf_OK;
 }
 
-static ConfRes SET_generate_module_args(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_generate_module_args(void *conf, const char *name,
+                                        const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->generator_args){
-            fprintf(xconf->echo, "generate-module-args = \"%s\"\n", xconf->generator_args);
+        if (xconf->generator_args) {
+            fprintf(xconf->echo, "generate-module-args = \"%s\"\n",
+                    xconf->generator_args);
         }
         return 0;
     }
@@ -663,13 +681,14 @@ static ConfRes SET_generate_module_args(void *conf, const char *name, const char
     return Conf_OK;
 }
 
-static ConfRes SET_output_module_args(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_output_module_args(void *conf, const char *name,
+                                      const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->out_conf.output_args){
-            fprintf(xconf->echo, "output-module-args = \"%s\"\n", xconf->out_conf.output_args);
+        if (xconf->out_conf.output_args) {
+            fprintf(xconf->echo, "output-module-args = \"%s\"\n",
+                    xconf->out_conf.output_args);
         }
         return 0;
     }
@@ -683,63 +702,62 @@ static ConfRes SET_output_module_args(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static ConfRes SET_list_scan_modules(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_list_scan_modules(void *conf, const char *name,
+                                     const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-       return 0;
+        return 0;
     }
-    xconf->op = parseBoolean(value)?Operation_ListScanModules:xconf->op;
+    xconf->op = parseBoolean(value) ? Operation_ListScanModules : xconf->op;
     return Conf_OK;
 }
 
-static ConfRes SET_list_probe_modules(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_list_probe_modules(void *conf, const char *name,
+                                      const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-       return 0;
+        return 0;
     }
-    xconf->op = parseBoolean(value)?Operation_ListProbeModules:xconf->op;
+    xconf->op = parseBoolean(value) ? Operation_ListProbeModules : xconf->op;
     return Conf_OK;
 }
 
-static ConfRes SET_list_generate_modules(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_list_generate_modules(void *conf, const char *name,
+                                         const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-       return 0;
+        return 0;
     }
-    xconf->op = parseBoolean(value)?Operation_ListGenerateModules:xconf->op;
+    xconf->op = parseBoolean(value) ? Operation_ListGenerateModules : xconf->op;
     return Conf_OK;
 }
 
-static ConfRes SET_list_output_modules(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_list_output_modules(void *conf, const char *name,
+                                       const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-       return 0;
+        return 0;
     }
-    xconf->op = parseBoolean(value)?Operation_ListOutputModules:xconf->op;
+    xconf->op = parseBoolean(value) ? Operation_ListOutputModules : xconf->op;
     return Conf_OK;
 }
 
-static ConfRes SET_listif(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_listif(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->op==Operation_ListRange || xconf->echo_all)
+        if (xconf->op == Operation_ListRange || xconf->echo_all)
             fprintf(xconf->echo, "iflist = %s\n",
-                xconf->op==Operation_ListAdapters?"true":"false");
+                    xconf->op == Operation_ListAdapters ? "true" : "false");
         return 0;
     }
 
@@ -748,8 +766,8 @@ static ConfRes SET_listif(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_list_target(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_list_target(void *conf, const char *name,
+                               const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
@@ -764,8 +782,7 @@ static ConfRes SET_list_target(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_list_range(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_list_range(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
@@ -779,14 +796,14 @@ static ConfRes SET_list_range(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_pfring(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_pfring(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
         if (xconf->is_pfring || xconf->echo_all)
-            fprintf(xconf->echo, "pfring = %s\n", xconf->is_pfring?"true":"false");
+            fprintf(xconf->echo, "pfring = %s\n",
+                    xconf->is_pfring ? "true" : "false");
         return 0;
     }
 
@@ -795,14 +812,14 @@ static ConfRes SET_pfring(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_noresume(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_noresume(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->is_nodedup || xconf->echo_all) {
-            fprintf(xconf->echo, "no-resume = %s\n", xconf->is_noresume?"true":"false");
+            fprintf(xconf->echo, "no-resume = %s\n",
+                    xconf->is_noresume ? "true" : "false");
         }
-       return 0;
+        return 0;
     }
 
     xconf->is_noresume = parseBoolean(value);
@@ -810,14 +827,14 @@ static ConfRes SET_noresume(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_nodedup(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_nodedup(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->is_nodedup || xconf->echo_all) {
-            fprintf(xconf->echo, "no-dedup = %s\n", xconf->is_nodedup?"true":"false");
+            fprintf(xconf->echo, "no-dedup = %s\n",
+                    xconf->is_nodedup ? "true" : "false");
         }
-       return 0;
+        return 0;
     }
 
     xconf->is_nodedup = parseBoolean(value);
@@ -825,13 +842,12 @@ static ConfRes SET_nodedup(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_tcp_window(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_tcp_window(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->tcp_window!=0)
+        if (xconf->tcp_window != 0)
             fprintf(xconf->echo, "tcp-window = %u\n", xconf->tcp_window);
-       return 0;
+        return 0;
     }
 
     unsigned x = parseInt(value);
@@ -845,13 +861,14 @@ static ConfRes SET_tcp_window(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_tcp_init_window(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_tcp_init_window(void *conf, const char *name,
+                                   const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->tcp_init_window!=0)
-            fprintf(xconf->echo, "tcp-init-window = %u\n", xconf->tcp_init_window);
-       return 0;
+        if (xconf->tcp_init_window != 0)
+            fprintf(xconf->echo, "tcp-init-window = %u\n",
+                    xconf->tcp_init_window);
+        return 0;
     }
 
     unsigned x = parseInt(value);
@@ -865,13 +882,12 @@ static ConfRes SET_tcp_init_window(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static ConfRes SET_packet_ttl(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_packet_ttl(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->packet_ttl!=0)
+        if (xconf->packet_ttl != 0)
             fprintf(xconf->echo, "packet-ttl = %u\n", xconf->packet_ttl);
-       return 0;
+        return 0;
     }
 
     unsigned x = parseInt(value);
@@ -885,16 +901,15 @@ static ConfRes SET_packet_ttl(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_dedup_win(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_dedup_win(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->dedup_win!=XCONF_DFT_DEDUP_WIN || xconf->echo_all)
+        if (xconf->dedup_win != XCONF_DFT_DEDUP_WIN || xconf->echo_all)
             fprintf(xconf->echo, "dedup-win = %u\n", xconf->dedup_win);
-       return 0;
+        return 0;
     }
 
-    if (parseInt(value)<1024) {
+    if (parseInt(value) < 1024) {
         LOG(LEVEL_ERROR, "%s: dedup-win must >= 1024.\n", name);
         return Conf_ERR;
     }
@@ -904,25 +919,27 @@ static ConfRes SET_dedup_win(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_stack_buf_count(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_stack_buf_count(void *conf, const char *name,
+                                   const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->stack_buf_count!=XCONF_DFT_STACK_BUF_COUNT || xconf->echo_all) {
-            fprintf(xconf->echo, "stack-buf-count = %u\n", xconf->stack_buf_count);
+        if (xconf->stack_buf_count != XCONF_DFT_STACK_BUF_COUNT ||
+            xconf->echo_all) {
+            fprintf(xconf->echo, "stack-buf-count = %u\n",
+                    xconf->stack_buf_count);
         }
-       return 0;
+        return 0;
     }
 
     uint64_t v = parseInt(value);
-    if (v<2048) {
+    if (v < 2048) {
         LOG(LEVEL_ERROR, "%s: stack-buf-count must >= 2048.\n", value);
         return Conf_ERR;
     } else if (!is_power_of_two(v)) {
         LOG(LEVEL_ERROR, "%s: stack-buf-count must be power of 2.\n", value);
         return Conf_ERR;
-    } else if (v>RTE_RING_SZ_MASK) {
+    } else if (v > RTE_RING_SZ_MASK) {
         LOG(LEVEL_ERROR, "%s: stack-buf-count exceeded size limit.\n", value);
         return Conf_ERR;
     }
@@ -932,26 +949,29 @@ static ConfRes SET_stack_buf_count(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static ConfRes SET_dispatch_buf_count(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_dispatch_buf_count(void *conf, const char *name,
+                                      const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->dispatch_buf_count!=XCONF_DFT_DISPATCH_BUF_COUNT || xconf->echo_all) {
-            fprintf(xconf->echo, "dispatch-buf-count = %u\n", xconf->dispatch_buf_count);
+        if (xconf->dispatch_buf_count != XCONF_DFT_DISPATCH_BUF_COUNT ||
+            xconf->echo_all) {
+            fprintf(xconf->echo, "dispatch-buf-count = %u\n",
+                    xconf->dispatch_buf_count);
         }
-       return 0;
+        return 0;
     }
 
     uint64_t v = parseInt(value);
-    if (v<2048) {
+    if (v < 2048) {
         LOG(LEVEL_ERROR, "%s: dispatch-buf-count must >= 2048.\n", value);
         return Conf_ERR;
     } else if (!is_power_of_two(v)) {
         LOG(LEVEL_ERROR, "%s: dispatch-buf-count must be power of 2.\n", value);
         return Conf_ERR;
-    } else if (v>RTE_RING_SZ_MASK) {
-        LOG(LEVEL_ERROR, "%s: dispatch-buf-count exceeded size limit.\n", value);
+    } else if (v > RTE_RING_SZ_MASK) {
+        LOG(LEVEL_ERROR, "%s: dispatch-buf-count exceeded size limit.\n",
+            value);
         return Conf_ERR;
     }
 
@@ -960,8 +980,7 @@ static ConfRes SET_dispatch_buf_count(void *conf, const char *name, const char *
     return Conf_OK;
 }
 
-static ConfRes SET_forever(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_forever(void *conf, const char *name, const char *value) {
     UNUSEDPARM(name);
     UNUSEDPARM(value);
 
@@ -970,17 +989,16 @@ static ConfRes SET_forever(void *conf, const char *name, const char *value)
         return 0;
     }
 
-    xconf->wait =  INT_MAX;
+    xconf->wait = INT_MAX;
 
     return Conf_OK;
 }
 
-static ConfRes SET_wait(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_wait(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->wait!=XCONF_DFT_WAIT || xconf->echo_all) {
-            if (xconf->wait==INT_MAX)
+        if (xconf->wait != XCONF_DFT_WAIT || xconf->echo_all) {
+            if (xconf->wait == INT_MAX)
                 fprintf(xconf->echo, "forever = true\n");
             else
                 fprintf(xconf->echo, "wait = %u\n", xconf->wait);
@@ -993,22 +1011,25 @@ static ConfRes SET_wait(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_rx_handler_count(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_rx_handler_count(void *conf, const char *name,
+                                    const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->rx_handler_count>1 || xconf->echo_all) {
-            fprintf(xconf->echo, "rx-handler-count = %u\n", xconf->rx_handler_count);
+        if (xconf->rx_handler_count > 1 || xconf->echo_all) {
+            fprintf(xconf->echo, "rx-handler-count = %u\n",
+                    xconf->rx_handler_count);
         }
         return 0;
     }
 
     unsigned count = parseInt(value);
-    if (count<=0) {
-        LOG(LEVEL_ERROR, "%s: receive handler thread count cannot be zero.\n", name);
+    if (count <= 0) {
+        LOG(LEVEL_ERROR, "%s: receive handler thread count cannot be zero.\n",
+            name);
         return Conf_ERR;
     } else if (!is_power_of_two(count)) {
-        LOG(LEVEL_ERROR, "%s: receive handler thread count must be power of 2.\n", value);
+        LOG(LEVEL_ERROR,
+            "%s: receive handler thread count must be power of 2.\n", value);
         return Conf_ERR;
     }
 
@@ -1017,18 +1038,19 @@ static ConfRes SET_rx_handler_count(void *conf, const char *name, const char *va
     return Conf_OK;
 }
 
-static ConfRes SET_tx_thread_count(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_tx_thread_count(void *conf, const char *name,
+                                   const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->tx_thread_count>1 || xconf->echo_all) {
-            fprintf(xconf->echo, "tx-thread-count = %u\n", xconf->tx_thread_count);
+        if (xconf->tx_thread_count > 1 || xconf->echo_all) {
+            fprintf(xconf->echo, "tx-thread-count = %u\n",
+                    xconf->tx_thread_count);
         }
         return 0;
     }
 
     unsigned count = parseInt(value);
-    if (count==0) {
+    if (count == 0) {
         LOG(LEVEL_ERROR, "%s: transmit thread count cannot be zero.\n", name);
         return Conf_ERR;
     }
@@ -1038,8 +1060,7 @@ static ConfRes SET_tx_thread_count(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static ConfRes SET_adapter(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_adapter(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
@@ -1050,21 +1071,19 @@ static ConfRes SET_adapter(void *conf, const char *name, const char *value)
     }
 
     if (xconf->nic.ifname[0]) {
-        LOG(LEVEL_HINT, "CONF: overwriting \"adapter=%s\"\n", xconf->nic.ifname);
+        LOG(LEVEL_HINT, "CONF: overwriting \"adapter=%s\"\n",
+            xconf->nic.ifname);
     }
-    snprintf(  xconf->nic.ifname, sizeof(xconf->nic.ifname),
-        "%s", value);
+    snprintf(xconf->nic.ifname, sizeof(xconf->nic.ifname), "%s", value);
 
     return Conf_OK;
 }
 
-static ConfRes SET_source_ip(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_source_ip(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-
-        if (xconf->nic.src.ipv4.first!=0 || xconf->nic.src.ipv4.last!=0) {
+        if (xconf->nic.src.ipv4.first != 0 || xconf->nic.src.ipv4.last != 0) {
             ipaddress_formatted_t ipv4_first =
                 ipv4address_fmt((ipv4address)(xconf->nic.src.ipv4.first));
             ipaddress_formatted_t ipv4_last =
@@ -1072,8 +1091,8 @@ static ConfRes SET_source_ip(void *conf, const char *name, const char *value)
             if (xconf->nic.src.ipv4.first == xconf->nic.src.ipv4.last) {
                 fprintf(xconf->echo, "source-ip = %s\n", ipv4_first.string);
             } else if (xconf->nic.src.ipv4.first < xconf->nic.src.ipv4.last) {
-                fprintf(xconf->echo, "source-ip = %s-%s\n",
-                    ipv4_first.string, ipv4_last.string);
+                fprintf(xconf->echo, "source-ip = %s-%s\n", ipv4_first.string,
+                        ipv4_last.string);
             }
         }
 
@@ -1082,9 +1101,10 @@ static ConfRes SET_source_ip(void *conf, const char *name, const char *value)
                 ipv6address_fmt(xconf->nic.src.ipv6.first);
             ipaddress_formatted_t ipv6_last =
                 ipv6address_fmt(xconf->nic.src.ipv6.last);
-            if (ipv6address_is_lessthan(xconf->nic.src.ipv6.first, xconf->nic.src.ipv6.last)) {
-                fprintf(xconf->echo, "source-ip = %s-%s\n",
-                    ipv6_first.string, ipv6_last.string);
+            if (ipv6address_is_lessthan(xconf->nic.src.ipv6.first,
+                                        xconf->nic.src.ipv6.last)) {
+                fprintf(xconf->echo, "source-ip = %s-%s\n", ipv6_first.string,
+                        ipv6_last.string);
             } else {
                 fprintf(xconf->echo, "source-ip = %s\n", ipv6_first.string);
             }
@@ -1094,19 +1114,19 @@ static ConfRes SET_source_ip(void *conf, const char *name, const char *value)
     }
 
     /* Send packets FROM this IP address */
-    struct Range range;
+    struct Range  range;
     struct Range6 range6;
-    int err;
+    int           err;
 
     /* Grab the next IPv4 or IPv6 range */
     err = targetip_parse_range(value, 0, 0, &range, &range6);
     switch (err) {
         case Ipv4_Address:
             /* If more than one IP address given, make the range is
-                * a power of two (1, 2, 4, 8, 16, ...) */
+             * a power of two (1, 2, 4, 8, 16, ...) */
             if (!is_power_of_two((uint64_t)range.end - range.begin + 1)) {
-                LOG(LEVEL_ERROR, "range must be power of two: %s=%s\n",
-                    name, value);
+                LOG(LEVEL_ERROR, "range must be power of two: %s=%s\n", name,
+                    value);
                 return Conf_ERR;
             }
             xconf->nic.src.ipv4.first = range.begin;
@@ -1114,15 +1134,16 @@ static ConfRes SET_source_ip(void *conf, const char *name, const char *value)
             xconf->nic.src.ipv4.range = range.end - range.begin + 1;
             break;
         case Ipv6_Address:
-            if (range6.begin.hi!=range6.end.hi) {
-                LOG(LEVEL_ERROR, "range of ipv6 source addresses is too large.\n");
+            if (range6.begin.hi != range6.end.hi) {
+                LOG(LEVEL_ERROR,
+                    "range of ipv6 source addresses is too large.\n");
                 return Conf_ERR;
             }
             /* If more than one IP address given, make the range is
-                * a power of two (1, 2, 4, 8, 16, ...) */
+             * a power of two (1, 2, 4, 8, 16, ...) */
             if (!is_power_of_two(range6.end.lo - range6.begin.lo + 1)) {
-                LOG(LEVEL_ERROR, "range must be power of two: %s=%s\n",
-                    name, value);
+                LOG(LEVEL_ERROR, "range must be power of two: %s=%s\n", name,
+                    value);
                 return Conf_ERR;
             }
             xconf->nic.src.ipv6.first = range6.begin;
@@ -1130,17 +1151,17 @@ static ConfRes SET_source_ip(void *conf, const char *name, const char *value)
             xconf->nic.src.ipv6.range = range6.end.lo - range6.begin.lo + 1;
             break;
         default:
-            LOG(LEVEL_ERROR, "bad source IP address: %s=%s\n",
-                name, value);
-            LOG(LEVEL_HINT, "Addresses looks like \"192.168.1.23\" or \"2001:db8:1::1ce9\".\n");
+            LOG(LEVEL_ERROR, "bad source IP address: %s=%s\n", name, value);
+            LOG(LEVEL_HINT, "Addresses looks like \"192.168.1.23\" or "
+                            "\"2001:db8:1::1ce9\".\n");
             return Conf_ERR;
     }
 
     return Conf_OK;
 }
 
-static ConfRes SET_source_port(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_source_port(void *conf, const char *name,
+                               const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->nic.src.port.first) {
@@ -1155,8 +1176,8 @@ static ConfRes SET_source_port(void *conf, const char *name, const char *value)
     }
 
     /* Send packets FROM this port number */
-    unsigned is_error      = 0;
-    struct RangeList ports = {0};
+    unsigned         is_error = 0;
+    struct RangeList ports    = {0};
 
     rangelist_parse_ports(&ports, value, &is_error, 0);
 
@@ -1168,8 +1189,9 @@ static ConfRes SET_source_port(void *conf, const char *name, const char *value)
 
     /* Only allow one range of ports */
     if (ports.count != 1) {
-        LOG(LEVEL_ERROR, "only one '%s' range may be specified, found %u ranges\n",
-            name, ports.count);
+        LOG(LEVEL_ERROR,
+            "only one '%s' range may be specified, found %u ranges\n", name,
+            ports.count);
         return Conf_ERR;
     }
 
@@ -1187,18 +1209,18 @@ static ConfRes SET_source_port(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_target_output(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_target_output(void *conf, const char *name,
+                                 const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /* Disable comma generation for the first element */
         unsigned i = 0;
         unsigned l = 0;
-        for (i=0; i<xconf->targets.ports.count; i++) {
+        for (i = 0; i < xconf->targets.ports.count; i++) {
             struct Range range = xconf->targets.ports.list[i];
             do {
                 struct Range rrange = range;
-                unsigned done = 0;
+                unsigned     done   = 0;
                 if (l) {
                     fprintf(xconf->echo, ",");
                 } else {
@@ -1208,17 +1230,17 @@ static ConfRes SET_target_output(void *conf, const char *name, const char *value
                 if (rrange.begin >= Range_Oproto) {
                     rrange.begin -= Range_Oproto;
                     rrange.end -= Range_Oproto;
-                    fprintf(xconf->echo,"O:");
+                    fprintf(xconf->echo, "O:");
                     done = 1;
                 } else if (rrange.begin >= Range_SCTP) {
                     rrange.begin -= Range_SCTP;
                     rrange.end -= Range_SCTP;
-                    fprintf(xconf->echo,"S:");
+                    fprintf(xconf->echo, "S:");
                     range.begin = Range_Oproto;
                 } else if (rrange.begin >= Range_UDP) {
                     rrange.begin -= Range_UDP;
                     rrange.end -= Range_UDP;
-                    fprintf(xconf->echo,"U:");
+                    fprintf(xconf->echo, "U:");
                     range.begin = Range_SCTP;
                 } else
                     range.begin = Range_UDP;
@@ -1236,46 +1258,34 @@ static ConfRes SET_target_output(void *conf, const char *name, const char *value
         if (l)
             fprintf(xconf->echo, "\n");
         /*
-        * IPv4 address targets
-        */
-        for (i=0; i<xconf->targets.ipv4.count; i++) {
-            unsigned prefix_bits;
+         * IPv4 address targets
+         */
+        for (i = 0; i < xconf->targets.ipv4.count; i++) {
+            unsigned     prefix_bits;
             struct Range range = xconf->targets.ipv4.list[i];
 
             if (range.begin == range.end) {
                 fprintf(xconf->echo, "range = %u.%u.%u.%u",
-                        (range.begin>>24)&0xFF,
-                        (range.begin>>16)&0xFF,
-                        (range.begin>> 8)&0xFF,
-                        (range.begin>> 0)&0xFF
-                        );
+                        (range.begin >> 24) & 0xFF, (range.begin >> 16) & 0xFF,
+                        (range.begin >> 8) & 0xFF, (range.begin >> 0) & 0xFF);
             } else if (range_is_cidr(range, &prefix_bits)) {
                 fprintf(xconf->echo, "range = %u.%u.%u.%u/%u",
-                        (range.begin>>24)&0xFF,
-                        (range.begin>>16)&0xFF,
-                        (range.begin>> 8)&0xFF,
-                        (range.begin>> 0)&0xFF,
-                        prefix_bits
-                        );
-
+                        (range.begin >> 24) & 0xFF, (range.begin >> 16) & 0xFF,
+                        (range.begin >> 8) & 0xFF, (range.begin >> 0) & 0xFF,
+                        prefix_bits);
             } else {
                 fprintf(xconf->echo, "range = %u.%u.%u.%u-%u.%u.%u.%u",
-                        (range.begin>>24)&0xFF,
-                        (range.begin>>16)&0xFF,
-                        (range.begin>> 8)&0xFF,
-                        (range.begin>> 0)&0xFF,
-                        (range.end  >>24)&0xFF,
-                        (range.end  >>16)&0xFF,
-                        (range.end  >> 8)&0xFF,
-                        (range.end  >> 0)&0xFF
-                        );
+                        (range.begin >> 24) & 0xFF, (range.begin >> 16) & 0xFF,
+                        (range.begin >> 8) & 0xFF, (range.begin >> 0) & 0xFF,
+                        (range.end >> 24) & 0xFF, (range.end >> 16) & 0xFF,
+                        (range.end >> 8) & 0xFF, (range.end >> 0) & 0xFF);
             }
             fprintf(xconf->echo, "\n");
         }
-        for (i=0; i<xconf->targets.ipv6.count; i++) {
-            bool exact = false;
-            struct Range6 range = xconf->targets.ipv6.list[i];
-            ipaddress_formatted_t fmt = ipv6address_fmt(range.begin);
+        for (i = 0; i < xconf->targets.ipv6.count; i++) {
+            bool                  exact = false;
+            struct Range6         range = xconf->targets.ipv6.list[i];
+            ipaddress_formatted_t fmt   = ipv6address_fmt(range.begin);
 
             fprintf(xconf->echo, "range = %s", fmt.string);
             if (!ipv6address_is_equal(range.begin, range.end)) {
@@ -1295,8 +1305,7 @@ static ConfRes SET_target_output(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static ConfRes SET_target_ip(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_target_ip(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
@@ -1316,12 +1325,12 @@ static ConfRes SET_target_ip(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_adapter_snaplen(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_adapter_snaplen(void *conf, const char *name,
+                                   const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->nic.snaplen!=XCONF_DFT_SNAPLEN || xconf->echo_all) {
+        if (xconf->nic.snaplen != XCONF_DFT_SNAPLEN || xconf->echo_all) {
             fprintf(xconf->echo, "adapter-snaplen = %u\n", xconf->nic.snaplen);
         }
         return 0;
@@ -1336,8 +1345,8 @@ static ConfRes SET_adapter_snaplen(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static ConfRes SET_adapter_vlan(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_adapter_vlan(void *conf, const char *name,
+                                const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
@@ -1353,8 +1362,8 @@ static ConfRes SET_adapter_vlan(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_target_port(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_target_port(void *conf, const char *name,
+                               const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
@@ -1376,8 +1385,7 @@ static ConfRes SET_target_port(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_top_port(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_top_port(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
@@ -1391,23 +1399,19 @@ static ConfRes SET_top_port(void *conf, const char *name, const char *value)
         return Conf_ERR;
     }
 
-    struct RangeList *ports = &xconf->targets.ports;
+    struct RangeList     *ports         = &xconf->targets.ports;
     static const unsigned max_tcp_ports = ARRAY_SIZE(top_tcp_ports);
     static const unsigned max_udp_ports = ARRAY_SIZE(top_udp_ports);
 
     unsigned i;
-    if (name[0]=='u') {
+    if (name[0] == 'u') {
         LOG(LEVEL_DETAIL, "adding UDP top-ports = %u\n", maxports);
-        for (i=0; i<maxports && i<max_udp_ports; i++)
-            rangelist_add_range_udp(ports,
-                                top_udp_ports[i],
-                                top_udp_ports[i]);
+        for (i = 0; i < maxports && i < max_udp_ports; i++)
+            rangelist_add_range_udp(ports, top_udp_ports[i], top_udp_ports[i]);
     } else {
         LOG(LEVEL_DETAIL, "adding TCP top-ports = %u\n", maxports);
-        for (i=0; i<maxports && i<max_tcp_ports; i++)
-            rangelist_add_range_tcp(ports,
-                                top_tcp_ports[i],
-                                top_tcp_ports[i]);
+        for (i = 0; i < maxports && i < max_tcp_ports; i++)
+            rangelist_add_range_tcp(ports, top_tcp_ports[i], top_tcp_ports[i]);
     }
 
     /* Targets must be sorted after every change, before being used */
@@ -1416,8 +1420,7 @@ static ConfRes SET_top_port(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_exclude_ip(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_exclude_ip(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
@@ -1437,15 +1440,15 @@ static ConfRes SET_exclude_ip(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_exclude_port(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_exclude_port(void *conf, const char *name,
+                                const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
     }
     unsigned defaultrange = 0;
-    int err;
+    int      err;
 
     err = targetip_add_port_string(&xconf->exclude, value, defaultrange);
     if (err) {
@@ -1459,15 +1462,15 @@ static ConfRes SET_exclude_port(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_include_file(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_include_file(void *conf, const char *name,
+                                const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
     }
 
-    int err;
+    int         err;
     const char *filename = value;
 
     err = targetip_parse_file(&xconf->targets, filename);
@@ -1481,17 +1484,17 @@ static ConfRes SET_include_file(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_exclude_file(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_exclude_file(void *conf, const char *name,
+                                const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
         return 0;
     }
 
-    unsigned count1 = xconf->exclude.ipv4.count;
-    unsigned count2;
-    int err;
+    unsigned    count1 = xconf->exclude.ipv4.count;
+    unsigned    count2;
+    int         err;
     const char *filename = value;
 
     // LOG(LEVEL_DETAIL, "EXCLUDING: %s\n", value);
@@ -1501,17 +1504,16 @@ static ConfRes SET_exclude_file(void *conf, const char *name, const char *value)
         return Conf_ERR;
     }
     /* Detect if this file has made any change, otherwise don't print
-        * a message */
+     * a message */
     count2 = xconf->exclude.ipv4.count;
     if (count2 - count1)
-        LOG(LEVEL_HINT, "%s: excluding %u ranges from file\n",
-            value, count2 - count1);
+        LOG(LEVEL_HINT, "%s: excluding %u ranges from file\n", value,
+            count2 - count1);
 
     return Conf_OK;
 }
 
-static ConfRes SET_source_mac(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_source_mac(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->nic.my_mac_count) {
@@ -1523,19 +1525,18 @@ static ConfRes SET_source_mac(void *conf, const char *name, const char *value)
 
     /* Send packets FROM this MAC address */
     macaddress_t source_mac;
-    int err;
+    int          err;
 
     err = parseMacAddress(value, &source_mac);
     if (err) {
-        LOG(LEVEL_ERROR, "CONF: bad MAC address: %s = %s\n",
-            name, value);
+        LOG(LEVEL_ERROR, "CONF: bad MAC address: %s = %s\n", name, value);
         return Conf_ERR;
     }
 
     /* Check for duplicates */
     if (macaddress_is_equal(xconf->nic.source_mac, source_mac)) {
         /* suppresses warning message about duplicate MAC addresses if
-            * they are in fact the same */
+         * they are in fact the same */
         return Conf_OK;
     }
 
@@ -1544,18 +1545,16 @@ static ConfRes SET_source_mac(void *conf, const char *name, const char *value)
         ipaddress_formatted_t fmt1 = macaddress_fmt(xconf->nic.source_mac);
         ipaddress_formatted_t fmt2 = macaddress_fmt(source_mac);
         LOG(LEVEL_HINT, "overwriting MAC address, was %s, now %s\n",
-            fmt1.string,
-            fmt2.string);
+            fmt1.string, fmt2.string);
     }
 
-    xconf->nic.source_mac = source_mac;
+    xconf->nic.source_mac   = source_mac;
     xconf->nic.my_mac_count = 1;
 
     return Conf_OK;
 }
 
-static ConfRes SET_router_ip(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_router_ip(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->nic.router_ip) {
@@ -1584,16 +1583,17 @@ static ConfRes SET_router_ip(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_router_mac(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_router_mac(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (!macaddress_is_zero(xconf->nic.router_mac_ipv4)) {
-            ipaddress_formatted_t fmt =  macaddress_fmt(xconf->nic.router_mac_ipv4);
+            ipaddress_formatted_t fmt =
+                macaddress_fmt(xconf->nic.router_mac_ipv4);
             fprintf(xconf->echo, "router-mac-ipv4 = %s\n", fmt.string);
         }
         if (!macaddress_is_zero(xconf->nic.router_mac_ipv6)) {
-            ipaddress_formatted_t fmt = macaddress_fmt(xconf->nic.router_mac_ipv6);
+            ipaddress_formatted_t fmt =
+                macaddress_fmt(xconf->nic.router_mac_ipv6);
             fprintf(xconf->echo, "router-mac-ipv6 = %s\n", fmt.string);
         }
 
@@ -1601,7 +1601,7 @@ static ConfRes SET_router_mac(void *conf, const char *name, const char *value)
     }
 
     macaddress_t router_mac;
-    int err;
+    int          err;
     err = parseMacAddress(value, &router_mac);
     if (err) {
         LOG(LEVEL_ERROR, "CONF: bad MAC address: %s = %s\n", name, value);
@@ -1621,9 +1621,8 @@ static ConfRes SET_router_mac(void *conf, const char *name, const char *value)
 
 /**
  * read conf file and set params directly
-*/
-static ConfRes SET_read_conf(void *conf, const char *name, const char *value)
-{
+ */
+static ConfRes SET_read_conf(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
@@ -1634,7 +1633,7 @@ static ConfRes SET_read_conf(void *conf, const char *name, const char *value)
 
     fp = fopen(value, "rt");
     if (fp == NULL) {
-        char dir[512];
+        char  dir[512];
         char *x;
 
         LOG(LEVEL_ERROR, "reading configuration file\n");
@@ -1668,11 +1667,10 @@ static ConfRes SET_read_conf(void *conf, const char *name, const char *value)
          * For value, must consider wrapper of double quotes or single quotes.
          * */
         trim(value, 65535);
-        if (value[0]=='"') {
+        if (value[0] == '"') {
             trim_char(value, 65535, '"');
             trim(value, 65535);
-        }
-        else if (value[0]=='\'') {
+        } else if (value[0] == '\'') {
             trim_char(value, 65535, '\'');
             trim(value, 65535);
         }
@@ -1686,128 +1684,130 @@ static ConfRes SET_read_conf(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_packet_trace(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_packet_trace(void *conf, const char *name,
+                                const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
         if (xconf->packet_trace || xconf->echo_all)
             fprintf(xconf->echo, "packet-trace = %s\n",
-                xconf->packet_trace?"true":"false");
+                    xconf->packet_trace ? "true" : "false");
         return 0;
     }
     xconf->packet_trace = parseBoolean(value);
     return Conf_OK;
 }
 
-static ConfRes SET_ndjson_status(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_ndjson_status(void *conf, const char *name,
+                                 const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
         if (xconf->is_status_ndjson || xconf->echo_all)
-            fprintf(xconf->echo, "ndjson-status = %s\n", xconf->is_status_ndjson?"true":"false");
+            fprintf(xconf->echo, "ndjson-status = %s\n",
+                    xconf->is_status_ndjson ? "true" : "false");
         return 0;
     }
     xconf->is_status_ndjson = parseBoolean(value);
     return Conf_OK;
 }
 
-static ConfRes SET_append(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_append(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
         if (xconf->out_conf.is_append || xconf->echo_all)
             fprintf(xconf->echo, "append-output = %s\n",
-                xconf->out_conf.is_append?"true":"false");
+                    xconf->out_conf.is_append ? "true" : "false");
         return 0;
     }
     xconf->out_conf.is_append = parseBoolean(value);
     return Conf_OK;
 }
 
-static ConfRes SET_interactive(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_interactive(void *conf, const char *name,
+                               const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
         if (xconf->out_conf.is_interactive || xconf->echo_all)
             fprintf(xconf->echo, "interactive = %s\n",
-                xconf->out_conf.is_interactive?"true":"false");
+                    xconf->out_conf.is_interactive ? "true" : "false");
         return 0;
     }
     xconf->out_conf.is_interactive = parseBoolean(value);
     return Conf_OK;
 }
 
-static ConfRes SET_offline(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_offline(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
         if (xconf->is_offline || xconf->echo_all)
-            fprintf(xconf->echo, "offline = %s\n", xconf->is_offline?"true":"false");
+            fprintf(xconf->echo, "offline = %s\n",
+                    xconf->is_offline ? "true" : "false");
         return 0;
     }
     xconf->is_offline = parseBoolean(value);
     return Conf_OK;
 }
 
-static ConfRes SET_no_cpu_bind(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_no_cpu_bind(void *conf, const char *name,
+                               const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
         if (xconf->is_no_cpu_bind || xconf->echo_all)
-            fprintf(xconf->echo, "no-cpu-bind = %s\n", xconf->is_no_cpu_bind?"true":"false");
+            fprintf(xconf->echo, "no-cpu-bind = %s\n",
+                    xconf->is_no_cpu_bind ? "true" : "false");
         return 0;
     }
     xconf->is_no_cpu_bind = parseBoolean(value);
     return Conf_OK;
 }
 
-static ConfRes SET_static_seed(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_static_seed(void *conf, const char *name,
+                               const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
         if (xconf->is_static_seed || xconf->echo_all)
-            fprintf(xconf->echo, "static-seed = %s\n", xconf->is_static_seed?"true":"false");
+            fprintf(xconf->echo, "static-seed = %s\n",
+                    xconf->is_static_seed ? "true" : "false");
         return 0;
     }
     xconf->is_static_seed = parseBoolean(value);
     return Conf_OK;
 }
 
-static ConfRes SET_infinite(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_infinite(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
         if (xconf->is_infinite || xconf->echo_all)
-            fprintf(xconf->echo, "infinite = %s\n", xconf->is_infinite?"true":"false");
+            fprintf(xconf->echo, "infinite = %s\n",
+                    xconf->is_infinite ? "true" : "false");
         return 0;
     }
     xconf->is_infinite = parseBoolean(value);
     return Conf_OK;
 }
 
-static ConfRes SET_fast_timeout(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_fast_timeout(void *conf, const char *name,
+                                const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->is_fast_timeout || xconf->echo_all) {
             if (xconf->is_fast_timeout) {
-                fprintf(xconf->echo, "timeout = %"PRId64"\n", xconf->ft_spec);
+                fprintf(xconf->echo, "timeout = %" PRId64 "\n", xconf->ft_spec);
             } else {
                 fprintf(xconf->echo, "timeout = false\n");
             }
@@ -1822,11 +1822,12 @@ static ConfRes SET_fast_timeout(void *conf, const char *name, const char *value)
     } else if (is_integer(value)) {
         int spec = parseInt(value);
         if (spec <= 0) {
-            LOG(LEVEL_ERROR, "%s: need a switch word or a positive number.\n", name);
+            LOG(LEVEL_ERROR, "%s: need a switch word or a positive number.\n",
+                name);
             return Conf_ERR;
         }
         xconf->is_fast_timeout = 1;
-        xconf->ft_spec = (time_t)spec;
+        xconf->ft_spec         = (time_t)spec;
     } else
         goto fail;
 
@@ -1836,13 +1837,14 @@ fail:
     return Conf_ERR;
 }
 
-static ConfRes SET_pcap_filename(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_pcap_filename(void *conf, const char *name,
+                                 const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->pcap_filename[0])
-            fprintf(xconf->echo, "pcap-filename = \"%s\"\n", xconf->pcap_filename);
+            fprintf(xconf->echo, "pcap-filename = \"%s\"\n",
+                    xconf->pcap_filename);
         return 0;
     }
     if (value)
@@ -1850,8 +1852,7 @@ static ConfRes SET_pcap_filename(void *conf, const char *name, const char *value
     return Conf_OK;
 }
 
-static ConfRes SET_echo(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_echo(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
@@ -1860,15 +1861,14 @@ static ConfRes SET_echo(void *conf, const char *name, const char *value)
     if (EQUALS("echo", name) && parseBoolean(value))
         xconf->op = Operation_Echo;
     else if (EQUALS("echo-all", name) && parseBoolean(value)) {
-        xconf->op = Operation_Echo;
+        xconf->op       = Operation_Echo;
         xconf->echo_all = 1;
     }
 
     return Conf_OK;
 }
 
-static ConfRes SET_debugif(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_debugif(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
@@ -1880,8 +1880,7 @@ static ConfRes SET_debugif(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_benchmark(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_benchmark(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
@@ -1893,8 +1892,7 @@ static ConfRes SET_benchmark(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_selftest(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_selftest(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
@@ -1906,8 +1904,7 @@ static ConfRes SET_selftest(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_list_cidr(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_list_cidr(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         return 0;
@@ -1919,8 +1916,7 @@ static ConfRes SET_list_cidr(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_lan_mode(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_lan_mode(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
@@ -1935,15 +1931,14 @@ static ConfRes SET_lan_mode(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_bypass_os(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_bypass_os(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
         if (xconf->is_bypass_os || xconf->echo_all)
             fprintf(xconf->echo, "bypass-os = %s",
-                xconf->is_bypass_os?"true":"false");
+                    xconf->is_bypass_os ? "true" : "false");
         return 0;
     }
 
@@ -1952,8 +1947,8 @@ static ConfRes SET_bypass_os(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_fake_router_mac(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_fake_router_mac(void *conf, const char *name,
+                                   const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
@@ -1968,11 +1963,10 @@ static ConfRes SET_fake_router_mac(void *conf, const char *name, const char *val
     return Conf_OK;
 }
 
-static ConfRes SET_rate(void *conf, const char *name, const char *value)
-{
-    XConf *xconf = (XConf *)conf;
-    double rate = 0.0;
-    double point = 10.0;
+static ConfRes SET_rate(void *conf, const char *name, const char *value) {
+    XConf   *xconf = (XConf *)conf;
+    double   rate  = 0.0;
+    double   point = 10.0;
     unsigned i;
 
     if (xconf->echo) {
@@ -1987,10 +1981,11 @@ static ConfRes SET_rate(void *conf, const char *name, const char *value)
         return 0;
     }
 
-    for (i=0; value[i] && value[i] != '.'; i++) {
+    for (i = 0; value[i] && value[i] != '.'; i++) {
         char c = value[i];
         if (c < '0' || '9' < c) {
-            LOG(LEVEL_ERROR, "CONF: non-digit in rate spec: %s=%s\n", name, value);
+            LOG(LEVEL_ERROR, "CONF: non-digit in rate spec: %s=%s\n", name,
+                value);
             return Conf_ERR;
         }
         rate = rate * 10.0 + (c - '0');
@@ -2001,11 +1996,11 @@ static ConfRes SET_rate(void *conf, const char *name, const char *value)
         while (value[i]) {
             char c = value[i];
             if (c < '0' || '9' < c) {
-                LOG(LEVEL_ERROR, "CONF: non-digit in rate spec: %s=%s\n",
-                        name, value);
+                LOG(LEVEL_ERROR, "CONF: non-digit in rate spec: %s=%s\n", name,
+                    value);
                 return Conf_ERR;
             }
-            rate += (c - '0')/point;
+            rate += (c - '0') / point;
             point *= 10.0;
             value++;
         }
@@ -2015,13 +2010,14 @@ static ConfRes SET_rate(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_max_packet_len(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_max_packet_len(void *conf, const char *name,
+                                  const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->max_packet_len!=XCONF_DFT_MAX_PKT_LEN || xconf->echo_all) {
-            fprintf(xconf->echo, "max-packet-len = %u\n", xconf->max_packet_len);
+        if (xconf->max_packet_len != XCONF_DFT_MAX_PKT_LEN || xconf->echo_all) {
+            fprintf(xconf->echo, "max-packet-len = %u\n",
+                    xconf->max_packet_len);
         }
         return 0;
     }
@@ -2029,13 +2025,14 @@ static ConfRes SET_max_packet_len(void *conf, const char *name, const char *valu
     return Conf_OK;
 }
 
-static ConfRes SET_resume_index(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_resume_index(void *conf, const char *name,
+                                const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->resume.index!=0 || xconf->echo_all) {
-            fprintf(xconf->echo, "resume-index = %" PRIu64 "\n", xconf->resume.index);
+        if (xconf->resume.index != 0 || xconf->echo_all) {
+            fprintf(xconf->echo, "resume-index = %" PRIu64 "\n",
+                    xconf->resume.index);
         }
         return 0;
     }
@@ -2043,23 +2040,21 @@ static ConfRes SET_resume_index(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_no_bpf(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_no_bpf(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
         if (xconf->is_no_bpf || xconf->echo_all)
             fprintf(xconf->echo, "no-bpf-filter = %s\n",
-                xconf->is_no_bpf?"true":"false");
+                    xconf->is_no_bpf ? "true" : "false");
         return 0;
     }
     xconf->is_no_bpf = parseBoolean(value);
     return Conf_OK;
 }
 
-static ConfRes SET_bpf_filter(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_bpf_filter(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
@@ -2077,9 +2072,7 @@ static ConfRes SET_bpf_filter(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-
-static ConfRes SET_seed(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_seed(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
@@ -2093,8 +2086,7 @@ static ConfRes SET_seed(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_nothing(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_nothing(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
@@ -2104,8 +2096,7 @@ static ConfRes SET_nothing(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_version(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_version(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
@@ -2118,8 +2109,7 @@ static ConfRes SET_version(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_usage(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_usage(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
@@ -2132,8 +2122,8 @@ static ConfRes SET_usage(void *conf, const char *name, const char *value)
     return Conf_ERR;
 }
 
-static ConfRes SET_print_intro(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_print_intro(void *conf, const char *name,
+                               const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
@@ -2146,8 +2136,7 @@ static ConfRes SET_print_intro(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_print_help(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_print_help(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     UNUSEDPARM(value);
@@ -2160,14 +2149,13 @@ static ConfRes SET_print_help(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_log_level(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_log_level(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(value);
     if (xconf->echo) {
         int level = LOG_get_level();
         if (level > 0) {
-            for (unsigned i=0; i<level; i++) {
+            for (unsigned i = 0; i < level; i++) {
                 fprintf(xconf->echo, "%c", 'd');
             }
             fprintf(xconf->echo, " = true\n");
@@ -2180,24 +2168,24 @@ static ConfRes SET_log_level(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_shard(void *conf, const char *name, const char *value)
-{
-    XConf *xconf = (XConf *)conf;
-    unsigned one = 0;
-    unsigned of = 0;
+static ConfRes SET_shard(void *conf, const char *name, const char *value) {
+    XConf   *xconf = (XConf *)conf;
+    unsigned one   = 0;
+    unsigned of    = 0;
 
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->shard.of > 1  || xconf->echo_all)
-            fprintf(xconf->echo, "shard = %u/%u\n", xconf->shard.one, xconf->shard.of);
+        if (xconf->shard.of > 1 || xconf->echo_all)
+            fprintf(xconf->echo, "shard = %u/%u\n", xconf->shard.one,
+                    xconf->shard.of);
         return 0;
     }
     while (isdigit(*value))
-        one = one*10 + (*(value++)) - '0';
+        one = one * 10 + (*(value++)) - '0';
     while (ispunct(*value))
         value++;
     while (isdigit(*value))
-        of = of*10 + (*(value++)) - '0';
+        of = of * 10 + (*(value++)) - '0';
 
     if (one < 1) {
         LOG(LEVEL_ERROR, "shard index can't be zero\n");
@@ -2210,12 +2198,11 @@ static ConfRes SET_shard(void *conf, const char *name, const char *value)
         return Conf_ERR;
     }
     xconf->shard.one = one;
-    xconf->shard.of = of;
+    xconf->shard.of  = of;
     return Conf_OK;
 }
 
-static ConfRes SET_tcp_mss(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_tcp_mss(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
 
     if (xconf->echo) {
@@ -2246,13 +2233,13 @@ static ConfRes SET_tcp_mss(void *conf, const char *name, const char *value)
     if (value == 0 || value[0] == '\0') {
         /* no following parameter, so interpret this to mean "enable" */
         xconf->templ_opts->tcp.is_mss = Add;
-        xconf->templ_opts->tcp.mss = TCP_DEFAULT_MSS;
+        xconf->templ_opts->tcp.mss    = TCP_DEFAULT_MSS;
     } else if (isBoolean(value)) {
         /* looking for "enable" or "disable", but any boolean works,
          * like "true/false" or "off/on" */
         if (parseBoolean(value)) {
             xconf->templ_opts->tcp.is_mss = Add;
-            xconf->templ_opts->tcp.mss = TCP_DEFAULT_MSS;
+            xconf->templ_opts->tcp.mss    = TCP_DEFAULT_MSS;
         } else
             xconf->templ_opts->tcp.is_mss = Remove;
     } else if (is_integer(value)) {
@@ -2261,7 +2248,7 @@ static ConfRes SET_tcp_mss(void *conf, const char *name, const char *value)
         if (num >= 0x10000)
             goto fail;
         xconf->templ_opts->tcp.is_mss = Add;
-        xconf->templ_opts->tcp.mss = (unsigned)num;
+        xconf->templ_opts->tcp.mss    = (unsigned)num;
     } else
         goto fail;
 
@@ -2271,9 +2258,8 @@ fail:
     return Conf_ERR;
 }
 
-static ConfRes SET_tcp_wscale(void *conf, const char *name, const char *value)
-{
-    XConf *xconf = (XConf *)conf;
+static ConfRes SET_tcp_wscale(void *conf, const char *name, const char *value) {
+    XConf                *xconf         = (XConf *)conf;
     static const unsigned default_value = 3;
 
     if (xconf->echo) {
@@ -2303,11 +2289,11 @@ static ConfRes SET_tcp_wscale(void *conf, const char *name, const char *value)
 
     if (value == 0 || value[0] == '\0') {
         xconf->templ_opts->tcp.is_wscale = Add;
-        xconf->templ_opts->tcp.wscale = default_value;
+        xconf->templ_opts->tcp.wscale    = default_value;
     } else if (isBoolean(value)) {
         if (parseBoolean(value)) {
             xconf->templ_opts->tcp.is_wscale = Add;
-            xconf->templ_opts->tcp.wscale = default_value;
+            xconf->templ_opts->tcp.wscale    = default_value;
         } else
             xconf->templ_opts->tcp.is_wscale = Remove;
     } else if (is_integer(value)) {
@@ -2315,7 +2301,7 @@ static ConfRes SET_tcp_wscale(void *conf, const char *name, const char *value)
         if (num >= 255)
             goto fail;
         xconf->templ_opts->tcp.is_wscale = Add;
-        xconf->templ_opts->tcp.wscale = (unsigned)num;
+        xconf->templ_opts->tcp.wscale    = (unsigned)num;
     } else
         goto fail;
 
@@ -2325,9 +2311,8 @@ fail:
     return Conf_ERR;
 }
 
-static ConfRes SET_tcp_tsecho(void *conf, const char *name, const char *value)
-{
-    XConf *xconf = (XConf *)conf;
+static ConfRes SET_tcp_tsecho(void *conf, const char *name, const char *value) {
+    XConf                *xconf         = (XConf *)conf;
     static const unsigned default_value = 0x12345678;
 
     if (xconf->echo) {
@@ -2357,11 +2342,11 @@ static ConfRes SET_tcp_tsecho(void *conf, const char *name, const char *value)
 
     if (value == 0 || value[0] == '\0') {
         xconf->templ_opts->tcp.is_tsecho = Add;
-        xconf->templ_opts->tcp.tsecho = default_value;
+        xconf->templ_opts->tcp.tsecho    = default_value;
     } else if (isBoolean(value)) {
         if (parseBoolean(value)) {
             xconf->templ_opts->tcp.is_tsecho = Add;
-            xconf->templ_opts->tcp.tsecho = default_value;
+            xconf->templ_opts->tcp.tsecho    = default_value;
         } else
             xconf->templ_opts->tcp.is_tsecho = Remove;
     } else if (is_integer(value)) {
@@ -2369,7 +2354,7 @@ static ConfRes SET_tcp_tsecho(void *conf, const char *name, const char *value)
         if (num >= 255)
             goto fail;
         xconf->templ_opts->tcp.is_tsecho = Add;
-        xconf->templ_opts->tcp.tsecho = (unsigned)num;
+        xconf->templ_opts->tcp.tsecho    = (unsigned)num;
     } else
         goto fail;
 
@@ -2379,8 +2364,7 @@ fail:
     return Conf_ERR;
 }
 
-static ConfRes SET_tcp_sackok(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_tcp_sackok(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->templ_opts) {
@@ -2422,14 +2406,13 @@ fail:
     return Conf_ERR;
 }
 
-static ConfRes SET_repeat(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_repeat(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
         if (xconf->repeat || xconf->echo_all)
-            fprintf(xconf->echo, "repeat = %"PRIu64"\n", xconf->repeat);
+            fprintf(xconf->echo, "repeat = %" PRIu64 "\n", xconf->repeat);
         return 0;
     }
 
@@ -2443,14 +2426,14 @@ static ConfRes SET_repeat(void *conf, const char *name, const char *value)
     return Conf_OK;
 }
 
-static ConfRes SET_send_queue(void *conf, const char *name, const char *value)
-{
+static ConfRes SET_send_queue(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
         if (xconf->is_sendq || xconf->echo_all)
-            fprintf(xconf->echo, "send-queue = %s\n", xconf->is_sendq?"true":"false");
+            fprintf(xconf->echo, "send-queue = %s\n",
+                    xconf->is_sendq ? "true" : "false");
         return 0;
     }
 
@@ -2461,896 +2444,728 @@ static ConfRes SET_send_queue(void *conf, const char *name, const char *value)
 ConfParam config_parameters[] = {
     {"BASIC PARAMITERS", SET_nothing, 0, {0}, NULL},
 
-    {
-        "seed",
-        SET_seed,
-        Type_NONE,
-        {0},
-        "Set a global seed for randomizing of target addresses(ports), and to "
-        "generate cookies in some ScanModules & ProbeModules."
-        "Specify an integer that seeds the random number generator for randomizing"
-        " targets and cookie(for ScanModules & ProbeModules) generation. Using a"
-        " different seed will cause packets to be sent in a different random "
-        "order. Instead of an integer, the string time can be specified, which "
-        "seeds using the local timestamp, automatically generating a different "
-        "random order of scans. If no seed specified, time is the default."
-    },
-    {
-        "rate",
-        SET_rate,
-        Type_NONE,
-        {"max-rate", 0},
-        "Specifies the desired rate for transmitting packets. This can be very "
-        "small numbers, like 0.1 for transmitting packets at rates of one every "
-        "10 seconds, for very large numbers like 10000000, which attempts to "
-        "transmit at 10 million packets/second. In usual experience, Windows can"
-        " do 250 thousand packets per second, and latest versions of Linux can "
-        "do 2.5 million packets per second. The PF_RING driver is needed to get "
-        "to 25 million packets/second. This rate(packets per second) is for total"
-        " speed of all transmit threads."
-    },
-    {
-        "wait",
-        SET_wait,
-        Type_NUM,
-        {"cooldown", 0},
-        "How many seconds should "XTATE_FIRST_UPPER_NAME" waiting and handling "
-        "incoming packets after all transmit threads finished. Default is 10s."
-        "Specifies the number of seconds after transmit is done to wait for "
-        "receiving packets before exiting the program. The default is 10 "
-        "seconds."
-    },
-    {
-        "forever",
-        SET_forever,
-        Type_BOOL,
-        {0},
-        "Set `--wait` to a large enough time."
-    },
-    {
-        "shard",
-        SET_shard,
-        Type_NONE,
-        {"shards", 0},
-        "Set a string like \"x/y\" to splits the scan among instances. x is the "
-        "id for this scan, while y is the total number of instances. For example,"
-        " --shard 1/2 tells an instance to send every other packet, starting with"
-        " index 0. Likewise, --shard 2/2 sends every other packet, but starting "
-        "with index 1, so that it doesn't overlap with the first example."
-    },
-    {
-        "tx-thread-count",
-        SET_tx_thread_count,
-        Type_NUM,
-        {"tx-count", "tx-num", 0},
-        "Specify the number of transmit threads. "XTATE_FIRST_UPPER_NAME" could"
-        " has multiple transmit threads but only one receive thread. Every "
-        "thread will be lock on a CPU kernel if the number of all threads is no"
-        " more than kernel's.\n"
-        "NOTE: 4 transmit threads could got a stable and high send rate in most "
-        "conditions. So the default value is 4."
-    },
-    {
-        "rx-handler-count",
-        SET_rx_handler_count,
-        Type_NUM,
-        {"rx-count", "rx-num", 0},
-        "Specify the number of receive handler threads. "XTATE_FIRST_UPPER_NAME" could"
-        " has multiple receive handler threads but only one receive thread. Every "
-        "handler thread will be dispatched recv packets by (dst_IP, dst_Port, "
-        "src_IP, src_Port) and executes the `handler_cb` of ScanModule. This is "
-        "for some necessary but slow action while ScanModule handling consecutive"
-        " communication (e.g. stateful TLS connection). If the action is irrespective"
-        " with consecutive communication (e.g. results processing), it is better"
-        " to use special thread-pool.\n"
-        "The number of receive handler must be the power of 2. (Default 1)"
-    },
-    {
-        "d",
-        SET_log_level,
-        Type_BOOL,
-        {"dd", "ddd", 0},
-        "Set the log level by the number of \"d\". You can set \"-d\", \"-dd\" "
-        "or \"-ddd\" for:\n"
-        "Level 0 (default): print OUT, HINT, ERROR and WARN logs.\n"
-        "Level 1: print INFO logs in addition to level 0.\n"
-        "Level 2: print DEBUG logs in addition to level 1.\n"
-        "Level 3: print DETAIL logs in addition to level 2."
-    },
-    {
-        "version",
-        SET_version,
-        Type_BOOL,
-        {"v", 0},
-        "Print the version and compilation info."
-    },
-    {
-        "usage",
-        SET_usage,
-        Type_BOOL,
-        {0},
-        "Print basic usage with some examples."
-    },
-    {
-        "help",
-        SET_print_help,
-        Type_BOOL,
-        {"h", "?", 0},
-        "Print the detailed help text of all parameters."
-    },
-    {
-        "introduction",
-        SET_print_intro,
-        Type_BOOL,
-        {"intro", 0},
-        "Print the introduction of work flow."
-    },
+    {"seed",
+     SET_seed,
+     Type_NONE,
+     {0},
+     "Set a global seed for randomizing of target addresses(ports), and to "
+     "generate cookies in some ScanModules & ProbeModules."
+     "Specify an integer that seeds the random number generator for randomizing"
+     " targets and cookie(for ScanModules & ProbeModules) generation. Using a"
+     " different seed will cause packets to be sent in a different random "
+     "order. Instead of an integer, the string time can be specified, which "
+     "seeds using the local timestamp, automatically generating a different "
+     "random order of scans. If no seed specified, time is the default."},
+    {"rate",
+     SET_rate,
+     Type_NONE,
+     {"max-rate", 0},
+     "Specifies the desired rate for transmitting packets. This can be very "
+     "small numbers, like 0.1 for transmitting packets at rates of one every "
+     "10 seconds, for very large numbers like 10000000, which attempts to "
+     "transmit at 10 million packets/second. In usual experience, Windows can"
+     " do 250 thousand packets per second, and latest versions of Linux can "
+     "do 2.5 million packets per second. The PF_RING driver is needed to get "
+     "to 25 million packets/second. This rate(packets per second) is for total"
+     " speed of all transmit threads."},
+    {"wait",
+     SET_wait,
+     Type_NUM,
+     {"cooldown", 0},
+     "How many seconds should " XTATE_FIRST_UPPER_NAME " waiting and handling "
+     "incoming packets after all transmit threads finished. Default is 10s."
+     "Specifies the number of seconds after transmit is done to wait for "
+     "receiving packets before exiting the program. The default is 10 "
+     "seconds."},
+    {"forever",
+     SET_forever,
+     Type_BOOL,
+     {0},
+     "Set `--wait` to a large enough time."},
+    {"shard",
+     SET_shard,
+     Type_NONE,
+     {"shards", 0},
+     "Set a string like \"x/y\" to splits the scan among instances. x is the "
+     "id for this scan, while y is the total number of instances. For example,"
+     " --shard 1/2 tells an instance to send every other packet, starting with"
+     " index 0. Likewise, --shard 2/2 sends every other packet, but starting "
+     "with index 1, so that it doesn't overlap with the first example."},
+    {"tx-thread-count",
+     SET_tx_thread_count,
+     Type_NUM,
+     {"tx-count", "tx-num", 0},
+     "Specify the number of transmit threads. " XTATE_FIRST_UPPER_NAME " could"
+     " has multiple transmit threads but only one receive thread. Every "
+     "thread will be lock on a CPU kernel if the number of all threads is no"
+     " more than kernel's.\n"
+     "NOTE: 4 transmit threads could got a stable and high send rate in most "
+     "conditions. So the default value is 4."},
+    {"rx-handler-count",
+     SET_rx_handler_count,
+     Type_NUM,
+     {"rx-count", "rx-num", 0},
+     "Specify the number of receive handler threads. " XTATE_FIRST_UPPER_NAME
+     " could"
+     " has multiple receive handler threads but only one receive thread. Every "
+     "handler thread will be dispatched recv packets by (dst_IP, dst_Port, "
+     "src_IP, src_Port) and executes the `handler_cb` of ScanModule. This is "
+     "for some necessary but slow action while ScanModule handling consecutive"
+     " communication (e.g. stateful TLS connection). If the action is "
+     "irrespective"
+     " with consecutive communication (e.g. results processing), it is better"
+     " to use special thread-pool.\n"
+     "The number of receive handler must be the power of 2. (Default 1)"},
+    {"d",
+     SET_log_level,
+     Type_BOOL,
+     {"dd", "ddd", 0},
+     "Set the log level by the number of \"d\". You can set \"-d\", \"-dd\" "
+     "or \"-ddd\" for:\n"
+     "Level 0 (default): print OUT, HINT, ERROR and WARN logs.\n"
+     "Level 1: print INFO logs in addition to level 0.\n"
+     "Level 2: print DEBUG logs in addition to level 1.\n"
+     "Level 3: print DETAIL logs in addition to level 2."},
+    {"version",
+     SET_version,
+     Type_BOOL,
+     {"v", 0},
+     "Print the version and compilation info."},
+    {"usage",
+     SET_usage,
+     Type_BOOL,
+     {0},
+     "Print basic usage with some examples."},
+    {"help",
+     SET_print_help,
+     Type_BOOL,
+     {"h", "?", 0},
+     "Print the detailed help text of all parameters."},
+    {"introduction",
+     SET_print_intro,
+     Type_BOOL,
+     {"intro", 0},
+     "Print the introduction of work flow."},
 
     {"TARGET SETTINGS", SET_nothing, 0, {0}, NULL},
 
-    {
-        "target-ip",
-        SET_target_ip,
-        Type_NONE,
-        {"range", "ranges", "dst-ip", "ip", 0},
-        "Specifies an IP address or range as target "XTATE_FIRST_UPPER_NAME". "
-        "There are three valid formats. The first is a single IP address like "
-        "192.168.0.1 or 2001:db8::1. The second is a range like 10.0.0.1-10.0.0.100."
-        " The third is a CIDR address, like 0.0.0.0/0 or 2001:db8::/90. At least"
-        " one target must be specified. Multiple targets can be specified. This "
-        "can be specified as multiple options separated by a comma as a single "
-        "option, such as 10.0.0.0/8,192.168.0.1,2001:db8::1."
-    },
-    {
-        "port",
-        SET_target_port,
-        Type_NONE,
-        {"p", "ports", 0},
-        "Specifies the port(s) to be scanned. A single port can be specified, "
-        "like -p 80. A range of ports can be specified, like -p 20-25. A list of"
-        " ports/ranges can be specified, like -p 80,20-25. UDP ports can be"
-        " specified, like --ports U:161,u:1024-1100. SCTP ports can be specified"
-        " like --ports S:36412,s:38412, too.\n"
-        "NOTE: We also support `--ports O:16` to present non-port number in range"
-        " [0..65535] for some ScanModules."
-    },
-    {
-        "top-port",
-        SET_top_port,
-        Type_NUM,
-        {"top", "tcp-top", "tcp-top-port", 0},
-        "Add a number of tcp ports to scan from predefined top list."
-    },
-    {
-        "udp-top-port",
-        SET_top_port,
-        Type_NUM,
-        {"udp-top", 0},
-        "Add a number of udp ports to scan from predefined top list."
-    },
-    {
-        "include-file",
-        SET_include_file,
-        Type_NONE,
-        {"iL", 0},
-        "Reads in a list of ranges from specified file to scan, in the same "
-        "target format described above for IP addresses and ranges. This file "
-        "can contain millions of addresses and ranges."
-    },
-    {
-        "exclude",
-        SET_exclude_ip,
-        Type_NONE,
-        {"exclude-range", "exlude-ranges", "exclude-ip", 0},
-        "Blacklist an IP address or range, preventing it from being scanned. "
-        "This overrides any target specification, guaranteeing that this "
-        "address/range won't be scanned. This has the same format as the normal "
-        "target specification."
-    },
-    {
-        "exclude-port",
-        SET_exclude_port,
-        Type_NONE,
-        {"exclude-ports", 0},
-        "Blacklist ports to preventing it from being scanned. This overrides "
-        "any port specification. This has the same format as the normal port "
-        "specification."
-    },
-    {
-        "exclude-file",
-        SET_exclude_file,
-        Type_NONE,
-        {0},
-        "Reads in a list of exclude ranges, in the same target format described "
-        "above. These ranges override any targets, preventing them from being "
-        "scanned."
-    },
+    {"target-ip",
+     SET_target_ip,
+     Type_NONE,
+     {"range", "ranges", "dst-ip", "ip", 0},
+     "Specifies an IP address or range as target " XTATE_FIRST_UPPER_NAME ". "
+     "There are three valid formats. The first is a single IP address like "
+     "192.168.0.1 or 2001:db8::1. The second is a range like "
+     "10.0.0.1-10.0.0.100."
+     " The third is a CIDR address, like 0.0.0.0/0 or 2001:db8::/90. At least"
+     " one target must be specified. Multiple targets can be specified. This "
+     "can be specified as multiple options separated by a comma as a single "
+     "option, such as 10.0.0.0/8,192.168.0.1,2001:db8::1."},
+    {"port",
+     SET_target_port,
+     Type_NONE,
+     {"p", "ports", 0},
+     "Specifies the port(s) to be scanned. A single port can be specified, "
+     "like -p 80. A range of ports can be specified, like -p 20-25. A list of"
+     " ports/ranges can be specified, like -p 80,20-25. UDP ports can be"
+     " specified, like --ports U:161,u:1024-1100. SCTP ports can be specified"
+     " like --ports S:36412,s:38412, too.\n"
+     "NOTE: We also support `--ports O:16` to present non-port number in range"
+     " [0..65535] for some ScanModules."},
+    {"top-port",
+     SET_top_port,
+     Type_NUM,
+     {"top", "tcp-top", "tcp-top-port", 0},
+     "Add a number of tcp ports to scan from predefined top list."},
+    {"udp-top-port",
+     SET_top_port,
+     Type_NUM,
+     {"udp-top", 0},
+     "Add a number of udp ports to scan from predefined top list."},
+    {"include-file",
+     SET_include_file,
+     Type_NONE,
+     {"iL", 0},
+     "Reads in a list of ranges from specified file to scan, in the same "
+     "target format described above for IP addresses and ranges. This file "
+     "can contain millions of addresses and ranges."},
+    {"exclude",
+     SET_exclude_ip,
+     Type_NONE,
+     {"exclude-range", "exlude-ranges", "exclude-ip", 0},
+     "Blacklist an IP address or range, preventing it from being scanned. "
+     "This overrides any target specification, guaranteeing that this "
+     "address/range won't be scanned. This has the same format as the normal "
+     "target specification."},
+    {"exclude-port",
+     SET_exclude_port,
+     Type_NONE,
+     {"exclude-ports", 0},
+     "Blacklist ports to preventing it from being scanned. This overrides "
+     "any port specification. This has the same format as the normal port "
+     "specification."},
+    {"exclude-file",
+     SET_exclude_file,
+     Type_NONE,
+     {0},
+     "Reads in a list of exclude ranges, in the same target format described "
+     "above. These ranges override any targets, preventing them from being "
+     "scanned."},
 
     {"INTERFACE ADJUSTMENT", SET_nothing, 0, {0}, NULL},
 
-    {
-        "adapter",
-        SET_adapter,
-        Type_NONE,
-        {"if", "interface", 0},
-        "Use the named raw network interface, such as \"eth0\" or \"dna1\". If "
-        "not specified, the first network interface found with a default gateway"
-        " will be used."
-    },
-    {
-        "source-ip",
-        SET_source_ip,
-        Type_NONE,
-        {"src-ip", 0},
-        "Send packets using this IP address. If not specified, then the first IP"
-        " address bound to the network interface will be used. Instead of a "
-        "single IP address, a range may be specified.\n"
-        "NOTE1: The size of the range must be a power of 2, such as "
-        "1, 2, 4, 8, 16, 1024 etc.\n"
-        "NOTE2: "XTATE_FIRST_UPPER_NAME" could get source ipv6 address with global"
-        " scope include NAT6 network. But we need to specified manually if use "
-        "ipv6 address in local link scope."
-    },
-    {
-        "source-port",
-        SET_source_port,
-        Type_NONE,
-        {"src-port", 0},
-        "Send packets using this port number as the source. If not specified, a"
-        " random port will be chosen in the range 40000 through 60000. This port"
-        " should be filtered by the host firewall (like iptables) to prevent the"
-        " host network stack from interfering with arriving packets. Instead of "
-        "a single port, a range can be specified, like 40000-40003.\n"
-        "NOTE: The size of the range must be a power of 2, such as "
-        "the example above that has a total of 4 addresses."
-    },
-    {
-        "source-mac",
-        SET_source_mac,
-        Type_NONE,
-        {"src-mac", 0},
-        "Send packets using this as the source MAC address. If not specified, "
-        "then the first MAC address bound to the network interface will be used."
-    },
-    {
-        "router-ip",
-        SET_router_ip,
-        Type_NONE,
-        {0},
-        "Set an IP as router's address."
-    },
-    {
-        "router-mac",
-        SET_router_mac,
-        Type_NONE,
-        {"gateway-mac", "router-mac-ipv4", "router-mac-ipv6", 0},
-        "Send packets to this MAC address as the destination. If not specified, "
-        "then the gateway address of the network interface will be get by ARP "
-        "and used.\n"
-        "NOTE: We could specify different router MAC address for IPv4 and "
-        "IPv6 by adding a suffix to the flag."
-    },
-    {
-        "adapter-vlan",
-        SET_adapter_vlan,
-        Type_NUM,
-        {"vlan", "vlan-id", 0},
-        "Send packets using this 802.1q VLAN ID."
-    },
-    {
-        "adapter-snaplen",
-        SET_adapter_snaplen,
-        Type_NUM,
-        {"snaplen", 0},
-        "Set the maximum packet capture len of pcap or pfring. It means we can "
-        "just got snaplen size at most for any packet even just like a kind of "
-        "truncation. This is a non-commonly used switch for some special "
-        "experimental tests. Default snaplen is 65535 and must be less than 65535.\n"
-        "NOTE: Be cared to the interaction with --tcp-win and --max-packet-len."
-    },
-    {
-        "lan-mode",
-        SET_lan_mode,
-        Type_BOOL,
-        {"local", "lan", 0},
-        "Set the router MAC address to a broadcast address(ff-ff-ff-ff-ff-ff). "
-        "This can make "XTATE_FIRST_UPPER_NAME" be able to scan in a local network.\n"
-        "NOTE: This flag must set while we do some layer-2 protocol scan "
-        "like ARP."
-    },
-    {
-        "fake-router-mac",
-        SET_fake_router_mac,
-        Type_BOOL,
-        {"no-router-mac", 0},
-        "Set the router MAC address to a invalid address(01-02-03-04-05-06). "
-        "This can stop "XTATE_FIRST_UPPER_NAME" to resolve router MAC address."
-        "It's useful when the ScanModule will specify destination MAC address "
-        "dynamicly for different target. e.g. NdpNsScan.\n"
-        "HINT: If we want to test the highest sending rate and not bother anyone"
-        ", this param would be helpful with `--infinite`."
-    },
-    {
-        "bypass-os",
-        SET_bypass_os,
-        Type_BOOL,
-        {"bypass", 0},
-        "Completely bypass the OS protocol stack. This means we can set a proper"
-        " `--src-ip`(in the local subnet) and `--src-mac` different from the OS "
-        "to scan. Because "XTATE_FIRST_UPPER_NAME" will do reponse to special ARP "
-        "& NDP request for our new IP as if we are real member of the local "
-        "subnet.\n"
-        "NOTE: There's no need to set some firewall rules for Linux while we are"
-        " in bypassing mode. And we can't use the feature of OS protocol stack "
-        "like responsing TCP RST or ICMP Port Unreachable."
-    },
+    {"adapter",
+     SET_adapter,
+     Type_NONE,
+     {"if", "interface", 0},
+     "Use the named raw network interface, such as \"eth0\" or \"dna1\". If "
+     "not specified, the first network interface found with a default gateway"
+     " will be used."},
+    {"source-ip",
+     SET_source_ip,
+     Type_NONE,
+     {"src-ip", 0},
+     "Send packets using this IP address. If not specified, then the first IP"
+     " address bound to the network interface will be used. Instead of a "
+     "single IP address, a range may be specified.\n"
+     "NOTE1: The size of the range must be a power of 2, such as "
+     "1, 2, 4, 8, 16, 1024 etc.\n"
+     "NOTE2: " XTATE_FIRST_UPPER_NAME
+     " could get source ipv6 address with global"
+     " scope include NAT6 network. But we need to specified manually if use "
+     "ipv6 address in local link scope."},
+    {"source-port",
+     SET_source_port,
+     Type_NONE,
+     {"src-port", 0},
+     "Send packets using this port number as the source. If not specified, a"
+     " random port will be chosen in the range 40000 through 60000. This port"
+     " should be filtered by the host firewall (like iptables) to prevent the"
+     " host network stack from interfering with arriving packets. Instead of "
+     "a single port, a range can be specified, like 40000-40003.\n"
+     "NOTE: The size of the range must be a power of 2, such as "
+     "the example above that has a total of 4 addresses."},
+    {"source-mac",
+     SET_source_mac,
+     Type_NONE,
+     {"src-mac", 0},
+     "Send packets using this as the source MAC address. If not specified, "
+     "then the first MAC address bound to the network interface will be "
+     "used."},
+    {"router-ip",
+     SET_router_ip,
+     Type_NONE,
+     {0},
+     "Set an IP as router's address."},
+    {"router-mac",
+     SET_router_mac,
+     Type_NONE,
+     {"gateway-mac", "router-mac-ipv4", "router-mac-ipv6", 0},
+     "Send packets to this MAC address as the destination. If not specified, "
+     "then the gateway address of the network interface will be get by ARP "
+     "and used.\n"
+     "NOTE: We could specify different router MAC address for IPv4 and "
+     "IPv6 by adding a suffix to the flag."},
+    {"adapter-vlan",
+     SET_adapter_vlan,
+     Type_NUM,
+     {"vlan", "vlan-id", 0},
+     "Send packets using this 802.1q VLAN ID."},
+    {"adapter-snaplen",
+     SET_adapter_snaplen,
+     Type_NUM,
+     {"snaplen", 0},
+     "Set the maximum packet capture len of pcap or pfring. It means we can "
+     "just got snaplen size at most for any packet even just like a kind of "
+     "truncation. This is a non-commonly used switch for some special "
+     "experimental tests. Default snaplen is 65535 and must be less than "
+     "65535.\n"
+     "NOTE: Be cared to the interaction with --tcp-win and --max-packet-len."},
+    {"lan-mode",
+     SET_lan_mode,
+     Type_BOOL,
+     {"local", "lan", 0},
+     "Set the router MAC address to a broadcast address(ff-ff-ff-ff-ff-ff). "
+     "This can make " XTATE_FIRST_UPPER_NAME
+     " be able to scan in a local network.\n"
+     "NOTE: This flag must set while we do some layer-2 protocol scan "
+     "like ARP."},
+    {"fake-router-mac",
+     SET_fake_router_mac,
+     Type_BOOL,
+     {"no-router-mac", 0},
+     "Set the router MAC address to a invalid address(01-02-03-04-05-06). "
+     "This can stop " XTATE_FIRST_UPPER_NAME " to resolve router MAC address."
+     "It's useful when the ScanModule will specify destination MAC address "
+     "dynamicly for different target. e.g. NdpNsScan.\n"
+     "HINT: If we want to test the highest sending rate and not bother anyone"
+     ", this param would be helpful with `--infinite`."},
+    {"bypass-os",
+     SET_bypass_os,
+     Type_BOOL,
+     {"bypass", 0},
+     "Completely bypass the OS protocol stack. This means we can set a proper"
+     " `--src-ip`(in the local subnet) and `--src-mac` different from the OS "
+     "to scan. Because " XTATE_FIRST_UPPER_NAME
+     " will do reponse to special ARP "
+     "& NDP request for our new IP as if we are real member of the local "
+     "subnet.\n"
+     "NOTE: There's no need to set some firewall rules for Linux while we are"
+     " in bypassing mode. And we can't use the feature of OS protocol stack "
+     "like responsing TCP RST or ICMP Port Unreachable."},
 
     {"OPERATION SELECTION", SET_nothing, 0, {0}, NULL},
 
-    {
-        "echo",
-        SET_echo,
-        Type_BOOL,
-        {"echo-all", 0},
-        "Do not run, but instead print the current configuration. Use --echo to "
-        "dump configurations that are different from default value. Use --echo-all"
-        " to dump configurations with explicit value. The configurations can be "
-        "save to a file as config and then be used with the --conf option."
-    },
-    {
-        "debug-if",
-        SET_debugif,
-        Type_BOOL,
-        {"if-debug", 0},
-        "Run special selftest for code about interface. This is useful to figure"
-        " out why the interface doesn't work."
-    },
-    {
-        "benchmark",
-        SET_benchmark,
-        Type_BOOL,
-        {"bench", 0},
-        "Run a global benchmark for key units."
-    },
-    {
-        "selftest",
-        SET_selftest,
-        Type_BOOL,
-        {"regress", "regression", 0},
-        "Run a global regression test to check if new changes in code healthy."
-    },
-    {
-        "list-cidr",
-        SET_list_cidr,
-        Type_BOOL,
-        {"cidr", 0},
-        "Do not run, but instead print all IP targets in CIDR format."
-    },
-    {
-        "list-range",
-        SET_list_range,
-        Type_BOOL,
-        {"list-ranges", 0},
-        "Do not run, but instead print all IP targets in ranges."
-    },
-    {
-        "list-target",
-        SET_list_target,
-        Type_BOOL,
-        {"list-targets", "list-ip", "ip-list", 0},
-        "Do not run, but instead print every unique IP targets in random."
-    },
-    {
-        "list-if",
-        SET_listif,
-        Type_BOOL,
-        {"if-list", "list-interface", "list-adapter", 0},
-        "Do not run, but instead print informations of all adapters in this machine."
-    },
+    {"echo",
+     SET_echo,
+     Type_BOOL,
+     {"echo-all", 0},
+     "Do not run, but instead print the current configuration. Use --echo to "
+     "dump configurations that are different from default value. Use --echo-all"
+     " to dump configurations with explicit value. The configurations can be "
+     "save to a file as config and then be used with the --conf option."},
+    {"debug-if",
+     SET_debugif,
+     Type_BOOL,
+     {"if-debug", 0},
+     "Run special selftest for code about interface. This is useful to figure"
+     " out why the interface doesn't work."},
+    {"benchmark",
+     SET_benchmark,
+     Type_BOOL,
+     {"bench", 0},
+     "Run a global benchmark for key units."},
+    {"selftest",
+     SET_selftest,
+     Type_BOOL,
+     {"regress", "regression", 0},
+     "Run a global regression test to check if new changes in code healthy."},
+    {"list-cidr",
+     SET_list_cidr,
+     Type_BOOL,
+     {"cidr", 0},
+     "Do not run, but instead print all IP targets in CIDR format."},
+    {"list-range",
+     SET_list_range,
+     Type_BOOL,
+     {"list-ranges", 0},
+     "Do not run, but instead print all IP targets in ranges."},
+    {"list-target",
+     SET_list_target,
+     Type_BOOL,
+     {"list-targets", "list-ip", "ip-list", 0},
+     "Do not run, but instead print every unique IP targets in random."},
+    {"list-if",
+     SET_listif,
+     Type_BOOL,
+     {"if-list", "list-interface", "list-adapter", 0},
+     "Do not run, but instead print informations of all adapters in this "
+     "machine."},
 
     {"SCAN MODULES CONFIG", SET_nothing, 0, {0}, NULL},
 
-    {
-        "scan-module",
-        SET_scan_module,
-        Type_NONE,
-        {"scan", 0},
-        "Specifies a ScanModule to perform scanning. Use --list-scan to get "
-        "informations of all ScanModules.\nNOTE: A ScanModule must be used in "
-        "every time we scan. TcpSynModule will be default if we did not specify."
-    },
-    {
-        "list-scan-modules",
-        SET_list_scan_modules,
-        Type_BOOL,
-        {"list-scan-module", "list-scan", "list-scans", 0},
-        "List informations of all ScanModules."
-    },
-    {
-        "help-scan-module",
-        SET_help_scan_module,
-        Type_NONE,
-        {"help-scan", "scan-help", 0},
-        "Print information and help of specified ScanModule."
-    },
-    {
-        "scan-module-args",
-        SET_scan_module_args,
-        Type_NONE,
-        {"scan-module-arg", "scan-args", "scan-arg", 0},
-        "Specifies module-specific parameters for used ScanModule. Information "
-        "of parameters for each ScanModule could be found in --list-scan."
-    },
+    {"scan-module",
+     SET_scan_module,
+     Type_NONE,
+     {"scan", 0},
+     "Specifies a ScanModule to perform scanning. Use --list-scan to get "
+     "informations of all ScanModules.\nNOTE: A ScanModule must be used in "
+     "every time we scan. TcpSynModule will be default if we did not "
+     "specify."},
+    {"list-scan-modules",
+     SET_list_scan_modules,
+     Type_BOOL,
+     {"list-scan-module", "list-scan", "list-scans", 0},
+     "List informations of all ScanModules."},
+    {"help-scan-module",
+     SET_help_scan_module,
+     Type_NONE,
+     {"help-scan", "scan-help", 0},
+     "Print information and help of specified ScanModule."},
+    {"scan-module-args",
+     SET_scan_module_args,
+     Type_NONE,
+     {"scan-module-arg", "scan-args", "scan-arg", 0},
+     "Specifies module-specific parameters for used ScanModule. Information "
+     "of parameters for each ScanModule could be found in --list-scan."},
 
     {"PROBE MODULES CONFIG", SET_nothing, 0, {0}, NULL},
 
-    {
-        "probe-module",
-        SET_probe_module,
-        Type_NONE,
-        {"probe", 0},
-        "Specifies a ProbeModule for used ScanModule to perform scanning. Use "
-        "--list-probe to get informations of all ProbeModules.\nNOTE: ProbeModule"
-        " is not required for all ScanModules and different ScanModule expects "
-        "different type of ProbeModule."
-    },
-    {
-        "list-probe-modules",
-        SET_list_probe_modules,
-        Type_BOOL,
-        {"list-probe-module", "list-probe", "list-probes", 0},
-        "List informations of all ProbeModules."
-    },
-    {
-        "help-probe-module",
-        SET_help_probe_module,
-        Type_NONE,
-        {"help-probe", "probe-help", 0},
-        "Print information and help of specified ProbeModule."
-    },
-    {
-        "probe-module-args",
-        SET_probe_module_args,
-        Type_NONE,
-        {"probe-module-arg", "probe-args", "probe-arg", 0},
-        "Specifies module-specific parameters for used ProbeModule. Information "
-        "of parameters for each ProbeModule could be found in --list-probe."
-    },
+    {"probe-module",
+     SET_probe_module,
+     Type_NONE,
+     {"probe", 0},
+     "Specifies a ProbeModule for used ScanModule to perform scanning. Use "
+     "--list-probe to get informations of all ProbeModules.\nNOTE: ProbeModule"
+     " is not required for all ScanModules and different ScanModule expects "
+     "different type of ProbeModule."},
+    {"list-probe-modules",
+     SET_list_probe_modules,
+     Type_BOOL,
+     {"list-probe-module", "list-probe", "list-probes", 0},
+     "List informations of all ProbeModules."},
+    {"help-probe-module",
+     SET_help_probe_module,
+     Type_NONE,
+     {"help-probe", "probe-help", 0},
+     "Print information and help of specified ProbeModule."},
+    {"probe-module-args",
+     SET_probe_module_args,
+     Type_NONE,
+     {"probe-module-arg", "probe-args", "probe-arg", 0},
+     "Specifies module-specific parameters for used ProbeModule. Information "
+     "of parameters for each ProbeModule could be found in --list-probe."},
 
     {"OUTPUT MODULES CONFIG", SET_nothing, 0, {0}, NULL},
 
-    {
-        "output-module",
-        SET_output_module,
-        Type_NONE,
-        {"output", "out", 0},
-        "Specifies an OutputModule for outputing results in special way. Use "
-        "--list-output to get informations of all OutputModules. OutputModule"
-        " is non-essential because "XTATE_FIRST_UPPER_NAME" output results to "
-        "stdout in default.\n"
-        "NOTE: "XTATE_FIRST_UPPER_NAME" won't output to stdout if we specified "
-        "an OutputModule unless we use `--interactive` switch."
-    },
-    {
-        "list-output-modules",
-        SET_list_output_modules,
-        Type_BOOL,
-        {"list-output-module", "list-output", "list-out", 0},
-        "List informations of all OutputModules."
-    },
-    {
-        "help-output-module",
-        SET_help_output_module,
-        Type_NONE,
-        {"help-output", "output-help", "help-out", "out-help", 0},
-        "Print information and help of specified OutputModule."
-    },
-    {
-        "output-module-args",
-        SET_output_module_args,
-        Type_NONE,
-        {"output-module-arg", "output-arg", "out-arg", 0},
-        "Specifies module-specific parameters for used OutputModule. Information "
-        "of parameters for each OutputModule could be found in --list-output."
-    },
-    {
-        "output-file",
-        SET_output_filename,
-        Type_NONE,
-        {"out-file", "o", 0},
-        "Specifies a file for OutputModule."
-    },
-    {
-        "append-output",
-        SET_append,
-        Type_BOOL,
-        {"output-append", "append", 0},
-        "Causes output to append mode, rather than overwriting. OutputModules "
-        "have different performance with this switch."
-    },
-    {
-        "interactive",
-        SET_interactive,
-        Type_BOOL,
-        {"interact", 0},
-        "Also print the results to screen while specifying an OutputModule."
-    },
-    {
-        "show-output",
-        SET_show_output,
-        Type_NONE,
-        {"show-out", "show", 0},
-        "Tells which type of results should be showed explicitly, such as:\n"
-        "'success', 'failed' or 'info'."
-    },
-    {
-        "no-show-output",
-        SET_no_show_output,
-        Type_NONE,
-        {"no-show-out", "no-show", 0},
-        "Tells which type of results should not be showed explicitly, such as:\n"
-        "'success', 'failed' or 'info'."
-    },
+    {"output-module",
+     SET_output_module,
+     Type_NONE,
+     {"output", "out", 0},
+     "Specifies an OutputModule for outputing results in special way. Use "
+     "--list-output to get informations of all OutputModules. OutputModule"
+     " is non-essential because " XTATE_FIRST_UPPER_NAME " output results to "
+     "stdout in default.\n"
+     "NOTE: " XTATE_FIRST_UPPER_NAME " won't output to stdout if we specified "
+     "an OutputModule unless we use `--interactive` switch."},
+    {"list-output-modules",
+     SET_list_output_modules,
+     Type_BOOL,
+     {"list-output-module", "list-output", "list-out", 0},
+     "List informations of all OutputModules."},
+    {"help-output-module",
+     SET_help_output_module,
+     Type_NONE,
+     {"help-output", "output-help", "help-out", "out-help", 0},
+     "Print information and help of specified OutputModule."},
+    {"output-module-args",
+     SET_output_module_args,
+     Type_NONE,
+     {"output-module-arg", "output-arg", "out-arg", 0},
+     "Specifies module-specific parameters for used OutputModule. Information "
+     "of parameters for each OutputModule could be found in --list-output."},
+    {"output-file",
+     SET_output_filename,
+     Type_NONE,
+     {"out-file", "o", 0},
+     "Specifies a file for OutputModule."},
+    {"append-output",
+     SET_append,
+     Type_BOOL,
+     {"output-append", "append", 0},
+     "Causes output to append mode, rather than overwriting. OutputModules "
+     "have different performance with this switch."},
+    {"interactive",
+     SET_interactive,
+     Type_BOOL,
+     {"interact", 0},
+     "Also print the results to screen while specifying an OutputModule."},
+    {"show-output",
+     SET_show_output,
+     Type_NONE,
+     {"show-out", "show", 0},
+     "Tells which type of results should be showed explicitly, such as:\n"
+     "'success', 'failed' or 'info'."},
+    {"no-show-output",
+     SET_no_show_output,
+     Type_NONE,
+     {"no-show-out", "no-show", 0},
+     "Tells which type of results should not be showed explicitly, such as:\n"
+     "'success', 'failed' or 'info'."},
 
     {"GENERATE MODULES CONFIG", SET_nothing, 0, {0}, NULL},
 
-    {
-        "generate-module",
-        SET_generate_module,
-        Type_NONE,
-        {"generate", "gen", "generator", 0},
-        "Specifies a GenerateModule to generate targets for scanning. Use "
-        "--list-gen to get informations of all GenerateModules.\n"
-        "NOTE: A GenerateModule must be used in every time we scan. BlackRock "
-        " module will be default if we did not specify."
-    },
-    {
-        "list-generate-modules",
-        SET_list_generate_modules,
-        Type_BOOL,
-        {"list-generate-module", "list-generator", "list-gen", 0},
-        "List informations of all GenerateModules."
-    },
-    {
-        "help-generate-module",
-        SET_help_generate_module,
-        Type_NONE,
-        {"help-generate", "help-generator", "help-gen", "gen-help", 0},
-        "Print information and help of specified GenerateModule."
-    },
-    {
-        "generate-module-args",
-        SET_generate_module_args,
-        Type_NONE,
-        {"generate-module-arg", "gen-args", "gen-arg", 0},
-        "Specifies module-specific parameters for used GenerateModule. Information "
-        "of parameters for each GenerateModule could be found in --help-gen."
-    },
+    {"generate-module",
+     SET_generate_module,
+     Type_NONE,
+     {"generate", "gen", "generator", 0},
+     "Specifies a GenerateModule to generate targets for scanning. Use "
+     "--list-gen to get informations of all GenerateModules.\n"
+     "NOTE: A GenerateModule must be used in every time we scan. BlackRock "
+     " module will be default if we did not specify."},
+    {"list-generate-modules",
+     SET_list_generate_modules,
+     Type_BOOL,
+     {"list-generate-module", "list-generator", "list-gen", 0},
+     "List informations of all GenerateModules."},
+    {"help-generate-module",
+     SET_help_generate_module,
+     Type_NONE,
+     {"help-generate", "help-generator", "help-gen", "gen-help", 0},
+     "Print information and help of specified GenerateModule."},
+    {"generate-module-args",
+     SET_generate_module_args,
+     Type_NONE,
+     {"generate-module-arg", "gen-args", "gen-arg", 0},
+     "Specifies module-specific parameters for used GenerateModule. "
+     "Information "
+     "of parameters for each GenerateModule could be found in --help-gen."},
 
     {"STATUS PRINTING", SET_nothing, 0, {0}, NULL},
 
-    {
-        "print-status",
-        SET_print_status,
-        Type_NONE,
-        {"print-st", "print", 0},
-        "Tells which type of status should be printed explicitly, such as:\n"
-        "'queue' for real-time capacity of transmit queue and receive queues.\n"
-        "'info-num'/'info' for count of information type results.\n"
-        "'hit-rate'/'hit' for rate of hiting in terms of total sent for targets"
-        " without sent from packet queue. It could be non-sense in some conditions."
-    },
-    {
-        "ndjson-status",
-        SET_ndjson_status,
-        Type_BOOL,
-        {"status-ndjson", 0},
-        "Print status information in NDJSON format(Newline Delimited JSON) while"
-        " running."
-    },
+    {"print-status",
+     SET_print_status,
+     Type_NONE,
+     {"print-st", "print", 0},
+     "Tells which type of status should be printed explicitly, such as:\n"
+     "'queue' for real-time capacity of transmit queue and receive queues.\n"
+     "'info-num'/'info' for count of information type results.\n"
+     "'hit-rate'/'hit' for rate of hiting in terms of total sent for targets"
+     " without sent from packet queue. It could be non-sense in some "
+     "conditions."},
+    {"ndjson-status",
+     SET_ndjson_status,
+     Type_BOOL,
+     {"status-ndjson", 0},
+     "Print status information in NDJSON format(Newline Delimited JSON) while"
+     " running."},
 
     {"PACKET ATTRIBUTES", SET_nothing, 0, {0}, NULL},
 
-    {
-        "packet-ttl",
-        SET_packet_ttl,
-        Type_NUM,
-        {"ttl", 0},
-        "Specifies the TTL of all default template packets, defaults to 255."
-    },
-    {
-        "tcp-init-window",
-        SET_tcp_init_window,
-        Type_NUM,
-        {"tcp-init-win", 0},
-        "Specifies what value of Window should TCP SYN packets use. The default "
-        "value of TCP Window for TCP SYN packets is 64240."
-    },
-    {
-        "tcp-window",
-        SET_tcp_window,
-        Type_NUM,
-        {"tcp-win", 0},
-        "Specifies what value of Window should TCP packets(except for SYN) use. "
-        "The default value of TCP Window for TCP packets(except SYN) is 1024.\n"
-        "NOTE: This value could affects some ScanModules working like ZBanner "
-        "and limit communicating rate of stateful ScanModules."
-        "Be cared to the interaction with --snaplen and --max-packet-len."
-    },
-    {
-        "tcp-wscale",
-        SET_tcp_wscale,
-        Type_NUM,
-        {0},
-        "Specifies whether or what value of TCP Window Scaling option should TCP"
-        " SYN packets use. e.g. --tcp-wscale true, --tcp-wscale 8. The default "
-        "value of Window Scaling is 3 and not be used in template of TCP SYN "
-        "packet."
-    },
-    {
-        "tcp-mss",
-        SET_tcp_mss,
-        Type_NUM,
-        {0},
-        "Specifies whether or what value of TCP MMS(Maximum Segment Size) option"
-        " should TCP SYN packets use. e.g. --tcp-mss false, --tcp-mss 64000. The "
-        "default MMS value is 1460."
-    },
-    {
-        "tcp-sackok",
-        SET_tcp_sackok,
-        Type_BOOL,
-        {"tcp-sack",0},
-        "Specifies whether should TCP SYN packets use TCP Selective Acknowledgement"
-        " option. e.g. --tcp-sackok true. The default template of TCP SYN packet"
-        " does not use TCP Selective Acknowledgement option."
-    },
-    {
-        "tcp-tsecho",
-        SET_tcp_tsecho,
-        Type_NUM,
-        {0},
-        "Specifies whether or what value of timestamp in TCP Timestamp option"
-        " should TCP SYN packets use for timestamp echoing. e.g. --tcp-tsecho "
-        "true, --tcp-tsecho <value>. The default timestamp value is 0x12345678 "
-        " and is not be used in template of TCP SYN packet."
-    },
-    {
-        "packet-trace",
-        SET_packet_trace,
-        Type_BOOL,
-        {"trace-packet", 0},
-        "Prints a summary of packets we sent and received. This is useful for "
-        "debugging at low rates, like a few packets per second, but will "
-        "overwhelm the terminal at high rates."
-    },
-    {
-        "bpf-filter",
-        SET_bpf_filter,
-        Type_NONE,
-        {"bpf", 0},
-        "Specifies a string as BPF filter for pcap to replace the default BPF "
-        "filter string in ScanModule.\n"
-        "NOTE: Every ScanModule has its own BPF filter and we can check them "
-        "with --help-scan <module>. The BPF filter we set with --bpf-filter will"
-        " constrain the packets we received with ScanModules."
-    },
-    {
-        "no-bpf-filter",
-        SET_no_bpf,
-        Type_BOOL,
-        {"no-bpf", 0},
-        "Do not compile any BPF filter from ScanModules or users. Some machines"
-        " does not support part or all of BPF filters and this switch makes "
-        XTATE_UPPER_NAME" working again."
-    },
-    {
-        "max-packet-len",
-        SET_max_packet_len,
-        Type_NUM,
-        {"max-pkt-len", 0},
-        XTATE_UPPER_NAME" won't handle a received packet that is more than "
-        "max-packet-len. Default is 1514."
-        "NOTE: Be cared to the interaction with --tcp-win and --snaplen."
-    },
+    {"packet-ttl",
+     SET_packet_ttl,
+     Type_NUM,
+     {"ttl", 0},
+     "Specifies the TTL of all default template packets, defaults to 255."},
+    {"tcp-init-window",
+     SET_tcp_init_window,
+     Type_NUM,
+     {"tcp-init-win", 0},
+     "Specifies what value of Window should TCP SYN packets use. The default "
+     "value of TCP Window for TCP SYN packets is 64240."},
+    {"tcp-window",
+     SET_tcp_window,
+     Type_NUM,
+     {"tcp-win", 0},
+     "Specifies what value of Window should TCP packets(except for SYN) use. "
+     "The default value of TCP Window for TCP packets(except SYN) is 1024.\n"
+     "NOTE: This value could affects some ScanModules working like ZBanner "
+     "and limit communicating rate of stateful ScanModules."
+     "Be cared to the interaction with --snaplen and --max-packet-len."},
+    {"tcp-wscale",
+     SET_tcp_wscale,
+     Type_NUM,
+     {0},
+     "Specifies whether or what value of TCP Window Scaling option should TCP"
+     " SYN packets use. e.g. --tcp-wscale true, --tcp-wscale 8. The default "
+     "value of Window Scaling is 3 and not be used in template of TCP SYN "
+     "packet."},
+    {"tcp-mss",
+     SET_tcp_mss,
+     Type_NUM,
+     {0},
+     "Specifies whether or what value of TCP MMS(Maximum Segment Size) option"
+     " should TCP SYN packets use. e.g. --tcp-mss false, --tcp-mss 64000. The "
+     "default MMS value is 1460."},
+    {"tcp-sackok",
+     SET_tcp_sackok,
+     Type_BOOL,
+     {"tcp-sack", 0},
+     "Specifies whether should TCP SYN packets use TCP Selective "
+     "Acknowledgement"
+     " option. e.g. --tcp-sackok true. The default template of TCP SYN packet"
+     " does not use TCP Selective Acknowledgement option."},
+    {"tcp-tsecho",
+     SET_tcp_tsecho,
+     Type_NUM,
+     {0},
+     "Specifies whether or what value of timestamp in TCP Timestamp option"
+     " should TCP SYN packets use for timestamp echoing. e.g. --tcp-tsecho "
+     "true, --tcp-tsecho <value>. The default timestamp value is 0x12345678 "
+     " and is not be used in template of TCP SYN packet."},
+    {"packet-trace",
+     SET_packet_trace,
+     Type_BOOL,
+     {"trace-packet", 0},
+     "Prints a summary of packets we sent and received. This is useful for "
+     "debugging at low rates, like a few packets per second, but will "
+     "overwhelm the terminal at high rates."},
+    {"bpf-filter",
+     SET_bpf_filter,
+     Type_NONE,
+     {"bpf", 0},
+     "Specifies a string as BPF filter for pcap to replace the default BPF "
+     "filter string in ScanModule.\n"
+     "NOTE: Every ScanModule has its own BPF filter and we can check them "
+     "with --help-scan <module>. The BPF filter we set with --bpf-filter will"
+     " constrain the packets we received with ScanModules."},
+    {"no-bpf-filter",
+     SET_no_bpf,
+     Type_BOOL,
+     {"no-bpf", 0},
+     "Do not compile any BPF filter from ScanModules or users. Some machines"
+     " does not support part or all of BPF filters and this switch "
+     "makes " XTATE_UPPER_NAME " working again."},
+    {"max-packet-len",
+     SET_max_packet_len,
+     Type_NUM,
+     {"max-pkt-len", 0},
+     XTATE_UPPER_NAME
+     " won't handle a received packet that is more than "
+     "max-packet-len. Default is 1514."
+     "NOTE: Be cared to the interaction with --tcp-win and --snaplen."},
 
     {"MISCELLANEOUS", SET_nothing, 0, {0}, NULL},
 
-    {
-        "conf",
-        SET_read_conf,
-        Type_NONE,
-        {"config", "resume", 0},
-        "Reads in a configuration file. If not specified, then will read from "
-        "/etc/xtate/xtate.conf by default. We could specifies a configuration "
-        "file generated by "XTATE_UPPER_NAME" automatically after break by user"
-        " to resume an unfinished scanning."
-    },
-    {
-        "resume-index",
-        SET_resume_index,
-        Type_NUM,
-        {0},
-        "The point in the scan at when it was paused."
-    },
-    {
-        "no-resume",
-        SET_noresume,
-        Type_BOOL,
-        {0},
-        "Do not save scan info to resume file(paused.conf) for resuming. This is"
-        " useful when our target list is too large and scattered and spend too "
-        "much time to save."
-    },
-    {
-        "pcap-filename",
-        SET_pcap_filename,
-        Type_NONE,
-        {"pcap",0},
-        "Saves received packets (but not transmitted packets) to the "
-        "libpcap-format file."
-    },
-    {
-        "timeout",
-        SET_fast_timeout,
-        Type_NUM,
-        {"use-timeout", 0},
-        "Specifies whether or how many timeouts(sec) should ScanModule use like"
-        " --timeout true, --timeout 15. Some ScanModules could use timeout "
-        "function of "XTATE_UPPER_NAME" to result some unresponsed targets and "
-        "do some operation.\n"
-        "NOTE: Timeout mechanism may use more memory and cause block on the Rx"
-        " thread while in high-speed send rate. Also the way I used to handle "
-        "the timeout event is kludge. I guess that it can be not that precise "
-        "sometimes because of the dedup mechanism. Although it can bring some "
-        "convenient effects in some scanning, I recommend not to use it if "
-        "possible. However, "XTATE_UPPER_NAME" was originally born in stateless "
-        "mode:)"
-    },
-    {
-        "no-dedup",
-        SET_nodedup,
-        Type_BOOL,
-        {0},
-        "Do not deduplicate the results even if ScanModule use deduplication.\n"
-        "NOTE: This will destroy the work of `--timeout`, so don't use these two"
-        " switch together."
-    },
-    {
-        "dedup-win",
-        SET_dedup_win,
-        Type_NUM,
-        {0},
-        "Set the window size of deduplication table. Default size if 1000000."
-    },
-    {
-        "stack-buf-count",
-        SET_stack_buf_count,
-        Type_NUM,
-        {"tx-buf-count", 0},
-        "Set the buffer size of packets queue(stack) from receive thread to transmit "
-        "thread.\n"
-        "The value of packets queue must be power of 2. (Default 16384)"
-    },
-    {
-        "dispatch-buf-count",
-        SET_dispatch_buf_count,
-        Type_NUM,
-        {"rx-buf-count", 0},
-        "Set the buffer size of dispatch queue from receive thread to receive "
-        "handler threads.\n"
-        "The value of packets queue must be power of 2. (Default 16384)"
-    },
-    {
-        "pfring",
-        SET_pfring,
-        Type_BOOL,
-        {0},
-        "Force the use of the PF_RING driver. The program will exit if PF_RING "
-        "DNA drvers are not available."
-    },
-    {
-        "send-queue",
-        SET_send_queue,
-        Type_BOOL,
-        {"sendq", 0},
-        "Use sendqueue feature of Npcap/Winpcap on Windows to transmit packets. "
-        "The transmit rate on Windows is really slow, like 40-kpps. The speed "
-        "can be increased by using the sendqueue feature to roughly 300-kpps.\n"
-        "NOTE: It's not recommended to use sendqueue feature in low send rate, "
-        "because this may cause a lot latency for every single packet and affect"
-        " some scan modules working with connections."
-    },
-    {
-        "offline",
-        SET_offline,
-        Type_BOOL,
-        {"dry-run", 0},
-        "Do not actually transmit packets. This is useful with a low rate and "
-        "--packet-trace to look at what packets might've been transmitted. Or, "
-        "it's useful with --rate 100000000 in order to benchmark how fast "
-        "transmit would work (assuming a zero-overhead driver). PF_RING is about"
-        " 20% slower than the benchmark result from offline mode."
-    },
-    {
-        "infinite",
-        SET_infinite,
-        Type_BOOL,
-        {0},
-        "Scan the target again and again. Not stop until we hit <Ctrl-C>. This "
-        "is useful for us to test the some performance of "XTATE_FIRST_UPPER_NAME
-        ". The seed will update in every loop while setting infinite mode.\n"
-        "HINT: If we just want to test the highest sending rate, try to set an "
-        "invalid router mac like `--router-mac 11:22:33:44:55:66` or use `--fake"
-        "-router-mac` to send packets in local network.\n"
-        "NOTE: We should be careful to the deduplication in the infinite mode."
-    },
-    {
-        "repeat",
-        SET_repeat,
-        Type_NUM,
-        {"repeats", 0},
-        "How many times "XTATE_FIRST_UPPER_NAME" should repeat for all targets."
-        " It also means the hit count for every target + 1. So default is 0."
-        " `--infinite` will be automatically set when we use repeat.\n"
-        "NOTE: We should be careful to the deduplication in the repeat mode."
-    },
-    {
-        "static-seed",
-        SET_static_seed,
-        Type_BOOL,
-        {"keep-seed", 0},
-        "Use same seed to pick up addresses in infinite mode. "
-        XTATE_FIRST_UPPER_NAME" changes seed for every round to make a different"
-        " scan order while repeating. We can use static-seed to keep order of "
-        "all rounds."
-    },
-    {
-        "no-cpu-bind",
-        SET_no_cpu_bind,
-        Type_BOOL,
-        {"no-bind", 0},
-        "In default, "XTATE_FIRST_UPPER_NAME" bind its threads to CPU kernels for"
-        " better performance if the number of kernels is great than 1. This "
-        "switch allows no CPU binding for all threads and is useful for computers"
-        " with outdated hardware.\n"
-        "NOTE1: The default CPU-binding order is:\n"
-        "    1.Tx Threads\n"
-        "    2.Rx Threads\n"
-        "    3.Rx Handle Threads\n"
-        "NOTE2: As you can see, 3 threads need to be binded at least. (1 tx "
-        "thread, 1 rx thread and 1 rx handle thread)"
-    },
-
+    {"conf",
+     SET_read_conf,
+     Type_NONE,
+     {"config", "resume", 0},
+     "Reads in a configuration file. If not specified, then will read from "
+     "/etc/xtate/xtate.conf by default. We could specifies a configuration "
+     "file generated by " XTATE_UPPER_NAME " automatically after break by user"
+     " to resume an unfinished scanning."},
+    {"resume-index",
+     SET_resume_index,
+     Type_NUM,
+     {0},
+     "The point in the scan at when it was paused."},
+    {"no-resume",
+     SET_noresume,
+     Type_BOOL,
+     {0},
+     "Do not save scan info to resume file(paused.conf) for resuming. This is"
+     " useful when our target list is too large and scattered and spend too "
+     "much time to save."},
+    {"pcap-filename",
+     SET_pcap_filename,
+     Type_NONE,
+     {"pcap", 0},
+     "Saves received packets (but not transmitted packets) to the "
+     "libpcap-format file."},
+    {"timeout",
+     SET_fast_timeout,
+     Type_NUM,
+     {"use-timeout", 0},
+     "Specifies whether or how many timeouts(sec) should ScanModule use like"
+     " --timeout true, --timeout 15. Some ScanModules could use timeout "
+     "function of " XTATE_UPPER_NAME " to result some unresponsed targets and "
+     "do some operation.\n"
+     "NOTE: Timeout mechanism may use more memory and cause block on the Rx"
+     " thread while in high-speed send rate. Also the way I used to handle "
+     "the timeout event is kludge. I guess that it can be not that precise "
+     "sometimes because of the dedup mechanism. Although it can bring some "
+     "convenient effects in some scanning, I recommend not to use it if "
+     "possible. However, " XTATE_UPPER_NAME " was originally born in stateless "
+     "mode:)"},
+    {"no-dedup",
+     SET_nodedup,
+     Type_BOOL,
+     {0},
+     "Do not deduplicate the results even if ScanModule use deduplication.\n"
+     "NOTE: This will destroy the work of `--timeout`, so don't use these two"
+     " switch together."},
+    {"dedup-win",
+     SET_dedup_win,
+     Type_NUM,
+     {0},
+     "Set the window size of deduplication table. Default size if 1000000."},
+    {"stack-buf-count",
+     SET_stack_buf_count,
+     Type_NUM,
+     {"tx-buf-count", 0},
+     "Set the buffer size of packets queue(stack) from receive thread to "
+     "transmit "
+     "thread.\n"
+     "The value of packets queue must be power of 2. (Default 16384)"},
+    {"dispatch-buf-count",
+     SET_dispatch_buf_count,
+     Type_NUM,
+     {"rx-buf-count", 0},
+     "Set the buffer size of dispatch queue from receive thread to receive "
+     "handler threads.\n"
+     "The value of packets queue must be power of 2. (Default 16384)"},
+    {"pfring",
+     SET_pfring,
+     Type_BOOL,
+     {0},
+     "Force the use of the PF_RING driver. The program will exit if PF_RING "
+     "DNA drvers are not available."},
+    {"send-queue",
+     SET_send_queue,
+     Type_BOOL,
+     {"sendq", 0},
+     "Use sendqueue feature of Npcap/Winpcap on Windows to transmit packets. "
+     "The transmit rate on Windows is really slow, like 40-kpps. The speed "
+     "can be increased by using the sendqueue feature to roughly 300-kpps.\n"
+     "NOTE: It's not recommended to use sendqueue feature in low send rate, "
+     "because this may cause a lot latency for every single packet and affect"
+     " some scan modules working with connections."},
+    {"offline",
+     SET_offline,
+     Type_BOOL,
+     {"dry-run", 0},
+     "Do not actually transmit packets. This is useful with a low rate and "
+     "--packet-trace to look at what packets might've been transmitted. Or, "
+     "it's useful with --rate 100000000 in order to benchmark how fast "
+     "transmit would work (assuming a zero-overhead driver). PF_RING is about"
+     " 20% slower than the benchmark result from offline mode."},
+    {"infinite",
+     SET_infinite,
+     Type_BOOL,
+     {0},
+     "Scan the target again and again. Not stop until we hit <Ctrl-C>. This "
+     "is useful for us to test the some performance of " XTATE_FIRST_UPPER_NAME
+     ". The seed will update in every loop while setting infinite mode.\n"
+     "HINT: If we just want to test the highest sending rate, try to set an "
+     "invalid router mac like `--router-mac 11:22:33:44:55:66` or use `--fake"
+     "-router-mac` to send packets in local network.\n"
+     "NOTE: We should be careful to the deduplication in the infinite mode."},
+    {"repeat",
+     SET_repeat,
+     Type_NUM,
+     {"repeats", 0},
+     "How many times " XTATE_FIRST_UPPER_NAME " should repeat for all targets."
+     " It also means the hit count for every target + 1. So default is 0."
+     " `--infinite` will be automatically set when we use repeat.\n"
+     "NOTE: We should be careful to the deduplication in the repeat mode."},
+    {"static-seed",
+     SET_static_seed,
+     Type_BOOL,
+     {"keep-seed", 0},
+     "Use same seed to pick up addresses in infinite "
+     "mode. " XTATE_FIRST_UPPER_NAME
+     " changes seed for every round to make a different"
+     " scan order while repeating. We can use static-seed to keep order of "
+     "all rounds."},
+    {"no-cpu-bind",
+     SET_no_cpu_bind,
+     Type_BOOL,
+     {"no-bind", 0},
+     "In default, " XTATE_FIRST_UPPER_NAME
+     " bind its threads to CPU kernels for"
+     " better performance if the number of kernels is great than 1. This "
+     "switch allows no CPU binding for all threads and is useful for computers"
+     " with outdated hardware.\n"
+     "NOTE1: The default CPU-binding order is:\n"
+     "    1.Tx Threads\n"
+     "    2.Rx Threads\n"
+     "    3.Rx Handle Threads\n"
+     "NOTE2: As you can see, 3 threads need to be binded at least. (1 tx "
+     "thread, 1 rx thread and 1 rx handle thread)"},
 
     /*Put it at last for better "help" output*/
     {"TARGET_OUTPUT", SET_target_output, 0, {0}, NULL},
 
-    {0}
-};
+    {0}};
 
 /***************************************************************************
  * Exit process if CONF_ERR happens.
  ***************************************************************************/
-void
-xconf_set_parameter(XConf *xconf,
-                      const char *name, const char *value)
-{
+void xconf_set_parameter(XConf *xconf, const char *name, const char *value) {
     set_one_parameter(xconf, config_parameters, name, value);
 }
-
 
 /***************************************************************************
  * Read the configuration from the command-line.
  * Called by 'main()' when starting up.
  ***************************************************************************/
-void
-xconf_command_line(XConf *xconf, int argc, char *argv[])
-{
-    set_parameters_from_args(xconf, config_parameters, argc-1, argv+1);
+void xconf_command_line(XConf *xconf, int argc, char *argv[]) {
+    set_parameters_from_args(xconf, config_parameters, argc - 1, argv + 1);
 
     if (xconf->shard.of > 1 && xconf->seed == 0) {
-        LOG(LEVEL_ERROR, "--seed <num> is not specified\n    HINT: all shards must share the same seed\n");
+        LOG(LEVEL_ERROR, "--seed <num> is not specified\n    HINT: all shards "
+                         "must share the same seed\n");
     }
 }
 
@@ -3359,9 +3174,7 @@ xconf_command_line(XConf *xconf, int argc, char *argv[])
  * Use#1: create a template file of all settable parameters.
  * Use#2: make sure your configuration was interpreted correctly.
  ***************************************************************************/
-void
-xconf_echo(XConf *xconf, FILE *fp)
-{
+void xconf_echo(XConf *xconf, FILE *fp) {
     unsigned i;
 
     /*
@@ -3370,12 +3183,12 @@ xconf_echo(XConf *xconf, FILE *fp)
     xconf->echo = fp;
 
     CONFIG_SET_PARAM tmp = NULL;
-    for (i=0; config_parameters[i].name; i++) {
+    for (i = 0; config_parameters[i].name; i++) {
         /**
          * We may use same `set` func more than one times back-to-back
          * in config_paramiters.
          * Do a dedup easily when echoing.
-        */
+         */
         if (config_parameters[i].setter == tmp)
             continue;
         tmp = config_parameters[i].setter;
@@ -3386,7 +3199,6 @@ xconf_echo(XConf *xconf, FILE *fp)
     xconf->echo     = 0;
     xconf->echo_all = 0;
 }
-
 
 /***************************************************************************
  * Prints the list of CIDR to scan to the command-line then exits.
@@ -3403,9 +3215,7 @@ xconf_echo(XConf *xconf, FILE *fp)
  *  10.0.0.64/26
  *  10.0.0.128/25
  ***************************************************************************/
-void
-xconf_echo_cidr(XConf *xconf, FILE *fp)
-{
+void xconf_echo_cidr(XConf *xconf, FILE *fp) {
     unsigned i;
 
     xconf->echo = fp;
@@ -3413,27 +3223,22 @@ xconf_echo_cidr(XConf *xconf, FILE *fp)
     /*
      * For all IPv4 ranges ...
      */
-    for (i=0; i<xconf->targets.ipv4.count; i++) {
-
+    for (i = 0; i < xconf->targets.ipv4.count; i++) {
         /* Get the next range in the list */
         struct Range range = xconf->targets.ipv4.list[i];
 
         /* If not a single CIDR range, print all the CIDR ranges
          * needed to completely represent this addres */
         for (;;) {
-            unsigned prefix_length;
+            unsigned     prefix_length;
             struct Range cidr;
 
             /* Find the largest CIDR range (one that can be specified
              * with a /prefix) at the start of this range. */
             cidr = range_first_cidr(range, &prefix_length);
-            fprintf(fp, "%u.%u.%u.%u/%u\n",
-                    (cidr.begin>>24)&0xFF,
-                    (cidr.begin>>16)&0xFF,
-                    (cidr.begin>> 8)&0xFF,
-                    (cidr.begin>> 0)&0xFF,
-                    prefix_length
-                    );
+            fprintf(fp, "%u.%u.%u.%u/%u\n", (cidr.begin >> 24) & 0xFF,
+                    (cidr.begin >> 16) & 0xFF, (cidr.begin >> 8) & 0xFF,
+                    (cidr.begin >> 0) & 0xFF, prefix_length);
 
             /* If this is the last range, then stop. There are multiple
              * ways to gets to see if we get to the end, but I think
@@ -3444,20 +3249,21 @@ xconf_echo_cidr(XConf *xconf, FILE *fp)
             /* If the CIDR range didn't cover the entire range,
              * then remove it from the beginning of the range
              * and process the remainder */
-            range.begin = cidr.end+1;
+            range.begin = cidr.end + 1;
         }
     }
 
     /*
      * For all IPv6 ranges...
      */
-    for (i=0; i<xconf->targets.ipv6.count; i++) {
+    for (i = 0; i < xconf->targets.ipv6.count; i++) {
         struct Range6 range = xconf->targets.ipv6.list[i];
-        bool exact = false;
+        bool          exact = false;
         while (!exact) {
             ipaddress_formatted_t fmt = ipv6address_fmt(range.begin);
             fprintf(fp, "%s", fmt.string);
-            if (range.begin.hi == range.end.hi && range.begin.lo == range.end.lo) {
+            if (range.begin.hi == range.end.hi &&
+                range.begin.lo == range.end.lo) {
                 fprintf(fp, "/128");
                 exact = true;
             } else {
@@ -3471,11 +3277,10 @@ xconf_echo_cidr(XConf *xconf, FILE *fp)
 
 /***************************************************************************
  ***************************************************************************/
-bool xconf_contains(const char *x, int argc, char **argv)
-{
+bool xconf_contains(const char *x, int argc, char **argv) {
     int i;
 
-    for (i=0; i<argc; i++) {
+    for (i = 0; i < argc; i++) {
         if (strcmp(argv[i], x) == 0)
             return true;
     }
@@ -3483,21 +3288,20 @@ bool xconf_contains(const char *x, int argc, char **argv)
     return false;
 }
 
-void xconf_print_intro()
-{
+void xconf_print_intro() {
     printf("\n");
-    printf("Welcome to "XTATE_FIRST_UPPER_NAME"!");
+    printf("Welcome to " XTATE_FIRST_UPPER_NAME "!");
     printf("\n");
     xprint(XTATE_FOR, 2, 80);
     printf("\n");
     printf("\n");
-    printf("  Author : "XTATE_AUTHOR_NAME"\n");
-    printf("  Github : "XTATE_GITHUB"\n");
-    printf("  Contact: "XTATE_AUTHOR_MAIL"\n");
+    printf("  Author : " XTATE_AUTHOR_NAME "\n");
+    printf("  Github : " XTATE_GITHUB "\n");
+    printf("  Contact: " XTATE_AUTHOR_MAIL "\n");
     printf("\n");
     printf("\n");
     printf("\n");
-    printf("This is how "XTATE_FIRST_UPPER_NAME" working internally:\n");
+    printf("This is how " XTATE_FIRST_UPPER_NAME " working internally:\n");
     printf("\n");
     printf(work_flow);
     printf("\n");
@@ -3510,89 +3314,105 @@ void xconf_print_intro()
     printf("\n");
 }
 
-void xconf_print_usage()
-{
+void xconf_print_usage() {
     printf("\n\n\n");
     xprint_with_head(ascii_xtate2, 10, 80);
-    printf("\n                             "XTATE_GOD"\n\n");
+    printf("\n                             " XTATE_GOD "\n\n");
     printf("\n");
 
     printf("\n");
-    printf("Welcome to "XTATE_FIRST_UPPER_NAME"!");
+    printf("Welcome to " XTATE_FIRST_UPPER_NAME "!");
     printf("\n");
     xprint(XTATE_FOR, 2, 80);
     printf("\n");
     printf("\n");
-    printf("  Author : "XTATE_AUTHOR_NAME"\n");
-    printf("  Github : "XTATE_GITHUB"\n");
-    printf("  Contact: "XTATE_AUTHOR_MAIL"\n");
+    printf("  Author : " XTATE_AUTHOR_NAME "\n");
+    printf("  Github : " XTATE_GITHUB "\n");
+    printf("  Contact: " XTATE_AUTHOR_MAIL "\n");
     printf("\n");
     printf("usage format:\n");
-    printf("  "XTATE_NAME" [options] [-ip IPs -p PORTs [-scan SCANMODULE [-probe PROBEMODULE]]]\n");
+    printf("  " XTATE_NAME " [options] [-ip IPs -p PORTs [-scan SCANMODULE "
+           "[-probe PROBEMODULE]]]\n");
     printf("\n");
-    printf("basic use examples of "XTATE_NAME":\n");
+    printf("basic use examples of " XTATE_NAME ":\n");
     printf("\n");
-    printf("  "XTATE_NAME" -p 80,8000-8100 -ip 10.0.0.0/8 --rate=10000\n");
-    xprint("use default TcpSyn ScanModule to scan web ports on 10.x.x.x at 10kpps.\n", 6, 80);
+    printf("  " XTATE_NAME " -p 80,8000-8100 -ip 10.0.0.0/8 --rate=10000\n");
+    xprint("use default TcpSyn ScanModule to scan web ports on 10.x.x.x at "
+           "10kpps.\n",
+           6, 80);
     printf("\n");
-    printf("  "XTATE_NAME" -p u:80 -ip 10.0.0.0/8 -scan udp -probe echo -show fail\n");
-    xprint("use UdpProbe ScanModule to scan UDP 80 port with echo ProbeModule and also show failed results.\n", 6, 80);
+    printf("  " XTATE_NAME
+           " -p u:80 -ip 10.0.0.0/8 -scan udp -probe echo -show fail\n");
+    xprint("use UdpProbe ScanModule to scan UDP 80 port with echo ProbeModule "
+           "and also show failed results.\n",
+           6, 80);
     printf("\n");
-    printf("  "XTATE_NAME" -ip 10.0.0.0/8 -scan icmp-echo -scan-arg \"-ttl\" -timeout 6\n");
-    xprint("use IcmpEcho ScanModule to do ping scan with a 6s timeout and record TTL.\n", 6, 80);
+    printf("  " XTATE_NAME
+           " -ip 10.0.0.0/8 -scan icmp-echo -scan-arg \"-ttl\" -timeout 6\n");
+    xprint("use IcmpEcho ScanModule to do ping scan with a 6s timeout and "
+           "record TTL.\n",
+           6, 80);
     printf("\n");
-    printf("  "XTATE_NAME" -p 80 -ip 10.0.0.0/8 -scan zbanner -probe http -probe-arg \"-ver HTTP/1.1\"\n");
-    xprint("use ZBanner ScanModule to grab http banners with http ProbeModule and module-specific param.\n", 6, 80);
+    printf("  " XTATE_NAME " -p 80 -ip 10.0.0.0/8 -scan zbanner -probe http "
+           "-probe-arg \"-ver HTTP/1.1\"\n");
+    xprint("use ZBanner ScanModule to grab http banners with http ProbeModule "
+           "and module-specific param.\n",
+           6, 80);
     printf("\n");
-    printf("  "XTATE_NAME" -p s:38412 -ip 10.0.0.0/8 -scan sctp-init -show fail\n");
-    xprint("use SctpInit ScanModule to scan SCTP 38412(36412) port and also show failed results.\n", 6, 80);
+    printf("  " XTATE_NAME
+           " -p s:38412 -ip 10.0.0.0/8 -scan sctp-init -show fail\n");
+    xprint("use SctpInit ScanModule to scan SCTP 38412(36412) port and also "
+           "show failed results.\n",
+           6, 80);
     printf("\n");
-    printf("  "XTATE_NAME" -ip 192.168.0.1/24 -scan arp-req -lan\n");
+    printf("  " XTATE_NAME " -ip 192.168.0.1/24 -scan arp-req -lan\n");
     xprint("do ARP scan with LAN mode in local network.\n", 6, 80);
     printf("\n");
-    printf("  "XTATE_NAME" -ip fe80::1/120 -scan ndp-ns -src-ip fe80::2 -fake-router-mac\n");
-    xprint("do NDP NS scan with a link-local source IP in local network.\n", 6, 80);
+    printf("  " XTATE_NAME
+           " -ip fe80::1/120 -scan ndp-ns -src-ip fe80::2 -fake-router-mac\n");
+    xprint("do NDP NS scan with a link-local source IP in local network.\n", 6,
+           80);
     printf("\n");
-    printf("  "XTATE_NAME" -list-scan\n");
+    printf("  " XTATE_NAME " -list-scan\n");
     xprint("list all ScanModules with introductions.\n", 6, 80);
     printf("\n");
-    printf("  "XTATE_NAME" -list-probe\n");
+    printf("  " XTATE_NAME " -list-probe\n");
     xprint("list all ProbeModules with introductions.\n", 6, 80);
     printf("\n");
-    printf("  "XTATE_NAME" -list-output\n");
+    printf("  " XTATE_NAME " -list-output\n");
     xprint("list all OutputModules with introductions.\n", 6, 80);
     printf("\n");
-    printf("  "XTATE_NAME" -version\n");
+    printf("  " XTATE_NAME " -version\n");
     xprint("print version and compilation info.\n", 6, 80);
     printf("\n");
-    printf("  "XTATE_NAME" -intro\n");
-    xprint("show the design and architecture of "XTATE_FIRST_UPPER_NAME".\n", 6, 80);
+    printf("  " XTATE_NAME " -intro\n");
+    xprint("show the design and architecture of " XTATE_FIRST_UPPER_NAME ".\n",
+           6, 80);
     printf("\n");
-    printf("  "XTATE_NAME" -usage\n");
+    printf("  " XTATE_NAME " -usage\n");
     xprint("display this usage text of using examples.\n", 6, 80);
     printf("\n");
-    printf("  "XTATE_NAME" -help\n");
+    printf("  " XTATE_NAME " -help\n");
     xprint("display detailed help text of all parameters.\n", 6, 80);
     printf("\n");
 }
 
-void xconf_print_version()
-{
-    const char *cpu = "unknown";
-    const char *compiler = "unknown";
+void xconf_print_version() {
+    const char *cpu              = "unknown";
+    const char *compiler         = "unknown";
     const char *compiler_version = "unknown";
-    const char *os = "unknown";
+    const char *os               = "unknown";
     printf("\n");
-    printf("  "XTATE_FIRST_UPPER_NAME" version %s", XTATE_VERSION);
+    printf("  " XTATE_FIRST_UPPER_NAME " version %s", XTATE_VERSION);
 #ifdef NDEBUG
     printf(" in Release\n");
 #else
     printf(" in Debug\n");
 #endif
     printf("\n");
-    printf("  Author : "XTATE_AUTHOR_NAME"\n");
-    printf("  Github : "XTATE_GITHUB"\n");
-    printf("  Contact: "XTATE_AUTHOR_MAIL"\n");
+    printf("  Author : " XTATE_AUTHOR_NAME "\n");
+    printf("  Github : " XTATE_GITHUB "\n");
+    printf("  Contact: " XTATE_AUTHOR_MAIL "\n");
     printf("\n");
     printf("  Compiled on: %s %s\n", __DATE__, __TIME__);
 
@@ -3601,13 +3421,13 @@ void xconf_print_version()
 #endif
 
 #if defined(_MSC_VER)
-    #if defined(_M_AMD64) || defined(_M_X64)
-        cpu = "x86";
-    #elif defined(_M_IX86)
-        cpu = "x86";
-    #elif defined (_M_ARM_FP)
-        cpu = "arm";
-    #endif
+#if defined(_M_AMD64) || defined(_M_X64)
+    cpu = "x86";
+#elif defined(_M_IX86)
+    cpu = "x86";
+#elif defined(_M_ARM_FP)
+    cpu = "arm";
+#endif
 
     {
         int msc_ver = _MSC_VER;
@@ -3694,28 +3514,27 @@ void xconf_print_version()
             compiler_version = "post-2022";
     }
 
-
 #elif defined(__GNUC__)
 #if defined(__clang__)
-    compiler = "clang";
+    compiler         = "clang";
     compiler_version = __clang_version__;
 #elif defined(__MINGW64__)
-    compiler = "MinGW-w64 gcc";
+    compiler         = "MinGW-w64 gcc";
     compiler_version = __VERSION__;
 #elif defined(__MINGW32__)
-    compiler = "MinGW-w32 gcc";
+    compiler         = "MinGW-w32 gcc";
     compiler_version = __VERSION__;
 #else
-    compiler = "gcc";
+    compiler         = "gcc";
     compiler_version = __VERSION__;
 #endif
 
 #if defined(i386) || defined(__i386) || defined(__i386__)
-    cpu = "x86";
+    cpu              = "x86";
 #endif
 
 #if defined(__corei7) || defined(__corei7__)
-    cpu = "x86-Corei7";
+    cpu              = "x86-Corei7";
 #endif
 
 #endif
@@ -3723,7 +3542,7 @@ void xconf_print_version()
 #if defined(WIN32)
     os = "Windows";
 #elif defined(__linux__)
-    os = "Linux";
+    os               = "Linux";
 #elif defined(__APPLE__)
     os = "Apple";
 #elif defined(__MACH__)
@@ -3738,18 +3557,17 @@ void xconf_print_version()
 
     printf("  Compiler: %s %s\n", compiler, compiler_version);
     printf("  OS: %s\n", os);
-    printf("  CPU: %s (%u bits)\n", cpu, (unsigned)(sizeof(void*))*8);
+    printf("  CPU: %s (%u bits)\n", cpu, (unsigned)(sizeof(void *)) * 8);
     printf("\n");
 
     printf("  Build with libraries:\n");
 
 #ifndef NOT_FOUND_OPENSSL
 #include <openssl/opensslv.h>
-    printf("    "OPENSSL_VERSION_TEXT"\n");
+    printf("    " OPENSSL_VERSION_TEXT "\n");
 #else
     printf("    OpenSSL    (null)\n");
 #endif
-
 
 #ifndef NOT_FOUND_PCRE2
 #define PCRE2_CODE_UNIT_WIDTH 8
@@ -3761,7 +3579,6 @@ void xconf_print_version()
     printf("    PCRE2      (null)\n");
 #endif
 
-
 #ifndef NOT_FOUND_LIBXML2
 #include <libxml/xmlversion.h>
     printf("    LibXml2 %s\n", LIBXML_DOTTED_VERSION);
@@ -3772,44 +3589,44 @@ void xconf_print_version()
     printf("\n");
 }
 
-void xconf_print_help()
-{
+void xconf_print_help() {
     printf("\n\n\n");
     xprint_with_head(ascii_xtate1, 15, 80);
-    printf("\n                               "XTATE_GOD"\n\n");
+    printf("\n                               " XTATE_GOD "\n\n");
     printf("\n");
-    xprint("Welcome to "XTATE_FIRST_UPPER_NAME"!", 2, 80);
+    xprint("Welcome to " XTATE_FIRST_UPPER_NAME "!", 2, 80);
     printf("\n");
     xprint(XTATE_FOR, 4, 80);
     printf("\n");
     printf("\n");
-    printf("  Author : "XTATE_AUTHOR_NAME"\n");
-    printf("  Github : "XTATE_GITHUB"\n");
-    printf("  Contact: "XTATE_AUTHOR_MAIL"\n");
+    printf("  Author : " XTATE_AUTHOR_NAME "\n");
+    printf("  Github : " XTATE_GITHUB "\n");
+    printf("  Contact: " XTATE_AUTHOR_MAIL "\n");
     printf("\n");
-    xprint("Here are detailed help text of all parameters of "
-        XTATE_FIRST_UPPER_NAME". I hope these will help you a lot. If any "
-        "problem or advice, please contact me.\n", 2, 80);
+    xprint("Here are detailed help text of all parameters "
+           "of " XTATE_FIRST_UPPER_NAME
+           ". I hope these will help you a lot. If any "
+           "problem or advice, please contact me.\n",
+           2, 80);
     printf("\n");
     printf("\n");
     printf("\n");
 
     unsigned count = 0;
-    for (unsigned i=0; config_parameters[i].name; i++) {
-
+    for (unsigned i = 0; config_parameters[i].name; i++) {
         if (!config_parameters[i].help_text) {
-            if (config_parameters[i].setter==&SET_nothing) {
+            if (config_parameters[i].setter == &SET_nothing) {
                 /*This is a paragraph name*/
-                printf(XPRINT_EQUAL_LINE"\n");
+                printf(XPRINT_EQUAL_LINE "\n");
                 printf("  %s\n", config_parameters[i].name);
-                printf(XPRINT_EQUAL_LINE"\n\n");
+                printf(XPRINT_EQUAL_LINE "\n\n");
             }
             continue;
         }
 
         printf("  --%s", config_parameters[i].name);
 
-        for (unsigned j=0; config_parameters[i].alt_names[j]; j++) {
+        for (unsigned j = 0; config_parameters[i].alt_names[j]; j++) {
             printf(", --%s", config_parameters[i].alt_names[j]);
         }
 
@@ -3821,15 +3638,20 @@ void xconf_print_help()
     }
 
     printf("\n\n");
-    printf("   **************************************************************************\n");
-    printf("   * Now contains [%d] parameters in total, use them to unleash your power! *\n", count);
-    printf("   **************************************************************************\n");
+    printf("   "
+           "*******************************************************************"
+           "*******\n");
+    printf("   * Now contains [%d] parameters in total, use them to unleash "
+           "your power! *\n",
+           count);
+    printf("   "
+           "*******************************************************************"
+           "*******\n");
     printf("\n\n\n");
 }
 
-void xconf_benchmark(unsigned blackrock_rounds)
-{
-    printf("=== benchmarking (%u-bits) ===\n\n", (unsigned)sizeof(void*)*8);
+void xconf_benchmark(unsigned blackrock_rounds) {
+    printf("=== benchmarking (%u-bits) ===\n\n", (unsigned)sizeof(void *) * 8);
     blackrock1_benchmark(blackrock_rounds);
     blackrock2_benchmark(blackrock_rounds);
     smack_benchmark();
@@ -3837,8 +3659,7 @@ void xconf_benchmark(unsigned blackrock_rounds)
 
 /***************************************************************************
  ***************************************************************************/
-static int xconf_self_selftest()
-{
+static int xconf_self_selftest() {
     char test[] = " test 1 ";
 
     trim(test, sizeof(test));
@@ -3846,11 +3667,11 @@ static int xconf_self_selftest()
         goto failure;
     }
 
-
     /* */
     {
-        int argc = 6;
-        char *argv[] = { "foo", "bar", "-ddd", "--readscan", "xxx", "--something" };
+        int   argc   = 6;
+        char *argv[] = {"foo",        "bar", "-ddd",
+                        "--readscan", "xxx", "--something"};
 
         if (xconf_contains("--nothing", argc, argv))
             goto failure;
@@ -3865,13 +3686,12 @@ failure:
     return 1;
 }
 
-void xconf_selftest()
-{
+void xconf_selftest() {
     puts("Regression test: start...");
 
     int x = 0;
 
-    //!Add new regression test here
+    //! Add new regression test here
     {
         x += targetip_selftest();
         x += targetip_parse_selftest();
@@ -3899,7 +3719,7 @@ void xconf_selftest()
         x += template_selftest();
     }
 
-    if (x!=0)
+    if (x != 0)
         puts("Regression test: failed :(");
     else
         puts("Regression test: success!");

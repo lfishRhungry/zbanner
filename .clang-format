@@ -1,0 +1,14 @@
+BasedOnStyle: LLVM
+
+TabWidth: 4
+UseTab: Never
+UseCRLF: false
+IndentWidth: 4
+SortIncludes: Never
+IndentCaseLabels: true
+
+AlignEscapedNewlines: Right
+AlignConsecutiveMacros: AcrossComments
+AlignConsecutiveBitFields: AcrossComments
+AlignConsecutiveAssignments: AcrossComments
+AlignConsecutiveDeclarations: AcrossComments

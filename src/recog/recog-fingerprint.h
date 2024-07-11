@@ -14,12 +14,12 @@ struct Recog_FP;
  * @param filename xml filename/path
  * @param unprefix unprefix the `^` from the head of regex
  * @param unsuffix unsuffix the `$` from the tail of regex
-*/
-struct Recog_FP * load_recog_fp(const char *filename, bool unprefix, bool unsuffix);
+ */
+struct Recog_FP *load_recog_fp(const char *filename, bool unprefix,
+                               bool unsuffix);
 
-const char *
-match_recog_fp(struct Recog_FP *fp,
-    const unsigned char *payload, size_t payload_len);
+const char *match_recog_fp(struct Recog_FP *fp, const unsigned char *payload,
+                           size_t payload_len);
 
 void free_recog_fp(struct Recog_FP *fp);
 

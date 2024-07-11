@@ -108,8 +108,8 @@
 
 /* create the ring */
 struct rte_ring *rte_ring_create(unsigned count, unsigned flags) {
-  struct rte_ring *r;
-  size_t ring_size;
+    struct rte_ring *r;
+    size_t           ring_size;
 
 #if 0
     /* compilation-time checks */
@@ -127,35 +127,35 @@ struct rte_ring *rte_ring_create(unsigned count, unsigned flags) {
 #endif
 #endif
 
-  /* count must be a power of 2 */
-  if ((!POWEROF2(count)) || (count > RTE_RING_SZ_MASK)) {
-    rte_errno = EINVAL;
-    LOG(LEVEL_ERROR,
+    /* count must be a power of 2 */
+    if ((!POWEROF2(count)) || (count > RTE_RING_SZ_MASK)) {
+        rte_errno = EINVAL;
+        LOG(LEVEL_ERROR,
             "Requested size is invalid, must be power of 2, and "
             "do not exceed the size limit %u\n",
             RTE_RING_SZ_MASK);
-    return NULL;
-  }
+        return NULL;
+    }
 
-  ring_size = count * sizeof(void *) + sizeof(struct rte_ring);
+    ring_size = count * sizeof(void *) + sizeof(struct rte_ring);
 
-  r = (struct rte_ring *)malloc(ring_size);
-  if (r == NULL)
-    abort();
+    r = (struct rte_ring *)malloc(ring_size);
+    if (r == NULL)
+        abort();
 
-  /* init the ring structure */
-  memset(r, 0, sizeof(*r));
+    /* init the ring structure */
+    memset(r, 0, sizeof(*r));
 
-  r->flags = flags;
-  r->prod.watermark = count;
-  r->prod.sp_enqueue = !!(flags & RING_F_SP_ENQ);
-  r->cons.sc_dequeue = !!(flags & RING_F_SC_DEQ);
-  r->prod.size = r->cons.size = count;
-  r->prod.mask = r->cons.mask = count - 1;
-  r->prod.head = r->cons.head = 0;
-  r->prod.tail = r->cons.tail = 0;
+    r->flags           = flags;
+    r->prod.watermark  = count;
+    r->prod.sp_enqueue = !!(flags & RING_F_SP_ENQ);
+    r->cons.sc_dequeue = !!(flags & RING_F_SC_DEQ);
+    r->prod.size = r->cons.size = count;
+    r->prod.mask = r->cons.mask = count - 1;
+    r->prod.head = r->cons.head = 0;
+    r->prod.tail = r->cons.tail = 0;
 
-  return r;
+    return r;
 }
 
 /*
@@ -163,65 +163,65 @@ struct rte_ring *rte_ring_create(unsigned count, unsigned flags) {
  * disabled
  */
 int rte_ring_set_water_mark(struct rte_ring *r, unsigned count) {
-  if (count >= r->prod.size)
-    return -EINVAL;
+    if (count >= r->prod.size)
+        return -EINVAL;
 
-  /* if count is 0, disable the watermarking */
-  if (count == 0)
-    count = r->prod.size;
+    /* if count is 0, disable the watermarking */
+    if (count == 0)
+        count = r->prod.size;
 
-  r->prod.watermark = count;
-  return 0;
+    r->prod.watermark = count;
+    return 0;
 }
 
 /* dump the status of the ring on the console */
 void rte_ring_dump(const struct rte_ring *r) {
 #ifdef RTE_LIBRTE_RING_DEBUG
-  struct rte_ring_debug_stats sum;
-  unsigned lcore_id;
+    struct rte_ring_debug_stats sum;
+    unsigned                    lcore_id;
 #endif
 
-  printf("  flags=%x\n", r->flags);
-  printf("  size=%u\n", r->prod.size);
-  printf("  ct=%u\n", r->cons.tail);
-  printf("  ch=%u\n", r->cons.head);
-  printf("  pt=%u\n", r->prod.tail);
-  printf("  ph=%u\n", r->prod.head);
-  printf("  used=%u\n", rte_ring_count(r));
-  printf("  avail=%u\n", rte_ring_free_count(r));
-  if (r->prod.watermark == r->prod.size)
-    printf("  watermark=0\n");
-  else
-    printf("  watermark=%u\n", r->prod.watermark);
+    printf("  flags=%x\n", r->flags);
+    printf("  size=%u\n", r->prod.size);
+    printf("  ct=%u\n", r->cons.tail);
+    printf("  ch=%u\n", r->cons.head);
+    printf("  pt=%u\n", r->prod.tail);
+    printf("  ph=%u\n", r->prod.head);
+    printf("  used=%u\n", rte_ring_count(r));
+    printf("  avail=%u\n", rte_ring_free_count(r));
+    if (r->prod.watermark == r->prod.size)
+        printf("  watermark=0\n");
+    else
+        printf("  watermark=%u\n", r->prod.watermark);
 
-    /* sum and dump statistics */
+        /* sum and dump statistics */
 #ifdef RTE_LIBRTE_RING_DEBUG
-  memset(&sum, 0, sizeof(sum));
-  for (lcore_id = 0; lcore_id < RTE_MAX_LCORE; lcore_id++) {
-    sum.enq_success_bulk += r->stats[lcore_id].enq_success_bulk;
-    sum.enq_success_objs += r->stats[lcore_id].enq_success_objs;
-    sum.enq_quota_bulk += r->stats[lcore_id].enq_quota_bulk;
-    sum.enq_quota_objs += r->stats[lcore_id].enq_quota_objs;
-    sum.enq_fail_bulk += r->stats[lcore_id].enq_fail_bulk;
-    sum.enq_fail_objs += r->stats[lcore_id].enq_fail_objs;
-    sum.deq_success_bulk += r->stats[lcore_id].deq_success_bulk;
-    sum.deq_success_objs += r->stats[lcore_id].deq_success_objs;
-    sum.deq_fail_bulk += r->stats[lcore_id].deq_fail_bulk;
-    sum.deq_fail_objs += r->stats[lcore_id].deq_fail_objs;
-  }
-  printf("  size=%u\n", r->prod.size);
-  printf("  enq_success_bulk=%" PRIu64 "\n", sum.enq_success_bulk);
-  printf("  enq_success_objs=%" PRIu64 "\n", sum.enq_success_objs);
-  printf("  enq_quota_bulk=%" PRIu64 "\n", sum.enq_quota_bulk);
-  printf("  enq_quota_objs=%" PRIu64 "\n", sum.enq_quota_objs);
-  printf("  enq_fail_bulk=%" PRIu64 "\n", sum.enq_fail_bulk);
-  printf("  enq_fail_objs=%" PRIu64 "\n", sum.enq_fail_objs);
-  printf("  deq_success_bulk=%" PRIu64 "\n", sum.deq_success_bulk);
-  printf("  deq_success_objs=%" PRIu64 "\n", sum.deq_success_objs);
-  printf("  deq_fail_bulk=%" PRIu64 "\n", sum.deq_fail_bulk);
-  printf("  deq_fail_objs=%" PRIu64 "\n", sum.deq_fail_objs);
+    memset(&sum, 0, sizeof(sum));
+    for (lcore_id = 0; lcore_id < RTE_MAX_LCORE; lcore_id++) {
+        sum.enq_success_bulk += r->stats[lcore_id].enq_success_bulk;
+        sum.enq_success_objs += r->stats[lcore_id].enq_success_objs;
+        sum.enq_quota_bulk += r->stats[lcore_id].enq_quota_bulk;
+        sum.enq_quota_objs += r->stats[lcore_id].enq_quota_objs;
+        sum.enq_fail_bulk += r->stats[lcore_id].enq_fail_bulk;
+        sum.enq_fail_objs += r->stats[lcore_id].enq_fail_objs;
+        sum.deq_success_bulk += r->stats[lcore_id].deq_success_bulk;
+        sum.deq_success_objs += r->stats[lcore_id].deq_success_objs;
+        sum.deq_fail_bulk += r->stats[lcore_id].deq_fail_bulk;
+        sum.deq_fail_objs += r->stats[lcore_id].deq_fail_objs;
+    }
+    printf("  size=%u\n", r->prod.size);
+    printf("  enq_success_bulk=%" PRIu64 "\n", sum.enq_success_bulk);
+    printf("  enq_success_objs=%" PRIu64 "\n", sum.enq_success_objs);
+    printf("  enq_quota_bulk=%" PRIu64 "\n", sum.enq_quota_bulk);
+    printf("  enq_quota_objs=%" PRIu64 "\n", sum.enq_quota_objs);
+    printf("  enq_fail_bulk=%" PRIu64 "\n", sum.enq_fail_bulk);
+    printf("  enq_fail_objs=%" PRIu64 "\n", sum.enq_fail_objs);
+    printf("  deq_success_bulk=%" PRIu64 "\n", sum.deq_success_bulk);
+    printf("  deq_success_objs=%" PRIu64 "\n", sum.deq_success_objs);
+    printf("  deq_fail_bulk=%" PRIu64 "\n", sum.deq_fail_bulk);
+    printf("  deq_fail_objs=%" PRIu64 "\n", sum.deq_fail_objs);
 #else
-  printf("  no statistics available\n");
+    printf("  no statistics available\n");
 #endif
 }
 
@@ -252,36 +252,31 @@ rte_ring_list_dump(void)
 
 typedef size_t Element;
 
-
 /***************************************************************************
  ***************************************************************************/
-struct Test
-{
-    struct rte_ring *ring;
-    unsigned producer_started;
-    unsigned producer_done;
-    unsigned consumer_done;
+struct Test {
+    struct rte_ring   *ring;
+    unsigned           producer_started;
+    unsigned           producer_done;
+    unsigned           consumer_done;
     unsigned long long total_count;
-    volatile int not_active;
-    volatile unsigned test_count;
-} *x_test;
-
+    volatile int       not_active;
+    volatile unsigned  test_count;
+} * x_test;
 
 /***************************************************************************
  ***************************************************************************/
-static void
-test_consumer_thread(void *v)
-{
-    struct Test *test = (struct Test *)v;
+static void test_consumer_thread(void *v) {
+    struct Test     *test = (struct Test *)v;
     struct rte_ring *ring = test->ring;
-    int err;
+    int              err;
 
     test->total_count = 0;
 
     while (!test->not_active) {
         Element e;
 
-        err = rte_ring_sc_dequeue(ring, (void**)&e);
+        err = rte_ring_sc_dequeue(ring, (void **)&e);
         if (err == 0)
             test->total_count += e;
         else {
@@ -289,12 +284,11 @@ test_consumer_thread(void *v)
         }
     }
 
-
     /* Wait until ring is empty before exiting */
     while (!rte_ring_empty(ring)) {
         Element e;
 
-        err = rte_ring_sc_dequeue(ring, (void**)&e);
+        err = rte_ring_sc_dequeue(ring, (void **)&e);
         if (err == 0)
             test->total_count += e;
         else {
@@ -307,18 +301,16 @@ test_consumer_thread(void *v)
 
 /***************************************************************************
  ***************************************************************************/
-static void
-test_producer_thread(void *v)
-{
-    struct Test *test = (struct Test *)v;
-    unsigned i = 1000;
+static void test_producer_thread(void *v) {
+    struct Test     *test = (struct Test *)v;
+    unsigned         i    = 1000;
     struct rte_ring *ring = test->ring;
 
     pixie_locked_add_u32(&test->producer_started, 1);
     while (i) {
         int err;
         for (;;) {
-            err = rte_ring_sp_enqueue(ring, (void*)(size_t)i);
+            err = rte_ring_sp_enqueue(ring, (void *)(size_t)i);
             if (err == 0)
                 break;
         }
@@ -329,17 +321,15 @@ test_producer_thread(void *v)
 
 /***************************************************************************
  ***************************************************************************/
-static uint64_t
-run_test(struct Test *test)
-{
-    unsigned i;
+static uint64_t run_test(struct Test *test) {
+    unsigned       i;
     const unsigned THREADS = 1;
 
     memset(test, 0, sizeof(*test));
-    test->ring = rte_ring_create(16, RING_F_SP_ENQ|RING_F_SC_DEQ);
+    test->ring = rte_ring_create(16, RING_F_SP_ENQ | RING_F_SC_DEQ);
 
     /* Generate producer threads */
-    for (i=0; i<THREADS; i++) {
+    for (i = 0; i < THREADS; i++) {
         pixie_begin_thread(test_producer_thread, 0, test);
     }
 
@@ -353,10 +343,8 @@ run_test(struct Test *test)
     while (test->producer_done < THREADS)
         pixie_usleep(10);
 
-
     /* Tell consumer thread to end */
     test->not_active = 1;
-
 
     /* Wait for consumer thread to end */
     while (!test->consumer_done)
@@ -365,23 +353,21 @@ run_test(struct Test *test)
     return test->total_count;
 }
 
-
 /***************************************************************************
  ***************************************************************************/
-int rte_ring_selftest()
-{
+int rte_ring_selftest() {
     unsigned i;
 
-
-    for (i=0; i<100; i++) {
-        uint64_t result;
+    for (i = 0; i < 100; i++) {
+        uint64_t    result;
         struct Test test[1];
 
         x_test = test;
 
         result = run_test(test);
         if (result != 500500) {
-            LOG(LEVEL_ERROR, "xring: selftest failed with %" PRIu64 "\n", result);
+            LOG(LEVEL_ERROR, "xring: selftest failed with %" PRIu64 "\n",
+                result);
             return 1;
         } else
             ;

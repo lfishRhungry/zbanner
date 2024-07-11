@@ -8,7 +8,6 @@
  * Correspond to a transmit thread.
  ***************************************************************************/
 typedef struct TxThreadConfig {
-
     const XConf *xconf;
 
     unsigned tx_index;
@@ -30,13 +29,11 @@ typedef struct TxThreadConfig {
     size_t thread_handle_xmit;
 } TxThread;
 
-
 /***************************************************************************
  *
  * Asynchronous transmit thread
  *
  ***************************************************************************/
-void
-transmit_thread(void *v); /*aka. scanning_thread() */
+void transmit_thread(void *v); /*aka. scanning_thread() */
 
 #endif

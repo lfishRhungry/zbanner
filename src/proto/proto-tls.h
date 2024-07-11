@@ -2,7 +2,7 @@
  * I cannot find a light, proper and convenient TLS library
  * for purpose of probing. So I try to implement the part of
  * ClientHello and ServerHello.
-*/
+ */
 
 /*
    TLS1.2 RFC5246
@@ -38,7 +38,6 @@ Message flow for an abbreviated handshake
       Finished                      -------->
       Application Data              <------->     Application Data
 */
-
 
 /*
    TLS1.3 RFC8446
@@ -129,41 +128,41 @@ Message Flow for a 0-RTT Handshake
 
 /*
  * Record Layer Content Type
-*/
-#define TLS_RECORD_CONTENT_TYPE_CHANGE_CIPHER_SPEC              '\x14'
-#define TLS_RECORD_CONTENT_TYPE_ALERT                           '\x15'
-#define TLS_RECORD_CONTENT_TYPE_HANDSHAKE                       '\x16'
-#define TLS_RECORD_CONTENT_TYPE_APP_DATA                        '\x17'
+ */
+#define TLS_RECORD_CONTENT_TYPE_CHANGE_CIPHER_SPEC '\x14'
+#define TLS_RECORD_CONTENT_TYPE_ALERT              '\x15'
+#define TLS_RECORD_CONTENT_TYPE_HANDSHAKE          '\x16'
+#define TLS_RECORD_CONTENT_TYPE_APP_DATA           '\x17'
 
 /*
  * Handshake Type
-*/
-#define TLS_HANDSHAKE_TYPE_CLIENTHELLO                          '\x01'
-#define TLS_HANDSHAKE_TYPE_SERVERHELLO                          '\x02'
+ */
+#define TLS_HANDSHAKE_TYPE_CLIENTHELLO '\x01'
+#define TLS_HANDSHAKE_TYPE_SERVERHELLO '\x02'
 
 /*
  * ALPN Proto Name
-*/
-#define TLS_EXT_ALPN_PROTO_HTTP_0_9                             "http/0.9"
-#define TLS_EXT_ALPN_PROTO_HTTP_1_0                             "http/1.0"
-#define TLS_EXT_ALPN_PROTO_HTTP_1_1                             "http/1.1"
-#define TLS_EXT_ALPN_PROTO_SPDY_1                               "spdy/1"
-#define TLS_EXT_ALPN_PROTO_SPDY_2                               "spdy/2"
-#define TLS_EXT_ALPN_PROTO_SPDY_3                               "spdy/3"
-#define TLS_EXT_ALPN_PROTO_HTTP_2_OVER_TLS                      "h2"
-#define TLS_EXT_ALPN_PROTO_HTTP_2_OVER_CLEARTEXT                "h2c"
-#define TLS_EXT_ALPN_PROTO_HTTP_QUIC                            "hq"      /*deprecated*/
+ */
+#define TLS_EXT_ALPN_PROTO_HTTP_0_9              "http/0.9"
+#define TLS_EXT_ALPN_PROTO_HTTP_1_0              "http/1.0"
+#define TLS_EXT_ALPN_PROTO_HTTP_1_1              "http/1.1"
+#define TLS_EXT_ALPN_PROTO_SPDY_1                "spdy/1"
+#define TLS_EXT_ALPN_PROTO_SPDY_2                "spdy/2"
+#define TLS_EXT_ALPN_PROTO_SPDY_3                "spdy/3"
+#define TLS_EXT_ALPN_PROTO_HTTP_2_OVER_TLS       "h2"
+#define TLS_EXT_ALPN_PROTO_HTTP_2_OVER_CLEARTEXT "h2c"
+#define TLS_EXT_ALPN_PROTO_HTTP_QUIC             "hq" /*deprecated*/
 
 /*
  * Key Share Group
-*/
-#define TLS_EXT_KEY_SHARE_GROUP_X25519                          "\x00\x1d"
+ */
+#define TLS_EXT_KEY_SHARE_GROUP_X25519 "\x00\x1d"
 
 /**
  * get a grease value by seed.
  * @param seed random seed provided by caller.
  * @return grease in uint16.
-*/
+ */
 uint16_t tls_get_a_grease(unsigned seed);
 
 /**
@@ -171,7 +170,7 @@ uint16_t tls_get_a_grease(unsigned seed);
  * @param px buffer to load.
  * @param name servername in C string style.
  * @return length we have loaded.
-*/
+ */
 size_t tls_load_ext_sni(unsigned char *px, const char *name);
 
 /**
@@ -179,7 +178,7 @@ size_t tls_load_ext_sni(unsigned char *px, const char *name);
  * @param px buffer to load.
  * @param proto an alpn proto in C string style.
  * @return length we have loaded.
-*/
+ */
 size_t tls_load_ext_alpn_proto(unsigned char *px, const char *proto);
 
 /**
@@ -188,8 +187,9 @@ size_t tls_load_ext_alpn_proto(unsigned char *px, const char *proto);
  * @param proto_list alpn list in C style.
  * @param proto_count num of protos.
  * @return length we have loaded.
-*/
-size_t tls_load_ext_alpn(unsigned char *px, const char **proto_list, unsigned proto_count);
+ */
+size_t tls_load_ext_alpn(unsigned char *px, const char **proto_list,
+                         unsigned proto_count);
 
 #endif
 

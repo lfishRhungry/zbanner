@@ -24,16 +24,13 @@
 #include <net/if.h>
 #include <arpa/inet.h>
 
-int
-rawsock_get_adapter_mac(const char *ifname, unsigned char *mac)
-{
-    int fd;
-    int x;
+int rawsock_get_adapter_mac(const char *ifname, unsigned char *mac) {
+    int          fd;
+    int          x;
     struct ifreq ifr;
 
-
     fd = socket(AF_INET, SOCK_STREAM, 0);
-    if(fd < 0){
+    if (fd < 0) {
         perror("socket");
         goto end;
     }
@@ -47,13 +44,13 @@ rawsock_get_adapter_mac(const char *ifname, unsigned char *mac)
 
     /* Log helpful info about the interface type */
     switch (ifr.ifr_ifru.ifru_hwaddr.sa_family) {
-    case 1:
-        LOG(LEVEL_DETAIL, "if:%s: type=ethernet(1)\n", ifname);
-        break;
-    default:
-        LOG(LEVEL_DETAIL, "if:%s: type=0x%04x\n", ifname, ifr.ifr_ifru.ifru_hwaddr.sa_family);
+        case 1:
+            LOG(LEVEL_DETAIL, "if:%s: type=ethernet(1)\n", ifname);
+            break;
+        default:
+            LOG(LEVEL_DETAIL, "if:%s: type=0x%04x\n", ifname,
+                ifr.ifr_ifru.ifru_hwaddr.sa_family);
     }
-
 
     memcpy(mac, ifr.ifr_ifru.ifru_hwaddr.sa_data, 6);
 
@@ -62,8 +59,8 @@ rawsock_get_adapter_mac(const char *ifname, unsigned char *mac)
      *  For VPN tunnels with raw IP there isn't a hardware address, so just
      *  return a fake one instead.
      */
-    if (memcmp(mac, "\0\0\0\0\0\0", 6) == 0
-            && ifr.ifr_ifru.ifru_hwaddr.sa_family == 0xfffe) {
+    if (memcmp(mac, "\0\0\0\0\0\0", 6) == 0 &&
+        ifr.ifr_ifru.ifru_hwaddr.sa_family == 0xfffe) {
         LOG(LEVEL_DEBUG, "%s: creating fake address\n", ifname);
         mac[5] = 1;
     }
@@ -76,10 +73,10 @@ end:
 /*****************************************************************************
  *****************************************************************************/
 #elif defined(WIN32)
- /* From:
-  * https://stackoverflow.com/questions/10972794/undefined-reference-to-getadaptersaddresses20-but-i-included-liphlpapi
-  * I think this fixes issue #734
-  */
+/* From:
+ * https://stackoverflow.com/questions/10972794/undefined-reference-to-getadaptersaddresses20-but-i-included-liphlpapi
+ * I think this fixes issue #734
+ */
 #if !defined(_WIN32_WINNT) || _WIN32_WINNT < 0x501
 #undef _WIN32_WINNT
 #define _WIN32_WINNT 0x501
@@ -90,24 +87,21 @@ end:
 #pragma comment(lib, "IPHLPAPI.lib")
 #endif
 
-
-
-int
-rawsock_get_adapter_mac(const char *ifname, unsigned char *mac)
-{
+int rawsock_get_adapter_mac(const char *ifname, unsigned char *mac) {
     PIP_ADAPTER_INFO pAdapterInfo;
     PIP_ADAPTER_INFO pAdapter = NULL;
-    DWORD err;
-    ULONG ulOutBufLen = sizeof (IP_ADAPTER_INFO);
+    DWORD            err;
+    ULONG            ulOutBufLen = sizeof(IP_ADAPTER_INFO);
 
     ifname = rawsock_win_name(ifname);
 
     /*
      * Allocate a proper sized buffer
      */
-    pAdapterInfo = (IP_ADAPTER_INFO *)malloc(sizeof (IP_ADAPTER_INFO));
+    pAdapterInfo = (IP_ADAPTER_INFO *)malloc(sizeof(IP_ADAPTER_INFO));
     if (pAdapterInfo == NULL) {
-        LOG(LEVEL_ERROR, "Error allocating memory needed to call GetAdaptersinfo\n");
+        LOG(LEVEL_ERROR,
+            "Error allocating memory needed to call GetAdaptersinfo\n");
         return EFAULT;
     }
 
@@ -121,7 +115,8 @@ again:
         free(pAdapterInfo);
         pAdapterInfo = (IP_ADAPTER_INFO *)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL) {
-            LOG(LEVEL_ERROR, "Error allocating memory needed to call GetAdaptersinfo\n");
+            LOG(LEVEL_ERROR,
+                "Error allocating memory needed to call GetAdaptersinfo\n");
             return EFAULT;
         }
         goto again;
@@ -134,9 +129,7 @@ again:
     /*
      * loop through all adapters looking for ours
      */
-    for (   pAdapter = pAdapterInfo;
-            pAdapter;
-            pAdapter = pAdapter->Next) {
+    for (pAdapter = pAdapterInfo; pAdapter; pAdapter = pAdapter->Next) {
         if (rawsock_is_adapter_names_equal(pAdapter->AdapterName, ifname))
             break;
     }
@@ -163,19 +156,16 @@ again:
 #include <arpa/inet.h>
 
 #ifdef AF_LINK
-#   include <net/if_dl.h>
+#include <net/if_dl.h>
 #endif
 #ifdef AF_PACKET
-#   include <netpacket/packet.h>
+#include <netpacket/packet.h>
 #endif
 
-int
-rawsock_get_adapter_mac(const char *ifname, unsigned char *mac)
-{
-    int err;
+int rawsock_get_adapter_mac(const char *ifname, unsigned char *mac) {
+    int             err;
     struct ifaddrs *ifap;
     struct ifaddrs *p;
-
 
     /* Get the list of all network adapters */
     err = getifaddrs(&ifap);
@@ -186,9 +176,8 @@ rawsock_get_adapter_mac(const char *ifname, unsigned char *mac)
 
     /* Look through the list until we get our adapter */
     for (p = ifap; p; p = p->ifa_next) {
-        if (strcmp(ifname, p->ifa_name) == 0
-            && p->ifa_addr
-            && p->ifa_addr->sa_family == AF_LINK)
+        if (strcmp(ifname, p->ifa_name) == 0 && p->ifa_addr &&
+            p->ifa_addr->sa_family == AF_LINK)
             break;
     }
     if (p == NULL) {
@@ -198,7 +187,7 @@ rawsock_get_adapter_mac(const char *ifname, unsigned char *mac)
 
     /* Return the address */
     {
-        size_t len = 6;
+        size_t              len = 6;
         struct sockaddr_dl *link;
 
         link = (struct sockaddr_dl *)p->ifa_addr;
@@ -207,16 +196,10 @@ rawsock_get_adapter_mac(const char *ifname, unsigned char *mac)
             len = link->sdl_alen;
         }
 
-        LOG(LEVEL_DETAIL, "if(%s): family=%u, type=%u, len=%u\n",
-                ifname,
-                link->sdl_family,
-                link->sdl_type,
-        len);
+        LOG(LEVEL_DETAIL, "if(%s): family=%u, type=%u, len=%u\n", ifname,
+            link->sdl_family, link->sdl_type, len);
 
-        memcpy(mac,
-               link->sdl_data + link->sdl_nlen,
-               len);
-
+        memcpy(mac, link->sdl_data + link->sdl_nlen, len);
     }
 
     freeifaddrs(ifap);
@@ -227,4 +210,3 @@ error:
 }
 
 #endif
-

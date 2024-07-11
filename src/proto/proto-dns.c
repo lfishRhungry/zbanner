@@ -10,43 +10,39 @@
 static char *hexchars = "0123456789abcdef";
 
 const size_t DNS_PACKET_MINIMUM_SIZE = 17; // as we handle them
-// 12 bytes header + 1 byte question name + 2 bytes question class + 2 bytes question type
+// 12 bytes header + 1 byte question name + 2 bytes question class + 2 bytes
+// question type
 
-dns_record_type dns_str_to_record_type(const char *str)
-{
-    // Performance is important here because we may want to use this when reading
-    // large numbers of DNS queries from a file.
+dns_record_type dns_str_to_record_type(const char *str) {
+    // Performance is important here because we may want to use this when
+    // reading large numbers of DNS queries from a file.
     long int code;
-    char *endptr;
+    char    *endptr;
 
-    switch (tolower(str[0]))
-    {
+    switch (tolower(str[0])) {
         case 'a':
-            switch (tolower(str[1]))
-            {
+            switch (tolower(str[1])) {
                 case 0:
                     return DNS_REC_A;
                 case 'a':
-                    if (tolower(str[2]) == 'a' && tolower(str[3]) == 'a' && str[4] == 0)
-                    {
+                    if (tolower(str[2]) == 'a' && tolower(str[3]) == 'a' &&
+                        str[4] == 0) {
                         return DNS_REC_AAAA;
                     }
                     return DNS_REC_INVALID;
                 case 'f':
-                    if (tolower(str[2]) == 's' && tolower(str[3]) == 'd' && tolower(str[4]) == 'b' && str[5] == 0)
-                    {
+                    if (tolower(str[2]) == 's' && tolower(str[3]) == 'd' &&
+                        tolower(str[4]) == 'b' && str[5] == 0) {
                         return DNS_REC_AFSDB;
                     }
                     return DNS_REC_INVALID;
                 case 'n':
-                    if (tolower(str[2]) == 'y' && str[3] == 0)
-                    {
+                    if (tolower(str[2]) == 'y' && str[3] == 0) {
                         return DNS_REC_ANY;
                     }
                     return DNS_REC_INVALID;
                 case 'p':
-                    if (tolower(str[2]) == 'l' && str[3] == 0)
-                    {
+                    if (tolower(str[2]) == 'l' && str[3] == 0) {
                         return DNS_REC_APL;
                     }
                     return DNS_REC_INVALID;
@@ -54,27 +50,24 @@ dns_record_type dns_str_to_record_type(const char *str)
                     return DNS_REC_INVALID;
             }
         case 'c':
-            switch (tolower(str[1]))
-            {
+            switch (tolower(str[1])) {
                 case 'a':
-                    if (tolower(str[2]) == 'a' && str[3] == 0)
-                    {
+                    if (tolower(str[2]) == 'a' && str[3] == 0) {
                         return DNS_REC_CAA;
                     }
                     return DNS_REC_INVALID;
                 case 'd':
-                    switch(tolower(str[2]))
-                    {
+                    switch (tolower(str[2])) {
                         case 's':
-                            if(str[3] == 0)
-                            {
+                            if (str[3] == 0) {
                                 return DNS_REC_CDS;
                             }
                             return DNS_REC_INVALID;
                         case 'n':
-                            if(tolower(str[3]) == 's' && tolower(str[4]) == 'k' && tolower(str[5]) == 'e'
-                                && tolower(str[6]) == 'y' && str[7] == 0)
-                            {
+                            if (tolower(str[3]) == 's' &&
+                                tolower(str[4]) == 'k' &&
+                                tolower(str[5]) == 'e' &&
+                                tolower(str[6]) == 'y' && str[7] == 0) {
                                 return DNS_REC_CDNSKEY;
                             }
                             return DNS_REC_INVALID;
@@ -82,14 +75,14 @@ dns_record_type dns_str_to_record_type(const char *str)
                             return DNS_REC_INVALID;
                     }
                 case 'e':
-                    if(tolower(str[2]) == 'r' && tolower(str[3]) == 't' && str[4] == 0)
-                    {
+                    if (tolower(str[2]) == 'r' && tolower(str[3]) == 't' &&
+                        str[4] == 0) {
                         return DNS_REC_CERT;
                     }
                     return DNS_REC_INVALID;
                 case 'n':
-                    if(tolower(str[2]) == 'a' && tolower(str[3]) == 'm' && tolower(str[4]) == 'e' && str[5] == 0)
-                    {
+                    if (tolower(str[2]) == 'a' && tolower(str[3]) == 'm' &&
+                        tolower(str[4]) == 'e' && str[5] == 0) {
                         return DNS_REC_CNAME;
                     }
                     return DNS_REC_INVALID;
@@ -97,32 +90,30 @@ dns_record_type dns_str_to_record_type(const char *str)
                     return DNS_REC_INVALID;
             }
         case 'd':
-            switch (tolower(str[1]))
-            {
+            switch (tolower(str[1])) {
                 case 'h':
-                    if(tolower(str[2]) == 'c' && tolower(str[3]) == 'i' && tolower(str[4]) == 'd' && str[5] == 0)
-                    {
+                    if (tolower(str[2]) == 'c' && tolower(str[3]) == 'i' &&
+                        tolower(str[4]) == 'd' && str[5] == 0) {
                         return DNS_REC_DHCID;
                     }
                     return DNS_REC_INVALID;
                 case 'l':
-                    if(tolower(str[2]) == 'v' && str[3] == 0)
-                    {
+                    if (tolower(str[2]) == 'v' && str[3] == 0) {
                         return DNS_REC_DLV;
                     }
                     return DNS_REC_INVALID;
                 case 'n':
-                    switch(tolower(str[2]))
-                    {
+                    switch (tolower(str[2])) {
                         case 'a':
-                            if(tolower(str[3]) == 'm' && tolower(str[4]) == 'e' && str[5] == 0)
-                            {
+                            if (tolower(str[3]) == 'm' &&
+                                tolower(str[4]) == 'e' && str[5] == 0) {
                                 return DNS_REC_DNAME;
                             }
                             return DNS_REC_INVALID;
                         case 's':
-                            if(tolower(str[3]) == 'k' && tolower(str[4]) == 'e' && tolower(str[5]) == 'y' && str[6] == 0)
-                            {
+                            if (tolower(str[3]) == 'k' &&
+                                tolower(str[4]) == 'e' &&
+                                tolower(str[5]) == 'y' && str[6] == 0) {
                                 return DNS_REC_DNSKEY;
                             }
                             return DNS_REC_INVALID;
@@ -130,8 +121,7 @@ dns_record_type dns_str_to_record_type(const char *str)
                             return DNS_REC_INVALID;
                     }
                 case 's':
-                    if(str[2] == 0)
-                    {
+                    if (str[2] == 0) {
                         return DNS_REC_DS;
                     }
                     return DNS_REC_INVALID;
@@ -139,17 +129,15 @@ dns_record_type dns_str_to_record_type(const char *str)
                     return DNS_REC_INVALID;
             }
         case 'h':
-            switch (tolower(str[1]))
-            {
+            switch (tolower(str[1])) {
                 case 'i':
-                    if(tolower(str[2]) == 'p' && str[3] == 0)
-                    {
+                    if (tolower(str[2]) == 'p' && str[3] == 0) {
                         return DNS_REC_HIP;
                     }
                     return DNS_REC_INVALID;
                 case 't':
-                    if(tolower(str[2]) == 't' && tolower(str[3]) == 'p' && tolower(str[4]) == 's' && str[5] == 0)
-                    {
+                    if (tolower(str[2]) == 't' && tolower(str[3]) == 'p' &&
+                        tolower(str[4]) == 's' && str[5] == 0) {
                         return DNS_REC_HTTPS;
                     }
                     return DNS_REC_INVALID;
@@ -157,24 +145,22 @@ dns_record_type dns_str_to_record_type(const char *str)
                     return DNS_REC_INVALID;
             }
         case 'i':
-            if (tolower(str[1]) == 'p' && tolower(str[2]) == 's' && tolower(str[3]) == 'e' && tolower(str[4]) == 'c'
-                && tolower(str[5]) == 'k' && tolower(str[6]) == 'e' && tolower(str[7]) == 'y' && str[8] == 0)
-            {
+            if (tolower(str[1]) == 'p' && tolower(str[2]) == 's' &&
+                tolower(str[3]) == 'e' && tolower(str[4]) == 'c' &&
+                tolower(str[5]) == 'k' && tolower(str[6]) == 'e' &&
+                tolower(str[7]) == 'y' && str[8] == 0) {
                 return DNS_REC_IPSECKEY;
             }
             return DNS_REC_INVALID;
         case 'k':
-            switch(tolower(str[1]))
-            {
+            switch (tolower(str[1])) {
                 case 'e':
-                    if (tolower(str[2]) == 'y' && str[3] == 0)
-                    {
+                    if (tolower(str[2]) == 'y' && str[3] == 0) {
                         return DNS_REC_KEY;
                     }
                     return DNS_REC_INVALID;
                 case 'x':
-                    if (str[2] == 0)
-                    {
+                    if (str[2] == 0) {
                         return DNS_REC_KX;
                     }
                     return DNS_REC_INVALID;
@@ -182,46 +168,43 @@ dns_record_type dns_str_to_record_type(const char *str)
                     return DNS_REC_INVALID;
             }
         case 'l':
-            if (tolower(str[1]) == 'o' && tolower(str[2]) == 'c' && str[3] == 0)
-            {
+            if (tolower(str[1]) == 'o' && tolower(str[2]) == 'c' &&
+                str[3] == 0) {
                 return DNS_REC_LOC;
             }
             return DNS_REC_INVALID;
         case 'm':
-            if (tolower(str[1]) == 'x' && str[2] == 0)
-            {
+            if (tolower(str[1]) == 'x' && str[2] == 0) {
                 return DNS_REC_MX;
             }
             return DNS_REC_INVALID;
         case 'n':
-            switch(tolower(str[1]))
-            {
+            switch (tolower(str[1])) {
                 case 'a':
-                    if (tolower(str[2]) == 'p' && tolower(str[3]) == 't' && tolower(str[4]) == 'r' && str[5] == 0)
-                    {
+                    if (tolower(str[2]) == 'p' && tolower(str[3]) == 't' &&
+                        tolower(str[4]) == 'r' && str[5] == 0) {
                         return DNS_REC_NAPTR;
                     }
                     return DNS_REC_INVALID;
                 case 's':
-                    switch(tolower(str[2]))
-                    {
+                    switch (tolower(str[2])) {
                         case 0:
                             return DNS_REC_NS;
                         case 'e':
-                            if(tolower(str[3]) == 'c')
-                            {
-                                switch(tolower(str[4]))
-                                {
+                            if (tolower(str[3]) == 'c') {
+                                switch (tolower(str[4])) {
                                     case 0:
                                         return DNS_REC_NSEC;
                                     case '3':
-                                        if(str[5] == 0)
-                                        {
+                                        if (str[5] == 0) {
                                             return DNS_REC_NSEC3;
                                         }
-                                        if(tolower(str[5]) == 'p' && tolower(str[6]) == 'a' && tolower(str[7]) == 'r'
-                                            && tolower(str[8]) == 'a' && tolower(str[9]) == 'm' && str[10] == 0)
-                                        {
+                                        if (tolower(str[5]) == 'p' &&
+                                            tolower(str[6]) == 'a' &&
+                                            tolower(str[7]) == 'r' &&
+                                            tolower(str[8]) == 'a' &&
+                                            tolower(str[9]) == 'm' &&
+                                            str[10] == 0) {
                                             return DNS_REC_NSEC3PARAM;
                                         }
                                         return DNS_REC_INVALID;
@@ -237,31 +220,30 @@ dns_record_type dns_str_to_record_type(const char *str)
                     return DNS_REC_INVALID;
             }
         case 'o':
-            if (tolower(str[1]) == 'p' && tolower(str[2]) == 'e' && tolower(str[3]) == 'n' && tolower(str[4]) == 'p'
-                && tolower(str[5]) == 'g' && tolower(str[6]) == 'p' && tolower(str[7]) == 'k' && tolower(str[8]) == 'e'
-                && tolower(str[9]) == 'y' && str[10] == 0)
-            {
+            if (tolower(str[1]) == 'p' && tolower(str[2]) == 'e' &&
+                tolower(str[3]) == 'n' && tolower(str[4]) == 'p' &&
+                tolower(str[5]) == 'g' && tolower(str[6]) == 'p' &&
+                tolower(str[7]) == 'k' && tolower(str[8]) == 'e' &&
+                tolower(str[9]) == 'y' && str[10] == 0) {
                 return DNS_REC_OPENPGPKEY;
             }
             return DNS_REC_INVALID;
         case 'p':
-            if (tolower(str[1]) == 't' && tolower(str[2]) == 'r' && str[3] == 0)
-            {
+            if (tolower(str[1]) == 't' && tolower(str[2]) == 'r' &&
+                str[3] == 0) {
                 return DNS_REC_PTR;
             }
             return DNS_REC_INVALID;
         case 'r':
-            switch(tolower(str[1]))
-            {
+            switch (tolower(str[1])) {
                 case 'p':
-                    if(str[2] == 0)
-                    {
+                    if (str[2] == 0) {
                         return DNS_REC_RP;
                     }
                     return DNS_REC_INVALID;
                 case 'r':
-                    if (tolower(str[2]) == 's' && tolower(str[3]) == 'i' && tolower(str[4]) == 'g' && str[5] == 0)
-                    {
+                    if (tolower(str[2]) == 's' && tolower(str[3]) == 'i' &&
+                        tolower(str[4]) == 'g' && str[5] == 0) {
                         return DNS_REC_RRSIG;
                     }
                     return DNS_REC_INVALID;
@@ -269,41 +251,38 @@ dns_record_type dns_str_to_record_type(const char *str)
                     return DNS_REC_INVALID;
             }
         case 's':
-            switch (tolower(str[1]))
-            {
+            switch (tolower(str[1])) {
                 case 'i':
-                    if (tolower(str[2]) == 'g' && tolower(str[3]) == 0)
-                    {
+                    if (tolower(str[2]) == 'g' && tolower(str[3]) == 0) {
                         return DNS_REC_SIG;
                     }
                     return DNS_REC_INVALID;
                 case 'm':
-                    if (tolower(str[2]) == 'i' && tolower(str[3]) == 'm' && tolower(str[4]) == 'e' && tolower(str[5]) == 'a' && str[6] == 0)
-                    {
+                    if (tolower(str[2]) == 'i' && tolower(str[3]) == 'm' &&
+                        tolower(str[4]) == 'e' && tolower(str[5]) == 'a' &&
+                        str[6] == 0) {
                         return DNS_REC_SMIMEA;
                     }
                     return DNS_REC_INVALID;
                 case 'o':
-                    if (tolower(str[2]) == 'a' && tolower(str[3]) == 0)
-                    {
+                    if (tolower(str[2]) == 'a' && tolower(str[3]) == 0) {
                         return DNS_REC_SOA;
                     }
                     return DNS_REC_INVALID;
                 case 'r':
-                    if (tolower(str[2]) == 'v' && tolower(str[3]) == 0)
-                    {
+                    if (tolower(str[2]) == 'v' && tolower(str[3]) == 0) {
                         return DNS_REC_SRV;
                     }
                     return DNS_REC_INVALID;
                 case 's':
-                    if (tolower(str[2]) == 'h' && tolower(str[3]) == 'f' && tolower(str[4]) == 'p' && str[5] == 0)
-                    {
+                    if (tolower(str[2]) == 'h' && tolower(str[3]) == 'f' &&
+                        tolower(str[4]) == 'p' && str[5] == 0) {
                         return DNS_REC_SSHFP;
                     }
                     return DNS_REC_INVALID;
                 case 'v':
-                    if (tolower(str[2]) == 'c' && tolower(str[3]) == 'b' && str[4] == 0)
-                    {
+                    if (tolower(str[2]) == 'c' && tolower(str[3]) == 'b' &&
+                        str[4] == 0) {
                         return DNS_REC_SVCB;
                     }
                     return DNS_REC_INVALID;
@@ -311,35 +290,32 @@ dns_record_type dns_str_to_record_type(const char *str)
                     return DNS_REC_INVALID;
             }
         case 't':
-            switch (tolower(str[1]))
-            {
+            switch (tolower(str[1])) {
                 case 'a':
-                    if(str[2] == 0)
-                    {
+                    if (str[2] == 0) {
                         return DNS_REC_TA;
                     }
                     return DNS_REC_INVALID;
                 case 'k':
-                    if (tolower(str[2]) == 'e' && tolower(str[3]) == 'y' && str[4] == 0)
-                    {
+                    if (tolower(str[2]) == 'e' && tolower(str[3]) == 'y' &&
+                        str[4] == 0) {
                         return DNS_REC_TKEY;
                     }
                     return DNS_REC_INVALID;
                 case 'l':
-                    if (tolower(str[2]) == 's' && tolower(str[3]) == 'a' && str[4] == 0)
-                    {
+                    if (tolower(str[2]) == 's' && tolower(str[3]) == 'a' &&
+                        str[4] == 0) {
                         return DNS_REC_TLSA;
                     }
                     return DNS_REC_INVALID;
                 case 's':
-                    if (tolower(str[2]) == 'i' && tolower(str[3]) == 'g' && str[4] == 0)
-                    {
+                    if (tolower(str[2]) == 'i' && tolower(str[3]) == 'g' &&
+                        str[4] == 0) {
                         return DNS_REC_TSIG;
                     }
                     return DNS_REC_INVALID;
                 case 'x':
-                    if (tolower(str[2]) == 't' && str[3] == 0)
-                    {
+                    if (tolower(str[2]) == 't' && str[3] == 0) {
                         return DNS_REC_TXT;
                     }
                     return DNS_REC_INVALID;
@@ -347,11 +323,9 @@ dns_record_type dns_str_to_record_type(const char *str)
                     return DNS_REC_INVALID;
             }
         case 'u':
-            switch (tolower(str[1]))
-            {
+            switch (tolower(str[1])) {
                 case 'r':
-                    if (tolower(str[2]) == 'i' && str[3] == 0)
-                    {
+                    if (tolower(str[2]) == 'i' && str[3] == 0) {
                         return DNS_REC_URI;
                     }
                     return DNS_REC_INVALID;
@@ -369,8 +343,7 @@ dns_record_type dns_str_to_record_type(const char *str)
         case '8':
         case '9':
             code = strtol(str, &endptr, 10);
-            if(code < 0 || code > 0xFFFF || *endptr != 0)
-            {
+            if (code < 0 || code > 0xFFFF || *endptr != 0) {
                 return DNS_REC_INVALID;
             }
             return (dns_record_type)code;
@@ -379,104 +352,66 @@ dns_record_type dns_str_to_record_type(const char *str)
     }
 }
 
-bool dns_str2rcode(char *str, dns_rcode *code)
-{
-    if(strcasecmp(str, "ok") == 0 || strcasecmp(str, "noerror") == 0)
-    {
+bool dns_str2rcode(char *str, dns_rcode *code) {
+    if (strcasecmp(str, "ok") == 0 || strcasecmp(str, "noerror") == 0) {
         *code = DNS_RCODE_NOERROR;
         return true;
-    }
-    else if(strcasecmp(str, "formerr") == 0)
-    {
+    } else if (strcasecmp(str, "formerr") == 0) {
         *code = DNS_RCODE_FORMERR;
         return true;
-    }
-    else if(strcasecmp(str, "servfail") == 0)
-    {
+    } else if (strcasecmp(str, "servfail") == 0) {
         *code = DNS_RCODE_SERVFAIL;
         return true;
-    }
-    else if(strcasecmp(str, "nxdomain") == 0)
-    {
+    } else if (strcasecmp(str, "nxdomain") == 0) {
         *code = DNS_RCODE_NXDOMAIN;
         return true;
-    }
-    else if(strcasecmp(str, "notimp") == 0)
-    {
+    } else if (strcasecmp(str, "notimp") == 0) {
         *code = DNS_RCODE_NOTIMP;
         return true;
-    }
-    else if(strcasecmp(str, "refused") == 0)
-    {
+    } else if (strcasecmp(str, "refused") == 0) {
         *code = DNS_RCODE_REFUSED;
         return true;
-    }
-    else if(strcasecmp(str, "yxdomain") == 0)
-    {
+    } else if (strcasecmp(str, "yxdomain") == 0) {
         *code = DNS_RCODE_YXDOMAIN;
         return true;
-    }
-    else if(strcasecmp(str, "yxrrset") == 0)
-    {
+    } else if (strcasecmp(str, "yxrrset") == 0) {
         *code = DNS_RCODE_YXRRSET;
         return true;
-    }
-    else if(strcasecmp(str, "notauth") == 0)
-    {
+    } else if (strcasecmp(str, "notauth") == 0) {
         *code = DNS_RCODE_NOTAUTH;
         return true;
-    }
-    else if(strcasecmp(str, "notzone") == 0)
-    {
+    } else if (strcasecmp(str, "notzone") == 0) {
         *code = DNS_RCODE_NOTZONE;
         return true;
-    }
-    else if(strcasecmp(str, "badvers") == 0 || strcasecmp(str, "badsig") == 0)
-    {
+    } else if (strcasecmp(str, "badvers") == 0 ||
+               strcasecmp(str, "badsig") == 0) {
         *code = DNS_RCODE_BADVERS;
         return true;
-    }
-    else if(strcasecmp(str, "badkey") == 0)
-    {
+    } else if (strcasecmp(str, "badkey") == 0) {
         *code = DNS_RCODE_BADKEY;
         return true;
-    }
-    else if(strcasecmp(str, "badtime") == 0)
-    {
+    } else if (strcasecmp(str, "badtime") == 0) {
         *code = DNS_RCODE_BADTIME;
         return true;
-    }
-    else if(strcasecmp(str, "badmode") == 0)
-    {
+    } else if (strcasecmp(str, "badmode") == 0) {
         *code = DNS_RCODE_BADMODE;
         return true;
-    }
-    else if(strcasecmp(str, "badname") == 0)
-    {
+    } else if (strcasecmp(str, "badname") == 0) {
         *code = DNS_RCODE_BADNAME;
         return true;
-    }
-    else if(strcasecmp(str, "badalg") == 0)
-    {
+    } else if (strcasecmp(str, "badalg") == 0) {
         *code = DNS_RCODE_BADALG;
         return true;
-    }
-    else if(strcasecmp(str, "badtrunc") == 0)
-    {
+    } else if (strcasecmp(str, "badtrunc") == 0) {
         *code = DNS_RCODE_BADTRUNC;
         return true;
-    }
-    else if(strcasecmp(str, "badcookie") == 0)
-    {
+    } else if (strcasecmp(str, "badcookie") == 0) {
         *code = DNS_RCODE_BADCOOKIE;
         return true;
-    }
-    else
-    {
-        char *endptr;
+    } else {
+        char         *endptr;
         unsigned long result = strtoul(str, &endptr, 10);
-        if(*endptr != 0 || result > UINT16_MAX)
-        {
+        if (*endptr != 0 || result > UINT16_MAX) {
             return false;
         }
         *code = (dns_rcode)result;
@@ -489,8 +424,7 @@ bool dns_str2rcode(char *str, dns_rcode *code)
 #pragma clang diagnostic ignored "-Wunused-function"
 #endif
 
-static inline bool is_valid_label_char(int c)
-{
+static inline bool is_valid_label_char(int c) {
     return isalnum(c) || c == '-' || c == '_';
 }
 
@@ -505,90 +439,76 @@ static inline bool is_valid_label_char(int c)
  * @param buf A pointer to the first byte of the name to be parsed.
  * @param end A pointer to the first byte succeeding the DNS packet.
  * @param name The buffer which the name is read into.
- * @param len Pointer to an integer which is filled with the total length of the name.
- * @param next Will be set to the byte succeeding the first DNS pointer if applicable or the entire DNS name otherwise.
+ * @param len Pointer to an integer which is filled with the total length of
+ * the name.
+ * @param next Will be set to the byte succeeding the first DNS pointer if
+ * applicable or the entire DNS name otherwise.
  * @return Whether the name was parsed successfully.
  */
-static bool parse_name(uint8_t *begin, uint8_t *buf, const uint8_t *end, uint8_t *name, uint8_t *len, uint8_t **next)
-{
-    int label_type;
-    int label_len;
-    int name_len = 0;
-    uint8_t *pointer = NULL;
+static bool parse_name(uint8_t *begin, uint8_t *buf, const uint8_t *end,
+                       uint8_t *name, uint8_t *len, uint8_t **next) {
+    int      label_type;
+    int      label_len;
+    int      name_len = 0;
+    uint8_t *pointer  = NULL;
 
-    while (true)
-    {
-        if (buf >= end)
-        {
+    while (true) {
+        if (buf >= end) {
             return false;
         }
         label_type = (*buf & 0xC0);
         if (label_type == 0xC0) // Compressed
         {
-            if(end - buf < 2)
-            {
+            if (end - buf < 2) {
                 return false;
             }
 
             // Set the next parameter if it has not been set yet
-            if (next && !pointer)
-            {
+            if (next && !pointer) {
                 *next = buf + 2;
             }
 
             // Parse pointer address
-            pointer = begin + (htons(*((uint16_t *) buf)) & 0x3FFF);
+            pointer = begin + (htons(*((uint16_t *)buf)) & 0x3FFF);
 
             // Address must be smaller than the current position
-            if (pointer >= buf)
-            {
+            if (pointer >= buf) {
                 return false;
             }
 
             // Continue parsing at the pointer location.
             buf = pointer;
-        }
-        else if (label_type == 0x00) // Uncompressed
+        } else if (label_type == 0x00) // Uncompressed
         {
             label_len = (*buf & 0x3F) + 1;
             name_len += label_len;
-            if (name_len >= 0xFF || end - buf < label_len)
-            {
+            if (name_len >= 0xFF || end - buf < label_len) {
                 return false;
             }
-            if (label_len == 1)
-            {
+            if (label_len == 1) {
                 *name = 0;
-                if (next && !pointer)
-                {
+                if (next && !pointer) {
                     *next = buf + 1;
                 }
-                *len = (uint8_t) name_len;
+                *len = (uint8_t)name_len;
                 return true;
-            }
-            else
-            {
+            } else {
                 memcpy(name, buf, (size_t)label_len);
                 name += label_len;
                 buf += label_len;
             }
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
 }
 
-static inline void dns_buffer_set_id(uint8_t *buf, uint16_t id)
-{
-    *((uint16_t *) buf) = htons(id);
+static inline void dns_buffer_set_id(uint8_t *buf, uint16_t id) {
+    *((uint16_t *)buf) = htons(id);
 }
 
-const char *dns_class2str(dns_class cls)
-{
-    switch(cls)
-    {
+const char *dns_class2str(dns_class cls) {
+    switch (cls) {
         case DNS_CLS_IN:
             return "IN";
         case DNS_CLS_CH:
@@ -604,10 +524,8 @@ const char *dns_class2str(dns_class cls)
     }
 }
 
-const char *dns_opcode2str(dns_opcode opcode)
-{
-    switch(opcode)
-    {
+const char *dns_opcode2str(dns_opcode opcode) {
+    switch (opcode) {
         case DNS_OPCODE_QUERY:
             return "QUERY";
         case DNS_OPCODE_IQUERY:
@@ -623,10 +541,8 @@ const char *dns_opcode2str(dns_opcode opcode)
     }
 }
 
-const char *dns_rcode2str(dns_rcode rcode)
-{
-    switch (rcode)
-    {
+const char *dns_rcode2str(dns_rcode rcode) {
+    switch (rcode) {
         case DNS_RCODE_NOERROR:
             return "NOERROR";
         case DNS_RCODE_FORMERR:
@@ -668,10 +584,8 @@ const char *dns_rcode2str(dns_rcode rcode)
     }
 }
 
-const char *dns_record_type2str(dns_record_type type)
-{
-    switch (type)
-    {
+const char *dns_record_type2str(dns_record_type type) {
+    switch (type) {
         case DNS_REC_A:
             return "A";
         case DNS_REC_AAAA:
@@ -763,58 +677,46 @@ const char *dns_record_type2str(dns_record_type type)
     }
 }
 
-int dns_str2namebuf(const char *name, uint8_t *buffer)
-{
+int dns_str2namebuf(const char *name, uint8_t *buffer) {
     static uint8_t *bufname;
     static uint8_t *lenptr;
-    static uint8_t total_len;
-    static uint8_t label_len;
+    static uint8_t  total_len;
+    static uint8_t  label_len;
 
-    lenptr = buffer; // points to the byte containing the label length
-    bufname = buffer + 1; // points to the first byte of the actual name
+    lenptr    = buffer;     // points to the byte containing the label length
+    bufname   = buffer + 1; // points to the first byte of the actual name
     total_len = 0;
     label_len = 0;
 
-    while (true)
-    {
+    while (true) {
         char c = *(name++);
         total_len++;
-        if (total_len > 254)
-        {
+        if (total_len > 254) {
             return -1;
         }
-        if (c == '.')
-        {
+        if (c == '.') {
             *lenptr = label_len;
-            if (total_len == 1)
-            {
+            if (total_len == 1) {
                 total_len--;
                 break;
             }
-            if (*name == 0)
-            {
+            if (*name == 0) {
                 *(bufname++) = 0;
                 break;
             }
-            if (*name == '.')
-            {
+            if (*name == '.') {
                 return -1;
             }
-            lenptr = bufname++;
+            lenptr    = bufname++;
             label_len = 0;
-        }
-        else if (c == 0)
-        {
-            *lenptr = label_len;
+        } else if (c == 0) {
+            *lenptr      = label_len;
             *(bufname++) = 0;
             break;
-        }
-        else
-        {
-            *(bufname++) = (uint8_t) c;
+        } else {
+            *(bufname++) = (uint8_t)c;
             label_len++;
-            if (label_len >= 64)
-            {
+            if (label_len >= 64) {
                 return -1;
             }
         }
@@ -822,135 +724,115 @@ int dns_str2namebuf(const char *name, uint8_t *buffer)
     return total_len + 1;
 }
 
-uint16_t dns_question_size(dns_name_t *name)
-{
-    return name->length + 16;
-}
+uint16_t dns_question_size(dns_name_t *name) { return name->length + 16; }
 
-uint16_t dns_question_create_from_name(uint8_t *buffer, dns_name_t *name, dns_record_type type, uint16_t id)
-{
+uint16_t dns_question_create_from_name(uint8_t *buffer, dns_name_t *name,
+                                       dns_record_type type, uint16_t id) {
     static uint8_t *aftername;
 
     dns_buffer_set_id(buffer, id);
-    *((uint16_t *) (buffer + 2)) = 0;
-    *((uint16_t *) (buffer + 4)) = htons(1);
-    *((uint16_t *) (buffer + 6)) = 0;
-    *((uint16_t *) (buffer + 8)) = 0;
-    *((uint16_t *) (buffer + 10)) = 0;
+    *((uint16_t *)(buffer + 2))  = 0;
+    *((uint16_t *)(buffer + 4))  = htons(1);
+    *((uint16_t *)(buffer + 6))  = 0;
+    *((uint16_t *)(buffer + 8))  = 0;
+    *((uint16_t *)(buffer + 10)) = 0;
     memcpy(buffer + 12, name->name, name->length);
-    aftername = buffer + 12 + name->length;
-    *((uint16_t *) aftername) = htons(type);
-    *((uint16_t *) (aftername + 2)) = htons(DNS_CLS_IN);
+    aftername                      = buffer + 12 + name->length;
+    *((uint16_t *)aftername)       = htons(type);
+    *((uint16_t *)(aftername + 2)) = htons(DNS_CLS_IN);
     return aftername + 4 - buffer;
 }
 
 // Requires a buffer of at least 272 bytes to be supplied
-int dns_question_create(uint8_t *buffer, char *name, dns_record_type type, uint16_t id)
-{
+int dns_question_create(uint8_t *buffer, char *name, dns_record_type type,
+                        uint16_t id) {
     static uint8_t *aftername;
 
     int name_len = dns_str2namebuf(name, buffer + 12);
-    if(name_len < 0)
-    {
+    if (name_len < 0) {
         return -1;
     }
     aftername = buffer + 12 + name_len;
 
     dns_buffer_set_id(buffer, id);
-    *((uint16_t *) (buffer + 2)) = 0;
-    *((uint16_t *) aftername) = htons(type);
-    *((uint16_t *) (aftername + 2)) = htons(DNS_CLS_IN);
-    *((uint16_t *) (buffer + 4)) = htons(0x0001);
+    *((uint16_t *)(buffer + 2))    = 0;
+    *((uint16_t *)aftername)       = htons(type);
+    *((uint16_t *)(aftername + 2)) = htons(DNS_CLS_IN);
+    *((uint16_t *)(buffer + 4))    = htons(0x0001);
     return aftername + 4 - buffer;
 }
 
-bool dns_send_question(uint8_t *buffer, char *name, dns_record_type type, uint16_t id, int fd, struct sockaddr_storage *addr)
-{
+bool dns_send_question(uint8_t *buffer, char *name, dns_record_type type,
+                       uint16_t id, int fd, struct sockaddr_storage *addr) {
     int result = dns_question_create(buffer, name, type, id);
-    if (result < DNS_PACKET_MINIMUM_SIZE)
-    {
+    if (result < DNS_PACKET_MINIMUM_SIZE) {
         return false;
     }
-    sendto(fd,
-           (void *)buffer,
-           (size_t) result,
-           0,
-           (struct sockaddr *) addr,
-           addr->ss_family == PF_INET ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6));
+    sendto(fd, (void *)buffer, (size_t)result, 0, (struct sockaddr *)addr,
+           addr->ss_family == PF_INET ? sizeof(struct sockaddr_in)
+                                      : sizeof(struct sockaddr_in6));
     return true;
 }
 
-bool dns_parse_question(uint8_t *buf, size_t len, dns_head_t *head, uint8_t **body_begin)
-{
+bool dns_parse_question(uint8_t *buf, size_t len, dns_head_t *head,
+                        uint8_t **body_begin) {
     static uint8_t *end; // exclusive
-    static bool name_parsed;
+    static bool     name_parsed;
     static uint8_t *qname_end;
 
     end = buf + len;
-    if (len < DNS_PACKET_MINIMUM_SIZE)
-    {
+    if (len < DNS_PACKET_MINIMUM_SIZE) {
         return false;
     }
 
-    head->header.id            = ntohs((*(uint16_t *) buf));
-    head->header.qr            = (bool) (buf[2] & 0x80);
-    head->header.opcode        = (uint8_t) ((buf[2] & (0x78)) >> 3);
-    head->header.aa            = (bool) (buf[2] & 0x04);
-    head->header.tc            = (bool) (buf[2] & 0x02);
-    head->header.rd            = (bool) (buf[2] & 0x01);
-    head->header.ra            = (bool) (buf[3] & 0x80);
-    head->header.z             = (bool) (buf[4] & 0x40);
-    head->header.ad            = (bool) (buf[3] & 0x20);
-    head->header.cd            = (bool) (buf[3] & 0x10);
-    head->header.rcode         = (uint8_t) (buf[3] & 0x0F);
-    head->header.ans_count     = ntohs((*(uint16_t *) (buf + 6)));
-    head->header.auth_count    = ntohs((*(uint16_t *) (buf + 8)));
-    head->header.add_count     = ntohs((*(uint16_t *) (buf + 10)));
-    head->header.q_count       = ntohs((*(uint16_t *) (buf + 4)));
+    head->header.id         = ntohs((*(uint16_t *)buf));
+    head->header.qr         = (bool)(buf[2] & 0x80);
+    head->header.opcode     = (uint8_t)((buf[2] & (0x78)) >> 3);
+    head->header.aa         = (bool)(buf[2] & 0x04);
+    head->header.tc         = (bool)(buf[2] & 0x02);
+    head->header.rd         = (bool)(buf[2] & 0x01);
+    head->header.ra         = (bool)(buf[3] & 0x80);
+    head->header.z          = (bool)(buf[4] & 0x40);
+    head->header.ad         = (bool)(buf[3] & 0x20);
+    head->header.cd         = (bool)(buf[3] & 0x10);
+    head->header.rcode      = (uint8_t)(buf[3] & 0x0F);
+    head->header.ans_count  = ntohs((*(uint16_t *)(buf + 6)));
+    head->header.auth_count = ntohs((*(uint16_t *)(buf + 8)));
+    head->header.add_count  = ntohs((*(uint16_t *)(buf + 10)));
+    head->header.q_count    = ntohs((*(uint16_t *)(buf + 4)));
 
-    if (head->header.q_count != 1)
-    {
+    if (head->header.q_count != 1) {
         return false;
     }
-    name_parsed = parse_name(buf, buf + 12, end, head->question.name.name, &head->question.name.length, &qname_end);
-    if (qname_end + 2 > end)
-    {
+    name_parsed = parse_name(buf, buf + 12, end, head->question.name.name,
+                             &head->question.name.length, &qname_end);
+    if (qname_end + 2 > end) {
         return false;
     }
-    if (!name_parsed)
-    {
+    if (!name_parsed) {
         return false;
     }
-    head->question.type = (dns_record_type) ntohs((*(uint16_t *) qname_end));
-    head->question.class = ntohs((*(uint16_t *) (qname_end + 2)));
-    if (body_begin)
-    {
+    head->question.type  = (dns_record_type)ntohs((*(uint16_t *)qname_end));
+    head->question.class = ntohs((*(uint16_t *)(qname_end + 2)));
+    if (body_begin) {
         *body_begin = qname_end + 4;
     }
     return true;
 }
 
-bool dns_names_eq(dns_name_t *name1, dns_name_t *name2)
-{
-    if(name1->length != name2->length)
-    {
+bool dns_names_eq(dns_name_t *name1, dns_name_t *name2) {
+    if (name1->length != name2->length) {
         return false;
     }
     uint_fast8_t label_length_offset = 0;
-    for(uint_fast8_t i = 0; i < name1->length; i++)
-    {
-        if (i == label_length_offset)
-        {
-            if (name1->name[i] != name2->name[i])
-            {
+    for (uint_fast8_t i = 0; i < name1->length; i++) {
+        if (i == label_length_offset) {
+            if (name1->name[i] != name2->name[i]) {
                 return false;
             }
             label_length_offset += name1->name[i];
-        }
-        else
-        {
-            if (tolower(name1->name[i]) != tolower(name2->name[i]))
-            {
+        } else {
+            if (tolower(name1->name[i]) != tolower(name2->name[i])) {
                 return false;
             }
         }
@@ -958,67 +840,56 @@ bool dns_names_eq(dns_name_t *name1, dns_name_t *name2)
     return true;
 }
 
-bool dns_raw_names_eq(dns_name_t *name1, dns_name_t *name2)
-{
-    return name1->length == name2->length && memcmp(name1->name, name2->name, name1->length) == 0;
+bool dns_raw_names_eq(dns_name_t *name1, dns_name_t *name2) {
+    return name1->length == name2->length &&
+           memcmp(name1->name, name2->name, name1->length) == 0;
 }
 
-bool dns_parse_record_raw(uint8_t *begin, uint8_t *buf, const uint8_t *end, uint8_t **next, dns_record_t *record)
-{
-    if (!parse_name(begin, buf, end, record->name.name, &record->name.length, next))
-    {
+bool dns_parse_record_raw(uint8_t *begin, uint8_t *buf, const uint8_t *end,
+                          uint8_t **next, dns_record_t *record) {
+    if (!parse_name(begin, buf, end, record->name.name, &record->name.length,
+                    next)) {
         return false;
     }
-    if (*next + 10 > end)
-    {
+    if (*next + 10 > end) {
         return false;
     }
 
-    record->type     = ntohs((*(uint16_t *) (*next)));
-    record->class    = ntohs((*(uint16_t *) (*next + 2)));
-    record->ttl      = ntohl((*(uint32_t *) (*next + 4)));
-    record->length   = ntohs((*(uint16_t *) (*next + 8)));
-    *next = *next + 10;
+    record->type   = ntohs((*(uint16_t *)(*next)));
+    record->class  = ntohs((*(uint16_t *)(*next + 2)));
+    record->ttl    = ntohl((*(uint32_t *)(*next + 4)));
+    record->length = ntohs((*(uint16_t *)(*next + 8)));
+    *next          = *next + 10;
 
     record->data.raw = *next;
 
     *next = *next + record->length;
-    if (*next > end)
-    {
+    if (*next > end) {
         return false;
     }
     return true;
 }
 
-bool dns_parse_record(uint8_t *begin, uint8_t *buf, const uint8_t *end, uint8_t **next, dns_record_t *record)
-{
-    if(!dns_parse_record_raw(begin, buf, end, next, record))
-    {
+bool dns_parse_record(uint8_t *begin, uint8_t *buf, const uint8_t *end,
+                      uint8_t **next, dns_record_t *record) {
+    if (!dns_parse_record_raw(begin, buf, end, next, record)) {
         return false;
     }
 
-    if (record->type == DNS_REC_A)
-    {
-        if (record->length != 4)
-        {
+    if (record->type == DNS_REC_A) {
+        if (record->length != 4) {
             return false;
         }
-    }
-    else if (record->type == DNS_REC_AAAA)
-    {
-        if (record->length != 16)
-        {
+    } else if (record->type == DNS_REC_AAAA) {
+        if (record->length != 16) {
             return false;
         }
-    }
-    else if (record->type == DNS_REC_NS)
-    {
-        if (record->length > 0xFF)
-        {
+    } else if (record->type == DNS_REC_NS) {
+        if (record->length > 0xFF) {
             return false;
         }
-        if (!parse_name(begin, record->data.raw, end, record->data.name.name, &record->data.name.length, NULL))
-        {
+        if (!parse_name(begin, record->data.raw, end, record->data.name.name,
+                        &record->data.name.length, NULL)) {
             return false;
         }
     }
@@ -1028,257 +899,236 @@ bool dns_parse_record(uint8_t *begin, uint8_t *buf, const uint8_t *end, uint8_t 
     return true;
 }
 
-bool dns_parse_body(uint8_t *buf, uint8_t *begin, const uint8_t *end, dns_pkt_t *packet)
-{
-    uint8_t *next;
+bool dns_parse_body(uint8_t *buf, uint8_t *begin, const uint8_t *end,
+                    dns_pkt_t *packet) {
+    uint8_t     *next;
     int_fast32_t i;
 
     next = buf;
-    for (i = 0; i < min(packet->head.header.ans_count, ARRAY_SIZE(packet->body.ans) - 1); i++)
-    {
-        if (!dns_parse_record(begin, next, end, &next, &packet->body.ans[i]))
-        {
+    for (i = 0; i < min(packet->head.header.ans_count,
+                        ARRAY_SIZE(packet->body.ans) - 1);
+         i++) {
+        if (!dns_parse_record(begin, next, end, &next, &packet->body.ans[i])) {
             return false;
         }
     }
     packet->body.ans[i].type = 0;
 
-    for (i = 0; i < min(packet->head.header.auth_count, ARRAY_SIZE(packet->body.auth) - 1); i++)
-    {
-        if (!dns_parse_record(begin, next, end, &next, &packet->body.auth[i]))
-        {
+    for (i = 0; i < min(packet->head.header.auth_count,
+                        ARRAY_SIZE(packet->body.auth) - 1);
+         i++) {
+        if (!dns_parse_record(begin, next, end, &next, &packet->body.auth[i])) {
             return false;
         }
     }
     packet->body.auth[i].type = 0;
 
-    for (i = 0; i < min(packet->head.header.add_count, ARRAY_SIZE(packet->body.add) - 1); i++)
-    {
-        if (!dns_parse_record(begin, next, end, &next, &packet->body.add[i]))
-        {
+    for (i = 0; i < min(packet->head.header.add_count,
+                        ARRAY_SIZE(packet->body.add) - 1);
+         i++) {
+        if (!dns_parse_record(begin, next, end, &next, &packet->body.add[i])) {
             return false;
         }
     }
     packet->body.add[i].type = 0;
 
-    // TODO: Check whether overly long packets are valid. If not, discard them here.
+    // TODO: Check whether overly long packets are valid. If not, discard them
+    // here.
 
     return true;
 }
 
-bool dns_parse_reply(uint8_t *buf, size_t len, dns_pkt_t *packet)
-{
+bool dns_parse_reply(uint8_t *buf, size_t len, dns_pkt_t *packet) {
     uint8_t *body_begin;
-    if (!dns_parse_question(buf, len, &packet->head, &body_begin))
-    {
+    if (!dns_parse_question(buf, len, &packet->head, &body_begin)) {
         return false;
     }
     return dns_parse_body(body_begin, buf, buf + len, packet);
 }
 
-void dns_buf_set_qr(uint8_t *buf, bool value)
-{
+void dns_buf_set_qr(uint8_t *buf, bool value) {
     buf[2] &= 0x7F;
     buf[2] |= value << 7;
 }
 
-void dns_buf_set_rd(uint8_t *buf, bool value)
-{
+void dns_buf_set_rd(uint8_t *buf, bool value) {
     buf[2] &= 0xFE;
     buf[2] |= value;
 }
 
-void dns_buf_set_rcode(uint8_t *buf, uint8_t code)
-{
+void dns_buf_set_rcode(uint8_t *buf, uint8_t code) {
     buf[3] &= 0xF0;
     buf[3] |= code;
 }
 
-void dns_send_reply(uint8_t *buffer, size_t len, int fd, struct sockaddr_storage *addr)
-{
-    sendto(fd,
-           (void *)buffer,
-           len,
-           0,
-           (struct sockaddr *) addr,
-           addr->ss_family == PF_INET ? sizeof(struct sockaddr_in) : sizeof(struct sockaddr_in6));
+void dns_send_reply(uint8_t *buffer, size_t len, int fd,
+                    struct sockaddr_storage *addr) {
+    sendto(fd, (void *)buffer, len, 0, (struct sockaddr *)addr,
+           addr->ss_family == PF_INET ? sizeof(struct sockaddr_in)
+                                      : sizeof(struct sockaddr_in6));
 }
 
-bool dns_create_reply(uint8_t *buffer, size_t *len, char *name, dns_record_type type, uint16_t id, dns_rcode code)
-{
+bool dns_create_reply(uint8_t *buffer, size_t *len, char *name,
+                      dns_record_type type, uint16_t id, dns_rcode code) {
     int result = dns_question_create(buffer, name, type, id);
-    if (result < DNS_PACKET_MINIMUM_SIZE)
-    {
+    if (result < DNS_PACKET_MINIMUM_SIZE) {
         return false;
     }
-    *len = (size_t) result;
+    *len = (size_t)result;
     dns_buf_set_qr(buffer, true);
     dns_buf_set_rcode(buffer, code);
     return true;
 }
 
-size_t dns_print_readable(char **buf, size_t buflen, const uint8_t *source, size_t len, bool is_name)
-{
-    char *endbuf = *buf + buflen;
+size_t dns_print_readable(char **buf, size_t buflen, const uint8_t *source,
+                          size_t len, bool is_name) {
+    char  *endbuf              = *buf + buflen;
     size_t label_length_offset = 0;
 
-    for(size_t i = 0; i < len; i++)
-    {
-        if(i == label_length_offset && is_name)
-        {
-            if(endbuf - *buf <= 1)
-            {
+    for (size_t i = 0; i < len; i++) {
+        if (i == label_length_offset && is_name) {
+            if (endbuf - *buf <= 1) {
                 **buf = 0;
                 return 0;
             }
-            if(i != 0 || len == 1)
-            {
+            if (i != 0 || len == 1) {
                 *((*buf)++) = '.';
             }
             label_length_offset += source[i] + 1;
             continue;
         }
-        if(source[i] >= ' ' && source[i] <= '~' && source[i] != '\\' && (source[i] != '.'
-            || (source[i] == '.' && !is_name)))
-        {
-            if(endbuf - *buf <= 1)
-            {
+        if (source[i] >= ' ' && source[i] <= '~' && source[i] != '\\' &&
+            (source[i] != '.' || (source[i] == '.' && !is_name))) {
+            if (endbuf - *buf <= 1) {
                 **buf = 0;
                 return 0;
             }
             *((*buf)++) = source[i];
-        }
-        else
-        {
-            if(*buf >= endbuf - 4)
-            {
+        } else {
+            if (*buf >= endbuf - 4) {
                 **buf = 0;
                 return 0;
             }
             *((*buf)++) = '\\';
             *((*buf)++) = 'x';
-            char hex1 = (char)((source[i] >> 4) & 0xF);
-            char hex2 = (char)(source[i] & 0xF);
+            char hex1   = (char)((source[i] >> 4) & 0xF);
+            char hex2   = (char)(source[i] & 0xF);
             *((*buf)++) = (char)(hex1 + (hex1 < 10 ? '0' : ('a' - 10)));
             *((*buf)++) = (char)(hex2 + (hex2 < 10 ? '0' : ('a' - 10)));
         }
     }
     **buf = 0;
-    return buflen-(endbuf-*buf);
+    return buflen - (endbuf - *buf);
 }
 
-void dns_name2str(dns_name_t *name, char *buf, size_t buf_len)
-{
+void dns_name2str(dns_name_t *name, char *buf, size_t buf_len) {
     dns_print_readable(&buf, buf_len, name->name, name->length, true);
 }
 
-void dns_question2str(dns_question_t *question, char *buf, size_t len)
-{
-    char sub_buf[0xFF*4];
-    dns_name2str(&question->name, sub_buf, 0xFF*4);
-    snprintf(buf, len, "%s %s %s",
-             sub_buf,
+void dns_question2str(dns_question_t *question, char *buf, size_t len) {
+    char sub_buf[0xFF * 4];
+    dns_name2str(&question->name, sub_buf, 0xFF * 4);
+    snprintf(buf, len, "%s %s %s", sub_buf,
              dns_class2str((dns_class)question->class),
              dns_record_type2str(question->type));
 }
 
-size_t dns_raw_record_data2str(dns_record_t *record,
-    uint8_t *begin, uint8_t *end, bool put_quotes,
-    char *buf, size_t buf_len)
-{
+size_t dns_raw_record_data2str(dns_record_t *record, uint8_t *begin,
+                               uint8_t *end, bool put_quotes, char *buf,
+                               size_t buf_len) {
     static dns_name_t name;
-    int written;
-    size_t ret = 0;
-    char tmp_buf[50];
+    int               written;
+    size_t            ret = 0;
+    char              tmp_buf[50];
 
-    char *ptr = buf;
+    char *ptr     = buf;
     char *buf_end = buf + buf_len;
 
-    switch(record->type)
-    {
+    switch (record->type) {
         case DNS_REC_NS:
         case DNS_REC_CNAME:
         case DNS_REC_DNAME:
         case DNS_REC_PTR:
-            parse_name(begin, record->data.raw, end, name.name, &name.length, NULL);
-            ret += dns_print_readable(&ptr, buf_end - ptr, name.name, name.length, true);
+            parse_name(begin, record->data.raw, end, name.name, &name.length,
+                       NULL);
+            ret += dns_print_readable(&ptr, buf_end - ptr, name.name,
+                                      name.length, true);
             break;
         case DNS_REC_MX:
-            if(record->length < 3)
-            {
+            if (record->length < 3) {
                 goto raw;
             }
-            parse_name(begin, record->data.raw + 2, end, name.name, &name.length, NULL);
-            int no = snprintf(buf, buf_len, "%" PRIu16 " ", ntohs(*((uint16_t*)record->data.raw)));
+            parse_name(begin, record->data.raw + 2, end, name.name,
+                       &name.length, NULL);
+            int no = snprintf(buf, buf_len, "%" PRIu16 " ",
+                              ntohs(*((uint16_t *)record->data.raw)));
             ptr += no;
             ret += no;
-            ret += dns_print_readable(&ptr, buf_end - ptr, name.name, name.length, true);
+            ret += dns_print_readable(&ptr, buf_end - ptr, name.name,
+                                      name.length, true);
             break;
-        case DNS_REC_TXT:
-        {
+        case DNS_REC_TXT: {
             uint8_t *record_end = record->data.raw + record->length;
-            uint8_t *data_ptr = record->data.raw;
-            while(data_ptr < record_end)
-            {
+            uint8_t *data_ptr   = record->data.raw;
+            while (data_ptr < record_end) {
                 uint8_t length = *(data_ptr++);
-                if (data_ptr + length <= record_end)
-                {
-                    if (put_quotes) *(ptr++) = '"';
-                    ret += dns_print_readable(&ptr, buf_end - ptr, data_ptr, length, false);
+                if (data_ptr + length <= record_end) {
+                    if (put_quotes)
+                        *(ptr++) = '"';
+                    ret += dns_print_readable(&ptr, buf_end - ptr, data_ptr,
+                                              length, false);
                     data_ptr += length;
-                    if (put_quotes){
+                    if (put_quotes) {
                         *(ptr++) = '"';
                         *(ptr++) = ' ';
                     }
-                }
-                else
-                {
+                } else {
                     break;
                 }
             }
             *ptr = 0;
             break;
         }
-        case DNS_REC_SOA:
-        {
+        case DNS_REC_SOA: {
             uint8_t *next;
             // We have 5 32-bit values plus two names.
-            if (record->length < 22)
-            {
+            if (record->length < 22) {
                 goto raw;
             }
 
-            parse_name(begin, record->data.raw, end, name.name, &name.length, &next);
-            ret += dns_print_readable(&ptr, buf_end - ptr, name.name, name.length, true);
+            parse_name(begin, record->data.raw, end, name.name, &name.length,
+                       &next);
+            ret += dns_print_readable(&ptr, buf_end - ptr, name.name,
+                                      name.length, true);
             *(ptr++) = ' ';
             ret++;
 
-            if(next + 20 >= record->data.raw + record->length)
-            {
+            if (next + 20 >= record->data.raw + record->length) {
                 goto raw;
             }
             parse_name(begin, next, end, name.name, &name.length, &next);
-            ret += dns_print_readable(&ptr, buf_end - ptr, name.name, name.length, true);
+            ret += dns_print_readable(&ptr, buf_end - ptr, name.name,
+                                      name.length, true);
 
             *(ptr++) = ' ';
             ret++;
 
-            if(next + 20 > record->data.raw + record->length)
-            {
+            if (next + 20 > record->data.raw + record->length) {
                 goto raw;
             }
 
-            ret += snprintf(ptr, buf_len-ret, "%" PRIu32 " %" PRIu32 " %" PRIu32 " %" PRIu32 " %" PRIu32,
-                    (uint32_t)ntohl(*((uint32_t*)next)),
-                    (uint32_t)ntohl(*(((uint32_t*)next) + 1)),
-                    (uint32_t)ntohl(*(((uint32_t*)next) + 2)),
-                    (uint32_t)ntohl(*(((uint32_t*)next) + 3)),
-                    (uint32_t)ntohl(*(((uint32_t*)next) + 4)));
+            ret += snprintf(ptr, buf_len - ret,
+                            "%" PRIu32 " %" PRIu32 " %" PRIu32 " %" PRIu32
+                            " %" PRIu32,
+                            (uint32_t)ntohl(*((uint32_t *)next)),
+                            (uint32_t)ntohl(*(((uint32_t *)next) + 1)),
+                            (uint32_t)ntohl(*(((uint32_t *)next) + 2)),
+                            (uint32_t)ntohl(*(((uint32_t *)next) + 3)),
+                            (uint32_t)ntohl(*(((uint32_t *)next) + 4)));
             break;
         }
         case DNS_REC_A:
-            if(record->length != 4)
-            {
+            if (record->length != 4) {
                 goto raw;
             }
             inet_ntop(AF_INET, record->data.raw, tmp_buf, 50);
@@ -1286,8 +1136,7 @@ size_t dns_raw_record_data2str(dns_record_t *record,
             safe_strcpy(buf, buf_len, tmp_buf);
             break;
         case DNS_REC_AAAA:
-            if(record->length != 16)
-            {
+            if (record->length != 16) {
                 goto raw;
             }
             inet_ntop(AF_INET6, record->data.raw, tmp_buf, 50);
@@ -1295,65 +1144,68 @@ size_t dns_raw_record_data2str(dns_record_t *record,
             safe_strcpy(buf, buf_len, tmp_buf);
             break;
         case DNS_REC_CAA:
-            if(record->length < 2 || record->data.raw[1] < 1 || record->data.raw[1] > 15
-               || record->data.raw[1] + 2 > record->length)
-            {
+            if (record->length < 2 || record->data.raw[1] < 1 ||
+                record->data.raw[1] > 15 ||
+                record->data.raw[1] + 2 > record->length) {
                 goto raw;
             }
-            written = snprintf(ptr, buf_len-ret, "%" PRIu8 " ", (uint8_t)(record->data.raw[0] >> 7));
-            if(written < 0)
-            {
+            written = snprintf(ptr, buf_len - ret, "%" PRIu8 " ",
+                               (uint8_t)(record->data.raw[0] >> 7));
+            if (written < 0) {
                 return 0;
             }
             ret += written;
             ptr += written;
-            dns_print_readable(&ptr, buf_end - ptr, record->data.raw + 2, record->data.raw[1], false);
+            dns_print_readable(&ptr, buf_end - ptr, record->data.raw + 2,
+                               record->data.raw[1], false);
             *(ptr++) = ' ';
             ret++;
             *(ptr++) = '"';
             ret++;
-            ret += dns_print_readable(&ptr, buf_end - ptr, record->data.raw + 2 + record->data.raw[1],
-                               (size_t) (record->length - record->data.raw[1] - 2), false);
+            ret += dns_print_readable(
+                &ptr, buf_end - ptr, record->data.raw + 2 + record->data.raw[1],
+                (size_t)(record->length - record->data.raw[1] - 2), false);
             *(ptr++) = '"';
             ret++;
             *ptr = 0;
             break;
         case DNS_REC_SRV:
-            if(record->length < 7)
-            {
+            if (record->length < 7) {
                 goto raw;
             }
-            uint16_t prio   = ntohs(*((uint16_t*)(record->data.raw + 0)));
-            uint16_t weight = ntohs(*((uint16_t*)(record->data.raw + 2)));
-            uint16_t port   = ntohs(*((uint16_t*)(record->data.raw + 4)));
-            written = snprintf(ptr, buf_end - ptr, "%" PRIu16 " %" PRIu16 " %" PRIu16 " ", prio, weight, port);
-            if(written < 0)
-            {
+            uint16_t prio   = ntohs(*((uint16_t *)(record->data.raw + 0)));
+            uint16_t weight = ntohs(*((uint16_t *)(record->data.raw + 2)));
+            uint16_t port   = ntohs(*((uint16_t *)(record->data.raw + 4)));
+            written         = snprintf(ptr, buf_end - ptr,
+                                       "%" PRIu16 " %" PRIu16 " %" PRIu16 " ", prio,
+                                       weight, port);
+            if (written < 0) {
                 return 0;
             }
             ptr += written;
             ret += written;
-            parse_name(begin, record->data.raw + 6, end, name.name, &name.length, NULL);
-            ret += dns_print_readable(&ptr, buf_end - ptr, name.name, name.length, true);
+            parse_name(begin, record->data.raw + 6, end, name.name,
+                       &name.length, NULL);
+            ret += dns_print_readable(&ptr, buf_end - ptr, name.name,
+                                      name.length, true);
             break;
         case DNS_REC_SMIMEA:
         case DNS_REC_TLSA:
-            if(record->length < 3)
-            {
+            if (record->length < 3) {
                 goto raw;
             }
-            written = snprintf(ptr, buf_end - ptr, "%" PRIu8 " %" PRIu8 " %" PRIu8 " ",
-                               record->data.raw[0], record->data.raw[1], record->data.raw[2]);
-            if(written < 0)
-            {
+            written = snprintf(
+                ptr, buf_end - ptr, "%" PRIu8 " %" PRIu8 " %" PRIu8 " ",
+                record->data.raw[0], record->data.raw[1], record->data.raw[2]);
+            if (written < 0) {
                 return 0;
             }
             ptr += written;
             ret += written;
 
-            for(uint16_t i = 3; i < record->length; i++) {
+            for (uint16_t i = 3; i < record->length; i++) {
                 uint8_t byte = record->data.raw[i];
-                *(ptr++) = hexchars[byte >> 4];
+                *(ptr++)     = hexchars[byte >> 4];
                 ret++;
                 *(ptr++) = hexchars[byte & 0xF];
                 ret++;
@@ -1362,32 +1214,25 @@ size_t dns_raw_record_data2str(dns_record_t *record,
             break;
         raw:
         default:
-            ret += dns_print_readable(&ptr, sizeof(buf), record->data.raw, record->length, false);
+            ret += dns_print_readable(&ptr, sizeof(buf), record->data.raw,
+                                      record->length, false);
             *ptr = 0;
     }
     return ret;
 }
 
-dns_section_t dns_get_section(uint16_t index, dns_header_t *header)
-{
-    if(index < header->ans_count)
-    {
+dns_section_t dns_get_section(uint16_t index, dns_header_t *header) {
+    if (index < header->ans_count) {
         return DNS_SECTION_ANSWER;
-    }
-    else if(index < header->ans_count + header->auth_count)
-    {
+    } else if (index < header->ans_count + header->auth_count) {
         return DNS_SECTION_AUTHORITY;
-    }
-    else
-    {
+    } else {
         return DNS_SECTION_ADDITIONAL;
     }
 }
 
-char *dns_section2str(dns_section_t section)
-{
-    switch(section)
-    {
+char *dns_section2str(dns_section_t section) {
+    switch (section) {
         case DNS_SECTION_ANSWER:
             return "ANSWER";
         case DNS_SECTION_ADDITIONAL:
@@ -1401,10 +1246,8 @@ char *dns_section2str(dns_section_t section)
     }
 }
 
-char *dns_section2str_lower_plural(dns_section_t section)
-{
-    switch(section)
-    {
+char *dns_section2str_lower_plural(dns_section_t section) {
+    switch (section) {
         case DNS_SECTION_ANSWER:
             return "answers";
         case DNS_SECTION_ADDITIONAL:
@@ -1418,92 +1261,85 @@ char *dns_section2str_lower_plural(dns_section_t section)
     }
 }
 
-bool dns_in_zone(dns_name_t *name, dns_name_t *zone)
-{
-    return zone->length == 1 // Provided that the label is a FQDN, this is the root zone containing everything else
-           || (zone->length == name->length
-               && strcasecmp((char*)name->name + name->length - zone->length, (char*)zone->name) == 0)
-           || (zone->length < name->length
-               && strcasecmp((char*)name->name + name->length - zone->length, (char*)zone->name) == 0
-               && *(name->name + name->length - zone->length - 1) == '.');
-
+bool dns_in_zone(dns_name_t *name, dns_name_t *zone) {
+    return zone->length == 1 // Provided that the label is a FQDN, this is the
+                             // root zone containing everything else
+           || (zone->length == name->length &&
+               strcasecmp((char *)name->name + name->length - zone->length,
+                          (char *)zone->name) == 0) ||
+           (zone->length < name->length &&
+            strcasecmp((char *)name->name + name->length - zone->length,
+                       (char *)zone->name) == 0 &&
+            *(name->name + name->length - zone->length - 1) == '.');
 }
 
-void dns_print_packet(FILE *f, dns_pkt_t *packet, uint8_t *begin, size_t len, uint8_t *next)
-{
-    char buf[0xFFFF];
+void dns_print_packet(FILE *f, dns_pkt_t *packet, uint8_t *begin, size_t len,
+                      uint8_t *next) {
+    char         buf[0xFFFF];
     dns_record_t rec;
 
     fprintf(f,
-             ";; ->>HEADER<<- opcode: %s, status: %s, id: %"PRIu16"\n"
-             ";; flags: %s%s%s%s%s%s%s; QUERY: %" PRIu16 ", ANSWER: %" PRIu16 ", AUTHORITY: %" PRIu16 ", ADDITIONAL: %" PRIu16 "\n\n"
-             ";; QUESTION SECTION:\n",
-             dns_opcode2str((dns_opcode)packet->head.header.opcode),
-             dns_rcode2str((dns_rcode)packet->head.header.rcode),
-             packet->head.header.id,
-             packet->head.header.qr ? "qr " : "",
-             packet->head.header.ad ? "ad " : "",
-             packet->head.header.aa ? "aa " : "",
-             packet->head.header.rd ? "rd " : "",
-             packet->head.header.ra ? "ra " : "",
-             packet->head.header.tc ? "tc " : "",
-             packet->head.header.cd ? "cd " : "",
-             packet->head.header.q_count,
-             packet->head.header.ans_count,
-             packet->head.header.auth_count,
-             packet->head.header.add_count
-    );
+            ";; ->>HEADER<<- opcode: %s, status: %s, id: %" PRIu16 "\n"
+            ";; flags: %s%s%s%s%s%s%s; QUERY: %" PRIu16 ", ANSWER: %" PRIu16
+            ", AUTHORITY: %" PRIu16 ", ADDITIONAL: %" PRIu16 "\n\n"
+            ";; QUESTION SECTION:\n",
+            dns_opcode2str((dns_opcode)packet->head.header.opcode),
+            dns_rcode2str((dns_rcode)packet->head.header.rcode),
+            packet->head.header.id, packet->head.header.qr ? "qr " : "",
+            packet->head.header.ad ? "ad " : "",
+            packet->head.header.aa ? "aa " : "",
+            packet->head.header.rd ? "rd " : "",
+            packet->head.header.ra ? "ra " : "",
+            packet->head.header.tc ? "tc " : "",
+            packet->head.header.cd ? "cd " : "", packet->head.header.q_count,
+            packet->head.header.ans_count, packet->head.header.auth_count,
+            packet->head.header.add_count);
 
     dns_question2str(&packet->head.question, buf, sizeof(buf));
     fprintf(f, "%s\n", buf);
 
-    uint16_t i = 0;
+    uint16_t      i       = 0;
     dns_section_t section = DNS_SECTION_QUESTION;
-    char sub_buf1[0xFF*4];
-    char sub_buf2[0xFFFF0];
-    while(dns_parse_record_raw(begin, next, begin + len, &next, &rec))
-    {
+    char          sub_buf1[0xFF * 4];
+    char          sub_buf2[0xFFFF0];
+    while (dns_parse_record_raw(begin, next, begin + len, &next, &rec)) {
         dns_section_t new_section = dns_get_section(i++, &packet->head.header);
-        if(new_section != section)
-        {
+        if (new_section != section) {
             fprintf(f, "\n;; %s SECTION:\n", dns_section2str(new_section));
             section = new_section;
         }
-        dns_name2str(&rec.name, sub_buf1, 0xFF*4);
-        dns_raw_record_data2str(&rec, begin, begin + len, true, sub_buf2, 0xFFFF0);
-        fprintf(f,
-                "%s %" PRIu32 " %s %s %s\n",
-                sub_buf1,
-                rec.ttl,
+        dns_name2str(&rec.name, sub_buf1, 0xFF * 4);
+        dns_raw_record_data2str(&rec, begin, begin + len, true, sub_buf2,
+                                0xFFFF0);
+        fprintf(f, "%s %" PRIu32 " %s %s %s\n", sub_buf1, rec.ttl,
                 dns_class2str((dns_class)rec.class),
-                dns_record_type2str((dns_record_type) rec.type),
-                sub_buf2);
+                dns_record_type2str((dns_record_type)rec.type), sub_buf2);
     }
     fprintf(f, "\n\n");
 }
 
-uint8_t dns_ip_octet2label(uint8_t *dst, uint8_t octet)
-{
+uint8_t dns_ip_octet2label(uint8_t *dst, uint8_t octet) {
     uint8_t length = octet >= 100 ? 3 : (octet >= 10 ? 2 : 1);
-    for(uint8_t i = 0; i < length; i++)
-    {
-        uint8_t digit = octet % 10;
+    for (uint8_t i = 0; i < length; i++) {
+        uint8_t digit       = octet % 10;
         dst[length - 1 - i] = (char)('0' + digit);
         octet /= 10;
     }
     return length;
 }
 
-bool dns_ip2ptr(const char *qname, dns_name_t *name)
-{
+bool dns_ip2ptr(const char *qname, dns_name_t *name) {
     struct sockaddr_storage ptr_addr_storage;
 
-    if (inet_pton(AF_INET, qname, &((struct sockaddr_in*)&ptr_addr_storage)->sin_addr) == 1)
-    {
-        name->length = 0;
-        uint8_t *addr = (uint8_t*)&((struct sockaddr_in*)&ptr_addr_storage)->sin_addr.s_addr;
-#define ipv4b2l(INDEX) name->name[name->length] = dns_ip_octet2label(name->name + name->length + 1, addr[(INDEX)]); \
-        name->length += name->name[name->length] + 1;
+    if (inet_pton(AF_INET, qname,
+                  &((struct sockaddr_in *)&ptr_addr_storage)->sin_addr) == 1) {
+        name->length  = 0;
+        uint8_t *addr = (uint8_t *)&((struct sockaddr_in *)&ptr_addr_storage)
+                            ->sin_addr.s_addr;
+#define ipv4b2l(INDEX)                                                         \
+    name->name[name->length] =                                                 \
+        dns_ip_octet2label(name->name + name->length + 1, addr[(INDEX)]);      \
+    name->length += name->name[name->length] + 1;
         ipv4b2l(3);
         ipv4b2l(2);
         ipv4b2l(1);
@@ -1524,14 +1360,17 @@ bool dns_ip2ptr(const char *qname, dns_name_t *name)
         name->name[name->length++] = 0;
 
         return true;
-    }
-    else if (inet_pton(AF_INET6, qname, &((struct sockaddr_in6*)&ptr_addr_storage)->sin6_addr) == 1)
-    {
-        uint8_t *addr = (uint8_t*)&((struct sockaddr_in6*)&ptr_addr_storage)->sin6_addr.s6_addr;
-#define ipv6b2l(INDEX) name->name[(INDEX) * 4 + 0] = 1; \
-    name->name[(INDEX) * 4 + 1] = hexchars[addr[15 - (INDEX)] & 0xF]; \
-    name->name[(INDEX) * 4 + 2] = 1; \
-    name->name[(INDEX) * 4 + 3] = hexchars[(addr[15 - (INDEX)] >> 4) & 0xF];
+    } else if (inet_pton(
+                   AF_INET6, qname,
+                   &((struct sockaddr_in6 *)&ptr_addr_storage)->sin6_addr) ==
+               1) {
+        uint8_t *addr = (uint8_t *)&((struct sockaddr_in6 *)&ptr_addr_storage)
+                            ->sin6_addr.s6_addr;
+#define ipv6b2l(INDEX)                                                         \
+    name->name[(INDEX)*4 + 0] = 1;                                             \
+    name->name[(INDEX)*4 + 1] = hexchars[addr[15 - (INDEX)] & 0xF];            \
+    name->name[(INDEX)*4 + 2] = 1;                                             \
+    name->name[(INDEX)*4 + 3] = hexchars[(addr[15 - (INDEX)] >> 4) & 0xF];
 
         ipv6b2l(0);
         ipv6b2l(1);
@@ -1559,7 +1398,7 @@ bool dns_ip2ptr(const char *qname, dns_name_t *name)
         name->name[71] = 'p';
         name->name[72] = 'a';
         name->name[73] = 0;
-        name->length = 74;
+        name->length   = 74;
         return true;
     }
     return false;

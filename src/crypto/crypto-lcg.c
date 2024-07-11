@@ -9,14 +9,12 @@
 #include "../util-data/fine-malloc.h"
 #include "../util-out/logger.h"
 
-#include <math.h>  /* for 'sqrt()', may need -lm for gcc */
+#include <math.h> /* for 'sqrt()', may need -lm for gcc */
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-
 
 /**
  * A 64 bit number can't have more than 16 prime factors. The first factors
@@ -26,7 +24,6 @@
  * We zero termiante this list, so we are going to reserve 20 slots.
  */
 typedef uint64_t PRIMEFACTORS[20];
-
 
 /****************************************************************************
  * Break down the number into prime factors using DJB's sieve code, which
@@ -42,16 +39,14 @@ typedef uint64_t PRIMEFACTORS[20];
  *      this because we are going to use prime non-factors for finding
  *      interesting numbers.
  ****************************************************************************/
-static unsigned
-sieve_prime_factors(uint64_t number, PRIMEFACTORS factors,
-                    PRIMEFACTORS non_factors, double *elapsed)
-{
+static unsigned sieve_prime_factors(uint64_t number, PRIMEFACTORS factors,
+                                    PRIMEFACTORS non_factors, double *elapsed) {
     primegen pg;
-    clock_t start;
-    clock_t stop;
+    clock_t  start;
+    clock_t  stop;
     uint64_t prime;
     uint64_t max;
-    unsigned factor_count = 0;
+    unsigned factor_count     = 0;
     unsigned non_factor_count = 0;
 
     /*
@@ -72,7 +67,6 @@ sieve_prime_factors(uint64_t number, PRIMEFACTORS factors,
      */
     start = clock();
     for (;;) {
-
         /* Sieve the next prime */
         prime = primegen_next(&pg);
 
@@ -116,7 +110,7 @@ sieve_prime_factors(uint64_t number, PRIMEFACTORS factors,
     /*
      * Zero terminate the results.
      */
-    factors[factor_count] = 0;
+    factors[factor_count]         = 0;
     non_factors[non_factor_count] = 0;
 
     /*
@@ -125,14 +119,12 @@ sieve_prime_factors(uint64_t number, PRIMEFACTORS factors,
      */
     stop = clock();
     if (elapsed)
-        *elapsed = ((double)stop - (double)start)/(double)CLOCKS_PER_SEC;
+        *elapsed = ((double)stop - (double)start) / (double)CLOCKS_PER_SEC;
 
     /* should always be at least 1, because if the number itself is prime,
      * then that's it's only prime factor */
     return factor_count;
 }
-
-
 
 /****************************************************************************
  * Do a pseudo-random 1-to-1 translation of a number within a range to
@@ -153,12 +145,9 @@ sieve_prime_factors(uint64_t number, PRIMEFACTORS factors,
  * @param range
  *      The 'modulus' of the LCG algorithm.
  ****************************************************************************/
-uint64_t
-lcg_rand(uint64_t index, uint64_t a, uint64_t c, uint64_t range)
-{
+uint64_t lcg_rand(uint64_t index, uint64_t a, uint64_t c, uint64_t range) {
     return (index * a + c) % range;
 }
-
 
 /****************************************************************************
  * Verify the LCG algorithm. You shouldn't do this for large ranges,
@@ -171,19 +160,18 @@ lcg_rand(uint64_t index, uint64_t a, uint64_t c, uint64_t range)
  * This works by counting the results of rand(), which should be produced
  * exactly once.
  ****************************************************************************/
-static unsigned
-lcg_verify(uint64_t a, uint64_t c, uint64_t range, uint64_t max)
-{
+static unsigned lcg_verify(uint64_t a, uint64_t c, uint64_t range,
+                           uint64_t max) {
     unsigned char *list;
-    uint64_t i;
-    unsigned is_success = 1;
+    uint64_t       i;
+    unsigned       is_success = 1;
 
     /* Allocate a list of 1-byte counters */
-    list = CALLOC(1, (size_t)((range<max)?range:max));
+    list = CALLOC(1, (size_t)((range < max) ? range : max));
 
     /* For all numbers in the range, verify increment the counter for the
      * the output. */
-    for (i=0; i<range; i++) {
+    for (i = 0; i < range; i++) {
         uint64_t x = lcg_rand(i, a, c, range);
         if (x < max)
             list[x]++;
@@ -191,7 +179,7 @@ lcg_verify(uint64_t a, uint64_t c, uint64_t range, uint64_t max)
 
     /* Now check the output to make sure that every counter is set exactly
      * to the value of '1'. */
-    for (i=0; i<max && i<range; i++) {
+    for (i = 0; i < max && i < range; i++) {
         if (list[i] != 1)
             is_success = 0;
     }
@@ -201,14 +189,11 @@ lcg_verify(uint64_t a, uint64_t c, uint64_t range, uint64_t max)
     return is_success;
 }
 
-
 /****************************************************************************
  * Count the number of digits in a number so that we can pretty-print a
  * bunch of numbers in nice columns.
  ****************************************************************************/
-static unsigned
-count_digits(uint64_t num)
-{
+static unsigned count_digits(uint64_t num) {
     unsigned result = 0;
 
     while (num) {
@@ -229,18 +214,15 @@ count_digits(uint64_t num)
  * @return
  *      !is_coprime(c, factors)
  ****************************************************************************/
-static uint64_t
-has_factors_in_common(uint64_t c, PRIMEFACTORS factors)
-{
+static uint64_t has_factors_in_common(uint64_t c, PRIMEFACTORS factors) {
     unsigned i;
 
-    for (i=0; factors[i]; i++) {
+    for (i = 0; factors[i]; i++) {
         if ((c % factors[i]) == 0)
             return factors[i]; /* found a common factor */
     }
     return 0; /* no factors in common */
 }
-
 
 /****************************************************************************
  * Given a range, calculate some possible constants for the LCG algorithm
@@ -256,15 +238,14 @@ has_factors_in_common(uint64_t c, PRIMEFACTORS factors)
  *      should be set to 0 on the input to this function, or a suggested
  *      value.
  ****************************************************************************/
-void
-lcg_calculate_constants(uint64_t m, uint64_t *out_a, uint64_t *inout_c, int is_debug)
-{
-    uint64_t a;
-    uint64_t c = *inout_c;
-    double elapsed = 0.0; /* Benchmark of 'sieve' algorithm */
-    PRIMEFACTORS factors; /* List of prime factors of 'm' */
+void lcg_calculate_constants(uint64_t m, uint64_t *out_a, uint64_t *inout_c,
+                             int is_debug) {
+    uint64_t     a;
+    uint64_t     c       = *inout_c;
+    double       elapsed = 0.0; /* Benchmark of 'sieve' algorithm */
+    PRIMEFACTORS factors;       /* List of prime factors of 'm' */
     PRIMEFACTORS non_factors;
-    unsigned i;
+    unsigned     i;
 
     /*
      * Find all the prime factors of the number. This step can take several
@@ -284,12 +265,12 @@ lcg_calculate_constants(uint64_t m, uint64_t *out_a, uint64_t *inout_c, int is_d
         unsigned j;
 
         a = 1;
-        for (j=0; non_factors[j] && j < 5; j++)
+        for (j = 0; non_factors[j] && j < 5; j++)
             a *= non_factors[j];
     } else {
-        //unsigned j;
+        // unsigned j;
         a = 1;
-        for (i=0; factors[i]; i++)
+        for (i = 0; factors[i]; i++)
             a = a * factors[i];
         if ((m % 4) == 0)
             a *= 2;
@@ -304,7 +285,7 @@ lcg_calculate_constants(uint64_t m, uint64_t *out_a, uint64_t *inout_c, int is_d
      * common with the range.
      */
     if (c == 0)
-        c = 2531011 ; /* something random */
+        c = 2531011; /* something random */
     while (has_factors_in_common(c, factors))
         c++;
 
@@ -312,20 +293,21 @@ lcg_calculate_constants(uint64_t m, uint64_t *out_a, uint64_t *inout_c, int is_d
         /*
          * print the results
          */
-        //printf("sizeof(int) = %" PRIu64 "-bits\n", (uint64_t)(sizeof(size_t)*8));
+        // printf("sizeof(int) = %" PRIu64 "-bits\n",
+        // (uint64_t)(sizeof(size_t)*8));
         printf("elapsed     = %5.3f-seconds\n", elapsed);
         printf("factors     = ");
-        for (i=0; factors[i]; i++)
+        for (i = 0; factors[i]; i++)
             printf("%" PRIu64 " ", factors[i]);
-        printf("%s\n", factors[0]?"":"(none)");
+        printf("%s\n", factors[0] ? "" : "(none)");
         printf("m           = %-24" PRIu64 " (0x%" PRIx64 ")\n", m, m);
         printf("a           = %-24" PRIu64 " (0x%" PRIx64 ")\n", a, a);
         printf("c           = %-24" PRIu64 " (0x%" PRIx64 ")\n", c, c);
-        printf("c%%m         = %-24" PRIu64 " (0x%" PRIx64 ")\n", c%m, c%m);
-        printf("a%%m         = %-24" PRIu64 " (0x%" PRIx64 ")\n", a%m, a%m);
+        printf("c%%m         = %-24" PRIu64 " (0x%" PRIx64 ")\n", c % m, c % m);
+        printf("a%%m         = %-24" PRIu64 " (0x%" PRIx64 ")\n", a % m, a % m);
 
         if (m < 1000000000) {
-            if (lcg_verify(a, c+1, m, 280))
+            if (lcg_verify(a, c + 1, m, 280))
                 printf("verify      = success\n");
             else
                 printf("verify      = failure\n");
@@ -333,17 +315,16 @@ lcg_calculate_constants(uint64_t m, uint64_t *out_a, uint64_t *inout_c, int is_d
             printf("verify      = too big to check\n");
         }
 
-
         /*
          * Print some first numbers. We use these to visually inspect whether
          * the results are random or not.
          */
         {
-            unsigned count = 0;
-            uint64_t x = 0;
+            unsigned count  = 0;
+            uint64_t x      = 0;
             unsigned digits = count_digits(m);
 
-            for (i=0; i<100 && i < m; i++) {
+            for (i = 0; i < 100 && i < m; i++) {
                 x = lcg_rand(x, a, c, m);
                 count += printf("%*" PRIu64 " ", digits, x);
                 if (count >= 70) {
@@ -355,22 +336,20 @@ lcg_calculate_constants(uint64_t m, uint64_t *out_a, uint64_t *inout_c, int is_d
         }
     }
 
-    *out_a = a;
+    *out_a   = a;
     *inout_c = c;
 }
 
 /***************************************************************************
  ***************************************************************************/
-int lcg_selftest()
-{
+int lcg_selftest() {
     unsigned i;
-    int is_success = 0;
+    int      is_success = 0;
     uint64_t m, a, c;
-
 
     m = 3015 * 3;
 
-    for (i=0; i<5; i++) {
+    for (i = 0; i < 5; i++) {
         a = 0;
         c = 0;
 

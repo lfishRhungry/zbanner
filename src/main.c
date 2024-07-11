@@ -48,7 +48,7 @@
  * Use to hint Tx & Rx threads.
  * Should not be modified by Tx or Rx thread themselves but by
  * `mainscan` or `control_c_handler`
-*/
+ */
 unsigned volatile time_to_finish_tx = 0;
 unsigned volatile time_to_finish_rx = 0;
 
@@ -56,24 +56,22 @@ unsigned volatile time_to_finish_rx = 0;
  * We update a global time in xtatus.c for less syscall.
  * Use this if you need rough and not accurate current time.
  */
-time_t global_now;
-
-static uint64_t usec_start;
-
+time_t   global_now;
 /**
  * This is for some wrappered functions that use TemplateSet to create packets.
  * !Do not modify it unless u know what u are doing.
  */
 TmplSet *global_tmplset;
 
-static void _control_c_handler(int x) {
+static uint64_t usec_start;
 
+static void _control_c_handler(int x) {
     static unsigned control_c_pressed = 0;
 
     if (control_c_pressed == 0) {
-        LOG(LEVEL_OUT,
-                "waiting several seconds to exit..."
-                "                                                                           \n");
+        LOG(LEVEL_OUT, "waiting several seconds to exit..."
+                       "                                                       "
+                       "                    \n");
         /*First time of <ctrl-c>, tell Tx to stop*/
         control_c_pressed = 1;
         time_to_finish_tx = 1;
@@ -97,25 +95,25 @@ static void _control_c_handler(int x) {
 static int _main_scan(XConf *xconf) {
     /**
      * According to C99 standards while using designated initializer:
-     * 
+     *
      *     "Omitted fields are implicitly initialized the same as for objects
      * that have static storage duration."
-     * 
+     *
      * ref: https://gcc.gnu.org/onlinedocs/gcc/Designated-Inits.html
-     * 
+     *
      * This is more efficient to got an all-zero var than memset and could got
      * a partial-zero var conveniently.
      */
-    bool                  stop_tx               = true;
-    time_t                now                   = time(0);
-    TmplSet               tmplset               = {0};
-    Xtatus                status                = {.last={0}};
-    XtatusItem            status_item           = {0};
-    RxThread              rx_thread[1]          = {{0}};
-    TxThread             *tx_thread;
-    double                tx_free_entries;
-    double                rx_free_entries;
-    double                rx_queue_ratio_tmp;
+    bool       stop_tx      = true;
+    time_t     now          = time(0);
+    TmplSet    tmplset      = {0};
+    Xtatus     status       = {.last = {0}};
+    XtatusItem status_item  = {0};
+    RxThread   rx_thread[1] = {{0}};
+    TxThread  *tx_thread;
+    double     tx_free_entries;
+    double     rx_free_entries;
+    double     rx_queue_ratio_tmp;
 
     tx_thread = CALLOC(xconf->tx_thread_count, sizeof(TxThread));
 
@@ -125,17 +123,18 @@ static int _main_scan(XConf *xconf) {
      */
     if (!xconf->generator) {
         xconf->generator = get_generate_module_by_name("blackrock");
-        LOG(LEVEL_DEBUG, "Default GenerateModule `blackrock` is chosen because no GenerateModule "
-            "was specified.\n");
+        LOG(LEVEL_DEBUG, "Default GenerateModule `blackrock` is chosen because "
+                         "no GenerateModule "
+                         "was specified.\n");
     }
     /*
      * Config params & Do global init for GenerateModule
      */
-    if (xconf->generator_args
-        && xconf->generator->params) {
-        if (set_parameters_from_substring(NULL,
-            xconf->generator->params, xconf->generator_args)) {
-            LOG(LEVEL_ERROR, "errors happened in sub param parsing of GenerateModule.\n");
+    if (xconf->generator_args && xconf->generator->params) {
+        if (set_parameters_from_substring(NULL, xconf->generator->params,
+                                          xconf->generator_args)) {
+            LOG(LEVEL_ERROR,
+                "errors happened in sub param parsing of GenerateModule.\n");
             exit(1);
         }
     }
@@ -150,13 +149,13 @@ static int _main_scan(XConf *xconf) {
     targetip_optimize(&xconf->targets);
 
     if (initialize_adapter(xconf, xconf->generator->has_ipv4_targets,
-        xconf->generator->has_ipv6_targets) != 0)
+                           xconf->generator->has_ipv6_targets) != 0)
         exit(1);
     if (!xconf->nic.is_usable) {
         LOG(LEVEL_ERROR, "failed to detect IP of interface\n");
         LOG(LEVEL_OUT, "    did you spell the name correctly?\n");
         LOG(LEVEL_HINT, "if it has no IP address, "
-               "manually set with \"--adapter-ip 192.168.100.5\"\n");
+                        "manually set with \"--adapter-ip 192.168.100.5\"\n");
         exit(1);
     }
 
@@ -164,10 +163,11 @@ static int _main_scan(XConf *xconf) {
      * Set the "source ports" of everything we transmit.
      */
     if (xconf->nic.src.port.range == 0) {
-        unsigned port = 40000 + now % 20000;
+        unsigned port             = 40000 + now % 20000;
         xconf->nic.src.port.first = port;
         xconf->nic.src.port.last  = port + XCONF_DFT_PORT_RANGE;
-        xconf->nic.src.port.range = xconf->nic.src.port.last-xconf->nic.src.port.first;
+        xconf->nic.src.port.range =
+            xconf->nic.src.port.last - xconf->nic.src.port.first;
     }
 
     /*
@@ -196,8 +196,9 @@ static int _main_scan(XConf *xconf) {
         template_set_tcp_window_of_default(xconf->tcp_window);
 
     template_packet_init(xconf->tmplset, xconf->nic.source_mac,
-        xconf->nic.router_mac_ipv4, xconf->nic.router_mac_ipv6,
-        stack_if_datalink(xconf->nic.adapter), xconf->seed, xconf->templ_opts);
+                         xconf->nic.router_mac_ipv4, xconf->nic.router_mac_ipv6,
+                         stack_if_datalink(xconf->nic.adapter), xconf->seed,
+                         xconf->templ_opts);
 
     if (xconf->packet_ttl)
         template_set_ttl(xconf->tmplset, xconf->packet_ttl);
@@ -211,20 +212,21 @@ static int _main_scan(XConf *xconf) {
      */
     if (!xconf->scanner) {
         xconf->scanner = get_scan_module_by_name("tcp-syn");
-        LOG(LEVEL_DEBUG, "Default ScanModule `tcpsyn` is chosen because no ScanModule "
+        LOG(LEVEL_DEBUG,
+            "Default ScanModule `tcpsyn` is chosen because no ScanModule "
             "was specified.\n");
     }
 
     /*validate probe type*/
-    if (xconf->scanner->required_probe_type==ProbeType_NULL) {
+    if (xconf->scanner->required_probe_type == ProbeType_NULL) {
         if (xconf->probe) {
             LOG(LEVEL_ERROR, "ScanModule %s does not support any probe.\n",
                 xconf->scanner->name);
             exit(1);
         }
     } else {
-        if (!xconf->probe
-            || xconf->probe->type != xconf->scanner->required_probe_type) {
+        if (!xconf->probe ||
+            xconf->probe->type != xconf->scanner->required_probe_type) {
             LOG(LEVEL_ERROR, "ScanModule %s needs probe of %s type.\n",
                 xconf->scanner->name,
                 get_probe_type_name(xconf->scanner->required_probe_type));
@@ -237,11 +239,11 @@ static int _main_scan(XConf *xconf) {
      */
     xconf->scanner->probe = xconf->probe;
 
-    if (xconf->scanner_args
-        && xconf->scanner->params) {
-        if (set_parameters_from_substring(NULL,
-            xconf->scanner->params, xconf->scanner_args)) {
-            LOG(LEVEL_ERROR, "errors happened in sub param parsing of ScanModule.\n");
+    if (xconf->scanner_args && xconf->scanner->params) {
+        if (set_parameters_from_substring(NULL, xconf->scanner->params,
+                                          xconf->scanner_args)) {
+            LOG(LEVEL_ERROR,
+                "errors happened in sub param parsing of ScanModule.\n");
             exit(1);
         }
     }
@@ -254,12 +256,11 @@ static int _main_scan(XConf *xconf) {
      * Config params & Do global init for ProbeModule
      */
     if (xconf->probe) {
-
-        if (xconf->probe_args
-            && xconf->probe->params) {
-            if (set_parameters_from_substring(NULL,
-                xconf->probe->params, xconf->probe_args)) {
-                LOG(LEVEL_ERROR, "errors happened in sub param parsing of ProbeModule.\n");
+        if (xconf->probe_args && xconf->probe->params) {
+            if (set_parameters_from_substring(NULL, xconf->probe->params,
+                                              xconf->probe_args)) {
+                LOG(LEVEL_ERROR,
+                    "errors happened in sub param parsing of ProbeModule.\n");
                 exit(1);
             }
         }
@@ -285,10 +286,8 @@ static int _main_scan(XConf *xconf) {
      * And the filter string is combined from ProbeModule and user setting.
      */
     if (!xconf->is_no_bpf) {
-        rawsock_set_filter(
-            xconf->nic.adapter,
-            xconf->scanner->bpf_filter,
-            xconf->bpf_filter);
+        rawsock_set_filter(xconf->nic.adapter, xconf->scanner->bpf_filter,
+                           xconf->bpf_filter);
     }
 
     /*
@@ -300,28 +299,28 @@ static int _main_scan(XConf *xconf) {
      * Prepare for tx threads
      */
     for (unsigned index = 0; index < xconf->tx_thread_count; index++) {
-        TxThread *parms                 = &tx_thread[index];
-        parms->xconf                    = xconf;
-        parms->tx_index                 = index;
-        parms->my_index                 = xconf->resume.index;
-        parms->done_transmitting        = false;
-        parms->thread_handle_xmit       = 0;
+        TxThread *parms           = &tx_thread[index];
+        parms->xconf              = xconf;
+        parms->tx_index           = index;
+        parms->my_index           = xconf->resume.index;
+        parms->done_transmitting  = false;
+        parms->thread_handle_xmit = 0;
     }
     /*
      * Prepare for rx thread
      */
-    rx_thread->xconf                    = xconf;
-    rx_thread->done_receiving           = false;
-    rx_thread->thread_handle_recv       = 0;
+    rx_thread->xconf              = xconf;
+    rx_thread->done_receiving     = false;
+    rx_thread->thread_handle_recv = 0;
     /** needed for --packet-trace option so that we know when we started
      * the scan
      */
-    rx_thread->pt_start = 1.0 * pixie_gettime() / 1000000.0;
+    rx_thread->pt_start           = 1.0 * pixie_gettime() / 1000000.0;
 
     /*
      * Print helpful text
      */
-    char buffer[80];
+    char      buffer[80];
     struct tm x;
 
     now = time(0);
@@ -330,7 +329,7 @@ static int _main_scan(XConf *xconf) {
     LOG(LEVEL_OUT,
         "\nStarting " XTATE_FIRST_UPPER_NAME " " XTATE_VERSION " at %s\n",
         buffer);
-    LOG(LEVEL_OUT, "("XTATE_GITHUB")\n");
+    LOG(LEVEL_OUT, "(" XTATE_GITHUB ")\n");
 
     LOG(LEVEL_OUT, "Scanner:   %s\n", xconf->scanner->name);
     if (xconf->probe)
@@ -339,7 +338,8 @@ static int _main_scan(XConf *xconf) {
     if (xconf->out_conf.output_module)
         LOG(LEVEL_OUT, "Output:    %s\n", xconf->out_conf.output_module->name);
 
-    LOG(LEVEL_OUT, "Scanning %u hosts [%u ports/host]\n\n", (unsigned)xconf->generator->count_ips,
+    LOG(LEVEL_OUT, "Scanning %u hosts [%u ports/host]\n\n",
+        (unsigned)xconf->generator->count_ips,
         (unsigned)xconf->generator->count_ports);
 
     /*
@@ -348,19 +348,20 @@ static int _main_scan(XConf *xconf) {
     rx_thread->thread_handle_recv =
         pixie_begin_thread(receive_thread, 0, rx_thread);
     for (unsigned index = 0; index < xconf->tx_thread_count; index++) {
-        TxThread *parms    = &tx_thread[index];
-        parms->thread_handle_xmit = pixie_begin_thread(transmit_thread, 0, parms);
+        TxThread *parms = &tx_thread[index];
+        parms->thread_handle_xmit =
+            pixie_begin_thread(transmit_thread, 0, parms);
     }
 
     /**
      * set status outputing
-    */
+     */
     xtatus_start(&status);
-    status.print_ft_event    = xconf->is_fast_timeout;
-    status.print_queue       = xconf->is_status_queue;
-    status.print_info_num    = xconf->is_status_info_num;
-    status.print_hit_rate    = xconf->is_status_hit_rate;
-    status.is_infinite       = xconf->is_infinite;
+    status.print_ft_event = xconf->is_fast_timeout;
+    status.print_queue    = xconf->is_status_queue;
+    status.print_info_num = xconf->is_status_info_num;
+    status.print_hit_rate = xconf->is_status_hit_rate;
+    status.is_infinite    = xconf->is_infinite;
 
     /*
      * Now wait for <ctrl-c> to be pressed OR for Tx Threads to exit.
@@ -371,7 +372,6 @@ static int _main_scan(XConf *xconf) {
     pixie_usleep(1000 * 100);
     LOG(LEVEL_INFO, "waiting for threads to finish\n");
     while (!time_to_finish_tx) {
-
         /* Find the min-index, repeat and rate */
         status_item.total_sent   = 0;
         status_item.cur_pps      = 0.0;
@@ -387,7 +387,7 @@ static int _main_scan(XConf *xconf) {
             if (status_item.repeat_count > parms->my_repeat)
                 status_item.repeat_count = parms->my_repeat;
 
-            status_item.cur_pps    += parms->throttler->current_rate;
+            status_item.cur_pps += parms->throttler->current_rate;
             status_item.total_sent += parms->total_sent;
 
             stop_tx &= (!xconf->generator->hasmore_cb(i, parms->my_index));
@@ -398,12 +398,12 @@ static int _main_scan(XConf *xconf) {
          */
         status_item.rx_queue_ratio = 100.0;
         if (rx_thread->handle_q) {
-            for (unsigned i=0; i<xconf->rx_handler_count; i++) {
+            for (unsigned i = 0; i < xconf->rx_handler_count; i++) {
                 rx_free_entries = rte_ring_free_count(rx_thread->handle_q[i]);
-                rx_queue_ratio_tmp = rx_free_entries*100.0 /
-                    (double)(xconf->dispatch_buf_count);
+                rx_queue_ratio_tmp = rx_free_entries * 100.0 /
+                                     (double)(xconf->dispatch_buf_count);
 
-                if (status_item.rx_queue_ratio>rx_queue_ratio_tmp)
+                if (status_item.rx_queue_ratio > rx_queue_ratio_tmp)
                     status_item.rx_queue_ratio = rx_queue_ratio_tmp;
             }
         }
@@ -411,12 +411,13 @@ static int _main_scan(XConf *xconf) {
         /**
          * Tx handle queue maybe short if something wrong.
          */
-        tx_free_entries            = rte_ring_free_count(xconf->stack->transmit_queue);
-        status_item.tx_queue_ratio = tx_free_entries*100.0/(double)xconf->stack_buf_count;
+        tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
+        status_item.tx_queue_ratio =
+            tx_free_entries * 100.0 / (double)xconf->stack_buf_count;
 
         /* Note: This is how we tell the Tx has ended */
         if (xconf->is_infinite) {
-            if (xconf->repeat && status_item.repeat_count>=xconf->repeat)
+            if (xconf->repeat && status_item.repeat_count >= xconf->repeat)
                 time_to_finish_tx = 1;
         } else {
             if (stop_tx)
@@ -449,23 +450,21 @@ static int _main_scan(XConf *xconf) {
      * If we haven't completed the scan, then save the resume
      * information.
      */
-    if (status_item.cur_count < xconf->generator->target_range
-        && !xconf->is_infinite
-        && !xconf->is_noresume) {
+    if (status_item.cur_count < xconf->generator->target_range &&
+        !xconf->is_infinite && !xconf->is_noresume) {
         xconf->resume.index = status_item.cur_count;
         xconf_save_state(xconf);
     }
 
     /*
      * Now Tx Threads have breaked out the main loop of sending because of
-     * `time_to_finish_tx` and go into loop of `stack_flush_packets` before `time_to_finish_rx`.
-     * Rx Thread exits just by our setting of `time_to_finish_rx` according to time
-     * waiting.
-     * So `time_to_finish_rx` is the important signal both for Tx/Rx Thread to exit.
+     * `time_to_finish_tx` and go into loop of `stack_flush_packets` before
+     * `time_to_finish_rx`. Rx Thread exits just by our setting of
+     * `time_to_finish_rx` according to time waiting. So `time_to_finish_rx` is
+     * the important signal both for Tx/Rx Thread to exit.
      */
     now = time(0);
     for (;;) {
-
         /* Find the min-index, repeat and rate */
         status_item.total_sent   = 0;
         status_item.cur_pps      = 0.0;
@@ -480,7 +479,7 @@ static int _main_scan(XConf *xconf) {
             if (status_item.repeat_count > parms->my_repeat)
                 status_item.repeat_count = parms->my_repeat;
 
-            status_item.cur_pps    += parms->throttler->current_rate;
+            status_item.cur_pps += parms->throttler->current_rate;
             status_item.total_sent += parms->total_sent;
         }
 
@@ -489,12 +488,12 @@ static int _main_scan(XConf *xconf) {
          */
         status_item.rx_queue_ratio = 100.0;
         if (rx_thread->handle_q) {
-            for (unsigned i=0; i<xconf->rx_handler_count; i++) {
+            for (unsigned i = 0; i < xconf->rx_handler_count; i++) {
                 rx_free_entries = rte_ring_free_count(rx_thread->handle_q[i]);
-                rx_queue_ratio_tmp = rx_free_entries*100.0 /
-                    (double)(xconf->dispatch_buf_count);
+                rx_queue_ratio_tmp = rx_free_entries * 100.0 /
+                                     (double)(xconf->dispatch_buf_count);
 
-                if (status_item.rx_queue_ratio>rx_queue_ratio_tmp)
+                if (status_item.rx_queue_ratio > rx_queue_ratio_tmp)
                     status_item.rx_queue_ratio = rx_queue_ratio_tmp;
             }
         }
@@ -502,8 +501,9 @@ static int _main_scan(XConf *xconf) {
         /**
          * Tx handle queue maybe short if something wrong.
          */
-        tx_free_entries            = rte_ring_free_count(xconf->stack->transmit_queue);
-        status_item.tx_queue_ratio = tx_free_entries*100.0/(double)xconf->stack_buf_count;
+        tx_free_entries = rte_ring_free_count(xconf->stack->transmit_queue);
+        status_item.tx_queue_ratio =
+            tx_free_entries * 100.0 / (double)xconf->stack_buf_count;
 
         /**
          * additional status from scan module
@@ -527,7 +527,7 @@ static int _main_scan(XConf *xconf) {
         /*no more waiting or too many <ctrl-c>*/
         if (time(0) - now >= xconf->wait || time_to_finish_rx) {
             LOG(LEVEL_DEBUG, "telling threads to exit..."
-                "                                           \n");
+                             "                                           \n");
             time_to_finish_rx = 1;
             break;
         }
@@ -543,7 +543,7 @@ static int _main_scan(XConf *xconf) {
 
     uint64_t usec_now = pixie_gettime();
     LOG(LEVEL_OUT, "\n%u milliseconds elapsed\n",
-            (unsigned)((usec_now - usec_start) / 1000));
+        (unsigned)((usec_now - usec_start) / 1000));
 
     /*
      * Now cleanup everything
@@ -577,7 +577,6 @@ static int _main_scan(XConf *xconf) {
 /***************************************************************************
  ***************************************************************************/
 int main(int argc, char *argv[]) {
-
     /*init logger*/
     LOG_init();
 
@@ -585,10 +584,10 @@ int main(int argc, char *argv[]) {
     memset(xconf, 0, sizeof(xconf));
 
 #if defined(WIN32)
-  {
-    WSADATA x;
-    WSAStartup(0x101, &x);
-  }
+    {
+        WSADATA x;
+        WSAStartup(0x101, &x);
+    }
 #endif
 
     usec_start = pixie_gettime();
@@ -604,18 +603,18 @@ int main(int argc, char *argv[]) {
         pixie_backtrace_init(argv[0]);
 
     //=================================================Define default params
-    xconf->tx_thread_count                  = XCONF_DFT_TX_THD_COUNT;
-    xconf->rx_handler_count                 = XCONF_DFT_RX_HDL_COUNT;
-    xconf->stack_buf_count                  = XCONF_DFT_STACK_BUF_COUNT;
-    xconf->dispatch_buf_count               = XCONF_DFT_DISPATCH_BUF_COUNT;
-    xconf->max_rate                         = XCONF_DFT_MAX_RATE;
-    xconf->dedup_win                        = XCONF_DFT_DEDUP_WIN;
-    xconf->shard.one                        = XCONF_DFT_SHARD_ONE;
-    xconf->shard.of                         = XCONF_DFT_SHARD_OF;
-    xconf->ft_spec                          = XCONF_DFT_FT_SPEC;
-    xconf->wait                             = XCONF_DFT_WAIT;
-    xconf->nic.snaplen                      = XCONF_DFT_SNAPLEN;
-    xconf->max_packet_len                   = XCONF_DFT_MAX_PKT_LEN;
+    xconf->tx_thread_count    = XCONF_DFT_TX_THD_COUNT;
+    xconf->rx_handler_count   = XCONF_DFT_RX_HDL_COUNT;
+    xconf->stack_buf_count    = XCONF_DFT_STACK_BUF_COUNT;
+    xconf->dispatch_buf_count = XCONF_DFT_DISPATCH_BUF_COUNT;
+    xconf->max_rate           = XCONF_DFT_MAX_RATE;
+    xconf->dedup_win          = XCONF_DFT_DEDUP_WIN;
+    xconf->shard.one          = XCONF_DFT_SHARD_ONE;
+    xconf->shard.of           = XCONF_DFT_SHARD_OF;
+    xconf->ft_spec            = XCONF_DFT_FT_SPEC;
+    xconf->wait               = XCONF_DFT_WAIT;
+    xconf->nic.snaplen        = XCONF_DFT_SNAPLEN;
+    xconf->max_packet_len     = XCONF_DFT_MAX_PKT_LEN;
 
     xconf_command_line(xconf, argc, argv);
     if (xconf->seed == 0)
@@ -642,97 +641,96 @@ int main(int argc, char *argv[]) {
             "scan range too large, max is 63-bits, requested is %u "
             "bits\n",
             int128_bitcount(targetip_range(&xconf->targets)));
-        LOG(LEVEL_HINT,
-            "scan range is number of IP addresses times "
-            "number of ports\n");
+        LOG(LEVEL_HINT, "scan range is number of IP addresses times "
+                        "number of ports\n");
         LOG(LEVEL_HINT, "IPv6 subnet must be at least /66 \n");
         exit(1);
     }
 
     switch (xconf->op) {
-    case Operation_Default:
-        xconf_set_parameter(xconf, "usage", "true");
-        break;
+        case Operation_Default:
+            xconf_set_parameter(xconf, "usage", "true");
+            break;
 
-    case Operation_Scan:
-        _main_scan(xconf);
-        break;
+        case Operation_Scan:
+            _main_scan(xconf);
+            break;
 
-    case Operation_Echo:
-        xconf_echo(xconf, stdout);
-        break;
+        case Operation_Echo:
+            xconf_echo(xconf, stdout);
+            break;
 
-    case Operation_DebugIF:
-        rawsock_selftest_if(xconf->nic.ifname);
-        break;
+        case Operation_DebugIF:
+            rawsock_selftest_if(xconf->nic.ifname);
+            break;
 
-    case Operation_ListCidr:
-        xconf_echo_cidr(xconf, stdout);
-        break;
+        case Operation_ListCidr:
+            xconf_echo_cidr(xconf, stdout);
+            break;
 
-    case Operation_ListRange:
-        listrange(xconf);
-        break;
+        case Operation_ListRange:
+            listrange(xconf);
+            break;
 
-    case Operation_ListTargets:
-        listip(xconf);
-        return 0;
+        case Operation_ListTargets:
+            listip(xconf);
+            return 0;
 
-    case Operation_ListAdapters:
-        rawsock_list_adapters();
-        break;
+        case Operation_ListAdapters:
+            rawsock_list_adapters();
+            break;
 
-    case Operation_ListScanModules:
-        list_all_scan_modules();
-        break;
+        case Operation_ListScanModules:
+            list_all_scan_modules();
+            break;
 
-    case Operation_HelpScanModule:
-        help_scan_module(xconf->scanner);
-        break;
+        case Operation_HelpScanModule:
+            help_scan_module(xconf->scanner);
+            break;
 
-    case Operation_ListProbeModules:
-        list_all_probe_modules();
-        break;
+        case Operation_ListProbeModules:
+            list_all_probe_modules();
+            break;
 
-    case Operation_HelpProbeModule:
-        help_probe_module(xconf->probe);
-        break;
+        case Operation_HelpProbeModule:
+            help_probe_module(xconf->probe);
+            break;
 
-    case Operation_ListOutputModules:
-        list_all_output_modules();
-        break;
+        case Operation_ListOutputModules:
+            list_all_output_modules();
+            break;
 
-    case Operation_HelpOutputModule:
-        help_output_module(xconf->out_conf.output_module);
-        break;
+        case Operation_HelpOutputModule:
+            help_output_module(xconf->out_conf.output_module);
+            break;
 
-    case Operation_ListGenerateModules:
-        list_all_generate_modules();
-        break;
+        case Operation_ListGenerateModules:
+            list_all_generate_modules();
+            break;
 
-    case Operation_HelpGenerateModule:
-        help_generate_module(xconf->generator);
-        break;
+        case Operation_HelpGenerateModule:
+            help_generate_module(xconf->generator);
+            break;
 
-    case Operation_PrintHelp:
-        xconf_print_help();
-        break;
+        case Operation_PrintHelp:
+            xconf_print_help();
+            break;
 
-    case Operation_PrintIntro:
-        xconf_print_intro();
-        break;
+        case Operation_PrintIntro:
+            xconf_print_intro();
+            break;
 
-    case Operation_PrintVersion:
-        xconf_print_version();
-        break;
+        case Operation_PrintVersion:
+            xconf_print_version();
+            break;
 
-    case Operation_Selftest:
-        xconf_selftest();
-        break;
+        case Operation_Selftest:
+            xconf_selftest();
+            break;
 
-    case Operation_Benchmark:
-        xconf_benchmark(14);
-        break;
+        case Operation_Benchmark:
+            xconf_benchmark(14);
+            break;
     }
 
     /*close logger*/

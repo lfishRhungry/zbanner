@@ -6,9 +6,7 @@
 
 /***************************************************************************
  ***************************************************************************/
-AdapterCache *
-rawsock_init_cache(bool is_sendq)
-{
+AdapterCache *rawsock_init_cache(bool is_sendq) {
     AdapterCache *acache = CALLOC(1, sizeof(AdapterCache));
 #if defined(WIN32)
     if (is_sendq) {
@@ -18,9 +16,7 @@ rawsock_init_cache(bool is_sendq)
     return acache;
 }
 
-void
-rawsock_close_cache(AdapterCache *acache)
-{
+void rawsock_close_cache(AdapterCache *acache) {
     if (acache->sendq) {
         PCAP.sendqueue_destroy(acache->sendq);
     }
@@ -30,9 +26,7 @@ rawsock_close_cache(AdapterCache *acache)
 
 /***************************************************************************
  ***************************************************************************/
-int
-stack_if_datalink(Adapter *adapter)
-{
+int stack_if_datalink(Adapter *adapter) {
     if (adapter->ring)
         return PCAP_DLT_ETHERNET;
     else {

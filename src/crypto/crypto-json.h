@@ -54,7 +54,7 @@
  *    #include <math.h>
  *    #include <stdio.h>
  *    #include <stdlib.h>
- *    
+ *
  *    static int find_number(JsonNode *object, const char *name, double *out)
  *    {
  *        JsonNode *node = json_find_member(object, name);
@@ -64,26 +64,26 @@
  *        }
  *        return 0;
  *    }
- *    
+ *
  *    static void solve_pythagorean(JsonNode *triple)
  *    {
  *        double a = 0, b = 0, c = 0;
  *        int a_given, b_given, c_given;
- *        
+ *
  *        if (triple->tag != JSON_OBJECT) {
  *            LOG(LEVEL_ERROR, "Expected a JSON object.\n");
  *            exit(EXIT_FAILURE);
  *        }
- *        
+ *
  *        a_given = find_number(triple, "a", &a);
  *        b_given = find_number(triple, "b", &b);
  *        c_given = find_number(triple, "c", &c);
- *        
+ *
  *        if (a_given + b_given + c_given != 2) {
- *            LOG(LEVEL_ERROR, " need two sides to compute the length of the third.\n");
- *            exit(EXIT_FAILURE);
+ *            LOG(LEVEL_ERROR, " need two sides to compute the length of the
+ * third.\n"); exit(EXIT_FAILURE);
  *        }
- *        
+ *
  *        if (a_given && b_given) {
  *            c = sqrt(a*a + b*b);
  *            json_append_member(triple, "c", json_mknumber(c));
@@ -95,23 +95,23 @@
  *            json_append_member(triple, "a", json_mknumber(a));
  *        }
  *    }
- *    
+ *
  *    int main(void)
  *    {
  *        JsonNode *triples = json_mkarray();
- *        
+ *
  *        json_append_element(triples, json_decode("{\"a\": 3, \"b\": 4}"));
  *        json_append_element(triples, json_decode("{\"a\": 5, \"c\": 13}"));
  *        json_append_element(triples, json_decode("{\"b\": 24, \"c\": 25}"));
- *        
+ *
  *        JsonNode *triple;
  *        json_foreach(triple, triples)
  *            solve_pythagorean(triple);
- *        
+ *
  *        char *tmp = json_stringify(triples, "\t");
  *        puts(tmp);
  *        free(tmp);
- *        
+ *
  *        json_delete(triples);
  *        return 0;
  *    }
@@ -138,8 +138,7 @@ typedef enum {
 
 typedef struct JsonNode JsonNode;
 
-struct JsonNode
-{
+struct JsonNode {
     /* only if parent is an object or array (NULL otherwise) */
     JsonNode *parent;
     JsonNode *prev, *next;
@@ -168,25 +167,23 @@ struct JsonNode
 
 /*** Encoding, decoding, and validation ***/
 
-JsonNode   *json_decode         (const char *json);
-char       *json_encode         (const JsonNode *node);
-char       *json_encode_string  (const char *str);
-char       *json_stringify      (const JsonNode *node, const char *space);
-void        json_delete         (JsonNode *node);
+JsonNode *json_decode(const char *json);
+char     *json_encode(const JsonNode *node);
+char     *json_encode_string(const char *str);
+char     *json_stringify(const JsonNode *node, const char *space);
+void      json_delete(JsonNode *node);
 
-bool        json_validate       (const char *json);
+bool json_validate(const char *json);
 
 /*** Lookup and traversal ***/
 
-JsonNode   *json_find_element   (JsonNode *array, int index);
-JsonNode   *json_find_member    (JsonNode *object, const char *key);
+JsonNode *json_find_element(JsonNode *array, int index);
+JsonNode *json_find_member(JsonNode *object, const char *key);
 
-JsonNode   *json_first_child    (const JsonNode *node);
+JsonNode *json_first_child(const JsonNode *node);
 
-#define json_foreach(i, object_or_array)            \
-    for ((i) = json_first_child(object_or_array);   \
-         (i) != NULL;                               \
-         (i) = (i)->next)
+#define json_foreach(i, object_or_array)                                       \
+    for ((i) = json_first_child(object_or_array); (i) != NULL; (i) = (i)->next)
 
 /*** Construction and manipulation ***/
 

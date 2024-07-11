@@ -3,7 +3,6 @@
 
 #include "../xconf.h"
 
-
 void listip(XConf *xconf);
 
 #endif

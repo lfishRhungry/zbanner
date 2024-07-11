@@ -10,7 +10,8 @@
 #include "../target/target-parse.h"
 #include "../util-out/logger.h"
 
-#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__sun__)
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) ||       \
+    defined(__OpenBSD__) || defined(__sun__)
 #include <unistd.h>
 #include <sys/socket.h>
 #include <net/route.h>
@@ -18,55 +19,49 @@
 #include <net/if_dl.h>
 #include <ctype.h>
 
-#define ROUNDUP2(a, n)       ((a) > 0 ? (1 + (((a) - 1U) | ((n) - 1))) : (n))
+#define ROUNDUP2(a, n) ((a) > 0 ? (1 + (((a)-1U) | ((n)-1))) : (n))
 
 #if defined(__APPLE__)
-# define ROUNDUP(a)           ROUNDUP2((a), sizeof(int))
+#define ROUNDUP(a) ROUNDUP2((a), sizeof(int))
 #elif defined(__NetBSD__)
-# define ROUNDUP(a)           ROUNDUP2((a), sizeof(uint64_t))
+#define ROUNDUP(a) ROUNDUP2((a), sizeof(uint64_t))
 #elif defined(__FreeBSD__)
-# define ROUNDUP(a)           ROUNDUP2((a), sizeof(int))
+#define ROUNDUP(a) ROUNDUP2((a), sizeof(int))
 #elif defined(__OpenBSD__)
-# define ROUNDUP(a)           ROUNDUP2((a), sizeof(int))
+#define ROUNDUP(a) ROUNDUP2((a), sizeof(int))
 #else
-# error unknown platform
+#error unknown platform
 #endif
 
-static struct sockaddr *
-get_rt_address(struct rt_msghdr *rtm, int desired)
-{
-    int i;
-    int bitmask = rtm->rtm_addrs;
-    struct sockaddr *sa = (struct sockaddr *)(rtm + 1);
+static struct sockaddr *get_rt_address(struct rt_msghdr *rtm, int desired) {
+    int              i;
+    int              bitmask = rtm->rtm_addrs;
+    struct sockaddr *sa      = (struct sockaddr *)(rtm + 1);
 
     for (i = 0; i < RTAX_MAX; i++) {
         if (bitmask & (1 << i)) {
-            if ((1<<i) == desired)
+            if ((1 << i) == desired)
                 return sa;
             sa = (struct sockaddr *)(ROUNDUP(sa->sa_len) + (char *)sa);
         } else
             ;
     }
     return NULL;
-
 }
 
-static void
-hexdump(const void *v, size_t len)
-{
+static void hexdump(const void *v, size_t len) {
     const unsigned char *p = (const unsigned char *)v;
-    size_t i;
+    size_t               i;
 
-
-    for (i=0; i<len; i += 16) {
+    for (i = 0; i < len; i += 16) {
         size_t j;
 
-        for (j=i; j<i+16 && j<len; j++)
+        for (j = i; j < i + 16 && j < len; j++)
             printf("%02x ", p[j]);
-        for (;j<i+16; j++)
+        for (; j < i + 16; j++)
             printf("   ");
         printf("  ");
-        for (j=i; j<i+16 && j<len; j++)
+        for (j = i; j < i + 16 && j < len; j++)
             if (isprint(p[j]) && !isspace(p[j]))
                 printf("%c", p[j]);
             else
@@ -76,29 +71,26 @@ hexdump(const void *v, size_t len)
 }
 
 #if 0
-#define RTA_DST         0x1     /* destination sockaddr present */
-#define RTA_GATEWAY     0x2     /* gateway sockaddr present */
-#define RTA_NETMASK     0x4     /* netmask sockaddr present */
-#define RTA_GENMASK     0x8     /* cloning mask sockaddr present */
-#define RTA_IFP         0x10    /* interface name sockaddr present */
-#define RTA_IFA         0x20    /* interface addr sockaddr present */
-#define RTA_AUTHOR      0x40    /* sockaddr for author of redirect */
-#define RTA_BRD         0x80    /* for NEWADDR, broadcast or p-p dest addr */
+#define RTA_DST     0x1  /* destination sockaddr present */
+#define RTA_GATEWAY 0x2  /* gateway sockaddr present */
+#define RTA_NETMASK 0x4  /* netmask sockaddr present */
+#define RTA_GENMASK 0x8  /* cloning mask sockaddr present */
+#define RTA_IFP     0x10 /* interface name sockaddr present */
+#define RTA_IFA     0x20 /* interface addr sockaddr present */
+#define RTA_AUTHOR  0x40 /* sockaddr for author of redirect */
+#define RTA_BRD     0x80 /* for NEWADDR, broadcast or p-p dest addr */
 #endif
 
-void
-dump_rt_addresses(struct rt_msghdr *rtm);
+void dump_rt_addresses(struct rt_msghdr *rtm);
 
-void
-dump_rt_addresses(struct rt_msghdr *rtm)
-{
-    int i;
-    int bitmask = rtm->rtm_addrs;
-    struct sockaddr *sa = (struct sockaddr *)(rtm + 1);
+void dump_rt_addresses(struct rt_msghdr *rtm) {
+    int              i;
+    int              bitmask = rtm->rtm_addrs;
+    struct sockaddr *sa      = (struct sockaddr *)(rtm + 1);
 
     for (i = 0; i < RTAX_MAX; i++) {
         if (bitmask & (1 << i)) {
-            printf("b=%u fam=%u len=%u\n", (1<<i), sa->sa_family, sa->sa_len);
+            printf("b=%u fam=%u len=%u\n", (1 << i), sa->sa_family, sa->sa_len);
             hexdump(sa, sa->sa_len + sizeof(sa->sa_family));
             sa = (struct sockaddr *)(ROUNDUP(sa->sa_len) + (char *)sa);
         } else
@@ -106,22 +98,19 @@ dump_rt_addresses(struct rt_msghdr *rtm)
     }
 }
 
-int
-rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
-{
-    int fd;
-    int seq = (int)time(0);
-    ssize_t err;
+int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4) {
+    int               fd;
+    int               seq = (int)time(0);
+    ssize_t           err;
     struct rt_msghdr *rtm;
-    size_t sizeof_buffer;
-
+    size_t            sizeof_buffer;
 
     /*
      * Requests/responses from the kernel are done with an "rt_msghdr"
      * structure followed by an array of "sockaddr" structures.
      */
     sizeof_buffer = sizeof(*rtm) + 512;
-    rtm = CALLOC(1, sizeof_buffer);
+    rtm           = CALLOC(1, sizeof_buffer);
 
     /*
      * Create a socket for querying the kernel
@@ -133,47 +122,50 @@ rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
         return errno;
     }
 
-    /* Needs a timeout. Sometimes it'll hang indefinitely waiting for a 
+    /* Needs a timeout. Sometimes it'll hang indefinitely waiting for a
      * response that will never arrive */
     {
         struct timeval timeout;
-        timeout.tv_sec = 1;
+        timeout.tv_sec  = 1;
         timeout.tv_usec = 0;
 
-        err = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
+        err = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+                         sizeof(timeout));
         if (err < 0)
             LOG(LEVEL_ERROR, "SO_RCVTIMEO: %d %s\n", errno, strerror(errno));
 
-        err = setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout));
+        err = setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
+                         sizeof(timeout));
         if (err < 0)
             LOG(LEVEL_ERROR, "SO_SNDTIMEO: %d %s\n", errno, strerror(errno));
-   }
+    }
 
     /*
      * Format and send request to kernel
      */
-    rtm->rtm_msglen = sizeof(*rtm) + sizeof(struct sockaddr_in);
+    rtm->rtm_msglen  = sizeof(*rtm) + sizeof(struct sockaddr_in);
     rtm->rtm_version = RTM_VERSION;
-    rtm->rtm_flags = RTF_UP;
-    rtm->rtm_type = RTM_GET;
-    rtm->rtm_addrs = RTA_DST | RTA_IFP;
-    rtm->rtm_pid = getpid();
-    rtm->rtm_seq = seq;
+    rtm->rtm_flags   = RTF_UP;
+    rtm->rtm_type    = RTM_GET;
+    rtm->rtm_addrs   = RTA_DST | RTA_IFP;
+    rtm->rtm_pid     = getpid();
+    rtm->rtm_seq     = seq;
 
     /*
      * Create an empty address of 0.0.0.0 to query the route
      */
     {
         struct sockaddr_in *sin;
-        sin = (struct sockaddr_in *)(rtm + 1);
-        sin->sin_len = sizeof(*sin);
-        sin->sin_family = AF_INET;
+        sin                  = (struct sockaddr_in *)(rtm + 1);
+        sin->sin_len         = sizeof(*sin);
+        sin->sin_family      = AF_INET;
         sin->sin_addr.s_addr = 0;
     }
 
     err = write(fd, (char *)rtm, rtm->rtm_msglen);
     if (err <= 0) {
-        LOG(LEVEL_ERROR, "getroute: write(): returned %d %s\n", errno, strerror(errno));
+        LOG(LEVEL_ERROR, "getroute: write(): returned %d %s\n", errno,
+            strerror(errno));
         goto fail;
     }
 
@@ -205,8 +197,8 @@ rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
 
         sdl = (struct sockaddr_dl *)get_rt_address(rtm, RTA_IFP);
         if (sdl) {
-            //hexdump(sdl, sdl->sdl_len);
-            //printf("%.*s\n", sdl->sdl_nlen, sdl->sdl_data);
+            // hexdump(sdl, sdl->sdl_len);
+            // printf("%.*s\n", sdl->sdl_nlen, sdl->sdl_data);
             if (memcmp(ifname, sdl->sdl_data, sdl->sdl_nlen) != 0) {
                 LOG(LEVEL_ERROR, "Route doesn't match interface\n");
                 LOG(LEVEL_ERROR, "You'll have to set --router-mac manually\n");
@@ -220,7 +212,6 @@ rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
             free(rtm);
             return 0;
         }
-
     }
 
 fail:
@@ -243,33 +234,30 @@ fail:
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-
-
 struct route_info {
     struct in_addr dstAddr;
     struct in_addr srcAddr;
     struct in_addr gateWay;
-    char ifName[IF_NAMESIZE];
+    char           ifName[IF_NAMESIZE];
 };
 
-static int
-read_netlink(int fd, char *bufPtr, size_t sizeof_buffer, int seqNum, int pId)
-{
+static int read_netlink(int fd, char *bufPtr, size_t sizeof_buffer, int seqNum,
+                        int pId) {
     struct nlmsghdr *nlHdr;
-    int readLen = 0, msgLen = 0;
+    int              readLen = 0, msgLen = 0;
 
- do {
+    do {
         /* Receive response from the kernel */
         if ((readLen = recv(fd, bufPtr, sizeof_buffer - msgLen, 0)) < 0) {
             perror("SOCK READ: ");
             return -1;
         }
 
-        nlHdr = (struct nlmsghdr *) bufPtr;
+        nlHdr = (struct nlmsghdr *)bufPtr;
 
         /* Check if the header is valid */
-        if ((NLMSG_OK(nlHdr, readLen) == 0)
-            || (nlHdr->nlmsg_type == NLMSG_ERROR)) {
+        if ((NLMSG_OK(nlHdr, readLen) == 0) ||
+            (nlHdr->nlmsg_type == NLMSG_ERROR)) {
             perror("Error in received packet");
             return -1;
         }
@@ -294,14 +282,12 @@ read_netlink(int fd, char *bufPtr, size_t sizeof_buffer, int seqNum, int pId)
 }
 
 /* For parsing the route info returned */
-static int
-parseRoutes(struct nlmsghdr *nlHdr, struct route_info *rtInfo)
-{
-    struct rtmsg *rtMsg;
+static int parseRoutes(struct nlmsghdr *nlHdr, struct route_info *rtInfo) {
+    struct rtmsg  *rtMsg;
     struct rtattr *rtAttr;
-    int rtLen = 0;
+    int            rtLen = 0;
 
-    rtMsg = (struct rtmsg *) NLMSG_DATA(nlHdr);
+    rtMsg = (struct rtmsg *)NLMSG_DATA(nlHdr);
 
     /* This must be an IPv4 (AF_INET) route */
     if (rtMsg->rtm_family != AF_INET)
@@ -313,35 +299,33 @@ parseRoutes(struct nlmsghdr *nlHdr, struct route_info *rtInfo)
 
     /* Attributes field*/
     rtAttr = (struct rtattr *)RTM_RTA(rtMsg);
-    rtLen = RTM_PAYLOAD(nlHdr);
+    rtLen  = RTM_PAYLOAD(nlHdr);
     for (; RTA_OK(rtAttr, rtLen); rtAttr = RTA_NEXT(rtAttr, rtLen)) {
         switch (rtAttr->rta_type) {
-        case RTA_OIF:
-            if_indextoname(*(int *) RTA_DATA(rtAttr), rtInfo->ifName);
-            break;
-        case RTA_GATEWAY:
-            rtInfo->gateWay.s_addr = *(u_int *)RTA_DATA(rtAttr);
-            break;
-        case RTA_PREFSRC:
-            rtInfo->srcAddr.s_addr = *(u_int *)RTA_DATA(rtAttr);
-            break;
-        case RTA_DST:
-            rtInfo->dstAddr .s_addr = *(u_int *)RTA_DATA(rtAttr);
-            break;
+            case RTA_OIF:
+                if_indextoname(*(int *)RTA_DATA(rtAttr), rtInfo->ifName);
+                break;
+            case RTA_GATEWAY:
+                rtInfo->gateWay.s_addr = *(u_int *)RTA_DATA(rtAttr);
+                break;
+            case RTA_PREFSRC:
+                rtInfo->srcAddr.s_addr = *(u_int *)RTA_DATA(rtAttr);
+                break;
+            case RTA_DST:
+                rtInfo->dstAddr.s_addr = *(u_int *)RTA_DATA(rtAttr);
+                break;
         }
     }
 
     return 0;
 }
 
-
-int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
-{
-    int fd;
+int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4) {
+    int              fd;
     struct nlmsghdr *nlMsg;
-    char msgBuf[16384] = {0};
-    int len;
-    int msgSeq = 0;
+    char             msgBuf[16384] = {0};
+    int              len;
+    int              msgSeq = 0;
 
     /*
      * Set to zero, in case we cannot find it
@@ -353,8 +337,8 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
      */
     fd = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_ROUTE);
     if (fd < 0) {
-        LOG(LEVEL_ERROR, "%s:%d: socket(NETLINK_ROUTE): %d\n",
-            __FILE__, __LINE__, errno);
+        LOG(LEVEL_ERROR, "%s:%d: socket(NETLINK_ROUTE): %d\n", __FILE__,
+            __LINE__, errno);
         return errno;
     }
 
@@ -363,18 +347,18 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
      */
     nlMsg = (struct nlmsghdr *)msgBuf;
 
-    nlMsg->nlmsg_len = NLMSG_LENGTH(sizeof(struct rtmsg));
-    nlMsg->nlmsg_type = RTM_GETROUTE;
+    nlMsg->nlmsg_len   = NLMSG_LENGTH(sizeof(struct rtmsg));
+    nlMsg->nlmsg_type  = RTM_GETROUTE;
     nlMsg->nlmsg_flags = NLM_F_DUMP | NLM_F_REQUEST;
-    nlMsg->nlmsg_seq = msgSeq++;
-    nlMsg->nlmsg_pid = getpid();
+    nlMsg->nlmsg_seq   = msgSeq++;
+    nlMsg->nlmsg_pid   = getpid();
 
     /*
      * send first request to kernel
      */
     if (send(fd, nlMsg, nlMsg->nlmsg_len, 0) < 0) {
-        LOG(LEVEL_ERROR, "%s:%d: send(NETLINK_ROUTE): %d\n",
-            __FILE__, __LINE__, errno);
+        LOG(LEVEL_ERROR, "%s:%d: send(NETLINK_ROUTE): %d\n", __FILE__, __LINE__,
+            errno);
         return errno;
     }
 
@@ -383,18 +367,17 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
      */
     len = read_netlink(fd, msgBuf, sizeof(msgBuf), msgSeq, getpid());
     if (len <= 0) {
-        LOG(LEVEL_ERROR, "%s:%d: read_netlink: %d\n",
-            __FILE__, __LINE__, errno);
+        LOG(LEVEL_ERROR, "%s:%d: read_netlink: %d\n", __FILE__, __LINE__,
+            errno);
         return errno;
     }
-
 
     /*
      * Parse the response
      */
     for (; NLMSG_OK(nlMsg, len); nlMsg = NLMSG_NEXT(nlMsg, len)) {
-        struct route_info rtInfo[1] = {{.ifName={0}}};
-        int err;
+        struct route_info rtInfo[1] = {{.ifName = {0}}};
+        int               err;
 
         err = parseRoutes(nlMsg, rtInfo);
         if (err != 0)
@@ -419,7 +402,6 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
 
 #endif
 
-
 #if defined(WIN32)
 /* From:
  * https://stackoverflow.com/questions/10972794/undefined-reference-to-getadaptersaddresses20-but-i-included-liphlpapi
@@ -436,27 +418,25 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
 #pragma comment(lib, "IPHLPAPI.lib")
 #endif
 
-
-
-int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4)
-{
+int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4) {
     PIP_ADAPTER_INFO pAdapterInfo;
     PIP_ADAPTER_INFO pAdapter = NULL;
-    DWORD err;
-    ULONG ulOutBufLen = sizeof (IP_ADAPTER_INFO);
+    DWORD            err;
+    ULONG            ulOutBufLen = sizeof(IP_ADAPTER_INFO);
 
     /*
      * Translate numeric index (if it exists) to real name
      */
     ifname = rawsock_win_name(ifname);
-    //printf("------ %s -----\n", ifname);
+    // printf("------ %s -----\n", ifname);
 
     /*
      * Allocate a proper sized buffer
      */
-    pAdapterInfo = (IP_ADAPTER_INFO *)malloc(sizeof (IP_ADAPTER_INFO));
+    pAdapterInfo = (IP_ADAPTER_INFO *)malloc(sizeof(IP_ADAPTER_INFO));
     if (pAdapterInfo == NULL) {
-        LOG(LEVEL_ERROR, "Error allocating memory needed to call GetAdaptersinfo\n");
+        LOG(LEVEL_ERROR,
+            "Error allocating memory needed to call GetAdaptersinfo\n");
         return EFAULT;
     }
 
@@ -470,78 +450,76 @@ again:
         free(pAdapterInfo);
         pAdapterInfo = (IP_ADAPTER_INFO *)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL) {
-            LOG(LEVEL_ERROR, "Error allocating memory needed to call GetAdaptersinfo\n");
+            LOG(LEVEL_ERROR,
+                "Error allocating memory needed to call GetAdaptersinfo\n");
             return EFAULT;
         }
         goto again;
     }
     if (err != NO_ERROR) {
-        LOG(LEVEL_ERROR, "GetAdaptersInfo failed: %u\n", 
-                            (unsigned)err);
+        LOG(LEVEL_ERROR, "GetAdaptersInfo failed: %u\n", (unsigned)err);
         return EFAULT;
     }
 
     /*
      * loop through all adapters looking for ours
      */
-    for (   pAdapter = pAdapterInfo;
-            pAdapter;
-            pAdapter = pAdapter->Next) {
+    for (pAdapter = pAdapterInfo; pAdapter; pAdapter = pAdapter->Next) {
         if (rawsock_is_adapter_names_equal(pAdapter->AdapterName, ifname))
             break;
     }
 
     if (pAdapter) {
-        //printf("\tComboIndex: \t%d\n", pAdapter->ComboIndex);
-        //printf("\tAdapter Name: \t%s\n", pAdapter->AdapterName);
-        //printf("\tAdapter Desc: \t%s\n", pAdapter->Description);
+        // printf("\tComboIndex: \t%d\n", pAdapter->ComboIndex);
+        // printf("\tAdapter Name: \t%s\n", pAdapter->AdapterName);
+        // printf("\tAdapter Desc: \t%s\n", pAdapter->Description);
 
-
-        //printf("\tAdapter Addr: \t");
+        // printf("\tAdapter Addr: \t");
         /*for (i = 0; i < pAdapter->AddressLength; i++) {
             if (i == (pAdapter->AddressLength - 1))
                 printf("%.2X\n", (int) pAdapter->Address[i]);
             else
                 printf("%.2X-", (int) pAdapter->Address[i]);
         }*/
-        //printf("\tIndex: \t%d\n", pAdapter->Index);
-        //printf("\tType: \t");
+        // printf("\tIndex: \t%d\n", pAdapter->Index);
+        // printf("\tType: \t");
         switch (pAdapter->Type) {
-        case MIB_IF_TYPE_OTHER:
-            //printf("Other\n");
-            break;
-        case MIB_IF_TYPE_ETHERNET:
-            //printf("Ethernet\n");
-            break;
-        case MIB_IF_TYPE_TOKENRING:
-            //printf("Token Ring\n");
-            break;
-        case MIB_IF_TYPE_FDDI:
-            //printf("FDDI\n");
-            break;
-        case MIB_IF_TYPE_PPP:
-            //printf("PPP\n");
-            break;
-        case MIB_IF_TYPE_LOOPBACK:
-            //printf("Lookback\n");
-            break;
-        case MIB_IF_TYPE_SLIP:
-            //printf("Slip\n");
-            break;
-        default:
-            //printf("Unknown type %ld\n", pAdapter->Type);
-            break;
+            case MIB_IF_TYPE_OTHER:
+                // printf("Other\n");
+                break;
+            case MIB_IF_TYPE_ETHERNET:
+                // printf("Ethernet\n");
+                break;
+            case MIB_IF_TYPE_TOKENRING:
+                // printf("Token Ring\n");
+                break;
+            case MIB_IF_TYPE_FDDI:
+                // printf("FDDI\n");
+                break;
+            case MIB_IF_TYPE_PPP:
+                // printf("PPP\n");
+                break;
+            case MIB_IF_TYPE_LOOPBACK:
+                // printf("Lookback\n");
+                break;
+            case MIB_IF_TYPE_SLIP:
+                // printf("Slip\n");
+                break;
+            default:
+                // printf("Unknown type %ld\n", pAdapter->Type);
+                break;
         }
 
-        //printf("\tIP Address: \t%s\n", pAdapter->IpAddressList.IpAddress.String);
-        //printf("\tIP Mask: \t%s\n", pAdapter->IpAddressList.IpMask.String);
+        // printf("\tIP Address: \t%s\n",
+        // pAdapter->IpAddressList.IpAddress.String); printf("\tIP Mask:
+        // \t%s\n", pAdapter->IpAddressList.IpMask.String);
 
-/*typedef struct _IP_ADDR_STRING {
-    struct _IP_ADDR_STRING* Next;
-    IP_ADDRESS_STRING IpAddress;
-    IP_MASK_STRING IpMask;
-    DWORD Context;
-} IP_ADDR_STRING, *PIP_ADDR_STRING;*/
+        /*typedef struct _IP_ADDR_STRING {
+            struct _IP_ADDR_STRING* Next;
+            IP_ADDRESS_STRING IpAddress;
+            IP_MASK_STRING IpMask;
+            DWORD Context;
+        } IP_ADDR_STRING, *PIP_ADDR_STRING;*/
 
         {
             const IP_ADDR_STRING *addr;
@@ -555,8 +533,7 @@ again:
             }
         }
 
-
-        //printf("\n");
+        // printf("\n");
     }
 end:
     if (pAdapterInfo)

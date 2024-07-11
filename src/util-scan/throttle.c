@@ -24,28 +24,25 @@
 #include <string.h>
 #include <stdio.h>
 
-
 /***************************************************************************
  ***************************************************************************/
-void
-throttler_start(Throttler *throttler, double max_rate)
-{
+void throttler_start(Throttler *throttler, double max_rate) {
     unsigned i;
 
     memset(throttler, 0, sizeof(*throttler));
 
     throttler->max_rate = max_rate;
 
-    for (i=0; i<ARRAY_SIZE(throttler->buckets); i++) {
+    for (i = 0; i < ARRAY_SIZE(throttler->buckets); i++) {
         throttler->buckets[i].timestamp    = pixie_gettime();
         throttler->buckets[i].packet_count = 0;
     }
 
     throttler->batch_size = 1;
 
-    LOG(LEVEL_DEBUG, "starting throttler: rate = %0.2f-pps\n", throttler->max_rate);
+    LOG(LEVEL_DEBUG, "starting throttler: rate = %0.2f-pps\n",
+        throttler->max_rate);
 }
-
 
 /***************************************************************************
  * We return the number of packets that can be sent in a batch. Thus,
@@ -57,16 +54,14 @@ throttler_start(Throttler *throttler, double max_rate)
  * NOTE: The minimum value this returns is 1. When it's less than that,
  * it'll pause and wait until it's ready to send a packet.
  ***************************************************************************/
-uint64_t
-throttler_next_batch(Throttler *throttler, uint64_t packet_count)
-{
+uint64_t throttler_next_batch(Throttler *throttler, uint64_t packet_count) {
     uint64_t timestamp;
     uint64_t index;
     uint64_t old_timestamp;
     uint64_t old_packet_count;
 
-    double   current_rate;
-    double   max_rate = throttler->max_rate;
+    double current_rate;
+    double max_rate = throttler->max_rate;
 
 again:
 
@@ -78,11 +73,11 @@ again:
      * We record that last batch of buckets, and average the rate over all of
      * them.
      */
-    index = (throttler->index) & (THR_CACHE-1);
-    throttler->buckets[index].timestamp    = timestamp;
+    index                               = (throttler->index) & (THR_CACHE - 1);
+    throttler->buckets[index].timestamp = timestamp;
     throttler->buckets[index].packet_count = packet_count;
 
-    index = (++throttler->index) & (THR_CACHE-1);
+    index            = (++throttler->index) & (THR_CACHE - 1);
     old_timestamp    = throttler->buckets[index].timestamp;
     old_packet_count = throttler->buckets[index].packet_count;
 
@@ -91,7 +86,7 @@ again:
      * in order to avoid transmitting too fast.
      */
     if (timestamp - old_timestamp > 1000000) {
-        //throttler_start(throttler, throttler->max_rate);
+        // throttler_start(throttler, throttler->max_rate);
         throttler->batch_size = 1;
         goto again;
     }
@@ -102,8 +97,8 @@ again:
      * That's so that if the system pauses for a while, we don't flood the
      * network trying to catch up.
      */
-    current_rate = 1.0*(packet_count - old_packet_count)/((timestamp - old_timestamp)/1000000.0);
-
+    current_rate = 1.0 * (packet_count - old_packet_count) /
+                   ((timestamp - old_timestamp) / 1000000.0);
 
     /*
      * If we've been going too fast, then <pause> for a moment, then
@@ -143,7 +138,7 @@ again:
          * again in order to support very slow rates, such as 0.5 packets
          * per second. Nobody would want to run a scanner that slowly of
          * course, but it's great for testing */
-        //return (uint64_t)throttler->batch_size;
+        // return (uint64_t)throttler->batch_size;
         goto again;
     }
 

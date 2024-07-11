@@ -9,12 +9,9 @@
 #include "../target/target-addr.h"
 #include "../stack/stack-queue.h"
 
-
-
 typedef struct Adapter       Adapter;
 typedef struct Adapter_Cache Adapter_Cache;
 typedef struct TemplateSet   TmplSet;
-
 
 void rawsock_init(void);
 
@@ -39,20 +36,13 @@ void rawsock_init(void);
  * @return
  *      a fully instantiated network adapter
  */
-Adapter *
-rawsock_init_adapter(const char *adapter_name,
-                     unsigned is_pfring,
-                     unsigned is_sendq,
-                     unsigned is_packet_trace,
-                     unsigned is_offline,
-                     unsigned is_vlan,
-                     unsigned vlan_id,
-                     unsigned snaplen);
+Adapter *rawsock_init_adapter(const char *adapter_name, unsigned is_pfring,
+                              unsigned is_sendq, unsigned is_packet_trace,
+                              unsigned is_offline, unsigned is_vlan,
+                              unsigned vlan_id, unsigned snaplen);
 
-void
-rawsock_set_filter(Adapter *adapter, const char *scan_filter,
-    const char *user_filter);
-
+void rawsock_set_filter(Adapter *adapter, const char *scan_filter,
+                        const char *user_filter);
 
 /**
  * Print to the command-line the list of available adapters. It's called
@@ -93,8 +83,7 @@ int rawsock_is_adapter_names_equal(const char *lhs, const char *rhs);
  * whenever the transmit queue is full, this is only needed in boundary
  * cases, like when shutting down.
  */
-void
-rawsock_flush(Adapter *adapter, AdapterCache *acache);
+void rawsock_flush(Adapter *adapter, AdapterCache *acache);
 
 /***************************************************************************
  * wrapper for libpcap's sendpacket
@@ -107,11 +96,8 @@ rawsock_flush(Adapter *adapter, AdapterCache *acache);
  * in this function except the queue or cache is full. The explicit `flush`
  * operation is in `rawsock_flush` function.
  ***************************************************************************/
-int rawsock_send_packet(
-    Adapter *adapter,
-    AdapterCache *acache,
-    const unsigned char *packet,
-    unsigned length);
+int rawsock_send_packet(Adapter *adapter, AdapterCache *acache,
+                        const unsigned char *packet, unsigned length);
 
 /**
  * Called to read the next packet from the network.
@@ -133,14 +119,8 @@ int rawsock_send_packet(
  *      0 for success, something else for failure
  *
  */
-int rawsock_recv_packet(
-    Adapter *adapter,
-    unsigned *length,
-    unsigned *secs,
-    unsigned *usecs,
-    const unsigned char **packet);
-
-
+int rawsock_recv_packet(Adapter *adapter, unsigned *length, unsigned *secs,
+                        unsigned *usecs, const unsigned char **packet);
 
 /**
  * Optimization functions to tell the underlying network stack
@@ -148,13 +128,11 @@ int rawsock_recv_packet(
  * adapters receive the packets they send, which will cause us a lot
  * of work requiring us to process the flood of packets we generate.
  */
-void rawsock_ignore_transmits(Adapter *adapter,
-                              const char *ifname);
+void rawsock_ignore_transmits(Adapter *adapter, const char *ifname);
 
 void rawsock_set_nonblock(Adapter *adapter);
 
-void
-rawsock_close_adapter(Adapter *adapter);
+void rawsock_close_adapter(Adapter *adapter);
 
 int rawsock_selftest_if(const char *ifname);
 

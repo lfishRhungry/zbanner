@@ -14,8 +14,7 @@
  * @param sixbit Six-bit value to map
  * @return a base 64 character
  */
-static char sixbit_to_b64(const base64_maps_t *maps, const uint8_t sixbit)
-{
+static char sixbit_to_b64(const base64_maps_t *maps, const uint8_t sixbit) {
     assert(sixbit <= 63);
 
     return maps->encode_map[(unsigned char)sixbit];
@@ -28,8 +27,7 @@ static char sixbit_to_b64(const base64_maps_t *maps, const uint8_t sixbit)
  * @return a six-bit value
  */
 static int8_t sixbit_from_b64(const base64_maps_t *maps,
-                  const unsigned char b64letter)
-{
+                              const unsigned char  b64letter) {
     int8_t ret;
 
     ret = maps->decode_map[(unsigned char)b64letter];
@@ -41,30 +39,24 @@ static int8_t sixbit_from_b64(const base64_maps_t *maps,
     return ret;
 }
 
-bool base64_char_in_alphabet(const base64_maps_t *maps, const char b64char)
-{
+bool base64_char_in_alphabet(const base64_maps_t *maps, const char b64char) {
     return (maps->decode_map[(const unsigned char)b64char] != (char)0xff);
 }
 
-void base64_init_maps(base64_maps_t *dest, const char src[64])
-{
+void base64_init_maps(base64_maps_t *dest, const char src[64]) {
     unsigned char i;
 
-    memcpy(dest->encode_map,src,64);
-    memset(dest->decode_map,0xff,256);
-    for (i=0; i<64; i++) {
+    memcpy(dest->encode_map, src, 64);
+    memset(dest->decode_map, 0xff, 256);
+    for (i = 0; i < 64; i++) {
         dest->decode_map[(unsigned char)src[i]] = i;
     }
 }
 
-size_t base64_encoded_length(size_t srclen)
-{
-    return ((srclen + 2) / 3) * 4;
-}
+size_t base64_encoded_length(size_t srclen) { return ((srclen + 2) / 3) * 4; }
 
-void base64_encode_triplet_using_maps(const base64_maps_t *maps,
-                      char dest[4], const char src[3])
-{
+void base64_encode_triplet_using_maps(const base64_maps_t *maps, char dest[4],
+                                      const char src[3]) {
     char a = src[0];
     char b = src[1];
     char c = src[2];
@@ -76,22 +68,20 @@ void base64_encode_triplet_using_maps(const base64_maps_t *maps,
 }
 
 void base64_encode_tail_using_maps(const base64_maps_t *maps, char dest[4],
-                   const char *src, const size_t srclen)
-{
-    char longsrc[3] = { 0 };
+                                   const char *src, const size_t srclen) {
+    char longsrc[3] = {0};
 
     assert(srclen <= 3);
 
     memcpy(longsrc, src, srclen);
     base64_encode_triplet_using_maps(maps, dest, longsrc);
-    memset(dest+1+srclen, '=', 3-srclen);
+    memset(dest + 1 + srclen, '=', 3 - srclen);
 }
 
-size_t base64_encode_using_maps(const base64_maps_t *maps,
-                 char *dest, const size_t destlen,
-                 const char *src, const size_t srclen)
-{
-    size_t src_offset = 0;
+size_t base64_encode_using_maps(const base64_maps_t *maps, char *dest,
+                                const size_t destlen, const char *src,
+                                const size_t srclen) {
+    size_t src_offset  = 0;
     size_t dest_offset = 0;
 
     if (destlen < base64_encoded_length(srclen)) {
@@ -100,29 +90,27 @@ size_t base64_encode_using_maps(const base64_maps_t *maps,
     }
 
     while (srclen - src_offset >= 3) {
-        base64_encode_triplet_using_maps(maps, &dest[dest_offset], &src[src_offset]);
+        base64_encode_triplet_using_maps(maps, &dest[dest_offset],
+                                         &src[src_offset]);
         src_offset += 3;
         dest_offset += 4;
     }
 
     if (src_offset < srclen) {
-        base64_encode_tail_using_maps(maps, &dest[dest_offset], &src[src_offset], srclen-src_offset);
+        base64_encode_tail_using_maps(maps, &dest[dest_offset],
+                                      &src[src_offset], srclen - src_offset);
         dest_offset += 4;
     }
 
-    memset(&dest[dest_offset], '\0', destlen-dest_offset);
+    memset(&dest[dest_offset], '\0', destlen - dest_offset);
 
     return dest_offset;
 }
 
-size_t base64_decoded_length(size_t srclen)
-{
-    return ((srclen+3)/4*3);
-}
+size_t base64_decoded_length(size_t srclen) { return ((srclen + 3) / 4 * 3); }
 
 int base64_decode_quartet_using_maps(const base64_maps_t *maps, char dest[3],
-                     const char src[4])
-{
+                                     const char src[4]) {
     signed char a;
     signed char b;
     signed char c;
@@ -144,16 +132,14 @@ int base64_decode_quartet_using_maps(const base64_maps_t *maps, char dest[3],
     return 0;
 }
 
-
 int base64_decode_tail_using_maps(const base64_maps_t *maps, char *dest,
-                  const char * src, const size_t srclen)
-{
-    char longsrc[4];
-    int quartet_result;
+                                  const char *src, const size_t srclen) {
+    char   longsrc[4];
+    int    quartet_result;
     size_t insize = srclen;
 
     while (insize != 0 &&
-           src[insize-1] == '=') { /* throw away padding symbols */
+           src[insize - 1] == '=') { /* throw away padding symbols */
         insize--;
     }
     if (insize == 0) {
@@ -165,7 +151,7 @@ int base64_decode_tail_using_maps(const base64_maps_t *maps, char *dest,
         return -1;
     }
     memcpy(longsrc, src, insize);
-    memset(longsrc+insize, 'A', 4-insize);
+    memset(longsrc + insize, 'A', 4 - insize);
     quartet_result = base64_decode_quartet_using_maps(maps, dest, longsrc);
     if (quartet_result == -1) {
         return -1;
@@ -174,10 +160,9 @@ int base64_decode_tail_using_maps(const base64_maps_t *maps, char *dest,
     return insize - 1;
 }
 
-size_t base64_decode_using_maps(const base64_maps_t *maps,
-                 char *dest, const size_t destlen,
-                 const char *src, const size_t srclen)
-{
+size_t base64_decode_using_maps(const base64_maps_t *maps, char *dest,
+                                const size_t destlen, const char *src,
+                                const size_t srclen) {
     size_t dest_offset = 0;
     size_t i;
     size_t more;
@@ -187,93 +172,88 @@ size_t base64_decode_using_maps(const base64_maps_t *maps,
         return -1;
     }
 
-    for(i=0; srclen - i > 4; i+=4) {
-        if (base64_decode_quartet_using_maps(maps, &dest[dest_offset], &src[i]) == -1) {
+    for (i = 0; srclen - i > 4; i += 4) {
+        if (base64_decode_quartet_using_maps(maps, &dest[dest_offset],
+                                             &src[i]) == -1) {
             return -1;
         }
         dest_offset += 3;
     }
 
-    more = base64_decode_tail_using_maps(maps, &dest[dest_offset], &src[i], srclen - i);
+    more = base64_decode_tail_using_maps(maps, &dest[dest_offset], &src[i],
+                                         srclen - i);
     if (more == -1) {
         return -1;
     }
     dest_offset += more;
 
-    memset(&dest[dest_offset], '\0', destlen-dest_offset);
+    memset(&dest[dest_offset], '\0', destlen - dest_offset);
 
     return dest_offset;
 }
-
-
-
 
 /**
  * base64_maps_rfc4648 - pregenerated maps struct for rfc4648
  */
 const base64_maps_t base64_maps_rfc4648 = {
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
 
-  "\xff\xff\xff\xff\xff" /* 0 */                    \
-  "\xff\xff\xff\xff\xff" /* 5 */                    \
-  "\xff\xff\xff\xff\xff" /* 10 */                    \
-  "\xff\xff\xff\xff\xff" /* 15 */                    \
-  "\xff\xff\xff\xff\xff" /* 20 */                    \
-  "\xff\xff\xff\xff\xff" /* 25 */                    \
-  "\xff\xff\xff\xff\xff" /* 30 */                    \
-  "\xff\xff\xff\xff\xff" /* 35 */                    \
-  "\xff\xff\xff\x3e\xff" /* 40 */                    \
-  "\xff\xff\x3f\x34\x35" /* 45 */                    \
-  "\x36\x37\x38\x39\x3a" /* 50 */                    \
-  "\x3b\x3c\x3d\xff\xff" /* 55 */                    \
-  "\xff\xff\xff\xff\xff" /* 60 */                    \
-  "\x00\x01\x02\x03\x04" /* 65 A */                    \
-  "\x05\x06\x07\x08\x09" /* 70 */                    \
-  "\x0a\x0b\x0c\x0d\x0e" /* 75 */                    \
-  "\x0f\x10\x11\x12\x13" /* 80 */                    \
-  "\x14\x15\x16\x17\x18" /* 85 */                    \
-  "\x19\xff\xff\xff\xff" /* 90 */                    \
-  "\xff\xff\x1a\x1b\x1c" /* 95 */                    \
-  "\x1d\x1e\x1f\x20\x21" /* 100 */                    \
-  "\x22\x23\x24\x25\x26" /* 105 */                    \
-  "\x27\x28\x29\x2a\x2b" /* 110 */                    \
-  "\x2c\x2d\x2e\x2f\x30" /* 115 */                    \
-  "\x31\x32\x33\xff\xff" /* 120 */                    \
-  "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" /* 125 */            \
-  "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"                \
-  "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"                \
-  "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" /* 155 */            \
-  "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"                \
-  "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"                \
-  "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" /* 185 */            \
-  "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"                \
-  "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"                \
-  "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" /* 215 */            \
-  "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"                \
-  "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"                \
-  "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" /* 245 */
+    "\xff\xff\xff\xff\xff"                     /* 0 */
+    "\xff\xff\xff\xff\xff"                     /* 5 */
+    "\xff\xff\xff\xff\xff"                     /* 10 */
+    "\xff\xff\xff\xff\xff"                     /* 15 */
+    "\xff\xff\xff\xff\xff"                     /* 20 */
+    "\xff\xff\xff\xff\xff"                     /* 25 */
+    "\xff\xff\xff\xff\xff"                     /* 30 */
+    "\xff\xff\xff\xff\xff"                     /* 35 */
+    "\xff\xff\xff\x3e\xff"                     /* 40 */
+    "\xff\xff\x3f\x34\x35"                     /* 45 */
+    "\x36\x37\x38\x39\x3a"                     /* 50 */
+    "\x3b\x3c\x3d\xff\xff"                     /* 55 */
+    "\xff\xff\xff\xff\xff"                     /* 60 */
+    "\x00\x01\x02\x03\x04"                     /* 65 A */
+    "\x05\x06\x07\x08\x09"                     /* 70 */
+    "\x0a\x0b\x0c\x0d\x0e"                     /* 75 */
+    "\x0f\x10\x11\x12\x13"                     /* 80 */
+    "\x14\x15\x16\x17\x18"                     /* 85 */
+    "\x19\xff\xff\xff\xff"                     /* 90 */
+    "\xff\xff\x1a\x1b\x1c"                     /* 95 */
+    "\x1d\x1e\x1f\x20\x21"                     /* 100 */
+    "\x22\x23\x24\x25\x26"                     /* 105 */
+    "\x27\x28\x29\x2a\x2b"                     /* 110 */
+    "\x2c\x2d\x2e\x2f\x30"                     /* 115 */
+    "\x31\x32\x33\xff\xff"                     /* 120 */
+    "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" /* 125 */
+    "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
+    "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
+    "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" /* 155 */
+    "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
+    "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
+    "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" /* 185 */
+    "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
+    "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
+    "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" /* 215 */
+    "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
+    "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"
+    "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff" /* 245 */
 };
-
 
 /*****************************************************************************
  * Provide my own rand() simply to avoid static-analysis warning me that
  * 'rand()' is unrandom, when in fact we want the non-random properties of
  * rand() for regression testing.
  *****************************************************************************/
-static unsigned
-r_rand(unsigned *seed)
-{
+static unsigned r_rand(unsigned *seed) {
     static const unsigned a = 214013;
     static const unsigned c = 2531011;
 
     *seed = (*seed) * a + c;
-    return (*seed)>>16 & 0x7fff;
+    return (*seed) >> 16 & 0x7fff;
 }
 
 /*****************************************************************************
  *****************************************************************************/
-int base64_selftest()
-{
+int base64_selftest() {
     char     buf[100];
     char     buf2[100];
     char     buf3[100];
@@ -293,13 +273,13 @@ int base64_selftest()
      * Generate a bunch of random strings, encode them, then decode them,
      * making sure the final result matches the original string
      */
-    for (i=0; i<100; i++) {
+    for (i = 0; i < 100; i++) {
         unsigned j;
-        size_t buf3_len;
+        size_t   buf3_len;
 
         /* create a string of random bytes */
         buf_len = r_rand(&seed) % 50;
-        for (j=0; j<buf_len; j++) {
+        for (j = 0; j < buf_len; j++) {
             buf[j] = (char)r_rand(&seed);
         }
 

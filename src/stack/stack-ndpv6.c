@@ -10,19 +10,16 @@
 #include "../stub/stub-pcap-dlt.h"
 #include "../templ/templ-icmp.h"
 
-
 #include <string.h>
 
-
-
-static inline void _append(unsigned char *buf, size_t *r_offset, size_t max, unsigned x)
-{
+static inline void _append(unsigned char *buf, size_t *r_offset, size_t max,
+                           unsigned x) {
     if (*r_offset >= max)
         return;
     buf[(*r_offset)++] = (unsigned char)x;
 }
-static inline void _append_bytes(unsigned char *buf, size_t *r_offset, size_t max, const void *v_bytes, size_t len)
-{
+static inline void _append_bytes(unsigned char *buf, size_t *r_offset,
+                                 size_t max, const void *v_bytes, size_t len) {
     const unsigned char *bytes = (const unsigned char *)v_bytes;
     if (*r_offset + len >= max)
         return;
@@ -30,29 +27,26 @@ static inline void _append_bytes(unsigned char *buf, size_t *r_offset, size_t ma
     *r_offset += len;
 }
 
-static inline void
-_append_short(unsigned char *buf, size_t *offset, size_t max, unsigned num)
-{
+static inline void _append_short(unsigned char *buf, size_t *offset, size_t max,
+                                 unsigned num) {
     if (2 > max - *offset) {
         *offset = max;
         return;
     }
-    buf[(*offset)++] = (unsigned char)(num>>8);
+    buf[(*offset)++] = (unsigned char)(num >> 8);
     buf[(*offset)++] = (unsigned char)(num & 0xFF);
 }
 
-static inline unsigned
-_read_byte(const unsigned char *buf, size_t *offset, size_t max)
-{
+static inline unsigned _read_byte(const unsigned char *buf, size_t *offset,
+                                  size_t max) {
     if (*offset + 1 < max) {
         return buf[(*offset)++];
     } else
         return (unsigned)~0;
 }
-static inline unsigned
-_read_short(const unsigned char *buf, size_t *offset, size_t max)
-{
-    if (*offset + 2  <= max) {
+static inline unsigned _read_short(const unsigned char *buf, size_t *offset,
+                                   size_t max) {
+    if (*offset + 2 <= max) {
         unsigned result;
         result = buf[(*offset)++] << 8;
         result |= buf[(*offset)++];
@@ -61,10 +55,9 @@ _read_short(const unsigned char *buf, size_t *offset, size_t max)
         return (unsigned)~0;
 }
 
-static inline unsigned
-_read_number(const unsigned char *buf, size_t *offset, size_t max)
-{
-    if (*offset + 4  <= max) {
+static inline unsigned _read_number(const unsigned char *buf, size_t *offset,
+                                    size_t max) {
+    if (*offset + 4 <= max) {
         unsigned result;
         result = buf[(*offset)++] << 24;
         result |= buf[(*offset)++] << 16;
@@ -75,10 +68,9 @@ _read_number(const unsigned char *buf, size_t *offset, size_t max)
         return (unsigned)~0;
 }
 
-static inline ipv6address_t
-_read_ipv6(const unsigned char *buf, size_t *offset, size_t max)
-{
-    ipv6address_t result = {0,0};
+static inline ipv6address_t _read_ipv6(const unsigned char *buf, size_t *offset,
+                                       size_t max) {
+    ipv6address_t result = {0, 0};
 
     if (*offset + 16 <= max) {
         result = ipv6address_from_bytes(buf + *offset);
@@ -89,28 +81,27 @@ _read_ipv6(const unsigned char *buf, size_t *offset, size_t max)
     return result;
 }
 
-
 /**
  * Handle the IPv6 Neighbor Solicitation request.
  * This happens after we've transmitted a packet, a response is on
  * it's way back, and the router needs to give us the response
- * packet. The router sends us a solicitation, like an ARP request, 
+ * packet. The router sends us a solicitation, like an ARP request,
  * to which we must respond.
  */
-int
-stack_ndpv6_incoming_request(STACK *stack, PreInfo *parsed,  const unsigned char *px, size_t length)
-{
-    PktBuf *response = 0;
-    size_t offset;
-    size_t remaining;
-    ipaddress target_ip;
+int stack_ndpv6_incoming_request(STACK *stack, PreInfo *parsed,
+                                 const unsigned char *px, size_t length) {
+    PktBuf              *response = 0;
+    size_t               offset;
+    size_t               remaining;
+    ipaddress            target_ip;
     const unsigned char *target_ip_buf;
-    macaddress_t target_mac = stack->source_mac;
-    unsigned xsum;
-    unsigned char *buf2;
-    static const size_t max = sizeof(response->px);
-    size_t offset_ip = parsed->ip_offset;
-    size_t offset_ip_src = offset_ip + 8; /* offset in packet to the source IPv6 address */
+    macaddress_t         target_mac = stack->source_mac;
+    unsigned             xsum;
+    unsigned char       *buf2;
+    static const size_t  max       = sizeof(response->px);
+    size_t               offset_ip = parsed->ip_offset;
+    size_t               offset_ip_src =
+        offset_ip + 8; /* offset in packet to the source IPv6 address */
     size_t offset_ip_dst = offset_ip + 24;
     size_t offset_icmpv6 = parsed->transport_offset;
 
@@ -119,24 +110,25 @@ stack_ndpv6_incoming_request(STACK *stack, PreInfo *parsed,  const unsigned char
         return -1;
 
     /* Make sure there's at least a full header */
-    offset = parsed->transport_offset;
+    offset    = parsed->transport_offset;
     remaining = length - offset;
     if (remaining < 24)
         return -1;
 
     /* Make sure it's looking for our own address */
-    target_ip_buf = px + offset + 8;
+    target_ip_buf     = px + offset + 8;
     target_ip.version = 6;
-    target_ip.ipv6 = ipv6address_from_bytes(target_ip_buf);
+    target_ip.ipv6    = ipv6address_from_bytes(target_ip_buf);
     if (!is_my_ip(stack->src, target_ip))
         return -1;
 
     /* Print a log message */
     {
-        ipv6address_t a = ipv6address_from_bytes(px + offset_ip_src);
+        ipv6address_t         a    = ipv6address_from_bytes(px + offset_ip_src);
         ipaddress_formatted_t fmt1 = ipv6address_fmt(a);
         ipaddress_formatted_t fmt2 = ipaddress_fmt(target_ip);
-        LOG(LEVEL_DETAIL, "received NDP request from %s for %s\n", fmt1.string, fmt2.string);
+        LOG(LEVEL_DETAIL, "received NDP request from %s for %s\n", fmt1.string,
+            fmt2.string);
     }
 
     /* Get a buffer for sending the response packet. This thread doesn't
@@ -161,7 +153,7 @@ stack_ndpv6_incoming_request(STACK *stack, PreInfo *parsed,  const unsigned char
     _append(buf2, &offset, max, ICMPv6_CODE_NA); /* code */
     _append(buf2, &offset, max, 0);              /*checksum[hi] */
     _append(buf2, &offset, max, 0);              /*checksum[lo] */
-    _append(buf2, &offset, max, 0x60);           /* flags*/ 
+    _append(buf2, &offset, max, 0x60);           /* flags*/
     _append(buf2, &offset, max, 0);
     _append(buf2, &offset, max, 0);
     _append(buf2, &offset, max, 0);
@@ -170,11 +162,9 @@ stack_ndpv6_incoming_request(STACK *stack, PreInfo *parsed,  const unsigned char
     _append(buf2, &offset, max, 1);
     _append_bytes(buf2, &offset, max, target_mac.addr, 6);
 
-    xsum = checksum_ipv6(buf2 + offset_ip_src, 
-                         buf2 + offset_ip_dst, 
-                         IP_PROTO_IPv6_ICMP,  
-                         offset - offset_icmpv6, 
-                         buf2 +offset_icmpv6);
+    xsum = checksum_ipv6(buf2 + offset_ip_src, buf2 + offset_ip_dst,
+                         IP_PROTO_IPv6_ICMP, offset - offset_icmpv6,
+                         buf2 + offset_icmpv6);
     buf2[offset_icmpv6 + 2] = (unsigned char)(xsum >> 8);
     buf2[offset_icmpv6 + 3] = (unsigned char)(xsum >> 0);
 
@@ -185,20 +175,14 @@ stack_ndpv6_incoming_request(STACK *stack, PreInfo *parsed,  const unsigned char
     return 0;
 }
 
-
-
-static int 
-_extract_router_advertisement(
-    const unsigned char *buf, 
-    size_t length,
-    PreInfo *parsed,
-    ipv6address my_ipv6,
-    ipv6address *router_ip, 
-    macaddress_t *router_mac)
-{
+static int _extract_router_advertisement(const unsigned char *buf,
+                                         size_t length, PreInfo *parsed,
+                                         ipv6address   my_ipv6,
+                                         ipv6address  *router_ip,
+                                         macaddress_t *router_mac) {
     size_t offset;
-    int is_same_prefix = 1;
-    int is_mac_explicit = 0;
+    int    is_same_prefix  = 1;
+    int    is_mac_explicit = 0;
 
     if (parsed->ip_version != 6)
         return 1;
@@ -236,46 +220,48 @@ _extract_router_advertisement(
     _read_number(buf, &offset, length);
 
     while (offset + 8 <= length) {
-        unsigned type = buf[offset + 0];
-        size_t len2 = buf[offset + 1] * 8;
-        size_t off2 = 2;
+        unsigned             type = buf[offset + 0];
+        size_t               len2 = buf[offset + 1] * 8;
+        size_t               off2 = 2;
         const unsigned char *buf2 = buf + offset;
 
         switch (type) {
             case 3: /* prefix info */
             {
-                unsigned prefix_len;
-                ipv6address prefix;
+                unsigned              prefix_len;
+                ipv6address           prefix;
                 ipaddress_formatted_t fmt;
 
                 prefix_len = _read_byte(buf2, &off2, len2);
-                _read_byte(buf2, &off2, len2);       /* flags */
-                _read_number(buf2, &off2, len2);     /* valid lifetime */
-                _read_number(buf2, &off2, len2);     /* preferred lifetime */
-                _read_number(buf2, &off2, len2);     /* reserved */
+                _read_byte(buf2, &off2, len2);   /* flags */
+                _read_number(buf2, &off2, len2); /* valid lifetime */
+                _read_number(buf2, &off2, len2); /* preferred lifetime */
+                _read_number(buf2, &off2, len2); /* reserved */
                 prefix = _read_ipv6(buf2, &off2, len2);
 
                 fmt = ipv6address_fmt(prefix);
-                LOG(LEVEL_DETAIL, "IPv6.prefix = %s/%u\n", fmt.string, prefix_len);
-                if (ipv6address_is_equal_prefixed(my_ipv6, prefix, prefix_len)) {
+                LOG(LEVEL_DETAIL, "IPv6.prefix = %s/%u\n", fmt.string,
+                    prefix_len);
+                if (ipv6address_is_equal_prefixed(my_ipv6, prefix,
+                                                  prefix_len)) {
                     is_same_prefix = 1;
                 } else {
                     ipaddress_formatted_t fmt1 = ipv6address_fmt(my_ipv6);
                     ipaddress_formatted_t fmt2 = ipv6address_fmt(prefix);
 
-                    LOG(LEVEL_HINT, "our source-ip is %s, but router prefix announces %s/%u\n",
-                            fmt1.string, fmt2.string, prefix_len);
+                    LOG(LEVEL_HINT,
+                        "our source-ip is %s, but router prefix announces "
+                        "%s/%u\n",
+                        fmt1.string, fmt2.string, prefix_len);
                     is_same_prefix = 0;
                 }
-
-            }
-                break;
+            } break;
             case 25: /* recursive DNS server */
                 _read_short(buf2, &off2, len2);
                 _read_number(buf2, &off2, len2);
 
                 while (off2 + 16 <= len2) {
-                    ipv6address resolver = _read_ipv6(buf2, &off2, len2);
+                    ipv6address resolver      = _read_ipv6(buf2, &off2, len2);
                     ipaddress_formatted_t fmt = ipv6address_fmt(resolver);
                     LOG(LEVEL_DETAIL, "IPv6.DNS = %s\n", fmt.string);
                 }
@@ -312,27 +298,22 @@ _extract_router_advertisement(
 
 /****************************************************************************
  ****************************************************************************/
-int
-stack_ndpv6_resolve(
-    Adapter *adapter,
-    AdapterCache *acache,
-    ipv6address my_ipv6,
-    macaddress_t my_mac_address,
-    macaddress_t *router_mac)
-{
+int stack_ndpv6_resolve(Adapter *adapter, AdapterCache *acache,
+                        ipv6address my_ipv6, macaddress_t my_mac_address,
+                        macaddress_t *router_mac) {
     unsigned char buf[128];
-    size_t max = sizeof(buf);
-    size_t offset = 0;
-    unsigned i;
-    time_t start;
-    unsigned is_arp_notice_given = 0;
-    int is_delay_reported = 0;
-    size_t offset_ip;
-    size_t offset_ip_src;
-    size_t offset_ip_dst;
-    size_t offset_icmpv6;
-    unsigned xsum;
-    PreInfo parsed = {0};
+    size_t        max    = sizeof(buf);
+    size_t        offset = 0;
+    unsigned      i;
+    time_t        start;
+    unsigned      is_arp_notice_given = 0;
+    int           is_delay_reported   = 0;
+    size_t        offset_ip;
+    size_t        offset_ip_src;
+    size_t        offset_ip_dst;
+    size_t        offset_icmpv6;
+    unsigned      xsum;
+    PreInfo       parsed = {0};
 
     /*
      * [KLUDGE]
@@ -342,7 +323,6 @@ stack_ndpv6_resolve(
         memcpy(router_mac->addr, "\0\0\0\0\0\2", 6);
         return 0; /* success */
     }
-
 
     /*
      * Ethernet header
@@ -360,12 +340,12 @@ stack_ndpv6_resolve(
      * Create IPv6 header
      */
     offset_ip = offset;
-    _append(buf, &offset, max, 0x60);        /* version = 6 */
+    _append(buf, &offset, max, 0x60); /* version = 6 */
     _append(buf, &offset, max, 0);
     _append_short(buf, &offset, max, 0);
-    _append_short(buf, &offset, max, 0);     /* length = 0 */
+    _append_short(buf, &offset, max, 0); /* length = 0 */
     _append(buf, &offset, max, IP_PROTO_IPv6_ICMP);
-    _append(buf, &offset, max, 255);         /*hop limit = 255 */
+    _append(buf, &offset, max, 255); /*hop limit = 255 */
 
     /* Link local source address based on MAC address */
     offset_ip_src = offset;
@@ -374,9 +354,9 @@ stack_ndpv6_resolve(
     _append_short(buf, &offset, max, 0);
     _append_short(buf, &offset, max, 0);
     _append_bytes(buf, &offset, max, my_mac_address.addr, 3);
-    buf[offset-3] |= 2;
+    buf[offset - 3] |= 2;
     _append_short(buf, &offset, max, 0xfffe);
-    _append_bytes(buf, &offset, max, my_mac_address.addr+3, 3);
+    _append_bytes(buf, &offset, max, my_mac_address.addr + 3, 3);
 
     /* All-routers link local address */
     offset_ip_dst = offset;
@@ -393,20 +373,18 @@ stack_ndpv6_resolve(
     offset_icmpv6 = offset;
     _append(buf, &offset, max, ICMPv6_TYPE_RS);
     _append(buf, &offset, max, ICMPv6_CODE_RS);
-    _append_short(buf, &offset, max, 0);      /* checksum = 0 (for the moment) */
-    _append_short(buf, &offset, max, 0);      /* reserved */
-    _append_short(buf, &offset, max, 0);      /* reserved */
-    _append(buf, &offset, max, 1);            /* option = source link layer address */
-    _append(buf, &offset, max, 1);            /* length = 2 + 6 / 8*/
+    _append_short(buf, &offset, max, 0); /* checksum = 0 (for the moment) */
+    _append_short(buf, &offset, max, 0); /* reserved */
+    _append_short(buf, &offset, max, 0); /* reserved */
+    _append(buf, &offset, max, 1); /* option = source link layer address */
+    _append(buf, &offset, max, 1); /* length = 2 + 6 / 8*/
     _append_bytes(buf, &offset, max, my_mac_address.addr, 6);
 
-    buf[offset_ip + 4] = (unsigned char)( (offset - offset_icmpv6) >> 8);
-    buf[offset_ip + 5] = (unsigned char)( (offset - offset_icmpv6) & 0xFF);
-    xsum = checksum_ipv6(buf + offset_ip_src, 
-                         buf + offset_ip_dst, 
-                         IP_PROTO_IPv6_ICMP,  
-                         offset - offset_icmpv6, 
-                         buf + offset_icmpv6);
+    buf[offset_ip + 4] = (unsigned char)((offset - offset_icmpv6) >> 8);
+    buf[offset_ip + 5] = (unsigned char)((offset - offset_icmpv6) & 0xFF);
+    xsum               = checksum_ipv6(buf + offset_ip_src, buf + offset_ip_dst,
+                                       IP_PROTO_IPv6_ICMP, offset - offset_icmpv6,
+                                       buf + offset_icmpv6);
     buf[offset_icmpv6 + 2] = (unsigned char)(xsum >> 8);
     buf[offset_icmpv6 + 3] = (unsigned char)(xsum >> 0);
     rawsock_send_packet(adapter, acache, buf, (unsigned)offset);
@@ -416,27 +394,24 @@ stack_ndpv6_resolve(
      * why, but some do this on the Internet.
      */
     offset -= 8;
-    buf[offset_ip + 4] = (unsigned char)( (offset - offset_icmpv6) >> 8);
-    buf[offset_ip + 5] = (unsigned char)( (offset - offset_icmpv6) & 0xFF);
-    xsum = checksum_ipv6(buf + offset_ip_src, 
-                         buf + offset_ip_dst, 
-                         IP_PROTO_IPv6_ICMP,  
-                         offset - offset_icmpv6, 
-                         buf + offset_icmpv6);
+    buf[offset_ip + 4] = (unsigned char)((offset - offset_icmpv6) >> 8);
+    buf[offset_ip + 5] = (unsigned char)((offset - offset_icmpv6) & 0xFF);
+    xsum               = checksum_ipv6(buf + offset_ip_src, buf + offset_ip_dst,
+                                       IP_PROTO_IPv6_ICMP, offset - offset_icmpv6,
+                                       buf + offset_icmpv6);
     buf[offset_icmpv6 + 2] = (unsigned char)(xsum >> 8);
     buf[offset_icmpv6 + 3] = (unsigned char)(xsum >> 0);
     rawsock_send_packet(adapter, acache, buf, (unsigned)offset);
 
-
     start = time(0);
-    i = 0;
+    i     = 0;
     for (;;) {
-        unsigned length2;
-        unsigned secs;
-        unsigned usecs;
+        unsigned             length2;
+        unsigned             secs;
+        unsigned             usecs;
         const unsigned char *buf2;
-        int err;
-        ipv6address router_ip;
+        int                  err;
+        ipv6address          router_ip;
 
         /* Resend every so often */
         if (time(0) != start) {
@@ -447,19 +422,20 @@ stack_ndpv6_resolve(
 
             /* It's taking too long, so notify the user */
             if (!is_delay_reported) {
-                LOG(LEVEL_HINT, "resolving IPv6 router MAC address (may take some time)...\n");
+                LOG(LEVEL_HINT, "resolving IPv6 router MAC address (may take "
+                                "some time)...\n");
                 is_delay_reported = 1;
             }
         }
 
         /* If we aren't getting a response back to our ARP, then print a
          * status message */
-        if (time(0) > start+1 && !is_arp_notice_given) {
+        if (time(0) > start + 1 && !is_arp_notice_given) {
             LOG(LEVEL_HINT, "resolving local IPv6 router\n");
             is_arp_notice_given = 1;
         }
 
-        err =  rawsock_recv_packet(adapter, &length2, &secs, &usecs, &buf2);
+        err = rawsock_recv_packet(adapter, &length2, &secs, &usecs, &buf2);
 
         if (err != 0)
             continue;
@@ -476,7 +452,8 @@ stack_ndpv6_resolve(
             continue;
 
         /* We've found a packet that may be the one we want, so parse it */
-        err = _extract_router_advertisement(buf2, length2, &parsed, my_ipv6, &router_ip, router_mac);
+        err = _extract_router_advertisement(buf2, length2, &parsed, my_ipv6,
+                                            &router_ip, router_mac);
         if (err)
             continue;
 
@@ -487,9 +464,8 @@ stack_ndpv6_resolve(
     return 1;
 }
 
-bool is_ipv6_multicast(ipaddress ip_me)
-{
+bool is_ipv6_multicast(ipaddress ip_me) {
     /* If this is an IPv6 multicast packet, one sent to the IPv6
      * address with a prefix of FF02::/16 */
-    return ip_me.version == 6 && (ip_me.ipv6.hi>>48ULL) == 0xFF02;
+    return ip_me.version == 6 && (ip_me.ipv6.hi >> 48ULL) == 0xFF02;
 }

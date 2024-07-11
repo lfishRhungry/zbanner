@@ -20,18 +20,16 @@ typedef struct RxThreadConfig {
 
     PACKET_QUEUE **handle_q;
 
-    PACKET_QUEUE  *dispatch_q;
+    PACKET_QUEUE *dispatch_q;
 
     size_t thread_handle_recv;
 } RxThread;
-
 
 /***************************************************************************
  *
  * Asynchronous receive thread
  *
  ***************************************************************************/
-void
-receive_thread(void *v);
+void receive_thread(void *v);
 
 #endif

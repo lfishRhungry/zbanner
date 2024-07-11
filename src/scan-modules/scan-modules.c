@@ -17,19 +17,12 @@ extern Scanner TcpStateScan;
 
 static Scanner *scan_modules_list[] = {
     &TcpSynScan, /*default scan module*/
-    &IcmpEchoScan,
-    &IcmpTimeScan,
-    &ArpReqScan,
-    &NdpNsScan,
-    &SctpInitScan,
-    &ZBannerScan,
-    &UdpScan,
-    &TcpStateScan,
+    &IcmpEchoScan, &IcmpTimeScan, &ArpReqScan, &NdpNsScan,
+    &SctpInitScan, &ZBannerScan,  &UdpScan,    &TcpStateScan,
     //! REGIST YOUR SCAN MODULE HERE
 };
 
-Scanner *get_scan_module_by_name(const char *name)
-{
+Scanner *get_scan_module_by_name(const char *name) {
     int len = (int)(ARRAY_SIZE(scan_modules_list));
     for (int i = 0; i < len; i++) {
         if (!strcmp(scan_modules_list[i]->name, name)) {
@@ -39,8 +32,7 @@ Scanner *get_scan_module_by_name(const char *name)
     return NULL;
 }
 
-void list_all_scan_modules()
-{
+void list_all_scan_modules() {
     int len = (int)(ARRAY_SIZE(scan_modules_list));
 
     printf("\n");
@@ -66,8 +58,7 @@ void list_all_scan_modules()
     printf("\n");
 }
 
-void help_scan_module(Scanner * module)
-{
+void help_scan_module(Scanner *module) {
     if (!module) {
         LOG(LEVEL_ERROR, "No specified scan module.\n");
         return;
@@ -78,10 +69,12 @@ void help_scan_module(Scanner * module)
     printf("\n");
     printf("\n");
     printf("  Name of ScanModule:  %s\n", module->name);
-    printf("  Probe Type Required: %s\n", get_probe_type_name(module->required_probe_type));
-    printf("  Supports Timeout:    %s\n", module->support_timeout?"Yes\n":"No\n");
+    printf("  Probe Type Required: %s\n",
+           get_probe_type_name(module->required_probe_type));
+    printf("  Supports Timeout:    %s\n",
+           module->support_timeout ? "Yes\n" : "No\n");
     printf("  Default BPF Filter:\n");
-    xprint(module->bpf_filter?module->bpf_filter:"null", 6, 80);
+    xprint(module->bpf_filter ? module->bpf_filter : "null", 6, 80);
     printf("\n");
     printf("\n");
     printf("  Description:\n");
@@ -89,13 +82,12 @@ void help_scan_module(Scanner * module)
     printf("\n");
     printf("\n");
     if (module->params) {
-        for (unsigned j=0; module->params[j].name; j++) {
-
+        for (unsigned j = 0; module->params[j].name; j++) {
             if (!module->params[j].help_text)
                 continue;
 
             printf("  --%s", module->params[j].name);
-            for (unsigned k=0; module->params[j].alt_names[k]; k++) {
+            for (unsigned k = 0; module->params[j].alt_names[k]; k++) {
                 printf(", --%s", module->params[j].alt_names[k]);
             }
             printf("\n");
@@ -110,30 +102,15 @@ void help_scan_module(Scanner * module)
     printf("\n");
 }
 
-bool scan_init_nothing(const XConf *params)
-{
-    return true;
-}
+bool scan_init_nothing(const XConf *params) { return true; }
 
+void scan_poll_nothing(unsigned th_idx) {}
 
-void scan_poll_nothing(unsigned th_idx){}
+void scan_close_nothing() { return; }
 
-void scan_close_nothing()
-{
-    return;
-}
-
-void scan_no_timeout(
-    uint64_t entropy,
-    ScanTmEvent *event,
-    OutItem *item,
-    STACK *stack,
-    FHandler *handler)
-{
+void scan_no_timeout(uint64_t entropy, ScanTmEvent *event, OutItem *item,
+                     STACK *stack, FHandler *handler) {
     item->no_output = 1;
 }
 
-void scan_no_status(char *status)
-{
-    status[0] = '\0';
-}
+void scan_no_status(char *status) { status[0] = '\0'; }
