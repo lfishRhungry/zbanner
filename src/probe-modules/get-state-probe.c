@@ -95,7 +95,7 @@ getstate_parse_response(
 
     OutItem item = {
         .target.ip_proto  = target->target.ip_proto,
-        .level     = OUT_SUCCESS,
+        .level            = OUT_SUCCESS,
         .target.ip_them   = target->target.ip_them,
         .target.ip_me     = target->target.ip_me,
         .target.port_them = target->target.port_them,

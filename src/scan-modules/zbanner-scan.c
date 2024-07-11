@@ -201,9 +201,9 @@ zbanner_transmit(
         seqno, 0, TCP_FLAG_SYN, 0, 0, NULL, 0, px, PKT_BUF_SIZE);
 
     if (zbanner_conf.is_port_timeout) {
-        event->need_timeout = 1;
-        event->dedup_type   = 0;
-        event->target.port_me      = src_port_start+target->index;
+        event->need_timeout   = 1;
+        event->dedup_type     = 0;
+        event->target.port_me = src_port_start+target->index;
     }
 
     /*multi-probe Multi_Direct*/
@@ -256,8 +256,8 @@ zbanner_validate(
             .target.ip_me     = recved->parsed.dst_ip,
             .target.port_them = recved->parsed.port_src,
             .target.port_me   = recved->parsed.port_dst,
-            .cookie    = 0, /*zbanner can recognize reponse by itself*/
-            .index     = recved->parsed.port_dst-src_port_start,
+            .cookie           = 0, /*zbanner can recognize reponse by itself*/
+            .index            = recved->parsed.port_dst-src_port_start,
         };
 
         size_t payload_len;
@@ -332,8 +332,8 @@ zbanner_handle(
                 .target.ip_me     = recved->parsed.dst_ip,
                 .target.port_them = recved->parsed.port_src,
                 .target.port_me   = recved->parsed.port_dst,
-                .cookie    = 0, /*zbanner can recognize reponse by itself*/
-                .index     = recved->parsed.port_dst-src_port_start,
+                .cookie           = 0, /*zbanner can recognize reponse by itself*/
+                .index            = recved->parsed.port_dst-src_port_start,
             };
 
             unsigned char payload[PM_PAYLOAD_SIZE];
@@ -449,8 +449,8 @@ zbanner_handle(
             .target.ip_me     = recved->parsed.dst_ip,
             .target.port_them = recved->parsed.port_src,
             .target.port_me   = recved->parsed.port_dst,
-            .cookie    = 0, /*zbanner can recognize reponse by itself*/
-            .index     = recved->parsed.port_dst-src_port_start,
+            .cookie           = 0, /*zbanner can recognize reponse by itself*/
+            .index            = recved->parsed.port_dst-src_port_start,
         };
 
         unsigned is_multi = ZBannerScan.probe->handle_response_cb(
@@ -561,8 +561,8 @@ zbanner_timeout(
         .target.ip_me     = event->target.ip_me,
         .target.port_them = event->target.port_them,
         .target.port_me   = event->target.port_me,
-        .cookie    = 0, /*zbanner can recognize reponse by itself*/
-        .index     = event->target.port_me-src_port_start,
+        .cookie           = 0, /*zbanner can recognize reponse by itself*/
+        .index            = event->target.port_me-src_port_start,
     };
 
     unsigned is_multi = ZBannerScan.probe->handle_timeout_cb(&ptarget, item);

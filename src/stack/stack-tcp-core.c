@@ -842,8 +842,8 @@ _tcb_seg_send(
 
     TcpSegment    *seg;
     TcpSegment   **next;
-    unsigned               seqno         = tcb->seqno_me;
-    size_t                 length_more   = 0;
+    unsigned       seqno         = tcb->seqno_me;
+    size_t         length_more   = 0;
 
     if (length > tcb->mss) {
         length_more = length - tcb->mss;
@@ -1236,8 +1236,8 @@ stack_incoming_tcp(TCP_Table *tcpcon,
                         .target.port_them = tcb->port_them,
                         .target.ip_me     = tcb->ip_me,
                         .target.port_me   = tcb->port_me,
-                        .cookie    = 0,  /*Probe_TYPE State doesn't need cookie*/
-                        .index     = tcb->port_me-tcpcon->src_port_start,
+                        .cookie           = 0,  /*Probe_TYPE State doesn't need cookie*/
+                        .index            = tcb->port_me-tcpcon->src_port_start,
                     };
 
                     if (!tcb->probe->conn_init_cb(&tcb->probe_state, &target)) {
@@ -1456,8 +1456,8 @@ again:
                         .target.ip_me     = socket->tcb->ip_me,
                         .target.port_them = socket->tcb->port_them,
                         .target.port_me   = socket->tcb->port_me,
-                        .cookie    = 0, /*state mode does not need cookie*/
-                        .index     = socket->tcb->port_me-socket->tcpcon->src_port_start,
+                        .cookie           = 0, /*state mode does not need cookie*/
+                        .index            = socket->tcb->port_me-socket->tcpcon->src_port_start,
                     };
 
                     DataPass pass = {0};
@@ -1554,8 +1554,8 @@ again:
                 .target.port_them = socket->tcb->port_them,
                 .target.ip_me     = socket->tcb->ip_me,
                 .target.port_me   = socket->tcb->port_me,
-                .cookie    = 0,          /*does not support cookie now*/
-                .index     = socket->tcb->port_me-socket->tcpcon->src_port_start,
+                .cookie           = 0,          /*does not support cookie now*/
+                .index            = socket->tcb->port_me-socket->tcpcon->src_port_start,
             };
 
             DataPass pass = {0};

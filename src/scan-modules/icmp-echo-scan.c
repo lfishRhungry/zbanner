@@ -85,9 +85,9 @@ icmpecho_transmit(
         cookie, cookie, 0, px, PKT_BUF_SIZE);
 
     /*add timeout*/
-    event->need_timeout = 1;
-    event->target.port_them    = 0;
-    event->target.port_me      = 0;
+    event->need_timeout     = 1;
+    event->target.port_them = 0;
+    event->target.port_me   = 0;
 
     return false;
 }
@@ -112,14 +112,14 @@ icmpecho_validate(
         &&recved->parsed.icmp_type==ICMPv4_TYPE_ECHO_REPLY
         &&recved->parsed.icmp_code==ICMPv4_CODE_ECHO_REPLY
         &&get_icmp_cookie(&recved->parsed, recved->packet)==cookie) {
-        pre->go_dedup = 1;
+        pre->go_dedup        = 1;
         pre->dedup_port_them = 0;
         pre->dedup_port_me   = 0;
     } else if (recved->parsed.src_ip.version==6
         &&recved->parsed.icmp_type==ICMPv6_TYPE_ECHO_REPLY
         &&recved->parsed.icmp_code==ICMPv6_CODE_ECHO_REPLY
         &&get_icmp_cookie(&recved->parsed, recved->packet)==cookie) {
-        pre->go_dedup = 1;
+        pre->go_dedup        = 1;
         pre->dedup_port_them = 0;
         pre->dedup_port_me   = 0;
     }
@@ -136,7 +136,7 @@ icmpecho_handle(
 {
     item->target.port_them  = 0;
     item->target.port_me    = 0;
-    item->level      = OUT_SUCCESS;
+    item->level             = OUT_SUCCESS;
 
     safe_strcpy(item->reason, OUT_RSN_SIZE, "echo reply");
     safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");

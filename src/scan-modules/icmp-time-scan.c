@@ -89,9 +89,9 @@ icmptime_transmit(
         cookie, cookie, 0, px, PKT_BUF_SIZE);
 
     /*add timeout*/
-    event->need_timeout = 1;
-    event->target.port_them    = 0;
-    event->target.port_me      = 0;
+    event->need_timeout     = 1;
+    event->target.port_them = 0;
+    event->target.port_me   = 0;
 
     return false;
 }
@@ -116,7 +116,7 @@ icmptime_validate(
     if (recved->parsed.icmp_type==ICMPv4_TYPE_TIMESTAMP_REPLY
         &&recved->parsed.icmp_code==ICMPv4_CODE_TIMESTAMP_REPLY
         &&get_icmp_cookie(&recved->parsed, recved->packet)==cookie) {
-        pre->go_dedup = 1;
+        pre->go_dedup        = 1;
         pre->dedup_port_them = 0;
         pre->dedup_port_me   = 0;
     }
@@ -131,9 +131,9 @@ icmptime_handle(
     STACK *stack,
     FHandler *handler)
 {
-    item->target.port_them  = 0;
-    item->target.port_me    = 0;
-    item->level      = OUT_SUCCESS;
+    item->target.port_them = 0;
+    item->target.port_me   = 0;
+    item->level            = OUT_SUCCESS;
 
     safe_strcpy(item->reason, OUT_RSN_SIZE, "timestamp reply");
     safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");

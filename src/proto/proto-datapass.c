@@ -9,7 +9,7 @@ void datapass_set_data(DataPass *pass, unsigned char *data,
 {
     /*do a safe check for no payload*/
     if (!data || !len) {
-        pass->data    = NULL;
+        pass->data       = NULL;
         pass->len        = 0;
         pass->is_dynamic = 0;
         return;

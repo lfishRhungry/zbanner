@@ -142,8 +142,8 @@ tcpsyn_transmit(
     unsigned cookie = get_cookie(target->target.ip_them, target->target.port_them,
         target->target.ip_me, target->target.port_me, entropy);
 
-    *len = tcp_create_packet(
-        target->target.ip_them, target->target.port_them, target->target.ip_me, target->target.port_me,
+    *len = tcp_create_packet(target->target.ip_them, target->target.port_them,
+        target->target.ip_me, target->target.port_me,
         cookie, 0, TCP_FLAG_SYN, 0, 0, NULL, 0, px, PKT_BUF_SIZE);
 
     /*add timeout*/

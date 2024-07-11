@@ -45,9 +45,9 @@ arpreq_transmit(
         target->target.ip_them, target->target.ip_me, px, PKT_BUF_SIZE);
 
     /*add timeout*/
-    event->need_timeout = 1;
-    event->target.port_them    = 0;
-    event->target.port_me      = 0;
+    event->need_timeout     = 1;
+    event->target.port_them = 0;
+    event->target.port_me   = 0;
 
     return false;
 }
@@ -67,7 +67,7 @@ arpreq_validate(
 
     pre->dedup_port_them = 0;
     pre->dedup_port_me   = 0;
-    pre->go_dedup  = 1;
+    pre->go_dedup        = 1;
 }
 
 static void
@@ -79,9 +79,9 @@ arpreq_handle(
     STACK *stack,
     FHandler *handler)
 {
-    item->target.port_them  = 0;
-    item->target.port_me    = 0;
-    item->level      = OUT_SUCCESS;
+    item->target.port_them = 0;
+    item->target.port_me   = 0;
+    item->level            = OUT_SUCCESS;
 
     safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");
     safe_strcpy(item->reason, OUT_RSN_SIZE, "arp reply");

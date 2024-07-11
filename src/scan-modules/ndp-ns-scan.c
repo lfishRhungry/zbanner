@@ -78,9 +78,9 @@ ndpns_transmit(
         0, px, PKT_BUF_SIZE);
 
     /*add timeout*/
-    event->need_timeout = 1;
-    event->target.port_them    = 0;
-    event->target.port_me      = 0;
+    event->need_timeout     = 1;
+    event->target.port_them = 0;
+    event->target.port_me   = 0;
 
     return false;
 }
@@ -103,7 +103,7 @@ ndpns_validate(
         &&recved->parsed.icmp_code==ICMPv6_CODE_NA
         && ndp_is_solicited_advertise(recved->parsed.src_ip.ipv6,
             recved->packet, recved->parsed.transport_offset)) {
-        pre->go_dedup = 1;
+        pre->go_dedup        = 1;
         pre->dedup_port_them = 0;
         pre->dedup_port_me   = 0;
     }
@@ -118,9 +118,9 @@ ndpns_handle(
     STACK *stack,
     FHandler *handler)
 {
-    item->target.port_them  = 0;
-    item->target.port_me    = 0;
-    item->level      = OUT_SUCCESS;
+    item->target.port_them = 0;
+    item->target.port_me   = 0;
+    item->level            = OUT_SUCCESS;
 
     safe_strcpy(item->reason, OUT_RSN_SIZE, "ndp na");
     safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");

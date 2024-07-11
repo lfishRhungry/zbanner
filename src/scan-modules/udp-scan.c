@@ -75,8 +75,8 @@ udp_transmit(
         .target.ip_me     = target->target.ip_me,
         .target.port_them = target->target.port_them,
         .target.port_me   = src_port_start+target->index,
-        .cookie    = cookie,
-        .index     = target->index,
+        .cookie           = cookie,
+        .index            = target->index,
     };
 
     unsigned char payload[PM_PAYLOAD_SIZE];
@@ -118,9 +118,9 @@ udp_validate(
             .target.ip_me     = recved->parsed.dst_ip,
             .target.port_them = recved->parsed.port_src,
             .target.port_me   = recved->parsed.port_dst,
-            .cookie    = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
+            .cookie           = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, recved->parsed.port_dst, entropy),
-            .index     = recved->parsed.port_dst-src_port_start,
+            .index            = recved->parsed.port_dst-src_port_start,
         };
 
         if (UdpScan.probe->validate_response_cb(&ptarget,
@@ -172,9 +172,9 @@ udp_handle(
             .target.ip_me     = recved->parsed.dst_ip,
             .target.port_them = recved->parsed.port_src,
             .target.port_me   = recved->parsed.port_dst,
-            .cookie    = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
+            .cookie           = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, recved->parsed.port_dst, entropy),
-            .index     = recved->parsed.port_dst-src_port_start,
+            .index            = recved->parsed.port_dst-src_port_start,
         };
 
         unsigned is_multi = UdpScan.probe->handle_response_cb(
@@ -198,9 +198,9 @@ udp_handle(
                     .target.ip_me     = recved->parsed.dst_ip,
                     .target.port_them = recved->parsed.port_src,
                     .target.port_me   = src_port_start+idx,
-                    .cookie    = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
+                    .cookie           = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                         recved->parsed.dst_ip, src_port_start+idx, entropy),
-                    .index     = idx,
+                    .index            = idx,
                 };
 
                 unsigned char payload[PM_PAYLOAD_SIZE];
@@ -249,9 +249,9 @@ udp_handle(
                 .target.ip_me     = recved->parsed.dst_ip,
                 .target.port_them = recved->parsed.port_src,
                 .target.port_me   = src_port_start+is_multi-1,
-                .cookie    = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
+                .cookie           = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                     recved->parsed.dst_ip, src_port_start+is_multi-1, entropy),
-                .index     = is_multi-1,
+                .index            = is_multi-1,
             };
 
             unsigned char payload[PM_PAYLOAD_SIZE];
@@ -314,9 +314,9 @@ udp_timeout(
         .target.ip_me     = event->target.ip_me,
         .target.port_them = event->target.port_them,
         .target.port_me   = event->target.port_me,
-        .cookie    = get_cookie(event->target.ip_them, event->target.port_them,
+        .cookie           = get_cookie(event->target.ip_them, event->target.port_them,
             event->target.ip_me, event->target.port_me, entropy),
-        .index     = event->target.port_me-src_port_start,
+        .index            = event->target.port_me-src_port_start,
     };
 
     unsigned is_multi = UdpScan.probe->handle_timeout_cb(&ptarget, item);
@@ -336,9 +336,9 @@ udp_timeout(
                 .target.ip_me     = event->target.ip_me,
                 .target.port_them = event->target.port_them,
                 .target.port_me   = src_port_start+idx,
-                .cookie    = get_cookie(event->target.ip_them, event->target.port_them,
+                .cookie           = get_cookie(event->target.ip_them, event->target.port_them,
                     event->target.ip_me, src_port_start+idx, entropy),
-                .index     = idx,
+                .index            = idx,
             };
 
             unsigned char payload[PM_PAYLOAD_SIZE];
@@ -386,9 +386,9 @@ udp_timeout(
             .target.ip_me     = event->target.ip_me,
             .target.port_them = event->target.port_them,
             .target.port_me   = src_port_start+is_multi-1,
-            .cookie    = get_cookie(event->target.ip_them, event->target.port_them,
+            .cookie           = get_cookie(event->target.ip_them, event->target.port_them,
                 event->target.ip_me, src_port_start+is_multi-1, entropy),
-            .index     = is_multi-1,
+            .index            = is_multi-1,
         };
 
         unsigned char payload[PM_PAYLOAD_SIZE];

@@ -252,7 +252,7 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line)
         .target.port_them = tgt->target.port_them,
         .target.ip_me     = tgt->target.ip_me,
         .target.port_me   = tgt->target.port_me,
-        .level     = OUT_INFO,
+        .level            = OUT_INFO,
     };
 
     safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
@@ -274,7 +274,7 @@ static void ssl_info_cb(const SSL *ssl, int where, int ret)
             .target.port_them = tgt->target.port_them,
             .target.ip_me     = tgt->target.ip_me,
             .target.port_me   = tgt->target.port_me,
-            .level     = OUT_INFO,
+            .level            = OUT_INFO,
         };
 
         safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
@@ -315,7 +315,7 @@ static bool output_subject_info(OutConf *out,
         .target.port_them = target->target.port_them,
         .target.ip_me     = target->target.ip_me,
         .target.port_me   = target->target.port_me,
-        .level     = OUT_INFO,
+        .level            = OUT_INFO,
     };
     safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
 
@@ -453,7 +453,7 @@ static bool output_x502_cert(OutConf *out,
             .target.port_them = target->target.port_them,
             .target.ip_me     = target->target.ip_me,
             .target.port_me   = target->target.port_me,
-            .level     = OUT_INFO,
+            .level            = OUT_INFO,
         };
 
         safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
@@ -549,7 +549,7 @@ static bool output_cipher_suite(OutConf *out,
         .target.port_them = target->target.port_them,
         .target.ip_me     = target->target.ip_me,
         .target.port_me   = target->target.port_me,
-        .level     = OUT_INFO,
+        .level            = OUT_INFO,
     };
 
     safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
@@ -573,7 +573,7 @@ static bool output_tls_version(OutConf *out,
         .target.port_them = target->target.port_them,
         .target.ip_me     = target->target.ip_me,
         .target.port_me   = target->target.port_me,
-        .level     = OUT_INFO,
+        .level            = OUT_INFO,
     };
 
     switch (version) {
@@ -693,7 +693,7 @@ tlsstate_init(const XConf *xconf)
      * Well...ugly but works.
      * */
     MultiMode *mode = (MultiMode *)&TlsStateProbe.multi_mode;
-    unsigned       *num  = (unsigned *)&TlsStateProbe.multi_num;
+    unsigned  *num  = (unsigned *)&TlsStateProbe.multi_num;
     *mode = tlsstate_conf.subprobe->multi_mode;
     *num  = tlsstate_conf.subprobe->multi_num;
 
@@ -768,14 +768,14 @@ tlsstate_conn_init(ProbeState *state, ProbeTarget *target)
 
     /*save `target` to SSL object*/
     ProbeTarget *tgt;
-    tgt              = MALLOC(sizeof(ProbeTarget));
+    tgt                     = MALLOC(sizeof(ProbeTarget));
     tgt->target.ip_proto    = target->target.ip_proto;
     tgt->target.ip_them     = target->target.ip_them;
     tgt->target.port_them   = target->target.port_them;
     tgt->target.ip_me       = target->target.ip_me;
     tgt->target.port_me     = target->target.port_me;
-    tgt->cookie      = target->cookie;
-    tgt->index       = target->index;
+    tgt->cookie             = target->cookie;
+    tgt->index              = target->index;
 
     res = SSL_set_ex_data(ssl, TSP_EXT_TGT_IDX, tgt);
     if (res != 1) {
@@ -1098,7 +1098,7 @@ tlsstate_parse_response(
                     .target.port_them = target->target.port_them,
                     .target.ip_me     = target->target.ip_me,
                     .target.port_me   = target->target.port_me,
-                    .level     = tlsstate_conf.fail_handshake?OUT_FAILURE:OUT_INFO,
+                    .level            = tlsstate_conf.fail_handshake?OUT_FAILURE:OUT_INFO,
                 };
                 safe_strcpy(item.classification, OUT_CLS_SIZE, "tls error");
                 safe_strcpy(item.reason, OUT_RSN_SIZE, "handshake failed");
