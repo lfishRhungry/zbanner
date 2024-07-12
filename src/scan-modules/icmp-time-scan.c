@@ -84,7 +84,7 @@ static bool icmptime_transmit(uint64_t entropy, ScanTarget *target,
     return false;
 }
 
-static void icmptime_validate(uint64_t entropy, PktRecv *recved,
+static void icmptime_validate(uint64_t entropy, Recved *recved,
                               PreHandle *pre) {
     /*record icmpv4 to my ip*/
     if (recved->parsed.found == FOUND_ICMP && recved->is_myip &&
@@ -106,7 +106,7 @@ static void icmptime_validate(uint64_t entropy, PktRecv *recved,
     }
 }
 
-static void icmptime_handle(unsigned th_idx, uint64_t entropy, PktRecv *recved,
+static void icmptime_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                             OutItem *item, STACK *stack, FHandler *handler) {
     item->target.port_them = 0;
     item->target.port_me   = 0;

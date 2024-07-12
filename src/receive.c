@@ -64,8 +64,8 @@ static void dispatch_thread(void *v) {
 
     DispatchConf *parms = v;
     while (!time_to_finish_rx) {
-        int      err    = 1;
-        PktRecv *recved = NULL;
+        int     err    = 1;
+        Recved *recved = NULL;
 
         err = rte_ring_sc_dequeue(parms->dispatch_queue, (void **)&recved);
         if (err != 0) {
@@ -145,7 +145,7 @@ static void handle_thread(void *v) {
          */
         parms->scanner->poll_cb(parms->index);
 
-        PktRecv *recved = NULL;
+        Recved *recved = NULL;
         int err = rte_ring_sc_dequeue(parms->handle_queue, (void **)&recved);
         if (err != 0) {
             pixie_usleep(RTE_XTATE_DEQ_USEC);
@@ -201,7 +201,7 @@ void receive_thread(void *v) {
     size_t           dispatcher;
     DispatchConf     dispatch_parms;
     PACKET_QUEUE    *dispatch_q;
-    PktRecv         *recved;
+    Recved          *recved;
 
     LOG(LEVEL_DEBUG, "starting receive thread\n");
 
@@ -329,7 +329,7 @@ void receive_thread(void *v) {
          * recved will not be handle in this thread.
          * and packet received from Adapters cannot exist too long.
          */
-        recved         = CALLOC(1, sizeof(PktRecv));
+        recved         = CALLOC(1, sizeof(Recved));
         recved->packet = MALLOC(pkt_len);
         recved->length = pkt_len;
         recved->secs   = pkt_secs;
@@ -393,8 +393,6 @@ void receive_thread(void *v) {
         }
 
         PreHandle pre = {
-            .go_record       = 0,
-            .go_dedup        = 0,
             .dedup_ip_them   = ip_them,
             .dedup_port_them = port_them,
             .dedup_ip_me     = ip_me,
@@ -415,7 +413,7 @@ void receive_thread(void *v) {
                          recved->length, false);
 
         /* Save raw packet in --pcap file */
-        if (pcapfile) {
+        if (pcapfile && !pre.no_record) {
             pcapfile_writeframe(pcapfile, recved->packet, recved->length,
                                 recved->length, recved->secs, recved->usecs);
         }

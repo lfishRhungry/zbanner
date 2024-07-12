@@ -200,7 +200,7 @@ static bool tcpstate_transmit(uint64_t entropy, ScanTarget *target,
     return false;
 }
 
-static void tcpstate_validate(uint64_t entropy, PktRecv *recved,
+static void tcpstate_validate(uint64_t entropy, Recved *recved,
                               PreHandle *pre) {
     if (recved->parsed.found == FOUND_TCP && recved->is_myip &&
         recved->is_myport)
@@ -229,7 +229,7 @@ static void tcpstate_validate(uint64_t entropy, PktRecv *recved,
     return;
 }
 
-static void tcpstate_handle(unsigned th_idx, uint64_t entropy, PktRecv *recved,
+static void tcpstate_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                             OutItem *item, STACK *stack, FHandler *handler) {
     /*in default*/
     item->no_output = 1;

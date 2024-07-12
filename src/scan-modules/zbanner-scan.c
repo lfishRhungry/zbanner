@@ -191,8 +191,7 @@ static bool zbanner_transmit(uint64_t entropy, ScanTarget *target,
     return false;
 }
 
-static void zbanner_validate(uint64_t entropy, PktRecv *recved,
-                             PreHandle *pre) {
+static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     if (recved->parsed.found == FOUND_TCP && recved->is_myip &&
         recved->is_myport)
         pre->go_record = 1;
@@ -252,7 +251,7 @@ static void zbanner_validate(uint64_t entropy, PktRecv *recved,
     }
 }
 
-static void zbanner_handle(unsigned th_idx, uint64_t entropy, PktRecv *recved,
+static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                            OutItem *item, STACK *stack, FHandler *handler) {
     unsigned mss_them;
     bool     mss_found;

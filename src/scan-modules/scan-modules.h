@@ -86,6 +86,10 @@ typedef bool (*scan_modules_transmit)(uint64_t entropy, ScanTarget *target,
  * * callback functions for Receive
  ****************************************************************************/
 
+/**
+ * Received packet info after preprocessed.
+ * This helps us to do initial validation.
+ */
 typedef struct PacketReceived {
     PreInfo        parsed;
     unsigned char *packet;
@@ -94,21 +98,31 @@ typedef struct PacketReceived {
     unsigned       usecs;
     unsigned       is_myip   : 1;
     unsigned       is_myport : 1;
-} PktRecv;
+} Recved;
 
-/*How we do prehandling for a packet*/
+/**
+ * How we do prehandling for a packet.
+ * The processes of prehandling has following step:
+ * 1.record packet to pcap file (optional)
+ * 2.do deduplication to the packet (optional)
+ * */
 typedef struct PacketPreHandle {
+    /*proceed to record or stop*/
+    unsigned  go_record : 1;
+    /*go on with(out) record*/
+    unsigned  no_record : 1;
+    /*proceed to dedup or stop*/
+    unsigned  go_dedup  : 1;
+    /*go on with(out) deduping*/
+    unsigned  no_dedup  : 1;
+    /**
+     * Info for deduplication
+     */
     ipaddress dedup_ip_them;
     unsigned  dedup_port_them;
     ipaddress dedup_ip_me;
     unsigned  dedup_port_me;
     unsigned  dedup_type;
-    /*proceed to record or stop*/
-    unsigned  go_record : 1;
-    /*proceed to dedup or stop*/
-    unsigned  go_dedup  : 1;
-    /*go on with(out) deduping*/
-    unsigned  no_dedup  : 1;
 } PreHandle;
 
 /**
@@ -124,7 +138,7 @@ typedef struct PacketPreHandle {
  * @param recved info of received packet.
  * @param pre some preHandle decisions we have to make.
  */
-typedef void (*scan_modules_validate)(uint64_t entropy, PktRecv *recved,
+typedef void (*scan_modules_validate)(uint64_t entropy, Recved *recved,
                                       PreHandle *pre);
 
 /**
@@ -145,8 +159,8 @@ typedef void (*scan_modules_validate)(uint64_t entropy, PktRecv *recved,
  * in use fast-timeout.
  */
 typedef void (*scan_modules_handle)(unsigned th_idx, uint64_t entropy,
-                                    PktRecv *recved, OutItem *item,
-                                    STACK *stack, FHandler *handler);
+                                    Recved *recved, OutItem *item, STACK *stack,
+                                    FHandler *handler);
 
 /***************************************************************************
  * * callback functions for Timeout

@@ -133,7 +133,7 @@ static bool tcpsyn_transmit(uint64_t entropy, ScanTarget *target,
     return false;
 }
 
-static void tcpsyn_validate(uint64_t entropy, PktRecv *recved, PreHandle *pre) {
+static void tcpsyn_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     /*record tcp packet to our source port*/
     if (recved->parsed.found == FOUND_TCP && recved->is_myip &&
         recved->is_myport)
@@ -166,7 +166,7 @@ static void tcpsyn_validate(uint64_t entropy, PktRecv *recved, PreHandle *pre) {
     }
 }
 
-static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, PktRecv *recved,
+static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                           OutItem *item, STACK *stack, FHandler *handler) {
     unsigned mss_them;
     bool     mss_found;

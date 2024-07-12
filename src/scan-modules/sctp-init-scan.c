@@ -68,7 +68,7 @@ static bool sctpinit_transmit(uint64_t entropy, ScanTarget *target,
     return false;
 }
 
-static void sctpinit_validate(uint64_t entropy, PktRecv *recved,
+static void sctpinit_validate(uint64_t entropy, Recved *recved,
                               PreHandle *pre) {
     /*record all sctp to me*/
     if (recved->parsed.found == FOUND_SCTP && recved->is_myip &&
@@ -103,7 +103,7 @@ static void sctpinit_validate(uint64_t entropy, PktRecv *recved,
     }
 }
 
-static void sctpinit_handle(unsigned th_idx, uint64_t entropy, PktRecv *recved,
+static void sctpinit_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                             OutItem *item, STACK *stack, FHandler *handler) {
     if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
                            SCTP_CHUNK_TYPE_INIT_ACK)) {

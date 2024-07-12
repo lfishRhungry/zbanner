@@ -46,7 +46,7 @@ static bool arpreq_transmit(uint64_t entropy, ScanTarget *target,
     return false;
 }
 
-static void arpreq_validate(uint64_t entropy, PktRecv *recved, PreHandle *pre) {
+static void arpreq_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     /*do not care about any other types of arp packet.*/
     if (recved->parsed.found == FOUND_ARP && recved->is_myip &&
         recved->parsed.arp_info.opcode == ARP_OPCODE_REPLY)
@@ -59,7 +59,7 @@ static void arpreq_validate(uint64_t entropy, PktRecv *recved, PreHandle *pre) {
     pre->go_dedup        = 1;
 }
 
-static void arpreq_handle(unsigned th_idx, uint64_t entropy, PktRecv *recved,
+static void arpreq_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                           OutItem *item, STACK *stack, FHandler *handler) {
     item->target.port_them = 0;
     item->target.port_me   = 0;

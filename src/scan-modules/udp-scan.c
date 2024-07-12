@@ -91,7 +91,7 @@ static bool udp_transmit(uint64_t entropy, ScanTarget *target,
         return false;
 }
 
-static void udp_validate(uint64_t entropy, PktRecv *recved, PreHandle *pre) {
+static void udp_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     /*record packet to our source port*/
     if (recved->parsed.found == FOUND_UDP && recved->is_myip &&
         recved->is_myport) {
@@ -140,7 +140,7 @@ static void udp_validate(uint64_t entropy, PktRecv *recved, PreHandle *pre) {
     }
 }
 
-static void udp_handle(unsigned th_idx, uint64_t entropy, PktRecv *recved,
+static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                        OutItem *item, STACK *stack, FHandler *handler) {
     if (recved->parsed.found == FOUND_UDP) {
         ProbeTarget ptarget = {
