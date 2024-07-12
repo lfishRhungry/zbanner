@@ -4,6 +4,7 @@
 #include "scan-modules.h"
 #include "../util-out/xprint.h"
 
+// clang-format off
 extern Scanner TcpSynScan;
 extern Scanner IcmpEchoScan;
 extern Scanner IcmpTimeScan;
@@ -17,10 +18,17 @@ extern Scanner TcpStateScan;
 
 static Scanner *scan_modules_list[] = {
     &TcpSynScan, /*default scan module*/
-    &IcmpEchoScan, &IcmpTimeScan, &ArpReqScan, &NdpNsScan,
-    &SctpInitScan, &ZBannerScan,  &UdpScan,    &TcpStateScan,
+    &IcmpEchoScan,
+    &IcmpTimeScan,
+    &ArpReqScan,
+    &NdpNsScan,
+    &SctpInitScan,
+    &ZBannerScan,
+    &UdpScan,
+    &TcpStateScan,
     //! REGIST YOUR SCAN MODULE HERE
 };
+// clang-format on
 
 Scanner *get_scan_module_by_name(const char *name) {
     int len = (int)(ARRAY_SIZE(scan_modules_list));

@@ -9,6 +9,7 @@
 This is an Application-layer Probe(or Request) Plugin System
 */
 
+// clang-format off
 //! ADD YOUR PROBE HERE
 extern Probe NullProbe;
 extern Probe HttpProbe;
@@ -148,6 +149,7 @@ static Probe *probe_modules_list[] = {
     &LzrNewlinesProbe,
     &LzrNewlines50Probe,
 };
+// clang-format on
 
 Probe *get_probe_module_by_name(const char *name) {
     int len = (int)ARRAY_SIZE(probe_modules_list);

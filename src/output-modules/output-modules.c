@@ -9,6 +9,7 @@
 #include "../util-out/xprint.h"
 #include "../util-data/fine-malloc.h"
 
+// clang-format off
 extern Output TextOutput;
 extern Output NdjsonOutput;
 extern Output CsvOutput;
@@ -17,9 +18,14 @@ extern Output NullOutput;
 //! REGIST YOUR OUTPUT MODULE HERE
 
 static Output *output_modules_list[] = {
-    &TextOutput, &NdjsonOutput, &CsvOutput, &ListOutput, &NullOutput,
+    &TextOutput,
+    &NdjsonOutput,
+    &CsvOutput,
+    &ListOutput,
+    &NullOutput,
     //! REGIST YOUR OUTPUT MODULE HERE
 };
+// clang-format on
 
 const char *output_level_to_string(OutLevel level) {
     switch (level) {

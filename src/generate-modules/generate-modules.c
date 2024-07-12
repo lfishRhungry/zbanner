@@ -3,6 +3,7 @@
 #include "../util-out/logger.h"
 #include "../util-data/safe-string.h"
 
+// clang-format off
 //! ADD YOUR GENERATOR HERE
 extern Generator BlackRockGen;
 
@@ -10,6 +11,7 @@ extern Generator BlackRockGen;
 static Generator *generate_modules_list[] = {
     &BlackRockGen, /* its also the default generator*/
 };
+// clang-format on
 
 Generator *get_generate_module_by_name(const char *name) {
     int len = (int)ARRAY_SIZE(generate_modules_list);
