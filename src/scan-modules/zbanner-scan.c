@@ -303,8 +303,9 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, PktRecv *recved,
                 .target.ip_me     = recved->parsed.dst_ip,
                 .target.port_them = recved->parsed.port_src,
                 .target.port_me   = recved->parsed.port_dst,
-                .cookie = 0, /*zbanner can recognize reponse by itself*/
-                .index  = recved->parsed.port_dst - src_port_start,
+                /*zbanner can recognize reponse by itself*/
+                .cookie           = 0,
+                .index            = recved->parsed.port_dst - src_port_start,
             };
 
             unsigned char payload[PM_PAYLOAD_SIZE];

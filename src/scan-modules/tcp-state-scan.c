@@ -352,12 +352,10 @@ static void tcpstate_handle(unsigned th_idx, uint64_t entropy, PktRecv *recved,
                          TCP_FLAG_FIN) &&
             !TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
                           TCP_FLAG_RST)) {
+            /* the FIN comes after any data in the packet */
             stack_incoming_tcp(
                 tcpcon, tcb, TCP_WHAT_FIN, 0, 0, recved->secs, recved->usecs,
-                seqno_them +
-                    recved->parsed.app_length, /* the FIN comes after any
-                                                  data in the packet */
-                seqno_me);
+                seqno_them + recved->parsed.app_length, seqno_me);
         }
 
         /* If this is a RST, then we'll be closing the connection */
