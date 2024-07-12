@@ -12,9 +12,3 @@ for f in ${files_to_lint}; do
     fail=1
   fi
 done
-
-# if [ "$fail" -eq "1" ]; then
-#   if [ ! -z $ZMAP_ENFORCE_FORMAT ]; then
-#     exit 1
-#   fi
-# fi
