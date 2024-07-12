@@ -14,7 +14,7 @@ ProbeDesc = [[
 ]]
 
 
-local dns_req ="\x50\xb6\x01\x20\x00\x01\x00\x00\x00\x00\x00\x00\x07version\x04bind\x00\x00\x10\x00\x03"
+local dns_req = "\x50\xb6\x01\x20\x00\x01\x00\x00\x00\x00\x00\x00\x07version\x04bind\x00\x00\x10\x00\x03"
 --[[
         /* 00 */"\x50\xb6"  /* transaction id */
         /* 02 */"\x01\x20"  /* query */
@@ -38,10 +38,9 @@ local dns_req ="\x50\xb6\x01\x20\x00\x01\x00\x00\x00\x00\x00\x00\x07version\x04b
 function Make_payload(ip_them, port_them, ip_me, port_me, index, cookie)
     local send_req = dns_req
     send_req = string.char(cookie & 0xFF) .. send_req:sub(2)
-    send_req = send_req:sub(1,1) .. string.char(cookie>>8 & 0xFF) .. send_req:sub(3)
+    send_req = send_req:sub(1, 1) .. string.char(cookie >> 8 & 0xFF) .. send_req:sub(3)
     return send_req
 end
-
 
 -- To validate response
 ---@param ip_them string ip of target.
@@ -54,18 +53,17 @@ end
 ---@return boolean if response data is valid
 function Validate_response(ip_them, port_them, ip_me, port_me, index, cookie, response)
     local a = string.pack("B", cookie & 0xFF)
-    if response:sub(1,1)~=a then
+    if response:sub(1, 1) ~= a then
         return false
     end
 
-    local b = string.pack("B", cookie>>8 & 0xFF)
-    if response:sub(2,2)~=b then
+    local b = string.pack("B", cookie >> 8 & 0xFF)
+    if response:sub(2, 2) ~= b then
         return false
     end
 
     return true
 end
-
 
 -- To handle reponse data
 ---@param ip_them string ip of target.
@@ -82,7 +80,6 @@ end
 function Handle_response(ip_them, port_them, ip_me, port_me, index, response)
     return 0, true, "identified", "matched", "dns"
 end
-
 
 -- To handle reponse timeout
 ---@param ip_them string ip of target.

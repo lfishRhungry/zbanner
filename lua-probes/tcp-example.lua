@@ -28,7 +28,6 @@ function Make_payload(ip_them, port_them, ip_me, port_me, index)
     return hello_string
 end
 
-
 -- To get hello data length.
 ---@param ip_them string ip of target.
 ---@param port_them number port of target.
@@ -39,7 +38,6 @@ end
 function Get_payload_length(ip_them, port_them, ip_me, port_me, index)
     return #hello_string
 end
-
 
 -- To handle reponse data.
 ---@param ip_them string ip of target.
@@ -54,18 +52,16 @@ end
 ---@return string reason of classification.
 ---@return string report of response (empty string if no report).
 function Handle_response(ip_them, port_them, ip_me, port_me, index, response)
-
     if not string.find(response, "HTTPS") and
         (string.find(response, "HTTP")
-        or string.find(response, "html")
-        or string.find(response, "HTML")
-        or string.find(response, "<h1>")) then
+            or string.find(response, "html")
+            or string.find(response, "HTML")
+            or string.find(response, "<h1>")) then
         return 0, true, "identified", "matched", "http service"
     end
 
     return 0, false, "unknown", "not matched", "not http"
 end
-
 
 -- To handle reponse timeout.
 ---@param ip_them string ip of target.
