@@ -23,8 +23,7 @@
 #include "../pixie/pixie-sockets.h"
 
 typedef enum {
-    DNS_REC_INVALID = -1, // Error code
-
+    DNS_REC_INVALID    = -1, // Error code
     DNS_REC_A          = 1,
     DNS_REC_AAAA       = 28,
     DNS_REC_AFSDB      = 18,

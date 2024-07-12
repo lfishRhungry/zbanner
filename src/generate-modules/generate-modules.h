@@ -26,6 +26,7 @@
 #include "../target/target-addr.h"
 
 typedef struct XtateConf XConf;
+
 struct source_t;
 
 /**

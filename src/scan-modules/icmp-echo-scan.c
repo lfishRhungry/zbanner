@@ -135,9 +135,9 @@ Scanner IcmpEchoScan = {
     .required_probe_type = 0,
     .support_timeout     = 1,
     .params              = icmpecho_parameters,
-    .bpf_filter          = /*icmp echo reply in ipv4 & ipv6*/
-    "(icmp && (icmp[0]==0 && icmp[1]==0)) "
-    "|| (icmp6 && (icmp6[0]==129 && icmp6[1]==0))",
+    /*icmp echo reply in ipv4 & ipv6*/
+    .bpf_filter          = "(icmp && (icmp[0]==0 && icmp[1]==0)) "
+                           "|| (icmp6 && (icmp6[0]==129 && icmp6[1]==0))",
     .desc = "IcmpEchoScan sends an ICMP ECHO Request packet to target host. "
             "Expect an "
             "ICMP ECHO Reply to believe the host is alive.\n"

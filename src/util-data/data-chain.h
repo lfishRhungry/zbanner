@@ -48,16 +48,18 @@ typedef struct DataLink {
     unsigned         name_hash;
     unsigned         data_len;
     unsigned         data_size;
-    bool is_number; /*is this value a number or bool string(true/false)*/
-    unsigned char
-        data[1]; /*visual studio doesn't support zero size array as member*/
+    /*is this value a number or bool string(true/false)*/
+    bool             is_number;
+    /*visual studio doesn't support zero size array as member*/
+    unsigned char    data[1];
 } DataLink;
 
 /**
  * wrapper of a bunch of data links, must be initiated in all zero
  * */
 typedef struct DataChain {
-    DataLink link[1]; /*dummy node for using out of the box*/
+    /*dummy node for using out of the box*/
+    DataLink link[1];
     unsigned count;
 } DataChain;
 

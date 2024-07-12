@@ -14,6 +14,7 @@ typedef enum {
     rx_only_direction,
     tx_only_direction
 } packet_direction;
+
 struct pfring_pkthdr {
     struct xtimeval {
         long tv_sec;
@@ -24,6 +25,7 @@ struct pfring_pkthdr {
     /* only filled in if PF_RING_LONG_HEADER set */
     unsigned char extended_hdr[512];
 };
+
 #define PF_RING_ERROR_GENERIC              -1
 #define PF_RING_ERROR_INVALID_ARGUMENT     -2
 #define PF_RING_ERROR_NO_PKT_AVAILABLE     -3
@@ -44,11 +46,10 @@ struct pfring_pkthdr {
 #define PF_RING_RX_PACKET_BOUNCE           1 << 6
 #define PF_RING_DNA_FIXED_RSS_Q_0          1 << 7
 #define PF_RING_STRIP_HW_TIMESTAMP         1 << 8
-#define PF_RING_DO_NOT_PARSE                                                   \
-    1 << 9 /* parsing already disabled in zero-copy                            \
-            */
-#define PF_RING_DO_NOT_TIMESTAMP                                               \
-    1 << 10 /* sw timestamp already disabled in zero-copy */
+/* parsing already disabled in zero-copy */
+#define PF_RING_DO_NOT_PARSE               1 << 9
+/* sw timestamp already disabled in zero-copy */
+#define PF_RING_DO_NOT_TIMESTAMP           1 << 10
 
 /*
  * function prototypes

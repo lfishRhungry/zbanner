@@ -600,28 +600,24 @@ Scanner ZBannerScan = {
     .required_probe_type = ProbeType_TCP,
     .support_timeout     = 1,
     .params              = zbanner_parameters,
-    .bpf_filter          = /*is rst or with ack in ipv4 & ipv6*/
-    "(ip && tcp && (tcp[tcpflags]|tcp-ack!=0 || tcp[tcpflags]==tcp-rst)) "
-    "|| (ip6 && tcp && (ip6[40+13]|tcp-ack!=0 || ip6[40+13]==tcp-rst))",
+    /*is rst or with ack in ipv4 & ipv6*/
+    .bpf_filter =
+        "(ip && tcp && (tcp[tcpflags]|tcp-ack!=0 || tcp[tcpflags]==tcp-rst)) "
+        "|| (ip6 && tcp && (ip6[40+13]|tcp-ack!=0 || ip6[40+13]==tcp-rst))",
     .desc =
         "ZBannerScan tries to contruct TCP conn with target port and send data "
         "from specified ProbeModule. Data in first reponse packet will be "
-        "handled"
-        " by specified ProbeModule.\n"
+        "handled by specified ProbeModule.\n"
         "What important is the whole process was done in completely stateless. "
         "So ZBannerScan is very fast for large-scale probing like banner "
-        "grabbing,"
-        " service identification and etc.\n"
+        "grabbing, service identification and etc.\n"
         "By the way, ZBanner support `timeout` just for banner response and "
-        "port"
-        " openness(syn-ack).\n"
+        "port openness(syn-ack).\n"
         "NOTE1: Must specify a TcpType ProbeModule for ZBannerScan like:\n"
         "    `--probe-module xxx`\n"
         "NOTE2: ZBannerScan will construct complete TCP conns. So must avoid "
-        "Linux"
-        " system sending RST automatically by adding iptable rules displayed "
-        "in "
-        "`firewall` directory.\n"
+        "Linux system sending RST automatically by adding iptable rules "
+        "displayed in `firewall` directory.\n"
         "NOTE3: Slow send rate may cause target host's retransmition.",
 
     .init_cb     = &zbanner_init,

@@ -18,7 +18,8 @@ struct DedupEntry_IPv4 {
     unsigned port_them;
     unsigned ip_me;
     unsigned port_me;
-    unsigned type; /*for more flexible dedup*/
+    /*for more flexible dedup*/
+    unsigned type;
 };
 
 struct DedupEntry_IPv6 {
@@ -26,7 +27,8 @@ struct DedupEntry_IPv6 {
     ipv6address ip_me;
     unsigned    port_them;
     unsigned    port_me;
-    unsigned    type; /*for more flexible dedup*/
+    /*for more flexible dedup*/
+    unsigned    type;
 };
 
 struct DedupEntry {

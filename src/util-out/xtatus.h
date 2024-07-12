@@ -25,26 +25,25 @@ typedef struct XtatusPrintItem {
 } XtatusItem;
 
 typedef struct XtatusPrinter {
+    /**
+     * For smoothly calculate remaining secs.
+     */
     struct {
         double   clock;
         time_t   time;
         uint64_t count;
     } last;
-
-    /**
-     * For smoothly calculate remaining secs.
-     */
     double   last_rates[XTS_RATE_CACHE];
     unsigned last_count;
-
+    /*statistics*/
+    uint64_t total_successed;
+    uint64_t total_sent;
+    /*switches*/
     unsigned is_infinite    : 1;
     unsigned print_queue    : 1;
     unsigned print_info_num : 1;
     unsigned print_ft_event : 1;
     unsigned print_hit_rate : 1;
-
-    uint64_t total_successed;
-    uint64_t total_sent;
 } Xtatus;
 
 void xtatus_print(Xtatus *xtatus, XtatusItem *item);

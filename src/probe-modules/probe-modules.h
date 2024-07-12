@@ -41,7 +41,8 @@ typedef bool (*probe_modules_init)(const XConf *xconf);
 typedef struct ProbeModuleTarget {
     Target   target;
     unsigned cookie;
-    unsigned index; /*use for identifying of multi probes per target*/
+    /*use for identifying of multi probes per target*/
+    unsigned index;
 } ProbeTarget;
 
 /**
@@ -139,8 +140,10 @@ typedef unsigned (*probe_modules_handle_timeout)(ProbeTarget *target,
  ****************************************************************************/
 
 typedef struct StateOfProbe {
-    uint8_t state; /*impossible to exceed the state limitation*/
-    void   *data;  /*defined by probe itself in need*/
+    /*impossible to exceed the state limitation*/
+    uint8_t state;
+    /*defined by probe itself in need*/
+    void   *data;
 } ProbeState;
 
 /**
@@ -229,23 +232,29 @@ typedef enum Probe_TYPE {
 } ProbeType;
 
 typedef enum MultiProbeMode {
-    Multi_Null   = 0,
-    Multi_Direct = 1, /*send multi_num probes(diff in index) from very beginning
-                         even don't know openness.*/
-    Multi_IfOpen = 2, /*send multi_num probes(diff in index) if port is open.
-                         !Just for TCP*/
-    Multi_AfterHandle =
-        3, /*send multi-num probes(diff in index) after first handled.*/
-    Multi_DynamicNext =
-        4, /*send a specified probe(with index+1) after every time handled*/
+    Multi_Null        = 0,
+    /*send multi_num probes(diff in index) from very beginning even don't know
+       openness.*/
+    Multi_Direct      = 1,
+    /**
+     * send multi_num probes(diff in index) if port is open.
+     * !Just for TCP
+     * */
+    Multi_IfOpen      = 2,
+    /*send multi-num probes(diff in index) after first handled.*/
+    Multi_AfterHandle = 3,
+    /*send a specified probe(with index+1) after every time handled*/
+    Multi_DynamicNext = 4,
 } MultiMode;
 
 typedef struct ProbeModule {
     const char     *name;
     const ProbeType type;
     const MultiMode multi_mode;
-    const unsigned  multi_num;  /*useless for Multi_DynamicNext or Multi_Null*/
-    unsigned        hello_wait; /*just for statefull scan*/
+    /*useless for Multi_DynamicNext or Multi_Null*/
+    const unsigned  multi_num;
+    /*just for statefull scan*/
+    unsigned        hello_wait;
     const char     *desc;
     ConfParam      *params;
 

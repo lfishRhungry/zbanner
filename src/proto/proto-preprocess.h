@@ -18,7 +18,7 @@
 #define ETHERTYPE_MLPS_UNI   0x8847
 #define ETHERTYPE_MLPS_MUL   0x8848
 
-enum {
+typedef enum PreprocessedFoundProtocol {
     FOUND_NOTHING = 0,
     FOUND_ETHERNET,
     FOUND_IPV4,
@@ -40,29 +40,15 @@ enum {
     FOUND_OPROTO, /* some other IP protocol */
     FOUND_IGMP,
     FOUND_NDPv6,
-};
+} FoundProto;
 
 typedef struct PreprocessedInfo {
+    /**
+     * Link layer
+     */
     const unsigned char *mac_src;
     const unsigned char *mac_dst;
     const unsigned char *mac_bss; /*for 802.11*/
-
-    unsigned ip_offset; /* 14 for normal Ethernet */
-    uint8_t  ip_version;
-    uint8_t  ip_protocol;
-    uint16_t ip_length; /* length of total packet */
-    uint8_t  ip_ttl;    /* ttl of ipv4 or hop limit of ipv6*/
-    uint16_t ip_v4_id;
-
-    const unsigned char *_ip_src;
-    const unsigned char *_ip_dst;
-
-    ipaddress src_ip;
-    ipaddress dst_ip;
-
-    unsigned transport_offset; /* 34 for normal Ethernet */
-    unsigned transport_length;
-
     struct {
         uint16_t hardware_type;
         uint16_t protocol_type;
@@ -73,22 +59,44 @@ typedef struct PreprocessedInfo {
         const unsigned char *sender_mac;
         const unsigned char *target_mac;
     } arp_info;
-
+    /**
+     * IP/Network layer
+     */
+    unsigned             ip_offset; /* 14 for normal Ethernet */
+    uint8_t              ip_version;
+    uint8_t              ip_protocol;
+    uint16_t             ip_length; /* length of total packet */
+    uint8_t              ip_ttl;    /* ttl of ipv4 or hop limit of ipv6*/
+    uint16_t             ip_v4_id;
+    /*point to actual ip data*/
+    const unsigned char *_ip_src;
+    const unsigned char *_ip_dst;
+    /*ip info after parsed*/
+    ipaddress            src_ip;
+    ipaddress            dst_ip;
+    /**
+     * transport layer
+     */
+    unsigned             transport_offset; /* 34 for normal Ethernet */
+    unsigned             transport_length;
     union {
         uint16_t port_src;
         uint16_t icmp_type;
     };
-
     union {
         uint16_t port_dst;
         uint16_t icmp_code;
     };
-
-    unsigned app_offset; /* start of TCP payload */
-    unsigned app_length; /* length of TCP payload */
-
-    int found;
-    int found_offset;
+    /**
+     * App layer
+     */
+    unsigned   app_offset; /* start of TCP payload */
+    unsigned   app_length; /* length of TCP payload */
+                           /**
+                            * the latest found proto
+                            */
+    FoundProto found;
+    int        found_offset;
 } PreInfo;
 
 /**

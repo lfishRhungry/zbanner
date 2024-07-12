@@ -17,38 +17,33 @@
 unsigned pixie_cpu_get_count(void);
 void     pixie_cpu_set_affinity(unsigned processor);
 void     pixie_cpu_raise_priority(void);
-
 /**
  * Launch and Join
  */
-size_t pixie_begin_thread(void (*worker_thread)(void *), unsigned flags,
-                          void *worker_data);
-void   pixie_thread_join(size_t thread_handle);
-
+size_t   pixie_begin_thread(void (*worker_thread)(void *), unsigned flags,
+                            void *worker_data);
+void     pixie_thread_join(size_t thread_handle);
 /**
  * set a name for the thread.
  * NOTE: name length cannot exceed 16 with null tail on Linux.
  */
-void pixie_set_thread_name(const char *name);
-
+void     pixie_set_thread_name(const char *name);
 /* barrier */
-void *pixie_create_barrier(unsigned total_threads);
-void  pixie_wait_barrier(void *p_barrier);
-bool  pixie_delete_barrier(void *p_barrier);
-
+void    *pixie_create_barrier(unsigned total_threads);
+void     pixie_wait_barrier(void *p_barrier);
+bool     pixie_delete_barrier(void *p_barrier);
 /* rwlock */
-void *pixie_create_rwlock();
-void  pixie_acquire_rwlock_read(void *p_rwlock);
-void  pixie_release_rwlock_read(void *p_rwlock);
-void  pixie_acquire_rwlock_write(void *p_rwlock);
-void  pixie_release_rwlock_write(void *p_rwlock);
-bool  pixie_delete_rwlock(void *p_rwlock);
-
+void    *pixie_create_rwlock();
+void     pixie_acquire_rwlock_read(void *p_rwlock);
+void     pixie_release_rwlock_read(void *p_rwlock);
+void     pixie_acquire_rwlock_write(void *p_rwlock);
+void     pixie_release_rwlock_write(void *p_rwlock);
+bool     pixie_delete_rwlock(void *p_rwlock);
 /* mutex */
-void *pixie_create_mutex();
-void  pixie_acquire_mutex(void *p_mutex);
-void  pixie_release_mutex(void *p_mutex);
-bool  pixie_delete_mutex(void *p_mutex);
+void    *pixie_create_mutex();
+void     pixie_acquire_mutex(void *p_mutex);
+void     pixie_release_mutex(void *p_mutex);
+bool     pixie_delete_mutex(void *p_mutex);
 
 #if defined(_MSC_VER)
 #define pixie_locked_add_u32(dst, src)                                         \

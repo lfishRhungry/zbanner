@@ -17,17 +17,15 @@ typedef struct TimeoutEntry {
      * See the TICKS_FROM_TV() macro for getting the timestamp from
      * the current time.
      */
-    uint64_t timestamp;
-
+    uint64_t              timestamp;
     /** we build a doubly-linked list */
     struct TimeoutEntry  *next;
     struct TimeoutEntry **prev;
-
     /** The timeout entry is never allocated by itself, but instead
      * lives inside another data structure. This stores the value of
      * 'offsetof()', so given a pointer to this structure, we can find
      * the original structure that contains it */
-    unsigned offset;
+    unsigned              offset;
 } TmEntry;
 
 /***************************************************************************

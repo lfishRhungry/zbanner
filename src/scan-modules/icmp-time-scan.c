@@ -133,8 +133,8 @@ Scanner IcmpTimeScan = {
     .required_probe_type = 0,
     .support_timeout     = 1,
     .params              = icmptime_parameters,
-    .bpf_filter          = /*icmp timestamp reply in ipv4*/
-    "icmp && (icmp[0]==14 && icmp[1]==0)",
+    /*icmp timestamp reply in ipv4*/
+    .bpf_filter          = "icmp && (icmp[0]==14 && icmp[1]==0)",
     .desc = "IcmpTimeScan sends an ICMP Timestamp mesage to IPv4 target host. "
             "Expect an "
             "ICMP Timestamp Reply to believe the host is alive.\n"

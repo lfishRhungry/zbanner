@@ -136,14 +136,13 @@ Scanner SctpInitScan = {
     .required_probe_type = 0,
     .support_timeout     = 1,
     .params              = sctpinit_parameters,
-    .bpf_filter          = /*sctp init or init ack in ipv4 & ipv6*/
-    "(ip && sctp && (sctp[12]==2 || sctp[12]==6)) "
-    "|| (ip6 && sctp && (ip6[40+12]==2 || ip6[40+12]==6))",
+    /*sctp init or init ack in ipv4 & ipv6*/
+    .bpf_filter          = "(ip && sctp && (sctp[12]==2 || sctp[12]==6)) "
+                           "|| (ip6 && sctp && (ip6[40+12]==2 || ip6[40+12]==6))",
     .desc = "SctpInitScan sends an SCTP INIT packet(chunk) to target port. "
             "Expect an "
             "INIT ACK response to believe the port is open or an ABORT for "
-            "closed in "
-            "SCTP protocol.",
+            "closed in SCTP protocol.",
 
     .init_cb     = &scan_init_nothing,
     .transmit_cb = &sctpinit_transmit,

@@ -98,7 +98,8 @@ typedef struct XtateConf {
         unsigned      vlan_id;
         unsigned      snaplen;
         int           link_type;
-        unsigned char my_mac_count; /*is there a MAC address? */
+        /*is there a MAC address? */
+        unsigned char my_mac_count;
         unsigned      is_vlan   : 1;
         unsigned      is_usable : 1;
     } nic;

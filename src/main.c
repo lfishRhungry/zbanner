@@ -617,8 +617,10 @@ int main(int argc, char *argv[]) {
     xconf->max_packet_len     = XCONF_DFT_MAX_PKT_LEN;
 
     xconf_command_line(xconf, argc, argv);
+
+    /* entropy for randomness */
     if (xconf->seed == 0)
-        xconf->seed = get_one_entropy(); /* entropy for randomness */
+        xconf->seed = get_one_entropy();
 
     /* a separate "raw socket" initialization step for Windows and PF_RING. */
     if (pcap_init() != 0)
@@ -634,7 +636,8 @@ int main(int argc, char *argv[]) {
      * hundreds of subranges. This allows us to grab addresses faster. */
     targetip_optimize(&xconf->targets);
 
-    /* FIXME: we only support 63-bit scans at the current time.
+    /**
+     * FIXME: we only support 63-bit scans at the current time.
      */
     if (int128_bitcount(targetip_range(&xconf->targets)) > 63) {
         LOG(LEVEL_ERROR,

@@ -111,6 +111,7 @@ typedef struct RxHandleConfig {
     STACK        *stack;
     OutConf      *out_conf;
     uint64_t      entropy;
+    /*unique index of the handle thread that count from 0*/
     unsigned      index;
 } HandleConf;
 

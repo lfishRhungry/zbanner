@@ -5,10 +5,9 @@
 #define THR_CACHE 256 /*must be power of 2*/
 
 typedef struct RateThrottler {
-    double max_rate;
-    double current_rate;
-    double batch_size;
-
+    double   max_rate;
+    double   current_rate;
+    double   batch_size;
     unsigned index;
 
     struct {

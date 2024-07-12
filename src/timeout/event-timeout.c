@@ -49,19 +49,15 @@ struct TimeoutTables {
      * Every time we check timeouts, we simply move it forward in time.
      */
     uint64_t current_index;
-
     /**
      * Counts the number of outstanding timeouts. Adding a timeout increments
      * this number, and removing a timeout decrements this number. The
      * program shouldn't exit until this number is zero.
      */
     uint64_t outstanding_count;
-
+    /*count of slot - 1 */
     unsigned mask;
-
-    /**
-     * The ring of entries, must be power of 2.
-     */
+    /*The ring of entries, must be power of 2.*/
     TmEntry *slots[EVENT_TM_SLOTS];
 };
 

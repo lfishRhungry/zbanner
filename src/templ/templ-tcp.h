@@ -60,43 +60,41 @@ typedef struct TemplateOptions TmplOpt;
 #define TCP_OPT_TYPE_SNAP       24
 #define TCP_OPT_TYPE_CF         26 /*TCP Compression Filter*/
 #define TCP_OPT_TYPE_QSR        27 /*Quick-Start Response*/
-#define TCP_OPT_TYPE_UTO                                                       \
-    28 /*User Timeout Option (also, other known unauthorized use)*/
-#define TCP_OPT_TYPE_AO    29 /*TCP Authentication Option (TCP-AO)*/
-#define TCP_OPT_TYPE_MPTCP 30 /*Multipath TCP*/
-#define TCP_OPT_TYPE_FOC   34 /*TCP Fast Open Cookie*/
-#define TCP_OPT_TYPE_ENO   69 /*Encryption Negotiation (TCP-ENO)*/
-#define TCP_OPT_TYPE_EXP1                                                      \
-    253 /*RFC3692-style Experiment 1 (also improperly used for shipping        \
-           products)*/
-#define TCP_OPT_TYPE_EXP2                                                      \
-    254 /*RFC3692-style Experiment 2 (also improperly used for shipping        \
-           products) */
-
-#define TCP_OPT_LEN_EOL        1
-#define TCP_OPT_LEN_NOP        1
-#define TCP_OPT_LEN_MSS        4
-#define TCP_OPT_LEN_WS         3
-#define TCP_OPT_LEN_ECHO       6
-#define TCP_OPT_LEN_ECHO_REPLY 6
-#define TCP_OPT_LEN_SACK_PERM  2
-#define TCP_OPT_LEN_TS         10
-#define TCP_OPT_LEN_POCP       2
-#define TCP_OPT_LEN_POSP       3
-#define TCP_OPT_LEN_ACR        3
-#define TCP_OPT_LEN_TCO        3
-#define TCP_OPT_LEN_MD5        18
-#define TCP_OPT_LEN_QSR        8
-#define TCP_OPT_LEN_UTO        4
+/*User Timeout Option (also, other known unauthorized use)*/
+#define TCP_OPT_TYPE_UTO        28
+#define TCP_OPT_TYPE_AO         29 /*TCP Authentication Option (TCP-AO)*/
+#define TCP_OPT_TYPE_MPTCP      30 /*Multipath TCP*/
+#define TCP_OPT_TYPE_FOC        34 /*TCP Fast Open Cookie*/
+#define TCP_OPT_TYPE_ENO        69 /*Encryption Negotiation (TCP-ENO)*/
+/*RFC3692-style Experiment 1 (also improperly used for shipping products)*/
+#define TCP_OPT_TYPE_EXP1       253
+/*RFC3692-style Experiment 2 (also improperly used for shipping products) */
+#define TCP_OPT_TYPE_EXP2       254
+#define TCP_OPT_LEN_EOL         1
+#define TCP_OPT_LEN_NOP         1
+#define TCP_OPT_LEN_MSS         4
+#define TCP_OPT_LEN_WS          3
+#define TCP_OPT_LEN_ECHO        6
+#define TCP_OPT_LEN_ECHO_REPLY  6
+#define TCP_OPT_LEN_SACK_PERM   2
+#define TCP_OPT_LEN_TS          10
+#define TCP_OPT_LEN_POCP        2
+#define TCP_OPT_LEN_POSP        3
+#define TCP_OPT_LEN_ACR         3
+#define TCP_OPT_LEN_TCO         3
+#define TCP_OPT_LEN_MD5         18
+#define TCP_OPT_LEN_QSR         8
+#define TCP_OPT_LEN_UTO         4
 
 #define TCP_DEFAULT_MSS 1460
 
 struct TcpOption {
     const unsigned char *buf;
     size_t               opt_len;
-    size_t   raw_len; /*raw_len = opt_len - opt_hdr (opt_hdr=kind(1)+len(1)=2)*/
-    unsigned kind;
-    bool     is_found;
+    /*raw_len = opt_len - opt_hdr (opt_hdr=kind(1)+len(1)=2)*/
+    size_t               raw_len;
+    unsigned             kind;
+    bool                 is_found;
 };
 
 /**

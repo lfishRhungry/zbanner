@@ -45,6 +45,7 @@ struct bpf_insn {
     uint8_t  jf;
     uint32_t k;
 };
+
 struct bpf_program {
     uint32_t         bf_len;
     struct bpf_insn *bf_insns;
@@ -76,11 +77,10 @@ enum {
     PCAP_ERROR_CANTSET_TSTAMP_TYPE     = -10,
     PCAP_ERROR_PROMISC_PERM_DENIED     = -11,
     PCAP_ERROR_TSTAMP_PRECISION_NOTSUP = -12,
-
     /* warnings, not errors */
-    PCAP_WARNING                    = 1,
-    PCAP_WARNING_PROMISC_NOTSUP     = 2,
-    PCAP_WARNING_TSTAMP_TYPE_NOTSUP = 3,
+    PCAP_WARNING                       = 1,
+    PCAP_WARNING_PROMISC_NOTSUP        = 2,
+    PCAP_WARNING_TSTAMP_TYPE_NOTSUP    = 3,
 };
 
 /* The packet header for capturing packets. Apple macOS inexplicably adds
@@ -126,7 +126,6 @@ typedef const char *(*PCAP_GETERR)(pcap_t *p);
 typedef const char *(*PCAP_DEV_NAME)(const pcap_if_t *dev);
 typedef const char *(*PCAP_DEV_DESCRIPTION)(const pcap_if_t *dev);
 typedef const pcap_if_t *(*PCAP_DEV_NEXT)(const pcap_if_t *dev);
-
 /*
  pcap_open() replaced with a series of calls to:
   p = pcap_create(device, errbuf);
@@ -144,7 +143,6 @@ typedef int (*PCAP_SET_BUFFER_SIZE)(pcap_t *p, int buffer_size);
 typedef int (*PCAP_SET_RFMON)(pcap_t *p, int rfmon);
 typedef int (*PCAP_CAN_SET_RFMON)(pcap_t *p);
 typedef int (*PCAP_ACTIVATE)(pcap_t *p);
-
 typedef int (*PCAP_LOOKUPNET)(const char *device, uint32_t *netp,
                               uint32_t *maskp, char *errbuf);
 typedef int (*PCAP_COMPILE)(pcap_t *p, struct bpf_program *fp, const char *str,
@@ -179,17 +177,16 @@ struct PcapFunctions {
     unsigned status;
     unsigned errcode;
 
-    PCAP_CLOSE         close;
-    PCAP_DATALINK      datalink;
-    PCAP_DISPATCH      dispatch;
-    PCAP_FINDALLDEVS   findalldevs;
-    PCAP_FREEALLDEVS   freealldevs;
-    PCAP_LOOKUPDEV     lookupdev;
-    PCAP_LIB_VERSION   lib_version;
-    PCAP_MAJOR_VERSION major_version;
-    PCAP_MINOR_VERSION minor_version;
-    PCAP_OPEN_LIVE     open_live;
-
+    PCAP_CLOSE                close;
+    PCAP_DATALINK             datalink;
+    PCAP_DISPATCH             dispatch;
+    PCAP_FINDALLDEVS          findalldevs;
+    PCAP_FREEALLDEVS          freealldevs;
+    PCAP_LOOKUPDEV            lookupdev;
+    PCAP_LIB_VERSION          lib_version;
+    PCAP_MAJOR_VERSION        major_version;
+    PCAP_MINOR_VERSION        minor_version;
+    PCAP_OPEN_LIVE            open_live;
     PCAP_OPEN_OFFLINE         open_offline;
     PCAP_SENDPACKET           sendpacket;
     PCAP_NEXT                 next;
@@ -197,35 +194,32 @@ struct PcapFunctions {
     PCAP_DATALINK_VAL_TO_NAME datalink_val_to_name;
     PCAP_PERROR               perror;
     PCAP_GETERR               geterr;
-
     /* Accessor functions for opaque data structure, don't really
      * exist in libpcap */
-    PCAP_DEV_NAME        dev_name;
-    PCAP_DEV_DESCRIPTION dev_description;
-    PCAP_DEV_NEXT        dev_next;
-
+    PCAP_DEV_NAME             dev_name;
+    PCAP_DEV_DESCRIPTION      dev_description;
+    PCAP_DEV_NEXT             dev_next;
     /* Windows-only functions */
-    PCAP_SENDQUEUE_ALLOC    sendqueue_alloc;
-    PCAP_SENDQUEUE_TRANSMIT sendqueue_transmit;
-    PCAP_SENDQUEUE_DESTROY  sendqueue_destroy;
-    PCAP_SENDQUEUE_QUEUE    sendqueue_queue;
-
-    PCAP_CREATE             create;
-    PCAP_SET_SNAPLEN        set_snaplen;
-    PCAP_SET_PROMISC        set_promisc;
-    PCAP_SET_TIMEOUT        set_timeout;
-    PCAP_SET_IMMEDIATE_MODE set_immediate_mode;
-    PCAP_SET_BUFFER_SIZE    set_buffer_size;
-    PCAP_SET_RFMON          set_rfmon;
-    PCAP_CAN_SET_RFMON      can_set_rfmon;
-    PCAP_ACTIVATE           activate;
-
+    PCAP_SENDQUEUE_ALLOC      sendqueue_alloc;
+    PCAP_SENDQUEUE_TRANSMIT   sendqueue_transmit;
+    PCAP_SENDQUEUE_DESTROY    sendqueue_destroy;
+    PCAP_SENDQUEUE_QUEUE      sendqueue_queue;
+    /*create*/
+    PCAP_CREATE               create;
+    PCAP_SET_SNAPLEN          set_snaplen;
+    PCAP_SET_PROMISC          set_promisc;
+    PCAP_SET_TIMEOUT          set_timeout;
+    PCAP_SET_IMMEDIATE_MODE   set_immediate_mode;
+    PCAP_SET_BUFFER_SIZE      set_buffer_size;
+    PCAP_SET_RFMON            set_rfmon;
+    PCAP_CAN_SET_RFMON        can_set_rfmon;
+    PCAP_ACTIVATE             activate;
     /* for bpf filter*/
-    PCAP_LOOKUPNET   lookupnet;
-    PCAP_COMPILE     compile;
-    PCAP_SETFILTER   setfilter;
-    PCAP_SETNONBLOCK setnonblock;
-    PCAP_NEXT_EX     next_ex;
+    PCAP_LOOKUPNET            lookupnet;
+    PCAP_COMPILE              compile;
+    PCAP_SETFILTER            setfilter;
+    PCAP_SETNONBLOCK          setnonblock;
+    PCAP_NEXT_EX              next_ex;
 };
 
 /**

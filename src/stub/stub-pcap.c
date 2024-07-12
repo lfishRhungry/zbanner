@@ -58,10 +58,13 @@
 
 struct pcap_if {
     struct pcap_if *next;
-    char           *name;        /* name to hand to "pcap_open_live()" */
-    char           *description; /* textual description of interface, or NULL */
+    /* name to hand to "pcap_open_live()" */
+    char           *name;
+    /* textual description of interface, or NULL */
+    char           *description;
     void           *addresses;
-    unsigned        flags; /* PCAP_IF_ interface flags */
+    /* PCAP_IF_ interface flags */
+    unsigned        flags;
 };
 
 static void seterr(char *errbuf, const char *msg) {

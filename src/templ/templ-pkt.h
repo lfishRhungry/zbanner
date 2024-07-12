@@ -10,8 +10,10 @@
 
 typedef enum Template_TYPE {
     TmplType_TCP = 0,
-    TmplType_TCP_SYN, /*for specific SYN settings and belongs to TCP*/
-    TmplType_TCP_RST, /*for specific RST settings and belongs to TCP*/
+    /*for specific SYN settings and belongs to TCP*/
+    TmplType_TCP_SYN,
+    /*for specific RST settings and belongs to TCP*/
+    TmplType_TCP_RST,
     TmplType_UDP,
     TmplType_SCTP,
     TmplType_ICMP_ECHO,

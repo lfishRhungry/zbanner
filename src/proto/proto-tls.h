@@ -124,8 +124,7 @@ Message Flow for a 0-RTT Handshake
 
 #include <openssl/ssl.h>
 
-#define TLS_CLIENTHELLO_MAX_LEN 1024
-
+#define TLS_CLIENTHELLO_MAX_LEN                    1024
 /*
  * Record Layer Content Type
  */
@@ -133,30 +132,27 @@ Message Flow for a 0-RTT Handshake
 #define TLS_RECORD_CONTENT_TYPE_ALERT              '\x15'
 #define TLS_RECORD_CONTENT_TYPE_HANDSHAKE          '\x16'
 #define TLS_RECORD_CONTENT_TYPE_APP_DATA           '\x17'
-
 /*
  * Handshake Type
  */
-#define TLS_HANDSHAKE_TYPE_CLIENTHELLO '\x01'
-#define TLS_HANDSHAKE_TYPE_SERVERHELLO '\x02'
-
+#define TLS_HANDSHAKE_TYPE_CLIENTHELLO             '\x01'
+#define TLS_HANDSHAKE_TYPE_SERVERHELLO             '\x02'
 /*
  * ALPN Proto Name
  */
-#define TLS_EXT_ALPN_PROTO_HTTP_0_9              "http/0.9"
-#define TLS_EXT_ALPN_PROTO_HTTP_1_0              "http/1.0"
-#define TLS_EXT_ALPN_PROTO_HTTP_1_1              "http/1.1"
-#define TLS_EXT_ALPN_PROTO_SPDY_1                "spdy/1"
-#define TLS_EXT_ALPN_PROTO_SPDY_2                "spdy/2"
-#define TLS_EXT_ALPN_PROTO_SPDY_3                "spdy/3"
-#define TLS_EXT_ALPN_PROTO_HTTP_2_OVER_TLS       "h2"
-#define TLS_EXT_ALPN_PROTO_HTTP_2_OVER_CLEARTEXT "h2c"
-#define TLS_EXT_ALPN_PROTO_HTTP_QUIC             "hq" /*deprecated*/
-
+#define TLS_EXT_ALPN_PROTO_HTTP_0_9                "http/0.9"
+#define TLS_EXT_ALPN_PROTO_HTTP_1_0                "http/1.0"
+#define TLS_EXT_ALPN_PROTO_HTTP_1_1                "http/1.1"
+#define TLS_EXT_ALPN_PROTO_SPDY_1                  "spdy/1"
+#define TLS_EXT_ALPN_PROTO_SPDY_2                  "spdy/2"
+#define TLS_EXT_ALPN_PROTO_SPDY_3                  "spdy/3"
+#define TLS_EXT_ALPN_PROTO_HTTP_2_OVER_TLS         "h2"
+#define TLS_EXT_ALPN_PROTO_HTTP_2_OVER_CLEARTEXT   "h2c"
+#define TLS_EXT_ALPN_PROTO_HTTP_QUIC               "hq" /*deprecated*/
 /*
  * Key Share Group
  */
-#define TLS_EXT_KEY_SHARE_GROUP_X25519 "\x00\x1d"
+#define TLS_EXT_KEY_SHARE_GROUP_X25519             "\x00\x1d"
 
 /**
  * get a grease value by seed.

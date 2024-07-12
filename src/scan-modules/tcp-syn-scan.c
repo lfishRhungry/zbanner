@@ -241,10 +241,11 @@ Scanner TcpSynScan = {
     .required_probe_type = 0,
     .support_timeout     = 1,
     .params              = tcpsyn_parameters,
-    .bpf_filter          = /* is syn-ack or rst in ipv4 & ipv6*/
-    "(ip && tcp && (tcp[tcpflags]==(tcp-syn|tcp-ack) || "
-    "tcp[tcpflags]==tcp-rst)) "
-    "|| (ip6 && tcp && (ip6[40+13]==(tcp-syn|tcp-ack) || ip6[40+13]==tcp-rst))",
+    /* is syn-ack or rst in ipv4 & ipv6*/
+    .bpf_filter          = "(ip && tcp && (tcp[tcpflags]==(tcp-syn|tcp-ack) || "
+                           "tcp[tcpflags]==tcp-rst)) "
+                           "|| (ip6 && tcp && (ip6[40+13]==(tcp-syn|tcp-ack) || "
+                           "ip6[40+13]==tcp-rst))",
     .desc = "TcpSynScan sends a TCP SYN packet to target port. Expect a SYNACK "
             "response to believe the port is open or an RST for closed in TCP "
             "protocol.\n"

@@ -32,7 +32,8 @@ typedef struct ConfigParam {
     CONFIG_SET_PARAM setter;
     ConfType         type;
     const char      *alt_names[8];
-    const char      *help_text; /*set NULL if not normal prarameter*/
+    /*set NULL if it's not a normal prarameter*/
+    const char      *help_text;
 } ConfParam;
 
 uint64_t parseInt(const char *str);

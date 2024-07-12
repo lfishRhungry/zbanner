@@ -17,24 +17,19 @@ typedef struct FastTmEntry FEntry;
 struct FastTmHandler {
     time_t     spec;
     lfqueue_t *queue;
-    FEntry    *oldest; /*oldest event poped from queue*/
+    /*oldest event poped from queue*/
+    FEntry    *oldest;
 };
 
 struct FastTmEntry {
-    /**
-     * time the Entry was create
-     */
+    /*time the Entry was create*/
     time_t timestamp;
-    /**
-     * point to correspond event or struct
-     */
+    /*point to correspond event or struct*/
     void  *event;
 };
 
 struct FastTmTable {
-    /**
-     * What time spec elapses before now should an event be timeout
-     */
+    /*What time spec elapses before now should an event be timeout*/
     time_t    spec;
     lfqueue_t queue_t;
 };

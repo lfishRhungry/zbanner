@@ -53,7 +53,8 @@ typedef bool (*scan_modules_init)(const XConf *xconf);
  */
 typedef struct ScanModuleTarget {
     Target   target;
-    unsigned index; /*use in tx thread for multi packets per target*/
+    /*use in tx thread for multi packets per target*/
+    unsigned index;
 } ScanTarget;
 
 /*a timeout event for scanning*/
@@ -102,9 +103,12 @@ typedef struct PacketPreHandle {
     ipaddress dedup_ip_me;
     unsigned  dedup_port_me;
     unsigned  dedup_type;
-    unsigned  go_record : 1; /*proceed to record or stop*/
-    unsigned  go_dedup  : 1; /*proceed to dedup or stop*/
-    unsigned  no_dedup  : 1; /*go on with(out) deduping*/
+    /*proceed to record or stop*/
+    unsigned  go_record : 1;
+    /*proceed to dedup or stop*/
+    unsigned  go_dedup  : 1;
+    /*go on with(out) deduping*/
+    unsigned  no_dedup  : 1;
 } PreHandle;
 
 /**
@@ -219,10 +223,13 @@ typedef void (*scan_modules_status)(char *status);
 
 typedef struct ScanModule {
     const char     *name;
-    const ProbeType required_probe_type; /*set zero if not using probe*/
+    /*set zero if not using probe*/
+    const ProbeType required_probe_type;
+    /*if support using timeout mechanism (fast-timeout)*/
     const unsigned  support_timeout;
-    const char     *bpf_filter; /*just for pcap to avoid copying uninteresting
-                                   packets from the kernel to user mode.*/
+    /*just for pcap to avoid copying uninteresting packets from the kernel to
+     * user mode.*/
+    const char     *bpf_filter;
     ConfParam      *params;
     Probe          *probe;
     const char     *desc;

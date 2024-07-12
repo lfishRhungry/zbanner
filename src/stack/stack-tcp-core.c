@@ -93,7 +93,7 @@
 #pragma warning(disable : 4996)
 #endif
 
-#define TCP_CORE_DEFAULT_EXPIRE 30
+#define TCP_CORE_DEFAULT_EXPIRE 30 /* half a minute before destroying tcb */
 #define TCP_CORE_DEFAULT_MSS    1460
 #define TCP_CORE_RTO_SECS       1
 
@@ -156,7 +156,7 @@ struct TCP_Control_Block {
     AppState    app_state;
     uint8_t     ttl;
     uint8_t     syns_sent; /* reconnect */
-    uint16_t    mss; /* maximum segment size 1460 TODO: maybe negotiate it */
+    uint16_t    mss;       /* maximum segment size 1460 */
     time_t      when_created;
     unsigned    is_active : 1; /*in-use/allocated or to be del soon*/
 
@@ -344,8 +344,7 @@ TCP_Table *tcpcon_create_table(size_t entry_count, STACK *stack,
 
     tcpcon->expire = expire;
     if (tcpcon->expire == 0)
-        tcpcon->expire =
-            TCP_CORE_DEFAULT_EXPIRE; /* half a minute before destroying tcb */
+        tcpcon->expire = TCP_CORE_DEFAULT_EXPIRE;
 
     bool is_found;
     tcpcon->mss_me = tcp_get_mss(syn_template->ipv4.packet,
@@ -1123,8 +1122,9 @@ void stack_incoming_tcp(TCP_Table *tcpcon, TCB *tcb, TcpWhat what,
                         .target.port_them = tcb->port_them,
                         .target.ip_me     = tcb->ip_me,
                         .target.port_me   = tcb->port_me,
-                        .cookie = 0, /*Probe_TYPE State doesn't need cookie*/
-                        .index  = tcb->port_me - tcpcon->src_port_start,
+                        /*Probe_TYPE State doesn't need cookie*/
+                        .cookie           = 0,
+                        .index = tcb->port_me - tcpcon->src_port_start,
                     };
 
                     if (!tcb->probe->conn_init_cb(&tcb->probe_state, &target)) {
@@ -1371,8 +1371,9 @@ again:
                         .target.ip_me     = socket->tcb->ip_me,
                         .target.port_them = socket->tcb->port_them,
                         .target.port_me   = socket->tcb->port_me,
-                        .cookie = 0, /*state mode does not need cookie*/
-                        .index  = socket->tcb->port_me -
+                        /*state mode does not need cookie*/
+                        .cookie           = 0,
+                        .index            = socket->tcb->port_me -
                                  socket->tcpcon->src_port_start,
                     };
 

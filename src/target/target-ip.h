@@ -37,15 +37,15 @@ typedef struct Target_IPs_Ports {
  * Ref:
  * https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
  */
-#define IP_PROTO_HOPOPT 0 /*IPv6 Hop-by-Hop Option*/
-#define IP_PROTO_ICMP   1 /*Internet Control Message*/
-#define IP_PROTO_IGMP   2 /*Internet Group Management*/
-#define IP_PROTO_GGP    3 /*Gateway-to-Gateway*/
-#define IP_PROTO_IPv4   4 /*IPv4 encapsulation*/
-#define IP_PROTO_TCP    6 /*Transmission Control*/
-#define IP_PROTO_EGP    8 /*Exterior Gateway Protocol*/
-#define IP_PROTO_IGP                                                           \
-    9 /*any private interior gateway (used by Cisco for their IGRP)*/
+#define IP_PROTO_HOPOPT         0 /*IPv6 Hop-by-Hop Option*/
+#define IP_PROTO_ICMP           1 /*Internet Control Message*/
+#define IP_PROTO_IGMP           2 /*Internet Group Management*/
+#define IP_PROTO_GGP            3 /*Gateway-to-Gateway*/
+#define IP_PROTO_IPv4           4 /*IPv4 encapsulation*/
+#define IP_PROTO_TCP            6 /*Transmission Control*/
+#define IP_PROTO_EGP            8 /*Exterior Gateway Protocol*/
+/*any private interior gateway (used by Cisco for their IGRP)*/
+#define IP_PROTO_IGP            9
 #define IP_PROTO_UDP            17  /*User Datagram*/
 #define IP_PROTO_IPv6           41  /*IPv6 encapsulation*/
 #define IP_PROTO_IPv6_Route     43  /*Routing Header for IPv6*/
