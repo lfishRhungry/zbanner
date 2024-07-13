@@ -732,7 +732,7 @@ int main(int argc, char *argv[]) {
             break;
 
         case Operation_Benchmark:
-            xconf_benchmark(14);
+            xconf_benchmark(XCONF_DFT_BLACKROCK_ROUNDS);
             break;
     }
 

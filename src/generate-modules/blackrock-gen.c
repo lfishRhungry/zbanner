@@ -99,7 +99,7 @@ bool blackrock_init(const XConf *xconf) {
      * prepare blackrock algorithm
      */
     if (blackrock_conf.rounds <= 0) {
-        blackrock_conf.rounds = 14;
+        blackrock_conf.rounds = XCONF_DFT_BLACKROCK_ROUNDS;
     }
 
     blackrock_conf.br_count = xconf->tx_thread_count;

@@ -2499,8 +2499,8 @@ ConfParam config_parameters[] = {
      " has multiple transmit threads but only one receive thread. Every "
      "thread will be lock on a CPU kernel if the number of all threads is no"
      " more than kernel's.\n"
-     "NOTE: 4 transmit threads could got a stable and high send rate in most "
-     "conditions. So the default value is 4."},
+     "NOTE: Default valude is 4. However, 4 transmit threads could got a stable"
+     " and high send rate in most conditions."},
     {"rx-handler-count",
      SET_rx_handler_count,
      Type_NUM,
