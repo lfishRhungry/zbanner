@@ -7,10 +7,10 @@ require("xtate-header")
 -- Secondly, set configs and info of the probe.
 ---@string name of the probe.
 ProbeName = "udp-example"
----@string type of the probe, could be 'tcp', 'udp' or 'state'.
-ProbeType = "udp"
----@string multi-probe mode, could be 'null', 'direct', 'if_open', 'after_handle' or 'dynamic_next'.
-MultiMode = "null"
+---@number a predefined Probe_Type value from xtate-header
+ProbeType = Probe_Type.UDP
+---@number a predefined Multi_Mode value from xtate-header
+MultiMode = Multi_Mode.Null
 ---@number multi-probe number.
 MultiNum  = 1
 ---@string description of the probe.
@@ -86,7 +86,7 @@ end
 ---@return string reason of classification.
 ---@return string report of response (empty string if no report).
 function Handle_response(ip_them, port_them, ip_me, port_me, index, response)
-    return 0, OutputLevel.SUCCESS, "identified", "matched", "dns"
+    return 0, Output_Level.SUCCESS, "identified", "matched", "dns"
 end
 
 -- To handle reponse timeout
@@ -101,5 +101,5 @@ end
 ---@return string reason of classification.
 ---@return string report of response (empty ret value if no report).
 function Handle_timeout(ip_them, port_them, ip_me, port_me, index)
-    return 0, OutputLevel.FAIL, "no service", "timeout", ""
+    return 0, Output_Level.FAIL, "no service", "timeout", ""
 end

@@ -226,9 +226,9 @@ typedef void (*probe_modules_close)();
 /*a probe belongs to one type*/
 typedef enum Probe_TYPE {
     ProbeType_NULL  = 0,
-    ProbeType_TCP   = 0B1,
-    ProbeType_UDP   = 0B10,
-    ProbeType_STATE = 0B100,
+    ProbeType_TCP   = 1,
+    ProbeType_UDP   = 2,
+    ProbeType_STATE = 3,
 } ProbeType;
 
 typedef enum MultiProbeMode {

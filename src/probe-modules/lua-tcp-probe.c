@@ -18,12 +18,6 @@
 #define LUA_PROBE_VAR_MULTINUM  "MultiNum"
 #define LUA_PROBE_VAR_PROBEDESC "ProbeDesc"
 
-#define LUA_PROBE_MULTI_NULL        "null"
-#define LUA_PROBE_MULTI_DIRECT      "direct"
-#define LUA_PROBE_MULTI_IFOPEN      "if_open"
-#define LUA_PROBE_MULTI_AFTERHANDLE "after_handle"
-#define LUA_PROBE_MULTI_DYNAMICNEXT "dynamic_next"
-
 #define LUA_PROBE_FUNC_MAKE_PAYLOAD    "Make_payload"
 #define LUA_PROBE_FUNC_GET_PAYLOAD_LEN "Get_payload_length"
 #define LUA_PROBE_FUNC_HANDLE_RESPONSE "Handle_response"
@@ -112,18 +106,18 @@ static bool sync_probe_config() {
 
     /*probe type*/
     lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_VAR_PROBETYPE);
-    if (lua_isstring(luatcp_conf.Ltx, -1) == 0) {
+    if (lua_isinteger(luatcp_conf.Ltx, -1) == 0) {
         LOG(LEVEL_ERROR,
             "" LUA_PROBE_NAME ": no `" LUA_PROBE_VAR_PROBETYPE
             "` setting in script %s.\n",
             luatcp_conf.script);
         return false;
     }
-    if (strcmp(lua_tostring(luatcp_conf.Ltx, -1), LUA_PROBE_TYPE) != 0) {
+    if (lua_tointeger(luatcp_conf.Ltx, -1) != ProbeType_TCP) {
         LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": need a " LUA_PROBE_TYPE
-            " `" LUA_PROBE_VAR_PROBETYPE "` instead of %s type in %s.\n",
-            lua_tostring(luatcp_conf.Ltx, -1), luatcp_conf.script);
+            "" LUA_PROBE_NAME ": need a %s `" LUA_PROBE_VAR_PROBETYPE
+            "` in %s.\n",
+            get_probe_type_name(ProbeType_TCP), luatcp_conf.script);
         return false;
     }
     lua_pop(luatcp_conf.Ltx, 1);
@@ -131,33 +125,14 @@ static bool sync_probe_config() {
     /*multi mode*/
     MultiMode *mode = (MultiMode *)&LuaTcpProbe.multi_mode;
     lua_getglobal(luatcp_conf.Ltx, LUA_PROBE_VAR_MULTIMODE);
-    if (lua_isstring(luatcp_conf.Ltx, -1) == 0) {
+    if (lua_isinteger(luatcp_conf.Ltx, -1) == 0) {
         LOG(LEVEL_ERROR,
             "" LUA_PROBE_NAME ": no `" LUA_PROBE_VAR_MULTIMODE
             "` setting in script %s.\n",
             luatcp_conf.script);
         return false;
     }
-    if (strcmp(lua_tostring(luatcp_conf.Ltx, -1), LUA_PROBE_MULTI_NULL) == 0) {
-    } else if (strcmp(lua_tostring(luatcp_conf.Ltx, -1),
-                      LUA_PROBE_MULTI_DIRECT) == 0) {
-        *mode = Multi_Direct;
-    } else if (strcmp(lua_tostring(luatcp_conf.Ltx, -1),
-                      LUA_PROBE_MULTI_IFOPEN) == 0) {
-        *mode = Multi_IfOpen;
-    } else if (strcmp(lua_tostring(luatcp_conf.Ltx, -1),
-                      LUA_PROBE_MULTI_AFTERHANDLE) == 0) {
-        *mode = Multi_AfterHandle;
-    } else if (strcmp(lua_tostring(luatcp_conf.Ltx, -1),
-                      LUA_PROBE_MULTI_DYNAMICNEXT) == 0) {
-        *mode = Multi_DynamicNext;
-    } else {
-        LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": invalid `" LUA_PROBE_VAR_MULTIMODE
-            "` setting in script %s.\n",
-            luatcp_conf.script);
-        return false;
-    }
+    *mode = lua_tointeger(luatcp_conf.Ltx, -1);
     lua_pop(luatcp_conf.Ltx, 1);
 
     /*multi num*/
