@@ -470,7 +470,7 @@ static unsigned luatcp_handle_response(unsigned th_idx, ProbeTarget *target,
         return 0;
     }
 
-    if (lua_isboolean(luatcp_conf.Lhx, -4) == 0) {
+    if (lua_isinteger(luatcp_conf.Lhx, -4) == 0) {
         LOG(LEVEL_ERROR,
             "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_RESPONSE
             "` return error in script %s.\n",
@@ -478,11 +478,7 @@ static unsigned luatcp_handle_response(unsigned th_idx, ProbeTarget *target,
         lua_settop(luatcp_conf.Lhx, 0);
         return 0;
     }
-    if (lua_toboolean(luatcp_conf.Lhx, -4) > 0) {
-        item->level = OUT_SUCCESS;
-    } else {
-        item->level = OUT_FAILURE;
-    }
+    item->level = lua_tointeger(luatcp_conf.Lhx, -4);
 
     if (lua_isstring(luatcp_conf.Lhx, -3) == 0) {
         LOG(LEVEL_ERROR,
@@ -562,7 +558,7 @@ static unsigned luatcp_handle_timeout(ProbeTarget *target, OutItem *item) {
         return 0;
     }
 
-    if (lua_isboolean(luatcp_conf.Lrx, -4) == 0) {
+    if (lua_isinteger(luatcp_conf.Lrx, -4) == 0) {
         LOG(LEVEL_ERROR,
             "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_TIMEOUT
             "` return error in script %s.\n",
@@ -570,11 +566,7 @@ static unsigned luatcp_handle_timeout(ProbeTarget *target, OutItem *item) {
         lua_settop(luatcp_conf.Lrx, 0);
         return 0;
     }
-    if (lua_toboolean(luatcp_conf.Lrx, -4) > 0) {
-        item->level = OUT_SUCCESS;
-    } else {
-        item->level = OUT_FAILURE;
-    }
+    item->level = lua_tointeger(luatcp_conf.Lrx, -4);
 
     if (lua_isstring(luatcp_conf.Lrx, -3) == 0) {
         LOG(LEVEL_ERROR,

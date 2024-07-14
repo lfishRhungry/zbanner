@@ -1,4 +1,10 @@
--- Configs
+-- Firstly, require the xtate header to get predefined values.
+local current_path = debug.getinfo(1, "S").source:sub(2)
+local current_dir = current_path:match("(.*/)")
+package.path = package.path .. ";" .. current_dir .. "?.lua"
+require("xtate-header")
+
+-- Secondly, set configs and info of the probe.
 ---@string name of the probe.
 ProbeName = "udp-example"
 ---@string type of the probe, could be 'tcp', 'udp' or 'state'.
@@ -13,6 +19,8 @@ ProbeDesc = [[
     "bind request and identifies dns service."
 ]]
 
+-- Then, write your own funcs in the same name and declaration as following.
+-- NOTE: take care of thread safety.
 
 local dns_req = "\x50\xb6\x01\x20\x00\x01\x00\x00\x00\x00\x00\x00\x07version\x04bind\x00\x00\x10\x00\x03"
 --[[
@@ -73,12 +81,12 @@ end
 ---@param index number index of expected hello probe.
 ---@param response string reponsed data.
 ---@return number positive for starting after_handle or index +1 to set next probe in dynamic_next.
----@return boolean result if a successful response.
+---@return number level a predefined output level value from xtate-header
 ---@return string classification of result.
 ---@return string reason of classification.
 ---@return string report of response (empty string if no report).
 function Handle_response(ip_them, port_them, ip_me, port_me, index, response)
-    return 0, true, "identified", "matched", "dns"
+    return 0, OutputLevel.SUCCESS, "identified", "matched", "dns"
 end
 
 -- To handle reponse timeout
@@ -88,10 +96,10 @@ end
 ---@param port_me number port of us.
 ---@param index number index of expected hello probe.
 ---@return number positive for starting after_handle or index +1 to set next probe in dynamic_next.
----@return boolean result if a successful response.
+---@return number level a predefined output level value from xtate-header
 ---@return string classification of result.
 ---@return string reason of classification.
 ---@return string report of response (empty ret value if no report).
 function Handle_timeout(ip_them, port_them, ip_me, port_me, index)
-    return 0, false, "no service", "timeout", ""
+    return 0, OutputLevel.FAIL, "no service", "timeout", ""
 end

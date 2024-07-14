@@ -1,4 +1,10 @@
--- Configs
+-- Firstly, require the xtate header to get predefined values.
+local current_path = debug.getinfo(1, "S").source:sub(2)
+local current_dir = current_path:match("(.*/)")
+package.path = package.path .. ";" .. current_dir .. "?.lua"
+require("xtate-header")
+
+-- Secondly, set configs and info of the probe.
 ---@string name of the probe.
 ProbeName = "tcp-example"
 ---@string type of the probe, could be 'tcp', 'udp' or 'state'.
@@ -12,6 +18,9 @@ ProbeDesc = [[
     "This is an example lua script for tcp type probe. It sends http simple get "
     "request and identifies http service."
 ]]
+
+-- Then, write your own funcs in the same name and declaration as following.
+-- NOTE: take care of thread safety.
 
 
 local hello_string = "GET / HTTP/1.0\r\n\r\n"
@@ -47,7 +56,7 @@ end
 ---@param index number index of expected hello probe.
 ---@param response string reponsed data.
 ---@return number positive for starting after_handle or index +1 to set next probe in dynamic_next.
----@return boolean result if a successful response.
+---@return number level a predefined output level value from xtate-header
 ---@return string classification of result.
 ---@return string reason of classification.
 ---@return string report of response (empty string if no report).
@@ -57,10 +66,10 @@ function Handle_response(ip_them, port_them, ip_me, port_me, index, response)
             or string.find(response, "html")
             or string.find(response, "HTML")
             or string.find(response, "<h1>")) then
-        return 0, true, "identified", "matched", "http service"
+        return 0, OutputLevel.SUCCESS, "identified", "matched", "http service"
     end
 
-    return 0, false, "unknown", "not matched", "not http"
+    return 0, OutputLevel.FAIL, "unknown", "not matched", "not http"
 end
 
 -- To handle reponse timeout.
@@ -70,10 +79,10 @@ end
 ---@param port_me number port of us.
 ---@param index number index of expected hello probe.
 ---@return number positive for starting after_handle or index +1 to set next probe in dynamic_next.
----@return boolean result if a successful response.
+---@return number level a predefined output level value from xtate-header
 ---@return string classification of result.
 ---@return string reason of classification.
 ---@return string report of response (empty ret value if no report).
 function Handle_timeout(ip_them, port_them, ip_me, port_me, index)
-    return 0, false, "no service", "timeout", ""
+    return 0, OutputLevel.FAIL, "no service", "timeout", ""
 end
