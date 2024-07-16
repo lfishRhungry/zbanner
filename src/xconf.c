@@ -588,6 +588,21 @@ static ConfRes SET_no_show_output(void *conf, const char *name,
     return Conf_OK;
 }
 
+static ConfRes SET_no_color(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        if (xconf->out_conf.no_color || xconf->echo_all) {
+            fprintf(xconf->echo, "no-color = %s\n",
+                    xconf->out_conf.no_color ? "true" : "false");
+        }
+        return 0;
+    }
+
+    xconf->out_conf.no_color = parseBoolean(value);
+
+    return Conf_OK;
+}
+
 static ConfRes SET_print_status(void *conf, const char *name,
                                 const char *value) {
     XConf *xconf = (XConf *)conf;
@@ -2872,6 +2887,12 @@ ConfParam config_parameters[] = {
      {"no-show-out", "no-show", 0},
      "Tells which type of results should not be showed explicitly, such as:\n"
      "'success', 'failed' or 'info'."},
+    {"no-color",
+     SET_no_color,
+     Type_BOOL,
+     {0},
+     "Print result to the screen without color. Some old terminal does not "
+     "support escapsed characters of ANSI for color."},
 
     {"GENERATE MODULES CONFIG", SET_nothing, 0, {0}, NULL},
 

@@ -122,6 +122,8 @@ static const char fmt_reason[]     = " because \"%s\"";
 static const char fmt_report_str[] = ",  " XPRINT_CH_COLOR_YELLOW "%s: \"%s\"";
 static const char fmt_report_num[] = ",  " XPRINT_CH_COLOR_YELLOW "%s: %s";
 
+static bool _output_color;
+
 bool output_init(OutConf *out_conf) {
     if (out_conf->output_module) {
         if (out_conf->output_module->need_file &&
@@ -150,6 +152,8 @@ bool output_init(OutConf *out_conf) {
         }
     }
 
+    _output_color = !out_conf->no_color;
+
     out_conf->stdout_mutex = pixie_create_mutex();
     out_conf->module_mutex = pixie_create_mutex();
     out_conf->succ_mutex   = pixie_create_mutex();
@@ -171,18 +175,31 @@ static void output_result_to_stdout(OutItem *item) {
 
     unsigned count = 0;
 
+    if (_output_color) {
+        switch (item->level) {
+            case OUT_SUCCESS:
+                count = fprintf(stdout, XPRINT_CH_COLOR_GREEN);
+                break;
+            case OUT_FAILURE:
+                count = fprintf(stdout, XPRINT_CH_COLOR_RED);
+                break;
+            case OUT_INFO:
+                count = fprintf(stdout, XPRINT_CH_COLOR_CYAN);
+                break;
+            default:
+                break;
+        }
+    }
+
     switch (item->level) {
         case OUT_SUCCESS:
-            count = fprintf(stdout, fmt_host, XPRINT_CH_COLOR_GREEN "[+]",
-                            ip_them_fmt.string);
+            count = fprintf(stdout, fmt_host, "[+]", ip_them_fmt.string);
             break;
         case OUT_FAILURE:
-            count = fprintf(stdout, fmt_host, XPRINT_CH_COLOR_RED "[x]",
-                            ip_them_fmt.string);
+            count = fprintf(stdout, fmt_host, "[x]", ip_them_fmt.string);
             break;
         case OUT_INFO:
-            count = fprintf(stdout, fmt_host, XPRINT_CH_COLOR_CYAN "[*]",
-                            ip_them_fmt.string);
+            count = fprintf(stdout, fmt_host, "[*]", ip_them_fmt.string);
             break;
         default:
             count = fprintf(stdout, fmt_host, "[?]", ip_them_fmt.string);
@@ -211,7 +228,10 @@ static void output_result_to_stdout(OutItem *item) {
     if (count < 120)
         fprintf(stdout, "%*s", (int)(120 - count), "");
 
-    fprintf(stdout, XPRINT_COLOR_RESET "\n");
+    if (_output_color)
+        fprintf(stdout, XPRINT_COLOR_RESET);
+
+    fprintf(stdout, "\n");
     fflush(stdout);
 }
 

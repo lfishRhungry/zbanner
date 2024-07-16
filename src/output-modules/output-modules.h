@@ -74,6 +74,7 @@ typedef struct OutputConfig {
     unsigned             is_show_failed  : 1;
     unsigned             is_show_info    : 1;
     unsigned             no_show_success : 1;
+    unsigned             no_color        : 1;
 } OutConf;
 
 /**
