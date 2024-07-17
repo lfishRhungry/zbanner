@@ -32,7 +32,7 @@ const char *output_level_to_string(OutLevel level) {
         case OUT_INFO:
             return "information";
         case OUT_FAILURE:
-            return "failed";
+            return "failure";
         case OUT_SUCCESS:
             return "success";
 
