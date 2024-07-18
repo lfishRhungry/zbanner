@@ -35,25 +35,6 @@ However, being fast and concise is always our target.
 
 In addition, Xtate supports IPv6 addresses and can be built on Windows and Linux with optional dependencies.
 
-## Papers
-
-Some of the Scan and Probe modules with original technology are derived from our papers.
-I hope that Xtate will be used more in academic research.
-And I would be honored if you cite our papers about Xtate despite my poor academic writing for a boring degree.
-
-- ZBanner: Fast Stateless Scanning Capable of Obtaining Responses over TCP
-
-```
-@misc{chen2024zbanner,
-      title={ZBanner: Fast Stateless Scanning Capable of Obtaining Responses over TCP}, 
-      author={Chiyu Chen and Yuliang Lu and Guozheng Yang and Yi Xie and Shasha Guo},
-      year={2024},
-      eprint={2405.07409},
-      archivePrefix={arXiv},
-      primaryClass={cs.NI}
-}
-```
-
 ## Intro/Design
 
 Unlike existing high-speed asynchronous scanners, Xtate enables richer scanning strategies by dividing the scanning process at a fine-grained level into individual functional modules.
@@ -337,7 +318,7 @@ make -j4
 
 # Author
 
-Xtate was created by sharkocha:
+Xtate was created by Sharkocha:
 
 - email: chenchiyu14@nudt.edu.cn
 
@@ -350,6 +331,32 @@ The initial version of Xtate was born from [Masscan](https://github.com/robertda
 Thanks to Robert Grahm for providing valued programing throughts and code infrastructures.
 Also thanks to other excellent open-source projects I refered to and noted in the code.
 I've learned more than just finishing my worthless graduate thesis.
+
+# Papers
+
+Some of the Scan and Probe modules with original technology are derived from our papers.
+You can see some details of Xtate in theory from them.
+I hope that Xtate will be used more in academic researches.
+And It would be my honored if you cite our papers about Xtate despite my poor academic writing for a boring degree.
+
+- ZBanner: Fast Stateless Scanning Capable of Obtaining Responses over TCP
+
+```
+@misc{chen2024zbanner,
+      title={ZBanner: Fast Stateless Scanning Capable of Obtaining Responses over TCP}, 
+      author={Chiyu Chen and Yuliang Lu and Guozheng Yang and Yi Xie and Shasha Guo},
+      year={2024},
+      eprint={2405.07409},
+      archivePrefix={arXiv},
+      primaryClass={cs.NI}
+}
+```
+
+- Efficient Application-Layer Scanning with Hybrid-State Lightweight TCP Stack for TLS-based Service Monitoring
+
+```
+publishing...
+```
 
 # License
 
