@@ -830,7 +830,7 @@ static ConfRes SET_pfring(void *conf, const char *name, const char *value) {
 static ConfRes SET_noresume(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->is_nodedup || xconf->echo_all) {
+        if (xconf->is_noresume || xconf->echo_all) {
             fprintf(xconf->echo, "no-resume = %s\n",
                     xconf->is_noresume ? "true" : "false");
         }
