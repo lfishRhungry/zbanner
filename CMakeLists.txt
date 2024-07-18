@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(xtate VERSION 1.0)
+project(xtate VERSION 1.0.0)
 
 option(WITH_OPENSSL        "Build with OpenSSL library"                   ON)
 option(WITH_PCRE2          "Build with PCRE2 library"                     ON)
