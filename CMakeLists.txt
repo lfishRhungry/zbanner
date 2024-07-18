@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
-project(xtate VERSION 1.0.0)
+project(xtate VERSION 1.1.0)
 
 option(WITH_OPENSSL        "Build with OpenSSL library"                   ON)
 option(WITH_PCRE2          "Build with PCRE2 library"                     ON)
 option(WITH_LIBXML2        "Build with LibXml2 library"                   ON)
+option(WITH_JUDY           "Build with Judy library"                      ON)
 # option(WITH_FANN           "Build with Fann library"                      ON)
 
 # According to C99 standards while using designated initializer:
@@ -101,6 +102,19 @@ if (${LibXml2_FOUND})
     target_link_libraries(${exe_name} LibXml2::LibXml2)
 else ()
     add_compile_definitions(NOT_FOUND_LIBXML2)
+endif ()
+
+
+# --------------------libjudy
+if (${WITH_JUDY})
+    find_library(FOUND_JUDY HINTS /usr/include/ NAMES Judy libjudy-dev judy dev-libs/judy judy-devel)
+endif ()
+
+if (FOUND_JUDY)
+    #include_directories(${LIBXML2_INCLUDE_DIR})
+    target_link_libraries(${exe_name} Judy)
+else ()
+    add_compile_definitions(NOT_FOUND_JUDY)
 endif ()
 
 # --------------------fann

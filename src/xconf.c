@@ -15,7 +15,7 @@
 #include "crypto/crypto-siphash24.h"
 #include "crypto/crypto-lcg.h"
 
-#include "util-scan/dedup.h"
+#include "dedup/dedup.h"
 #include "util-scan/rstfilter.h"
 #include "util-data/safe-string.h"
 #include "util-data/fine-malloc.h"
@@ -3080,7 +3080,13 @@ ConfParam config_parameters[] = {
      SET_dedup_win,
      Type_NUM,
      {0},
-     "Set the window size of deduplication table. Default size if 1000000."},
+     "Set the window size of deduplication table. Default size if 1000000.\n"
+     "NOTE: " XTATE_UPPER_NAME " uses two different types of deduplication. The"
+     " default one is hash buckets with LRU mechanism and window size means the"
+     " whole count of entries. The other one is judy array which will be used "
+     "automaticly if built with libjudy. In this condition, window size means"
+     " the actual size of slide window. I didn't identify the performance and "
+     "advantages between them and left the choice to users."},
     {"stack-buf-count",
      SET_stack_buf_count,
      Type_NUM,
@@ -3605,6 +3611,12 @@ void xconf_print_version() {
     printf("    LibXml2 %s\n", LIBXML_DOTTED_VERSION);
 #else
     printf("    LibXml2    (null)\n");
+#endif
+
+#ifndef NOT_FOUND_JUDY
+    printf("    LibJudy linked\n");
+#else
+    printf("    LibJudy    (null)\n");
 #endif
 
     printf("\n");

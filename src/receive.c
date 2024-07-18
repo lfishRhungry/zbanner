@@ -25,7 +25,7 @@
 #include "templ/templ-icmp.h"
 #include "templ/templ-arp.h"
 
-#include "util-scan/dedup.h"
+#include "dedup/dedup.h"
 #include "util-out/logger.h"
 #include "util-data/fine-malloc.h"
 #include "util-scan/ptrace.h"
@@ -190,7 +190,7 @@ void receive_thread(void *v) {
     uint64_t         entropy      = xconf->seed;
     STACK           *stack        = xconf->stack;
     Scanner         *scan_module  = xconf->scanner;
-    DedupTable      *dedup        = NULL;
+    Dedup           *dedup        = NULL;
     struct PcapFile *pcapfile     = NULL;
     ScanTmEvent     *tm_event     = NULL;
     FHandler        *ft_handler   = NULL;
@@ -233,7 +233,7 @@ void receive_thread(void *v) {
     }
 
     if (!xconf->is_nodedup)
-        dedup = dedup_create(xconf->dedup_win);
+        dedup = dedup_init(xconf->dedup_win);
 
     if (xconf->is_fast_timeout) {
         ft_handler = ft_get_handler(xconf->ft_table);
@@ -284,10 +284,10 @@ void receive_thread(void *v) {
                 break;
 
             if ((!xconf->is_nodedup &&
-                 !dedup_is_duplicate(
-                     dedup, tm_event->target.ip_them,
-                     tm_event->target.port_them, tm_event->target.ip_me,
-                     tm_event->target.port_me, tm_event->dedup_type)) ||
+                 !dedup_is_dup(dedup, tm_event->target.ip_them,
+                               tm_event->target.port_them,
+                               tm_event->target.ip_me, tm_event->target.port_me,
+                               tm_event->dedup_type)) ||
                 xconf->is_nodedup) {
                 OutItem item = {
                     .target.ip_proto  = tm_event->target.ip_proto,
@@ -425,9 +425,9 @@ void receive_thread(void *v) {
         }
 
         if (!xconf->is_nodedup && !pre.no_dedup) {
-            if (dedup_is_duplicate(dedup, pre.dedup_ip_them,
-                                   pre.dedup_port_them, pre.dedup_ip_me,
-                                   pre.dedup_port_me, pre.dedup_type)) {
+            if (dedup_is_dup(dedup, pre.dedup_ip_them, pre.dedup_port_them,
+                             pre.dedup_ip_me, pre.dedup_port_me,
+                             pre.dedup_type)) {
                 free(recved->packet);
                 free(recved);
                 continue;
@@ -462,7 +462,7 @@ void receive_thread(void *v) {
     }
 
     if (!xconf->is_nodedup && dedup) {
-        dedup_destroy(dedup);
+        dedup_close(dedup);
         dedup = NULL;
     }
     if (pcapfile) {
