@@ -39,7 +39,7 @@ In addition, Xtate supports IPv6 addresses and can be built on Windows and Linux
 
 Some of the Scan and Probe modules with original technology are derived from our papers.
 I hope that Xtate will be used more in academic research.
-And I would be honored if you would cite our papers related to xtate.
+And I would be honored if you cite our papers about Xtate despite my poor academic writing for a boring degree.
 
 - ZBanner: Fast Stateless Scanning Capable of Obtaining Responses over TCP
 
