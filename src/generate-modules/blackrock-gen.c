@@ -210,7 +210,7 @@ Generator BlackRockGen = {
         " BlackRock implements an encryption algorithm based on DES and "
         "shuffles"
         " the index in stateless.\n"
-        "NOTE1: BlackRock is the default generator of " XTATE_FIRST_UPPER_NAME
+        "NOTE1: BlackRock is the default generator of " XTATE_NAME_TITLE_CASE
         " if"
         " no other generator was specified.\n"
         "NOTE2: BlackRock generates targets in product of ip*port. So it cannot"

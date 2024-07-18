@@ -397,7 +397,7 @@ Probe LzrProbe = {
     .params     = lzr_parameters,
     .desc =
         "LzrProbe is an implementation of LZR( a service identifier) "
-        "in " XTATE_FIRST_UPPER_NAME
+        "in " XTATE_NAME_TITLE_CASE
         ". It sends a serias specified LZR handshakes"
         "(subprobes) until identified the service by matching responsed data "
         "with all LZR handshakes.\n"

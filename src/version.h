@@ -1,22 +1,24 @@
+// clang-format off
+#pragma once
+
 #ifndef VERSION_H
 #define VERSION_H
 
-/**
- * Useful predefinition for xtate
- */
-#define XTATE_GOD "God is Stateless"
-#define XTATE_FOR                                                              \
-    "A modular all-stack network scanner for next-generation internet "        \
-    "surveys!"
 #define XTATE_NAME             "xtate"
-#define XTATE_UPPER_NAME       "XTATE"
-#define XTATE_FIRST_UPPER_NAME "Xtate"
-#define XTATE_AUTHOR_NAME      "sharkocha"
-#define XTATE_AUTHOR_MAIL      "chenchiyu14@nudt.edu.cn"
-#define XTATE_VERSION          "1.1.1"
-#define XTATE_WITH_VERSION     "xtate/1.1.1"
+#define XTATE_NAME_ALL_CAPS    "XTATE"
+#define XTATE_NAME_TITLE_CASE  "Xtate"
+#define XTATE_VERSION          "1.2.1"
+#define XTATE_VERSION_MAJOR    1
+#define XTATE_VERSION_MINOR    2
+#define XTATE_VERSION_PATCH    1
+#define XTATE_WITH_VERSION     "xtate/1.2.1"
+#define XTATE_DESCRIPTION      "A modular all-stack network scanner for next-generation internet surveys."
+#define XTATE_AUTHOR           "Sharkocha"
+#define XTATE_CONTACT          "chenchiyu14@nudt.edu.cn"
+#define XTATE_GITHUB_URL       "https://github.com/sharkocha/xtate"
+#define XTATE_ISSUES_URL       "https://github.com/sharkocha/xtate/issues"
 #define XTATE_DEFAULT_CONF     "/etc/xtate/xtate.conf"
-#define XTATE_GITHUB           "https://github.com/sharkocha/xtate"
-#define XTATE_GITHUB_ISSUES    "https://github.com/sharkocha/xtate/issues"
+#define XTATE_BANNER           "God is Stateless"
 
 #endif
+// clang-format on

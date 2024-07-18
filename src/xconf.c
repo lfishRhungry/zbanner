@@ -2487,7 +2487,7 @@ ConfParam config_parameters[] = {
      SET_wait,
      Type_NUM,
      {"cooldown", 0},
-     "How many seconds should " XTATE_FIRST_UPPER_NAME " waiting and handling "
+     "How many seconds should " XTATE_NAME_TITLE_CASE " waiting and handling "
      "incoming packets after all transmit threads finished. Default is 10s."
      "Specifies the number of seconds after transmit is done to wait for "
      "receiving packets before exiting the program. The default is 10 "
@@ -2510,7 +2510,7 @@ ConfParam config_parameters[] = {
      SET_tx_thread_count,
      Type_NUM,
      {"tx-count", "tx-num", 0},
-     "Specify the number of transmit threads. " XTATE_FIRST_UPPER_NAME " could"
+     "Specify the number of transmit threads. " XTATE_NAME_TITLE_CASE " could"
      " has multiple transmit threads but only one receive thread. Every "
      "thread will be lock on a CPU kernel if the number of all threads is no"
      " more than kernel's.\n"
@@ -2520,7 +2520,7 @@ ConfParam config_parameters[] = {
      SET_rx_handler_count,
      Type_NUM,
      {"rx-count", "rx-num", 0},
-     "Specify the number of receive handler threads. " XTATE_FIRST_UPPER_NAME
+     "Specify the number of receive handler threads. " XTATE_NAME_TITLE_CASE
      " could"
      " has multiple receive handler threads but only one receive thread. Every "
      "handler thread will be dispatched recv packets by (dst_IP, dst_Port, "
@@ -2568,7 +2568,7 @@ ConfParam config_parameters[] = {
      SET_target_ip,
      Type_NONE,
      {"range", "ranges", "dst-ip", "ip", 0},
-     "Specifies an IP address or range as target " XTATE_FIRST_UPPER_NAME ". "
+     "Specifies an IP address or range as target " XTATE_NAME_TITLE_CASE ". "
      "There are three valid formats. The first is a single IP address like "
      "192.168.0.1 or 2001:db8::1. The second is a range like "
      "10.0.0.1-10.0.0.100."
@@ -2645,7 +2645,7 @@ ConfParam config_parameters[] = {
      "single IP address, a range may be specified.\n"
      "NOTE1: The size of the range must be a power of 2, such as "
      "1, 2, 4, 8, 16, 1024 etc.\n"
-     "NOTE2: " XTATE_FIRST_UPPER_NAME
+     "NOTE2: " XTATE_NAME_TITLE_CASE
      " could get source ipv6 address with global"
      " scope include NAT6 network. But we need to specified manually if use "
      "ipv6 address in local link scope."},
@@ -2701,7 +2701,7 @@ ConfParam config_parameters[] = {
      Type_BOOL,
      {"local", "lan", 0},
      "Set the router MAC address to a broadcast address(ff-ff-ff-ff-ff-ff). "
-     "This can make " XTATE_FIRST_UPPER_NAME
+     "This can make " XTATE_NAME_TITLE_CASE
      " be able to scan in a local network.\n"
      "NOTE: This flag must set while we do some layer-2 protocol scan "
      "like ARP."},
@@ -2710,7 +2710,7 @@ ConfParam config_parameters[] = {
      Type_BOOL,
      {"no-router-mac", 0},
      "Set the router MAC address to a invalid address(01-02-03-04-05-06). "
-     "This can stop " XTATE_FIRST_UPPER_NAME " to resolve router MAC address."
+     "This can stop " XTATE_NAME_TITLE_CASE " to resolve router MAC address."
      "It's useful when the ScanModule will specify destination MAC address "
      "dynamicly for different target. e.g. NdpNsScan.\n"
      "HINT: If we want to test the highest sending rate and not bother anyone"
@@ -2721,7 +2721,7 @@ ConfParam config_parameters[] = {
      {"bypass", 0},
      "Completely bypass the OS protocol stack. This means we can set a proper"
      " `--src-ip`(in the local subnet) and `--src-mac` different from the OS "
-     "to scan. Because " XTATE_FIRST_UPPER_NAME
+     "to scan. Because " XTATE_NAME_TITLE_CASE
      " will do reponse to special ARP "
      "& NDP request for our new IP as if we are real member of the local "
      "subnet.\n"
@@ -2839,9 +2839,9 @@ ConfParam config_parameters[] = {
      {"output", "out", 0},
      "Specifies an OutputModule for outputing results in special way. Use "
      "--list-output to get informations of all OutputModules. OutputModule"
-     " is non-essential because " XTATE_FIRST_UPPER_NAME " output results to "
+     " is non-essential because " XTATE_NAME_TITLE_CASE " output results to "
      "stdout in default.\n"
-     "NOTE: " XTATE_FIRST_UPPER_NAME " won't output to stdout if we specified "
+     "NOTE: " XTATE_NAME_TITLE_CASE " won't output to stdout if we specified "
      "an OutputModule unless we use `--interactive` switch."},
     {"list-output-modules",
      SET_list_output_modules,
@@ -3016,12 +3016,12 @@ ConfParam config_parameters[] = {
      {"no-bpf", 0},
      "Do not compile any BPF filter from ScanModules or users. Some machines"
      " does not support part or all of BPF filters and this switch "
-     "makes " XTATE_UPPER_NAME " working again."},
+     "makes " XTATE_NAME_TITLE_CASE " working again."},
     {"max-packet-len",
      SET_max_packet_len,
      Type_NUM,
      {"max-pkt-len", 0},
-     XTATE_UPPER_NAME
+     XTATE_NAME_TITLE_CASE
      " won't handle a received packet that is more than "
      "max-packet-len. Default is 1514."
      "NOTE: Be cared to the interaction with --tcp-win and --snaplen."},
@@ -3034,7 +3034,8 @@ ConfParam config_parameters[] = {
      {"config", "resume", 0},
      "Reads in a configuration file. If not specified, then will read from "
      "/etc/xtate/xtate.conf by default. We could specifies a configuration "
-     "file generated by " XTATE_UPPER_NAME " automatically after break by user"
+     "file generated by " XTATE_NAME_TITLE_CASE
+     " automatically after break by user"
      " to resume an unfinished scanning."},
     {"resume-index",
      SET_resume_index,
@@ -3060,14 +3061,16 @@ ConfParam config_parameters[] = {
      {"use-timeout", 0},
      "Specifies whether or how many timeouts(sec) should ScanModule use like"
      " --timeout true, --timeout 15. Some ScanModules could use timeout "
-     "function of " XTATE_UPPER_NAME " to result some unresponsed targets and "
+     "function of " XTATE_NAME_TITLE_CASE
+     " to result some unresponsed targets and "
      "do some operation.\n"
      "NOTE: Timeout mechanism may use more memory and cause block on the Rx"
      " thread while in high-speed send rate. Also the way I used to handle "
      "the timeout event is kludge. I guess that it can be not that precise "
      "sometimes because of the dedup mechanism. Although it can bring some "
      "convenient effects in some scanning, I recommend not to use it if "
-     "possible. However, " XTATE_UPPER_NAME " was originally born in stateless "
+     "possible. However, " XTATE_NAME_TITLE_CASE
+     " was originally born in stateless "
      "mode:)"},
     {"no-dedup",
      SET_nodedup,
@@ -3081,7 +3084,8 @@ ConfParam config_parameters[] = {
      Type_NUM,
      {0},
      "Set the window size of deduplication table. Default size if 1000000.\n"
-     "NOTE: " XTATE_UPPER_NAME " uses two different types of deduplication. The"
+     "NOTE: " XTATE_NAME_TITLE_CASE
+     " uses two different types of deduplication. The"
      " default one is hash buckets with LRU mechanism and window size means the"
      " whole count of entries. The other one is judy array which will be used "
      "automaticly if built with libjudy. In this condition, window size means"
@@ -3132,7 +3136,7 @@ ConfParam config_parameters[] = {
      Type_BOOL,
      {0},
      "Scan the target again and again. Not stop until we hit <Ctrl-C>. This "
-     "is useful for us to test the some performance of " XTATE_FIRST_UPPER_NAME
+     "is useful for us to test the some performance of " XTATE_NAME_TITLE_CASE
      ". The seed will update in every loop while setting infinite mode.\n"
      "HINT: If we just want to test the highest sending rate, try to set an "
      "invalid router mac like `--router-mac 11:22:33:44:55:66` or use `--fake"
@@ -3142,7 +3146,7 @@ ConfParam config_parameters[] = {
      SET_repeat,
      Type_NUM,
      {"repeats", 0},
-     "How many times " XTATE_FIRST_UPPER_NAME " should repeat for all targets."
+     "How many times " XTATE_NAME_TITLE_CASE " should repeat for all targets."
      " It also means the hit count for every target + 1. So default is 0."
      " `--infinite` will be automatically set when we use repeat.\n"
      "NOTE: We should be careful to the deduplication in the repeat mode."},
@@ -3151,7 +3155,7 @@ ConfParam config_parameters[] = {
      Type_BOOL,
      {"keep-seed", 0},
      "Use same seed to pick up addresses in infinite "
-     "mode. " XTATE_FIRST_UPPER_NAME
+     "mode. " XTATE_NAME_TITLE_CASE
      " changes seed for every round to make a different"
      " scan order while repeating. We can use static-seed to keep order of "
      "all rounds."},
@@ -3159,8 +3163,7 @@ ConfParam config_parameters[] = {
      SET_no_cpu_bind,
      Type_BOOL,
      {"no-bind", 0},
-     "In default, " XTATE_FIRST_UPPER_NAME
-     " bind its threads to CPU kernels for"
+     "In default, " XTATE_NAME_TITLE_CASE " bind its threads to CPU kernels for"
      " better performance if the number of kernels is great than 1. This "
      "switch allows no CPU binding for all threads and is useful for computers"
      " with outdated hardware.\n"
@@ -3317,18 +3320,18 @@ bool xconf_contains(const char *x, int argc, char **argv) {
 
 void xconf_print_intro() {
     printf("\n");
-    printf("Welcome to " XTATE_FIRST_UPPER_NAME "!");
+    printf("Welcome to " XTATE_NAME_TITLE_CASE "!");
     printf("\n");
-    xprint(XTATE_FOR, 2, 80);
-    printf("\n");
-    printf("\n");
-    printf("  Author : " XTATE_AUTHOR_NAME "\n");
-    printf("  Github : " XTATE_GITHUB "\n");
-    printf("  Contact: " XTATE_AUTHOR_MAIL "\n");
+    xprint(XTATE_DESCRIPTION, 2, 80);
     printf("\n");
     printf("\n");
+    printf("  Author : " XTATE_AUTHOR "\n");
+    printf("  Github : " XTATE_GITHUB_URL "\n");
+    printf("  Contact: " XTATE_CONTACT "\n");
     printf("\n");
-    printf("This is how " XTATE_FIRST_UPPER_NAME " working internally:\n");
+    printf("\n");
+    printf("\n");
+    printf("This is how " XTATE_NAME_TITLE_CASE " working internally:\n");
     printf("\n");
     printf(work_flow);
     printf("\n");
@@ -3344,18 +3347,18 @@ void xconf_print_intro() {
 void xconf_print_usage() {
     printf("\n\n\n");
     xprint_with_head(ascii_xtate2, 10, 80);
-    printf("\n                             " XTATE_GOD "\n\n");
+    printf("\n                             " XTATE_BANNER "\n\n");
     printf("\n");
 
     printf("\n");
-    printf("Welcome to " XTATE_FIRST_UPPER_NAME "!");
+    printf("Welcome to " XTATE_NAME_TITLE_CASE "!");
     printf("\n");
-    xprint(XTATE_FOR, 2, 80);
+    xprint(XTATE_DESCRIPTION, 2, 80);
     printf("\n");
     printf("\n");
-    printf("  Author : " XTATE_AUTHOR_NAME "\n");
-    printf("  Github : " XTATE_GITHUB "\n");
-    printf("  Contact: " XTATE_AUTHOR_MAIL "\n");
+    printf("  Author : " XTATE_AUTHOR "\n");
+    printf("  Github : " XTATE_GITHUB_URL "\n");
+    printf("  Contact: " XTATE_CONTACT "\n");
     printf("\n");
     printf("usage format:\n");
     printf("  " XTATE_NAME " [options] [-ip IPs -p PORTs [-scan SCANMODULE "
@@ -3413,7 +3416,7 @@ void xconf_print_usage() {
     xprint("print version and compilation info.\n", 6, 80);
     printf("\n");
     printf("  " XTATE_NAME " -intro\n");
-    xprint("show the design and architecture of " XTATE_FIRST_UPPER_NAME ".\n",
+    xprint("show the design and architecture of " XTATE_NAME_TITLE_CASE ".\n",
            6, 80);
     printf("\n");
     printf("  " XTATE_NAME " -usage\n");
@@ -3430,16 +3433,16 @@ void xconf_print_version() {
     const char *compiler_version = "unknown";
     const char *os               = "unknown";
     printf("\n");
-    printf("  " XTATE_FIRST_UPPER_NAME " version %s", XTATE_VERSION);
+    printf("  " XTATE_NAME_TITLE_CASE " version %s", XTATE_VERSION);
 #ifdef NDEBUG
     printf(" in Release\n");
 #else
     printf(" in Debug\n");
 #endif
     printf("\n");
-    printf("  Author : " XTATE_AUTHOR_NAME "\n");
-    printf("  Github : " XTATE_GITHUB "\n");
-    printf("  Contact: " XTATE_AUTHOR_MAIL "\n");
+    printf("  Author : " XTATE_AUTHOR "\n");
+    printf("  Github : " XTATE_GITHUB_URL "\n");
+    printf("  Contact: " XTATE_CONTACT "\n");
     printf("\n");
     printf("  Compiled on: %s %s\n", __DATE__, __TIME__);
 
@@ -3625,19 +3628,19 @@ void xconf_print_version() {
 void xconf_print_help() {
     printf("\n\n\n");
     xprint_with_head(ascii_xtate1, 15, 80);
-    printf("\n                               " XTATE_GOD "\n\n");
+    printf("\n                               " XTATE_BANNER "\n\n");
     printf("\n");
-    xprint("Welcome to " XTATE_FIRST_UPPER_NAME "!", 2, 80);
+    xprint("Welcome to " XTATE_NAME_TITLE_CASE "!", 2, 80);
     printf("\n");
-    xprint(XTATE_FOR, 4, 80);
+    xprint(XTATE_DESCRIPTION, 4, 80);
     printf("\n");
     printf("\n");
-    printf("  Author : " XTATE_AUTHOR_NAME "\n");
-    printf("  Github : " XTATE_GITHUB "\n");
-    printf("  Contact: " XTATE_AUTHOR_MAIL "\n");
+    printf("  Author : " XTATE_AUTHOR "\n");
+    printf("  Github : " XTATE_GITHUB_URL "\n");
+    printf("  Contact: " XTATE_CONTACT "\n");
     printf("\n");
     xprint("Here are detailed help text of all parameters "
-           "of " XTATE_FIRST_UPPER_NAME
+           "of " XTATE_NAME_TITLE_CASE
            ". I hope these will help you a lot. If any "
            "problem or advice, please contact me.\n",
            2, 80);

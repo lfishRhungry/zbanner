@@ -327,9 +327,9 @@ static int _main_scan(XConf *xconf) {
     safe_gmtime(&x, &now);
     strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S GMT", &x);
     LOG(LEVEL_OUT,
-        "\nStarting " XTATE_FIRST_UPPER_NAME " " XTATE_VERSION " at %s\n",
+        "\nStarting " XTATE_NAME_TITLE_CASE " " XTATE_VERSION " at %s\n",
         buffer);
-    LOG(LEVEL_OUT, "(" XTATE_GITHUB ")\n");
+    LOG(LEVEL_OUT, "(" XTATE_GITHUB_URL ")\n");
 
     LOG(LEVEL_OUT, "Scanner:   %s\n", xconf->scanner->name);
     if (xconf->probe)

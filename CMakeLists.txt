@@ -1,5 +1,23 @@
 cmake_minimum_required(VERSION 3.20)
-project(xtate VERSION 1.1.1)
+project(
+    xtate
+    LANGUAGES               C
+    VERSION                 1.2.1
+    DESCRIPTION             "A modular all-stack network scanner for next-generation internet surveys."
+    HOMEPAGE_URL            "https://github.com/sharkocha/xtate"
+    )
+set(PROJECT_NAME_ALL_CAPS   "XTATE")
+set(PROJECT_NAME_TITLE_CASE "Xtate")
+set(PROJECT_AUTHOR          "Sharkocha")
+set(PROJECT_CONTACT         "chenchiyu14@nudt.edu.cn")
+set(PROJECT_GITHUB_URL      "https://github.com/sharkocha/xtate")
+set(PROJECT_ISSUES_URL      "https://github.com/sharkocha/xtate/issues")
+set(PROJECT_CONF_PATH       "/etc/xtate/xtate.conf")
+set(PROJECT_BANNER          "God is Stateless")
+
+configure_file(${CMAKE_SOURCE_DIR}/src/version.h.in ${CMAKE_SOURCE_DIR}/src/version.h @ONLY)
+
+
 
 option(WITH_OPENSSL        "Build with OpenSSL library"                   ON)
 option(WITH_PCRE2          "Build with PCRE2 library"                     ON)

@@ -13,7 +13,7 @@
 
 static const char default_http_header[] =
     "GET / HTTP/1.0\r\n"
-    "User-Agent: " XTATE_WITH_VERSION " " XTATE_GITHUB "\r\n"
+    "User-Agent: " XTATE_WITH_VERSION " " XTATE_GITHUB_URL "\r\n"
     "Accept: */*\r\n"
     "\r\n";
 
@@ -717,7 +717,7 @@ Probe HttpProbe = {
         "HttpProbe sends target port a user-defined HTTP request and save the "
         "response. Default HTTP request is based on:\n\n"
         "      `GET / HTTP/1.0`\n"
-        "      `User-Agent: " XTATE_WITH_VERSION " " XTATE_GITHUB "`\n"
+        "      `User-Agent: " XTATE_WITH_VERSION " " XTATE_GITHUB_URL "`\n"
         "      `Accept: */*`\n\n"
         "We can use various args to change the default request and set a regex "
         "to match the response as successed.",

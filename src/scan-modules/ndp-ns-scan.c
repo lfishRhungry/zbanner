@@ -140,7 +140,7 @@ Scanner NdpNsScan = {
         "host(actually `the solicited-node multicast address`). Expect an NDP"
         "Neighbor Advertisement to believe the host is alive.\n"
         "We must set an IPv6 link-local address as source IP. And it's better"
-        "  to set `--fake-router-mac` to avoid " XTATE_FIRST_UPPER_NAME " to "
+        "  to set `--fake-router-mac` to avoid " XTATE_NAME_TITLE_CASE " to "
         "resolve router MAC address to a non link-local IPv6 and warn us.\n"
         "HINT: Sometimes we want to check if target host is reachable with "
         "link-"

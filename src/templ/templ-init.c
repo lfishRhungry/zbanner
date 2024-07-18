@@ -512,7 +512,7 @@ static void _template_init(TmplPkt *tmpl, macaddress_t source_mac,
     } else {
         LOG(LEVEL_ERROR, "bad packet template, unknown data link type\n");
         LOG(LEVEL_OUT,
-            "    " XTATE_FIRST_UPPER_NAME
+            "    " XTATE_NAME_TITLE_CASE
             " doesn't know how to format packets for this interface\n");
         exit(1);
     }

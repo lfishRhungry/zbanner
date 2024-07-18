@@ -268,10 +268,8 @@ But you can also set subparameter `--send-rst` to tcp-syn scan module to let Xta
 
 ## Build
 
-Xtate could be built both on Linux and Windows with CMake because of cross-platform code.
+Xtate could be built both on Linux and Windows with CMake because of cross-platform source code.
 And some dependencies are optional, we can give up some modules if the specific dependency libraries cannot be prepared.
-If any error happened in CMake, trying to modify and use `Makefile` is a good idea.
-I'm sorry about my fail to be a CMake professor...
 
 ### Dependencies
 

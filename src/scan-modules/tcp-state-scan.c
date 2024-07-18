@@ -431,7 +431,7 @@ Scanner TcpStateScan = {
         " means little data exchanging in less times and our original purpose "
         "of "
         "TcpStateScan is to get banners over TLS with TlsStateProbe.\n"
-        "NOTE6: Remember that " XTATE_FIRST_UPPER_NAME
+        "NOTE6: Remember that " XTATE_NAME_TITLE_CASE
         " is not a browser, crawler"
         " or any other tools concentrated on contents in protocol. We must "
         "focus on protocol itself with activate scanning.\n"
