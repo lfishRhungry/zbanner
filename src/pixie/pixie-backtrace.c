@@ -154,7 +154,7 @@ static void handle_segfault(int sig) {
     printf("==================================================================="
            "===\n");
     printf(" Segmentation fault: please post this backtrace to:\n");
-    printf(" " XTATE_GITHUB_ISSUES "\n");
+    printf(" " XTATE_GITHUB_URL "\n");
     printf("==================================================================="
            "===\n");
     printStack();
