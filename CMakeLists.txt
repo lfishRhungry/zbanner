@@ -123,12 +123,12 @@ endif ()
 # --------------------libjudy
 if (${WITH_JUDY})
     find_library(FOUND_JUDY HINTS /usr/include/ NAMES Judy libjudy-dev judy dev-libs/judy judy-devel)
-    message(STATUS "Found libjudy: ${FOUND_JUDY}")
 endif ()
 
 if (FOUND_JUDY)
     #include_directories(${LIBXML2_INCLUDE_DIR})
     target_link_libraries(${exe_name} Judy)
+    message(STATUS "Found libjudy: ${FOUND_JUDY}")
 else ()
     add_compile_definitions(NOT_FOUND_JUDY)
 endif ()
