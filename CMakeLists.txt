@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(
     xtate
     LANGUAGES               C
-    VERSION                 1.1.3
+    VERSION                 1.1.4
     DESCRIPTION             "A modular all-stack network scanner for next-generation internet surveys."
     HOMEPAGE_URL            "https://github.com/sharkocha/xtate"
     )
@@ -14,9 +14,6 @@ set(PROJECT_GITHUB_URL      "https://github.com/sharkocha/xtate")
 set(PROJECT_ISSUES_URL      "https://github.com/sharkocha/xtate/issues")
 set(PROJECT_CONF_PATH       "/etc/xtate/xtate.conf")
 set(PROJECT_BANNER          "God is Stateless")
-
-configure_file(${CMAKE_SOURCE_DIR}/src/version.h.in ${CMAKE_SOURCE_DIR}/src/version.h @ONLY)
-
 
 
 option(WITH_OPENSSL        "Build with OpenSSL library"                   ON)
@@ -126,6 +123,7 @@ endif ()
 # --------------------libjudy
 if (${WITH_JUDY})
     find_library(FOUND_JUDY HINTS /usr/include/ NAMES Judy libjudy-dev judy dev-libs/judy judy-devel)
+    message(STATUS "Found libjudy: ${FOUND_JUDY}")
 endif ()
 
 if (FOUND_JUDY)
@@ -151,3 +149,8 @@ endif ()
 # find_package(Lua REQUIRED)
 # target_include_directories(${exe_name} PRIVATE ${LUA_INCLUDE_DIR})
 # target_link_libraries(${exe_name} ${LUA_LIBRARIES})
+
+
+
+
+configure_file(${CMAKE_SOURCE_DIR}/src/version.h.in ${CMAKE_SOURCE_DIR}/src/version.h @ONLY)

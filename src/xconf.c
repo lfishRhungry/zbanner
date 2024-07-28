@@ -3617,7 +3617,7 @@ void xconf_print_version() {
 #endif
 
 #ifndef NOT_FOUND_JUDY
-    printf("    LibJudy linked\n");
+    printf("    LibJudy " JUDY_PATH "\n");
 #else
     printf("    LibJudy    (null)\n");
 #endif
