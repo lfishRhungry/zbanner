@@ -1,10 +1,11 @@
 /*
-    Originally, I modified dedup funcs from masscan to adapt xtate. But I'm
-    confused about the performance between mas-dedup and judy-dedup from ZMap.
+    Originally, I modified dedup funcs from masscan to adapt xtate and support
+    different type of dedup entry. But I'm confused about the performance
+    between mas-dedup and judy-dedup from ZMap.
     So I decided to let users to enjoy both of them and give you guys the
     freedom of choice.
 
-    Modified by lishRhungry 2024
+    Created by sharkocha 2024
 */
 #ifndef DEDUP_H
 #define DEDUP_H

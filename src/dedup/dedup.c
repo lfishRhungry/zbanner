@@ -29,9 +29,9 @@ Dedup *dedup_init(unsigned dedup_win) {
 
 void dedup_close(Dedup *dedup) {
 #ifndef NOT_FOUND_JUDY
-    return cachehash_free(dedup, NULL);
+    cachehash_free(dedup, NULL);
 #else
-    return dedup_destroy(dedup);
+    dedup_destroy(dedup);
 #endif
 }
 
