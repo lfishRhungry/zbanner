@@ -119,8 +119,8 @@ static const char fmt_host[]       = "%s host: %-15s";
 static const char fmt_port[]       = " port: %-5u";
 static const char fmt_cls[]        = " \"%s\"";
 static const char fmt_reason[]     = " because \"%s\"";
-static const char fmt_report_str[] = ",  " XPRINT_CH_COLOR_YELLOW "%s: \"%s\"";
-static const char fmt_report_num[] = ",  " XPRINT_CH_COLOR_YELLOW "%s: %s";
+static const char fmt_report_str[] = ",  %s: \"%s\"";
+static const char fmt_report_num[] = ",  %s: %s";
 
 static bool _output_color;
 
@@ -216,6 +216,9 @@ static void output_result_to_stdout(OutItem *item) {
     if (item->reason[0]) {
         count += fprintf(stdout, fmt_reason, item->reason);
     }
+
+    if (_output_color)
+        fprintf(stdout, XPRINT_CH_COLOR_YELLOW);
 
     DataLink *pre = item->report.link;
     while (pre->next) {
