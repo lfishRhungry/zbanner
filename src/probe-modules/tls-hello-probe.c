@@ -395,7 +395,11 @@ static unsigned tlshello_handle_reponse(unsigned th_idx, ProbeTarget *target,
                                     "regex not matched in TLSv1.3");
                     } else {
                         item->level = OUT_SUCCESS;
+                        safe_strcpy(item->reason, OUT_RSN_SIZE,
+                                    "protocol matched");
                     }
+                    dach_append_normalized(&item->report, "type", "handshake",
+                                           sizeof("handshake") - 1);
                     return 0;
                 }
             }
@@ -458,13 +462,17 @@ static unsigned tlshello_handle_reponse(unsigned th_idx, ProbeTarget *target,
             safe_strcpy(item->classification, OUT_CLS_SIZE, "TLSv1.1");
         } else if (px[10] == 0x03) {
             /**
-             * NOTE: (Kludge)
-             * In fast and practice, our probe can support normal TLS from
-             * version 3.0 to version 1.2 .
-             * If we got a `protocol version` alert from version 1.2, we can
-             * infer that the server only support version 1.3 .
+             * NOTE: (TRICK)
+             * In practice, our default probe can support normal TLS from
+             * version 1.0 to version 1.2 . If we got a `protocol version` alert
+             * from version 1.2, we can infer that the server only support
+             * version 1.3. This could help us to identify the servers which
+             * only support TLSv1.3 with our default payload--a very rare
+             * condition. But it cannot test if the servers support TLSv1.3.
+             *
+             * 70 is an ALERT description for Protocol Version
              */
-            if (px[6] == 70) { /*ALERT DESC: Protocol Version*/
+            if (!tlshello_conf.support_tls1_3 && px[6] == 70) {
                 safe_strcpy(item->classification, OUT_CLS_SIZE, "TLSv1.3");
             } else {
                 safe_strcpy(item->classification, OUT_CLS_SIZE, "TLSv1.2");
