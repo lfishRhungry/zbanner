@@ -30,6 +30,7 @@ extern Probe RecogProbe;
 extern Probe RecogUdpProbe;
 extern Probe RecogStateProbe;
 extern Probe CloseStateProbe;
+extern Probe TlsHelloProbe;
 /*for lzr probes*/
 extern Probe LzrProbe;
 extern Probe LzrHttpProbe;
@@ -107,6 +108,7 @@ static Probe *probe_modules_list[] = {
 #endif
 
     &CloseStateProbe,
+    &TlsHelloProbe,
 
     /*for lzr probes*/
     &LzrProbe,
