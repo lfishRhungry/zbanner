@@ -1342,6 +1342,14 @@ Probe TlsStateProbe = {
         "NOTE2: TlsState probe is designed to be compatible with wide range of "
         "servers in version of TLS from v1.0 to v1.3. So our settings of "
         "OpenSSL is not safe from the modern perspective.\n"
+        "NOTE3: The quote symbol in nested parameter can be a problem while we "
+        "use `subprobearg` for beginners. I give you a complete command as a "
+        "simple example here:\n"
+        "```\n"
+        "    xtate -scan tcp-state -probe tls-state -probearg \"-subprobe "
+        "hello-state -subprobearg '-nmap \\'GET / HTTP/1.0\\r\\n\\r\\n\\'' "
+        "-version -subject\" -ip 192.168.0.1 -p 443 -rate 500 -wait 30\n"
+        "```\n"
         "Dependencies: OpenSSL.",
 
     .init_cb           = &tlsstate_init,
