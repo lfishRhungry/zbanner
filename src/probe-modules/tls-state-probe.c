@@ -665,6 +665,12 @@ static bool tlsstate_init(const XConf *xconf) {
             res);
     }
 
+    res = SSL_CTX_set_options(ctx, SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
+    if (res != 1) {
+        LOG(LEVEL_WARN, "(TSP Global INIT) SSL_CTX_set_options error %d\n",
+            res);
+    }
+
     /**
      * set TLS key logging callback
      * typedef void (*SSL_CTX_keylog_cb_func)(const SSL *ssl, const char *line);
