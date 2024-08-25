@@ -624,6 +624,10 @@ static bool tlsstate_init(const XConf *xconf) {
 
     LOG(LEVEL_DETAIL, "(TSP Global INIT) >>>\n");
 
+    SSL_library_init();
+    SSL_load_error_strings();
+    OpenSSL_add_all_algorithms();
+
     /*support cryptographic algorithms from SSLv3.0 to TLSv1.3*/
     meth = TLS_method();
     if (meth == NULL) {
@@ -649,22 +653,21 @@ static bool tlsstate_init(const XConf *xconf) {
     /*security level 0 means: everything is permitted*/
     SSL_CTX_set_security_level(ctx, 0);
 
-    /*ciphersuites allowed in TLSv1.2 or older*/
+    /*support all ciphers and all "no ciphers"*/
     res = SSL_CTX_set_cipher_list(ctx, "ALL:eNULL");
     if (res != 1) {
         LOG(LEVEL_WARN, "(TSP Global INIT) SSL_CTX_set_cipher_list error %d\n",
             res);
     }
     /*ciphersuites allowed in TLSv1.3. (ALL & in order)*/
-    res = SSL_CTX_set_ciphersuites(
-        ctx, "TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:"
-             "TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_CCM_SHA256:"
-             "TLS_AES_128_CCM_8_SHA256");
+    res = SSL_CTX_set_ciphersuites(ctx, "ALL");
     if (res != 1) {
         LOG(LEVEL_WARN, "(TSP Global INIT) SSL_CTX_set_ciphersuites error %d\n",
             res);
     }
 
+    /*this allows our probe to be able to handshake with old server in version
+     * of TLSv1.0*/
     res = SSL_CTX_set_options(ctx, SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
     if (res != 1) {
         LOG(LEVEL_WARN, "(TSP Global INIT) SSL_CTX_set_options error %d\n",
@@ -868,6 +871,7 @@ static void tlsstate_make_hello(DataPass *pass, ProbeState *state,
     size_t           offset    = 0;
     struct TlsState *tls_state = state->data;
 
+    ERR_clear_error();
     int res    = SSL_do_handshake(tls_state->ssl);
     int res_ex = SSL_ERROR_NONE;
     if (res < 0) {
@@ -984,6 +988,7 @@ static unsigned tlsstate_parse_response(DataPass *pass, ProbeState *state,
             /*still in handshake*/
             case TSP_STATE_HANDSHAKE:
 
+                ERR_clear_error();
                 res    = SSL_do_handshake(tls_state->ssl);
                 res_ex = SSL_ERROR_NONE;
 
@@ -1077,6 +1082,7 @@ static unsigned tlsstate_parse_response(DataPass *pass, ProbeState *state,
                         break;
                     }
                 } else { // cannot go on handshake
+                    printf("res_ex=%u\n", res_ex);
 
                     state->state = TSP_STATE_NEED_CLOSE;
 
@@ -1117,6 +1123,7 @@ static unsigned tlsstate_parse_response(DataPass *pass, ProbeState *state,
                     break;
                 }
 
+                ERR_clear_error();
                 res = SSL_write(tls_state->ssl, subpass.data, subpass.len);
                 if (subpass.is_dynamic) {
                     free(subpass.data);
@@ -1186,6 +1193,7 @@ static unsigned tlsstate_parse_response(DataPass *pass, ProbeState *state,
                         _extend_buffer(&tls_state->data, &tls_state->data_size);
                     }
 
+                    ERR_clear_error();
                     res = SSL_read(tls_state->ssl, tls_state->data + offset,
                                    tls_state->data_size - offset);
 
@@ -1216,6 +1224,7 @@ static unsigned tlsstate_parse_response(DataPass *pass, ProbeState *state,
                     }
 
                     /*Subprobe has further data to send, encode it first*/
+                    ERR_clear_error();
                     int sub_res =
                         SSL_write(tls_state->ssl, subpass.data, subpass.len);
                     if (subpass.is_dynamic) {
@@ -1328,9 +1337,11 @@ Probe TlsStateProbe = {
         "our"
         " user-spase TCP stack. TlsState is just a middle layer(probe), so we "
         "should specify a subprobe for it.\n"
-        "NOTE: TlsState doesn't support initial waiting before hello for "
-        "subprobe"
-        " because the nesting.\n"
+        "NOTE1: TlsState doesn't support initial waiting before hello for "
+        "subprobe because the nesting.\n"
+        "NOTE2: TlsState probe is designed to be compatible with wide range of "
+        "servers in version of TLS from v1.0 to v1.3. So our settings of "
+        "OpenSSL is not safe from the modern perspective.\n"
         "Dependencies: OpenSSL.",
 
     .init_cb           = &tlsstate_init,
