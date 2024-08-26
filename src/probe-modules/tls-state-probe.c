@@ -647,8 +647,16 @@ static bool tlsstate_init(const XConf *xconf) {
     SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
 
     /*support all versions*/
-    SSL_CTX_set_min_proto_version(ctx, 0);
+    res = SSL_CTX_set_min_proto_version(ctx, 0);
+    if (res != 1) {
+        LOG(LEVEL_WARN,
+            "(TSP Global INIT) SSL_CTX_set_min_proto_version error %d\n", res);
+    }
     SSL_CTX_set_max_proto_version(ctx, 0);
+    if (res != 1) {
+        LOG(LEVEL_WARN,
+            "(TSP Global INIT) SSL_CTX_set_max_proto_version error %d\n", res);
+    }
 
     /*security level 0 means: everything is permitted*/
     SSL_CTX_set_security_level(ctx, 0);
