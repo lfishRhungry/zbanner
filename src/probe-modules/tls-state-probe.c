@@ -653,14 +653,19 @@ static bool tlsstate_init(const XConf *xconf) {
     /*security level 0 means: everything is permitted*/
     SSL_CTX_set_security_level(ctx, 0);
 
-    /*support all ciphers and all "no ciphers"*/
+    /*support all ciphers and all "no ciphers" in TLS versions under 1.2*/
     res = SSL_CTX_set_cipher_list(ctx, "ALL:eNULL");
     if (res != 1) {
         LOG(LEVEL_WARN, "(TSP Global INIT) SSL_CTX_set_cipher_list error %d\n",
             res);
     }
+
     /*ciphersuites allowed in TLSv1.3. (ALL & in order)*/
-    res = SSL_CTX_set_ciphersuites(ctx, "ALL");
+    res = SSL_CTX_set_ciphersuites(ctx, "TLS_AES_128_GCM_SHA256:"
+                                        "TLS_AES_256_GCM_SHA384:"
+                                        "TLS_CHACHA20_POLY1305_SHA256:"
+                                        "TLS_AES_128_CCM_SHA256:"
+                                        "TLS_AES_128_CCM_8_SHA256");
     if (res != 1) {
         LOG(LEVEL_WARN, "(TSP Global INIT) SSL_CTX_set_ciphersuites error %d\n",
             res);
@@ -668,11 +673,7 @@ static bool tlsstate_init(const XConf *xconf) {
 
     /*this allows our probe to be able to handshake with old server in version
      * of TLSv1.0*/
-    res = SSL_CTX_set_options(ctx, SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
-    if (res != 1) {
-        LOG(LEVEL_WARN, "(TSP Global INIT) SSL_CTX_set_options error %d\n",
-            res);
-    }
+    SSL_CTX_set_options(ctx, SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION);
 
     /**
      * set TLS key logging callback
