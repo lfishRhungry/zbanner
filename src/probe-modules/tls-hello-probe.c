@@ -523,7 +523,7 @@ static unsigned tlshello_handle_timeout(ProbeTarget *target, OutItem *item) {
 }
 
 Probe TlsHelloProbe = {
-    .name       = "tlshello",
+    .name       = "tls-hello",
     .type       = ProbeType_TCP,
     .multi_mode = Multi_Null,
     .multi_num  = 1,
