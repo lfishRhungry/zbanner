@@ -1,5 +1,6 @@
 #include "output-modules.h"
 
+#include <string.h>
 #include "../util-out/logger.h"
 #include "../pixie/pixie-file.h"
 
@@ -35,6 +36,12 @@ static ConfParam list_parameters[] = {
     {0}};
 
 static bool list_init(const OutConf *out) {
+    /*a convention*/
+    if (out->output_filename[0] == '-' && strlen(out->output_filename) == 1) {
+        file = stdout;
+        return true;
+    }
+
     int err =
         pixie_fopen_shareable(&file, out->output_filename, out->is_append);
 
@@ -93,7 +100,9 @@ error:
 
 static void list_close(const OutConf *out) {
     fflush(file);
-    fclose(file);
+    if (file != stdout) {
+        fclose(file);
+    }
 }
 
 Output ListOutput = {

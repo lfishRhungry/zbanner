@@ -2863,7 +2863,12 @@ ConfParam config_parameters[] = {
      SET_output_filename,
      Type_NONE,
      {"out-file", "o", 0},
-     "Specifies a file for OutputModule."},
+     "Specifies a \"file\" name for selected OutputModule. The meaning of "
+     "\"file\" name can be variable for different OutputModule. (e.g. It can "
+     "be a database connecting string)\n"
+     "NOTE: For some OutputModules, we can use `-o '-'` to let them output to "
+     "stdout. But we should be care of the stdout outputting conflict "
+     "especially the `-interact` flag."},
     {"append-output",
      SET_append,
      Type_BOOL,

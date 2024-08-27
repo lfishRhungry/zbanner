@@ -1,5 +1,6 @@
 #include "output-modules.h"
 
+#include <string.h>
 #include "../util-out/logger.h"
 #include "../pixie/pixie-file.h"
 
@@ -16,6 +17,12 @@ extern Output TextOutput; /*for internal x-ref*/
 static FILE *file;
 
 static bool text_init(const OutConf *out) {
+    /*a convention*/
+    if (out->output_filename[0] == '-' && strlen(out->output_filename) == 1) {
+        file = stdout;
+        return true;
+    }
+
     int err =
         pixie_fopen_shareable(&file, out->output_filename, out->is_append);
 
@@ -96,7 +103,9 @@ error:
 
 static void text_close(const OutConf *out) {
     fflush(file);
-    fclose(file);
+    if (file != stdout) {
+        fclose(file);
+    }
 }
 
 Output TextOutput = {

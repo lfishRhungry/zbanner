@@ -35,6 +35,12 @@ static const char fmt_ndjson_suffix[] = "}" /*close report*/
 static char format_time[32];
 
 static bool ndjson_init(const OutConf *out) {
+    /*a convention*/
+    if (out->output_filename[0] == '-' && strlen(out->output_filename) == 1) {
+        file = stdout;
+        return true;
+    }
+
     int err =
         pixie_fopen_shareable(&file, out->output_filename, out->is_append);
 
@@ -116,7 +122,9 @@ error:
 
 static void ndjson_close(const OutConf *out) {
     fflush(file);
-    fclose(file);
+    if (file != stdout) {
+        fclose(file);
+    }
 }
 
 Output NdjsonOutput = {
