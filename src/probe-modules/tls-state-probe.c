@@ -1091,7 +1091,6 @@ static unsigned tlsstate_parse_response(DataPass *pass, ProbeState *state,
                         break;
                     }
                 } else { // cannot go on handshake
-                    printf("res_ex=%u\n", res_ex);
 
                     state->state = TSP_STATE_NEED_CLOSE;
 
