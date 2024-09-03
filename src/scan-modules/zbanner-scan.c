@@ -11,17 +11,27 @@
 extern Scanner ZBannerScan; /*for internal x-ref*/
 
 struct ZBannerConf {
-    unsigned no_banner_timeout : 1; /*--no-banner-tm*/
-    unsigned is_port_timeout   : 1; /*--port-tm*/
-    unsigned is_port_success   : 1; /*--port-success*/
-    unsigned is_port_failure   : 1; /*--port-fail*/
+    unsigned no_banner_timeout : 1;
+    unsigned is_port_timeout   : 1;
+    unsigned is_port_success   : 1;
+    unsigned is_port_failure   : 1;
     unsigned record_ttl        : 1;
     unsigned record_ipid       : 1;
     unsigned record_win        : 1;
     unsigned record_mss        : 1;
+    unsigned with_ack          : 1;
 };
 
 static struct ZBannerConf zbanner_conf = {0};
+
+static ConfRes SET_with_ack(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.with_ack = parseBoolean(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_record_mss(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -143,6 +153,16 @@ static ConfParam zbanner_parameters[] = {
      Type_BOOL,
      {"mss", 0},
      "Records TCP MSS option value of SYN-ACK if the option exists."},
+    {"with-ack",
+     SET_with_ack,
+     Type_BOOL,
+     {"ack", 0},
+     "Send an seperate ACK segment after receiving non-zerowin SYNACK segment "
+     "from target port. This makes a complete standard TCP 3-way handshake "
+     "before sending segment with data(probe) and spends more bandwidth while "
+     "scanning. But some servers(not very sure) may only accept this kind of "
+     "connections. However, it's the early version of ZBanner and can also be "
+     "used for research."},
 
     {0}};
 
@@ -311,6 +331,21 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             size_t        payload_len = 0;
 
             payload_len = ZBannerScan.probe->make_payload_cb(&ptarget, payload);
+
+            /**
+             * Use a complete standard TCP 3-way handshake
+             */
+            if (payload_len > 0 && zbanner_conf.with_ack) {
+                PktBuf *pkt_buffer_ack = stack_get_pktbuf(stack);
+
+                pkt_buffer_ack->length = tcp_create_packet(
+                    recved->parsed.src_ip, recved->parsed.port_src,
+                    recved->parsed.dst_ip, recved->parsed.port_dst, seqno_me,
+                    seqno_them + 1, TCP_FLAG_ACK, 0, 0, NULL, 0,
+                    pkt_buffer_ack->px, PKT_BUF_SIZE);
+
+                stack_transmit_pktbuf(stack, pkt_buffer_ack);
+            }
 
             PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
