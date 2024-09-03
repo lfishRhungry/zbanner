@@ -134,7 +134,7 @@ unsigned long long __rdtsc(void) {
         if (pmcntenset & 0x80000000ul) { // Is it counting?
             asm volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(pmccntr));
             // The counter is set up to count every 64th cycle
-            return (unsigned long long)(pmccntr)*64ULL;
+            return (unsigned long long)(pmccntr) * 64ULL;
         }
     }
     return 0;
@@ -1537,14 +1537,14 @@ int smack_benchmark() {
 int smack_selftest() {
     struct SMACK *s;
     const char   *patterns[] = {
-          "GET",      "PUT",        "POST",    "OPTIONS",
-          "HEAD",     "DELETE",     "TRACE",   "CONNECT",
-          "PROPFIND", "PROPPATCH",  "MKCOL",   "MKWORKSPACE",
-          "MOVE",     "LOCK",       "UNLOCK",  "VERSION-CONTROL",
-          "REPORT",   "CHECKOUT",   "CHECKIN", "UNCHECKOUT",
-          "COPY",     "UPDATE",     "LABEL",   "BASELINE-CONTROL",
-          "MERGE",    "SEARCH",     "ACL",     "ORDERPATCH",
-          "PATCH",    "MKACTIVITY", 0};
+        "GET",      "PUT",        "POST",    "OPTIONS",
+        "HEAD",     "DELETE",     "TRACE",   "CONNECT",
+        "PROPFIND", "PROPPATCH",  "MKCOL",   "MKWORKSPACE",
+        "MOVE",     "LOCK",       "UNLOCK",  "VERSION-CONTROL",
+        "REPORT",   "CHECKOUT",   "CHECKIN", "UNCHECKOUT",
+        "COPY",     "UPDATE",     "LABEL",   "BASELINE-CONTROL",
+        "MERGE",    "SEARCH",     "ACL",     "ORDERPATCH",
+        "PATCH",    "MKACTIVITY", 0};
     unsigned    i;
     const char *text =
         "ahpropfindhf;orderpatchposearchmoversion-controlockasldhf";

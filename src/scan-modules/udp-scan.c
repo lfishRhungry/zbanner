@@ -173,8 +173,8 @@ static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                     .target.port_them = recved->parsed.port_src,
                     .target.port_me   = src_port_start + idx,
                     .cookie           = get_cookie(
-                                  recved->parsed.src_ip, recved->parsed.port_src,
-                                  recved->parsed.dst_ip, src_port_start + idx, entropy),
+                        recved->parsed.src_ip, recved->parsed.port_src,
+                        recved->parsed.dst_ip, src_port_start + idx, entropy),
                     .index = idx,
                 };
 
@@ -302,8 +302,8 @@ static void udp_timeout(uint64_t entropy, ScanTmEvent *event, OutItem *item,
                 .target.port_them = event->target.port_them,
                 .target.port_me   = src_port_start + idx,
                 .cookie           = get_cookie(
-                              event->target.ip_them, event->target.port_them,
-                              event->target.ip_me, src_port_start + idx, entropy),
+                    event->target.ip_them, event->target.port_them,
+                    event->target.ip_me, src_port_start + idx, entropy),
                 .index = idx,
             };
 

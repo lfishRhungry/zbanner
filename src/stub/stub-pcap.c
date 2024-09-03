@@ -32,7 +32,7 @@
 #if defined(_MSC_VER)
 #pragma warning(disable : 4115 4201)
 #pragma warning(disable : 4100) /* unreferenced formal parameter */
-//#include <winerror.h>
+// #include <winerror.h>
 #endif
 
 #include "stub-pcap.h"
@@ -107,7 +107,7 @@ static int     null_PCAP_SET_SNAPLEN(pcap_t *p, int snaplen) { return 0; }
 static int     null_PCAP_SET_PROMISC(pcap_t *p, int promisc) { return 0; }
 static int     null_PCAP_SET_TIMEOUT(pcap_t *p, int to_ms) { return 0; }
 static int     null_PCAP_SET_IMMEDIATE_MODE(pcap_t *p, int immediate_mode) {
-        return 0;
+    return 0;
 }
 static int null_PCAP_SET_BUFFER_SIZE(pcap_t *p, int buffer_size) { return 0; }
 static int null_PCAP_SET_RFMON(pcap_t *p, int rfmon) { return 0; }

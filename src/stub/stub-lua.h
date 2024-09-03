@@ -64,7 +64,7 @@ typedef struct luaL_Reg {
 #define lua_isnone(L, n)          (lua_type(L, (n)) == LUA_TNONE)
 #define lua_isnoneornil(L, n)     (lua_type(L, (n)) <= 0)
 #define lua_pcall(L, n, r, f)     lua_pcallk(L, (n), (r), (f), 0, NULL)
-#define lua_pop(L, n)             lua_settop(L, -(n)-1)
+#define lua_pop(L, n)             lua_settop(L, -(n) - 1)
 #define lua_pushcfunction(L, f)   lua_pushcclosure(L, (f), 0)
 #define lua_register(L, n, f)     (lua_pushcfunction(L, (f)), lua_setglobal(L, (n)))
 #define lua_tonumber(L, i)        lua_tonumberx(L, (i), NULL)

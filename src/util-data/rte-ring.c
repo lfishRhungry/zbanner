@@ -104,7 +104,7 @@
 #include "rte-ring.h"
 
 /* true if x is a power of 2 */
-#define POWEROF2(x) ((((x)-1) & (x)) == 0)
+#define POWEROF2(x) ((((x) - 1) & (x)) == 0)
 
 /* create the ring */
 struct rte_ring *rte_ring_create(unsigned count, unsigned flags) {
@@ -262,7 +262,7 @@ struct Test {
     unsigned long long total_count;
     volatile int       not_active;
     volatile unsigned  test_count;
-} * x_test;
+} *x_test;
 
 /***************************************************************************
  ***************************************************************************/

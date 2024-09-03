@@ -115,7 +115,7 @@ void *timeouts_remove(Timeouts *timeouts, uint64_t timestamp_now);
  * from the packets that we are capturing.
  */
 #define TICKS_PER_SECOND        (16384ULL)
-#define TICKS_FROM_SECS(secs)   ((secs)*TICKS_PER_SECOND)
+#define TICKS_FROM_SECS(secs)   ((secs) * TICKS_PER_SECOND)
 #define TICKS_FROM_USECS(usecs) ((usecs) / 64ULL)
 #define TICKS_FROM_TV(secs, usecs)                                             \
     (TICKS_FROM_SECS(secs) + TICKS_FROM_USECS(usecs))

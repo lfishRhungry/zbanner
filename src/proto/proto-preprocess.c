@@ -62,7 +62,7 @@ parse_ethernet:
     if (ethertype != ETHERTYPE_IPv4)
         goto parse_ethertype;
 
-parse_ipv4 : {
+parse_ipv4: {
     unsigned header_length;
     unsigned flags;
     unsigned fragment_offset;
@@ -132,7 +132,7 @@ parse_ipv4 : {
     }
 }
 
-parse_tcp : {
+parse_tcp: {
     unsigned tcp_length;
     VERIFY_REMAINING(20, FOUND_TCP);
     tcp_length = px[offset + 12] >> 2;
@@ -146,7 +146,7 @@ parse_tcp : {
     return true;
 }
 
-parse_udp : {
+parse_udp: {
     VERIFY_REMAINING(8, FOUND_UDP);
 
     info->port_src = BE_TO_U16(px + offset + 0);
@@ -160,21 +160,21 @@ parse_udp : {
     return true;
 }
 
-parse_icmp : {
+parse_icmp: {
     VERIFY_REMAINING(4, FOUND_ICMP);
     info->icmp_type = px[offset + 0];
     info->icmp_code = px[offset + 1];
     return true;
 }
 
-parse_igmp : {
+parse_igmp: {
     VERIFY_REMAINING(4, FOUND_IGMP);
     info->port_src = 0;
     info->port_dst = px[offset + 0];
     return true;
 }
 
-parse_sctp : {
+parse_sctp: {
     VERIFY_REMAINING(12, FOUND_SCTP);
     info->port_src   = BE_TO_U16(px + offset + 0);
     info->port_dst   = BE_TO_U16(px + offset + 2);
@@ -184,7 +184,7 @@ parse_sctp : {
     return true;
 }
 
-parse_ipv6 : {
+parse_ipv6: {
     unsigned payload_length;
 
     info->ip_offset = offset;
@@ -240,7 +240,7 @@ parse_ipv6_next:
     }
 }
 
-parse_ipv6_hop_by_hop : {
+parse_ipv6_hop_by_hop: {
     unsigned len;
 
     VERIFY_REMAINING(8, FOUND_IPV6_HOP);
@@ -254,7 +254,7 @@ parse_ipv6_hop_by_hop : {
 }
     goto parse_ipv6_next;
 
-parse_icmpv6 : {
+parse_icmpv6: {
     unsigned icmp_type;
     unsigned icmp_code;
 
@@ -295,7 +295,7 @@ parse_vlanmpls:
     } else
         return false;
 
-wifi_data : {
+wifi_data: {
     unsigned flag;
     VERIFY_REMAINING(24, FOUND_WIFI_DATA);
 
@@ -407,7 +407,7 @@ parse_prism_header:
         goto parse_wifi;
     }
 
-parse_llc : {
+parse_llc: {
     unsigned oui;
 
     VERIFY_REMAINING(3, FOUND_LLC);

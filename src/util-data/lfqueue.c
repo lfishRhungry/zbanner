@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #if defined __GNUC__ || defined __CYGWIN__ || defined __MINGW32__ ||           \
-    defined                                           __APPLE__
+    defined __APPLE__
 
 #include <sys/time.h>
 #include <unistd.h> // for usleep
@@ -90,7 +90,7 @@ inline BOOL __SYNC_BOOL_CAS(LONG volatile *dest, LONG input, LONG comparand) {
 #define DEF_LFQ_ASSIGNED_SPIN 2048
 
 #if defined __GNUC__ || defined __CYGWIN__ || defined __MINGW32__ ||           \
-    defined                                           __APPLE__
+    defined __APPLE__
 #define lfq_time_t long
 #define lfq_get_curr_time(_time_sec)                                           \
     struct timeval _time_;                                                     \
@@ -358,8 +358,8 @@ uint64_t lfqueue_size(lfqueue_t *lfqueue) {
 
 void        lfqueue_sleep(unsigned int milisec) {
 #if defined __GNUC__ || defined __CYGWIN__ || defined __MINGW32__ ||           \
-    defined                                           __APPLE__
-#pragma GCC diagnostic                                push
+    defined __APPLE__
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
     usleep(milisec * 1000);
 #pragma GCC diagnostic pop

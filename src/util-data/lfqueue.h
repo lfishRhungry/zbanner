@@ -44,7 +44,7 @@ typedef void *(*lfqueue_malloc_fn)(void *, size_t);
 typedef void (*lfqueue_free_fn)(void *, void *);
 
 #if defined __GNUC__ || defined __CYGWIN__ || defined __MINGW32__ ||           \
-    defined                                           __APPLE__
+    defined __APPLE__
 #define lfq_bool_t int
 #else
 #ifdef _WIN64

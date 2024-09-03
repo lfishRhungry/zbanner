@@ -3565,11 +3565,11 @@ void xconf_print_version() {
 #endif
 
 #if defined(i386) || defined(__i386) || defined(__i386__)
-    cpu              = "x86";
+    cpu = "x86";
 #endif
 
 #if defined(__corei7) || defined(__corei7__)
-    cpu              = "x86-Corei7";
+    cpu = "x86-Corei7";
 #endif
 
 #endif
@@ -3577,7 +3577,7 @@ void xconf_print_version() {
 #if defined(WIN32)
     os = "Windows";
 #elif defined(__linux__)
-    os               = "Linux";
+    os = "Linux";
 #elif defined(__APPLE__)
     os = "Apple";
 #elif defined(__MACH__)

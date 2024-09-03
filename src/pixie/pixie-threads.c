@@ -36,7 +36,7 @@
 
 /****************************************************************************
  ****************************************************************************/
-void        pixie_cpu_raise_priority(void) {
+void pixie_cpu_raise_priority(void) {
 #if defined WIN32
     DWORD_PTR result;
     result = SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
@@ -66,7 +66,7 @@ void        pixie_cpu_raise_priority(void) {
  * process.
  * http://en.wikipedia.org/wiki/Processor_affinity
  ****************************************************************************/
-void        pixie_cpu_set_affinity(unsigned processor) {
+void pixie_cpu_set_affinity(unsigned processor) {
 #if defined WIN32
     DWORD_PTR mask;
     DWORD_PTR result;
@@ -103,7 +103,7 @@ void        pixie_cpu_set_affinity(unsigned processor) {
 
 /****************************************************************************
  ****************************************************************************/
-unsigned    pixie_cpu_get_count(void) {
+unsigned pixie_cpu_get_count(void) {
 #if defined WIN32
     /* WINDOWS - use GetProcessAffinityMask() function */
     size_t x;

@@ -1367,10 +1367,10 @@ bool dns_ip2ptr(const char *qname, dns_name_t *name) {
         uint8_t *addr = (uint8_t *)&((struct sockaddr_in6 *)&ptr_addr_storage)
                             ->sin6_addr.s6_addr;
 #define ipv6b2l(INDEX)                                                         \
-    name->name[(INDEX)*4 + 0] = 1;                                             \
-    name->name[(INDEX)*4 + 1] = hexchars[addr[15 - (INDEX)] & 0xF];            \
-    name->name[(INDEX)*4 + 2] = 1;                                             \
-    name->name[(INDEX)*4 + 3] = hexchars[(addr[15 - (INDEX)] >> 4) & 0xF];
+    name->name[(INDEX) * 4 + 0] = 1;                                           \
+    name->name[(INDEX) * 4 + 1] = hexchars[addr[15 - (INDEX)] & 0xF];          \
+    name->name[(INDEX) * 4 + 2] = 1;                                           \
+    name->name[(INDEX) * 4 + 3] = hexchars[(addr[15 - (INDEX)] >> 4) & 0xF];
 
         ipv6b2l(0);
         ipv6b2l(1);

@@ -19,7 +19,7 @@
 #include <net/if_dl.h>
 #include <ctype.h>
 
-#define ROUNDUP2(a, n) ((a) > 0 ? (1 + (((a)-1U) | ((n)-1))) : (n))
+#define ROUNDUP2(a, n) ((a) > 0 ? (1 + (((a) - 1U) | ((n) - 1))) : (n))
 
 #if defined(__APPLE__)
 #define ROUNDUP(a) ROUNDUP2((a), sizeof(int))
