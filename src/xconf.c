@@ -2895,7 +2895,7 @@ ConfParam config_parameters[] = {
     {"no-color",
      SET_no_color,
      Type_BOOL,
-     {0},
+     {"nc", 0},
      "Print result to the screen without color. Some old terminal does not "
      "support escapsed characters of ANSI for color."},
 
