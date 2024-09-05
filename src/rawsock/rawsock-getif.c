@@ -68,7 +68,7 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname) {
     fd = socket(AF_ROUTE, SOCK_RAW, 0);
     if (fd < 0) {
         perror("socket(PF_ROUTE)");
-        free(rtm);
+        FREE(rtm);
         return errno;
     }
     LOG(LEVEL_DETAIL, "getif: got socket handle\n");
@@ -159,13 +159,13 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname) {
                 len = sizeof_ifname - 1;
             memcpy(ifname, sdl->sdl_data, len);
             ifname[len] = 0;
-            free(rtm);
+            FREE(rtm);
             return 0;
         }
     }
 
 fail:
-    free(rtm);
+    FREE(rtm);
     if (fd > 0)
         close(fd);
     return -1;
@@ -422,7 +422,7 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname) {
 again:
     err = GetAdaptersInfo(pAdapterInfo, &ulOutBufLen);
     if (err == ERROR_BUFFER_OVERFLOW) {
-        free(pAdapterInfo);
+        FREE(pAdapterInfo);
         pAdapterInfo = (IP_ADAPTER_INFO *)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL) {
             LOG(LEVEL_ERROR,
@@ -470,8 +470,7 @@ again:
                      pAdapter->AdapterName);
         }
     }
-    if (pAdapterInfo)
-        free(pAdapterInfo);
+    FREE(pAdapterInfo);
 
     return 0;
 }

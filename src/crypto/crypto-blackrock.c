@@ -301,7 +301,7 @@ static unsigned blackrock_verify(BlackRock *br, uint64_t max) {
             is_success = 0;
     }
 
-    free(list);
+    FREE(list);
 
     return is_success;
 }

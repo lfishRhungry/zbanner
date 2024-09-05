@@ -541,11 +541,7 @@ static unsigned snmp_handle_timeout(ProbeTarget *target, OutItem *item) {
 }
 
 static void snmp_close() {
-    if (snmp_conf.global_mibs) {
-        free(snmp_conf.global_mibs);
-        snmp_conf.global_mibs = NULL;
-    }
-
+    FREE(snmp_conf.global_mibs);
     snmp_conf.mib_count = 0;
 }
 

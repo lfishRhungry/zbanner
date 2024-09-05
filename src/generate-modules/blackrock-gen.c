@@ -191,10 +191,7 @@ Target blackrock_generate(unsigned tx_index, uint64_t index, uint64_t repeat,
 }
 
 void blackrock_close() {
-    if (blackrock_conf.br_table) {
-        free(blackrock_conf.br_table);
-        blackrock_conf.br_table = NULL;
-    }
+    FREE(blackrock_conf.br_table);
     blackrock_conf.br_count = 0;
 }
 

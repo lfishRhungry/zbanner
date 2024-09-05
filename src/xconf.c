@@ -646,8 +646,7 @@ static ConfRes SET_scan_module_args(void *conf, const char *name,
     }
 
     size_t len = strlen(value) + 1;
-    if (xconf->scanner_args)
-        free(xconf->scanner_args);
+    FREE(xconf->scanner_args);
     xconf->scanner_args = CALLOC(1, len);
     memcpy(xconf->scanner_args, value, len);
 
@@ -667,8 +666,7 @@ static ConfRes SET_probe_module_args(void *conf, const char *name,
     }
 
     size_t len = strlen(value) + 1;
-    if (xconf->probe_args)
-        free(xconf->probe_args);
+    FREE(xconf->probe_args);
     xconf->probe_args = CALLOC(1, len);
     memcpy(xconf->probe_args, value, len);
 
@@ -688,8 +686,7 @@ static ConfRes SET_generate_module_args(void *conf, const char *name,
     }
 
     size_t len = strlen(value) + 1;
-    if (xconf->generator_args)
-        free(xconf->generator_args);
+    FREE(xconf->generator_args);
     xconf->generator_args = CALLOC(1, len);
     memcpy(xconf->generator_args, value, len);
 
@@ -709,8 +706,7 @@ static ConfRes SET_output_module_args(void *conf, const char *name,
     }
 
     size_t len = strlen(value) + 1;
-    if (xconf->out_conf.output_args)
-        free(xconf->out_conf.output_args);
+    FREE(xconf->out_conf.output_args);
     xconf->out_conf.output_args = CALLOC(1, len);
     memcpy(xconf->out_conf.output_args, value, len);
 
@@ -1694,7 +1690,7 @@ static ConfRes SET_read_conf(void *conf, const char *name, const char *value) {
     }
 
     fclose(fp);
-    free(line);
+    FREE(line);
 
     return Conf_OK;
 }
@@ -2079,8 +2075,7 @@ static ConfRes SET_bpf_filter(void *conf, const char *name, const char *value) {
     }
 
     size_t len = strlen(value) + 1;
-    if (xconf->bpf_filter)
-        free(xconf->bpf_filter);
+    FREE(xconf->bpf_filter);
     xconf->bpf_filter = MALLOC(len);
     memcpy(xconf->bpf_filter, value, len);
 

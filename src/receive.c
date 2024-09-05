@@ -173,8 +173,8 @@ static void handle_thread(void *v) {
 
         output_result(parms->out_conf, &item);
 
-        free(recved->packet);
-        free(recved);
+        FREE(recved->packet);
+        FREE(recved);
     }
 
     LOG(LEVEL_DEBUG, "exiting handle thread #%u                    \n",
@@ -301,13 +301,12 @@ void receive_thread(void *v) {
                                         ft_handler);
                 output_result(out_conf, &item);
 
-                free(tm_event);
-                tm_event = NULL;
+                FREE(tm_event);
 
                 break;
             }
 
-            free(tm_event);
+            FREE(tm_event);
         }
 
         if (xconf->is_fast_timeout)
@@ -339,8 +338,8 @@ void receive_thread(void *v) {
         unsigned x = preprocess_frame(recved->packet, recved->length, data_link,
                                       &recved->parsed);
         if (!x) {
-            free(recved->packet);
-            free(recved);
+            FREE(recved->packet);
+            FREE(recved);
             continue; /* corrupt packet */
         }
 
@@ -403,8 +402,8 @@ void receive_thread(void *v) {
         scan_module->validate_cb(entropy, recved, &pre);
 
         if (!pre.go_record) {
-            free(recved->packet);
-            free(recved);
+            FREE(recved->packet);
+            FREE(recved);
             continue;
         }
 
@@ -419,8 +418,8 @@ void receive_thread(void *v) {
         }
 
         if (!pre.go_dedup) {
-            free(recved->packet);
-            free(recved);
+            FREE(recved->packet);
+            FREE(recved);
             continue;
         }
 
@@ -428,8 +427,8 @@ void receive_thread(void *v) {
             if (dedup_is_dup(dedup, pre.dedup_ip_them, pre.dedup_port_them,
                              pre.dedup_ip_me, pre.dedup_port_me,
                              pre.dedup_type)) {
-                free(recved->packet);
-                free(recved);
+                FREE(recved->packet);
+                FREE(recved);
                 continue;
             }
         }
@@ -473,21 +472,12 @@ void receive_thread(void *v) {
         ft_close_handler(ft_handler);
         ft_handler = NULL;
     }
-    if (handler) {
-        free(handler);
-        handler = NULL;
-    }
-    if (handle_parms) {
-        free(handle_parms);
-        handle_parms = NULL;
-    }
     if (dispatch_q) {
         parms->handle_q = NULL;
     }
-    if (handle_q) {
-        free(handle_q);
-        parms->handle_q = NULL;
-    }
+    FREE(handler);
+    FREE(handle_parms);
+    FREE(handle_q);
 
     /* Thread is about to exit */
     parms->done_receiving = true;

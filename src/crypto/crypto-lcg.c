@@ -184,7 +184,7 @@ static unsigned lcg_verify(uint64_t a, uint64_t c, uint64_t range,
             is_success = 0;
     }
 
-    free(list);
+    FREE(list);
 
     return is_success;
 }

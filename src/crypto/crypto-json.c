@@ -108,7 +108,7 @@ static char *sb_finish(SB *sb) {
     return sb->start;
 }
 
-static void sb_free(SB *sb) { free(sb->start); }
+static void sb_free(SB *sb) { FREE(sb->start); }
 
 /*
  * Unicode helper functions
@@ -393,7 +393,7 @@ void json_delete(JsonNode *node) {
 
         switch (node->tag) {
             case JSON_STRING:
-                free(node->string_);
+                FREE(node->string_);
                 break;
             case JSON_ARRAY:
             case JSON_OBJECT: {
@@ -407,7 +407,7 @@ void json_delete(JsonNode *node) {
             default:;
         }
 
-        free(node);
+        FREE(node);
     }
 }
 
@@ -564,11 +564,10 @@ void json_remove_from_parent(JsonNode *node) {
         else
             parent->children.tail = node->prev;
 
-        free(node->key);
+        FREE(node->key);
 
         node->parent = NULL;
         node->prev = node->next = NULL;
-        node->key               = NULL;
     }
 }
 
@@ -733,7 +732,7 @@ success:
 
 failure_free_key:
     if (out)
-        free(key);
+        FREE(key);
 failure:
     json_delete(ret);
     return false;

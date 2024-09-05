@@ -377,8 +377,7 @@ static void tcpstate_close() {
         tcpcon_destroy_table(tcpcon_set.tcpcons[i]);
     }
 
-    free(tcpcon_set.tcpcons);
-    tcpcon_set.tcpcons = NULL;
+    FREE(tcpcon_set.tcpcons);
 }
 
 static void tcpstate_status(char *status) {

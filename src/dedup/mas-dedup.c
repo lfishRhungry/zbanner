@@ -120,7 +120,7 @@ DedupTable *dedup_create(unsigned dedup_win) {
  * There's nothing special we need to do to free the structure
  * since it's all contained in the single allocation.
  */
-void dedup_destroy(DedupTable *dedup) { free(dedup); }
+void dedup_destroy(DedupTable *dedup) { FREE(dedup); }
 
 /**
  * Create a hash of the IPv6 socket. This doesn't have to be

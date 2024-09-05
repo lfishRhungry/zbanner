@@ -113,7 +113,7 @@ struct Recog_FP *load_recog_fp(const char *filename, bool unprefix,
             (icase ? PCRE2_CASELESS : 0) | (mline ? PCRE2_DOTALL : 0),
             &pcre2_errcode, &pcre2_erroffset, NULL);
 
-        free(tmp_char);
+        FREE(tmp_char);
 
         if (!match->compiled_re) {
             LOG(LEVEL_HINT, "regex compiled failed in %s.\n", tmp_xml_char);
@@ -183,8 +183,8 @@ error:
     LOG(LEVEL_ERROR, "Failed to load fingerprints in file %s.\n", filename);
     xmlFreeDoc(doc);
     xmlCleanupParser();
-    free(fp->filename);
-    free(fp);
+    FREE(fp->filename);
+    FREE(fp);
     /*some loaded matches may be leaked, but it's acceptable while loading
      * error*/
 
@@ -246,8 +246,7 @@ void free_recog_fp(struct Recog_FP *fp) {
     struct RecogMatch *match = fp->match;
     struct RecogMatch *tmp;
     for (; match;) {
-        if (match->desc)
-            free(match->desc);
+        FREE(match->desc);
         if (match->compiled_re)
             pcre2_code_free(match->compiled_re);
         if (match->match_ctx)
@@ -255,7 +254,7 @@ void free_recog_fp(struct Recog_FP *fp) {
 
         tmp   = match;
         match = match->next;
-        free(tmp);
+        FREE(tmp);
     }
 }
 

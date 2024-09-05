@@ -59,8 +59,7 @@ static ConfRes SET_script(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (luatcp_conf.script)
-        free(luatcp_conf.script);
+    FREE(luatcp_conf.script);
 
     luatcp_conf.script = STRDUP(value);
 
@@ -218,7 +217,7 @@ static bool luatcp_init(const XConf *xconf) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
         lua_close(luatcp_conf.Lhx);
-        free(luatcp_conf.script);
+        FREE(luatcp_conf.script);
         return false;
     }
     x = luaL_loadfile(luatcp_conf.Lrx, luatcp_conf.script);
@@ -229,7 +228,7 @@ static bool luatcp_init(const XConf *xconf) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
         lua_close(luatcp_conf.Lhx);
-        free(luatcp_conf.script);
+        FREE(luatcp_conf.script);
         return false;
     }
     x = luaL_loadfile(luatcp_conf.Lhx, luatcp_conf.script);
@@ -240,7 +239,7 @@ static bool luatcp_init(const XConf *xconf) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
         lua_close(luatcp_conf.Lhx);
-        free(luatcp_conf.script);
+        FREE(luatcp_conf.script);
         return false;
     }
 
@@ -257,7 +256,7 @@ static bool luatcp_init(const XConf *xconf) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
         lua_close(luatcp_conf.Lhx);
-        free(luatcp_conf.script);
+        FREE(luatcp_conf.script);
         return false;
     }
     x = lua_pcall(luatcp_conf.Lrx, 0, 0, 0);
@@ -267,7 +266,7 @@ static bool luatcp_init(const XConf *xconf) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
         lua_close(luatcp_conf.Lhx);
-        free(luatcp_conf.script);
+        FREE(luatcp_conf.script);
         return false;
     }
     x = lua_pcall(luatcp_conf.Lhx, 0, 0, 0);
@@ -278,7 +277,7 @@ static bool luatcp_init(const XConf *xconf) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
         lua_close(luatcp_conf.Lhx);
-        free(luatcp_conf.script);
+        FREE(luatcp_conf.script);
         return false;
     }
 
@@ -289,7 +288,7 @@ static bool luatcp_init(const XConf *xconf) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
         lua_close(luatcp_conf.Lhx);
-        free(luatcp_conf.script);
+        FREE(luatcp_conf.script);
         return false;
     }
 
@@ -300,28 +299,28 @@ static bool luatcp_init(const XConf *xconf) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
         lua_close(luatcp_conf.Lhx);
-        free(luatcp_conf.script);
+        FREE(luatcp_conf.script);
         return false;
     }
     if (!check_func_exist(LUA_PROBE_FUNC_GET_PAYLOAD_LEN)) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
         lua_close(luatcp_conf.Lhx);
-        free(luatcp_conf.script);
+        FREE(luatcp_conf.script);
         return false;
     }
     if (!check_func_exist(LUA_PROBE_FUNC_HANDLE_RESPONSE)) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
         lua_close(luatcp_conf.Lhx);
-        free(luatcp_conf.script);
+        FREE(luatcp_conf.script);
         return false;
     }
     if (!check_func_exist(LUA_PROBE_FUNC_HANDLE_TIMEOUT)) {
         lua_close(luatcp_conf.Ltx);
         lua_close(luatcp_conf.Lrx);
         lua_close(luatcp_conf.Lhx);
-        free(luatcp_conf.script);
+        FREE(luatcp_conf.script);
         return false;
     }
 
@@ -590,8 +589,7 @@ void luatcp_close() {
     if (luatcp_conf.Lhx) {
         lua_close(luatcp_conf.Lhx);
     }
-    if (luatcp_conf.script)
-        free(luatcp_conf.script);
+    FREE(luatcp_conf.script);
 }
 
 Probe LuaTcpProbe = {

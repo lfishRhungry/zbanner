@@ -78,8 +78,7 @@ static ConfRes SET_hello_string(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (recogstate_conf.hello)
-        free(recogstate_conf.hello);
+    FREE(recogstate_conf.hello);
 
     recogstate_conf.hello_len = strlen(value);
     if (recogstate_conf.hello_len == 0) {
@@ -96,8 +95,7 @@ static ConfRes SET_hello_nmap(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (recogstate_conf.hello)
-        free(recogstate_conf.hello);
+    FREE(recogstate_conf.hello);
 
     recogstate_conf.hello_len = strlen(value);
     if (recogstate_conf.hello_len == 0) {
@@ -118,8 +116,7 @@ static ConfRes SET_hello_base64(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (recogstate_conf.hello)
-        free(recogstate_conf.hello);
+    FREE(recogstate_conf.hello);
 
     recogstate_conf.hello_len = strlen(value);
     if (recogstate_conf.hello_len == 0) {
@@ -139,8 +136,7 @@ static ConfRes SET_hello_file(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (recogstate_conf.hello)
-        free(recogstate_conf.hello);
+    FREE(recogstate_conf.hello);
 
     FILE *fp = fopen(value, "rb");
     if (fp == NULL) {
@@ -172,8 +168,7 @@ static ConfRes SET_recog_file(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (recogstate_conf.xml_filename)
-        free(recogstate_conf.xml_filename);
+    FREE(recogstate_conf.xml_filename);
 
     recogstate_conf.xml_filename = STRDUP(value);
 
@@ -326,10 +321,7 @@ static unsigned recogstate_parse_response(DataPass *pass, ProbeState *state,
 }
 
 static void recogstate_close() {
-    if (recogstate_conf.hello) {
-        free(recogstate_conf.hello);
-        recogstate_conf.hello = NULL;
-    }
+    FREE(recogstate_conf.hello);
     recogstate_conf.hello_len = 0;
 
     if (recogstate_conf.recog_fp) {

@@ -21,7 +21,7 @@ void rawsock_close_cache(AdapterCache *acache) {
         PCAP.sendqueue_destroy(acache->sendq);
     }
 
-    free(acache);
+    FREE(acache);
 }
 
 /***************************************************************************

@@ -126,8 +126,7 @@ static ConfRes SET_hello_string(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (hello_conf.hello)
-        free(hello_conf.hello);
+    FREE(hello_conf.hello);
 
     hello_conf.hello_len = strlen(value);
     if (hello_conf.hello_len == 0) {
@@ -144,8 +143,7 @@ static ConfRes SET_hello_nmap(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (hello_conf.hello)
-        free(hello_conf.hello);
+    FREE(hello_conf.hello);
 
     hello_conf.hello_len = strlen(value);
     if (hello_conf.hello_len == 0) {
@@ -165,8 +163,7 @@ static ConfRes SET_hello_base64(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (hello_conf.hello)
-        free(hello_conf.hello);
+    FREE(hello_conf.hello);
 
     hello_conf.hello_len = strlen(value);
     if (hello_conf.hello_len == 0) {
@@ -186,8 +183,7 @@ static ConfRes SET_hello_file(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (hello_conf.hello)
-        free(hello_conf.hello);
+    FREE(hello_conf.hello);
 
     FILE *fp = fopen(value, "rb");
     if (fp == NULL) {
@@ -362,17 +358,11 @@ static unsigned hello_handle_timeout(ProbeTarget *target, OutItem *item) {
 }
 
 static void hello_close() {
-    if (hello_conf.hello) {
-        free(hello_conf.hello);
-        hello_conf.hello = NULL;
-    }
+    FREE(hello_conf.hello);
     hello_conf.hello_len = 0;
 
 #ifndef NOT_FOUND_PCRE2
-    if (hello_conf.regex) {
-        free(hello_conf.regex);
-        hello_conf.regex = NULL;
-    }
+    FREE(hello_conf.regex);
     hello_conf.regex_len = 0;
 
     if (hello_conf.compiled_re) {

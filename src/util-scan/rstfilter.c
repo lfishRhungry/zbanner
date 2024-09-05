@@ -49,7 +49,7 @@ struct ResetFilter *rstfilter_create(unsigned long long seed,
 void rstfilter_destroy(struct ResetFilter *rf) {
     if (rf == NULL)
         return;
-    free(rf->buckets);
+    FREE(rf->buckets);
     free(rf);
 }
 

@@ -148,8 +148,7 @@ static ConfRes SET_hello_string(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (hellostate_conf.hello)
-        free(hellostate_conf.hello);
+    FREE(hellostate_conf.hello);
 
     hellostate_conf.hello_len = strlen(value);
     if (hellostate_conf.hello_len == 0) {
@@ -166,8 +165,7 @@ static ConfRes SET_hello_nmap(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (hellostate_conf.hello)
-        free(hellostate_conf.hello);
+    FREE(hellostate_conf.hello);
 
     hellostate_conf.hello_len = strlen(value);
     if (hellostate_conf.hello_len == 0) {
@@ -188,8 +186,7 @@ static ConfRes SET_hello_base64(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (hellostate_conf.hello)
-        free(hellostate_conf.hello);
+    FREE(hellostate_conf.hello);
 
     hellostate_conf.hello_len = strlen(value);
     if (hellostate_conf.hello_len == 0) {
@@ -209,8 +206,7 @@ static ConfRes SET_hello_file(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (hellostate_conf.hello)
-        free(hellostate_conf.hello);
+    FREE(hellostate_conf.hello);
 
     FILE *fp = fopen(value, "rb");
     if (fp == NULL) {
@@ -406,17 +402,11 @@ static unsigned hellostate_parse_response(DataPass *pass, ProbeState *state,
 }
 
 static void hellostate_close() {
-    if (hellostate_conf.hello) {
-        free(hellostate_conf.hello);
-        hellostate_conf.hello = NULL;
-    }
+    FREE(hellostate_conf.hello);
     hellostate_conf.hello_len = 0;
 
 #ifndef NOT_FOUND_PCRE2
-    if (hellostate_conf.regex) {
-        free(hellostate_conf.regex);
-        hellostate_conf.regex = NULL;
-    }
+    FREE(hellostate_conf.regex);
     hellostate_conf.regex_len = 0;
 
     if (hellostate_conf.compiled_re) {

@@ -309,8 +309,7 @@ void *pixie_create_barrier(unsigned total_threads) {
     }
     is_succces = InitializeSynchronizationBarrier(p_barrier, total_threads, 0);
     if (is_succces == FALSE) {
-        free(p_barrier);
-        p_barrier = NULL;
+        FREE(p_barrier);
     }
     return p_barrier;
 #else
@@ -322,8 +321,7 @@ void *pixie_create_barrier(unsigned total_threads) {
     }
     res = pthread_barrier_init(p_barrier, NULL, total_threads);
     if (res != 0) {
-        free(p_barrier);
-        p_barrier = NULL;
+        FREE(p_barrier);
     }
     return p_barrier;
 #endif
@@ -348,7 +346,7 @@ bool pixie_delete_barrier(void *p_barrier) {
 #else
     int res;
     res = pthread_barrier_destroy(p_barrier);
-    free(p_barrier);
+    FREE(p_barrier);
     return res == 0;
 #endif
 }
@@ -371,8 +369,7 @@ void *pixie_create_rwlock() {
     }
     res = pthread_rwlock_init(p_rwlock, NULL);
     if (res != 0) {
-        free(p_rwlock);
-        p_rwlock = NULL;
+        FREE(p_rwlock);
     }
     return p_rwlock;
 #endif
@@ -412,12 +409,12 @@ void pixie_release_rwlock_write(void *p_rwlock) {
 
 bool pixie_delete_rwlock(void *p_rwlock) {
 #if defined(WIN32)
-    free(p_rwlock);
+    FREE(p_rwlock);
     return true;
 #else
     int res;
     res = pthread_rwlock_destroy(p_rwlock);
-    free(p_rwlock);
+    FREE(p_rwlock);
     return res == 0;
 #endif
 }
@@ -436,8 +433,7 @@ void *pixie_create_mutex() {
     }
     res = pthread_mutex_init(p_mutex, NULL);
     if (res != 0) {
-        free(p_mutex);
-        p_mutex = NULL;
+        FREE(p_mutex);
     }
     return p_mutex;
 #endif
@@ -466,7 +462,7 @@ bool pixie_delete_mutex(void *p_mutex) {
 #else
     int res;
     res = pthread_mutex_destroy(p_mutex);
-    free(p_mutex);
+    FREE(p_mutex);
     return res == 0;
 #endif
 }

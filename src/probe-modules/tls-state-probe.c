@@ -109,8 +109,7 @@ static ConfRes SET_subprobe_args(void *conf, const char *name,
     UNUSEDPARM(name);
 
     size_t len = strlen(value) + 1;
-    if (tlsstate_conf.subprobe_args)
-        free(tlsstate_conf.subprobe_args);
+    FREE(tlsstate_conf.subprobe_args);
     tlsstate_conf.subprobe_args = CALLOC(1, len);
     memcpy(tlsstate_conf.subprobe_args, value, len);
 
@@ -818,15 +817,15 @@ static bool tlsstate_conn_init(ProbeState *state, ProbeTarget *target) {
 // error7:
 // SSL_set_ex_data(ssl, 0, NULL);
 error4:
-    free(tgt);
+    FREE(tgt);
     SSL_free(ssl);
 error3:
     BIO_free(wbio);
 error2:
     BIO_free(rbio);
 error1:
-    free(data);
-    free(tls_state);
+    FREE(data);
+    FREE(tls_state);
 error0:
 
     return false;
@@ -849,24 +848,17 @@ static void tlsstate_conn_close(ProbeState *state, ProbeTarget *target) {
     if (tls_state->ssl) {
         /*cleanup ex data in SSL obj*/
         void *ex_data = SSL_get_ex_data(tls_state->ssl, TSP_EXT_TGT_IDX);
-        if (ex_data) {
-            free(ex_data);
-            ex_data = NULL;
-        }
-
+        FREE(ex_data);
         SSL_free(tls_state->ssl);
         tls_state->ssl  = NULL;
         tls_state->rbio = NULL;
         tls_state->wbio = NULL;
     }
 
-    if (tls_state->data) {
-        free(tls_state->data);
-        tls_state->data      = NULL;
-        tls_state->data_size = 0;
-    }
+    FREE(tls_state->data);
+    tls_state->data_size = 0;
 
-    free(tls_state);
+    FREE(tls_state);
     state->data = NULL;
 }
 
@@ -1134,9 +1126,8 @@ static unsigned tlsstate_parse_response(DataPass *pass, ProbeState *state,
                 ERR_clear_error();
                 res = SSL_write(tls_state->ssl, subpass.data, subpass.len);
                 if (subpass.is_dynamic) {
-                    free(subpass.data);
-                    subpass.data = NULL;
-                    subpass.len  = 0;
+                    FREE(subpass.data);
+                    subpass.len = 0;
                 }
 
                 if (res <= 0) {
@@ -1236,9 +1227,8 @@ static unsigned tlsstate_parse_response(DataPass *pass, ProbeState *state,
                     int sub_res =
                         SSL_write(tls_state->ssl, subpass.data, subpass.len);
                     if (subpass.is_dynamic) {
-                        free(subpass.data);
-                        subpass.data = NULL;
-                        subpass.len  = 0;
+                        FREE(subpass.data);
+                        subpass.len = 0;
                     }
 
                     if (sub_res <= 0) {

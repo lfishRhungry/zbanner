@@ -202,7 +202,7 @@ static ConfRes SET_handshake(void *conf, const char *name, const char *value) {
 
             if (lzr_conf.handshake[hs_index] == NULL) {
                 LOG(LEVEL_ERROR, "Invalid name of handshake for lzr.\n");
-                free(str);
+                FREE(str);
                 return Conf_ERR;
             }
 
@@ -212,7 +212,7 @@ static ConfRes SET_handshake(void *conf, const char *name, const char *value) {
         }
     }
 
-    free(str);
+    FREE(str);
 
     return Conf_OK;
 }
@@ -386,7 +386,7 @@ void lzr_close() {
     for (unsigned i = 0; i < lzr_conf.hs_count; i++)
         lzr_conf.handshake[i]->close_cb();
 
-    free(lzr_conf.handshake);
+    FREE(lzr_conf.handshake);
 }
 
 Probe LzrProbe = {

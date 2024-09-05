@@ -56,8 +56,7 @@ static ConfRes SET_hello_string(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (recogudp_conf.hello)
-        free(recogudp_conf.hello);
+    FREE(recogudp_conf.hello);
 
     recogudp_conf.hello_len = strlen(value);
     if (recogudp_conf.hello_len == 0) {
@@ -74,8 +73,7 @@ static ConfRes SET_hello_nmap(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (recogudp_conf.hello)
-        free(recogudp_conf.hello);
+    FREE(recogudp_conf.hello);
 
     recogudp_conf.hello_len = strlen(value);
     if (recogudp_conf.hello_len == 0) {
@@ -96,8 +94,7 @@ static ConfRes SET_hello_base64(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (recogudp_conf.hello)
-        free(recogudp_conf.hello);
+    FREE(recogudp_conf.hello);
 
     recogudp_conf.hello_len = strlen(value);
     if (recogudp_conf.hello_len == 0) {
@@ -117,8 +114,7 @@ static ConfRes SET_hello_file(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (recogudp_conf.hello)
-        free(recogudp_conf.hello);
+    FREE(recogudp_conf.hello);
 
     FILE *fp = fopen(value, "rb");
     if (fp == NULL) {
@@ -150,8 +146,7 @@ static ConfRes SET_recog_file(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (recogudp_conf.xml_filename)
-        free(recogudp_conf.xml_filename);
+    FREE(recogudp_conf.xml_filename);
 
     recogudp_conf.xml_filename = STRDUP(value);
 
@@ -287,10 +282,7 @@ static unsigned recogudp_handle_timeout(ProbeTarget *target, OutItem *item) {
 }
 
 static void recogudp_close() {
-    if (recogudp_conf.hello) {
-        free(recogudp_conf.hello);
-        recogudp_conf.hello = NULL;
-    }
+    FREE(recogudp_conf.hello);
     recogudp_conf.hello_len = 0;
 
     if (recogudp_conf.recog_fp) {

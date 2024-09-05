@@ -457,11 +457,10 @@ static void _tcpcon_destroy_tcb(TCP_Table *tcpcon, TCB *tcb,
         tcb->segments   = seg->next;
 
         if (seg->is_dynamic) {
-            free(seg->buf);
-            seg->buf = NULL;
+            FREE(seg->buf);
         }
 
-        free(seg);
+        FREE(seg);
     }
 
     /*do connection close for probe*/
@@ -511,11 +510,11 @@ void tcpcon_destroy_table(TCP_Table *tcpcon) {
     while (tcpcon->freed_list) {
         TCB *tcb           = tcpcon->freed_list;
         tcpcon->freed_list = tcb->next;
-        free(tcb);
+        FREE(tcb);
     }
 
-    free(tcpcon->entries);
-    free(tcpcon);
+    FREE(tcpcon->entries);
+    FREE(tcpcon);
 }
 
 /***************************************************************************
@@ -851,10 +850,9 @@ static bool _tcp_seg_acknowledge(TCB *tcb, uint32_t ackno) {
 
             /* free the old segment */
             if (seg->is_dynamic) {
-                free(seg->buf);
-                seg->buf = NULL;
+                FREE(seg->buf);
             }
-            free(seg);
+            FREE(seg);
             if (ackno == tcb->ackno_them)
                 return true; /* good ACK */
         }
@@ -872,7 +870,7 @@ static bool _tcp_seg_acknowledge(TCB *tcb, uint32_t ackno) {
                 unsigned char *buf        = MALLOC(new_length);
 
                 memcpy(buf, seg->buf + length, new_length);
-                free(seg->buf);
+                FREE(seg->buf);
 
                 seg->buf        = buf;
                 seg->length     = new_length;

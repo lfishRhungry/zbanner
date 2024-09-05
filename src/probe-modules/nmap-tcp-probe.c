@@ -58,9 +58,7 @@ static ConfRes SET_no_port_limit(void *conf, const char *name,
 static ConfRes SET_softmatch(void *conf, const char *name, const char *value) {
     UNUSEDPARM(name);
 
-    if (nmaptcp_conf.softmatch) {
-        free(nmaptcp_conf.softmatch);
-    }
+    FREE(nmaptcp_conf.softmatch);
 
     nmaptcp_conf.softmatch = STRDUP(value);
     return Conf_OK;
@@ -69,9 +67,7 @@ static ConfRes SET_softmatch(void *conf, const char *name, const char *value) {
 static ConfRes SET_probe_file(void *conf, const char *name, const char *value) {
     UNUSEDPARM(name);
 
-    if (nmaptcp_conf.probe_file) {
-        free(nmaptcp_conf.probe_file);
-    }
+    FREE(nmaptcp_conf.probe_file);
 
     nmaptcp_conf.probe_file = STRDUP(value);
     return Conf_OK;
@@ -181,15 +177,8 @@ static void nmaptcp_close() {
         nmaptcp_conf.service_probes = NULL;
     }
 
-    if (nmaptcp_conf.probe_file) {
-        free(nmaptcp_conf.probe_file);
-        nmaptcp_conf.probe_file = NULL;
-    }
-
-    if (nmaptcp_conf.softmatch) {
-        free(nmaptcp_conf.softmatch);
-        nmaptcp_conf.softmatch = NULL;
-    }
+    FREE(nmaptcp_conf.probe_file);
+    FREE(nmaptcp_conf.softmatch);
 }
 
 static size_t nmaptcp_make_payload(ProbeTarget   *target,

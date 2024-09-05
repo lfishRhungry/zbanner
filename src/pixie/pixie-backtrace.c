@@ -146,7 +146,7 @@ static void printStack(void) {
                symbol->Address);
     }
 
-    free(symbol);
+    FREE(symbol);
 }
 
 static void handle_segfault(int sig) {

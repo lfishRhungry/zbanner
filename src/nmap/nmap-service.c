@@ -466,12 +466,9 @@ static void parse_probe(struct NmapServiceProbeList *list, const char *line,
     return;
 
 parse_error:
-    if (probe->name != 0)
-        free(probe->name);
-    if (probe->hellostring != 0)
-        free(probe->hellostring);
-    probe->hellostring = 0;
-    free(probe);
+    FREE(probe->name);
+    FREE(probe->hellostring);
+    FREE(probe);
     list->count--;
 }
 
@@ -709,16 +706,15 @@ static struct ServiceProbeMatch *parse_match(struct NmapServiceProbeList *list,
     return match;
 
 parse_error:
-    free(match->regex);
-    free(match->service);
+    FREE(match->regex);
+    FREE(match->service);
     while (match->versioninfo) {
         struct ServiceVersionInfo *v = match->versioninfo;
         match->versioninfo           = v->next;
-        if (v->value)
-            free(v->value);
-        free(v);
+        FREE(v->value);
+        FREE(v);
     }
-    free(match);
+    FREE(match);
     return 0;
 }
 
@@ -911,37 +907,33 @@ struct NmapServiceProbeList *nmapservice_read_file(const char *filename) {
 /*****************************************************************************
  *****************************************************************************/
 static void nmapserviceprobes_free_record(struct NmapServiceProbe *probe) {
-    if (probe->name)
-        free(probe->name);
-    if (probe->hellostring)
-        free(probe->hellostring);
+    FREE(probe->name);
+    FREE(probe->hellostring);
     rangelist_remove_all(&probe->ports);
     rangelist_remove_all(&probe->sslports);
     while (probe->match) {
         struct ServiceProbeMatch *match = probe->match;
         probe->match                    = match->next;
-        free(match->regex);
-        free(match->service);
+        FREE(match->regex);
+        FREE(match->service);
         while (match->versioninfo) {
             struct ServiceVersionInfo *v = match->versioninfo;
             match->versioninfo           = v->next;
-            if (v->value)
-                free(v->value);
-            free(v);
+            FREE(v->value);
+            FREE(v);
         }
-        free(match);
+        FREE(match);
     }
     while (probe->fallback) {
         struct ServiceProbeFallback *fallback;
 
         fallback        = probe->fallback;
         probe->fallback = fallback->next;
-        if (fallback->name)
-            free(fallback->name);
-        free(fallback);
+        FREE(fallback->name);
+        FREE(fallback);
     }
 
-    free(probe);
+    FREE(probe);
 }
 
 /*****************************************************************************
@@ -1315,9 +1307,8 @@ void nmapservice_free(struct NmapServiceProbeList *list) {
         nmapserviceprobes_free_record(list->probes[i]);
     }
 
-    if (list->probes)
-        free(list->probes);
-    free(list);
+    FREE(list->probes);
+    FREE(list);
 }
 
 /**

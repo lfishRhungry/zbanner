@@ -67,8 +67,7 @@ static ConfRes SET_hello_string(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (recog_conf.hello)
-        free(recog_conf.hello);
+    FREE(recog_conf.hello);
 
     recog_conf.hello_len = strlen(value);
     if (recog_conf.hello_len == 0) {
@@ -85,8 +84,7 @@ static ConfRes SET_hello_nmap(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (recog_conf.hello)
-        free(recog_conf.hello);
+    FREE(recog_conf.hello);
 
     recog_conf.hello_len = strlen(value);
     if (recog_conf.hello_len == 0) {
@@ -106,8 +104,7 @@ static ConfRes SET_hello_base64(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (recog_conf.hello)
-        free(recog_conf.hello);
+    FREE(recog_conf.hello);
 
     recog_conf.hello_len = strlen(value);
     if (recog_conf.hello_len == 0) {
@@ -127,8 +124,7 @@ static ConfRes SET_hello_file(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (recog_conf.hello)
-        free(recog_conf.hello);
+    FREE(recog_conf.hello);
 
     FILE *fp = fopen(value, "rb");
     if (fp == NULL) {
@@ -160,8 +156,7 @@ static ConfRes SET_recog_file(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (recog_conf.xml_filename)
-        free(recog_conf.xml_filename);
+    FREE(recog_conf.xml_filename);
 
     recog_conf.xml_filename = STRDUP(value);
 
@@ -301,10 +296,7 @@ static unsigned recog_handle_timeout(ProbeTarget *target, OutItem *item) {
 }
 
 static void recog_close() {
-    if (recog_conf.hello) {
-        free(recog_conf.hello);
-        recog_conf.hello = NULL;
-    }
+    FREE(recog_conf.hello);
     recog_conf.hello_len = 0;
 
     if (recog_conf.recog_fp) {

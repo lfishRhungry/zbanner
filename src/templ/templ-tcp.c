@@ -1652,7 +1652,7 @@ static int _selftests_run(void) {
             }
         }
 
-        free(buf);
+        FREE(buf);
     }
 
     return 0; /* success */
@@ -1766,11 +1766,11 @@ int templ_tcp_selftest() {
         goto fail;
     }
 
-    free(buf);
+    FREE(buf);
     return 0; /* success */
 fail:
     LOG(LEVEL_ERROR, "templ_tcp_selftest failed, file=%s, line=%u\n", __FILE__,
         line);
-    free(buf);
+    FREE(buf);
     return 1; /* failure */
 }

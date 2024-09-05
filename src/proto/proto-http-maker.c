@@ -486,7 +486,7 @@ int proto_http_maker_selftest() {
                 (unsigned)i);
             return 1;
         }
-        free(x);
+        FREE(x);
 
         /* Same test as above, but when name specified with a colon */
         x    = (unsigned char *)STRDUP(fieldsamples[i].from);
@@ -497,7 +497,7 @@ int proto_http_maker_selftest() {
                 (unsigned)i);
             return 1;
         }
-        free(x);
+        FREE(x);
 
         /* Same test as above, but with name having additional space */
         x    = (unsigned char *)STRDUP(fieldsamples[i].from);
@@ -509,7 +509,7 @@ int proto_http_maker_selftest() {
                 (unsigned)i);
             return 1;
         }
-        free(x);
+        FREE(x);
     }
 
     /* Removing fields */
@@ -528,7 +528,7 @@ int proto_http_maker_selftest() {
                 (unsigned)i);
             return 1;
         }
-        free(x);
+        FREE(x);
     }
 
     return 0;

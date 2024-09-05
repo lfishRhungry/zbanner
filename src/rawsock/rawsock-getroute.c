@@ -6,7 +6,6 @@
 */
 #include "rawsock.h"
 #include "../util-data/safe-string.h"
-#include "../util-data/fine-malloc.h"
 #include "../target/target-parse.h"
 #include "../util-out/logger.h"
 

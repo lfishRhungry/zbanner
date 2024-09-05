@@ -175,8 +175,7 @@ static ConfRes SET_method(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (http_conf.method)
-        free(http_conf.method);
+    FREE(http_conf.method);
 
     http_conf.method_length = strlen(value);
     http_conf.method        = STRDUP(value);
@@ -188,8 +187,7 @@ static ConfRes SET_url(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (http_conf.url)
-        free(http_conf.url);
+    FREE(http_conf.url);
 
     http_conf.url_length = strlen(value);
     http_conf.url        = STRDUP(value);
@@ -201,8 +199,7 @@ static ConfRes SET_version(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (http_conf.version)
-        free(http_conf.version);
+    FREE(http_conf.version);
 
     http_conf.version_length = strlen(value);
     http_conf.version        = STRDUP(value);
@@ -214,8 +211,7 @@ static ConfRes SET_host(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (http_conf.host)
-        free(http_conf.host);
+    FREE(http_conf.host);
 
     http_conf.host_length = strlen(value);
     http_conf.host        = STRDUP(value);
@@ -227,8 +223,7 @@ static ConfRes SET_user_agent(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (http_conf.user_agent)
-        free(http_conf.user_agent);
+    FREE(http_conf.user_agent);
 
     http_conf.user_agent_length = strlen(value);
     http_conf.user_agent        = STRDUP(value);
@@ -240,8 +235,7 @@ static ConfRes SET_payload(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (http_conf.payload)
-        free(http_conf.payload);
+    FREE(http_conf.payload);
 
     http_conf.payload_length = strlen(value);
     http_conf.payload        = STRDUP(value);
@@ -688,10 +682,7 @@ static unsigned http_handle_timeout(ProbeTarget *target, OutItem *item) {
 
 static void http_close() {
 #ifndef NOT_FOUND_PCRE2
-    if (http_conf.regex) {
-        free(http_conf.regex);
-        http_conf.regex = NULL;
-    }
+    FREE(http_conf.regex);
     http_conf.regex_len = 0;
 
     if (http_conf.compiled_re) {

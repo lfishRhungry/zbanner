@@ -290,7 +290,7 @@ void range6list_sort(struct Range6List *targets) {
 
     LOG(LEVEL_DEBUG, "range:sort: combined from %u elements to %u elements\n",
         original_count, newlist.count);
-    free(targets->list);
+    FREE(targets->list);
     targets->list  = newlist.list;
     targets->count = newlist.count;
     newlist.list   = 0;
@@ -340,10 +340,8 @@ void range6list_add_range(struct Range6List *targets, ipv6address begin,
 /***************************************************************************
  ***************************************************************************/
 void range6list_remove_all(struct Range6List *targets) {
-    if (targets->list)
-        free(targets->list);
-    if (targets->picker)
-        free(targets->picker);
+    FREE(targets->list);
+    FREE(targets->picker);
     memset(targets, 0, sizeof(*targets));
 }
 
@@ -510,8 +508,7 @@ void range6list_optimize(struct Range6List *targets) {
     if (!targets->is_sorted)
         range6list_sort(targets);
 
-    if (targets->picker)
-        free(targets->picker);
+    FREE(targets->picker);
 
     picker = REALLOCARRAY(NULL, targets->count, sizeof(*picker));
 

@@ -560,7 +560,7 @@ static int _main_scan(XConf *xconf) {
 
     output_close(&xconf->out_conf);
 
-    free(tx_thread);
+    FREE(tx_thread);
 
     if (xconf->is_fast_timeout) {
         ft_close_table(xconf->ft_table);

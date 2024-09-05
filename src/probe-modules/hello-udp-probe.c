@@ -109,8 +109,7 @@ static ConfRes SET_hello_string(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (helloudp_conf.hello)
-        free(helloudp_conf.hello);
+    FREE(helloudp_conf.hello);
 
     helloudp_conf.hello_len = strlen(value);
     if (helloudp_conf.hello_len == 0) {
@@ -127,8 +126,7 @@ static ConfRes SET_hello_nmap(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (helloudp_conf.hello)
-        free(helloudp_conf.hello);
+    FREE(helloudp_conf.hello);
 
     helloudp_conf.hello_len = strlen(value);
     if (helloudp_conf.hello_len == 0) {
@@ -149,8 +147,7 @@ static ConfRes SET_hello_base64(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (helloudp_conf.hello)
-        free(helloudp_conf.hello);
+    FREE(helloudp_conf.hello);
 
     helloudp_conf.hello_len = strlen(value);
     if (helloudp_conf.hello_len == 0) {
@@ -170,8 +167,7 @@ static ConfRes SET_hello_file(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (helloudp_conf.hello)
-        free(helloudp_conf.hello);
+    FREE(helloudp_conf.hello);
 
     FILE *fp = fopen(value, "rb");
     if (fp == NULL) {
@@ -323,16 +319,10 @@ static unsigned helloudp_handle_timeout(ProbeTarget *target, OutItem *item) {
 }
 
 static void helloudp_close() {
-    if (helloudp_conf.hello) {
-        free(helloudp_conf.hello);
-        helloudp_conf.hello = NULL;
-    }
+    FREE(helloudp_conf.hello);
     helloudp_conf.hello_len = 0;
 
-    if (helloudp_conf.regex) {
-        free(helloudp_conf.regex);
-        helloudp_conf.regex = NULL;
-    }
+    FREE(helloudp_conf.regex);
     helloudp_conf.regex_len = 0;
 
     if (helloudp_conf.compiled_re) {

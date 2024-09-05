@@ -270,7 +270,7 @@ void rangelist_sort(struct RangeList *targets) {
 
     LOG(LEVEL_DEBUG, "range:sort: combined from %u elements to %u elements\n",
         original_count, newlist.count);
-    free(targets->list);
+    FREE(targets->list);
     targets->list  = newlist.list;
     targets->count = newlist.count;
     newlist.list   = 0;
@@ -325,8 +325,8 @@ void rangelist_add_range(struct RangeList *targets, unsigned begin,
  * allocated.
  ***************************************************************************/
 void rangelist_remove_all(struct RangeList *targets) {
-    free(targets->list);
-    free(targets->picker);
+    FREE(targets->list);
+    FREE(targets->picker);
     memset(targets, 0, sizeof(*targets));
 }
 
@@ -713,7 +713,7 @@ void rangelist_exclude(struct RangeList *targets, struct RangeList *excludes) {
     }
 
     /* Now free the old list and move over the new list */
-    free(targets->list);
+    FREE(targets->list);
     targets->list  = newlist.list;
     targets->count = newlist.count;
     newlist.list   = NULL;
@@ -824,8 +824,7 @@ void rangelist_optimize(struct RangeList *targets) {
     if (!targets->is_sorted)
         rangelist_sort(targets);
 
-    if (targets->picker)
-        free(targets->picker);
+    FREE(targets->picker);
 
     picker = REALLOCARRAY(NULL, targets->count, sizeof(*picker));
 
@@ -913,8 +912,8 @@ static unsigned lcgrand(unsigned *state) {
  * Create an exact duplicate range.
  ***************************************************************************/
 static void rangelist_copy(struct RangeList *dst, const struct RangeList *src) {
-    free(dst->list);
-    free(dst->picker);
+    FREE(dst->list);
+    FREE(dst->picker);
     memset(dst, 0, sizeof(*dst));
     dst->list = CALLOC(src->count, sizeof(src->list[0]));
     memcpy(dst->list, src->list, src->count * sizeof(src->list[0]));

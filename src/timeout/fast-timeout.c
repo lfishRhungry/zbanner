@@ -69,8 +69,7 @@ void *ft_pop_event(FHandler *handler, time_t now) {
 
     if (now - handler->oldest->timestamp >= handler->spec) {
         void *ret = handler->oldest->event;
-        free(handler->oldest);
-        handler->oldest = NULL;
+        FREE(handler->oldest);
         return ret;
     }
 
@@ -79,8 +78,7 @@ void *ft_pop_event(FHandler *handler, time_t now) {
 
 void ft_close_handler(FHandler *handler) {
     if (handler->oldest) {
-        if (handler->oldest->event)
-            free(handler->oldest->event);
+        FREE(handler->oldest->event);
         free(handler->oldest);
         handler->oldest = NULL;
     }
@@ -91,12 +89,12 @@ void ft_close_handler(FHandler *handler) {
 void ft_close_table(FTable *table) {
     FEntry *entry = lfqueue_deq(&table->queue_t);
     while (entry) {
-        free(entry->event);
+        FREE(entry->event);
         free(entry);
         entry = lfqueue_deq(&table->queue_t);
     }
     lfqueue_destroy(&table->queue_t);
-    free(table);
+    FREE(table);
 }
 
 uint64_t ft_event_count(FHandler *handler) {

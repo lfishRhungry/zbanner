@@ -315,12 +315,7 @@ static unsigned dns_handle_timeout(ProbeTarget *target, OutItem *item) {
     return 0;
 }
 
-static void dns_close() {
-    if (dns_conf.req_name) {
-        free(dns_conf.req_name);
-        dns_conf.req_name = NULL;
-    }
-}
+static void dns_close() { FREE(dns_conf.req_name); }
 
 Probe DnsProbe = {
     .name       = "dns",

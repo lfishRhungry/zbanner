@@ -13,6 +13,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define FREE(ptr)                                                              \
+    do {                                                                       \
+        if ((ptr) != NULL) {                                                   \
+            free(ptr);                                                         \
+            (ptr) = NULL;                                                      \
+        }                                                                      \
+    } while (0)
+
 void *REALLOCARRAY(void *p, size_t count, size_t size);
 
 void *CALLOC(size_t count, size_t size);

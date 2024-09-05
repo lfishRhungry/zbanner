@@ -198,8 +198,7 @@ static ConfRes SET_method(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (httpstate_conf.method)
-        free(httpstate_conf.method);
+    FREE(httpstate_conf.method);
 
     httpstate_conf.method_length = strlen(value);
     httpstate_conf.method        = STRDUP(value);
@@ -211,8 +210,7 @@ static ConfRes SET_url(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (httpstate_conf.url)
-        free(httpstate_conf.url);
+    FREE(httpstate_conf.url);
 
     httpstate_conf.url_length = strlen(value);
     httpstate_conf.url        = STRDUP(value);
@@ -224,8 +222,7 @@ static ConfRes SET_version(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (httpstate_conf.version)
-        free(httpstate_conf.version);
+    FREE(httpstate_conf.version);
 
     httpstate_conf.version_length = strlen(value);
     httpstate_conf.version        = STRDUP(value);
@@ -237,8 +234,7 @@ static ConfRes SET_host(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (httpstate_conf.host)
-        free(httpstate_conf.host);
+    FREE(httpstate_conf.host);
 
     httpstate_conf.host_length = strlen(value);
     httpstate_conf.host        = STRDUP(value);
@@ -250,8 +246,7 @@ static ConfRes SET_user_agent(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (httpstate_conf.user_agent)
-        free(httpstate_conf.user_agent);
+    FREE(httpstate_conf.user_agent);
 
     httpstate_conf.user_agent_length = strlen(value);
     httpstate_conf.user_agent        = STRDUP(value);
@@ -263,8 +258,7 @@ static ConfRes SET_payload(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    if (httpstate_conf.payload)
-        free(httpstate_conf.payload);
+    FREE(httpstate_conf.payload);
 
     httpstate_conf.payload_length = strlen(value);
     httpstate_conf.payload        = STRDUP(value);
@@ -741,10 +735,7 @@ static unsigned httpstate_parse_response(DataPass *pass, ProbeState *state,
 
 static void httpstate_close() {
 #ifndef NOT_FOUND_PCRE2
-    if (httpstate_conf.regex) {
-        free(httpstate_conf.regex);
-        httpstate_conf.regex = NULL;
-    }
+    FREE(httpstate_conf.regex);
     httpstate_conf.regex_len = 0;
 
     if (httpstate_conf.compiled_re) {
