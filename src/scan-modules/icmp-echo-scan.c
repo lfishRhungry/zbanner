@@ -40,12 +40,12 @@ static ConfParam icmpecho_parameters[] = {
      SET_record_ttl,
      Type_BOOL,
      {"ttl", 0},
-     "Records TTL for IPv4 in ICMP Timestamp."},
+     "Records TTL for IPv4 or Hop Limit for IPv6 in ICMP Echo Reply."},
     {"record-ipid",
      SET_record_ipid,
      Type_BOOL,
      {"ipid", 0},
-     "Records IPID of ICMP Timestamp for IPv4."},
+     "Records IPID of ICMP Echo Reply just for IPv4."},
 
     {0}};
 
