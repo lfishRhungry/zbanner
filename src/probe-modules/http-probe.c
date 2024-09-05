@@ -141,9 +141,8 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
     http_conf.regex = STRDUP(value);
     http_conf.compiled_re =
         pcre2_compile((PCRE2_SPTR)http_conf.regex, PCRE2_ZERO_TERMINATED,
-                      http_conf.re_case_insensitive       ? PCRE2_CASELESS
-                      : 0 | http_conf.re_include_newlines ? PCRE2_DOTALL
-                                                          : 0,
+                      (http_conf.re_case_insensitive ? PCRE2_CASELESS : 0) |
+                          (http_conf.re_include_newlines ? PCRE2_DOTALL : 0),
                       &pcre2_errcode, &pcre2_erroffset, NULL);
 
     if (!http_conf.compiled_re) {

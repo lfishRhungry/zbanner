@@ -161,13 +161,12 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
 
     int        pcre2_errcode;
     PCRE2_SIZE pcre2_erroffset;
-    httpstate_conf.regex = STRDUP(value);
-    httpstate_conf.compiled_re =
-        pcre2_compile((PCRE2_SPTR)httpstate_conf.regex, PCRE2_ZERO_TERMINATED,
-                      httpstate_conf.re_case_insensitive       ? PCRE2_CASELESS
-                      : 0 | httpstate_conf.re_include_newlines ? PCRE2_DOTALL
-                                                               : 0,
-                      &pcre2_errcode, &pcre2_erroffset, NULL);
+    httpstate_conf.regex       = STRDUP(value);
+    httpstate_conf.compiled_re = pcre2_compile(
+        (PCRE2_SPTR)httpstate_conf.regex, PCRE2_ZERO_TERMINATED,
+        (httpstate_conf.re_case_insensitive ? PCRE2_CASELESS : 0) |
+            (httpstate_conf.re_include_newlines ? PCRE2_DOTALL : 0),
+        &pcre2_errcode, &pcre2_erroffset, NULL);
 
     if (!httpstate_conf.compiled_re) {
         LOG(LEVEL_ERROR, "Regex compiled failed.\n");

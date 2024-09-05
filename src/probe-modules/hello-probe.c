@@ -91,9 +91,8 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
     hello_conf.regex = STRDUP(value);
     hello_conf.compiled_re =
         pcre2_compile((PCRE2_SPTR)hello_conf.regex, PCRE2_ZERO_TERMINATED,
-                      hello_conf.re_case_insensitive       ? PCRE2_CASELESS
-                      : 0 | hello_conf.re_include_newlines ? PCRE2_DOTALL
-                                                           : 0,
+                      (hello_conf.re_case_insensitive ? PCRE2_CASELESS : 0) |
+                          (hello_conf.re_include_newlines ? PCRE2_DOTALL : 0),
                       &pcre2_errcode, &pcre2_erroffset, NULL);
 
     if (!hello_conf.compiled_re) {

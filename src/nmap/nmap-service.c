@@ -1219,12 +1219,11 @@ void nmapservice_match_compile(struct NmapServiceProbeList *service_probes) {
             if (match->compiled_re)
                 continue;
 
-            match->compiled_re =
-                pcre2_compile((PCRE2_SPTR)match->regex, PCRE2_ZERO_TERMINATED,
-                              match->is_case_insensitive       ? PCRE2_CASELESS
-                              : 0 | match->is_include_newlines ? PCRE2_DOTALL
-                                                               : 0,
-                              &pcre2_errcode, &pcre2_erroffset, NULL);
+            match->compiled_re = pcre2_compile(
+                (PCRE2_SPTR)match->regex, PCRE2_ZERO_TERMINATED,
+                (match->is_case_insensitive ? PCRE2_CASELESS : 0) |
+                    (match->is_include_newlines ? PCRE2_DOTALL : 0),
+                &pcre2_errcode, &pcre2_erroffset, NULL);
 
             if (!match->compiled_re) {
                 LOG(LEVEL_HINT, "regex compiled failed.\n");

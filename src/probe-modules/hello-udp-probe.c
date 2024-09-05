@@ -73,13 +73,12 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
 
     int        pcre2_errcode;
     PCRE2_SIZE pcre2_erroffset;
-    helloudp_conf.regex = STRDUP(value);
-    helloudp_conf.compiled_re =
-        pcre2_compile((PCRE2_SPTR)helloudp_conf.regex, PCRE2_ZERO_TERMINATED,
-                      helloudp_conf.re_case_insensitive       ? PCRE2_CASELESS
-                      : 0 | helloudp_conf.re_include_newlines ? PCRE2_DOTALL
-                                                              : 0,
-                      &pcre2_errcode, &pcre2_erroffset, NULL);
+    helloudp_conf.regex       = STRDUP(value);
+    helloudp_conf.compiled_re = pcre2_compile(
+        (PCRE2_SPTR)helloudp_conf.regex, PCRE2_ZERO_TERMINATED,
+        (helloudp_conf.re_case_insensitive ? PCRE2_CASELESS : 0) |
+            (helloudp_conf.re_include_newlines ? PCRE2_DOTALL : 0),
+        &pcre2_errcode, &pcre2_erroffset, NULL);
 
     if (!helloudp_conf.compiled_re) {
         LOG(LEVEL_ERROR, "Regex compiled failed.\n");
