@@ -469,7 +469,7 @@ static void _add_padding(unsigned char **inout_buf, size_t *inout_length,
     size_t         length = *inout_length;
 
     length += pad_count;
-    buf = realloc(buf, length);
+    buf = REALLOC(buf, length);
 
     /* open space between headers and payload */
     safe_memmove(buf, length, offset + pad_count, offset,
@@ -640,7 +640,7 @@ static int _insert_field(unsigned char **inout_buf, size_t *inout_length,
     adjust = (int)new_length - ((int)offset_end - (int)offset_begin);
     if (adjust > 0) {
         length += adjust;
-        buf = realloc(buf, length);
+        buf = REALLOC(buf, length);
         safe_memmove(buf, length, offset_begin + new_length, offset_end,
                      (length - adjust) - offset_end);
     }
@@ -648,7 +648,7 @@ static int _insert_field(unsigned char **inout_buf, size_t *inout_length,
         safe_memmove(buf, length, offset_begin + new_length, offset_end,
                      length - offset_end);
         length += adjust;
-        buf = realloc(buf, length);
+        buf = REALLOC(buf, length);
     }
 
     /**/
@@ -1297,14 +1297,14 @@ static bool _replace_options(unsigned char **inout_buf, size_t *inout_length,
     adjust = (int)(new_length - old_length);
     if (adjust > 0) {
         length += adjust;
-        buf = realloc(buf, length);
+        buf = REALLOC(buf, length);
         safe_memmove(buf, length, hdr.max + adjust, hdr.max,
                      (length - adjust) - hdr.max);
     }
     if (adjust < 0) {
         safe_memmove(buf, length, hdr.max + adjust, hdr.max, length - hdr.max);
         length += adjust;
-        buf = realloc(buf, length);
+        buf = REALLOC(buf, length);
     }
 
     /* Now that we've resized the options field, overright

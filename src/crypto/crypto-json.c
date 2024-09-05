@@ -79,7 +79,7 @@ static void sb_grow(SB *sb, int need) {
         alloc *= 2;
     } while (alloc < length + need);
 
-    sb->start = (char *)realloc(sb->start, alloc + 1);
+    sb->start = (char *)REALLOC(sb->start, alloc + 1);
     if (sb->start == NULL)
         out_of_memory();
     sb->cur = sb->start + length;
