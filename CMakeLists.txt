@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(
     xtate
     LANGUAGES               C
-    VERSION                 1.5.3
+    VERSION                 1.5.6
     DESCRIPTION             "A modular all-stack network scanner for next-generation internet surveys."
     HOMEPAGE_URL            "https://github.com/sharkocha/xtate"
     )
@@ -50,6 +50,13 @@ if (UNIX OR MINGW)
         endif ()
     endif ()
 endif ()
+
+if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    # remove typedef-redefinition warnings for Clang.
+    # Some redefinitions exist in code and this is not a C99 standard but C11,
+    # Clang is strict about it even they are safe.
+    add_compile_options(-Wno-typedef-redefinition)
+endif()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     set(exe_name "xtate_debug")

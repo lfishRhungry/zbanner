@@ -26,7 +26,14 @@ static unsigned lzr_socks5_handle_reponse(unsigned th_idx, ProbeTarget *target,
                                           const unsigned char *px,
                                           unsigned sizeof_px, OutItem *item) {
     if (sizeof_px == 2 && px[0] == '\x05' &&
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-constant-out-of-range-compare"
+#endif
         (px[1] == '\xff' || px[1] == '\x00')) {
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
         item->level = OUT_FAILURE;
         safe_strcpy(item->classification, OUT_CLS_SIZE, "socks5");
         safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
