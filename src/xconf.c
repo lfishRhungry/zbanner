@@ -3540,8 +3540,10 @@ void xconf_print_version() {
             compiler_version = "2022 VC++17.9";
         else if (msc_ver == 1940)
             compiler_version = "2022 VC++17.10";
+        else if (msc_ver == 1941)
+            compiler_version = "2022 VC++17.11";
         else
-            compiler_version = "post-2022";
+            compiler_version = "2022-post VC++17.11-post";
     }
 
 #elif defined(__GNUC__)
