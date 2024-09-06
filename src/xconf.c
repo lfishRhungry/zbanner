@@ -3154,8 +3154,8 @@ ConfParam config_parameters[] = {
      SET_static_seed,
      Type_BOOL,
      {"keep-seed", 0},
-     "Use same seed to pick up addresses in infinite "
-     "mode. " XTATE_NAME_TITLE_CASE
+     "Use same seed to pick up addresses in infinite mode while listing targets"
+     ". " XTATE_NAME_TITLE_CASE
      " changes seed for every round to make a different"
      " scan order while repeating. We can use static-seed to keep order of "
      "all rounds."},

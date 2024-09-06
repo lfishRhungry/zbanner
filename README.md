@@ -70,7 +70,7 @@ This is how Xtate working internally (or you can check it by `xtate --intro`):
 The most important of these are the Scan module and the Probe module.
 The Scan module is responsible for tasks in the network, transport and sometimes data-link layers during the scanning process (e.g., underlying packet construction, verification, etc.), while the Probe module is responsible for tasks above the transport layer (e.g., payload generation, content detection, etc.).
 A Scan module can be used alone (e.g. `icmp-echo` ScanModule), or paired with different Probe modules (e.g., `zbanner` ScanModulea and `http` ProbeModule). By clever design, Probe modules can even be nested with other Probe modules (e.g., `tcp-state` ScanModule, `tls-state` ProbeModule and `http` ProbeModule).
-Both Scan modules and Probe modules have own sub-parameters and you can check details by `--list-scan` or `--list-probe`.
+Both Scan modules and Probe modules have own sub-parameters.
 
 This is what ScanModules, ProbeModules and "all-stack" mean (or you can check it by `xtate --intro`):
 
@@ -206,15 +206,61 @@ The default Generator is the one extracted from Masscan.
 
 ## Helps in Detail
 
-Xtate embeds more detailed helps into the program, and I recommend using the compiled binary to view them.
+Xtate embeds all detailed help information into the program, and I recommend using the compiled binary to view them. PS: Some of the help info are too long, you can use `less`(`more`) command or output it to files(or `vim`).
 
-Use `xtate --help | less` to see all parameters and help of xtate.
+See all parameters and help of xtate.
 
-Use `xtate --list-scan | less` to see all ScanModules with sub-parameters and help.
+```
+xtate --help
+```
 
-Use `xtate --list-probe | less` to see all ProbeModules with sub-parameters and help.
+See all ScanModules with names and introductions.
 
-Use `xtate --list-out | less` to see all OutputModules with sub-parameters and help.
+```
+xtate --list-scan
+```
+
+See specified ScanModules with sub-parameters and help info.
+
+```
+xtate --help-scan <module-name>
+```
+
+See all ProbeModules with names and introductions.
+
+```
+xtate --list-probe
+```
+
+See specified ProbeModules with sub-parameters and help info.
+
+```
+xtate --help-probe <module-name>
+```
+
+See all OutputModules with names and introductions.
+
+```
+xtate --list-out
+```
+
+See specified OutputModules with sub-parameters and help info.
+
+```
+xtate --help-out <module-name>
+```
+
+See all GenerateModules with names and introductions.
+
+```
+xtate --list-gen
+```
+
+See specified GenerateModules with sub-parameters and help info.
+
+```
+xtate --help-gen <module-name>
+```
 
 ## Scan Rate
 
@@ -249,7 +295,7 @@ But you can also set subparameter `--send-rst` to tcp-syn scan module to let Xta
 
 ## Build
 
-Xtate could be built both on Linux and Windows with CMake because of cross-platform source code.
+Xtate could be built both on Linux and Windows with CMake(>=v3.20) because of cross-platform source code.
 And some dependencies are optional, we can give up some modules if the specific dependency libraries cannot be prepared.
 
 ### Dependencies
