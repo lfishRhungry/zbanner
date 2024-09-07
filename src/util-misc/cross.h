@@ -25,23 +25,6 @@ typedef enum { false = 0, true = 1 } bool;
 #define strncasecmp _strnicmp
 #endif
 
-#ifndef max
-#define max(a, b)                                                              \
-    ({                                                                         \
-        typeof(a) _a = (a);                                                    \
-        typeof(b) _b = (b);                                                    \
-        _a > _b ? _a : _b;                                                     \
-    })
-#endif
-#ifndef min
-#define min(a, b)                                                              \
-    ({                                                                         \
-        typeof(a) _a = (a);                                                    \
-        typeof(b) _b = (b);                                                    \
-        _a < _b ? _a : _b;                                                     \
-    })
-#endif
-
 // ARRAY
 #if defined(_MSC_VER)
 #include <stdlib.h>
@@ -60,6 +43,23 @@ typedef enum { false = 0, true = 1 } bool;
 #define UNUSEDPARM(x) x
 #elif defined(__GNUC__)
 #define UNUSEDPARM(x) (void)x
+#endif
+
+#ifndef max
+#define max(a, b)                                                              \
+    ({                                                                         \
+        typeof(a) _a = (a);                                                    \
+        typeof(b) _b = (b);                                                    \
+        _a > _b ? _a : _b;                                                     \
+    })
+#endif
+#ifndef min
+#define min(a, b)                                                              \
+    ({                                                                         \
+        typeof(a) _a = (a);                                                    \
+        typeof(b) _b = (b);                                                    \
+        _a < _b ? _a : _b;                                                     \
+    })
 #endif
 
 #endif
