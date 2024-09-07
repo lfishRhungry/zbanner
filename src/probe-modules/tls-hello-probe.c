@@ -388,15 +388,19 @@ static unsigned tlshello_handle_reponse(unsigned th_idx, ProbeTarget *target,
                 if (safe_memmem(px, sizeof_px, "\x00\x2b\x00\x02\x03\x04",
                                 sizeof("\x00\x2b\x00\x02\x03\x04") - 1)) {
                     safe_strcpy(item->classification, OUT_CLS_SIZE, "TLSv1.3");
+#ifndef NOT_FOUND_PCRE2
                     if (tlshello_conf.compiled_re) {
                         item->level = OUT_FAILURE;
                         safe_strcpy(item->reason, OUT_RSN_SIZE,
                                     "regex not matched in TLSv1.3");
                     } else {
+#endif
                         item->level = OUT_SUCCESS;
                         safe_strcpy(item->reason, OUT_RSN_SIZE,
                                     "protocol matched");
+#ifndef NOT_FOUND_PCRE2
                     }
+#endif
                     dach_append_normalized(&item->report, "type", "handshake",
                                            sizeof("handshake") - 1);
                     return 0;
