@@ -7,6 +7,7 @@ rm -rf ./build/*
 rm -rf ./bin/*
 
 mkdir -p ./build
+mkdir -p ./bin
 cd ./build
 
 if [[ "$1" == "debug" ]]; then
@@ -30,4 +31,4 @@ else
     cp ./build/xtate ./bin/
 fi
 
-echo "=====Build and copy process completed successfully."
+echo "=====Build and copy process completed successfully!"
