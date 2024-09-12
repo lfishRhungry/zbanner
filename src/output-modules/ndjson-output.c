@@ -135,8 +135,7 @@ Output NdjsonOutput = {
         "NdjsonOutput save results in newline-delimited json(ndjson) format to "
         "specified file.\n"
         "NOTE: NdjsonOutput doesn't convert any escaped chars from result "
-        "string"
-        "and assumes all result string type except ports.",
+        "string and assumes all result string type except ports.",
 
     .init_cb   = &ndjson_init,
     .result_cb = &ndjson_result,

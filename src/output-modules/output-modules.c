@@ -12,6 +12,7 @@
 // clang-format off
 extern Output TextOutput;
 extern Output NdjsonOutput;
+extern Output JsonOutput;
 extern Output CsvOutput;
 extern Output ListOutput;
 extern Output NullOutput;
@@ -20,6 +21,7 @@ extern Output NullOutput;
 static Output *output_modules_list[] = {
     &TextOutput,
     &NdjsonOutput,
+    &JsonOutput,
     &CsvOutput,
     &ListOutput,
     &NullOutput,
