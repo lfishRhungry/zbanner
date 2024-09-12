@@ -20,22 +20,22 @@ static const char header_csv[] = "time,"
                                  "report"
                                  "\n";
 
-static const char fmt_csv_prefix[] = "\"%s\","
-                                     "\"%s\","
-                                     "\"%s\","
-                                     "\"%s\","
+static const char fmt_csv_prefix[] = "%s,"
+                                     "%s,"
+                                     "%s,"
+                                     "%s,"
                                      "%u,"
-                                     "\"%s\","
+                                     "%s,"
                                      "%u,"
-                                     "\"%s\","
-                                     "\"%s\","
-                                     "\"";
+                                     "%s,"
+                                     "%s,"
+                                     "\"{";
 
-static const char fmt_csv_str_inffix[] = "\'%s\':\'%s\',";
+static const char fmt_csv_str_inffix[] = "\"\"%s\"\":\"\"%s\"\",";
 
-static const char fmt_csv_num_inffix[] = "\'%s\':%s,";
+static const char fmt_csv_num_inffix[] = "\"\"%s\"\":%s,";
 
-static const char fmt_csv_suffix[] = "\""
+static const char fmt_csv_suffix[] = "}\""
                                      "\n";
 
 static char format_time[32];
