@@ -1,6 +1,6 @@
 /*
     Born from Masscan
-    Modified by lishRhungry 2024
+    Modified by sharkocha 2024
 */
 /*
     Simple module for handling addresses (IPv6, IPv4, MAC).

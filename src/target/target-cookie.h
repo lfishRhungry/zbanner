@@ -1,6 +1,6 @@
 /*
     Born from Masscan
-    Modified by lishRhungry 2024
+    Modified by sharkocha 2024
 */
 #ifndef TARGET_COOKIE_H
 #define TARGET_COOKIE_H

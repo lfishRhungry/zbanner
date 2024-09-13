@@ -1,6 +1,6 @@
 /*
     Born from Masscan
-    Modified by lishRhungry 2024
+    Modified by sharkocha 2024
 */
 #ifndef MAS_DEDUP_H
 #define MAS_DEDUP_H

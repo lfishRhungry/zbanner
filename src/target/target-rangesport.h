@@ -1,6 +1,6 @@
 /*
     Born from Masscan
-    Modified by lishRhungry 2024
+    Modified by sharkocha 2024
 */
 #ifndef TARGET_RANGESPORT_H
 #define TARGET_RANGESPORT_H

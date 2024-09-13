@@ -15,7 +15,7 @@
     Datachain was inspired by banout of masscan but with different
     target, usage and internal code.
 
-    Create by lishRhungry 2024
+    Create by sharkocha 2024
 */
 #include "data-chain.h"
 #include "fine-malloc.h"
