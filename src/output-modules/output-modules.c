@@ -117,12 +117,15 @@ void help_output_module(Output *module) {
     printf("\n");
 }
 
-static const char fmt_host[]       = "%s host: %-15s";
-static const char fmt_port[]       = " port: %-5u";
-static const char fmt_cls[]        = " \"%s\"";
-static const char fmt_reason[]     = " because \"%s\"";
-static const char fmt_report_str[] = ",  %s: \"%s\"";
-static const char fmt_report_num[] = ",  %s: %s";
+static const char fmt_host[]          = "%s host: %-15s";
+static const char fmt_port[]          = " port: %-5u";
+static const char fmt_cls[]           = " \"%s\"";
+static const char fmt_reason[]        = " because \"%s\"";
+static const char fmt_report_str[]    = ",  %s: \"%s\"";
+static const char fmt_report_int[]    = ",  %s: %" PRIu64;
+static const char fmt_report_double[] = ", %s: %.2f";
+static const char fmt_report_true[]   = ", %s: true";
+static const char fmt_report_false[]  = ", %s: false";
 
 static bool _output_color;
 
@@ -224,9 +227,21 @@ static void output_result_to_stdout(OutItem *item) {
 
     DataLink *pre = item->report.link;
     while (pre->next) {
-        count += fprintf(stdout,
-                         pre->next->is_number ? fmt_report_num : fmt_report_str,
-                         pre->next->name, pre->next->data);
+        if (pre->next->link_type == LinkType_Data) {
+            count += fprintf(stdout, fmt_report_str, pre->next->name,
+                             pre->next->value_data);
+        } else if (pre->next->link_type == LinkType_Int) {
+            count += fprintf(stdout, fmt_report_int, pre->next->name,
+                             pre->next->value_int);
+        } else if (pre->next->link_type == LinkType_Double) {
+            count += fprintf(stdout, fmt_report_double, pre->next->name,
+                             pre->next->value_double);
+        } else if (pre->next->link_type == LinkType_Bool) {
+            count += fprintf(stdout,
+                             pre->next->value_bool ? fmt_report_true
+                                                   : fmt_report_false,
+                             pre->next->name);
+        }
         pre = pre->next;
     }
 

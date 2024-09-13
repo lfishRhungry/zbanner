@@ -198,12 +198,10 @@ static unsigned jarm_handle_response(unsigned th_idx, ProbeTarget *target,
                             strlen(tmp_data));
 
                 if (jarm_conf.probe_index) {
-                    dach_printf(&item->report, "index", true, "%d",
-                                jarm_conf.probe_index);
+                    dach_set_int(&item->report, "index", jarm_conf.probe_index);
                     return 0;
                 } else {
-                    dach_printf(&item->report, "index", true, "%d",
-                                target->index + 1);
+                    dach_set_int(&item->report, "index", target->index + 1);
                     return 1;
                 }
             }
@@ -221,9 +219,9 @@ static unsigned jarm_handle_timeout(ProbeTarget *target, OutItem *item) {
     safe_strcpy(item->classification, OUT_CLS_SIZE, "no jarm");
     safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
     if (jarm_conf.probe_index) {
-        dach_printf(&item->report, "index", true, "%d", jarm_conf.probe_index);
+        dach_set_int(&item->report, "index", jarm_conf.probe_index);
     } else {
-        dach_printf(&item->report, "index", true, "%d", target->index + 1);
+        dach_set_int(&item->report, "index", target->index + 1);
     }
     return 0;
 }

@@ -227,7 +227,7 @@ unsigned nmaptcp_handle_response(unsigned th_idx, ProbeTarget *target,
                         strlen(match->versioninfo->value));
         }
 
-        dach_printf(&item->report, "line", true, "%d", match->line);
+        dach_set_int(&item->report, "line", match->line);
         dach_append(&item->report, "probe", list->probes[target->index]->name,
                     strlen(list->probes[target->index]->name));
 

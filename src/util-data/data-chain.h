@@ -1,26 +1,26 @@
 /*
     Data Chain
 
-    This module remembers a series of "data" identified by "name".
-    These are often simple strings, like the FTP hello string.
-    I provide funcs to append data/string conveniently.
+    This module remembers a series of "value" identified by "name".
+    These are often simple strings(e.g. FTP banners.) or other number types.
+    I provide funcs to append value(data/string) conveniently.
 
-    I try to maintain c string in data by keeping '\0' tail.
+    I try to maintain c string in value of data type by keeping '\0' tail.
     But you can break this by appending special string.
 
     For out-of-box using and simple iterating, structures are exposed.
     Change internal contents of structures after understanding code.
     C is dangerous and charming, right?
 
-    Datachain was inspired by banout of masscan but with different
-    target, usage and internal code.
+    Datachain was inspired by `banout` of masscan and `fieldset` of zmap, but
+    with different purpose, usage and internal code.
 
-    Appending new data to link by `dach...by_link` is efficient than
+    Appending new value to link by `dach...by_link` is efficient than
     `dach_append...` because of no name matching. You can get the corresponding
     datalink by `dach_get/find_link...` or `dach_append...` funcs.
 
-    We can set is_number to mention the data string present a number or bool
-    string(true or false). This is for some output module formatting.
+    We can set link_type to mention the type of the value. This is for pretty
+    formatted result style of some output module.
 
     !NOTE: Everytime operate by a link, update it by returned link.
 
@@ -32,12 +32,20 @@
 #include "../util-misc/cross.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 #define DACH_MAX_NAME_SIZE     25
 #define DACH_DEFAULT_DATA_SIZE 200
 
+typedef enum Link_TYPE {
+    LinkType_Bool   = 1,
+    LinkType_Int    = 2,
+    LinkType_Double = 3,
+    LinkType_Data   = 0,
+} LinkType;
+
 /**
- * A double link list structure for tracking a series of name/data memories
+ * A double link list structure for tracking a series of name/value memories
  * Why not be a ring? I'd like it to be used out-of-the-box.
  * NOTE: name length
  */
@@ -46,12 +54,15 @@ typedef struct DataLink {
     struct DataLink *prev;
     char             name[DACH_MAX_NAME_SIZE];
     unsigned         name_hash;
-    unsigned         data_len;
-    unsigned         data_size;
-    /*is this value a number or bool string(true/false)*/
-    bool             is_number;
-    /*visual studio doesn't support zero size array as member*/
-    unsigned char    data[1];
+    LinkType         link_type;
+    unsigned         data_len;  /*decription for LinkType_Data*/
+    unsigned         data_size; /*decription for LinkType_Data*/
+    union {
+        bool          value_bool;
+        uint64_t      value_int;
+        double        value_double;
+        unsigned char value_data[1]; /*MSVC doesn't support zero size array */
+    };
 } DataLink;
 
 /**
@@ -70,38 +81,38 @@ typedef struct DachBase64 {
 
 /**
  * Create a data link with specified capacity by yourself.
- * @param data_size expected capacity, the actual size of data won't be less
- * than DACH_DEFAULT_DATA_SIZE.
- * @param is_number is the link a number type or bool string(true/false)
+ * @param data_size expected capacity, the actual size of data type link won't
+ * be less than DACH_DEFAULT_DATA_SIZE.
+ * @param type type of the link. Invalid type will belong to LinkType_Data
  * @return link of new link or already existed link
  */
 DataLink *dach_new_link(DataChain *dach, const char *name, size_t data_size,
-                        bool is_number);
+                        LinkType type);
 
 /**
- * Get data link by name
+ * Get data link by name.
  * @return the expected link, or NULL if it doesn't exist.
  */
 DataLink *dach_find_link(DataChain *dach, const char *name);
 
 /**
- * Get data link by name
- * If the target link doesn't exist then create it.
+ * Get data link by name.
+ * If the target link doesn't exist then create it in specified type.
  * @return the expected link
  */
-inline DataLink *dach_get_link(DataChain *dach, const char *name) {
-    return dach_new_link(dach, name, 1, false);
+inline DataLink *dach_get_link(DataChain *dach, const char *name,
+                               LinkType type) {
+    return dach_new_link(dach, name, 1, type);
 }
 
 /**
- * Create a data link with formatted name and specified capacity by yourself.
+ * Create a data link with formatted name and specified capacity(if data type).
  * @param data_size expected capacity, the actual size of data won't be less
  * than DACH_DEFAULT_DATA_SIZE.
- * @param is_number is the link a number type or bool string(true/false)
  * @return new link or already existed link
  */
-DataLink *dach_new_link_printf(DataChain *dach, size_t data_size,
-                               bool is_number, const char *fmt_name, ...);
+DataLink *dach_new_link_printf(DataChain *dach, size_t data_size, LinkType type,
+                               const char *fmt_name, ...);
 
 /**
  * Release all memory.
@@ -124,7 +135,49 @@ inline void dach_del_link(DataChain *dach, const char *name) {
 }
 
 /**
- * Append target link
+ * Set value to the int type link.
+ * @param link expected link and must not be NULL
+ * @return target link after append.
+ */
+DataLink *dach_set_int_by_link(DataLink *link, uint64_t value);
+
+/**
+ * Set value to the int type link.
+ * If data with this name doesn't exist, it'll be create.
+ * @return target link after append.
+ */
+DataLink *dach_set_int(DataChain *dach, const char *name, uint64_t value);
+
+/**
+ * Set value to the double type link.
+ * @param link expected link and must not be NULL
+ * @return target link after append.
+ */
+DataLink *dach_set_double_by_link(DataLink *link, double value);
+
+/**
+ * Set value to the double type link.
+ * If data with this name doesn't exist, it'll be create.
+ * @return target link after append.
+ */
+DataLink *dach_set_double(DataChain *dach, const char *name, double value);
+
+/**
+ * Set value to the bool type link.
+ * @param link expected link and must not be NULL
+ * @return target link after append.
+ */
+DataLink *dach_set_bool_by_link(DataLink *link, bool value);
+
+/**
+ * Set value to the bool type link.
+ * If data with this name doesn't exist, it'll be create.
+ * @return target link after append.
+ */
+DataLink *dach_set_bool(DataChain *dach, const char *name, bool value);
+
+/**
+ * Append data to the data type link.
  * @param link expected link and must not be NULL
  * @param length len of px, can be DACH_AUTO_LEN if px is c string.
  * @return target link after append.
@@ -132,7 +185,7 @@ inline void dach_del_link(DataChain *dach, const char *name) {
 DataLink *dach_append_by_link(DataLink *pre, const void *px, size_t length);
 
 /**
- * Append text onto the data.
+ * Append data to the data type link.
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
  * @param length len of px, can be DACH_AUTO_LEN if px is c string.
@@ -142,7 +195,7 @@ DataLink *dach_append(DataChain *dach, const char *name, const void *px,
                       size_t length);
 
 /**
- * Append a char to target link.
+ * Append a char to the data type link.
  * If this exceeds the buffer, then the buffer will be expanded.
  * @param link expected link and must not be NULL
  * @return target link after append.
@@ -150,7 +203,7 @@ DataLink *dach_append(DataChain *dach, const char *name, const void *px,
 DataLink *dach_append_char_by_link(DataLink *link, int c);
 
 /**
- * Append a char
+ * Append a char to the data type link.
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
  * @return target link after append.
@@ -168,8 +221,8 @@ DataLink *dach_append_hexint_by_link(DataLink *link, unsigned long long number,
                                      int digits);
 
 /**
- * Append an integer, with hex digits, with the specified number of
- * digits
+ * Append an integer to the data type link, with hex digits, with the specified
+ * number of digits.
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
  * @return target link after append.
@@ -178,7 +231,8 @@ DataLink *dach_append_hexint(DataChain *dach, const char *name,
                              unsigned long long number, int digits);
 
 /**
- * Append either a normal character, or the hex form of a UTF-8 string
+ * Append either a normal character, or the hex form of a UTF-8 string to the
+ * data type link.
  * If this exceeds the buffer, then the buffer will be expanded.
  * @param link expected link and must not be NULL
  * @return target link after append.
@@ -186,7 +240,8 @@ DataLink *dach_append_hexint(DataChain *dach, const char *name,
 DataLink *dach_append_unicode_by_link(DataLink *link, unsigned c);
 
 /**
- * Append either a normal character, or the hex form of a UTF-8 string
+ * Append either a normal character, or the hex form of a UTF-8 string to the
+ * data type link.
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
  * @return target link after append.
@@ -194,7 +249,7 @@ DataLink *dach_append_unicode_by_link(DataLink *link, unsigned c);
 DataLink *dach_append_unicode(DataChain *dach, const char *name, unsigned c);
 
 /**
- * Printf in datachain version
+ * Printf in datachain version for data type link.
  * If this exceeds the buffer, then the buffer will be expanded.
  * @param link expected link and must not be NULL
  * @return target link after append.
@@ -202,19 +257,18 @@ DataLink *dach_append_unicode(DataChain *dach, const char *name, unsigned c);
 DataLink *dach_printf_by_link(DataLink *link, const char *fmt, ...);
 
 /**
- * Printf in datachain version
+ * Printf in datachain version for data type link.
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
  * @param is_number set link number type or bool string(true/false) if create
  * it.
  * @return target link after append.
  */
-DataLink *dach_printf(DataChain *dach, const char *name, bool is_number,
-                      const char *fmt, ...);
+DataLink *dach_printf(DataChain *dach, const char *name, const char *fmt, ...);
 
 /**
  * Append after removing bad characters, especially new lines and HTML
- * control codes.
+ * control codes for data type link.
  * If this exceeds the buffer, then the buffer will be expanded.
  * NOTE: The normalized string is not standard for JSON string value...
  * @param link expected link and must not be NULL
@@ -226,7 +280,7 @@ DataLink *dach_append_normalized_by_link(DataLink *link, const void *px,
 
 /**
  * Append after removing bad characters, especially new lines and HTML
- * control codes.
+ * control codes for data type link.
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
  * NOTE: The normalized string is not standard for JSON string value...
@@ -237,24 +291,24 @@ DataLink *dach_append_normalized(DataChain *dach, const char *name,
                                  const void *px, size_t length);
 
 /**
- * @param link target link and must not be NULL
+ * @param link data type link and must not be NULL
  */
-bool dach_link_contains(DataLink *link, const char *string);
+bool dach_link_contains_data(DataLink *link, const char *string);
 
 /**
- * @return if contains or NULL if name doesn't exist
+ * @return if the data type link contains or NULL if name doesn't exist
  */
-bool dach_contains(DataChain *dach, const char *name, const char *string);
+bool dach_contains_data(DataChain *dach, const char *name, const char *string);
 
 /**
- * @param link target link and must not be NULL
+ * @param link data type link and must not be NULL
  */
-bool dach_link_equals(DataLink *link, const char *rhs);
+bool dach_link_equals_in_data(DataLink *link, const char *rhs);
 
 /**
- * @return if equals or NULL if name doesn't exist
+ * @return the data type link if equals or NULL if name doesn't exist
  */
-bool dach_equals(DataChain *dach, const char *name, const char *string);
+bool dach_equals_in_data(DataChain *dach, const char *name, const char *string);
 
 /**
  * Prepare to start calling dach_append_base64()
@@ -262,7 +316,7 @@ bool dach_equals(DataChain *dach, const char *name, const char *string);
 void dach_init_base64(struct DachBase64 *base64);
 
 /**
- * Converts the string to BASE64 and appends it to the data.
+ * Converts the string to BASE64 and appends it to the data type link.
  * Since this can be called iteratively as new input arrives,
  * a call to dach_init_base64() must be called before the first fragment.
  * And a call to dach_finalize_base64() must be called after the last
@@ -276,7 +330,7 @@ DataLink *dach_append_base64_by_link(DataLink *link, const void *vpx,
                                      size_t length, struct DachBase64 *base64);
 
 /**
- * Converts the string to BASE64 and appends it to the data.
+ * Converts the string to BASE64 and appends it to the data type link.
  * Since this can be called iteratively as new input arrives,
  * a call to dach_init_base64() must be called before the first fragment.
  * And a call to dach_finalize_base64() must be called after the last
@@ -291,7 +345,7 @@ DataLink *dach_append_base64(DataChain *dach, const char *name, const void *vpx,
 /**
  * Finish encoding the BASE64 string, appending the '==' things on the
  * end if necessary
- * @param link expected link and must not be NULL
+ * @param link expected data type link and must not be NULL
  * @return target link after append.
  */
 DataLink *dach_finalize_base64_by_link(DataLink          *link,

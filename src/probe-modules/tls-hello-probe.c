@@ -503,8 +503,8 @@ static unsigned tlshello_handle_reponse(unsigned th_idx, ProbeTarget *target,
         safe_strcpy(item->reason, OUT_RSN_SIZE, "protocol matched");
         dach_append_normalized(&item->report, "type", "alert",
                                sizeof("alert") - 1);
-        dach_printf(&item->report, "level", true, "%u", px[5]);
-        dach_printf(&item->report, "desc", true, "%u", px[6]);
+        dach_set_int(&item->report, "level", px[5]);
+        dach_set_int(&item->report, "desc", px[6]);
 
         /*we can do further regex matching here*/
 

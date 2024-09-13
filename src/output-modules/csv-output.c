@@ -8,35 +8,34 @@ extern Output CsvOutput; /*for internal x-ref*/
 
 static FILE *file;
 
-static const char header_csv[] = "time,"
-                                 "level,"
-                                 "ip_proto,"
-                                 "ip_them,"
-                                 "port_them,"
-                                 "ip_me,"
-                                 "port_me,"
-                                 "classification,"
-                                 "reason,"
-                                 "report"
-                                 "\n";
-
-static const char fmt_csv_prefix[] = "%s,"
-                                     "%s,"
-                                     "%s,"
-                                     "%s,"
-                                     "%u,"
-                                     "%s,"
-                                     "%u,"
-                                     "%s,"
-                                     "%s,"
-                                     "\"{";
-
-static const char fmt_csv_str_inffix[] = "\"\"%s\"\":\"\"%s\"\",";
-
-static const char fmt_csv_num_inffix[] = "\"\"%s\"\":%s,";
-
-static const char fmt_csv_suffix[] = "}\""
-                                     "\n";
+static const char header_csv[]            = "time,"
+                                            "level,"
+                                            "ip_proto,"
+                                            "ip_them,"
+                                            "port_them,"
+                                            "ip_me,"
+                                            "port_me,"
+                                            "classification,"
+                                            "reason,"
+                                            "report"
+                                            "\n";
+static const char fmt_csv_prefix[]        = "%s,"
+                                            "%s,"
+                                            "%s,"
+                                            "%s,"
+                                            "%u,"
+                                            "%s,"
+                                            "%u,"
+                                            "%s,"
+                                            "%s,"
+                                            "\"{";
+static const char fmt_csv_str_inffix[]    = "\"\"%s\"\":\"\"%s\"\",";
+static const char fmt_csv_int_inffix[]    = "\"\"%s\"\":%" PRIu64 ",";
+static const char fmt_csv_double_inffix[] = "\"\"%s\"\":%.2f,";
+static const char fmt_csv_true_inffix[]   = "\"\"%s\"\":true,";
+static const char fmt_csv_false_inffix[]  = "\"\"%s\"\":false,";
+static const char fmt_csv_suffix[]        = "}\""
+                                            "\n";
 
 static char format_time[32];
 
@@ -88,12 +87,25 @@ static void csv_result(OutItem *item) {
 
     DataLink *pre = item->report.link;
     while (pre->next) {
-        err = fprintf(file,
-                      pre->next->is_number ? fmt_csv_num_inffix
-                                           : fmt_csv_str_inffix,
-                      pre->next->name, pre->next->data);
+        if (pre->next->link_type == LinkType_Data) {
+            err = fprintf(file, fmt_csv_str_inffix, pre->next->name,
+                          pre->next->value_data);
+        } else if (pre->next->link_type == LinkType_Int) {
+            err = fprintf(file, fmt_csv_int_inffix, pre->next->name,
+                          pre->next->value_int);
+        } else if (pre->next->link_type == LinkType_Double) {
+            err = fprintf(file, fmt_csv_double_inffix, pre->next->name,
+                          pre->next->value_double);
+        } else if (pre->next->link_type == LinkType_Bool) {
+            err = fprintf(file,
+                          pre->next->value_bool ? fmt_csv_true_inffix
+                                                : fmt_csv_false_inffix,
+                          pre->next->name);
+        }
+
         if (err < 0)
             goto error;
+
         pre = pre->next;
     }
 

@@ -4,6 +4,7 @@
 #include <time.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 #include "../util-data/data-chain.h"
 #include "../util-misc/configer.h"

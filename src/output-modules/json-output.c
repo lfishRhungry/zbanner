@@ -8,31 +8,26 @@ extern Output NdjsonOutput; /*for internal x-ref*/
 
 static FILE *file;
 
-static const char header_json[] = "[\n";
-static const char tail_json[]   = "\n]\n";
-
-static const char fmt_json_prefix[] = "    {\n"
-                                      "        \"time\": \"%s\",\n"
-                                      "        \"level\": \"%s\",\n"
-                                      "        \"ip_proto\": \"%s\",\n"
-                                      "        \"ip_them\": \"%s\",\n";
-
+static const char header_json[]        = "[\n";
+static const char tail_json[]          = "\n]\n";
+static const char fmt_json_prefix[]    = "    {\n"
+                                         "        \"time\": \"%s\",\n"
+                                         "        \"level\": \"%s\",\n"
+                                         "        \"ip_proto\": \"%s\",\n"
+                                         "        \"ip_them\": \"%s\",\n";
 static const char fmt_json_port_them[] = "        \"port_them\": %u,\n";
-
-static const char fmt_json_ip_me[] = "        \"ip_me\": \"%s\",\n";
-
-static const char fmt_json_port_me[] = "        \"port_me\": %u,\n";
-
-static const char fmt_json_inffix[] = "        \"classification\": \"%s\",\n"
-                                      "        \"reason\": \"%s\",\n"
-                                      "        \"report\": {\n";
-
+static const char fmt_json_ip_me[]     = "        \"ip_me\": \"%s\",\n";
+static const char fmt_json_port_me[]   = "        \"port_me\": %u,\n";
+static const char fmt_json_inffix[]    = "        \"classification\": \"%s\",\n"
+                                         "        \"reason\": \"%s\",\n"
+                                         "        \"report\": {\n";
 static const char fmt_json_str_inffix[] = "            \"%s\": \"%s\",\n";
-
-static const char fmt_json_num_inffix[] = "            \"%s\": %s,\n";
-
-static const char fmt_json_suffix[] = "        }\n" /*close report*/
-                                      "    },"      /*cose all*/
+static const char fmt_json_int_inffix[] = "            \"%s\": %" PRIu64 ",\n";
+static const char fmt_json_double_inffix[] = "            \"%s\": %.2f,\n";
+static const char fmt_json_true_inffix[]   = "            \"%s\": true,\n";
+static const char fmt_json_false_inffix[]  = "            \"%s\": false,\n";
+static const char fmt_json_suffix[]        = "        }\n" /*close report*/
+                                      "    },"             /*cose all*/
                                       "\n";
 
 static char format_time[32];
@@ -104,12 +99,25 @@ static void json_result(OutItem *item) {
 
     DataLink *pre = item->report.link;
     while (pre->next) {
-        err = fprintf(file,
-                      pre->next->is_number ? fmt_json_num_inffix
-                                           : fmt_json_str_inffix,
-                      pre->next->name, pre->next->data);
+        if (pre->next->link_type == LinkType_Data) {
+            err = fprintf(file, fmt_json_str_inffix, pre->next->name,
+                          pre->next->value_data);
+        } else if (pre->next->link_type == LinkType_Int) {
+            err = fprintf(file, fmt_json_int_inffix, pre->next->name,
+                          pre->next->value_int);
+        } else if (pre->next->link_type == LinkType_Double) {
+            err = fprintf(file, fmt_json_double_inffix, pre->next->name,
+                          pre->next->value_double);
+        } else if (pre->next->link_type == LinkType_Bool) {
+            err = fprintf(file,
+                          pre->next->value_bool ? fmt_json_true_inffix
+                                                : fmt_json_false_inffix,
+                          pre->next->name);
+        }
+
         if (err < 0)
             goto error;
+
         pre = pre->next;
     }
 

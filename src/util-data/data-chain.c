@@ -1,19 +1,19 @@
 /*
     Data Chain
 
-    This module remembers a series of "data" identified by "name".
-    These are often simple strings, like the FTP hello string.
-    I provide funcs to append data/string conveniently.
+    This module remembers a series of "value" identified by "name".
+    These are often simple strings(e.g. FTP banners.) or other number types.
+    I provide funcs to append value(data/string) conveniently.
 
-    I try to maintain c string in data by keeping '\0' tail.
+    I try to maintain c string in value of data type by keeping '\0' tail.
     But you can break this by appending special string.
 
     For out-of-box using and simple iterating, structures are exposed.
     Change internal contents of structures after understanding code.
     C is dangerous and charming, right?
 
-    Datachain was inspired by banout of masscan but with different
-    target, usage and internal code.
+    Datachain was inspired by `banout` of masscan and `fieldset` of zmap, but
+    with different purpose, usage and internal code.
 
     Create by sharkocha 2024
 */
@@ -40,24 +40,31 @@ static unsigned _name_hash(const char *name) {
 
 /**
  * Create a data link by yourself and put it after the dummy node.
- * The initial size of data won't be less than DACH_DEFAULT_DATA_SIZE.
+ * The initial size of data type link won't be less than DACH_DEFAULT_DATA_SIZE.
  * NOTE: the name must not exist already
  * @param len min necessary size of data
+ * @param type type of the link. Invalid type will belong to LinkType_Data
  * @return new created link
  */
 static DataLink *_dach_new_link(DataChain *dach, const char *name, size_t len,
-                                bool is_number) {
-    /*keep a space for '\0'*/
-    size_t data_size =
-        len < DACH_DEFAULT_DATA_SIZE ? DACH_DEFAULT_DATA_SIZE : len + 1;
-    DataLink *p = CALLOC(1, offsetof(DataLink, data) + 1 + data_size);
+                                LinkType type) {
+    DataLink *p = NULL;
+    if (type == LinkType_Bool || type == LinkType_Int ||
+        type == LinkType_Double) {
+        p            = CALLOC(1, sizeof(DataLink));
+        p->link_type = type;
+    } else { /*invalid link_type will belong to LinkType_Data*/
+        /*keep a space for '\0'*/
+        size_t data_size =
+            len < DACH_DEFAULT_DATA_SIZE ? DACH_DEFAULT_DATA_SIZE : len + 1;
+        p = CALLOC(1, offsetof(DataLink, value_data) + 1 + data_size);
+        p->data_size = data_size;
+        p->link_type = LinkType_Data;
+    }
 
     safe_strcpy(p->name, DACH_MAX_NAME_SIZE, name);
 
-    p->name_hash = _name_hash(name);
-    p->data_size = data_size;
-    p->is_number = is_number;
-
+    p->name_hash     = _name_hash(name);
     p->next          = dach->link->next;
     p->prev          = dach->link;
     dach->link->next = p;
@@ -70,17 +77,15 @@ static DataLink *_dach_new_link(DataChain *dach, const char *name, size_t len,
 }
 
 /*
- * Try to maintain a c string by keeping at least a '\0' in tails of data
- * ref:
- *     new_link
- *     expand
+ * Try to maintain a c string by keeping at least a '\0' in tails of data-type
+ * value ref: new_link expand
  */
 DataLink *dach_new_link(DataChain *dach, const char *name, size_t data_size,
-                        bool is_number) {
+                        LinkType type) {
     DataLink *link = dach_find_link(dach, name);
 
     if (link == NULL) {
-        link = _dach_new_link(dach, name, data_size, is_number);
+        link = _dach_new_link(dach, name, data_size, type);
     }
 
     return link;
@@ -100,12 +105,12 @@ DataLink *dach_find_link(DataChain *dach, const char *name) {
 }
 
 /**
- * Create a data link with formatted name and specified capacity by yourself.
+ * Create a data link with formatted name and specified capacity(if data type).
  * NOTE: return old pre if the link exists
  * @return the pre of new link
  */
 static DataLink *_dach_new_link_vprintf(DataChain *dach, size_t data_size,
-                                        bool is_number, const char *fmt_name,
+                                        LinkType type, const char *fmt_name,
                                         va_list marker) {
     char str[DACH_MAX_NAME_SIZE];
     int  len;
@@ -120,19 +125,19 @@ static DataLink *_dach_new_link_vprintf(DataChain *dach, size_t data_size,
     DataLink *link = dach_find_link(dach, str);
 
     if (link == NULL) {
-        link = _dach_new_link(dach, str, data_size, is_number);
+        link = _dach_new_link(dach, str, data_size, type);
     }
 
     return link;
 }
 
-DataLink *dach_new_link_printf(DataChain *dach, size_t data_size,
-                               bool is_number, const char *fmt_name, ...) {
+DataLink *dach_new_link_printf(DataChain *dach, size_t data_size, LinkType type,
+                               const char *fmt_name, ...) {
     DataLink *link;
     va_list   marker;
 
     va_start(marker, fmt_name);
-    link = _dach_new_link_vprintf(dach, data_size, is_number, fmt_name, marker);
+    link = _dach_new_link_vprintf(dach, data_size, type, fmt_name, marker);
     va_end(marker);
 
     return link;
@@ -146,8 +151,8 @@ DataLink *dach_new_link_printf(DataChain *dach, size_t data_size,
  */
 
 /**
- * Expand the target link size to at least mlen
- * NOTE: link must not be NULL
+ * Expand the data type link size to at least mlen
+ * NOTE: link must not be NULL and must be data type.
  * @return expanded link
  */
 static DataLink *_dach_link_expand(DataLink *link, size_t mlen) {
@@ -158,9 +163,9 @@ static DataLink *_dach_link_expand(DataLink *link, size_t mlen) {
 
     /*keep a space for '\0'*/
     length = mlen < (2 * link->data_size) ? (2 * link->data_size) : mlen + 1;
-    n      = CALLOC(1, offsetof(DataLink, data) + 1 + length);
+    n      = CALLOC(1, offsetof(DataLink, value_data) + 1 + length);
 
-    memcpy(n, link, offsetof(DataLink, data) + 1 + link->data_size);
+    memcpy(n, link, offsetof(DataLink, value_data) + 1 + link->data_size);
     n->data_size = length;
 
     n->next          = link->next;
@@ -202,15 +207,97 @@ void dach_del_by_link(DataChain *dach, DataLink *link) {
 
 /***************************************************************************
  ***************************************************************************/
+DataLink *dach_set_int_by_link(DataLink *link, uint64_t value) {
+    assert(link);
+
+    /*ensure the type*/
+    if (link->link_type != LinkType_Int)
+        return link;
+
+    link->value_int = value;
+
+    return link;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+DataLink *dach_set_int(DataChain *dach, const char *name, uint64_t value) {
+    DataLink *link = dach_find_link(dach, name);
+
+    if (link == NULL) {
+        link = _dach_new_link(dach, name, 0, LinkType_Int);
+    }
+
+    return dach_set_int_by_link(link, value);
+}
+
+/***************************************************************************
+ ***************************************************************************/
+DataLink *dach_set_double_by_link(DataLink *link, double value) {
+    assert(link);
+
+    /*ensure the type*/
+    if (link->link_type != LinkType_Double)
+        return link;
+
+    link->value_double = value;
+
+    return link;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+DataLink *dach_set_double(DataChain *dach, const char *name, double value) {
+    DataLink *link = dach_find_link(dach, name);
+
+    if (link == NULL) {
+        link = _dach_new_link(dach, name, 0, LinkType_Double);
+    }
+
+    return dach_set_double_by_link(link, value);
+}
+
+/***************************************************************************
+ ***************************************************************************/
+DataLink *dach_set_bool_by_link(DataLink *link, bool value) {
+    assert(link);
+
+    /*ensure the type*/
+    if (link->link_type != LinkType_Bool)
+        return link;
+
+    link->value_bool = value;
+
+    return link;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+DataLink *dach_set_bool(DataChain *dach, const char *name, bool value) {
+    DataLink *link = dach_find_link(dach, name);
+
+    if (link == NULL) {
+        link = _dach_new_link(dach, name, 0, LinkType_Bool);
+    }
+
+    return dach_set_bool_by_link(link, value);
+}
+
+/***************************************************************************
+ ***************************************************************************/
 DataLink *dach_append_by_link(DataLink *link, const void *px, size_t length) {
     assert(link);
+
+    /*ensure the type*/
+    if (link->link_type != LinkType_Data)
+        return link;
 
     size_t min_len = link->data_len + length;
     if (min_len >= link->data_size) { /*at least keep a '\0'*/
         link = _dach_link_expand(link, min_len);
     }
 
-    memcpy(link->data + link->data_len, px, length);
+    memcpy(link->value_data + link->data_len, px, length);
     link->data_len = min_len;
 
     return link;
@@ -223,7 +310,7 @@ DataLink *dach_append(DataChain *dach, const char *name, const void *px,
     DataLink *link = dach_find_link(dach, name);
 
     if (link == NULL) {
-        link = _dach_new_link(dach, name, length, false);
+        link = _dach_new_link(dach, name, length, LinkType_Data);
     }
 
     return dach_append_by_link(link, px, length);
@@ -242,7 +329,7 @@ DataLink *dach_append_char(DataChain *dach, const char *name, int c) {
     DataLink *link = dach_find_link(dach, name);
 
     if (link == NULL) {
-        link = _dach_new_link(dach, name, 1, false);
+        link = _dach_new_link(dach, name, 1, LinkType_Data);
     }
 
     return dach_append_char_by_link(link, c);
@@ -274,7 +361,7 @@ DataLink *dach_append_hexint(DataChain *dach, const char *name,
     DataLink *link = dach_find_link(dach, name);
 
     if (link == NULL) {
-        link = _dach_new_link(dach, name, 1, false); /*use default*/
+        link = _dach_new_link(dach, name, 1, LinkType_Data); /*use default*/
     }
 
     if (digits == 0) {
@@ -331,7 +418,7 @@ DataLink *dach_append_unicode(DataChain *dach, const char *name, unsigned c) {
     DataLink *link = dach_find_link(dach, name);
 
     if (link == NULL) {
-        link = _dach_new_link(dach, name, 1, false); /*use default*/
+        link = _dach_new_link(dach, name, 1, LinkType_Data); /*use default*/
     }
 
     return dach_append_unicode_by_link(link, c);
@@ -372,13 +459,12 @@ DataLink *dach_printf_by_link(DataLink *link, const char *fmt, ...) {
 
 /***************************************************************************
  ***************************************************************************/
-DataLink *dach_printf(DataChain *dach, const char *name, bool is_number,
-                      const char *fmt, ...) {
+DataLink *dach_printf(DataChain *dach, const char *name, const char *fmt, ...) {
     DataLink *link = dach_find_link(dach, name);
 
     if (link == NULL) {
         /*we don't know the exact length, use default*/
-        link = _dach_new_link(dach, name, 1, is_number);
+        link = _dach_new_link(dach, name, 1, LinkType_Data);
     }
 
     va_list marker;
@@ -421,7 +507,7 @@ DataLink *dach_append_normalized(DataChain *dach, const char *name,
         link = _dach_new_link(dach, name,
                               length * 4 < DACH_DEFAULT_DATA_SIZE ? length * 4
                                                                   : length * 2,
-                              false); /*estimate the encoded length*/
+                              LinkType_Data); /*estimate the encoded length*/
     }
 
     return dach_append_normalized_by_link(link, px, length);
@@ -429,13 +515,18 @@ DataLink *dach_append_normalized(DataChain *dach, const char *name,
 
 /***************************************************************************
  ***************************************************************************/
-bool dach_link_contains(DataLink *link, const char *string) {
-    assert(link && link->data);
+bool dach_link_contains_data(DataLink *link, const char *string) {
+    assert(link);
+
+    if (link->link_type != LinkType_Data)
+        return false;
+
+    assert(link->value_data);
 
     if (string == NULL)
         return false;
 
-    const unsigned char *string2        = link->data;
+    const unsigned char *string2        = link->value_data;
     size_t               string2_length = link->data_len;
     size_t               string_length  = strlen(string);
 
@@ -452,7 +543,7 @@ bool dach_link_contains(DataLink *link, const char *string) {
 
 /***************************************************************************
  ***************************************************************************/
-bool dach_contains(DataChain *dach, const char *name, const char *string) {
+bool dach_contains_data(DataChain *dach, const char *name, const char *string) {
     if (string == NULL)
         return false;
 
@@ -460,15 +551,20 @@ bool dach_contains(DataChain *dach, const char *name, const char *string) {
     if (link == NULL)
         return false;
 
-    return dach_link_contains(link, string);
+    return dach_link_contains_data(link, string);
 }
 
 /*****************************************************************************
  *****************************************************************************/
-bool dach_link_equals(DataLink *link, const char *rhs) {
-    assert(link && link->data);
+bool dach_link_equals_in_data(DataLink *link, const char *rhs) {
+    assert(link);
 
-    const unsigned char *lhs = link->data;
+    if (link->link_type != LinkType_Data)
+        return false;
+
+    assert(link->value_data);
+
+    const unsigned char *lhs = link->value_data;
 
     size_t lhs_length = link->data_len;
     size_t rhs_length = strlen(rhs);
@@ -481,12 +577,12 @@ bool dach_link_equals(DataLink *link, const char *rhs) {
 
 /*****************************************************************************
  *****************************************************************************/
-bool dach_equals(DataChain *dach, const char *name, const char *rhs) {
+bool dach_equals_in_data(DataChain *dach, const char *name, const char *rhs) {
     DataLink *link = dach_find_link(dach, name);
     if (link == NULL)
         return false;
 
-    return dach_link_equals(link, rhs);
+    return dach_link_equals_in_data(link, rhs);
 }
 
 /*****************************************************************************
@@ -600,7 +696,13 @@ int datachain_selftest(void) {
         DataChain *dach = CALLOC(1, sizeof(DataChain));
         DataLink  *link;
         unsigned   i;
+        uint64_t   num_int    = 22;
+        double     num_double = 3.14;
+        bool       num_bool   = true;
 
+        /**
+         * Add links in different types
+         */
         for (i = 0; i < 10; i++) {
             dach_append(dach, "x", "xxxx", 4);
             dach_append(dach, "y", "yyyyy", 5);
@@ -611,18 +713,26 @@ int datachain_selftest(void) {
             dach_append_char(dach, "y", 'y');
         }
 
+        dach_set_int(dach, "int", num_int);
+        dach_set_double(dach, "double", num_double);
+        dach_set_bool(dach, "bool", num_bool);
+
         if (dach->link->next == NULL) {
             line = __LINE__;
             goto fail;
         }
 
-        if (dach->count != 2) {
+        if (dach->count != 5) {
             line = __LINE__;
             goto fail;
         }
 
         link = dach_find_link(dach, "x");
         if (link == NULL) {
+            line = __LINE__;
+            goto fail;
+        }
+        if (link->link_type != LinkType_Data) {
             line = __LINE__;
             goto fail;
         }
@@ -636,11 +746,60 @@ int datachain_selftest(void) {
             line = __LINE__;
             goto fail;
         }
+        if (link->link_type != LinkType_Data) {
+            line = __LINE__;
+            goto fail;
+        }
         if (link->data_len != 60) {
             line = __LINE__;
             goto fail;
         }
 
+        link = dach_find_link(dach, "int");
+        if (link == NULL) {
+            line = __LINE__;
+            goto fail;
+        }
+        if (link->link_type != LinkType_Int) {
+            line = __LINE__;
+            goto fail;
+        }
+        if (link->value_int != num_int) {
+            line = __LINE__;
+            goto fail;
+        }
+
+        link = dach_find_link(dach, "double");
+        if (link == NULL) {
+            line = __LINE__;
+            goto fail;
+        }
+        if (link->link_type != LinkType_Double) {
+            line = __LINE__;
+            goto fail;
+        }
+        if (link->value_double != num_double) {
+            line = __LINE__;
+            goto fail;
+        }
+
+        link = dach_find_link(dach, "bool");
+        if (link == NULL) {
+            line = __LINE__;
+            goto fail;
+        }
+        if (link->link_type != LinkType_Bool) {
+            line = __LINE__;
+            goto fail;
+        }
+        if (link->value_bool != num_bool) {
+            line = __LINE__;
+            goto fail;
+        }
+
+        /**
+         * Delete links
+         */
         dach_del_by_link(dach, dach_find_link(dach, "x"));
 
         link = dach_find_link(dach, "x");
@@ -649,11 +808,14 @@ int datachain_selftest(void) {
             goto fail;
         }
 
-        if (dach->count != 1) {
+        if (dach->count != 4) {
             line = __LINE__;
             goto fail;
         }
 
+        /**
+         * Add data type links in formatting or printf style
+         */
         dach_append_normalized(dach, "normal", "<hello>\n",
                                strlen("<hello>\n"));
         link = dach_find_link(dach, "normal");
@@ -661,27 +823,30 @@ int datachain_selftest(void) {
             line = __LINE__;
             goto fail;
         }
-        if (!dach_equals(dach, "normal", "\\x3chello\\x3e\\x0a")) {
+        if (!dach_equals_in_data(dach, "normal", "\\x3chello\\x3e\\x0a")) {
             line = __LINE__;
             goto fail;
         }
 
-        dach_printf(dach, "print", false, "%s is %d", "65", 65);
+        dach_printf(dach, "print", "%s is %d", "65", 65);
         link = dach_find_link(dach, "print");
         if (link == NULL) {
             line = __LINE__;
             goto fail;
         }
-        if (!dach_equals(dach, "print", "65 is 65")) {
+        if (!dach_equals_in_data(dach, "print", "65 is 65")) {
             line = __LINE__;
             goto fail;
         }
 
-        if (dach->count != 3) {
+        if (dach->count != 6) {
             line = __LINE__;
             goto fail;
         }
 
+        /**
+         * Delete links
+         */
         dach_del_by_link(dach, dach_find_link(dach, "normal"));
         link = dach_find_link(dach, "normal");
         if (link) {
@@ -689,7 +854,7 @@ int datachain_selftest(void) {
             goto fail;
         }
 
-        if (dach->count != 2) {
+        if (dach->count != 5) {
             line = __LINE__;
             goto fail;
         }
@@ -732,23 +897,23 @@ int datachain_selftest(void) {
         dach_append_base64(dach, "5", "fghij", 5, base64);
         dach_finalize_base64(dach, "5", base64);
 
-        if (!dach_equals(dach, "1", "eA==")) {
+        if (!dach_equals_in_data(dach, "1", "eA==")) {
             line = __LINE__;
             goto fail;
         }
-        if (!dach_equals(dach, "2", "YmM=")) {
+        if (!dach_equals_in_data(dach, "2", "YmM=")) {
             line = __LINE__;
             goto fail;
         }
-        if (!dach_equals(dach, "3", "bW5v")) {
+        if (!dach_equals_in_data(dach, "3", "bW5v")) {
             line = __LINE__;
             goto fail;
         }
-        if (!dach_equals(dach, "4", "c3R1dg==")) {
+        if (!dach_equals_in_data(dach, "4", "c3R1dg==")) {
             line = __LINE__;
             goto fail;
         }
-        if (!dach_equals(dach, "5", "ZmdoaWo=")) {
+        if (!dach_equals_in_data(dach, "5", "ZmdoaWo=")) {
             line = __LINE__;
             goto fail;
         }

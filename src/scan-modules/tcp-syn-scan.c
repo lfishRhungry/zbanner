@@ -211,7 +211,7 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             /*comput of mss is not easy*/
             mss_them = tcp_get_mss(recved->packet, recved->length, &mss_found);
             if (mss_found)
-                dach_printf(&item->report, "mss", true, "%d", mss_them);
+                dach_set_int(&item->report, "mss", mss_them);
         }
     }
     /*RST*/
@@ -222,11 +222,11 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     }
 
     if (tcpsyn_conf.record_ttl)
-        dach_printf(&item->report, "ttl", true, "%d", recved->parsed.ip_ttl);
+        dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
     if (tcpsyn_conf.record_ipid && recved->parsed.src_ip.version == 4)
-        dach_printf(&item->report, "ipid", true, "%d", recved->parsed.ip_v4_id);
+        dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
     if (tcpsyn_conf.record_win)
-        dach_printf(&item->report, "win", true, "%d", win_them);
+        dach_set_int(&item->report, "win", win_them);
 }
 
 static void tcpsyn_timeout(uint64_t entropy, ScanTmEvent *event, OutItem *item,

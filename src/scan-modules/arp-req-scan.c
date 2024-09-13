@@ -67,8 +67,7 @@ static void arpreq_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
 
     safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");
     safe_strcpy(item->reason, OUT_RSN_SIZE, "arp reply");
-    dach_printf(&item->report, "mac addr", false,
-                "%02X:%02X:%02X:%02X:%02X:%02X",
+    dach_printf(&item->report, "mac addr", "%02X:%02X:%02X:%02X:%02X:%02X",
                 recved->parsed.arp_info.sender_mac[0],
                 recved->parsed.arp_info.sender_mac[1],
                 recved->parsed.arp_info.sender_mac[2],

@@ -213,7 +213,7 @@ static void snmp_banner_oid(struct SMACK *global_mib, const unsigned char *oid,
         if (x == 0 && i >= oid_length)
             break;
 
-        dach_printf(dach, SNMP_DACH_NAME, false, ".%" PRIu64 "", x);
+        dach_printf(dach, SNMP_DACH_NAME, ".%" PRIu64 "", x);
     }
 }
 
@@ -236,7 +236,7 @@ static void snmp_banner(struct SMACK *global_mib, const unsigned char *oid,
             uint64_t result = 0;
             for (i = 0; i < var_length; i++)
                 result = result << 8 | var[i];
-            dach_printf(dach, SNMP_DACH_NAME, false, "%" PRIu64 "", result);
+            dach_printf(dach, SNMP_DACH_NAME, "%" PRIu64 "", result);
         } break;
         case 6:
             snmp_banner_oid(global_mib, var, var_length, dach);

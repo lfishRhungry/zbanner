@@ -257,7 +257,7 @@ static void ssl_info_cb(const SSL *ssl, int where, int ret) {
         };
 
         safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
-        dach_printf(&item.report, "openssl alert", false, "0x%04x %s: %s", ret,
+        dach_printf(&item.report, "openssl alert", "0x%04x %s: %s", ret,
                     SSL_alert_type_string_long(ret),
                     SSL_alert_desc_string_long(ret));
 
@@ -352,7 +352,7 @@ static bool output_subject_info(OutConf *out, ProbeTarget *target, SSL *ssl) {
     }
 
     link = dach_new_link(&item.report, "subject name", DACH_DEFAULT_DATA_SIZE,
-                         false);
+                         LinkType_Data);
 
     while (true) {
         res = BIO_read(bio, s_names, sizeof(s_names));
@@ -401,8 +401,8 @@ static bool output_subject_info(OutConf *out, ProbeTarget *target, SSL *ssl) {
         sk_GENERAL_NAME_pop_free(x509_alt_names, GENERAL_NAME_free);
     }
 
-    link =
-        dach_new_link(&item.report, "alt name", DACH_DEFAULT_DATA_SIZE, false);
+    link = dach_new_link(&item.report, "alt name", DACH_DEFAULT_DATA_SIZE,
+                         LinkType_Data);
 
     while (true) {
         res = BIO_read(bio, s_names, sizeof(s_names));
@@ -500,8 +500,8 @@ static bool output_x502_cert(OutConf *out, ProbeTarget *target, SSL *ssl) {
         }
 
         /*cert is a little bit large*/
-        link = dach_new_link_printf(&item.report, 2048, false, "cert_%d",
-                                    i_cert + 1);
+        link = dach_new_link_printf(&item.report, 2048, LinkType_Data,
+                                    "cert_%d", i_cert + 1);
 
         while (true) {
             res = BIO_read(bio_mem, s_base64, sizeof(s_base64));
@@ -549,7 +549,7 @@ static bool output_cipher_suite(OutConf *out, ProbeTarget *target, SSL *ssl) {
     safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
 
     cipher_suite = SSL_CIPHER_get_protocol_id(ssl_cipher);
-    dach_printf(&item.report, "cipher", false, "0x%x", cipher_suite);
+    dach_printf(&item.report, "cipher", "0x%x", cipher_suite);
 
     output_result(_tls_out, &item);
 

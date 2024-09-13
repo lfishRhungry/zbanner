@@ -4,13 +4,16 @@
 #include "../util-out/logger.h"
 #include "../pixie/pixie-file.h"
 
-static const char fmt_host[]       = "%s host: %s";
-static const char fmt_port[]       = " port: %u";
-static const char fmt_proto[]      = " in %s";
-static const char fmt_cls[]        = " is \"%s\"";
-static const char fmt_reason[]     = " because \"%s\"";
-static const char fmt_report_str[] = ",  %s: \"%s\"";
-static const char fmt_report_num[] = ",  %s: %s";
+static const char fmt_host[]          = "%s host: %s";
+static const char fmt_port[]          = " port: %u";
+static const char fmt_proto[]         = " in %s";
+static const char fmt_cls[]           = " is \"%s\"";
+static const char fmt_reason[]        = " because \"%s\"";
+static const char fmt_report_str[]    = ",  %s: \"%s\"";
+static const char fmt_report_int[]    = ",  %s: %" PRIu64;
+static const char fmt_report_double[] = ", %s: %.2f";
+static const char fmt_report_true[]   = ", %s: true";
+static const char fmt_report_false[]  = ", %s: false";
 
 extern Output TextOutput; /*for internal x-ref*/
 
@@ -86,8 +89,20 @@ static void text_result(OutItem *item) {
 
     DataLink *pre = item->report.link;
     while (pre->next) {
-        fprintf(file, pre->next->is_number ? fmt_report_num : fmt_report_str,
-                pre->next->name, pre->next->data);
+        if (pre->next->link_type == LinkType_Data) {
+            fprintf(file, fmt_report_str, pre->next->name,
+                    pre->next->value_data);
+        } else if (pre->next->link_type == LinkType_Int) {
+            fprintf(file, fmt_report_int, pre->next->name,
+                    pre->next->value_int);
+        } else if (pre->next->link_type == LinkType_Double) {
+            fprintf(file, fmt_report_double, pre->next->name,
+                    pre->next->value_double);
+        } else if (pre->next->link_type == LinkType_Bool) {
+            fprintf(file,
+                    pre->next->value_bool ? fmt_report_true : fmt_report_false,
+                    pre->next->name);
+        }
         pre = pre->next;
     }
 

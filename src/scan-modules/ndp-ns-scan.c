@@ -101,8 +101,7 @@ static void ndpns_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     safe_strcpy(item->reason, OUT_RSN_SIZE, "ndp na");
     safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");
 
-    dach_printf(&item->report, "mac_addr", false,
-                "%02X:%02X:%02X:%02X:%02X:%02X",
+    dach_printf(&item->report, "mac_addr", "%02X:%02X:%02X:%02X:%02X:%02X",
                 recved->packet[recved->parsed.transport_offset + 26],
                 recved->packet[recved->parsed.transport_offset + 27],
                 recved->packet[recved->parsed.transport_offset + 28],
@@ -112,13 +111,13 @@ static void ndpns_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
 
     if (NDP_NA_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
                         NDP_NA_FLAG_ROUTER)) {
-        dach_append(&item->report, "from_router", "true", sizeof("true") - 1);
+        dach_set_bool(&item->report, "from_router", true);
     } else {
-        dach_append(&item->report, "from_router", "false", sizeof("false") - 1);
+        dach_set_bool(&item->report, "from_router", false);
     }
 
     if (ndpns_conf.record_ttl)
-        dach_printf(&item->report, "ttl", true, "%d", recved->parsed.ip_ttl);
+        dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
 }
 
 static void ndpns_timeout(uint64_t entropy, ScanTmEvent *event, OutItem *item,

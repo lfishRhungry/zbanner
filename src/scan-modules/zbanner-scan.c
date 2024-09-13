@@ -293,19 +293,17 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
         if (zbanner_conf.record_ttl)
-            dach_printf(&item->report, "ttl", true, "%d",
-                        recved->parsed.ip_ttl);
+            dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
         if (zbanner_conf.record_ipid && recved->parsed.src_ip.version == 4)
-            dach_printf(&item->report, "ipid", true, "%d",
-                        recved->parsed.ip_v4_id);
+            dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
         if (zbanner_conf.record_win)
-            dach_printf(&item->report, "win", true, "%d", win_them);
+            dach_set_int(&item->report, "win", win_them);
         if (zbanner_conf.record_mss) {
             /*comput of mss is not easy*/
             mss_them = tcp_get_mss(recved->packet, recved->length, &mss_found);
             if (!mss_found)
                 mss_them = 0;
-            dach_printf(&item->report, "mss", true, "%d", mss_them);
+            dach_set_int(&item->report, "mss", mss_them);
         }
 
         if (win_them == 0) {
@@ -419,13 +417,11 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
         if (zbanner_conf.record_ttl)
-            dach_printf(&item->report, "ttl", true, "%d",
-                        recved->parsed.ip_ttl);
+            dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
         if (zbanner_conf.record_ipid && recved->parsed.src_ip.version == 4)
-            dach_printf(&item->report, "ipid", true, "%d",
-                        recved->parsed.ip_v4_id);
+            dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
         if (zbanner_conf.record_win)
-            dach_printf(&item->report, "win", true, "%d", win_them);
+            dach_set_int(&item->report, "win", win_them);
 
         safe_strcpy(item->reason, OUT_RSN_SIZE, "rst");
         safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");

@@ -118,9 +118,9 @@ static void icmpecho_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");
 
     if (icmpecho_conf.record_ttl)
-        dach_printf(&item->report, "ttl", true, "%d", recved->parsed.ip_ttl);
+        dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
     if (icmpecho_conf.record_ipid && recved->parsed.src_ip.version == 4)
-        dach_printf(&item->report, "ipid", true, "%d", recved->parsed.ip_v4_id);
+        dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
 }
 
 static void icmpecho_timeout(uint64_t entropy, ScanTmEvent *event,

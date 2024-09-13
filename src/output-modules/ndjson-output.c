@@ -8,28 +8,24 @@ extern Output NdjsonOutput; /*for internal x-ref*/
 
 static FILE *file;
 
-static const char fmt_ndjson_prefix[] = "{"
-                                        "\"time\":\"%s\","
-                                        "\"level\":\"%s\","
-                                        "\"ip_proto\":\"%s\","
-                                        "\"ip_them\":\"%s\",";
-
-static const char fmt_ndjson_port_them[] = "\"port_them\":%u,";
-
-static const char fmt_ndjson_ip_me[] = "\"ip_me\":\"%s\",";
-
-static const char fmt_ndjson_port_me[] = "\"port_me\":%u,";
-
-static const char fmt_ndjson_inffix[] = "\"classification\":\"%s\","
-                                        "\"reason\":\"%s\","
-                                        "\"report\":{";
-
-static const char fmt_ndjson_str_inffix[] = "\"%s\":\"%s\",";
-
-static const char fmt_ndjson_num_inffix[] = "\"%s\":%s,";
-
-static const char fmt_ndjson_suffix[] = "}" /*close report*/
-                                        "}" /*cose all*/
+static const char fmt_ndjson_prefix[]        = "{"
+                                               "\"time\":\"%s\","
+                                               "\"level\":\"%s\","
+                                               "\"ip_proto\":\"%s\","
+                                               "\"ip_them\":\"%s\",";
+static const char fmt_ndjson_port_them[]     = "\"port_them\":%u,";
+static const char fmt_ndjson_ip_me[]         = "\"ip_me\":\"%s\",";
+static const char fmt_ndjson_port_me[]       = "\"port_me\":%u,";
+static const char fmt_ndjson_inffix[]        = "\"classification\":\"%s\","
+                                               "\"reason\":\"%s\","
+                                               "\"report\":{";
+static const char fmt_ndjson_str_inffix[]    = "\"%s\":\"%s\",";
+static const char fmt_ndjson_int_inffix[]    = "\"%s\":%" PRIu64 ",";
+static const char fmt_ndjson_double_inffix[] = "\"%s\":%.2f,";
+static const char fmt_ndjson_true_inffix[]   = "\"%s\":true,";
+static const char fmt_ndjson_false_inffix[]  = "\"%s\":false,";
+static const char fmt_ndjson_suffix[]        = "}" /*close report*/
+                                        "}"        /*cose all*/
                                         "\n";
 
 static char format_time[32];
@@ -96,12 +92,25 @@ static void ndjson_result(OutItem *item) {
 
     DataLink *pre = item->report.link;
     while (pre->next) {
-        err = fprintf(file,
-                      pre->next->is_number ? fmt_ndjson_num_inffix
-                                           : fmt_ndjson_str_inffix,
-                      pre->next->name, pre->next->data);
+        if (pre->next->link_type == LinkType_Data) {
+            err = fprintf(file, fmt_ndjson_str_inffix, pre->next->name,
+                          pre->next->value_data);
+        } else if (pre->next->link_type == LinkType_Int) {
+            err = fprintf(file, fmt_ndjson_int_inffix, pre->next->name,
+                          pre->next->value_int);
+        } else if (pre->next->link_type == LinkType_Double) {
+            err = fprintf(file, fmt_ndjson_double_inffix, pre->next->name,
+                          pre->next->value_double);
+        } else if (pre->next->link_type == LinkType_Bool) {
+            err = fprintf(file,
+                          pre->next->value_bool ? fmt_ndjson_true_inffix
+                                                : fmt_ndjson_false_inffix,
+                          pre->next->name);
+        }
+
         if (err < 0)
             goto error;
+
         pre = pre->next;
     }
 
