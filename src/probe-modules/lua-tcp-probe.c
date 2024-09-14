@@ -485,7 +485,7 @@ static unsigned luatcp_handle_response(unsigned th_idx, ProbeTarget *target,
         return 0;
     }
     lua_ret = lua_tolstring(luatcp_conf.Lhx, -1, &ret_len);
-    dach_append(&item->report, "lua report", lua_ret, ret_len);
+    dach_append(&item->report, "lua report", lua_ret, ret_len, LinkType_String);
 
     lua_settop(luatcp_conf.Lhx, 0);
     return ret;
@@ -573,7 +573,7 @@ static unsigned luatcp_handle_timeout(ProbeTarget *target, OutItem *item) {
         return 0;
     }
     lua_ret = lua_tolstring(luatcp_conf.Lrx, -1, &ret_len);
-    dach_append(&item->report, "lua report", lua_ret, ret_len);
+    dach_append(&item->report, "lua report", lua_ret, ret_len, LinkType_String);
 
     lua_settop(luatcp_conf.Lrx, 0);
     return ret;

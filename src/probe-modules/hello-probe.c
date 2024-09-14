@@ -325,14 +325,16 @@ static unsigned hello_handle_response(unsigned th_idx, ProbeTarget *target,
             safe_strcpy(item->classification, OUT_CLS_SIZE, "matched");
 
             if (hello_conf.banner_while_regex) {
-                dach_append_normalized(&item->report, "banner", px, sizeof_px);
+                dach_append_normalized(&item->report, "banner", px, sizeof_px,
+                                       LinkType_String);
             }
         } else {
             item->level = OUT_FAILURE;
             safe_strcpy(item->classification, OUT_CLS_SIZE, "not matched");
 
             if (hello_conf.banner_while_regex || hello_conf.banner_if_fail) {
-                dach_append_normalized(&item->report, "banner", px, sizeof_px);
+                dach_append_normalized(&item->report, "banner", px, sizeof_px,
+                                       LinkType_String);
             }
         }
 
@@ -341,7 +343,8 @@ static unsigned hello_handle_response(unsigned th_idx, ProbeTarget *target,
 #endif
 
         item->level = OUT_SUCCESS;
-        dach_append_normalized(&item->report, "banner", px, sizeof_px);
+        dach_append_normalized(&item->report, "banner", px, sizeof_px,
+                               LinkType_String);
 
 #ifndef NOT_FOUND_PCRE2
     }

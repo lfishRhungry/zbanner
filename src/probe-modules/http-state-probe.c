@@ -715,14 +715,16 @@ static unsigned httpstate_parse_response(DataPass *pass, ProbeState *state,
         }
 
         if (httpstate_conf.report_while_regex) {
-            dach_append_normalized(&item.report, "banner", px, sizeof_px);
+            dach_append_normalized(&item.report, "banner", px, sizeof_px,
+                                   LinkType_String);
         }
         pcre2_match_data_free(match_data);
     } else {
 #endif
 
         item.level = OUT_SUCCESS;
-        dach_append_normalized(&item.report, "banner", px, sizeof_px);
+        dach_append_normalized(&item.report, "banner", px, sizeof_px,
+                               LinkType_String);
 
 #ifndef NOT_FOUND_PCRE2
     }

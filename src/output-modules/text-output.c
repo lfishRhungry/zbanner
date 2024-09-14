@@ -10,6 +10,7 @@ static const char fmt_proto[]         = " in %s";
 static const char fmt_cls[]           = " is \"%s\"";
 static const char fmt_reason[]        = " because \"%s\"";
 static const char fmt_report_str[]    = ",  %s: \"%s\"";
+static const char fmt_report_bin[]    = ",  %s: \"(%u bytes bin)\"";
 static const char fmt_report_int[]    = ",  %s: %" PRIu64;
 static const char fmt_report_double[] = ", %s: %.2f";
 static const char fmt_report_true[]   = ", %s: true";
@@ -89,7 +90,7 @@ static void text_result(OutItem *item) {
 
     DataLink *pre = item->report.link;
     while (pre->next) {
-        if (pre->next->link_type == LinkType_Data) {
+        if (pre->next->link_type == LinkType_String) {
             fprintf(file, fmt_report_str, pre->next->name,
                     pre->next->value_data);
         } else if (pre->next->link_type == LinkType_Int) {
@@ -102,7 +103,10 @@ static void text_result(OutItem *item) {
             fprintf(file,
                     pre->next->value_bool ? fmt_report_true : fmt_report_false,
                     pre->next->name);
+        } else if (pre->next->link_type == LinkType_Binary) {
+            fprintf(file, fmt_report_bin, pre->next->name, pre->next->data_len);
         }
+
         pre = pre->next;
     }
 

@@ -220,19 +220,20 @@ unsigned nmaptcp_handle_response(unsigned th_idx, ProbeTarget *target,
         safe_strcpy(item->reason, OUT_RSN_SIZE,
                     match->is_softmatch ? "softmatch" : "matched");
         dach_append(&item->report, "service", match->service,
-                    strlen(match->service));
+                    strlen(match->service), LinkType_String);
 
         if (!match->is_softmatch && match->versioninfo) {
             dach_append(&item->report, "info", match->versioninfo->value,
-                        strlen(match->versioninfo->value));
+                        strlen(match->versioninfo->value), LinkType_String);
         }
 
         dach_set_int(&item->report, "line", match->line);
         dach_append(&item->report, "probe", list->probes[target->index]->name,
-                    strlen(list->probes[target->index]->name));
+                    strlen(list->probes[target->index]->name), LinkType_String);
 
         if (nmaptcp_conf.show_banner) {
-            dach_append_normalized(&item->report, "banner", px, sizeof_px);
+            dach_append_normalized(&item->report, "banner", px, sizeof_px,
+                                   LinkType_String);
         }
 
         return 0;
@@ -241,7 +242,7 @@ unsigned nmaptcp_handle_response(unsigned th_idx, ProbeTarget *target,
     safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
     safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
     dach_append(&item->report, "probe", list->probes[target->index]->name,
-                strlen(list->probes[target->index]->name));
+                strlen(list->probes[target->index]->name), LinkType_String);
 
     /*fail to match or in softmatch mode, try to send next possible probe*/
     next_probe = nmapservice_next_probe_index(
@@ -254,7 +255,8 @@ unsigned nmaptcp_handle_response(unsigned th_idx, ProbeTarget *target,
         item->level = OUT_FAILURE;
 
         if (nmaptcp_conf.show_banner || nmaptcp_conf.banner_if_fail) {
-            dach_append_normalized(&item->report, "banner", px, sizeof_px);
+            dach_append_normalized(&item->report, "banner", px, sizeof_px,
+                                   LinkType_String);
         }
         return 0;
     }
@@ -268,7 +270,7 @@ static unsigned nmaptcp_handle_timeout(ProbeTarget *target, OutItem *item) {
     safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
     safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
     dach_append(&item->report, "probe", list->probes[target->index]->name,
-                strlen(list->probes[target->index]->name));
+                strlen(list->probes[target->index]->name), LinkType_String);
 
     /**
      * We have to check whether it is the last available probe.

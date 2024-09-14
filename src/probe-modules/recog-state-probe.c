@@ -300,10 +300,12 @@ static unsigned recogstate_parse_response(DataPass *pass, ProbeState *state,
     if (match_res) {
         item.level = OUT_SUCCESS;
         safe_strcpy(item.classification, OUT_CLS_SIZE, "matched");
-        dach_append(&item.report, "result", match_res, strlen(match_res));
+        dach_append(&item.report, "result", match_res, strlen(match_res),
+                    LinkType_String);
 
         if (recogstate_conf.banner_while_regex) {
-            dach_append_normalized(&item.report, "banner", px, sizeof_px);
+            dach_append_normalized(&item.report, "banner", px, sizeof_px,
+                                   LinkType_String);
         }
     } else {
         item.level = OUT_FAILURE;
@@ -311,7 +313,8 @@ static unsigned recogstate_parse_response(DataPass *pass, ProbeState *state,
 
         if (recogstate_conf.banner_while_regex ||
             recogstate_conf.banner_if_fail) {
-            dach_append_normalized(&item.report, "banner", px, sizeof_px);
+            dach_append_normalized(&item.report, "banner", px, sizeof_px,
+                                   LinkType_String);
         }
     }
 

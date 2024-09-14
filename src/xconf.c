@@ -3596,9 +3596,9 @@ void xconf_print_version() {
 
 #ifndef NOT_FOUND_OPENSSL
 #include <openssl/opensslv.h>
-    printf("    " OPENSSL_VERSION_TEXT "\n");
+    printf("    OpenSSL  " OPENSSL_FULL_VERSION_STR OPENSSL_RELEASE_DATE "\n");
 #else
-    printf("    OpenSSL    (null)\n");
+    printf("    OpenSSL  (null)\n");
 #endif
 
 #ifndef NOT_FOUND_PCRE2
@@ -3606,22 +3606,28 @@ void xconf_print_version() {
 #include <pcre2.h>
     char version[120];
     pcre2_config(PCRE2_CONFIG_VERSION, version);
-    printf("    PCRE2   %s\n", version);
+    printf("    PCRE2    %s\n", version);
 #else
-    printf("    PCRE2      (null)\n");
+    printf("    PCRE2    (null)\n");
 #endif
 
 #ifndef NOT_FOUND_LIBXML2
 #include <libxml/xmlversion.h>
-    printf("    LibXml2 %s\n", LIBXML_DOTTED_VERSION);
+    printf("    LibXml2  %s\n", LIBXML_DOTTED_VERSION);
 #else
-    printf("    LibXml2    (null)\n");
+    printf("    LibXml2  (null)\n");
 #endif
 
 #ifndef NOT_FOUND_JUDY
-    printf("    LibJudy " JUDY_PATH "\n");
+    printf("    LibJudy  " JUDY_PATH "\n");
 #else
-    printf("    LibJudy    (null)\n");
+    printf("    LibJudy  (null)\n");
+#endif
+
+#ifndef NOT_FOUND_BSON
+    printf("    libbson  " BSON_PATH "\n");
+#else
+    printf("    libbson  (null)\n");
 #endif
 
     printf("\n");

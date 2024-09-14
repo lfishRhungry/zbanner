@@ -263,10 +263,12 @@ static unsigned recogudp_handle_response(unsigned th_idx, ProbeTarget *target,
     if (match_res) {
         item->level = OUT_SUCCESS;
         safe_strcpy(item->classification, OUT_CLS_SIZE, "matched");
-        dach_append(&item->report, "result", match_res, strlen(match_res));
+        dach_append(&item->report, "result", match_res, strlen(match_res),
+                    LinkType_String);
 
         if (recogudp_conf.show_banner)
-            dach_append_normalized(&item->report, "banner", px, sizeof_px);
+            dach_append_normalized(&item->report, "banner", px, sizeof_px,
+                                   LinkType_String);
     } else {
         item->no_output = 1;
     }

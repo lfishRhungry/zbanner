@@ -306,7 +306,8 @@ static unsigned helloudp_handle_response(unsigned th_idx, ProbeTarget *target,
     safe_strcpy(item->classification, OUT_CLS_SIZE, "matched");
 
     if (helloudp_conf.show_banner)
-        dach_append_normalized(&item->report, "banner", px, sizeof_px);
+        dach_append_normalized(&item->report, "banner", px, sizeof_px,
+                               LinkType_String);
 
     return 0;
 }

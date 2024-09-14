@@ -5,9 +5,6 @@
     These are often simple strings(e.g. FTP banners.) or other number types.
     I provide funcs to append value(data/string) conveniently.
 
-    I try to maintain c string in value of data type by keeping '\0' tail.
-    But you can break this by appending special string.
-
     For out-of-box using and simple iterating, structures are exposed.
     Change internal contents of structures after understanding code.
     C is dangerous and charming, right?
@@ -37,11 +34,17 @@
 #define DACH_MAX_NAME_SIZE     25
 #define DACH_DEFAULT_DATA_SIZE 200
 
+/**
+ * NOTE: data type means LinkType_Binary or LinkType_String. They are saved in
+ * the same way in DataChain but are different in semantics. It is important for
+ * some output modules to print or save these two types in different ways.
+ */
 typedef enum Link_TYPE {
-    LinkType_Bool   = 1,
-    LinkType_Int    = 2,
-    LinkType_Double = 3,
-    LinkType_Data   = 0,
+    LinkType_String = 0, /*data type with just printable chars*/
+    LinkType_Binary,     /*data type with unprintable chars*/
+    LinkType_Bool,
+    LinkType_Int,
+    LinkType_Double,
 } LinkType;
 
 /**
@@ -55,8 +58,8 @@ typedef struct DataLink {
     char             name[DACH_MAX_NAME_SIZE];
     unsigned         name_hash;
     LinkType         link_type;
-    unsigned         data_len;  /*decription for LinkType_Data*/
-    unsigned         data_size; /*decription for LinkType_Data*/
+    unsigned         data_len;  /*decription for LinkType_String*/
+    unsigned         data_size; /*decription for LinkType_String*/
     union {
         bool          value_bool;
         uint64_t      value_int;
@@ -83,7 +86,7 @@ typedef struct DachBase64 {
  * Create a data link with specified capacity by yourself.
  * @param data_size expected capacity, the actual size of data type link won't
  * be less than DACH_DEFAULT_DATA_SIZE.
- * @param type type of the link. Invalid type will belong to LinkType_Data
+ * @param type valid type of the link.
  * @return link of new link or already existed link
  */
 DataLink *dach_new_link(DataChain *dach, const char *name, size_t data_size,
@@ -192,7 +195,7 @@ DataLink *dach_append_by_link(DataLink *pre, const void *px, size_t length);
  * @return target link after append.
  */
 DataLink *dach_append(DataChain *dach, const char *name, const void *px,
-                      size_t length);
+                      size_t length, LinkType type);
 
 /**
  * Append a char to the data type link.
@@ -208,7 +211,8 @@ DataLink *dach_append_char_by_link(DataLink *link, int c);
  * If data with this name doesn't exist, it'll be create.
  * @return target link after append.
  */
-DataLink *dach_append_char(DataChain *dach, const char *name, int c);
+DataLink *dach_append_char(DataChain *dach, const char *name, int c,
+                           LinkType type);
 
 /**
  * Append an integer, with hex digits, with the specified number of
@@ -228,7 +232,8 @@ DataLink *dach_append_hexint_by_link(DataLink *link, unsigned long long number,
  * @return target link after append.
  */
 DataLink *dach_append_hexint(DataChain *dach, const char *name,
-                             unsigned long long number, int digits);
+                             unsigned long long number, int digits,
+                             LinkType type);
 
 /**
  * Append either a normal character, or the hex form of a UTF-8 string to the
@@ -246,7 +251,8 @@ DataLink *dach_append_unicode_by_link(DataLink *link, unsigned c);
  * If data with this name doesn't exist, it'll be create.
  * @return target link after append.
  */
-DataLink *dach_append_unicode(DataChain *dach, const char *name, unsigned c);
+DataLink *dach_append_unicode(DataChain *dach, const char *name, unsigned c,
+                              LinkType type);
 
 /**
  * Printf in datachain version for data type link.
@@ -260,11 +266,10 @@ DataLink *dach_printf_by_link(DataLink *link, const char *fmt, ...);
  * Printf in datachain version for data type link.
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
- * @param is_number set link number type or bool string(true/false) if create
- * it.
  * @return target link after append.
  */
-DataLink *dach_printf(DataChain *dach, const char *name, const char *fmt, ...);
+DataLink *dach_printf(DataChain *dach, const char *name, LinkType type,
+                      const char *fmt, ...);
 
 /**
  * Append after removing bad characters, especially new lines and HTML
@@ -288,27 +293,27 @@ DataLink *dach_append_normalized_by_link(DataLink *link, const void *px,
  * @return target link after append.
  */
 DataLink *dach_append_normalized(DataChain *dach, const char *name,
-                                 const void *px, size_t length);
+                                 const void *px, size_t length, LinkType type);
 
 /**
  * @param link data type link and must not be NULL
  */
-bool dach_link_contains_data(DataLink *link, const char *string);
+bool dach_link_contains_str(DataLink *link, const char *string);
 
 /**
  * @return if the data type link contains or NULL if name doesn't exist
  */
-bool dach_contains_data(DataChain *dach, const char *name, const char *string);
+bool dach_contains_str(DataChain *dach, const char *name, const char *string);
 
 /**
  * @param link data type link and must not be NULL
  */
-bool dach_link_equals_in_data(DataLink *link, const char *rhs);
+bool dach_link_equals_str(DataLink *link, const char *rhs);
 
 /**
  * @return the data type link if equals or NULL if name doesn't exist
  */
-bool dach_equals_in_data(DataChain *dach, const char *name, const char *string);
+bool dach_equals_str(DataChain *dach, const char *name, const char *string);
 
 /**
  * Prepare to start calling dach_append_base64()
@@ -340,7 +345,8 @@ DataLink *dach_append_base64_by_link(DataLink *link, const void *vpx,
  * @return target link after append.
  */
 DataLink *dach_append_base64(DataChain *dach, const char *name, const void *vpx,
-                             size_t length, struct DachBase64 *base64);
+                             size_t length, LinkType type,
+                             struct DachBase64 *base64);
 
 /**
  * Finish encoding the BASE64 string, appending the '==' things on the

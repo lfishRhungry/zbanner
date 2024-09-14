@@ -7,11 +7,11 @@
 #define XTATE_NAME             "xtate"
 #define XTATE_NAME_ALL_CAPS    "XTATE"
 #define XTATE_NAME_TITLE_CASE  "Xtate"
-#define XTATE_VERSION          "1.7.0"
+#define XTATE_VERSION          "1.8.0"
 #define XTATE_VERSION_MAJOR    1
-#define XTATE_VERSION_MINOR    7
+#define XTATE_VERSION_MINOR    8
 #define XTATE_VERSION_PATCH    0
-#define XTATE_WITH_VERSION     "xtate/1.7.0"
+#define XTATE_WITH_VERSION     "xtate/1.8.0"
 #define XTATE_DESCRIPTION      "A modular all-stack network scanner for next-generation internet surveys."
 #define XTATE_AUTHOR           "Sharkocha"
 #define XTATE_CONTACT          "chenchiyu14@nudt.edu.cn"
@@ -20,6 +20,7 @@
 #define XTATE_DEFAULT_CONF     "/etc/xtate/xtate.conf"
 #define XTATE_BANNER           "God is Stateless"
 #define JUDY_PATH              "/usr/lib/x86_64-linux-gnu/libJudy.so"
+#define BSON_PATH              "/usr/lib/x86_64-linux-gnu/libbson-1.0.so"
 
 #endif
 // clang-format on

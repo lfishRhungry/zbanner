@@ -13,6 +13,9 @@
 extern Output TextOutput;
 extern Output NdjsonOutput;
 extern Output JsonOutput;
+#ifndef NOT_FOUND_BSON
+extern Output BsonOutput;
+#endif
 extern Output CsvOutput;
 extern Output ListOutput;
 extern Output NullOutput;
@@ -22,6 +25,9 @@ static Output *output_modules_list[] = {
     &TextOutput,
     &NdjsonOutput,
     &JsonOutput,
+#ifndef NOT_FOUND_BSON
+    &BsonOutput,
+#endif
     &CsvOutput,
     &ListOutput,
     &NullOutput,
@@ -122,6 +128,7 @@ static const char fmt_port[]          = " port: %-5u";
 static const char fmt_cls[]           = " \"%s\"";
 static const char fmt_reason[]        = " because \"%s\"";
 static const char fmt_report_str[]    = ",  %s: \"%s\"";
+static const char fmt_report_bin[]    = ",  %s: \"(%u bytes bin)\"";
 static const char fmt_report_int[]    = ",  %s: %" PRIu64;
 static const char fmt_report_double[] = ", %s: %.2f";
 static const char fmt_report_true[]   = ", %s: true";
@@ -227,7 +234,7 @@ static void output_result_to_stdout(OutItem *item) {
 
     DataLink *pre = item->report.link;
     while (pre->next) {
-        if (pre->next->link_type == LinkType_Data) {
+        if (pre->next->link_type == LinkType_String) {
             count += fprintf(stdout, fmt_report_str, pre->next->name,
                              pre->next->value_data);
         } else if (pre->next->link_type == LinkType_Int) {
@@ -241,7 +248,11 @@ static void output_result_to_stdout(OutItem *item) {
                              pre->next->value_bool ? fmt_report_true
                                                    : fmt_report_false,
                              pre->next->name);
+        } else if (pre->next->link_type == LinkType_Binary) {
+            count += fprintf(stdout, fmt_report_bin, pre->next->name,
+                             pre->next->data_len);
         }
+
         pre = pre->next;
     }
 

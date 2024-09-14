@@ -321,9 +321,9 @@ static unsigned lzr_handle_response(unsigned th_idx, ProbeTarget *target,
         }
     }
 
-    dach_append(&item->report, "handshake",
-                lzr_conf.handshake[target->index]->name,
-                strlen(lzr_conf.handshake[target->index]->name));
+    dach_append(
+        &item->report, "handshake", lzr_conf.handshake[target->index]->name,
+        strlen(lzr_conf.handshake[target->index]->name), LinkType_String);
 
     if (identified) {
         item->level = OUT_SUCCESS;
@@ -331,7 +331,8 @@ static unsigned lzr_handle_response(unsigned th_idx, ProbeTarget *target,
         safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
 
         if (lzr_conf.banner) {
-            dach_append_normalized(&item->report, "banner", px, sizeof_px);
+            dach_append_normalized(&item->report, "banner", px, sizeof_px,
+                                   LinkType_String);
         }
 
         if (lzr_conf.force_all_handshakes &&
@@ -345,7 +346,8 @@ static unsigned lzr_handle_response(unsigned th_idx, ProbeTarget *target,
         dach_del_by_link(&item->report, res_link);
 
         if (lzr_conf.banner_if_fail || lzr_conf.banner) {
-            dach_append_normalized(&item->report, "banner", px, sizeof_px);
+            dach_append_normalized(&item->report, "banner", px, sizeof_px,
+                                   LinkType_String);
         }
 
         /*last handshake*/
@@ -363,9 +365,9 @@ static unsigned lzr_handle_response(unsigned th_idx, ProbeTarget *target,
 static unsigned lzr_handle_timeout(ProbeTarget *target, OutItem *item) {
     safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
     safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
-    dach_append(&item->report, "handshake",
-                lzr_conf.handshake[target->index]->name,
-                strlen(lzr_conf.handshake[target->index]->name));
+    dach_append(
+        &item->report, "handshake", lzr_conf.handshake[target->index]->name,
+        strlen(lzr_conf.handshake[target->index]->name), LinkType_String);
     /**
      * Set last unmatching as failure in normal mode.
      * Or all unmatching as failure if force-all-handshakes

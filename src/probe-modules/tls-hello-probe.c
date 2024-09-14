@@ -328,7 +328,8 @@ static unsigned tlshello_handle_reponse(unsigned th_idx, ProbeTarget *target,
                                         unsigned sizeof_px, OutItem *item) {
 
     if (tlshello_conf.banner) {
-        dach_append_normalized(&item->report, "banner", px, sizeof_px);
+        dach_append_normalized(&item->report, "banner", px, sizeof_px,
+                               LinkType_String);
     }
 
     if (sizeof_px < 3) {
@@ -402,7 +403,8 @@ static unsigned tlshello_handle_reponse(unsigned th_idx, ProbeTarget *target,
                     }
 #endif
                     dach_append_normalized(&item->report, "type", "handshake",
-                                           sizeof("handshake") - 1);
+                                           sizeof("handshake") - 1,
+                                           LinkType_String);
                     return 0;
                 }
             }
@@ -420,7 +422,7 @@ static unsigned tlshello_handle_reponse(unsigned th_idx, ProbeTarget *target,
         item->level = OUT_SUCCESS;
         safe_strcpy(item->reason, OUT_RSN_SIZE, "protocol matched");
         dach_append_normalized(&item->report, "type", "handshake",
-                               sizeof("handshake") - 1);
+                               sizeof("handshake") - 1, LinkType_String);
 
         /*we can do further regex matching here*/
 #ifndef NOT_FOUND_PCRE2
@@ -502,7 +504,7 @@ static unsigned tlshello_handle_reponse(unsigned th_idx, ProbeTarget *target,
         item->level = OUT_SUCCESS;
         safe_strcpy(item->reason, OUT_RSN_SIZE, "protocol matched");
         dach_append_normalized(&item->report, "type", "alert",
-                               sizeof("alert") - 1);
+                               sizeof("alert") - 1, LinkType_String);
         dach_set_int(&item->report, "level", px[5]);
         dach_set_int(&item->report, "desc", px[6]);
 

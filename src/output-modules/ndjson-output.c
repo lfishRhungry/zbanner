@@ -20,6 +20,7 @@ static const char fmt_ndjson_inffix[]        = "\"classification\":\"%s\","
                                                "\"reason\":\"%s\","
                                                "\"report\":{";
 static const char fmt_ndjson_str_inffix[]    = "\"%s\":\"%s\",";
+static const char fmt_ndjson_bin_inffix[]    = "\"%s\":\"(%u bytes bin)\",";
 static const char fmt_ndjson_int_inffix[]    = "\"%s\":%" PRIu64 ",";
 static const char fmt_ndjson_double_inffix[] = "\"%s\":%.2f,";
 static const char fmt_ndjson_true_inffix[]   = "\"%s\":true,";
@@ -92,7 +93,7 @@ static void ndjson_result(OutItem *item) {
 
     DataLink *pre = item->report.link;
     while (pre->next) {
-        if (pre->next->link_type == LinkType_Data) {
+        if (pre->next->link_type == LinkType_String) {
             err = fprintf(file, fmt_ndjson_str_inffix, pre->next->name,
                           pre->next->value_data);
         } else if (pre->next->link_type == LinkType_Int) {
@@ -106,6 +107,9 @@ static void ndjson_result(OutItem *item) {
                           pre->next->value_bool ? fmt_ndjson_true_inffix
                                                 : fmt_ndjson_false_inffix,
                           pre->next->name);
+        } else if (pre->next->link_type == LinkType_Binary) {
+            err = fprintf(file, fmt_ndjson_bin_inffix, pre->next->name,
+                          pre->next->data_len);
         }
 
         if (err < 0)

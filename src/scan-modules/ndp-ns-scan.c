@@ -101,7 +101,8 @@ static void ndpns_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     safe_strcpy(item->reason, OUT_RSN_SIZE, "ndp na");
     safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");
 
-    dach_printf(&item->report, "mac_addr", "%02X:%02X:%02X:%02X:%02X:%02X",
+    dach_printf(&item->report, "mac_addr", LinkType_String,
+                "%02X:%02X:%02X:%02X:%02X:%02X",
                 recved->packet[recved->parsed.transport_offset + 26],
                 recved->packet[recved->parsed.transport_offset + 27],
                 recved->packet[recved->parsed.transport_offset + 28],

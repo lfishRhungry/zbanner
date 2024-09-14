@@ -271,17 +271,20 @@ static unsigned recog_handle_response(unsigned th_idx, ProbeTarget *target,
     if (match_res) {
         item->level = OUT_SUCCESS;
         safe_strcpy(item->classification, OUT_CLS_SIZE, "matched");
-        dach_append(&item->report, "result", match_res, strlen(match_res));
+        dach_append(&item->report, "result", match_res, strlen(match_res),
+                    LinkType_String);
 
         if (recog_conf.banner_while_regex) {
-            dach_append_normalized(&item->report, "banner", px, sizeof_px);
+            dach_append_normalized(&item->report, "banner", px, sizeof_px,
+                                   LinkType_String);
         }
     } else {
         item->level = OUT_FAILURE;
         safe_strcpy(item->classification, OUT_CLS_SIZE, "not matched");
 
         if (recog_conf.banner_while_regex || recog_conf.banner_if_fail) {
-            dach_append_normalized(&item->report, "banner", px, sizeof_px);
+            dach_append_normalized(&item->report, "banner", px, sizeof_px,
+                                   LinkType_String);
         }
     }
 

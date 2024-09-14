@@ -8,29 +8,30 @@ extern Output CsvOutput; /*for internal x-ref*/
 
 static FILE *file;
 
-static const char header_csv[]            = "time,"
-                                            "level,"
-                                            "ip_proto,"
-                                            "ip_them,"
-                                            "port_them,"
-                                            "ip_me,"
-                                            "port_me,"
-                                            "classification,"
-                                            "reason,"
-                                            "report"
-                                            "\n";
-static const char fmt_csv_prefix[]        = "%s,"
-                                            "%s,"
-                                            "%s,"
-                                            "%s,"
-                                            "%u,"
-                                            "%s,"
-                                            "%u,"
-                                            "%s,"
-                                            "%s,"
-                                            "\"{";
-static const char fmt_csv_str_inffix[]    = "\"\"%s\"\":\"\"%s\"\",";
-static const char fmt_csv_int_inffix[]    = "\"\"%s\"\":%" PRIu64 ",";
+static const char header_csv[]         = "time,"
+                                         "level,"
+                                         "ip_proto,"
+                                         "ip_them,"
+                                         "port_them,"
+                                         "ip_me,"
+                                         "port_me,"
+                                         "classification,"
+                                         "reason,"
+                                         "report"
+                                         "\n";
+static const char fmt_csv_prefix[]     = "%s,"
+                                         "%s,"
+                                         "%s,"
+                                         "%s,"
+                                         "%u,"
+                                         "%s,"
+                                         "%u,"
+                                         "%s,"
+                                         "%s,"
+                                         "\"{";
+static const char fmt_csv_str_inffix[] = "\"\"%s\"\":\"\"%s\"\",";
+static const char fmt_csv_bin_inffix[] = "\"\"%s\"\":\"\"(%u bytes bin)\"\",";
+static const char fmt_csv_int_inffix[] = "\"\"%s\"\":%" PRIu64 ",";
 static const char fmt_csv_double_inffix[] = "\"\"%s\"\":%.2f,";
 static const char fmt_csv_true_inffix[]   = "\"\"%s\"\":true,";
 static const char fmt_csv_false_inffix[]  = "\"\"%s\"\":false,";
@@ -87,7 +88,7 @@ static void csv_result(OutItem *item) {
 
     DataLink *pre = item->report.link;
     while (pre->next) {
-        if (pre->next->link_type == LinkType_Data) {
+        if (pre->next->link_type == LinkType_String) {
             err = fprintf(file, fmt_csv_str_inffix, pre->next->name,
                           pre->next->value_data);
         } else if (pre->next->link_type == LinkType_Int) {
@@ -101,6 +102,9 @@ static void csv_result(OutItem *item) {
                           pre->next->value_bool ? fmt_csv_true_inffix
                                                 : fmt_csv_false_inffix,
                           pre->next->name);
+        } else if (pre->next->link_type == LinkType_Binary) {
+            err = fprintf(file, fmt_csv_bin_inffix, pre->next->name,
+                          pre->next->data_len);
         }
 
         if (err < 0)
