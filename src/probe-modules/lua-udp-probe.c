@@ -623,7 +623,8 @@ Probe LuaUdpProbe = {
     "NOTE: This is an experimental function and does not support more than "
     "one tx thread or rx-handle thread well. Even through, it is mandatory "
     "to implement functions thread-seperately. However, we had 3 essential"
-    " threads at least and should be careful to thread-safe problems.",
+    " threads at least and should be careful to thread-safe problems.\n"
+    "Dependencies: lua5.3/5.4.",
 
     .init_cb              = &luaudp_init,
     .make_payload_cb      = &luaudp_make_payload,

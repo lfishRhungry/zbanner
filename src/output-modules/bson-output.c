@@ -101,7 +101,8 @@ Output BsonOutput = {
         "to JSON but stores data in a binary format, making it more efficient "
         "for data storage and transmission.\n"
         "NOTE1: BsonOutput saves every results as a BSON document to file.\n "
-        "NOTE2: BsonOutput could save binary type of fields in results.",
+        "NOTE2: BsonOutput could save binary type of fields in results.\n"
+        "Dependencies: libbson.",
 
     .init_cb   = &bsonout_init,
     .result_cb = &bsonout_result,

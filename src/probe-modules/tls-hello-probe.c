@@ -553,7 +553,8 @@ Probe TlsHelloProbe = {
         "default probe payload doesn't support TLSv1.3 and also cannot test if "
         "the server supports TLSv1.3. But we can set `-tls13` to use a "
         "TLSv1.3-compatible payload as probe. But TlsHello will not do regex "
-        "matching from it if the server responses a TLSv1.3 ServerHello.",
+        "matching from it if the server responses a TLSv1.3 ServerHello.\n"
+        "Dependencies: PCRE2 for regex.",
 
     .init_cb               = &tlshello_init,
     .make_payload_cb       = &tlshello_make_payload,

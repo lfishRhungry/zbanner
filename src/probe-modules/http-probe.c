@@ -712,7 +712,8 @@ Probe HttpProbe = {
         "      `User-Agent: " XTATE_WITH_VERSION " " XTATE_GITHUB_URL "`\n"
         "      `Accept: */*`\n\n"
         "We can use various args to change the default request and set a regex "
-        "to match the response as successed.",
+        "to match the response as successed.\n"
+        "Dependencies: PCRE2 for regex.",
 
     .init_cb               = &http_init,
     .make_payload_cb       = &http_make_payload,

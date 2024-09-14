@@ -768,7 +768,8 @@ Probe HttpStateProbe = {
         "      `Accept: */*`\n\n"
         "We can use various args to change the default request and set a regex "
         "to match the response as successed.\n"
-        "NOTE: HttpStateProbe could be used over TLS.",
+        "NOTE: HttpStateProbe could be used over TLS.\n"
+        "Dependencies: PCRE2 for regex.",
 
     .init_cb           = &http_init,
     .conn_init_cb      = &probe_conn_init_nothing,
