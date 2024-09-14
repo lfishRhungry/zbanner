@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(
     xtate
     LANGUAGES               C
-    VERSION                 1.8.0
+    VERSION                 1.8.1
     DESCRIPTION             "A modular all-stack network scanner for next-generation internet surveys."
     HOMEPAGE_URL            "https://github.com/sharkocha/xtate"
     )
@@ -178,6 +178,10 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
         target_link_libraries(${exe_name} mongo::bson_shared)
         get_target_property(LIBBSON_LIBRARY mongo::bson_shared LOCATION)
         message(STATUS "Found libbson: ${LIBBSON_LIBRARY}")
+        # special requirement for MinGW
+        if (MINGW)
+            add_compile_definitions(__USE_MINGW_ANSI_STDIO=1)
+        endif ()
     else ()
         add_compile_definitions(NOT_FOUND_BSON)
     endif ()
