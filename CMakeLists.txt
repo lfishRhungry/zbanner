@@ -186,7 +186,7 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
         add_compile_definitions(NOT_FOUND_BSON)
     endif ()
 else ()
-    add_compile_definitions(NOT_FOUND_LIBBSON)
+    add_compile_definitions(NOT_FOUND_BSON)
 endif ()
 
 
