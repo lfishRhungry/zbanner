@@ -807,6 +807,7 @@ static ConfRes SET_list_range(void *conf, const char *name, const char *value) {
     return Conf_OK;
 }
 
+#ifndef NOT_FOUND_BSON
 static ConfRes SET_parse_bson(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
@@ -818,6 +819,7 @@ static ConfRes SET_parse_bson(void *conf, const char *name, const char *value) {
 
     return Conf_OK;
 }
+#endif
 
 static ConfRes SET_pfring(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
