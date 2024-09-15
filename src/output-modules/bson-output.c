@@ -1,9 +1,11 @@
 #ifndef NOT_FOUND_BSON
 
 #include "output-modules.h"
+#include "bson-output.h"
 
 #include "../util-out/logger.h"
 #include "../util-data/safe-string.h"
+#include "../util-data/fine-malloc.h"
 #include "../pixie/pixie-file.h"
 
 #include <bson/bson.h>
@@ -12,7 +14,29 @@ extern Output BsonOutput; /*for internal x-ref*/
 
 static FILE *file;
 
-// static char format_time[32];
+struct BsonConf {
+    unsigned compact : 1;
+};
+
+static struct BsonConf bson_conf = {0};
+
+static ConfRes SET_compact(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    bson_conf.compact = parseBoolean(value);
+
+    return Conf_OK;
+}
+
+static ConfParam bson_parameters[] = {
+    {"compact-mode",
+     SET_compact,
+     Type_BOOL,
+     {"compact", 0},
+     "Record IP addr as compacted number type instead of string. This will "
+     "reduce the size of the result file."},
+    {0}};
 
 static bool bsonout_init(const OutConf *out) {
     /**
@@ -35,22 +59,35 @@ static bool bsonout_init(const OutConf *out) {
 static void bsonout_result(OutItem *item) {
     bson_t *res_doc = bson_new();
 
-    bool output_port = (item->target.ip_proto == IP_PROTO_TCP ||
-                        item->target.ip_proto == IP_PROTO_UDP ||
-                        item->target.ip_proto == IP_PROTO_SCTP);
-
-    ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
-    ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(item->target.ip_me);
-
-    // iso8601_time_str(format_time, sizeof(format_time), &item->timestamp);
-
     BSON_APPEND_DATE_TIME(res_doc, "time", (uint64_t)item->timestamp * 1000);
     // BSON_APPEND_UTF8(res_doc, "time", format_time);
     BSON_APPEND_UTF8(res_doc, "level", output_level_to_string(item->level));
     BSON_APPEND_UTF8(res_doc, "ip_proto",
                      ip_proto_to_string(item->target.ip_proto));
-    BSON_APPEND_UTF8(res_doc, "ip_them", ip_them_fmt.string);
-    BSON_APPEND_UTF8(res_doc, "ip_me", ip_me_fmt.string);
+    if (bson_conf.compact) {
+        if (item->target.ip_them.version == 4) {
+            BSON_APPEND_INT32(res_doc, "ip_them", item->target.ip_them.ipv4);
+            BSON_APPEND_INT32(res_doc, "ip_me", item->target.ip_me.ipv4);
+        } else {
+            BSON_APPEND_INT64(res_doc, "ipv6_them_hi",
+                              item->target.ip_them.ipv6.hi);
+            BSON_APPEND_INT64(res_doc, "ipv6_them_lo",
+                              item->target.ip_them.ipv6.lo);
+            BSON_APPEND_INT64(res_doc, "ipv6_me_hi",
+                              item->target.ip_me.ipv6.hi);
+            BSON_APPEND_INT64(res_doc, "ipv6_me_lo",
+                              item->target.ip_me.ipv6.lo);
+        }
+    } else {
+        ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
+        ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(item->target.ip_me);
+        BSON_APPEND_UTF8(res_doc, "ip_them", ip_them_fmt.string);
+        BSON_APPEND_UTF8(res_doc, "ip_me", ip_me_fmt.string);
+    }
+
+    bool output_port = (item->target.ip_proto == IP_PROTO_TCP ||
+                        item->target.ip_proto == IP_PROTO_UDP ||
+                        item->target.ip_proto == IP_PROTO_SCTP);
 
     if (output_port) {
         BSON_APPEND_INT32(res_doc, "port_them", item->target.port_them);
@@ -93,7 +130,7 @@ static void bsonout_close(const OutConf *out) {
 Output BsonOutput = {
     .name      = "bson",
     .need_file = 1,
-    .params    = NULL,
+    .params    = bson_parameters,
     .desc =
         "BsonOutput save results in BSON(binary BSON) format to "
         "specified file. BSON is a binary-encoded serialization format used to "
@@ -108,5 +145,93 @@ Output BsonOutput = {
     .result_cb = &bsonout_result,
     .close_cb  = &bsonout_close,
 };
+
+/**
+ * @return is printed successful.
+ */
+static bool print_bson_as_json(const uint8_t *bson_data, size_t bson_size) {
+    char  *json_str;
+    bson_t bson_doc;
+    bool   is_success = true;
+
+    if (!bson_init_static(&bson_doc, bson_data, bson_size)) {
+        LOG(LEVEL_ERROR, "ParseBson: Failed to initialize BSON document.\n");
+        is_success = false;
+        goto bson_to_json_err1;
+    }
+
+    json_str = bson_as_json(&bson_doc, NULL);
+
+    if (json_str) {
+        printf("%s\n", json_str);
+        bson_free(json_str);
+    } else {
+        LOG(LEVEL_ERROR, "ParseBson: Failed to convert BSON to JSON.\n");
+        is_success = false;
+    }
+
+    bson_destroy(&bson_doc);
+
+bson_to_json_err1:
+    return is_success;
+}
+
+void parse_bson_file(const char *filename) {
+
+    FILE *bsonfile = fopen(filename, "rb");
+    if (bsonfile == NULL) {
+        LOG(LEVEL_ERROR, "ParseBson: could not open BSON file %s.\n", filename);
+        perror(filename);
+        return;
+    }
+
+    while (true) {
+        /*read the first 4 bytes as length of a BSON doc*/
+        uint32_t doc_length = 0;
+        size_t   read_size  = fread(&doc_length, 1, 4, bsonfile);
+        if (read_size == 0) {
+            /*EOF*/
+            break;
+        } else if (read_size < 4) {
+            LOG(LEVEL_ERROR,
+                "ParseBson: Incomplete length field. Corrupted file?\n");
+            break;
+        }
+
+        /*get real doc len*/
+        doc_length = BSON_UINT32_FROM_LE(doc_length);
+
+        /*the shortest doc len*/
+        if (doc_length < 5) {
+            LOG(LEVEL_ERROR, "ParseBson: Invalid BSON document length: %u\n",
+                doc_length);
+            break;
+        }
+
+        // read remaining doc data
+        size_t   remaining = doc_length - 4;
+        uint8_t *bson_data = MALLOC(doc_length);
+
+        // contains the len field
+        ((uint32_t *)bson_data)[0] = BSON_UINT32_TO_LE(doc_length);
+
+        read_size = fread(bson_data + 4, 1, remaining, bsonfile);
+        if (read_size < remaining) {
+            LOG(LEVEL_ERROR,
+                "ParseBson: Incomplete BSON document. Expected %zu bytes, got "
+                "%zu bytes.\n",
+                remaining, read_size);
+            FREE(bson_data);
+            break;
+        }
+
+        // print BSON as JSON
+        print_bson_as_json(bson_data, doc_length);
+
+        FREE(bson_data);
+    }
+
+    fclose(bsonfile);
+}
 
 #endif

@@ -65,6 +65,9 @@ enum Operation {
     Operation_PrintVersion,        /* print version and build info*/
     Operation_Selftest,            /* do global regression test*/
     Operation_Benchmark,           /* do global benchmark for key units */
+#ifndef NOT_FOUND_BSON
+    Operation_ParseBson, /*parse BSON result file to JSON format*/
+#endif
 };
 
 struct source_t {
@@ -212,6 +215,13 @@ typedef struct XtateConf {
     unsigned       is_no_bpf          : 1;
     unsigned       is_no_cpu_bind     : 1;
     unsigned       is_static_seed     : 1;
+
+    /**
+     * parse BSON file
+     */
+#ifndef NOT_FOUND_BSON
+    char *bson_file;
+#endif
 
 } XConf;
 

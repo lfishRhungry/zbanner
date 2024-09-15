@@ -807,6 +807,18 @@ static ConfRes SET_list_range(void *conf, const char *name, const char *value) {
     return Conf_OK;
 }
 
+static ConfRes SET_parse_bson(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+
+    xconf->bson_file = STRDUP(value);
+    xconf->op        = Operation_ParseBson;
+
+    return Conf_OK;
+}
+
 static ConfRes SET_pfring(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
@@ -2771,6 +2783,14 @@ ConfParam config_parameters[] = {
      {"if-list", "list-interface", "list-adapter", 0},
      "Do not run, but instead print informations of all adapters in this "
      "machine."},
+#ifndef NOT_FOUND_BSON
+    {"parse-bson-file",
+     SET_parse_bson,
+     Type_NONE,
+     {"parse-bson", "bson-file", "bson", 0},
+     "Parse BSON format result file generated from Bson Output Module to JSON "
+     "format and output to stdout."},
+#endif
 
     {"SCAN MODULES CONFIG", SET_nothing, 0, {0}, NULL},
 

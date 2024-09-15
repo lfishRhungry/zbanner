@@ -734,6 +734,13 @@ int main(int argc, char *argv[]) {
         case Operation_Benchmark:
             xconf_benchmark(XCONF_DFT_BLACKROCK_ROUNDS);
             break;
+
+#ifndef NOT_FOUND_BSON
+#include "output-modules/bson-output.h"
+        case Operation_ParseBson:
+            parse_bson_file(xconf->bson_file);
+            break;
+#endif
     }
 
     /*close logger*/
