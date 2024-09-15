@@ -14,6 +14,8 @@ extern Output BsonOutput; /*for internal x-ref*/
 
 static FILE *file;
 
+static char format_time[32];
+
 struct BsonConf {
     unsigned compact : 1;
 };
@@ -34,8 +36,12 @@ static ConfParam bson_parameters[] = {
      SET_compact,
      Type_BOOL,
      {"compact", 0},
-     "Record IP addr as compacted number type instead of string. This will "
-     "reduce the size of the result file."},
+     "Record time, IP proto, IP addr and level field as compacted number type "
+     "instead of string. This will reduce the size of the result file.\n"
+     "NOTE: IPv4 addr will save as an int32 number. IPv6 addr will save as two"
+     " int64 number. Level field will save to an int32 as 'information' for 0, "
+     "'failure' for 1 and 'success' for 2. Time and IP proto will save as an "
+     "int32 number,."},
     {0}};
 
 static bool bsonout_init(const OutConf *out) {
@@ -59,12 +65,11 @@ static bool bsonout_init(const OutConf *out) {
 static void bsonout_result(OutItem *item) {
     bson_t *res_doc = bson_new();
 
-    BSON_APPEND_DATE_TIME(res_doc, "time", (uint64_t)item->timestamp * 1000);
-    // BSON_APPEND_UTF8(res_doc, "time", format_time);
-    BSON_APPEND_UTF8(res_doc, "level", output_level_to_string(item->level));
-    BSON_APPEND_UTF8(res_doc, "ip_proto",
-                     ip_proto_to_string(item->target.ip_proto));
     if (bson_conf.compact) {
+        BSON_APPEND_DATE_TIME(res_doc, "time",
+                              (uint64_t)item->timestamp * 1000);
+        BSON_APPEND_INT32(res_doc, "level", item->level);
+        BSON_APPEND_INT32(res_doc, "ip_proto", item->target.ip_proto);
         if (item->target.ip_them.version == 4) {
             BSON_APPEND_INT32(res_doc, "ip_them", item->target.ip_them.ipv4);
             BSON_APPEND_INT32(res_doc, "ip_me", item->target.ip_me.ipv4);
@@ -79,6 +84,11 @@ static void bsonout_result(OutItem *item) {
                               item->target.ip_me.ipv6.lo);
         }
     } else {
+        iso8601_time_str(format_time, sizeof(format_time), &item->timestamp);
+        BSON_APPEND_UTF8(res_doc, "time", format_time);
+        BSON_APPEND_UTF8(res_doc, "level", output_level_to_string(item->level));
+        BSON_APPEND_UTF8(res_doc, "ip_proto",
+                         ip_proto_to_string(item->target.ip_proto));
         ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
         ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(item->target.ip_me);
         BSON_APPEND_UTF8(res_doc, "ip_them", ip_them_fmt.string);
