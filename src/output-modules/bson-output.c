@@ -74,14 +74,12 @@ static void bsonout_result(OutItem *item) {
             BSON_APPEND_INT32(res_doc, "ip_them", item->target.ip_them.ipv4);
             BSON_APPEND_INT32(res_doc, "ip_me", item->target.ip_me.ipv4);
         } else {
-            BSON_APPEND_INT64(res_doc, "ipv6_them_hi",
+            BSON_APPEND_INT64(res_doc, "ip_them_hi",
                               item->target.ip_them.ipv6.hi);
-            BSON_APPEND_INT64(res_doc, "ipv6_them_lo",
+            BSON_APPEND_INT64(res_doc, "ip_them_lo",
                               item->target.ip_them.ipv6.lo);
-            BSON_APPEND_INT64(res_doc, "ipv6_me_hi",
-                              item->target.ip_me.ipv6.hi);
-            BSON_APPEND_INT64(res_doc, "ipv6_me_lo",
-                              item->target.ip_me.ipv6.lo);
+            BSON_APPEND_INT64(res_doc, "ip_me_hi", item->target.ip_me.ipv6.hi);
+            BSON_APPEND_INT64(res_doc, "ip_me_lo", item->target.ip_me.ipv6.lo);
         }
     } else {
         iso8601_time_str(format_time, sizeof(format_time), &item->timestamp);
