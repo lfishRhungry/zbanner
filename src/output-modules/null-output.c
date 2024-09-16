@@ -8,7 +8,7 @@ extern Output NullOutput; /*for internal x-ref*/
 
 Output NullOutput = {
     .name      = "null",
-    .need_file = 0,
+    .need_file = false,
     .params    = NULL,
     .desc =
         "NullOutput doesn't save any results and is convenient for debugging. ",

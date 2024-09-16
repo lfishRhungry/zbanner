@@ -136,7 +136,7 @@ static void csv_close(const OutConf *out) {
 
 Output CsvOutput = {
     .name       = "csv",
-    .need_file  = 1,
+    .need_file  = true,
     .params     = NULL,
     .short_desc = "Save results in CSV(Comma-Separated Values) format.",
     .desc = "CsvOutput save results in Comma-Seperated Values(csv) format to "

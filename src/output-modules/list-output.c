@@ -107,7 +107,7 @@ static void list_close(const OutConf *out) {
 
 Output ListOutput = {
     .name       = "list",
-    .need_file  = 1,
+    .need_file  = true,
     .params     = list_parameters,
     .short_desc = "Save IP(Port) list of results.",
     .desc =

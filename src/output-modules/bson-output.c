@@ -138,7 +138,7 @@ static void bsonout_close(const OutConf *out) {
 
 Output BsonOutput = {
     .name       = "bson",
-    .need_file  = 1,
+    .need_file  = true,
     .params     = bson_parameters,
     .short_desc = "Save results in BSON(Binary JSON) format.",
     .desc =

@@ -142,7 +142,7 @@ static void ndjson_close(const OutConf *out) {
 
 Output NdjsonOutput = {
     .name       = "ndjson",
-    .need_file  = 1,
+    .need_file  = true,
     .params     = NULL,
     .short_desc = "Save results in NDJSON format.",
     .desc =

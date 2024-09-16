@@ -97,7 +97,7 @@ typedef struct OutputModule {
     const char *name;
     const char *short_desc; /*an optional short description*/
     const char *desc;
-    unsigned    need_file : 1;
+    bool        need_file;
     ConfParam  *params;
 
     output_modules_init   init_cb;

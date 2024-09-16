@@ -129,7 +129,7 @@ static void text_close(const OutConf *out) {
 
 Output TextOutput = {
     .name      = "text",
-    .need_file = 1,
+    .need_file = true,
     .params    = NULL,
     .desc = "TextOutput save results same as stdout to specified file without "
             "color.",
