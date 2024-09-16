@@ -322,7 +322,7 @@ static bool hellostate_init(const XConf *xconf) {
 static void hellostate_make_hello(DataPass *pass, ProbeState *state,
                                   ProbeTarget *target) {
     datapass_set_data(pass, hellostate_conf.hello, hellostate_conf.hello_len,
-                      0);
+                      false);
 }
 
 static unsigned hellostate_parse_response(DataPass *pass, ProbeState *state,

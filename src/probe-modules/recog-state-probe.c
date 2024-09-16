@@ -271,7 +271,7 @@ static bool recogstate_init(const XConf *xconf) {
 static void recogstate_make_hello(DataPass *pass, ProbeState *state,
                                   ProbeTarget *target) {
     datapass_set_data(pass, recogstate_conf.hello, recogstate_conf.hello_len,
-                      0);
+                      false);
 }
 
 static unsigned recogstate_parse_response(DataPass *pass, ProbeState *state,

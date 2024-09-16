@@ -917,7 +917,7 @@ static void tlsstate_make_hello(DataPass *pass, ProbeState *state,
     tls_state->handshake_state = SSL_get_state(tls_state->ssl);
 
     /*telling underlayer to send ClientHello*/
-    datapass_set_data(pass, tls_state->data, offset, 1);
+    datapass_set_data(pass, tls_state->data, offset, true);
 
     return;
 error1:
@@ -1079,7 +1079,7 @@ static unsigned tlsstate_parse_response(DataPass *pass, ProbeState *state,
                     }
 
                     if (state->state != TSP_STATE_NEED_CLOSE) {
-                        datapass_set_data(pass, tls_state->data, offset, 1);
+                        datapass_set_data(pass, tls_state->data, offset, true);
                         is_continue = false;
                         break;
                     }
@@ -1173,7 +1173,7 @@ static unsigned tlsstate_parse_response(DataPass *pass, ProbeState *state,
                         }
                     }
                     if (state->state != TSP_STATE_NEED_CLOSE) {
-                        datapass_set_data(pass, tls_state->data, offset, 1);
+                        datapass_set_data(pass, tls_state->data, offset, true);
                         pass->is_close = subpass.is_close;
                         state->state   = TSP_STATE_RECV_DATA;
                         is_continue    = false;
@@ -1279,7 +1279,7 @@ static unsigned tlsstate_parse_response(DataPass *pass, ProbeState *state,
                         }
                         if (state->state != TSP_STATE_NEED_CLOSE) {
                             datapass_set_data(pass, tls_state->data, sub_offset,
-                                              1);
+                                              true);
                             pass->is_close = subpass.is_close;
                             state->state   = TSP_STATE_RECV_DATA;
                             is_continue    = false;

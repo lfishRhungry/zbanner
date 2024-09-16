@@ -658,7 +658,7 @@ static void httpstate_make_hello(DataPass *pass, ProbeState *state,
         pass->is_dynamic = 1;
     } else {
         datapass_set_data(pass, (unsigned char *)httpstate_conf.request4,
-                          httpstate_conf.req4_len, 0);
+                          httpstate_conf.req4_len, false);
     }
 }
 

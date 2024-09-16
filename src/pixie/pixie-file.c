@@ -10,8 +10,7 @@
 #include <errno.h>
 #endif
 
-int pixie_fopen_shareable(FILE **in_fp, const char *filename,
-                          unsigned is_append) {
+int pixie_fopen_shareable(FILE **in_fp, const char *filename, bool is_append) {
     FILE *fp;
 
     *in_fp = NULL;

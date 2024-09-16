@@ -58,7 +58,7 @@ static void getstate_make_hello(DataPass *pass, ProbeState *state,
     LOG(LEVEL_INFO, "(GetState Probe making hello) >>>\n");
     /*static data and don't close the conn*/
     datapass_set_data(pass, (unsigned char *)GET_STATE_PAYLOAD,
-                      strlen(GET_STATE_PAYLOAD), 0);
+                      strlen(GET_STATE_PAYLOAD), false);
 }
 
 static unsigned getstate_parse_response(DataPass *pass, ProbeState *state,

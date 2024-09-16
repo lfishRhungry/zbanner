@@ -2,6 +2,7 @@
 #define PROTO_DATAPASS_H
 
 #include <stdio.h>
+#include "../util-misc/cross.h"
 
 /**
  * DataPass is a media of different protocol layer to pass data
@@ -25,6 +26,6 @@ typedef struct PassedData {
  * !set `is_close` by yourself
  */
 void datapass_set_data(DataPass *pass, unsigned char *data, size_t len,
-                       unsigned is_dynamic);
+                       bool is_dynamic);
 
 #endif
