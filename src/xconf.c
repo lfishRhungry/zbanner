@@ -2936,9 +2936,13 @@ ConfParam config_parameters[] = {
      Type_BOOL,
      {"no-escape", 0},
      "Use no escaped chars for unprintable chars while normalizing in data "
-     "chains of result outputing.\n"
-     "NOTE: use no escaped chars means to escape the escaped chars like "
-     "'\\x00\\x01' to '\\\\x00\\\\x01'"},
+     "chains of result outputing. This will get valid JSON compatible string "
+     "values.\n"
+     "NOTE1: use no escaped chars means to escape the escaped chars like "
+     "'\\x00\\x01' to '\\\\x00\\\\x01'\n"
+     "NOTE2: Some output modules could accept escaped chars and will escape "
+     "unprinted chars automaticlly(e.g. Bson Output Module). So don't use the "
+     "flag for those modules or we'll get weired string results."},
 
     {"GENERATE MODULES CONFIG", SET_nothing, 0, {0}, NULL},
 
