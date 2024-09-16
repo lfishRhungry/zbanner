@@ -255,6 +255,7 @@ typedef struct ProbeModule {
     const unsigned  multi_num;
     /*just for statefull scan*/
     unsigned        hello_wait;
+    const char     *short_desc; /*an optional short description*/
     const char     *desc;
     ConfParam      *params;
 

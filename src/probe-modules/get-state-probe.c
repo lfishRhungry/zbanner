@@ -98,8 +98,10 @@ Probe GetStateProbe = {
     .multi_num  = 1,
     .hello_wait = 0,
     .params     = getstate_parameters,
+    .short_desc = "A probe that sends HTTP GET request to test and debug "
+                  "stateful TCP scan",
     .desc =
-        "GetState Probe sends target port a simple HTTP HTTP Get request:\n"
+        "GetState Probe sends target port a simple HTTP GET request:\n"
         "    `GET / HTTP/1.0\\r\\n\\r\\n`\n"
         "And could get a simple result from http server fastly. GetState is "
         "the "

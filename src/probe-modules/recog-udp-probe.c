@@ -299,6 +299,7 @@ Probe RecogUdpProbe = {
     .multi_mode = Multi_Null,
     .multi_num  = 1,
     .params     = recogudp_parameters,
+    .short_desc = "Try to match Recog fingerprints in UDP scan.",
     .desc =
         "RecogUdpProbe is the udp version of RecogProbe. RecogUdpProbe"
         " use static content set by user as hello data and match the "

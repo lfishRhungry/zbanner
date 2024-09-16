@@ -9,6 +9,8 @@ Probe NullProbe = {
     .multi_mode = Multi_Null,
     .multi_num  = 1,
     .params     = NULL,
+    .short_desc =
+        "Send nothing and just wait for response in stateless TCP scan.",
     .desc =
         "NullProbe does not send any data to target port. It just wait banner "
         "from server. However, waiting is the cheapest thing while we are in "

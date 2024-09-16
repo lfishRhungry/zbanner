@@ -29,6 +29,8 @@ Probe CloseStateProbe = {
     .multi_num  = 1,
     .hello_wait = 0,
     .params     = NULL,
+    .short_desc = "Send nothing and just close lower-layer connection in "
+                  "stateful TCP scan.",
     .desc =
         "CloseState Probe does nothing but close after lower level connection "
         "established. It's useful when we just want to obtain some information "

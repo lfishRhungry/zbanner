@@ -326,13 +326,13 @@ Probe DnsProbe = {
     .multi_mode = Multi_Null,
     .multi_num  = 1,
     .params     = dns_parameters,
+    .short_desc = "Do specified DNS record request.",
     .desc =
         "DnsProbe sends a dns request specified by user to target udp port and "
         "expects a dns reply. DnsProbe is used for scanning multiple dns "
         "servers"
         " by one type request, instead of doing multiple dns requests to one "
-        "dns"
-        " server.\n"
+        "dns server.\n"
         "NOTE: If we have not added iptables rules to ban the outwards ICMP "
         "Port"
         " Unreachable sending, dns response retransmission will happen and "

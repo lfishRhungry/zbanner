@@ -54,8 +54,7 @@ Probe LzrMemcachedBinaryProbe = {
     .multi_num  = 1,
     .params     = NULL,
     .desc = "LzrMemcachedBinary Probe sends a Memcached Binary request and "
-            "identifies"
-            " Memcached Binary service.",
+            "identifies Memcached Binary service.",
 
     .init_cb               = &probe_init_nothing,
     .make_payload_cb       = &lzr_memb_make_payload,

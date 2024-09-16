@@ -431,6 +431,8 @@ Probe HelloStateProbe = {
     .multi_num  = 1,
     .hello_wait = 0,
     .params     = hellostate_parameters,
+    .short_desc =
+        "Send user-specified payload and get response in stateful TCP scan.",
     .desc =
         "HelloStateProbe is the stateful version of HelloPorbe, it uses static"
         " content set by user as hello data and reports banner. It is used to "

@@ -76,7 +76,10 @@ void list_all_output_modules() {
         printf("\n");
         printf("  Name of OutputModule: %s\n", output_modules_list[i]->name);
         printf("  Description:\n");
-        xprint(output_modules_list[i]->desc, 6, 80);
+        xprint(output_modules_list[i]->short_desc
+                   ? output_modules_list[i]->short_desc
+                   : output_modules_list[i]->desc,
+               6, 80);
         printf("\n");
         printf("\n");
     }

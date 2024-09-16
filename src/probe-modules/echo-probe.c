@@ -38,13 +38,13 @@ Probe EchoProbe = {
     .multi_mode = Multi_Null,
     .multi_num  = 1,
     .params     = NULL,
+    .short_desc = "UDP scan with 4 random bytes payload.",
     .desc =
         "EchoProbe sends 4 bytes of random data to target udp port and expects "
         "response that contains our random data.\n"
         "EchoProbe could be used for finding UDP echo service or alive hosts "
         "by icmp port unreachable messages. Its `validate_reponsed_cb` cannot "
-        "be "
-        "used when making a ScanModule if you like.",
+        "be used when making a ScanModule if you like.",
 
     .init_cb              = &probe_init_nothing,
     .make_payload_cb      = &echo_make_payload,

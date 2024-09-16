@@ -705,6 +705,8 @@ Probe HttpProbe = {
     .multi_mode = Multi_Null,
     .multi_num  = 1,
     .params     = http_parameters,
+    .short_desc = "Send user-specified HTTP request and get response in "
+                  "stateless TCP scan.",
     .desc =
         "HttpProbe sends target port a user-defined HTTP request and save the "
         "response. Default HTTP request is based on:\n\n"

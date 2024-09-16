@@ -340,6 +340,7 @@ Probe RecogStateProbe = {
     .multi_num  = 1,
     .hello_wait = 0,
     .params     = recogstate_parameters,
+    .short_desc = "Try to match Recog fingerprints in stateful TCP scan.",
     .desc =
         "RecogStateProbe is the stateful version of RecogProbe. RecogStateProbe"
         " use static content set by user as hello data and match the "

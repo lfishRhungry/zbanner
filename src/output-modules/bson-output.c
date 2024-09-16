@@ -2,6 +2,7 @@
 
 #include "output-modules.h"
 #include "bson-output.h"
+#include "../version.h"
 
 #include "../util-out/logger.h"
 #include "../util-data/safe-string.h"
@@ -136,17 +137,21 @@ static void bsonout_close(const OutConf *out) {
 }
 
 Output BsonOutput = {
-    .name      = "bson",
-    .need_file = 1,
-    .params    = bson_parameters,
+    .name       = "bson",
+    .need_file  = 1,
+    .params     = bson_parameters,
+    .short_desc = "Save results in BSON(Binary JSON) format.",
     .desc =
-        "BsonOutput save results in BSON(binary BSON) format to "
+        "BsonOutput save results in BSON(Binary JSON) format to "
         "specified file. BSON is a binary-encoded serialization format used to "
         "store and exchange data in a compact and efficient way. It is similar "
         "to JSON but stores data in a binary format, making it more efficient "
         "for data storage and transmission.\n"
         "NOTE1: BsonOutput saves every results as a BSON document to file.\n "
         "NOTE2: BsonOutput could save binary type of fields in results.\n"
+        "NOTE3: " XTATE_NAME_TITLE_CASE
+        " could decode BSON result file to JSON format with `--parse-bson` "
+        "parameter. Or we can use bsondump tool to decode it.\n"
         "Dependencies: libbson.",
 
     .init_cb   = &bsonout_init,

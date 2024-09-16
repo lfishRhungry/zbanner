@@ -90,6 +90,7 @@ Scanner ArpReqScan = {
     .support_timeout     = 1,
     .params              = NULL,
     .bpf_filter          = "arp && arp[6:2]==2", /*arp reply*/
+    .short_desc          = "ARP scan for local network.",
     .desc = "ArpReqScan sends an ARP Request packet to broadcast mac addr"
             "(all one) with target ipv4 addr we request. Expect an ARP Reply "
             "packet "

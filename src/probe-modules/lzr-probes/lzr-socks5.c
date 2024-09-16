@@ -83,8 +83,7 @@ Probe LzrSocks5Probe = {
     .multi_num  = 1,
     .params     = NULL,
     .desc       = "LzrSocks5 Probe sends an socks5 probe with google.com http "
-                  "request and "
-                  "identifies socks5 service.",
+                  "request and identifies socks5 service.",
 
     .init_cb               = &probe_init_nothing,
     .make_payload_cb       = &lzr_socks5_make_payload,

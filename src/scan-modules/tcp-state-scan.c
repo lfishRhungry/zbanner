@@ -396,6 +396,7 @@ Scanner TcpStateScan = {
     .support_timeout     = 0,
     .bpf_filter          = "tcp",
     .params              = tcpstate_parameters,
+    .short_desc          = "Stateful TCP scan with specified ProbeModule.",
     .desc =
         "TcpStateScan tries to contruct TCP conn with target port with a "
         "hybrid-state"

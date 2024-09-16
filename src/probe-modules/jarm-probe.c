@@ -232,13 +232,13 @@ Probe JarmProbe = {
     .multi_mode = Multi_AfterHandle,
     .multi_num  = 10,
     .params     = jarm_parameters,
+    .short_desc = "Try to get unhashed JARM fingerprints.",
     .desc = "Jarm Probe sends 10 various TLS ClientHello probes in total if "
             "the first "
             "response represents the target port is running TLS protocol. "
             "Results can "
             "be analyzed to get JARM fingerprint of the target TLS stack for "
-            "different "
-            "purposes.\n"
+            "different purposes.\n"
             "Dependencies: OpenSSL.",
 
     .init_cb               = &probe_init_nothing,

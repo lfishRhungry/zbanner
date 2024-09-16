@@ -397,8 +397,11 @@ Probe LzrProbe = {
     .multi_mode = Multi_DynamicNext,
     .multi_num  = 1,
     .params     = lzr_parameters,
+    .short_desc = "",
+    .short_desc = "An implementation of LZR-like service identifier "
+                  "in " XTATE_NAME_TITLE_CASE ".",
     .desc =
-        "LzrProbe is an implementation of LZR( a service identifier) "
+        "LzrProbe is an implementation of LZR-like service identifier "
         "in " XTATE_NAME_TITLE_CASE
         ". It sends a serias specified LZR handshakes"
         "(subprobes) until identified the service by matching responsed data "

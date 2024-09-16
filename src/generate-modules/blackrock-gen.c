@@ -196,8 +196,10 @@ void blackrock_close() {
 }
 
 Generator BlackRockGen = {
-    .name   = "blackrock",
-    .params = blackrock_parameters,
+    .name       = "blackrock",
+    .params     = blackrock_parameters,
+    .short_desc = "Default GenerateModule for randomizing scan targets(both "
+                  "IPs and ports).",
     .desc =
         "BlackRock module randomizes ip*port that user set through commandline "
         "or file and generates ip:port in a dispersed way to reduce the "

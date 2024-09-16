@@ -80,6 +80,7 @@ typedef void (*generate_modules_close)();
 
 typedef struct GenerateModule {
     const char *name;
+    const char *short_desc; /*an optional short description*/
     const char *desc;
     ConfParam  *params;
     /**

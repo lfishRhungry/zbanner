@@ -759,6 +759,8 @@ Probe HttpStateProbe = {
     .multi_num  = 1,
     .hello_wait = 0,
     .params     = httpstate_parameters,
+    .short_desc = "Send user-specified HTTP request and get response in "
+                  "stateful TCP scan.",
     .desc =
         "HttpStateProbe is the stateful version of HttpProbe, it sends target "
         "port a user-defined HTTP request and save the response. Default HTTP "

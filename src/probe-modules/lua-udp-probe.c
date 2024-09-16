@@ -604,6 +604,7 @@ Probe LuaUdpProbe = {
     .multi_mode = Multi_Null,
     .multi_num  = 1,
     .params     = luaudp_parameters,
+    .short_desc = "Use user-defined LUA script to do UDP scan.",
     .desc       = LUA_PROBE_NAME
     " let a specifies proper lua script as a " LUA_PROBE_TYPE " type probe. It "
     "will save a lot of time for us to write simple probes or test ideas. "

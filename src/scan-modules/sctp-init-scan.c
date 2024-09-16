@@ -139,6 +139,7 @@ Scanner SctpInitScan = {
     /*sctp init or init ack in ipv4 & ipv6*/
     .bpf_filter          = "(ip && sctp && (sctp[12]==2 || sctp[12]==6)) "
                            "|| (ip6 && sctp && (ip6[40+12]==2 || ip6[40+12]==6))",
+    .short_desc          = "SCTP INIT scan to find open or closed SCTP port.",
     .desc = "SctpInitScan sends an SCTP INIT packet(chunk) to target port. "
             "Expect an "
             "INIT ACK response to believe the port is open or an ABORT for "

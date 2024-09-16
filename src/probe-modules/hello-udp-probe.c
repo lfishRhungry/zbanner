@@ -343,6 +343,7 @@ Probe HelloUdpProbe = {
     .multi_mode = Multi_Null,
     .multi_num  = 1,
     .params     = helloudp_parameters,
+    .short_desc = "Send user-specified payload and get response in UDP scan.",
     .desc = "HelloUdpProbe is the udp version of HelloPorbe, it uses static"
             " content set by user as hello data and reports banner if it "
             "matches regex"

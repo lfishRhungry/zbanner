@@ -533,6 +533,8 @@ Probe TlsHelloProbe = {
     .multi_mode = Multi_Null,
     .multi_num  = 1,
     .params     = tlshello_parameters,
+    .short_desc = "Try to get TLS Server Hello and identify the version or do "
+                  "regex matching.",
     .desc =
         "TlsHello Probe sends an simple version-universal ClientHello and "
         "gets the first response from target port. It tries to identify if "

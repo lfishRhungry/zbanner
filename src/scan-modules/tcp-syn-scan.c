@@ -246,6 +246,7 @@ Scanner TcpSynScan = {
                            "tcp[tcpflags]==tcp-rst)) "
                            "|| (ip6 && tcp && (ip6[40+13]==(tcp-syn|tcp-ack) || "
                            "ip6[40+13]==tcp-rst))",
+    .short_desc          = "Default ScanModule for TCP SYN scan.",
     .desc = "TcpSynScan sends a TCP SYN packet to target port. Expect a SYNACK "
             "response to believe the port is open or an RST for closed in TCP "
             "protocol.\n"

@@ -635,6 +635,7 @@ Scanner ZBannerScan = {
     .bpf_filter =
         "(ip && tcp && (tcp[tcpflags]|tcp-ack!=0 || tcp[tcpflags]==tcp-rst)) "
         "|| (ip6 && tcp && (ip6[40+13]|tcp-ack!=0 || ip6[40+13]==tcp-rst))",
+    .short_desc = "Stateless TCP scan with specified ProbeModule.",
     .desc =
         "ZBannerScan tries to contruct TCP conn with target port and send data "
         "from specified ProbeModule. Data in first reponse packet will be "

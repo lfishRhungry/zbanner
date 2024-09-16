@@ -160,9 +160,10 @@ static void json_close(const OutConf *out) {
 }
 
 Output JsonOutput = {
-    .name      = "json",
-    .need_file = 1,
-    .params    = NULL,
+    .name       = "json",
+    .need_file  = 1,
+    .params     = NULL,
+    .short_desc = "Save results in pretty JSON format.",
     .desc =
         "JsonOutput save results in json format in pretty style to "
         "specified file.\n"

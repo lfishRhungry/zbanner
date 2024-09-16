@@ -95,6 +95,7 @@ typedef void (*output_modules_close)(const OutConf *out);
 
 typedef struct OutputModule {
     const char *name;
+    const char *short_desc; /*an optional short description*/
     const char *desc;
     unsigned    need_file : 1;
     ConfParam  *params;

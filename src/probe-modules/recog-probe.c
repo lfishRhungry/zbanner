@@ -314,11 +314,11 @@ Probe RecogProbe = {
     .multi_mode = Multi_Null,
     .multi_num  = 1,
     .params     = recog_parameters,
+    .short_desc = "Try to match Recog fingerprints in stateless TCP scan.",
     .desc =
         "RecogProbe use static content set by user as hello data and match the "
         "response with specified Recog fingerprints. It's a proof of concept "
-        "for"
-        " service version detection.\n"
+        "for service version detection.\n"
         "NOTE1: Recog fingerprints are adapted for specific part of response "
         "data"
         " like html title, http cookie and etc. But RecogProbe doesn't prepare"
@@ -329,10 +329,8 @@ Probe RecogProbe = {
         " to solve most cases. Implement your own probes if you want a more "
         "accurate results.\n"
         "NOTE2: I found the order of fingerprints in recog xml file would "
-        "affect"
-        " the identidying result because our probe just output the first "
-        "matched"
-        " result.\n"
+        "affect the identidying result because our probe just output the first "
+        "matched result.\n"
         "Dependencies: PCRE2, LibXml2.",
 
     .init_cb               = &recog_init,

@@ -1330,6 +1330,7 @@ Probe TlsStateProbe = {
     .multi_num  = 1,
     .hello_wait = 0,
     .params     = tlsstate_parameters,
+    .short_desc = "Do TLS upper-layer scan with specified probe.",
     .desc =
         "TlsState Probe emulates SSL/TLS layer by OpenSSL BIO machanism. "
         "It is used with TcpState ScanModule to perform TLS probing based on "

@@ -397,6 +397,7 @@ Scanner UdpScan = {
     /*udp and icmp port unreachable in ipv4 & ipv6*/
     .bpf_filter          = "udp || (icmp && icmp[0]==3 && icmp[1]==3) "
                            "|| (icmp6 && icmp6[0]==1 && icmp6[1]==4)",
+    .short_desc          = "Single-packet UDP scan with specified ProbeModule.",
     .desc =
         "UdpScan sends a udp packet with ProbeModule data to target port "
         "and expects a udp response to believe the port is open or an icmp "

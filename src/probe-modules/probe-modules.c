@@ -229,7 +229,10 @@ void list_all_probe_modules() {
         printf("\n");
         printf("  ProbeModule Name: %s\n", probe_modules_list[i]->name);
         printf("  Description:\n");
-        xprint(probe_modules_list[i]->desc, 6, 80);
+        xprint(probe_modules_list[i]->short_desc
+                   ? probe_modules_list[i]->short_desc
+                   : probe_modules_list[i]->desc,
+               6, 80);
         printf("\n");
         printf("\n");
     }

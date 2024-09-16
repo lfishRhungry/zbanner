@@ -386,6 +386,8 @@ Probe HelloProbe = {
     .multi_mode = Multi_Null,
     .multi_num  = 1,
     .params     = hello_parameters,
+    .short_desc =
+        "Send user-specified payload and get response in stateless TCP scan.",
     .desc =
         "HelloProbe use static content set by user as hello data and reports "
         "banner. We can set hello data in different format and set a regex to "

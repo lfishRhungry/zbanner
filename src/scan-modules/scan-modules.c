@@ -57,7 +57,10 @@ void list_all_scan_modules() {
         printf("\n");
         printf("  Name of ScanModule:  %s\n", scan_modules_list[i]->name);
         printf("  Description:\n");
-        xprint(scan_modules_list[i]->desc, 6, 80);
+        xprint(scan_modules_list[i]->short_desc
+                   ? scan_modules_list[i]->short_desc
+                   : scan_modules_list[i]->desc,
+               6, 80);
         printf("\n");
         printf("\n");
     }

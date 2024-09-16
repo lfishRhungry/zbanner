@@ -295,6 +295,8 @@ Probe NmapTcpProbe = {
     .multi_mode = Multi_DynamicNext,
     .multi_num  = 1,
     .params     = nmapservice_parameters,
+    .short_desc = "Try to implement Nmap-like service identification with "
+                  "specified fingerprints file.",
     .desc =
         "NmapTcp Probe sends payloads from specified nmap-service-probes "
         "file and identifies service and version of target tcp port just like "

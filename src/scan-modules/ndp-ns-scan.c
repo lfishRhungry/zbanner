@@ -135,6 +135,7 @@ Scanner NdpNsScan = {
     .params              = ndpns_parameters,
     /*ndp neighbor advertisement*/
     .bpf_filter          = "icmp6 && (icmp6[0]==136 && icmp6[1]==0)",
+    .short_desc          = "NDP scan for local network.",
     .desc =
         "NdpNsScan sends an NDP(ICMPv6) Neighbor Solicitation to IPv6 target "
         "host(actually `the solicited-node multicast address`). Expect an NDP"

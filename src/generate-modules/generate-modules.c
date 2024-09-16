@@ -40,7 +40,10 @@ void list_all_generate_modules() {
         printf("\n");
         printf("  GenerateModule Name: %s\n", generate_modules_list[i]->name);
         printf("  Description:\n");
-        xprint(generate_modules_list[i]->desc, 6, 80);
+        xprint(generate_modules_list[i]->short_desc
+                   ? generate_modules_list[i]->short_desc
+                   : generate_modules_list[i]->desc,
+               6, 80);
         printf("\n");
         printf("\n");
     }

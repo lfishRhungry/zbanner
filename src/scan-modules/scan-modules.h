@@ -246,6 +246,7 @@ typedef struct ScanModule {
     const char     *bpf_filter;
     ConfParam      *params;
     Probe          *probe;
+    const char     *short_desc; /*an optional short description*/
     const char     *desc;
 
     /*for init*/

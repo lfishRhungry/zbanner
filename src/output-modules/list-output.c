@@ -106,9 +106,10 @@ static void list_close(const OutConf *out) {
 }
 
 Output ListOutput = {
-    .name      = "list",
-    .need_file = 1,
-    .params    = list_parameters,
+    .name       = "list",
+    .need_file  = 1,
+    .params     = list_parameters,
+    .short_desc = "Save IP(Port) list of results.",
     .desc =
         "ListOutput save results just in \"IP port\" format to specified file "
         "without any other information.",
