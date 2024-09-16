@@ -201,8 +201,6 @@ You can write your own output module for better saving.
 GenerateModule or Generator is an abstraction for scan targets generation. It makes target generation extensible and flexible.
 I expect that users can design their own target generation algorithms, or method like gererating from database or files, even design it with OutputModule together.
 
-The default Generator is the one extracted from Masscan.
-
 
 ## Helps in Detail
 
@@ -264,10 +262,10 @@ xtate --help-gen <module-name>
 
 ## Scan Rate
 
-Xtate could do scan with a high-speed send rate like ZMap and Masscan.
+Xtate could do scan with a high-speed send rate like ZMap and Masscan but with more functions.
 All those tools work on similar sending way like raw socket, libpcap(winpcap) or zero-copy(PFRING/netmap).
 
-Xtate inherent the packet sending way of Masscan which contains libpcap/winpcap and PFRING.
+Xtate inherent and improve the packet sending way of Masscan which contains multi-thread libpcap/winpcap and PFRING.
 And it randomizes the target IP addresses so that it shouldn't overwhelm any distant network.
 Xtate could event randomize the source IPv4/IPv6 addresses if needed(Yes, I fixed).
 
@@ -276,7 +274,7 @@ When scanning the IPv4 Internet, you'll be scanning lots of subnets, so even tho
 
 However, with IPv6 scanning, you'll tend to focus on a single target subnet with billions of addresses.
 Thus, your default behavior will overwhelm the target network.
-Networks often crash under the load that masscan can generate.
+Networks often crash under the load that xtate can generate.
 
 In addition, Xtate support LAN mode to do NDP or ARP scan.
 Set a proper scan rate when operate on your own network.
