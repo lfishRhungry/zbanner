@@ -272,10 +272,18 @@ DataLink *dach_printf(DataChain *dach, const char *name, LinkType type,
                       const char *fmt, ...);
 
 /**
+ * Use no escape char for unprinted chars while normalizing the data. This is a
+ * previous setting before starting all data chain.
+ * NOTE: no escaped char means escape the escaped chars like '\x00' to '\\x00'
+ */
+void dach_no_escape_char();
+
+/**
  * Append after removing bad characters, especially new lines and HTML
  * control codes for data type link.
  * If this exceeds the buffer, then the buffer will be expanded.
- * NOTE: The normalized string is not standard for JSON string value...
+ * NOTE: The normalized string is not standard for JSON string value if use
+ * escaped char...
  * @param link expected link and must not be NULL
  * @param length len of px, can be DACH_AUTO_LEN if px is c string.
  * @return target link after append.
@@ -288,7 +296,8 @@ DataLink *dach_append_normalized_by_link(DataLink *link, const void *px,
  * control codes for data type link.
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
- * NOTE: The normalized string is not standard for JSON string value...
+ * NOTE: The normalized string is not standard for JSON string value if use
+ * escaped char...
  * @param length len of px, can be DACH_AUTO_LEN if px is c string.
  * @return target link after append.
  */

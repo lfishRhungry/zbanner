@@ -480,6 +480,12 @@ DataLink *dach_printf(DataChain *dach, const char *name, LinkType type,
 
 /***************************************************************************
  ***************************************************************************/
+static bool no_escape_char = false;
+
+void dach_no_escape_char() { no_escape_char = true; }
+
+/***************************************************************************
+ ***************************************************************************/
 DataLink *dach_append_normalized_by_link(DataLink *link, const void *px,
                                          size_t length) {
     int c;
@@ -490,7 +496,11 @@ DataLink *dach_append_normalized_by_link(DataLink *link, const void *px,
             c != '\\' && c != '"' && c != '\'') {
             link = dach_append_char_by_link(link, c);
         } else {
-            link = dach_append_by_link(link, "\\x", 2);
+            if (no_escape_char) {
+                link = dach_append_by_link(link, "\\\\x", 3);
+            } else {
+                link = dach_append_by_link(link, "\\x", 2);
+            }
             link = dach_append_char_by_link(link, HEX_ARRAY[(c >> 4) & 0xF]);
             link = dach_append_char_by_link(link, HEX_ARRAY[(c >> 0) & 0xF]);
         }

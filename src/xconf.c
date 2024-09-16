@@ -603,6 +603,22 @@ static ConfRes SET_no_color(void *conf, const char *name, const char *value) {
     return Conf_OK;
 }
 
+static ConfRes SET_no_escape(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        if (xconf->no_escape_char || xconf->echo_all) {
+            fprintf(xconf->echo, "no-escape = %s\n",
+                    xconf->out_conf.no_color ? "true" : "false");
+        }
+        return 0;
+    }
+
+    xconf->no_escape_char = parseBoolean(value);
+    dach_no_escape_char();
+
+    return Conf_OK;
+}
+
 static ConfRes SET_print_status(void *conf, const char *name,
                                 const char *value) {
     XConf *xconf = (XConf *)conf;
@@ -2915,6 +2931,14 @@ ConfParam config_parameters[] = {
      {"nc", 0},
      "Print result to the screen without color. Some old terminal does not "
      "support escapsed characters of ANSI for color."},
+    {"no-escape-char",
+     SET_no_escape,
+     Type_BOOL,
+     {"no-escape", 0},
+     "Use no escaped chars for unprintable chars while normalizing in data "
+     "chains of result outputing.\n"
+     "NOTE: use no escaped chars means to escape the escaped chars like "
+     "'\\x00\\x01' to '\\\\x00\\\\x01'"},
 
     {"GENERATE MODULES CONFIG", SET_nothing, 0, {0}, NULL},
 

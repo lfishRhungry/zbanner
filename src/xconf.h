@@ -215,6 +215,7 @@ typedef struct XtateConf {
     unsigned       is_no_bpf          : 1;
     unsigned       is_no_cpu_bind     : 1;
     unsigned       is_static_seed     : 1;
+    unsigned       no_escape_char     : 1;
 
     /**
      * parse BSON file
