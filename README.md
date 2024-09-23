@@ -318,7 +318,14 @@ Dependent libraries for running:
 All of them can be installed on Windows in some way you like but always easier on Linux like Ubuntu22:
 
 ```
-sudo apt install libpcap-dev libssl-dev libpcre2-dev libxml2-dev liblua5.X-0 libjudy-dev
+sudo apt install \
+libpcap-dev \
+libssl-dev \
+libpcre2-dev \
+libxml2-dev \
+liblua5.X-0 \
+libjudy-dev \
+libbson-dev
 ```
 
 Use `xtate --version` to check details of version, binary info after building.
