@@ -3646,7 +3646,8 @@ void xconf_print_version() {
 
 #ifndef NOT_FOUND_OPENSSL
 #include <openssl/opensslv.h>
-    printf("    OpenSSL  " OPENSSL_FULL_VERSION_STR OPENSSL_RELEASE_DATE "\n");
+    /*This macro is backward compatible*/
+    printf("    OpenSSL  %s\n", &OPENSSL_VERSION_TEXT[8]);
 #else
     printf("    OpenSSL  (null)\n");
 #endif
