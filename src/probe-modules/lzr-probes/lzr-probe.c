@@ -397,7 +397,6 @@ Probe LzrProbe = {
     .multi_mode = Multi_DynamicNext,
     .multi_num  = 1,
     .params     = lzr_parameters,
-    .short_desc = "",
     .short_desc = "An implementation of LZR-like service identifier "
                   "in " XTATE_NAME_TITLE_CASE ".",
     .desc =
