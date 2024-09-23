@@ -2628,7 +2628,8 @@ ConfParam config_parameters[] = {
      {"iL", 0},
      "Reads in a list of ranges from specified file to scan, in the same "
      "target format described above for IP addresses and ranges. This file "
-     "can contain millions of addresses and ranges."},
+     "can contain millions of addresses and ranges.\n"
+     "NOTE: we can use `-` to read range lists from stdin."},
     {"exclude",
      SET_exclude_ip,
      Type_NONE,
@@ -2899,7 +2900,7 @@ ConfParam config_parameters[] = {
      "Specifies a \"file\" name for selected OutputModule. The meaning of "
      "\"file\" name can be variable for different OutputModule. (e.g. It can "
      "be a database connecting string)\n"
-     "NOTE: For some OutputModules, we can use `-o '-'` to let them output to "
+     "NOTE: For some OutputModules, we can use `-o -` to let them output to "
      "stdout. But we should be care of the stdout outputting conflict "
      "especially the `-interact` flag."},
     {"append-output",
