@@ -2626,9 +2626,10 @@ ConfParam config_parameters[] = {
      SET_include_file,
      Type_NONE,
      {"iL", 0},
-     "Reads in a list of ranges from specified file to scan, in the same "
-     "target format described above for IP addresses and ranges. This file "
-     "can contain millions of addresses and ranges.\n"
+     "Read in a list of ranges from specified file in the same target format "
+     "described above for IP addresses and ranges. These range lists is for "
+     "some GenerateModules and this file can contain millions of addresses and "
+     "ranges.\n"
      "NOTE: we can use `-` to read range lists from stdin."},
     {"exclude",
      SET_exclude_ip,
