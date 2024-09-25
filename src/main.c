@@ -133,13 +133,12 @@ static int _main_scan(XConf *xconf) {
     if (xconf->generator_args && xconf->generator->params) {
         if (set_parameters_from_substring(NULL, xconf->generator->params,
                                           xconf->generator_args)) {
-            LOG(LEVEL_ERROR,
-                "errors happened in sub param parsing of GenerateModule.\n");
+            LOG(LEVEL_ERROR, "sub param parsing of GenerateModule.\n");
             exit(1);
         }
     }
     if (!xconf->generator->init_cb(xconf)) {
-        LOG(LEVEL_ERROR, "errors happened in global init of GenerateModule.\n");
+        LOG(LEVEL_ERROR, "global init of GenerateModule.\n");
         exit(1);
     }
 
@@ -242,13 +241,12 @@ static int _main_scan(XConf *xconf) {
     if (xconf->scanner_args && xconf->scanner->params) {
         if (set_parameters_from_substring(NULL, xconf->scanner->params,
                                           xconf->scanner_args)) {
-            LOG(LEVEL_ERROR,
-                "errors happened in sub param parsing of ScanModule.\n");
+            LOG(LEVEL_ERROR, "sub param parsing of ScanModule.\n");
             exit(1);
         }
     }
     if (!xconf->scanner->init_cb(xconf)) {
-        LOG(LEVEL_ERROR, "errors happened in global init of ScanModule.\n");
+        LOG(LEVEL_ERROR, "global init of ScanModule.\n");
         exit(1);
     }
 
@@ -259,14 +257,13 @@ static int _main_scan(XConf *xconf) {
         if (xconf->probe_args && xconf->probe->params) {
             if (set_parameters_from_substring(NULL, xconf->probe->params,
                                               xconf->probe_args)) {
-                LOG(LEVEL_ERROR,
-                    "errors happened in sub param parsing of ProbeModule.\n");
+                LOG(LEVEL_ERROR, "sub param parsing of ProbeModule.\n");
                 exit(1);
             }
         }
 
         if (!xconf->probe->init_cb(xconf)) {
-            LOG(LEVEL_ERROR, "errors in ProbeModule global initializing\n");
+            LOG(LEVEL_ERROR, "ProbeModule global initializing\n");
             exit(1);
         }
     }
@@ -275,7 +272,7 @@ static int _main_scan(XConf *xconf) {
      * Do init for OutputModule
      */
     if (!output_init(&xconf->out_conf)) {
-        LOG(LEVEL_ERROR, "errors in OutputModule initializing\n");
+        LOG(LEVEL_ERROR, "OutputModule initializing\n");
         exit(1);
     }
 

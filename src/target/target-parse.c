@@ -925,7 +925,7 @@ int targetip_parse_file(TargetIP *targetip, const char *filename) {
      * config, not this deep in the code. */
     if (filename == 0 || filename[0] == '\0') {
         LOG(LEVEL_ERROR, "missing filename for ranges\n");
-        exit(1);
+        return -1;
     }
 
     /*
@@ -937,9 +937,9 @@ int targetip_parse_file(TargetIP *targetip, const char *filename) {
     } else {
         fp = fopen(filename, "rb");
         if (fp == NULL) {
-            LOG(LEVEL_ERROR, "parsing IP addresses\n");
-            LOG(LEVEL_ERROR, "%s: %s\n", filename, strerror(errno));
-            exit(1);
+            LOG(LEVEL_ERROR, "(addr parsing) %s: %s\n", filename,
+                strerror(errno));
+            return -1;
         }
     }
 

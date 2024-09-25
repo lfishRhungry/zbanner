@@ -435,7 +435,7 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4) {
     pAdapterInfo = (IP_ADAPTER_INFO *)malloc(sizeof(IP_ADAPTER_INFO));
     if (pAdapterInfo == NULL) {
         LOG(LEVEL_ERROR,
-            "Error allocating memory needed to call GetAdaptersinfo\n");
+            "fail to allocate memory for calling GetAdaptersinfo\n");
         return EFAULT;
     }
 
@@ -450,7 +450,7 @@ again:
         pAdapterInfo = (IP_ADAPTER_INFO *)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL) {
             LOG(LEVEL_ERROR,
-                "Error allocating memory needed to call GetAdaptersinfo\n");
+                "fail to allocate memory for calling GetAdaptersinfo\n");
             return EFAULT;
         }
         goto again;

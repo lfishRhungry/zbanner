@@ -137,7 +137,8 @@ void rawsock_init(void) {
     ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
     pAdapterInfo      = (IP_ADAPTER_INFO *)malloc(sizeof(IP_ADAPTER_INFO));
     if (pAdapterInfo == NULL) {
-        printf("Error allocating memory needed to call GetAdaptersinfo\n");
+        LOG(LEVEL_ERROR,
+            "fail to allocate memory for calling GetAdaptersinfo\n");
         return;
     }
     // Make an initial call to GetAdaptersInfo to get
@@ -146,7 +147,8 @@ void rawsock_init(void) {
         free(pAdapterInfo);
         pAdapterInfo = (IP_ADAPTER_INFO *)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL) {
-            printf("Error allocating memory needed to call GetAdaptersinfo\n");
+            LOG(LEVEL_ERROR,
+                "fail to allocate memory for calling GetAdaptersinfo\n");
             return;
         }
     }

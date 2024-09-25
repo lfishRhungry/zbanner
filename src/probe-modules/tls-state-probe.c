@@ -696,8 +696,7 @@ static bool tlsstate_init(const XConf *xconf) {
     if (tlsstate_conf.subprobe_args && tlsstate_conf.subprobe->params) {
         if (set_parameters_from_substring(NULL, tlsstate_conf.subprobe->params,
                                           tlsstate_conf.subprobe_args)) {
-            LOG(LEVEL_ERROR,
-                "errors happened in param parsing of subprobe of TlsState.\n");
+            LOG(LEVEL_ERROR, "subparam parsing of subprobe of TlsState.\n");
             goto error0;
         }
     }

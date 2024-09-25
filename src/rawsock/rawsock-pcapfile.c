@@ -730,7 +730,7 @@ struct PcapFile *pcapfile_openappend(const char *capfilename,
 
     /* Read in the header to discover link type and byte order */
     if (fread(buf, 1, 24, fp) != 24) {
-        LOG(LEVEL_ERROR, "Error reading capture file header\n");
+        LOG(LEVEL_ERROR, "fail to read capture file header\n");
         perror(capfilename);
         fclose(fp);
         return pcapfile_openappend(capfilename, linktype);

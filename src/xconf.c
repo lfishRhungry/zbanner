@@ -552,11 +552,11 @@ static ConfRes SET_show_output(void *conf, const char *name,
     }
 
     if (EQUALS("failed", value) || EQUALS("fail", value) ||
-        EQUALS("error", value)) {
+        EQUALS("failure", value)) {
         xconf->out_conf.is_show_failed = true;
     } else if (EQUALS("info", value) || EQUALS("information", value)) {
         xconf->out_conf.is_show_info = true;
-    } else if (EQUALS("success", value)) {
+    } else if (EQUALS("success", value) || EQUALS("successed", value)) {
         xconf->out_conf.no_show_success = false;
     } else {
         LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
@@ -1416,7 +1416,7 @@ static ConfRes SET_target_port(void *conf, const char *name,
     rangelist_parse_ports(&xconf->targets.ports, value, &is_error, 0);
 
     if (is_error) {
-        LOG(LEVEL_ERROR, "error to set target port.\n");
+        LOG(LEVEL_ERROR, "fail to set target port.\n");
         return Conf_ERR;
     }
 
@@ -1516,7 +1516,7 @@ static ConfRes SET_include_file(void *conf, const char *name,
 
     err = targetip_parse_file(&xconf->targets, filename);
     if (err) {
-        LOG(LEVEL_ERROR, "error reading from include file\n");
+        LOG(LEVEL_ERROR, "reading from include file\n");
         return Conf_ERR;
     }
     if (xconf->op == Operation_Default)
@@ -1541,7 +1541,7 @@ static ConfRes SET_exclude_file(void *conf, const char *name,
     // LOG(LEVEL_DETAIL, "EXCLUDING: %s\n", value);
     err = targetip_parse_file(&xconf->exclude, filename);
     if (err) {
-        LOG(LEVEL_ERROR, "error reading from exclude file\n");
+        LOG(LEVEL_ERROR, "fail reading from exclude file\n");
         return Conf_ERR;
     }
     /* Detect if this file has made any change, otherwise don't print

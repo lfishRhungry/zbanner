@@ -154,15 +154,13 @@ bool output_init(OutConf *out_conf) {
             if (set_parameters_from_substring(NULL,
                                               out_conf->output_module->params,
                                               out_conf->output_args)) {
-                LOG(LEVEL_ERROR,
-                    "errors happened in sub param parsing of OutputModule.\n");
+                LOG(LEVEL_ERROR, "sub param parsing of OutputModule.\n");
                 return false;
             }
         }
 
         if (!out_conf->output_module->init_cb(out_conf)) {
-            LOG(LEVEL_ERROR, "errors happened in %s initing.\n",
-                out_conf->output_module->name);
+            LOG(LEVEL_ERROR, "OutputModule initing.\n");
             return false;
         }
     }
