@@ -4,6 +4,7 @@
 #include "../globals.h"
 #include "../util-data/safe-string.h"
 #include "../util-out/logger.h"
+#include "../util-out/xprint.h"
 
 #include <stdio.h>
 
@@ -191,7 +192,6 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
      * Print the message to <stderr> so that <stdout> can be redirected
      * to a file (<stdout> reports what systems were found).
      */
-
     if (xtatus->is_infinite) {
         if (time_to_finish_tx) {
             if (item->print_in_json) {
@@ -228,8 +228,6 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
                     fmt = ", %s";
                     LOG(LEVEL_OUT, fmt, item->add_status);
                 }
-
-                LOG(LEVEL_OUT, "                \r");
             }
         } else {
             if (item->print_in_json) {
@@ -266,8 +264,6 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
                     fmt = ", %s";
                     LOG(LEVEL_OUT, fmt, item->add_status);
                 }
-
-                LOG(LEVEL_OUT, "                \r");
             }
         }
     } else {
@@ -315,8 +311,6 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
                     fmt = ", %s";
                     LOG(LEVEL_OUT, fmt, item->add_status);
                 }
-
-                LOG(LEVEL_OUT, "       \r");
             }
         } else {
             if (item->print_in_json) {
@@ -365,11 +359,10 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
                     fmt = ", %s";
                     LOG(LEVEL_OUT, fmt, item->add_status);
                 }
-
-                LOG(LEVEL_OUT, "       \r");
             }
         }
     }
+    LOG(LEVEL_OUT, "\r");
     fflush(stderr);
 
     /*

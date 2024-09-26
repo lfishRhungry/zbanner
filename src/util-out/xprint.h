@@ -14,21 +14,31 @@
     "########################################################################" \
     "########"
 
-#define XPRINT_CH_COLOR_RED     "\x1b[31m"
-#define XPRINT_CH_COLOR_GREEN   "\x1b[32m"
-#define XPRINT_CH_COLOR_YELLOW  "\x1b[33m"
-#define XPRINT_CH_COLOR_BLUE    "\x1b[34m"
-#define XPRINT_CH_COLOR_MAGENTA "\x1b[35m"
-#define XPRINT_CH_COLOR_CYAN    "\x1b[36m"
-
-#define XPRINT_BG_COLOR_RED     "\x1b[41m"
-#define XPRINT_BG_COLOR_GREEN   "\x1b[42m"
-#define XPRINT_BG_COLOR_YELLOW  "\x1b[43m"
-#define XPRINT_BG_COLOR_BLUE    "\x1b[44m"
-#define XPRINT_BG_COLOR_MAGENTA "\x1b[45m"
-#define XPRINT_BG_COLOR_CYAN    "\x1b[46m"
-
-#define XPRINT_COLOR_RESET "\x1b[0m"
+/*font color*/
+#define XPRINT_CH_COLOR_RED     "\033[31m"
+#define XPRINT_CH_COLOR_GREEN   "\033[32m"
+#define XPRINT_CH_COLOR_YELLOW  "\033[33m"
+#define XPRINT_CH_COLOR_BLUE    "\033[34m"
+#define XPRINT_CH_COLOR_MAGENTA "\033[35m"
+#define XPRINT_CH_COLOR_CYAN    "\033[36m"
+/*background color*/
+#define XPRINT_BG_COLOR_RED     "\033[41m"
+#define XPRINT_BG_COLOR_GREEN   "\033[42m"
+#define XPRINT_BG_COLOR_YELLOW  "\033[43m"
+#define XPRINT_BG_COLOR_BLUE    "\033[44m"
+#define XPRINT_BG_COLOR_MAGENTA "\033[45m"
+#define XPRINT_BG_COLOR_CYAN    "\033[46m"
+/*controlling*/
+#define XPRINT_RESET            "\033[0m"
+#define XPRINT_BOLD             "\033[1m"
+#define XPRINT_ITALIC           "\033[3m"
+#define XPRINT_UNDERLINE        "\033[4m"
+#define XPRINT_LINE_UP          "\033[A"
+#define XPRINT_LINE_DOWN        "\033[B"
+#define XPRINT_COLUMN_RIGHT     "\033[C"
+#define XPRINT_COLUMN_LEFT      "\033[D"
+#define XPRINT_CLEAR_SCREEN     "\033[2J"
+#define XPRINT_CLEAR_LINE       "\033[K"
 
 /*print documents with an indent*/
 void xprint(const char *text, unsigned indent, unsigned count);

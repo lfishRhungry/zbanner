@@ -137,7 +137,7 @@ static const char fmt_report_double[] = ", %s: %.2f";
 static const char fmt_report_true[]   = ", %s: true";
 static const char fmt_report_false[]  = ", %s: false";
 
-static bool _output_color;
+static bool _output_ansi;
 
 bool output_init(OutConf *out_conf) {
     if (out_conf->output_module) {
@@ -165,7 +165,7 @@ bool output_init(OutConf *out_conf) {
         }
     }
 
-    _output_color = !out_conf->no_color;
+    _output_ansi = !out_conf->no_ansi;
 
     out_conf->stdout_mutex = pixie_create_mutex();
     out_conf->module_mutex = pixie_create_mutex();
@@ -188,7 +188,9 @@ static void output_result_to_stdout(OutItem *item) {
 
     unsigned count = 0;
 
-    if (_output_color) {
+    if (_output_ansi) {
+        fprintf(stdout, XPRINT_CLEAR_LINE);
+
         switch (item->level) {
             case OUT_SUCCESS:
                 count = fprintf(stdout, XPRINT_CH_COLOR_GREEN);
@@ -230,7 +232,7 @@ static void output_result_to_stdout(OutItem *item) {
         count += fprintf(stdout, fmt_reason, item->reason);
     }
 
-    if (_output_color)
+    if (_output_ansi)
         fprintf(stdout, XPRINT_CH_COLOR_YELLOW);
 
     DataLink *pre = item->report.link;
@@ -257,11 +259,10 @@ static void output_result_to_stdout(OutItem *item) {
         pre = pre->next;
     }
 
-    if (count < 120)
+    if (_output_ansi)
+        fprintf(stdout, XPRINT_RESET);
+    else if (count < 120)
         fprintf(stdout, "%*s", (int)(120 - count), "");
-
-    if (_output_color)
-        fprintf(stdout, XPRINT_COLOR_RESET);
 
     fprintf(stdout, "\n");
     fflush(stdout);
