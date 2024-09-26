@@ -437,7 +437,8 @@ static int _main_scan(XConf *xconf) {
         status_item.max_count       = xconf->generator->target_range;
         status_item.print_in_json   = xconf->is_status_ndjson;
 
-        xtatus_print(&status, &status_item);
+        if (!xconf->is_no_status)
+            xtatus_print(&status, &status_item);
 
         /* Sleep for almost a second */
         pixie_mssleep(350);
@@ -519,12 +520,12 @@ static int _main_scan(XConf *xconf) {
         status_item.print_in_json   = xconf->is_status_ndjson;
         status_item.exiting_secs    = xconf->wait - (time(0) - now);
 
-        xtatus_print(&status, &status_item);
+        if (!xconf->is_no_status)
+            xtatus_print(&status, &status_item);
 
         /*no more waiting or too many <ctrl-c>*/
         if (time(0) - now >= xconf->wait || time_to_finish_rx) {
-            LOG(LEVEL_DEBUG, "telling threads to exit..."
-                             "                                           \n");
+            LOG(LEVEL_DEBUG, "telling threads to exit...\n");
             time_to_finish_rx = 1;
             break;
         }
@@ -566,7 +567,7 @@ static int _main_scan(XConf *xconf) {
 
     rawsock_close_adapter(xconf->nic.adapter);
 
-    LOG(LEVEL_INFO, "all threads have exited                    \n");
+    LOG(LEVEL_INFO, "all threads exited...\n");
 
     return 0;
 }

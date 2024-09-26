@@ -1755,6 +1755,20 @@ static ConfRes SET_ndjson_status(void *conf, const char *name,
     return Conf_OK;
 }
 
+static ConfRes SET_no_status(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->is_no_status || xconf->echo_all)
+            fprintf(xconf->echo, "no-status = %s\n",
+                    xconf->is_no_status ? "true" : "false");
+        return 0;
+    }
+    xconf->is_no_status = parseBoolean(value);
+    return Conf_OK;
+}
+
 static ConfRes SET_append(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
@@ -2980,7 +2994,7 @@ ConfParam config_parameters[] = {
     {"print-status",
      SET_print_status,
      Type_NONE,
-     {"print-st", "print", 0},
+     {"print", 0},
      "Tells which type of status should be printed explicitly, such as:\n"
      "'queue' for real-time capacity of transmit queue and receive queues.\n"
      "'info-num'/'info' for count of information type results.\n"
@@ -2993,6 +3007,7 @@ ConfParam config_parameters[] = {
      {"status-ndjson", 0},
      "Print status information in NDJSON format(Newline Delimited JSON) while"
      " running."},
+    {"no-status", SET_no_status, Type_BOOL, {0}, "Do not print status info."},
 
     {"PACKET ATTRIBUTES", SET_nothing, 0, {0}, NULL},
 
