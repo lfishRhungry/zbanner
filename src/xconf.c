@@ -2941,13 +2941,6 @@ ConfParam config_parameters[] = {
      {"no-show-out", "no-show", 0},
      "Tells which type of results should not be showed explicitly, such as:\n"
      "'success', 'failed' or 'info'."},
-    {"no-ansi-control",
-     SET_no_ansi,
-     Type_BOOL,
-     {"no-ansi", "no-color", 0},
-     "Print result and status to the screen without ANSI controlling(escape) "
-     "characters. Some old terminal does not support those charactors.\n"
-     "NOTE: displaying maybe not that good if no ansi escape chars."},
     {"no-escape-char",
      SET_no_escape,
      Type_BOOL,
@@ -3123,6 +3116,13 @@ ConfParam config_parameters[] = {
      {"pcap", 0},
      "Saves received packets (but not transmitted packets) to the "
      "libpcap-format file."},
+    {"no-ansi-control",
+     SET_no_ansi,
+     Type_BOOL,
+     {"no-ansi", "no-color", 0},
+     "Print result and status to the screen without ANSI controlling(escape) "
+     "characters. Some old terminal does not support those charactors.\n"
+     "NOTE: displaying maybe not that good if no ansi escape chars."},
     {"timeout",
      SET_fast_timeout,
      Type_NUM,
