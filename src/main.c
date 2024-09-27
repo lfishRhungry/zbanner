@@ -118,8 +118,8 @@ static int _main_scan(XConf *xconf) {
     tx_thread = CALLOC(xconf->tx_thread_count, sizeof(TxThread));
 
     /*
-     * Choose a default GenerateModule if not specified.
-     * Wrong specification will be handled in SET_generate_module in xconf.c
+     * Set modules at first for dependency checking in module initing.
+     * Output & Probe don't need explicit default setting.
      */
     if (!xconf->generator) {
         xconf->generator = get_generate_module_by_name("blackrock");
@@ -127,6 +127,30 @@ static int _main_scan(XConf *xconf) {
                          "no GenerateModule "
                          "was specified.\n");
     }
+    if (!xconf->scanner) {
+        xconf->scanner = get_scan_module_by_name("tcp-syn");
+        LOG(LEVEL_DEBUG,
+            "Default ScanModule `tcpsyn` is chosen because no ScanModule "
+            "was specified.\n");
+    }
+
+    /*validate probe type*/
+    if (xconf->scanner->required_probe_type == ProbeType_NULL) {
+        if (xconf->probe) {
+            LOG(LEVEL_ERROR, "ScanModule %s does not support any probe.\n",
+                xconf->scanner->name);
+            exit(1);
+        }
+    } else {
+        if (!xconf->probe ||
+            xconf->probe->type != xconf->scanner->required_probe_type) {
+            LOG(LEVEL_ERROR, "ScanModule %s needs probe of %s type.\n",
+                xconf->scanner->name,
+                get_probe_type_name(xconf->scanner->required_probe_type));
+            exit(1);
+        }
+    }
+
     /*
      * Config params & Do global init for GenerateModule
      */
@@ -204,34 +228,6 @@ static int _main_scan(XConf *xconf) {
 
     if (xconf->nic.is_vlan)
         template_set_vlan(xconf->tmplset, xconf->nic.vlan_id);
-
-    /*
-     * Choose a default ScanModule if not specified.
-     * Wrong specification will be handled in SET_scan_module in xconf.c
-     */
-    if (!xconf->scanner) {
-        xconf->scanner = get_scan_module_by_name("tcp-syn");
-        LOG(LEVEL_DEBUG,
-            "Default ScanModule `tcpsyn` is chosen because no ScanModule "
-            "was specified.\n");
-    }
-
-    /*validate probe type*/
-    if (xconf->scanner->required_probe_type == ProbeType_NULL) {
-        if (xconf->probe) {
-            LOG(LEVEL_ERROR, "ScanModule %s does not support any probe.\n",
-                xconf->scanner->name);
-            exit(1);
-        }
-    } else {
-        if (!xconf->probe ||
-            xconf->probe->type != xconf->scanner->required_probe_type) {
-            LOG(LEVEL_ERROR, "ScanModule %s needs probe of %s type.\n",
-                xconf->scanner->name,
-                get_probe_type_name(xconf->scanner->required_probe_type));
-            exit(1);
-        }
-    }
 
     /*
      * Config params & Do global init for ScanModule
