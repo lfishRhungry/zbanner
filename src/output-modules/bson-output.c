@@ -45,7 +45,7 @@ static ConfParam bson_parameters[] = {
      "int32 number,."},
     {0}};
 
-static bool bsonout_init(const OutConf *out) {
+static bool bsonout_init(const XConf *xconf, const OutConf *out) {
     /**
      * BSON is binary style, so print to stdout is nonsense.
      */

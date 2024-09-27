@@ -35,7 +35,7 @@ static ConfParam list_parameters[] = {
      "NOTE: No deduplicating will be used for IP."},
     {0}};
 
-static bool list_init(const OutConf *out) {
+static bool list_init(const XConf *xconf, const OutConf *out) {
     /*a convention*/
     if (out->output_filename[0] == '-' && strlen(out->output_filename) == 1) {
         file = stdout;

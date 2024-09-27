@@ -34,7 +34,7 @@ static const char fmt_json_suffix[]        = "        }\n" /*close report*/
 
 static char format_time[32];
 
-static bool json_init(const OutConf *out) {
+static bool json_init(const XConf *xconf, const OutConf *out) {
     /*a convention*/
     if (out->output_filename[0] == '-' && strlen(out->output_filename) == 1) {
         file = stdout;

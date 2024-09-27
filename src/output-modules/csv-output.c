@@ -40,7 +40,7 @@ static const char fmt_csv_suffix[]        = "}\""
 
 static char format_time[32];
 
-static bool csv_init(const OutConf *out) {
+static bool csv_init(const XConf *xconf, const OutConf *out) {
     /*a convention*/
     if (out->output_filename[0] == '-' && strlen(out->output_filename) == 1) {
         file = stdout;

@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "output-modules.h"
+#include "../xconf.h"
 #include "../globals.h"
 #include "../pixie/pixie-file.h"
 #include "../pixie/pixie-threads.h"
@@ -139,7 +140,7 @@ static const char fmt_report_false[]  = ", %s: false";
 
 static bool _output_ansi;
 
-bool output_init(OutConf *out_conf) {
+bool output_init(const XConf *xconf, OutConf *out_conf) {
     if (out_conf->output_module) {
         if (out_conf->output_module->need_file &&
             !out_conf->output_filename[0]) {
@@ -159,13 +160,13 @@ bool output_init(OutConf *out_conf) {
             }
         }
 
-        if (!out_conf->output_module->init_cb(out_conf)) {
+        if (!out_conf->output_module->init_cb(xconf, out_conf)) {
             LOG(LEVEL_ERROR, "OutputModule initing.\n");
             return false;
         }
     }
 
-    _output_ansi = !out_conf->no_ansi;
+    _output_ansi = !xconf->is_no_ansi;
 
     out_conf->stdout_mutex = pixie_create_mutex();
     out_conf->module_mutex = pixie_create_mutex();
@@ -331,7 +332,9 @@ void output_close(OutConf *out_conf) {
     pixie_delete_mutex(out_conf->info_mutex);
 }
 
-bool output_init_nothing(const OutConf *out_conf) { return true; }
+bool output_init_nothing(const XConf *xconf, const OutConf *out_conf) {
+    return true;
+}
 
 void output_result_nothing(OutItem *item) {}
 

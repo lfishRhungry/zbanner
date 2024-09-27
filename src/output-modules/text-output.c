@@ -20,7 +20,7 @@ extern Output TextOutput; /*for internal x-ref*/
 
 static FILE *file;
 
-static bool text_init(const OutConf *out) {
+static bool text_init(const XConf *xconf, const OutConf *out) {
     /*a convention*/
     if (out->output_filename[0] == '-' && strlen(out->output_filename) == 1) {
         file = stdout;

@@ -200,6 +200,7 @@ typedef struct XtateConf {
     unsigned       packet_ttl;
     unsigned       max_packet_len;
     unsigned       packet_trace       : 1;
+    unsigned       is_no_ansi         : 1;
     unsigned       is_no_status       : 1;
     unsigned       is_status_ndjson   : 1;
     unsigned       is_status_queue    : 1;

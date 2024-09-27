@@ -188,6 +188,9 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
         hit_rate = (100.0 * item->total_successed) / ((double)item->total_sent);
     }
 
+    if (!xtatus->no_ansi)
+        LOG(LEVEL_OUT, XPRINT_CLEAR_LINE);
+
     /*
      * Print the message to <stderr> so that <stdout> can be redirected
      * to a file (<stdout> reports what systems were found).
@@ -362,7 +365,7 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
             }
         }
     }
-    LOG(LEVEL_OUT, "\r");
+    LOG(LEVEL_OUT, xtatus->no_ansi ? "          \r" : "\r");
     fflush(stderr);
 
     /*

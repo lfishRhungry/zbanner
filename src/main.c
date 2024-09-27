@@ -267,7 +267,7 @@ static int _main_scan(XConf *xconf) {
     /*
      * Do init for OutputModule
      */
-    if (!output_init(&xconf->out_conf)) {
+    if (!output_init(xconf, &xconf->out_conf)) {
         LOG(LEVEL_ERROR, "OutputModule initializing\n");
         exit(1);
     }
@@ -355,6 +355,7 @@ static int _main_scan(XConf *xconf) {
     status.print_info_num = xconf->is_status_info_num;
     status.print_hit_rate = xconf->is_status_hit_rate;
     status.is_infinite    = xconf->is_infinite;
+    status.no_ansi        = xconf->is_no_ansi;
 
     /*
      * Now wait for <ctrl-c> to be pressed OR for Tx Threads to exit.

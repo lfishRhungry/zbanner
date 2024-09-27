@@ -39,6 +39,7 @@ typedef struct XtatusPrinter {
     uint64_t total_successed;
     uint64_t total_sent;
     /*switches*/
+    unsigned no_ansi        : 1;
     unsigned is_infinite    : 1;
     unsigned print_queue    : 1;
     unsigned print_info_num : 1;
@@ -50,6 +51,9 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item);
 
 void xtatus_finish(Xtatus *xtatus);
 
+/**
+ * Set Xtatus to zero and init some fields.
+ */
 void xtatus_start(Xtatus *xtatus);
 
 #endif

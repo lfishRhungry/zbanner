@@ -591,14 +591,14 @@ static ConfRes SET_no_show_output(void *conf, const char *name,
 static ConfRes SET_no_ansi(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->out_conf.no_ansi || xconf->echo_all) {
+        if (xconf->is_no_ansi || xconf->echo_all) {
             fprintf(xconf->echo, "no-ansi = %s\n",
-                    xconf->out_conf.no_ansi ? "true" : "false");
+                    xconf->is_no_ansi ? "true" : "false");
         }
         return 0;
     }
 
-    xconf->out_conf.no_ansi = parseBoolean(value);
+    xconf->is_no_ansi = parseBoolean(value);
 
     return Conf_OK;
 }
@@ -608,7 +608,7 @@ static ConfRes SET_no_escape(void *conf, const char *name, const char *value) {
     if (xconf->echo) {
         if (xconf->no_escape_char || xconf->echo_all) {
             fprintf(xconf->echo, "no-escape = %s\n",
-                    xconf->out_conf.no_ansi ? "true" : "false");
+                    xconf->no_escape_char ? "true" : "false");
         }
         return 0;
     }
@@ -2945,8 +2945,8 @@ ConfParam config_parameters[] = {
      SET_no_ansi,
      Type_BOOL,
      {"no-ansi", "no-color", 0},
-     "Print result to the screen without ANSI controlling(escape) characters. "
-     "Some old terminal does not support those charactors.\n"
+     "Print result and status to the screen without ANSI controlling(escape) "
+     "characters. Some old terminal does not support those charactors.\n"
      "NOTE: displaying maybe not that good if no ansi escape chars."},
     {"no-escape-char",
      SET_no_escape,
