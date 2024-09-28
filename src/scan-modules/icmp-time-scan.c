@@ -100,7 +100,8 @@ static void icmptime_validate(uint64_t entropy, Recved *recved,
 
     if (recved->parsed.icmp_type == ICMPv4_TYPE_TIMESTAMP_REPLY &&
         recved->parsed.icmp_code == ICMPv4_CODE_TIMESTAMP_REPLY &&
-        get_icmp_cookie(&recved->parsed, recved->packet) == cookie) {
+        get_icmp_cookie(recved->packet + recved->parsed.transport_offset) ==
+            cookie) {
         pre->go_dedup        = 1;
         pre->dedup_port_them = 0;
         pre->dedup_port_me   = 0;

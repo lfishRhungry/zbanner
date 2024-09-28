@@ -95,14 +95,16 @@ static void icmpecho_validate(uint64_t entropy, Recved *recved,
     if (recved->parsed.src_ip.version == 4 &&
         recved->parsed.icmp_type == ICMPv4_TYPE_ECHO_REPLY &&
         recved->parsed.icmp_code == ICMPv4_CODE_ECHO_REPLY &&
-        get_icmp_cookie(&recved->parsed, recved->packet) == cookie) {
+        get_icmp_cookie(recved->packet + recved->parsed.transport_offset) ==
+            cookie) {
         pre->go_dedup        = 1;
         pre->dedup_port_them = 0;
         pre->dedup_port_me   = 0;
     } else if (recved->parsed.src_ip.version == 6 &&
                recved->parsed.icmp_type == ICMPv6_TYPE_ECHO_REPLY &&
                recved->parsed.icmp_code == ICMPv6_CODE_ECHO_REPLY &&
-               get_icmp_cookie(&recved->parsed, recved->packet) == cookie) {
+               get_icmp_cookie(recved->packet +
+                               recved->parsed.transport_offset) == cookie) {
         pre->go_dedup        = 1;
         pre->dedup_port_them = 0;
         pre->dedup_port_me   = 0;

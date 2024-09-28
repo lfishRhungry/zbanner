@@ -105,7 +105,7 @@ size_t icmp_create_timestamp_packet(ipaddress ip_them, const ipaddress ip_me,
 /**
  * Try to get cookie from `Identifier` and `Sequence Number` fields.
  */
-unsigned get_icmp_cookie(const PreInfo *parsed, const unsigned char *px);
+unsigned get_icmp_cookie(const unsigned char *transport_px);
 
 /**
  * get detail of icmp port unreachable info

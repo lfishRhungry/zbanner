@@ -249,8 +249,8 @@ size_t icmp_create_timestamp_packet(ipaddress ip_them, const ipaddress ip_me,
                                    sizeof_px);
 }
 
-unsigned get_icmp_cookie(const PreInfo *parsed, const unsigned char *px) {
-    return BE_TO_U32(px + parsed->transport_offset + 4);
+unsigned get_icmp_cookie(const unsigned char *transport_px) {
+    return BE_TO_U32(transport_px + 4);
 }
 
 /***************************************************************************
