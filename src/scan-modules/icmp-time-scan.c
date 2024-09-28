@@ -71,9 +71,10 @@ static bool icmptime_transmit(uint64_t entropy, ScanTarget *target,
     /*we do not care target port*/
     unsigned cookie =
         get_cookie(target->target.ip_them, 0, target->target.ip_me, 0, entropy);
+    uint16_t ipid = cookie ^ entropy;
 
     *len = icmp_create_timestamp_packet(target->target.ip_them,
-                                        target->target.ip_me, cookie, cookie, 0,
+                                        target->target.ip_me, cookie, ipid, 0,
                                         px, PKT_BUF_SIZE);
 
     /*add timeout*/

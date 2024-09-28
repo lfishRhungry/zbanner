@@ -67,9 +67,10 @@ static bool icmpecho_transmit(uint64_t entropy, ScanTarget *target,
     /*we do not care target port*/
     unsigned cookie =
         get_cookie(target->target.ip_them, 0, target->target.ip_me, 0, entropy);
+    uint16_t ipid = cookie ^ entropy;
 
     *len = icmp_create_echo_packet(target->target.ip_them, target->target.ip_me,
-                                   cookie, cookie, 0, px, PKT_BUF_SIZE);
+                                   cookie, ipid, 0, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout     = 1;
