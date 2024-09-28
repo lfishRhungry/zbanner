@@ -132,9 +132,9 @@ static void udp_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     } else
         return;
 
-    if (17 == get_icmp_port_unreachable_proto(
-                  &recved->packet[recved->parsed.transport_offset],
-                  recved->parsed.transport_length)) {
+    if (IP_PROTO_UDP == get_icmp_port_unreachable_proto(
+                            &recved->packet[recved->parsed.transport_offset],
+                            recved->parsed.transport_length)) {
         pre->go_record = 1;
         pre->go_dedup  = 1;
     }
