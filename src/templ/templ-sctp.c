@@ -102,12 +102,11 @@
 #include "../util-data/data-convert.h"
 #include "../proto/proto-preprocess.h"
 
-static size_t sctp_create_by_template_ipv4(TmplPkt *tmpl, ipv4address ip_them,
-                                           unsigned    port_them,
-                                           ipv4address ip_me, unsigned port_me,
-                                           unsigned init_tag, unsigned ttl,
-                                           unsigned char *px,
-                                           size_t         sizeof_px) {
+static size_t
+sctp_create_by_template_ipv4(const TmplPkt *tmpl, ipv4address ip_them,
+                             unsigned port_them, ipv4address ip_me,
+                             unsigned port_me, unsigned init_tag, unsigned ttl,
+                             unsigned char *px, size_t sizeof_px) {
     unsigned offset_ip;
     unsigned offset_tcp;
     uint64_t xsum_sctp;
@@ -147,11 +146,9 @@ static size_t sctp_create_by_template_ipv4(TmplPkt *tmpl, ipv4address ip_them,
      * Fill in the empty fields in the IP header and then re-calculate
      * the checksum.
      */
-    {
-        unsigned total_length = tmpl->ipv4.length - tmpl->ipv4.offset_ip;
-        px[offset_ip + 2]     = (unsigned char)(total_length >> 8);
-        px[offset_ip + 3]     = (unsigned char)(total_length >> 0);
-    }
+    unsigned ip_len   = tmpl->ipv4.length - tmpl->ipv4.offset_ip;
+    px[offset_ip + 2] = (unsigned char)(ip_len >> 8);
+    px[offset_ip + 3] = (unsigned char)(ip_len >> 0);
     U16_EQUAL_TO_BE(px + offset_ip + 4, ip_id);
 
     if (ttl)
@@ -181,12 +178,11 @@ static size_t sctp_create_by_template_ipv4(TmplPkt *tmpl, ipv4address ip_them,
     return r_len;
 }
 
-static size_t sctp_create_by_template_ipv6(TmplPkt *tmpl, ipv6address ip_them,
-                                           unsigned    port_them,
-                                           ipv6address ip_me, unsigned port_me,
-                                           unsigned init_tag, unsigned ttl,
-                                           unsigned char *px,
-                                           size_t         sizeof_px) {
+static size_t
+sctp_create_by_template_ipv6(const TmplPkt *tmpl, ipv6address ip_them,
+                             unsigned port_them, ipv6address ip_me,
+                             unsigned port_me, unsigned init_tag, unsigned ttl,
+                             unsigned char *px, size_t sizeof_px) {
     unsigned offset_ip;
     unsigned offset_tcp;
     uint64_t xsum_sctp;
@@ -251,7 +247,7 @@ static size_t sctp_create_by_template_ipv6(TmplPkt *tmpl, ipv6address ip_them,
     return r_len;
 }
 
-size_t sctp_create_by_template(TmplPkt *tmpl, ipaddress ip_them,
+size_t sctp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
                                unsigned port_them, ipaddress ip_me,
                                unsigned port_me, unsigned init_tag,
                                unsigned ttl, unsigned char *px,

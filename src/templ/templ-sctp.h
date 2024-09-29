@@ -32,7 +32,7 @@
 /**
  * @param ttl use default value in packet template if set to zero.
  */
-size_t sctp_create_by_template(TmplPkt *tmpl, ipaddress ip_them,
+size_t sctp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
                                unsigned port_them, ipaddress ip_me,
                                unsigned port_me, unsigned init_tag,
                                unsigned ttl, unsigned char *px,

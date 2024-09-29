@@ -1106,7 +1106,7 @@ size_t tcp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
         size_t ip_len     = (offset_payload - offset_ip) + payload_length;
 
         if (new_length > px_length) {
-            LOG(LEVEL_ERROR, "tcp: err generating packet: too much payload\n");
+            LOG(LEVEL_ERROR, "(tcp_create_by_template) too much payload\n");
             return 0;
         }
 
