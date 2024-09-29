@@ -66,46 +66,49 @@
 
 /**
  * @param tmpl TemplatePacket of ICMP.
- * @param cookie we set cookie on `Identifier` and `Sequence Number` fields.
+ * @param identifier could set by cookie
+ * @param sequence could set by cookie
  * @param ip_id just for ipv4 and could set it randomly.
  * @param ttl it is for ipv4's ttl or ipv6's hop limit. use value in default
  * template packet if set it to zero.
  * @return len of packet generated.
  */
 size_t icmp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
-                               ipaddress ip_me, unsigned cookie, uint16_t ip_id,
-                               uint8_t ttl, unsigned char *px,
-                               size_t sizeof_px);
+                               ipaddress ip_me, uint16_t identifier,
+                               uint16_t sequence, uint16_t ip_id, uint8_t ttl,
+                               unsigned char *px, size_t sizeof_px);
 
 /**
  * This is a wrapped func that uses global_tmplset to create icmp echo packet.
- * @param cookie we set cookie on `Identifier` and `Sequence Number` fields.
+ * @param identifier could set by cookie
+ * @param sequence could set by cookie
  * @param ip_id just for ipv4 and could set it randomly.
  * @param ttl it is for ipv4's ttl or ipv6's hop limit. use value in default
  * template packet if set it to zero.
  * @return len of packet generated.
  */
 size_t icmp_create_echo_packet(ipaddress ip_them, ipaddress ip_me,
-                               unsigned cookie, uint16_t ip_id, uint8_t ttl,
-                               unsigned char *px, size_t sizeof_px);
+                               uint16_t identifier, uint16_t sequence,
+                               uint16_t ip_id, uint8_t ttl, unsigned char *px,
+                               size_t sizeof_px);
 
 /**
  * This is a wrapped func that uses global_tmplset to create icmp icmp packet.
- * @param cookie we set cookie on `Identifier` and `Sequence Number` fields.
+ * @param identifier could set by cookie
+ * @param sequence could set by cookie
  * @param ip_id just for ipv4 and could set it randomly.
  * @param ttl it is for ipv4's ttl or ipv6's hop limit. use value in default
  * template packet if set it to zero.
  * @return len of packet generated.
  */
 size_t icmp_create_timestamp_packet(ipaddress ip_them, const ipaddress ip_me,
-                                    unsigned cookie, uint16_t ip_id,
-                                    uint8_t ttl, unsigned char *px,
-                                    size_t sizeof_px);
+                                    uint16_t identifier, uint16_t sequence,
+                                    uint16_t ip_id, uint8_t ttl,
+                                    unsigned char *px, size_t sizeof_px);
 
-/**
- * Try to get cookie from `Identifier` and `Sequence Number` fields.
- */
-unsigned get_icmp_cookie(const unsigned char *transport_px);
+uint16_t get_icmp_identifier(const unsigned char *transport_px);
+
+uint16_t get_icmp_sequence(const unsigned char *transport_px);
 
 /**
  * get detail of icmp port unreachable info

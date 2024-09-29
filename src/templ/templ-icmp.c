@@ -64,8 +64,9 @@ ICMPv4 Timestamp or Timestamp Reply Message according to RFC792
 
 static size_t
 icmp_create_by_template_ipv4(const TmplPkt *tmpl, ipv4address ip_them,
-                             ipv4address ip_me, unsigned cookie, uint16_t ip_id,
-                             uint8_t ttl, unsigned char *px, size_t sizeof_px) {
+                             ipv4address ip_me, uint16_t identifier,
+                             uint16_t sequence, uint16_t ip_id, uint8_t ttl,
+                             unsigned char *px, size_t sizeof_px) {
     unsigned offset_ip;
     unsigned offset_tcp;
     uint64_t xsum_icmp;
@@ -127,7 +128,8 @@ icmp_create_by_template_ipv4(const TmplPkt *tmpl, ipv4address ip_them,
      */
     xsum_icmp = 0;
 
-    U32_TO_BE(px + offset_tcp + 4, cookie);
+    U16_TO_BE(px + offset_tcp + 4, identifier);
+    U16_TO_BE(px + offset_tcp + 6, sequence);
 
     payload_length =
         total_length - (tmpl->ipv4.offset_tcp - tmpl->ipv4.offset_ip);
@@ -137,11 +139,11 @@ icmp_create_by_template_ipv4(const TmplPkt *tmpl, ipv4address ip_them,
     return r_len;
 }
 
-static size_t icmp_create_by_template_ipv6(const TmplPkt *tmpl,
-                                           ipv6address    ip_them,
-                                           ipv6address ip_me, unsigned cookie,
-                                           uint8_t ttl, unsigned char *px,
-                                           size_t sizeof_px) {
+static size_t
+icmp_create_by_template_ipv6(const TmplPkt *tmpl, ipv6address ip_them,
+                             ipv6address ip_me, uint16_t identifier,
+                             uint16_t sequence, uint8_t ttl, unsigned char *px,
+                             size_t sizeof_px) {
     unsigned offset_ip;
     unsigned offset_tcp;
     uint64_t xsum_icmp;
@@ -200,7 +202,8 @@ static size_t icmp_create_by_template_ipv6(const TmplPkt *tmpl,
      * Now do the checksum for the higher layer protocols
      */
     /* TODO: IPv6 */
-    U32_TO_BE(px + offset_tcp + 4, cookie);
+    U16_TO_BE(px + offset_tcp + 4, identifier);
+    U16_TO_BE(px + offset_tcp + 6, sequence);
     xsum_icmp = checksum_ipv6(px + offset_ip + 8, px + offset_ip + 24,
                               IP_PROTO_IPv6_ICMP,
                               tmpl->ipv6.length - offset_tcp, px + offset_tcp);
@@ -210,9 +213,9 @@ static size_t icmp_create_by_template_ipv6(const TmplPkt *tmpl,
 }
 
 size_t icmp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
-                               ipaddress ip_me, unsigned cookie, uint16_t ip_id,
-                               uint8_t ttl, unsigned char *px,
-                               size_t sizeof_px) {
+                               ipaddress ip_me, uint16_t identifier,
+                               uint16_t sequence, uint16_t ip_id, uint8_t ttl,
+                               unsigned char *px, size_t sizeof_px) {
     if (tmpl->tmpl_type != TmplType_ICMP_ECHO &&
         tmpl->tmpl_type != TmplType_ICMP_TS) {
         LOG(LEVEL_ERROR, "icmp_create_by_template: need a TmplType_ICMP_ECHO "
@@ -224,33 +227,40 @@ size_t icmp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
 
     if (ip_them.version == 4) {
         r_len = icmp_create_by_template_ipv4(tmpl, ip_them.ipv4, ip_me.ipv4,
-                                             cookie, ip_id, ttl, px, sizeof_px);
+                                             identifier, sequence, ip_id, ttl,
+                                             px, sizeof_px);
     } else {
         r_len = icmp_create_by_template_ipv6(tmpl, ip_them.ipv6, ip_me.ipv6,
-                                             cookie, ttl, px, sizeof_px);
+                                             identifier, sequence, ttl, px,
+                                             sizeof_px);
     }
     return r_len;
 }
 
 size_t icmp_create_echo_packet(ipaddress ip_them, const ipaddress ip_me,
-                               unsigned cookie, uint16_t ip_id, uint8_t ttl,
-                               unsigned char *px, size_t sizeof_px) {
+                               uint16_t identifier, uint16_t sequence,
+                               uint16_t ip_id, uint8_t ttl, unsigned char *px,
+                               size_t sizeof_px) {
     return icmp_create_by_template(&global_tmplset->pkts[TmplType_ICMP_ECHO],
-                                   ip_them, ip_me, cookie, ip_id, ttl, px,
-                                   sizeof_px);
+                                   ip_them, ip_me, identifier, sequence, ip_id,
+                                   ttl, px, sizeof_px);
 }
 
 size_t icmp_create_timestamp_packet(ipaddress ip_them, const ipaddress ip_me,
-                                    unsigned cookie, uint16_t ip_id,
-                                    uint8_t ttl, unsigned char *px,
-                                    size_t sizeof_px) {
+                                    uint16_t identifier, uint16_t sequence,
+                                    uint16_t ip_id, uint8_t ttl,
+                                    unsigned char *px, size_t sizeof_px) {
     return icmp_create_by_template(&global_tmplset->pkts[TmplType_ICMP_TS],
-                                   ip_them, ip_me, cookie, ip_id, ttl, px,
-                                   sizeof_px);
+                                   ip_them, ip_me, identifier, sequence, ip_id,
+                                   ttl, px, sizeof_px);
 }
 
-unsigned get_icmp_cookie(const unsigned char *transport_px) {
-    return BE_TO_U32(transport_px + 4);
+uint16_t get_icmp_identifier(const unsigned char *transport_px) {
+    return BE_TO_U16(transport_px + 4);
+}
+
+uint16_t get_icmp_sequence(const unsigned char *transport_px) {
+    return BE_TO_U16(transport_px + 6);
 }
 
 /***************************************************************************
