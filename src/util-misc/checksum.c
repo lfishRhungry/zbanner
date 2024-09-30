@@ -12,6 +12,7 @@
 
 #include "checksum.h"
 #include "../target/target-ip.h"
+#include "../util-out/logger.h"
 
 /**
  * Calculates the checksum over a buffer.
@@ -148,24 +149,22 @@ unsigned checksum_ipv6(const unsigned char *ip_src, const unsigned char *ip_dst,
     return sum;
 }
 
-/***************************************************************************
- * Checksum the IP header. This is a "partial" checksum, so we
- * don't reverse the bits ~.
- * NOTE: Just IPv4 has checksum in header
- ***************************************************************************/
 unsigned checksum_ip_header(const unsigned char *px, unsigned offset,
                             unsigned max_offset) {
     unsigned header_length = (px[offset] & 0xF) * 4;
+    unsigned header_offset = offset + header_length;
     unsigned xsum          = 0;
     unsigned i;
 
-    /* restrict check only over packet */
-    if (max_offset > offset + header_length)
-        max_offset = offset + header_length;
+    /* restrict border of header */
+    if (max_offset < offset + header_length) {
+        LOG(LEVEL_ERROR, "(checksum_ip_header) wrong ip hdr len field.\n");
+        header_offset = max_offset;
+    }
 
     /* add all the two-byte words together */
     xsum = 0;
-    for (i = offset; i < max_offset; i += 2) {
+    for (i = offset; i < header_offset; i += 2) {
         xsum += px[i] << 8 | px[i + 1];
     }
 
@@ -316,7 +315,7 @@ static unsigned crc_c[256] = {
     0xAD7D5351L,
 };
 
-unsigned checksum_sctp(const void *vbuffer, size_t length) {
+unsigned checksum_sctp(const void *vbuffer, size_t sctp_length) {
     const unsigned char *buffer = (const unsigned char *)vbuffer;
     unsigned             i;
     unsigned             crc32 = (unsigned)~0;
@@ -332,7 +331,7 @@ unsigned checksum_sctp(const void *vbuffer, size_t length) {
     CRC32C(crc32, 0);
     CRC32C(crc32, 0);
 
-    for (i = 12; i < length; i++) {
+    for (i = 12; i < sctp_length; i++) {
         CRC32C(crc32, buffer[i]);
     }
     result = ~crc32;

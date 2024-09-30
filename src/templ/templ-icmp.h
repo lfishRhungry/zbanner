@@ -65,50 +65,50 @@
 #define ICMPv6_CODE_NA 0
 
 /**
- * @param tmpl TemplatePacket of ICMP.
- * @param identifier could set by cookie
- * @param sequence could set by cookie
- * @param ip_id just for ipv4 and could set it randomly.
- * @param ttl it is for ipv4's ttl or ipv6's hop limit. use value in default
- * template packet if set it to zero.
+ * @param tmpl TemplatePacket of ICMP ECHO.
  * @return len of packet generated.
  */
-size_t icmp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
-                               ipaddress ip_me, uint16_t identifier,
-                               uint16_t sequence, uint16_t ip_id, uint8_t ttl,
-                               unsigned char *px, size_t sizeof_px);
+size_t icmp_echo_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
+                                    ipaddress ip_me, uint16_t identifier,
+                                    uint16_t sequence, uint16_t ip_id,
+                                    uint8_t ttl, unsigned char *payload,
+                                    size_t payload_length, unsigned char *px,
+                                    size_t sizeof_px);
 
 /**
  * This is a wrapped func that uses global_tmplset to create icmp echo packet.
- * @param identifier could set by cookie
- * @param sequence could set by cookie
- * @param ip_id just for ipv4 and could set it randomly.
- * @param ttl it is for ipv4's ttl or ipv6's hop limit. use value in default
- * template packet if set it to zero.
  * @return len of packet generated.
  */
-size_t icmp_create_echo_packet(ipaddress ip_them, ipaddress ip_me,
+size_t icmp_echo_create_packet(ipaddress ip_them, const ipaddress ip_me,
                                uint16_t identifier, uint16_t sequence,
-                               uint16_t ip_id, uint8_t ttl, unsigned char *px,
-                               size_t sizeof_px);
+                               uint16_t ip_id, uint8_t ttl,
+                               unsigned char *payload, size_t payload_length,
+                               unsigned char *px, size_t sizeof_px);
 
 /**
- * This is a wrapped func that uses global_tmplset to create icmp icmp packet.
- * @param identifier could set by cookie
- * @param sequence could set by cookie
- * @param ip_id just for ipv4 and could set it randomly.
- * @param ttl it is for ipv4's ttl or ipv6's hop limit. use value in default
- * template packet if set it to zero.
+ * This is a wrapped func that uses global_tmplset to create icmp timestamp
+ * packet.
  * @return len of packet generated.
  */
-size_t icmp_create_timestamp_packet(ipaddress ip_them, const ipaddress ip_me,
+size_t icmp_timestamp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
+                                         ipaddress ip_me, uint16_t identifier,
+                                         uint16_t sequence, uint16_t ip_id,
+                                         uint8_t ttl, unsigned origin_time,
+                                         unsigned recv_time,
+                                         unsigned trans_time, unsigned char *px,
+                                         size_t sizeof_px);
+
+/**
+ * This is a wrapped func that uses global_tmplset to create icmp timestamp
+ * packet.
+ * @return len of packet generated.
+ */
+size_t icmp_timestamp_create_packet(ipaddress ip_them, const ipaddress ip_me,
                                     uint16_t identifier, uint16_t sequence,
                                     uint16_t ip_id, uint8_t ttl,
-                                    unsigned char *px, size_t sizeof_px);
-
-uint16_t get_icmp_identifier(const unsigned char *transport_px);
-
-uint16_t get_icmp_sequence(const unsigned char *transport_px);
+                                    unsigned origin_time, unsigned recv_time,
+                                    unsigned trans_time, unsigned char *px,
+                                    size_t sizeof_px);
 
 /**
  * get detail of icmp port unreachable info
@@ -119,20 +119,20 @@ uint16_t get_icmp_sequence(const unsigned char *transport_px);
  * @param r_ip_me for ret ip_me
  * @param r_port_me for ret port_me
  * @param r_ip_proto for ret ip protocol number, 6 for tcp or 17 for udp
+ * @param r_app_px app layer pointer in udp of icmp
  * @return TRUE if parse successfully
  */
 bool parse_icmp_port_unreachable(const unsigned char *transport_px,
                                  unsigned length, ipaddress *r_ip_them,
                                  unsigned *r_port_them, ipaddress *r_ip_me,
-                                 unsigned *r_port_me, unsigned *r_ip_proto);
+                                 unsigned *r_port_me, unsigned *r_ip_proto,
+                                 unsigned char **r_app_px, size_t *r_app_len);
 
 /**
- * get upper proto number of icmp port unreachable info
+ * get upper proto number of icmp if exists.
  * @param transport_px packet data over IP
- * @param length len of transport_px
- * @return IP Protocol number 6(tcp) or 17(udp) or 0 for nothing.
+ * @return IP Protocol number
  */
-unsigned get_icmp_port_unreachable_proto(const unsigned char *transport_px,
-                                         unsigned             length);
+unsigned get_icmp_upper_proto(const unsigned char *transport_px);
 
 #endif

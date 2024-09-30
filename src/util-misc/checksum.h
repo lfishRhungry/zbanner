@@ -46,6 +46,9 @@ unsigned checksum_ipv6(const unsigned char *ip_src, const unsigned char *ip_dst,
 /***************************************************************************
  * Checksum the IP header. This is a "partial" checksum, so we
  * don't reverse the bits ~.
+ * NOTE: Just IPv4 has checksum in header.
+ * @param offset ip layer offset.
+ * @param max_offset max offset ip layer used to do border check.
  ***************************************************************************/
 unsigned checksum_ip_header(const unsigned char *px, unsigned offset,
                             unsigned max_offset);
@@ -59,7 +62,7 @@ unsigned checksum_udp(const unsigned char *px, unsigned offset_ip,
 unsigned checksum_tcp(const unsigned char *px, unsigned offset_ip,
                       unsigned offset_tcp, size_t tcp_length);
 
-unsigned checksum_sctp(const void *vbuffer, size_t length);
+unsigned checksum_sctp(const void *vbuffer, size_t sctp_length);
 
 int checksum_selftest();
 

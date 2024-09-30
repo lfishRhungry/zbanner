@@ -25,7 +25,7 @@ typedef enum Template_TYPE {
 
 typedef struct TemplatePacket {
     struct {
-        unsigned       length;
+        unsigned       length; /*packet len*/
         unsigned       offset_ip;
         unsigned       offset_tcp;
         unsigned       offset_app;
@@ -33,7 +33,7 @@ typedef struct TemplatePacket {
         unsigned char *packet;
     } ipv4;
     struct {
-        unsigned       length;
+        unsigned       length; /*packet len*/
         unsigned       offset_ip;
         unsigned       offset_tcp;
         unsigned       offset_app;

@@ -110,7 +110,7 @@ static void udp_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
         };
 
         if (UdpScan.probe->validate_response_cb(
-                &ptarget, &recved->packet[recved->parsed.app_offset],
+                &ptarget, recved->packet + recved->parsed.app_offset,
                 recved->parsed.app_length)) {
             pre->go_dedup = 1;
         }
@@ -132,11 +132,30 @@ static void udp_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     } else
         return;
 
-    if (IP_PROTO_UDP == get_icmp_port_unreachable_proto(
-                            &recved->packet[recved->parsed.transport_offset],
-                            recved->parsed.transport_length)) {
-        pre->go_record = 1;
-        pre->go_dedup  = 1;
+    if (IP_PROTO_UDP == get_icmp_upper_proto(recved->packet +
+                                             recved->parsed.transport_offset)) {
+        ProbeTarget    utarget = {.target = 0};
+        unsigned char *uapp_offset;
+        size_t         uapp_len;
+        if (parse_icmp_port_unreachable(
+                recved->packet + recved->parsed.transport_offset,
+                recved->parsed.transport_length, &utarget.target.ip_them,
+                &utarget.target.port_them, &utarget.target.ip_me,
+                &utarget.target.port_me, &utarget.target.ip_proto, &uapp_offset,
+                &uapp_len)) {
+            utarget.cookie = get_cookie(
+                utarget.target.ip_them, utarget.target.port_them,
+                utarget.target.ip_me, utarget.target.port_me, entropy);
+            utarget.index = utarget.target.port_me - src_port_start;
+
+            if (UdpScan.probe->validate_unreachable_cb(&utarget, uapp_offset,
+                                                       uapp_len)) {
+                pre->go_record       = 1;
+                pre->go_dedup        = 1;
+                pre->dedup_port_me   = utarget.target.port_me;
+                pre->dedup_port_them = utarget.target.port_them;
+            }
+        }
     }
 }
 
@@ -260,14 +279,17 @@ static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             return;
         }
     } else {
-        safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
-        safe_strcpy(item->reason, OUT_RSN_SIZE, "port unreachable");
-        unsigned proto;
+        unsigned char *uapp_offset;
+        size_t         uapp_len;
         parse_icmp_port_unreachable(
             &recved->packet[recved->parsed.transport_offset],
             recved->parsed.transport_length, &item->target.ip_them,
             &item->target.port_them, &item->target.ip_me, &item->target.port_me,
-            &proto);
+            &item->target.ip_proto, &uapp_offset, &uapp_len);
+
+        item->level = OUT_FAILURE;
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "port unreachable");
     }
 }
 

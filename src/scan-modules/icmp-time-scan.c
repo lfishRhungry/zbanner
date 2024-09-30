@@ -75,9 +75,9 @@ static bool icmptime_transmit(uint64_t entropy, ScanTarget *target,
     uint16_t seq  = (cookie >> 0) & 0xFF;
     uint16_t ipid = cookie ^ entropy;
 
-    *len = icmp_create_timestamp_packet(target->target.ip_them,
-                                        target->target.ip_me, id, seq, ipid, 0,
-                                        px, PKT_BUF_SIZE);
+    *len = icmp_timestamp_create_packet(target->target.ip_them,
+                                        target->target.ip_me, id, seq, ipid, 64,
+                                        0, 0, 0, px, PKT_BUF_SIZE);
 
     /*add timeout*/
     event->need_timeout     = 1;
@@ -102,10 +102,8 @@ static void icmptime_validate(uint64_t entropy, Recved *recved,
 
     if (recved->parsed.icmp_type == ICMPv4_TYPE_TIMESTAMP_REPLY &&
         recved->parsed.icmp_code == ICMPv4_CODE_TIMESTAMP_REPLY &&
-        get_icmp_identifier(recved->packet + recved->parsed.transport_offset) ==
-            ((cookie >> 16) & 0xFF) &&
-        get_icmp_sequence(recved->packet + recved->parsed.transport_offset) ==
-            ((cookie >> 0) & 0xFF)) {
+        recved->parsed.icmp_id == ((cookie >> 16) & 0xFF) &&
+        recved->parsed.icmp_seq == ((cookie >> 0) & 0xFF)) {
         pre->go_dedup        = 1;
         pre->dedup_port_them = 0;
         pre->dedup_port_me   = 0;

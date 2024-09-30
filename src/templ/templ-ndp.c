@@ -257,9 +257,10 @@ static size_t ndp_create_ns_by_template_ipv6(
     /*
      * Now do the checksum for the higher layer protocols
      */
-    xsum_icmp          = checksum_ipv6(px + offset_ip + 8, px + offset_ip + 24,
-                                       IP_PROTO_IPv6_ICMP,
-                                       tmpl->ipv6.length - offset_tcp, px + offset_tcp);
+    xsum_icmp = checksum_ipv6(px + offset_ip + 8, px + offset_ip + 24,
+                              IP_PROTO_IPv6_ICMP,
+                              tmpl->ipv6.length - offset_tcp, px + offset_tcp);
+
     px[offset_tcp + 2] = (unsigned char)(xsum_icmp >> 8);
     px[offset_tcp + 3] = (unsigned char)(xsum_icmp >> 0);
 
@@ -270,8 +271,10 @@ size_t ndp_create_ns_packet(ipaddress ip_them, ipaddress ip_me,
                             macaddress_t src_mac, uint8_t ttl,
                             unsigned char *px, size_t sizeof_px) {
     /*just for IPv6*/
-    if (ip_them.version == 4)
+    if (ip_them.version == 4) {
+        LOG(LEVEL_ERROR, "(ndp_create_ns_packet) cannot create for ipv4.\n");
         return 0;
+    }
 
     return ndp_create_ns_by_template_ipv6(
         &global_tmplset->pkts[TmplType_NDP_NS], ip_them.ipv6, ip_me.ipv6,

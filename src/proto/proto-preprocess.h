@@ -65,8 +65,8 @@ typedef struct PreprocessedInfo {
     unsigned             ip_offset; /* 14 for normal Ethernet */
     uint8_t              ip_version;
     uint8_t              ip_protocol;
-    uint16_t             ip_length; /* length of total packet */
-    uint8_t              ip_ttl;    /* ttl of ipv4 or hop limit of ipv6*/
+    uint16_t             ip_v4_length; /* length packet from ipv4 layer*/
+    uint8_t              ip_ttl;       /* ttl for ipv4 or hop limit for ipv6*/
     uint16_t             ip_v4_id;
     /*point to actual ip data*/
     const unsigned char *_ip_src;
@@ -75,28 +75,27 @@ typedef struct PreprocessedInfo {
     ipaddress            src_ip;
     ipaddress            dst_ip;
     /**
-     * transport layer
+     * Transport layer
      */
     unsigned             transport_offset; /* 34 for normal Ethernet */
     unsigned             transport_length;
-    union {
-        uint16_t port_src;
-        uint16_t icmp_type;
-    };
-    union {
-        uint16_t port_dst;
-        uint16_t icmp_code;
-    };
+    uint8_t              icmp_type;
+    uint8_t              icmp_code;
+    uint16_t             icmp_id;
+    uint16_t             icmp_seq;
+    uint16_t             port_src;
+    uint16_t             port_dst;
     /**
-     * App layer
+     * Application layer
+     * NOTE: also for icmp echo
      */
-    unsigned   app_offset; /* start of TCP payload */
-    unsigned   app_length; /* length of TCP payload */
-                           /**
-                            * the latest found proto
-                            */
-    FoundProto found;
-    int        found_offset;
+    unsigned             app_offset;
+    unsigned             app_length;
+    /**
+     * The latest found proto
+     */
+    FoundProto           found;
+    int                  found_offset;
 } PreInfo;
 
 /**

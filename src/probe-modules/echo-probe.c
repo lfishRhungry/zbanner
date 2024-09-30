@@ -32,6 +32,25 @@ static bool echo_validate_response(ProbeTarget *target, const unsigned char *px,
     return false;
 }
 
+static bool echo_validate_unreachable(ProbeTarget         *target,
+                                      const unsigned char *px,
+                                      unsigned             sizeof_px) {
+    if (sizeof_px == 0) {
+        return false;
+    }
+
+    unsigned char needle[4];
+    needle[0] = target->cookie >> 24;
+    needle[1] = target->cookie >> 16;
+    needle[2] = target->cookie >> 8;
+    needle[3] = target->cookie >> 0;
+
+    if (safe_memmem(px, sizeof_px, needle, 4))
+        return true;
+
+    return false;
+}
+
 Probe EchoProbe = {
     .name       = "echo",
     .type       = ProbeType_UDP,
@@ -46,10 +65,11 @@ Probe EchoProbe = {
         "by icmp port unreachable messages. Its `validate_reponsed_cb` cannot "
         "be used when making a ScanModule if you like.",
 
-    .init_cb              = &probe_init_nothing,
-    .make_payload_cb      = &echo_make_payload,
-    .validate_response_cb = &echo_validate_response,
-    .handle_response_cb   = &probe_just_report_banner,
-    .handle_timeout_cb    = &probe_no_timeout,
-    .close_cb             = &probe_close_nothing,
+    .init_cb                 = &probe_init_nothing,
+    .make_payload_cb         = &echo_make_payload,
+    .validate_response_cb    = &echo_validate_response,
+    .validate_unreachable_cb = &echo_validate_unreachable,
+    .handle_response_cb      = &probe_just_report_banner,
+    .handle_timeout_cb       = &probe_no_timeout,
+    .close_cb                = &probe_close_nothing,
 };

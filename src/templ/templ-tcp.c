@@ -175,7 +175,7 @@ static bool _consistancy_check(const unsigned char *buf, size_t length,
     /* Check the lengths */
     switch (parsed.ip_version) {
         case 4:
-            if (parsed.ip_length + 14 != length) {
+            if (parsed.ip_v4_length + 14 != length) {
                 LOG(LEVEL_ERROR, "check: IP length bad\n");
                 goto fail;
             }
@@ -1127,7 +1127,7 @@ size_t tcp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
         U32_TO_BE(px + offset_ip + 16, ip_them.ipv4);
 
         xsum_ip =
-            (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.length);
+            (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.offset_app);
         U16_TO_BE(px + offset_ip + 10, xsum_ip);
 
         /*

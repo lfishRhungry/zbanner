@@ -35,7 +35,7 @@ unsigned char default_tcp_template[] =
 
     "\x45" /* IP type */
     "\x00"
-    "\x00\x28" /* total length = 40 bytes */
+    "\x00\x28" /* total length from ip = 40 bytes */
     "\x00\x00" /* identification */
     "\x00\x00" /* fragmentation flags */
     "\xFF\x06" /* TTL=255, proto=TCP */
@@ -65,7 +65,7 @@ unsigned char default_tcp_syn_template[] =
 
     "\x45" /* IP type */
     "\x00"
-    "\x00\x2c" /* total length = 44 bytes */
+    "\x00\x2c" /* total length from ip = 44 bytes */
     "\x00\x00" /* identification */
     "\x00\x00" /* fragmentation flags */
     "\xFF\x06" /* TTL=255, proto=TCP */
@@ -96,7 +96,7 @@ unsigned char default_tcp_rst_template[] =
 
     "\x45" /* IP type */
     "\x00"
-    "\x00\x28" /* total length = 40 bytes */
+    "\x00\x28" /* total length from ip = 40 bytes */
     "\x00\x00" /* identification */
     "\x00\x00" /* fragmentation flags */
     "\xFF\x06" /* TTL=255, proto=TCP */
@@ -121,7 +121,7 @@ static unsigned char default_udp_template[] =
     "\x08\x00"         /* Ethernet type: IPv4 */
     "\x45"             /* IP type */
     "\x00"
-    "\x00\x1c" /* total length = 28 bytes */
+    "\x00\x1c" /* total length from ip = 28 bytes */
     "\x00\x00" /* identification */
     "\x00\x00" /* fragmentation flags */
     "\xFF\x11" /* TTL=255, proto=UDP */
@@ -133,6 +133,7 @@ static unsigned char default_udp_template[] =
     "\x00\x00" /* destination port */
     "\x00\x08" /* length */
     "\x00\x00" /* checksum */
+    /* payload */
     ;
 
 static unsigned char default_sctp_template[] =
@@ -141,7 +142,7 @@ static unsigned char default_sctp_template[] =
     "\x08\x00"         /* Ethernet type: IPv4 */
     "\x45"             /* IP type */
     "\x00"
-    "\x00\x34" /* total length = 52 bytes */
+    "\x00\x34" /* total length from ip = 52 bytes */
     "\x00\x00" /* identification */
     "\x00\x00" /* fragmentation flags */
     "\xFF\x84" /* TTL=255, proto = SCTP */
@@ -169,7 +170,7 @@ static unsigned char default_icmp_ping_template[] =
     "\x08\x00"         /* Ethernet type: IPv4 */
     "\x45"             /* IP type */
     "\x00"
-    "\x00\x4c" /* total length = 76 bytes */
+    "\x00\x1C" /* total length from ip = 44 bytes */
     "\x00\x00" /* identification */
     "\x00\x00" /* fragmentation flags */
     "\xFF\x01" /* TTL=255, proto=ICMP */
@@ -179,21 +180,11 @@ static unsigned char default_icmp_ping_template[] =
 
     "\x08\x00" /* Ping Request */
     "\x00\x00" /* checksum */
+    "\x00\x00" /* identifier */
+    "\x00\x00" /* sequence number */
 
-    "\x00\x00\x00\x00" /* ID, seqno */
-
-    "\x08\x09\x0a\x0b" /* payload */
-    "\x0c\x0d\x0e\x0f"
-    "\x10\x11\x12\x13"
-    "\x14\x15\x16\x17"
-    "\x18\x19\x1a\x1b"
-    "\x1c\x1d\x1e\x1f"
-    "\x20\x21\x22\x23"
-    "\x24\x25\x26\x27"
-    "\x28\x29\x2a\x2b"
-    "\x2c\x2d\x2e\x2f"
-    "\x30\x31\x32\x33"
-    "\x34\x35\x36\x37";
+    /* payload */
+    ;
 
 static unsigned char default_icmp_timestamp_template[] =
     "\0\1\2\3\4\5"     /* Ethernet: destination */
@@ -201,7 +192,7 @@ static unsigned char default_icmp_timestamp_template[] =
     "\x08\x00"         /* Ethernet type: IPv4 */
     "\x45"             /* IP type */
     "\x00"
-    "\x00\x28" /* total length = 40 bytes */
+    "\x00\x28" /* total length from ip = 40 bytes */
     "\x00\x00" /* identification */
     "\x00\x00" /* fragmentation flags */
     "\xFF\x01" /* TTL=255, proto=ICMP */
@@ -213,9 +204,11 @@ static unsigned char default_icmp_timestamp_template[] =
     "\x00\x00" /* checksum */
     "\x00\x00" /* identifier */
     "\x00\x00" /* sequence number */
-    "\x00\x00\x00\x00"
-    "\x00\x00\x00\x00"
-    "\x00\x00\x00\x00";
+
+    "\x00\x00\x00\x00" /* originate timestamp */
+    "\x00\x00\x00\x00" /* receive timestamp */
+    "\x00\x00\x00\x00" /* transmit timestamp */
+    ;
 
 static unsigned char default_arp_template[] =
     "\xff\xff\xff\xff\xff\xff" /* Ethernet: destination */
@@ -238,7 +231,7 @@ static unsigned char default_ndp_ns_template[] =
     "\x08\x00"         /* Ethernet type: IPv4 */
     "\x45"             /* IP type */
     "\x00"
-    "\x00\x34" /* total length = 54 bytes */
+    "\x00\x34" /* total length from ip = 54 bytes */
     "\x00\x00" /* identification */
     "\x00\x00" /* fragmentation flags */
     "\xFF\x01" /* TTL=255, proto=ICMP (should be converted while initing...)
@@ -415,7 +408,7 @@ static void _template_init(TmplPkt *tmpl, macaddress_t source_mac,
     if (parsed.found == FOUND_ARP) {
         tmpl->ipv4.length = parsed.ip_offset + 28;
     } else
-        tmpl->ipv4.length = parsed.ip_offset + parsed.ip_length;
+        tmpl->ipv4.length = parsed.ip_offset + parsed.ip_v4_length;
 
     /*
      * Overwrite the MAC and IP addresses
@@ -456,7 +449,6 @@ static void _template_init(TmplPkt *tmpl, macaddress_t source_mac,
      */
     switch (parsed.ip_protocol) {
         case IP_PROTO_ICMP:
-            tmpl->ipv4.offset_app = tmpl->ipv4.length;
             switch (px[tmpl->ipv4.offset_tcp]) {
                 case ICMPv4_TYPE_ECHO_REQUEST:
                     tmpl->tmpl_type = TmplType_ICMP_ECHO;

@@ -555,18 +555,18 @@ Probe SnmpProbe = {
     .params     = NULL,
     .short_desc = "Do SNMP scan and try to get some host info.",
     .desc = "SnmpProbe sends an snmp(v1) request with community `public` and "
-            "expects"
-            " sysName and sysDesc of target. The default snmp(over udp) port "
-            "is 161.\n"
-            "NOTE: SnmpProbe is capable of obtaining the basic info on snmp(v1 "
-            "or v2c)"
-            " theoretically but cannot identifying whether the port is serving "
-            "of snmp protocol.",
+            "expects sysName and sysDesc of target. The default snmp(over udp) "
+            "port is 161.\n"
+            "NOTE1: SnmpProbe is capable of obtaining the basic info on snmp(v1"
+            " or v2c) theoretically but cannot identifying whether the port is "
+            "serving of snmp protocol.\n"
+            "NOTE2: SnmpProbe doesn't process port unreachable.",
 
-    .init_cb              = &snmp_init,
-    .make_payload_cb      = &snmp_make_payload,
-    .validate_response_cb = &probe_all_valid,
-    .handle_response_cb   = &snmp_handle_response,
-    .handle_timeout_cb    = &snmp_handle_timeout,
-    .close_cb             = &snmp_close,
+    .init_cb                 = &snmp_init,
+    .make_payload_cb         = &snmp_make_payload,
+    .validate_response_cb    = &probe_all_response_valid,
+    .validate_unreachable_cb = &probe_all_unreachable_invalid,
+    .handle_response_cb      = &snmp_handle_response,
+    .handle_timeout_cb       = &snmp_handle_timeout,
+    .close_cb                = &snmp_close,
 };

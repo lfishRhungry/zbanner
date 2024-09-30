@@ -96,7 +96,8 @@ static size_t udp_create_by_template_ipv4(
     px[offset_ip + 10] = (unsigned char)(0);
     px[offset_ip + 11] = (unsigned char)(0);
 
-    xsum_ip = (unsigned)~checksum_ip_header(px, offset_ip, r_len);
+    xsum_ip =
+        (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.offset_app);
     U16_TO_BE(px + offset_ip + 10, xsum_ip);
 
     /*

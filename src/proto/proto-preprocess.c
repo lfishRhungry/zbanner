@@ -105,7 +105,7 @@ parse_ipv4: {
     info->dst_ip.version = 4;
     info->ip_ttl         = px[offset + 8];
     info->ip_protocol    = px[offset + 9];
-    info->ip_length      = total_length;
+    info->ip_v4_length   = total_length;
 
     if (info->ip_version != 4)
         return false;
@@ -162,8 +162,14 @@ parse_udp: {
 
 parse_icmp: {
     VERIFY_REMAINING(4, FOUND_ICMP);
-    info->icmp_type = px[offset + 0];
-    info->icmp_code = px[offset + 1];
+    info->icmp_type  = px[offset + 0];
+    info->icmp_code  = px[offset + 1];
+    info->icmp_id    = BE_TO_U16(px + offset + 4);
+    info->icmp_seq   = BE_TO_U16(px + offset + 6);
+    /*for icmp echo*/
+    info->app_offset = offset + 8;
+    info->app_length = length - info->app_offset;
+
     return true;
 }
 
@@ -255,18 +261,18 @@ parse_ipv6_hop_by_hop: {
     goto parse_ipv6_next;
 
 parse_icmpv6: {
-    unsigned icmp_type;
-    unsigned icmp_code;
-
     VERIFY_REMAINING(4, FOUND_ICMP);
 
-    icmp_type = px[offset + 0];
-    icmp_code = px[offset + 1];
+    info->icmp_type  = px[offset + 0];
+    info->icmp_code  = px[offset + 1];
+    info->icmp_id    = BE_TO_U16(px + offset + 4);
+    info->icmp_seq   = BE_TO_U16(px + offset + 6);
+    /*for icmp echo*/
+    info->app_offset = offset + 8;
+    info->app_length = length - info->app_offset;
 
-    info->icmp_type = icmp_type;
-    info->icmp_code = icmp_code;
-
-    if (ICMPv6_TYPE_RS <= icmp_type && icmp_type <= ICMPv6_TYPE_NA) {
+    if (ICMPv6_TYPE_RS <= info->icmp_type &&
+        info->icmp_type <= ICMPv6_TYPE_NA) {
         info->found = FOUND_NDPv6;
     }
 }
