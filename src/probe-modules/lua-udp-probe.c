@@ -18,10 +18,11 @@
 #define LUA_PROBE_VAR_MULTINUM  "MultiNum"
 #define LUA_PROBE_VAR_PROBEDESC "ProbeDesc"
 
-#define LUA_PROBE_FUNC_MAKE_PAYLOAD      "Make_payload"
-#define LUA_PROBE_FUNC_VALIDATE_RESPONSE "Validate_response"
-#define LUA_PROBE_FUNC_HANDLE_RESPONSE   "Handle_response"
-#define LUA_PROBE_FUNC_HANDLE_TIMEOUT    "Handle_timeout"
+#define LUA_PROBE_FUNC_MAKE_PAYLOAD         "Make_payload"
+#define LUA_PROBE_FUNC_VALIDATE_RESPONSE    "Validate_response"
+#define LUA_PROBE_FUNC_VALIDATE_UNREACHABLE "Validate_unreachable"
+#define LUA_PROBE_FUNC_HANDLE_RESPONSE      "Handle_response"
+#define LUA_PROBE_FUNC_HANDLE_TIMEOUT       "Handle_timeout"
 
 /*for internal x-ref*/
 extern Probe LuaUdpProbe;
@@ -49,7 +50,7 @@ struct LuaUdpConf {
      * Xtate.
      */
     lua_State *Ltx; /*for make_payload*/
-    lua_State *Lrx; /*for validate_response and handle_timeout*/
+    lua_State *Lrx; /*for validate_response/unreachable and handle_timeout*/
     lua_State *Lhx; /*for handle_response*/
 };
 
@@ -310,6 +311,13 @@ static bool luaudp_init(const XConf *xconf) {
         FREE(luaudp_conf.script);
         return false;
     }
+    if (!check_func_exist(LUA_PROBE_FUNC_VALIDATE_UNREACHABLE)) {
+        lua_close(luaudp_conf.Ltx);
+        lua_close(luaudp_conf.Lrx);
+        lua_close(luaudp_conf.Lhx);
+        FREE(luaudp_conf.script);
+        return false;
+    }
     if (!check_func_exist(LUA_PROBE_FUNC_HANDLE_RESPONSE)) {
         lua_close(luaudp_conf.Ltx);
         lua_close(luaudp_conf.Lrx);
@@ -394,6 +402,45 @@ static bool luaudp_validate_response(ProbeTarget         *target,
     if (lua_isboolean(luaudp_conf.Lrx, -1) == 0) {
         LOG(LEVEL_ERROR,
             "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_VALIDATE_RESPONSE
+            "` return error in script %s.\n",
+            luaudp_conf.script);
+        lua_settop(luaudp_conf.Lrx, 0);
+        return false;
+    }
+
+    ret = lua_toboolean(luaudp_conf.Lrx, -1);
+    lua_settop(luaudp_conf.Lrx, 0);
+
+    return ret;
+}
+
+static bool luaudp_validate_unreachable(ProbeTarget         *target,
+                                        const unsigned char *px,
+                                        unsigned             sizeof_px) {
+    bool ret;
+
+    lua_getglobal(luaudp_conf.Lrx, LUA_PROBE_FUNC_VALIDATE_UNREACHABLE);
+    lua_pushstring(luaudp_conf.Lrx,
+                   ipaddress_fmt(target->target.ip_them).string);
+    lua_pushinteger(luaudp_conf.Lrx, target->target.port_them);
+    lua_pushstring(luaudp_conf.Lrx, ipaddress_fmt(target->target.ip_me).string);
+    lua_pushinteger(luaudp_conf.Lrx, target->target.port_me);
+    lua_pushinteger(luaudp_conf.Lrx, target->index);
+    lua_pushinteger(luaudp_conf.Lrx, target->cookie);
+    lua_pushlstring(luaudp_conf.Lrx, (const char *)px, sizeof_px);
+
+    if (lua_pcall(luaudp_conf.Lrx, 7, 1, 0) != LUA_OK) {
+        LOG(LEVEL_ERROR,
+            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_VALIDATE_UNREACHABLE
+            "` execute error in %s: %s\n",
+            luaudp_conf.script, lua_tostring(luaudp_conf.Lrx, -1));
+        lua_settop(luaudp_conf.Lrx, 0);
+        return false;
+    }
+
+    if (lua_isboolean(luaudp_conf.Lrx, -1) == 0) {
+        LOG(LEVEL_ERROR,
+            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_VALIDATE_UNREACHABLE
             "` return error in script %s.\n",
             luaudp_conf.script);
         lua_settop(luaudp_conf.Lrx, 0);
@@ -616,9 +663,10 @@ Probe LuaUdpProbe = {
     "`" LUA_PROBE_VAR_MULTIMODE "`\n"
     "`" LUA_PROBE_VAR_MULTINUM "`\n"
     "`" LUA_PROBE_VAR_PROBEDESC "`\n"
-    "And implement 3 global functions for calling back include:\n"
+    "And implement some global functions for calling back include:\n"
     "`" LUA_PROBE_FUNC_MAKE_PAYLOAD "`\n"
     "`" LUA_PROBE_FUNC_VALIDATE_RESPONSE "`\n"
+    "`" LUA_PROBE_FUNC_VALIDATE_UNREACHABLE "`\n"
     "`" LUA_PROBE_FUNC_HANDLE_RESPONSE "`\n"
     "`" LUA_PROBE_FUNC_HANDLE_TIMEOUT "`\n"
     "NOTE: This is an experimental function and does not support more than "
@@ -627,10 +675,11 @@ Probe LuaUdpProbe = {
     " threads at least and should be careful to thread-safe problems.\n"
     "Dependencies: lua5.3/5.4.",
 
-    .init_cb              = &luaudp_init,
-    .make_payload_cb      = &luaudp_make_payload,
-    .validate_response_cb = &luaudp_validate_response,
-    .handle_response_cb   = &luaudp_handle_response,
-    .handle_timeout_cb    = &luaudp_handle_timeout,
-    .close_cb             = &luaudp_close,
+    .init_cb                 = &luaudp_init,
+    .make_payload_cb         = &luaudp_make_payload,
+    .validate_response_cb    = &luaudp_validate_response,
+    .validate_unreachable_cb = &luaudp_validate_unreachable,
+    .handle_response_cb      = &luaudp_handle_response,
+    .handle_timeout_cb       = &luaudp_handle_timeout,
+    .close_cb                = &luaudp_close,
 };

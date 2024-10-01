@@ -73,6 +73,29 @@ function Validate_response(ip_them, port_them, ip_me, port_me, index, cookie, re
     return true
 end
 
+-- To validate ICMP port unreachable
+---@param ip_them string ip of target in ICMP.
+---@param port_them number port of target in ICMP.
+---@param ip_me string ip of us in ICMP.
+---@param port_me number port of us in ICMP.
+---@param index number index of hello probe in ICMP.
+---@param cookie number suggested cookie of this target
+---@param content string content data of UDP in ICMP.
+---@return boolean if ICMP port unreachable message is valid
+function Validate_unreachable(ip_them, port_them, ip_me, port_me, index, cookie, content)
+    local a = string.pack("B", cookie & 0xFF)
+    if content:sub(1, 1) ~= a then
+        return false
+    end
+
+    local b = string.pack("B", cookie >> 8 & 0xFF)
+    if content:sub(2, 2) ~= b then
+        return false
+    end
+
+    return true
+end
+
 -- To handle reponse data
 ---@param ip_them string ip of target.
 ---@param port_them number port of target.

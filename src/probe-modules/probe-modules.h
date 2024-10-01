@@ -56,7 +56,7 @@ typedef struct ProbeModuleTarget {
  * !Must be implemented.
  * !Must be thread safe for itself.
  *
- * @param target info of a target
+ * @param target info of target
  * @param payload_buf buffer to fill with payload. (Length is PM_PAYLOAD_SIZE)
  * @return paylaod length.
  */
@@ -71,7 +71,7 @@ typedef size_t (*probe_modules_make_payload)(ProbeTarget   *target,
  * !Must check index range in multi-probe
  * !Must be thread safe for itself.
  *
- * @param target info of a target
+ * @param target info of target
  * @return length of payload data
  */
 typedef size_t (*probe_modules_get_payload_length)(ProbeTarget *target);
@@ -90,7 +90,7 @@ typedef size_t (*probe_modules_get_payload_length)(ProbeTarget *target);
  * !Must be implemented for ProbeType_UDP.
  * !Must be thread safe for other funcs.
  *
- * @param target info of a target
+ * @param target info of target
  * @param px response data, it can be zero
  * @param sizeof_px len of reponse
  * @return TRUE if the response is for us.
@@ -109,7 +109,7 @@ typedef bool (*probe_modules_validate_response)(ProbeTarget         *target,
  * !Must be implemented for ProbeType_UDP.
  * !Must be thread safe for other funcs.
  *
- * @param target info of a target in icmp
+ * @param target info of target in icmp
  * @param px payload of udp in icmp port unreachable, it can be zero.
  * @param sizeof_px len of payload.
  * @return TRUE if the port unreachable response is for us.
@@ -126,7 +126,7 @@ typedef bool (*probe_modules_validate_unreachable)(ProbeTarget         *target,
  * !Must be thread safe for other funcs.
  *
  * @param th_idx the index of receive handler thread.
- * @param target info of a target
+ * @param target info of target
  * @param px response data
  * @param sizeof_px len of reponse, must>0
  * @param item to define output content.

@@ -610,7 +610,7 @@ Probe LuaTcpProbe = {
     "`" LUA_PROBE_VAR_MULTIMODE "`\n"
     "`" LUA_PROBE_VAR_MULTINUM "`\n"
     "`" LUA_PROBE_VAR_PROBEDESC "`\n"
-    "And implement 3 global functions for calling back include:\n"
+    "And implement some global functions for calling back include:\n"
     "`" LUA_PROBE_FUNC_MAKE_PAYLOAD "`\n"
     "`" LUA_PROBE_FUNC_GET_PAYLOAD_LEN "`\n"
     "`" LUA_PROBE_FUNC_HANDLE_RESPONSE "`\n"
