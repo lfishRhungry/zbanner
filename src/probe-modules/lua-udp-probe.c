@@ -46,8 +46,7 @@ struct LuaUdpConf {
      * Well, we can't ask lua probe do everything like a real probe module,
      * right?
      *
-     * TODO: Maybe one thread for one Lua VM to support full multi-thread of
-     * Xtate.
+     * TODO: Maybe one thread for one Lua VM to support full multiple threads.
      */
     lua_State *Ltx; /*for make_payload*/
     lua_State *Lrx; /*for validate_response/unreachable and handle_timeout*/
