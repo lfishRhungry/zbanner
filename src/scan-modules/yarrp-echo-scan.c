@@ -118,6 +118,10 @@ static void yarrpecho_validate(uint64_t entropy, Recved *recved,
             get_cookie(ip_them, recved->parsed.icmp_seq, ip_me, 0, entropy);
 
         if (recved->parsed.icmp_id == (cookie & 0xFF)) {
+            /**
+             * We must save all echo replys because the one with min initial TTL
+             * is not always come back firstly.
+             */
             pre->go_dedup        = 1;
             pre->dedup_port_them = recved->parsed.icmp_seq;
             pre->dedup_port_me   = 0;
@@ -138,7 +142,10 @@ static void yarrpecho_validate(uint64_t entropy, Recved *recved,
         if (preprocess_frame(recved->packet + recved->parsed.app_offset,
                              recved->length - recved->parsed.app_offset,
                              PCAP_DLT_RAW, &info)) {
-
+            /**
+             * NOTE:Must use saved TTL instead of the fake one in IP header from
+             * ICMP payload.
+             */
             ipaddress ip_them = info.dst_ip;
             ipaddress ip_me   = info.src_ip;
             unsigned  cookie =
@@ -181,6 +188,10 @@ static void yarrpecho_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(info.dst_ip);
         safe_strcpy(item->reason, OUT_RSN_SIZE, "ttl exceeded");
         safe_strcpy(item->classification, OUT_CLS_SIZE, "path");
+        /**
+         * NOTE:Must use saved TTL instead of the fake one in IP header from
+         * ICMP payload.
+         */
         dach_set_int(&item->report, "distance", info.icmp_seq);
         dach_append(&item->report, "destination", ip_them_fmt.string,
                     strlen(ip_them_fmt.string), LinkType_String);
@@ -207,7 +218,8 @@ Scanner YarrpEchoScan = {
         "to target hosts and expects ICMP Echo Rely or ICMP TTL/Hop Limit "
         "Exceeded message for tracing the route path. This scanner uses the "
         "core idea of the stateless traceroute tool Yarrp, so it sends all "
-        "target/ttl combinations in random.\n"
+        "target/ttl combinations in random. We need to reconstruct the paths "
+        "off-linely with the discrete results of because of stateless.\n"
         "NOTE1: YarrpEcho needs to specify TTL ranges manually by \"Other\" "
         "port type. E.g. `--port o:1-20` means TTL range from 1 to 20.\n"
         "NOTE2: We should care the network pressure of hosts in the path. "
