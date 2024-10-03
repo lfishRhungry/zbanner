@@ -30,7 +30,7 @@
       |                                                               |
 */
 
-/* echo or echo reply ICMP(v4/v6) according to RFC792 and RFC4443.
+/* echo request and reply ICMP(v4/v6) according to RFC792 and RFC4443.
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -41,7 +41,7 @@
    |     Data ...
    +-+-+-+-+-
 
-   So we set cookie on `Identifier` and `Sequence Number` fields when echoing.
+   So we set messages in `Identifier` and `Sequence Number` fields for echoing.
 */
 
 /*
