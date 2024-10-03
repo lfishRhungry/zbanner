@@ -111,7 +111,10 @@ size_t icmp_timestamp_create_packet(ipaddress ip_them, const ipaddress ip_me,
                                     size_t sizeof_px);
 
 /**
- * get detail of icmp port unreachable info
+ * Get detail info from icmp port unreachable message payload.
+ * NOTE:This function could be deprecated now because we can use preprocess
+ * frame function from `proto-preprocess.h` to parse packet recursively.
+ *
  * @param transport_px packet data over IP
  * @param length len of transport_px
  * @param r_ip_them for ret ip_them
