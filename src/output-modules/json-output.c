@@ -63,10 +63,6 @@ static bool json_init(const XConf *xconf, const OutConf *out) {
 static void json_result(OutItem *item) {
     int err;
 
-    bool output_port = (item->target.ip_proto == IP_PROTO_TCP ||
-                        item->target.ip_proto == IP_PROTO_UDP ||
-                        item->target.ip_proto == IP_PROTO_SCTP);
-
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
     ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(item->target.ip_me);
 
@@ -79,7 +75,7 @@ static void json_result(OutItem *item) {
     if (err < 0)
         goto error;
 
-    if (output_port) {
+    if (!item->no_port) {
         err = fprintf(file, fmt_json_port_them, item->target.port_them);
         if (err < 0)
             goto error;
@@ -89,7 +85,7 @@ static void json_result(OutItem *item) {
     if (err < 0)
         goto error;
 
-    if (output_port) {
+    if (!item->no_port) {
         err = fprintf(file, fmt_json_port_me, item->target.port_me);
         if (err < 0)
             goto error;

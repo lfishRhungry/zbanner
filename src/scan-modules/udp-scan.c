@@ -136,10 +136,12 @@ static void udp_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     /*parse UDP packet in ICMP port unreachable message payload*/
     if (IP_PROTO_UDP == get_icmp_upper_proto(recved->packet +
                                              recved->parsed.transport_offset)) {
-        PreInfo info = {0};
-        if (preprocess_frame(recved->packet + recved->parsed.app_offset,
-                             recved->length - recved->parsed.app_offset,
-                             PCAP_DLT_RAW, &info)) {
+
+        unsigned char *icmp_app = recved->packet + recved->parsed.app_offset;
+        unsigned icmp_app_len   = recved->length - recved->parsed.app_offset;
+        PreInfo  info           = {0};
+
+        if (preprocess_frame(icmp_app, icmp_app_len, PCAP_DLT_RAW, &info)) {
             ProbeTarget utarget = {.target.ip_them   = info.dst_ip,
                                    .target.port_them = info.port_dst,
                                    .target.ip_me     = info.src_ip,
@@ -151,12 +153,11 @@ static void udp_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
                 utarget.target.ip_me, utarget.target.port_me, entropy);
             utarget.index = utarget.target.port_me - src_port_start;
 
-            if (UdpScan.probe->validate_unreachable_cb(
-                    &utarget,
-                    recved->packet + recved->parsed.app_offset +
-                        info.app_offset,
-                    recved->length - recved->parsed.app_offset -
-                        info.app_offset)) {
+            unsigned char *udp_app     = icmp_app + info.app_offset;
+            unsigned       udp_app_len = icmp_app_len - info.app_offset;
+
+            if (UdpScan.probe->validate_unreachable_cb(&utarget, udp_app,
+                                                       udp_app_len)) {
                 pre->go_record       = 1;
                 pre->go_dedup        = 1;
                 pre->dedup_port_me   = utarget.target.port_me;
@@ -290,12 +291,13 @@ static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         preprocess_frame(recved->packet + recved->parsed.app_offset,
                          recved->length - recved->parsed.app_offset,
                          PCAP_DLT_RAW, &info);
+
         item->level            = OUT_FAILURE;
         item->target.ip_them   = info.dst_ip;
         item->target.port_them = info.port_dst;
         item->target.ip_me     = info.src_ip;
         item->target.port_me   = info.port_src;
-        item->target.ip_proto  = info.ip_protocol;
+
         safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
         safe_strcpy(item->reason, OUT_RSN_SIZE, "port unreachable");
     }

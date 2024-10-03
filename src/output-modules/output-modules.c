@@ -183,10 +183,6 @@ static void output_result_to_stdout(OutItem *item) {
     // ipaddress_formatted_t ip_me_fmt = ipaddress_fmt(item->target.ip_me);
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
 
-    bool output_port = (item->target.ip_proto == IP_PROTO_TCP ||
-                        item->target.ip_proto == IP_PROTO_UDP ||
-                        item->target.ip_proto == IP_PROTO_SCTP);
-
     unsigned count = 0;
 
     if (_output_ansi) {
@@ -221,7 +217,7 @@ static void output_result_to_stdout(OutItem *item) {
             count = fprintf(stdout, fmt_host, "[?]", ip_them_fmt.string);
     }
 
-    if (output_port) {
+    if (!item->no_port) {
         count += fprintf(stdout, fmt_port, item->target.port_them);
     }
 

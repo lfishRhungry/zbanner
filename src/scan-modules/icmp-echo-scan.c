@@ -118,6 +118,7 @@ static void icmpecho_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                             OutItem *item, STACK *stack, FHandler *handler) {
     item->target.port_them = 0;
     item->target.port_me   = 0;
+    item->no_port          = 1;
     item->level            = OUT_SUCCESS;
 
     safe_strcpy(item->reason, OUT_RSN_SIZE, "echo reply");
@@ -131,7 +132,8 @@ static void icmpecho_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
 
 static void icmpecho_timeout(uint64_t entropy, ScanTmEvent *event,
                              OutItem *item, STACK *stack, FHandler *handler) {
-    item->level = OUT_FAILURE;
+    item->no_port = 1;
+    item->level   = OUT_FAILURE;
     safe_strcpy(item->classification, OUT_CLS_SIZE, "down");
     safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
 }

@@ -41,13 +41,9 @@ static bool text_init(const XConf *xconf, const OutConf *out) {
 }
 
 static void text_result(OutItem *item) {
-    ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
-
-    bool output_port = (item->target.ip_proto == IP_PROTO_TCP ||
-                        item->target.ip_proto == IP_PROTO_UDP ||
-                        item->target.ip_proto == IP_PROTO_SCTP);
-
     int err = 0;
+
+    ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
 
     switch (item->level) {
         case OUT_SUCCESS:
@@ -66,7 +62,7 @@ static void text_result(OutItem *item) {
     if (err < 0)
         goto error;
 
-    if (output_port) {
+    if (!item->no_port) {
         err = fprintf(file, fmt_port, item->target.port_them);
         if (err < 0)
             goto error;

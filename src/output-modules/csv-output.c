@@ -8,28 +8,38 @@ extern Output CsvOutput; /*for internal x-ref*/
 
 static FILE *file;
 
-static const char header_csv[]         = "time,"
-                                         "level,"
-                                         "ip_proto,"
-                                         "ip_them,"
-                                         "port_them,"
-                                         "ip_me,"
-                                         "port_me,"
-                                         "classification,"
-                                         "reason,"
-                                         "report"
-                                         "\n";
-static const char fmt_csv_prefix[]     = "%s,"
-                                         "%s,"
-                                         "%s,"
-                                         "%s,"
-                                         "%u,"
-                                         "%s,"
-                                         "%u,"
-                                         "%s,"
-                                         "%s,"
-                                         "\"{";
-static const char fmt_csv_str_inffix[] = "\"\"%s\"\":\"\"%s\"\",";
+static const char header_csv[]             = "time,"
+                                             "level,"
+                                             "ip_proto,"
+                                             "ip_them,"
+                                             "port_them,"
+                                             "ip_me,"
+                                             "port_me,"
+                                             "classification,"
+                                             "reason,"
+                                             "report"
+                                             "\n";
+static const char fmt_csv_prefix[]         = "%s,"
+                                             "%s,"
+                                             "%s,"
+                                             "%s,"
+                                             "%u,"
+                                             "%s,"
+                                             "%u,"
+                                             "%s,"
+                                             "%s,"
+                                             "\"{";
+static const char fmt_csv_prefix_no_port[] = "%s,"
+                                             "%s,"
+                                             "%s,"
+                                             "%s,"
+                                             ","
+                                             "%s,"
+                                             ","
+                                             "%s,"
+                                             "%s,"
+                                             "\"{";
+static const char fmt_csv_str_inffix[]     = "\"\"%s\"\":\"\"%s\"\",";
 static const char fmt_csv_bin_inffix[] = "\"\"%s\"\":\"\"(%u bytes bin)\"\",";
 static const char fmt_csv_int_inffix[] = "\"\"%s\"\":%" PRIu64 ",";
 static const char fmt_csv_double_inffix[] = "\"\"%s\"\":%.2f,";
@@ -67,21 +77,27 @@ static bool csv_init(const XConf *xconf, const OutConf *out) {
 }
 
 static void csv_result(OutItem *item) {
-    bool output_port = (item->target.ip_proto == IP_PROTO_TCP ||
-                        item->target.ip_proto == IP_PROTO_UDP ||
-                        item->target.ip_proto == IP_PROTO_SCTP);
+    int err = 0;
 
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
     ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(item->target.ip_me);
 
     iso8601_time_str(format_time, sizeof(format_time), &item->timestamp);
 
-    int err = fprintf(
-        file, fmt_csv_prefix, format_time, output_level_to_string(item->level),
-        ip_proto_to_string(item->target.ip_proto), ip_them_fmt.string,
-        output_port ? item->target.port_them : 0, ip_me_fmt.string,
-        output_port ? item->target.port_me : 0, item->classification,
-        item->reason);
+    if (item->no_port) {
+        err = fprintf(file, fmt_csv_prefix_no_port, format_time,
+                      output_level_to_string(item->level),
+                      ip_proto_to_string(item->target.ip_proto),
+                      ip_them_fmt.string, ip_me_fmt.string,
+                      item->classification, item->reason);
+    } else {
+        err = fprintf(file, fmt_csv_prefix, format_time,
+                      output_level_to_string(item->level),
+                      ip_proto_to_string(item->target.ip_proto),
+                      ip_them_fmt.string, item->target.port_them,
+                      ip_me_fmt.string, item->target.port_me,
+                      item->classification, item->reason);
+    }
 
     if (err < 0)
         goto error;

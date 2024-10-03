@@ -94,11 +94,7 @@ static void bsonout_result(OutItem *item) {
         BSON_APPEND_UTF8(res_doc, "ip_me", ip_me_fmt.string);
     }
 
-    bool output_port = (item->target.ip_proto == IP_PROTO_TCP ||
-                        item->target.ip_proto == IP_PROTO_UDP ||
-                        item->target.ip_proto == IP_PROTO_SCTP);
-
-    if (output_port) {
+    if (!item->no_port) {
         BSON_APPEND_INT32(res_doc, "port_them", item->target.port_them);
         BSON_APPEND_INT32(res_doc, "port_me", item->target.port_me);
     }

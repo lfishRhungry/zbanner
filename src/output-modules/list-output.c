@@ -58,18 +58,12 @@ static bool list_init(const XConf *xconf, const OutConf *out) {
 static void list_result(OutItem *item) {
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
 
-    bool output_port = (item->target.ip_proto == IP_PROTO_TCP ||
-                        item->target.ip_proto == IP_PROTO_UDP ||
-                        item->target.ip_proto == IP_PROTO_SCTP);
-
-    int err = 0;
-
-    err = fprintf(file, fmt_host, ip_them_fmt.string);
+    int err = fprintf(file, fmt_host, ip_them_fmt.string);
 
     if (err < 0)
         goto error;
 
-    if (output_port && !list_conf.no_port) {
+    if (!item->no_port && !list_conf.no_port) {
         switch (item->target.ip_proto) {
             case IP_PROTO_TCP:
                 err = fprintf(file, fmt_port, "", item->target.port_them);

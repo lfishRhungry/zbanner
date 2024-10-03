@@ -164,6 +164,7 @@ static void yarrpecho_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                              OutItem *item, STACK *stack, FHandler *handler) {
     item->target.port_them = 0;
     item->target.port_me   = 0;
+    item->no_port          = 1;
     item->level            = OUT_SUCCESS;
 
     /*echo reply*/

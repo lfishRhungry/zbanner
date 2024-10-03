@@ -57,6 +57,8 @@ typedef struct OutputItem {
     DataChain report;
     /**This result item won't be output if it set to true*/
     unsigned  no_output : 1;
+    /**Port info won't be output if it set to true*/
+    unsigned  no_port   : 1;
 } OutItem;
 
 typedef struct OutputConfig {
