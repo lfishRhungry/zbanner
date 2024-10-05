@@ -414,6 +414,9 @@ bool parse_icmp_port_unreachable(const unsigned char *transport_px,
         /*length of ipv6 header is fixed*/
         trans_header = (unsigned char *)ip_header + 40;
         trans_len    = icmp_payload_len - 40;
+    } else {
+        /*invalid ip version*/
+        return false;
     }
 
     if (*r_ip_proto == IP_PROTO_UDP) {
