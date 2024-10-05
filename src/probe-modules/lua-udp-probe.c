@@ -185,7 +185,6 @@ static bool luaudp_init(const XConf *xconf) {
     }
 
     /* Dynamically link the library*/
-    stublua_init();
     if (!stublua_init()) {
         LOG(LEVEL_ERROR, "Failed to init lua library dynamicly.\n");
         LOG(LEVEL_ERROR,
