@@ -143,8 +143,9 @@ Output BsonOutput = {
         "store and exchange data in a compact and efficient way. It is similar "
         "to JSON but stores data in a binary format, making it more efficient "
         "for data storage and transmission.\n"
-        "NOTE1: BsonOutput saves every results as a BSON document to file.\n "
-        "NOTE2: BsonOutput could save binary type of fields in results.\n"
+        "NOTE1: BsonOutput saves all results as a series of BSON documents to "
+        "file.\n "
+        "NOTE2: BsonOutput could save complete binary type fields in results.\n"
         "NOTE3: " XTATE_NAME_TITLE_CASE
         " could decode BSON result file to JSON format with `--parse-bson` "
         "parameter. Or we can use bsondump tool to decode it.\n"

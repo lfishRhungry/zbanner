@@ -11,7 +11,7 @@ Output NullOutput = {
     .need_file = false,
     .params    = NULL,
     .desc =
-        "NullOutput doesn't save any results and is convenient for debugging. ",
+        "NullOutput doesn't save any results and is convenient for debugging.",
 
     .init_cb   = &output_init_nothing,
     .result_cb = &output_result_nothing,

@@ -167,11 +167,8 @@ Output JsonOutput = {
     .desc =
         "JsonOutput save results in json format in pretty style to "
         "specified file.\n"
-        "NOTE1: JsonOutput doesn't convert any escaped chars from result "
-        "string and assumes all result string type except ports.\n"
-        "NOTE2: Output results from some modules is not standard in JSON string"
-        ". e.g. \"\\x00\\x01\" should be \"\\\\x00\\\\x01\" for JSON. But I "
-        "havn't found good way to solve this JSON-special problem.\n"
+        "NOTE1: JsonOutput doesn't convert any escaped chars actively.\n"
+        "NOTE2: Output results from some modules is not standard JSON string.\n"
         "NOTE3: JsonOutput would generate large file if the number of results "
         "is large. However, json in pretty style is just for human read-well.",
 

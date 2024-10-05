@@ -140,13 +140,11 @@ Output NdjsonOutput = {
     .params     = NULL,
     .short_desc = "Save results in NDJSON format.",
     .desc =
-        "NdjsonOutput save results in newline-delimited json(ndjson) format to "
-        "specified file.\n"
-        "NOTE1: NdjsonOutput doesn't convert any escaped chars from result "
-        "string and assumes all result string type except ports.\n"
-        "NOTE2: Output results from some modules is not standard in JSON string"
-        ". e.g. \"\\x00\\x01\" should be \"\\\\x00\\\\x01\" for JSON. But I "
-        "havn't found good way to solve this JSON-special problem.",
+        "NdjsonOutput save results in Newline-Delimited JSON(NDJSON) format to "
+        "specified file. The format is also called JSONL(ines) and its filename"
+        " suffix can be '.jsonl'.\n"
+        "NOTE1: NdjsonOutput doesn't convert any escaped chars actively.\n"
+        "NOTE2: Results from some modules is not standard string for JSON.",
 
     .init_cb   = &ndjson_init,
     .result_cb = &ndjson_result,

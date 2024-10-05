@@ -127,8 +127,7 @@ Output TextOutput = {
     .name      = "text",
     .need_file = true,
     .params    = NULL,
-    .desc = "TextOutput save results same as stdout to specified file without "
-            "color.",
+    .desc      = "TextOutput save results in text format to specified file.",
 
     .init_cb   = &text_init,
     .result_cb = &text_result,
