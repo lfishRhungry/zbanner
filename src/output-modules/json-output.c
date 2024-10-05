@@ -8,9 +8,9 @@ extern Output NdjsonOutput; /*for internal x-ref*/
 
 static FILE *file;
 
-static const char header_json[]        = "[\n";
+static const char header_json[]        = "[";
 static const char tail_json[]          = "\n]\n";
-static const char fmt_json_prefix[]    = "    {\n"
+static const char fmt_json_prefix[]    = ",\n    {\n"
                                          "        \"time\": \"%s\",\n"
                                          "        \"level\": \"%s\",\n"
                                          "        \"ip_proto\": \"%s\",\n"
@@ -20,19 +20,21 @@ static const char fmt_json_ip_me[]     = "        \"ip_me\": \"%s\",\n";
 static const char fmt_json_port_me[]   = "        \"port_me\": %u,\n";
 static const char fmt_json_inffix[]    = "        \"classification\": \"%s\",\n"
                                          "        \"reason\": \"%s\",\n"
-                                         "        \"report\": {\n";
-static const char fmt_json_str_inffix[] = "            \"%s\": \"%s\",\n";
+                                         "        \"report\": {";
+static const char fmt_json_str_inffix[] = ",\n            \"%s\": \"%s\"";
 static const char fmt_json_bin_inffix[] =
-    "            \"%s\": \"(%u bytes bin)\",\n";
-static const char fmt_json_int_inffix[] = "            \"%s\": %" PRIu64 ",\n";
-static const char fmt_json_double_inffix[] = "            \"%s\": %.2f,\n";
-static const char fmt_json_true_inffix[]   = "            \"%s\": true,\n";
-static const char fmt_json_false_inffix[]  = "            \"%s\": false,\n";
-static const char fmt_json_suffix[]        = "        }\n" /*close report*/
-                                      "    },"             /*cose all*/
-                                      "\n";
+    ",\n            \"%s\": \"(%u bytes bin)\"";
+static const char fmt_json_int_inffix[]    = ",\n            \"%s\": %" PRIu64;
+static const char fmt_json_double_inffix[] = ",\n            \"%s\": %.2f";
+static const char fmt_json_true_inffix[]   = ",\n            \"%s\": true";
+static const char fmt_json_false_inffix[]  = ",\n            \"%s\": false";
+static const char fmt_json_suffix1[]       = "\n        }\n" /*close report*/
+                                       "    }";              /*cose all*/
+static const char fmt_json_suffix2[] = " }\n"                /*close report*/
+                                       "    }";              /*cose all*/
 
-static char format_time[32];
+static char     format_time[32];
+static unsigned is_first_result = 1;
 
 static bool json_init(const XConf *xconf, const OutConf *out) {
     /*a convention*/
@@ -68,9 +70,11 @@ static void json_result(OutItem *item) {
 
     iso8601_time_str(format_time, sizeof(format_time), &item->timestamp);
 
-    err = fprintf(
-        file, fmt_json_prefix, format_time, output_level_to_string(item->level),
-        ip_proto_to_string(item->target.ip_proto), ip_them_fmt.string);
+    err =
+        fprintf(file, fmt_json_prefix + is_first_result, format_time,
+                output_level_to_string(item->level),
+                ip_proto_to_string(item->target.ip_proto), ip_them_fmt.string);
+    is_first_result = 0;
 
     if (err < 0)
         goto error;
@@ -95,42 +99,43 @@ static void json_result(OutItem *item) {
     if (err < 0)
         goto error;
 
-    DataLink *pre = item->report.link;
+    DataLink *pre      = item->report.link;
+    unsigned  is_first = 1; /*no comma for first item*/
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
-            err = fprintf(file, fmt_json_str_inffix, pre->next->name,
+            err = fprintf(file, fmt_json_str_inffix + is_first, pre->next->name,
                           pre->next->value_data);
         } else if (pre->next->link_type == LinkType_Int) {
-            err = fprintf(file, fmt_json_int_inffix, pre->next->name,
+            err = fprintf(file, fmt_json_int_inffix + is_first, pre->next->name,
                           pre->next->value_int);
         } else if (pre->next->link_type == LinkType_Double) {
-            err = fprintf(file, fmt_json_double_inffix, pre->next->name,
-                          pre->next->value_double);
+            err = fprintf(file, fmt_json_double_inffix + is_first,
+                          pre->next->name, pre->next->value_double);
         } else if (pre->next->link_type == LinkType_Bool) {
             err = fprintf(file,
-                          pre->next->value_bool ? fmt_json_true_inffix
-                                                : fmt_json_false_inffix,
+                          pre->next->value_bool
+                              ? fmt_json_true_inffix + is_first
+                              : fmt_json_false_inffix + is_first,
                           pre->next->name);
         } else if (pre->next->link_type == LinkType_Binary) {
-            err = fprintf(file, fmt_json_bin_inffix, pre->next->name,
+            err = fprintf(file, fmt_json_bin_inffix + is_first, pre->next->name,
                           pre->next->data_len);
         }
 
         if (err < 0)
             goto error;
 
-        pre = pre->next;
+        pre      = pre->next;
+        is_first = 0;
     }
 
     /*at least one report, overwrite the last comma*/
     if (item->report.link->next) {
-        fseek(file, -2, SEEK_CUR);
-        err = fputs("\n", file);
-        if (err < 0)
-            goto error;
+        err = fprintf(file, fmt_json_suffix1);
+    } else {
+        err = fprintf(file, fmt_json_suffix2);
     }
 
-    err = fprintf(file, fmt_json_suffix);
     if (err < 0)
         goto error;
 
@@ -142,7 +147,6 @@ error:
 
 static void json_close(const OutConf *out) {
 
-    fseek(file, -2, SEEK_CUR);
     int err = fputs(tail_json, file);
 
     if (err < 0) {

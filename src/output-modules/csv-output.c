@@ -39,12 +39,12 @@ static const char fmt_csv_prefix_no_port[] = "%s,"
                                              "%s,"
                                              "%s,"
                                              "\"{";
-static const char fmt_csv_str_inffix[]     = "\"\"%s\"\":\"\"%s\"\",";
-static const char fmt_csv_bin_inffix[] = "\"\"%s\"\":\"\"(%u bytes bin)\"\",";
-static const char fmt_csv_int_inffix[] = "\"\"%s\"\":%" PRIu64 ",";
-static const char fmt_csv_double_inffix[] = "\"\"%s\"\":%.2f,";
-static const char fmt_csv_true_inffix[]   = "\"\"%s\"\":true,";
-static const char fmt_csv_false_inffix[]  = "\"\"%s\"\":false,";
+static const char fmt_csv_str_inffix[]     = ",\"\"%s\"\":\"\"%s\"\"";
+static const char fmt_csv_bin_inffix[] = ",\"\"%s\"\":\"\"(%u bytes bin)\"\"";
+static const char fmt_csv_int_inffix[] = ",\"\"%s\"\":%" PRIu64;
+static const char fmt_csv_double_inffix[] = ",\"\"%s\"\":%.2f";
+static const char fmt_csv_true_inffix[]   = ",\"\"%s\"\":true";
+static const char fmt_csv_false_inffix[]  = ",\"\"%s\"\":false";
 static const char fmt_csv_suffix[]        = "}\""
                                             "\n";
 
@@ -102,37 +102,36 @@ static void csv_result(OutItem *item) {
     if (err < 0)
         goto error;
 
-    DataLink *pre = item->report.link;
+    DataLink *pre      = item->report.link;
+    unsigned  is_first = 1; /*no comma for first item*/
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
-            err = fprintf(file, fmt_csv_str_inffix, pre->next->name,
+            err = fprintf(file, fmt_csv_str_inffix + is_first, pre->next->name,
                           pre->next->value_data);
         } else if (pre->next->link_type == LinkType_Int) {
-            err = fprintf(file, fmt_csv_int_inffix, pre->next->name,
+            err = fprintf(file, fmt_csv_int_inffix + is_first, pre->next->name,
                           pre->next->value_int);
         } else if (pre->next->link_type == LinkType_Double) {
-            err = fprintf(file, fmt_csv_double_inffix, pre->next->name,
-                          pre->next->value_double);
+            err = fprintf(file, fmt_csv_double_inffix + is_first,
+                          pre->next->name, pre->next->value_double);
         } else if (pre->next->link_type == LinkType_Bool) {
-            err = fprintf(file,
-                          pre->next->value_bool ? fmt_csv_true_inffix
-                                                : fmt_csv_false_inffix,
-                          pre->next->name);
+            err =
+                fprintf(file,
+                        pre->next->value_bool ? fmt_csv_true_inffix + is_first
+                                              : fmt_csv_false_inffix + is_first,
+                        pre->next->name);
         } else if (pre->next->link_type == LinkType_Binary) {
-            err = fprintf(file, fmt_csv_bin_inffix, pre->next->name,
+            err = fprintf(file, fmt_csv_bin_inffix + is_first, pre->next->name,
                           pre->next->data_len);
         }
 
         if (err < 0)
             goto error;
 
-        pre = pre->next;
+        pre      = pre->next;
+        is_first = 0;
     }
 
-    /*at least one report, overwrite the last comma*/
-    if (item->report.link->next) {
-        fseek(file, -1, SEEK_CUR);
-    }
     err = fprintf(file, fmt_csv_suffix);
     if (err < 0)
         goto error;

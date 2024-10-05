@@ -19,12 +19,12 @@ static const char fmt_ndjson_port_me[]       = "\"port_me\":%u,";
 static const char fmt_ndjson_inffix[]        = "\"classification\":\"%s\","
                                                "\"reason\":\"%s\","
                                                "\"report\":{";
-static const char fmt_ndjson_str_inffix[]    = "\"%s\":\"%s\",";
-static const char fmt_ndjson_bin_inffix[]    = "\"%s\":\"(%u bytes bin)\",";
-static const char fmt_ndjson_int_inffix[]    = "\"%s\":%" PRIu64 ",";
-static const char fmt_ndjson_double_inffix[] = "\"%s\":%.2f,";
-static const char fmt_ndjson_true_inffix[]   = "\"%s\":true,";
-static const char fmt_ndjson_false_inffix[]  = "\"%s\":false,";
+static const char fmt_ndjson_str_inffix[]    = ",\"%s\":\"%s\"";
+static const char fmt_ndjson_bin_inffix[]    = ",\"%s\":\"(%u bytes bin)\"";
+static const char fmt_ndjson_int_inffix[]    = ",\"%s\":%" PRIu64;
+static const char fmt_ndjson_double_inffix[] = ",\"%s\":%.2f";
+static const char fmt_ndjson_true_inffix[]   = ",\"%s\":true";
+static const char fmt_ndjson_false_inffix[]  = ",\"%s\":false";
 static const char fmt_ndjson_suffix[]        = "}" /*close report*/
                                         "}"        /*cose all*/
                                         "\n";
@@ -87,36 +87,34 @@ static void ndjson_result(OutItem *item) {
     if (err < 0)
         goto error;
 
-    DataLink *pre = item->report.link;
+    DataLink *pre      = item->report.link;
+    unsigned  is_first = 1; /*no comma for first item*/
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
-            err = fprintf(file, fmt_ndjson_str_inffix, pre->next->name,
-                          pre->next->value_data);
+            err = fprintf(file, fmt_ndjson_str_inffix + is_first,
+                          pre->next->name, pre->next->value_data);
         } else if (pre->next->link_type == LinkType_Int) {
-            err = fprintf(file, fmt_ndjson_int_inffix, pre->next->name,
-                          pre->next->value_int);
+            err = fprintf(file, fmt_ndjson_int_inffix + is_first,
+                          pre->next->name, pre->next->value_int);
         } else if (pre->next->link_type == LinkType_Double) {
-            err = fprintf(file, fmt_ndjson_double_inffix, pre->next->name,
-                          pre->next->value_double);
+            err = fprintf(file, fmt_ndjson_double_inffix + is_first,
+                          pre->next->name, pre->next->value_double);
         } else if (pre->next->link_type == LinkType_Bool) {
             err = fprintf(file,
-                          pre->next->value_bool ? fmt_ndjson_true_inffix
-                                                : fmt_ndjson_false_inffix,
+                          pre->next->value_bool
+                              ? fmt_ndjson_true_inffix + is_first
+                              : fmt_ndjson_false_inffix + is_first,
                           pre->next->name);
         } else if (pre->next->link_type == LinkType_Binary) {
-            err = fprintf(file, fmt_ndjson_bin_inffix, pre->next->name,
-                          pre->next->data_len);
+            err = fprintf(file, fmt_ndjson_bin_inffix + is_first,
+                          pre->next->name, pre->next->data_len);
         }
 
         if (err < 0)
             goto error;
 
-        pre = pre->next;
-    }
-
-    /*at least one report, overwrite the last comma*/
-    if (item->report.link->next) {
-        fseek(file, -1, SEEK_CUR);
+        pre      = pre->next;
+        is_first = 0;
     }
 
     err = fprintf(file, fmt_ndjson_suffix);
