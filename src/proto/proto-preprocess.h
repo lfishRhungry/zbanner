@@ -102,6 +102,8 @@ typedef struct PreprocessedInfo {
  * This function can be not only used to parse raw packets, but also be used to
  * parse some wrapped content like payload of ICMP messages by passing content
  * buffer with link type PCAP_DLT_RAW(101).
+ * NOTE: Payload content should be valid packet if parsing recursively. Or we
+ * must conditionally ignore the retured value of preprocess.
  * @return true if useful stuff found, false otherwise
  */
 bool preprocess_frame(const unsigned char *px, unsigned length,

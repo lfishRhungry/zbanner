@@ -15,6 +15,7 @@ extern Scanner ZBannerScan;
 extern Scanner UdpScan;
 extern Scanner TcpStateScan;
 extern Scanner YarrpEchoScan;
+extern Scanner YarrpUdpScan;
 //! REGIST YOUR SCAN MODULE HERE
 
 static Scanner *scan_modules_list[] = {
@@ -28,6 +29,7 @@ static Scanner *scan_modules_list[] = {
     &UdpScan,
     &TcpStateScan,
     &YarrpEchoScan,
+    &YarrpUdpScan,
     //! REGIST YOUR SCAN MODULE HERE
 };
 // clang-format on

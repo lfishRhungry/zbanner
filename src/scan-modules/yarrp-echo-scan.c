@@ -22,12 +22,16 @@
    We set fields in echo request packets as following:
     1.identifier: cookie of ip_them, ip_me and TTL for identifying response for
     us. TTL is used to avoid same `identifier` for same path.
-    2.sequence: TTL. This is for identifying distance from ICMP echo reply.
-    3.ipid: useless for us and set it to random.
+    2.sequence: TTL. This is for identifying distance.
 
-   NOTE: The IP header wrapped in ICMP payload isn't be totally same as what we
-   sent especially the TTL. And the TTL in IP header of ICMP Echo Reply isn't
-   what we sent one, too. So we must save the initial TTL in a field of ICMP.
+   NOTE: The IP header wrapped in responsed ICMP payload isn't be totally same
+   as what we sent. Especially the TTL in the IP header in ICMP payload. So we
+   must save the initial TTL in a field.
+
+   NOTE: Payload of responsed ICMP message can only contains an IP header and
+   other 8 bytes data according to RFC(maybe some hosts can contain more data).
+   So lenght of our packets should better be less than 8 bytes(no any other
+   data). And this makes recursive preprocess being correct.
 */
 
 extern Scanner YarrpEchoScan; /*for internal x-ref*/
@@ -80,16 +84,15 @@ static bool yarrpecho_transmit(uint64_t entropy, ScanTarget *target,
     if (target->target.ip_proto != IP_PROTO_Other)
         return false;
 
-    unsigned cookie =
-        get_cookie(target->target.ip_them, target->target.port_them,
-                   target->target.ip_me, 0, entropy);
-    uint16_t id   = cookie & 0xFF;
-    uint16_t ipid = cookie ^ entropy;
+    unsigned ttl    = target->target.port_them;
+    unsigned cookie = get_cookie(target->target.ip_them, ttl,
+                                 target->target.ip_me, 0, entropy);
+    uint16_t id     = cookie & 0xFF;
+    uint16_t ipid   = cookie ^ entropy;
 
-    *len = icmp_echo_create_packet(target->target.ip_them, target->target.ip_me,
-                                   id, target->target.port_them, ipid,
-                                   target->target.port_them, NULL, 0, px,
-                                   PKT_BUF_SIZE);
+    *len =
+        icmp_echo_create_packet(target->target.ip_them, target->target.ip_me,
+                                id, ttl, ipid, ttl, NULL, 0, px, PKT_BUF_SIZE);
 
     /*doesn't need timeout*/
 
@@ -141,7 +144,8 @@ static void yarrpecho_validate(uint64_t entropy, Recved *recved,
         PreInfo info = {0};
         if (preprocess_frame(recved->packet + recved->parsed.app_offset,
                              recved->length - recved->parsed.app_offset,
-                             PCAP_DLT_RAW, &info)) {
+                             PCAP_DLT_RAW, &info) &&
+            info.ip_protocol == IP_PROTO_ICMP) {
             /**
              * NOTE:Must use saved TTL instead of the fake one in IP header from
              * ICMP payload.
@@ -221,7 +225,7 @@ Scanner YarrpEchoScan = {
         "core idea of the stateless traceroute tool Yarrp, so it sends all "
         "target/ttl combinations in random. We need to reconstruct the paths "
         "off-linely with the discrete results of because of stateless.\n"
-        "NOTE1: YarrpEcho needs to specify TTL ranges manually by \"Other\" "
+        "NOTE1: We need to specify TTL ranges manually by \"Other\" "
         "port type. E.g. `--port o:1-20` means TTL range from 1 to 20.\n"
         "NOTE2: We should care the network pressure of hosts in the path. "
         "Yarrp's completely stateless route tracing method would make close "

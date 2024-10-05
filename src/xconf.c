@@ -1403,8 +1403,8 @@ static ConfRes SET_adapter_vlan(void *conf, const char *name,
     return Conf_OK;
 }
 
-static ConfRes SET_target_port(void *conf, const char *name,
-                               const char *value) {
+static ConfRes SET_init_port_them(void *conf, const char *name,
+                                  const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         /*echo in SET_target_output*/
@@ -2616,7 +2616,7 @@ ConfParam config_parameters[] = {
      "can be specified as multiple options separated by a comma as a single "
      "option, such as 10.0.0.0/8,192.168.0.1,2001:db8::1."},
     {"port",
-     SET_target_port,
+     SET_init_port_them,
      Type_NONE,
      {"p", "ports", 0},
      "Specifies the port(s) to be scanned. A single port can be specified, "
