@@ -2916,14 +2916,14 @@ ConfParam config_parameters[] = {
      "\"file\" name can be variable for different OutputModule. (e.g. It can "
      "be a database connecting string)\n"
      "NOTE: For some OutputModules, we can use `-o -` to let them output to "
-     "stdout. But we should be care of the stdout outputting conflict "
-     "especially the `-interact` flag."},
+     "stdout. But we should be care of the conflict while using the `-interact`"
+     " flag."},
     {"append-output",
      SET_append,
      Type_BOOL,
      {"output-append", "append", 0},
-     "Causes output to append mode, rather than overwriting. OutputModules "
-     "have different performance with this switch."},
+     "Causes output to append mode, rather than overwriting. Performance of "
+     "OutputModules can be different for this flag."},
     {"interactive",
      SET_interactive,
      Type_BOOL,
