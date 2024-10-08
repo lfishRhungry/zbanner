@@ -83,8 +83,8 @@ bool blackrock_init(const XConf *xconf) {
     /**
      * Count target info
      */
-    BlackRockGen.count_ips        = count_ips;
-    BlackRockGen.count_ports      = count_ports;
+    BlackRockGen.count_targets    = count_ips;
+    BlackRockGen.count_endpoints  = count_ports;
     BlackRockGen.target_range     = count_ips * count_ports;
     BlackRockGen.has_ipv4_targets = targetip_has_ipv4_targets(&xconf->targets);
     BlackRockGen.has_ipv6_targets = targetip_has_ipv6_targets(&xconf->targets);

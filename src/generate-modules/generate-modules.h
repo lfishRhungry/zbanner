@@ -93,14 +93,20 @@ typedef struct GenerateModule {
      * This is for main thread to print some info about scanning.
      * It could be dynamicly updated after inited. The value of it won't affect
      * our scan process.
+     * We use target and endpoint for generalizing. Not all modules would using
+     * host. A target can be an IP, URL or any others.
+     * However, a target is a host in most cases.
      */
-    uint64_t    count_ips;
+    uint64_t    count_targets;
     /**
      * This is for main thread to print some info about scanning.
      * It could be dynamicly updated after inited. The value of it won't affect
      * our scan process.
+     * We use endpoint for generalizing. Not all modules would using port. An
+     * endpoint can be a port, TTL, IP protocol, sub-directory or any others.
+     * However, an endpoint is a port in most cases.
      */
-    uint64_t    count_ports;
+    uint64_t    count_endpoints;
     /**
      * This is for main thread to init adapter for ipv4 optionally.
      * It could be dynamicly updated after inited.

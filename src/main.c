@@ -330,10 +330,22 @@ static int _main_scan(XConf *xconf) {
     LOG(LEVEL_OUT, "Generator: %s\n", xconf->generator->name);
     if (xconf->out_conf.output_module)
         LOG(LEVEL_OUT, "Output:    %s\n", xconf->out_conf.output_module->name);
-
-    LOG(LEVEL_OUT, "Scanning %u hosts [%u ports/host]\n\n",
-        (unsigned)xconf->generator->count_ips,
-        (unsigned)xconf->generator->count_ports);
+    /**
+     * We use target and endpoint for generalizing.
+     * Not all modules would using host and port. A target can be an IP, URL or
+     * any others. An endpoint can be a port, TTL, IP protocol, sub-directory or
+     * any others.
+     */
+    if (xconf->generator->count_targets > 0) {
+        LOG(LEVEL_OUT, "Scanning %" PRIu64 " targets",
+            xconf->generator->count_targets);
+        if (xconf->generator->count_endpoints > 1) {
+            LOG(LEVEL_OUT, " [%" PRIu64 " endpoints each]",
+                xconf->generator->count_endpoints);
+        }
+        LOG(LEVEL_OUT, "\n");
+    }
+    LOG(LEVEL_OUT, "\n");
 
     /*
      * Start tx & rx threads
