@@ -34,9 +34,28 @@ struct source_t;
  * !Happens in Main Thread.
  *
  * @param xconf main conf of xtate
+ * @param count_targets We use target and endpoint for generalizing. Not all
+ * modules would using host. A target can be an IP, URL or any others. However,
+ * a target is a host in most cases. This is for main thread to print some
+ * running info. Do not care it or set it to zero if don't know the value from
+ * beginning.
+ * @param count_endpoints We use endpoint for generalizing. Not all modules
+ * would using port. An endpoint can be a port, TTL, IP protocol, sub-directory
+ * or any others. However, an endpoint is a port in most cases. This is for main
+ * thread to print some running info. Do not care it or set it to zero if don't
+ * know the value from beginning.
+ * @param init_ipv4 This is for main thread to init adapter for ipv4 optionally.
+ * Do not care it if don't know the value from beginning because it could be
+ * setted manually by global conf.
+ * @param init_ipv6 This is for main thread to init adapter for ipv6 optionally.
+ * Do not care it if don't know the value from beginning because it could be
+ * setted manually by global conf.
  * @return FALSE to exit process if init failed
  */
-typedef bool (*generate_modules_init)(const XConf *xconf);
+typedef bool (*generate_modules_init)(const XConf *xconf,
+                                      uint64_t    *count_targets,
+                                      uint64_t    *count_endpoints,
+                                      bool *init_ipv4, bool *init_ipv6);
 
 /**
  * !Must be implemented.
@@ -83,40 +102,6 @@ typedef struct GenerateModule {
     const char *short_desc; /*an optional short description*/
     const char *desc;
     ConfParam  *params;
-    /**
-     * This is for outer Xtatus to print better status of scanning.
-     * It could be dynamicly updated after inited or you can set it to zero
-     * if the actual value cannot be known.
-     */
-    uint64_t    target_range;
-    /**
-     * This is for main thread to print some info about scanning.
-     * It could be dynamicly updated after inited. The value of it won't affect
-     * our scan process.
-     * We use target and endpoint for generalizing. Not all modules would using
-     * host. A target can be an IP, URL or any others.
-     * However, a target is a host in most cases.
-     */
-    uint64_t    count_targets;
-    /**
-     * This is for main thread to print some info about scanning.
-     * It could be dynamicly updated after inited. The value of it won't affect
-     * our scan process.
-     * We use endpoint for generalizing. Not all modules would using port. An
-     * endpoint can be a port, TTL, IP protocol, sub-directory or any others.
-     * However, an endpoint is a port in most cases.
-     */
-    uint64_t    count_endpoints;
-    /**
-     * This is for main thread to init adapter for ipv4 optionally.
-     * It could be dynamicly updated after inited.
-     */
-    bool        has_ipv4_targets;
-    /**
-     * This is for main thread to init adapter for ipv6 optionally.
-     * It could be dynamicly updated after inited.
-     */
-    bool        has_ipv6_targets;
 
     generate_modules_init     init_cb;
     generate_modules_hasmore  hasmore_cb;
@@ -131,7 +116,9 @@ void list_all_generate_modules();
 void help_generate_module(Generator *module);
 
 /*implemented `generate_modules_init`*/
-bool generate_init_nothing(const XConf *xconf);
+bool generate_init_nothing(const XConf *xconf, uint64_t *count_targets,
+                           uint64_t *count_endpoints, bool *init_ipv4,
+                           bool *init_ipv6);
 
 /*implemented `generate_modules_close`*/
 void generate_close_nothing(const XConf *xconf);

@@ -111,8 +111,8 @@ infinite:;
      */
     parms->my_index = start;
 
-    LOG(LEVEL_DEBUG, "Tx Thread: starting main loop [%llu..%lu] inc: %llu\n",
-        start, generator->target_range, increment);
+    LOG(LEVEL_DEBUG, "Tx Thread: starting main loop from: %llu inc: %llu\n",
+        start, increment);
 
     more_idx = 0;
     for (uint64_t i = start; generator->hasmore_cb(parms->tx_index, i);) {

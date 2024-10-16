@@ -41,7 +41,9 @@ static ConfParam blackrock_parameters[] = {
 
     {0}};
 
-bool blackrock_init(const XConf *xconf) {
+bool blackrock_init(const XConf *xconf, uint64_t *count_targets,
+                    uint64_t *count_endpoints, bool *init_ipv4,
+                    bool *init_ipv6) {
     blackrock_conf.targets = &xconf->targets;
     blackrock_conf.seed    = xconf->seed;
 
@@ -83,15 +85,14 @@ bool blackrock_init(const XConf *xconf) {
     /**
      * Count target info
      */
-    BlackRockGen.count_targets    = count_ips;
-    BlackRockGen.count_endpoints  = count_ports;
-    BlackRockGen.target_range     = count_ips * count_ports;
-    BlackRockGen.has_ipv4_targets = targetip_has_ipv4_targets(&xconf->targets);
-    BlackRockGen.has_ipv6_targets = targetip_has_ipv6_targets(&xconf->targets);
+    *count_targets   = count_ips;
+    *count_endpoints = count_ports;
+    *init_ipv4       = targetip_has_ipv4_targets(&xconf->targets);
+    *init_ipv6       = targetip_has_ipv6_targets(&xconf->targets);
 
     blackrock_conf.count_ipv4 = rangelist_count(&xconf->targets.ipv4);
     blackrock_conf.count_ipv6 = range6list_count(&xconf->targets.ipv6).lo;
-    blackrock_conf.range_all  = BlackRockGen.target_range;
+    blackrock_conf.range_all  = count_ips * count_ports;
     blackrock_conf.range_ipv6 =
         blackrock_conf.count_ipv6 * rangelist_count(&xconf->targets.ports);
 

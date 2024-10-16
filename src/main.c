@@ -104,12 +104,17 @@ static int _main_scan(XConf *xconf) {
      * This is more efficient to got an all-zero var than memset and could got
      * a partial-zero var conveniently.
      */
-    bool       stop_tx      = true;
-    time_t     now          = time(0);
-    TmplSet    tmplset      = {0};
-    Xtatus     status       = {.last = {0}};
-    XtatusItem status_item  = {0};
-    RxThread   rx_thread[1] = {{0}};
+    bool       stop_tx         = true;
+    uint64_t   count_targets   = 0;
+    uint64_t   count_endpoints = 0;
+    uint64_t   scan_range      = 0;
+    bool       init_ipv4       = false;
+    bool       init_ipv6       = false;
+    time_t     now             = time(0);
+    TmplSet    tmplset         = {0};
+    Xtatus     status          = {.last = {0}};
+    XtatusItem status_item     = {0};
+    RxThread   rx_thread[1]    = {{0}};
     TxThread  *tx_thread;
     double     tx_free_entries;
     double     rx_free_entries;
@@ -161,18 +166,39 @@ static int _main_scan(XConf *xconf) {
             exit(1);
         }
     }
-    if (!xconf->generator->init_cb(xconf)) {
+    if (!xconf->generator->init_cb(xconf, &count_targets, &count_endpoints,
+                                   &init_ipv4, &init_ipv6)) {
         LOG(LEVEL_ERROR, "global init of GenerateModule.\n");
         exit(1);
     }
+
+    LOG(LEVEL_DEBUG, "init_ipv4 from generator: %s\n",
+        init_ipv4 ? "true" : "false");
+    LOG(LEVEL_DEBUG, "init_ipv6 from generator: %s\n",
+        init_ipv6 ? "true" : "false");
+
+    init_ipv4 = xconf->set_ipv4_adapter ? xconf->init_ipv4_adapter : init_ipv4;
+    init_ipv6 = xconf->set_ipv6_adapter ? xconf->init_ipv6_adapter : init_ipv6;
+    if (!init_ipv4 && !init_ipv6) {
+        LOG(LEVEL_ERROR, "neither ipv4 & ipv6 adapter would be inited.\n");
+        LOG(LEVEL_HINT, "we can manually init adapter like `-init-ipv4`.\n");
+        exit(1);
+    }
+
+    scan_range = count_targets * count_endpoints;
+
+    LOG(LEVEL_DEBUG, "count_targets from generator: %" PRIu64 "\n",
+        count_targets);
+    LOG(LEVEL_DEBUG, "count_endpoints from generator: %" PRIu64 "\n",
+        count_targets);
+    LOG(LEVEL_DEBUG, "scan_range from generator: %" PRIu64 "\n", scan_range);
 
     /**
      * Optimize target again because generator may add new targets.
      */
     targetip_optimize(&xconf->targets);
 
-    if (initialize_adapter(xconf, xconf->generator->has_ipv4_targets,
-                           xconf->generator->has_ipv6_targets) != 0)
+    if (initialize_adapter(xconf, init_ipv4, init_ipv6) != 0)
         exit(1);
     if (!xconf->nic.is_usable) {
         LOG(LEVEL_ERROR, "failed to detect IP of interface\n");
@@ -330,20 +356,27 @@ static int _main_scan(XConf *xconf) {
     LOG(LEVEL_OUT, "Generator: %s\n", xconf->generator->name);
     if (xconf->out_conf.output_module)
         LOG(LEVEL_OUT, "Output:    %s\n", xconf->out_conf.output_module->name);
+
+    LOG(LEVEL_OUT, "Adapter:  ");
+    if (init_ipv4)
+        LOG(LEVEL_OUT, " ipv4");
+    if (init_ipv6)
+        LOG(LEVEL_OUT, " ipv6");
+    LOG(LEVEL_OUT, "\n");
     /**
      * We use target and endpoint for generalizing.
      * Not all modules would using host and port. A target can be an IP, URL or
      * any others. An endpoint can be a port, TTL, IP protocol, sub-directory or
      * any others.
      */
-    if (xconf->generator->count_targets > 0) {
-        LOG(LEVEL_OUT, "Scanning %" PRIu64 " targets",
-            xconf->generator->count_targets);
-        if (xconf->generator->count_endpoints > 1) {
-            LOG(LEVEL_OUT, " [%" PRIu64 " endpoints each]",
-                xconf->generator->count_endpoints);
+    if (count_targets > 0) {
+        LOG(LEVEL_OUT, "Scanning %" PRIu64 " targets", count_targets);
+        if (count_endpoints > 1) {
+            LOG(LEVEL_OUT, " [%" PRIu64 " endpoints each]", count_endpoints);
         }
         LOG(LEVEL_OUT, "\n");
+    } else {
+        LOG(LEVEL_OUT, "Scanning targets in dynamic counts\n");
     }
     LOG(LEVEL_OUT, "\n");
 
@@ -443,7 +476,7 @@ static int _main_scan(XConf *xconf) {
         status_item.total_failed    = xconf->out_conf.total_failed;
         status_item.total_info      = xconf->out_conf.total_info;
         status_item.total_tm_event  = rx_thread->total_tm_event;
-        status_item.max_count       = xconf->generator->target_range;
+        status_item.max_count       = scan_range;
         status_item.print_in_json   = xconf->is_status_ndjson;
 
         if (!xconf->is_no_status)
@@ -457,8 +490,8 @@ static int _main_scan(XConf *xconf) {
      * If we haven't completed the scan, then save the resume
      * information.
      */
-    if (status_item.cur_count < xconf->generator->target_range &&
-        !xconf->is_infinite && !xconf->is_noresume) {
+    if (status_item.cur_count < scan_range && !xconf->is_infinite &&
+        !xconf->is_noresume) {
         xconf->resume.index = status_item.cur_count;
         xconf_save_state(xconf);
     }
@@ -525,7 +558,7 @@ static int _main_scan(XConf *xconf) {
         status_item.total_failed    = xconf->out_conf.total_failed;
         status_item.total_info      = xconf->out_conf.total_info;
         status_item.total_tm_event  = rx_thread->total_tm_event;
-        status_item.max_count       = xconf->generator->target_range;
+        status_item.max_count       = scan_range;
         status_item.print_in_json   = xconf->is_status_ndjson;
         status_item.exiting_secs    = xconf->wait - (time(0) - now);
 

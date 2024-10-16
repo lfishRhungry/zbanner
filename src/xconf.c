@@ -2002,6 +2002,40 @@ static ConfRes SET_bypass_os(void *conf, const char *name, const char *value) {
     return Conf_OK;
 }
 
+static ConfRes SET_init_ipv4(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->set_ipv4_adapter)
+            fprintf(xconf->echo, "init-ipv4-adapter = %s",
+                    xconf->init_ipv4_adapter ? "true" : "false");
+        return 0;
+    }
+
+    xconf->set_ipv4_adapter  = 1;
+    xconf->init_ipv4_adapter = parseBoolean(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_init_ipv6(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->set_ipv6_adapter)
+            fprintf(xconf->echo, "init-ipv6-adapter = %s",
+                    xconf->init_ipv6_adapter ? "true" : "false");
+        return 0;
+    }
+
+    xconf->set_ipv6_adapter  = 1;
+    xconf->init_ipv6_adapter = parseBoolean(value);
+
+    return Conf_OK;
+}
+
 static ConfRes SET_fake_router_mac(void *conf, const char *name,
                                    const char *value) {
     XConf *xconf = (XConf *)conf;
@@ -2769,6 +2803,18 @@ ConfParam config_parameters[] = {
      "NOTE: There's no need to set some firewall rules for Linux while we are"
      " in bypassing mode. And we can't use the feature of OS protocol stack "
      "like responsing TCP RST or ICMP Port Unreachable."},
+    {"init-ipv4-adapter",
+     SET_init_ipv4,
+     Type_BOOL,
+     {"init-ipv4", "ipv4", 0},
+     "Manually specifies if initiate adapter for IPv4 or not. This is for some "
+     "generators that cannot initiate automatically."},
+    {"init-ipv6-adapter",
+     SET_init_ipv6,
+     Type_BOOL,
+     {"init-ipv6", "ipv6", 0},
+     "Manually specifies if initiate adapter for IPv6 or not. This is for some "
+     "generators that cannot initiate automatically."},
 
     {"OPERATION SELECTION", SET_nothing, 0, {0}, NULL},
 

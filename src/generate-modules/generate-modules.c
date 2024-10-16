@@ -87,7 +87,11 @@ void help_generate_module(Generator *module) {
     printf("\n");
 }
 
-bool generate_init_nothing(const XConf *xconf) { return true; }
+bool generate_init_nothing(const XConf *xconf, uint64_t *count_targets,
+                           uint64_t *count_endpoints, bool *init_ipv4,
+                           bool *init_ipv6) {
+    return true;
+}
 
 /*implemented `generate_modules_close`*/
 void generate_close_nothing(const XConf *xconf) {}

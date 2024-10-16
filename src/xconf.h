@@ -218,6 +218,10 @@ typedef struct XtateConf {
     unsigned       is_no_cpu_bind     : 1;
     unsigned       is_static_seed     : 1;
     unsigned       no_escape_char     : 1;
+    unsigned       set_ipv4_adapter   : 1;
+    unsigned       set_ipv6_adapter   : 1;
+    unsigned       init_ipv4_adapter  : 1;
+    unsigned       init_ipv6_adapter  : 1;
 
     /**
      * parse BSON file
