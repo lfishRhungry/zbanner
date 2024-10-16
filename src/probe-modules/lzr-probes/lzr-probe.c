@@ -406,17 +406,15 @@ Probe LzrProbe = {
         "(subprobes) until identified the service by matching responsed data "
         "with all LZR handshakes.\n"
         "I suggest you to specify `--timeout` parameter because LzrProbe "
-        "performs"
-        " better by recognizing the status of non-responsing.\n"
+        "performs better by recognizing the status of non-responsing.\n"
         "NOTE1: Recommended optimal handshake order by LZR paper:\n"
-        "1.  wait\n"
-        "2.  tls\n"
-        "3.  http\n"
-        "4.  dns\n"
-        "5.  pptp\n"
+        "1)wait\n"
+        "2)tls\n"
+        "3)http\n"
+        "4)dns\n"
+        "5)pptp\n"
         "NOTE2: I had fixed some matching bugs and errors from original LZR "
-        "and "
-        "added more useful handshakes. So, enjoy it!",
+        "and added more useful handshakes. So, enjoy it!",
 
     .init_cb               = &lzr_init,
     .make_payload_cb       = &lzr_make_payload,
