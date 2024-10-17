@@ -60,7 +60,7 @@ static ConfParam addrstream_parameters[] = {
      SET_file,
      Type_NONE,
      {"file", "f", 0},
-     "Specifies a file as input stream."},
+     "Specifies a file as input stream. Default is stdin."},
     {"splitter",
      SET_splitter,
      Type_NONE,
