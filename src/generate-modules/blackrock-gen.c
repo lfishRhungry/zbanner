@@ -9,8 +9,8 @@ Generator BlackRockGen;
 
 struct BlackRockConf {
     unsigned        rounds;
-    BlackRock      *br_table; /*for multi tx threads*/
-    unsigned        br_count; /*equal to tx thread num and is power of 2*/
+    BlackRock      *br_tables; /*for multi tx threads*/
+    unsigned        br_count;  /*equal to tx thread num and is power of 2*/
     unsigned        br_mask;
     uint64_t        count_ipv4;
     uint64_t        count_ipv6;
@@ -105,11 +105,11 @@ bool blackrock_init(const XConf *xconf, uint64_t *count_targets,
 
     blackrock_conf.br_count = xconf->tx_thread_count;
     blackrock_conf.br_mask  = blackrock_conf.br_count - 1;
-    blackrock_conf.br_table =
+    blackrock_conf.br_tables =
         MALLOC(blackrock_conf.br_count * sizeof(BlackRock));
 
     for (unsigned i = 0; i < blackrock_conf.br_count; i++) {
-        blackrock1_init(&blackrock_conf.br_table[i], blackrock_conf.range_all,
+        blackrock1_init(&blackrock_conf.br_tables[i], blackrock_conf.range_all,
                         xconf->seed, blackrock_conf.rounds);
     }
 
@@ -134,7 +134,7 @@ Target blackrock_generate(unsigned tx_index, uint64_t index, uint64_t repeat,
         xXx -= blackrock_conf.range_all;
     }
 
-    blackrock = &blackrock_conf.br_table[tx_index & blackrock_conf.br_mask];
+    blackrock = &blackrock_conf.br_tables[tx_index & blackrock_conf.br_mask];
     xXx       = blackrock1_shuffle(blackrock, xXx);
 
     /**
@@ -186,13 +186,13 @@ Target blackrock_generate(unsigned tx_index, uint64_t index, uint64_t repeat,
     /**
      * Due to flexible port store method.
      */
-    target.ip_proto = get_actual_proto_port(&(target.port_them));
+    target.ip_proto = get_actual_proto_port(&target.port_them);
 
     return target;
 }
 
 void blackrock_close() {
-    FREE(blackrock_conf.br_table);
+    FREE(blackrock_conf.br_tables);
     blackrock_conf.br_count = 0;
 }
 

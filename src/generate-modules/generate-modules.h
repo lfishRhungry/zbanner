@@ -66,6 +66,8 @@ typedef bool (*generate_modules_init)(const XConf *xconf,
  * also the condition to stop tx threads. Tx Thread will jump out send loop if
  * generator has no more target. Main Thread will stop all Tx Threads if
  * generatror has no more target for every Tx Threads.
+ * NOTE:Every time before calling `generate` func, `hasmore` func will be called
+ * at least once with a `true` result.
  *
  * @param tx_index index of tx thread
  * @param index index of target traveling

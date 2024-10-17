@@ -75,11 +75,10 @@ void targetip_optimize(TargetIP *targets) {
     range6list_optimize(&targets->ipv6);
     rangelist_optimize(&targets->ports);
 
-    targets->count_ports = rangelist_count(&targets->ports);
-    targets->count_ipv4s = rangelist_count(&targets->ipv4);
-    targets->count_ipv6s = range6list_count(&targets->ipv6).lo;
-    targets->ipv4_index_threshold =
-        targets->count_ipv4s * rangelist_count(&targets->ports);
+    targets->count_ports          = rangelist_count(&targets->ports);
+    targets->count_ipv4s          = rangelist_count(&targets->ipv4);
+    targets->count_ipv6s          = range6list_count(&targets->ipv6).lo;
+    targets->ipv4_index_threshold = targets->count_ipv4s * targets->count_ports;
 }
 
 void targetip_pick(const TargetIP *targetip, uint64_t index, ipaddress *addr,
@@ -155,9 +154,9 @@ int targetip_add_target_string(TargetIP *targetip, const char *string) {
 }
 
 int targetip_add_port_string(TargetIP *targets, const char *string,
-                             unsigned defaultrange) {
+                             unsigned proto_offset) {
     unsigned is_error = 0;
-    rangelist_parse_ports(&targets->ports, string, &is_error, defaultrange);
+    rangelist_parse_ports(&targets->ports, string, &is_error, proto_offset);
     if (is_error)
         return 1;
     else

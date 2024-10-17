@@ -360,12 +360,8 @@ static ConfRes SET_scan_module(void *conf, const char *name,
                                const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->scanner || xconf->echo_all) {
-            if (xconf->scanner)
-                fprintf(xconf->echo, "scan-module = %s\n",
-                        xconf->scanner->name);
-            else
-                fprintf(xconf->echo, "scan-module = TcpSyn\n");
+        if (xconf->scanner) {
+            fprintf(xconf->echo, "scan-module = %s\n", xconf->scanner->name);
         }
         return 0;
     }
@@ -495,6 +491,9 @@ static ConfRes SET_generate_module(void *conf, const char *name,
         return Conf_ERR;
     }
 
+    if (xconf->op == Operation_Default)
+        xconf->op = Operation_Scan;
+
     return Conf_OK;
 }
 
@@ -514,6 +513,9 @@ static ConfRes SET_output_module(void *conf, const char *name,
         LOG(LEVEL_ERROR, "FAIL %s: no such output module\n", value);
         return Conf_ERR;
     }
+
+    if (xconf->op == Operation_Default)
+        xconf->op = Operation_Scan;
 
     return Conf_OK;
 }

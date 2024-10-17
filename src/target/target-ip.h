@@ -114,7 +114,7 @@ int targetip_add_target_string(TargetIP *targetip, const char *string);
  * Parse the string contain port specifier.
  */
 int targetip_add_port_string(TargetIP *targetip, const char *string,
-                             unsigned proto);
+                             unsigned proto_offset);
 
 /**
  * Indicates whether there are IPv4 targets. If so, we'll have to
