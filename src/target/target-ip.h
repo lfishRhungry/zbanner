@@ -112,6 +112,7 @@ int targetip_add_target_string(TargetIP *targetip, const char *string);
 
 /**
  * Parse the string contain port specifier.
+ * NOTE: this func may add no port in final.
  */
 int targetip_add_port_string(TargetIP *targetip, const char *string,
                              unsigned proto_offset);
