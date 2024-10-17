@@ -108,7 +108,10 @@ bool ipstream_init(const XConf *xconf, uint64_t *count_targets,
         ipstream_conf.rounds = XCONF_DFT_BLACKROCK_ROUNDS;
     }
 
-    *init_ipv4         = true; /*only use ipv4 adapter in default*/
+    /*init all adapter in default*/
+    *init_ipv4 = true;
+    *init_ipv6 = true;
+
     ipstream_conf.seed = xconf->seed;
 
     return true;
@@ -144,7 +147,8 @@ bool ipstream_hasmore(unsigned tx_index, uint64_t index) {
 
         int err = targetip_add_target_string(cur_tgt, line);
         if (err) {
-            // LOG(LEVEL_ERROR, "(stream generator) invalid address: %s", line);
+            LOG(LEVEL_ERROR, "(stream generator) invalid ip in address: %s",
+                line);
             continue;
         } else
             break;

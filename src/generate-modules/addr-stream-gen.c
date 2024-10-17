@@ -100,7 +100,10 @@ bool addrstream_init(const XConf *xconf, uint64_t *count_targets,
         addrstream_conf.rounds = XCONF_DFT_BLACKROCK_ROUNDS;
     }
 
-    *init_ipv4           = true; /*only use ipv4 adapter in default*/
+    /*init all adapter in default*/
+    *init_ipv4 = true;
+    *init_ipv6 = true;
+
     addrstream_conf.seed = xconf->seed;
 
     return true;
@@ -138,7 +141,8 @@ bool addrstream_hasmore(unsigned tx_index, uint64_t index) {
         /*split ip range and port range*/
         char *sub = strstr(s, addrstream_conf.splitter);
         if (sub == NULL) {
-            LOG(LEVEL_ERROR, "(stream generator) invalid address: %s", line);
+            LOG(LEVEL_ERROR,
+                "(stream generator) invalid splitter in address: %s", line);
             continue;
         }
 
@@ -147,11 +151,17 @@ bool addrstream_hasmore(unsigned tx_index, uint64_t index) {
 
         int err = targetip_add_target_string(cur_tgt, s);
         if (err) {
+            sub[0] = addrstream_conf.splitter[0];
+            LOG(LEVEL_ERROR, "(stream generator) invalid ip in address: %s",
+                line);
             continue;
         }
 
         err = targetip_add_port_string(cur_tgt, port_str, 0);
         if (err) {
+            sub[0] = addrstream_conf.splitter[0];
+            LOG(LEVEL_ERROR, "(stream generator) invalid port* in address: %s",
+                line);
             rangelist_remove_all(&cur_tgt->ipv4);
             range6list_remove_all(&cur_tgt->ipv6);
             continue;
@@ -163,8 +173,9 @@ bool addrstream_hasmore(unsigned tx_index, uint64_t index) {
         targetip_optimize(cur_tgt);
 
         if (cur_tgt->count_ports == 0) {
-            /*we have lost original line content, so just do a hint*/
-            LOG(LEVEL_ERROR, "(stream generator) invalid address\n");
+            sub[0] = addrstream_conf.splitter[0];
+            LOG(LEVEL_ERROR, "(stream generator) invalid port** in address: %s",
+                line);
             rangelist_remove_all(&cur_tgt->ipv4);
             range6list_remove_all(&cur_tgt->ipv6);
             continue;
