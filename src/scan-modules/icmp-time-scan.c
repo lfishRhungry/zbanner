@@ -49,15 +49,6 @@ static ConfParam icmptime_parameters[] = {
 
     {0}};
 
-static bool icmptime_init(const XConf *xconf) {
-    if (xconf->targets.count_ports != 1) {
-        LOG(LEVEL_ERROR, "IcmpTimeScan doesn't need to specify any ports.\n");
-        return false;
-    }
-
-    return true;
-}
-
 static bool icmptime_transmit(uint64_t entropy, ScanTarget *target,
                               ScanTmEvent *event, unsigned char *px,
                               size_t *len) {
@@ -147,7 +138,7 @@ Scanner IcmpTimeScan = {
             "ICMP Timestamp Reply to believe the host is alive.\n"
             "NOTE: Don't specify any ports for this module.",
 
-    .init_cb     = &icmptime_init,
+    .init_cb     = &scan_init_nothing,
     .transmit_cb = &icmptime_transmit,
     .validate_cb = &icmptime_validate,
     .handle_cb   = &icmptime_handle,

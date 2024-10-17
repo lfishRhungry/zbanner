@@ -37,10 +37,6 @@ static ConfParam ndpns_parameters[] = {
     {0}};
 
 static bool ndpns_init(const XConf *xconf) {
-    if (xconf->targets.count_ports != 1) {
-        LOG(LEVEL_ERROR, "NdpNsScan doesn't need to specify any ports.\n");
-        return false;
-    }
 
     if (xconf->nic.link_type != 1) {
         LOG(LEVEL_ERROR, "NdpNsScan cannot work on non-ethernet link type.\n");

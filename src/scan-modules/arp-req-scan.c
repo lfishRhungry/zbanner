@@ -16,11 +16,6 @@ static bool arpreq_init(const XConf *xconf) {
         return false;
     }
 
-    if (xconf->targets.count_ports != 1) {
-        LOG(LEVEL_ERROR, "ArpReqScan doesn't need to specify any ports.\n");
-        return false;
-    }
-
     return true;
 }
 

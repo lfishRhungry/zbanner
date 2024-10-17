@@ -49,15 +49,6 @@ static ConfParam icmpecho_parameters[] = {
 
     {0}};
 
-static bool icmpecho_init(const XConf *xconf) {
-    if (xconf->targets.count_ports != 1) {
-        LOG(LEVEL_ERROR, "IcmpEchoScan doesn't need to specify any ports.\n");
-        return false;
-    }
-
-    return true;
-}
-
 static bool icmpecho_transmit(uint64_t entropy, ScanTarget *target,
                               ScanTmEvent *event, unsigned char *px,
                               size_t *len) {
@@ -152,7 +143,7 @@ Scanner IcmpEchoScan = {
             "ICMP ECHO Reply to believe the host is alive.\n"
             "NOTE: Don't specify any ports for this module.",
 
-    .init_cb     = &icmpecho_init,
+    .init_cb     = &scan_init_nothing,
     .transmit_cb = &icmpecho_transmit,
     .validate_cb = &icmpecho_validate,
     .handle_cb   = &icmpecho_handle,

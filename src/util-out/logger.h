@@ -19,6 +19,12 @@
  */
 void LOG_init();
 
+/**
+ * set if use ansi control characters.
+ * !not thread safe, set it at early first.
+ */
+void LOG_set_ansi(bool no_ansi);
+
 void LOG_close();
 
 void LOG(int level, const char *fmt, ...);

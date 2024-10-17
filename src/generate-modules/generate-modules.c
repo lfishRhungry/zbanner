@@ -6,10 +6,13 @@
 // clang-format off
 //! ADD YOUR GENERATOR HERE
 extern Generator BlackRockGen;
+extern Generator IpStreamGen;
 
 //! ADD YOUR GENERATOR HERE
 static Generator *generate_modules_list[] = {
     &BlackRockGen, /* its also the default generator*/
+    &IpStreamGen,
+
 };
 // clang-format on
 

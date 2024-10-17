@@ -376,7 +376,7 @@ static int _main_scan(XConf *xconf) {
         }
         LOG(LEVEL_OUT, "\n");
     } else {
-        LOG(LEVEL_OUT, "Scanning targets in dynamic counts\n");
+        LOG(LEVEL_OUT, "Scanning a dynamic number of targets\n");
     }
     LOG(LEVEL_OUT, "\n");
 
@@ -582,8 +582,11 @@ static int _main_scan(XConf *xconf) {
     pixie_thread_join(rx_thread->thread_handle_recv);
 
     uint64_t usec_now = pixie_gettime();
-    LOG(LEVEL_OUT, "\n%u milliseconds elapsed\n",
-        (unsigned)((usec_now - usec_start) / 1000));
+    LOG(LEVEL_OUT,
+        "\n%u milliseconds elapsed: [+]=%" PRIu64 " [x]=%" PRIu64
+        " [*]=%" PRIu64 "\n",
+        (unsigned)((usec_now - usec_start) / 1000), status_item.total_successed,
+        status_item.total_failed, status_item.total_info);
 
     /*
      * Now cleanup everything
@@ -657,6 +660,8 @@ int main(int argc, char *argv[]) {
     xconf->max_packet_len     = XCONF_DFT_MAX_PKT_LEN;
 
     xconf_command_line(xconf, argc, argv);
+
+    LOG_set_ansi(xconf->is_no_ansi);
 
     /* entropy for randomness */
     if (xconf->seed == 0)

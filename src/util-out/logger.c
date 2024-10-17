@@ -1,6 +1,7 @@
 #include "logger.h"
 #include "../util-data/safe-string.h"
 #include "../pixie/pixie-threads.h"
+#include "../util-out/xprint.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -19,6 +20,7 @@
 
 static int   _debug_level = 0;
 static void *_log_mutex   = NULL;
+static bool  _no_ansi     = false;
 
 /***************************************************************************
  ***************************************************************************/
@@ -54,6 +56,10 @@ void LOG_init() {
 
 /***************************************************************************
  ***************************************************************************/
+void LOG_set_ansi(bool no_ansi) { _no_ansi = no_ansi; }
+
+/***************************************************************************
+ ***************************************************************************/
 void LOG_close() {
     if (_log_mutex) {
         pixie_delete_mutex(_log_mutex);
@@ -74,6 +80,9 @@ int LOG_get_level() { return _debug_level; }
 static void _vLOG(int level, const char *fmt, va_list marker) {
     if (level <= _debug_level) {
         pixie_acquire_mutex(_log_mutex);
+
+        if (!_no_ansi)
+            fputs(XPRINT_CLEAR_LINE, stderr);
 
         fputs(_level_to_string(level), stderr);
         vfprintf(stderr, fmt, marker);
@@ -100,6 +109,9 @@ static void _vLOGnet(ipaddress ip_them, unsigned port_them, const char *fmt,
     ipaddress_formatted_t fmt1 = ipaddress_fmt(ip_them);
 
     pixie_acquire_mutex(_log_mutex);
+
+    if (!_no_ansi)
+        fputs(XPRINT_CLEAR_LINE, stderr);
 
     if (ip_them.version == 4) {
         fprintf(stderr, "[Net](%s:%u) ", fmt1.string, port_them);
@@ -129,6 +141,9 @@ static void _vLOGip(int level, ipaddress ip, unsigned port, const char *fmt,
         ipaddress_formatted_t fmt1 = ipaddress_fmt(ip);
 
         pixie_acquire_mutex(_log_mutex);
+
+        if (!_no_ansi)
+            fputs(XPRINT_CLEAR_LINE, stderr);
 
         fputs(_level_to_string(level), stderr);
         if (ip.version == 4) {
@@ -172,6 +187,9 @@ int LOGopenssl(int level) {
     int res = 0;
     if (level <= _debug_level) {
         pixie_acquire_mutex(_log_mutex);
+
+        if (!_no_ansi)
+            fputs(XPRINT_CLEAR_LINE, stderr);
 
         fputs(_level_to_string(level), stderr);
         fprintf(stderr, "(OpenSSL) ");
