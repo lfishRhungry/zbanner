@@ -28,7 +28,7 @@ struct Range6List {
     struct Range6 *list;
     size_t         list_len;
     size_t         list_size;
-    size_t        *picker; /*a array of sorted cumulative range value*/
+    size_t        *picker; /*array of cumulative count value for sorted list*/
     unsigned       is_sorted : 1;
 };
 

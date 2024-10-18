@@ -61,7 +61,7 @@ struct RangeList {
     struct Range *list;
     unsigned      list_len;
     unsigned      list_size;
-    unsigned     *picker; /*a array of sorted cumulative range value*/
+    unsigned     *picker; /*array of cumulative count value for sorted list*/
     unsigned      is_sorted : 1;
 };
 
