@@ -31,7 +31,6 @@
 #include "util-out/xtatus.h"
 
 #include "util-data/fine-malloc.h"
-#include "util-scan/listrange.h"
 
 #if defined(WIN32)
 #include <WinSock.h>
@@ -717,11 +716,11 @@ int main(int argc, char *argv[]) {
             break;
 
         case Operation_ListRange:
-            listrange(xconf);
+            list_range(xconf);
             break;
 
         case Operation_ListTargets:
-            listip(xconf);
+            list_ip_port(xconf);
             return 0;
 
         case Operation_ListAdapters:

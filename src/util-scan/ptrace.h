@@ -1,5 +1,5 @@
-#ifndef ptrace_h
-#define ptrace_h
+#ifndef PTRACE_H
+#define PTRACE_H
 #include <stdio.h>
 #include <stdint.h>
 

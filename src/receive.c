@@ -29,7 +29,6 @@
 #include "util-out/logger.h"
 #include "util-data/fine-malloc.h"
 #include "util-scan/ptrace.h"
-#include "util-scan/listrange.h"
 
 #include "timeout/fast-timeout.h"
 #include "output-modules/output-modules.h"

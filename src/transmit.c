@@ -27,7 +27,6 @@
 
 #include "util-out/logger.h"
 #include "util-data/fine-malloc.h"
-#include "util-scan/listrange.h"
 #include "util-scan/throttle.h"
 
 static void _adapter_get_source_addresses(const XConf     *xconf,
