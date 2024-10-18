@@ -30,7 +30,7 @@ void listrange(XConf *xconf) {
     unsigned           i;
     FILE              *fp = stdout;
 
-    for (i = 0; i < list4->count; i++) {
+    for (i = 0; i < list4->list_len; i++) {
         unsigned     prefix_length;
         struct Range range = list4->list[i];
 
@@ -51,7 +51,7 @@ void listrange(XConf *xconf) {
         }
     }
 
-    for (i = 0; i < list6->count; i++) {
+    for (i = 0; i < list6->list_len; i++) {
         struct Range6         range = list6->list[i];
         ipaddress_formatted_t fmt   = ipv6address_fmt(range.begin);
         fprintf(fp, "%s", fmt.string);

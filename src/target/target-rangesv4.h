@@ -59,9 +59,9 @@ bool range_is_cidr(const struct Range range, unsigned *prefix_length /*out*/);
  */
 struct RangeList {
     struct Range *list;
-    unsigned      count;
-    unsigned      max;
-    unsigned     *picker;
+    unsigned      list_len;
+    unsigned      list_size;
+    unsigned     *picker; /*a array of sorted cumulative range value*/
     unsigned      is_sorted : 1;
 };
 

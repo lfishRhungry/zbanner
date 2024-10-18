@@ -62,7 +62,7 @@ static struct Range INVALID_RANGE = {2, 1};
  ***************************************************************************/
 bool rangelist_is_contains(const struct RangeList *targets, unsigned addr) {
     unsigned i;
-    for (i = 0; i < targets->count; i++) {
+    for (i = 0; i < targets->list_len; i++) {
         struct Range *range = &targets->list[i];
 
         if (range->begin <= addr && addr <= range->end)
@@ -227,8 +227,8 @@ static int range_compare(const void *lhs, const void *rhs) {
  ***************************************************************************/
 static void rangelist_remove_at(struct RangeList *targets, size_t index) {
     memmove(&targets->list[index], &targets->list[index + 1],
-            (targets->count - index) * sizeof(targets->list[index]));
-    targets->count--;
+            (targets->list_len - index) * sizeof(targets->list[index]));
+    targets->list_len--;
 }
 
 /***************************************************************************
@@ -236,12 +236,12 @@ static void rangelist_remove_at(struct RangeList *targets, size_t index) {
 void rangelist_sort(struct RangeList *targets) {
     size_t           i;
     struct RangeList newlist        = {0};
-    unsigned         original_count = targets->count;
+    unsigned         original_count = targets->list_len;
 
     /* Empty lists are, of course, sorted. We need to set this
      * to avoid an error later on in the code which asserts that
      * the lists are sorted */
-    if (targets->count == 0) {
+    if (targets->list_len == 0) {
         targets->is_sorted = 1;
         return;
     }
@@ -254,7 +254,7 @@ void rangelist_sort(struct RangeList *targets) {
     /* First, sort the list */
     LOG(LEVEL_DETAIL, "range:sort: sorting...\n");
     qsort(targets->list,            /* the array to sort */
-          targets->count,           /* number of elements to sort */
+          targets->list_len,        /* number of elements to sort */
           sizeof(targets->list[0]), /* size of element */
           range_compare);
 
@@ -263,17 +263,17 @@ void rangelist_sort(struct RangeList *targets) {
      * middle when collapsing overlapping entries together, which is painfully
      * slow. */
     LOG(LEVEL_DETAIL, "range:sort: combining...\n");
-    for (i = 0; i < targets->count; i++) {
+    for (i = 0; i < targets->list_len; i++) {
         rangelist_add_range(&newlist, targets->list[i].begin,
                             targets->list[i].end);
     }
 
     LOG(LEVEL_DEBUG, "range:sort: combined from %u elements to %u elements\n",
-        original_count, newlist.count);
+        original_count, newlist.list_len);
     FREE(targets->list);
-    targets->list  = newlist.list;
-    targets->count = newlist.count;
-    newlist.list   = 0;
+    targets->list     = newlist.list;
+    targets->list_len = newlist.list_len;
+    newlist.list      = 0;
 
     LOG(LEVEL_DETAIL, "range:sort: done...\n");
 
@@ -291,16 +291,16 @@ void rangelist_add_range(struct RangeList *targets, unsigned begin,
     range.end   = end;
 
     /* auto-expand the list if necessary */
-    if (targets->count + 1 >= targets->max) {
-        targets->max = targets->max * 2 + 1;
-        targets->list =
-            REALLOCARRAY(targets->list, targets->max, sizeof(targets->list[0]));
+    if (targets->list_len + 1 >= targets->list_size) {
+        targets->list_size = targets->list_size * 2 + 1;
+        targets->list      = REALLOCARRAY(targets->list, targets->list_size,
+                                          sizeof(targets->list[0]));
     }
 
     /* If empty list, then add this one */
-    if (targets->count == 0) {
+    if (targets->list_len == 0) {
         targets->list[0] = range;
-        targets->count++;
+        targets->list_len++;
         targets->is_sorted = 1;
         return;
     }
@@ -308,15 +308,15 @@ void rangelist_add_range(struct RangeList *targets, unsigned begin,
     /* If new range overlaps the last range in the list, then combine it
      * rather than appending it. This is an optimization for the fact that
      * we often read in sequential addresses */
-    if (range_is_overlap(targets->list[targets->count - 1], range)) {
-        range_combine(&targets->list[targets->count - 1], range);
+    if (range_is_overlap(targets->list[targets->list_len - 1], range)) {
+        range_combine(&targets->list[targets->list_len - 1], range);
         targets->is_sorted = 0;
         return;
     }
 
     /* append to the end of our list */
-    targets->list[targets->count] = range;
-    targets->count++;
+    targets->list[targets->list_len] = range;
+    targets->list_len++;
     targets->is_sorted = 0;
 }
 
@@ -335,7 +335,7 @@ void rangelist_remove_all(struct RangeList *targets) {
 void rangelist_merge(struct RangeList *list1, const struct RangeList *list2) {
     unsigned i;
 
-    for (i = 0; i < list2->count; i++) {
+    for (i = 0; i < list2->list_len; i++) {
         rangelist_add_range(list1, list2->list[i].begin, list2->list[i].end);
     }
     rangelist_sort(list1);
@@ -361,7 +361,7 @@ static void rangelist_remove_range(struct RangeList *targets, unsigned begin,
 
     /* See if the range overlaps any exist range already in the
      * list */
-    for (i = 0; i < targets->count; i++) {
+    for (i = 0; i < targets->list_len; i++) {
         if (!range_is_overlap(targets->list[i], x))
             continue;
 
@@ -592,7 +592,7 @@ static void rangelist_exclude2(struct RangeList       *targets,
                                const struct RangeList *excludes) {
     unsigned i;
 
-    for (i = 0; i < excludes->count; i++) {
+    for (i = 0; i < excludes->list_len; i++) {
         struct Range range = excludes->list[i];
         rangelist_remove_range(targets, range.begin, range.end);
     }
@@ -678,16 +678,16 @@ void rangelist_exclude(struct RangeList *targets, struct RangeList *excludes) {
      * (which may split into two ranges), and add them to
      * the new target list */
     x = 0;
-    for (i = 0; i < targets->count; i++) {
+    for (i = 0; i < targets->list_len; i++) {
         struct Range range = targets->list[i];
 
         /* Move the exclude forward until we find a potentially
          * overlapping candidate */
-        while (x < excludes->count && excludes->list[x].end < range.begin)
+        while (x < excludes->list_len && excludes->list[x].end < range.begin)
             x++;
 
         /* Keep applying excludes to this range as long as there are overlaps */
-        while (x < excludes->count && excludes->list[x].begin <= range.end) {
+        while (x < excludes->list_len && excludes->list[x].begin <= range.end) {
             struct Range split = INVALID_RANGE;
 
             range_apply_exclude(excludes->list[x], &range, &split);
@@ -714,10 +714,10 @@ void rangelist_exclude(struct RangeList *targets, struct RangeList *excludes) {
 
     /* Now free the old list and move over the new list */
     FREE(targets->list);
-    targets->list  = newlist.list;
-    targets->count = newlist.count;
-    newlist.list   = NULL;
-    newlist.count  = 0;
+    targets->list     = newlist.list;
+    targets->list_len = newlist.list_len;
+    newlist.list      = NULL;
+    newlist.list_len  = 0;
 
     /* Since chopping up large ranges can split ranges, this can
      * grow the list so we need to re-sort it */
@@ -734,7 +734,7 @@ uint64_t rangelist_count(const struct RangeList *targets) {
     unsigned i;
     uint64_t result = 0;
 
-    for (i = 0; i < targets->count; i++) {
+    for (i = 0; i < targets->list_len; i++) {
         result += (uint64_t)targets->list[i].end -
                   (uint64_t)targets->list[i].begin + 1UL;
     }
@@ -754,7 +754,7 @@ static unsigned rangelist_pick_linearsearch(const struct RangeList *targets,
                                             uint64_t                index) {
     unsigned i;
 
-    for (i = 0; i < targets->count; i++) {
+    for (i = 0; i < targets->list_len; i++) {
         uint64_t range = (uint64_t)targets->list[i].end -
                          (uint64_t)targets->list[i].begin + 1UL;
         if (index < range)
@@ -770,9 +770,9 @@ static unsigned rangelist_pick_linearsearch(const struct RangeList *targets,
 /***************************************************************************
  ***************************************************************************/
 unsigned rangelist_pick(const struct RangeList *targets, uint64_t index) {
-    unsigned        maxmax = targets->count;
+    unsigned        maxmax = targets->list_len;
     unsigned        min    = 0;
-    unsigned        max    = targets->count;
+    unsigned        max    = targets->list_len;
     unsigned        mid;
     const unsigned *picker = targets->picker;
 
@@ -816,7 +816,7 @@ void rangelist_optimize(struct RangeList *targets) {
     unsigned  i;
     unsigned  total = 0;
 
-    if (targets->count == 0)
+    if (targets->list_len == 0)
         return;
 
     /* This technique only works when the targets are in
@@ -826,9 +826,9 @@ void rangelist_optimize(struct RangeList *targets) {
 
     FREE(targets->picker);
 
-    picker = REALLOCARRAY(NULL, targets->count, sizeof(*picker));
+    picker = REALLOCARRAY(NULL, targets->list_len, sizeof(*picker));
 
-    for (i = 0; i < targets->count; i++) {
+    for (i = 0; i < targets->list_len; i++) {
         picker[i] = total;
         total += targets->list[i].end - targets->list[i].begin + 1;
     }
@@ -889,9 +889,9 @@ static int regress_pick2() {
         rangelist_sort(duplicate);
 
         /* at this point, the two range lists should be identical */
-        REGRESS(targets->count == duplicate->count);
+        REGRESS(targets->list_len == duplicate->list_len);
         REGRESS(memcmp(targets->list, duplicate->list,
-                       targets->count * sizeof(targets->list[0])) == 0);
+                       targets->list_len * sizeof(targets->list[0])) == 0);
 
         rangelist_remove_all(targets);
         rangelist_remove_all(duplicate);
@@ -915,10 +915,10 @@ static void rangelist_copy(struct RangeList *dst, const struct RangeList *src) {
     FREE(dst->list);
     FREE(dst->picker);
     memset(dst, 0, sizeof(*dst));
-    dst->list = CALLOC(src->count, sizeof(src->list[0]));
-    memcpy(dst->list, src->list, src->count * sizeof(src->list[0]));
-    dst->count     = src->count;
-    dst->max       = dst->count;
+    dst->list = CALLOC(src->list_len, sizeof(src->list[0]));
+    memcpy(dst->list, src->list, src->list_len * sizeof(src->list[0]));
+    dst->list_len  = src->list_len;
+    dst->list_size = dst->list_len;
     dst->is_sorted = src->is_sorted;
 }
 
@@ -930,9 +930,9 @@ static bool rangelist_is_equal(const struct RangeList *lhs,
                                const struct RangeList *rhs) {
     unsigned i;
 
-    if (lhs->count != rhs->count)
+    if (lhs->list_len != rhs->list_len)
         return false;
-    for (i = 0; i < lhs->count; i++) {
+    for (i = 0; i < lhs->list_len; i++) {
         if (lhs->list[i].begin != rhs->list[i].begin) {
             return false;
         }
@@ -1089,8 +1089,8 @@ int ranges_selftest(void) {
     rangelist_add_range2(targets, range_parse_ipv4("10.0.0.0-10.0.1.12", 0, 0));
     rangelist_sort(targets);
 
-    if (targets->count != 1) {
-        LOG(LEVEL_ERROR, "count = %u\n", targets->count);
+    if (targets->list_len != 1) {
+        LOG(LEVEL_ERROR, "count = %u\n", targets->list_len);
         ERROR();
         return 1;
     }
@@ -1118,7 +1118,7 @@ int ranges_selftest(void) {
     rangelist_remove_range2(targets, range_parse_ipv4("192.168.0.0/16", 0, 0));
     rangelist_sort(targets);
 
-    if (targets->count != 1 || targets->list->begin != 0x0a000000 ||
+    if (targets->list_len != 1 || targets->list->begin != 0x0a000000 ||
         targets->list->end != 0x0aFFFFFF) {
         ERROR();
         return 1;
@@ -1130,7 +1130,7 @@ int ranges_selftest(void) {
     rangelist_remove_range2(targets,
                             range_parse_ipv4("10.255.255.255-11.0.0.0", 0, 0));
     rangelist_sort(targets);
-    if (targets->count != 1 || targets->list->begin != 0x0a000001 ||
+    if (targets->list_len != 1 || targets->list->begin != 0x0a000001 ||
         targets->list->end != 0x0aFFFFFE) {
         ERROR();
         return 1;
@@ -1140,14 +1140,14 @@ int ranges_selftest(void) {
     rangelist_remove_range2(targets, range_parse_ipv4("10.10.0.0/16", 0, 0));
     rangelist_remove_range2(targets, range_parse_ipv4("10.20.0.0/16", 0, 0));
     rangelist_sort(targets);
-    if (targets->count != 3) {
+    if (targets->list_len != 3) {
         ERROR();
         return 1;
     }
 
     rangelist_remove_range2(targets, range_parse_ipv4("10.12.0.0/16", 0, 0));
     rangelist_sort(targets);
-    if (targets->count != 4) {
+    if (targets->list_len != 4) {
         ERROR();
         return 1;
     }
@@ -1155,7 +1155,7 @@ int ranges_selftest(void) {
     rangelist_remove_range2(targets,
                             range_parse_ipv4("10.10.10.10-10.12.12.12", 0, 0));
     rangelist_sort(targets);
-    if (targets->count != 3) {
+    if (targets->list_len != 3) {
         ERROR();
         return 1;
     }
@@ -1168,7 +1168,7 @@ int ranges_selftest(void) {
 
         rangelist_parse_ports(targets, "80,1000-2000,1234,4444", &is_error, 0);
         rangelist_sort(targets);
-        if (targets->count != 3 || is_error) {
+        if (targets->list_len != 3 || is_error) {
             ERROR();
             return 1;
         }

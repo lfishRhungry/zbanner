@@ -75,10 +75,10 @@ void targetip_optimize(TargetIP *targets) {
     range6list_optimize(&targets->ipv6);
     rangelist_optimize(&targets->ports);
 
-    targets->count_ports          = rangelist_count(&targets->ports);
-    targets->count_ipv4s          = rangelist_count(&targets->ipv4);
-    targets->count_ipv6s          = range6list_count(&targets->ipv6).lo;
-    targets->ipv4_index_threshold = targets->count_ipv4s * targets->count_ports;
+    targets->count_ports    = rangelist_count(&targets->ports);
+    targets->count_ipv4s    = rangelist_count(&targets->ipv4);
+    targets->count_ipv6s    = range6list_count(&targets->ipv6).lo;
+    targets->ipv4_threshold = targets->count_ipv4s * targets->count_ports;
 }
 
 void targetip_pick(const TargetIP *targetip, uint64_t index, ipaddress *addr,
@@ -86,14 +86,14 @@ void targetip_pick(const TargetIP *targetip, uint64_t index, ipaddress *addr,
     /*
      * We can return either IPv4 or IPv6 addresses
      */
-    if (index < targetip->ipv4_index_threshold) {
+    if (index < targetip->ipv4_threshold) {
         addr->version = 4;
         addr->ipv4 =
             rangelist_pick(&targetip->ipv4, index % targetip->count_ipv4s);
         *port = rangelist_pick(&targetip->ports, index / targetip->count_ipv4s);
     } else {
+        index -= targetip->ipv4_threshold;
         addr->version = 6;
-        index -= targetip->ipv4_index_threshold;
         addr->ipv6 =
             range6list_pick(&targetip->ipv6, index % targetip->count_ipv6s);
         *port = rangelist_pick(&targetip->ports, index / targetip->count_ipv6s);
@@ -112,13 +112,13 @@ bool targetip_has_port(const TargetIP *targetip, unsigned port) {
 }
 
 bool targetip_has_ipv4_targets(const TargetIP *targetip) {
-    return targetip->ipv4.count != 0;
+    return targetip->ipv4.list_len != 0;
 }
 bool targetip_has_target_ports(const TargetIP *targetip) {
-    return targetip->ports.count != 0;
+    return targetip->ports.list_len != 0;
 }
 bool targetip_has_ipv6_targets(const TargetIP *targetip) {
-    return targetip->ipv6.count != 0;
+    return targetip->ipv6.list_len != 0;
 }
 
 int targetip_add_target_string(TargetIP *targetip, const char *string) {
@@ -161,6 +161,30 @@ int targetip_add_port_string(TargetIP *targets, const char *string,
         return 1;
     else
         return 0;
+}
+
+void targetip_remove_all(TargetIP *targets) {
+    rangelist_remove_all(&targets->ipv4);
+    rangelist_remove_all(&targets->ports);
+    range6list_remove_all(&targets->ipv6);
+    targets->count_ipv4s    = 0;
+    targets->count_ipv6s    = 0;
+    targets->count_ports    = 0;
+    targets->ipv4_threshold = 0;
+}
+
+void targetip_remove_ip(TargetIP *targets) {
+    rangelist_remove_all(&targets->ipv4);
+    range6list_remove_all(&targets->ipv6);
+    targets->count_ipv4s    = 0;
+    targets->count_ipv6s    = 0;
+    targets->ipv4_threshold = 0;
+}
+
+void targetip_remove_port(TargetIP *targets) {
+    rangelist_remove_all(&targets->ports);
+    targets->ipv4_threshold = 0;
+    targets->count_ports    = 0;
 }
 
 int targetip_selftest() {

@@ -1232,10 +1232,10 @@ static ConfRes SET_source_port(void *conf, const char *name,
     }
 
     /* Only allow one range of ports */
-    if (ports.count != 1) {
+    if (ports.list_len != 1) {
         LOG(LEVEL_ERROR,
             "only one '%s' range may be specified, found %u ranges\n", name,
-            ports.count);
+            ports.list_len);
         return Conf_ERR;
     }
 
@@ -1260,7 +1260,7 @@ static ConfRes SET_target_output(void *conf, const char *name,
         /* Disable comma generation for the first element */
         unsigned i = 0;
         unsigned l = 0;
-        for (i = 0; i < xconf->targets.ports.count; i++) {
+        for (i = 0; i < xconf->targets.ports.list_len; i++) {
             struct Range range = xconf->targets.ports.list[i];
             do {
                 struct Range rrange = range;
@@ -1304,7 +1304,7 @@ static ConfRes SET_target_output(void *conf, const char *name,
         /*
          * IPv4 address targets
          */
-        for (i = 0; i < xconf->targets.ipv4.count; i++) {
+        for (i = 0; i < xconf->targets.ipv4.list_len; i++) {
             unsigned     prefix_bits;
             struct Range range = xconf->targets.ipv4.list[i];
 
@@ -1326,7 +1326,7 @@ static ConfRes SET_target_output(void *conf, const char *name,
             }
             fprintf(xconf->echo, "\n");
         }
-        for (i = 0; i < xconf->targets.ipv6.count; i++) {
+        for (i = 0; i < xconf->targets.ipv6.list_len; i++) {
             bool                  exact = false;
             struct Range6         range = xconf->targets.ipv6.list[i];
             ipaddress_formatted_t fmt   = ipv6address_fmt(range.begin);
@@ -1535,7 +1535,7 @@ static ConfRes SET_exclude_file(void *conf, const char *name,
         return 0;
     }
 
-    unsigned    count1 = xconf->exclude.ipv4.count;
+    unsigned    count1 = xconf->exclude.ipv4.list_len;
     unsigned    count2;
     int         err;
     const char *filename = value;
@@ -1548,7 +1548,7 @@ static ConfRes SET_exclude_file(void *conf, const char *name,
     }
     /* Detect if this file has made any change, otherwise don't print
      * a message */
-    count2 = xconf->exclude.ipv4.count;
+    count2 = xconf->exclude.ipv4.list_len;
     if (count2 - count1)
         LOG(LEVEL_HINT, "%s: excluding %u ranges from file\n", value,
             count2 - count1);
@@ -3369,7 +3369,7 @@ void xconf_echo_cidr(XConf *xconf, FILE *fp) {
     /*
      * For all IPv4 ranges ...
      */
-    for (i = 0; i < xconf->targets.ipv4.count; i++) {
+    for (i = 0; i < xconf->targets.ipv4.list_len; i++) {
         /* Get the next range in the list */
         struct Range range = xconf->targets.ipv4.list[i];
 
@@ -3402,7 +3402,7 @@ void xconf_echo_cidr(XConf *xconf, FILE *fp) {
     /*
      * For all IPv6 ranges...
      */
-    for (i = 0; i < xconf->targets.ipv6.count; i++) {
+    for (i = 0; i < xconf->targets.ipv6.list_len; i++) {
         struct Range6 range = xconf->targets.ipv6.list[i];
         bool          exact = false;
         while (!exact) {

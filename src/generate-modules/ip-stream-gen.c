@@ -124,8 +124,7 @@ bool ipstream_hasmore(unsigned tx_index, uint64_t index) {
 
     /*remove old ips */
     TargetIP *cur_tgt = &ipstream_conf.targets;
-    rangelist_remove_all(&cur_tgt->ipv4);
-    range6list_remove_all(&cur_tgt->ipv6);
+    targetip_remove_ip(cur_tgt);
 
     /*add new ips*/
     char line[256];
@@ -158,9 +157,9 @@ bool ipstream_hasmore(unsigned tx_index, uint64_t index) {
     rangelist_optimize(&cur_tgt->ipv4);
     range6list_optimize(&cur_tgt->ipv6);
 
-    cur_tgt->count_ipv4s          = rangelist_count(&cur_tgt->ipv4);
-    cur_tgt->count_ipv6s          = range6list_count(&cur_tgt->ipv6).lo;
-    cur_tgt->ipv4_index_threshold = cur_tgt->count_ipv4s * cur_tgt->count_ports;
+    cur_tgt->count_ipv4s    = rangelist_count(&cur_tgt->ipv4);
+    cur_tgt->count_ipv6s    = range6list_count(&cur_tgt->ipv6).lo;
+    cur_tgt->ipv4_threshold = cur_tgt->count_ipv4s * cur_tgt->count_ports;
     ipstream_conf.range_all =
         (cur_tgt->count_ipv4s + cur_tgt->count_ipv6s) * cur_tgt->count_ports;
     ipstream_conf.index = 0;
@@ -177,9 +176,7 @@ Target ipstream_generate(unsigned tx_index, uint64_t index, uint64_t repeat,
     Target    target;
     TargetIP *cur_tgt = &ipstream_conf.targets;
     uint64_t  xXx     = ipstream_conf.index;
-    uint64_t  range_ipv6 =
-        ipstream_conf.range_all - cur_tgt->ipv4_index_threshold;
-    uint64_t ck;
+    uint64_t  ck;
 
     /*Actually it is impossible*/
     while (xXx >= ipstream_conf.range_all) {
@@ -191,7 +188,28 @@ Target ipstream_generate(unsigned tx_index, uint64_t index, uint64_t repeat,
     /**
      * Pick up target & source
      */
-    if (xXx < range_ipv6) {
+    if (xXx < cur_tgt->ipv4_threshold) {
+        target.ip_them.version = 4;
+        target.ip_me.version   = 4;
+
+        target.ip_them.ipv4 =
+            rangelist_pick(&cur_tgt->ipv4, xXx % cur_tgt->count_ipv4s);
+        target.port_them =
+            rangelist_pick(&cur_tgt->ports, xXx / cur_tgt->count_ipv4s);
+
+        if (src->ipv4_mask > 1 || src->port_mask > 1) {
+            ck = get_cookie_ipv4(
+                (unsigned)(index + repeat), (unsigned)((index + repeat) >> 32),
+                (unsigned)xXx, (unsigned)(xXx >> 32), ipstream_conf.seed);
+            target.port_me    = src->port + (ck & src->port_mask);
+            target.ip_me.ipv4 = src->ipv4 + ((ck >> 16) & src->ipv4_mask);
+        } else {
+            target.port_me    = src->port;
+            target.ip_me.ipv4 = src->ipv4;
+        }
+    } else {
+        xXx -= cur_tgt->ipv4_threshold;
+
         target.ip_them.version = 6;
         target.ip_me.version   = 6;
 
@@ -210,27 +228,6 @@ Target ipstream_generate(unsigned tx_index, uint64_t index, uint64_t repeat,
             target.ip_me.ipv6.lo += (ck & src->ipv6_mask);
         } else {
             target.port_me = src->port;
-        }
-    } else {
-        xXx -= range_ipv6;
-
-        target.ip_them.version = 4;
-        target.ip_me.version   = 4;
-
-        target.ip_them.ipv4 =
-            rangelist_pick(&cur_tgt->ipv4, xXx % cur_tgt->count_ipv4s);
-        target.port_them =
-            rangelist_pick(&cur_tgt->ports, xXx / cur_tgt->count_ipv4s);
-
-        if (src->ipv4_mask > 1 || src->port_mask > 1) {
-            ck = get_cookie_ipv4(
-                (unsigned)(index + repeat), (unsigned)((index + repeat) >> 32),
-                (unsigned)xXx, (unsigned)(xXx >> 32), ipstream_conf.seed);
-            target.port_me    = src->port + (ck & src->port_mask);
-            target.ip_me.ipv4 = src->ipv4 + ((ck >> 16) & src->ipv4_mask);
-        } else {
-            target.port_me    = src->port;
-            target.ip_me.ipv4 = src->ipv4;
         }
     }
 

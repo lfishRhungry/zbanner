@@ -163,7 +163,7 @@ bool range6list_is_contains(const struct Range6List *targets,
                             const ipv6address        ip) {
     unsigned i;
 
-    for (i = 0; i < targets->count; i++) {
+    for (i = 0; i < targets->list_len; i++) {
         struct Range6 *range = &targets->list[i];
 
         if (LESSEQ(range->begin, ip) && LESSEQ(ip, range->end))
@@ -177,8 +177,8 @@ bool range6list_is_contains(const struct Range6List *targets,
  ***************************************************************************/
 static void todo_remove_at(struct Range6List *targets, unsigned index) {
     memmove(&targets->list[index], &targets->list[index + 1],
-            (targets->count - index) * sizeof(targets->list[index]));
-    targets->count--;
+            (targets->list_len - index) * sizeof(targets->list[index]));
+    targets->list_len--;
 }
 
 /***************************************************************************
@@ -256,12 +256,12 @@ static int range6_compare(const void *lhs, const void *rhs) {
 void range6list_sort(struct Range6List *targets) {
     size_t            i;
     struct Range6List newlist        = {0};
-    size_t            original_count = targets->count;
+    size_t            original_count = targets->list_len;
 
     /* Empty lists are, of course, sorted. We need to set this
      * to avoid an error later on in the code which asserts that
      * the lists are sorted */
-    if (targets->count == 0) {
+    if (targets->list_len == 0) {
         targets->is_sorted = 1;
         return;
     }
@@ -274,7 +274,7 @@ void range6list_sort(struct Range6List *targets) {
     /* First, sort the list */
     LOG(LEVEL_DETAIL, "range6:sort: sorting...\n");
     qsort(targets->list,            /* the array to sort */
-          targets->count,           /* number of elements to sort */
+          targets->list_len,        /* number of elements to sort */
           sizeof(targets->list[0]), /* size of element */
           range6_compare);
 
@@ -283,17 +283,17 @@ void range6list_sort(struct Range6List *targets) {
      * middle when collapsing overlapping entries together, which is painfully
      * slow. */
     LOG(LEVEL_DETAIL, "range:sort: combining...\n");
-    for (i = 0; i < targets->count; i++) {
+    for (i = 0; i < targets->list_len; i++) {
         range6list_add_range(&newlist, targets->list[i].begin,
                              targets->list[i].end);
     }
 
     LOG(LEVEL_DEBUG, "range:sort: combined from %u elements to %u elements\n",
-        original_count, newlist.count);
+        original_count, newlist.list_len);
     FREE(targets->list);
-    targets->list  = newlist.list;
-    targets->count = newlist.count;
-    newlist.list   = 0;
+    targets->list     = newlist.list;
+    targets->list_len = newlist.list_len;
+    newlist.list      = 0;
 
     LOG(LEVEL_DETAIL, "range:sort: done...\n");
 
@@ -308,16 +308,16 @@ void range6list_add_range(struct Range6List *targets, ipv6address begin,
     range.end   = end;
 
     /* auto-expand the list if necessary */
-    if (targets->count + 1 >= targets->max) {
-        targets->max = targets->max * 2 + 1;
-        targets->list =
-            REALLOCARRAY(targets->list, targets->max, sizeof(targets->list[0]));
+    if (targets->list_len + 1 >= targets->list_size) {
+        targets->list_size = targets->list_size * 2 + 1;
+        targets->list      = REALLOCARRAY(targets->list, targets->list_size,
+                                          sizeof(targets->list[0]));
     }
 
     /* If empty list, then add this one */
-    if (targets->count == 0) {
+    if (targets->list_len == 0) {
         targets->list[0] = range;
-        targets->count++;
+        targets->list_len++;
         targets->is_sorted = 1;
         return;
     }
@@ -325,15 +325,15 @@ void range6list_add_range(struct Range6List *targets, ipv6address begin,
     /* If new range overlaps the last range in the list, then combine it
      * rather than appending it. This is an optimization for the fact that
      * we often read in sequential addresses */
-    if (range6_is_overlap(targets->list[targets->count - 1], range)) {
-        range6_combine(&targets->list[targets->count - 1], range);
+    if (range6_is_overlap(targets->list[targets->list_len - 1], range)) {
+        range6_combine(&targets->list[targets->list_len - 1], range);
         targets->is_sorted = 0;
         return;
     }
 
     /* append to the end of our list */
-    targets->list[targets->count] = range;
-    targets->count++;
+    targets->list[targets->list_len] = range;
+    targets->list_len++;
     targets->is_sorted = 0;
 }
 
@@ -351,7 +351,7 @@ void range6list_merge(struct Range6List       *list1,
                       const struct Range6List *list2) {
     unsigned i;
 
-    for (i = 0; i < list2->count; i++) {
+    for (i = 0; i < list2->list_len; i++) {
         range6list_add_range(list1, list2->list[i].begin, list2->list[i].end);
     }
 }
@@ -368,7 +368,7 @@ void range6list_remove_range(struct Range6List *targets,
 
     /* See if the range overlaps any exist range already in the
      * list */
-    for (i = 0; i < targets->count; i++) {
+    for (i = 0; i < targets->list_len; i++) {
         if (!range6_is_overlap(targets->list[i], x))
             continue;
 
@@ -422,7 +422,7 @@ ipv6address range6list_exclude(struct Range6List       *targets,
     ipv6address count = {0, 0};
     unsigned    i;
 
-    for (i = 0; i < excludes->count; i++) {
+    for (i = 0; i < excludes->list_len; i++) {
         struct Range6 range = excludes->list[i];
         ipv6address   x;
 
@@ -442,7 +442,7 @@ int128_t range6list_count(const struct Range6List *targets) {
     unsigned    i;
     ipv6address result = {0, 0};
 
-    for (i = 0; i < targets->count; i++) {
+    for (i = 0; i < targets->list_len; i++) {
         ipv6address x;
 
         x = _int128_subtract(targets->list[i].end, targets->list[i].begin);
@@ -458,9 +458,9 @@ int128_t range6list_count(const struct Range6List *targets) {
 /***************************************************************************
  ***************************************************************************/
 ipv6address range6list_pick(const struct Range6List *targets, uint64_t index) {
-    size_t        maxmax = targets->count;
+    size_t        maxmax = targets->list_len;
     size_t        min    = 0;
-    size_t        max    = targets->count;
+    size_t        max    = targets->list_len;
     size_t        mid;
     const size_t *picker = targets->picker;
 
@@ -500,7 +500,7 @@ void range6list_optimize(struct Range6List *targets) {
     size_t      i;
     ipv6address total = {0, 0};
 
-    if (targets->count == 0)
+    if (targets->list_len == 0)
         return;
 
     /* This technique only works when the targets are in
@@ -510,9 +510,9 @@ void range6list_optimize(struct Range6List *targets) {
 
     FREE(targets->picker);
 
-    picker = REALLOCARRAY(NULL, targets->count, sizeof(*picker));
+    picker = REALLOCARRAY(NULL, targets->list_len, sizeof(*picker));
 
-    for (i = 0; i < targets->count; i++) {
+    for (i = 0; i < targets->list_len; i++) {
         ipv6address x;
         picker[i] = (size_t)total.lo;
         x     = _int128_subtract(targets->list[i].end, targets->list[i].begin);
@@ -607,9 +607,9 @@ static int regress_pick2() {
         }
 
         /* at this point, the two range lists should be identical */
-        REGRESS(i, targets->count == duplicate->count);
+        REGRESS(i, targets->list_len == duplicate->list_len);
         REGRESS(i, memcmp(targets->list, duplicate->list,
-                          targets->count * sizeof(targets->list[0])) == 0);
+                          targets->list_len * sizeof(targets->list[0])) == 0);
 
         range6list_remove_all(targets);
         range6list_remove_all(duplicate);

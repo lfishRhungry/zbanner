@@ -764,7 +764,7 @@ static void parse_line(struct NmapServiceProbeList *list, const char *line) {
                     filename, line_number, (unsigned)offset);
             } else {
                 ranges = parse_ports(list, line, offset, line_length);
-                if (ranges.count == 0) {
+                if (ranges.list_len == 0) {
                     LOG(LEVEL_ERROR, "%s:%u:%u: 'Exclude' bad format\n",
                         filename, line_number, (unsigned)offset);
                 } else {
@@ -794,7 +794,7 @@ static void parse_line(struct NmapServiceProbeList *list, const char *line) {
     switch ((int)type) {
         case SvcP_Ports:
             ranges = parse_ports(list, line, offset, line_length);
-            if (ranges.count == 0) {
+            if (ranges.list_len == 0) {
                 LOG(LEVEL_ERROR, "%s:%u:%u: bad ports format\n", filename,
                     line_number, (unsigned)offset);
             } else {
@@ -804,7 +804,7 @@ static void parse_line(struct NmapServiceProbeList *list, const char *line) {
             break;
         case SvcP_Sslports:
             ranges = parse_ports(list, line, offset, line_length);
-            if (ranges.count == 0) {
+            if (ranges.list_len == 0) {
                 LOG(LEVEL_ERROR, "%s:%u:%u: bad ports format\n", filename,
                     line_number, (unsigned)offset);
             } else {
@@ -944,14 +944,14 @@ static void nmapserviceprobes_print_ports(const struct RangeList *ranges,
     unsigned i;
 
     /* don't print anything if no ports */
-    if (ranges == NULL || ranges->count == 0)
+    if (ranges == NULL || ranges->list_len == 0)
         return;
 
     /* 'Exclude', 'ports', 'sslports' */
     fprintf(fp, "%s ", prefix);
 
     /* print all ports */
-    for (i = 0; i < ranges->count; i++) {
+    for (i = 0; i < ranges->list_len; i++) {
         unsigned proto;
         int      begin = ranges->list[i].begin;
         int      end   = ranges->list[i].end;

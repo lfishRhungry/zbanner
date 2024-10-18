@@ -24,9 +24,12 @@ typedef struct Target_IPs_Ports {
     /**
      * Used internally to differentiate between indexes selecting an
      * IPv4 address and higher ones selecting an IPv6 address.
+     * NOTE:Should be update manually or by targetip_optimize
      */
-    uint64_t ipv4_index_threshold;
-
+    uint64_t ipv4_threshold;
+    /**
+     * NOTE:Should be update manually or by targetip_optimize
+     */
     uint64_t count_ports;
     uint64_t count_ipv4s;
     uint64_t count_ipv6s;
@@ -133,6 +136,10 @@ bool targetip_has_target_ports(const TargetIP *targetip);
  * otherwise
  */
 bool targetip_has_ipv6_targets(const TargetIP *targetip);
+
+void targetip_remove_all(TargetIP *targets);
+void targetip_remove_ip(TargetIP *targets);
+void targetip_remove_port(TargetIP *targets);
 
 int targetip_selftest();
 
