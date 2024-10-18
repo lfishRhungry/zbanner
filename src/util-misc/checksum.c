@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 #include "checksum.h"
-#include "../target/target-set.h"
+#include "../target/target.h"
 #include "../util-out/logger.h"
 
 /**

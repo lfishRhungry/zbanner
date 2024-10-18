@@ -14,7 +14,7 @@
 
  ****************************************************************************/
 #include "proto-preprocess.h"
-#include "../target/target-set.h"
+#include "../target/target.h"
 #include "../util-data/data-convert.h"
 #include "../stub/stub-pcap-dlt.h"
 #include "../templ/templ-icmp.h"

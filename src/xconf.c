@@ -1256,53 +1256,11 @@ static ConfRes SET_target_output(void *conf, const char *name,
                                  const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        /* Disable comma generation for the first element */
-        unsigned i = 0;
-        unsigned l = 0;
-        for (i = 0; i < xconf->targets.ports.list_len; i++) {
-            struct Range range = xconf->targets.ports.list[i];
-            do {
-                struct Range rrange = range;
-                unsigned     done   = 0;
-                if (l) {
-                    fprintf(xconf->echo, ",");
-                } else {
-                    fprintf(xconf->echo, "port = ");
-                }
-                l = 1;
-                if (rrange.begin >= Range_Oproto) {
-                    rrange.begin -= Range_Oproto;
-                    rrange.end -= Range_Oproto;
-                    fprintf(xconf->echo, "O:");
-                    done = 1;
-                } else if (rrange.begin >= Range_SCTP) {
-                    rrange.begin -= Range_SCTP;
-                    rrange.end -= Range_SCTP;
-                    fprintf(xconf->echo, "S:");
-                    range.begin = Range_Oproto;
-                } else if (rrange.begin >= Range_UDP) {
-                    rrange.begin -= Range_UDP;
-                    rrange.end -= Range_UDP;
-                    fprintf(xconf->echo, "U:");
-                    range.begin = Range_SCTP;
-                } else
-                    range.begin = Range_UDP;
-
-                rrange.end = min(rrange.end, 65535);
-                if (rrange.begin == rrange.end)
-                    fprintf(xconf->echo, "%u", rrange.begin);
-                else
-                    fprintf(xconf->echo, "%u-%u", rrange.begin, rrange.end);
-                if (done)
-                    break;
-            } while (range.begin <= range.end);
-        }
-
-        if (l)
-            fprintf(xconf->echo, "\n");
+        rangeport_println(&xconf->targets.ports, xconf->echo);
         /*
          * IPv4 address targets
          */
+        unsigned i;
         for (i = 0; i < xconf->targets.ipv4.list_len; i++) {
             unsigned     prefix_bits;
             struct Range range = xconf->targets.ipv4.list[i];

@@ -1,12 +1,15 @@
 #ifndef NOT_FOUND_PCRE2
 
 #include "nmap-service.h"
+
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
-#include "../target/target-rangeport.h"
-#include "../target/target-set.h"
 #include "../util-misc/cross.h"
 #include "../util-out/logger.h"
+
+#include "../target/target.h"
+#include "../target/target-set.h"
+#include "../target/target-rangeport.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -941,8 +944,6 @@ static void nmapserviceprobes_free_record(struct NmapServiceProbe *probe) {
 static void nmapserviceprobes_print_ports(const struct RangeList *ranges,
                                           FILE *fp, const char *prefix,
                                           unsigned default_proto) {
-    unsigned i;
-
     /* don't print anything if no ports */
     if (ranges == NULL || ranges->list_len == 0)
         return;
@@ -950,57 +951,7 @@ static void nmapserviceprobes_print_ports(const struct RangeList *ranges,
     /* 'Exclude', 'ports', 'sslports' */
     fprintf(fp, "%s ", prefix);
 
-    /* print all ports */
-    for (i = 0; i < ranges->list_len; i++) {
-        unsigned proto;
-        int      begin = ranges->list[i].begin;
-        int      end   = ranges->list[i].end;
-
-        if (Range_TCP <= begin && begin < Range_UDP) {
-            proto = IP_PROTO_TCP;
-            begin -= Range_TCP;
-            end -= Range_TCP;
-        } else if (Range_UDP <= begin && begin < Range_SCTP) {
-            proto = IP_PROTO_UDP;
-            begin -= Range_UDP;
-            end -= Range_UDP;
-        } else {
-            proto = IP_PROTO_SCTP;
-            begin -= Range_SCTP;
-            end -= Range_SCTP;
-        }
-
-        /* If UDP, shift down */
-        begin -= proto;
-        end -= proto;
-
-        /* print comma between ports, but not for first port */
-        if (i)
-            fprintf(fp, ",");
-
-        /* Print either one number for a single port, or two numbers for a range
-         */
-        if (default_proto != proto) {
-            default_proto = proto;
-            switch (proto) {
-                case IP_PROTO_TCP:
-                    fprintf(fp, "T:");
-                    break;
-                case IP_PROTO_UDP:
-                    fprintf(fp, "U:");
-                    break;
-                case IP_PROTO_SCTP:
-                    fprintf(fp, "S:");
-                    break;
-                default:
-                    fprintf(fp, "O:");
-                    break;
-            }
-        }
-        fprintf(fp, "%u", begin);
-        if (end > begin)
-            fprintf(fp, "-%u", end);
-    }
+    rangeport_print(ranges, fp, default_proto);
     fprintf(fp, "\n");
 }
 

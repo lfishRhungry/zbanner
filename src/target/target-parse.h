@@ -8,15 +8,6 @@
  * Born and updated from Masscan
  * Modified and Created by sharkocha 2024
  */
-/*
-    target-parse
-
-    This module parses IPv4 and IPv6 addresses.
-
-    It's not a typical parser. It's optimized around parsing large
-    files containing millions of addresses and ranges using a
-    "state-machine parser".
-*/
 #ifndef TARGET_PARSE_H
 #define TARGET_PARSE_H
 #include "target-ipaddress.h"

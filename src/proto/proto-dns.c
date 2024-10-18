@@ -1273,12 +1273,12 @@ bool dns_in_zone(dns_name_t *name, dns_name_t *zone) {
             *(name->name + name->length - zone->length - 1) == '.');
 }
 
-void dns_print_packet(FILE *f, dns_pkt_t *packet, uint8_t *begin, size_t len,
+void dns_print_packet(FILE *fp, dns_pkt_t *packet, uint8_t *begin, size_t len,
                       uint8_t *next) {
     char         buf[0xFFFF];
     dns_record_t rec;
 
-    fprintf(f,
+    fprintf(fp,
             ";; ->>HEADER<<- opcode: %s, status: %s, id: %" PRIu16 "\n"
             ";; flags: %s%s%s%s%s%s%s; QUERY: %" PRIu16 ", ANSWER: %" PRIu16
             ", AUTHORITY: %" PRIu16 ", ADDITIONAL: %" PRIu16 "\n\n"
@@ -1296,7 +1296,7 @@ void dns_print_packet(FILE *f, dns_pkt_t *packet, uint8_t *begin, size_t len,
             packet->head.header.add_count);
 
     dns_question2str(&packet->head.question, buf, sizeof(buf));
-    fprintf(f, "%s\n", buf);
+    fprintf(fp, "%s\n", buf);
 
     uint16_t      i       = 0;
     dns_section_t section = DNS_SECTION_QUESTION;
@@ -1305,17 +1305,17 @@ void dns_print_packet(FILE *f, dns_pkt_t *packet, uint8_t *begin, size_t len,
     while (dns_parse_record_raw(begin, next, begin + len, &next, &rec)) {
         dns_section_t new_section = dns_get_section(i++, &packet->head.header);
         if (new_section != section) {
-            fprintf(f, "\n;; %s SECTION:\n", dns_section2str(new_section));
+            fprintf(fp, "\n;; %s SECTION:\n", dns_section2str(new_section));
             section = new_section;
         }
         dns_name2str(&rec.name, sub_buf1, 0xFF * 4);
         dns_raw_record_data2str(&rec, begin, begin + len, true, sub_buf2,
                                 0xFFFF0);
-        fprintf(f, "%s %" PRIu32 " %s %s %s\n", sub_buf1, rec.ttl,
+        fprintf(fp, "%s %" PRIu32 " %s %s %s\n", sub_buf1, rec.ttl,
                 dns_class2str((dns_class)rec.class),
                 dns_record_type2str((dns_record_type)rec.type), sub_buf2);
     }
-    fprintf(f, "\n\n");
+    fprintf(fp, "\n\n");
 }
 
 uint8_t dns_ip_octet2label(uint8_t *dst, uint8_t octet) {

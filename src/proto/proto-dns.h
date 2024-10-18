@@ -278,7 +278,7 @@ char *dns_section2str_lower_plural(dns_section_t section);
 
 bool dns_in_zone(dns_name_t *name, dns_name_t *zone);
 
-void dns_print_packet(FILE *f, dns_pkt_t *packet, uint8_t *begin, size_t len,
+void dns_print_packet(FILE *fp, dns_pkt_t *packet, uint8_t *begin, size_t len,
                       uint8_t *next);
 
 uint8_t dns_ip_octet2label(uint8_t *dst, uint8_t octet);

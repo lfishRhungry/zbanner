@@ -7,27 +7,6 @@
 
 struct RangeList;
 
-#define TARGET_PORT_SPEC 65535
-
-/*
- * Ports are 16-bit numbers ([0..65535], but different
- * transports (TCP, UDP, SCTP, Other IP protocol num) are distinct port ranges.
- * Thus, we instead of three 64k and one 0xFF ranges we could instead treat
- * this internally together.
- * We can expand this range to include other
- * things we scan for, such as ICMP pings or ARP requests.
- */
-enum Proto_Port_range {
-    Range_TCP         = (TARGET_PORT_SPEC + 1) * 0,
-    Range_TCP_last    = (TARGET_PORT_SPEC + 1) * 0 + TARGET_PORT_SPEC,
-    Range_UDP         = (TARGET_PORT_SPEC + 1) * 1,
-    Range_UDP_last    = (TARGET_PORT_SPEC + 1) * 1 + TARGET_PORT_SPEC,
-    Range_SCTP        = (TARGET_PORT_SPEC + 1) * 2,
-    Range_SCTP_last   = (TARGET_PORT_SPEC + 1) * 2 + TARGET_PORT_SPEC,
-    Range_Oproto      = (TARGET_PORT_SPEC + 1) * 3,
-    Range_Oproto_last = (TARGET_PORT_SPEC + 1) * 3 + TARGET_PORT_SPEC,
-};
-
 void rangelist_add_range_tcp(struct RangeList *targets, unsigned begin,
                              unsigned end);
 
@@ -54,6 +33,18 @@ void rangelist_add_range_udp(struct RangeList *targets, unsigned begin,
  */
 const char *rangelist_parse_ports(struct RangeList *ports, const char *string,
                                   unsigned *is_error, unsigned proto_offset);
+
+/**
+ * print ports in a line of `port = 80-81,82-88,U:85-99...\n` format
+ */
+void rangeport_println(const struct RangeList *ports, FILE *fp);
+
+/**
+ * print just ports in `80-81,82-88,U:85-99...` format
+ * @param default_ipproto won't be printed with prefix like U:, T: or S:
+ */
+void rangeport_print(const struct RangeList *ports, FILE *fp,
+                     unsigned default_ipproto);
 
 /**
  * transfer port from range format to real port

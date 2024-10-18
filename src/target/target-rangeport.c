@@ -1,3 +1,4 @@
+#include "target.h"
 #include "target-set.h"
 #include "target-rangeport.h"
 #include "target-rangev4.h"
@@ -8,18 +9,36 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+ * Ports are 16-bit numbers ([0..65535], but different
+ * transports (TCP, UDP, SCTP, Other IP protocol num) are distinct port ranges.
+ * Thus, we instead of three 64k and one 0xFF ranges we could instead treat
+ * this internally together.
+ * We can expand this range to include other
+ * things we scan for, such as ICMP pings or ARP requests.
+ */
+#define PORT_SPEC    65535
+#define TCP_START    0
+#define TCP_LAST     (TCP_START + PORT_SPEC)
+#define UDP_START    (TCP_LAST + 1)
+#define UDP_LAST     (UDP_START + PORT_SPEC)
+#define SCTP_START   (UDP_LAST + 1)
+#define SCTP_LAST    (SCTP_START + PORT_SPEC)
+#define OPROTO_START (SCTP_LAST + 1)
+#define OPROTO_LAST  (OPROTO_START + PORT_SPEC)
+
 /** Use this when adding TCP ports, to avoid the comoplication of how
  * ports are stored */
 void rangelist_add_range_tcp(struct RangeList *targets, unsigned begin,
                              unsigned end) {
-    rangelist_add_range(targets, Range_TCP + begin, Range_TCP + end);
+    rangelist_add_range(targets, TCP_START + begin, TCP_START + end);
 }
 
 /** Use this when adding UDP ports, to avoid the comoplication of how
  * ports are stored */
 void rangelist_add_range_udp(struct RangeList *targets, unsigned begin,
                              unsigned end) {
-    rangelist_add_range(targets, Range_UDP + begin, Range_UDP + end);
+    rangelist_add_range(targets, UDP_START + begin, UDP_START + end);
 }
 
 /***************************************************************************
@@ -53,19 +72,19 @@ const char *rangelist_parse_ports(struct RangeList *ports, const char *string,
             switch (*p) {
                 case 'T':
                 case 't':
-                    proto_offset = 0;
+                    proto_offset = TCP_START;
                     break;
                 case 'U':
                 case 'u':
-                    proto_offset = Range_UDP;
+                    proto_offset = UDP_START;
                     break;
                 case 'S':
                 case 's':
-                    proto_offset = Range_SCTP;
+                    proto_offset = SCTP_START;
                     break;
                 case 'O':
                 case 'o':
-                    proto_offset = Range_Oproto;
+                    proto_offset = OPROTO_START;
                     break;
                 default:
                     LOG(LEVEL_ERROR, "bad port character = %c\n", p[0]);
@@ -94,7 +113,7 @@ const char *rangelist_parse_ports(struct RangeList *ports, const char *string,
             p++;
             if (!isdigit(*p)) {
                 /* nmap style range spec meaning end with 65535 */
-                end = TARGET_PORT_SPEC;
+                end = PORT_SPEC;
             } else {
                 end = (unsigned)strtoul(p, &p, 0);
             }
@@ -102,7 +121,7 @@ const char *rangelist_parse_ports(struct RangeList *ports, const char *string,
             end = port;
 
         /* Check for out-of-range */
-        if (port > TARGET_PORT_SPEC || end > TARGET_PORT_SPEC || end < port) {
+        if (port > PORT_SPEC || end > PORT_SPEC || end < port) {
             LOG(LEVEL_ERROR, "bad port range: %s\n", string);
             *is_error = 2;
             return p;
@@ -124,16 +143,123 @@ const char *rangelist_parse_ports(struct RangeList *ports, const char *string,
     return p;
 }
 
+void rangeport_println(const struct RangeList *ports, FILE *fp) {
+    /* Disable comma generation for the first element */
+    unsigned i = 0;
+    unsigned l = 0;
+    for (i = 0; i < ports->list_len; i++) {
+        struct Range range = ports->list[i];
+        do {
+            struct Range rrange = range;
+            unsigned     done   = 0;
+            if (l) {
+                fprintf(fp, ",");
+            } else {
+                fprintf(fp, "port = ");
+            }
+            l = 1;
+            if (rrange.begin >= OPROTO_START) {
+                rrange.begin -= OPROTO_START;
+                rrange.end -= OPROTO_START;
+                fprintf(fp, "O:");
+                done = 1;
+            } else if (rrange.begin >= SCTP_START) {
+                rrange.begin -= SCTP_START;
+                rrange.end -= SCTP_START;
+                fprintf(fp, "S:");
+                range.begin = OPROTO_START;
+            } else if (rrange.begin >= UDP_START) {
+                rrange.begin -= UDP_START;
+                rrange.end -= UDP_START;
+                fprintf(fp, "U:");
+                range.begin = SCTP_START;
+            } else {
+                range.begin = UDP_START;
+            }
+
+            rrange.end = min(rrange.end, 65535);
+            if (rrange.begin == rrange.end)
+                fprintf(fp, "%u", rrange.begin);
+            else
+                fprintf(fp, "%u-%u", rrange.begin, rrange.end);
+
+            if (done)
+                break;
+
+        } while (range.begin <= range.end);
+    }
+
+    if (l)
+        fprintf(fp, "\n");
+}
+
+void rangeport_print(const struct RangeList *ports, FILE *fp,
+                     unsigned default_ipproto) {
+    /* print all ports */
+    unsigned i;
+    for (i = 0; i < ports->list_len; i++) {
+        unsigned proto;
+        int      begin = ports->list[i].begin;
+        int      end   = ports->list[i].end;
+
+        if (TCP_START <= begin && begin < UDP_START) {
+            proto = IP_PROTO_TCP;
+            begin -= TCP_START;
+            end -= TCP_START;
+        } else if (UDP_START <= begin && begin < SCTP_START) {
+            proto = IP_PROTO_UDP;
+            begin -= UDP_START;
+            end -= UDP_START;
+        } else {
+            proto = IP_PROTO_SCTP;
+            begin -= SCTP_START;
+            end -= SCTP_START;
+        }
+
+        /* If UDP, shift down */
+        begin -= proto;
+        end -= proto;
+
+        /* print comma between ports, but not for first port */
+        if (i)
+            fprintf(fp, ",");
+
+        /**
+         * Print either one number for a single port, or two numbers for a range
+         */
+        if (default_ipproto != proto) {
+            default_ipproto = proto;
+            switch (proto) {
+                case IP_PROTO_TCP:
+                    fprintf(fp, "T:");
+                    break;
+                case IP_PROTO_UDP:
+                    fprintf(fp, "U:");
+                    break;
+                case IP_PROTO_SCTP:
+                    fprintf(fp, "S:");
+                    break;
+                default:
+                    fprintf(fp, "O:");
+                    break;
+            }
+        }
+        fprintf(fp, "%u", begin);
+        if (end > begin)
+            fprintf(fp, "-%u", end);
+    }
+}
+
 uint8_t get_actual_proto_port(unsigned *raw_port) {
-    if (*raw_port <= Range_TCP_last)
+    if (*raw_port <= TCP_LAST)
         return IP_PROTO_TCP;
-    else if (*raw_port <= Range_UDP_last) {
+    else if (*raw_port <= UDP_LAST) {
         *raw_port &= 0xFFFF;
         return IP_PROTO_UDP;
-    } else if (*raw_port <= Range_SCTP_last) {
+    } else if (*raw_port <= SCTP_LAST) {
         *raw_port &= 0xFFFF;
         return IP_PROTO_SCTP;
-    } else if (*raw_port <= Range_Oproto_last) {
+    } else if (*raw_port <= OPROTO_LAST) {
         *raw_port &= 0xFFFF;
         return IP_PROTO_Other;
     } else {

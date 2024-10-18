@@ -11,7 +11,7 @@
 Generator IpStreamGen;
 
 struct IpStreamConf {
-    FILE     *f;
+    FILE     *fp;
     uint64_t  seed;
     TargetSet targets;
     uint64_t  index;
@@ -59,8 +59,8 @@ static ConfRes SET_file(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    ipstream_conf.f = fopen(value, "rb");
-    if (ipstream_conf.f == NULL) {
+    ipstream_conf.fp = fopen(value, "rb");
+    if (ipstream_conf.fp == NULL) {
         LOG(LEVEL_ERROR, "(stream generator) %s: %s\n", value, strerror(errno));
         return Conf_ERR;
     }
@@ -115,8 +115,8 @@ bool ipstream_init(const XConf *xconf, uint64_t *count_targets,
             rangelist_count(&ipstream_conf.targets.ports);
     }
 
-    if (!ipstream_conf.f) {
-        ipstream_conf.f = stdin;
+    if (!ipstream_conf.fp) {
+        ipstream_conf.fp = stdin;
     }
 
     if (ipstream_conf.rounds <= 0) {
@@ -144,12 +144,12 @@ bool ipstream_hasmore(unsigned tx_index, uint64_t index) {
     /*add new ips*/
     char line[256];
     while (true) {
-        char *s = fgets(line, sizeof(line), ipstream_conf.f);
+        char *s = fgets(line, sizeof(line), ipstream_conf.fp);
 
         if (s == NULL) {
-            if (ferror(ipstream_conf.f))
+            if (ferror(ipstream_conf.fp))
                 LOG(LEVEL_DEBUG, "(stream generator) error of stream.\n");
-            else if (feof(ipstream_conf.f))
+            else if (feof(ipstream_conf.fp))
                 LOG(LEVEL_DEBUG, "(stream generator) EOF of stream.\n");
             return false;
         }
@@ -259,10 +259,10 @@ Target ipstream_generate(unsigned tx_index, uint64_t index, uint64_t repeat,
 }
 
 void ipstream_close() {
-    if (ipstream_conf.f != stdin) {
-        fclose(ipstream_conf.f);
+    if (ipstream_conf.fp != stdin) {
+        fclose(ipstream_conf.fp);
     }
-    ipstream_conf.f = NULL;
+    ipstream_conf.fp = NULL;
 }
 
 Generator IpStreamGen = {

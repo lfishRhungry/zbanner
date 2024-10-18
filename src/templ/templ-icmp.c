@@ -3,7 +3,7 @@
 
 #include "templ-icmp.h"
 #include "../globals.h"
-#include "../target/target-set.h"
+#include "../target/target.h"
 #include "../util-misc/checksum.h"
 #include "../util-data/data-convert.h"
 

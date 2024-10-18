@@ -11,7 +11,7 @@
 Generator AddrStreamGen;
 
 struct AddrStreamConf {
-    FILE     *f;
+    FILE     *fp;
     uint64_t  seed;
     TargetSet targets;
     uint64_t  index;
@@ -56,8 +56,8 @@ static ConfRes SET_file(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    addrstream_conf.f = fopen(value, "rb");
-    if (addrstream_conf.f == NULL) {
+    addrstream_conf.fp = fopen(value, "rb");
+    if (addrstream_conf.fp == NULL) {
         LOG(LEVEL_ERROR, "(stream generator) %s: %s\n", value, strerror(errno));
         return Conf_ERR;
     }
@@ -107,8 +107,8 @@ bool addrstream_init(const XConf *xconf, uint64_t *count_targets,
         addrstream_conf.splitter_len = 1;
     }
 
-    if (!addrstream_conf.f) {
-        addrstream_conf.f = stdin;
+    if (!addrstream_conf.fp) {
+        addrstream_conf.fp = stdin;
     }
 
     if (addrstream_conf.rounds <= 0) {
@@ -136,12 +136,12 @@ bool addrstream_hasmore(unsigned tx_index, uint64_t index) {
     /*add new ips*/
     char line[256];
     while (true) {
-        char *s = fgets(line, sizeof(line), addrstream_conf.f);
+        char *s = fgets(line, sizeof(line), addrstream_conf.fp);
 
         if (s == NULL) {
-            if (ferror(addrstream_conf.f))
+            if (ferror(addrstream_conf.fp))
                 LOG(LEVEL_DEBUG, "(stream generator) error of stream.\n");
-            else if (feof(addrstream_conf.f))
+            else if (feof(addrstream_conf.fp))
                 LOG(LEVEL_DEBUG, "(stream generator) EOF of stream.\n");
             return false;
         }
@@ -280,10 +280,10 @@ Target addrstream_generate(unsigned tx_index, uint64_t index, uint64_t repeat,
 }
 
 void addrstream_close() {
-    if (addrstream_conf.f != stdin) {
-        fclose(addrstream_conf.f);
+    if (addrstream_conf.fp != stdin) {
+        fclose(addrstream_conf.fp);
     }
-    addrstream_conf.f = NULL;
+    addrstream_conf.fp = NULL;
 }
 
 Generator AddrStreamGen = {
