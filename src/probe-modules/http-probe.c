@@ -97,7 +97,7 @@ static ConfRes SET_show_banner(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    http_conf.report_while_regex = parseBoolean(value);
+    http_conf.report_while_regex = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -106,7 +106,7 @@ static ConfRes SET_newlines(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    http_conf.re_include_newlines = parseBoolean(value);
+    http_conf.re_include_newlines = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -116,7 +116,7 @@ static ConfRes SET_insensitive(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    http_conf.re_case_insensitive = parseBoolean(value);
+    http_conf.re_case_insensitive = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -355,7 +355,7 @@ static ConfRes SET_dynamic_host(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    http_conf.dynamic_host = parseBoolean(value);
+    http_conf.dynamic_host = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -363,39 +363,39 @@ static ConfRes SET_dynamic_host(void *conf, const char *name,
 static ConfParam http_parameters[] = {
     {"method",
      SET_method,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Changes the default `GET` method in http request line."},
     {"url",
      SET_url,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Replaces the existing `/` url field in http request line."},
     {"version",
      SET_version,
-     Type_NONE,
+     Type_ARG,
      {"ver", 0},
      "Replaces the existing `HTTP/1.0` version field in http request line."},
     {"host",
      SET_host,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Adds `Host` field to http request header."},
     {"dynamic-host",
      SET_dynamic_host,
-     Type_BOOL,
+     Type_FLAG,
      {"ip-host", 0},
      "Sets(Adds) correspond IP address as `Host` field to http request header"
      " for different target e.g. `Host: 192.168.0.1`, `Host: [fe80::1]`."},
     {"user-agent",
      SET_user_agent,
-     Type_NONE,
+     Type_ARG,
      {"ua", 0},
      "Replaces existing `User-Agent` field in http request header.(highly "
      "recommended)"},
     {"payload",
      SET_payload,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Adds a payload string after http request header. This will automatically"
      " add `--header Content-Length:LEN` field to match the length of the "
@@ -406,13 +406,13 @@ static ConfParam http_parameters[] = {
      "form-urlencoded`, `application/json`, or `text/xml`."},
     {"cookie",
      SET_cookie,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Adds a `Cookie` field to http request header even if other cookie fields"
      " exist."},
     {"header",
      SET_header,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Replaces the existing http request header field or inserts a new one if"
      " the fields doesn't exist, given as a `name:value` pair. It cannot be "
@@ -421,7 +421,7 @@ static ConfParam http_parameters[] = {
      "Example: `--header Accept:image/gif`, `--header[Accept] image/gif`\n"},
     {"remove",
      SET_remove,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Removes the first field from the header that matches. We may need "
      "multiple times for fields like `Cookie` that can exist multiple times."},
@@ -429,23 +429,23 @@ static ConfParam http_parameters[] = {
 #ifndef NOT_FOUND_PCRE2
     {"regex",
      SET_regex,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Specifies a regex and sets matched response data as successed instead of"
      " reporting all results."},
     {"case-insensitive",
      SET_insensitive,
-     Type_BOOL,
+     Type_FLAG,
      {"insensitive", 0},
      "Whether the specified regex is case-insensitive or not."},
     {"include-newlines",
      SET_newlines,
-     Type_BOOL,
+     Type_FLAG,
      {"include-newline", "newline", "newlines", 0},
      "Whether the specified regex contains newlines."},
     {"report",
      SET_show_banner,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Report response data after regex matching."},
 #endif

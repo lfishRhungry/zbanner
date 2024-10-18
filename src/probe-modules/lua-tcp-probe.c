@@ -69,7 +69,7 @@ static ConfRes SET_script(void *conf, const char *name, const char *value) {
 static ConfParam luatcp_parameters[] = {
     {"script",
      SET_script,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Specifies which lua script we'll load to as probe."},
 

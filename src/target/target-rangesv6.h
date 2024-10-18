@@ -1,17 +1,15 @@
-/*
-    Born from Masscan
-    Modified by sharkocha 2024
-*/
-/*
-    List of IPv6 ranges.
-
-    Sames as the "ranges.h" module, but for IPv6 instead of IPv4.
-*/
+/**
+ *
+ * Born and updated from Masscan
+ * Modified and Created by sharkocha 2024
+ */
 #ifndef RANGES6_H
 #define RANGES6_H
+
 #include "target-addr.h"
 #include <stdio.h>
 #include <stdint.h>
+
 struct Range;
 
 /**

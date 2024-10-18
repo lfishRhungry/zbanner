@@ -32,7 +32,7 @@ static ConfRes SET_show_banner(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    helloudp_conf.show_banner = parseBoolean(value);
+    helloudp_conf.show_banner = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -41,7 +41,7 @@ static ConfRes SET_newlines(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    helloudp_conf.re_include_newlines = parseBoolean(value);
+    helloudp_conf.re_include_newlines = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -51,7 +51,7 @@ static ConfRes SET_insensitive(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    helloudp_conf.re_case_insensitive = parseBoolean(value);
+    helloudp_conf.re_case_insensitive = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -198,47 +198,47 @@ static ConfRes SET_hello_file(void *conf, const char *name, const char *value) {
 static ConfParam helloudp_parameters[] = {
     {"string",
      SET_hello_string,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Specifies a string and set it as hello data after decoded."
      " This will overwrite hello data set by other parameters."},
     {"base64-string",
      SET_hello_base64,
-     Type_NONE,
+     Type_ARG,
      {"base64", 0},
      "Specifies a string in base64 format and set it as hello data after "
      "decoded."
      " This will overwrite hello data set by other parameters."},
     {"nmap-string",
      SET_hello_nmap,
-     Type_NONE,
+     Type_ARG,
      {"nmap", 0},
      "Specifies a string in nmap probe format and set it as hello data after "
      "decoded."
      " This will overwrite hello data set by other parameters."},
     {"file",
      SET_hello_file,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Specifies a file and set the content of file as hello data."
      " This will overwrite hello data set by other parameters."},
     {"regex",
      SET_regex,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Specifies a regex and sets matched response data as successed instead of"
      " reporting all results."},
     {"case-insensitive",
      SET_insensitive,
-     Type_BOOL,
+     Type_FLAG,
      {"insensitive", 0},
      "Whether the specified regex is case-insensitive or not."},
     {"include-newlines",
      SET_newlines,
-     Type_BOOL,
+     Type_FLAG,
      {"include-newline", "newline", "newlines", 0},
      "Whether the specified regex contains newlines."},
-    {"banner", SET_show_banner, Type_BOOL, {0}, "Show normalized banner."},
+    {"banner", SET_show_banner, Type_FLAG, {0}, "Show normalized banner."},
 
     {0}};
 

@@ -46,7 +46,7 @@ static ConfRes SET_print_all_add(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    dns_conf.print_all_add = parseBoolean(value);
+    dns_conf.print_all_add = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -56,7 +56,7 @@ static ConfRes SET_print_all_auth(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    dns_conf.print_all_auth = parseBoolean(value);
+    dns_conf.print_all_auth = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -66,7 +66,7 @@ static ConfRes SET_print_all_answer(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    dns_conf.print_all_ans = parseBoolean(value);
+    dns_conf.print_all_ans = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -110,33 +110,33 @@ static ConfRes SET_req_type(void *conf, const char *name, const char *value) {
 static ConfParam dns_parameters[] = {
     {"req-name",
      SET_req_name,
-     Type_NONE,
+     Type_ARG,
      {"name", 0},
      "Specifies dns request name like 'www.google.com'."},
     {"req-type",
      SET_req_type,
-     Type_NONE,
+     Type_ARG,
      {"type", 0},
      "Specifies dns request type like 'A', 'AAAA'."},
     {"ptr-request",
      SET_ptr,
-     Type_NONE,
+     Type_ARG,
      {"ptr", "ptr-ip", 0},
      "This is a wrapper of setting request type to PTR and request name by "
      "the ip we specified."},
     {"all-answer",
      SET_print_all_answer,
-     Type_BOOL,
+     Type_FLAG,
      {"all-ans", 0},
      "Print all answer records instead of only the first in default."},
     {"all-authority",
      SET_print_all_auth,
-     Type_BOOL,
+     Type_FLAG,
      {"all-auth", 0},
      "Print all authority records instead of only the first in default."},
     {"all-additional",
      SET_print_all_add,
-     Type_BOOL,
+     Type_FLAG,
      {"all-addition", "all-add", 0},
      "Print all additional records instead of only the first in default."},
 

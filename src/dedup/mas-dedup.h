@@ -1,7 +1,8 @@
-/*
-    Born from Masscan
-    Modified by sharkocha 2024
-*/
+/**
+ * Born and updated from Masscan
+ *
+ * Modified by sharkocha 2024
+ */
 #ifndef MAS_DEDUP_H
 #define MAS_DEDUP_H
 #include "../target/target-addr.h"

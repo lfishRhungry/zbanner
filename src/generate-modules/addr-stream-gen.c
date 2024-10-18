@@ -39,7 +39,7 @@ static ConfRes SET_rounds(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    addrstream_conf.rounds = (unsigned)parseInt(value);
+    addrstream_conf.rounds = (unsigned)parse_str_int(value);
     return Conf_OK;
 }
 
@@ -58,18 +58,18 @@ static ConfRes SET_file(void *conf, const char *name, const char *value) {
 static ConfParam addrstream_parameters[] = {
     {"ip-file",
      SET_file,
-     Type_NONE,
+     Type_ARG,
      {"file", "f", 0},
      "Specifies a file as input stream. Default is stdin."},
     {"splitter",
      SET_splitter,
-     Type_NONE,
+     Type_ARG,
      {"split", 0},
      "Specifies a string as splitter of ip and port range in input stream. "
      "Default splitter is a space."},
     {"rounds",
      SET_rounds,
-     Type_NUM,
+     Type_ARG,
      {"round", 0},
      "Specifies the number of round in blackrock algorithm for targets "
      "randomization in every IP/Port range. It's 14 rounds in default to give "

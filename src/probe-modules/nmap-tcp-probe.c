@@ -30,7 +30,7 @@ static ConfRes SET_banner_if_fail(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    nmaptcp_conf.banner_if_fail = parseBoolean(value);
+    nmaptcp_conf.banner_if_fail = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -40,7 +40,7 @@ static ConfRes SET_show_banner(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    nmaptcp_conf.show_banner = parseBoolean(value);
+    nmaptcp_conf.show_banner = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -50,7 +50,7 @@ static ConfRes SET_no_port_limit(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    nmaptcp_conf.no_port_limit = parseBoolean(value);
+    nmaptcp_conf.no_port_limit = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -77,7 +77,7 @@ static ConfRes SET_rarity(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    unsigned rarity = parseBoolean(value);
+    unsigned rarity = parse_str_bool(value);
     if (rarity < 1 || rarity > 9) {
         LOG(LEVEL_ERROR, "NmapTcpProbe: rarity must be in range 1-9.\n");
         return Conf_ERR;
@@ -91,12 +91,12 @@ static ConfRes SET_rarity(void *conf, const char *name, const char *value) {
 static ConfParam nmapservice_parameters[] = {
     {"probe-file",
      SET_probe_file,
-     Type_NONE,
+     Type_ARG,
      {"probes-file", "probes", 0},
      "Specifies nmap-service-probes file for probes loading."},
     {"rarity",
      SET_rarity,
-     Type_NONE,
+     Type_ARG,
      {"intensity", 0},
      "Specifies the intensity of nmap version scan. The lower-numbered probes"
      " are effective against a wide variety of common services, while the "
@@ -104,7 +104,7 @@ static ConfParam nmapservice_parameters[] = {
      " and 9. The default is 7."},
     {"softmatch",
      SET_softmatch,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Specifies what service has been softmatched for target ports before, so "
      "NmapTcpProbe could use more accurate probes to reduce cost and just do "
@@ -113,18 +113,18 @@ static ConfParam nmapservice_parameters[] = {
      "cannot be implemented completely in stateless mode."},
     {"no-port-limit",
      SET_no_port_limit,
-     Type_NUM,
+     Type_ARG,
      {0},
      "Switch on this param to release limitation of port ranges in probes of "
      "nmap-service-probes file."},
     {"banner",
      SET_show_banner,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Show normalized banner after fingerprint matching."},
     {"banner-if-fail",
      SET_banner_if_fail,
-     Type_BOOL,
+     Type_FLAG,
      {"banner-fail", "fail-banner", 0},
      "Show normalized banner in results if fingerprint matching failed."},
 

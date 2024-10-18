@@ -600,7 +600,7 @@ static ConfRes SET_no_ansi(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->is_no_ansi = parseBoolean(value);
+    xconf->is_no_ansi = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -615,7 +615,7 @@ static ConfRes SET_no_escape(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->no_escape_char = parseBoolean(value);
+    xconf->no_escape_char = parse_str_bool(value);
     dach_no_escape_char();
 
     return Conf_OK;
@@ -739,7 +739,7 @@ static ConfRes SET_list_scan_modules(void *conf, const char *name,
     if (xconf->echo) {
         return 0;
     }
-    xconf->op = parseBoolean(value) ? Operation_ListScanModules : xconf->op;
+    xconf->op = parse_str_bool(value) ? Operation_ListScanModules : xconf->op;
     return Conf_OK;
 }
 
@@ -751,7 +751,7 @@ static ConfRes SET_list_probe_modules(void *conf, const char *name,
     if (xconf->echo) {
         return 0;
     }
-    xconf->op = parseBoolean(value) ? Operation_ListProbeModules : xconf->op;
+    xconf->op = parse_str_bool(value) ? Operation_ListProbeModules : xconf->op;
     return Conf_OK;
 }
 
@@ -763,7 +763,8 @@ static ConfRes SET_list_generate_modules(void *conf, const char *name,
     if (xconf->echo) {
         return 0;
     }
-    xconf->op = parseBoolean(value) ? Operation_ListGenerateModules : xconf->op;
+    xconf->op =
+        parse_str_bool(value) ? Operation_ListGenerateModules : xconf->op;
     return Conf_OK;
 }
 
@@ -775,7 +776,7 @@ static ConfRes SET_list_output_modules(void *conf, const char *name,
     if (xconf->echo) {
         return 0;
     }
-    xconf->op = parseBoolean(value) ? Operation_ListOutputModules : xconf->op;
+    xconf->op = parse_str_bool(value) ? Operation_ListOutputModules : xconf->op;
     return Conf_OK;
 }
 
@@ -790,7 +791,7 @@ static ConfRes SET_listif(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parseBoolean(value))
+    if (parse_str_bool(value))
         xconf->op = Operation_ListAdapters;
     return Conf_OK;
 }
@@ -819,7 +820,7 @@ static ConfRes SET_list_range(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parseBoolean(value))
+    if (parse_str_bool(value))
         xconf->op = Operation_ListRange;
 
     return Conf_OK;
@@ -850,7 +851,7 @@ static ConfRes SET_pfring(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->is_pfring = parseBoolean(value);
+    xconf->is_pfring = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -865,7 +866,7 @@ static ConfRes SET_noresume(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->is_noresume = parseBoolean(value);
+    xconf->is_noresume = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -880,7 +881,7 @@ static ConfRes SET_nodedup(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->is_nodedup = parseBoolean(value);
+    xconf->is_nodedup = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -893,7 +894,7 @@ static ConfRes SET_tcp_window(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    unsigned x = parseInt(value);
+    unsigned x = parse_str_int(value);
     if (x > 65535) {
         LOG(LEVEL_ERROR, "%s=<n>: expected number less than 65535\n", name);
         return Conf_ERR;
@@ -914,7 +915,7 @@ static ConfRes SET_tcp_init_window(void *conf, const char *name,
         return 0;
     }
 
-    unsigned x = parseInt(value);
+    unsigned x = parse_str_int(value);
     if (x > 65535) {
         LOG(LEVEL_ERROR, "%s=<n>: expected number less than 65535\n", name);
         return Conf_ERR;
@@ -933,7 +934,7 @@ static ConfRes SET_packet_ttl(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    unsigned x = parseInt(value);
+    unsigned x = parse_str_int(value);
     if (x >= 256) {
         LOG(LEVEL_ERROR, "%s=<n>: expected number less than 256\n", name);
         return Conf_ERR;
@@ -952,12 +953,12 @@ static ConfRes SET_dedup_win(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parseInt(value) < 1024) {
+    if (parse_str_int(value) < 1024) {
         LOG(LEVEL_ERROR, "%s: dedup-win must >= 1024.\n", name);
         return Conf_ERR;
     }
 
-    xconf->dedup_win = parseInt(value);
+    xconf->dedup_win = parse_str_int(value);
 
     return Conf_OK;
 }
@@ -975,7 +976,7 @@ static ConfRes SET_stack_buf_count(void *conf, const char *name,
         return 0;
     }
 
-    uint64_t v = parseInt(value);
+    uint64_t v = parse_str_int(value);
     if (v < 2048) {
         LOG(LEVEL_ERROR, "%s: stack-buf-count must >= 2048.\n", value);
         return Conf_ERR;
@@ -1005,7 +1006,7 @@ static ConfRes SET_dispatch_buf_count(void *conf, const char *name,
         return 0;
     }
 
-    uint64_t v = parseInt(value);
+    uint64_t v = parse_str_int(value);
     if (v < 2048) {
         LOG(LEVEL_ERROR, "%s: dispatch-buf-count must >= 2048.\n", value);
         return Conf_ERR;
@@ -1049,7 +1050,7 @@ static ConfRes SET_wait(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->wait = (unsigned)parseInt(value);
+    xconf->wait = (unsigned)parse_str_int(value);
 
     return Conf_OK;
 }
@@ -1065,7 +1066,7 @@ static ConfRes SET_rx_handler_count(void *conf, const char *name,
         return 0;
     }
 
-    unsigned count = parseInt(value);
+    unsigned count = parse_str_int(value);
     if (count <= 0) {
         LOG(LEVEL_ERROR, "%s: receive handler thread count cannot be zero.\n",
             name);
@@ -1092,7 +1093,7 @@ static ConfRes SET_tx_thread_count(void *conf, const char *name,
         return 0;
     }
 
-    unsigned count = parseInt(value);
+    unsigned count = parse_str_int(value);
     if (count == 0) {
         LOG(LEVEL_ERROR, "%s: transmit thread count cannot be zero.\n", name);
         return Conf_ERR;
@@ -1379,7 +1380,7 @@ static ConfRes SET_adapter_snaplen(void *conf, const char *name,
         return 0;
     }
 
-    xconf->nic.snaplen = (unsigned)parseInt(value);
+    xconf->nic.snaplen = (unsigned)parse_str_int(value);
     if (xconf->nic.snaplen > 65535) {
         LOG(LEVEL_ERROR, "snaplen must be less than 65535.\n");
         return Conf_ERR;
@@ -1400,7 +1401,7 @@ static ConfRes SET_adapter_vlan(void *conf, const char *name,
     }
 
     xconf->nic.is_vlan = 1;
-    xconf->nic.vlan_id = (unsigned)parseInt(value);
+    xconf->nic.vlan_id = (unsigned)parse_str_int(value);
 
     return Conf_OK;
 }
@@ -1434,7 +1435,7 @@ static ConfRes SET_top_port(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    unsigned maxports = parseInt(value);
+    unsigned maxports = parse_str_int(value);
 
     if (!maxports) {
         LOG(LEVEL_ERROR, "FAIL %s: value of top-port must > 0.\n", name);
@@ -1569,7 +1570,7 @@ static ConfRes SET_source_mac(void *conf, const char *name, const char *value) {
     macaddress_t source_mac;
     int          err;
 
-    err = parseMacAddress(value, &source_mac);
+    err = parse_str_mac(value, &source_mac);
     if (err) {
         LOG(LEVEL_ERROR, "CONF: bad MAC address: %s = %s\n", name, value);
         return Conf_ERR;
@@ -1644,7 +1645,7 @@ static ConfRes SET_router_mac(void *conf, const char *name, const char *value) {
 
     macaddress_t router_mac;
     int          err;
-    err = parseMacAddress(value, &router_mac);
+    err = parse_str_mac(value, &router_mac);
     if (err) {
         LOG(LEVEL_ERROR, "CONF: bad MAC address: %s = %s\n", name, value);
         return Conf_ERR;
@@ -1737,7 +1738,7 @@ static ConfRes SET_packet_trace(void *conf, const char *name,
                     xconf->packet_trace ? "true" : "false");
         return 0;
     }
-    xconf->packet_trace = parseBoolean(value);
+    xconf->packet_trace = parse_str_bool(value);
     return Conf_OK;
 }
 
@@ -1752,7 +1753,7 @@ static ConfRes SET_ndjson_status(void *conf, const char *name,
                     xconf->is_status_ndjson ? "true" : "false");
         return 0;
     }
-    xconf->is_status_ndjson = parseBoolean(value);
+    xconf->is_status_ndjson = parse_str_bool(value);
     return Conf_OK;
 }
 
@@ -1766,7 +1767,7 @@ static ConfRes SET_no_status(void *conf, const char *name, const char *value) {
                     xconf->is_no_status ? "true" : "false");
         return 0;
     }
-    xconf->is_no_status = parseBoolean(value);
+    xconf->is_no_status = parse_str_bool(value);
     return Conf_OK;
 }
 
@@ -1780,7 +1781,7 @@ static ConfRes SET_append(void *conf, const char *name, const char *value) {
                     xconf->out_conf.is_append ? "true" : "false");
         return 0;
     }
-    xconf->out_conf.is_append = parseBoolean(value);
+    xconf->out_conf.is_append = parse_str_bool(value);
     return Conf_OK;
 }
 
@@ -1795,7 +1796,7 @@ static ConfRes SET_interactive(void *conf, const char *name,
                     xconf->out_conf.is_interactive ? "true" : "false");
         return 0;
     }
-    xconf->out_conf.is_interactive = parseBoolean(value);
+    xconf->out_conf.is_interactive = parse_str_bool(value);
     return Conf_OK;
 }
 
@@ -1809,7 +1810,7 @@ static ConfRes SET_offline(void *conf, const char *name, const char *value) {
                     xconf->is_offline ? "true" : "false");
         return 0;
     }
-    xconf->is_offline = parseBoolean(value);
+    xconf->is_offline = parse_str_bool(value);
     return Conf_OK;
 }
 
@@ -1824,7 +1825,7 @@ static ConfRes SET_no_cpu_bind(void *conf, const char *name,
                     xconf->is_no_cpu_bind ? "true" : "false");
         return 0;
     }
-    xconf->is_no_cpu_bind = parseBoolean(value);
+    xconf->is_no_cpu_bind = parse_str_bool(value);
     return Conf_OK;
 }
 
@@ -1839,7 +1840,7 @@ static ConfRes SET_static_seed(void *conf, const char *name,
                     xconf->is_static_seed ? "true" : "false");
         return 0;
     }
-    xconf->is_static_seed = parseBoolean(value);
+    xconf->is_static_seed = parse_str_bool(value);
     return Conf_OK;
 }
 
@@ -1853,7 +1854,7 @@ static ConfRes SET_infinite(void *conf, const char *name, const char *value) {
                     xconf->is_infinite ? "true" : "false");
         return 0;
     }
-    xconf->is_infinite = parseBoolean(value);
+    xconf->is_infinite = parse_str_bool(value);
     return Conf_OK;
 }
 
@@ -1871,12 +1872,12 @@ static ConfRes SET_fast_timeout(void *conf, const char *name,
         return 0;
     }
 
-    if (isBoolean(value)) {
-        if (parseBoolean(value)) {
+    if (is_str_bool(value)) {
+        if (parse_str_bool(value)) {
             xconf->is_fast_timeout = 1;
         }
-    } else if (is_integer(value)) {
-        int spec = parseInt(value);
+    } else if (is_str_int(value)) {
+        int spec = parse_str_int(value);
         if (spec <= 0) {
             LOG(LEVEL_ERROR, "%s: need a switch word or a positive number.\n",
                 name);
@@ -1914,9 +1915,9 @@ static ConfRes SET_echo(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (EQUALS("echo", name) && parseBoolean(value))
+    if (EQUALS("echo", name) && parse_str_bool(value))
         xconf->op = Operation_Echo;
-    else if (EQUALS("echo-all", name) && parseBoolean(value)) {
+    else if (EQUALS("echo-all", name) && parse_str_bool(value)) {
         xconf->op       = Operation_Echo;
         xconf->echo_all = 1;
     }
@@ -1930,7 +1931,7 @@ static ConfRes SET_debugif(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parseBoolean(value))
+    if (parse_str_bool(value))
         xconf->op = Operation_DebugIF;
 
     return Conf_OK;
@@ -1942,7 +1943,7 @@ static ConfRes SET_benchmark(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parseBoolean(value))
+    if (parse_str_bool(value))
         xconf->op = Operation_Benchmark;
 
     return Conf_OK;
@@ -1954,7 +1955,7 @@ static ConfRes SET_selftest(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parseBoolean(value))
+    if (parse_str_bool(value))
         xconf->op = Operation_Selftest;
 
     return Conf_OK;
@@ -1966,7 +1967,7 @@ static ConfRes SET_list_cidr(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parseBoolean(value))
+    if (parse_str_bool(value))
         xconf->op = Operation_ListCidr;
 
     return Conf_OK;
@@ -1980,7 +1981,7 @@ static ConfRes SET_lan_mode(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parseBoolean(value)) {
+    if (parse_str_bool(value)) {
         SET_router_mac(xconf, "router-mac", "ff-ff-ff-ff-ff-ff");
     }
 
@@ -1998,7 +1999,7 @@ static ConfRes SET_bypass_os(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->is_bypass_os = parseBoolean(value);
+    xconf->is_bypass_os = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -2015,7 +2016,7 @@ static ConfRes SET_init_ipv4(void *conf, const char *name, const char *value) {
     }
 
     xconf->set_ipv4_adapter  = 1;
-    xconf->init_ipv4_adapter = parseBoolean(value);
+    xconf->init_ipv4_adapter = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -2032,7 +2033,7 @@ static ConfRes SET_init_ipv6(void *conf, const char *name, const char *value) {
     }
 
     xconf->set_ipv6_adapter  = 1;
-    xconf->init_ipv6_adapter = parseBoolean(value);
+    xconf->init_ipv6_adapter = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -2046,7 +2047,7 @@ static ConfRes SET_fake_router_mac(void *conf, const char *name,
         return 0;
     }
 
-    if (parseBoolean(value)) {
+    if (parse_str_bool(value)) {
         SET_router_mac(xconf, "router-mac", "01-02-03-04-05-06");
     }
 
@@ -2111,7 +2112,7 @@ static ConfRes SET_max_packet_len(void *conf, const char *name,
         }
         return 0;
     }
-    xconf->max_packet_len = parseInt(value);
+    xconf->max_packet_len = parse_str_int(value);
     return Conf_OK;
 }
 
@@ -2126,7 +2127,7 @@ static ConfRes SET_resume_index(void *conf, const char *name,
         }
         return 0;
     }
-    xconf->resume.index = parseInt(value);
+    xconf->resume.index = parse_str_int(value);
     return Conf_OK;
 }
 
@@ -2140,7 +2141,7 @@ static ConfRes SET_no_bpf(void *conf, const char *name, const char *value) {
                     xconf->is_no_bpf ? "true" : "false");
         return 0;
     }
-    xconf->is_no_bpf = parseBoolean(value);
+    xconf->is_no_bpf = parse_str_bool(value);
     return Conf_OK;
 }
 
@@ -2171,7 +2172,7 @@ static ConfRes SET_seed(void *conf, const char *name, const char *value) {
     if (EQUALS("time", value))
         xconf->seed = time(0);
     else
-        xconf->seed = parseInt(value);
+        xconf->seed = parse_str_int(value);
     return Conf_OK;
 }
 
@@ -2323,17 +2324,17 @@ static ConfRes SET_tcp_mss(void *conf, const char *name, const char *value) {
         /* no following parameter, so interpret this to mean "enable" */
         xconf->templ_opts->tcp.is_mss = Add;
         xconf->templ_opts->tcp.mss    = TCP_DEFAULT_MSS;
-    } else if (isBoolean(value)) {
+    } else if (is_str_bool(value)) {
         /* looking for "enable" or "disable", but any boolean works,
          * like "true/false" or "off/on" */
-        if (parseBoolean(value)) {
+        if (parse_str_bool(value)) {
             xconf->templ_opts->tcp.is_mss = Add;
             xconf->templ_opts->tcp.mss    = TCP_DEFAULT_MSS;
         } else
             xconf->templ_opts->tcp.is_mss = Remove;
-    } else if (is_integer(value)) {
+    } else if (is_str_int(value)) {
         /* A specific number was specified */
-        uint64_t num = parseInt(value);
+        uint64_t num = parse_str_int(value);
         if (num >= 0x10000)
             goto fail;
         xconf->templ_opts->tcp.is_mss = Add;
@@ -2379,14 +2380,14 @@ static ConfRes SET_tcp_wscale(void *conf, const char *name, const char *value) {
     if (value == 0 || value[0] == '\0') {
         xconf->templ_opts->tcp.is_wscale = Add;
         xconf->templ_opts->tcp.wscale    = default_value;
-    } else if (isBoolean(value)) {
-        if (parseBoolean(value)) {
+    } else if (is_str_bool(value)) {
+        if (parse_str_bool(value)) {
             xconf->templ_opts->tcp.is_wscale = Add;
             xconf->templ_opts->tcp.wscale    = default_value;
         } else
             xconf->templ_opts->tcp.is_wscale = Remove;
-    } else if (is_integer(value)) {
-        uint64_t num = parseInt(value);
+    } else if (is_str_int(value)) {
+        uint64_t num = parse_str_int(value);
         if (num >= 255)
             goto fail;
         xconf->templ_opts->tcp.is_wscale = Add;
@@ -2432,14 +2433,14 @@ static ConfRes SET_tcp_tsecho(void *conf, const char *name, const char *value) {
     if (value == 0 || value[0] == '\0') {
         xconf->templ_opts->tcp.is_tsecho = Add;
         xconf->templ_opts->tcp.tsecho    = default_value;
-    } else if (isBoolean(value)) {
-        if (parseBoolean(value)) {
+    } else if (is_str_bool(value)) {
+        if (parse_str_bool(value)) {
             xconf->templ_opts->tcp.is_tsecho = Add;
             xconf->templ_opts->tcp.tsecho    = default_value;
         } else
             xconf->templ_opts->tcp.is_tsecho = Remove;
-    } else if (is_integer(value)) {
-        uint64_t num = parseInt(value);
+    } else if (is_str_int(value)) {
+        uint64_t num = parse_str_int(value);
         if (num >= 255)
             goto fail;
         xconf->templ_opts->tcp.is_tsecho = Add;
@@ -2478,13 +2479,13 @@ static ConfRes SET_tcp_sackok(void *conf, const char *name, const char *value) {
 
     if (value == 0 || value[0] == '\0') {
         xconf->templ_opts->tcp.is_sackok = Add;
-    } else if (isBoolean(value)) {
-        if (parseBoolean(value)) {
+    } else if (is_str_bool(value)) {
+        if (parse_str_bool(value)) {
             xconf->templ_opts->tcp.is_sackok = Add;
         } else
             xconf->templ_opts->tcp.is_sackok = Remove;
-    } else if (is_integer(value)) {
-        if (parseInt(value) != 0)
+    } else if (is_str_int(value)) {
+        if (parse_str_int(value) != 0)
             xconf->templ_opts->tcp.is_sackok = Add;
     } else
         goto fail;
@@ -2505,7 +2506,7 @@ static ConfRes SET_repeat(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->repeat = (unsigned)parseInt(value);
+    xconf->repeat = (unsigned)parse_str_int(value);
     if (xconf->repeat) {
         xconf->is_infinite = 1;
     } else {
@@ -2526,7 +2527,7 @@ static ConfRes SET_send_queue(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->is_sendq = parseBoolean(value);
+    xconf->is_sendq = parse_str_bool(value);
     return Conf_OK;
 }
 
@@ -2535,7 +2536,7 @@ ConfParam config_parameters[] = {
 
     {"seed",
      SET_seed,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Set a global seed for randomizing of target addresses(ports), and to "
      "generate cookies in some ScanModules & ProbeModules."
@@ -2547,7 +2548,7 @@ ConfParam config_parameters[] = {
      "random order of scans. If no seed specified, time is the default."},
     {"rate",
      SET_rate,
-     Type_NONE,
+     Type_ARG,
      {"max-rate", 0},
      "Specifies the desired rate for transmitting packets. This can be very "
      "small numbers, like 0.1 for transmitting packets at rates of one every "
@@ -2559,7 +2560,7 @@ ConfParam config_parameters[] = {
      " speed of all transmit threads."},
     {"wait",
      SET_wait,
-     Type_NUM,
+     Type_ARG,
      {"cooldown", 0},
      "How many seconds should " XTATE_NAME_TITLE_CASE " waiting and handling "
      "incoming packets after all transmit threads finished. Default is 10s."
@@ -2568,12 +2569,12 @@ ConfParam config_parameters[] = {
      "seconds."},
     {"forever",
      SET_forever,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Set `--wait` to a large enough time."},
     {"shard",
      SET_shard,
-     Type_NONE,
+     Type_ARG,
      {"shards", 0},
      "Set a string like \"x/y\" to splits the scan among instances. x is the "
      "id for this scan, while y is the total number of instances. For example,"
@@ -2582,7 +2583,7 @@ ConfParam config_parameters[] = {
      "with index 1, so that it doesn't overlap with the first example."},
     {"tx-thread-count",
      SET_tx_thread_count,
-     Type_NUM,
+     Type_ARG,
      {"tx-count", "tx-num", 0},
      "Specify the number of transmit threads. " XTATE_NAME_TITLE_CASE " could"
      " has multiple transmit threads but only one receive thread. Every "
@@ -2592,7 +2593,7 @@ ConfParam config_parameters[] = {
      " and high send rate in most conditions."},
     {"rx-handler-count",
      SET_rx_handler_count,
-     Type_NUM,
+     Type_ARG,
      {"rx-count", "rx-num", 0},
      "Specify the number of receive handler threads. " XTATE_NAME_TITLE_CASE
      " could"
@@ -2607,7 +2608,7 @@ ConfParam config_parameters[] = {
      "The number of receive handler must be the power of 2. (Default 1)"},
     {"d",
      SET_log_level,
-     Type_BOOL,
+     Type_FLAG,
      {"dd", "ddd", 0},
      "Set the log level by the number of \"d\". You can set \"-d\", \"-dd\" "
      "or \"-ddd\" for:\n"
@@ -2617,22 +2618,22 @@ ConfParam config_parameters[] = {
      "Level 3: print DETAIL logs in addition to level 2."},
     {"version",
      SET_version,
-     Type_BOOL,
+     Type_FLAG,
      {"v", 0},
      "Print the version and compilation info."},
     {"usage",
      SET_usage,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Print basic usage with some examples."},
     {"help",
      SET_print_help,
-     Type_BOOL,
+     Type_FLAG,
      {"h", "?", 0},
      "Print the detailed help text of all parameters."},
     {"introduction",
      SET_print_intro,
-     Type_BOOL,
+     Type_FLAG,
      {"intro", 0},
      "Print the introduction of work flow."},
 
@@ -2640,7 +2641,7 @@ ConfParam config_parameters[] = {
 
     {"target-ip",
      SET_target_ip,
-     Type_NONE,
+     Type_ARG,
      {"range", "ranges", "dst-ip", "ip", 0},
      "Specifies an IP address or range as target " XTATE_NAME_TITLE_CASE ". "
      "There are three valid formats. The first is a single IP address like "
@@ -2652,7 +2653,7 @@ ConfParam config_parameters[] = {
      "option, such as 10.0.0.0/8,192.168.0.1,2001:db8::1."},
     {"port",
      SET_port_them,
-     Type_NONE,
+     Type_ARG,
      {"p", "ports", 0},
      "Specifies the port(s) to be scanned. A single port can be specified, "
      "like -p 80. A range of ports can be specified, like -p 20-25. A list of"
@@ -2663,17 +2664,17 @@ ConfParam config_parameters[] = {
      " [0..65535] for some ScanModules."},
     {"top-port",
      SET_top_port,
-     Type_NUM,
+     Type_ARG,
      {"top", "tcp-top", "tcp-top-port", 0},
      "Add a number of tcp ports to scan from predefined top list."},
     {"udp-top-port",
      SET_top_port,
-     Type_NUM,
+     Type_ARG,
      {"udp-top", 0},
      "Add a number of udp ports to scan from predefined top list."},
     {"include-file",
      SET_include_file,
-     Type_NONE,
+     Type_ARG,
      {"iL", 0},
      "Read in a list of ranges from specified file in the same target format "
      "described above for IP addresses and ranges. These range lists is for "
@@ -2682,7 +2683,7 @@ ConfParam config_parameters[] = {
      "NOTE: we can use `-` to read range lists from stdin."},
     {"exclude",
      SET_exclude_ip,
-     Type_NONE,
+     Type_ARG,
      {"exclude-range", "exlude-ranges", "exclude-ip", 0},
      "Blacklist an IP address or range, preventing it from being scanned. "
      "This overrides any target specification, guaranteeing that this "
@@ -2690,14 +2691,14 @@ ConfParam config_parameters[] = {
      "target specification."},
     {"exclude-port",
      SET_exclude_port,
-     Type_NONE,
+     Type_ARG,
      {"exclude-ports", 0},
      "Blacklist ports to preventing it from being scanned. This overrides "
      "any port specification. This has the same format as the normal port "
      "specification."},
     {"exclude-file",
      SET_exclude_file,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Reads in a list of exclude ranges, in the same target format described "
      "above. These ranges override any targets, preventing them from being "
@@ -2707,14 +2708,14 @@ ConfParam config_parameters[] = {
 
     {"adapter",
      SET_adapter,
-     Type_NONE,
+     Type_ARG,
      {"if", "interface", 0},
      "Use the named raw network interface, such as \"eth0\" or \"dna1\". If "
      "not specified, the first network interface found with a default gateway"
      " will be used."},
     {"source-ip",
      SET_source_ip,
-     Type_NONE,
+     Type_ARG,
      {"src-ip", 0},
      "Send packets using this IP address. If not specified, then the first IP"
      " address bound to the network interface will be used. Instead of a "
@@ -2727,7 +2728,7 @@ ConfParam config_parameters[] = {
      "ipv6 address in local link scope."},
     {"source-port",
      SET_source_port,
-     Type_NONE,
+     Type_ARG,
      {"src-port", 0},
      "Send packets using this port number as the source. If not specified, a"
      " random port will be chosen in the range 40000 through 60000. This port"
@@ -2738,19 +2739,19 @@ ConfParam config_parameters[] = {
      "the example above that has a total of 4 addresses."},
     {"source-mac",
      SET_source_mac,
-     Type_NONE,
+     Type_ARG,
      {"src-mac", 0},
      "Send packets using this as the source MAC address. If not specified, "
      "then the first MAC address bound to the network interface will be "
      "used."},
     {"router-ip",
      SET_router_ip,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Set an IP as router's address."},
     {"router-mac",
      SET_router_mac,
-     Type_NONE,
+     Type_ARG,
      {"gateway-mac", "router-mac-ipv4", "router-mac-ipv6", 0},
      "Send packets to this MAC address as the destination. If not specified, "
      "then the gateway address of the network interface will be get by ARP "
@@ -2759,12 +2760,12 @@ ConfParam config_parameters[] = {
      "IPv6 by adding a suffix to the flag."},
     {"adapter-vlan",
      SET_adapter_vlan,
-     Type_NUM,
+     Type_ARG,
      {"vlan", "vlan-id", 0},
      "Send packets using this 802.1q VLAN ID."},
     {"adapter-snaplen",
      SET_adapter_snaplen,
-     Type_NUM,
+     Type_ARG,
      {"snaplen", 0},
      "Set the maximum packet capture len of pcap or pfring. It means we can "
      "just got snaplen size at most for any packet even just like a kind of "
@@ -2774,7 +2775,7 @@ ConfParam config_parameters[] = {
      "NOTE: Be cared to the interaction with --tcp-win and --max-packet-len."},
     {"lan-mode",
      SET_lan_mode,
-     Type_BOOL,
+     Type_FLAG,
      {"local", "lan", 0},
      "Set the router MAC address to a broadcast address(ff-ff-ff-ff-ff-ff). "
      "This can make " XTATE_NAME_TITLE_CASE
@@ -2783,7 +2784,7 @@ ConfParam config_parameters[] = {
      "like ARP."},
     {"fake-router-mac",
      SET_fake_router_mac,
-     Type_BOOL,
+     Type_FLAG,
      {"no-router-mac", 0},
      "Set the router MAC address to a invalid address(01-02-03-04-05-06). "
      "This can stop " XTATE_NAME_TITLE_CASE " to resolve router MAC address."
@@ -2793,7 +2794,7 @@ ConfParam config_parameters[] = {
      ", this param would be helpful with `--infinite`."},
     {"bypass-os",
      SET_bypass_os,
-     Type_BOOL,
+     Type_FLAG,
      {"bypass", 0},
      "Completely bypass the OS protocol stack. This means we can set a proper"
      " `--src-ip`(in the local subnet) and `--src-mac` different from the OS "
@@ -2806,13 +2807,13 @@ ConfParam config_parameters[] = {
      "like responsing TCP RST or ICMP Port Unreachable."},
     {"init-ipv4-adapter",
      SET_init_ipv4,
-     Type_BOOL,
+     Type_FLAG,
      {"init-ipv4", "ipv4", 0},
      "Manually specifies if initiate adapter for IPv4 or not. This is for some "
      "generators that cannot initiate automatically."},
     {"init-ipv6-adapter",
      SET_init_ipv6,
-     Type_BOOL,
+     Type_FLAG,
      {"init-ipv6", "ipv6", 0},
      "Manually specifies if initiate adapter for IPv6 or not. This is for some "
      "generators that cannot initiate automatically."},
@@ -2821,7 +2822,7 @@ ConfParam config_parameters[] = {
 
     {"echo",
      SET_echo,
-     Type_BOOL,
+     Type_FLAG,
      {"echo-all", 0},
      "Do not run, but instead print the current configuration. Use --echo to "
      "dump configurations that are different from default value. Use --echo-all"
@@ -2829,45 +2830,45 @@ ConfParam config_parameters[] = {
      "save to a file as config and then be used with the --conf option."},
     {"debug-if",
      SET_debugif,
-     Type_BOOL,
+     Type_FLAG,
      {"if-debug", 0},
      "Run special selftest for code about interface. This is useful to figure"
      " out why the interface doesn't work."},
     {"benchmark",
      SET_benchmark,
-     Type_BOOL,
+     Type_FLAG,
      {"bench", 0},
      "Run a global benchmark for key units."},
     {"selftest",
      SET_selftest,
-     Type_BOOL,
+     Type_FLAG,
      {"regress", "regression", 0},
      "Run a global regression test to check if new changes in code healthy."},
     {"list-cidr",
      SET_list_cidr,
-     Type_BOOL,
+     Type_FLAG,
      {"cidr", 0},
      "Do not run, but instead print all IP targets in CIDR format."},
     {"list-range",
      SET_list_range,
-     Type_BOOL,
+     Type_FLAG,
      {"list-ranges", 0},
      "Do not run, but instead print all IP targets in ranges."},
     {"list-target",
      SET_list_target,
-     Type_BOOL,
+     Type_FLAG,
      {"list-targets", "list-ip", "ip-list", 0},
      "Do not run, but instead print every unique IP targets in random."},
     {"list-if",
      SET_listif,
-     Type_BOOL,
+     Type_FLAG,
      {"if-list", "list-interface", "list-adapter", 0},
      "Do not run, but instead print informations of all adapters in this "
      "machine."},
 #ifndef NOT_FOUND_BSON
     {"parse-bson-file",
      SET_parse_bson,
-     Type_NONE,
+     Type_ARG,
      {"parse-bson", "bson-file", "bson", 0},
      "Parse BSON format result file generated from Bson Output Module to JSON "
      "format and output to stdout."},
@@ -2877,7 +2878,7 @@ ConfParam config_parameters[] = {
 
     {"scan-module",
      SET_scan_module,
-     Type_NONE,
+     Type_ARG,
      {"scan", 0},
      "Specifies a ScanModule to perform scanning. Use --list-scan to get "
      "informations of all ScanModules.\nNOTE: A ScanModule must be used in "
@@ -2885,17 +2886,17 @@ ConfParam config_parameters[] = {
      "specify."},
     {"list-scan-modules",
      SET_list_scan_modules,
-     Type_BOOL,
+     Type_FLAG,
      {"list-scan-module", "list-scan", "list-scans", 0},
      "List informations of all ScanModules."},
     {"help-scan-module",
      SET_help_scan_module,
-     Type_NONE,
+     Type_ARG,
      {"help-scan", "scan-help", 0},
      "Print information and help of specified ScanModule."},
     {"scan-module-args",
      SET_scan_module_args,
-     Type_NONE,
+     Type_ARG,
      {"scan-module-arg", "scan-args", "scan-arg", 0},
      "Specifies module-specific parameters for used ScanModule. Information "
      "of parameters for each ScanModule could be found in --list-scan."},
@@ -2904,7 +2905,7 @@ ConfParam config_parameters[] = {
 
     {"probe-module",
      SET_probe_module,
-     Type_NONE,
+     Type_ARG,
      {"probe", 0},
      "Specifies a ProbeModule for used ScanModule to perform scanning. Use "
      "--list-probe to get informations of all ProbeModules.\nNOTE: ProbeModule"
@@ -2912,17 +2913,17 @@ ConfParam config_parameters[] = {
      "different type of ProbeModule."},
     {"list-probe-modules",
      SET_list_probe_modules,
-     Type_BOOL,
+     Type_FLAG,
      {"list-probe-module", "list-probe", "list-probes", 0},
      "List informations of all ProbeModules."},
     {"help-probe-module",
      SET_help_probe_module,
-     Type_NONE,
+     Type_ARG,
      {"help-probe", "probe-help", 0},
      "Print information and help of specified ProbeModule."},
     {"probe-module-args",
      SET_probe_module_args,
-     Type_NONE,
+     Type_ARG,
      {"probe-module-arg", "probe-args", "probe-arg", 0},
      "Specifies module-specific parameters for used ProbeModule. Information "
      "of parameters for each ProbeModule could be found in --list-probe."},
@@ -2931,7 +2932,7 @@ ConfParam config_parameters[] = {
 
     {"output-module",
      SET_output_module,
-     Type_NONE,
+     Type_ARG,
      {"output", "out", 0},
      "Specifies an OutputModule for outputing results in special way. Use "
      "--list-output to get informations of all OutputModules. OutputModule"
@@ -2941,23 +2942,23 @@ ConfParam config_parameters[] = {
      "an OutputModule unless we use `--interactive` switch."},
     {"list-output-modules",
      SET_list_output_modules,
-     Type_BOOL,
+     Type_FLAG,
      {"list-output-module", "list-output", "list-out", 0},
      "List informations of all OutputModules."},
     {"help-output-module",
      SET_help_output_module,
-     Type_NONE,
+     Type_ARG,
      {"help-output", "output-help", "help-out", "out-help", 0},
      "Print information and help of specified OutputModule."},
     {"output-module-args",
      SET_output_module_args,
-     Type_NONE,
+     Type_ARG,
      {"output-module-arg", "output-arg", "out-arg", 0},
      "Specifies module-specific parameters for used OutputModule. Information "
      "of parameters for each OutputModule could be found in --list-output."},
     {"output-file",
      SET_output_filename,
-     Type_NONE,
+     Type_ARG,
      {"out-file", "o", 0},
      "Specifies a \"file\" name for selected OutputModule. The meaning of "
      "\"file\" name can be variable for different OutputModule. (e.g. It can "
@@ -2967,30 +2968,30 @@ ConfParam config_parameters[] = {
      " flag."},
     {"append-output",
      SET_append,
-     Type_BOOL,
+     Type_FLAG,
      {"output-append", "append", 0},
      "Causes output to append mode, rather than overwriting. Performance of "
      "OutputModules can be different for this flag."},
     {"interactive",
      SET_interactive,
-     Type_BOOL,
+     Type_FLAG,
      {"interact", 0},
      "Also print the results to screen while specifying an OutputModule."},
     {"show-output",
      SET_show_output,
-     Type_NONE,
+     Type_ARG,
      {"show-out", "show", 0},
      "Tells which type of results should be showed explicitly, such as:\n"
      "'success', 'failed' or 'info'."},
     {"no-show-output",
      SET_no_show_output,
-     Type_NONE,
+     Type_ARG,
      {"no-show-out", "no-show", 0},
      "Tells which type of results should not be showed explicitly, such as:\n"
      "'success', 'failed' or 'info'."},
     {"no-escape-char",
      SET_no_escape,
-     Type_BOOL,
+     Type_FLAG,
      {"no-escape", 0},
      "Use no escaped chars for unprintable chars while normalizing in data "
      "chains of result outputing. This will get valid JSON compatible string "
@@ -3005,7 +3006,7 @@ ConfParam config_parameters[] = {
 
     {"generate-module",
      SET_generate_module,
-     Type_NONE,
+     Type_ARG,
      {"generate", "gen", "generator", 0},
      "Specifies a GenerateModule to generate targets for scanning. Use "
      "--list-gen to get informations of all GenerateModules.\n"
@@ -3013,17 +3014,17 @@ ConfParam config_parameters[] = {
      " module will be default if we did not specify."},
     {"list-generate-modules",
      SET_list_generate_modules,
-     Type_BOOL,
+     Type_FLAG,
      {"list-generate-module", "list-generator", "list-gen", 0},
      "List informations of all GenerateModules."},
     {"help-generate-module",
      SET_help_generate_module,
-     Type_NONE,
+     Type_ARG,
      {"help-generate", "help-generator", "help-gen", "gen-help", 0},
      "Print information and help of specified GenerateModule."},
     {"generate-module-args",
      SET_generate_module_args,
-     Type_NONE,
+     Type_ARG,
      {"generate-module-arg", "gen-args", "gen-arg", 0},
      "Specifies module-specific parameters for used GenerateModule. "
      "Information "
@@ -3033,7 +3034,7 @@ ConfParam config_parameters[] = {
 
     {"print-status",
      SET_print_status,
-     Type_NONE,
+     Type_ARG,
      {"print", 0},
      "Tells which type of status should be printed explicitly, such as:\n"
      "'queue' for real-time capacity of transmit queue and receive queues.\n"
@@ -3043,28 +3044,28 @@ ConfParam config_parameters[] = {
      "conditions."},
     {"ndjson-status",
      SET_ndjson_status,
-     Type_BOOL,
+     Type_FLAG,
      {"status-ndjson", 0},
      "Print status information in NDJSON format(Newline Delimited JSON) while"
      " running."},
-    {"no-status", SET_no_status, Type_BOOL, {0}, "Do not print status info."},
+    {"no-status", SET_no_status, Type_FLAG, {0}, "Do not print status info."},
 
     {"PACKET ATTRIBUTES", SET_nothing, 0, {0}, NULL},
 
     {"packet-ttl",
      SET_packet_ttl,
-     Type_NUM,
+     Type_ARG,
      {"ttl", 0},
      "Specifies the TTL of all default template packets, defaults to 255."},
     {"tcp-init-window",
      SET_tcp_init_window,
-     Type_NUM,
+     Type_ARG,
      {"tcp-init-win", 0},
      "Specifies what value of Window should TCP SYN packets use. The default "
      "value of TCP Window for TCP SYN packets is 64240."},
     {"tcp-window",
      SET_tcp_window,
-     Type_NUM,
+     Type_ARG,
      {"tcp-win", 0},
      "Specifies what value of Window should TCP packets(except for SYN) use. "
      "The default value of TCP Window for TCP packets(except SYN) is 1024.\n"
@@ -3073,7 +3074,7 @@ ConfParam config_parameters[] = {
      "Be cared to the interaction with --snaplen and --max-packet-len."},
     {"tcp-wscale",
      SET_tcp_wscale,
-     Type_NUM,
+     Type_ARG,
      {0},
      "Specifies whether or what value of TCP Window Scaling option should TCP"
      " SYN packets use. e.g. --tcp-wscale true, --tcp-wscale 8. The default "
@@ -3081,14 +3082,14 @@ ConfParam config_parameters[] = {
      "packet."},
     {"tcp-mss",
      SET_tcp_mss,
-     Type_NUM,
+     Type_ARG,
      {0},
      "Specifies whether or what value of TCP MMS(Maximum Segment Size) option"
      " should TCP SYN packets use. e.g. --tcp-mss false, --tcp-mss 64000. The "
      "default MMS value is 1460."},
     {"tcp-sackok",
      SET_tcp_sackok,
-     Type_BOOL,
+     Type_FLAG,
      {"tcp-sack", 0},
      "Specifies whether should TCP SYN packets use TCP Selective "
      "Acknowledgement"
@@ -3096,7 +3097,7 @@ ConfParam config_parameters[] = {
      " does not use TCP Selective Acknowledgement option."},
     {"tcp-tsecho",
      SET_tcp_tsecho,
-     Type_NUM,
+     Type_ARG,
      {0},
      "Specifies whether or what value of timestamp in TCP Timestamp option"
      " should TCP SYN packets use for timestamp echoing. e.g. --tcp-tsecho "
@@ -3104,14 +3105,14 @@ ConfParam config_parameters[] = {
      " and is not be used in template of TCP SYN packet."},
     {"packet-trace",
      SET_packet_trace,
-     Type_BOOL,
+     Type_FLAG,
      {"trace-packet", 0},
      "Prints a summary of packets we sent and received. This is useful for "
      "debugging at low rates, like a few packets per second, but will "
      "overwhelm the terminal at high rates."},
     {"bpf-filter",
      SET_bpf_filter,
-     Type_NONE,
+     Type_ARG,
      {"bpf", 0},
      "Specifies a string as BPF filter for pcap to replace the default BPF "
      "filter string in ScanModule.\n"
@@ -3120,14 +3121,14 @@ ConfParam config_parameters[] = {
      " constrain the packets we received with ScanModules."},
     {"no-bpf-filter",
      SET_no_bpf,
-     Type_BOOL,
+     Type_FLAG,
      {"no-bpf", 0},
      "Do not compile any BPF filter from ScanModules or users. Some machines"
      " does not support part or all of BPF filters and this switch "
      "makes " XTATE_NAME_TITLE_CASE " working again."},
     {"max-packet-len",
      SET_max_packet_len,
-     Type_NUM,
+     Type_ARG,
      {"max-pkt-len", 0},
      XTATE_NAME_TITLE_CASE
      " won't handle a received packet that is more than "
@@ -3138,7 +3139,7 @@ ConfParam config_parameters[] = {
 
     {"conf",
      SET_read_conf,
-     Type_NONE,
+     Type_ARG,
      {"config", "resume", 0},
      "Reads in a configuration file. If not specified, then will read from "
      "/etc/xtate/xtate.conf by default. We could specifies a configuration "
@@ -3147,32 +3148,32 @@ ConfParam config_parameters[] = {
      " to resume an unfinished scanning."},
     {"resume-index",
      SET_resume_index,
-     Type_NUM,
+     Type_ARG,
      {0},
      "The point in the scan at when it was paused."},
     {"no-resume",
      SET_noresume,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Do not save scan info to resume file(paused.conf) for resuming. This is"
      " useful when our target list is too large and scattered and spend too "
      "much time to save."},
     {"pcap-filename",
      SET_pcap_filename,
-     Type_NONE,
+     Type_ARG,
      {"pcap", 0},
      "Saves received packets (but not transmitted packets) to the "
      "libpcap-format file."},
     {"no-ansi-control",
      SET_no_ansi,
-     Type_BOOL,
+     Type_FLAG,
      {"no-ansi", "no-color", 0},
      "Print result and status to the screen without ANSI controlling(escape) "
      "characters. Some old terminal does not support those charactors.\n"
      "NOTE: displaying maybe not that good if no ansi escape chars."},
     {"timeout",
      SET_fast_timeout,
-     Type_NUM,
+     Type_ARG,
      {"use-timeout", 0},
      "Specifies whether or how many timeouts(sec) should ScanModule use like"
      " --timeout true, --timeout 15. Some ScanModules could use timeout "
@@ -3189,14 +3190,14 @@ ConfParam config_parameters[] = {
      "mode:)"},
     {"no-dedup",
      SET_nodedup,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Do not deduplicate the results even if ScanModule use deduplication.\n"
      "NOTE: This will destroy the work of `--timeout`, so don't use these two"
      " switch together."},
     {"dedup-win",
      SET_dedup_win,
-     Type_NUM,
+     Type_ARG,
      {0},
      "Set the window size of deduplication table. Default size if 1000000.\n"
      "NOTE: " XTATE_NAME_TITLE_CASE
@@ -3208,7 +3209,7 @@ ConfParam config_parameters[] = {
      "advantages between them and left the choice to users."},
     {"stack-buf-count",
      SET_stack_buf_count,
-     Type_NUM,
+     Type_ARG,
      {"tx-buf-count", 0},
      "Set the buffer size of packets queue(stack) from receive thread to "
      "transmit "
@@ -3216,20 +3217,20 @@ ConfParam config_parameters[] = {
      "The value of packets queue must be power of 2. (Default 16384)"},
     {"dispatch-buf-count",
      SET_dispatch_buf_count,
-     Type_NUM,
+     Type_ARG,
      {"rx-buf-count", 0},
      "Set the buffer size of dispatch queue from receive thread to receive "
      "handler threads.\n"
      "The value of packets queue must be power of 2. (Default 16384)"},
     {"pfring",
      SET_pfring,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Force the use of the PF_RING driver. The program will exit if PF_RING "
      "DNA drvers are not available."},
     {"send-queue",
      SET_send_queue,
-     Type_BOOL,
+     Type_FLAG,
      {"sendq", 0},
      "Use sendqueue feature of Npcap/Winpcap on Windows to transmit packets. "
      "The transmit rate on Windows is really slow, like 40-kpps. The speed "
@@ -3239,7 +3240,7 @@ ConfParam config_parameters[] = {
      " some scan modules working with connections."},
     {"offline",
      SET_offline,
-     Type_BOOL,
+     Type_FLAG,
      {"dry-run", 0},
      "Do not actually transmit packets. This is useful with a low rate and "
      "--packet-trace to look at what packets might've been transmitted. Or, "
@@ -3248,7 +3249,7 @@ ConfParam config_parameters[] = {
      " 20% slower than the benchmark result from offline mode."},
     {"infinite",
      SET_infinite,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Scan the target again and again. Not stop until we hit <Ctrl-C>. This "
      "is useful for us to test the some performance of " XTATE_NAME_TITLE_CASE
@@ -3259,7 +3260,7 @@ ConfParam config_parameters[] = {
      "NOTE: We should be careful to the deduplication in the infinite mode."},
     {"repeat",
      SET_repeat,
-     Type_NUM,
+     Type_ARG,
      {"repeats", 0},
      "How many times " XTATE_NAME_TITLE_CASE " should repeat for all targets."
      " It also means the hit count for every target + 1. So default is 0."
@@ -3267,7 +3268,7 @@ ConfParam config_parameters[] = {
      "NOTE: We should be careful to the deduplication in the repeat mode."},
     {"static-seed",
      SET_static_seed,
-     Type_BOOL,
+     Type_FLAG,
      {"keep-seed", 0},
      "Use same seed to pick up addresses in infinite mode while listing targets"
      ". " XTATE_NAME_TITLE_CASE
@@ -3276,7 +3277,7 @@ ConfParam config_parameters[] = {
      "all rounds."},
     {"no-cpu-bind",
      SET_no_cpu_bind,
-     Type_BOOL,
+     Type_FLAG,
      {"no-bind", 0},
      "In default, " XTATE_NAME_TITLE_CASE " bind its threads to CPU kernels for"
      " better performance if the number of kernels is great than 1. This "

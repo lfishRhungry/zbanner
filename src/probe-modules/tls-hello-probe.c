@@ -146,7 +146,7 @@ static ConfRes SET_support_tls1_3(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlshello_conf.support_tls1_3 = parseBoolean(value);
+    tlshello_conf.support_tls1_3 = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -156,7 +156,7 @@ static ConfRes SET_show_banner(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlshello_conf.banner = parseBoolean(value);
+    tlshello_conf.banner = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -167,7 +167,7 @@ static ConfRes SET_newlines(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlshello_conf.re_include_newlines = parseBoolean(value);
+    tlshello_conf.re_include_newlines = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -177,7 +177,7 @@ static ConfRes SET_insensitive(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlshello_conf.re_case_insensitive = parseBoolean(value);
+    tlshello_conf.re_case_insensitive = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -235,12 +235,12 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
 static ConfParam tlshello_parameters[] = {
     {"banner",
      SET_show_banner,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Show normalized banner in results."},
     {"support-tls13",
      SET_support_tls1_3,
-     Type_BOOL,
+     Type_FLAG,
      {"tls13", 0},
      "Use probe payload which supports TLSv1.3. The default payload of "
      "TlsHelloProbe supports TLS version from 1.0 to 1.2 and can match regex "
@@ -256,7 +256,7 @@ static ConfParam tlshello_parameters[] = {
 #ifndef NOT_FOUND_PCRE2
     {"regex",
      SET_regex,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Specifies a regex and sets matched response data as successed instead of"
      " reporting all results matched in protocol.\n"
@@ -267,12 +267,12 @@ static ConfParam tlshello_parameters[] = {
      "TLSv1.3. Because the cert and domain info is encrypted in TLSv1.3."},
     {"case-insensitive",
      SET_insensitive,
-     Type_BOOL,
+     Type_FLAG,
      {"insensitive", 0},
      "Whether the specified regex is case-insensitive or not."},
     {"include-newlines",
      SET_newlines,
-     Type_BOOL,
+     Type_FLAG,
      {"include-newline", "newline", "newlines", 0},
      "Whether the specified regex contains newlines."},
 #endif

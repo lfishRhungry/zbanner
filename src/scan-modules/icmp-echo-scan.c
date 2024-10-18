@@ -20,7 +20,7 @@ static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    icmpecho_conf.record_ttl = parseBoolean(value);
+    icmpecho_conf.record_ttl = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -30,7 +30,7 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    icmpecho_conf.record_ipid = parseBoolean(value);
+    icmpecho_conf.record_ipid = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -38,12 +38,12 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
 static ConfParam icmpecho_parameters[] = {
     {"record-ttl",
      SET_record_ttl,
-     Type_BOOL,
+     Type_FLAG,
      {"ttl", 0},
      "Records TTL for IPv4 or Hop Limit for IPv6 in ICMP Echo Reply."},
     {"record-ipid",
      SET_record_ipid,
-     Type_BOOL,
+     Type_FLAG,
      {"ipid", 0},
      "Records IPID of ICMP Echo Reply just for IPv4."},
 

@@ -28,7 +28,7 @@ static ConfRes SET_unsuffix(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    recog_conf.unsuffix = parseBoolean(value);
+    recog_conf.unsuffix = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -37,7 +37,7 @@ static ConfRes SET_unprefix(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    recog_conf.unprefix = parseBoolean(value);
+    recog_conf.unprefix = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -47,7 +47,7 @@ static ConfRes SET_banner_if_fail(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    recog_conf.banner_if_fail = parseBoolean(value);
+    recog_conf.banner_if_fail = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -57,7 +57,7 @@ static ConfRes SET_show_banner(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    recog_conf.banner_while_regex = parseBoolean(value);
+    recog_conf.banner_while_regex = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -166,55 +166,55 @@ static ConfRes SET_recog_file(void *conf, const char *name, const char *value) {
 static ConfParam recog_parameters[] = {
     {"string",
      SET_hello_string,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Specifies a string and set it as hello data after decoded."
      " This will overwrite hello data set by other parameters."},
     {"base64-string",
      SET_hello_base64,
-     Type_NONE,
+     Type_ARG,
      {"base64", 0},
      "Specifies a string in base64 format and set it as hello data after "
      "decoded."
      " This will overwrite hello data set by other parameters."},
     {"nmap-string",
      SET_hello_nmap,
-     Type_NONE,
+     Type_ARG,
      {"nmap", 0},
      "Specifies a string in nmap probe format and set it as hello data after "
      "decoded."
      " This will overwrite hello data set by other parameters."},
     {"file",
      SET_hello_file,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Specifies a file and set the content of file as hello data."
      " This will overwrite hello data set by other parameters."},
     {"recog-xml",
      SET_recog_file,
-     Type_NONE,
+     Type_ARG,
      {"xml", "xml-file", 0},
      "Specifies a xml file in Recog fingerprint format as the matching "
      "source."},
     {"banner",
      SET_show_banner,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Show normalized banner after regex matching."},
     {"banner-if-fail",
      SET_banner_if_fail,
-     Type_BOOL,
+     Type_FLAG,
      {"banner-fail", "fail-banner", 0},
      "Show normalized banner in results if regex matching failed."},
     {"unprefix",
      SET_unprefix,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Unprefix the '^' from the head of all regex. It's useful if we cannot "
      "extract exactly the proper part of string for matching."},
     {"unsuffix",
      SET_unsuffix,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Unprefix the '$' from the tail of all regex. It's useful if we cannot "
      "extract exactly the proper part of string for matching."},

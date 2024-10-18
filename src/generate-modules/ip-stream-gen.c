@@ -26,7 +26,7 @@ static ConfRes SET_rounds(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    ipstream_conf.rounds = (unsigned)parseInt(value);
+    ipstream_conf.rounds = (unsigned)parse_str_int(value);
     return Conf_OK;
 }
 
@@ -61,7 +61,7 @@ static ConfRes SET_file(void *conf, const char *name, const char *value) {
 static ConfParam ipstream_parameters[] = {
     {"default-port",
      SET_port,
-     Type_NONE,
+     Type_ARG,
      {"port", "p", 0},
      "Specifies target ports if the input stream has no port info. like -p 80. "
      "UDP ports can be specified, like --ports U:161,u:1024-1100. SCTP ports "
@@ -70,12 +70,12 @@ static ConfParam ipstream_parameters[] = {
      " [0..65535] for some ScanModules."},
     {"ip-file",
      SET_file,
-     Type_NONE,
+     Type_ARG,
      {"file", "f", 0},
      "Specifies a file as input stream. Default is stdin."},
     {"rounds",
      SET_rounds,
-     Type_NUM,
+     Type_ARG,
      {"round", 0},
      "Specifies the number of round in blackrock algorithm for targets "
      "randomization in every IP/Port range. It's 14 rounds in default to give "

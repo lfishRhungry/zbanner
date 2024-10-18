@@ -1,7 +1,9 @@
 /**
- * Originally born from https://github.com/bi-zone/masscan-ng
- * Modified by sharkocha 2024
+ * Originally born from the broken one: https://github.com/bi-zone/masscan-ng
+ * I fixed some errors, bugs and done some updates. (So exhausted...)
  * Now it supports multi data exchange after hello over TLS and more functions.
+ *
+ * Modified and Created by sharkocha 2024
  */
 #ifndef NOT_FOUND_OPENSSL
 
@@ -120,7 +122,7 @@ static ConfRes SET_ssl_keylog(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlsstate_conf.ssl_keylog = parseBoolean(value);
+    tlsstate_conf.ssl_keylog = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -130,7 +132,7 @@ static ConfRes SET_dump_version(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlsstate_conf.dump_version = parseBoolean(value);
+    tlsstate_conf.dump_version = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -140,7 +142,7 @@ static ConfRes SET_dump_cipher(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlsstate_conf.dump_cipher = parseBoolean(value);
+    tlsstate_conf.dump_cipher = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -149,7 +151,7 @@ static ConfRes SET_dump_cert(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlsstate_conf.dump_cert = parseBoolean(value);
+    tlsstate_conf.dump_cert = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -159,7 +161,7 @@ static ConfRes SET_dump_subject(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlsstate_conf.dump_subject = parseBoolean(value);
+    tlsstate_conf.dump_subject = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -169,7 +171,7 @@ static ConfRes SET_fail_handshake(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlsstate_conf.fail_handshake = parseBoolean(value);
+    tlsstate_conf.fail_handshake = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -177,45 +179,45 @@ static ConfRes SET_fail_handshake(void *conf, const char *name,
 static ConfParam tlsstate_parameters[] = {
     {"subprobe",
      SET_subprobe,
-     Type_NONE,
+     Type_ARG,
      {"sub-probe-module", 0},
      "Specifies a ProbeModule as subprobe of TlsState Probe."},
     {"subprobe-arg",
      SET_subprobe_args,
-     Type_NONE,
+     Type_ARG,
      {"subprobe-args", "subarg", "subargs", 0},
      "Specifies arguments for subprobe.\n"
      "NOTE: Use double/single quotes and backslashes to handle params with "
      "spaces in nesting."},
     {"ssl-keylog",
      SET_ssl_keylog,
-     Type_BOOL,
+     Type_FLAG,
      {"key-log", 0},
      "Record the SSL key log to result as INFO."},
     {"dump-version",
      SET_dump_version,
-     Type_BOOL,
+     Type_FLAG,
      {"version", 0},
      "Record SSL/TLS version to results as INFO."},
     {"dump-cipher",
      SET_dump_cipher,
-     Type_BOOL,
+     Type_FLAG,
      {"cipher", 0},
      "Record cipher suites of SSL/TLS connection to results as INFO."},
     {"dump-cert",
      SET_dump_cert,
-     Type_BOOL,
+     Type_FLAG,
      {"cert", 0},
      "Record X509 cert info of SSL/TLS server to results in base64 format as"
      " INFO."},
     {"dump-subject",
      SET_dump_subject,
-     Type_BOOL,
+     Type_FLAG,
      {"subject", 0},
      "Record X509 subject info of SSL/TLS server to results as INFO."},
     {"fail-handshake",
      SET_fail_handshake,
-     Type_BOOL,
+     Type_FLAG,
      {"handshake-fail", 0},
      "Output TLS handshake failed as FAILED results. Default is INFO."},
 

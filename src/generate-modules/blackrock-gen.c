@@ -26,14 +26,14 @@ static ConfRes SET_rounds(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    blackrock_conf.rounds = (unsigned)parseInt(value);
+    blackrock_conf.rounds = (unsigned)parse_str_int(value);
     return Conf_OK;
 }
 
 static ConfParam blackrock_parameters[] = {
     {"rounds",
      SET_rounds,
-     Type_NUM,
+     Type_ARG,
      {"round", 0},
      "Specifies the number of round in blackrock algorithm for targets "
      "randomization. It's 14 rounds in default to give a better statistical "

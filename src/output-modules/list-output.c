@@ -21,7 +21,7 @@ static ConfRes SET_no_port(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    list_conf.no_port = parseBoolean(value);
+    list_conf.no_port = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -29,7 +29,7 @@ static ConfRes SET_no_port(void *conf, const char *name, const char *value) {
 static ConfParam list_parameters[] = {
     {"no-port",
      SET_no_port,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Just output IP list in any time.\n"
      "NOTE: No deduplicating will be used for IP."},

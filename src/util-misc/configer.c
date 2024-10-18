@@ -7,7 +7,7 @@
 #include "../util-data/safe-string.h"
 #include "../util-out/logger.h"
 
-uint64_t parseInt(const char *str) {
+uint64_t parse_str_int(const char *str) {
     uint64_t result = 0;
 
     while (*str && isdigit(*str & 0xFF)) {
@@ -20,7 +20,7 @@ uint64_t parseInt(const char *str) {
 /**
  * a stricter function for determining if something is boolean.
  */
-bool isBoolean(const char *str) {
+bool is_str_bool(const char *str) {
     size_t length = str ? strlen(str) : 0;
 
     if (length == 0)
@@ -85,7 +85,7 @@ bool isBoolean(const char *str) {
     }
 }
 
-bool parseBoolean(const char *str) {
+bool parse_str_bool(const char *str) {
     if (str == NULL || str[0] == 0)
         return true;
     if (isdigit(str[0])) {
@@ -127,7 +127,18 @@ bool parseBoolean(const char *str) {
     return true;
 }
 
-uint64_t parseTime(const char *value) {
+/***************************************************************************
+ * Parses the number of seconds (for rotating files mostly). We do a little
+ * more than just parse an integer. We support strings like:
+ *
+ * hourly
+ * daily
+ * Week
+ * 5days
+ * 10-months
+ * 3600
+ ***************************************************************************/
+uint64_t parse_str_time(const char *value) {
     uint64_t num         = 0;
     unsigned is_negative = 0;
 
@@ -179,7 +190,11 @@ uint64_t parseTime(const char *value) {
     return num;
 }
 
-uint64_t parseSize(const char *value) {
+/***************************************************************************
+ * Parses a size integer, which can be suffixed with "tera", "giga",
+ * "mega", and "kilo". These numbers are in units of 1024 so suck it.
+ ***************************************************************************/
+uint64_t parse_str_size(const char *value) {
     uint64_t num = 0;
 
     while (isdigit(value[0] & 0xFF)) {
@@ -221,7 +236,7 @@ uint64_t parseSize(const char *value) {
     return num;
 }
 
-unsigned parseHexChar(char c) {
+unsigned parse_char_hex(char c) {
     if ('0' <= c && c <= '9')
         return (unsigned)(c - '0');
     if ('a' <= c && c <= 'f')
@@ -231,7 +246,7 @@ unsigned parseHexChar(char c) {
     return 0xFF;
 }
 
-int parseMacAddress(const char *text, macaddress_t *mac) {
+int parse_str_mac(const char *text, macaddress_t *mac) {
     unsigned i;
 
     for (i = 0; i < 6; i++) {
@@ -244,13 +259,13 @@ int parseMacAddress(const char *text, macaddress_t *mac) {
         c = *text;
         if (!isxdigit(c & 0xFF))
             return -1;
-        x = parseHexChar(c) << 4;
+        x = parse_char_hex(c) << 4;
         text++;
 
         c = *text;
         if (!isxdigit(c & 0xFF))
             return -1;
-        x |= parseHexChar(c);
+        x |= parse_char_hex(c);
         text++;
 
         mac->addr[i] = (unsigned char)x;
@@ -262,16 +277,16 @@ int parseMacAddress(const char *text, macaddress_t *mac) {
     return 0;
 }
 
-unsigned parseOptionInt(const char *name) {
+unsigned parse_opt_int(const char *name) {
     const char *p = strchr(name, '[');
     if (p == NULL)
         return 0;
     else
         p++;
-    return (unsigned)parseInt(p);
+    return (unsigned)parse_str_int(p);
 }
 
-char *parseOptionStr(const char *name) {
+char *parse_opt_str(const char *name) {
     const char *p1 = strchr(name, '[');
     const char *p2 = strchr(name, ']');
 
@@ -285,6 +300,13 @@ char *parseOptionStr(const char *name) {
     return ret;
 }
 
+/***************************************************************************
+ * Tests if the named parameter on the command-line. We do a little
+ * more than a straight string compare, because I get confused
+ * whether parameter have punctuation. Is it "--excludefile" or
+ * "--exclude-file"? I don't know if it's got that dash. Screw it,
+ * I'll just make the code so it don't care.
+ ***************************************************************************/
 bool EQUALS(const char *lhs, const char *rhs) {
     for (;;) {
         while (*lhs == '-' || *lhs == '.' || *lhs == '_')
@@ -328,7 +350,7 @@ unsigned INDEX_OF(const char *str, char c) {
     return i;
 }
 
-bool is_integer(const char *value) {
+bool is_str_int(const char *value) {
     size_t i;
 
     if (value == NULL)
@@ -338,24 +360,6 @@ bool is_integer(const char *value) {
         if (!isdigit(value[i] & 0xFF))
             return false;
     return true;
-}
-
-bool is_numable(const ConfParam *cp, const char *name) {
-    size_t i;
-
-    for (i = 0; cp[i].name; i++) {
-        if (EQUALS(cp[i].name, name)) {
-            return (cp[i].type & Type_NUM) == Type_NUM;
-        } else {
-            size_t j;
-            for (j = 0; cp[i].alt_names[j]; j++) {
-                if (EQUALS(cp[i].alt_names[j], name)) {
-                    return (cp[i].type & Type_NUM) == Type_NUM;
-                }
-            }
-        }
-    }
-    return false;
 }
 
 bool is_power_of_two(uint64_t x) {
@@ -368,15 +372,15 @@ bool is_power_of_two(uint64_t x) {
  * Command-line parsing code assumes every --parm is followed by a value.
  * This is a list of the parameters that don't follow the default.
  ***************************************************************************/
-bool is_singleton(const ConfParam *cp, const char *name) {
+bool is_parm_flag(const ConfParam *cp, const char *name) {
     for (size_t i = 0; cp[i].name; i++) {
         if (EQUALS(cp[i].name, name)) {
-            return (cp[i].type & Type_BOOL) == Type_BOOL;
+            return (cp[i].type & Type_FLAG) == Type_FLAG;
         } else {
             size_t j;
             for (j = 0; cp[i].alt_names[j]; j++) {
                 if (EQUALS(cp[i].alt_names[j], name)) {
-                    return (cp[i].type & Type_BOOL) == Type_BOOL;
+                    return (cp[i].type & Type_FLAG) == Type_FLAG;
                 }
             }
         }
@@ -385,6 +389,9 @@ bool is_singleton(const ConfParam *cp, const char *name) {
     return false;
 }
 
+/*
+ * Go through configured list of parameters
+ */
 void set_one_parameter(void *conf, ConfParam *cp, const char *name,
                        const char *value) {
     size_t i;
@@ -410,6 +417,9 @@ void set_one_parameter(void *conf, ConfParam *cp, const char *name,
     exit(1);
 }
 
+/**
+ * argc and argv do not contain process file name
+ */
 void set_parameters_from_args(void *conf, ConfParam *cp, int argc,
                               char **argv) {
     int      i;
@@ -419,7 +429,7 @@ void set_parameters_from_args(void *conf, ConfParam *cp, int argc,
         /*
          * -(-)name=value
          * -(-)name:value
-         * -(-)name value
+         * -(-)name value for Type_ARG
          */
         if (argv[i][0] == '-') {
             unsigned tmp_step = 1;
@@ -431,80 +441,43 @@ void set_parameters_from_args(void *conf, ConfParam *cp, int argc,
             char        name2[64];
             const char *value;
 
-            if (is_numable(cp, argname)) {
-                /* May exist by itself like a bool or take an additional
-                 * numeric argument */
-
-                /* Look for:
-                 * --name=value
-                 * --name:value */
-                value = strchr(argname, '=');
-                if (value == NULL)
-                    value = strchr(&argv[i][2], ':');
-                if (value) {
-                    name_length = (unsigned)(value - argname);
-                } else {
-                    /* The next parameter contains the name */
-                    if (i + 1 < argc) {
-                        value = argv[i + 1];
-                        if (is_integer(value) || isBoolean(value))
-                            i++;
-                        else
-                            value = "";
-                    } else
-                        value = "";
-                    name_length = (unsigned)strlen(argname);
-                }
-
-                /* create a copy of the name */
-                if (name_length > sizeof(name2) - 1) {
-                    LOG(LEVEL_ERROR, "%.*s: name too long\n", name_length,
-                        argname);
-                    name_length = sizeof(name2) - 1;
-                }
-                memcpy(name2, argname, name_length);
-                name2[name_length] = '\0';
-
-                set_one_parameter(conf, cp, name2, value);
+            value = strchr(&argv[i][2], '=');
+            if (value == NULL)
+                value = strchr(&argv[i][2], ':');
+            if (value == NULL) {
+                /*Type_FLAG doesn't carry args*/
+                if (is_parm_flag(cp, argname))
+                    value = "";
+                else
+                    value = argv[++i];
+                name_length = (unsigned)strlen(argname);
             } else {
-                value = strchr(&argv[i][2], '=');
-                if (value == NULL)
-                    value = strchr(&argv[i][2], ':');
-                if (value == NULL) {
-                    if (is_singleton(cp, argname))
-                        value = "";
-                    else
-                        value = argv[++i];
-                    name_length = (unsigned)strlen(argname);
-                } else {
-                    name_length = (unsigned)(value - argname);
-                    value++;
-                }
-
-                if (i >= argc) {
-                    LOG(LEVEL_ERROR, "%.*s: empty parameter\n", name_length,
-                        argname);
-                    // break;
-                    exit(1);
-                }
-
-                if (name_length > sizeof(name2) - 1) {
-                    LOG(LEVEL_ERROR, "%.*s: name too long\n", name_length,
-                        argname);
-                    name_length = sizeof(name2) - 1;
-                }
-
-                memcpy(name2, argname, name_length);
-                name2[name_length] = '\0';
-
-                set_one_parameter(conf, cp, name2, value);
+                name_length = (unsigned)(value - argname);
+                value++;
             }
+
+            if (i >= argc) {
+                LOG(LEVEL_ERROR, "%.*s: empty parameter\n", name_length,
+                    argname);
+                // break;
+                exit(1);
+            }
+
+            if (name_length > sizeof(name2) - 1) {
+                LOG(LEVEL_ERROR, "%.*s: name too long\n", name_length, argname);
+                name_length = sizeof(name2) - 1;
+            }
+
+            memcpy(name2, argname, name_length);
+            name2[name_length] = '\0';
+
+            set_one_parameter(conf, cp, name2, value);
+
             continue;
         }
 
         if (!isdigit(argv[i][0]) && argv[i][0] != ':' && argv[i][0] != '[') {
-            LOG(LEVEL_ERROR, "unknown command-line parameter \"%s\"\n",
-                argv[i]);
+            LOG(LEVEL_ERROR, "unknown parameter \"%s\"\n", argv[i]);
             exit(1);
         }
 
@@ -515,6 +488,14 @@ void set_parameters_from_args(void *conf, ConfParam *cp, int argc,
     }
 }
 
+/**
+ * Parse string and set parameters
+ * It can handle quotes(ignore single quotes)
+ * @param conf config to set params
+ * @param cp params
+ * @param string whole string contains all params
+ * @return 0 if success
+ */
 int set_parameters_from_string(void *conf, ConfParam *cp, char *string) {
     int    sub_argc;
     char **sub_argv;
@@ -529,6 +510,14 @@ int set_parameters_from_string(void *conf, ConfParam *cp, char *string) {
     return 0;
 }
 
+/**
+ * Parse string and set parameters
+ * It can handle single quotes(ignore quotes)
+ * @param conf config to set params
+ * @param cp params
+ * @param substring whole string contains all params
+ * @return 0 if success
+ */
 int set_parameters_from_substring(void *conf, ConfParam *cp, char *substring) {
     int    sub_argc;
     char **sub_argv;

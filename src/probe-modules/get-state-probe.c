@@ -21,7 +21,7 @@ static ConfRes SET_whole_page(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    getstate_conf.get_whole_page = parseBoolean(value);
+    getstate_conf.get_whole_page = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -29,7 +29,7 @@ static ConfRes SET_whole_page(void *conf, const char *name, const char *value) {
 static ConfParam getstate_parameters[] = {
     {"whole-page",
      SET_whole_page,
-     Type_BOOL,
+     Type_FLAG,
      {"whole", 0},
      "Get the whole page before connection timeout, not just the banner."},
 

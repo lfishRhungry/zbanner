@@ -55,7 +55,7 @@ static ConfRes SET_record_mss(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_mss = parseBoolean(value);
+    tcpstate_conf.record_mss = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -64,7 +64,7 @@ static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_ttl = parseBoolean(value);
+    tcpstate_conf.record_ttl = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -74,7 +74,7 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_ipid = parseBoolean(value);
+    tcpstate_conf.record_ipid = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -83,7 +83,7 @@ static ConfRes SET_record_win(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_win = parseBoolean(value);
+    tcpstate_conf.record_win = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -93,7 +93,7 @@ static ConfRes SET_port_success(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.is_port_success = parseBoolean(value);
+    tcpstate_conf.is_port_success = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -102,7 +102,7 @@ static ConfRes SET_conn_expire(void *conf, const char *name,
                                const char *value) {
     UNUSEDPARM(conf);
 
-    unsigned tm = parseInt(value);
+    unsigned tm = parse_str_int(value);
 
     if (tm <= 0) {
         LOG(LEVEL_ERROR, "%s must be positive.\n", name);
@@ -117,33 +117,33 @@ static ConfRes SET_conn_expire(void *conf, const char *name,
 static ConfParam tcpstate_parameters[] = {
     {"conn-expire",
      SET_conn_expire,
-     Type_NUM,
+     Type_ARG,
      {"expire", 0},
      "Specifies the max existing time of each connection."},
     {"port-success",
      SET_port_success,
-     Type_BOOL,
+     Type_FLAG,
      {"success-port", 0},
      "Let port opening(contains zero syn-ack) results as success level."
      "(Default is info level)"},
     {"record-ttl",
      SET_record_ttl,
-     Type_BOOL,
+     Type_FLAG,
      {"ttl", 0},
      "Records TTL for IPv4 or Hop Limit for IPv6 in SYN-ACK."},
     {"record-ipid",
      SET_record_ipid,
-     Type_BOOL,
+     Type_FLAG,
      {"ipid", 0},
      "Records IPID of SYN-ACK just for IPv4."},
     {"record-win",
      SET_record_win,
-     Type_BOOL,
+     Type_FLAG,
      {"win", "window", 0},
      "Records TCP window size of SYN-ACK."},
     {"record-mss",
      SET_record_mss,
-     Type_BOOL,
+     Type_FLAG,
      {"mss", 0},
      "Records TCP MSS option value of SYN-ACK if the option exists."},
 

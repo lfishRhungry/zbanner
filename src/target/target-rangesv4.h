@@ -1,7 +1,7 @@
-/*
-    Born from Masscan
-    Modified by sharkocha 2024
-*/
+/**
+ * Born and updated from Masscan
+ * Modified and Created by sharkocha 2024
+ */
 #ifndef RANGES_H
 #define RANGES_H
 #include <stdint.h>

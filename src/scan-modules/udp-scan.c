@@ -22,7 +22,7 @@ static ConfRes SET_no_icmp(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.no_icmp = parseBoolean(value);
+    udp_conf.no_icmp = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -30,7 +30,7 @@ static ConfRes SET_no_icmp(void *conf, const char *name, const char *value) {
 static ConfParam udp_parameters[] = {
     {"no-icmp",
      SET_no_icmp,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Do not handle icmp port unreachable info."},
     {0}};

@@ -1,7 +1,7 @@
-/*
-    Born from Masscan
-    Modified by sharkocha 2024
-*/
+/**
+ * Born and updated from Masscan
+ * Modified and Created by sharkocha 2024
+ */
 #ifndef TARGET_IP_H
 #define TARGET_IP_H
 #include <stddef.h>

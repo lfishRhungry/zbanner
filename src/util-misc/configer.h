@@ -1,3 +1,15 @@
+/**
+ * This was originally extracted from masscan's parm config workflow(a little
+ * messy...). I updated  and abstracted it into a useful parm configer tool.
+ * Some features:
+ * - Single or double dash for parm name is valid: `-name` or `--name`
+ * - Any dash within parm name is valid: `-na-me` or `--nam-e`
+ * - Args can be carried in multiple ways: `-name arg`, `-name:arg`, `-name=arg`
+ * - Parm name can carry sub str or int: `-name[2] arg` or `-name[hello] arg`,
+ *   this should be further parsed by parse_opt_xxx funcs.
+ *
+ * Modified and Created by sharkocha 2024
+ */
 #ifndef CONFIGER_H
 #define CONFIGER_H
 
@@ -8,14 +20,12 @@
 
 typedef enum Config_RES {
     Conf_OK,
-    Conf_WARN,
     Conf_ERR,
 } ConfRes;
 
 typedef enum ConfigParam_TYPE {
-    Type_NONE = 0,
-    Type_BOOL = 1,
-    Type_NUM  = 2,
+    Type_ARG  = 0, /*may carry args like `--parm arg` or `--parm=arg`*/
+    Type_FLAG = 1, /*only a single flag, even can be --parm=false*/
 } ConfType;
 
 /**
@@ -32,97 +42,34 @@ typedef struct ConfigParam {
     CONFIG_SET_PARAM setter;
     ConfType         type;
     const char      *alt_names[8];
-    /*set NULL if it's not a normal prarameter*/
-    const char      *help_text;
+    const char      *help_text; /*set NULL if it's not a normal prarameter*/
 } ConfParam;
 
-uint64_t parseInt(const char *str);
-
-bool isBoolean(const char *str);
-
-bool parseBoolean(const char *str);
-
-/***************************************************************************
- * Parses the number of seconds (for rotating files mostly). We do a little
- * more than just parse an integer. We support strings like:
- *
- * hourly
- * daily
- * Week
- * 5days
- * 10-months
- * 3600
- ***************************************************************************/
-uint64_t parseTime(const char *value);
-
-/***************************************************************************
- * Parses a size integer, which can be suffixed with "tera", "giga",
- * "mega", and "kilo". These numbers are in units of 1024 so suck it.
- ***************************************************************************/
-uint64_t parseSize(const char *value);
-
-unsigned parseHexChar(char c);
-
-int parseMacAddress(const char *text, macaddress_t *mac);
-
-unsigned parseOptionInt(const char *name);
-
-char *parseOptionStr(const char *name);
-
-/***************************************************************************
- * Tests if the named parameter on the command-line. We do a little
- * more than a straight string compare, because I get confused
- * whether parameter have punctuation. Is it "--excludefile" or
- * "--exclude-file"? I don't know if it's got that dash. Screw it,
- * I'll just make the code so it don't care.
- ***************************************************************************/
-bool EQUALS(const char *lhs, const char *rhs);
-
-bool EQUALSx(const char *lhs, const char *rhs, size_t rhs_length);
-
-unsigned INDEX_OF(const char *str, char c);
-
-bool is_integer(const char *value);
-
-bool is_numable(const ConfParam *cp, const char *name);
-
+bool is_str_bool(const char *str);
+bool is_str_int(const char *value);
 bool is_power_of_two(uint64_t x);
 
-/***************************************************************************
- * Command-line parsing code assumes every --parm is followed by a value.
- * This is a list of the parameters that don't follow the default.
- ***************************************************************************/
-bool is_singleton(const ConfParam *cp, const char *name);
+uint64_t parse_str_time(const char *value);
+uint64_t parse_str_size(const char *value);
+int      parse_str_mac(const char *text, macaddress_t *mac);
+uint64_t parse_str_int(const char *str);
+bool     parse_str_bool(const char *str);
 
-/*
- * Go through configured list of parameters
- */
+unsigned parse_char_hex(char c);
+
+unsigned parse_opt_int(const char *name);
+char    *parse_opt_str(const char *name);
+
+bool is_parm_flag(const ConfParam *cp, const char *name);
+
+bool     EQUALS(const char *lhs, const char *rhs);
+bool     EQUALSx(const char *lhs, const char *rhs, size_t rhs_length);
+unsigned INDEX_OF(const char *str, char c);
+
 void set_one_parameter(void *conf, ConfParam *cp, const char *name,
                        const char *value);
-
-/**
- * argc and argv do not contain process file name
- */
 void set_parameters_from_args(void *conf, ConfParam *cp, int argc, char **argv);
-
-/**
- * Parse string and set parameters
- * It can handle quotes(ignore single quotes)
- * @param conf config to set params
- * @param cp params
- * @param string whole string contains all params
- * @return 0 if success
- */
-int set_parameters_from_string(void *conf, ConfParam *cp, char *string);
-
-/**
- * Parse string and set parameters
- * It can handle single quotes(ignore quotes)
- * @param conf config to set params
- * @param cp params
- * @param substring whole string contains all params
- * @return 0 if success
- */
-int set_parameters_from_substring(void *conf, ConfParam *cp, char *substring);
+int  set_parameters_from_string(void *conf, ConfParam *cp, char *string);
+int  set_parameters_from_substring(void *conf, ConfParam *cp, char *substring);
 
 #endif

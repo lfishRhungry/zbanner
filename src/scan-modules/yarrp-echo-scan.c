@@ -47,7 +47,7 @@ static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpecho_conf.record_ttl = parseBoolean(value);
+    yarrpecho_conf.record_ttl = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -57,7 +57,7 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpecho_conf.record_ipid = parseBoolean(value);
+    yarrpecho_conf.record_ipid = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -65,13 +65,13 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
 static ConfParam yarrpecho_parameters[] = {
     {"record-ttl",
      SET_record_ttl,
-     Type_BOOL,
+     Type_FLAG,
      {"ttl", 0},
      "Records TTL for IPv4 or Hop Limit for IPv6 in ICMP Echo Reply or ICMP "
      "ttl/hop limit exceeded response."},
     {"record-ipid",
      SET_record_ipid,
-     Type_BOOL,
+     Type_FLAG,
      {"ipid", 0},
      "Records IPID just for IPv4 of ICMP Echo Reply or ICMP ttl/hop limit "
      "exceeded response."},

@@ -1,16 +1,15 @@
-/*
-    Born from Masscan
-    Modified by sharkocha 2024
-*/
-/*
-    Simple module for handling addresses (IPv6, IPv4, MAC).
-    Also implements a 128-bit type for dealing with addresses.
+/**
+ * Simple module for handling addresses (IPv6, IPv4, MAC).
+ * Also implements a 128-bit type for dealing with addresses.
 
-    This is the module that almost all the other code depends
-    upon, because everything else deals with the IP address
-    types defined here.
-
-*/
+ * This is the module that almost all the other code depends
+ * upon, because everything else deals with the IP address
+ * types defined here.
+ *
+ * Born and updated from Masscan
+ *
+ * Modified by sharkocha 2024
+ */
 #ifndef TARGET_ADDR_H
 #define TARGET_ADDR_H
 #include <stdint.h>

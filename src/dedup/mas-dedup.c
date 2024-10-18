@@ -1,7 +1,8 @@
-/*
-    Born from Masscan
-    Modified by sharkocha 2024
-*/
+/**
+ * Born and updated from Masscan
+ *
+ * Modified by sharkocha 2024
+ */
 #include "mas-dedup.h"
 #include "../target/target-cookie.h"
 #include "../util-data/fine-malloc.h"

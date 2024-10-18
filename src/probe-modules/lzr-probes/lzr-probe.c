@@ -131,7 +131,7 @@ static ConfRes SET_show_banner(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    lzr_conf.banner = parseBoolean(value);
+    lzr_conf.banner = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -141,7 +141,7 @@ static ConfRes SET_banner_if_fail(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    lzr_conf.banner_if_fail = parseBoolean(value);
+    lzr_conf.banner_if_fail = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -151,7 +151,7 @@ static ConfRes SET_force_all_match(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    lzr_conf.force_all_match = parseBoolean(value);
+    lzr_conf.force_all_match = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -161,7 +161,7 @@ static ConfRes SET_force_all_handshake(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    lzr_conf.force_all_handshakes = parseBoolean(value);
+    lzr_conf.force_all_handshakes = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -220,30 +220,30 @@ static ConfRes SET_handshake(void *conf, const char *name, const char *value) {
 static ConfParam lzr_parameters[] = {
     {"handshake",
      SET_handshake,
-     Type_NONE,
+     Type_ARG,
      {"subprobe", "handshakes", "subprobes", 0},
      "Specifies handshakes(subprobes) for probe sending. Handshake names are "
      "splitted by comma like `--handshake http,tls`."},
     {"force-all-match",
      SET_force_all_match,
-     Type_BOOL,
+     Type_FLAG,
      {"all-match", 0},
      "Complete all matching process even if identified. This might get multi- "
      "results."},
     {"force-all-handshakes",
      SET_force_all_handshake,
-     Type_BOOL,
+     Type_FLAG,
      {"force-all-handshake", "all-handshake", "all-handshakes", 0},
      "Complete all specified handshakes even if identified. This could make "
      "weird count of results."},
     {"banner",
      SET_show_banner,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Show normalized banner in results."},
     {"banner-if-fail",
      SET_banner_if_fail,
-     Type_BOOL,
+     Type_FLAG,
      {"banner-fail", "fail-banner", 0},
      "Show normalized banner in results if failed to identify."},
 

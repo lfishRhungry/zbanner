@@ -1,7 +1,7 @@
-/*
-    Born from Masscan
-    Modified by sharkocha 2024
-*/
+/**
+ * Born from Masscan
+ * Modified by sharkocha 2024
+ */
 #ifndef TARGET_COOKIE_H
 #define TARGET_COOKIE_H
 #include <stdint.h>

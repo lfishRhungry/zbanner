@@ -27,7 +27,7 @@ static ConfRes SET_compact(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    bson_conf.compact = parseBoolean(value);
+    bson_conf.compact = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -35,7 +35,7 @@ static ConfRes SET_compact(void *conf, const char *name, const char *value) {
 static ConfParam bson_parameters[] = {
     {"compact-mode",
      SET_compact,
-     Type_BOOL,
+     Type_FLAG,
      {"compact", 0},
      "Record time, IP proto, IP addr and level field as compacted number type "
      "instead of string. This will reduce the size of the result file.\n"

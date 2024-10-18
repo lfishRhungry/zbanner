@@ -28,7 +28,7 @@ static ConfRes SET_with_ack(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.with_ack = parseBoolean(value);
+    zbanner_conf.with_ack = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -37,7 +37,7 @@ static ConfRes SET_record_mss(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_mss = parseBoolean(value);
+    zbanner_conf.record_mss = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -46,7 +46,7 @@ static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_ttl = parseBoolean(value);
+    zbanner_conf.record_ttl = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -56,7 +56,7 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_ipid = parseBoolean(value);
+    zbanner_conf.record_ipid = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -65,7 +65,7 @@ static ConfRes SET_record_win(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_win = parseBoolean(value);
+    zbanner_conf.record_win = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -75,7 +75,7 @@ static ConfRes SET_banner_timeout(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.no_banner_timeout = parseBoolean(value);
+    zbanner_conf.no_banner_timeout = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -85,7 +85,7 @@ static ConfRes SET_port_timeout(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.is_port_timeout = parseBoolean(value);
+    zbanner_conf.is_port_timeout = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -95,7 +95,7 @@ static ConfRes SET_port_success(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.is_port_success = parseBoolean(value);
+    zbanner_conf.is_port_success = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -105,7 +105,7 @@ static ConfRes SET_port_failure(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.is_port_failure = parseBoolean(value);
+    zbanner_conf.is_port_failure = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -113,49 +113,49 @@ static ConfRes SET_port_failure(void *conf, const char *name,
 static ConfParam zbanner_parameters[] = {
     {"no-banner-timeout",
      SET_banner_timeout,
-     Type_BOOL,
+     Type_FLAG,
      {"no-banner-tm", "no-timeout-banner", "no-tm-banner", 0},
      "Do not use timeout for banner grabbing while in timeout mode."},
     {"port-timeout",
      SET_port_timeout,
-     Type_BOOL,
+     Type_FLAG,
      {"timeout-port", "port-tm", "tm-port", 0},
      "Use timeout for port scanning(openness detection) while in timeout "
      "mode."},
     {"port-success",
      SET_port_success,
-     Type_BOOL,
+     Type_FLAG,
      {"success-port", 0},
      "Let port opening(contains zero syn-ack) results as success level."
      "(Default is info level)"},
     {"port-failure",
      SET_port_failure,
-     Type_BOOL,
+     Type_FLAG,
      {"failure-port", "port-fail", "fail-port", 0},
      "Let port closed results as failure level.(Default is info level)"},
     {"record-ttl",
      SET_record_ttl,
-     Type_BOOL,
+     Type_FLAG,
      {"ttl", 0},
      "Records TTL for IPv4 or Hop Limit for IPv6 in SYN-ACK or RST."},
     {"record-ipid",
      SET_record_ipid,
-     Type_BOOL,
+     Type_FLAG,
      {"ipid", 0},
      "Records IPID of SYN-ACK or RST just for IPv4."},
     {"record-win",
      SET_record_win,
-     Type_BOOL,
+     Type_FLAG,
      {"win", "window", 0},
      "Records TCP window size of SYN-ACK or RST."},
     {"record-mss",
      SET_record_mss,
-     Type_BOOL,
+     Type_FLAG,
      {"mss", 0},
      "Records TCP MSS option value of SYN-ACK if the option exists."},
     {"with-ack",
      SET_with_ack,
-     Type_BOOL,
+     Type_FLAG,
      {"ack", 0},
      "Send an seperate ACK segment after receiving non-zerowin SYNACK segment "
      "from target port. This makes a complete standard TCP 3-way handshake "

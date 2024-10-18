@@ -37,7 +37,7 @@ static ConfRes SET_get_whole_response(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    hellostate_conf.get_whole_response = parseBoolean(value);
+    hellostate_conf.get_whole_response = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -49,7 +49,7 @@ static ConfRes SET_banner_if_fail(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    hellostate_conf.banner_if_fail = parseBoolean(value);
+    hellostate_conf.banner_if_fail = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -59,7 +59,7 @@ static ConfRes SET_show_banner(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    hellostate_conf.banner_while_regex = parseBoolean(value);
+    hellostate_conf.banner_while_regex = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -69,7 +69,7 @@ static ConfRes SET_match_whole_response(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    hellostate_conf.match_whole_response = parseBoolean(value);
+    hellostate_conf.match_whole_response = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -78,7 +78,7 @@ static ConfRes SET_newlines(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    hellostate_conf.re_include_newlines = parseBoolean(value);
+    hellostate_conf.re_include_newlines = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -88,7 +88,7 @@ static ConfRes SET_insensitive(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    hellostate_conf.re_case_insensitive = parseBoolean(value);
+    hellostate_conf.re_case_insensitive = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -237,27 +237,27 @@ static ConfRes SET_hello_file(void *conf, const char *name, const char *value) {
 static ConfParam hellostate_parameters[] = {
     {"string",
      SET_hello_string,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Specifies a string and set it as hello data after decoded."
      " This will overwrite hello data set by other parameters."},
     {"base64-string",
      SET_hello_base64,
-     Type_NONE,
+     Type_ARG,
      {"base64", 0},
      "Specifies a string in base64 format and set it as hello data after "
      "decoded."
      " This will overwrite hello data set by other parameters."},
     {"nmap-string",
      SET_hello_nmap,
-     Type_NONE,
+     Type_ARG,
      {"nmap", 0},
      "Specifies a string in nmap probe format and set it as hello data after "
      "decoded."
      " This will overwrite hello data set by other parameters."},
     {"file",
      SET_hello_file,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Specifies a file and set the content of file as hello data."
      " This will overwrite hello data set by other parameters."},
@@ -265,41 +265,41 @@ static ConfParam hellostate_parameters[] = {
 #ifndef NOT_FOUND_PCRE2
     {"regex",
      SET_regex,
-     Type_NONE,
+     Type_ARG,
      {0},
      "Specifies a regex and sets matched response data as successed instead of"
      " reporting all results."},
     {"case-insensitive",
      SET_insensitive,
-     Type_BOOL,
+     Type_FLAG,
      {"insensitive", 0},
      "Whether the specified regex is case-insensitive or not."},
     {"include-newlines",
      SET_newlines,
-     Type_BOOL,
+     Type_FLAG,
      {"include-newline", "newline", "newlines", 0},
      "Whether the specified regex contains newlines."},
     {"match-whole-response",
      SET_match_whole_response,
-     Type_BOOL,
+     Type_FLAG,
      {"match-whole", 0},
      "Continue to match the whole response after matched previous content.\n"
      "NOTE: it works while using --get-whole-response."},
     {"banner",
      SET_show_banner,
-     Type_BOOL,
+     Type_FLAG,
      {0},
      "Show normalized banner after regex matching."},
     {"banner-if-fail",
      SET_banner_if_fail,
-     Type_BOOL,
+     Type_FLAG,
      {"banner-fail", "fail-banner", 0},
      "Show normalized banner in results if regex matching failed."},
 #endif
 
     {"get-whole-response",
      SET_get_whole_response,
-     Type_BOOL,
+     Type_FLAG,
      {"whole", 0},
      "Get the whole response before connection timeout, not just the banner."},
 

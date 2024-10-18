@@ -116,7 +116,7 @@ static ConfRes SET_probe_index(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    jarm_conf.probe_index = parseInt(value);
+    jarm_conf.probe_index = parse_str_int(value);
 
     if (jarm_conf.probe_index < 1 || jarm_conf.probe_index > 10) {
         LOG(LEVEL_ERROR, "JarmProbe: probe index should be in 1..10\n");
@@ -129,7 +129,7 @@ static ConfRes SET_probe_index(void *conf, const char *name,
 static ConfParam jarm_parameters[] = {
     {"probe-index",
      SET_probe_index,
-     Type_NUM,
+     Type_ARG,
      {"index", 0},
      "Just send one specified jarm probe to target."},
 

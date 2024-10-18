@@ -68,7 +68,7 @@ static ConfRes SET_port_me(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpudp_conf.port_me           = parseInt(value);
+    yarrpudp_conf.port_me           = parse_str_int(value);
     yarrpudp_conf.fixed_port_me_set = 1;
 
     return Conf_OK;
@@ -79,7 +79,7 @@ static ConfRes SET_init_port_me(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpudp_conf.port_me_offset   = parseInt(value) + 1;
+    yarrpudp_conf.port_me_offset   = parse_str_int(value) + 1;
     yarrpudp_conf.init_port_me_set = 1;
 
     return Conf_OK;
@@ -90,7 +90,7 @@ static ConfRes SET_init_port_them(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpudp_conf.port_them_offset   = parseInt(value) - 1;
+    yarrpudp_conf.port_them_offset   = parse_str_int(value) - 1;
     yarrpudp_conf.init_port_them_set = 1;
 
     return Conf_OK;
@@ -100,7 +100,7 @@ static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpudp_conf.record_ttl = parseBoolean(value);
+    yarrpudp_conf.record_ttl = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -110,7 +110,7 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpudp_conf.record_ipid = parseBoolean(value);
+    yarrpudp_conf.record_ipid = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -118,7 +118,7 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
 static ConfParam yarrpudp_parameters[] = {
     {"init-target-port",
      SET_init_port_them,
-     Type_NUM,
+     Type_ARG,
      {"target-port", 0},
      "Set initial UDP target port for packets we send with TTL of 1. The actual"
      " UDP target port we send packets to would increase by the TTL which we "
@@ -128,7 +128,7 @@ static ConfParam yarrpudp_parameters[] = {
      "NOTE: Be careful to the backwind of sum of initial target port and TTL."},
     {"init-source-port",
      SET_init_port_me,
-     Type_NUM,
+     Type_ARG,
      {"init-src-port", 0},
      "Set initial UDP source port for packets we send with TTL of 1. The actual"
      " UDP source port we send packets to would decrease by the TTL which we "
@@ -138,20 +138,20 @@ static ConfParam yarrpudp_parameters[] = {
      "port and TTL."},
     {"fixed-source-port",
      SET_port_me,
-     Type_NUM,
+     Type_ARG,
      {"source-port", "src-port", 0},
      "Set fixed UDP source port for packets we send. Source port is for "
      "identifying if the packet is ours. Default UDP source port varias with "
      "TTL and its initial value is random from 40000 to 60000."},
     {"record-ttl",
      SET_record_ttl,
-     Type_BOOL,
+     Type_FLAG,
      {"ttl", 0},
      "Records TTL for IPv4 or Hop Limit for IPv6 in ICMP Port Unreachable or "
      "ttl/hop limit exceeded response."},
     {"record-ipid",
      SET_record_ipid,
-     Type_BOOL,
+     Type_FLAG,
      {"ipid", 0},
      "Records IPID just for IPv4 of ICMP Port Unreachable or ttl/hop limit "
      "exceeded response."},

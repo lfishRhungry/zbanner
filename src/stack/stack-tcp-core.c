@@ -58,8 +58,9 @@
  * state). Actually, it combines stateless and stateful mode, also I call it
  * hybrid-state lightweight TCP stack----HLTCP.
  *
- * Born from masscan's tcp stack.
- * Modified by sharkocha 2024.
+ * Born and updated from masscan's tcp stack.
+ *
+ * Modified and Created by sharkocha 2024.
  */
 #include "stack-tcp-core.h"
 

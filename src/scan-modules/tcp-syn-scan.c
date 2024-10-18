@@ -23,7 +23,7 @@ static ConfRes SET_record_mss(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.record_mss = parseBoolean(value);
+    tcpsyn_conf.record_mss = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -32,7 +32,7 @@ static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.record_ttl = parseBoolean(value);
+    tcpsyn_conf.record_ttl = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -42,7 +42,7 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.record_ipid = parseBoolean(value);
+    tcpsyn_conf.record_ipid = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -51,7 +51,7 @@ static ConfRes SET_record_win(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.record_win = parseBoolean(value);
+    tcpsyn_conf.record_win = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -60,7 +60,7 @@ static ConfRes SET_zero_fail(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.zero_fail = parseBoolean(value);
+    tcpsyn_conf.zero_fail = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -69,7 +69,7 @@ static ConfRes SET_send_rst(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.send_rst = parseBoolean(value);
+    tcpsyn_conf.send_rst = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -77,35 +77,35 @@ static ConfRes SET_send_rst(void *conf, const char *name, const char *value) {
 static ConfParam tcpsyn_parameters[] = {
     {"send-rst",
      SET_send_rst,
-     Type_BOOL,
+     Type_FLAG,
      {"rst", 0},
      "Actively send an RST if got a SYN-ACK. This is useful when we are in "
      "bypassing mode or working on Windows and don't want to waste connection"
      " resources of targets."},
     {"fail-zerowin",
      SET_zero_fail,
-     Type_BOOL,
+     Type_FLAG,
      {"fail-zero", "zero-fail", 0},
      "Let SYN-ACK responds with zero window setting as failed. Default is "
      "success."},
     {"record-ttl",
      SET_record_ttl,
-     Type_BOOL,
+     Type_FLAG,
      {"ttl", 0},
      "Records TTL for IPv4 or Hop Limit for IPv6 in SYN-ACK or RST."},
     {"record-ipid",
      SET_record_ipid,
-     Type_BOOL,
+     Type_FLAG,
      {"ipid", 0},
      "Records IPID of SYN-ACK or RST just for IPv4."},
     {"record-win",
      SET_record_win,
-     Type_BOOL,
+     Type_FLAG,
      {"win", "window", 0},
      "Records TCP window size of SYN-ACK or RST."},
     {"record-mss",
      SET_record_mss,
-     Type_BOOL,
+     Type_FLAG,
      {"mss", 0},
      "Records TCP MSS option value of SYN-ACK if the option exists."},
 
