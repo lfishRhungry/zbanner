@@ -1,6 +1,6 @@
 #ifndef STACK_SOURCE_H
 #define STACK_SOURCE_H
-#include "../target/target-addr.h"
+#include "../target/target-ipaddress.h"
 
 /**
  * These the source IP addresses that we'll be spoofing. IP addresses

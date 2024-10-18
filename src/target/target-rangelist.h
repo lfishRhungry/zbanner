@@ -2,8 +2,8 @@
  * Born and updated from Masscan
  * Modified and Created by sharkocha 2024
  */
-#ifndef RANGES_H
-#define RANGES_H
+#ifndef TARGET_RANGE_LIST_H
+#define TARGET_RANGE_LIST_H
 #include <stdint.h>
 #include <stdio.h>
 #include "../util-misc/cross.h"

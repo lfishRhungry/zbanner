@@ -22,7 +22,7 @@ static ConfRes SET_ptr(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    ipaddress ip = targetip_parse_ip(value);
+    ipaddress ip = target_parse_ip(value);
     if (ip.version == 0) {
         LOG(LEVEL_ERROR, "PTR request ip is invalid: %s.\n", value);
         return Conf_ERR;

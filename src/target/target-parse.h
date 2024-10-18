@@ -19,9 +19,9 @@
 */
 #ifndef TARGET_PARSE_H
 #define TARGET_PARSE_H
-#include "target-addr.h"
+#include "target-ipaddress.h"
 
-typedef struct Target_IPs_Ports TargetIP;
+typedef struct TargetRangeSet TargetSet;
 struct Range;
 struct Range6;
 
@@ -40,7 +40,7 @@ struct Range6;
  * @return
         0 on success, any other number on failure.
  */
-int targetip_parse_file(TargetIP *targetip, const char *filename);
+int targetset_parse_file(TargetSet *targetset, const char *filename);
 
 enum RangeParseResult {
     Bad_Address,
@@ -52,25 +52,24 @@ enum RangeParseResult {
  * Parse the next IPv4/IPv6 range from a string. This is called
  * when parsing strings from the command-line.
  */
-enum RangeParseResult targetip_parse_range(const char *line,
-                                           size_t *inout_offset, size_t max,
-                                           struct Range  *ipv4,
-                                           struct Range6 *ipv6);
+enum RangeParseResult target_parse_range(const char *line, size_t *inout_offset,
+                                         size_t max, struct Range *ipv4,
+                                         struct Range6 *ipv6);
 
 /**
  * Parse a single IPv6 address. This is called when working with
  * the operating system stack, when querying addresses from
  * the local network adapters.
  */
-ipv6address_t targetip_parse_ipv6(const char *buf);
+ipv6address_t target_parse_ipv6(const char *buf);
 
-ipv4address_t targetip_parse_ipv4(const char *buf);
+ipv4address_t target_parse_ipv4(const char *buf);
 
 /**
  * got version 0 if failed
  */
-ipaddress targetip_parse_ip(const char *line);
+ipaddress target_parse_ip(const char *line);
 
-int targetip_parse_selftest();
+int target_parse_selftest();
 
 #endif

@@ -3,9 +3,9 @@
 #include "../version.h"
 #include "../util-data/fine-malloc.h"
 #include "../target/target-cookie.h"
-#include "../target/target-ip.h"
-#include "../target/target-rangesv4.h"
-#include "../target/target-rangesv6.h"
+#include "../target/target-set.h"
+#include "../target/target-rangelist.h"
+#include "../target/target-range6list.h"
 #include "../crypto/crypto-blackrock.h"
 
 Generator IpStreamGen;
@@ -13,7 +13,7 @@ Generator IpStreamGen;
 struct IpStreamConf {
     FILE     *f;
     uint64_t  seed;
-    TargetIP  targets;
+    TargetSet targets;
     uint64_t  index;
     uint64_t  range_all;
     BlackRock br_table;
@@ -43,7 +43,7 @@ static ConfRes SET_port(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    int err = targetip_add_port_string(&ipstream_conf.targets, value, 0);
+    int err = targetset_add_port_string(&ipstream_conf.targets, value, 0);
     if (err) {
         LOG(LEVEL_ERROR, "(stream generator) invalid port: %s.\n", value);
         return Conf_ERR;
@@ -109,7 +109,7 @@ bool ipstream_init(const XConf *xconf, uint64_t *count_targets,
     if (ipstream_conf.targets.count_ports == 0) {
         LOG(LEVEL_HINT,
             "(stream generator) use o:0 as default port for no specified.\n");
-        targetip_add_port_string(&ipstream_conf.targets, "o:0", 0);
+        targetset_add_port_string(&ipstream_conf.targets, "o:0", 0);
         rangelist_optimize(&ipstream_conf.targets.ports);
         ipstream_conf.targets.count_ports =
             rangelist_count(&ipstream_conf.targets.ports);
@@ -138,8 +138,8 @@ bool ipstream_hasmore(unsigned tx_index, uint64_t index) {
         return true;
 
     /*remove old ips */
-    TargetIP *cur_tgt = &ipstream_conf.targets;
-    targetip_remove_ip(cur_tgt);
+    TargetSet *cur_tgt = &ipstream_conf.targets;
+    targetset_remove_ip(cur_tgt);
 
     /*add new ips*/
     char line[256];
@@ -159,7 +159,7 @@ bool ipstream_hasmore(unsigned tx_index, uint64_t index) {
             continue;
         }
 
-        int err = targetip_add_target_string(cur_tgt, line);
+        int err = targetset_add_ip_string(cur_tgt, line);
         if (err) {
             LOG(LEVEL_ERROR, "(stream generator) invalid ip in address: %s",
                 line);
@@ -189,10 +189,10 @@ bool ipstream_hasmore(unsigned tx_index, uint64_t index) {
 
 Target ipstream_generate(unsigned tx_index, uint64_t index, uint64_t repeat,
                          struct source_t *src) {
-    Target    target;
-    TargetIP *cur_tgt = &ipstream_conf.targets;
-    uint64_t  xXx     = ipstream_conf.index;
-    uint64_t  ck;
+    Target     target;
+    TargetSet *cur_tgt = &ipstream_conf.targets;
+    uint64_t   xXx     = ipstream_conf.index;
+    uint64_t   ck;
 
     /*Actually it is impossible*/
     while (xXx >= ipstream_conf.range_all) {

@@ -3,9 +3,9 @@
 #include "../version.h"
 #include "../util-data/fine-malloc.h"
 #include "../target/target-cookie.h"
-#include "../target/target-ip.h"
-#include "../target/target-rangesv4.h"
-#include "../target/target-rangesv6.h"
+#include "../target/target-set.h"
+#include "../target/target-rangelist.h"
+#include "../target/target-range6list.h"
 #include "../crypto/crypto-blackrock.h"
 
 Generator AddrStreamGen;
@@ -13,7 +13,7 @@ Generator AddrStreamGen;
 struct AddrStreamConf {
     FILE     *f;
     uint64_t  seed;
-    TargetIP  targets;
+    TargetSet targets;
     uint64_t  index;
     uint64_t  range_all;
     BlackRock br_table;
@@ -130,8 +130,8 @@ bool addrstream_hasmore(unsigned tx_index, uint64_t index) {
         return true;
 
     /*remove old ips */
-    TargetIP *cur_tgt = &addrstream_conf.targets;
-    targetip_remove_all(cur_tgt);
+    TargetSet *cur_tgt = &addrstream_conf.targets;
+    targetset_remove_all(cur_tgt);
 
     /*add new ips*/
     char line[256];
@@ -162,7 +162,7 @@ bool addrstream_hasmore(unsigned tx_index, uint64_t index) {
         sub[0]         = '\0';
         char *port_str = sub + addrstream_conf.splitter_len;
 
-        int err = targetip_add_target_string(cur_tgt, s);
+        int err = targetset_add_ip_string(cur_tgt, s);
         if (err) {
             sub[0] = addrstream_conf.splitter[0];
             LOG(LEVEL_ERROR, "(stream generator) invalid ip in address: %s",
@@ -170,25 +170,25 @@ bool addrstream_hasmore(unsigned tx_index, uint64_t index) {
             continue;
         }
 
-        err = targetip_add_port_string(cur_tgt, port_str, 0);
+        err = targetset_add_port_string(cur_tgt, port_str, 0);
         if (err) {
             sub[0] = addrstream_conf.splitter[0];
             LOG(LEVEL_ERROR, "(stream generator) invalid port* in address: %s",
                 line);
-            targetip_remove_ip(cur_tgt);
+            targetset_remove_ip(cur_tgt);
             continue;
         }
 
         /**
          * port range may not be added, so check it earlier.
          */
-        targetip_optimize(cur_tgt);
+        targetset_optimize(cur_tgt);
 
         if (cur_tgt->count_ports == 0) {
             sub[0] = addrstream_conf.splitter[0];
             LOG(LEVEL_ERROR, "(stream generator) invalid port** in address: %s",
                 line);
-            targetip_remove_ip(cur_tgt);
+            targetset_remove_ip(cur_tgt);
             continue;
         }
         break;
@@ -210,10 +210,10 @@ bool addrstream_hasmore(unsigned tx_index, uint64_t index) {
 
 Target addrstream_generate(unsigned tx_index, uint64_t index, uint64_t repeat,
                            struct source_t *src) {
-    Target    target;
-    TargetIP *cur_tgt = &addrstream_conf.targets;
-    uint64_t  xXx     = addrstream_conf.index;
-    uint64_t  ck;
+    Target     target;
+    TargetSet *cur_tgt = &addrstream_conf.targets;
+    uint64_t   xXx     = addrstream_conf.index;
+    uint64_t   ck;
 
     /*Actually it is impossible*/
     while (xXx >= addrstream_conf.range_all) {

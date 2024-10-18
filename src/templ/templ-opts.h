@@ -1,6 +1,6 @@
 #ifndef TEMPL_OPTS_H
 #define TEMPL_OPTS_H
-#include "../target/target-addr.h"
+#include "../target/target-ipaddress.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4214)

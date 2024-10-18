@@ -2,8 +2,8 @@
  * Born and updated from Masscan
  * Modified and Created by sharkocha 2024
  */
-#ifndef TARGET_RANGESPORT_H
-#define TARGET_RANGESPORT_H
+#ifndef TARGET_RANGE_PORT_H
+#define TARGET_RANGE_PORT_H
 
 struct RangeList;
 

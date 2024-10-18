@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #include "../target/target.h"
-#include "../target/target-addr.h"
+#include "../target/target-ipaddress.h"
 #include "../output-modules/output-modules.h"
 #include "../util-misc/configer.h"
 #include "../util-misc/cross.h"

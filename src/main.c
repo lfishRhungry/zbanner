@@ -196,7 +196,7 @@ static int _main_scan(XConf *xconf) {
     /**
      * Optimize target again because generator may add new targets.
      */
-    targetip_optimize(&xconf->targets);
+    targetset_optimize(&xconf->targets);
 
     if (initialize_adapter(xconf, init_ipv4, init_ipv6) != 0)
         exit(1);
@@ -673,22 +673,22 @@ int main(int argc, char *argv[]) {
 
     rawsock_init();
 
-    targetip_apply_excludes(&xconf->targets, &xconf->exclude);
+    targetset_apply_excludes(&xconf->targets, &xconf->exclude);
 
     /* Optimize target selection so it's a quick binary search instead
      * of walking large memory tables. When we scan the entire Internet
      * our --excludefile will chop up our pristine 0.0.0.0/0 range into
      * hundreds of subranges. This allows us to grab addresses faster. */
-    targetip_optimize(&xconf->targets);
+    targetset_optimize(&xconf->targets);
 
     /**
      * FIXME: we only support 63-bit scans at the current time.
      */
-    if (int128_bitcount(targetip_range(&xconf->targets)) > 63) {
+    if (int128_bitcount(targetset_count(&xconf->targets)) > 63) {
         LOG(LEVEL_ERROR,
             "scan range too large, max is 63-bits, requested is %u "
             "bits\n",
-            int128_bitcount(targetip_range(&xconf->targets)));
+            int128_bitcount(targetset_count(&xconf->targets)));
         LOG(LEVEL_HINT, "scan range is number of IP addresses times "
                         "number of ports\n");
         LOG(LEVEL_HINT, "IPv6 subnet must be at least /66 \n");

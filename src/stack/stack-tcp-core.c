@@ -76,7 +76,7 @@
 
 #include "stack-queue.h"
 #include "stack-src.h"
-#include "../target/target-ip.h"
+#include "../target/target-set.h"
 #include "../target/target-cookie.h"
 #include "../timeout/event-timeout.h"
 #include "../rawsock/rawsock.h"

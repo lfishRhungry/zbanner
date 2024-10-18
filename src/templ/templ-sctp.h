@@ -5,7 +5,7 @@
 
 #include "templ-pkt.h"
 #include "../util-misc/cross.h"
-#include "../target/target-addr.h"
+#include "../target/target-ipaddress.h"
 
 #define SCTP_CHUNK_TYPE_DATA              0
 #define SCTP_CHUNK_TYPE_INIT              1

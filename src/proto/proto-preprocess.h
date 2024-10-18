@@ -2,7 +2,7 @@
 /* Modified: sharkocha 2024*/
 #ifndef PREPROCESS_H
 #define PREPROCESS_H
-#include "../target/target-addr.h"
+#include "../target/target-ipaddress.h"
 #include "../util-misc/cross.h"
 
 /**

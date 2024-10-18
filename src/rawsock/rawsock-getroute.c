@@ -524,7 +524,7 @@ again:
             const IP_ADDR_STRING *addr;
 
             for (addr = &pAdapter->GatewayList; addr; addr = addr->Next) {
-                unsigned x = targetip_parse_ipv4(addr->IpAddress.String);
+                unsigned x = target_parse_ipv4(addr->IpAddress.String);
                 if (x != 0xFFFFFFFF) {
                     *ipv4 = x;
                     goto end;

@@ -13,17 +13,17 @@ void listip(XConf *xconf) {
 
     /* If called with no ports, then create a pseudo-port needed
      * for the internal algorithm. */
-    if (!targetip_has_target_ports(&xconf->targets)) {
-        targetip_add_port_string(&xconf->targets, "o:0", 0);
+    if (!targetset_has_any_ports(&xconf->targets)) {
+        targetset_add_port_string(&xconf->targets, "o:0", 0);
         // LOG(LEVEL_WARN, "no ports were specified or remained, a fake port o:0
         // was" " specified automaticlly.\n");
     }
-    targetip_optimize(&xconf->targets);
+    targetset_optimize(&xconf->targets);
 
     /**
      * The "range" is the total number of IP/port combinations that
      * the scan can produce */
-    range = targetip_range(&xconf->targets).lo;
+    range = targetset_count(&xconf->targets).lo;
 
 infinite:
     blackrock1_init(&blackrock, range, dynamic_seed, 14);
@@ -39,7 +39,7 @@ infinite:
 
         xXx = blackrock1_shuffle(&blackrock, i);
 
-        targetip_pick(&xconf->targets, xXx, &addr, &port);
+        targetset_pick(&xconf->targets, xXx, &addr, &port);
 
         ip_proto = get_actual_proto_port(&port);
 

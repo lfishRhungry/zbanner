@@ -8,15 +8,15 @@
 Generator BlackRockGen;
 
 struct BlackRockConf {
-    const TargetIP *targets;
-    BlackRock       br_table; /*for multi tx threads*/
-    uint64_t        count_ipv4;
-    uint64_t        count_ipv6;
-    uint64_t        range_all;
-    uint64_t        range_ipv6;
-    uint64_t        seed;
-    unsigned        rounds;
-    unsigned        no_random : 1;
+    const TargetSet *targets;
+    BlackRock        br_table; /*for multi tx threads*/
+    uint64_t         count_ipv4;
+    uint64_t         count_ipv6;
+    uint64_t         range_all;
+    uint64_t         range_ipv6;
+    uint64_t         seed;
+    unsigned         rounds;
+    unsigned         no_random : 1;
 };
 
 static struct BlackRockConf blackrock_conf = {0};
@@ -73,7 +73,7 @@ bool blackrock_init(const XConf *xconf, uint64_t *count_targets,
     }
     uint64_t count_ports = rangelist_count(&xconf->targets.ports);
     if (count_ports == 0) {
-        targetip_add_port_string((TargetIP *)(&xconf->targets), "o:0", 0);
+        targetset_add_port_string((TargetSet *)(&xconf->targets), "o:0", 0);
         LOG(LEVEL_WARN, "(BlackRock) no ports were specified or remained, a "
                         "fake port o:0 was"
                         " specified automaticlly.\n");
@@ -100,8 +100,8 @@ bool blackrock_init(const XConf *xconf, uint64_t *count_targets,
      */
     *count_targets   = count_ips;
     *count_endpoints = count_ports;
-    *init_ipv4       = targetip_has_ipv4_targets(&xconf->targets);
-    *init_ipv6       = targetip_has_ipv6_targets(&xconf->targets);
+    *init_ipv4       = targetset_has_any_ipv4(&xconf->targets);
+    *init_ipv6       = targetset_has_any_ipv6(&xconf->targets);
 
     blackrock_conf.count_ipv4 = rangelist_count(&xconf->targets.ipv4);
     blackrock_conf.count_ipv6 = range6list_count(&xconf->targets.ipv6).lo;

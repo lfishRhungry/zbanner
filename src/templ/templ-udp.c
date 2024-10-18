@@ -38,7 +38,7 @@
 #include "../util-misc/checksum.h"
 #include "../util-data/data-convert.h"
 #include "../proto/proto-preprocess.h"
-#include "../target/target-ip.h"
+#include "../target/target-set.h"
 
 static size_t udp_create_by_template_ipv4(
     const TmplPkt *tmpl, ipv4address ip_them, unsigned port_them,

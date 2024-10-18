@@ -1,6 +1,6 @@
 #ifndef LOGGER_H
 #define LOGGER_H
-#include "../target/target-addr.h"
+#include "../target/target-ipaddress.h"
 
 /**
  * Output warning level at least in default

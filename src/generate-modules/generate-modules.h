@@ -22,8 +22,8 @@
 #include "../util-misc/configer.h"
 #include "../util-misc/cross.h"
 #include "../target/target.h"
-#include "../target/target-ip.h"
-#include "../target/target-addr.h"
+#include "../target/target-set.h"
+#include "../target/target-ipaddress.h"
 
 typedef struct XtateConf XConf;
 

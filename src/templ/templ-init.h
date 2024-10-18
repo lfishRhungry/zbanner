@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include "../target/target-addr.h"
+#include "../target/target-ipaddress.h"
 #include "templ-pkt.h"
 
 typedef struct TemplateOptions TmplOpt;

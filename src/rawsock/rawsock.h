@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-#include "../target/target-addr.h"
+#include "../target/target-ipaddress.h"
 #include "../stack/stack-queue.h"
 
 typedef struct Adapter       Adapter;

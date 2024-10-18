@@ -10,8 +10,8 @@
  *
  * Modified by sharkocha 2024
  */
-#ifndef TARGET_ADDR_H
-#define TARGET_ADDR_H
+#ifndef TARGET_IPADDRESS_H
+#define TARGET_IPADDRESS_H
 #include <stdint.h>
 #include <stddef.h>
 #include "../util-misc/cross.h"

@@ -1,7 +1,7 @@
 #ifndef PACKET_QUEUE_H
 #define PACKET_QUEUE_H
 #include "../util-data/rte-ring.h"
-#include "../target/target-addr.h"
+#include "../target/target-ipaddress.h"
 #include <limits.h>
 
 /**It limits the max size of packet we could send

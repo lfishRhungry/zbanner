@@ -9,7 +9,7 @@
 */
 #ifndef DEDUP_H
 #define DEDUP_H
-#include "../target/target-addr.h"
+#include "../target/target-ipaddress.h"
 #include "../util-misc/cross.h"
 
 #ifndef NOT_FOUND_JUDY

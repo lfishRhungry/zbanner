@@ -121,7 +121,7 @@ int initialize_adapter(XConf *xconf, bool has_ipv4_targets,
             LOG(LEVEL_ERROR,
                 "    if it has no IP address, manually set with something like "
                 "\"--source-ip 198.51.100.17\"\n");
-            if (targetip_has_ipv4_targets(&xconf->targets)) {
+            if (targetset_has_any_ipv4(&xconf->targets)) {
                 rawsock_close_cache(tmp_acache);
                 return -1;
             }

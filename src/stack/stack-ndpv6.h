@@ -14,7 +14,7 @@
 #include <stddef.h>
 #include <time.h>
 #include "stack-queue.h"
-#include "../target/target-addr.h"
+#include "../target/target-ipaddress.h"
 
 typedef struct PreprocessedInfo PreInfo;
 

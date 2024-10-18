@@ -124,7 +124,7 @@ again:
         for (addr = &pAdapter->IpAddressList; addr; addr = addr->Next) {
             unsigned x;
 
-            x = targetip_parse_ipv4(addr->IpAddress.String);
+            x = target_parse_ipv4(addr->IpAddress.String);
             if (x != 0xFFFFFFFF) {
                 result = x;
                 goto end;

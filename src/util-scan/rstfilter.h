@@ -18,7 +18,7 @@
 #ifndef RSTFILTER_H
 #define RSTFILTER_H
 #include <stdio.h>
-#include "../target/target-addr.h"
+#include "../target/target-ipaddress.h"
 
 struct ResetFilter;
 

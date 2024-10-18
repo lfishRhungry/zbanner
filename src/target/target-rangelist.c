@@ -26,8 +26,8 @@
  it takes almost 3 seconds to process everything before starting.
 
 */
-#include "target-rangesv4.h"
-#include "target-rangesport.h"
+#include "target-rangelist.h"
+#include "target-rangeport.h"
 #include "../util-out/logger.h"
 #include "../util-misc/cross.h"
 #include "../util-data/fine-malloc.h"

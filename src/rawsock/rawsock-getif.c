@@ -453,7 +453,7 @@ again:
             for (addr = &pAdapter->GatewayList; addr; addr = addr->Next) {
                 unsigned x;
 
-                x = targetip_parse_ipv4(addr->IpAddress.String);
+                x = target_parse_ipv4(addr->IpAddress.String);
                 if (x != 0xFFFFFFFF) {
                     ipv4 = x;
                     break;

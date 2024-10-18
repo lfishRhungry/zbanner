@@ -18,7 +18,7 @@
 #include <ctype.h>
 #include <stdio.h>
 
-#include "../target/target-addr.h"
+#include "../target/target-ipaddress.h"
 #include "../util-misc/cross.h"
 #include "../pixie/pixie-sockets.h"
 

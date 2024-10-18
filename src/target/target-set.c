@@ -1,8 +1,8 @@
-#include "target-ip.h"
+#include "target-set.h"
 #include "target-parse.h"
-#include "target-rangesv4.h"
-#include "target-rangesv6.h"
-#include "target-rangesport.h"
+#include "target-rangelist.h"
+#include "target-range6list.h"
+#include "target-rangeport.h"
 #include <string.h>
 #include <ctype.h>
 
@@ -64,13 +64,13 @@ const char *ip_proto_to_string(unsigned ip_proto) {
     }
 }
 
-void targetip_apply_excludes(TargetIP *targets, TargetIP *exclude) {
+void targetset_apply_excludes(TargetSet *targets, TargetSet *exclude) {
     rangelist_exclude(&targets->ipv4, &exclude->ipv4);
     range6list_exclude(&targets->ipv6, &exclude->ipv6);
     rangelist_exclude(&targets->ports, &exclude->ports);
 }
 
-void targetip_optimize(TargetIP *targets) {
+void targetset_optimize(TargetSet *targets) {
     rangelist_optimize(&targets->ipv4);
     range6list_optimize(&targets->ipv6);
     rangelist_optimize(&targets->ports);
@@ -81,47 +81,51 @@ void targetip_optimize(TargetIP *targets) {
     targets->ipv4_threshold = targets->count_ipv4s * targets->count_ports;
 }
 
-void targetip_pick(const TargetIP *targetip, uint64_t index, ipaddress *addr,
-                   unsigned *port) {
+void targetset_pick(const TargetSet *targetset, uint64_t index, ipaddress *addr,
+                    unsigned *port) {
     /*
      * We can return either IPv4 or IPv6 addresses
      */
-    if (index < targetip->ipv4_threshold) {
+    if (index < targetset->ipv4_threshold) {
         addr->version = 4;
         addr->ipv4 =
-            rangelist_pick(&targetip->ipv4, index % targetip->count_ipv4s);
-        *port = rangelist_pick(&targetip->ports, index / targetip->count_ipv4s);
+            rangelist_pick(&targetset->ipv4, index % targetset->count_ipv4s);
+        *port =
+            rangelist_pick(&targetset->ports, index / targetset->count_ipv4s);
     } else {
-        index -= targetip->ipv4_threshold;
+        index -= targetset->ipv4_threshold;
         addr->version = 6;
         addr->ipv6 =
-            range6list_pick(&targetip->ipv6, index % targetip->count_ipv6s);
-        *port = rangelist_pick(&targetip->ports, index / targetip->count_ipv6s);
+            range6list_pick(&targetset->ipv6, index % targetset->count_ipv6s);
+        *port =
+            rangelist_pick(&targetset->ports, index / targetset->count_ipv6s);
     }
 }
 
-bool targetip_has_ip(const TargetIP *targetip, ipaddress ip) {
+bool targetset_has_ip(const TargetSet *targetset, ipaddress ip) {
     if (ip.version == 6)
-        return range6list_is_contains(&targetip->ipv6, ip.ipv6);
+        return range6list_is_contains(&targetset->ipv6, ip.ipv6);
     else
-        return rangelist_is_contains(&targetip->ipv4, ip.ipv4);
+        return rangelist_is_contains(&targetset->ipv4, ip.ipv4);
 }
 
-bool targetip_has_port(const TargetIP *targetip, unsigned port) {
-    return rangelist_is_contains(&targetip->ports, port);
+bool targetset_has_port(const TargetSet *targetset, unsigned port) {
+    return rangelist_is_contains(&targetset->ports, port);
 }
 
-bool targetip_has_ipv4_targets(const TargetIP *targetip) {
-    return targetip->ipv4.list_len != 0;
-}
-bool targetip_has_target_ports(const TargetIP *targetip) {
-    return targetip->ports.list_len != 0;
-}
-bool targetip_has_ipv6_targets(const TargetIP *targetip) {
-    return targetip->ipv6.list_len != 0;
+bool targetset_has_any_ipv4(const TargetSet *targetset) {
+    return targetset->ipv4.list_len != 0;
 }
 
-int targetip_add_target_string(TargetIP *targetip, const char *string) {
+bool targetset_has_any_ipv6(const TargetSet *targetset) {
+    return targetset->ipv6.list_len != 0;
+}
+
+bool targetset_has_any_ports(const TargetSet *targetset) {
+    return targetset->ports.list_len != 0;
+}
+
+int targetset_add_ip_string(TargetSet *targetset, const char *string) {
     const char *ranges     = string;
     size_t      offset     = 0;
     size_t      max_offset = strlen(ranges);
@@ -132,14 +136,14 @@ int targetip_add_target_string(TargetIP *targetip, const char *string) {
         int           err;
 
         /* Grab the next IPv4 or IPv6 range */
-        err =
-            targetip_parse_range(ranges, &offset, max_offset, &range, &range6);
+        err = target_parse_range(ranges, &offset, max_offset, &range, &range6);
         switch (err) {
             case Ipv4_Address:
-                rangelist_add_range(&targetip->ipv4, range.begin, range.end);
+                rangelist_add_range(&targetset->ipv4, range.begin, range.end);
                 break;
             case Ipv6_Address:
-                range6list_add_range(&targetip->ipv6, range6.begin, range6.end);
+                range6list_add_range(&targetset->ipv6, range6.begin,
+                                     range6.end);
                 break;
             default:
                 offset = max_offset; /* An error means skipping the rest of the
@@ -153,8 +157,8 @@ int targetip_add_target_string(TargetIP *targetip, const char *string) {
     return 0;
 }
 
-int targetip_add_port_string(TargetIP *targets, const char *string,
-                             unsigned proto_offset) {
+int targetset_add_port_string(TargetSet *targets, const char *string,
+                              unsigned proto_offset) {
     unsigned is_error = 0;
     rangelist_parse_ports(&targets->ports, string, &is_error, proto_offset);
     if (is_error)
@@ -163,7 +167,7 @@ int targetip_add_port_string(TargetIP *targets, const char *string,
         return 0;
 }
 
-void targetip_remove_all(TargetIP *targets) {
+void targetset_remove_all(TargetSet *targets) {
     rangelist_remove_all(&targets->ipv4);
     rangelist_remove_all(&targets->ports);
     range6list_remove_all(&targets->ipv6);
@@ -173,7 +177,7 @@ void targetip_remove_all(TargetIP *targets) {
     targets->ipv4_threshold = 0;
 }
 
-void targetip_remove_ip(TargetIP *targets) {
+void targetset_remove_ip(TargetSet *targets) {
     rangelist_remove_all(&targets->ipv4);
     range6list_remove_all(&targets->ipv6);
     targets->count_ipv4s    = 0;
@@ -181,47 +185,47 @@ void targetip_remove_ip(TargetIP *targets) {
     targets->ipv4_threshold = 0;
 }
 
-void targetip_remove_port(TargetIP *targets) {
+void targetset_remove_port(TargetSet *targets) {
     rangelist_remove_all(&targets->ports);
     targets->ipv4_threshold = 0;
     targets->count_ports    = 0;
 }
 
-int targetip_selftest() {
-    TargetIP targets  = {.ipv4 = {0}, .ipv6 = {0}, .ports = {0}};
-    TargetIP excludes = {.ipv4 = {0}, .ipv6 = {0}, .ports = {0}};
-    int128_t count;
-    int      line;
-    int      err;
+int targetset_selftest() {
+    TargetSet targets  = {.ipv4 = {0}, .ipv6 = {0}, .ports = {0}};
+    TargetSet excludes = {.ipv4 = {0}, .ipv6 = {0}, .ports = {0}};
+    int128_t  count;
+    int       line;
+    int       err;
 
     rangelist_parse_ports(&targets.ports, "80", 0, 0);
 
     /* First, create a list of targets */
     line = __LINE__;
-    err  = targetip_add_target_string(&targets,
-                                      "2607:f8b0:4002:801::2004/124,1111::1");
+    err  = targetset_add_ip_string(&targets,
+                                   "2607:f8b0:4002:801::2004/124,1111::1");
     if (err)
         goto fail;
 
     /* Second, create an exclude list */
     line = __LINE__;
-    err  = targetip_add_target_string(&excludes,
-                                      "2607:f8b0:4002:801::2004/126,1111::/16");
+    err  = targetset_add_ip_string(&excludes,
+                                   "2607:f8b0:4002:801::2004/126,1111::/16");
     if (err)
         goto fail;
 
     /* Third, apply the excludes, causing ranges to be removed
      * from the target list */
-    targetip_apply_excludes(&targets, &excludes);
+    targetset_apply_excludes(&targets, &excludes);
 
     /* Now make sure the count equals the expected count */
     line  = __LINE__;
-    count = targetip_range(&targets);
+    count = targetset_count(&targets);
     if (count.hi != 0 || count.lo != 12)
         goto fail;
 
     return 0;
 fail:
-    LOG(LEVEL_ERROR, "targetip: test fail, line=%d\n", line);
+    LOG(LEVEL_ERROR, "targetset: test fail, line=%d\n", line);
     return 1;
 }

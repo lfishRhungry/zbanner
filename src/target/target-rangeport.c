@@ -1,6 +1,6 @@
-#include "target-ip.h"
-#include "target-rangesport.h"
-#include "target-rangesv4.h"
+#include "target-set.h"
+#include "target-rangeport.h"
+#include "target-rangelist.h"
 
 #include "../util-out/logger.h"
 
@@ -142,7 +142,7 @@ uint8_t get_actual_proto_port(unsigned *raw_port) {
 }
 
 int rangesport_selftest() {
-    TargetIP targets = {.ipv4 = {0}, .ipv6 = {0}, .ports = {0}};
+    TargetSet targets = {.ipv4 = {0}, .ipv6 = {0}, .ports = {0}};
 
     unsigned err;
     int      line;

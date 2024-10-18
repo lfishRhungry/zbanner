@@ -5,7 +5,7 @@
 
 #include "templ-pkt.h"
 #include "../util-misc/cross.h"
-#include "../target/target-addr.h"
+#include "../target/target-ipaddress.h"
 
 /**
  * @param ttl use default value in packet template if set to zero.

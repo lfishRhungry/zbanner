@@ -3,10 +3,10 @@
  * Born and updated from Masscan
  * Modified and Created by sharkocha 2024
  */
-#ifndef RANGES6_H
-#define RANGES6_H
+#ifndef TARGET_RANGE6_LIST_H
+#define TARGET_RANGE6_LIST_H
 
-#include "target-addr.h"
+#include "target-ipaddress.h"
 #include <stdio.h>
 #include <stdint.h>
 

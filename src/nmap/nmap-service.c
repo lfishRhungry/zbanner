@@ -3,8 +3,8 @@
 #include "nmap-service.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
-#include "../target/target-rangesport.h"
-#include "../target/target-ip.h"
+#include "../target/target-rangeport.h"
+#include "../target/target-set.h"
 #include "../util-misc/cross.h"
 #include "../util-out/logger.h"
 

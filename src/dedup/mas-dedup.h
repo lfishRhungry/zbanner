@@ -5,7 +5,7 @@
  */
 #ifndef MAS_DEDUP_H
 #define MAS_DEDUP_H
-#include "../target/target-addr.h"
+#include "../target/target-ipaddress.h"
 #include "../util-misc/cross.h"
 
 typedef struct DeduplicateTable DedupTable;

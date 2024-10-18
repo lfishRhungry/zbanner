@@ -9,9 +9,8 @@
 #include "util-data/safe-string.h"
 #include "util-misc/cross.h"
 #include "timeout/fast-timeout.h"
-#include "target/target-addr.h"
-#include "target/target-ip.h"
-#include "target/target-ip.h"
+#include "target/target-ipaddress.h"
+#include "target/target-set.h"
 #include "stack/stack-src.h"
 #include "stack/stack-queue.h"
 #include "generate-modules/generate-modules.h"
@@ -127,8 +126,8 @@ typedef struct XtateConf {
      * save scanning targets(ip*port).
      * but generator may not use this.
      * */
-    TargetIP       targets;
-    TargetIP       exclude;
+    TargetSet      targets;
+    TargetSet      exclude;
     /**
      * Temporary file to echo parameters to, used for saving configuration
      * to a file

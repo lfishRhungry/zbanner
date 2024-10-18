@@ -1,10 +1,10 @@
 #ifndef TARGET_H
 #define TARGET_H
 
-#include "target-addr.h"
+#include "target-ipaddress.h"
 
 /**
- * Abstract common attributes for a single scanning target
+ * Abstract common attributes for a unique scanning target
  */
 typedef struct Target {
     /*IP proto number to mention whether it is TCP, UDP, etc.*/

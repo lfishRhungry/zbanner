@@ -26,11 +26,10 @@
 #include "util-misc/checksum.h"
 #include "util-misc/configer.h"
 
-#include "target/target-ip.h"
-#include "target/target-addr.h"
-#include "target/target-addr.h"
+#include "target/target-set.h"
+#include "target/target-ipaddress.h"
 #include "target/target-parse.h"
-#include "target/target-rangesport.h"
+#include "target/target-rangeport.h"
 
 #include "proto/proto-http-maker.h"
 
@@ -1163,7 +1162,7 @@ static ConfRes SET_source_ip(void *conf, const char *name, const char *value) {
     int           err;
 
     /* Grab the next IPv4 or IPv6 range */
-    err = targetip_parse_range(value, 0, 0, &range, &range6);
+    err = target_parse_range(value, 0, 0, &range, &range6);
     switch (err) {
         case Ipv4_Address:
             /* If more than one IP address given, make the range is
@@ -1357,7 +1356,7 @@ static ConfRes SET_target_ip(void *conf, const char *name, const char *value) {
     }
 
     int err;
-    err = targetip_add_target_string(&xconf->targets, value);
+    err = targetset_add_ip_string(&xconf->targets, value);
     if (err) {
         LOG(LEVEL_ERROR, "Bad IP address/range: %s\n", value);
         return Conf_ERR;
@@ -1471,7 +1470,7 @@ static ConfRes SET_exclude_ip(void *conf, const char *name, const char *value) {
     }
 
     int err;
-    err = targetip_add_target_string(&xconf->exclude, value);
+    err = targetset_add_ip_string(&xconf->exclude, value);
     if (err) {
         LOG(LEVEL_ERROR, "Bad exclude address/range: %s\n", value);
         return Conf_ERR;
@@ -1493,7 +1492,7 @@ static ConfRes SET_exclude_port(void *conf, const char *name,
     unsigned defaultrange = 0;
     int      err;
 
-    err = targetip_add_port_string(&xconf->exclude, value, defaultrange);
+    err = targetset_add_port_string(&xconf->exclude, value, defaultrange);
     if (err) {
         LOG(LEVEL_ERROR, "bad exclude port: %s\n", value);
         LOG(LEVEL_HINT, "a port is a number [0..65535]\n");
@@ -1516,7 +1515,7 @@ static ConfRes SET_include_file(void *conf, const char *name,
     int         err;
     const char *filename = value;
 
-    err = targetip_parse_file(&xconf->targets, filename);
+    err = targetset_parse_file(&xconf->targets, filename);
     if (err) {
         LOG(LEVEL_ERROR, "reading from include file\n");
         return Conf_ERR;
@@ -1541,7 +1540,7 @@ static ConfRes SET_exclude_file(void *conf, const char *name,
     const char *filename = value;
 
     // LOG(LEVEL_DETAIL, "EXCLUDING: %s\n", value);
-    err = targetip_parse_file(&xconf->exclude, filename);
+    err = targetset_parse_file(&xconf->exclude, filename);
     if (err) {
         LOG(LEVEL_ERROR, "fail reading from exclude file\n");
         return Conf_ERR;
@@ -3854,8 +3853,8 @@ void xconf_selftest() {
 
     //! Add new regression test here
     {
-        x += targetip_selftest();
-        x += targetip_parse_selftest();
+        x += targetset_selftest();
+        x += target_parse_selftest();
         x += ipv6address_selftest();
         x += ranges_selftest();
         x += ranges6_selftest();

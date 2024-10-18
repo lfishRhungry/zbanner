@@ -1,11 +1,11 @@
 /*
     for tracking IP/port ranges
 */
-#include "target-rangesv6.h"
-#include "target-rangesv4.h"
+#include "target-range6list.h"
+#include "target-rangelist.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-out/logger.h"
-#include "target-ip.h"
+#include "target-set.h"
 #include "target-parse.h"
 
 #include <assert.h>
@@ -147,12 +147,12 @@ static ipv6address PLUS_ONE(const ipv6address ip) {
 
 /***************************************************************************
  ***************************************************************************/
-int128_t targetip_range(TargetIP *targetip) {
+int128_t targetset_count(TargetSet *targetset) {
     int128_t result;
 
-    result = range6list_count(&targetip->ipv6);
-    result = _int128_add64(result, rangelist_count(&targetip->ipv4));
-    result = _int128_mult64(result, rangelist_count(&targetip->ports));
+    result = range6list_count(&targetset->ipv6);
+    result = _int128_add64(result, rangelist_count(&targetset->ipv4));
+    result = _int128_mult64(result, rangelist_count(&targetset->ports));
 
     return result;
 }
@@ -627,8 +627,8 @@ int ranges6_selftest() {
 #define ERROR()                                                                \
     LOG(LEVEL_ERROR, "selftest: failed %s:%u\n", __FILE__, __LINE__);
 
-    err = targetip_parse_range("2001:0db8:85a3:0000:0000:8a2e:0370:7334", 0, 0,
-                               0, &r);
+    err = target_parse_range("2001:0db8:85a3:0000:0000:8a2e:0370:7334", 0, 0, 0,
+                             &r);
     if (err != Ipv6_Address)
         ERROR();
 
