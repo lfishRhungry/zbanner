@@ -20,9 +20,18 @@ struct AddrStreamConf {
     unsigned  rounds;
     char      splitter[10];
     size_t    splitter_len;
+    unsigned  no_random : 1;
 };
 
 static struct AddrStreamConf addrstream_conf = {0};
+
+static ConfRes SET_no_random(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    addrstream_conf.no_random = parse_str_bool(value);
+    return Conf_OK;
+}
 
 static ConfRes SET_splitter(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -74,6 +83,12 @@ static ConfParam addrstream_parameters[] = {
      "Specifies the number of round in blackrock algorithm for targets "
      "randomization in every IP/Port range. It's 14 rounds in default to give "
      "a better statistical distribution with a low impact on scan rate."},
+    {"no-random",
+     SET_no_random,
+     Type_FLAG,
+     {"no-blackrock", "order", 0},
+     "Generate targets in natural order instead of using blackrock algorithm "
+     "to randomize."},
 
     {0}};
 
@@ -186,8 +201,9 @@ bool addrstream_hasmore(unsigned tx_index, uint64_t index) {
     addrstream_conf.index = 0;
 
     /*init blackrock again*/
-    blackrock1_init(&addrstream_conf.br_table, addrstream_conf.range_all,
-                    addrstream_conf.seed, addrstream_conf.rounds);
+    if (!addrstream_conf.no_random)
+        blackrock1_init(&addrstream_conf.br_table, addrstream_conf.range_all,
+                        addrstream_conf.seed, addrstream_conf.rounds);
 
     return true;
 }
@@ -204,7 +220,8 @@ Target addrstream_generate(unsigned tx_index, uint64_t index, uint64_t repeat,
         xXx -= addrstream_conf.range_all;
     }
 
-    xXx = blackrock1_shuffle(&addrstream_conf.br_table, xXx);
+    if (!addrstream_conf.no_random)
+        xXx = blackrock1_shuffle(&addrstream_conf.br_table, xXx);
 
     /**
      * Pick up target & source

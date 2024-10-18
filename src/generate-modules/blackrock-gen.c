@@ -8,19 +8,26 @@
 Generator BlackRockGen;
 
 struct BlackRockConf {
-    unsigned        rounds;
-    BlackRock      *br_tables; /*for multi tx threads*/
-    unsigned        br_count;  /*equal to tx thread num and is power of 2*/
-    unsigned        br_mask;
+    const TargetIP *targets;
+    BlackRock       br_table; /*for multi tx threads*/
     uint64_t        count_ipv4;
     uint64_t        count_ipv6;
     uint64_t        range_all;
     uint64_t        range_ipv6;
     uint64_t        seed;
-    const TargetIP *targets;
+    unsigned        rounds;
+    unsigned        no_random : 1;
 };
 
 static struct BlackRockConf blackrock_conf = {0};
+
+static ConfRes SET_no_random(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    blackrock_conf.no_random = parse_str_bool(value);
+    return Conf_OK;
+}
 
 static ConfRes SET_rounds(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -38,6 +45,12 @@ static ConfParam blackrock_parameters[] = {
      "Specifies the number of round in blackrock algorithm for targets "
      "randomization. It's 14 rounds in default to give a better statistical "
      "distribution with a low impact on scan rate."},
+    {"no-random",
+     SET_no_random,
+     Type_FLAG,
+     {"no-blackrock", "order", 0},
+     "Generate targets in natural order instead of using blackrock algorithm "
+     "to randomize."},
 
     {0}};
 
@@ -99,19 +112,15 @@ bool blackrock_init(const XConf *xconf, uint64_t *count_targets,
     /**
      * prepare blackrock algorithm
      */
+    if (blackrock_conf.no_random)
+        return true;
+
     if (blackrock_conf.rounds <= 0) {
         blackrock_conf.rounds = XCONF_DFT_BLACKROCK_ROUNDS;
     }
 
-    blackrock_conf.br_count = xconf->tx_thread_count;
-    blackrock_conf.br_mask  = blackrock_conf.br_count - 1;
-    blackrock_conf.br_tables =
-        MALLOC(blackrock_conf.br_count * sizeof(BlackRock));
-
-    for (unsigned i = 0; i < blackrock_conf.br_count; i++) {
-        blackrock1_init(&blackrock_conf.br_tables[i], blackrock_conf.range_all,
-                        xconf->seed, blackrock_conf.rounds);
-    }
+    blackrock1_init(&blackrock_conf.br_table, blackrock_conf.range_all,
+                    xconf->seed, blackrock_conf.rounds);
 
     return true;
 }
@@ -125,17 +134,16 @@ bool blackrock_hasmore(unsigned tx_index, uint64_t index) {
 
 Target blackrock_generate(unsigned tx_index, uint64_t index, uint64_t repeat,
                           struct source_t *src) {
-    Target     target;
-    BlackRock *blackrock;
-    uint64_t   xXx = index;
-    uint64_t   ck;
+    Target   target;
+    uint64_t xXx = index;
+    uint64_t ck;
 
     while (xXx >= blackrock_conf.range_all) {
         xXx -= blackrock_conf.range_all;
     }
 
-    blackrock = &blackrock_conf.br_tables[tx_index & blackrock_conf.br_mask];
-    xXx       = blackrock1_shuffle(blackrock, xXx);
+    if (!blackrock_conf.no_random)
+        xXx = blackrock1_shuffle(&blackrock_conf.br_table, xXx);
 
     /**
      * Pick up target & source
@@ -191,11 +199,6 @@ Target blackrock_generate(unsigned tx_index, uint64_t index, uint64_t repeat,
     return target;
 }
 
-void blackrock_close() {
-    FREE(blackrock_conf.br_tables);
-    blackrock_conf.br_count = 0;
-}
-
 Generator BlackRockGen = {
     .name       = "blackrock",
     .params     = blackrock_parameters,
@@ -219,5 +222,5 @@ Generator BlackRockGen = {
     .init_cb     = &blackrock_init,
     .hasmore_cb  = &blackrock_hasmore,
     .generate_cb = &blackrock_generate,
-    .close_cb    = &blackrock_close,
+    .close_cb    = &generate_close_nothing,
 };
