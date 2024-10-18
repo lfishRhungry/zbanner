@@ -1,7 +1,7 @@
 #include "target-set.h"
 #include "target-parse.h"
-#include "target-rangelist.h"
-#include "target-range6list.h"
+#include "target-rangev4.h"
+#include "target-rangev6.h"
 #include "target-rangeport.h"
 #include <string.h>
 #include <ctype.h>

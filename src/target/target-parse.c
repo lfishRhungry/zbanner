@@ -9,8 +9,8 @@
 */
 #include "target-set.h"
 #include "target-parse.h"
-#include "target-rangelist.h"
-#include "target-range6list.h"
+#include "target-rangev4.h"
+#include "target-rangev6.h"
 #include "../util-out/logger.h"
 #include "../util-misc/cross.h"
 #include "../util-data/fine-malloc.h"

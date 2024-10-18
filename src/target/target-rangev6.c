@@ -1,8 +1,8 @@
 /*
     for tracking IP/port ranges
 */
-#include "target-range6list.h"
-#include "target-rangelist.h"
+#include "target-rangev6.h"
+#include "target-rangev4.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-out/logger.h"
 #include "target-set.h"

@@ -5,8 +5,8 @@
 #ifndef TARGET_SET_H
 #define TARGET_SET_H
 #include <stddef.h>
-#include "target-rangelist.h"
-#include "target-range6list.h"
+#include "target-rangev4.h"
+#include "target-rangev6.h"
 
 typedef struct TargetRangeSet {
     struct RangeList  ipv4;
