@@ -557,10 +557,9 @@ Probe SnmpProbe = {
     .desc = "SnmpProbe sends an snmp(v1) request with community `public` and "
             "expects sysName and sysDesc of target. The default snmp(over udp) "
             "port is 161.\n"
-            "NOTE1: SnmpProbe is capable of obtaining the basic info on snmp(v1"
+            "NOTE: SnmpProbe is capable of obtaining the basic info on snmp(v1"
             " or v2c) theoretically but cannot identifying whether the port is "
-            "serving of snmp protocol.\n"
-            "NOTE2: SnmpProbe doesn't process port unreachable.",
+            "serving of snmp protocol.",
 
     .init_cb              = &snmp_init,
     .make_payload_cb      = &snmp_make_payload,
