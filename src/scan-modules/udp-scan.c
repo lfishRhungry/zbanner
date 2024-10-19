@@ -12,29 +12,6 @@
 
 extern Scanner UdpScan; /*for internal x-ref*/
 
-struct UdpConf {
-    unsigned no_icmp : 1;
-};
-
-static struct UdpConf udp_conf = {0};
-
-static ConfRes SET_no_icmp(void *conf, const char *name, const char *value) {
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    udp_conf.no_icmp = parse_str_bool(value);
-
-    return Conf_OK;
-}
-
-static ConfParam udp_parameters[] = {
-    {"no-icmp",
-     SET_no_icmp,
-     Type_FLAG,
-     {0},
-     "Do not handle icmp port unreachable info."},
-    {0}};
-
 /**
  *For calc the conn index.
  * NOTE: We use a trick of src-port to differenciate multi-probes to avoid
@@ -114,55 +91,6 @@ static void udp_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
                 &ptarget, recved->packet + recved->parsed.app_offset,
                 recved->parsed.app_length)) {
             pre->go_dedup = 1;
-        }
-
-        return;
-    }
-
-    /*record ICMP (udp) port unreachable message*/
-    if (recved->parsed.found != FOUND_ICMP || !recved->is_myip ||
-        udp_conf.no_icmp)
-        return;
-
-    if (recved->parsed.dst_ip.version == 4 &&
-        recved->parsed.icmp_type == ICMPv4_TYPE_ERR &&
-        recved->parsed.icmp_code == ICMPv4_CODE_ERR_PORT_UNREACHABLE) {
-    } else if (recved->parsed.dst_ip.version == 6 &&
-               recved->parsed.icmp_type == ICMPv6_TYPE_ERR &&
-               recved->parsed.icmp_code == ICMPv6_CODE_ERR_PORT_UNREACHABLE) {
-    } else
-        return;
-
-    /*parse UDP packet in ICMP port unreachable message payload*/
-    if (IP_PROTO_UDP == get_icmp_upper_proto(recved->packet +
-                                             recved->parsed.transport_offset)) {
-
-        unsigned char *icmp_app = recved->packet + recved->parsed.app_offset;
-        unsigned icmp_app_len   = recved->length - recved->parsed.app_offset;
-        PreInfo  info           = {0};
-
-        if (preprocess_frame(icmp_app, icmp_app_len, PCAP_DLT_RAW, &info)) {
-            ProbeTarget utarget = {.target.ip_them   = info.dst_ip,
-                                   .target.port_them = info.port_dst,
-                                   .target.ip_me     = info.src_ip,
-                                   .target.port_me   = info.port_src,
-                                   .target.ip_proto  = info.ip_protocol};
-
-            utarget.cookie = get_cookie(
-                utarget.target.ip_them, utarget.target.port_them,
-                utarget.target.ip_me, utarget.target.port_me, entropy);
-            utarget.index = utarget.target.port_me - src_port_start;
-
-            unsigned char *udp_app     = icmp_app + info.app_offset;
-            unsigned       udp_app_len = icmp_app_len - info.app_offset;
-
-            if (UdpScan.probe->validate_unreachable_cb(&utarget, udp_app,
-                                                       udp_app_len)) {
-                pre->go_record       = 1;
-                pre->go_dedup        = 1;
-                pre->dedup_port_me   = utarget.target.port_me;
-                pre->dedup_port_them = utarget.target.port_them;
-            }
         }
     }
 }
@@ -425,10 +353,9 @@ Scanner UdpScan = {
     .name                = "udp",
     .required_probe_type = ProbeType_UDP,
     .support_timeout     = 1,
-    .params              = udp_parameters,
+    .params              = NULL,
     /*udp and icmp port unreachable in ipv4 & ipv6*/
-    .bpf_filter          = "udp || (icmp && icmp[0]==3 && icmp[1]==3) "
-                           "|| (icmp6 && icmp6[0]==1 && icmp6[1]==4)",
+    .bpf_filter          = "udp",
     .short_desc          = "Single-packet UDP scan with specified ProbeModule.",
     .desc =
         "UdpScan sends a udp packet with ProbeModule data to target port "

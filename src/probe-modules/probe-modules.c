@@ -325,8 +325,3 @@ bool probe_all_response_valid(ProbeTarget *target, const unsigned char *px,
                               unsigned sizeof_px) {
     return true;
 }
-
-bool probe_all_unreachable_invalid(ProbeTarget *target, const unsigned char *px,
-                                   unsigned sizeof_px) {
-    return false;
-}

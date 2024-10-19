@@ -562,11 +562,10 @@ Probe SnmpProbe = {
             "serving of snmp protocol.\n"
             "NOTE2: SnmpProbe doesn't process port unreachable.",
 
-    .init_cb                 = &snmp_init,
-    .make_payload_cb         = &snmp_make_payload,
-    .validate_response_cb    = &probe_all_response_valid,
-    .validate_unreachable_cb = &probe_all_unreachable_invalid,
-    .handle_response_cb      = &snmp_handle_response,
-    .handle_timeout_cb       = &snmp_handle_timeout,
-    .close_cb                = &snmp_close,
+    .init_cb              = &snmp_init,
+    .make_payload_cb      = &snmp_make_payload,
+    .validate_response_cb = &probe_all_response_valid,
+    .handle_response_cb   = &snmp_handle_response,
+    .handle_timeout_cb    = &snmp_handle_timeout,
+    .close_cb             = &snmp_close,
 };

@@ -99,25 +99,6 @@ typedef bool (*probe_modules_validate_response)(ProbeTarget         *target,
                                                 unsigned             sizeof_px);
 
 /**
- * !Happens in Rx Thread Handle Thread
- *
- * Validate whether the port unreachable response is for us.
- * This is useful when ScanModule cannot validate through the
- * packet attributes.
- *
- * !Must be implemented for ProbeType_UDP.
- * !Must be thread safe for other funcs.
- *
- * @param target info of target in icmp
- * @param px payload of udp in icmp port unreachable, it can be zero.
- * @param sizeof_px len of payload.
- * @return TRUE if the port unreachable response is for us.
- */
-typedef bool (*probe_modules_validate_unreachable)(ProbeTarget         *target,
-                                                   const unsigned char *px,
-                                                   unsigned sizeof_px);
-
-/**
  * !Happens in Rx Handle Thread,
  * Decide the results for the response
  *
@@ -278,25 +259,24 @@ typedef struct ProbeModule {
     ConfParam      *params;
 
     /*for init*/
-    probe_modules_init                 init_cb;
+    probe_modules_init               init_cb;
     /*for stateless payload*/
-    probe_modules_make_payload         make_payload_cb;
+    probe_modules_make_payload       make_payload_cb;
     /*for stateless validate (tcp)*/
-    probe_modules_get_payload_length   get_payload_length_cb;
+    probe_modules_get_payload_length get_payload_length_cb;
     /*for stateless validate (udp)*/
-    probe_modules_validate_response    validate_response_cb;
-    probe_modules_validate_unreachable validate_unreachable_cb;
+    probe_modules_validate_response  validate_response_cb;
     /*for stateless response*/
-    probe_modules_handle_response      handle_response_cb;
+    probe_modules_handle_response    handle_response_cb;
     /*for stateless timeout*/
-    probe_modules_handle_timeout       handle_timeout_cb;
+    probe_modules_handle_timeout     handle_timeout_cb;
     /*for stateful process*/
-    probe_modules_conn_init            conn_init_cb;
-    probe_modules_make_hello           make_hello_cb;
-    probe_modules_parse_response       parse_response_cb;
-    probe_modules_conn_close           conn_close_cb;
+    probe_modules_conn_init          conn_init_cb;
+    probe_modules_make_hello         make_hello_cb;
+    probe_modules_parse_response     parse_response_cb;
+    probe_modules_conn_close         conn_close_cb;
     /*for close*/
-    probe_modules_close                close_cb;
+    probe_modules_close              close_cb;
 } Probe;
 
 Probe *get_probe_module_by_name(const char *name);
@@ -342,8 +322,5 @@ unsigned probe_no_timeout(ProbeTarget *target, OutItem *item);
 
 bool probe_all_response_valid(ProbeTarget *target, const unsigned char *px,
                               unsigned sizeof_px);
-
-bool probe_all_unreachable_invalid(ProbeTarget *target, const unsigned char *px,
-                                   unsigned sizeof_px);
 
 #endif

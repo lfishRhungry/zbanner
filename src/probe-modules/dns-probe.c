@@ -181,21 +181,6 @@ static bool dns_validate_response(ProbeTarget *target, const unsigned char *px,
     return false;
 }
 
-static bool dns_validate_unreachable(ProbeTarget         *target,
-                                     const unsigned char *px,
-                                     unsigned             sizeof_px) {
-    if (sizeof_px < 2) {
-        return false;
-    }
-
-    /*maybe we can do more validation to ensure this is a valid dns packet*/
-    if (U16_EQUAL_TO_BE(px, target->cookie & 0xFFFF)) {
-        return true;
-    }
-
-    return false;
-}
-
 static unsigned dns_handle_response(unsigned th_idx, ProbeTarget *target,
                                     const unsigned char *px, unsigned sizeof_px,
                                     OutItem *item) {
@@ -363,11 +348,10 @@ Probe DnsProbe = {
         " resource both on scanner and targets. And an interesting thing will "
         "happen: every retransmited dns reply carries a different answer.",
 
-    .init_cb                 = &dns_init,
-    .make_payload_cb         = &dns_make_payload,
-    .validate_response_cb    = &dns_validate_response,
-    .validate_unreachable_cb = &dns_validate_unreachable,
-    .handle_response_cb      = &dns_handle_response,
-    .handle_timeout_cb       = &dns_handle_timeout,
-    .close_cb                = &dns_close,
+    .init_cb              = &dns_init,
+    .make_payload_cb      = &dns_make_payload,
+    .validate_response_cb = &dns_validate_response,
+    .handle_response_cb   = &dns_handle_response,
+    .handle_timeout_cb    = &dns_handle_timeout,
+    .close_cb             = &dns_close,
 };
