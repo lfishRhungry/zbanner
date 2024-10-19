@@ -173,7 +173,7 @@ bool addrstream_hasmore(unsigned tx_index, uint64_t index) {
         err = targetset_add_port_string(cur_tgt, port_str, 0);
         if (err) {
             sub[0] = addrstream_conf.splitter[0];
-            LOG(LEVEL_ERROR, "(stream generator) invalid port* in address: %s",
+            LOG(LEVEL_ERROR, "(stream generator) invalid port in address: %s",
                 line);
             targetset_remove_ip(cur_tgt);
             continue;
@@ -186,7 +186,7 @@ bool addrstream_hasmore(unsigned tx_index, uint64_t index) {
 
         if (cur_tgt->count_ports == 0) {
             sub[0] = addrstream_conf.splitter[0];
-            LOG(LEVEL_ERROR, "(stream generator) invalid port** in address: %s",
+            LOG(LEVEL_ERROR, "(stream generator) not valid port in address: %s",
                 line);
             targetset_remove_ip(cur_tgt);
             continue;

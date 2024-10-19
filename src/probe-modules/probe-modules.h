@@ -40,9 +40,8 @@ typedef bool (*probe_modules_init)(const XConf *xconf);
  */
 typedef struct ProbeModuleTarget {
     Target   target;
-    unsigned cookie;
-    /*use for identifying of multi probes per target*/
-    unsigned index;
+    unsigned cookie; /*for cookie setting of UDP type probe*/
+    unsigned index;  /*for identifying of multi probes per target*/
 } ProbeTarget;
 
 /**

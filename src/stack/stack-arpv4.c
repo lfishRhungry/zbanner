@@ -179,7 +179,7 @@ int stack_arp_resolve(Adapter *adapter, AdapterCache *acache,
             /* It's taking too long, so notify the user */
             if (!is_delay_reported) {
                 ipaddress_formatted_t fmt = ipv4address_fmt(your_ipv4);
-                LOG(LEVEL_ERROR,
+                LOG(LEVEL_HINT,
                     "resolving router %s with ARP (may take some time)...\n",
                     fmt.string);
                 is_delay_reported = 1;
@@ -190,7 +190,7 @@ int stack_arp_resolve(Adapter *adapter, AdapterCache *acache,
          * status message */
         if (time(0) > start + 1 && !is_arp_notice_given) {
             ipaddress_formatted_t fmt = ipv4address_fmt(your_ipv4);
-            LOG(LEVEL_ERROR, "arping local router %s\n", fmt.string);
+            LOG(LEVEL_HINT, "arping local router %s\n", fmt.string);
             is_arp_notice_given = 1;
         }
 

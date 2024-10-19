@@ -50,7 +50,7 @@ static ConfParam sctpinit_parameters[] = {
 static bool sctpinit_transmit(uint64_t entropy, ScanTarget *target,
                               ScanTmEvent *event, unsigned char *px,
                               size_t *len) {
-    /*we just handle tcp target*/
+    /*we just handle sctp target*/
     if (target->target.ip_proto != IP_PROTO_SCTP)
         return false;
 

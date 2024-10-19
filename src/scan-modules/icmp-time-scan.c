@@ -57,7 +57,7 @@ static bool icmptime_transmit(uint64_t entropy, ScanTarget *target,
 
     /*icmp timestamp is just for ipv4*/
     if (target->target.ip_them.version != 4)
-        return 0;
+        return false;
 
     /*we do not care target port*/
     unsigned cookie =

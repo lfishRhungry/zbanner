@@ -38,18 +38,33 @@
 const char *ip_proto_to_string(unsigned ip_proto);
 
 /**
- * Abstract common attributes for a unique scanning target
+ * Abstract common attributes for a scanning target.
  */
 typedef struct Target {
-    /*IP proto number to mention whether it is TCP, UDP, etc.*/
+    /**
+     * IP proto number to mention whether it is TCP, UDP, etc.
+     * This can be used to indicate the what the port means.
+     * When the ip_proto presents other protocols. The meaning of port can
+     * changed by modules we use.
+     * */
     unsigned  ip_proto;
-    /*IP of target*/
+    /**
+     * IP of target.
+     * */
     ipaddress ip_them;
-    /*IP of me*/
+    /**
+     * IP of me.
+     * */
     ipaddress ip_me;
-    /*actual port number of target*/
+    /**
+     * Actual port number of target.
+     * It can have many meanings for different modules.
+     * */
     unsigned  port_them;
-    /*actual port number of me*/
+    /**
+     * Actual port number of me.
+     * It can have many meanings for different modules.
+     * */
     unsigned  port_me;
 } Target;
 

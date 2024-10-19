@@ -43,7 +43,7 @@
 
    NOTE: Payload of responsed ICMP message can only contains an IP header and
    other 8 bytes data according to RFC(maybe some hosts can contain more data).
-   So lenght of our packets should better be less than 8 bytes(no any other
+   So length of our packets should better be less than 8 bytes(no any other
    data). And this makes recursive preprocess being correct.
 */
 

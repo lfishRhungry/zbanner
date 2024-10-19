@@ -155,8 +155,8 @@ typedef void (*scan_modules_validate)(uint64_t entropy, Recved *recved,
  * @param recved info of received packet.
  * @param item results we have to fill to output.
  * @param stack packet buffer queue stack for preparing transmitting by us.
- * @param handler handler of fast-timeout to add tm-event by us or NULL if not
- * in use fast-timeout.
+ * @param handler handler of fast-timeout to add tm-event or NULL if the
+ * fast-timeout is off.
  */
 typedef void (*scan_modules_handle)(unsigned th_idx, uint64_t entropy,
                                     Recved *recved, OutItem *item, STACK *stack,

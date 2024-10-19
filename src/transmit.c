@@ -138,11 +138,11 @@ infinite:;
             tm_event->target.port_them = target.target.port_them;
             tm_event->target.port_me   = target.target.port_me;
 
-            unsigned char pkt_buffer[PKT_BUF_SIZE];
+            unsigned char pkt_buf[PKT_BUF_SIZE];
             size_t        pkt_len = 0;
             unsigned      more    = 0;
             more = xconf->scanner->transmit_cb(entropy, &target, tm_event,
-                                               pkt_buffer, &pkt_len);
+                                               pkt_buf, &pkt_len);
 
             /*
              * Send packet actually.
@@ -150,7 +150,7 @@ infinite:;
              * always enough packets here to trigger implicit flushing.
              */
             if (pkt_len) {
-                rawsock_send_packet(adapter, acache, pkt_buffer,
+                rawsock_send_packet(adapter, acache, pkt_buf,
                                     (unsigned)pkt_len);
 
                 batch_size--;
