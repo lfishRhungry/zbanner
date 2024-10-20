@@ -1,4 +1,5 @@
 #include "pixie-file.h"
+#include "../util-out/logger.h"
 
 #if defined(WIN32)
 #include <Windows.h>
@@ -47,7 +48,7 @@ int pixie_fopen_shareable(FILE **in_fp, const char *filename, bool is_append) {
         fd = _open_osfhandle((intptr_t)hFile,
                              _O_CREAT | _O_RDONLY | _O_TEMPORARY);
         if (fd == -1) {
-            perror("_open_osfhandle");
+            LOGPERROR("_open_osfhandle");
             return -1;
         }
 

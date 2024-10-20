@@ -319,7 +319,7 @@ int rawsock_send_packet(Adapter *adapter, AdapterCache *acache,
             err = PFRING.send(adapter->ring, packet, length, 0);
         }
         if (err < 0)
-            LOG(LEVEL_WARN, "pfring:xmit: ERROR %d\n", err);
+            LOG(LEVEL_WARN, "error happens in send for pfring xmit %d\n", err);
         return err;
     }
 
@@ -473,9 +473,11 @@ void rawsock_ignore_transmits(Adapter *adapter, const char *ifname) {
         int err;
         err = PCAP.setdirection(adapter->pcap, PCAP_D_IN);
         if (err) {
-            ; // PCAP.perror(adapter->pcap, "if: pcap_setdirection(IN)");
+            LOG(LEVEL_WARN, "(%s) failed to set set direction for %s\n",
+                __func__, ifname);
         } else {
-            LOG(LEVEL_DEBUG, "if:%s: not receiving transmits\n", ifname);
+            LOG(LEVEL_DEBUG, "(%s) setted to not receive transmits for %s\n",
+                __func__, ifname);
         }
     }
 }
@@ -602,7 +604,7 @@ Adapter *rawsock_init_adapter(const char *adapter_name, unsigned is_pfring,
          * NOTE: I don't think it needs the "re-entrant" flag, because it
          * transmit and receive are separate functions?
          */
-        LOG(LEVEL_DETAIL, "pfring:'%s': opening...\n", adapter_name);
+        LOG(LEVEL_DETAIL, "(pfring:'%s') opening...\n", adapter_name);
 
         adapter->ring      = PFRING.open(adapter_name, snaplen,
                                          0); // 1500, PF_RING_REENTRANT);
@@ -610,11 +612,11 @@ Adapter *rawsock_init_adapter(const char *adapter_name, unsigned is_pfring,
         adapter->link_type = PCAP_DLT_ETHERNET;
 
         if (adapter->ring == NULL) {
-            LOG(LEVEL_ERROR, "pfring:'%s': OPEN ERROR: %s\n", adapter_name,
+            LOG(LEVEL_ERROR, "(pfring:'%s') OPEN ERROR: %s\n", adapter_name,
                 strerror(errno));
             return 0;
         } else
-            LOG(LEVEL_DETAIL, "pfring:'%s': successfully opened\n",
+            LOG(LEVEL_DETAIL, "(pfring:'%s') successfully opened\n",
                 adapter_name);
 
         /*
@@ -622,32 +624,34 @@ Adapter *rawsock_init_adapter(const char *adapter_name, unsigned is_pfring,
          */
         PFRING.set_application_name(adapter->ring, XTATE_NAME);
         PFRING.version(adapter->ring, &version);
-        LOG(LEVEL_DEBUG, "pfring: version %d.%d.%d\n", (version >> 16) & 0xFFFF,
-            (version >> 8) & 0xFF, (version >> 0) & 0xFF);
+        LOG(LEVEL_DEBUG, "(pfring) version %d.%d.%d\n",
+            (version >> 16) & 0xFFFF, (version >> 8) & 0xFF,
+            (version >> 0) & 0xFF);
 
-        LOG(LEVEL_DETAIL, "pfring:'%s': setting direction\n", adapter_name);
+        LOG(LEVEL_DETAIL, "(pfring:'%s') setting direction\n", adapter_name);
         err = PFRING.set_direction(adapter->ring, rx_only_direction);
         if (err) {
-            LOG(LEVEL_ERROR, "pfring:'%s': setdirection = %d\n", adapter_name,
+            LOG(LEVEL_ERROR, "(pfring:'%s') setdirection = %d\n", adapter_name,
                 err);
         } else
-            LOG(LEVEL_DETAIL, "pfring:'%s': direction success\n", adapter_name);
+            LOG(LEVEL_DETAIL, "(pfring:'%s') direction success\n",
+                adapter_name);
 
         /*
          * Activate
          *
          * PF_RING requires a separate activation step.
          */
-        LOG(LEVEL_DETAIL, "pfring:'%s': activating\n", adapter_name);
+        LOG(LEVEL_DETAIL, "(pfring:'%s') activating\n", adapter_name);
         err = PFRING.enable_ring(adapter->ring);
         if (err != 0) {
-            LOG(LEVEL_ERROR, "pfring: '%s': ENABLE ERROR: %s\n", adapter_name,
+            LOG(LEVEL_ERROR, "(pfring:'%s') ENABLE ERROR: %s\n", adapter_name,
                 strerror(errno));
             PFRING.close(adapter->ring);
             adapter->ring = 0;
             return 0;
         } else
-            LOG(LEVEL_INFO, "pfring:'%s': successfully enabled\n",
+            LOG(LEVEL_INFO, "(pfring:'%s') successfully enabled\n",
                 adapter_name);
 
         return adapter;
@@ -657,7 +661,7 @@ Adapter *rawsock_init_adapter(const char *adapter_name, unsigned is_pfring,
      * Kludge: for using files
      *----------------------------------------------------------------*/
     if (memcmp(adapter_name, "file:", 5) == 0) {
-        LOG(LEVEL_DETAIL, "pcap: file: %s\n", adapter_name + 5);
+        LOG(LEVEL_DETAIL, "(pcap) file: %s\n", adapter_name + 5);
         is_pcap_file       = 1;
         adapter->pcap      = PCAP.open_offline(adapter_name + 5, errbuf);
         adapter->link_type = PCAP.datalink(adapter->pcap);
@@ -687,7 +691,7 @@ Adapter *rawsock_init_adapter(const char *adapter_name, unsigned is_pfring,
                                READ_TIMEOUT, /* read timeout in milliseconds */
                                errbuf);
             if (adapter->pcap == NULL) {
-                LOG(LEVEL_ERROR, "FAIL:%s: can't open adapter: %s\n",
+                LOG(LEVEL_ERROR, "(if:%s) can't open adapter: %s\n",
                     adapter_name, errbuf);
                 if (strstr(errbuf, "perm")) {
                     LOG(LEVEL_ERROR, "permission denied\n");
@@ -699,13 +703,13 @@ Adapter *rawsock_init_adapter(const char *adapter_name, unsigned is_pfring,
         } else {
             err = PCAP.set_snaplen(adapter->pcap, snaplen);
             if (err) {
-                PCAP.perror(adapter->pcap, "if: set_snaplen");
+                LOGPCAPERROR(adapter->pcap, "pcap_set_snaplen");
                 goto pcap_error;
             }
 
             err = PCAP.set_promisc(adapter->pcap, 8);
             if (err) {
-                PCAP.perror(adapter->pcap, "if: set_promisc");
+                LOGPCAPERROR(adapter->pcap, "pcap_set_promisc");
                 goto pcap_error;
             }
 
@@ -720,7 +724,7 @@ Adapter *rawsock_init_adapter(const char *adapter_name, unsigned is_pfring,
              */
             err = PCAP.set_timeout(adapter->pcap, READ_TIMEOUT);
             if (err) {
-                PCAP.perror(adapter->pcap, "if: set_timeout");
+                LOGPCAPERROR(adapter->pcap, "pcap_set_timeout");
                 goto pcap_error;
             }
 
@@ -733,7 +737,7 @@ Adapter *rawsock_init_adapter(const char *adapter_name, unsigned is_pfring,
              */
             err = PCAP.set_immediate_mode(adapter->pcap, 1);
             if (err) {
-                PCAP.perror(adapter->pcap, "if: set_immediate_mode");
+                LOGPCAPERROR(adapter->pcap, "pcap_set_immediate_mode");
                 goto pcap_error;
             }
 
@@ -745,13 +749,14 @@ Adapter *rawsock_init_adapter(const char *adapter_name, unsigned is_pfring,
                     /* drop down below */
                     break;
                 case PCAP_ERROR_PERM_DENIED:
-                    LOG(LEVEL_ERROR, "permission denied\n");
+                    LOG(LEVEL_ERROR,
+                        "(%s) permission denied while activating PCAP\n",
+                        __func__);
                     LOG(LEVEL_HINT,
                         "need to sudo or run as root or administrator\n");
                     goto pcap_error;
                 default:
-                    LOG(LEVEL_ERROR, "if(%s): activate:%d: %s\n", adapter_name,
-                        err, PCAP.geterr(adapter->pcap));
+                    LOGPCAPERROR(adapter->pcap, "pcap_activate");
                     if (err < 0)
                         goto pcap_error;
             }
@@ -763,7 +768,7 @@ Adapter *rawsock_init_adapter(const char *adapter_name, unsigned is_pfring,
         adapter->link_type = PCAP.datalink(adapter->pcap);
         switch (adapter->link_type) {
             case -1:
-                PCAP.perror(adapter->pcap, "if: datalink");
+                LOGPCAPERROR(adapter->pcap, "pcap_datalink");
                 goto pcap_error;
             case PCAP_DLT_NULL:
                 LOG(LEVEL_DEBUG, "if(%s): VPN tunnel interface found\n",
@@ -812,7 +817,7 @@ void rawsock_set_filter(Adapter *adapter, const char *scan_filter,
         return;
     }
 
-    LOG(LEVEL_DEBUG, "Final BPF filter: %s\n", final_filter);
+    LOG(LEVEL_DEBUG, "final BPF filter: %s\n", final_filter);
 
     /**
      * set BPF filter
@@ -822,15 +827,13 @@ void rawsock_set_filter(Adapter *adapter, const char *scan_filter,
 
     err = PCAP.compile(adapter->pcap, &bpfp, final_filter, 1, 0);
     if (err) {
-        PCAP.perror(adapter->pcap, "if: pcap_compile");
-        LOG(LEVEL_ERROR, "compile bpf filter error.\n");
+        LOGPCAPERROR(adapter->pcap, "pcap_compile");
         exit(1);
     }
 
     err = PCAP.setfilter(adapter->pcap, &bpfp);
     if (err) {
-        PCAP.perror(adapter->pcap, "if: setfilter");
-        LOG(LEVEL_ERROR, "set bpf filter error.\n");
+        LOGPCAPERROR(adapter->pcap, "pcap_setfilter");
         exit(1);
     }
 }
@@ -845,8 +848,7 @@ void rawsock_set_nonblock(Adapter *adapter) {
 
         err = PCAP.setnonblock(adapter->pcap, 1, errbuf);
         if (err) {
-            PCAP.perror(adapter->pcap, "if: pcap_setnonblock");
-            LOG(LEVEL_ERROR, "set nonblock error.\n");
+            LOGPCAPERROR(adapter->pcap, "pcap_setnonblock");
             exit(1);
         }
     }

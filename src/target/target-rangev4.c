@@ -252,7 +252,7 @@ void rangelist_sort(struct RangeList *targets) {
     }
 
     /* First, sort the list */
-    LOG(LEVEL_DETAIL, "range:sort: sorting...\n");
+    LOG(LEVEL_DETAIL, "(rangelist_sort) sorting...\n");
     qsort(targets->list,            /* the array to sort */
           targets->list_len,        /* number of elements to sort */
           sizeof(targets->list[0]), /* size of element */
@@ -262,20 +262,21 @@ void rangelist_sort(struct RangeList *targets) {
      * a new list from a sorted list, so we don't have to remove things in the
      * middle when collapsing overlapping entries together, which is painfully
      * slow. */
-    LOG(LEVEL_DETAIL, "range:sort: combining...\n");
+    LOG(LEVEL_DETAIL, "(rangelist_sort) combining...\n");
     for (i = 0; i < targets->list_len; i++) {
         rangelist_add_range(&newlist, targets->list[i].begin,
                             targets->list[i].end);
     }
 
-    LOG(LEVEL_DEBUG, "range:sort: combined from %u elements to %u elements\n",
+    LOG(LEVEL_DEBUG,
+        "(rangelist_sort) combined from %u elements to %u elements\n",
         original_count, newlist.list_len);
     FREE(targets->list);
     targets->list     = newlist.list;
     targets->list_len = newlist.list_len;
     newlist.list      = 0;
 
-    LOG(LEVEL_DETAIL, "range:sort: done...\n");
+    LOG(LEVEL_DETAIL, "(rangelist_sort) done...\n");
 
     targets->is_sorted = 1;
 }
@@ -1041,7 +1042,7 @@ int ranges_selftest(void) {
         return 1;
 
 #define ERROR()                                                                \
-    LOG(LEVEL_ERROR, "selftest: failed %s:%u\n", __FILE__, __LINE__);
+    LOG(LEVEL_ERROR, "(range) selftest failed %s:%u\n", __FILE__, __LINE__);
 
     /* test for the /0 CIDR block, since we'll be using that a lot to scan the
      * entire Internet */

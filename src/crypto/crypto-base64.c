@@ -261,7 +261,7 @@ int base64_selftest() {
     buf_len  = base64_encode(buf, sizeof(buf), "hello", 5);
     buf2_len = base64_decode(buf2, sizeof(buf2), buf, buf_len);
     if (buf2_len != 5 && memcmp(buf2, "hello", 5) != 0) {
-        LOG(LEVEL_ERROR, "base64: selftest failed\n");
+        LOG(LEVEL_ERROR, "(base64) selftest failed\n");
         return 1;
     }
 
@@ -287,7 +287,7 @@ int base64_selftest() {
 
         /* now make sure result equals original */
         if (buf3_len != buf_len && memcmp(buf3, buf, buf_len) != 0) {
-            LOG(LEVEL_ERROR, "base64: selftest failed\n");
+            LOG(LEVEL_ERROR, "(base64) selftest failed\n");
             return 1;
         }
     }

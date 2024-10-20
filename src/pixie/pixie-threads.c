@@ -41,7 +41,7 @@ void pixie_cpu_raise_priority(void) {
     DWORD_PTR result;
     result = SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
     if (result == 0) {
-        LOG(LEVEL_ERROR, "set_priority: returned error win32:%u\n",
+        LOG(LEVEL_ERROR, "(set_priority) returned error win32:%u\n",
             (unsigned)GetLastError());
     }
 #elif defined(__linux__) && defined(__GNUC__)
@@ -77,7 +77,7 @@ void pixie_cpu_set_affinity(unsigned processor) {
     // printf("mask(%u) = 0x%08x\n", processor, mask);
     result = SetThreadAffinityMask(GetCurrentThread(), mask);
     if (result == 0) {
-        LOG(LEVEL_ERROR, "set_affinity: returned error win32:%u\n",
+        LOG(LEVEL_ERROR, "(set_affinity) returned error win32:%u\n",
             (unsigned)GetLastError());
     }
 #elif defined(__linux__) && defined(__GNUC__) && !defined(__TERMUX__)
@@ -92,7 +92,7 @@ void pixie_cpu_set_affinity(unsigned processor) {
 
     x = pthread_setaffinity_np(thread, sizeof(cpu_set_t), &cpuset);
     if (x != 0) {
-        LOG(LEVEL_ERROR, "set_affinity: returned error linux:%d\n", errno);
+        LOG(LEVEL_ERROR, "(set_affinity) returned error linux:%d\n", errno);
     }
 #elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) ||     \
     defined(__OpenBSD__)
@@ -146,7 +146,7 @@ unsigned pixie_cpu_get_count(void) {
     ncpu_length = sizeof(ncpu);
     x           = sysctl(mib, 2, &ncpu, &ncpu_length, NULL, 0);
     if (x == -1) {
-        perror("sysctl(HW_NCPU) failed");
+        LOGPERROR("sysctl(HW_NCPU) failed");
         return 1;
     } else
         return (unsigned)ncpu;
@@ -163,7 +163,7 @@ unsigned pixie_cpu_get_count(void) {
         /* Get list of available CPUs for our system */
         err = sched_getaffinity(pid, sizeof(mask), &mask);
         if (err) {
-            perror("sched_getaffinity");
+            LOGPERROR("sched_getaffinity");
             return 1;
         } else {
 #ifndef CPU_COUNT

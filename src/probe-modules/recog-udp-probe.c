@@ -129,7 +129,7 @@ static ConfRes SET_hello_file(void *conf, const char *name, const char *value) {
     size_t        bytes_read = fread(buf, 1, PM_PAYLOAD_SIZE, fp);
     if (bytes_read == 0) {
         LOG(LEVEL_ERROR, "Failed to read valid hello in file %s.\n", value);
-        perror(value);
+        LOGPERROR(value);
         fclose(fp);
         return Conf_ERR;
     }
@@ -207,7 +207,7 @@ extern Probe HelloUdpProbe;
 
 static bool recogudp_init(const XConf *xconf) {
     if (recogudp_conf.hello == NULL || recogudp_conf.hello_len == 0) {
-        LOG(LEVEL_ERROR, "RecogUdpProbe: No hello data specified.\n");
+        LOG(LEVEL_ERROR, "(RecogUdpProbe) No hello data specified.\n");
         return false;
     }
 

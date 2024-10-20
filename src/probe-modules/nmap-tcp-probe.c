@@ -79,7 +79,7 @@ static ConfRes SET_rarity(void *conf, const char *name, const char *value) {
 
     unsigned rarity = parse_str_bool(value);
     if (rarity < 1 || rarity > 9) {
-        LOG(LEVEL_ERROR, "NmapTcpProbe: rarity must be in range 1-9.\n");
+        LOG(LEVEL_ERROR, "(NmapTcpProbe) rarity must be in range 1-9.\n");
         return Conf_ERR;
     }
 
@@ -140,27 +140,28 @@ static bool nmaptcp_init(const XConf *xconf) {
         nmapservice_read_file(nmaptcp_conf.probe_file);
 
     if (!nmaptcp_conf.service_probes) {
-        LOG(LEVEL_ERROR, "NmapTcpProbe: invalid nmap_service_probes file: %s\n",
+        LOG(LEVEL_ERROR,
+            "(NmapTcpProbe) invalid nmap_service_probes file: %s\n",
             nmaptcp_conf.probe_file);
         return false;
     }
 
     if (!nmaptcp_conf.service_probes->count) {
-        LOG(LEVEL_ERROR, "NmapTcpProbe: no probe has been loaded from %s\n",
+        LOG(LEVEL_ERROR, "(NmapTcpProbe) no probe has been loaded from %s\n",
             nmaptcp_conf.probe_file);
         nmapservice_free(nmaptcp_conf.service_probes);
         return false;
     }
 
     nmapservice_match_compile(nmaptcp_conf.service_probes);
-    LOG(LEVEL_HINT, "NmapTcpProbe: probes loaded and compiled.\n");
+    LOG(LEVEL_HINT, "(NmapTcpProbe) probes loaded and compiled.\n");
 
     nmapservice_link_fallback(nmaptcp_conf.service_probes);
-    LOG(LEVEL_HINT, "NmapTcpProbe: probe fallbacks linked.\n");
+    LOG(LEVEL_HINT, "(NmapTcpProbe) probe fallbacks linked.\n");
 
     if (nmaptcp_conf.rarity == 0) {
         nmaptcp_conf.rarity = 7;
-        LOG(LEVEL_HINT, "NmapTcpProbe: no rarity specified, use default 7.\n");
+        LOG(LEVEL_HINT, "(NmapTcpProbe) no rarity specified, use default 7.\n");
     }
 
     return true;
@@ -169,10 +170,10 @@ static bool nmaptcp_init(const XConf *xconf) {
 static void nmaptcp_close() {
     if (nmaptcp_conf.service_probes) {
         nmapservice_match_free(nmaptcp_conf.service_probes);
-        LOG(LEVEL_DETAIL, "NmapTcpProbe: probes compilation freed.\n");
+        LOG(LEVEL_DETAIL, "(NmapTcpProbe) probes compilation freed.\n");
 
         nmapservice_free(nmaptcp_conf.service_probes);
-        LOG(LEVEL_DETAIL, "NmapTcpProbe: probes freed.\n");
+        LOG(LEVEL_DETAIL, "(NmapTcpProbe) probes freed.\n");
 
         nmaptcp_conf.service_probes = NULL;
     }

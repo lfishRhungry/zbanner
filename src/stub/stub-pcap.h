@@ -13,6 +13,7 @@
 #ifndef STUB_PCAP_H
 #define STUB_PCAP_H
 #include <stdio.h>
+#include "../util-out/logger.h"
 
 /* Including the right ".h" file to define "timeval" is difficult, so instead
  * so instead we are simply going to define our own structure. This should
@@ -227,6 +228,9 @@ struct PcapFunctions {
  * use in the form "PCAP.functionname()" rather than "pcap_functioname()".
  */
 extern struct PcapFunctions PCAP;
+
+#define LOGPCAPERROR(pcap, s)                                                  \
+    LOG(LEVEL_ERROR, "(%s) %s: %s.\n", __func__, (s), PCAP.geterr(pcap))
 
 /**
  * Dynamically loads the shared library (libpcap.so, libpcap.dynlib,

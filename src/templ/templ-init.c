@@ -721,6 +721,6 @@ int template_selftest() {
     failures += tmplset->pkts[TmplType_NDP_NS].tmpl_type != TmplType_NDP_NS;
 
     if (failures)
-        LOG(LEVEL_ERROR, "template: failed\n");
+        LOG(LEVEL_ERROR, "(template) selftest failed\n");
     return failures;
 }

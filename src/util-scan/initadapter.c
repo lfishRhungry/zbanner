@@ -59,7 +59,7 @@ int initialize_adapter(XConf *xconf, bool has_ipv4_targets,
         xconf->is_offline, xconf->nic.is_vlan, xconf->nic.vlan_id,
         xconf->nic.snaplen);
     if (xconf->nic.adapter == 0) {
-        LOG(LEVEL_ERROR, "if:%s:init: failed\n", ifname);
+        LOG(LEVEL_ERROR, "(if:%s) init failed\n", ifname);
         rawsock_close_cache(tmp_acache);
         return -1;
     }

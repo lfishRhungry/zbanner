@@ -31,9 +31,9 @@ static bool text_init(const XConf *xconf, const OutConf *out) {
         pixie_fopen_shareable(&file, out->output_filename, out->is_append);
 
     if (err != 0 || file == NULL) {
-        LOG(LEVEL_ERROR, "TextOutput: could not open file %s for %s.\n",
+        LOG(LEVEL_ERROR, "(TextOutput) could not open file %s for %s.\n",
             out->output_filename, out->is_append ? "appending" : "writing");
-        perror(out->output_filename);
+        LOGPERROR(out->output_filename);
         return false;
     }
 
@@ -113,7 +113,7 @@ static void text_result(OutItem *item) {
     return;
 
 error:
-    LOG(LEVEL_ERROR, "TextOutput: could not write result to file.\n");
+    LOG(LEVEL_ERROR, "(TextOutput) could not write result to file.\n");
 }
 
 static void text_close(const OutConf *out) {

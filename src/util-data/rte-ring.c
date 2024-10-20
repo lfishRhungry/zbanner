@@ -366,7 +366,7 @@ int rte_ring_selftest() {
 
         result = run_test(test);
         if (result != 500500) {
-            LOG(LEVEL_ERROR, "xring: selftest failed with %" PRIu64 "\n",
+            LOG(LEVEL_ERROR, "(xring) selftest failed with %" PRIu64 "\n",
                 result);
             return 1;
         } else

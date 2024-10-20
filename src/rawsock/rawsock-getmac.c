@@ -31,24 +31,24 @@ int rawsock_get_adapter_mac(const char *ifname, unsigned char *mac) {
 
     fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0) {
-        perror("socket");
+        LOGPERROR("socket");
         goto end;
     }
 
     safe_strcpy(ifr.ifr_name, IFNAMSIZ, ifname);
     x = ioctl(fd, SIOCGIFHWADDR, (char *)&ifr);
     if (x < 0) {
-        perror("ioctl");
+        LOGPERROR("ioctl");
         goto end;
     }
 
     /* Log helpful info about the interface type */
     switch (ifr.ifr_ifru.ifru_hwaddr.sa_family) {
         case 1:
-            LOG(LEVEL_DETAIL, "if:%s: type=ethernet(1)\n", ifname);
+            LOG(LEVEL_DETAIL, "(if:%s) type=ethernet(1)\n", ifname);
             break;
         default:
-            LOG(LEVEL_DETAIL, "if:%s: type=0x%04x\n", ifname,
+            LOG(LEVEL_DETAIL, "(if:%s) type=0x%04x\n", ifname,
                 ifr.ifr_ifru.ifru_hwaddr.sa_family);
     }
 
@@ -122,7 +122,7 @@ again:
         goto again;
     }
     if (err != NO_ERROR) {
-        LOG(LEVEL_ERROR, "if: GetAdaptersInfo failed: %u\n", (unsigned)err);
+        LOG(LEVEL_ERROR, "(if) GetAdaptersInfo failed: %u\n", (unsigned)err);
         return EFAULT;
     }
 
@@ -170,7 +170,7 @@ int rawsock_get_adapter_mac(const char *ifname, unsigned char *mac) {
     /* Get the list of all network adapters */
     err = getifaddrs(&ifap);
     if (err != 0) {
-        perror("getifaddrs");
+        LOGPERROR("getifaddrs");
         return 1;
     }
 
@@ -181,7 +181,7 @@ int rawsock_get_adapter_mac(const char *ifname, unsigned char *mac) {
             break;
     }
     if (p == NULL) {
-        LOG(LEVEL_WARN, "if:%s: not found\n", ifname);
+        LOG(LEVEL_WARN, "(if:%s) not found\n", ifname);
         goto error; /* not found */
     }
 

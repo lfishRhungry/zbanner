@@ -413,7 +413,7 @@ void set_one_parameter(void *conf, ConfParam *cp, const char *name,
         }
     }
 
-    LOG(LEVEL_ERROR, "CONF: unknown config option: %s=%s\n", name, value);
+    LOG(LEVEL_ERROR, "(CONF) unknown config option: %s=%s\n", name, value);
     exit(1);
 }
 

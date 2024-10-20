@@ -55,8 +55,8 @@ bool stublua_init(void) {
         }
 
         if (lib == NULL) {
-            LOG(LEVEL_ERROR, "liblua: failed to load Lua shared library\n");
-            LOG(LEVEL_ERROR, "    HINT: you must install Lua library\n");
+            LOG(LEVEL_ERROR, "(liblua) failed to load Lua shared library\n");
+            LOG(LEVEL_HINT, "you must install Lua library\n");
             return false;
         }
     }
@@ -65,14 +65,14 @@ bool stublua_init(void) {
 #define DOLINK(name)                                                           \
     name = (void (*)())GetProcAddress(lib, #name);                             \
     if (name == NULL) {                                                        \
-        LOG(LEVEL_ERROR, "liblua: %s: failed\n", #name);                       \
+        LOG(LEVEL_ERROR, "(liblua: %s) failed\n", #name);                      \
         return false;                                                          \
     }
 #else
 #define DOLINK(name)                                                           \
     name = dlsym(lib, #name);                                                  \
     if (name == NULL) {                                                        \
-        LOG(LEVEL_ERROR, "liblua: %s: failed\n", #name);                       \
+        LOG(LEVEL_ERROR, "(liblua: %s) failed\n", #name);                      \
         return false;                                                          \
     }
 #endif

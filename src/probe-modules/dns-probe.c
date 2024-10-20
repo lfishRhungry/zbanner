@@ -34,7 +34,7 @@ static ConfRes SET_ptr(void *conf, const char *name, const char *value) {
     dns_conf.req_type = dns_str_to_record_type("ptr");
 
     if (dns_conf.req_type == DNS_REC_INVALID) {
-        LOG(LEVEL_ERROR, "internal: invalide request type of dns.\n");
+        LOG(LEVEL_ERROR, "(dns internal) invalide request type.\n");
         return Conf_ERR;
     }
 

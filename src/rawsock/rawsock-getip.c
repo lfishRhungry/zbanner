@@ -164,7 +164,7 @@ unsigned rawsock_get_adapter_ip(const char *ifname) {
     /* Get the list of all network adapters */
     err = getifaddrs(&ifap);
     if (err != 0) {
-        perror("getifaddrs");
+        LOGPERROR("getifaddrs");
         return 0;
     }
 

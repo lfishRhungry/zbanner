@@ -142,7 +142,7 @@ again:
      * If our adapter isn't found, print an error.
      */
     if (adapters == NULL) {
-        LOG(LEVEL_ERROR, "GetAdaptersInfo: adapter not found: %s\n", ifname);
+        LOG(LEVEL_ERROR, "(GetAdaptersInfo) adapter not found: %s\n", ifname);
         goto end;
     }
 

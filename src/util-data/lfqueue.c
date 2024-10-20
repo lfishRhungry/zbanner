@@ -38,6 +38,8 @@
 #include <unistd.h> // for usleep
 #include <sched.h>
 
+#include "../util-out/logger.h"
+
 #define __LFQ_VAL_COMPARE_AND_SWAP  __sync_val_compare_and_swap
 #define __LFQ_BOOL_COMPARE_AND_SWAP __sync_bool_compare_and_swap
 #define __LFQ_FETCH_AND_ADD         __sync_fetch_and_add
@@ -188,7 +190,7 @@ static int _enqueue(lfqueue_t *lfqueue, void *value) {
     node = (lfqueue_cas_node_t *)lfqueue->_malloc(lfqueue->pl,
                                                   sizeof(lfqueue_cas_node_t));
     if (node == NULL) {
-        perror("malloc");
+        LOGPERROR("malloc");
         return errno;
     }
     node->value    = value;
@@ -258,7 +260,7 @@ int lfqueue_init_mf(lfqueue_t *lfqueue, void *pl,
     lfqueue_cas_node_t *freebase =
         lfqueue_malloc(pl, sizeof(lfqueue_cas_node_t));
     if (base == NULL || freebase == NULL) {
-        perror("malloc");
+        LOGPERROR("malloc");
         return errno;
     }
     base->value          = NULL;

@@ -110,7 +110,7 @@ infinite:;
      */
     parms->my_index = start;
 
-    LOG(LEVEL_DEBUG, "Tx Thread: starting main loop from: %llu inc: %llu\n",
+    LOG(LEVEL_DEBUG, "(tx thread) starting main loop from: %llu inc: %llu\n",
         start, increment);
 
     more_idx = 0;

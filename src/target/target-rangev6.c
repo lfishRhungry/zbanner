@@ -272,7 +272,7 @@ void range6list_sort(struct Range6List *targets) {
     }
 
     /* First, sort the list */
-    LOG(LEVEL_DETAIL, "range6:sort: sorting...\n");
+    LOG(LEVEL_DETAIL, "(range6list_sort) sorting...\n");
     qsort(targets->list,            /* the array to sort */
           targets->list_len,        /* number of elements to sort */
           sizeof(targets->list[0]), /* size of element */
@@ -282,20 +282,21 @@ void range6list_sort(struct Range6List *targets) {
      * a new list from a sorted list, so we don't have to remove things in the
      * middle when collapsing overlapping entries together, which is painfully
      * slow. */
-    LOG(LEVEL_DETAIL, "range:sort: combining...\n");
+    LOG(LEVEL_DETAIL, "(range6list_sort) combining...\n");
     for (i = 0; i < targets->list_len; i++) {
         range6list_add_range(&newlist, targets->list[i].begin,
                              targets->list[i].end);
     }
 
-    LOG(LEVEL_DEBUG, "range:sort: combined from %u elements to %u elements\n",
+    LOG(LEVEL_DEBUG,
+        "(range6list_sort) combined from %u elements to %u elements\n",
         original_count, newlist.list_len);
     FREE(targets->list);
     targets->list     = newlist.list;
     targets->list_len = newlist.list_len;
     newlist.list      = 0;
 
-    LOG(LEVEL_DETAIL, "range:sort: done...\n");
+    LOG(LEVEL_DETAIL, "(range6list_sort) done...\n");
 
     targets->is_sorted = 1;
 }
@@ -595,7 +596,7 @@ static int regress_pick2() {
         /* Duplicate the targetlist using the picker */
         x = range6list_count(targets);
         if (x.hi) {
-            LOG(LEVEL_ERROR, "range6: range too big\n");
+            LOG(LEVEL_ERROR, "(range6) range too big\n");
             return 1;
         }
         range = x.lo;
@@ -625,7 +626,7 @@ int ranges6_selftest() {
     REGRESS(0, regress_pick2() == 0);
 
 #define ERROR()                                                                \
-    LOG(LEVEL_ERROR, "selftest: failed %s:%u\n", __FILE__, __LINE__);
+    LOG(LEVEL_ERROR, "(range6) selftest failed %s:%u\n", __FILE__, __LINE__);
 
     err = target_parse_range("2001:0db8:85a3:0000:0000:8a2e:0370:7334", 0, 0, 0,
                              &r);

@@ -171,9 +171,9 @@ static int _main_scan(XConf *xconf) {
         exit(1);
     }
 
-    LOG(LEVEL_DEBUG, "init_ipv4 from generator: %s\n",
+    LOG(LEVEL_DETAIL, "init_ipv4 from generator: %s\n",
         init_ipv4 ? "true" : "false");
-    LOG(LEVEL_DEBUG, "init_ipv6 from generator: %s\n",
+    LOG(LEVEL_DETAIL, "init_ipv6 from generator: %s\n",
         init_ipv6 ? "true" : "false");
 
     init_ipv4 = xconf->set_ipv4_adapter ? xconf->init_ipv4_adapter : init_ipv4;
@@ -186,11 +186,11 @@ static int _main_scan(XConf *xconf) {
 
     scan_range = count_targets * count_endpoints;
 
-    LOG(LEVEL_DEBUG, "count_targets from generator: %" PRIu64 "\n",
+    LOG(LEVEL_DETAIL, "count_targets from generator: %" PRIu64 "\n",
         count_targets);
-    LOG(LEVEL_DEBUG, "count_endpoints from generator: %" PRIu64 "\n",
+    LOG(LEVEL_DETAIL, "count_endpoints from generator: %" PRIu64 "\n",
         count_targets);
-    LOG(LEVEL_DEBUG, "scan_range from generator: %" PRIu64 "\n", scan_range);
+    LOG(LEVEL_DETAIL, "scan_range from generator: %" PRIu64 "\n", scan_range);
 
     /**
      * Optimize target again because generator may add new targets.
@@ -668,7 +668,7 @@ int main(int argc, char *argv[]) {
 
     /* a separate "raw socket" initialization step for Windows and PF_RING. */
     if (pcap_init() != 0)
-        LOG(LEVEL_ERROR, "libpcap: failed to load\n");
+        LOG(LEVEL_ERROR, "(libpcap) failed to load\n");
 
     rawsock_init();
 

@@ -48,7 +48,7 @@ static bool list_init(const XConf *xconf, const OutConf *out) {
     if (err != 0 || file == NULL) {
         LOG(LEVEL_ERROR, "(ListOutput) could not open file %s for %s.\n",
             out->output_filename, out->is_append ? "appending" : "writing");
-        perror(out->output_filename);
+        LOGPERROR(out->output_filename);
         return false;
     }
 

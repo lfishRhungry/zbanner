@@ -170,6 +170,6 @@ int targetset_selftest() {
 
     return 0;
 fail:
-    LOG(LEVEL_ERROR, "targetset: test fail, line=%d\n", line);
+    LOG(LEVEL_ERROR, "(targetset) selftest fail, line=%d\n", line);
     return 1;
 }

@@ -360,7 +360,7 @@ int lcg_selftest() {
         is_success = lcg_verify(a, c, m, m);
 
         if (!is_success) {
-            LOG(LEVEL_ERROR, "LCG: randomization failed\n");
+            LOG(LEVEL_ERROR, "(LCG) randomization failed\n");
             return 1; /*fail*/
         }
     }

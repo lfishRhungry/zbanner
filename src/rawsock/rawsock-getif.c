@@ -67,11 +67,11 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname) {
      */
     fd = socket(AF_ROUTE, SOCK_RAW, 0);
     if (fd < 0) {
-        perror("socket(PF_ROUTE)");
+        LOGPERROR("socket(PF_ROUTE)");
         FREE(rtm);
         return errno;
     }
-    LOG(LEVEL_DETAIL, "getif: got socket handle\n");
+    LOG(LEVEL_DETAIL, "(getif) got socket handle\n");
 
     /* Needs a timeout. Sometimes it'll hang indefinitely waiting for a
      * response that will never arrive */
@@ -83,12 +83,12 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname) {
         err = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
                          sizeof(timeout));
         if (err < 0)
-            LOG(LEVEL_ERROR, "SO_RCVTIMEO: %d %s\n", errno, strerror(errno));
+            LOGPERROR("setsockopt(SO_RCVTIMEO)")
 
         err = setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
                          sizeof(timeout));
         if (err < 0)
-            LOG(LEVEL_ERROR, "SO_SNDTIMEO: %d %s\n", errno, strerror(errno));
+            LOGPERROR("setsockopt(SO_SNDTIMEO)")
     }
 
     /*
@@ -115,8 +115,7 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname) {
 
     err = write(fd, (char *)rtm, rtm->rtm_msglen);
     if (err <= 0) {
-        LOG(LEVEL_ERROR, "getif: write(): returned %d %s\n", errno,
-            strerror(errno));
+        LOGPERROR("write");
         goto fail;
     }
 
@@ -126,12 +125,11 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname) {
     for (;;) {
         err = read(fd, (char *)rtm, sizeof_buffer);
         if (err <= 0) {
-            LOG(LEVEL_ERROR, "getif: read(): returned %d %s\n", errno,
-                strerror(errno));
+            LOGPERROR("read");
             goto fail;
         }
 
-        LOG(LEVEL_DETAIL, "getif: got response, len=%d\n", err);
+        LOG(LEVEL_DETAIL, "(getif) got response, len=%d\n", err);
 
         if (rtm->rtm_seq != seq) {
             printf("seq: %u %u\n", rtm->rtm_seq, seq);
@@ -202,7 +200,7 @@ static int read_netlink(int fd, char *bufPtr, size_t sizeof_buffer, int seqNum,
     do {
         /* Receive response from the kernel */
         if ((readLen = recv(fd, bufPtr, sizeof_buffer - msgLen, 0)) < 0) {
-            perror("SOCK READ: ");
+            LOGPERROR("recv");
             return -1;
         }
 
@@ -211,7 +209,7 @@ static int read_netlink(int fd, char *bufPtr, size_t sizeof_buffer, int seqNum,
         /* Check if the header is valid */
         if ((NLMSG_OK(nlHdr, readLen) == 0) ||
             (nlHdr->nlmsg_type == NLMSG_ERROR)) {
-            perror("Error in received packet");
+            LOGPERROR("NLMSG_OK");
             return -1;
         }
 

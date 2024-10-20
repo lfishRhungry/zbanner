@@ -273,7 +273,7 @@ void receive_thread(void *v) {
         handler[i] = pixie_begin_thread(handle_thread, 0, &handle_parms[i]);
     }
 
-    LOG(LEVEL_DEBUG, "THREAD: recv: starting main loop\n");
+    LOG(LEVEL_DEBUG, "(rx thread) starting main loop\n");
     while (!time_to_finish_rx) {
         /*handle only one actual fast-timeout event to avoid blocking*/
         while (xconf->is_fast_timeout && !time_to_finish_rx) {

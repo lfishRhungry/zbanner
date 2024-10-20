@@ -27,7 +27,6 @@
  static libpcap.a library.
 
 */
-#include "../util-out/logger.h"
 
 #if defined(_MSC_VER)
 #pragma warning(disable : 4115 4201)
@@ -383,10 +382,11 @@ int pcap_init(void) {
         for (i = 0; possible_names[i]; i++) {
             hLibpcap = dlopen(possible_names[i], RTLD_LAZY);
             if (hLibpcap) {
-                LOG(LEVEL_INFO, "pcap: found library: %s\n", possible_names[i]);
+                LOG(LEVEL_INFO, "(pcap) found library: %s\n",
+                    possible_names[i]);
                 break;
             } else {
-                LOG(LEVEL_WARN, "pcap: failed to load: %s\n",
+                LOG(LEVEL_WARN, "(pcap) failed to load: %s\n",
                     possible_names[i]);
             }
         }
@@ -400,7 +400,7 @@ int pcap_init(void) {
 #define DOLINK(PCAP_DATALINK, datalink)                                        \
     pl->datalink = (PCAP_DATALINK)dlsym(hLibpcap, "pcap_" #datalink);          \
     if (pl->datalink == NULL)                                                  \
-        LOG(LEVEL_WARN, "pcap: pcap_%s: failed\n", #datalink);                 \
+        LOG(LEVEL_WARN, "(pcap: pcap_%s) failed\n", #datalink);                \
     if (pl->datalink == NULL)                                                  \
         pl->func_err = 1, pl->datalink = null_##PCAP_DATALINK;
 #else

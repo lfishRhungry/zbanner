@@ -1,5 +1,9 @@
 #ifndef LOGGER_H
 #define LOGGER_H
+
+#include <errno.h>
+#include <string.h>
+
 #include "../target/target-ipaddress.h"
 
 /**
@@ -14,6 +18,9 @@
 #define LEVEL_DEBUG  (2)
 #define LEVEL_DETAIL (3)
 
+#define LOGPERROR(s)                                                           \
+    LOG(LEVEL_ERROR, "(%s) %s: %s.\n", __func__, (s), strerror(errno))
+
 /**
  * Use logger after inited.
  */
@@ -27,6 +34,10 @@ void LOG_set_ansi(bool no_ansi);
 
 void LOG_close();
 
+/**
+ * log info of different level in format like "[ERR] info of log".
+ * NOTE: the best practice is like "[ERR] (subject) info...".
+ */
 void LOG(int level, const char *fmt, ...);
 
 void LOGip(int level, ipaddress ip, unsigned port, const char *fmt, ...);

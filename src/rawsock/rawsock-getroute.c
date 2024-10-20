@@ -116,7 +116,7 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4) {
      */
     fd = socket(AF_ROUTE, SOCK_RAW, 0);
     if (fd < 0) {
-        perror("socket(AF_ROUTE)");
+        LOGPERROR("socket(AF_ROUTE)");
         free(rtm);
         return errno;
     }
@@ -131,12 +131,12 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4) {
         err = setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
                          sizeof(timeout));
         if (err < 0)
-            LOG(LEVEL_ERROR, "SO_RCVTIMEO: %d %s\n", errno, strerror(errno));
+            LOG(LEVEL_ERROR, "(SO_RCVTIMEO) %d %s\n", errno, strerror(errno));
 
         err = setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout,
                          sizeof(timeout));
         if (err < 0)
-            LOG(LEVEL_ERROR, "SO_SNDTIMEO: %d %s\n", errno, strerror(errno));
+            LOG(LEVEL_ERROR, "(SO_SNDTIMEO) %d %s\n", errno, strerror(errno));
     }
 
     /*
@@ -163,8 +163,7 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4) {
 
     err = write(fd, (char *)rtm, rtm->rtm_msglen);
     if (err <= 0) {
-        LOG(LEVEL_ERROR, "getroute: write(): returned %d %s\n", errno,
-            strerror(errno));
+        LOGPERROR("write");
         goto fail;
     }
 
@@ -248,7 +247,7 @@ static int read_netlink(int fd, char *bufPtr, size_t sizeof_buffer, int seqNum,
     do {
         /* Receive response from the kernel */
         if ((readLen = recv(fd, bufPtr, sizeof_buffer - msgLen, 0)) < 0) {
-            perror("SOCK READ: ");
+            LOGPERROR("recv");
             return -1;
         }
 
@@ -257,7 +256,7 @@ static int read_netlink(int fd, char *bufPtr, size_t sizeof_buffer, int seqNum,
         /* Check if the header is valid */
         if ((NLMSG_OK(nlHdr, readLen) == 0) ||
             (nlHdr->nlmsg_type == NLMSG_ERROR)) {
-            perror("Error in received packet");
+            LOGPERROR("NLMSG_OK");
             return -1;
         }
 

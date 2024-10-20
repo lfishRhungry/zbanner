@@ -281,7 +281,7 @@ static ConfRes SET_header(void *conf, const char *name, const char *value) {
         newname[name_length] = '\0';
     } else {
         LOG(LEVEL_ERROR, "--header needs both a name and value\n");
-        LOG(LEVEL_ERROR, "    hint: \"--header Name:value\"\n");
+        LOG(LEVEL_HINT, "    \"--header Name:value\"\n");
         return Conf_ERR;
     }
 

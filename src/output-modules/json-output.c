@@ -47,16 +47,16 @@ static bool json_init(const XConf *xconf, const OutConf *out) {
         pixie_fopen_shareable(&file, out->output_filename, out->is_append);
 
     if (err != 0 || file == NULL) {
-        LOG(LEVEL_ERROR, "JsonOutput: could not open file %s for %s.\n",
+        LOG(LEVEL_ERROR, "(JsonOutput) could not open file %s for %s.\n",
             out->output_filename, out->is_append ? "appending" : "writing");
-        perror(out->output_filename);
+        LOGPERROR(out->output_filename);
         return false;
     }
 
     err = fputs(header_json, file);
 
     if (err < 0) {
-        LOG(LEVEL_ERROR, "JsonOutput: could not write header to file.\n");
+        LOG(LEVEL_ERROR, "(JsonOutput) could not write header to file.\n");
     }
 
     return true;
@@ -142,7 +142,7 @@ static void json_result(OutItem *item) {
     return;
 
 error:
-    LOG(LEVEL_ERROR, "JsonOutput: could not write result to file.\n");
+    LOG(LEVEL_ERROR, "(JsonOutput) could not write result to file.\n");
 }
 
 static void json_close(const OutConf *out) {
@@ -150,7 +150,7 @@ static void json_close(const OutConf *out) {
     int err = fputs(tail_json, file);
 
     if (err < 0) {
-        LOG(LEVEL_WARN, "JsonOutput: could not write tail to file.\n");
+        LOG(LEVEL_WARN, "(JsonOutput) could not write tail to file.\n");
     }
 
     fflush(file);

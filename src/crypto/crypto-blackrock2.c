@@ -470,7 +470,7 @@ int blackrock2_selftest() {
         is_success = verify(&br, range);
 
         if (!is_success) {
-            LOG(LEVEL_ERROR, "BLACKROCK: randomization failed\n");
+            LOG(LEVEL_ERROR, "(BLACKROCK) randomization failed\n");
             return 1; /*fail*/
         }
     }

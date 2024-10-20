@@ -940,7 +940,7 @@ int datachain_selftest(void) {
     return 0;
 
 fail:
-    LOG(LEVEL_ERROR, "selftest: 'datachain' failed, file=%s, line=%u\n",
+    LOG(LEVEL_ERROR, "(selftest) 'datachain' failed, file=%s, line=%u\n",
         __FILE__, line);
     return 1;
 }

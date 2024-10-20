@@ -296,6 +296,6 @@ int rangesport_selftest() {
     return 0;
 
 fail:
-    LOG(LEVEL_ERROR, "rangesport: test fail, line=%d\n", line);
+    LOG(LEVEL_ERROR, "(rangesport) selftest fail, line=%d\n", line);
     return 1;
 }

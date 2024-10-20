@@ -54,9 +54,9 @@ static bool bsonout_init(const XConf *xconf, const OutConf *out) {
         pixie_fopen_shareable(&file, out->output_filename, out->is_append);
 
     if (err != 0 || file == NULL) {
-        LOG(LEVEL_ERROR, "BsonOutput: could not open file %s for %s.\n",
+        LOG(LEVEL_ERROR, "(BsonOutput) could not open file %s for %s.\n",
             out->output_filename, out->is_append ? "appending" : "writing");
-        perror(out->output_filename);
+        LOGPERROR(out->output_filename);
         return false;
     }
 
@@ -165,7 +165,7 @@ static bool print_bson_as_json(const uint8_t *bson_data, size_t bson_size) {
     bool   is_success = true;
 
     if (!bson_init_static(&bson_doc, bson_data, bson_size)) {
-        LOG(LEVEL_ERROR, "ParseBson: Failed to initialize BSON document.\n");
+        LOG(LEVEL_ERROR, "(ParseBson) Failed to initialize BSON document.\n");
         is_success = false;
         goto bson_to_json_err1;
     }
@@ -176,7 +176,7 @@ static bool print_bson_as_json(const uint8_t *bson_data, size_t bson_size) {
         printf("%s\n", json_str);
         bson_free(json_str);
     } else {
-        LOG(LEVEL_ERROR, "ParseBson: Failed to convert BSON to JSON.\n");
+        LOG(LEVEL_ERROR, "(ParseBson) Failed to convert BSON to JSON.\n");
         is_success = false;
     }
 
@@ -190,8 +190,9 @@ void parse_bson_file(const char *filename) {
 
     FILE *bsonfile = fopen(filename, "rb");
     if (bsonfile == NULL) {
-        LOG(LEVEL_ERROR, "ParseBson: could not open BSON file %s.\n", filename);
-        perror(filename);
+        LOG(LEVEL_ERROR, "(ParseBson) could not open BSON file %s.\n",
+            filename);
+        LOGPERROR(filename);
         return;
     }
 
@@ -213,7 +214,7 @@ void parse_bson_file(const char *filename) {
 
         /*the shortest doc len*/
         if (doc_length < 5) {
-            LOG(LEVEL_ERROR, "ParseBson: Invalid BSON document length: %u\n",
+            LOG(LEVEL_ERROR, "(ParseBson) Invalid BSON document length: %u\n",
                 doc_length);
             break;
         }

@@ -877,7 +877,7 @@ struct NmapServiceProbeList *nmapservice_read_file(const char *filename) {
      */
     fp = fopen(filename, "rt");
     if (fp == NULL) {
-        perror(filename);
+        LOGPERROR(filename);
         return 0;
     }
 

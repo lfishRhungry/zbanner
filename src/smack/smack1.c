@@ -1554,7 +1554,7 @@ int smack_selftest() {
     static const size_t END_TEST_THINGY1 = 9001;
     static const size_t END_TEST_THINGY2 = 9002;
 
-    LOG(LEVEL_DEBUG, "smack: selftest started\n");
+    LOG(LEVEL_DEBUG, "(smack) selftest started\n");
 
     /*
      * using SMACK is 5 steps:
@@ -1578,7 +1578,7 @@ int smack_selftest() {
     i = 0;
 #define TEST(pat, offset, str)                                                 \
     if (pat != id || offset != i)                                              \
-    LOG(LEVEL_ERROR, "smack: fail %s\n", str)
+    LOG(LEVEL_ERROR, "(smack) fail %s\n", str)
     id = smack_search_next(s, &state, text, &i, text_length);
     TEST(8, 10, "PROPFIND");
     id = smack_search_next(s, &state, text, &i, text_length);
@@ -1604,7 +1604,7 @@ int smack_selftest() {
     if (id != SMACK_NOT_FOUND) {
         /* At this point, we should no more patterns, and reach the end
          * of the string */
-        LOG(LEVEL_ERROR, "smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
+        LOG(LEVEL_ERROR, "(smack fail) line=%u, file=%s\n", __LINE__, __FILE__);
         return 1;
     }
 
@@ -1617,7 +1617,7 @@ int smack_selftest() {
     if (id != END_TEST_THINGY1 && id != END_TEST_THINGY2) {
         /* We didn't find one of the two end-patterns we were looking for, so
          * fail */
-        LOG(LEVEL_ERROR, "smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
+        LOG(LEVEL_ERROR, "(smack fail) line=%u, file=%s\n", __LINE__, __FILE__);
         return 1;
     }
 
@@ -1628,11 +1628,11 @@ int smack_selftest() {
      * versions. */
     id2 = smack_search_next_end(s, &state);
     if (id2 != END_TEST_THINGY1 && id2 != END_TEST_THINGY2) {
-        LOG(LEVEL_ERROR, "smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
+        LOG(LEVEL_ERROR, "(smack fail) line=%u, file=%s\n", __LINE__, __FILE__);
         return 1;
     } else if (id2 == id) {
         /* The two ending patterns should give two different results */
-        LOG(LEVEL_ERROR, "smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
+        LOG(LEVEL_ERROR, "(smack fail) line=%u, file=%s\n", __LINE__, __FILE__);
         return 1;
     }
 
@@ -1640,12 +1640,12 @@ int smack_selftest() {
      * a NOT FOUND */
     id2 = smack_search_next_end(s, &state);
     if (id2 != SMACK_NOT_FOUND) {
-        LOG(LEVEL_ERROR, "smack: fail: line=%u, file=%s\n", __LINE__, __FILE__);
+        LOG(LEVEL_ERROR, "(smack fail) line=%u, file=%s\n", __LINE__, __FILE__);
         return 1;
     }
 
     smack_destroy(s);
 
-    LOG(LEVEL_DEBUG, "smack: success!\n");
+    LOG(LEVEL_DEBUG, "(smack) success!\n");
     return 0;
 }

@@ -220,7 +220,7 @@ size_t icmp_echo_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
                                     size_t payload_length, unsigned char *px,
                                     size_t sizeof_px) {
     if (tmpl->tmpl_type != TmplType_ICMP_ECHO) {
-        LOG(LEVEL_ERROR, "icmp_echo_echo_create_by_template: need a "
+        LOG(LEVEL_ERROR, "(icmp_echo_echo_create_by_template) need a "
                          "TmplType_ICMP_ECHO TemplatePacket.\n");
         return 0;
     }
@@ -336,7 +336,7 @@ size_t icmp_timestamp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
                                          unsigned trans_time, unsigned char *px,
                                          size_t sizeof_px) {
     if (tmpl->tmpl_type != TmplType_ICMP_TS) {
-        LOG(LEVEL_ERROR, "icmp_timestamp_create_by_template: need a "
+        LOG(LEVEL_ERROR, "(icmp_timestamp_create_by_template) need a "
                          "TmplType_ICMP_TS TemplatePacket.\n");
         return 0;
     }

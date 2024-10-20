@@ -1114,7 +1114,7 @@ static ConfRes SET_adapter(void *conf, const char *name, const char *value) {
     }
 
     if (xconf->nic.ifname[0]) {
-        LOG(LEVEL_HINT, "CONF: overwriting \"adapter=%s\"\n",
+        LOG(LEVEL_HINT, "(CONF) overwriting \"adapter=%s\"\n",
             xconf->nic.ifname);
     }
     snprintf(xconf->nic.ifname, sizeof(xconf->nic.ifname), "%s", value);
@@ -1529,7 +1529,7 @@ static ConfRes SET_source_mac(void *conf, const char *name, const char *value) {
 
     err = parse_str_mac(value, &source_mac);
     if (err) {
-        LOG(LEVEL_ERROR, "CONF: bad MAC address: %s = %s\n", name, value);
+        LOG(LEVEL_ERROR, "(CONF) bad MAC address: %s = %s\n", name, value);
         return Conf_ERR;
     }
 
@@ -1604,7 +1604,7 @@ static ConfRes SET_router_mac(void *conf, const char *name, const char *value) {
     int          err;
     err = parse_str_mac(value, &router_mac);
     if (err) {
-        LOG(LEVEL_ERROR, "CONF: bad MAC address: %s = %s\n", name, value);
+        LOG(LEVEL_ERROR, "(CONF): bad MAC address: %s = %s\n", name, value);
         return Conf_ERR;
     }
     if (EQUALS("router-mac-ipv4", name))
@@ -2032,7 +2032,7 @@ static ConfRes SET_rate(void *conf, const char *name, const char *value) {
     for (i = 0; value[i] && value[i] != '.'; i++) {
         char c = value[i];
         if (c < '0' || '9' < c) {
-            LOG(LEVEL_ERROR, "CONF: non-digit in rate spec: %s=%s\n", name,
+            LOG(LEVEL_ERROR, "(CONF) non-digit in rate spec: %s=%s\n", name,
                 value);
             return Conf_ERR;
         }
@@ -2044,7 +2044,7 @@ static ConfRes SET_rate(void *conf, const char *name, const char *value) {
         while (value[i]) {
             char c = value[i];
             if (c < '0' || '9' < c) {
-                LOG(LEVEL_ERROR, "CONF: non-digit in rate spec: %s=%s\n", name,
+                LOG(LEVEL_ERROR, "(CONF) non-digit in rate spec: %s=%s\n", name,
                     value);
                 return Conf_ERR;
             }
@@ -3800,7 +3800,7 @@ static int xconf_self_selftest() {
 
     return 0;
 failure:
-    LOG(LEVEL_ERROR, "selftest failure: config subsystem\n");
+    LOG(LEVEL_ERROR, "(xconf) selftest failed\n");
     return 1;
 }
 

@@ -285,7 +285,7 @@ again:
     if (bytes_read < 16) {
         if (bytes_read <= 0) {
             // LOG(LEVEL_ERROR, "%s: failed to read header\n",
-            // capfile->filename); perror(capfile->filename);
+            // capfile->filename); LOGPERROR(capfile->filename);
         } else if (bytes_read == 0)
             ; /* normal end-of-file */
         else
@@ -344,7 +344,7 @@ again:
             LOG(LEVEL_ERROR,
                 "%s:%lld: could not resolve file corruption (ftell)\n",
                 capfile->filename, capfile->frame_number);
-            perror(capfile->filename);
+            LOGPERROR(capfile->filename);
             fseek_x(capfile->fp, 0, SEEK_END);
             return 0;
         }
@@ -365,7 +365,7 @@ again:
             if (bytes_read <= 0) {
                 LOG(LEVEL_ERROR, "%s: error at end of file\n",
                     capfile->filename);
-                perror(capfile->filename);
+                LOGPERROR(capfile->filename);
             } else
                 LOG(LEVEL_ERROR, "%s: premature end of file\n",
                     capfile->filename);
@@ -395,7 +395,7 @@ again:
                 LOG(LEVEL_ERROR,
                     "%s: could not resolve file corruption (seek forward)\n",
                     capfile->filename);
-                perror(capfile->filename);
+                LOGPERROR(capfile->filename);
                 fseek_x(capfile->fp, 0, SEEK_END);
                 return 0;
             }
@@ -447,7 +447,7 @@ again:
                  * going to repeat the reset of the file location
                  * that we did above */
                 if (fseek_x(capfile->fp, position, SEEK_SET) != 0) {
-                    perror(capfile->filename);
+                    LOGPERROR(capfile->filename);
                     fseek_x(capfile->fp, 0, SEEK_END);
                     return 0;
                 }
@@ -484,7 +484,7 @@ again:
         if (bytes_read <= 0) {
             LOG(LEVEL_ERROR, "%s: could not read packet data, frame #%lld\n",
                 capfile->filename, (long long)capfile->frame_number);
-            perror(capfile->filename);
+            LOGPERROR(capfile->filename);
         } else
             LOG(LEVEL_ERROR, "%s: premature end of file\n", capfile->filename);
         return 0;
@@ -527,7 +527,7 @@ struct PcapFile *pcapfile_openread(const char *capfilename) {
     fp = fopen(capfilename, "rb");
     if (fp == NULL) {
         LOG(LEVEL_ERROR, "%s: could not open capture file\n", capfilename);
-        perror(capfilename);
+        LOGPERROR(capfilename);
         return 0;
     }
 
@@ -546,7 +546,7 @@ struct PcapFile *pcapfile_openread(const char *capfilename) {
     if (bytes_read < 24) {
         if (bytes_read <= 0) {
             LOG(LEVEL_ERROR, "%s: could not read PCAP header\n", capfilename);
-            perror(capfilename);
+            LOGPERROR(capfilename);
         } else
             LOG(LEVEL_ERROR, "%s: file too short\n", capfilename);
         fclose(fp);
@@ -615,13 +615,13 @@ struct PcapFile *pcapfile_openread(const char *capfilename) {
                 "%s: ftell failed (file system error? seen with VMware HGFS "
                 "bug)\n",
                 capfilename);
-            perror(capfilename);
+            LOGPERROR(capfilename);
             fclose(fp);
             return 0;
         }
         x = fread(tsbuf, 1, 8, fp);
         if (x != 8) {
-            perror(capfilename);
+            LOGPERROR(capfilename);
             fclose(fp);
             return 0;
         }
@@ -629,7 +629,7 @@ struct PcapFile *pcapfile_openread(const char *capfilename) {
         if (fseek(fp, loc, SEEK_SET) != 0) {
             LOG(LEVEL_ERROR, "%s: fseek failed (file system error?)\n",
                 capfilename);
-            perror(capfilename);
+            LOGPERROR(capfilename);
             fclose(fp);
             return 0;
         }
@@ -675,13 +675,13 @@ struct PcapFile *pcapfile_openwrite(const char *capfilename,
     fp = fopen(capfilename, "wb");
     if (fp == NULL) {
         LOG(LEVEL_ERROR, "Could not open capture file\n");
-        perror(capfilename);
+        LOGPERROR(capfilename);
         return 0;
     }
 
     if (fwrite(buf, 1, 24, fp) != 24) {
         LOG(LEVEL_ERROR, "Could not write capture file header\n");
-        perror(capfilename);
+        LOGPERROR(capfilename);
         fclose(fp);
         return 0;
     }
@@ -724,14 +724,14 @@ struct PcapFile *pcapfile_openappend(const char *capfilename,
     }
     if (fp == NULL) {
         LOG(LEVEL_ERROR, "Could not open capture file to append frame\n");
-        perror(capfilename);
+        LOGPERROR(capfilename);
         return pcapfile_openappend(capfilename, linktype);
     }
 
     /* Read in the header to discover link type and byte order */
     if (fread(buf, 1, 24, fp) != 24) {
         LOG(LEVEL_ERROR, "fail to read capture file header\n");
-        perror(capfilename);
+        LOGPERROR(capfilename);
         fclose(fp);
         return pcapfile_openappend(capfilename, linktype);
     }
@@ -742,7 +742,7 @@ struct PcapFile *pcapfile_openappend(const char *capfilename,
      * so we may end up writing these frames in a way that cannot be read. */
     if (fseek(fp, 0, SEEK_END) != 0) {
         LOG(LEVEL_ERROR, "Could not seek to end of capture file\n");
-        perror(capfilename);
+        LOGPERROR(capfilename);
         fclose(fp);
         return 0;
     }
@@ -905,7 +905,7 @@ void pcapfile_writeframe(struct PcapFile *capfile, const void *buffer,
     if (fwrite(header, 1, 16, capfile->fp) != 16) {
         LOG(LEVEL_ERROR, "%s:%lld: could not write packet header\n",
             capfile->filename, capfile->frame_number);
-        perror(capfile->filename);
+        LOGPERROR(capfile->filename);
         fclose(capfile->fp);
         capfile->fp = NULL;
     }
@@ -913,7 +913,7 @@ void pcapfile_writeframe(struct PcapFile *capfile, const void *buffer,
     if (fwrite(buffer, 1, buffer_size, capfile->fp) != buffer_size) {
         LOG(LEVEL_ERROR, "%s:%lld: could not write packet contents\n",
             capfile->filename, capfile->frame_number);
-        perror(capfile->filename);
+        LOGPERROR(capfile->filename);
         fclose(capfile->fp);
         capfile->fp = NULL;
     }

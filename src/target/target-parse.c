@@ -1307,14 +1307,15 @@ static int rangefile6_test_buffer(struct targetset_parser *parser,
             if (!ipv6address_is_equal(found_begin, expected_begin)) {
                 ipaddress_formatted_t fmt1 = ipv6address_fmt(found_begin);
                 ipaddress_formatted_t fmt2 = ipv6address_fmt(expected_begin);
-                LOG(LEVEL_ERROR, "begin mismatch: found=[%s], expected=[%s]\n",
+                LOG(LEVEL_ERROR,
+                    "mismatch of begin: found=[%s], expected=[%s]\n",
                     fmt1.string, fmt2.string);
                 goto fail;
             }
             if (!ipv6address_is_equal(found_end, expected_end)) {
                 ipaddress_formatted_t fmt1 = ipv6address_fmt(found_end);
                 ipaddress_formatted_t fmt2 = ipv6address_fmt(expected_end);
-                LOG(LEVEL_ERROR, "end mismatch: found=[%s], expected=[%s]\n",
+                LOG(LEVEL_ERROR, "mismatch of end: found=[%s], expected=[%s]\n",
                     fmt1.string, fmt2.string);
                 goto fail;
             }
@@ -1416,7 +1417,7 @@ int target_parse_selftest() {
         x += rangefile6_test_buffer(parser, test_cases[i].string,
                                     test_cases[i].begin, test_cases[i].end);
         if (x) {
-            LOG(LEVEL_ERROR, "failed: %u: %s\n", (unsigned)i,
+            LOG(LEVEL_ERROR, "failed in %u: %s\n", (unsigned)i,
                 test_cases[i].string);
             break;
         }
@@ -1436,6 +1437,6 @@ int target_parse_selftest() {
     x += rangefile_test_error("#bad ipv4\n 1.1.1.1.1\n", 2, 9, __LINE__);
 
     if (x)
-        LOG(LEVEL_ERROR, "rangefile_selftest: fail\n");
+        LOG(LEVEL_ERROR, "(target parse) selftest failed\n");
     return x;
 }

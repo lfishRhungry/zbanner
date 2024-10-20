@@ -168,7 +168,7 @@ static bool _consistancy_check(const unsigned char *buf, size_t length,
     /* Parse the packet */
     is_success = preprocess_frame(buf, (unsigned)length, 1 /*enet*/, &parsed);
     if (!is_success || parsed.found != FOUND_TCP) {
-        LOG(LEVEL_ERROR, "check: TCP header not found\n");
+        LOG(LEVEL_ERROR, "(check) TCP header not found\n");
         goto fail;
     }
 
@@ -176,14 +176,14 @@ static bool _consistancy_check(const unsigned char *buf, size_t length,
     switch (parsed.ip_version) {
         case 4:
             if (parsed.ip_v4_length + 14 != length) {
-                LOG(LEVEL_ERROR, "check: IP length bad\n");
+                LOG(LEVEL_ERROR, "(check) IP length bad\n");
                 goto fail;
             }
             break;
         case 6:
             break;
         default:
-            LOG(LEVEL_ERROR, "check: IPv?\n");
+            LOG(LEVEL_ERROR, "(check) IPv?\n");
             goto fail;
     }
 
@@ -1164,7 +1164,8 @@ size_t tcp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
 
         /* Make sure the new packet won't exceed buffer size */
         if (offset_app + payload_length > px_length) {
-            LOG(LEVEL_ERROR, "tcp: err generating packet: too much payload\n");
+            LOG(LEVEL_ERROR, "(tcp_create_by_template) err generating packet: "
+                             "too much payload\n");
             return 0;
         }
 
