@@ -235,6 +235,7 @@ void rawsock_list_adapters(void) {
         if (alldevs == NULL) {
             LOG(LEVEL_ERROR,
                 "libpcap: no adapters found, are you sure you are root?\n");
+            return;
         }
         /* Print the list */
         for (d = alldevs; d; d = PCAP.dev_next(d)) {
@@ -247,7 +248,7 @@ void rawsock_list_adapters(void) {
         fprintf(stdout, "\n");
         PCAP.freealldevs(alldevs);
     } else {
-        LOG(LEVEL_ERROR, "%s\n", errbuf);
+        LOG(LEVEL_ERROR, "(%s) %s\n", __func__, errbuf);
     }
 }
 
