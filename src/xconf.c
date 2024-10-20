@@ -784,9 +784,6 @@ static ConfRes SET_listif(void *conf, const char *name, const char *value) {
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->op == Operation_ListRange || xconf->echo_all)
-            fprintf(xconf->echo, "iflist = %s\n",
-                    xconf->op == Operation_ListAdapters ? "true" : "false");
         return 0;
     }
 
@@ -798,15 +795,19 @@ static ConfRes SET_listif(void *conf, const char *name, const char *value) {
 static ConfRes SET_list_target(void *conf, const char *name,
                                const char *value) {
     XConf *xconf = (XConf *)conf;
-    UNUSEDPARM(name);
-    UNUSEDPARM(value);
 
     if (xconf->echo) {
         return 0;
     }
 
-    /* Read in a binary file instead of scanning the network*/
-    xconf->op = Operation_ListTargets;
+    if (parse_str_bool(value))
+        xconf->op = Operation_ListTargets;
+
+    char *opt = parse_opt_str(name);
+    if (opt) {
+        if (strcmp(opt, "order") == 0 || strcmp(opt, "norandom") == 0)
+            xconf->listtargets_in_order = 1;
+    }
 
     return Conf_OK;
 }
@@ -2815,7 +2816,8 @@ ConfParam config_parameters[] = {
      SET_list_target,
      Type_FLAG,
      {"list-targets", "list-ip", "ip-list", 0},
-     "Do not run, but instead print every unique IP targets in random."},
+     "Do not run, but print every unique targets in random. We can got ordered "
+     "targets with `--list-target[order]` or `--list-target[norandom]`."},
     {"list-if",
      SET_listif,
      Type_FLAG,

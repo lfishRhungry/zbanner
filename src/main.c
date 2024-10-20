@@ -681,16 +681,13 @@ int main(int argc, char *argv[]) {
     targetset_optimize(&xconf->targets);
 
     /**
-     * FIXME: we only support 63-bit scans at the current time.
+     * FIXME: we only support 63-bit scans for non-dynamic generators
      */
     if (int128_bitcount(targetset_count(&xconf->targets)) > 63) {
-        LOG(LEVEL_ERROR,
-            "scan range too large, max is 63-bits, requested is %u "
-            "bits\n",
+        LOG(LEVEL_ERROR, "scan range too large for non-dynamic: %u-bits\n",
             int128_bitcount(targetset_count(&xconf->targets)));
-        LOG(LEVEL_HINT, "scan range is number of IP addresses times "
-                        "number of ports\n");
-        LOG(LEVEL_HINT, "IPv6 subnet must be at least /66 \n");
+        LOG(LEVEL_HINT, "target_count = ip_count * port_count\n");
+        LOG(LEVEL_HINT, "max targets count is within 63-bits\n");
         exit(1);
     }
 

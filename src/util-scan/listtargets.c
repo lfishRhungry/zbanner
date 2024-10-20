@@ -11,15 +11,14 @@ void list_ip_port(XConf *xconf) {
     BlackRock blackrock;
     unsigned  increment    = xconf->shard.of;
     uint64_t  dynamic_seed = xconf->seed;
+    bool      in_order     = xconf->listtargets_in_order;
 
     /* If called with no ports, then create a pseudo-port needed
      * for the internal algorithm. */
     if (!targetset_has_any_ports(&xconf->targets)) {
         targetset_add_port_string(&xconf->targets, "o:0", 0);
-        // LOG(LEVEL_WARN, "no ports were specified or remained, a fake port o:0
-        // was" " specified automaticlly.\n");
+        targetset_optimize(&xconf->targets);
     }
-    targetset_optimize(&xconf->targets);
 
     /**
      * The "range" is the total number of IP/port combinations that
@@ -27,18 +26,20 @@ void list_ip_port(XConf *xconf) {
     range = targetset_count(&xconf->targets).lo;
 
 infinite:
-    blackrock1_init(&blackrock, range, dynamic_seed, 14);
+    if (!in_order)
+        blackrock1_init(&blackrock, range, dynamic_seed, 14);
 
     start = xconf->resume.index + (xconf->shard.one - 1);
     end   = range;
 
     for (i = start; i < end;) {
-        uint64_t  xXx;
+        uint64_t  xXx = i;
         unsigned  port;
         unsigned  ip_proto;
         ipaddress addr;
 
-        xXx = blackrock1_shuffle(&blackrock, i);
+        if (!in_order)
+            xXx = blackrock1_shuffle(&blackrock, i);
 
         targetset_pick(&xconf->targets, xXx, &addr, &port);
 

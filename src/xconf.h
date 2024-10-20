@@ -49,7 +49,7 @@ enum Operation {
     Operation_DebugIF,      /* do special selftest to interface for debugging*/
     Operation_ListCidr,     /* list all target IPs in CIDR */
     Operation_ListRange,    /* list all target IPs in range */
-    Operation_ListTargets,  /* list all target IPs uniquely in random */
+    Operation_ListTargets,  /* list all target in IPs and Ports*/
     Operation_ListAdapters, /* list all usable interfaces */
     Operation_ListScanModules,     /* list all scan modules */
     Operation_HelpScanModule,      /* print help of specified scan module */
@@ -198,29 +198,30 @@ typedef struct XtateConf {
     unsigned       tcp_window;
     unsigned       packet_ttl;
     unsigned       max_packet_len;
-    unsigned       packet_trace       : 1;
-    unsigned       is_no_ansi         : 1;
-    unsigned       is_no_status       : 1;
-    unsigned       is_status_ndjson   : 1;
-    unsigned       is_status_queue    : 1;
-    unsigned       is_status_info_num : 1;
-    unsigned       is_status_hit_rate : 1;
-    unsigned       is_pfring          : 1;
-    unsigned       is_sendq           : 1;
-    unsigned       is_offline         : 1;
-    unsigned       is_nodedup         : 1;
-    unsigned       is_noresume        : 1;
-    unsigned       is_infinite        : 1;
-    unsigned       is_fast_timeout    : 1;
-    unsigned       is_bypass_os       : 1;
-    unsigned       is_no_bpf          : 1;
-    unsigned       is_no_cpu_bind     : 1;
-    unsigned       is_static_seed     : 1;
-    unsigned       no_escape_char     : 1;
-    unsigned       set_ipv4_adapter   : 1;
-    unsigned       set_ipv6_adapter   : 1;
-    unsigned       init_ipv4_adapter  : 1;
-    unsigned       init_ipv6_adapter  : 1;
+    unsigned       packet_trace         : 1;
+    unsigned       is_no_ansi           : 1;
+    unsigned       is_no_status         : 1;
+    unsigned       is_status_ndjson     : 1;
+    unsigned       is_status_queue      : 1;
+    unsigned       is_status_info_num   : 1;
+    unsigned       is_status_hit_rate   : 1;
+    unsigned       is_pfring            : 1;
+    unsigned       is_sendq             : 1;
+    unsigned       is_offline           : 1;
+    unsigned       is_nodedup           : 1;
+    unsigned       is_noresume          : 1;
+    unsigned       is_infinite          : 1;
+    unsigned       is_fast_timeout      : 1;
+    unsigned       is_bypass_os         : 1;
+    unsigned       is_no_bpf            : 1;
+    unsigned       is_no_cpu_bind       : 1;
+    unsigned       is_static_seed       : 1;
+    unsigned       no_escape_char       : 1;
+    unsigned       set_ipv4_adapter     : 1;
+    unsigned       set_ipv6_adapter     : 1;
+    unsigned       init_ipv4_adapter    : 1;
+    unsigned       init_ipv6_adapter    : 1;
+    unsigned       listtargets_in_order : 1;
 
     /**
      * parse BSON file

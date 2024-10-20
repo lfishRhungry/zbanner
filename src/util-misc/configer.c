@@ -295,7 +295,7 @@ char *parse_opt_str(const char *name) {
 
     char *ret = MALLOC(p2 - p1);
     memcpy(ret, p1 + 1, p2 - p1 - 1);
-    ret[p2 - p1 - 2] = '\0';
+    ret[p2 - p1 - 1] = '\0';
 
     return ret;
 }
