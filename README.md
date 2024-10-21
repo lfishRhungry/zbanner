@@ -384,21 +384,25 @@ Recommended compile suites:
 - MSVC
 - MinGW-w64
 
-Generate a Visual Studio solution with MSVC as compiler:
+Generate a Visual Studio solution (e.g. VS2022) and build with MSVC:
 
 ```
 cd build
-cmake .. -DVCPKG_TARGET_TRIPLET=x64-windows
+cmake .. \
+    [-G "Visual Studio 17 2022"] \
+    [-DCMAKE_TOOLCHAIN_FILE=<maybe path of your vcpkg toolchain>]
+cmake --build . \
+    --config <Release/Debug/MinSizeRel/RelWithDebInfo> \
+    --parallel 4
 ```
 
-Generate a Makefile with MinGW-w64 as compiler:
+Generate a unix-style Makefile and build with MinGW-w64 :
 
 ```
 cd build
 cmake .. \
     -G "Unix Makefiles" \
-    -DCMAKE_BUILD_TYPE=<Debug/Release> \
-    -DVCPKG_TARGET_TRIPLET=x64-windows
+    -DCMAKE_BUILD_TYPE=<Release/Debug>
 make -j4
 ```
 
@@ -410,7 +414,7 @@ Xtate was created by Sharkocha:
 
 - email: chenchiyu14@nudt.edu.cn
 
-Original code was written in:
+Original code was written during my master's studies at:
 
 - College of Electronic Engineering, [National University of Defense Technology](https://english.nudt.edu.cn/).
 - Anhui Province Key Laboratory of Cyberspace Security Situation Awareness and Evaluation.
@@ -448,7 +452,7 @@ And It would be my honored if you cite our papers about Xtate despite my poor ac
 publishing...
 ```
 
-**Well...bad papers and wonderful scanner**😜
+**Well...bad papers and thesis, but wonderful scanner**😜
 
 [back to top](#xtate)
 
