@@ -17,30 +17,55 @@
 
 # XTATE
 
+## 🤔What's this?
+
 Welcome to Xtate -- A modular all-stack network scanner for next-generation internet surveys!
 
-## Table of Content
+## ✨Features
 
-1. [Introduction](#introduction)
-1. [Design](#design)
-1. [Basic Usage](#basic-usage)
-1. [Modules](#modules)
+- Designed for Internet-scale scanning and surveys both in academic and practice:
+    - High-speed asynchronous transmission mechanism for packets.
+    - Stateless scanning model for application layer(aka. ZBanner).
+    - HLTCP(Hybrid-state lightweight TCP stack) in user-space for stateful scanning.
+    - etc.
+- Modularized interfaces: Custom modules in 4 types can be written to achieve your scanning task.
+    - Scan Module
+    - Probe Module
+    - Generate Module
+    - Output Module
+- Corresponding modules have been implemented for commonly used functions:
+    - Port scanning and host discovery in many ways.
+    - Grab service banners within one connection in a complete stateless manner.
+    - Obtain TLS info and TLS-based service banner with HLTCP.
+    - Service discovery and identification like LZR.
+    - Probe Topology like yarrp.
+    - etc.
+- Full support for IPv6 and can work in LAN.
+- ~~Written in advanced and popular C language.~~
+
+
+## 📇Table of Content
+
+1. 🎤[Introduction](#🎤introduction)
+1. 🎨[Design](#🎨design)
+1. 🤺[Basic Usage](#🤺basic-usage)
+1. 📦[Modules](#📦modules)
     1. [Some Typical Scan Modules](#some-typical-scan-modules)
     1. [Some Generalizable Probe Modules](#some-generalizable-probe-modules)
     1. [Output Modules](#output-modules)
     1. [Generate Modules](#generate-modules)
-1. [Helps in Detail](#helps-in-detail)
-1. [Scan Rate](#scan-rate)
-1. [Set Your Firewall](#set-your-firewall)
-1. [Build](#build)
+1. 💁[Helps in Detail](#💁helps-in-detail)
+1. 🥽[Scan Rate](#🥽scan-rate)
+1. ❗[️Set Your Firewall](#❗set-your-firewall)
+1. 🔨[Build](#🔨build)
     1. [Dependencies](#dependencies)
     1. [Compile on Linux](#compile-on-linux)
     1. [Compile on Windows](#compile-on-windows)
-1. [Author](#author)
-1. [Papers](#papers)
-1. [License](#license)
+1. ✍[Author](#✍author)
+1. 📄[Papers](#📄papers)
+1. 🪪[License](#🪪license)
 
-## Introduction
+## 🎤Introduction
 
 Xtate provides basic ability of super fast asychronous packet sending/receiving and highly extensible architecture.
 It allows adding self-define ScanModules or ProbeModules to do different scan task with specific strategy.
@@ -58,7 +83,7 @@ However, being fast and concise is always our target.
 
 In addition, Xtate supports IPv6 addresses and can be built on Windows and Linux with optional dependencies.
 
-## Design
+## 🎨Design
 
 Unlike existing high-speed asynchronous scanners, Xtate enables richer scanning strategies by dividing the scanning process at a fine-grained level into individual functional modules.
 This is how Xtate working internally (or you can check it by `xtate --intro`):
@@ -135,9 +160,9 @@ This is what ScanModules, ProbeModules and "all-stack" mean (or you can check it
 
 Xtate allows and encourages users to write their own modules to accomplish specific scanning tasks.
 
-[back to top](#xtate)
+[🔝back to top](#xtate)
 
-## Basic Usage
+## 🤺Basic Usage
 
 Use `xtate --usage` to see the basic usages of xtate.
 But actually you can do much more than these if you know xtate deeply by reading helps.
@@ -172,9 +197,9 @@ original examples of xtate:
       do NDP NS scan with a link-local source IP in local network.
 ```
 
-[back to top](#xtate)
+[🔝back to top](#xtate)
 
-## Modules
+## 📦Modules
 
 ### Some Typical Scan Modules
 
@@ -228,13 +253,15 @@ You can write your own output module for better saving.
 GenerateModule or Generator is an abstraction for scan targets generation. It makes target generation extensible and flexible.
 I expect that users can design their own target generation algorithms, or method like gererating from database or files, even design it with OutputModule together.
 
-[back to top](#xtate)
+[🔝back to top](#xtate)
 
-## Helps in Detail
+## 💁Helps in Detail
 
-Xtate embeds all detailed help information into the program, and I recommend using the compiled binary to view them. PS: Some of the help info are too long, you can use `less`(`more`) command or output it to files(or `vim`).
+Xtate has many parameters for global configuration and sub-parameters for specific modules.
+All detailed help information of parameters ared embeded into the program, and I recommend using the compiled binary to view them.
+PS: Some of the help info are too long, you can use `less`(`more`) command or output it to files(or `vim`).
 
-See all parameters and help of xtate.
+See all global parameters and help of xtate.
 
 ```
 xtate --help
@@ -290,7 +317,7 @@ xtate --help-gen <module-name>
 
 [back to top](#xtate)
 
-## Scan Rate
+## 🥽Scan Rate
 
 Xtate could do scan with a high-speed send rate like ZMap and Masscan but with more functions.
 All those tools work on similar sending way like raw socket, libpcap(winpcap) or zero-copy(PFRING/netmap).
@@ -309,9 +336,9 @@ Networks often crash under the load that xtate can generate.
 In addition, Xtate support LAN mode to do NDP or ARP scan.
 Set a proper scan rate when operate on your own network.
 
-[back to top](#xtate)
+[🔝back to top](#xtate)
 
-## Set Your Firewall
+## ❗Set Your Firewall
 
 Xtate needs to avoid responds of system stack when using udp, zbanner or HLTCP scan.
 When Linux local system receives a SYN-ACK from the probed target, it responds with a RST packet that kills the connection before Xtate handle.
@@ -323,9 +350,9 @@ Or I write some shell scripts to set iptable rules in `firewall` directory both 
 Note, when we do tcp-syn scan, it's better to let system stack to respond RST automaticly.
 But you can also set subparameter `--send-rst` to tcp-syn scan module to let Xtate send rst by itself while we work on Windows or use seperate source IP address on Linux.
 
-[back to top](#xtate)
+[🔝back to top](#xtate)
 
-## Build
+## 🔨Build
 
 Xtate could be built both on Linux and Windows with CMake(>=v3.20) because of cross-platform source code.
 And some dependencies are optional, we can give up some modules if the specific dependency libraries cannot be prepared.
@@ -408,7 +435,7 @@ make -j4
 
 [back to top](#xtate)
 
-# Author
+# ✍Author
 
 Xtate was created by Sharkocha:
 
@@ -424,9 +451,9 @@ Thanks to Robert Grahm for providing valued programing throughts and code infras
 Also thanks to other excellent open-source projects I refered to and noted in the code.
 I've learned more than just finishing my worthless graduate thesis.
 
-[back to top](#xtate)
+[🔝back to top](#xtate)
 
-# Papers
+# 📄Papers
 
 Some of the Scan and Probe modules with original technology are derived from our papers.
 You can see some details of Xtate in theory from them.
@@ -454,9 +481,9 @@ publishing...
 
 **Well...bad papers and thesis, but wonderful scanner**😜
 
-[back to top](#xtate)
+[🔝back to top](#xtate)
 
-# License
+# 🪪License
 
 Copyright (c) 2024 sharkocha
 
