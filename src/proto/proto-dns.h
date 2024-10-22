@@ -241,10 +241,19 @@ bool dns_parse_body(uint8_t *buf, uint8_t *begin, const uint8_t *end,
 
 bool dns_parse_reply(uint8_t *buf, size_t len, dns_pkt_t *packet);
 
+/**
+ * set QR(request or response) in DNS Flag field
+ */
 void dns_buf_set_qr(uint8_t *buf, bool value);
 
+/**
+ * set RD(recursive desired) in DNS Flag field
+ */
 void dns_buf_set_rd(uint8_t *buf, bool value);
 
+/**
+ * set Reply Code in DNS header
+ */
 void dns_buf_set_rcode(uint8_t *buf, uint8_t code);
 
 void dns_send_reply(uint8_t *buffer, size_t len, int fd,

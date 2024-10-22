@@ -11,9 +11,10 @@ extern Probe DnsProbe;
 struct DnsConf {
     char           *req_name;
     dns_record_type req_type;
-    unsigned        print_all_ans  : 1;
-    unsigned        print_all_auth : 1;
-    unsigned        print_all_add  : 1;
+    unsigned        recursive_desired : 1;
+    unsigned        print_all_ans     : 1;
+    unsigned        print_all_auth    : 1;
+    unsigned        print_all_add     : 1;
 };
 
 static struct DnsConf dns_conf = {0};
@@ -37,6 +38,16 @@ static ConfRes SET_ptr(void *conf, const char *name, const char *value) {
         LOG(LEVEL_ERROR, "(dns internal) invalide request type.\n");
         return Conf_ERR;
     }
+
+    return Conf_OK;
+}
+
+static ConfRes SET_recursive_desired(void *conf, const char *name,
+                                     const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    dns_conf.recursive_desired = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -124,6 +135,12 @@ static ConfParam dns_parameters[] = {
      {"ptr", "ptr-ip", 0},
      "This is a wrapper of setting request type to PTR and request name by "
      "the ip we specified."},
+    {"recursive-desired",
+     SET_recursive_desired,
+     Type_FLAG,
+     {"recursive", "rd", 0},
+     "Sets recursive desired flag to true in DNS header and expects target DNS "
+     "server to answer our question by recursive requesting."},
     {"all-answer",
      SET_print_all_answer,
      Type_FLAG,
@@ -163,6 +180,8 @@ static size_t dns_make_payload(ProbeTarget   *target,
     int res_len =
         dns_question_create(payload_buf, dns_conf.req_name, dns_conf.req_type,
                             target->cookie & 0xFFFF);
+    if (dns_conf.recursive_desired)
+        dns_buf_set_rd(payload_buf, true);
 
     return (size_t)res_len;
 }

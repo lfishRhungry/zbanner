@@ -948,12 +948,12 @@ bool dns_parse_reply(uint8_t *buf, size_t len, dns_pkt_t *packet) {
 
 void dns_buf_set_qr(uint8_t *buf, bool value) {
     buf[2] &= 0x7F;
-    buf[2] |= value << 7;
+    buf[2] |= (value ? 1 : 0) << 7;
 }
 
 void dns_buf_set_rd(uint8_t *buf, bool value) {
     buf[2] &= 0xFE;
-    buf[2] |= value;
+    buf[2] |= value ? 1 : 0;
 }
 
 void dns_buf_set_rcode(uint8_t *buf, uint8_t code) {
