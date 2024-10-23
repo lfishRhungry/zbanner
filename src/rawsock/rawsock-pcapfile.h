@@ -28,14 +28,6 @@ void pcapfile_get_timestamps(struct PcapFile *handle, time_t *start,
                              time_t *end);
 
 /**
- * Set a "maximum" size for a file. When the current file fills up with data,
- * it will close that file and open a new one, then continue to write
- * from that point on in the new file.
- */
-void pcapfile_set_max(struct PcapFile *capfile, unsigned max_megabytes,
-                      unsigned max_files);
-
-/**
  *  Read a single frame from the file.
  *  Returns 0 if failed to read (from error or end of file), and
  *  returns 1 if successful.
