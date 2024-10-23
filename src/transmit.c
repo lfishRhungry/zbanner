@@ -174,6 +174,12 @@ infinite:;
                 more_idx = 0;
             }
 
+            /**
+             * avoid infinite loop after ctrl+C if always no packet was sent
+             * */
+            if (!pkt_len)
+                break;
+
         } /* end of batch */
 
         /* save our current location for resuming */
