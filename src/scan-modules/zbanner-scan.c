@@ -137,12 +137,12 @@ static ConfParam zbanner_parameters[] = {
      SET_record_ttl,
      Type_FLAG,
      {"ttl", 0},
-     "Records TTL for IPv4 or Hop Limit for IPv6 in SYN-ACK or RST."},
+     "Records TTL for IPv4 or Hop Limit for IPv6."},
     {"record-ipid",
      SET_record_ipid,
      Type_FLAG,
      {"ipid", 0},
-     "Records IPID of SYN-ACK or RST just for IPv4."},
+     "Records IPID just for IPv4."},
     {"record-win",
      SET_record_win,
      Type_FLAG,
@@ -456,6 +456,12 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         unsigned is_multi = ZBannerScan.probe->handle_response_cb(
             th_idx, &ptarget, &recved->packet[recved->parsed.app_offset],
             recved->parsed.app_length, item);
+
+        /*ttl and ipid is also impportant for non-synack segment*/
+        if (zbanner_conf.record_ttl)
+            dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+        if (zbanner_conf.record_ipid && recved->parsed.src_ip.version == 4)
+            dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
 
         /*multi-probe Multi_AfterHandle*/
         if (ZBannerScan.probe->multi_mode == Multi_AfterHandle && is_multi &&
