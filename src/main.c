@@ -240,8 +240,13 @@ static int _main_scan(XConf *xconf) {
     /* it should be set before template init*/
     if (xconf->tcp_init_window)
         template_set_tcp_syn_window_of_default(xconf->tcp_init_window);
+    else
+        template_set_tcp_syn_window_of_default(XCONF_DFT_TCP_SYN_WINSIZE);
+
     if (xconf->tcp_window)
         template_set_tcp_window_of_default(xconf->tcp_window);
+    else
+        template_set_tcp_window_of_default(XCONF_DFT_TCP_OTHER_WINSIZE);
 
     template_packet_init(xconf->tmplset, xconf->nic.source_mac,
                          xconf->nic.router_mac_ipv4, xconf->nic.router_mac_ipv6,
@@ -250,6 +255,8 @@ static int _main_scan(XConf *xconf) {
 
     if (xconf->packet_ttl)
         template_set_ttl(xconf->tmplset, xconf->packet_ttl);
+    else
+        template_set_ttl(xconf->tmplset, XCONF_DFT_PACKET_TTL);
 
     if (xconf->nic.is_vlan)
         template_set_vlan(xconf->tmplset, xconf->nic.vlan_id);

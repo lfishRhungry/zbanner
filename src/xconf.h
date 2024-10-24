@@ -37,6 +37,9 @@ very low impact on scan rate */
 #define XCONF_DFT_PORT_RANGE         256
 #define XCONF_DFT_SNAPLEN            65535 /*also the max*/
 #define XCONF_DFT_MAX_PKT_LEN        1514
+#define XCONF_DFT_PACKET_TTL         255
+#define XCONF_DFT_TCP_SYN_WINSIZE    64240
+#define XCONF_DFT_TCP_OTHER_WINSIZE  1024
 
 typedef struct Adapter         Adapter;
 typedef struct TemplateSet     TmplSet;
