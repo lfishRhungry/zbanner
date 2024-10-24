@@ -12,6 +12,46 @@
 
 extern Scanner UdpScan; /*for internal x-ref*/
 
+struct UdpConf {
+    unsigned record_ttl  : 1;
+    unsigned record_ipid : 1;
+};
+
+static struct UdpConf udp_conf = {0};
+
+static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    udp_conf.record_ttl = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_ipid(void *conf, const char *name,
+                               const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    udp_conf.record_ipid = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfParam udp_parameters[] = {
+    {"record-ttl",
+     SET_record_ttl,
+     Type_FLAG,
+     {"ttl", 0},
+     "Records TTL for IPv4 or Hop Limit for IPv6."},
+    {"record-ipid",
+     SET_record_ipid,
+     Type_FLAG,
+     {"ipid", 0},
+     "Records IPID just for IPv4."},
+
+    {0}};
+
 /**
  *For calc the conn index.
  * NOTE: We use a trick of src-port to differenciate multi-probes to avoid
@@ -113,6 +153,11 @@ static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         unsigned is_multi = UdpScan.probe->handle_response_cb(
             th_idx, &ptarget, &recved->packet[recved->parsed.app_offset],
             recved->parsed.app_length, item);
+
+        if (udp_conf.record_ttl)
+            dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+        if (udp_conf.record_ipid && recved->parsed.src_ip.version == 4)
+            dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
 
         /*for multi-probe Multi_AfterHandle*/
         if (UdpScan.probe->multi_mode == Multi_AfterHandle && is_multi &&
@@ -353,7 +398,7 @@ Scanner UdpScan = {
     .name                = "udp",
     .required_probe_type = ProbeType_UDP,
     .support_timeout     = 1,
-    .params              = NULL,
+    .params              = udp_parameters,
     /*udp and icmp port unreachable in ipv4 & ipv6*/
     .bpf_filter          = "udp",
     .short_desc          = "Single-packet UDP scan with specified ProbeModule.",
