@@ -18,8 +18,8 @@
 #define LEVEL_DEBUG  (2)
 #define LEVEL_DETAIL (3)
 
-#define LOGPERROR(s)                                                           \
-    LOG(LEVEL_ERROR, "(%s) %s: %s.\n", __func__, (s), strerror(errno))
+#define LOGPERROR(subject)                                                     \
+    LOG(LEVEL_ERROR, "(%s) %s: %s\n", __func__, (subject), strerror(errno))
 
 /**
  * Use logger after inited.
