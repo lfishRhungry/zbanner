@@ -41,7 +41,7 @@ very low impact on scan rate */
 #define XCONF_DFT_TCP_SYN_WINSIZE    64240
 #define XCONF_DFT_TCP_OTHER_WINSIZE  1024
 
-typedef struct Adapter         Adapter;
+typedef struct NetworkAdapter  Adapter;
 typedef struct TemplateSet     TmplSet;
 typedef struct TemplateOptions TmplOpt;
 
@@ -93,6 +93,7 @@ typedef struct XtateConf {
      * should have a set of IP source addresses, except in the case
      * of PF_RING dnaX:Y adapters.
      */
+
     struct {
         char          ifname[256];
         Adapter      *adapter;
@@ -108,6 +109,7 @@ typedef struct XtateConf {
         unsigned      is_vlan   : 1;
         unsigned      is_usable : 1;
     } nic;
+
     /**save resume info */
     struct {
         uint64_t index;

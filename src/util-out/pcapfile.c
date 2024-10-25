@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/stat.h>
-#include "rawsock-pcapfile.h"
+#include "pcapfile.h"
 #include "../util-misc/cross.h"
 #include "../util-out/logger.h"
 #include "../stub/stub-pcap-dlt.h"

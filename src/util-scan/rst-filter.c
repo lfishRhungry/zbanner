@@ -1,6 +1,6 @@
 #include <time.h>
 
-#include "rstfilter.h"
+#include "rst-filter.h"
 #include "../crypto/crypto-siphash24.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-out/logger.h"

@@ -12,11 +12,10 @@
         IP address. Every so often, the local router may drop it's route
         entry and re-request our address.
 */
-#include "../rawsock/rawsock.h"
-#include "../rawsock/rawsock-adapter.h"
 #include "stack-src.h"
 #include "stack-arpv4.h"
 #include "stack-queue.h"
+#include "../rawsock/rawsock.h"
 #include "../util-data/safe-string.h"
 #include "../util-out/logger.h"
 #include "../pixie/pixie-timer.h"

@@ -16,7 +16,7 @@
 #include "crypto/crypto-lcg.h"
 
 #include "dedup/dedup.h"
-#include "util-scan/rstfilter.h"
+#include "util-scan/rst-filter.h"
 #include "util-data/safe-string.h"
 #include "util-data/fine-malloc.h"
 #include "util-data/data-chain.h"

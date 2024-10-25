@@ -2,7 +2,6 @@
 #include "stack-src.h"
 #include "../proto/proto-preprocess.h"
 #include "../templ/templ-icmp.h"
-#include "../rawsock/rawsock-adapter.h"
 #include "../rawsock/rawsock.h"
 #include "../util-misc/checksum.h"
 #include "../util-out/logger.h"

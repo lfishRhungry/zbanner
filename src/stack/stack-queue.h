@@ -9,11 +9,10 @@
  */
 #define PKT_BUF_SIZE 2048
 
-typedef struct StackOfSource StackSrc;
-typedef struct Adapter       Adapter;
-typedef struct Adapter_Cache AdapterCache;
-
-typedef struct rte_ring PACKET_QUEUE;
+typedef struct StackOfSource  StackSrc;
+typedef struct NetworkAdapter Adapter;
+typedef struct Adapter_Cache  AdapterCache;
+typedef struct rte_ring       PACKET_QUEUE;
 
 typedef struct PacketBuffer {
     size_t        length;

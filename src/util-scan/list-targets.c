@@ -1,4 +1,4 @@
-#include "listtargets.h"
+#include "list-targets.h"
 #include <assert.h>
 #include "../util-out/logger.h"
 #include "../crypto/crypto-blackrock.h"

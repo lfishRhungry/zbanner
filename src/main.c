@@ -17,19 +17,16 @@
 #include "target/target-cookie.h"
 #include "target/target-parse.h"
 
-#include "rawsock/rawsock-adapter.h"
 #include "rawsock/rawsock.h"
 
 #include "pixie/pixie-backtrace.h"
 #include "pixie/pixie-threads.h"
 #include "pixie/pixie-timer.h"
 
-#include "util-scan/initadapter.h"
-#include "util-scan/listtargets.h"
-
 #include "util-out/logger.h"
 #include "util-out/xtatus.h"
-
+#include "util-scan/init-nic.h"
+#include "util-scan/list-targets.h"
 #include "util-data/fine-malloc.h"
 
 #if defined(WIN32)
@@ -197,7 +194,7 @@ static int _main_scan(XConf *xconf) {
      */
     targetset_optimize(&xconf->targets);
 
-    if (initialize_adapter(xconf, init_ipv4, init_ipv6) != 0)
+    if (init_nic(xconf, init_ipv4, init_ipv6) != 0)
         exit(1);
     if (!xconf->nic.is_usable) {
         LOG(LEVEL_ERROR, "failed to detect IP of interface\n");
@@ -677,7 +674,7 @@ int main(int argc, char *argv[]) {
     if (pcap_init() != 0)
         LOG(LEVEL_ERROR, "(libpcap) failed to load\n");
 
-    rawsock_init();
+    rawsock_prepare();
 
     targetset_apply_excludes(&xconf->targets, &xconf->exclude);
 

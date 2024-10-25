@@ -11,9 +11,8 @@
 #include "version.h"
 #include "target/target-cookie.h"
 
-#include "rawsock/rawsock-adapter.h"
-#include "rawsock/rawsock-pcapfile.h"
 #include "rawsock/rawsock.h"
+#include "util-out/pcapfile.h"
 
 #include "stack/stack-arpv4.h"
 #include "stack/stack-ndpv6.h"

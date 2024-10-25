@@ -46,8 +46,6 @@ static int is_pcap_file = 0;
 #else
 #endif
 
-#include "rawsock-adapter.h"
-
 /**
  * KLUDGE
  *
@@ -113,7 +111,7 @@ int pcap_setdirection(pcap_t *pcap, pcap_direction_t direction) {
 
 /***************************************************************************
  ***************************************************************************/
-void rawsock_init(void) {
+void rawsock_prepare(void) {
 #ifdef WIN32
     /* Declare and initialize variables */
 
@@ -539,12 +537,10 @@ static int is_pfring_dna(const char *name) {
         return 0;
 }
 
-/***************************************************************************
- ***************************************************************************/
-Adapter *rawsock_init_adapter(const char *adapter_name, unsigned is_pfring,
-                              unsigned is_sendq, unsigned is_packet_trace,
-                              unsigned is_offline, unsigned is_vlan,
-                              unsigned vlan_id, unsigned snaplen) {
+Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
+                              bool is_sendq, bool is_packet_trace,
+                              bool is_offline, bool is_vlan, unsigned vlan_id,
+                              unsigned snaplen) {
     Adapter *adapter;
     char     errbuf[PCAP_ERRBUF_SIZE] = "pcap";
 
@@ -865,6 +861,36 @@ int rawsock_is_adapter_names_equal(const char *lhs, const char *rhs) {
     if (memcmp(rhs, "\\Device\\NPF_", 12) == 0)
         rhs += 12;
     return strcmp(lhs, rhs) == 0;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+AdapterCache *rawsock_init_cache(bool is_sendq) {
+    AdapterCache *acache = CALLOC(1, sizeof(AdapterCache));
+#if defined(WIN32)
+    if (is_sendq) {
+        acache->sendq = PCAP.sendqueue_alloc(SENDQ_SIZE);
+    }
+#endif
+    return acache;
+}
+
+void rawsock_close_cache(AdapterCache *acache) {
+    if (acache->sendq) {
+        PCAP.sendqueue_destroy(acache->sendq);
+    }
+
+    FREE(acache);
+}
+
+/***************************************************************************
+ ***************************************************************************/
+int stack_if_datalink(Adapter *adapter) {
+    if (adapter->ring)
+        return PCAP_DLT_ETHERNET;
+    else {
+        return adapter->link_type;
+    }
 }
 
 int rawsock_selftest_if(const char *ifname) {

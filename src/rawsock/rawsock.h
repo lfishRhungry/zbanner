@@ -6,14 +6,40 @@
 
 #include <stdio.h>
 
+#include "../xconf.h"
 #include "../target/target-ipaddress.h"
 #include "../stack/stack-queue.h"
 
-typedef struct Adapter       Adapter;
-typedef struct Adapter_Cache Adapter_Cache;
-typedef struct TemplateSet   TmplSet;
+#define SENDQ_SIZE 65536 * 8
 
-void rawsock_init(void);
+typedef struct TemplateSet TmplSet;
+
+/**
+ * In fact the struct is like a socket in different types.
+ * But we always use it like a raw socket to send from layer 2 or layer 3.
+ * So it is more like an adapter.
+ *
+ * NOTE: Multiple tx threads will use it to send. For raw packet, it is thread
+ * safe. But recving is not thread safe because of getting data repeatedly.
+ */
+typedef struct NetworkAdapter {
+    struct pcap     *pcap;
+    struct __pfring *ring;
+    unsigned         is_packet_trace : 1;
+    unsigned         is_vlan         : 1;
+    unsigned         vlan_id;
+    double           pt_start;
+    int              link_type;
+} Adapter;
+
+/**
+ * For every Tx thread to maintain its own cache for sendqueue or sendmmsg.
+ */
+typedef struct Adapter_Cache {
+    struct pcap_send_queue *sendq;
+} AdapterCache;
+
+void rawsock_prepare(void);
 
 /**
  * Does an "open" on the network adapter. What actually happens depends upon
@@ -36,10 +62,16 @@ void rawsock_init(void);
  * @return
  *      a fully instantiated network adapter
  */
-Adapter *rawsock_init_adapter(const char *adapter_name, unsigned is_pfring,
-                              unsigned is_sendq, unsigned is_packet_trace,
-                              unsigned is_offline, unsigned is_vlan,
-                              unsigned vlan_id, unsigned snaplen);
+Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
+                              bool is_sendq, bool is_packet_trace,
+                              bool is_offline, bool is_vlan, unsigned vlan_id,
+                              unsigned snaplen);
+
+void rawsock_close_adapter(Adapter *adapter);
+
+AdapterCache *rawsock_init_cache(bool is_sendq);
+
+void rawsock_close_cache(AdapterCache *acache);
 
 void rawsock_set_filter(Adapter *adapter, const char *scan_filter,
                         const char *user_filter);
@@ -132,7 +164,10 @@ void rawsock_ignore_transmits(Adapter *adapter, const char *ifname);
 
 void rawsock_set_nonblock(Adapter *adapter);
 
-void rawsock_close_adapter(Adapter *adapter);
+/**
+ * Retrieve the datalink type of the adapter
+ */
+int stack_if_datalink(Adapter *adapter);
 
 int rawsock_selftest_if(const char *ifname);
 

@@ -15,7 +15,6 @@
 
 #include "templ/templ-init.h"
 
-#include "rawsock/rawsock-adapter.h"
 #include "rawsock/rawsock.h"
 
 #include "stack/stack-arpv4.h"

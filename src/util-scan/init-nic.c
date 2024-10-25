@@ -1,13 +1,11 @@
-#include "initadapter.h"
-#include "../util-out/logger.h"
+#include "./init-nic.h"
 #include "../rawsock/rawsock.h"
-#include "../rawsock/rawsock-adapter.h"
+#include "../stub/stub-pcap-dlt.h"
 #include "../stack/stack-arpv4.h"
 #include "../stack/stack-ndpv6.h"
-#include "../stub/stub-pcap-dlt.h"
 
 /***************************************************************************
- * Initialize the network adapter.
+ * Initialize the struct NIC in XConf.
  *
  * This requires finding things like our IP address, MAC address, and router
  * MAC address. The user could configure these things manually instead.
@@ -17,8 +15,8 @@
  * so if we pause and resume a scan, auto discovered values don't get saved
  * in the configuration file.
  ***************************************************************************/
-int initialize_adapter(XConf *xconf, bool has_ipv4_targets,
-                       bool has_ipv6_targets) {
+int init_nic(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets) {
+
     ipaddress_formatted_t fmt;
     char                 *ifname;
     char                  ifname2[256];
@@ -36,6 +34,7 @@ int initialize_adapter(XConf *xconf, bool has_ipv4_targets,
      */
     if (xconf->nic.ifname[0])
         ifname = xconf->nic.ifname;
+
     else {
         /* no adapter specified, so find a default one */
         int err;
