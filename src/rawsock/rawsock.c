@@ -490,7 +490,8 @@ void rawsock_ignore_transmits(Adapter *adapter, const char *ifname) {
         int err;
         err = PCAP.setdirection(adapter->pcap, PCAP_D_IN);
         if (err) {
-            LOG(LEVEL_WARN, "(%s) failed to set set direction for %s\n",
+            /*we usually cannot set direction on Windows*/
+            LOG(LEVEL_INFO, "(%s) failed to set set direction for %s\n",
                 __func__, ifname);
         } else {
             LOG(LEVEL_DEBUG, "(%s) setted to not receive transmits for %s\n",
