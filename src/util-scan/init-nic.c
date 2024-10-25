@@ -34,7 +34,6 @@ int init_nic(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets) {
      */
     if (xconf->nic.ifname[0])
         ifname = xconf->nic.ifname;
-
     else {
         /* no adapter specified, so find a default one */
         int err;
@@ -56,9 +55,9 @@ int init_nic(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets) {
      * START ADAPTER
      */
     xconf->nic.adapter = rawsock_init_adapter(
-        ifname, xconf->is_pfring, xconf->is_sendq, xconf->packet_trace,
-        xconf->is_offline, xconf->nic.is_vlan, xconf->nic.vlan_id,
-        xconf->nic.snaplen);
+        ifname, xconf->is_pfring, xconf->is_rawsocket, xconf->is_sendq,
+        xconf->is_packet_trace, xconf->is_offline, xconf->nic.is_vlan,
+        xconf->nic.vlan_id, xconf->nic.snaplen);
     if (xconf->nic.adapter == 0) {
         LOG(LEVEL_ERROR, "(if:%s) init failed\n", ifname);
         rawsock_close_cache(tmp_acache);

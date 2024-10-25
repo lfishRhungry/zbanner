@@ -202,7 +202,7 @@ typedef struct XtateConf {
     unsigned       tcp_window;
     unsigned       packet_ttl;
     unsigned       max_packet_len;
-    unsigned       packet_trace         : 1;
+    unsigned       is_packet_trace      : 1;
     unsigned       is_no_ansi           : 1;
     unsigned       is_no_status         : 1;
     unsigned       is_status_ndjson     : 1;
@@ -210,6 +210,7 @@ typedef struct XtateConf {
     unsigned       is_status_info_num   : 1;
     unsigned       is_status_hit_rate   : 1;
     unsigned       is_pfring            : 1;
+    unsigned       is_rawsocket         : 1;
     unsigned       is_sendq             : 1;
     unsigned       is_offline           : 1;
     unsigned       is_nodedup           : 1;

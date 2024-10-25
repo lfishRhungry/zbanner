@@ -46,6 +46,11 @@ static int is_pcap_file = 0;
 #else
 #endif
 
+#ifndef WIN32
+#include <netpacket/packet.h>
+static struct sockaddr_ll _device;
+#endif
+
 /**
  * KLUDGE
  *
@@ -322,6 +327,19 @@ int rawsock_send_packet(Adapter *adapter, AdapterCache *acache,
         return err;
     }
 
+/*raw socket in link layer on Linux*/
+#ifndef WIN32
+    if (adapter->raw_sock) {
+        if (sendto(adapter->raw_sock, packet, length, 0,
+                   (struct sockaddr *)&_device, sizeof(_device)) < 0) {
+            perror("sendto");
+            LOGPERROR("sendto");
+            return -1;
+        }
+        return 0;
+    }
+#endif
+
     /* WINDOWS PCAP */
     /*----------------------------------------------------------------
      * PORTABILITY: WINDOWS
@@ -492,6 +510,12 @@ void rawsock_close_adapter(Adapter *adapter) {
         PCAP.close(adapter->pcap);
         adapter->pcap = NULL;
     }
+#ifndef WIN32
+    if (adapter->raw_sock) {
+        close(adapter->raw_sock);
+        adapter->raw_sock = 0;
+    }
+#endif
 
     free(adapter);
 }
@@ -538,8 +562,9 @@ static int is_pfring_dna(const char *name) {
 }
 
 Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
-                              bool is_sendq, bool is_packet_trace,
-                              bool is_offline, bool is_vlan, unsigned vlan_id,
+                              bool is_rawsock, bool is_sendq,
+                              bool is_packet_trace, bool is_offline,
+                              bool is_vlan, unsigned vlan_id,
                               unsigned snaplen) {
     Adapter *adapter;
     char     errbuf[PCAP_ERRBUF_SIZE] = "pcap";
@@ -782,6 +807,68 @@ Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
         }
     }
 
+/**
+ * init raw socket for sendmmsg
+ */
+#ifndef WIN32
+#include <netinet/if_ether.h>
+    if (is_rawsock) {
+        /**
+         * NOTE: ZMap use PF_INET family on raw socket to send IPv4 in IP layer.
+         * But Xtate need to send both IPv4 and IPv6 packets in one socket in
+         * sendmmsg way. We can't achieve this in an elegent way by raw socket.
+         * So we just accept sending packet in Link Layer.
+         */
+        if (adapter->link_type != PCAP_DLT_ETHERNET) {
+            LOG(LEVEL_WARN, "(%s) sendmmsg just work on link layer\n",
+                __func__);
+            return adapter;
+        }
+
+        adapter->raw_sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+
+        if (adapter->raw_sock <= 0) {
+            LOGPERROR("socket init");
+            goto pcap_error;
+        }
+
+        // get interface index
+        struct ifreq if_idx;
+        memset(&if_idx, 0, sizeof(struct ifreq));
+        if (strlen(adapter_name) >= IFNAMSIZ) {
+            LOG(LEVEL_ERROR, "(%s) device interface name (%s) too long\n",
+                __func__, adapter_name);
+            goto socket_error;
+        }
+        strncpy(if_idx.ifr_name, adapter_name, IFNAMSIZ - 1);
+        if (ioctl(adapter->raw_sock, SIOCGIFINDEX, &if_idx) < 0) {
+            LOGPERROR("ioctl(SIOCGIFINDEX)");
+            goto socket_error;
+        }
+
+        // bind device for the socket
+        memset((void *)&_device, 0, sizeof(struct sockaddr_ll));
+        _device.sll_ifindex = if_idx.ifr_ifindex;
+        _device.sll_family  = AF_PACKET;
+
+        // bind to interface
+        if (bind(adapter->raw_sock, (struct sockaddr *)&_device,
+                 sizeof(_device)) < 0) {
+            LOGPERROR("bind");
+            goto socket_error;
+        }
+
+        return adapter;
+
+    socket_error:
+        if (adapter->raw_sock) {
+            close(adapter->raw_sock);
+            adapter->raw_sock = 0;
+        }
+    }
+
+#endif
+
     return adapter;
 
 pcap_error:
@@ -920,7 +1007,8 @@ int rawsock_selftest_if(const char *ifname) {
     /*
      * Initialize the adapter.
      */
-    adapter = rawsock_init_adapter(ifname, 0, 0, 0, 0, 0, 0, 65535);
+    adapter = rawsock_init_adapter(ifname, false, false, false, false, false,
+                                   false, 0, 65535);
     if (adapter == 0) {
         puts("pcap = failed");
         return -1;

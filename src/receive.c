@@ -405,7 +405,7 @@ void receive_thread(void *v) {
             continue;
         }
 
-        if (parms->xconf->packet_trace)
+        if (parms->xconf->is_packet_trace)
             packet_trace(stdout, parms->pt_start, recved->packet,
                          recved->length, false);
 

@@ -856,6 +856,22 @@ static ConfRes SET_pfring(void *conf, const char *name, const char *value) {
     return Conf_OK;
 }
 
+static ConfRes SET_rawsocket(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->is_rawsocket || xconf->echo_all)
+            fprintf(xconf->echo, "raw-socket = %s\n",
+                    xconf->is_rawsocket ? "true" : "false");
+        return 0;
+    }
+
+    xconf->is_rawsocket = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
 static ConfRes SET_noresume(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
@@ -1691,12 +1707,12 @@ static ConfRes SET_packet_trace(void *conf, const char *name,
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->packet_trace || xconf->echo_all)
+        if (xconf->is_packet_trace || xconf->echo_all)
             fprintf(xconf->echo, "packet-trace = %s\n",
-                    xconf->packet_trace ? "true" : "false");
+                    xconf->is_packet_trace ? "true" : "false");
         return 0;
     }
-    xconf->packet_trace = parse_str_bool(value);
+    xconf->is_packet_trace = parse_str_bool(value);
     return Conf_OK;
 }
 
@@ -3187,6 +3203,14 @@ ConfParam config_parameters[] = {
      {0},
      "Force the use of the PF_RING driver. The program will exit if PF_RING "
      "DNA drvers are not available."},
+    {"raw-socket",
+     SET_rawsocket,
+     Type_FLAG,
+     {"raw-sock", 0},
+     "Use raw socket to send packets instead of pcap on Linux if possible. Just"
+     " support working on link layer because " XTATE_NAME_TITLE_CASE
+     " needs to handle both IPv4/IPv6.\n"
+     "NOTE: " XTATE_NAME_TITLE_CASE " always uses pcap to recv in default."},
     {"send-queue",
      SET_send_queue,
      Type_FLAG,

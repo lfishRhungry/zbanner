@@ -5,7 +5,7 @@
 
 /**
  * Init struct NIC and adapter within it.
- * 
+ *
  * Discover the local network adapter parameters, such as which
  * MAC address we are using and the MAC addresses of the
  * local routers.

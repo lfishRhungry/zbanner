@@ -23,8 +23,9 @@ typedef struct TemplateSet TmplSet;
  * safe. But recving is not thread safe because of getting data repeatedly.
  */
 typedef struct NetworkAdapter {
-    struct pcap     *pcap;
-    struct __pfring *ring;
+    struct pcap     *pcap;     /**/
+    struct __pfring *ring;     /*optional*/
+    int              raw_sock; /*for sendmmsg*/
     unsigned         is_packet_trace : 1;
     unsigned         is_vlan         : 1;
     unsigned         vlan_id;
@@ -63,9 +64,9 @@ void rawsock_prepare(void);
  *      a fully instantiated network adapter
  */
 Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
-                              bool is_sendq, bool is_packet_trace,
-                              bool is_offline, bool is_vlan, unsigned vlan_id,
-                              unsigned snaplen);
+                              bool is_rawsock, bool is_sendq,
+                              bool is_packet_trace, bool is_offline,
+                              bool is_vlan, unsigned vlan_id, unsigned snaplen);
 
 void rawsock_close_adapter(Adapter *adapter);
 
