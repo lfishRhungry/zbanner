@@ -31,14 +31,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+
+#include "../util-out/logger.h"
+
 #if defined __GNUC__ || defined __CYGWIN__ || defined __MINGW32__ ||           \
     defined __APPLE__
 
 #include <sys/time.h>
 #include <unistd.h> // for usleep
 #include <sched.h>
-
-#include "../util-out/logger.h"
 
 #define __LFQ_VAL_COMPARE_AND_SWAP  __sync_val_compare_and_swap
 #define __LFQ_BOOL_COMPARE_AND_SWAP __sync_bool_compare_and_swap
