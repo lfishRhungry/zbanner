@@ -3015,7 +3015,7 @@ ConfParam config_parameters[] = {
      SET_packet_ttl,
      Type_ARG,
      {"ttl", 0},
-     "Specifies the TTL of all default template packets, defaults to 255."},
+     "Specifies the TTL of all default template packets, defaults to 128."},
     {"tcp-init-window",
      SET_tcp_init_window,
      Type_ARG,
