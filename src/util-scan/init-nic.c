@@ -47,6 +47,8 @@ int init_nic(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets) {
             return -1;
         }
         ifname = ifname2;
+        /*pass the ifname we chose to global*/
+        safe_strcpy(xconf->nic.ifname, 256, ifname2);
     }
     LOG(LEVEL_DEBUG, "interface = %s\n", ifname);
 

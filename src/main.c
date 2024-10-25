@@ -353,18 +353,19 @@ static int _main_scan(XConf *xconf) {
         buffer);
     LOG(LEVEL_OUT, "(" XTATE_GITHUB_URL ")\n");
 
-    LOG(LEVEL_OUT, "Scanner:   %s\n", xconf->scanner->name);
+    LOG(LEVEL_OUT, "Scanner:    %s\n", xconf->scanner->name);
     if (xconf->probe)
-        LOG(LEVEL_OUT, "Probe:     %s\n", xconf->probe->name);
-    LOG(LEVEL_OUT, "Generator: %s\n", xconf->generator->name);
+        LOG(LEVEL_OUT, "Probe:      %s\n", xconf->probe->name);
+    LOG(LEVEL_OUT, "Generator:  %s\n", xconf->generator->name);
     if (xconf->out_conf.output_module)
-        LOG(LEVEL_OUT, "Output:    %s\n", xconf->out_conf.output_module->name);
+        LOG(LEVEL_OUT, "Output:     %s\n", xconf->out_conf.output_module->name);
 
-    LOG(LEVEL_OUT, "Adapter:  ");
+    LOG(LEVEL_OUT, "Interface:  %s\n", xconf->nic.ifname);
+    LOG(LEVEL_OUT, "IP version:");
     if (init_ipv4)
-        LOG(LEVEL_OUT, " ipv4");
+        LOG(LEVEL_OUT, " v4");
     if (init_ipv6)
-        LOG(LEVEL_OUT, " ipv6");
+        LOG(LEVEL_OUT, " v6");
     LOG(LEVEL_OUT, "\n");
     /**
      * We use target and endpoint for generalizing.
