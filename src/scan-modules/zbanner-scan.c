@@ -18,9 +18,19 @@ struct ZBannerConf {
     unsigned record_win      : 1;
     unsigned record_mss      : 1;
     unsigned with_ack        : 1;
+    unsigned no_rst          : 1;
 };
 
 static struct ZBannerConf zbanner_conf = {0};
+
+static ConfRes SET_no_rst(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.no_rst = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_with_ack(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -130,6 +140,11 @@ static ConfParam zbanner_parameters[] = {
      "scanning. But some servers(not very sure) may only accept this kind of "
      "connections. However, it's the early version of ZBanner and can also be "
      "used for research."},
+    {"no-rst",
+     SET_no_rst,
+     Type_FLAG,
+     {0},
+     "Do not send RST segment after got banner. It's used for research."},
 
     {0}};
 
@@ -359,15 +374,17 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     /*Banner*/
     else {
         /*send rst first to disconn*/
-        PktBuf *pkt_buffer = stack_get_pktbuf(stack);
+        if (!zbanner_conf.no_rst) {
+            PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
-        pkt_buffer->length =
-            tcp_create_packet(recved->parsed.src_ip, recved->parsed.port_src,
-                              recved->parsed.dst_ip, recved->parsed.port_dst,
-                              seqno_me, seqno_them + 1, TCP_FLAG_RST, 0, 0,
-                              NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
+            pkt_buffer->length = tcp_create_packet(
+                recved->parsed.src_ip, recved->parsed.port_src,
+                recved->parsed.dst_ip, recved->parsed.port_dst, seqno_me,
+                seqno_them + 1, TCP_FLAG_RST, 0, 0, NULL, 0, pkt_buffer->px,
+                PKT_BUF_SIZE);
 
-        stack_transmit_pktbuf(stack, pkt_buffer);
+            stack_transmit_pktbuf(stack, pkt_buffer);
+        }
 
         ProbeTarget ptarget = {
             .target.ip_proto  = recved->parsed.ip_protocol,
