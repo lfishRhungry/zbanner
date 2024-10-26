@@ -74,10 +74,10 @@ const char ascii_xtate2[] =
 const char work_flow[] =
 "+--------------------------------------------------------------------------------------------+\n"
 "|                                                                                            |\n"
-"|      New Targets Generation     Tx Threads         ScanModule Transmit        Tx Threads   |\n"
+"|      New Targets Generation     Tx Threads           Packet  Transmit         Tx Threads   |\n"
 "|     +----------------------+  ------------->  +---------------------------+  ----------->  |\n"
-"|     | 1.GenerateModule     |  ------------->  |(ProbeModule Hello Making) |  ----------->  |\n"
-"|     | 2.Scan Rate Control  |  ------------->  |(Timeout Event Creating)   |  ----------->  |\n"
+"|     | 1.GenerateModule     |  ------------->  | 1.ProbeModule Hello Making|  ----------->  |\n"
+"|     | 2.Scan Rate Control  |  ------------->  | 2.ScanModule Transmiting  |  ----------->  |\n"
 "|     +----------------------+                  +---------------------------+                |\n"
 "|                                                                                            |\n"
 "|                                                                            ^               |\n"
@@ -88,14 +88,13 @@ const char work_flow[] =
 "|  |                                                                                         |\n"
 "|  |                                                                                         |\n"
 "|  |         ScanModule Handling                        ScanModule Validation                |\n"
-"|  |  +-----------------------------+                +-----------------------+               |\n"
-"|  |  | 1.ProbeModule Handling      | Handle Threads | 1.Packet Record       |   Rx  Thread  |\n"
+"|  |  +-----------------------------+ Handle Threads +-----------------------+               |\n"
+"|  |  | 1.ProbeModule Handling      | <------------- | 1.Packet Record       |   Rx  Thread  |\n"
 "|  |  | 2.OutputModule save results | <------------- | 2.Deduplication       | <-----------  |\n"
-"|  +--| 3.More packets to send      | <------------- | 3.Timeout handling    |               |\n"
-"|     |  (ProbeModule Hello Making) | <------------- | 4.ProbeModule Validate|               |\n"
+"|  +--| 3.More packets to send      | <------------- | 3.ProbeModule Validate|               |\n"
 "|     +-----------------------------+                +-----------------------+               |\n"
 "|                                                                                            |\n"
-"+--------------------------------------------------------------------------------------------+\n";
+"+--------------------------------------------------------------------------------------------+\n"
 ;
 
 const char scan_probe_module_rela[] =
@@ -3114,9 +3113,7 @@ ConfParam config_parameters[] = {
      SET_nodedup,
      Type_FLAG,
      {0},
-     "Do not deduplicate the results even if ScanModule use deduplication.\n"
-     "NOTE: This will destroy the work of `--timeout`, so don't use these two"
-     " switch together."},
+     "Do not deduplicate the results."},
     {"dedup-win",
      SET_dedup_win,
      Type_ARG,
@@ -3412,7 +3409,7 @@ void xconf_print_usage() {
     printf("\n");
     printf("basic use examples of " XTATE_NAME ":\n");
     printf("\n");
-    printf("  " XTATE_NAME " -p 80,8000-8100 -ip 10.0.0.0/8 --rate=10000\n");
+    printf("  " XTATE_NAME " -p 80,8000-8100 -ip 10.0.0.0/8 --rate 10000\n");
     xprint("use default TcpSyn ScanModule to scan web ports on 10.x.x.x at "
            "10kpps.\n",
            6, 80);
@@ -3424,10 +3421,8 @@ void xconf_print_usage() {
            6, 80);
     printf("\n");
     printf("  " XTATE_NAME
-           " -ip 10.0.0.0/8 -scan icmp-echo -scan-arg \"-ttl\" -timeout 6\n");
-    xprint("use IcmpEcho ScanModule to do ping scan with a 6s timeout and "
-           "record TTL.\n",
-           6, 80);
+           " -ip 10.0.0.0/8 -scan icmp-echo -scan-arg \"-ttl\"\n");
+    xprint("use IcmpEcho ScanModule to do ping scan and record TTL.\n", 6, 80);
     printf("\n");
     printf("  " XTATE_NAME " -p 80 -ip 10.0.0.0/8 -scan zbanner -probe http "
            "-probe-arg \"-ver HTTP/1.1\"\n");
@@ -3436,9 +3431,9 @@ void xconf_print_usage() {
            6, 80);
     printf("\n");
     printf("  " XTATE_NAME
-           " -p s:38412 -ip 10.0.0.0/8 -scan sctp-init -show fail\n");
-    xprint("use SctpInit ScanModule to scan SCTP 38412(36412) port and also "
-           "show failed results.\n",
+           " -p s:38412 -ip 10.0.0.0/8 -scan sctp-init -show info\n");
+    xprint("use SctpInit ScanModule to scan SCTP 38412(36412) port and show "
+           "info results.\n",
            6, 80);
     printf("\n");
     printf("  " XTATE_NAME " -ip 192.168.0.1/24 -scan arp-req -lan\n");
@@ -3450,13 +3445,11 @@ void xconf_print_usage() {
            80);
     printf("\n");
     printf("  " XTATE_NAME " -list-scan\n");
-    xprint("list all ScanModules with introductions.\n", 6, 80);
+    xprint("list all ScanModules and other types of module are the same.\n", 6,
+           80);
     printf("\n");
-    printf("  " XTATE_NAME " -list-probe\n");
-    xprint("list all ProbeModules with introductions.\n", 6, 80);
-    printf("\n");
-    printf("  " XTATE_NAME " -list-output\n");
-    xprint("list all OutputModules with introductions.\n", 6, 80);
+    printf("  " XTATE_NAME " -help-scan tcp-syn\n");
+    xprint("see help of TcpSyn ScanModule in detail.\n", 6, 80);
     printf("\n");
     printf("  " XTATE_NAME " -version\n");
     xprint("print version and compilation info.\n", 6, 80);

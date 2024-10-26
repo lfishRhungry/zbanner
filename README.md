@@ -92,10 +92,10 @@ This is how Xtate working internally (or you can check it by `xtate --intro`):
 ```
 +--------------------------------------------------------------------------------------------+
 |                                                                                            |
-|      New Targets Generation     Tx Threads         ScanModule Transmit        Tx Threads   |
+|      New Targets Generation     Tx Threads           Packet  Transmit         Tx Threads   |
 |     +----------------------+  ------------->  +---------------------------+  ----------->  |
-|     | 1.GenerateModule     |  ------------->  |(ProbeModule Hello Making) |  ----------->  |
-|     | 2.Scan Rate Control  |  ------------->  |(Timeout Event Creating)   |  ----------->  |
+|     | 1.GenerateModule     |  ------------->  | 1.ProbeModule Hello Making|  ----------->  |
+|     | 2.Scan Rate Control  |  ------------->  | 2.ScanModule Transmiting  |  ----------->  |
 |     +----------------------+                  +---------------------------+                |
 |                                                                                            |
 |                                                                            ^               |
@@ -106,11 +106,10 @@ This is how Xtate working internally (or you can check it by `xtate --intro`):
 |  |                                                                                         |
 |  |                                                                                         |
 |  |         ScanModule Handling                        ScanModule Validation                |
-|  |  +-----------------------------+                +-----------------------+               |
-|  |  | 1.ProbeModule Handling      | Handle Threads | 1.Packet Record       |   Rx  Thread  |
+|  |  +-----------------------------+ Handle Threads +-----------------------+               |
+|  |  | 1.ProbeModule Handling      | <------------- | 1.Packet Record       |   Rx  Thread  |
 |  |  | 2.OutputModule save results | <------------- | 2.Deduplication       | <-----------  |
-|  +--| 3.More packets to send      | <------------- | 3.Timeout handling    |               |
-|     |  (ProbeModule Hello Making) | <------------- | 4.ProbeModule Validate|               |
+|  +--| 3.More packets to send      | <------------- | 3.ProbeModule Validate|               |
 |     +-----------------------------+                +-----------------------+               |
 |                                                                                            |
 +--------------------------------------------------------------------------------------------+
@@ -172,29 +171,30 @@ But actually you can do much more than these if you know xtate deeply by reading
 usage format:
   xtate [options] [-ip IPs -p PORTs [-scan SCANMODULE [-probe PROBEMODULE]]]
 
-original examples of xtate:
+basic use examples of xtate:
 
-  xtate -p 80,8000-8100 -range 10.0.0.0/8 --rate=10000
+  xtate -p 80,8000-8100 -ip 10.0.0.0/8 --rate 10000
       use default TcpSyn ScanModule to scan web ports on 10.x.x.x at 10kpps.
-
-  xtate -p 80 -range 10.0.0.0/8 -scan zbanner -probe http
-      use ZBanner ScanModule to grab http banners with http ProbeModule.
-
-  xtate -p u:80 -range 10.0.0.0/8 -scan udp -probe echo -show fail
+      
+  xtate -p u:80 -ip 10.0.0.0/8 -scan udp -probe echo -show fail
       use UdpProbe ScanModule to scan UDP 80 port with echo ProbeModule and also
       show failed results.
-
-  xtate -p s:38412 -range 10.0.0.0/8 -scanmodule sctp-init -show fail
-      use SctpInit ScanModule to scan SCTP 38412(36412) port and also show faile
-      d results.
-
-  xtate -range 10.0.0.0/8 -scanmodule icmp-echo -timeout 6
-      use IcmpEcho ScanModule to do ping scan with a 6s timeout.
-
-  xtate -range 192.168.0.1/24 -scanmodule arp-req -lan
+      
+  xtate -ip 10.0.0.0/8 -scan icmp-echo -scan-arg "-ttl"
+      use IcmpEcho ScanModule to do ping scan and record TTL.
+      
+  xtate -p 80 -ip 10.0.0.0/8 -scan zbanner -probe http -probe-arg "-ver HTTP/1.1"
+      use ZBanner ScanModule to grab http banners with http ProbeModule and modu
+      le-specific param.
+      
+  xtate -p s:38412 -ip 10.0.0.0/8 -scan sctp-init -show info
+      use SctpInit ScanModule to scan SCTP 38412(36412) port and show info resul
+      ts.
+      
+  xtate -ip 192.168.0.1/24 -scan arp-req -lan
       do ARP scan with LAN mode in local network.
-
-  xtate -range fe80::1/120 -scanmodule ndp-ns -src-ip fe80::2 -fake-router-mac
+      
+  xtate -ip fe80::1/120 -scan ndp-ns -src-ip fe80::2 -fake-router-mac
       do NDP NS scan with a link-local source IP in local network.
 ```
 
