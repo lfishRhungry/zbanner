@@ -3237,8 +3237,8 @@ void xconf_command_line(XConf *xconf, int argc, char *argv[]) {
     set_parameters_from_args(xconf, config_parameters, argc - 1, argv + 1);
 
     if (xconf->shard.of > 1 && xconf->seed == 0) {
-        LOG(LEVEL_ERROR, "--seed <num> is not specified\n    HINT: all shards "
-                         "must share the same seed\n");
+        LOG(LEVEL_ERROR, "--seed <num> is not specified\n");
+        LOG(LEVEL_HINT, "all shards must share the same seed\n");
     }
 }
 
