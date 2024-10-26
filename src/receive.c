@@ -29,7 +29,6 @@
 #include "util-data/fine-malloc.h"
 #include "util-scan/ptrace.h"
 
-#include "timeout/fast-timeout.h"
 #include "output-modules/output-modules.h"
 
 static uint8_t _dispatch_hash(ipaddress addr) {
@@ -105,7 +104,6 @@ typedef struct RxHandleConfig {
     const XConf  *xconf;
     Scanner      *scanner;
     PACKET_QUEUE *handle_queue;
-    FHandler     *ft_handler;
     STACK        *stack;
     OutConf      *out_conf;
     uint64_t      entropy;
@@ -167,7 +165,7 @@ static void handle_thread(void *v) {
         };
 
         parms->scanner->handle_cb(parms->index, parms->entropy, recved, &item,
-                                  parms->stack, parms->ft_handler);
+                                  parms->stack);
 
         output_result(parms->out_conf, &item);
 
@@ -190,8 +188,6 @@ void receive_thread(void *v) {
     Scanner         *scan_module  = xconf->scanner;
     Dedup           *dedup        = NULL;
     struct PcapFile *pcapfile     = NULL;
-    ScanTmEvent     *tm_event     = NULL;
-    FHandler        *ft_handler   = NULL;
     unsigned         handler_num  = xconf->rx_handler_count;
     size_t          *handler      = MALLOC(handler_num * sizeof(size_t));
     HandleConf      *handle_parms = MALLOC(handler_num * sizeof(HandleConf));
@@ -233,10 +229,6 @@ void receive_thread(void *v) {
     if (!xconf->is_nodedup)
         dedup = dedup_init(xconf->dedup_win);
 
-    if (xconf->is_fast_timeout) {
-        ft_handler = ft_get_handler(xconf->ft_table);
-    }
-
     /**
      * init dispatch and handle threads
      */
@@ -259,9 +251,7 @@ void receive_thread(void *v) {
     dispatcher = pixie_begin_thread(dispatch_thread, 0, &dispatch_parms);
 
     for (unsigned i = 0; i < handler_num; i++) {
-        /*handle threads just add tm_event, it's thread safe*/
-        handle_parms[i].ft_handler = xconf->is_fast_timeout ? ft_handler : NULL;
-        handle_parms[i].scanner    = xconf->scanner;
+        handle_parms[i].scanner      = xconf->scanner;
         handle_parms[i].handle_queue = handle_q[i];
         handle_parms[i].xconf        = xconf;
         handle_parms[i].stack        = stack;
@@ -274,42 +264,6 @@ void receive_thread(void *v) {
 
     LOG(LEVEL_DEBUG, "(rx thread) starting main loop\n");
     while (!time_to_finish_rx) {
-        /*handle only one actual fast-timeout event to avoid blocking*/
-        while (xconf->is_fast_timeout && !time_to_finish_rx) {
-            tm_event = ft_pop_event(ft_handler, global_now);
-
-            if (tm_event == NULL)
-                break;
-
-            if ((!xconf->is_nodedup &&
-                 !dedup_is_dup(dedup, tm_event->target.ip_them,
-                               tm_event->target.port_them,
-                               tm_event->target.ip_me, tm_event->target.port_me,
-                               tm_event->dedup_type)) ||
-                xconf->is_nodedup) {
-                OutItem item = {
-                    .target.ip_proto  = tm_event->target.ip_proto,
-                    .target.ip_them   = tm_event->target.ip_them,
-                    .target.ip_me     = tm_event->target.ip_me,
-                    .target.port_them = tm_event->target.port_them,
-                    .target.port_me   = tm_event->target.port_me,
-                };
-
-                scan_module->timeout_cb(entropy, tm_event, &item, stack,
-                                        ft_handler);
-                output_result(out_conf, &item);
-
-                FREE(tm_event);
-
-                break;
-            }
-
-            FREE(tm_event);
-        }
-
-        if (xconf->is_fast_timeout)
-            parms->total_tm_event = ft_event_count(ft_handler);
-
         unsigned             pkt_len, pkt_secs, pkt_usecs;
         const unsigned char *pkt_data;
 
@@ -465,10 +419,6 @@ void receive_thread(void *v) {
     if (pcapfile) {
         pcapfile_close(pcapfile);
         pcapfile = NULL;
-    }
-    if (xconf->is_fast_timeout && ft_handler) {
-        ft_close_handler(ft_handler);
-        ft_handler = NULL;
     }
     if (dispatch_q) {
         parms->handle_q = NULL;

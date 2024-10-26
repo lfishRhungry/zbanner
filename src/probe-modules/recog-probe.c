@@ -291,13 +291,6 @@ static unsigned recog_handle_response(unsigned th_idx, ProbeTarget *target,
     return 0;
 }
 
-static unsigned recog_handle_timeout(ProbeTarget *target, OutItem *item) {
-    item->level = OUT_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "no response");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
-    return 0;
-}
-
 static void recog_close() {
     FREE(recog_conf.hello);
     recog_conf.hello_len = 0;
@@ -337,7 +330,6 @@ Probe RecogProbe = {
     .make_payload_cb       = &recog_make_payload,
     .get_payload_length_cb = &recog_get_payload_length,
     .handle_response_cb    = &recog_handle_response,
-    .handle_timeout_cb     = &recog_handle_timeout,
     .close_cb              = &recog_close,
 };
 

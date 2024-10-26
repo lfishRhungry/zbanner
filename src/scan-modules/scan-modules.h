@@ -21,7 +21,6 @@
 #include "../target/target-set.h"
 #include "../target/target-ipaddress.h"
 #include "../target/target-rangeport.h"
-#include "../timeout/fast-timeout.h"
 #include "../proto/proto-preprocess.h"
 #include "../probe-modules/probe-modules.h"
 
@@ -57,13 +56,6 @@ typedef struct ScanModuleTarget {
     unsigned index;
 } ScanTarget;
 
-/*a timeout event for scanning*/
-typedef struct ScanTimeoutEvent {
-    Target   target;
-    unsigned dedup_type;
-    unsigned need_timeout : 1;
-} ScanTmEvent;
-
 /**
  * !Only step for transmitting. Happens in Tx Thread.
  * Do the first packet transmitting for every target.
@@ -73,14 +65,12 @@ typedef struct ScanTimeoutEvent {
  *
  * @param entropy a rand seed (generated or user-specified).
  * @param target info of target.
- * @param event fill it if we need to add a timeout event.
  * @param px packet buffer to transmit. (Max Length is PKT_BUF_SIZE)
  * @param len length of packet data we filled.
  * @return true if need to transmit one more packet.
  */
 typedef bool (*scan_modules_transmit)(uint64_t entropy, ScanTarget *target,
-                                      ScanTmEvent *event, unsigned char *px,
-                                      size_t *len);
+                                      unsigned char *px, size_t *len);
 
 /***************************************************************************
  * * callback functions for Receive
@@ -155,36 +145,10 @@ typedef void (*scan_modules_validate)(uint64_t entropy, Recved *recved,
  * @param recved info of received packet.
  * @param item results we have to fill to output.
  * @param stack packet buffer queue stack for preparing transmitting by us.
- * @param handler handler of fast-timeout to add tm-event or NULL if the
- * fast-timeout is off.
  */
 typedef void (*scan_modules_handle)(unsigned th_idx, uint64_t entropy,
-                                    Recved *recved, OutItem *item, STACK *stack,
-                                    FHandler *handler);
-
-/***************************************************************************
- * * callback functions for Timeout
- ****************************************************************************/
-
-/**
- * !Happens in Rx Thread.
- * Handle fast-timeout event if we use fast-timeout.
- * This func will be called only if a fast timeout event need to
- * be handled while using fast-timeout.
- *
- * !Must be implemented if support timeout.
- * !Must be thread safe for other funcs.
- *
- * @param entropy a rand seed (generated or user-specified).
- * @param event timeout event;
- * @param item results we have to fill to output.
- * @param stack packet buffer queue stack for preparing transmitting by us.
- * @param handler handler of fast-timeout to add tm-event by us or NULL if not
- * in use fast-timeout.
- */
-typedef void (*scan_modules_timeout)(uint64_t entropy, ScanTmEvent *event,
-                                     OutItem *item, STACK *stack,
-                                     FHandler *handler);
+                                    Recved *recved, OutItem *item,
+                                    STACK *stack);
 
 /***************************************************************************
  * * callback functions for Polling
@@ -239,8 +203,6 @@ typedef struct ScanModule {
     const char     *name;
     /*set zero if not using probe*/
     const ProbeType required_probe_type;
-    /*if support using timeout mechanism (fast-timeout)*/
-    const unsigned  support_timeout;
     /*just for pcap to avoid copying uninteresting packets from the kernel to
      * user mode.*/
     const char     *bpf_filter;
@@ -256,8 +218,6 @@ typedef struct ScanModule {
     /*for receive*/
     scan_modules_validate validate_cb;
     scan_modules_handle   handle_cb;
-    /*for timeout*/
-    scan_modules_timeout  timeout_cb;
     /*for polling*/
     scan_modules_poll     poll_cb;
     /*for close*/
@@ -284,9 +244,6 @@ void scan_poll_nothing(unsigned th_idx);
 
 /*implemented `scan_modules_close`*/
 void scan_close_nothing();
-
-void scan_no_timeout(uint64_t entropy, ScanTmEvent *event, OutItem *item,
-                     STACK *stack, FHandler *handler);
 
 void scan_no_status(char *status);
 

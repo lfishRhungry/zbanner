@@ -312,13 +312,6 @@ static unsigned helloudp_handle_response(unsigned th_idx, ProbeTarget *target,
     return 0;
 }
 
-static unsigned helloudp_handle_timeout(ProbeTarget *target, OutItem *item) {
-    item->level = OUT_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "no response");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
-    return 0;
-}
-
 static void helloudp_close() {
     FREE(helloudp_conf.hello);
     helloudp_conf.hello_len = 0;
@@ -355,7 +348,6 @@ Probe HelloUdpProbe = {
     .make_payload_cb      = &helloudp_make_payload,
     .validate_response_cb = &helloudp_validate_response,
     .handle_response_cb   = &helloudp_handle_response,
-    .handle_timeout_cb    = &helloudp_handle_timeout,
     .close_cb             = &helloudp_close,
 };
 

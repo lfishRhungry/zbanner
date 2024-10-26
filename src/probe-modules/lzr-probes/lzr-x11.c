@@ -53,13 +53,6 @@ static unsigned lzr_x11_handle_reponse(unsigned th_idx, ProbeTarget *target,
     return 0;
 }
 
-static unsigned lzr_x11_handle_timeout(ProbeTarget *target, OutItem *item) {
-    item->level = OUT_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "not x11");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
-    return 0;
-}
-
 Probe LzrX11Probe = {
     .name       = "lzr-x11",
     .type       = ProbeType_TCP,
@@ -73,6 +66,5 @@ Probe LzrX11Probe = {
     .make_payload_cb       = &lzr_x11_make_payload,
     .get_payload_length_cb = &lzr_x11_get_payload_length,
     .handle_response_cb    = &lzr_x11_handle_reponse,
-    .handle_timeout_cb     = &lzr_x11_handle_timeout,
     .close_cb              = &probe_close_nothing,
 };

@@ -11,15 +11,13 @@
 extern Scanner ZBannerScan; /*for internal x-ref*/
 
 struct ZBannerConf {
-    unsigned no_banner_timeout : 1;
-    unsigned is_port_timeout   : 1;
-    unsigned is_port_success   : 1;
-    unsigned is_port_failure   : 1;
-    unsigned record_ttl        : 1;
-    unsigned record_ipid       : 1;
-    unsigned record_win        : 1;
-    unsigned record_mss        : 1;
-    unsigned with_ack          : 1;
+    unsigned is_port_success : 1;
+    unsigned is_port_failure : 1;
+    unsigned record_ttl      : 1;
+    unsigned record_ipid     : 1;
+    unsigned record_win      : 1;
+    unsigned record_mss      : 1;
+    unsigned with_ack        : 1;
 };
 
 static struct ZBannerConf zbanner_conf = {0};
@@ -70,26 +68,6 @@ static ConfRes SET_record_win(void *conf, const char *name, const char *value) {
     return Conf_OK;
 }
 
-static ConfRes SET_banner_timeout(void *conf, const char *name,
-                                  const char *value) {
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    zbanner_conf.no_banner_timeout = parse_str_bool(value);
-
-    return Conf_OK;
-}
-
-static ConfRes SET_port_timeout(void *conf, const char *name,
-                                const char *value) {
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    zbanner_conf.is_port_timeout = parse_str_bool(value);
-
-    return Conf_OK;
-}
-
 static ConfRes SET_port_success(void *conf, const char *name,
                                 const char *value) {
     UNUSEDPARM(conf);
@@ -111,17 +89,6 @@ static ConfRes SET_port_failure(void *conf, const char *name,
 }
 
 static ConfParam zbanner_parameters[] = {
-    {"no-banner-timeout",
-     SET_banner_timeout,
-     Type_FLAG,
-     {"no-banner-tm", "no-timeout-banner", "no-tm-banner", 0},
-     "Do not use timeout for banner grabbing while in timeout mode."},
-    {"port-timeout",
-     SET_port_timeout,
-     Type_FLAG,
-     {"timeout-port", "port-tm", "tm-port", 0},
-     "Use timeout for port scanning(openness detection) while in timeout "
-     "mode."},
     {"port-success",
      SET_port_success,
      Type_FLAG,
@@ -182,8 +149,7 @@ static bool zbanner_init(const XConf *xconf) {
 }
 
 static bool zbanner_transmit(uint64_t entropy, ScanTarget *target,
-                             ScanTmEvent *event, unsigned char *px,
-                             size_t *len) {
+                             unsigned char *px, size_t *len) {
     /*we just handle tcp target*/
     if (target->target.ip_proto != IP_PROTO_TCP)
         return false;
@@ -196,12 +162,6 @@ static bool zbanner_transmit(uint64_t entropy, ScanTarget *target,
                              target->target.ip_me,
                              src_port_start + target->index, seqno, 0,
                              TCP_FLAG_SYN, 0, 0, NULL, 0, px, PKT_BUF_SIZE);
-
-    if (zbanner_conf.is_port_timeout) {
-        event->need_timeout   = 1;
-        event->dedup_type     = 0;
-        event->target.port_me = src_port_start + target->index;
-    }
 
     /*multi-probe Multi_Direct*/
     if (ZBannerScan.probe->multi_mode == Multi_Direct &&
@@ -272,7 +232,7 @@ static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
 }
 
 static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
-                           OutItem *item, STACK *stack, FHandler *handler) {
+                           OutItem *item, STACK *stack) {
     unsigned mss_them;
     bool     mss_found;
     uint16_t win_them;
@@ -355,23 +315,6 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
 
             stack_transmit_pktbuf(stack, pkt_buffer);
 
-            /*add timeout for banner*/
-            if (handler && !zbanner_conf.no_banner_timeout) {
-                ScanTmEvent *tm_event = CALLOC(1, sizeof(ScanTmEvent));
-
-                tm_event->target.ip_proto  = IP_PROTO_TCP;
-                tm_event->target.ip_them   = recved->parsed.src_ip;
-                tm_event->target.ip_me     = recved->parsed.dst_ip;
-                tm_event->target.port_them = recved->parsed.port_src;
-                tm_event->target.port_me   = recved->parsed.port_dst;
-
-                tm_event->need_timeout = 1;
-                tm_event->dedup_type   = 1; /*1 for banner*/
-
-                ft_add_event(handler, tm_event, global_now);
-                tm_event = NULL;
-            }
-
             /*multi-probe Multi_IfOpen*/
             if (ZBannerScan.probe->multi_mode == Multi_IfOpen &&
                 recved->parsed.port_dst == src_port_start) {
@@ -390,23 +333,6 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                         PKT_BUF_SIZE);
 
                     stack_transmit_pktbuf(stack, pkt_buffer);
-
-                    /*add timeout for port*/
-                    if (handler && zbanner_conf.is_port_timeout) {
-                        ScanTmEvent *tm_event = CALLOC(1, sizeof(ScanTmEvent));
-
-                        tm_event->target.ip_proto  = IP_PROTO_TCP;
-                        tm_event->target.ip_them   = recved->parsed.src_ip;
-                        tm_event->target.ip_me     = recved->parsed.dst_ip;
-                        tm_event->target.port_them = recved->parsed.port_src;
-                        tm_event->target.port_me   = src_port_start + idx;
-
-                        tm_event->need_timeout = 1;
-                        tm_event->dedup_type   = 0; /*0 for port*/
-
-                        ft_add_event(handler, tm_event, global_now);
-                        tm_event = NULL;
-                    }
                 }
             }
         }
@@ -479,23 +405,6 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                     TCP_FLAG_SYN, 0, 0, NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
                 stack_transmit_pktbuf(stack, pkt_buffer);
-
-                /*add timeout for port*/
-                if (handler && zbanner_conf.is_port_timeout) {
-                    ScanTmEvent *tm_event = CALLOC(1, sizeof(ScanTmEvent));
-
-                    tm_event->target.ip_proto  = IP_PROTO_TCP;
-                    tm_event->target.ip_them   = recved->parsed.src_ip;
-                    tm_event->target.ip_me     = recved->parsed.dst_ip;
-                    tm_event->target.port_them = recved->parsed.port_src;
-                    tm_event->target.port_me   = src_port_start + idx;
-
-                    tm_event->need_timeout = 1;
-                    tm_event->dedup_type   = 0; /*0 for port*/
-
-                    ft_add_event(handler, tm_event, global_now);
-                    tm_event = NULL;
-                }
             }
 
             return;
@@ -515,119 +424,6 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                 TCP_FLAG_SYN, 0, 0, NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_pktbuf(stack, pkt_buffer);
-
-            /*add timeout for port*/
-            if (handler && zbanner_conf.is_port_timeout) {
-                ScanTmEvent *tm_event = CALLOC(1, sizeof(ScanTmEvent));
-
-                tm_event->target.ip_proto  = IP_PROTO_TCP;
-                tm_event->target.ip_them   = recved->parsed.src_ip;
-                tm_event->target.ip_me     = recved->parsed.dst_ip;
-                tm_event->target.port_them = recved->parsed.port_src;
-                tm_event->target.port_me   = src_port_start + is_multi - 1;
-
-                tm_event->need_timeout = 1;
-                tm_event->dedup_type   = 0; /*0 for port*/
-
-                ft_add_event(handler, tm_event, global_now);
-                tm_event = NULL;
-            }
-        }
-    }
-}
-
-static void zbanner_timeout(uint64_t entropy, ScanTmEvent *event, OutItem *item,
-                            STACK *stack, FHandler *handler) {
-    /*event for port*/
-    if (event->dedup_type == 0) {
-        safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
-        safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
-        if (zbanner_conf.is_port_failure) {
-            item->level = OUT_FAILURE;
-        }
-        return;
-    }
-
-    /*event for banner*/
-
-    ProbeTarget ptarget = {
-        .target.ip_proto  = event->target.ip_proto,
-        .target.ip_them   = event->target.ip_them,
-        .target.ip_me     = event->target.ip_me,
-        .target.port_them = event->target.port_them,
-        .target.port_me   = event->target.port_me,
-        .cookie           = 0, /*zbanner can recognize reponse by itself*/
-        .index            = event->target.port_me - src_port_start,
-    };
-
-    unsigned is_multi = ZBannerScan.probe->handle_timeout_cb(&ptarget, item);
-
-    /*multi-probe Multi_AfterHandle*/
-    if (ZBannerScan.probe->multi_mode == Multi_AfterHandle && is_multi &&
-        event->target.port_me == src_port_start) {
-        for (unsigned idx = 1; idx < ZBannerScan.probe->multi_num; idx++) {
-            unsigned cookie =
-                get_cookie(event->target.ip_them, event->target.port_them,
-                           event->target.ip_me, src_port_start + idx, entropy);
-
-            PktBuf *pkt_buffer = stack_get_pktbuf(stack);
-
-            pkt_buffer->length = tcp_create_packet(
-                event->target.ip_them, event->target.port_them,
-                event->target.ip_me, src_port_start + idx, cookie, 0,
-                TCP_FLAG_SYN, 0, 0, NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
-
-            stack_transmit_pktbuf(stack, pkt_buffer);
-
-            /*add timeout for port*/
-            if (handler && zbanner_conf.is_port_timeout) {
-                ScanTmEvent *tm_event = CALLOC(1, sizeof(ScanTmEvent));
-
-                tm_event->target.ip_proto  = IP_PROTO_TCP;
-                tm_event->target.ip_them   = event->target.ip_them;
-                tm_event->target.ip_me     = event->target.ip_me;
-                tm_event->target.port_them = event->target.port_them;
-                tm_event->target.port_me   = src_port_start + idx;
-
-                tm_event->need_timeout = 1;
-                tm_event->dedup_type   = 0; /*0 for port*/
-
-                ft_add_event(handler, tm_event, global_now);
-                tm_event = NULL;
-            }
-        }
-    }
-
-    /*multi-probe Multi_DynamicNext*/
-    if (ZBannerScan.probe->multi_mode == Multi_DynamicNext && is_multi) {
-        unsigned cookie = get_cookie(
-            event->target.ip_them, event->target.port_them, event->target.ip_me,
-            src_port_start + is_multi - 1, entropy);
-
-        PktBuf *pkt_buffer = stack_get_pktbuf(stack);
-
-        pkt_buffer->length = tcp_create_packet(
-            event->target.ip_them, event->target.port_them, event->target.ip_me,
-            src_port_start + is_multi - 1, cookie, 0, TCP_FLAG_SYN, 0, 0, NULL,
-            0, pkt_buffer->px, PKT_BUF_SIZE);
-
-        stack_transmit_pktbuf(stack, pkt_buffer);
-
-        /*add timeout for port*/
-        if (handler && zbanner_conf.is_port_timeout) {
-            ScanTmEvent *tm_event = CALLOC(1, sizeof(ScanTmEvent));
-
-            tm_event->target.ip_proto  = IP_PROTO_TCP;
-            tm_event->target.ip_them   = event->target.ip_them;
-            tm_event->target.ip_me     = event->target.ip_me;
-            tm_event->target.port_them = event->target.port_them;
-            tm_event->target.port_me   = src_port_start + is_multi - 1;
-
-            tm_event->need_timeout = 1;
-            tm_event->dedup_type   = 0; /*0 for port*/
-
-            ft_add_event(handler, tm_event, global_now);
-            tm_event = NULL;
         }
     }
 }
@@ -635,7 +431,6 @@ static void zbanner_timeout(uint64_t entropy, ScanTmEvent *event, OutItem *item,
 Scanner ZBannerScan = {
     .name                = "zbanner",
     .required_probe_type = ProbeType_TCP,
-    .support_timeout     = 1,
     .params              = zbanner_parameters,
     /*is rst or with ack in ipv4 & ipv6*/
     .bpf_filter =
@@ -662,7 +457,6 @@ Scanner ZBannerScan = {
     .transmit_cb = &zbanner_transmit,
     .validate_cb = &zbanner_validate,
     .handle_cb   = &zbanner_handle,
-    .timeout_cb  = &zbanner_timeout,
     .poll_cb     = &scan_poll_nothing,
     .close_cb    = &scan_close_nothing,
     .status_cb   = &scan_no_status,

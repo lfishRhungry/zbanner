@@ -50,6 +50,5 @@ Probe EchoProbe = {
     .make_payload_cb      = &echo_make_payload,
     .validate_response_cb = &echo_validate_response,
     .handle_response_cb   = &probe_just_report_banner,
-    .handle_timeout_cb    = &probe_no_timeout,
     .close_cb             = &probe_close_nothing,
 };

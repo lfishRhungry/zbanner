@@ -33,7 +33,6 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
                                     "},"
                                     "\"sent\":%" PRIu64 ","
                                     "\"repeat\":%" PRIu64 ","
-                                    "\"tm_event\":%" PRIu64 ","
                                     "\"txq\":%.2f%%,"
                                     "\"rxq\":%.2f%%,"
                                     "\"hit\":%.2f%%,"
@@ -52,7 +51,6 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
                                    "\"successed ps\":%.0f,"
                                    "},"
                                    "\"sent\":%" PRIu64 ","
-                                   "\"tm_event\":%" PRIu64 ","
                                    "\"txq\":%.2f%%,"
                                    "\"rxq\":%.2f%%,"
                                    "\"hit\":%.2f%%,"
@@ -73,7 +71,6 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
                                    "\"successed\":%" PRIu64 ","
                                    "\"failed\":%" PRIu64 ","
                                    "\"info\":%" PRIu64 ","
-                                   "\"tm_event\":%" PRIu64 ","
                                    "\"txq\":%.2f%%,"
                                    "\"rxq\":%.2f%%,"
                                    "\"hit\":%.2f%%,"
@@ -112,7 +109,6 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
                                    "\"successed\":%" PRIu64 ","
                                    "\"failed\":%" PRIu64 ","
                                    "\"info\":%" PRIu64 ","
-                                   "\"tm_event\":%" PRIu64 ","
                                    "\"txq\":%.2f%%,"
                                    "\"rxq\":%.2f%%,"
                                    "\"hit\":%.2f%%"
@@ -202,19 +198,14 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
 
                 LOG(LEVEL_OUT, fmt, (int)item->exiting_secs, kpps,
                     item->cur_pps, sent_rate, successed_rate, item->cur_count,
-                    item->total_tm_event, item->tx_queue_ratio,
-                    item->rx_queue_ratio, hit_rate, item->add_status);
+                    item->tx_queue_ratio, item->rx_queue_ratio, hit_rate,
+                    item->add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, waiting %d-secs, sent/s=%.0f, "
                       "[+]/s=%.0f";
 
                 LOG(LEVEL_OUT, fmt, kpps, (int)item->exiting_secs, sent_rate,
                     successed_rate);
-
-                if (xtatus->print_ft_event) {
-                    fmt = ", tm_event=%6$" PRIu64;
-                    LOG(LEVEL_OUT, fmt, item->total_tm_event);
-                }
 
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
@@ -238,19 +229,14 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
 
                 LOG(LEVEL_OUT, fmt, kpps, item->cur_pps, sent_rate,
                     successed_rate, item->cur_count, item->repeat_count,
-                    item->total_tm_event, item->tx_queue_ratio,
-                    item->rx_queue_ratio, hit_rate, item->add_status);
+                    item->tx_queue_ratio, item->rx_queue_ratio, hit_rate,
+                    item->add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, round=%" PRIu64
                       ", sent/s=%.0f, [+]/s=%.0f";
 
                 LOG(LEVEL_OUT, fmt, kpps, item->repeat_count + 1, sent_rate,
                     successed_rate);
-
-                if (xtatus->print_ft_event) {
-                    fmt = ", tm_event=%6$" PRIu64;
-                    LOG(LEVEL_OUT, fmt, item->total_tm_event);
-                }
 
                 if (xtatus->print_queue) {
                     fmt = ", %5.2f%%-txq, %5.2f%%-rxq";
@@ -277,10 +263,9 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
                 LOG(LEVEL_OUT, fmt, item->cur_pps / 1000.0, item->cur_pps,
                     percent_done, (int)item->exiting_secs,
                     item->total_successed, item->total_failed, item->total_info,
-                    item->total_tm_event, item->tx_queue_ratio,
-                    item->rx_queue_ratio, hit_rate, item->cur_count,
-                    item->max_count, item->max_count - item->cur_count,
-                    item->add_status);
+                    item->tx_queue_ratio, item->rx_queue_ratio, hit_rate,
+                    item->cur_count, item->max_count,
+                    item->max_count - item->cur_count, item->add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, %5.2f%% done, waiting %d-secs, "
                       "[+]=%" PRIu64 ", [x]=%" PRIu64;
@@ -292,11 +277,6 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
                 if (xtatus->print_info_num) {
                     fmt = ", [*]=%" PRIu64;
                     LOG(LEVEL_OUT, fmt, item->total_info);
-                }
-
-                if (xtatus->print_ft_event) {
-                    fmt = ", tm_event=%" PRIu64;
-                    LOG(LEVEL_OUT, fmt, item->total_tm_event);
                 }
 
                 if (xtatus->print_queue) {
@@ -325,8 +305,8 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
                     (unsigned)(time_remaining) % 60, item->cur_count,
                     item->max_count, item->max_count - item->cur_count,
                     item->total_successed, item->total_failed, item->total_info,
-                    item->total_tm_event, item->tx_queue_ratio,
-                    item->rx_queue_ratio, hit_rate, item->add_status);
+                    item->tx_queue_ratio, item->rx_queue_ratio, hit_rate,
+                    item->add_status);
             } else {
                 fmt = "rate:%6.2f-kpps, %5.2f%% done,%4u:%02u:%02u remaining, "
                       "[+]=%" PRIu64 ", [x]=%" PRIu64;
@@ -340,11 +320,6 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
                 if (xtatus->print_info_num) {
                     fmt = ", [*]=%" PRIu64;
                     LOG(LEVEL_OUT, fmt, item->total_info);
-                }
-
-                if (xtatus->print_ft_event) {
-                    fmt = ", tm_event=%" PRIu64;
-                    LOG(LEVEL_OUT, fmt, item->total_tm_event);
                 }
 
                 if (xtatus->print_queue) {

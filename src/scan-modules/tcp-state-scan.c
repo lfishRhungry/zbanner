@@ -177,8 +177,7 @@ static bool tcpstate_init(const XConf *xconf) {
 }
 
 static bool tcpstate_transmit(uint64_t entropy, ScanTarget *target,
-                              ScanTmEvent *event, unsigned char *px,
-                              size_t *len) {
+                              unsigned char *px, size_t *len) {
     /*we just handle tcp target*/
     if (target->target.ip_proto != IP_PROTO_TCP)
         return false;
@@ -230,7 +229,7 @@ static void tcpstate_validate(uint64_t entropy, Recved *recved,
 }
 
 static void tcpstate_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
-                            OutItem *item, STACK *stack, FHandler *handler) {
+                            OutItem *item, STACK *stack) {
     /*in default*/
     item->no_output = 1;
 
@@ -393,7 +392,6 @@ static void tcpstate_status(char *status) {
 Scanner TcpStateScan = {
     .name                = "tcp-state",
     .required_probe_type = ProbeType_STATE,
-    .support_timeout     = 0,
     .bpf_filter          = "tcp",
     .params              = tcpstate_parameters,
     .short_desc          = "Stateful TCP scan with specified ProbeModule.",
@@ -439,7 +437,6 @@ Scanner TcpStateScan = {
     .transmit_cb = &tcpstate_transmit,
     .validate_cb = &tcpstate_validate,
     .handle_cb   = &tcpstate_handle,
-    .timeout_cb  = &scan_no_timeout,
     .poll_cb     = &tcpstate_poll,
     .close_cb    = &tcpstate_close,
     .status_cb   = &tcpstate_status,

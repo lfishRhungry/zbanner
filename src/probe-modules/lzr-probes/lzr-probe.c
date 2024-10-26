@@ -228,14 +228,14 @@ static ConfParam lzr_parameters[] = {
      SET_force_all_match,
      Type_FLAG,
      {"all-match", 0},
-     "Complete all matching process even if identified. This might get multi- "
-     "results."},
+     "Complete all matching process for one banner even if a service "
+     "identified. This might get multiple identified results."},
     {"force-all-handshakes",
      SET_force_all_handshake,
      Type_FLAG,
      {"force-all-handshake", "all-handshake", "all-handshakes", 0},
-     "Complete all specified handshakes even if identified. This could make "
-     "weird count of results."},
+     "Send all specified handshakes even if identified. This could got "
+     "multiple output item for a target."},
     {"banner",
      SET_show_banner,
      Type_FLAG,
@@ -362,26 +362,6 @@ static unsigned lzr_handle_response(unsigned th_idx, ProbeTarget *target,
     return 0;
 }
 
-static unsigned lzr_handle_timeout(ProbeTarget *target, OutItem *item) {
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
-    dach_append(
-        &item->report, "handshake", lzr_conf.handshake[target->index]->name,
-        strlen(lzr_conf.handshake[target->index]->name), LinkType_String);
-    /**
-     * Set last unmatching as failure in normal mode.
-     * Or all unmatching as failure if force-all-handshakes
-     * */
-    if (target->index == lzr_conf.hs_count - 1 || lzr_conf.force_all_handshakes)
-        item->level = OUT_FAILURE;
-    /*last handshake*/
-    if (target->index != lzr_conf.hs_count - 1) {
-        return target->index + 2;
-    } else {
-        return 0;
-    }
-}
-
 void lzr_close() {
     /*close for every handshake*/
     /*do init for all handshakes*/
@@ -404,22 +384,22 @@ Probe LzrProbe = {
         "in " XTATE_NAME_TITLE_CASE
         ". It sends a serias specified LZR handshakes"
         "(subprobes) until identified the service by matching responsed data "
-        "with all LZR handshakes.\n"
-        "I suggest you to specify `--timeout` parameter because LzrProbe "
-        "performs better by recognizing the status of non-responsing.\n"
+        "with all LZR handshakes. "
+        "I had fixed some matching bugs and errors from original LZR "
+        "and added more useful handshakes. So, enjoy it!\n"
         "NOTE1: Recommended optimal handshake order by LZR paper:\n"
         "1)wait\n"
         "2)tls\n"
         "3)http\n"
         "4)dns\n"
         "5)pptp\n"
-        "NOTE2: I had fixed some matching bugs and errors from original LZR "
-        "and added more useful handshakes. So, enjoy it!",
+        "NOTE2: LzrProbe's defect is driven by ZBanner mechanism so that works "
+        "in complete stateless mode. So it cannot recognize timeout for "
+        "handshakes it sent.",
 
     .init_cb               = &lzr_init,
     .make_payload_cb       = &lzr_make_payload,
     .get_payload_length_cb = &lzr_get_payload_length,
     .handle_response_cb    = &lzr_handle_response,
-    .handle_timeout_cb     = &lzr_handle_timeout,
     .close_cb              = &lzr_close,
 };

@@ -21,7 +21,6 @@
 #define LUA_PROBE_FUNC_MAKE_PAYLOAD    "Make_payload"
 #define LUA_PROBE_FUNC_GET_PAYLOAD_LEN "Get_payload_length"
 #define LUA_PROBE_FUNC_HANDLE_RESPONSE "Handle_response"
-#define LUA_PROBE_FUNC_HANDLE_TIMEOUT  "Handle_timeout"
 
 /*for internal x-ref*/
 extern Probe LuaTcpProbe;
@@ -49,7 +48,7 @@ struct LuaTcpConf {
      * Xtate.
      */
     lua_State *Ltx; /*for make_payload*/
-    lua_State *Lrx; /*for get_payload_length and handle_timeout*/
+    lua_State *Lrx; /*for get_payload_length*/
     lua_State *Lhx; /*for handle_response*/
 };
 
@@ -316,13 +315,6 @@ static bool luatcp_init(const XConf *xconf) {
         FREE(luatcp_conf.script);
         return false;
     }
-    if (!check_func_exist(LUA_PROBE_FUNC_HANDLE_TIMEOUT)) {
-        lua_close(luatcp_conf.Ltx);
-        lua_close(luatcp_conf.Lrx);
-        lua_close(luatcp_conf.Lhx);
-        FREE(luatcp_conf.script);
-        return false;
-    }
 
     lua_settop(luatcp_conf.Ltx, 0);
     return true;
@@ -491,94 +483,6 @@ static unsigned luatcp_handle_response(unsigned th_idx, ProbeTarget *target,
     return ret;
 }
 
-static unsigned luatcp_handle_timeout(ProbeTarget *target, OutItem *item) {
-    const char *lua_ret;
-    size_t      ret_len;
-    unsigned    ret = 0;
-
-    lua_getglobal(luatcp_conf.Lrx, LUA_PROBE_FUNC_HANDLE_TIMEOUT);
-    lua_pushstring(luatcp_conf.Lrx,
-                   ipaddress_fmt(target->target.ip_them).string);
-    lua_pushinteger(luatcp_conf.Lrx, target->target.port_them);
-    lua_pushstring(luatcp_conf.Lrx, ipaddress_fmt(target->target.ip_me).string);
-    lua_pushinteger(luatcp_conf.Lrx, target->target.port_me);
-    lua_pushinteger(luatcp_conf.Lrx, target->index);
-
-    if (lua_pcall(luatcp_conf.Lrx, 5, 5, 0) != LUA_OK) {
-        LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_TIMEOUT
-            "` execute error in %s: %s\n",
-            luatcp_conf.script, lua_tostring(luatcp_conf.Lrx, -1));
-        lua_settop(luatcp_conf.Lrx, 0);
-        return 0;
-    }
-
-    if (lua_isinteger(luatcp_conf.Lrx, -5) == 0) {
-        LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_TIMEOUT
-            "` return error in script %s.\n",
-            luatcp_conf.script);
-        lua_settop(luatcp_conf.Lrx, 0);
-        return 0;
-    }
-    if (lua_tointeger(luatcp_conf.Lrx, -5) > 0) {
-        ret = lua_tointeger(luatcp_conf.Lrx, -5);
-    } else if (lua_tointeger(luatcp_conf.Lrx, -5) < 0) {
-        LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_TIMEOUT
-            "` return error in script %s.\n",
-            luatcp_conf.script);
-        lua_settop(luatcp_conf.Lrx, 0);
-        return 0;
-    }
-
-    if (lua_isinteger(luatcp_conf.Lrx, -4) == 0) {
-        LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_TIMEOUT
-            "` return error in script %s.\n",
-            luatcp_conf.script);
-        lua_settop(luatcp_conf.Lrx, 0);
-        return 0;
-    }
-    item->level = lua_tointeger(luatcp_conf.Lrx, -4);
-
-    if (lua_isstring(luatcp_conf.Lrx, -3) == 0) {
-        LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_TIMEOUT
-            "` return error in script %s.\n",
-            luatcp_conf.script);
-        lua_settop(luatcp_conf.Lrx, 0);
-        return 0;
-    }
-    lua_ret = lua_tolstring(luatcp_conf.Lrx, -3, &ret_len);
-    memcpy(item->classification, lua_ret, ret_len);
-
-    if (lua_isstring(luatcp_conf.Lrx, -2) == 0) {
-        LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_TIMEOUT
-            "` return error in script %s.\n",
-            luatcp_conf.script);
-        lua_settop(luatcp_conf.Lrx, 0);
-        return 0;
-    }
-    lua_ret = lua_tolstring(luatcp_conf.Lrx, -2, &ret_len);
-    memcpy(item->reason, lua_ret, ret_len);
-
-    if (lua_isstring(luatcp_conf.Lrx, -1) == 0) {
-        LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_TIMEOUT
-            "` return error in script %s.\n",
-            luatcp_conf.script);
-        lua_settop(luatcp_conf.Lrx, 0);
-        return 0;
-    }
-    lua_ret = lua_tolstring(luatcp_conf.Lrx, -1, &ret_len);
-    dach_append(&item->report, "lua report", lua_ret, ret_len, LinkType_String);
-
-    lua_settop(luatcp_conf.Lrx, 0);
-    return ret;
-}
-
 void luatcp_close() {
     if (luatcp_conf.Ltx) {
         lua_close(luatcp_conf.Ltx);
@@ -614,7 +518,6 @@ Probe LuaTcpProbe = {
     "`" LUA_PROBE_FUNC_MAKE_PAYLOAD "`\n"
     "`" LUA_PROBE_FUNC_GET_PAYLOAD_LEN "`\n"
     "`" LUA_PROBE_FUNC_HANDLE_RESPONSE "`\n"
-    "`" LUA_PROBE_FUNC_HANDLE_TIMEOUT "`\n"
     "NOTE: This is an experimental function and does not support more than "
     "one tx thread or rx-handle thread well. Even through, it is mandatory "
     "to implement functions thread-seperately. However, we had 3 essential"
@@ -625,6 +528,5 @@ Probe LuaTcpProbe = {
     .make_payload_cb       = &luatcp_make_payload,
     .get_payload_length_cb = &luatcp_get_payload_length,
     .handle_response_cb    = &luatcp_handle_response,
-    .handle_timeout_cb     = &luatcp_handle_timeout,
     .close_cb              = &luatcp_close,
 };

@@ -8,7 +8,6 @@
 
 #include "util-data/safe-string.h"
 #include "util-misc/cross.h"
-#include "timeout/fast-timeout.h"
 #include "target/target-ipaddress.h"
 #include "target/target-set.h"
 #include "stack/stack-src.h"
@@ -154,11 +153,6 @@ typedef struct XtateConf {
     TmplSet       *tmplset;
     TmplOpt       *templ_opts;
     /**
-     * Use fast-timeout table to handle simple timeout events;
-     */
-    FTable        *ft_table;
-    time_t         ft_spec; /*timeout seconds*/
-    /**
      * probe module
      * */
     Probe         *probe;
@@ -216,7 +210,6 @@ typedef struct XtateConf {
     unsigned       is_nodedup           : 1;
     unsigned       is_noresume          : 1;
     unsigned       is_infinite          : 1;
-    unsigned       is_fast_timeout      : 1;
     unsigned       is_bypass_os         : 1;
     unsigned       is_no_bpf            : 1;
     unsigned       is_no_cpu_bind       : 1;

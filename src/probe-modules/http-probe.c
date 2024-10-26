@@ -675,13 +675,6 @@ static unsigned http_handle_response(unsigned th_idx, ProbeTarget *target,
     return 0;
 }
 
-static unsigned http_handle_timeout(ProbeTarget *target, OutItem *item) {
-    item->level = OUT_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "no response");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
-    return 0;
-}
-
 static void http_close() {
 #ifndef NOT_FOUND_PCRE2
     FREE(http_conf.regex);
@@ -721,6 +714,5 @@ Probe HttpProbe = {
     .make_payload_cb       = &http_make_payload,
     .get_payload_length_cb = &http_get_payload_length,
     .handle_response_cb    = &http_handle_response,
-    .handle_timeout_cb     = &http_handle_timeout,
     .close_cb              = &http_close,
 };

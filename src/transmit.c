@@ -51,8 +51,6 @@ void transmit_thread(void *v) {
     uint64_t      packets_sent = 0;
     unsigned      increment    = xconf->shard.of * xconf->tx_thread_count;
     uint64_t      entropy      = xconf->seed;
-    ScanTmEvent  *tm_event     = NULL;
-    FHandler     *ft_handler   = NULL;
     Generator    *generator    = xconf->generator;
 
     /* Wait to make sure receive_thread is ready */
@@ -86,10 +84,6 @@ void transmit_thread(void *v) {
      * init tx's own adapter transmit cache.
      */
     acache = rawsock_init_cache(xconf->is_sendq);
-
-    if (xconf->is_fast_timeout) {
-        ft_handler = ft_get_handler(xconf->ft_table);
-    }
 
     throttler_start(throttler, xconf->max_rate / xconf->tx_thread_count);
 
@@ -126,22 +120,11 @@ infinite:;
             target.target = generator->generate_cb(parms->tx_index, i,
                                                    parms->my_repeat, &src);
 
-            /*if we don't use fast-timeout, do not malloc more memory*/
-            if (!tm_event) {
-                tm_event = CALLOC(1, sizeof(ScanTmEvent));
-            }
-
-            tm_event->target.ip_proto  = target.target.ip_proto;
-            tm_event->target.ip_them   = target.target.ip_them;
-            tm_event->target.ip_me     = target.target.ip_me;
-            tm_event->target.port_them = target.target.port_them;
-            tm_event->target.port_me   = target.target.port_me;
-
             unsigned char pkt_buf[PKT_BUF_SIZE];
             size_t        pkt_len = 0;
             unsigned      more    = 0;
-            more = xconf->scanner->transmit_cb(entropy, &target, tm_event,
-                                               pkt_buf, &pkt_len);
+            more = xconf->scanner->transmit_cb(entropy, &target, pkt_buf,
+                                               &pkt_len);
 
             /*
              * Send packet actually.
@@ -155,15 +138,6 @@ infinite:;
                 batch_size--;
                 packets_sent++;
                 parms->total_sent++;
-
-                /*add timeout event*/
-                if (xconf->is_fast_timeout && tm_event->need_timeout) {
-                    ft_add_event(ft_handler, tm_event, global_now);
-                    tm_event = NULL;
-                } else {
-                    tm_event->need_timeout = 0;
-                    tm_event->dedup_type   = 0;
-                }
             }
 
             if (more) {
@@ -224,9 +198,6 @@ infinite:;
     /*clean adapter transmit cache*/
     rawsock_close_cache(acache);
     acache = NULL;
-
-    if (xconf->is_fast_timeout)
-        ft_close_handler(ft_handler);
 
     parms->done_transmitting = true;
     LOG(LEVEL_DEBUG, "exiting transmit thread #%u                    \n",

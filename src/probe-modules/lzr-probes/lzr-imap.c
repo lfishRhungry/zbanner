@@ -38,13 +38,6 @@ static unsigned lzr_imap_handle_reponse(unsigned th_idx, ProbeTarget *target,
     return 0;
 }
 
-static unsigned lzr_imap_handle_timeout(ProbeTarget *target, OutItem *item) {
-    item->level = OUT_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "not imap");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
-    return 0;
-}
-
 Probe LzrImapProbe = {
     .name       = "lzr-imap",
     .type       = ProbeType_TCP,
@@ -57,6 +50,5 @@ Probe LzrImapProbe = {
     .make_payload_cb       = &probe_make_no_payload,
     .get_payload_length_cb = &probe_no_payload_length,
     .handle_response_cb    = &lzr_imap_handle_reponse,
-    .handle_timeout_cb     = &lzr_imap_handle_timeout,
     .close_cb              = &probe_close_nothing,
 };

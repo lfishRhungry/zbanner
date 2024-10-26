@@ -48,8 +48,7 @@ static ConfParam sctpinit_parameters[] = {
 
     {0}};
 static bool sctpinit_transmit(uint64_t entropy, ScanTarget *target,
-                              ScanTmEvent *event, unsigned char *px,
-                              size_t *len) {
+                              unsigned char *px, size_t *len) {
     /*we just handle sctp target*/
     if (target->target.ip_proto != IP_PROTO_SCTP)
         return false;
@@ -61,9 +60,6 @@ static bool sctpinit_transmit(uint64_t entropy, ScanTarget *target,
     *len = sctp_create_packet(target->target.ip_them, target->target.port_them,
                               target->target.ip_me, target->target.port_me,
                               cookie, 0, px, PKT_BUF_SIZE);
-
-    /*add timeout*/
-    event->need_timeout = 1;
 
     return false;
 }
@@ -104,7 +100,7 @@ static void sctpinit_validate(uint64_t entropy, Recved *recved,
 }
 
 static void sctpinit_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
-                            OutItem *item, STACK *stack, FHandler *handler) {
+                            OutItem *item, STACK *stack) {
     if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
                            SCTP_CHUNK_TYPE_INIT_ACK)) {
         item->level = OUT_SUCCESS;
@@ -124,17 +120,9 @@ static void sctpinit_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
 }
 
-static void sctpinit_timeout(uint64_t entropy, ScanTmEvent *event,
-                             OutItem *item, STACK *stack, FHandler *handler) {
-    item->level = OUT_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
-}
-
 Scanner SctpInitScan = {
     .name                = "sctp-init",
-    .required_probe_type = 0,
-    .support_timeout     = 1,
+    .required_probe_type = ProbeType_NULL,
     .params              = sctpinit_parameters,
     /*sctp init or init ack in ipv4 & ipv6*/
     .bpf_filter          = "(ip && sctp && (sctp[12]==2 || sctp[12]==6)) "
@@ -149,7 +137,6 @@ Scanner SctpInitScan = {
     .transmit_cb = &sctpinit_transmit,
     .validate_cb = &sctpinit_validate,
     .handle_cb   = &sctpinit_handle,
-    .timeout_cb  = &sctpinit_timeout,
     .poll_cb     = &scan_poll_nothing,
     .close_cb    = &scan_close_nothing,
     .status_cb   = &scan_no_status,

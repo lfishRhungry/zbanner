@@ -536,12 +536,6 @@ error:
     return 0;
 }
 
-static unsigned snmp_handle_timeout(ProbeTarget *target, OutItem *item) {
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
-    return 0;
-}
-
 static void snmp_close() {
     FREE(snmp_conf.global_mibs);
     snmp_conf.mib_count = 0;
@@ -565,6 +559,5 @@ Probe SnmpProbe = {
     .make_payload_cb      = &snmp_make_payload,
     .validate_response_cb = &probe_all_response_valid,
     .handle_response_cb   = &snmp_handle_response,
-    .handle_timeout_cb    = &snmp_handle_timeout,
     .close_cb             = &snmp_close,
 };

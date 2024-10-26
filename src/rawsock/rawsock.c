@@ -51,33 +51,7 @@ static int is_pcap_file = 0;
 static struct sockaddr_ll _device;
 #endif
 
-/**
- * KLUDGE
- *
- * NOTE: Well, some operates of fast-timeout should be done in real time in rx
- * thread. But I have to set pcap to block mode on Windows, so a small timeout
- * can perform a real time loop while pcap recv is blocked.
- * This may cause high CPU using while no packet recving. But this is useful in
- * fast-timeout handling. And I havn't feel any problem on it yet.
- * Anyway, this parameter is useless on Linux because I could set pcap to non-
- * -block mode on it.
- * PS: Set to non-block mode on Windows will cause a weird packet sending
- * latency even if using sendqueue.
- *
- * FIXME: Some ways may solve this:
- *
- * 1.To make fast-timeout to handle all possible tm-events in one loop. As for
- * the precision of fast-timeout is depend on xtatus updating frequency(about
- * half a second). So the READ_TIMEOUT can be set to a bigger value like 500 or
- * 1000. But it may cause a bigger time spending on fast-timeout handling in
- * every loop of rx thread. It is a trade-off whatever.
- *
- * 2.Handle tm-events in Rx handle threads. But this will move many operations
- * from rx thread to handle threads and may cause some new bugs. Also, we
- * cannot print the count of tm-events conveniently if fast-tm handlers are
- * distributed in different places.
- */
-#define READ_TIMEOUT 1
+#define PCAP_READ_TIMEOUT_MS 1000
 
 struct AdapterNames {
     char *easy_name;
@@ -709,10 +683,10 @@ Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
              * NOTE: If going to this way, send rate of pcap will be a little
              * bit slower. I cannot explain this.
              * */
-            adapter->pcap =
-                PCAP.open_live(adapter_name, snaplen, 8, /* promiscuous mode */
-                               READ_TIMEOUT, /* read timeout in milliseconds */
-                               errbuf);
+            adapter->pcap = PCAP.open_live(
+                adapter_name, snaplen, 8, /* promiscuous mode */
+                PCAP_READ_TIMEOUT_MS,     /* read timeout in milliseconds */
+                errbuf);
             if (adapter->pcap == NULL) {
                 LOG(LEVEL_ERROR, "(if:%s) can't open adapter: %s\n",
                     adapter_name, errbuf);
@@ -745,7 +719,7 @@ Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
              * disgarded if pcap is in immediate mode. But I saw it has effect
              * while setting both block mode and immediate mode.
              */
-            err = PCAP.set_timeout(adapter->pcap, READ_TIMEOUT);
+            err = PCAP.set_timeout(adapter->pcap, PCAP_READ_TIMEOUT_MS);
             if (err) {
                 LOGPCAPERROR(adapter->pcap, "pcap_set_timeout");
                 goto pcap_error;

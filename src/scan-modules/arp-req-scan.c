@@ -20,8 +20,7 @@ static bool arpreq_init(const XConf *xconf) {
 }
 
 static bool arpreq_transmit(uint64_t entropy, ScanTarget *target,
-                            ScanTmEvent *event, unsigned char *px,
-                            size_t *len) {
+                            unsigned char *px, size_t *len) {
     if (target->target.ip_proto != IP_PROTO_Other)
         return false;
 
@@ -32,11 +31,6 @@ static bool arpreq_transmit(uint64_t entropy, ScanTarget *target,
     /*we do not need a cookie and actually cannot set it*/
     *len = arp_create_request_packet(target->target.ip_them,
                                      target->target.ip_me, px, PKT_BUF_SIZE);
-
-    /*add timeout*/
-    event->need_timeout     = 1;
-    event->target.port_them = 0;
-    event->target.port_me   = 0;
 
     return false;
 }
@@ -55,7 +49,7 @@ static void arpreq_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
 }
 
 static void arpreq_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
-                          OutItem *item, STACK *stack, FHandler *handler) {
+                          OutItem *item, STACK *stack) {
     item->target.port_them = 0;
     item->target.port_me   = 0;
     item->no_port          = 1;
@@ -73,18 +67,9 @@ static void arpreq_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                 recved->parsed.arp_info.sender_mac[5]);
 }
 
-static void arpreq_timeout(uint64_t entropy, ScanTmEvent *event, OutItem *item,
-                           STACK *stack, FHandler *handler) {
-    item->no_port = 1;
-    item->level   = OUT_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "down");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
-}
-
 Scanner ArpReqScan = {
     .name                = "arp-req",
-    .required_probe_type = 0,
-    .support_timeout     = 1,
+    .required_probe_type = ProbeType_NULL,
     .params              = NULL,
     .bpf_filter          = "arp && arp[6:2]==2", /*arp reply*/
     .short_desc          = "ARP scan for local network.",
@@ -110,7 +95,6 @@ Scanner ArpReqScan = {
     .transmit_cb = &arpreq_transmit,
     .validate_cb = &arpreq_validate,
     .handle_cb   = &arpreq_handle,
-    .timeout_cb  = &arpreq_timeout,
     .poll_cb     = &scan_poll_nothing,
     .close_cb    = &scan_close_nothing,
     .status_cb   = &scan_no_status,

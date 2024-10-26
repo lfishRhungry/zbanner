@@ -20,6 +20,5 @@ Probe NullProbe = {
     .make_payload_cb       = &probe_make_no_payload,
     .get_payload_length_cb = &probe_no_payload_length,
     .handle_response_cb    = &probe_just_report_banner,
-    .handle_timeout_cb     = &probe_no_timeout,
     .close_cb              = &probe_close_nothing,
 };

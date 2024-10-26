@@ -119,21 +119,6 @@ typedef unsigned (*probe_modules_handle_response)(unsigned             th_idx,
                                                   unsigned sizeof_px,
                                                   OutItem *item);
 
-/**
- * !Happens in Rx Thread,
- * Handle response timeout
- *
- * !Must be implemented in Non-STATE type.
- * !Must be thread safe for other funcs.
- *
- * @param target info of a target
- * @param item to define output content.
- * @return true for starting multi-probe in Multi_AfterHandle mode
- * or num=index+1 to set next probe in Multi_DynamicNext mode.
- */
-typedef unsigned (*probe_modules_handle_timeout)(ProbeTarget *target,
-                                                 OutItem     *item);
-
 /***************************************************************************
  * * callback functions for ProbeType_STATE only
  ****************************************************************************/
@@ -268,8 +253,6 @@ typedef struct ProbeModule {
     probe_modules_validate_response  validate_response_cb;
     /*for stateless response*/
     probe_modules_handle_response    handle_response_cb;
-    /*for stateless timeout*/
-    probe_modules_handle_timeout     handle_timeout_cb;
     /*for stateful process*/
     probe_modules_conn_init          conn_init_cb;
     probe_modules_make_hello         make_hello_cb;
@@ -317,8 +300,6 @@ void probe_close_nothing();
 bool probe_conn_init_nothing(ProbeState *state, ProbeTarget *target);
 
 void probe_conn_close_nothing(ProbeState *state, ProbeTarget *target);
-
-unsigned probe_no_timeout(ProbeTarget *target, OutItem *item);
 
 bool probe_all_response_valid(ProbeTarget *target, const unsigned char *px,
                               unsigned sizeof_px);

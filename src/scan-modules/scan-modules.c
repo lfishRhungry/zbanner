@@ -86,8 +86,6 @@ void help_scan_module(Scanner *module) {
     printf("  Name of ScanModule:  %s\n", module->name);
     printf("  Probe Type Required: %s\n",
            get_probe_type_name(module->required_probe_type));
-    printf("  Supports Timeout:    %s\n",
-           module->support_timeout ? "Yes\n" : "No\n");
     printf("  Default BPF Filter:\n");
     xprint(module->bpf_filter ? module->bpf_filter : "null", 6, 80);
     printf("\n");
@@ -122,10 +120,5 @@ bool scan_init_nothing(const XConf *params) { return true; }
 void scan_poll_nothing(unsigned th_idx) {}
 
 void scan_close_nothing() { return; }
-
-void scan_no_timeout(uint64_t entropy, ScanTmEvent *event, OutItem *item,
-                     STACK *stack, FHandler *handler) {
-    item->no_output = 1;
-}
 
 void scan_no_status(char *status) { status[0] = '\0'; }

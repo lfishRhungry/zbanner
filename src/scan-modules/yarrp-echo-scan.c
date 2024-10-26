@@ -79,8 +79,7 @@ static ConfParam yarrpecho_parameters[] = {
     {0}};
 
 static bool yarrpecho_transmit(uint64_t entropy, ScanTarget *target,
-                               ScanTmEvent *event, unsigned char *px,
-                               size_t *len) {
+                               unsigned char *px, size_t *len) {
     if (target->target.ip_proto != IP_PROTO_Other)
         return false;
 
@@ -165,7 +164,7 @@ static void yarrpecho_validate(uint64_t entropy, Recved *recved,
 }
 
 static void yarrpecho_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
-                             OutItem *item, STACK *stack, FHandler *handler) {
+                             OutItem *item, STACK *stack) {
     item->target.port_them = 0;
     item->target.port_me   = 0;
     item->no_port          = 1;
@@ -210,8 +209,7 @@ static void yarrpecho_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
 
 Scanner YarrpEchoScan = {
     .name                = "yarrp-echo",
-    .required_probe_type = 0,
-    .support_timeout     = 0,
+    .required_probe_type = ProbeType_NULL,
     .params              = yarrpecho_parameters,
     /*icmp echo reply and ttl/hop limit exceeded in ipv4 & ipv6*/
     .bpf_filter = "(icmp && ((icmp[0]==0 && icmp[1]==0)||(icmp[0]==11 && "
@@ -237,7 +235,6 @@ Scanner YarrpEchoScan = {
     .transmit_cb = &yarrpecho_transmit,
     .validate_cb = &yarrpecho_validate,
     .handle_cb   = &yarrpecho_handle,
-    .timeout_cb  = &scan_no_timeout,
     .poll_cb     = &scan_poll_nothing,
     .close_cb    = &scan_close_nothing,
     .status_cb   = &scan_no_status,

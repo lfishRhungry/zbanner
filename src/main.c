@@ -222,13 +222,6 @@ static int _main_scan(XConf *xconf) {
                                 xconf->stack_buf_count);
 
     /*
-     * create fast-timeout table
-     */
-    if (xconf->is_fast_timeout) {
-        xconf->ft_table = ft_init_table(xconf->ft_spec);
-    }
-
-    /*
      * Initialize the packet templates and attributes
      */
     xconf->tmplset = &tmplset;
@@ -399,7 +392,6 @@ static int _main_scan(XConf *xconf) {
      * set status outputing
      */
     xtatus_start(&status);
-    status.print_ft_event = xconf->is_fast_timeout;
     status.print_queue    = xconf->is_status_queue;
     status.print_info_num = xconf->is_status_info_num;
     status.print_hit_rate = xconf->is_status_hit_rate;
@@ -479,7 +471,6 @@ static int _main_scan(XConf *xconf) {
         status_item.total_successed = xconf->out_conf.total_successed;
         status_item.total_failed    = xconf->out_conf.total_failed;
         status_item.total_info      = xconf->out_conf.total_info;
-        status_item.total_tm_event  = rx_thread->total_tm_event;
         status_item.max_count       = scan_range;
         status_item.print_in_json   = xconf->is_status_ndjson;
 
@@ -561,7 +552,6 @@ static int _main_scan(XConf *xconf) {
         status_item.total_successed = xconf->out_conf.total_successed;
         status_item.total_failed    = xconf->out_conf.total_failed;
         status_item.total_info      = xconf->out_conf.total_info;
-        status_item.total_tm_event  = rx_thread->total_tm_event;
         status_item.max_count       = scan_range;
         status_item.print_in_json   = xconf->is_status_ndjson;
         status_item.exiting_secs    = xconf->wait - (time(0) - now);
@@ -609,11 +599,6 @@ static int _main_scan(XConf *xconf) {
 
     FREE(tx_thread);
 
-    if (xconf->is_fast_timeout) {
-        ft_close_table(xconf->ft_table);
-        xconf->ft_table = NULL;
-    }
-
     rawsock_close_adapter(xconf->nic.adapter);
 
     LOG(LEVEL_INFO, "all threads exited...\n");
@@ -658,7 +643,6 @@ int main(int argc, char *argv[]) {
     xconf->dedup_win          = XCONF_DFT_DEDUP_WIN;
     xconf->shard.one          = XCONF_DFT_SHARD_ONE;
     xconf->shard.of           = XCONF_DFT_SHARD_OF;
-    xconf->ft_spec            = XCONF_DFT_FT_SPEC;
     xconf->wait               = XCONF_DFT_WAIT;
     xconf->nic.snaplen        = XCONF_DFT_SNAPLEN;
     xconf->max_packet_len     = XCONF_DFT_MAX_PKT_LEN;

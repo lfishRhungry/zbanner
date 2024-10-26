@@ -248,8 +248,11 @@ int init_nic(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets) {
      * NOTE:
      *
      * Set to non-block mode will cause a weired sending latency on Windows.
-     * Set to block mode will cause disgarding of timeout while receiving
-     * packet after BPF filter set on Linux.
+     *
+     * Set to block mode will cause disgarding of read timeout on Linux.
+     * Especialy while using BPF filter, rx thread may be blocked in a long
+     * time because no valid packet can be recved, so that rx thread exits so
+     * late.
      *
      * Actually I have not found actual reason to it, so just adapt it.
      *

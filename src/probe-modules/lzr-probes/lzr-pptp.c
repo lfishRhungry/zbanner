@@ -44,13 +44,6 @@ static unsigned lzr_pptp_handle_reponse(unsigned th_idx, ProbeTarget *target,
     return 0;
 }
 
-static unsigned lzr_pptp_handle_timeout(ProbeTarget *target, OutItem *item) {
-    item->level = OUT_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "not pptp");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
-    return 0;
-}
-
 Probe LzrPptpProbe = {
     .name       = "lzr-pptp",
     .type       = ProbeType_TCP,
@@ -63,6 +56,5 @@ Probe LzrPptpProbe = {
     .make_payload_cb       = &lzr_pptp_make_payload,
     .get_payload_length_cb = &lzr_pptp_get_payload_length,
     .handle_response_cb    = &lzr_pptp_handle_reponse,
-    .handle_timeout_cb     = &lzr_pptp_handle_timeout,
     .close_cb              = &probe_close_nothing,
 };

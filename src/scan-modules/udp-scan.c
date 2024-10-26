@@ -68,7 +68,7 @@ static bool udp_init(const XConf *xconf) {
 }
 
 static bool udp_transmit(uint64_t entropy, ScanTarget *target,
-                         ScanTmEvent *event, unsigned char *px, size_t *len) {
+                         unsigned char *px, size_t *len) {
     /*we just handle udp target*/
     if (target->target.ip_proto != IP_PROTO_UDP)
         return false;
@@ -96,10 +96,6 @@ static bool udp_transmit(uint64_t entropy, ScanTarget *target,
         udp_create_packet(target->target.ip_them, target->target.port_them,
                           target->target.ip_me, src_port_start + target->index,
                           0, payload, payload_len, px, PKT_BUF_SIZE);
-
-    /*add timeout*/
-    event->need_timeout   = 1;
-    event->target.port_me = src_port_start + target->index;
 
     /*for multi-probe*/
     if (UdpScan.probe->multi_mode == Multi_Direct &&
@@ -136,7 +132,7 @@ static void udp_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
 }
 
 static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
-                       OutItem *item, STACK *stack, FHandler *handler) {
+                       OutItem *item, STACK *stack) {
     if (recved->parsed.found == FOUND_UDP) {
         ProbeTarget ptarget = {
             .target.ip_proto  = recved->parsed.ip_protocol,
@@ -189,23 +185,6 @@ static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                     payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
                 stack_transmit_pktbuf(stack, pkt_buffer);
-
-                /*add timeout*/
-                if (handler) {
-                    ScanTmEvent *tm_event = CALLOC(1, sizeof(ScanTmEvent));
-
-                    tm_event->target.ip_proto  = IP_PROTO_UDP;
-                    tm_event->target.ip_them   = recved->parsed.src_ip;
-                    tm_event->target.ip_me     = recved->parsed.dst_ip;
-                    tm_event->target.port_them = recved->parsed.port_src;
-                    tm_event->target.port_me   = src_port_start + idx;
-
-                    tm_event->need_timeout = 1;
-                    tm_event->dedup_type   = 0;
-
-                    ft_add_event(handler, tm_event, global_now);
-                    tm_event = NULL;
-                }
             }
 
             return;
@@ -240,23 +219,6 @@ static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
 
             stack_transmit_pktbuf(stack, pkt_buffer);
 
-            /*add timeout*/
-            if (handler) {
-                ScanTmEvent *tm_event = CALLOC(1, sizeof(ScanTmEvent));
-
-                tm_event->target.ip_proto  = IP_PROTO_UDP;
-                tm_event->target.ip_them   = recved->parsed.src_ip;
-                tm_event->target.ip_me     = recved->parsed.dst_ip;
-                tm_event->target.port_them = recved->parsed.port_src;
-                tm_event->target.port_me   = src_port_start + is_multi - 1;
-
-                tm_event->need_timeout = 1;
-                tm_event->dedup_type   = 0;
-
-                ft_add_event(handler, tm_event, global_now);
-                tm_event = NULL;
-            }
-
             return;
         }
     } else {
@@ -276,128 +238,9 @@ static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     }
 }
 
-static void udp_timeout(uint64_t entropy, ScanTmEvent *event, OutItem *item,
-                        STACK *stack, FHandler *handler) {
-    /*all events is for banner*/
-
-    ProbeTarget ptarget = {
-        .target.ip_proto  = event->target.ip_proto,
-        .target.ip_them   = event->target.ip_them,
-        .target.ip_me     = event->target.ip_me,
-        .target.port_them = event->target.port_them,
-        .target.port_me   = event->target.port_me,
-        .cookie =
-            get_cookie(event->target.ip_them, event->target.port_them,
-                       event->target.ip_me, event->target.port_me, entropy),
-        .index = event->target.port_me - src_port_start,
-    };
-
-    unsigned is_multi = UdpScan.probe->handle_timeout_cb(&ptarget, item);
-
-    /*for multi-probe Multi_AfterHandle*/
-    if (UdpScan.probe->multi_mode == Multi_AfterHandle && is_multi &&
-        event->target.port_me == src_port_start && UdpScan.probe->multi_num) {
-        for (unsigned idx = 1; idx < UdpScan.probe->multi_num; idx++) {
-            PktBuf *pkt_buffer = stack_get_pktbuf(stack);
-
-            ProbeTarget ptarget = {
-                .target.ip_proto  = event->target.ip_proto,
-                .target.ip_them   = event->target.ip_them,
-                .target.ip_me     = event->target.ip_me,
-                .target.port_them = event->target.port_them,
-                .target.port_me   = src_port_start + idx,
-                .cookie           = get_cookie(
-                    event->target.ip_them, event->target.port_them,
-                    event->target.ip_me, src_port_start + idx, entropy),
-                .index = idx,
-            };
-
-            unsigned char payload[PM_PAYLOAD_SIZE];
-            size_t        payload_len = 0;
-
-            payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
-
-            pkt_buffer->length = udp_create_packet(
-                event->target.ip_them, event->target.port_them,
-                event->target.ip_me, src_port_start + idx, 0, payload,
-                payload_len, pkt_buffer->px, PKT_BUF_SIZE);
-
-            stack_transmit_pktbuf(stack, pkt_buffer);
-
-            /*add timeout*/
-            if (handler) {
-                ScanTmEvent *tm_event = CALLOC(1, sizeof(ScanTmEvent));
-
-                tm_event->target.ip_proto  = IP_PROTO_UDP;
-                tm_event->target.ip_them   = event->target.ip_them;
-                tm_event->target.ip_me     = event->target.ip_me;
-                tm_event->target.port_them = event->target.port_them;
-                tm_event->target.port_me   = src_port_start + idx;
-
-                tm_event->need_timeout = 1;
-                tm_event->dedup_type   = 0;
-
-                ft_add_event(handler, tm_event, global_now);
-                tm_event = NULL;
-            }
-        }
-
-        return;
-    }
-
-    /*for multi-probe Multi_DynamicNext*/
-    if (UdpScan.probe->multi_mode == Multi_DynamicNext && is_multi) {
-        PktBuf *pkt_buffer = stack_get_pktbuf(stack);
-
-        ProbeTarget ptarget = {
-            .target.ip_proto  = event->target.ip_proto,
-            .target.ip_them   = event->target.ip_them,
-            .target.ip_me     = event->target.ip_me,
-            .target.port_them = event->target.port_them,
-            .target.port_me   = src_port_start + is_multi - 1,
-            .cookie = get_cookie(event->target.ip_them, event->target.port_them,
-                                 event->target.ip_me,
-                                 src_port_start + is_multi - 1, entropy),
-            .index  = is_multi - 1,
-        };
-
-        unsigned char payload[PM_PAYLOAD_SIZE];
-        size_t        payload_len = 0;
-
-        payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
-
-        pkt_buffer->length = udp_create_packet(
-            event->target.ip_them, event->target.port_them, event->target.ip_me,
-            src_port_start + is_multi - 1, 0, payload, payload_len,
-            pkt_buffer->px, PKT_BUF_SIZE);
-
-        stack_transmit_pktbuf(stack, pkt_buffer);
-
-        /*add timeout*/
-        if (handler) {
-            ScanTmEvent *tm_event = CALLOC(1, sizeof(ScanTmEvent));
-
-            tm_event->target.ip_proto  = IP_PROTO_UDP;
-            tm_event->target.ip_them   = event->target.ip_them;
-            tm_event->target.ip_me     = event->target.ip_me;
-            tm_event->target.port_them = event->target.port_them;
-            tm_event->target.port_me   = src_port_start + is_multi - 1;
-
-            tm_event->need_timeout = 1;
-            tm_event->dedup_type   = 0;
-
-            ft_add_event(handler, tm_event, global_now);
-            tm_event = NULL;
-        }
-
-        return;
-    }
-}
-
 Scanner UdpScan = {
     .name                = "udp",
     .required_probe_type = ProbeType_UDP,
-    .support_timeout     = 1,
     .params              = udp_parameters,
     /*udp and icmp port unreachable in ipv4 & ipv6*/
     .bpf_filter          = "udp",
@@ -424,7 +267,6 @@ Scanner UdpScan = {
     .transmit_cb = &udp_transmit,
     .validate_cb = &udp_validate,
     .handle_cb   = &udp_handle,
-    .timeout_cb  = &udp_timeout,
     .poll_cb     = &scan_poll_nothing,
     .close_cb    = &scan_close_nothing,
     .status_cb   = &scan_no_status,

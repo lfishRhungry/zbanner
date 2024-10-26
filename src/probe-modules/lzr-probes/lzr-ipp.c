@@ -64,13 +64,6 @@ static unsigned lzr_ipp_handle_reponse(unsigned th_idx, ProbeTarget *target,
     return 0;
 }
 
-static unsigned lzr_ipp_handle_timeout(ProbeTarget *target, OutItem *item) {
-    item->level = OUT_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "not ipp");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
-    return 0;
-}
-
 Probe LzrIppProbe = {
     .name       = "lzr-ipp",
     .type       = ProbeType_TCP,
@@ -83,6 +76,5 @@ Probe LzrIppProbe = {
     .make_payload_cb       = &lzr_ipp_make_payload,
     .get_payload_length_cb = &lzr_ipp_get_payload_length,
     .handle_response_cb    = &lzr_ipp_handle_reponse,
-    .handle_timeout_cb     = &lzr_ipp_handle_timeout,
     .close_cb              = &probe_close_nothing,
 };

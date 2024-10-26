@@ -1832,42 +1832,6 @@ static ConfRes SET_infinite(void *conf, const char *name, const char *value) {
     return Conf_OK;
 }
 
-static ConfRes SET_fast_timeout(void *conf, const char *name,
-                                const char *value) {
-    XConf *xconf = (XConf *)conf;
-    if (xconf->echo) {
-        if (xconf->is_fast_timeout || xconf->echo_all) {
-            if (xconf->is_fast_timeout) {
-                fprintf(xconf->echo, "timeout = %" PRId64 "\n", xconf->ft_spec);
-            } else {
-                fprintf(xconf->echo, "timeout = false\n");
-            }
-        }
-        return 0;
-    }
-
-    if (is_str_bool(value)) {
-        if (parse_str_bool(value)) {
-            xconf->is_fast_timeout = 1;
-        }
-    } else if (is_str_int(value)) {
-        int spec = parse_str_int(value);
-        if (spec <= 0) {
-            LOG(LEVEL_ERROR, "%s: need a switch word or a positive number.\n",
-                name);
-            return Conf_ERR;
-        }
-        xconf->is_fast_timeout = 1;
-        xconf->ft_spec         = (time_t)spec;
-    } else
-        goto fail;
-
-    return Conf_OK;
-fail:
-    LOG(LEVEL_ERROR, "%s: bad value: %s\n", name, value);
-    return Conf_ERR;
-}
-
 static ConfRes SET_pcap_filename(void *conf, const char *name,
                                  const char *value) {
     XConf *xconf = (XConf *)conf;
@@ -3146,23 +3110,6 @@ ConfParam config_parameters[] = {
      "Print result and status to the screen without ANSI controlling(escape) "
      "characters. Some old terminal does not support those charactors.\n"
      "NOTE: displaying maybe not that good if no ansi escape chars."},
-    {"timeout",
-     SET_fast_timeout,
-     Type_ARG,
-     {"use-timeout", 0},
-     "Specifies whether or how many timeouts(sec) should ScanModule use like"
-     " --timeout true, --timeout 15. Some ScanModules could use timeout "
-     "function of " XTATE_NAME_TITLE_CASE
-     " to result some unresponsed targets and "
-     "do some operation.\n"
-     "NOTE: Timeout mechanism may use more memory and cause block on the Rx"
-     " thread while in high-speed send rate. Also the way I used to handle "
-     "the timeout event is kludge. I guess that it can be not that precise "
-     "sometimes because of the dedup mechanism. Although it can bring some "
-     "convenient effects in some scanning, I recommend not to use it if "
-     "possible. However, " XTATE_NAME_TITLE_CASE
-     " was originally born in stateless "
-     "mode:)"},
     {"no-dedup",
      SET_nodedup,
      Type_FLAG,

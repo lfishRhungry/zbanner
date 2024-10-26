@@ -88,18 +88,3 @@ end
 function Handle_response(ip_them, port_them, ip_me, port_me, index, response)
     return 0, Output_Level.SUCCESS, "identified", "matched", "dns"
 end
-
--- To handle reponse timeout
----@param ip_them string ip of target.
----@param port_them number port of target.
----@param ip_me string ip of us.
----@param port_me number port of us.
----@param index number index of expected hello probe.
----@return number positive for starting after_handle or index +1 to set next probe in dynamic_next.
----@return number level a predefined output level value from xtate-header
----@return string classification of result.
----@return string reason of classification.
----@return string report of response (empty ret value if no report).
-function Handle_timeout(ip_them, port_them, ip_me, port_me, index)
-    return 0, Output_Level.FAIL, "no service", "timeout", ""
-end

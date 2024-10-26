@@ -18,7 +18,6 @@ extern Probe EchoProbe;
 extern Probe GetStateProbe;
 extern Probe JarmProbe;
 extern Probe TlsStateProbe;
-extern Probe NmapTcpProbe;
 extern Probe DnsProbe;
 extern Probe LuaTcpProbe;
 extern Probe LuaUdpProbe;
@@ -83,10 +82,6 @@ static Probe *probe_modules_list[] = {
 #ifndef NOT_FOUND_OPENSSL
     &JarmProbe,
     &TlsStateProbe,
-#endif
-
-#ifndef NOT_FOUND_PCRE2
-    &NmapTcpProbe,
 #endif
 
     &DnsProbe,
@@ -314,11 +309,6 @@ bool probe_conn_init_nothing(ProbeState *state, ProbeTarget *target) {
 
 void probe_conn_close_nothing(ProbeState *state, ProbeTarget *target) {
     return;
-}
-
-unsigned probe_no_timeout(ProbeTarget *target, OutItem *item) {
-    item->no_output = 1;
-    return 0;
 }
 
 bool probe_all_response_valid(ProbeTarget *target, const unsigned char *px,

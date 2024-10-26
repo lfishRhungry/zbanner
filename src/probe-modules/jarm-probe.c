@@ -214,18 +214,6 @@ static unsigned jarm_handle_response(unsigned th_idx, ProbeTarget *target,
     return 0;
 }
 
-static unsigned jarm_handle_timeout(ProbeTarget *target, OutItem *item) {
-    item->level = OUT_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "no jarm");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
-    if (jarm_conf.probe_index) {
-        dach_set_int(&item->report, "index", jarm_conf.probe_index);
-    } else {
-        dach_set_int(&item->report, "index", target->index + 1);
-    }
-    return 0;
-}
-
 Probe JarmProbe = {
     .name       = "jarm",
     .type       = ProbeType_TCP,
@@ -245,7 +233,6 @@ Probe JarmProbe = {
     .make_payload_cb       = &jarm_make_payload,
     .get_payload_length_cb = &jarm_get_payload_length,
     .handle_response_cb    = &jarm_handle_response,
-    .handle_timeout_cb     = &jarm_handle_timeout,
     .close_cb              = &probe_close_nothing,
 };
 

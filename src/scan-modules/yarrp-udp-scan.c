@@ -171,8 +171,7 @@ static bool yarrpudp_init(const XConf *xconf) {
 }
 
 static bool yarrpudp_transmit(uint64_t entropy, ScanTarget *target,
-                              ScanTmEvent *event, unsigned char *px,
-                              size_t *len) {
+                              unsigned char *px, size_t *len) {
     if (target->target.ip_proto != IP_PROTO_Other)
         return false;
 
@@ -239,7 +238,7 @@ static void yarrpudp_validate(uint64_t entropy, Recved *recved,
 }
 
 static void yarrpudp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
-                            OutItem *item, STACK *stack, FHandler *handler) {
+                            OutItem *item, STACK *stack) {
     item->target.port_them = 0;
     item->target.port_me   = 0;
     item->no_port          = 1;
@@ -282,8 +281,7 @@ static void yarrpudp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
 
 Scanner YarrpUdpScan = {
     .name                = "yarrp-udp",
-    .required_probe_type = 0,
-    .support_timeout     = 0,
+    .required_probe_type = ProbeType_NULL,
     .params              = yarrpudp_parameters,
     /*icmp port unreachable and ttl/hop limit exceeded in ipv4 & ipv6*/
     .bpf_filter = "(icmp && ((icmp[0]==3 && icmp[1]==3)||(icmp[0]==11 && "
@@ -310,7 +308,6 @@ Scanner YarrpUdpScan = {
     .transmit_cb = &yarrpudp_transmit,
     .validate_cb = &yarrpudp_validate,
     .handle_cb   = &yarrpudp_handle,
-    .timeout_cb  = &scan_no_timeout,
     .poll_cb     = &scan_poll_nothing,
     .close_cb    = &scan_close_nothing,
     .status_cb   = &scan_no_status,

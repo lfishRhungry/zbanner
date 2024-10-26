@@ -31,14 +31,6 @@ static unsigned lzr_newlines50_handle_response(unsigned             th_idx,
     return 0;
 }
 
-static unsigned lzr_newlines50_handle_timeout(ProbeTarget *target,
-                                              OutItem     *item) {
-    item->level = OUT_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
-    return 0;
-}
-
 Probe LzrNewlines50Probe = {
     .name       = "lzr-newlines50",
     .type       = ProbeType_TCP,
@@ -52,6 +44,5 @@ Probe LzrNewlines50Probe = {
     .make_payload_cb       = &lzr_newlines50_make_payload,
     .get_payload_length_cb = &lzr_newlines50_get_payload_length,
     .handle_response_cb    = &lzr_newlines50_handle_response,
-    .handle_timeout_cb     = &lzr_newlines50_handle_timeout,
     .close_cb              = &probe_close_nothing,
 };

@@ -21,7 +21,6 @@
 #define LUA_PROBE_FUNC_MAKE_PAYLOAD      "Make_payload"
 #define LUA_PROBE_FUNC_VALIDATE_RESPONSE "Validate_response"
 #define LUA_PROBE_FUNC_HANDLE_RESPONSE   "Handle_response"
-#define LUA_PROBE_FUNC_HANDLE_TIMEOUT    "Handle_timeout"
 
 /*for internal x-ref*/
 extern Probe LuaUdpProbe;
@@ -48,7 +47,7 @@ struct LuaUdpConf {
      * TODO: Maybe one thread for one Lua VM to support full multiple threads.
      */
     lua_State *Ltx; /*for make_payload*/
-    lua_State *Lrx; /*for validate_response/unreachable and handle_timeout*/
+    lua_State *Lrx; /*for validate_response*/
     lua_State *Lhx; /*for handle_response*/
 };
 
@@ -315,13 +314,6 @@ static bool luaudp_init(const XConf *xconf) {
         FREE(luaudp_conf.script);
         return false;
     }
-    if (!check_func_exist(LUA_PROBE_FUNC_HANDLE_TIMEOUT)) {
-        lua_close(luaudp_conf.Ltx);
-        lua_close(luaudp_conf.Lrx);
-        lua_close(luaudp_conf.Lhx);
-        FREE(luaudp_conf.script);
-        return false;
-    }
 
     lua_settop(luaudp_conf.Ltx, 0);
     return true;
@@ -495,94 +487,6 @@ static unsigned luaudp_handle_response(unsigned th_idx, ProbeTarget *target,
     return ret;
 }
 
-static unsigned luaudp_handle_timeout(ProbeTarget *target, OutItem *item) {
-    const char *lua_ret;
-    size_t      ret_len;
-    unsigned    ret = 0;
-
-    lua_getglobal(luaudp_conf.Lrx, LUA_PROBE_FUNC_HANDLE_TIMEOUT);
-    lua_pushstring(luaudp_conf.Lrx,
-                   ipaddress_fmt(target->target.ip_them).string);
-    lua_pushinteger(luaudp_conf.Lrx, target->target.port_them);
-    lua_pushstring(luaudp_conf.Lrx, ipaddress_fmt(target->target.ip_me).string);
-    lua_pushinteger(luaudp_conf.Lrx, target->target.port_me);
-    lua_pushinteger(luaudp_conf.Lrx, target->index);
-
-    if (lua_pcall(luaudp_conf.Lrx, 5, 5, 0) != LUA_OK) {
-        LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_TIMEOUT
-            "` execute error in %s: %s\n",
-            luaudp_conf.script, lua_tostring(luaudp_conf.Lrx, -1));
-        lua_settop(luaudp_conf.Lrx, 0);
-        return 0;
-    }
-
-    if (lua_isinteger(luaudp_conf.Lrx, -5) == 0) {
-        LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_TIMEOUT
-            "` return error in script %s.\n",
-            luaudp_conf.script);
-        lua_settop(luaudp_conf.Lrx, 0);
-        return 0;
-    }
-    if (lua_tointeger(luaudp_conf.Lrx, -5) > 0) {
-        ret = lua_tointeger(luaudp_conf.Lrx, -5);
-    } else if (lua_tointeger(luaudp_conf.Lrx, -5) < 0) {
-        LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_TIMEOUT
-            "` return error in script %s.\n",
-            luaudp_conf.script);
-        lua_settop(luaudp_conf.Lrx, 0);
-        return 0;
-    }
-
-    if (lua_isinteger(luaudp_conf.Lrx, -4) == 0) {
-        LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_TIMEOUT
-            "` return error in script %s.\n",
-            luaudp_conf.script);
-        lua_settop(luaudp_conf.Lrx, 0);
-        return 0;
-    }
-    item->level = lua_tointeger(luaudp_conf.Lrx, -4);
-
-    if (lua_isstring(luaudp_conf.Lrx, -3) == 0) {
-        LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_TIMEOUT
-            "` return error in script %s.\n",
-            luaudp_conf.script);
-        lua_settop(luaudp_conf.Lrx, 0);
-        return 0;
-    }
-    lua_ret = lua_tolstring(luaudp_conf.Lrx, -3, &ret_len);
-    memcpy(item->classification, lua_ret, ret_len);
-
-    if (lua_isstring(luaudp_conf.Lrx, -2) == 0) {
-        LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_TIMEOUT
-            "` return error in script %s.\n",
-            luaudp_conf.script);
-        lua_settop(luaudp_conf.Lrx, 0);
-        return 0;
-    }
-    lua_ret = lua_tolstring(luaudp_conf.Lrx, -2, &ret_len);
-    memcpy(item->reason, lua_ret, ret_len);
-
-    if (lua_isstring(luaudp_conf.Lrx, -1) == 0) {
-        LOG(LEVEL_ERROR,
-            "" LUA_PROBE_NAME ": func `" LUA_PROBE_FUNC_HANDLE_TIMEOUT
-            "` return error in script %s.\n",
-            luaudp_conf.script);
-        lua_settop(luaudp_conf.Lrx, 0);
-        return 0;
-    }
-    lua_ret = lua_tolstring(luaudp_conf.Lrx, -1, &ret_len);
-    dach_append(&item->report, "lua report", lua_ret, ret_len, LinkType_String);
-
-    lua_settop(luaudp_conf.Lrx, 0);
-    return ret;
-}
-
 void luaudp_close() {
     if (luaudp_conf.Ltx) {
         lua_close(luaudp_conf.Ltx);
@@ -618,7 +522,6 @@ Probe LuaUdpProbe = {
     "`" LUA_PROBE_FUNC_MAKE_PAYLOAD "`\n"
     "`" LUA_PROBE_FUNC_VALIDATE_RESPONSE "`\n"
     "`" LUA_PROBE_FUNC_HANDLE_RESPONSE "`\n"
-    "`" LUA_PROBE_FUNC_HANDLE_TIMEOUT "`\n"
     "NOTE: This is an experimental function and does not support more than "
     "one tx thread or rx-handle thread well. Even through, it is mandatory "
     "to implement functions thread-seperately. However, we had 3 essential"
@@ -629,6 +532,5 @@ Probe LuaUdpProbe = {
     .make_payload_cb      = &luaudp_make_payload,
     .validate_response_cb = &luaudp_validate_response,
     .handle_response_cb   = &luaudp_handle_response,
-    .handle_timeout_cb    = &luaudp_handle_timeout,
     .close_cb             = &luaudp_close,
 };

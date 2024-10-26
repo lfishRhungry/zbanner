@@ -520,13 +520,6 @@ static unsigned tlshello_handle_reponse(unsigned th_idx, ProbeTarget *target,
     return 0;
 }
 
-static unsigned tlshello_handle_timeout(ProbeTarget *target, OutItem *item) {
-    item->level = OUT_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "not TLS");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "no response");
-    return 0;
-}
-
 Probe TlsHelloProbe = {
     .name       = "tls-hello",
     .type       = ProbeType_TCP,
@@ -562,6 +555,5 @@ Probe TlsHelloProbe = {
     .make_payload_cb       = &tlshello_make_payload,
     .get_payload_length_cb = &tlshello_get_payload_length,
     .handle_response_cb    = &tlshello_handle_reponse,
-    .handle_timeout_cb     = &tlshello_handle_timeout,
     .close_cb              = &probe_close_nothing,
 };

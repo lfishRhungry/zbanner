@@ -112,8 +112,7 @@ static ConfParam tcpsyn_parameters[] = {
     {0}};
 
 static bool tcpsyn_transmit(uint64_t entropy, ScanTarget *target,
-                            ScanTmEvent *event, unsigned char *px,
-                            size_t *len) {
+                            unsigned char *px, size_t *len) {
     /*we just handle tcp target*/
     if (target->target.ip_proto != IP_PROTO_TCP)
         return false;
@@ -126,9 +125,6 @@ static bool tcpsyn_transmit(uint64_t entropy, ScanTarget *target,
         tcp_create_packet(target->target.ip_them, target->target.port_them,
                           target->target.ip_me, target->target.port_me, cookie,
                           0, TCP_FLAG_SYN, 0, 0, NULL, 0, px, PKT_BUF_SIZE);
-
-    /*add timeout*/
-    event->need_timeout = 1;
 
     return false;
 }
@@ -167,7 +163,7 @@ static void tcpsyn_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
 }
 
 static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
-                          OutItem *item, STACK *stack, FHandler *handler) {
+                          OutItem *item, STACK *stack) {
     unsigned mss_them;
     bool     mss_found;
     uint16_t win_them;
@@ -229,17 +225,9 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         dach_set_int(&item->report, "win", win_them);
 }
 
-static void tcpsyn_timeout(uint64_t entropy, ScanTmEvent *event, OutItem *item,
-                           STACK *stack, FHandler *handler) {
-    item->level = OUT_FAILURE;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
-    safe_strcpy(item->reason, OUT_RSN_SIZE, "timeout");
-}
-
 Scanner TcpSynScan = {
     .name                = "tcp-syn",
-    .required_probe_type = 0,
-    .support_timeout     = 1,
+    .required_probe_type = ProbeType_NULL,
     .params              = tcpsyn_parameters,
     /* is syn-ack or rst in ipv4 & ipv6*/
     .bpf_filter          = "(ip && tcp && (tcp[tcpflags]==(tcp-syn|tcp-ack) || "
@@ -256,7 +244,6 @@ Scanner TcpSynScan = {
     .transmit_cb = &tcpsyn_transmit,
     .validate_cb = &tcpsyn_validate,
     .handle_cb   = &tcpsyn_handle,
-    .timeout_cb  = &tcpsyn_timeout,
     .poll_cb     = &scan_poll_nothing,
     .close_cb    = &scan_close_nothing,
     .status_cb   = &scan_no_status,

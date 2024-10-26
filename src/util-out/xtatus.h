@@ -18,7 +18,6 @@ typedef struct XtatusPrintItem {
     uint64_t total_failed;
     uint64_t total_info;
     uint64_t total_sent;
-    uint64_t total_tm_event;
     uint64_t exiting_secs;
     char     add_status[XTS_ADD_SIZE];
     unsigned print_in_json : 1;
@@ -43,7 +42,6 @@ typedef struct XtatusPrinter {
     unsigned is_infinite    : 1;
     unsigned print_queue    : 1;
     unsigned print_info_num : 1;
-    unsigned print_ft_event : 1;
     unsigned print_hit_rate : 1;
 } Xtatus;
 
