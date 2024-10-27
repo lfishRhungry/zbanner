@@ -478,7 +478,7 @@ static int _main_scan(XConf *xconf) {
             xtatus_print(&status, &status_item);
 
         /* Sleep for almost a second */
-        pixie_mssleep(350);
+        pixie_mssleep(500);
     }
 
     /*
