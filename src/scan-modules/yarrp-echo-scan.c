@@ -78,6 +78,15 @@ static ConfParam yarrpecho_parameters[] = {
 
     {0}};
 
+static bool yarrpecho_init(const XConf *xconf) {
+    if (strcmp(xconf->generator->name, "blackrock") != 0) {
+        LOG(LEVEL_ERROR, "(yarrp echo) only support default generator\n");
+        return false;
+    }
+
+    return true;
+}
+
 static bool yarrpecho_transmit(uint64_t entropy, ScanTarget *target,
                                unsigned char *px, size_t *len) {
     if (target->target.ip_proto != IP_PROTO_Other)
@@ -231,7 +240,7 @@ Scanner YarrpEchoScan = {
         "NOTE3: Proper TTL range is import both for efficiency and network "
         "pressure of target hosts. A big range may hit target hosts a lot.",
 
-    .init_cb     = &scan_init_nothing,
+    .init_cb     = &yarrpecho_init,
     .transmit_cb = &yarrpecho_transmit,
     .validate_cb = &yarrpecho_validate,
     .handle_cb   = &yarrpecho_handle,

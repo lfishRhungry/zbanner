@@ -159,6 +159,11 @@ static ConfParam yarrpudp_parameters[] = {
     {0}};
 
 static bool yarrpudp_init(const XConf *xconf) {
+    if (strcmp(xconf->generator->name, "blackrock") != 0) {
+        LOG(LEVEL_ERROR, "(yarrp udp) only support default generator\n");
+        return false;
+    }
+
     if (!yarrpudp_conf.init_port_them_set) {
         yarrpudp_conf.port_them_offset = DEFAULT_INIT_PORT - 1;
     }
