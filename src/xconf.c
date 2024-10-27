@@ -3192,7 +3192,9 @@ ConfParam config_parameters[] = {
      "How many times " XTATE_NAME_TITLE_CASE " should repeat for all targets."
      " It also means the hit count for every target + 1. So default is 0."
      " `--infinite` will be automatically set when we use repeat.\n"
-     "NOTE: We should be careful to the deduplication in the repeat mode."},
+     "NOTE1: We should be careful to the deduplication in the repeat mode.\n"
+     "NOTE2: This switch is useful for default and some generators instead of "
+     "all"},
     {"static-seed",
      SET_static_seed,
      Type_FLAG,
