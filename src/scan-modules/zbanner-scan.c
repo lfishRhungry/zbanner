@@ -11,6 +11,10 @@
 extern Scanner ZBannerScan; /*for internal x-ref*/
 
 struct ZBannerConf {
+    uint8_t  syn_ttl;
+    uint8_t  ack_ttl;
+    uint8_t  rst_ttl;
+    uint8_t  probe_ttl;
     unsigned is_port_success : 1;
     unsigned is_port_failure : 1;
     unsigned record_ttl      : 1;
@@ -22,6 +26,42 @@ struct ZBannerConf {
 };
 
 static struct ZBannerConf zbanner_conf = {0};
+
+static ConfRes SET_probe_ttl(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.probe_ttl = parse_str_int(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_rst_ttl(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.rst_ttl = parse_str_int(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_ack_ttl(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.ack_ttl = parse_str_int(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_syn_ttl(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.syn_ttl = parse_str_int(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_no_rst(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -145,6 +185,28 @@ static ConfParam zbanner_parameters[] = {
      Type_FLAG,
      {0},
      "Do not send RST segment after got banner. It's used for research."},
+    {"syn-ttl",
+     SET_syn_ttl,
+     Type_ARG,
+     {0},
+     "Set TTL of SYN segment to specified value instead of global default."},
+    {"ack-ttl",
+     SET_ack_ttl,
+     Type_ARG,
+     {0},
+     "Set TTL of ACK segment during 3-way handshake to specified value instead "
+     "of global default."},
+    {"rst-ttl",
+     SET_rst_ttl,
+     Type_ARG,
+     {0},
+     "Set TTL of RST segment to specified value instead of global default."},
+    {"probe-ttl",
+     SET_probe_ttl,
+     Type_ARG,
+     {0},
+     "Set TTL of ACK segment with probe data to specified value instead of "
+     "global default."},
 
     {0}};
 
@@ -173,10 +235,10 @@ static bool zbanner_transmit(uint64_t entropy, ScanTarget *target,
                                 target->target.port_them, target->target.ip_me,
                                 src_port_start + target->index, entropy);
 
-    *len = tcp_create_packet(target->target.ip_them, target->target.port_them,
-                             target->target.ip_me,
-                             src_port_start + target->index, seqno, 0,
-                             TCP_FLAG_SYN, 0, 0, NULL, 0, px, PKT_BUF_SIZE);
+    *len = tcp_create_packet(
+        target->target.ip_them, target->target.port_them, target->target.ip_me,
+        src_port_start + target->index, seqno, 0, TCP_FLAG_SYN,
+        zbanner_conf.syn_ttl, 0, NULL, 0, px, PKT_BUF_SIZE);
 
     /*multi-probe Multi_Direct*/
     if (ZBannerScan.probe->multi_mode == Multi_Direct &&
@@ -314,8 +376,8 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                 pkt_buffer_ack->length = tcp_create_packet(
                     recved->parsed.src_ip, recved->parsed.port_src,
                     recved->parsed.dst_ip, recved->parsed.port_dst, seqno_me,
-                    seqno_them + 1, TCP_FLAG_ACK, 0, 0, NULL, 0,
-                    pkt_buffer_ack->px, PKT_BUF_SIZE);
+                    seqno_them + 1, TCP_FLAG_ACK, zbanner_conf.ack_ttl, 0, NULL,
+                    0, pkt_buffer_ack->px, PKT_BUF_SIZE);
 
                 stack_transmit_pktbuf(stack, pkt_buffer_ack);
             }
@@ -325,8 +387,8 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             pkt_buffer->length = tcp_create_packet(
                 recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, recved->parsed.port_dst, seqno_me,
-                seqno_them + 1, TCP_FLAG_ACK, 0, 0, payload, payload_len,
-                pkt_buffer->px, PKT_BUF_SIZE);
+                seqno_them + 1, TCP_FLAG_ACK, zbanner_conf.probe_ttl, 0,
+                payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_pktbuf(stack, pkt_buffer);
 
@@ -344,8 +406,8 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                     pkt_buffer->length = tcp_create_packet(
                         recved->parsed.src_ip, recved->parsed.port_src,
                         recved->parsed.dst_ip, src_port_start + idx, cookie, 0,
-                        TCP_FLAG_SYN, 0, 0, NULL, 0, pkt_buffer->px,
-                        PKT_BUF_SIZE);
+                        TCP_FLAG_SYN, zbanner_conf.syn_ttl, 0, NULL, 0,
+                        pkt_buffer->px, PKT_BUF_SIZE);
 
                     stack_transmit_pktbuf(stack, pkt_buffer);
                 }
@@ -380,8 +442,8 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             pkt_buffer->length = tcp_create_packet(
                 recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, recved->parsed.port_dst, seqno_me,
-                seqno_them + 1, TCP_FLAG_RST, 0, 0, NULL, 0, pkt_buffer->px,
-                PKT_BUF_SIZE);
+                seqno_them + 1, TCP_FLAG_RST, zbanner_conf.rst_ttl, 0, NULL, 0,
+                pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_pktbuf(stack, pkt_buffer);
         }
@@ -419,7 +481,8 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                 pkt_buffer->length = tcp_create_packet(
                     recved->parsed.src_ip, recved->parsed.port_src,
                     recved->parsed.dst_ip, src_port_start + idx, cookie, 0,
-                    TCP_FLAG_SYN, 0, 0, NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
+                    TCP_FLAG_SYN, zbanner_conf.syn_ttl, 0, NULL, 0,
+                    pkt_buffer->px, PKT_BUF_SIZE);
 
                 stack_transmit_pktbuf(stack, pkt_buffer);
             }
@@ -438,7 +501,8 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             pkt_buffer->length = tcp_create_packet(
                 recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, src_port_start + is_multi - 1, cookie, 0,
-                TCP_FLAG_SYN, 0, 0, NULL, 0, pkt_buffer->px, PKT_BUF_SIZE);
+                TCP_FLAG_SYN, zbanner_conf.syn_ttl, 0, NULL, 0, pkt_buffer->px,
+                PKT_BUF_SIZE);
 
             stack_transmit_pktbuf(stack, pkt_buffer);
         }

@@ -9,6 +9,8 @@
 extern Scanner TcpSynScan; /*for internal x-ref*/
 
 struct TcpSynConf {
+    uint8_t  syn_ttl;
+    uint8_t  rst_ttl;
     unsigned send_rst    : 1;
     unsigned zero_fail   : 1;
     unsigned record_ttl  : 1;
@@ -18,6 +20,24 @@ struct TcpSynConf {
 };
 
 static struct TcpSynConf tcpsyn_conf = {0};
+
+static ConfRes SET_syn_ttl(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.syn_ttl = parse_str_int(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_rst_ttl(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.rst_ttl = parse_str_int(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_record_mss(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -108,6 +128,16 @@ static ConfParam tcpsyn_parameters[] = {
      Type_FLAG,
      {"mss", 0},
      "Records TCP MSS option value of SYN-ACK if the option exists."},
+    {"syn-ttl",
+     SET_syn_ttl,
+     Type_ARG,
+     {0},
+     "Set TTL of SYN segment to specified value instead of global default."},
+    {"rst-ttl",
+     SET_rst_ttl,
+     Type_ARG,
+     {0},
+     "Set TTL of RST segment to specified value instead of global default."},
 
     {0}};
 
@@ -121,10 +151,10 @@ static bool tcpsyn_transmit(uint64_t entropy, ScanTarget *target,
         get_cookie(target->target.ip_them, target->target.port_them,
                    target->target.ip_me, target->target.port_me, entropy);
 
-    *len =
-        tcp_create_packet(target->target.ip_them, target->target.port_them,
-                          target->target.ip_me, target->target.port_me, cookie,
-                          0, TCP_FLAG_SYN, 0, 0, NULL, 0, px, PKT_BUF_SIZE);
+    *len = tcp_create_packet(target->target.ip_them, target->target.port_them,
+                             target->target.ip_me, target->target.port_me,
+                             cookie, 0, TCP_FLAG_SYN, tcpsyn_conf.syn_ttl, 0,
+                             NULL, 0, px, PKT_BUF_SIZE);
 
     return false;
 }
@@ -197,8 +227,8 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             pkt_buffer->length = tcp_create_packet(
                 recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, recved->parsed.port_dst, seqno_me,
-                seqno_them + 1, TCP_FLAG_RST, 0, 0, NULL, 0, pkt_buffer->px,
-                PKT_BUF_SIZE);
+                seqno_them + 1, TCP_FLAG_RST, tcpsyn_conf.rst_ttl, 0, NULL, 0,
+                pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_pktbuf(stack, pkt_buffer);
         }
