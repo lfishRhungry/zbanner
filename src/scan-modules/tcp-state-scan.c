@@ -381,12 +381,13 @@ static void tcpstate_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
     uint16_t win_them =
         TCP_WIN(recved->packet, recved->parsed.transport_offset);
+    uint8_t flags_them =
+        TCP_FLAGS(recved->packet, recved->parsed.transport_offset);
 
     tcpcon = tcpcon_set.tcpcons[th_idx];
     tcb    = tcpcon_lookup_tcb(tcpcon, ip_me, ip_them, port_me, port_them);
 
-    if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
-                     TCP_FLAG_SYN | TCP_FLAG_ACK)) {
+    if (TCP_FLAG_HAS(flags_them, TCP_FLAG_SYN | TCP_FLAG_ACK)) {
         item->no_output = 0;
 
         /*zerowin could be a kind of port open*/
@@ -481,14 +482,11 @@ static void tcpstate_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         if (tcpstate_conf.record_any_all) {
             item->no_output = 0;
             safe_strcpy(item->classification, OUT_CLS_SIZE, "conn");
-            tcp_flags_to_string(
-                TCP_FLAGS(recved->packet, recved->parsed.transport_offset),
-                item->reason, OUT_RSN_SIZE);
+            tcp_flags_to_string(flags_them, item->reason, OUT_RSN_SIZE);
         }
 
         /* If this has an ACK, then handle that first */
-        if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
-                         TCP_FLAG_ACK)) {
+        if (TCP_FLAG_HAS(flags_them, TCP_FLAG_ACK)) {
             stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_ACK, 0, 0, recved->secs,
                                recved->usecs, seqno_them, seqno_me);
         }
@@ -507,11 +505,8 @@ static void tcpstate_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
 
         /* If this is a FIN (also), handle that.
         Note that ACK + payload + FIN can come together */
-        if (tcb_is_active(tcb) &&
-            TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
-                         TCP_FLAG_FIN) &&
-            !TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
-                          TCP_FLAG_RST)) {
+        if (tcb_is_active(tcb) && TCP_FLAG_HAS(flags_them, TCP_FLAG_FIN) &&
+            !TCP_FLAG_HAS(flags_them, TCP_FLAG_RST)) {
             /* the FIN comes after any data in the packet */
             stack_incoming_tcp(
                 tcpcon, tcb, TCP_WHAT_FIN, 0, 0, recved->secs, recved->usecs,
@@ -519,9 +514,7 @@ static void tcpstate_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         }
 
         /* If this is a RST, then we'll be closing the connection */
-        if (tcb_is_active(tcb) &&
-            TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
-                         TCP_FLAG_RST)) {
+        if (tcb_is_active(tcb) && TCP_FLAG_HAS(flags_them, TCP_FLAG_RST)) {
             stack_incoming_tcp(tcpcon, tcb, TCP_WHAT_RST, 0, 0, recved->secs,
                                recved->usecs, seqno_them, seqno_me);
         }

@@ -204,17 +204,17 @@ static void tcpsyn_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     unsigned  seqno_me =
         TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
     unsigned cookie = get_cookie(ip_them, port_them, ip_me, port_me, entropy);
+    uint8_t  flags_them =
+        TCP_FLAGS(recved->packet, recved->parsed.transport_offset);
 
     /*SYNACK*/
-    if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
-                     TCP_FLAG_SYN | TCP_FLAG_ACK)) {
+    if (TCP_FLAG_HAS(flags_them, TCP_FLAG_SYN | TCP_FLAG_ACK)) {
         if (cookie == seqno_me - 1) {
             pre->go_dedup = 1;
         }
     }
     /*RST*/
-    else if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
-                          TCP_FLAG_RST)) {
+    else if (TCP_FLAG_HAS(flags_them, TCP_FLAG_RST)) {
         /*NOTE: diff from SYNACK*/
         if (cookie == seqno_me - 1 || cookie == seqno_me) {
             pre->go_dedup = 1;

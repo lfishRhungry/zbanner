@@ -23,11 +23,12 @@
 #define SCTP_CHUNK_TYPE_CWR               13
 #define SCTP_CHUNK_TYPE_SHUTDOWN_COMPLETE 14
 
-#define SCTP_VERI_TAG(px, i)                                                   \
-    ((px)[(i) + 4] << 24 | (px)[(i) + 5] << 16 | (px)[(i) + 6] << 8 |          \
-     (px)[(i) + 7])
-#define SCTP_CHUNK_TYPE(px, i)          ((px)[(i) + 12])
-#define SCTP_IS_CHUNK_TYPE(px, i, type) ((SCTP_CHUNK_TYPE((px), (i))) == (type))
+#define SCTP_VERI_TAG(px, transport_offset)                                    \
+    ((px)[(transport_offset) + 4] << 24 | (px)[(transport_offset) + 5] << 16 | \
+     (px)[(transport_offset) + 6] << 8 | (px)[(transport_offset) + 7])
+#define SCTP_CHUNK_TYPE(px, transport_offset) ((px)[(transport_offset) + 12])
+#define SCTP_IS_CHUNK_TYPE(px, transport_offset, type)                         \
+    ((SCTP_CHUNK_TYPE((px), (transport_offset))) == (type))
 
 /**
  * @param ttl use default value in packet template if set to zero.

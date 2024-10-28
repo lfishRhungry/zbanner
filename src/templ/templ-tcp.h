@@ -18,17 +18,19 @@ typedef struct TemplateOptions TmplOpt;
 #define TCP_FLAG_SYN 0B00000010
 #define TCP_FLAG_FIN 0B00000001
 
-#define TCP_SEQNO(px, i)                                                       \
-    ((px)[(i) + 4] << 24 | (px)[(i) + 5] << 16 | (px)[(i) + 6] << 8 |          \
-     (px)[(i) + 7])
-#define TCP_ACKNO(px, i)                                                       \
-    ((px)[(i) + 8] << 24 | (px)[(i) + 9] << 16 | (px)[(i) + 10] << 8 |         \
-     (px)[(i) + 11])
-#define TCP_FLAGS(px, i) ((px)[(i) + 13])
-#define TCP_WIN(px, i)                                                         \
-    ((px)[(i) + 14] << 8 | (px)[(i) + 15]) /*calc TCP window size*/
-
-#define TCP_HAS_FLAG(px, i, flag) ((TCP_FLAGS((px), (i)) & (flag)) == (flag))
+#define TCP_SEQNO(px, transport_offset)                                        \
+    ((px)[(transport_offset) + 4] << 24 | (px)[(transport_offset) + 5] << 16 | \
+     (px)[(transport_offset) + 6] << 8 | (px)[(transport_offset) + 7])
+#define TCP_ACKNO(px, transport_offset)                                        \
+    ((px)[(transport_offset) + 8] << 24 | (px)[(transport_offset) + 9] << 16 | \
+     (px)[(transport_offset) + 10] << 8 | (px)[(transport_offset) + 11])
+#define TCP_WIN(px, transport_offset)                                          \
+    ((px)[(transport_offset) + 14] << 8 |                                      \
+     (px)[(transport_offset) + 15]) /*calc TCP window size*/
+#define TCP_FLAGS(px, transport_offset) ((px)[(transport_offset) + 13])
+#define TCP_HAS_FLAG(px, transport_offset, flag)                               \
+    ((TCP_FLAGS((px), (transport_offset)) & (flag)) == (flag))
+#define TCP_FLAG_HAS(flag, test_flag) (((flag) & (test_flag)) == (test_flag))
 
 /**
  * ref: https://www.iana.org/assignments/tcp-parameters/tcp-parameters.xhtml

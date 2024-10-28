@@ -11,10 +11,9 @@
 #define NDP_NA_FLAG_SOLICITED 0B01000000
 #define NDP_NA_FLAG_OVERRIDE  0B00100000
 
-#define NDP_NA_FLAGS(px, i) ((px)[(i) + 4])
-
-#define NDP_NA_HAS_FLAG(px, i, flag)                                           \
-    ((NDP_NA_FLAGS((px), (i)) & (flag)) == (flag))
+#define NDP_NA_FLAGS(px, transport_offset) ((px)[(transport_offset) + 4])
+#define NDP_NA_HAS_FLAG(px, transport_offset, flag)                            \
+    ((NDP_NA_FLAGS((px), (transport_offset)) & (flag)) == (flag))
 
 /**
  * This is a wrapped func that uses global_tmplset to create ndp neighbor

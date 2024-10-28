@@ -338,10 +338,11 @@ static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     unsigned cookie =
         get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                    recved->parsed.dst_ip, recved->parsed.port_dst, entropy);
+    uint8_t flags_them =
+        TCP_FLAGS(recved->packet, recved->parsed.transport_offset);
 
     /*syn-ack*/
-    if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
-                     TCP_FLAG_SYN | TCP_FLAG_ACK)) {
+    if (TCP_FLAG_HAS(flags_them, TCP_FLAG_SYN | TCP_FLAG_ACK)) {
         if (cookie == seqno_me - 1) {
             pre->go_dedup   = 1;
             pre->dedup_type = 0;
@@ -355,8 +356,7 @@ static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     * 2.[PSH, ACK]: no more data
     * 3.[FIN, PSH, ACK]: no more data and disconnecting
     */
-    else if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
-                          TCP_FLAG_ACK) &&
+    else if (TCP_FLAG_HAS(flags_them, TCP_FLAG_ACK) &&
              recved->parsed.app_length) {
         ProbeTarget ptarget = {
             .target.ip_proto  = recved->parsed.ip_protocol,
@@ -377,8 +377,7 @@ static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
         }
     }
     /*rst for syn (a little different)*/
-    else if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
-                          TCP_FLAG_RST)) {
+    else if (TCP_FLAG_HAS(flags_them, TCP_FLAG_RST)) {
         if (seqno_me == cookie + 1 || seqno_me == cookie) {
             pre->go_dedup   = 1;
             pre->dedup_type = 0;
@@ -396,10 +395,11 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
     unsigned seqno_them =
         TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
+    uint8_t flags_them =
+        TCP_FLAGS(recved->packet, recved->parsed.transport_offset);
 
     /*SYNACK*/
-    if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
-                     TCP_FLAG_SYN | TCP_FLAG_ACK)) {
+    if (TCP_FLAG_HAS(flags_them, TCP_FLAG_SYN | TCP_FLAG_ACK)) {
         /*zerowin could be a kind of port open*/
         if (zbanner_conf.is_port_success) {
             item->level = OUT_SUCCESS;
@@ -499,8 +499,7 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         }
     }
     /*RST*/
-    else if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
-                          TCP_FLAG_RST)) {
+    else if (TCP_FLAG_HAS(flags_them, TCP_FLAG_RST)) {
         win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
         if (zbanner_conf.record_ttl)
