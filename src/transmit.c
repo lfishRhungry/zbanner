@@ -83,7 +83,9 @@ void transmit_thread(void *v) {
     /**
      * init tx's own adapter transmit cache.
      */
-    acache = rawsock_init_cache(xconf->is_sendmmsg, xconf->is_sendq);
+    acache = rawsock_init_cache(xconf->is_sendmmsg, xconf->sendmmsg_batch,
+                                xconf->sendmmsg_retries, xconf->is_sendq,
+                                xconf->sendq_size);
 
     throttler_start(throttler, xconf->max_rate / xconf->tx_thread_count);
 

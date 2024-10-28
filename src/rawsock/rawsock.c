@@ -280,7 +280,7 @@ void rawsock_flush(Adapter *adapter, AdapterCache *acache) {
         struct mmsghdr *current_msg_vec         = acache->msgvec;
         int             total_packets_sent      = 0;
         int             num_of_packets_in_batch = acache->pkt_index;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < acache->msg_retries; i++) {
             /**
              * according to manpages:On success, sendmmsg() returns the number
              * of messages sent from msgvec; if this is less than vlen, the
@@ -329,7 +329,7 @@ void rawsock_flush(Adapter *adapter, AdapterCache *acache) {
          * sendqueue cannot be reused because there's no way to clear it.
          */
         PCAP.sendqueue_destroy(acache->sendq);
-        acache->sendq = PCAP.sendqueue_alloc(SENDQ_SIZE);
+        acache->sendq = PCAP.sendqueue_alloc(acache->sendq_size);
     }
 }
 
@@ -1011,15 +1011,21 @@ int rawsock_is_adapter_names_equal(const char *lhs, const char *rhs) {
 
 /***************************************************************************
  ***************************************************************************/
-AdapterCache *rawsock_init_cache(bool is_sendmmsg, bool is_sendq) {
+AdapterCache *rawsock_init_cache(bool is_sendmmsg, unsigned sendmmsg_batch,
+                                 unsigned sendmmsg_retries, bool is_sendq,
+                                 unsigned sendq_size) {
     AdapterCache *acache = CALLOC(1, sizeof(AdapterCache));
 #ifdef WIN32
     if (is_sendq) {
-        acache->sendq = PCAP.sendqueue_alloc(SENDQ_SIZE);
+        acache->sendq_size = sendq_size ? sendq_size : XCONF_DFT_SENDQUEUE_SIZE;
+        acache->sendq      = PCAP.sendqueue_alloc(acache->sendq_size);
     }
 #else
     if (is_sendmmsg) {
-        acache->msg_capacity = XCONF_DFT_SENDMMSG_BATCH_SIZE;
+        acache->msg_capacity =
+            sendmmsg_batch ? sendmmsg_batch : XCONF_DFT_SENDMMSG_BATCH;
+        acache->msg_retries =
+            sendmmsg_retries ? sendmmsg_retries : XCONF_DFT_SENDMMSG_RETRIES;
         acache->msgvec  = CALLOC(acache->msg_capacity, sizeof(struct mmsghdr));
         acache->msgs    = CALLOC(acache->msg_capacity, sizeof(struct msghdr));
         acache->iovs    = CALLOC(acache->msg_capacity, sizeof(struct iovec));
@@ -1093,7 +1099,7 @@ int rawsock_selftest_if(const char *ifname) {
         puts("pcap = opened");
     }
 
-    acache = rawsock_init_cache(false, false);
+    acache = rawsock_init_cache(false, 0, 0, false, 0);
 
     /* IPv4 address */
     ipv4 = rawsock_get_adapter_ip(ifname);

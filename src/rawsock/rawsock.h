@@ -17,8 +17,6 @@
 #include "../target/target-ipaddress.h"
 #include "../stack/stack-queue.h"
 
-#define SENDQ_SIZE 65536 * 8
-
 typedef struct TemplateSet TmplSet;
 
 /**
@@ -45,13 +43,15 @@ typedef struct NetworkAdapter {
  */
 typedef struct Adapter_Cache {
     struct pcap_send_queue *sendq;
+    unsigned                sendq_size;
 #ifndef WIN32
     struct mmsghdr *msgvec;
     struct msghdr  *msgs;
     struct iovec   *iovs;
     PktBuf         *pkt_buf;
-    size_t          msg_capacity;
+    unsigned        msg_capacity;
     unsigned        pkt_index;
+    unsigned        msg_retries;
 #endif
 } AdapterCache;
 
@@ -85,7 +85,9 @@ Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
 
 void rawsock_close_adapter(Adapter *adapter);
 
-AdapterCache *rawsock_init_cache(bool is_sendmmsg, bool is_sendq);
+AdapterCache *rawsock_init_cache(bool is_sendmmsg, unsigned sendmmsg_batch,
+                                 unsigned sendmmsg_retries, bool is_sendq,
+                                 unsigned sendq_size);
 
 void rawsock_close_cache(AdapterCache *acache);
 

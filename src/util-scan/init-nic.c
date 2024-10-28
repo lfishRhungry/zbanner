@@ -20,10 +20,10 @@ int init_nic(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets) {
     ipaddress_formatted_t fmt;
     char                 *ifname;
     char                  ifname2[256];
-    unsigned              adapter_ip     = 0;
-    AdapterCache         *tmp_acache     = rawsock_init_cache(false, false);
-    bool                  is_usable_ipv4 = !has_ipv4_targets;
-    bool                  is_usable_ipv6 = !has_ipv6_targets;
+    unsigned              adapter_ip = 0;
+    AdapterCache *tmp_acache     = rawsock_init_cache(false, 0, 0, false, 0);
+    bool          is_usable_ipv4 = !has_ipv4_targets;
+    bool          is_usable_ipv6 = !has_ipv6_targets;
 
     /*
      * ADAPTER/NETWORK-INTERFACE

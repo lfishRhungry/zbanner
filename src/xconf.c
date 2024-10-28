@@ -2468,6 +2468,52 @@ static ConfRes SET_sendmmsg(void *conf, const char *name, const char *value) {
     return Conf_OK;
 }
 
+static ConfRes SET_sendmmsg_batch(void *conf, const char *name,
+                                  const char *value) {
+    XConf *xconf = (XConf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->sendmmsg_batch || xconf->echo_all)
+            fprintf(xconf->echo, "sendmmsg-batch = %u\n",
+                    xconf->sendmmsg_batch);
+        return 0;
+    }
+
+    xconf->sendmmsg_batch = parse_str_int(value);
+    return Conf_OK;
+}
+
+static ConfRes SET_sendmmsg_retries(void *conf, const char *name,
+                                    const char *value) {
+    XConf *xconf = (XConf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->sendmmsg_retries || xconf->echo_all)
+            fprintf(xconf->echo, "sendmmsg-retries = %u\n",
+                    xconf->sendmmsg_retries);
+        return 0;
+    }
+
+    xconf->sendmmsg_retries = parse_str_int(value);
+    return Conf_OK;
+}
+
+static ConfRes SET_sendq_size(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->sendq_size || xconf->echo_all)
+            fprintf(xconf->echo, "sendq-size = %u\n", xconf->sendq_size);
+        return 0;
+    }
+
+    xconf->sendq_size = parse_str_int(value);
+    return Conf_OK;
+}
+
 static ConfRes SET_send_queue(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
@@ -3178,6 +3224,18 @@ ConfParam config_parameters[] = {
      "be used. This may break the bottle-neck of sending one by one.\n"
      "NOTE: Use sendmmsg in slow send rate is not recommended because of the "
      "latency."},
+    {"sendmmsg-batch",
+     SET_sendmmsg_batch,
+     Type_ARG,
+     {0},
+     "Set the batch size while sending packets with sendmmsg syscall. Default "
+     "is 64."},
+    {"sendmmsg-retries",
+     SET_sendmmsg_retries,
+     Type_ARG,
+     {"sendmmsg-retry", 0},
+     "Max number of times to try to do sendmmsg syscall if failed."
+     "is 64."},
     {"send-queue",
      SET_send_queue,
      Type_FLAG,
@@ -3188,6 +3246,12 @@ ConfParam config_parameters[] = {
      "NOTE: It's not recommended to use sendqueue feature in low send rate, "
      "because this may cause a lot latency for every single packet and affect"
      " some scan modules working with connections."},
+    {"send-queue-size",
+     SET_sendq_size,
+     Type_ARG,
+     {"sendq-size", 0},
+     "Set the buffer size while sending packets with sendqueue of "
+     "Npcap/Winpcap. Default size is 65535*8."},
     {"offline",
      SET_offline,
      Type_FLAG,
