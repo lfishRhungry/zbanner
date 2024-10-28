@@ -267,6 +267,62 @@ void rawsock_flush(Adapter *adapter, AdapterCache *acache) {
         return;
     }
 
+#ifndef WIN32
+    /**
+     * Send in batch with sendmmsg just like ZMap v4.0
+     */
+    if (adapter->raw_sock && acache->msg_capacity) {
+        if (acache->pkt_index == 0)
+            return;
+
+        /*set up per-retry variables, so we can only re-submit what didn't send
+         * successfully*/
+        struct mmsghdr *current_msg_vec         = acache->msgvec;
+        int             total_packets_sent      = 0;
+        int             num_of_packets_in_batch = acache->pkt_index;
+        for (int i = 0; i < 3; i++) {
+            /**
+             * according to manpages:On success, sendmmsg() returns the number
+             * of messages sent from msgvec; if this is less than vlen, the
+             * caller can retry with a further sendmmsg() call to send the
+             * remaining messages. On error, -1 is returned, and errno is set to
+             * indicate the error.
+             */
+            int rv = sendmmsg(adapter->raw_sock, current_msg_vec,
+                              num_of_packets_in_batch, 0);
+            if (rv < 0) {
+                /*retry if sending all packets failed*/
+                LOGPERROR("sendmmsg");
+                continue;
+            }
+
+            total_packets_sent += rv;
+            if (rv == num_of_packets_in_batch) {
+                /*all packets in batch were sent successfully*/
+                break;
+            }
+
+            // batch send was only partially successful, we'll retry if we have
+            // retries available
+            LOG(LEVEL_ERROR,
+                "(sendmmsg) only sent %d packets out of a batch of %d packets",
+                total_packets_sent, acache->pkt_index);
+
+            /**
+             * per the manpages for sendmmsg, packets are sent sequentially and
+             * the call returns upon a failure, returning the number of packets
+             * successfully sent remove successfully sent packets from batch for
+             * retry
+             */
+            current_msg_vec         = &acache->msgvec[total_packets_sent];
+            num_of_packets_in_batch = acache->pkt_index - total_packets_sent;
+        }
+
+        acache->pkt_index = 0;
+        return;
+    }
+#endif
+
     if (acache->sendq) {
         PCAP.sendqueue_transmit(adapter->pcap, acache->sendq, 0);
         /**
@@ -303,6 +359,36 @@ int rawsock_send_packet(Adapter *adapter, AdapterCache *acache,
 
 /*raw socket in link layer on Linux*/
 #ifndef WIN32
+    /*use sendmmsg to send in batch*/
+    if (adapter->raw_sock && acache->msg_capacity) {
+        memcpy(acache->pkt_buf[acache->pkt_index].px, packet, length);
+        acache->pkt_buf[acache->pkt_index].length = length;
+
+        acache->iovs[acache->pkt_index].iov_base =
+            acache->pkt_buf[acache->pkt_index].px;
+        acache->iovs[acache->pkt_index].iov_len =
+            acache->pkt_buf[acache->pkt_index].length;
+
+        acache->msgs[acache->pkt_index].msg_name = (struct sockaddr *)&_device;
+        acache->msgs[acache->pkt_index].msg_namelen =
+            sizeof(struct sockaddr_ll);
+        acache->msgs[acache->pkt_index].msg_iov =
+            &acache->iovs[acache->pkt_index];
+        acache->msgs[acache->pkt_index].msg_iovlen = 1;
+
+        acache->msgvec[acache->pkt_index].msg_hdr =
+            acache->msgs[acache->pkt_index];
+        acache->msgvec[acache->pkt_index].msg_len =
+            acache->pkt_buf[acache->pkt_index].length;
+
+        acache->pkt_index++;
+        if (acache->pkt_index == acache->msg_capacity) {
+            rawsock_flush(adapter, acache);
+        }
+        return 0;
+    }
+
+    /*use sendto to send one by one*/
     if (adapter->raw_sock) {
         if (sendto(adapter->raw_sock, packet, length, 0,
                    (struct sockaddr *)&_device, sizeof(_device)) < 0) {
@@ -323,12 +409,9 @@ int rawsock_send_packet(Adapter *adapter, AdapterCache *acache,
      * to roughly 300-kpps.
      *----------------------------------------------------------------*/
     if (acache->sendq) {
-        int                err;
-        struct pcap_pkthdr hdr;
-        hdr.len    = length;
-        hdr.caplen = length;
+        struct pcap_pkthdr hdr = {.len = length, .caplen = length};
 
-        err = PCAP.sendqueue_queue(acache->sendq, &hdr, packet);
+        int err = PCAP.sendqueue_queue(acache->sendq, &hdr, packet);
         if (err) {
             rawsock_flush(adapter, acache);
             PCAP.sendqueue_queue(acache->sendq, &hdr, packet);
@@ -537,7 +620,7 @@ static int is_pfring_dna(const char *name) {
 }
 
 Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
-                              bool is_rawsock, bool is_sendq,
+                              bool is_rawsock, bool is_sendmmsg, bool is_sendq,
                               bool is_packet_trace, bool is_offline,
                               bool is_vlan, unsigned vlan_id,
                               unsigned snaplen) {
@@ -783,11 +866,11 @@ Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
     }
 
 /**
- * init raw socket for sendmmsg
+ * init raw socket for sendto or sendmmsg
  */
 #ifndef WIN32
 #include <netinet/if_ether.h>
-    if (is_rawsock) {
+    if (is_rawsock || is_sendmmsg) {
         /**
          * NOTE: ZMap use PF_INET family on raw socket to send IPv4 in IP layer.
          * But Xtate need to send both IPv4 and IPv6 packets in one socket in
@@ -801,13 +884,12 @@ Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
         }
 
         adapter->raw_sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-
         if (adapter->raw_sock <= 0) {
             LOGPERROR("socket init");
             goto pcap_error;
         }
 
-        // get interface index
+        /*bind to specified interface*/
         struct ifreq if_idx;
         memset(&if_idx, 0, sizeof(struct ifreq));
         if (strlen(adapter_name) >= IFNAMSIZ) {
@@ -821,17 +903,19 @@ Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
             goto socket_error;
         }
 
-        // bind device for the socket
+        /*set destination*/
         memset((void *)&_device, 0, sizeof(struct sockaddr_ll));
         _device.sll_ifindex = if_idx.ifr_ifindex;
+        // _device.sll_halen=ETH_ALEN;
+        // memcpy(_device.sll_addr,"\xd4\xda\x21\x5d\xd8\x38",ETH_ALEN);
         _device.sll_family  = AF_PACKET;
 
         // bind to interface
-        if (bind(adapter->raw_sock, (struct sockaddr *)&_device,
-                 sizeof(_device)) < 0) {
-            LOGPERROR("bind");
-            goto socket_error;
-        }
+        // if (bind(adapter->raw_sock, (struct sockaddr *)&_device,
+        //          sizeof(_device)) < 0) {
+        //     LOGPERROR("bind");
+        //     goto socket_error;
+        // }
 
         return adapter;
 
@@ -927,20 +1011,38 @@ int rawsock_is_adapter_names_equal(const char *lhs, const char *rhs) {
 
 /***************************************************************************
  ***************************************************************************/
-AdapterCache *rawsock_init_cache(bool is_sendq) {
+AdapterCache *rawsock_init_cache(bool is_sendmmsg, bool is_sendq) {
     AdapterCache *acache = CALLOC(1, sizeof(AdapterCache));
-#if defined(WIN32)
+#ifdef WIN32
     if (is_sendq) {
         acache->sendq = PCAP.sendqueue_alloc(SENDQ_SIZE);
     }
+#else
+    if (is_sendmmsg) {
+        acache->msg_capacity = XCONF_DFT_SENDMMSG_BATCH_SIZE;
+        acache->msgvec  = CALLOC(acache->msg_capacity, sizeof(struct mmsghdr));
+        acache->msgs    = CALLOC(acache->msg_capacity, sizeof(struct msghdr));
+        acache->iovs    = CALLOC(acache->msg_capacity, sizeof(struct iovec));
+        acache->pkt_buf = CALLOC(acache->msg_capacity, sizeof(PktBuf));
+    }
 #endif
+
     return acache;
 }
 
 void rawsock_close_cache(AdapterCache *acache) {
+#ifdef WIN32
     if (acache->sendq) {
         PCAP.sendqueue_destroy(acache->sendq);
     }
+#else
+    if (acache->msg_capacity) {
+        FREE(acache->msgvec);
+        FREE(acache->msgs);
+        FREE(acache->iovs);
+        FREE(acache->pkt_buf);
+    }
+#endif
 
     FREE(acache);
 }
@@ -983,7 +1085,7 @@ int rawsock_selftest_if(const char *ifname) {
      * Initialize the adapter.
      */
     adapter = rawsock_init_adapter(ifname, false, false, false, false, false,
-                                   false, 0, 65535);
+                                   false, false, 0, 65535);
     if (adapter == 0) {
         puts("pcap = failed");
         return -1;
@@ -991,7 +1093,7 @@ int rawsock_selftest_if(const char *ifname) {
         puts("pcap = opened");
     }
 
-    acache = rawsock_init_cache(false);
+    acache = rawsock_init_cache(false, false);
 
     /* IPv4 address */
     ipv4 = rawsock_get_adapter_ip(ifname);

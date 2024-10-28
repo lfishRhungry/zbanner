@@ -22,23 +22,24 @@
  */
 /* 14 rounds seem to give way better statistical distribution than 4 with a
 very low impact on scan rate */
-#define XCONF_DFT_BLACKROCK_ROUNDS   14
-#define XCONF_DFT_TX_THD_COUNT       1
-#define XCONF_DFT_RX_HDL_COUNT       1
-#define XCONF_DFT_STACK_BUF_COUNT    16384
-#define XCONF_DFT_DISPATCH_BUF_COUNT 16384
-#define XCONF_DFT_MAX_RATE           100.0
-#define XCONF_DFT_DEDUP_WIN          1000000
-#define XCONF_DFT_FT_SPEC            5
-#define XCONF_DFT_SHARD_ONE          1
-#define XCONF_DFT_SHARD_OF           1
-#define XCONF_DFT_WAIT               10
-#define XCONF_DFT_PORT_RANGE         256
-#define XCONF_DFT_SNAPLEN            65535 /*also the max*/
-#define XCONF_DFT_MAX_PKT_LEN        1514
-#define XCONF_DFT_PACKET_TTL         128
-#define XCONF_DFT_TCP_SYN_WINSIZE    64240
-#define XCONF_DFT_TCP_OTHER_WINSIZE  1024
+#define XCONF_DFT_BLACKROCK_ROUNDS    14
+#define XCONF_DFT_TX_THD_COUNT        1
+#define XCONF_DFT_RX_HDL_COUNT        1
+#define XCONF_DFT_STACK_BUF_COUNT     16384
+#define XCONF_DFT_DISPATCH_BUF_COUNT  16384
+#define XCONF_DFT_MAX_RATE            100.0
+#define XCONF_DFT_DEDUP_WIN           1000000
+#define XCONF_DFT_FT_SPEC             5
+#define XCONF_DFT_SHARD_ONE           1
+#define XCONF_DFT_SHARD_OF            1
+#define XCONF_DFT_WAIT                10
+#define XCONF_DFT_PORT_RANGE          256
+#define XCONF_DFT_SNAPLEN             65535 /*also the max*/
+#define XCONF_DFT_MAX_PKT_LEN         1514
+#define XCONF_DFT_PACKET_TTL          128
+#define XCONF_DFT_TCP_SYN_WINSIZE     64240
+#define XCONF_DFT_TCP_OTHER_WINSIZE   1024
+#define XCONF_DFT_SENDMMSG_BATCH_SIZE 64
 
 typedef struct NetworkAdapter  Adapter;
 typedef struct TemplateSet     TmplSet;
@@ -205,6 +206,7 @@ typedef struct XtateConf {
     unsigned       is_status_hit_rate   : 1;
     unsigned       is_pfring            : 1;
     unsigned       is_rawsocket         : 1;
+    unsigned       is_sendmmsg          : 1;
     unsigned       is_sendq             : 1;
     unsigned       is_offline           : 1;
     unsigned       is_nodedup           : 1;

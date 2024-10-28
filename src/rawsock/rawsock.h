@@ -4,6 +4,13 @@
 #ifndef RAWSOCK_H
 #define RAWSOCK_H
 
+#ifndef WIN32
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+#include <sys/socket.h>
+#endif
+
 #include <stdio.h>
 
 #include "../xconf.h"
@@ -38,6 +45,14 @@ typedef struct NetworkAdapter {
  */
 typedef struct Adapter_Cache {
     struct pcap_send_queue *sendq;
+#ifndef WIN32
+    struct mmsghdr *msgvec;
+    struct msghdr  *msgs;
+    struct iovec   *iovs;
+    PktBuf         *pkt_buf;
+    size_t          msg_capacity;
+    unsigned        pkt_index;
+#endif
 } AdapterCache;
 
 void rawsock_prepare(void);
@@ -64,13 +79,13 @@ void rawsock_prepare(void);
  *      a fully instantiated network adapter
  */
 Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
-                              bool is_rawsock, bool is_sendq,
+                              bool is_rawsock, bool is_sendmmsg, bool is_sendq,
                               bool is_packet_trace, bool is_offline,
                               bool is_vlan, unsigned vlan_id, unsigned snaplen);
 
 void rawsock_close_adapter(Adapter *adapter);
 
-AdapterCache *rawsock_init_cache(bool is_sendq);
+AdapterCache *rawsock_init_cache(bool is_sendmmsg, bool is_sendq);
 
 void rawsock_close_cache(AdapterCache *acache);
 

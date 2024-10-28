@@ -51,6 +51,7 @@ if (UNIX)
             add_link_options(-rdynamic)
         endif ()
     endif ()
+    add_definitions(-D_GNU_SOURCE) # using sendmmsg need this GNU 
 endif ()
 
 if (CMAKE_C_COMPILER_ID STREQUAL "Clang")

@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include "pixie-threads.h"
 #include "../util-data/fine-malloc.h"
 

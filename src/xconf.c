@@ -2453,6 +2453,21 @@ static ConfRes SET_repeat(void *conf, const char *name, const char *value) {
     return Conf_OK;
 }
 
+static ConfRes SET_sendmmsg(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->is_sendmmsg || xconf->echo_all)
+            fprintf(xconf->echo, "sendmmsg = %s\n",
+                    xconf->is_sendmmsg ? "true" : "false");
+        return 0;
+    }
+
+    xconf->is_sendmmsg = parse_str_bool(value);
+    return Conf_OK;
+}
+
 static ConfRes SET_send_queue(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
@@ -3155,6 +3170,14 @@ ConfParam config_parameters[] = {
      " support working on link layer because " XTATE_NAME_TITLE_CASE
      " needs to handle both IPv4/IPv6.\n"
      "NOTE: " XTATE_NAME_TITLE_CASE " always uses pcap to recv in default."},
+    {"sendmmsg",
+     SET_sendmmsg,
+     Type_FLAG,
+     {0},
+     "Use sendmmsg syscall to send packets in batch on Linux if raw socket can "
+     "be used. This may break the bottle-neck of sending one by one.\n"
+     "NOTE: Use sendmmsg in slow send rate is not recommended because of the "
+     "latency."},
     {"send-queue",
      SET_send_queue,
      Type_FLAG,
