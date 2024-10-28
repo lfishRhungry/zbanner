@@ -48,7 +48,7 @@ static int is_pcap_file = 0;
 
 #ifndef WIN32
 #include <netpacket/packet.h>
-static struct sockaddr_ll _device;
+static struct sockaddr_ll _sockaddr;
 #endif
 
 #define PCAP_READ_TIMEOUT_MS 1000
@@ -369,7 +369,8 @@ int rawsock_send_packet(Adapter *adapter, AdapterCache *acache,
         acache->iovs[acache->pkt_index].iov_len =
             acache->pkt_buf[acache->pkt_index].length;
 
-        acache->msgs[acache->pkt_index].msg_name = (struct sockaddr *)&_device;
+        acache->msgs[acache->pkt_index].msg_name =
+            (struct sockaddr *)&_sockaddr;
         acache->msgs[acache->pkt_index].msg_namelen =
             sizeof(struct sockaddr_ll);
         acache->msgs[acache->pkt_index].msg_iov =
@@ -391,7 +392,7 @@ int rawsock_send_packet(Adapter *adapter, AdapterCache *acache,
     /*use sendto to send one by one*/
     if (adapter->raw_sock) {
         if (sendto(adapter->raw_sock, packet, length, 0,
-                   (struct sockaddr *)&_device, sizeof(_device)) < 0) {
+                   (struct sockaddr *)&_sockaddr, sizeof(_sockaddr)) < 0) {
             perror("sendto");
             LOGPERROR("sendto");
             return -1;
@@ -904,18 +905,9 @@ Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
         }
 
         /*set destination*/
-        memset((void *)&_device, 0, sizeof(struct sockaddr_ll));
-        _device.sll_ifindex = if_idx.ifr_ifindex;
-        // _device.sll_halen=ETH_ALEN;
-        // memcpy(_device.sll_addr,"\xd4\xda\x21\x5d\xd8\x38",ETH_ALEN);
-        _device.sll_family  = AF_PACKET;
-
-        // bind to interface
-        // if (bind(adapter->raw_sock, (struct sockaddr *)&_device,
-        //          sizeof(_device)) < 0) {
-        //     LOGPERROR("bind");
-        //     goto socket_error;
-        // }
+        memset((void *)&_sockaddr, 0, sizeof(struct sockaddr_ll));
+        _sockaddr.sll_ifindex = if_idx.ifr_ifindex;
+        _sockaddr.sll_family  = AF_PACKET;
 
         return adapter;
 
