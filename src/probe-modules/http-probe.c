@@ -82,7 +82,6 @@ struct HttpConf {
     pcre2_match_context *match_ctx;
     unsigned             re_case_insensitive : 1;
     unsigned             re_include_newlines : 1;
-    unsigned             report_while_regex  : 1;
 #endif
     /*dynamic set ip:port as Host field*/
     unsigned dynamic_host : 1;
@@ -91,16 +90,6 @@ struct HttpConf {
 static struct HttpConf http_conf = {0};
 
 #ifndef NOT_FOUND_PCRE2
-
-static ConfRes SET_show_banner(void *conf, const char *name,
-                               const char *value) {
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    http_conf.report_while_regex = parse_str_bool(value);
-
-    return Conf_OK;
-}
 
 static ConfRes SET_newlines(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -443,11 +432,6 @@ static ConfParam http_parameters[] = {
      Type_FLAG,
      {"include-newline", "newline", "newlines", 0},
      "Whether the specified regex contains newlines."},
-    {"report",
-     SET_show_banner,
-     Type_FLAG,
-     {0},
-     "Report response data after regex matching."},
 #endif
 
     {0}};
@@ -656,17 +640,11 @@ static unsigned http_handle_response(unsigned th_idx, ProbeTarget *target,
             safe_strcpy(item->classification, OUT_CLS_SIZE, "not matched");
         }
 
-        if (http_conf.report_while_regex) {
-            dach_append_normalized(&item->report, "banner", px, sizeof_px,
-                                   LinkType_String);
-        }
         pcre2_match_data_free(match_data);
     } else {
 #endif
 
         item->level = OUT_SUCCESS;
-        dach_append_normalized(&item->report, "banner", px, sizeof_px,
-                               LinkType_String);
 
 #ifndef NOT_FOUND_PCRE2
     }

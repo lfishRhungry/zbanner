@@ -128,7 +128,6 @@ struct TlsHello {
     char    *tls_hello_payload;
     unsigned tls_hello_payload_len;
     unsigned support_tls1_3 : 1;
-    unsigned banner         : 1;
 #ifndef NOT_FOUND_PCRE2
     char                *regex;
     size_t               regex_len;
@@ -147,16 +146,6 @@ static ConfRes SET_support_tls1_3(void *conf, const char *name,
     UNUSEDPARM(name);
 
     tlshello_conf.support_tls1_3 = parse_str_bool(value);
-
-    return Conf_OK;
-}
-
-static ConfRes SET_show_banner(void *conf, const char *name,
-                               const char *value) {
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    tlshello_conf.banner = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -233,11 +222,6 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
 #endif
 
 static ConfParam tlshello_parameters[] = {
-    {"banner",
-     SET_show_banner,
-     Type_FLAG,
-     {0},
-     "Show normalized banner in results."},
     {"support-tls13",
      SET_support_tls1_3,
      Type_FLAG,
@@ -326,11 +310,6 @@ static size_t tlshello_get_payload_length(ProbeTarget *target) {
 static unsigned tlshello_handle_reponse(unsigned th_idx, ProbeTarget *target,
                                         const unsigned char *px,
                                         unsigned sizeof_px, OutItem *item) {
-
-    if (tlshello_conf.banner) {
-        dach_append_normalized(&item->report, "banner", px, sizeof_px,
-                               LinkType_String);
-    }
 
     if (sizeof_px < 3) {
         item->level = OUT_FAILURE;

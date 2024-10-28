@@ -16,10 +16,8 @@ struct RecogConf {
     size_t           hello_len;
     char            *xml_filename;
     struct Recog_FP *recog_fp;
-    unsigned         banner_while_regex : 1;
-    unsigned         banner_if_fail     : 1;
-    unsigned         unprefix           : 1;
-    unsigned         unsuffix           : 1;
+    unsigned         unprefix : 1;
+    unsigned         unsuffix : 1;
 };
 
 static struct RecogConf recog_conf = {0};
@@ -38,26 +36,6 @@ static ConfRes SET_unprefix(void *conf, const char *name, const char *value) {
     UNUSEDPARM(name);
 
     recog_conf.unprefix = parse_str_bool(value);
-
-    return Conf_OK;
-}
-
-static ConfRes SET_banner_if_fail(void *conf, const char *name,
-                                  const char *value) {
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    recog_conf.banner_if_fail = parse_str_bool(value);
-
-    return Conf_OK;
-}
-
-static ConfRes SET_show_banner(void *conf, const char *name,
-                               const char *value) {
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    recog_conf.banner_while_regex = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -196,16 +174,6 @@ static ConfParam recog_parameters[] = {
      {"xml", "xml-file", 0},
      "Specifies a xml file in Recog fingerprint format as the matching "
      "source."},
-    {"banner",
-     SET_show_banner,
-     Type_FLAG,
-     {0},
-     "Show normalized banner after regex matching."},
-    {"banner-if-fail",
-     SET_banner_if_fail,
-     Type_FLAG,
-     {"banner-fail", "fail-banner", 0},
-     "Show normalized banner in results if regex matching failed."},
     {"unprefix",
      SET_unprefix,
      Type_FLAG,
@@ -273,19 +241,9 @@ static unsigned recog_handle_response(unsigned th_idx, ProbeTarget *target,
         safe_strcpy(item->classification, OUT_CLS_SIZE, "matched");
         dach_append(&item->report, "result", match_res, strlen(match_res),
                     LinkType_String);
-
-        if (recog_conf.banner_while_regex) {
-            dach_append_normalized(&item->report, "banner", px, sizeof_px,
-                                   LinkType_String);
-        }
     } else {
         item->level = OUT_FAILURE;
         safe_strcpy(item->classification, OUT_CLS_SIZE, "not matched");
-
-        if (recog_conf.banner_while_regex || recog_conf.banner_if_fail) {
-            dach_append_normalized(&item->report, "banner", px, sizeof_px,
-                                   LinkType_String);
-        }
     }
 
     return 0;

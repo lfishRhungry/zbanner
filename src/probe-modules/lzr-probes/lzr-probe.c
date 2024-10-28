@@ -120,31 +120,9 @@ struct LzrConf {
     unsigned hs_count;
     unsigned force_all_handshakes : 1;
     unsigned force_all_match      : 1;
-    unsigned banner_if_fail       : 1;
-    unsigned banner               : 1;
 };
 
 static struct LzrConf lzr_conf = {0};
-
-static ConfRes SET_show_banner(void *conf, const char *name,
-                               const char *value) {
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    lzr_conf.banner = parse_str_bool(value);
-
-    return Conf_OK;
-}
-
-static ConfRes SET_banner_if_fail(void *conf, const char *name,
-                                  const char *value) {
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    lzr_conf.banner_if_fail = parse_str_bool(value);
-
-    return Conf_OK;
-}
 
 static ConfRes SET_force_all_match(void *conf, const char *name,
                                    const char *value) {
@@ -236,16 +214,6 @@ static ConfParam lzr_parameters[] = {
      {"force-all-handshake", "all-handshake", "all-handshakes", 0},
      "Send all specified handshakes even if identified. This could got "
      "multiple output item for a target."},
-    {"banner",
-     SET_show_banner,
-     Type_FLAG,
-     {0},
-     "Show normalized banner in results."},
-    {"banner-if-fail",
-     SET_banner_if_fail,
-     Type_FLAG,
-     {"banner-fail", "fail-banner", 0},
-     "Show normalized banner in results if failed to identify."},
 
     {0}};
 
@@ -330,11 +298,6 @@ static unsigned lzr_handle_response(unsigned th_idx, ProbeTarget *target,
         safe_strcpy(item->classification, OUT_CLS_SIZE, "identified");
         safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");
 
-        if (lzr_conf.banner) {
-            dach_append_normalized(&item->report, "banner", px, sizeof_px,
-                                   LinkType_String);
-        }
-
         if (lzr_conf.force_all_handshakes &&
             target->index != lzr_conf.hs_count - 1) {
             return target->index + 2;
@@ -344,11 +307,6 @@ static unsigned lzr_handle_response(unsigned th_idx, ProbeTarget *target,
         safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
         safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
         dach_del_by_link(&item->report, res_link);
-
-        if (lzr_conf.banner_if_fail || lzr_conf.banner) {
-            dach_append_normalized(&item->report, "banner", px, sizeof_px,
-                                   LinkType_String);
-        }
 
         /*last handshake*/
         if (target->index != lzr_conf.hs_count - 1 &&

@@ -16,9 +16,8 @@ struct RecogUdpConf {
     size_t           hello_len;
     char            *xml_filename;
     struct Recog_FP *recog_fp;
-    unsigned         show_banner : 1;
-    unsigned         unprefix    : 1;
-    unsigned         unsuffix    : 1;
+    unsigned         unprefix : 1;
+    unsigned         unsuffix : 1;
 };
 
 static struct RecogUdpConf recogudp_conf = {0};
@@ -37,16 +36,6 @@ static ConfRes SET_unprefix(void *conf, const char *name, const char *value) {
     UNUSEDPARM(name);
 
     recogudp_conf.unprefix = parse_str_bool(value);
-
-    return Conf_OK;
-}
-
-static ConfRes SET_show_banner(void *conf, const char *name,
-                               const char *value) {
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    recogudp_conf.show_banner = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -186,7 +175,6 @@ static ConfParam recogudp_parameters[] = {
      {"xml", "xml-file", 0},
      "Specifies a xml file in Recog fingerprint format as the matching "
      "source."},
-    {"banner", SET_show_banner, Type_FLAG, {0}, "Show normalized banner."},
     {"unprefix",
      SET_unprefix,
      Type_FLAG,
@@ -265,10 +253,6 @@ static unsigned recogudp_handle_response(unsigned th_idx, ProbeTarget *target,
         safe_strcpy(item->classification, OUT_CLS_SIZE, "matched");
         dach_append(&item->report, "result", match_res, strlen(match_res),
                     LinkType_String);
-
-        if (recogudp_conf.show_banner)
-            dach_append_normalized(&item->report, "banner", px, sizeof_px,
-                                   LinkType_String);
     } else {
         item->no_output = 1;
     }

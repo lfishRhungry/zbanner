@@ -13,12 +13,34 @@
 extern Scanner UdpScan; /*for internal x-ref*/
 
 struct UdpConf {
+    unsigned record_banner   : 1;
+    unsigned record_data     : 1;
     unsigned record_ttl      : 1;
     unsigned record_ipid     : 1;
     unsigned record_data_len : 1;
 };
 
 static struct UdpConf udp_conf = {0};
+
+static ConfRes SET_record_data(void *conf, const char *name,
+                               const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    udp_conf.record_data = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_banner(void *conf, const char *name,
+                                 const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    udp_conf.record_banner = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_record_data_len(void *conf, const char *name,
                                    const char *value) {
@@ -50,6 +72,16 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
 }
 
 static ConfParam udp_parameters[] = {
+    {"record-banner",
+     SET_record_banner,
+     Type_FLAG,
+     {"banner", 0},
+     "Records banner content in escaped text style."},
+    {"record-data",
+     SET_record_data,
+     Type_FLAG,
+     {"data", 0},
+     "Records data content in binary format."},
     {"record-ttl",
      SET_record_ttl,
      Type_FLAG,
@@ -165,6 +197,14 @@ static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         th_idx, &ptarget, &recved->packet[recved->parsed.app_offset],
         recved->parsed.app_length, item);
 
+    if (udp_conf.record_banner)
+        dach_append_normalized(&item->report, "banner",
+                               &recved->packet[recved->parsed.app_offset],
+                               recved->parsed.app_length, LinkType_String);
+    if (udp_conf.record_data)
+        dach_append(&item->report, "data",
+                    &recved->packet[recved->parsed.app_offset],
+                    recved->parsed.app_length, LinkType_Binary);
     if (udp_conf.record_ttl)
         dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
     if (udp_conf.record_ipid && recved->parsed.src_ip.version == 4)

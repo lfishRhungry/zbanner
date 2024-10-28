@@ -23,34 +23,12 @@ struct HelloConf {
     pcre2_match_context *match_ctx;
     unsigned             re_case_insensitive : 1;
     unsigned             re_include_newlines : 1;
-    unsigned             banner_while_regex  : 1;
-    unsigned             banner_if_fail      : 1;
 #endif
 };
 
 static struct HelloConf hello_conf = {0};
 
 #ifndef NOT_FOUND_PCRE2
-
-static ConfRes SET_banner_if_fail(void *conf, const char *name,
-                                  const char *value) {
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    hello_conf.banner_if_fail = parse_str_bool(value);
-
-    return Conf_OK;
-}
-
-static ConfRes SET_show_banner(void *conf, const char *name,
-                               const char *value) {
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    hello_conf.banner_while_regex = parse_str_bool(value);
-
-    return Conf_OK;
-}
 
 static ConfRes SET_newlines(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -256,16 +234,6 @@ static ConfParam hello_parameters[] = {
      Type_FLAG,
      {"include-newline", "newline", "newlines", 0},
      "Whether the specified regex contains newlines."},
-    {"banner",
-     SET_show_banner,
-     Type_FLAG,
-     {0},
-     "Show normalized banner after regex matching."},
-    {"banner-if-fail",
-     SET_banner_if_fail,
-     Type_FLAG,
-     {"banner-fail", "fail-banner", 0},
-     "Show normalized banner in results if regex matching failed."},
 #endif
 
     {0}};
@@ -323,19 +291,9 @@ static unsigned hello_handle_response(unsigned th_idx, ProbeTarget *target,
         if (rc >= 0) {
             item->level = OUT_SUCCESS;
             safe_strcpy(item->classification, OUT_CLS_SIZE, "matched");
-
-            if (hello_conf.banner_while_regex) {
-                dach_append_normalized(&item->report, "banner", px, sizeof_px,
-                                       LinkType_String);
-            }
         } else {
             item->level = OUT_FAILURE;
             safe_strcpy(item->classification, OUT_CLS_SIZE, "not matched");
-
-            if (hello_conf.banner_while_regex || hello_conf.banner_if_fail) {
-                dach_append_normalized(&item->report, "banner", px, sizeof_px,
-                                       LinkType_String);
-            }
         }
 
         pcre2_match_data_free(match_data);
@@ -343,8 +301,6 @@ static unsigned hello_handle_response(unsigned th_idx, ProbeTarget *target,
 #endif
 
         item->level = OUT_SUCCESS;
-        dach_append_normalized(&item->report, "banner", px, sizeof_px,
-                               LinkType_String);
 
 #ifndef NOT_FOUND_PCRE2
     }
