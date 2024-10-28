@@ -13,11 +13,22 @@
 extern Scanner UdpScan; /*for internal x-ref*/
 
 struct UdpConf {
-    unsigned record_ttl  : 1;
-    unsigned record_ipid : 1;
+    unsigned record_ttl      : 1;
+    unsigned record_ipid     : 1;
+    unsigned record_data_len : 1;
 };
 
 static struct UdpConf udp_conf = {0};
+
+static ConfRes SET_record_data_len(void *conf, const char *name,
+                                   const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    udp_conf.record_data_len = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -49,6 +60,11 @@ static ConfParam udp_parameters[] = {
      Type_FLAG,
      {"ipid", 0},
      "Records IPID just for IPv4."},
+    {"record-data-len",
+     SET_record_data_len,
+     Type_FLAG,
+     {"data-len", "len", 0},
+     "Records payload data length."},
 
     {0}};
 
@@ -133,65 +149,34 @@ static void udp_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
 
 static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                        OutItem *item, STACK *stack) {
-    if (recved->parsed.found == FOUND_UDP) {
-        ProbeTarget ptarget = {
-            .target.ip_proto  = recved->parsed.ip_protocol,
-            .target.ip_them   = recved->parsed.src_ip,
-            .target.ip_me     = recved->parsed.dst_ip,
-            .target.port_them = recved->parsed.port_src,
-            .target.port_me   = recved->parsed.port_dst,
-            .cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
-                                 recved->parsed.dst_ip, recved->parsed.port_dst,
-                                 entropy),
-            .index  = recved->parsed.port_dst - src_port_start,
-        };
+    ProbeTarget ptarget = {
+        .target.ip_proto  = recved->parsed.ip_protocol,
+        .target.ip_them   = recved->parsed.src_ip,
+        .target.ip_me     = recved->parsed.dst_ip,
+        .target.port_them = recved->parsed.port_src,
+        .target.port_me   = recved->parsed.port_dst,
+        .cookie =
+            get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
+                       recved->parsed.dst_ip, recved->parsed.port_dst, entropy),
+        .index = recved->parsed.port_dst - src_port_start,
+    };
 
-        unsigned is_multi = UdpScan.probe->handle_response_cb(
-            th_idx, &ptarget, &recved->packet[recved->parsed.app_offset],
-            recved->parsed.app_length, item);
+    unsigned is_multi = UdpScan.probe->handle_response_cb(
+        th_idx, &ptarget, &recved->packet[recved->parsed.app_offset],
+        recved->parsed.app_length, item);
 
-        if (udp_conf.record_ttl)
-            dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
-        if (udp_conf.record_ipid && recved->parsed.src_ip.version == 4)
-            dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+    if (udp_conf.record_ttl)
+        dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+    if (udp_conf.record_ipid && recved->parsed.src_ip.version == 4)
+        dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+    if (udp_conf.record_data_len) {
+        dach_set_int(&item->report, "data len", recved->parsed.app_length);
+    }
 
-        /*for multi-probe Multi_AfterHandle*/
-        if (UdpScan.probe->multi_mode == Multi_AfterHandle && is_multi &&
-            recved->parsed.port_dst == src_port_start &&
-            UdpScan.probe->multi_num) {
-            for (unsigned idx = 1; idx < UdpScan.probe->multi_num; idx++) {
-                PktBuf *pkt_buffer = stack_get_pktbuf(stack);
-
-                ProbeTarget ptarget = {
-                    .target.ip_proto  = recved->parsed.ip_protocol,
-                    .target.ip_them   = recved->parsed.src_ip,
-                    .target.ip_me     = recved->parsed.dst_ip,
-                    .target.port_them = recved->parsed.port_src,
-                    .target.port_me   = src_port_start + idx,
-                    .cookie           = get_cookie(
-                        recved->parsed.src_ip, recved->parsed.port_src,
-                        recved->parsed.dst_ip, src_port_start + idx, entropy),
-                    .index = idx,
-                };
-
-                unsigned char payload[PM_PAYLOAD_SIZE];
-                size_t        payload_len = 0;
-
-                payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
-
-                pkt_buffer->length = udp_create_packet(
-                    recved->parsed.src_ip, recved->parsed.port_src,
-                    recved->parsed.dst_ip, src_port_start + idx, 0, payload,
-                    payload_len, pkt_buffer->px, PKT_BUF_SIZE);
-
-                stack_transmit_pktbuf(stack, pkt_buffer);
-            }
-
-            return;
-        }
-
-        /*for multi-probe Multi_DynamicNext*/
-        if (UdpScan.probe->multi_mode == Multi_DynamicNext && is_multi) {
+    /*for multi-probe Multi_AfterHandle*/
+    if (UdpScan.probe->multi_mode == Multi_AfterHandle && is_multi &&
+        recved->parsed.port_dst == src_port_start && UdpScan.probe->multi_num) {
+        for (unsigned idx = 1; idx < UdpScan.probe->multi_num; idx++) {
             PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
             ProbeTarget ptarget = {
@@ -199,12 +184,11 @@ static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                 .target.ip_them   = recved->parsed.src_ip,
                 .target.ip_me     = recved->parsed.dst_ip,
                 .target.port_them = recved->parsed.port_src,
-                .target.port_me   = src_port_start + is_multi - 1,
-                .cookie =
-                    get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
-                               recved->parsed.dst_ip,
-                               src_port_start + is_multi - 1, entropy),
-                .index = is_multi - 1,
+                .target.port_me   = src_port_start + idx,
+                .cookie           = get_cookie(
+                    recved->parsed.src_ip, recved->parsed.port_src,
+                    recved->parsed.dst_ip, src_port_start + idx, entropy),
+                .index = idx,
             };
 
             unsigned char payload[PM_PAYLOAD_SIZE];
@@ -214,27 +198,44 @@ static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
 
             pkt_buffer->length = udp_create_packet(
                 recved->parsed.src_ip, recved->parsed.port_src,
-                recved->parsed.dst_ip, src_port_start + is_multi - 1, 0,
-                payload, payload_len, pkt_buffer->px, PKT_BUF_SIZE);
+                recved->parsed.dst_ip, src_port_start + idx, 0, payload,
+                payload_len, pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_pktbuf(stack, pkt_buffer);
-
-            return;
         }
-    } else {
-        PreInfo info = {0};
-        preprocess_frame(recved->packet + recved->parsed.app_offset,
-                         recved->length - recved->parsed.app_offset,
-                         PCAP_DLT_RAW, &info);
 
-        item->level            = OUT_FAILURE;
-        item->target.ip_them   = info.dst_ip;
-        item->target.port_them = info.port_dst;
-        item->target.ip_me     = info.src_ip;
-        item->target.port_me   = info.port_src;
+        return;
+    }
 
-        safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
-        safe_strcpy(item->reason, OUT_RSN_SIZE, "port unreachable");
+    /*for multi-probe Multi_DynamicNext*/
+    if (UdpScan.probe->multi_mode == Multi_DynamicNext && is_multi) {
+        PktBuf *pkt_buffer = stack_get_pktbuf(stack);
+
+        ProbeTarget ptarget = {
+            .target.ip_proto  = recved->parsed.ip_protocol,
+            .target.ip_them   = recved->parsed.src_ip,
+            .target.ip_me     = recved->parsed.dst_ip,
+            .target.port_them = recved->parsed.port_src,
+            .target.port_me   = src_port_start + is_multi - 1,
+            .cookie = get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
+                                 recved->parsed.dst_ip,
+                                 src_port_start + is_multi - 1, entropy),
+            .index  = is_multi - 1,
+        };
+
+        unsigned char payload[PM_PAYLOAD_SIZE];
+        size_t        payload_len = 0;
+
+        payload_len = UdpScan.probe->make_payload_cb(&ptarget, payload);
+
+        pkt_buffer->length = udp_create_packet(
+            recved->parsed.src_ip, recved->parsed.port_src,
+            recved->parsed.dst_ip, src_port_start + is_multi - 1, 0, payload,
+            payload_len, pkt_buffer->px, PKT_BUF_SIZE);
+
+        stack_transmit_pktbuf(stack, pkt_buffer);
+
+        return;
     }
 }
 

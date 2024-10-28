@@ -54,10 +54,21 @@ struct TcpStateConf {
     unsigned record_all_win  : 1;
     unsigned record_all_seq  : 1;
     unsigned record_all_ack  : 1;
+    unsigned record_all_len  : 1;
     unsigned record_any_all  : 1;
 };
 
 static struct TcpStateConf tcpstate_conf = {0};
+
+static ConfRes SET_record_all_len(void *conf, const char *name,
+                                  const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpstate_conf.record_all_len = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_record_all_ack(void *conf, const char *name,
                                   const char *value) {
@@ -258,6 +269,12 @@ static ConfParam tcpstate_parameters[] = {
      Type_FLAG,
      {"all-ack", 0},
      "Records TCP acknowledge number of all segments for debugging."},
+    {"record-all-len",
+     SET_record_all_len,
+     Type_FLAG,
+     {"all-data-len", "all-len", 0},
+     "Records TCP payload data length of all non-SYN-ACK segments for "
+     "debugging."},
 
     {0}};
 
@@ -286,7 +303,7 @@ static bool tcpstate_init(const XConf *xconf) {
     tcpstate_conf.record_any_all =
         tcpstate_conf.record_all_ack | tcpstate_conf.record_all_ipid |
         tcpstate_conf.record_all_seq | tcpstate_conf.record_all_ttl |
-        tcpstate_conf.record_all_win;
+        tcpstate_conf.record_all_win | tcpstate_conf.record_all_len;
 
     return true;
 }
@@ -456,6 +473,9 @@ static void tcpstate_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         }
         if (tcpstate_conf.record_all_ack) {
             dach_set_int(&item->report, "ack", seqno_me);
+        }
+        if (tcpstate_conf.record_all_len) {
+            dach_set_int(&item->report, "data len", recved->parsed.app_length);
         }
 
         if (tcpstate_conf.record_any_all) {

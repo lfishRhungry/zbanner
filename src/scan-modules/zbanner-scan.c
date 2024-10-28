@@ -23,11 +23,22 @@ struct ZBannerConf {
     unsigned record_mss      : 1;
     unsigned record_seq      : 1;
     unsigned record_ack      : 1;
+    unsigned record_data_len : 1;
     unsigned with_ack        : 1;
     unsigned no_rst          : 1;
 };
 
 static struct ZBannerConf zbanner_conf = {0};
+
+static ConfRes SET_record_data_len(void *conf, const char *name,
+                                   const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.record_data_len = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_record_ack(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -200,6 +211,11 @@ static ConfParam zbanner_parameters[] = {
      Type_FLAG,
      {"ack", 0},
      "Records TCP acknowledge number."},
+    {"record-data-len",
+     SET_record_data_len,
+     Type_FLAG,
+     {"data-len", "len", 0},
+     "Records payload data length of ACK segments if data exists."},
     {"with-ack",
      SET_with_ack,
      Type_FLAG,
@@ -514,6 +530,9 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         }
         if (zbanner_conf.record_ack) {
             dach_set_int(&item->report, "ack", seqno_me);
+        }
+        if (zbanner_conf.record_data_len) {
+            dach_set_int(&item->report, "data len", recved->parsed.app_length);
         }
 
         /*multi-probe Multi_AfterHandle*/
