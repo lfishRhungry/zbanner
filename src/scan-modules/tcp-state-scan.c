@@ -47,9 +47,85 @@ struct TcpStateConf {
     unsigned record_ipid     : 1;
     unsigned record_win      : 1;
     unsigned record_mss      : 1;
+    unsigned record_seq      : 1;
+    unsigned record_ack      : 1;
+    unsigned record_all_ttl  : 1;
+    unsigned record_all_ipid : 1;
+    unsigned record_all_win  : 1;
+    unsigned record_all_seq  : 1;
+    unsigned record_all_ack  : 1;
+    unsigned record_any_all  : 1;
 };
 
 static struct TcpStateConf tcpstate_conf = {0};
+
+static ConfRes SET_record_all_ack(void *conf, const char *name,
+                                  const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpstate_conf.record_all_ack = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_all_seq(void *conf, const char *name,
+                                  const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpstate_conf.record_all_seq = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_all_ttl(void *conf, const char *name,
+                                  const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpstate_conf.record_all_ttl = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_all_ipid(void *conf, const char *name,
+                                   const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpstate_conf.record_all_ipid = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_all_win(void *conf, const char *name,
+                                  const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpstate_conf.record_all_win = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_ack(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpstate_conf.record_ack = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_seq(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpstate_conf.record_seq = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_record_mss(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -146,6 +222,42 @@ static ConfParam tcpstate_parameters[] = {
      Type_FLAG,
      {"mss", 0},
      "Records TCP MSS option value of SYN-ACK if the option exists."},
+    {"record-seq",
+     SET_record_seq,
+     Type_FLAG,
+     {"seq", 0},
+     "Records TCP sequence number of SYN-ACK."},
+    {"record-ack",
+     SET_record_ack,
+     Type_FLAG,
+     {"ack", 0},
+     "Records TCP acknowledge number of SYN-ACK."},
+    {"record-all-ttl",
+     SET_record_all_ttl,
+     Type_FLAG,
+     {"all-ttl", 0},
+     "Records TTL for IPv4 or Hop Limit for IPv6 of all segments for "
+     "debugging."},
+    {"record-all-ipid",
+     SET_record_all_ipid,
+     Type_FLAG,
+     {"all-ipid", 0},
+     "Records IPID of SYN-ACK just for IPv4 of all segments for debugging."},
+    {"record-all-win",
+     SET_record_all_win,
+     Type_FLAG,
+     {"all-win", "all-window", 0},
+     "Records TCP window size of all segments for debugging."},
+    {"record-all-seq",
+     SET_record_all_seq,
+     Type_FLAG,
+     {"all-seq", 0},
+     "Records TCP sequence number of all segments for debugging."},
+    {"record-all-ack",
+     SET_record_all_ack,
+     Type_FLAG,
+     {"all-ack", 0},
+     "Records TCP acknowledge number of all segments for debugging."},
 
     {0}};
 
@@ -169,9 +281,12 @@ static bool tcpstate_init(const XConf *xconf) {
             xconf->seed);
     }
 
-    tcb_count = &((XConf *)xconf)->tcb_count;
-
+    tcb_count      = &((XConf *)xconf)->tcb_count;
     src_port_start = xconf->nic.src.port.first;
+    tcpstate_conf.record_any_all =
+        tcpstate_conf.record_all_ack | tcpstate_conf.record_all_ipid |
+        tcpstate_conf.record_all_seq | tcpstate_conf.record_all_ttl |
+        tcpstate_conf.record_all_win;
 
     return true;
 }
@@ -235,7 +350,6 @@ static void tcpstate_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
 
     unsigned mss_them;
     bool     mss_found;
-    uint16_t win_them;
 
     TCB       *tcb;
     TCP_Table *tcpcon;
@@ -248,6 +362,8 @@ static void tcpstate_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
     unsigned seqno_them =
         TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
+    uint16_t win_them =
+        TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
     tcpcon = tcpcon_set.tcpcons[th_idx];
     tcb    = tcpcon_lookup_tcb(tcpcon, ip_me, ip_them, port_me, port_them);
@@ -261,13 +377,12 @@ static void tcpstate_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             item->level = OUT_SUCCESS;
         }
 
-        win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
-
-        if (tcpstate_conf.record_ttl)
+        if (tcpstate_conf.record_ttl || tcpstate_conf.record_all_ttl)
             dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
-        if (tcpstate_conf.record_ipid && recved->parsed.src_ip.version == 4)
+        if ((tcpstate_conf.record_ipid || tcpstate_conf.record_all_ipid) &&
+            recved->parsed.src_ip.version == 4)
             dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
-        if (tcpstate_conf.record_win)
+        if (tcpstate_conf.record_win || tcpstate_conf.record_all_win)
             dach_set_int(&item->report, "win", win_them);
         if (tcpstate_conf.record_mss) {
             /*comput of mss is not easy*/
@@ -275,6 +390,12 @@ static void tcpstate_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             if (!mss_found)
                 mss_them = 0;
             dach_set_int(&item->report, "mss", mss_them);
+        }
+        if (tcpstate_conf.record_seq || tcpstate_conf.record_all_seq) {
+            dach_set_int(&item->report, "seq", seqno_them);
+        }
+        if (tcpstate_conf.record_ack || tcpstate_conf.record_all_ack) {
+            dach_set_int(&item->report, "ack", seqno_me);
         }
 
         /**
@@ -323,6 +444,28 @@ static void tcpstate_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             }
         }
     } else if (tcb) {
+
+        if (tcpstate_conf.record_all_ttl)
+            dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+        if (tcpstate_conf.record_all_ipid && recved->parsed.src_ip.version == 4)
+            dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+        if (tcpstate_conf.record_all_win)
+            dach_set_int(&item->report, "win", win_them);
+        if (tcpstate_conf.record_all_seq) {
+            dach_set_int(&item->report, "seq", seqno_them);
+        }
+        if (tcpstate_conf.record_all_ack) {
+            dach_set_int(&item->report, "ack", seqno_me);
+        }
+
+        if (tcpstate_conf.record_any_all) {
+            item->no_output = 0;
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "conn");
+            tcp_flags_to_string(
+                TCP_FLAGS(recved->packet, recved->parsed.transport_offset),
+                item->reason, OUT_RSN_SIZE);
+        }
+
         /* If this has an ACK, then handle that first */
         if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
                          TCP_FLAG_ACK)) {
