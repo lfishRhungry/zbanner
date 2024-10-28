@@ -17,9 +17,29 @@ struct TcpSynConf {
     unsigned record_ipid : 1;
     unsigned record_win  : 1;
     unsigned record_mss  : 1;
+    unsigned record_seq  : 1;
+    unsigned record_ack  : 1;
 };
 
 static struct TcpSynConf tcpsyn_conf = {0};
+
+static ConfRes SET_record_ack(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.record_ack = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_seq(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.record_seq = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_syn_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -128,6 +148,16 @@ static ConfParam tcpsyn_parameters[] = {
      Type_FLAG,
      {"mss", 0},
      "Records TCP MSS option value of SYN-ACK if the option exists."},
+    {"record-seq",
+     SET_record_seq,
+     Type_FLAG,
+     {"seq", 0},
+     "Records TCP sequence number."},
+    {"record-ack",
+     SET_record_ack,
+     Type_FLAG,
+     {"ack", 0},
+     "Records TCP acknowledge number."},
     {"syn-ttl",
      SET_syn_ttl,
      Type_ARG,
@@ -199,6 +229,10 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     uint16_t win_them;
 
     win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
+    unsigned seqno_me =
+        TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
+    unsigned seqno_them =
+        TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
 
     /*SYNACK*/
     if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
@@ -217,10 +251,6 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         }
 
         if (tcpsyn_conf.send_rst) {
-            unsigned seqno_me =
-                TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
-            unsigned seqno_them =
-                TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
 
             PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
@@ -253,6 +283,12 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
     if (tcpsyn_conf.record_win)
         dach_set_int(&item->report, "win", win_them);
+    if (tcpsyn_conf.record_seq) {
+        dach_set_int(&item->report, "seq", seqno_them);
+    }
+    if (tcpsyn_conf.record_ack) {
+        dach_set_int(&item->report, "ack", seqno_me);
+    }
 }
 
 Scanner TcpSynScan = {
