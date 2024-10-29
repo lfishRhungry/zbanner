@@ -97,6 +97,7 @@
 
 #include "templ-sctp.h"
 #include "../globals.h"
+#include "../target/target.h"
 #include "../util-out/logger.h"
 #include "../util-misc/checksum.h"
 #include "../util-data/data-convert.h"
@@ -149,32 +150,30 @@ sctp_create_by_template_ipv4(const TmplPkt *tmpl, ipv4address ip_them,
     unsigned ip_len   = tmpl->ipv4.length - tmpl->ipv4.offset_ip;
     px[offset_ip + 2] = (unsigned char)(ip_len >> 8);
     px[offset_ip + 3] = (unsigned char)(ip_len >> 0);
-    U16_EQUAL_TO_BE(px + offset_ip + 4, ip_id);
+    U16_TO_BE(px + offset_ip + 4, ip_id);
 
     if (ttl)
         px[offset_ip + 8] = (unsigned char)(ttl);
 
-    U32_EQUAL_TO_BE(px + offset_ip + 12, ip_me);
-    U32_EQUAL_TO_BE(px + offset_ip + 16, ip_them);
+    U32_TO_BE(px + offset_ip + 12, ip_me);
+    U32_TO_BE(px + offset_ip + 16, ip_them);
 
     px[offset_ip + 10] = (unsigned char)(0);
     px[offset_ip + 11] = (unsigned char)(0);
 
-    xsum_ip =
-        (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.offset_app);
+    xsum_ip = checksum_ipv4_header(px, offset_ip, tmpl->ipv4.offset_app);
 
-    U16_EQUAL_TO_BE(px + offset_ip + 10, xsum_ip);
+    U16_TO_BE(px + offset_ip + 10, xsum_ip);
+
+    U16_TO_BE(px + offset_tcp + 0, port_me);
+    U16_TO_BE(px + offset_tcp + 2, port_them);
+    U32_TO_BE(px + offset_tcp + 16, init_tag);
 
     /*
      * Now do the checksum for the higher layer protocols
      */
-    xsum_sctp = 0;
-    U16_EQUAL_TO_BE(px + offset_tcp + 0, port_me);
-    U16_EQUAL_TO_BE(px + offset_tcp + 2, port_them);
-    U32_EQUAL_TO_BE(px + offset_tcp + 16, init_tag);
-
     xsum_sctp = checksum_sctp(px + offset_tcp, tmpl->ipv4.length - offset_tcp);
-    U32_EQUAL_TO_BE(px + offset_tcp + 8, xsum_sctp);
+    U32_TO_BE(px + offset_tcp + 8, xsum_sctp);
 
     return r_len;
 }
@@ -237,12 +236,11 @@ sctp_create_by_template_ipv6(const TmplPkt *tmpl, ipv6address ip_them,
     U64_TO_BE(px + offset_ip + 24, ip_them.hi);
     U64_TO_BE(px + offset_ip + 32, ip_them.lo);
 
-    /* TODO: IPv6 */
     U16_TO_BE(px + offset_tcp + 0, port_me);
     U16_TO_BE(px + offset_tcp + 2, port_them);
     U32_TO_BE(px + offset_tcp + 16, init_tag);
 
-    xsum_sctp = checksum_sctp(px + offset_tcp, tmpl->ipv6.length - offset_tcp);
+    xsum_sctp = checksum_sctp(px + offset_tcp, r_len - offset_tcp);
     U32_TO_BE(px + offset_tcp + 8, xsum_sctp);
 
     return r_len;

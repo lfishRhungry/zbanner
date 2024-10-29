@@ -1074,8 +1074,8 @@ void tcp_set_window(unsigned char *px, size_t px_length, unsigned window) {
     px[offset + 16] = (unsigned char)(0);
     px[offset + 17] = (unsigned char)(0);
 
-    xsum = ~checksum_tcp(px, parsed.ip_offset, parsed.transport_offset,
-                         parsed.transport_length);
+    xsum = ~checksum_ipv4_tcp(px, parsed.ip_offset, parsed.transport_offset,
+                              parsed.transport_length);
 
     U16_TO_BE(px + offset + 16, xsum);
 }
@@ -1126,8 +1126,7 @@ size_t tcp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
         U32_TO_BE(px + offset_ip + 12, ip_me.ipv4);
         U32_TO_BE(px + offset_ip + 16, ip_them.ipv4);
 
-        xsum_ip =
-            (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.offset_app);
+        xsum_ip = checksum_ipv4_header(px, offset_ip, tmpl->ipv4.offset_app);
         U16_TO_BE(px + offset_ip + 10, xsum_ip);
 
         /*
@@ -1146,9 +1145,9 @@ size_t tcp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
         px[offset_tcp + 16] = (unsigned char)(0 >> 8);
         px[offset_tcp + 17] = (unsigned char)(0 >> 0);
 
-        xsum_tcp = checksum_tcp(px, tmpl->ipv4.offset_ip, tmpl->ipv4.offset_tcp,
-                                new_length - tmpl->ipv4.offset_tcp);
-        xsum_tcp = ~xsum_tcp;
+        xsum_tcp =
+            checksum_ipv4_tcp(px, tmpl->ipv4.offset_ip, tmpl->ipv4.offset_tcp,
+                              new_length - tmpl->ipv4.offset_tcp);
 
         U16_TO_BE(px + offset_tcp + 16, xsum_tcp);
 
@@ -1157,6 +1156,7 @@ size_t tcp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
             new_length = 60;
         }
         return new_length;
+
     } else {
         unsigned offset_ip  = tmpl->ipv6.offset_ip;
         unsigned offset_tcp = tmpl->ipv6.offset_tcp;
@@ -1211,7 +1211,7 @@ size_t tcp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
         px[offset_tcp + 16] = (unsigned char)(0 >> 8);
         px[offset_tcp + 17] = (unsigned char)(0 >> 0);
 
-        xsum_tcp = checksum_ipv6(
+        xsum_tcp = checksum_ipv6_upper(
             px + offset_ip + 8, px + offset_ip + 24, IP_PROTO_TCP,
             (offset_app - offset_tcp) + payload_length, px + offset_tcp);
         U16_TO_BE(px + offset_tcp + 16, xsum_tcp);

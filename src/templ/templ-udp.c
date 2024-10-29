@@ -96,22 +96,19 @@ static size_t udp_create_by_template_ipv4(
     px[offset_ip + 10] = (unsigned char)(0);
     px[offset_ip + 11] = (unsigned char)(0);
 
-    xsum_ip =
-        (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.offset_app);
+    xsum_ip = checksum_ipv4_header(px, offset_ip, tmpl->ipv4.offset_app);
     U16_TO_BE(px + offset_ip + 10, xsum_ip);
 
     /*
      * Now do the checksum for the higher layer protocols
      */
-    xsum_udp = 0;
     U16_TO_BE(px + offset_tcp + 0, port_me);
     U16_TO_BE(px + offset_tcp + 2, port_them);
     U16_TO_BE(px + offset_tcp + 4, r_len - tmpl->ipv4.offset_app + 8);
 
     px[offset_tcp + 6] = (unsigned char)(0);
     px[offset_tcp + 7] = (unsigned char)(0);
-    xsum_udp = checksum_udp(px, offset_ip, offset_tcp, r_len - offset_tcp);
-    xsum_udp = ~xsum_udp;
+    xsum_udp = checksum_ipv4_udp(px, offset_ip, offset_tcp, r_len - offset_tcp);
     U16_TO_BE(px + offset_tcp + 6, xsum_udp);
 
     return r_len;
@@ -171,18 +168,18 @@ static size_t udp_create_by_template_ipv6(
     U64_TO_BE(px + offset_ip + 24, ip_them.hi);
     U64_TO_BE(px + offset_ip + 32, ip_them.lo);
 
-    /*
-     * Now do the checksum for the higher layer protocols
-     */
-    /* TODO: IPv6 */
     U16_TO_BE(px + offset_tcp + 0, port_me);
     U16_TO_BE(px + offset_tcp + 2, port_them);
     U16_TO_BE(px + offset_tcp + 4, r_len - tmpl->ipv6.offset_app + 8);
 
+    /*
+     * Now do the checksum for the higher layer protocols
+     */
     px[offset_tcp + 6] = (unsigned char)(0);
     px[offset_tcp + 7] = (unsigned char)(0);
-    xsum_udp           = checksum_ipv6(px + offset_ip + 8, px + offset_ip + 24,
-                                       IP_PROTO_UDP, r_len - offset_tcp, px + offset_tcp);
+    xsum_udp =
+        checksum_ipv6_upper(px + offset_ip + 8, px + offset_ip + 24,
+                            IP_PROTO_UDP, r_len - offset_tcp, px + offset_tcp);
     U16_TO_BE(px + offset_tcp + 6, xsum_udp);
 
     return r_len;

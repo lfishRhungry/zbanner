@@ -13,56 +13,63 @@
 #include <stddef.h>
 
 /**
- * Calculate a checksum for IPv4 packets for generic pkts
- * @param ip_src
- *      The source IPv4 address, represented a standard way,
- *      as a 32-bit integer in host byte order.
- * @param ip_dst
- *      The destination IPv4 address, represented as a 32-bit integer in host
- * byte order.
- * @param ip_proto
- *      A value of 6 for TCP or 17 for UDP.
- * @param payload_length
- *      The length of the IP packet payload, meaning, everything after the IPv4
- * header. In other words, it's the "total length" field of the IP packet minus
- * the length of the IP header.
+ * Calculate a checksum of general uppler-layer protocol for IPv4.
+ * NOTE: Just support some protocols.
+ *
+ * @param payload_length payload of IP packet.
  * @param payload
  *      A pointer to the aforementioned payload (a pointer to the first byte
  * past the IP header). Note that the calculation skips the checksum field, so
  * the payload we use is everything but the 2 bytes in the checksum field.
  * Thus, due to the quirkiness of Internet protocols, the result of this
  * calculation should end up equally the value of the checksum field.
- * @return
- *      the calculated checksum, which should equal the checksum found in the
+ * @return the calculated checksum, which should equal the checksum found in the
  * payload
  */
-unsigned checksum_ipv4(unsigned ip_src, unsigned ip_dst, unsigned ip_proto,
-                       size_t payload_length, const void *payload);
+unsigned checksum_ipv4_upper(unsigned ip_src, unsigned ip_dst,
+                             unsigned ip_proto, size_t payload_length,
+                             const void *payload);
 
-unsigned checksum_ipv6(const unsigned char *ip_src, const unsigned char *ip_dst,
-                       unsigned ip_proto, size_t payload_length,
-                       const void *payload);
+/**
+ * Calculate a checksum of general uppler-layer protocol for IPv6.
+ * NOTE: Just support some protocols.
+ *
+ * @param payload_length payload of IP packet.
+ * @param payload
+ *      A pointer to the aforementioned payload (a pointer to the first byte
+ * past the IP header). Note that the calculation skips the checksum field, so
+ * the payload we use is everything but the 2 bytes in the checksum field.
+ * Thus, due to the quirkiness of Internet protocols, the result of this
+ * calculation should end up equally the value of the checksum field.
+ * @return the calculated checksum, which should equal the checksum found in the
+ * payload
+ */
+unsigned checksum_ipv6_upper(const unsigned char *ip_src,
+                             const unsigned char *ip_dst, unsigned ip_proto,
+                             size_t payload_length, const void *payload);
 
 /***************************************************************************
- * Checksum the IP header. This is a "partial" checksum, so we
- * don't reverse the bits ~.
+ * Checksum the IP header.
  * NOTE: Just IPv4 has checksum in header.
  * @param offset ip layer offset.
  * @param max_offset max offset ip layer used to do border check.
  ***************************************************************************/
-unsigned checksum_ip_header(const unsigned char *px, unsigned offset,
-                            unsigned max_offset);
+unsigned checksum_ipv4_header(const unsigned char *px, unsigned offset_ip,
+                              unsigned max_offset);
 
-unsigned checksum_icmp(const unsigned char *px, unsigned offset_icmp,
-                       size_t icmp_length);
+unsigned checksum_ipv4_icmp(const unsigned char *px, unsigned offset_icmp,
+                            size_t icmp_length);
 
-unsigned checksum_udp(const unsigned char *px, unsigned offset_ip,
-                      unsigned offset_tcp, size_t tcp_length);
+unsigned checksum_ipv4_udp(const unsigned char *px, unsigned offset_ip,
+                           unsigned offset_udp, size_t udp_length);
 
-unsigned checksum_tcp(const unsigned char *px, unsigned offset_ip,
-                      unsigned offset_tcp, size_t tcp_length);
+unsigned checksum_ipv4_tcp(const unsigned char *px, unsigned offset_ip,
+                           unsigned offset_tcp, size_t tcp_length);
 
-unsigned checksum_sctp(const void *vbuffer, size_t sctp_length);
+/**
+ * SCTP use CRC32 to do checksum and non-reletive with IP layer or version.
+ */
+unsigned checksum_sctp(const void *offset_sctp, size_t sctp_length);
 
 int checksum_selftest();
 

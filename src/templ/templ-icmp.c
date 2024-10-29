@@ -117,25 +117,22 @@ static size_t icmp_echo_create_by_template_ipv4(
     U32_TO_BE(px + offset_ip + 12, ip_me);
     U32_TO_BE(px + offset_ip + 16, ip_them);
 
-    /*fake ip header checksum*/
+    /*set ip header checksum field to zero*/
     px[offset_ip + 10] = (unsigned char)(0);
     px[offset_ip + 11] = (unsigned char)(0);
 
-    xsum_ip =
-        (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.offset_app);
+    xsum_ip = checksum_ipv4_header(px, offset_ip, tmpl->ipv4.offset_app);
 
     U16_TO_BE(px + offset_ip + 10, xsum_ip);
 
     /*
      * Now do the checksum for the higher layer protocols
      */
-    xsum_icmp = 0;
-
     U16_TO_BE(px + offset_tcp + 4, identifier);
     U16_TO_BE(px + offset_tcp + 6, sequence);
 
     icmp_length = r_len - (tmpl->ipv4.offset_tcp - tmpl->ipv4.offset_ip);
-    xsum_icmp   = (unsigned)~checksum_icmp(px, offset_tcp, icmp_length);
+    xsum_icmp   = checksum_ipv4_icmp(px, offset_tcp, icmp_length);
     U16_TO_BE(px + offset_tcp + 2, xsum_icmp);
 
     return r_len;
@@ -200,14 +197,15 @@ static size_t icmp_echo_create_by_template_ipv6(
     U64_TO_BE(px + offset_ip + 24, ip_them.hi);
     U64_TO_BE(px + offset_ip + 32, ip_them.lo);
 
+    U16_TO_BE(px + offset_tcp + 4, identifier);
+    U16_TO_BE(px + offset_tcp + 6, sequence);
+
     /*
      * Now do the checksum for the higher layer protocols
      */
-    U16_TO_BE(px + offset_tcp + 4, identifier);
-    U16_TO_BE(px + offset_tcp + 6, sequence);
-    xsum_icmp =
-        checksum_ipv6(px + offset_ip + 8, px + offset_ip + 24,
-                      IP_PROTO_IPv6_ICMP, r_len - offset_tcp, px + offset_tcp);
+    xsum_icmp = checksum_ipv6_upper(px + offset_ip + 8, px + offset_ip + 24,
+                                    IP_PROTO_IPv6_ICMP, r_len - offset_tcp,
+                                    px + offset_tcp);
     U16_TO_BE(px + offset_tcp + 2, xsum_icmp);
 
     return r_len;
@@ -302,19 +300,17 @@ static size_t icmp_timestamp_create_by_template_ipv4(
     U32_TO_BE(px + offset_ip + 12, ip_me);
     U32_TO_BE(px + offset_ip + 16, ip_them);
 
-    /*fake ip header checksum*/
+    /*set ip header checksum to zero*/
     px[offset_ip + 10] = (unsigned char)(0);
     px[offset_ip + 11] = (unsigned char)(0);
 
-    xsum_ip = (unsigned)~checksum_ip_header(px, offset_ip, tmpl->ipv4.length);
+    xsum_ip = checksum_ipv4_header(px, offset_ip, tmpl->ipv4.length);
 
     U16_TO_BE(px + offset_ip + 10, xsum_ip);
 
     /*
      * Now do the checksum for the higher layer protocols
      */
-    xsum_icmp = 0;
-
     U16_TO_BE(px + offset_tcp + 4, identifier);
     U16_TO_BE(px + offset_tcp + 6, sequence);
     U32_TO_BE(px + offset_tcp + 8, origin_time);
@@ -322,7 +318,7 @@ static size_t icmp_timestamp_create_by_template_ipv4(
     U32_TO_BE(px + offset_tcp + 16, trans_time);
 
     icmp_length = ip_len - (tmpl->ipv4.offset_tcp - tmpl->ipv4.offset_ip);
-    xsum_icmp   = (unsigned)~checksum_icmp(px, offset_tcp, icmp_length);
+    xsum_icmp   = checksum_ipv4_icmp(px, offset_tcp, icmp_length);
     U16_TO_BE(px + offset_tcp + 2, xsum_icmp);
 
     return r_len;
