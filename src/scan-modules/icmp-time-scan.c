@@ -66,7 +66,7 @@ static bool icmptime_transmit(uint64_t entropy, ScanTarget *target,
     uint16_t ipid = cookie ^ entropy;
 
     *len = icmp_timestamp_create_packet(target->target.ip_them,
-                                        target->target.ip_me, id, seq, ipid, 64,
+                                        target->target.ip_me, id, seq, ipid, 0,
                                         0, 0, 0, px, PKT_BUF_SIZE);
 
     return false;
