@@ -57,8 +57,7 @@ typedef struct Adapter_Cache {
 
 /**
  * Do some preparation before rawsock init.
- * e.g. get adapter name on Windows.
- * e.g. init PFRING
+ * e.g. try to load pcap & PFRING as stub dynamically.
  */
 void rawsock_prepare(void);
 

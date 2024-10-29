@@ -196,10 +196,6 @@ static int _main_scan(XConf *xconf) {
      */
     targetset_optimize(&xconf->targets);
 
-    /* load pcap as stub dynamically */
-    if (pcap_init() != 0)
-        LOG(LEVEL_ERROR, "(libpcap) failed to load\n");
-
     /*before rawsock initing*/
     rawsock_prepare();
 
