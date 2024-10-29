@@ -628,14 +628,12 @@ int main(int argc, char *argv[]) {
     /* Set system to report debug information on crash */
     int is_backtrace = 1;
     for (unsigned i = 1; i < (unsigned)argc; i++) {
-        if (strcmp(argv[i], "--nobacktrace") == 0)
+        if (argv[i][0] == '-' && EQUALS(argv[i] + 1, "nobacktrace")) {
             is_backtrace = 0;
+        }
     }
     if (is_backtrace)
         pixie_backtrace_init(argv[0]);
-
-    //=================================================read conf from args
-    xconf_command_line(xconf, argc, argv);
 
     //=================================================Define default params
     xconf->tx_thread_count    = XCONF_DFT_TX_THD_COUNT;
@@ -656,6 +654,9 @@ int main(int argc, char *argv[]) {
     xconf->sendmmsg_retries   = XCONF_DFT_SENDMMSG_RETRIES;
     xconf->sendq_size         = XCONF_DFT_SENDQUEUE_SIZE;
     //=================================================
+
+    //=================================================read conf from args
+    xconf_command_line(xconf, argc, argv);
 
     // logger should be prepared early
     LOG_set_ansi(xconf->is_no_ansi);
