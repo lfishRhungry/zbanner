@@ -26,8 +26,8 @@
  *      The buffer that we are checksumming, such as all the
  *      payload after an IPv4 or IPv6 header.
  */
-static unsigned _checksum_calculate(const void *vbuf, size_t length) {
-    unsigned             sum = 0;
+static uint64_t _checksum_calculate(const void *vbuf, size_t length) {
+    uint64_t             sum = 0;
     size_t               i;
     const unsigned char *buf = (const unsigned char *)vbuf;
     int                  is_remainder;
@@ -62,7 +62,7 @@ static unsigned _checksum_calculate(const void *vbuf, size_t length) {
  * more than two folds. After this, we need to take the 1s-complement,
  * which means reversing the bits so that 0 becomes 1 and 1 becomes 0.
  */
-static unsigned _checksum_finish(unsigned sum) {
+static unsigned _checksum_finish(uint64_t sum) {
     while (sum >> 16)
         sum = (sum >> 16) + (sum & 0xFFFF);
     return (~sum) & 0xFFFF;
@@ -71,7 +71,7 @@ static unsigned _checksum_finish(unsigned sum) {
 unsigned checksum_ipv4_upper(unsigned ip_src, unsigned ip_dst,
                              unsigned ip_proto, size_t payload_length,
                              const void *payload) {
-    unsigned             sum = 0;
+    uint64_t             sum = 0;
     const unsigned char *buf = (const unsigned char *)payload;
 
     /**
@@ -124,7 +124,7 @@ unsigned checksum_ipv6_upper(const unsigned char *ip_src,
                              const unsigned char *ip_dst, unsigned ip_proto,
                              size_t payload_length, const void *payload) {
     const unsigned char *buf = (const unsigned char *)payload;
-    unsigned             sum = 0;
+    uint64_t             sum = 0;
 
     /* Calculate the pseudo-header */
     sum += _checksum_calculate(ip_src, 16);
@@ -161,7 +161,7 @@ unsigned checksum_ipv4_header(const unsigned char *px, unsigned offset_ip,
                               unsigned max_offset) {
     unsigned header_length = (px[offset_ip] & 0xF) * 4;
     unsigned header_max    = offset_ip + header_length;
-    unsigned xsum          = 0;
+    uint64_t xsum          = 0;
 
     /* restrict border of header */
     if (max_offset < offset_ip + header_length) {
@@ -179,7 +179,7 @@ unsigned checksum_ipv4_header(const unsigned char *px, unsigned offset_ip,
  ***************************************************************************/
 unsigned checksum_ipv4_icmp(const unsigned char *px, unsigned offset_icmp,
                             size_t icmp_length) {
-    unsigned xsum = 0;
+    uint64_t xsum = 0;
 
     xsum = _checksum_calculate(&px[offset_icmp], icmp_length);
 

@@ -93,8 +93,8 @@ static size_t udp_create_by_template_ipv4(
     U32_TO_BE(px + offset_ip + 12, ip_me);
     U32_TO_BE(px + offset_ip + 16, ip_them);
 
-    px[offset_ip + 10] = (unsigned char)(0);
-    px[offset_ip + 11] = (unsigned char)(0);
+    /*set ip header checksum to zero*/
+    U16_TO_BE(px + offset_ip + 10, 0);
 
     xsum_ip = checksum_ipv4_header(px, offset_ip, tmpl->ipv4.offset_app);
     U16_TO_BE(px + offset_ip + 10, xsum_ip);
@@ -106,8 +106,8 @@ static size_t udp_create_by_template_ipv4(
     U16_TO_BE(px + offset_tcp + 2, port_them);
     U16_TO_BE(px + offset_tcp + 4, r_len - tmpl->ipv4.offset_app + 8);
 
-    px[offset_tcp + 6] = (unsigned char)(0);
-    px[offset_tcp + 7] = (unsigned char)(0);
+    /*set udp checksum to zero*/
+    U16_TO_BE(px + offset_tcp + 6, 0);
     xsum_udp = checksum_ipv4_udp(px, offset_ip, offset_tcp, r_len - offset_tcp);
     U16_TO_BE(px + offset_tcp + 6, xsum_udp);
 
@@ -175,8 +175,9 @@ static size_t udp_create_by_template_ipv6(
     /*
      * Now do the checksum for the higher layer protocols
      */
-    px[offset_tcp + 6] = (unsigned char)(0);
-    px[offset_tcp + 7] = (unsigned char)(0);
+
+    /*set udp checksum to zero*/
+    U16_TO_BE(px + offset_tcp + 6, 0);
     xsum_udp =
         checksum_ipv6_upper(px + offset_ip + 8, px + offset_ip + 24,
                             IP_PROTO_UDP, r_len - offset_tcp, px + offset_tcp);

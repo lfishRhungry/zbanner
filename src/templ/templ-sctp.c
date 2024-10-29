@@ -158,8 +158,8 @@ sctp_create_by_template_ipv4(const TmplPkt *tmpl, ipv4address ip_them,
     U32_TO_BE(px + offset_ip + 12, ip_me);
     U32_TO_BE(px + offset_ip + 16, ip_them);
 
-    px[offset_ip + 10] = (unsigned char)(0);
-    px[offset_ip + 11] = (unsigned char)(0);
+    /*set ip header checksum to zero*/
+    U16_TO_BE(px + offset_ip + 10, 0);
 
     xsum_ip = checksum_ipv4_header(px, offset_ip, tmpl->ipv4.offset_app);
 

@@ -118,8 +118,7 @@ static size_t icmp_echo_create_by_template_ipv4(
     U32_TO_BE(px + offset_ip + 16, ip_them);
 
     /*set ip header checksum field to zero*/
-    px[offset_ip + 10] = (unsigned char)(0);
-    px[offset_ip + 11] = (unsigned char)(0);
+    U16_TO_BE(px + offset_ip + 10, 0);
 
     xsum_ip = checksum_ipv4_header(px, offset_ip, tmpl->ipv4.offset_app);
 
@@ -301,8 +300,7 @@ static size_t icmp_timestamp_create_by_template_ipv4(
     U32_TO_BE(px + offset_ip + 16, ip_them);
 
     /*set ip header checksum to zero*/
-    px[offset_ip + 10] = (unsigned char)(0);
-    px[offset_ip + 11] = (unsigned char)(0);
+    U16_TO_BE(px + offset_ip + 10, 0);
 
     xsum_ip = checksum_ipv4_header(px, offset_ip, tmpl->ipv4.length);
 

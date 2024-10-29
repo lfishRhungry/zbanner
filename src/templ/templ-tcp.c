@@ -1123,6 +1123,9 @@ size_t tcp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
         if (ttl)
             px[offset_ip + 8] = (unsigned char)(ttl);
 
+        /*set ip header checksum to zero*/
+        U16_TO_BE(px + offset_ip + 10, 0);
+
         U32_TO_BE(px + offset_ip + 12, ip_me.ipv4);
         U32_TO_BE(px + offset_ip + 16, ip_them.ipv4);
 
@@ -1142,8 +1145,8 @@ size_t tcp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
         if (win)
             U16_TO_BE(px + offset_tcp + 14, win);
 
-        px[offset_tcp + 16] = (unsigned char)(0 >> 8);
-        px[offset_tcp + 17] = (unsigned char)(0 >> 0);
+        /*set tcp checksum to zero*/
+        U16_TO_BE(px + offset_tcp + 16, 0);
 
         xsum_tcp =
             checksum_ipv4_tcp(px, tmpl->ipv4.offset_ip, tmpl->ipv4.offset_tcp,
@@ -1208,8 +1211,8 @@ size_t tcp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
         if (win)
             U16_TO_BE(px + offset_tcp + 14, win);
 
-        px[offset_tcp + 16] = (unsigned char)(0 >> 8);
-        px[offset_tcp + 17] = (unsigned char)(0 >> 0);
+        /*set tcp checksum to zero*/
+        U16_TO_BE(px + offset_tcp + 16, 0);
 
         xsum_tcp = checksum_ipv6_upper(
             px + offset_ip + 8, px + offset_ip + 24, IP_PROTO_TCP,

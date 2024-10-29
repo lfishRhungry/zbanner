@@ -261,8 +261,7 @@ static size_t ndp_create_ns_by_template_ipv6(
         px + offset_ip + 8, px + offset_ip + 24, IP_PROTO_IPv6_ICMP,
         tmpl->ipv6.length - offset_tcp, px + offset_tcp);
 
-    px[offset_tcp + 2] = (unsigned char)(xsum_icmp >> 8);
-    px[offset_tcp + 3] = (unsigned char)(xsum_icmp >> 0);
+    U16_TO_BE(px + offset_tcp + 2, xsum_icmp);
 
     return r_len;
 }
