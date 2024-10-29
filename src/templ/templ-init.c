@@ -205,6 +205,7 @@ static unsigned char default_icmp_timestamp_template[] =
     "\x00\x00" /* identifier */
     "\x00\x00" /* sequence number */
 
+    /* payload */
     "\x00\x00\x00\x00" /* originate timestamp */
     "\x00\x00\x00\x00" /* receive timestamp */
     "\x00\x00\x00\x00" /* transmit timestamp */

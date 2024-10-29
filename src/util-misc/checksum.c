@@ -205,7 +205,7 @@ unsigned checksum_udp(const unsigned char *px, unsigned offset_ip,
     unsigned i;
 
     /* pseudo checksum */
-    xsum = 17;
+    xsum = IP_PROTO_UDP;
     xsum += tcp_length;
     xsum += px[offset_ip + 12] << 8 | px[offset_ip + 13];
     xsum += px[offset_ip + 14] << 8 | px[offset_ip + 15];
@@ -235,7 +235,7 @@ unsigned checksum_tcp(const unsigned char *px, unsigned offset_ip,
     unsigned i;
 
     /* pseudo checksum */
-    xsum = 6;
+    xsum = IP_PROTO_TCP;
     xsum += tcp_length;
     xsum += px[offset_ip + 12] << 8 | px[offset_ip + 13];
     xsum += px[offset_ip + 14] << 8 | px[offset_ip + 15];
@@ -372,14 +372,14 @@ static struct {
 } ipv4packets[] = {
     {
         0xee9b, "\x11\x64\xee\x9b\x00\x00\x00\x00", 0x0a141e01, 0xe0000001, 8,
-        2 /* IGMP - Group Message protocol */
+        IP_PROTO_IGMP
     },
     {
         0x6042,
         "\xdc\x13\x01\xbb\x00\x29\x60\x42"
         "\x5b\xd6\x16\x3a\xb1\x78\x3d\x5d\xdd\x0e\x5a\x05\x35\x74\x92\x91"
         "\x57\x4c\xaa\xc1\x85\x76\xc0\x0f\x8d\x9e\x19\xa5\xcc\xa2\x81\x65\xbe",
-        0x0a141ec9, 0xadc2900a, 41, 17 /* UDP */
+        0x0a141ec9, 0xadc2900a, 41, IP_PROTO_UDP
     },
     {
         0x84b2,
@@ -389,7 +389,7 @@ static struct {
         "\x8d\x41\x39\x53\xfb\xd0\xd5\x3e\x14\xf8\xdf\xb9\xb8\x47\xe0\x43"
         "\xab\x09\x24\x58\x7c\x6a\xab\x91\xaf\x24\xc0\x5c\xc6\xaf\x56\x45"
         "\xed\xa3\xde\x06\xa2\xd1\x79\x0a\x21\xfe\x9c\x2e\x6e\x81\x19",
-        0x0a141ec9, 0xa2fec14a, 83, 6 /* TCP */
+        0x0a141ec9, 0xa2fec14a, 83, IP_PROTO_TCP
     },
     {0}};
 

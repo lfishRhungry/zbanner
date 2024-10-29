@@ -911,7 +911,11 @@ AdapterCache *rawsock_init_cache(bool is_sendmmsg, unsigned sendmmsg_batch,
     AdapterCache *acache = CALLOC(1, sizeof(AdapterCache));
 #ifdef WIN32
     if (is_sendq) {
-        acache->sendq_size = sendq_size ? sendq_size : XCONF_DFT_SENDQUEUE_SIZE;
+        if (sendq_size == 0) {
+            LOG(LEVEL_ERROR, "(%s) sendqueue size cannot be zero\n", __func__);
+            exit(1);
+        }
+        acache->sendq_size = sendq_size;
         acache->sendq      = PCAP.sendqueue_alloc(acache->sendq_size);
     }
 #else
