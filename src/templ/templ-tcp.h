@@ -88,7 +88,8 @@ typedef struct TemplateOptions TmplOpt;
 #define TCP_OPT_LEN_QSR         8
 #define TCP_OPT_LEN_UTO         4
 
-#define TCP_DEFAULT_MSS 1460
+#define TCP_DEFAULT_MSS    1460
+#define TCP_DEFAULT_TSECHO 0x12345678
 
 struct TcpOption {
     const unsigned char *buf;

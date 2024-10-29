@@ -29,7 +29,6 @@ very low impact on scan rate */
 #define XCONF_DFT_DISPATCH_BUF_COUNT 16384
 #define XCONF_DFT_MAX_RATE           100.0
 #define XCONF_DFT_DEDUP_WIN          1000000
-#define XCONF_DFT_FT_SPEC            5
 #define XCONF_DFT_SHARD_ONE          1
 #define XCONF_DFT_SHARD_OF           1
 #define XCONF_DFT_WAIT               10

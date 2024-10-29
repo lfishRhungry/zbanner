@@ -29,6 +29,8 @@
 #include "util-scan/list-targets.h"
 #include "util-data/fine-malloc.h"
 
+#include "output-modules/bson-output.h"
+
 #if defined(WIN32)
 #include <WinSock.h>
 #if defined(_MSC_VER)
@@ -194,6 +196,14 @@ static int _main_scan(XConf *xconf) {
      */
     targetset_optimize(&xconf->targets);
 
+    /* load pcap as stub dynamically */
+    if (pcap_init() != 0)
+        LOG(LEVEL_ERROR, "(libpcap) failed to load\n");
+
+    /*before rawsock initing*/
+    rawsock_prepare();
+
+    /*init NIC & rawsock*/
     if (init_nic(xconf, init_ipv4, init_ipv6) != 0)
         exit(1);
     if (!xconf->nic.is_usable) {
@@ -230,13 +240,9 @@ static int _main_scan(XConf *xconf) {
     /* it should be set before template init*/
     if (xconf->tcp_init_window)
         template_set_tcp_syn_window_of_default(xconf->tcp_init_window);
-    else
-        template_set_tcp_syn_window_of_default(XCONF_DFT_TCP_SYN_WINSIZE);
 
     if (xconf->tcp_window)
         template_set_tcp_window_of_default(xconf->tcp_window);
-    else
-        template_set_tcp_window_of_default(XCONF_DFT_TCP_OTHER_WINSIZE);
 
     template_packet_init(xconf->tmplset, xconf->nic.source_mac,
                          xconf->nic.router_mac_ipv4, xconf->nic.router_mac_ipv6,
@@ -245,8 +251,6 @@ static int _main_scan(XConf *xconf) {
 
     if (xconf->packet_ttl)
         template_set_ttl(xconf->tmplset, xconf->packet_ttl);
-    else
-        template_set_ttl(xconf->tmplset, XCONF_DFT_PACKET_TTL);
 
     if (xconf->nic.is_vlan)
         template_set_vlan(xconf->tmplset, xconf->nic.vlan_id);
@@ -634,6 +638,9 @@ int main(int argc, char *argv[]) {
     if (is_backtrace)
         pixie_backtrace_init(argv[0]);
 
+    //=================================================read conf from args
+    xconf_command_line(xconf, argc, argv);
+
     //=================================================Define default params
     xconf->tx_thread_count    = XCONF_DFT_TX_THD_COUNT;
     xconf->rx_handler_count   = XCONF_DFT_RX_HDL_COUNT;
@@ -646,20 +653,20 @@ int main(int argc, char *argv[]) {
     xconf->wait               = XCONF_DFT_WAIT;
     xconf->nic.snaplen        = XCONF_DFT_SNAPLEN;
     xconf->max_packet_len     = XCONF_DFT_MAX_PKT_LEN;
+    xconf->packet_ttl         = XCONF_DFT_PACKET_TTL;
+    xconf->tcp_init_window    = XCONF_DFT_TCP_SYN_WINSIZE;
+    xconf->tcp_window         = XCONF_DFT_TCP_OTHER_WINSIZE;
+    xconf->sendmmsg_batch     = XCONF_DFT_SENDMMSG_BATCH;
+    xconf->sendmmsg_retries   = XCONF_DFT_SENDMMSG_RETRIES;
+    xconf->sendq_size         = XCONF_DFT_SENDQUEUE_SIZE;
+    //=================================================
 
-    xconf_command_line(xconf, argc, argv);
-
+    // logger should be prepared early
     LOG_set_ansi(xconf->is_no_ansi);
 
     /* entropy for randomness */
     if (xconf->seed == 0)
         xconf->seed = get_one_entropy();
-
-    /* a separate "raw socket" initialization step for Windows and PF_RING. */
-    if (pcap_init() != 0)
-        LOG(LEVEL_ERROR, "(libpcap) failed to load\n");
-
-    rawsock_prepare();
 
     targetset_apply_excludes(&xconf->targets, &xconf->exclude);
 
@@ -682,7 +689,7 @@ int main(int argc, char *argv[]) {
 
     switch (xconf->op) {
         case Operation_Default:
-            xconf_set_parameter(xconf, "usage", "true");
+            xconf_print_usage();
             break;
 
         case Operation_Scan:
@@ -766,7 +773,6 @@ int main(int argc, char *argv[]) {
             break;
 
 #ifndef NOT_FOUND_BSON
-#include "output-modules/bson-output.h"
         case Operation_ParseBson:
             parse_bson_file(xconf->bson_file);
             break;

@@ -55,6 +55,11 @@ typedef struct Adapter_Cache {
 #endif
 } AdapterCache;
 
+/**
+ * Do some preparation before rawsock init.
+ * e.g. get adapter name on Windows.
+ * e.g. init PFRING
+ */
 void rawsock_prepare(void);
 
 /**

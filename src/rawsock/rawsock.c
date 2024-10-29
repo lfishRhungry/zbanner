@@ -204,6 +204,12 @@ void rawsock_list_adapters(void) {
     pcap_if_t *alldevs;
     char       errbuf[PCAP_ERRBUF_SIZE];
 
+    /* load pcap as stub dynamically */
+    if (pcap_init() != 0) {
+        LOG(LEVEL_ERROR, "(libpcap) failed to load\n");
+        return;
+    }
+
     if (PCAP.findalldevs(&alldevs, errbuf) != -1) {
         int              i;
         const pcap_if_t *d;
@@ -1014,10 +1020,17 @@ AdapterCache *rawsock_init_cache(bool is_sendmmsg, unsigned sendmmsg_batch,
     }
 #else
     if (is_sendmmsg) {
-        acache->msg_capacity =
-            sendmmsg_batch ? sendmmsg_batch : XCONF_DFT_SENDMMSG_BATCH;
-        acache->msg_retries =
-            sendmmsg_retries ? sendmmsg_retries : XCONF_DFT_SENDMMSG_RETRIES;
+        if (sendmmsg_batch == 0) {
+            LOG(LEVEL_ERROR, "(%s) sendmmsg batch cannot be zero\n", __func__);
+            exit(1);
+        }
+        if (sendmmsg_retries == 0) {
+            LOG(LEVEL_ERROR, "(%s) sendmmsg retries cannot be zero\n",
+                __func__);
+            exit(1);
+        }
+        acache->msg_capacity = sendmmsg_batch;
+        acache->msg_retries  = sendmmsg_retries;
         acache->msgvec  = CALLOC(acache->msg_capacity, sizeof(struct mmsghdr));
         acache->msgs    = CALLOC(acache->msg_capacity, sizeof(struct msghdr));
         acache->iovs    = CALLOC(acache->msg_capacity, sizeof(struct iovec));
@@ -1065,6 +1078,12 @@ int rawsock_selftest_if(const char *ifname) {
     AdapterCache         *acache;
     char                  ifname2[246];
     ipaddress_formatted_t fmt;
+
+    /* load pcap as stub dynamically */
+    if (pcap_init() != 0)
+        LOG(LEVEL_ERROR, "(libpcap) failed to load\n");
+
+    // rawsock_prepare();
 
     /*
      * Get the interface

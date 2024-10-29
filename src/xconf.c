@@ -904,7 +904,7 @@ static ConfRes SET_nodedup(void *conf, const char *name, const char *value) {
 static ConfRes SET_tcp_window(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->tcp_window != 0)
+        if (xconf->tcp_window != XCONF_DFT_TCP_OTHER_WINSIZE || xconf->echo_all)
             fprintf(xconf->echo, "tcp-window = %u\n", xconf->tcp_window);
         return 0;
     }
@@ -924,7 +924,8 @@ static ConfRes SET_tcp_init_window(void *conf, const char *name,
                                    const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->tcp_init_window != 0)
+        if (xconf->tcp_init_window != XCONF_DFT_TCP_SYN_WINSIZE ||
+            xconf->echo_all)
             fprintf(xconf->echo, "tcp-init-window = %u\n",
                     xconf->tcp_init_window);
         return 0;
@@ -944,14 +945,14 @@ static ConfRes SET_tcp_init_window(void *conf, const char *name,
 static ConfRes SET_packet_ttl(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->packet_ttl != 0)
+        if (xconf->packet_ttl != XCONF_DFT_PACKET_TTL || xconf->echo_all)
             fprintf(xconf->echo, "packet-ttl = %u\n", xconf->packet_ttl);
         return 0;
     }
 
     unsigned x = parse_str_int(value);
     if (x >= 256) {
-        LOG(LEVEL_ERROR, "%s=<n>: expected number less than 256\n", name);
+        LOG(LEVEL_ERROR, "%s=%u: expected number less than 256\n", name, x);
         return Conf_ERR;
     } else {
         xconf->packet_ttl = x;
@@ -1148,9 +1149,9 @@ static ConfRes SET_source_ip(void *conf, const char *name, const char *value) {
             ipaddress_formatted_t ipv4_last =
                 ipv4address_fmt((ipv4address)(xconf->nic.src.ipv4.last));
             if (xconf->nic.src.ipv4.first == xconf->nic.src.ipv4.last) {
-                fprintf(xconf->echo, "source-ip = %s\n", ipv4_first.string);
+                fprintf(xconf->echo, "source-ipv4 = %s\n", ipv4_first.string);
             } else if (xconf->nic.src.ipv4.first < xconf->nic.src.ipv4.last) {
-                fprintf(xconf->echo, "source-ip = %s-%s\n", ipv4_first.string,
+                fprintf(xconf->echo, "source-ipv4 = %s-%s\n", ipv4_first.string,
                         ipv4_last.string);
             }
         }
@@ -1162,10 +1163,10 @@ static ConfRes SET_source_ip(void *conf, const char *name, const char *value) {
                 ipv6address_fmt(xconf->nic.src.ipv6.last);
             if (ipv6address_is_lessthan(xconf->nic.src.ipv6.first,
                                         xconf->nic.src.ipv6.last)) {
-                fprintf(xconf->echo, "source-ip = %s-%s\n", ipv6_first.string,
+                fprintf(xconf->echo, "source-ipv6 = %s-%s\n", ipv6_first.string,
                         ipv6_last.string);
             } else {
-                fprintf(xconf->echo, "source-ip = %s\n", ipv6_first.string);
+                fprintf(xconf->echo, "source-ipv6 = %s\n", ipv6_first.string);
             }
         }
 
@@ -1931,7 +1932,7 @@ static ConfRes SET_bypass_os(void *conf, const char *name, const char *value) {
 
     if (xconf->echo) {
         if (xconf->is_bypass_os || xconf->echo_all)
-            fprintf(xconf->echo, "bypass-os = %s",
+            fprintf(xconf->echo, "bypass-os = %s\n",
                     xconf->is_bypass_os ? "true" : "false");
         return 0;
     }
@@ -2340,7 +2341,7 @@ fail:
 
 static ConfRes SET_tcp_tsecho(void *conf, const char *name, const char *value) {
     XConf                *xconf         = (XConf *)conf;
-    static const unsigned default_value = 0x12345678;
+    static const unsigned default_value = TCP_DEFAULT_TSECHO;
 
     if (xconf->echo) {
         if (xconf->templ_opts) {
@@ -2377,9 +2378,7 @@ static ConfRes SET_tcp_tsecho(void *conf, const char *name, const char *value) {
         } else
             xconf->templ_opts->tcp.is_tsecho = Remove;
     } else if (is_str_int(value)) {
-        uint64_t num = parse_str_int(value);
-        if (num >= 255)
-            goto fail;
+        uint64_t num                     = parse_str_int(value);
         xconf->templ_opts->tcp.is_tsecho = Add;
         xconf->templ_opts->tcp.tsecho    = (unsigned)num;
     } else
@@ -2474,7 +2473,8 @@ static ConfRes SET_sendmmsg_batch(void *conf, const char *name,
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->sendmmsg_batch || xconf->echo_all)
+        if (xconf->sendmmsg_batch != XCONF_DFT_SENDMMSG_BATCH ||
+            xconf->echo_all)
             fprintf(xconf->echo, "sendmmsg-batch = %u\n",
                     xconf->sendmmsg_batch);
         return 0;
@@ -2490,7 +2490,8 @@ static ConfRes SET_sendmmsg_retries(void *conf, const char *name,
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->sendmmsg_retries || xconf->echo_all)
+        if (xconf->sendmmsg_retries != XCONF_DFT_SENDMMSG_RETRIES ||
+            xconf->echo_all)
             fprintf(xconf->echo, "sendmmsg-retries = %u\n",
                     xconf->sendmmsg_retries);
         return 0;
@@ -2505,7 +2506,7 @@ static ConfRes SET_sendq_size(void *conf, const char *name, const char *value) {
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->sendq_size || xconf->echo_all)
+        if (xconf->sendq_size != XCONF_DFT_SENDQUEUE_SIZE || xconf->echo_all)
             fprintf(xconf->echo, "sendq-size = %u\n", xconf->sendq_size);
         return 0;
     }
@@ -2714,7 +2715,7 @@ ConfParam config_parameters[] = {
     {"source-ip",
      SET_source_ip,
      Type_ARG,
-     {"src-ip", 0},
+     {"src-ip", "source-ipv4", "source-ipv6", 0},
      "Send packets using this IP address. If not specified, then the first IP"
      " address bound to the network interface will be used. Instead of a "
      "single IP address, a range may be specified.\n"
@@ -2746,7 +2747,7 @@ ConfParam config_parameters[] = {
      SET_router_ip,
      Type_ARG,
      {0},
-     "Set an IP as router's address."},
+     "Set an IP as router's address. Just for IPv4"},
     {"router-mac",
      SET_router_mac,
      Type_ARG,
@@ -3055,22 +3056,25 @@ ConfParam config_parameters[] = {
      SET_packet_ttl,
      Type_ARG,
      {"ttl", 0},
-     "Specifies the TTL of all default template packets, defaults to 128."},
+     "Specifies the TTL of all default template packets, defaults to 128. The "
+     "value in packet templates will be used if set to zero."},
     {"tcp-init-window",
      SET_tcp_init_window,
      Type_ARG,
      {"tcp-init-win", 0},
      "Specifies what value of Window should TCP SYN packets use. The default "
-     "value of TCP Window for TCP SYN packets is 64240."},
+     "value of TCP Window for TCP SYN packets is 64240. The value in packet "
+     "templates will be used if set to zero."},
     {"tcp-window",
      SET_tcp_window,
      Type_ARG,
      {"tcp-win", 0},
      "Specifies what value of Window should TCP packets(except for SYN) use. "
-     "The default value of TCP Window for TCP packets(except SYN) is 1024.\n"
-     "NOTE: This value could affects some ScanModules working like ZBanner "
-     "and limit communicating rate of stateful ScanModules."
-     "Be cared to the interaction with --snaplen and --max-packet-len."},
+     "The default value of TCP Window for TCP packets(except SYN) is 1024. The "
+     "value in packet templates will be used if set to zero.\n"
+     "NOTE: This value could affects some ScanModules working like ZBanner and "
+     "limit communicating rate of stateful ScanModules. Be cared to the "
+     "interaction with --snaplen and --max-packet-len."},
     {"tcp-wscale",
      SET_tcp_wscale,
      Type_ARG,
@@ -3078,7 +3082,7 @@ ConfParam config_parameters[] = {
      "Specifies whether or what value of TCP Window Scaling option should TCP"
      " SYN packets use. e.g. --tcp-wscale true, --tcp-wscale 8. The default "
      "value of Window Scaling is 3 and not be used in template of TCP SYN "
-     "packet."},
+     "packet. The value in packet templates will be used if not set."},
     {"tcp-mss",
      SET_tcp_mss,
      Type_ARG,
@@ -3091,9 +3095,10 @@ ConfParam config_parameters[] = {
      Type_FLAG,
      {"tcp-sack", 0},
      "Specifies whether should TCP SYN packets use TCP Selective "
-     "Acknowledgement"
-     " option. e.g. --tcp-sackok true. The default template of TCP SYN packet"
-     " does not use TCP Selective Acknowledgement option."},
+     "Acknowledgement option. e.g. --tcp-sackok true. The default template of "
+     "TCP SYN packet"
+     " does not use TCP Selective Acknowledgement option. The value in packet "
+     "templates will be used if not set."},
     {"tcp-tsecho",
      SET_tcp_tsecho,
      Type_ARG,
@@ -3101,7 +3106,8 @@ ConfParam config_parameters[] = {
      "Specifies whether or what value of timestamp in TCP Timestamp option"
      " should TCP SYN packets use for timestamp echoing. e.g. --tcp-tsecho "
      "true, --tcp-tsecho <value>. The default timestamp value is 0x12345678 "
-     " and is not be used in template of TCP SYN packet."},
+     " and is not be used in template of TCP SYN packet. The value in packet "
+     "templates will be used if not set."},
     {"packet-trace",
      SET_packet_trace,
      Type_FLAG,
