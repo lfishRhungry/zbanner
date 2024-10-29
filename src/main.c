@@ -628,12 +628,16 @@ int main(int argc, char *argv[]) {
     /* Set system to report debug information on crash */
     int is_backtrace = 1;
     for (unsigned i = 1; i < (unsigned)argc; i++) {
-        if (argv[i][0] == '-' && EQUALS(argv[i] + 1, "nobacktrace")) {
+        if (argv[i][0] == '-' && (EQUALS(argv[i] + 1, "nobacktrace") ||
+                                  EQUALS(argv[i] + 1, "nobt"))) {
             is_backtrace = 0;
         }
     }
-    if (is_backtrace)
+    if (is_backtrace) {
         pixie_backtrace_init(argv[0]);
+    } else {
+        LOG(LEVEL_WARN, "backtrace is off\n");
+    }
 
     //=================================================Define default params
     xconf->tx_thread_count    = XCONF_DFT_TX_THD_COUNT;

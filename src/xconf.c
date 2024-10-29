@@ -3229,7 +3229,7 @@ ConfParam config_parameters[] = {
      "Use sendmmsg syscall to send packets in batch on Linux if raw socket can "
      "be used. This may break the bottle-neck of sending one by one.\n"
      "NOTE: Use sendmmsg in slow send rate is not recommended because of the "
-     "latency."},
+     "latency and packet lossing."},
     {"sendmmsg-batch",
      SET_sendmmsg_batch,
      Type_ARG,
@@ -3311,6 +3311,12 @@ ConfParam config_parameters[] = {
      "    3.Rx Handle Threads\n"
      "NOTE2: As you can see, 3 threads need to be binded at least. (1 tx "
      "thread, 1 rx thread and 1 rx handle thread)"},
+
+    {"no-back-trace",
+     SET_nothing,
+     Type_FLAG,
+     {0},
+     "Turn off the backtrace switch."},
 
     /*Put it at last for better "help" output*/
     {"TARGET_OUTPUT", SET_target_output, 0, {0}, NULL},
