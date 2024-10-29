@@ -1102,10 +1102,10 @@ size_t tcp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
         unsigned offset_tcp = tmpl->ipv4.offset_tcp;
         unsigned offset_payload =
             offset_tcp + ((tmpl->ipv4.packet[offset_tcp + 12] & 0xF0) >> 2);
-        size_t new_length = offset_payload + payload_length;
-        size_t ip_len     = (offset_payload - offset_ip) + payload_length;
+        size_t r_len  = offset_payload + payload_length;
+        size_t ip_len = (offset_payload - offset_ip) + payload_length;
 
-        if (new_length > px_length) {
+        if (r_len > px_length) {
             LOG(LEVEL_ERROR, "(tcp_create_by_template) too much payload\n");
             return 0;
         }
@@ -1150,15 +1150,15 @@ size_t tcp_create_by_template(const TmplPkt *tmpl, ipaddress ip_them,
 
         xsum_tcp =
             checksum_ipv4_tcp(px, tmpl->ipv4.offset_ip, tmpl->ipv4.offset_tcp,
-                              new_length - tmpl->ipv4.offset_tcp);
+                              r_len - tmpl->ipv4.offset_tcp);
 
         U16_TO_BE(px + offset_tcp + 16, xsum_tcp);
 
-        if (new_length < 60) {
-            memset(px + new_length, 0, 60 - new_length);
-            new_length = 60;
-        }
-        return new_length;
+        // if (r_len < 60) {
+        //     memset(px + r_len, 0, 60 - r_len);
+        //     r_len = 60;
+        // }
+        return r_len;
 
     } else {
         unsigned offset_ip  = tmpl->ipv6.offset_ip;

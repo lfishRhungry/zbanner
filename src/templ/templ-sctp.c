@@ -172,7 +172,7 @@ sctp_create_by_template_ipv4(const TmplPkt *tmpl, ipv4address ip_them,
     /*
      * Now do the checksum for the higher layer protocols
      */
-    xsum_sctp = checksum_sctp(px + offset_tcp, tmpl->ipv4.length - offset_tcp);
+    xsum_sctp = checksum_sctp(px + offset_tcp, r_len - offset_tcp);
     U32_TO_BE(px + offset_tcp + 8, xsum_sctp);
 
     return r_len;

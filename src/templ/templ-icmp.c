@@ -130,7 +130,7 @@ static size_t icmp_echo_create_by_template_ipv4(
     U16_TO_BE(px + offset_tcp + 4, identifier);
     U16_TO_BE(px + offset_tcp + 6, sequence);
 
-    icmp_length = r_len - (tmpl->ipv4.offset_tcp - tmpl->ipv4.offset_ip);
+    icmp_length = r_len - tmpl->ipv4.offset_tcp;
     xsum_icmp   = checksum_ipv4_icmp(px, offset_tcp, icmp_length);
     U16_TO_BE(px + offset_tcp + 2, xsum_icmp);
 
@@ -315,7 +315,7 @@ static size_t icmp_timestamp_create_by_template_ipv4(
     U32_TO_BE(px + offset_tcp + 12, recv_time);
     U32_TO_BE(px + offset_tcp + 16, trans_time);
 
-    icmp_length = ip_len - (tmpl->ipv4.offset_tcp - tmpl->ipv4.offset_ip);
+    icmp_length = r_len - tmpl->ipv4.offset_tcp;
     xsum_icmp   = checksum_ipv4_icmp(px, offset_tcp, icmp_length);
     U16_TO_BE(px + offset_tcp + 2, xsum_icmp);
 

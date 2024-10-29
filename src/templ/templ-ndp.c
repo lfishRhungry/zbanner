@@ -166,8 +166,8 @@ static size_t ndp_create_ns_by_template_ipv6(
 
     unsigned offset_ip;
     unsigned offset_tcp;
-    uint64_t xsum_icmp;
-    unsigned payload_length;
+    uint64_t xsum_ndp;
+    unsigned ndp_length;
 
     unsigned r_len = sizeof_px;
 
@@ -214,8 +214,8 @@ static size_t ndp_create_ns_by_template_ipv6(
      * Fill in the empty fields in the IP header and then re-calculate
      * the checksum.
      */
-    payload_length = tmpl->ipv6.length - tmpl->ipv6.offset_ip - 40;
-    U16_TO_BE(px + offset_ip + 4, payload_length);
+    ndp_length = r_len - tmpl->ipv6.offset_ip - 40;
+    U16_TO_BE(px + offset_ip + 4, ndp_length);
 
     if (ttl)
         px[offset_ip + 7] = (unsigned char)(ttl);
@@ -257,11 +257,11 @@ static size_t ndp_create_ns_by_template_ipv6(
     /*
      * Now do the checksum for the higher layer protocols
      */
-    xsum_icmp = checksum_ipv6_upper(
-        px + offset_ip + 8, px + offset_ip + 24, IP_PROTO_IPv6_ICMP,
-        tmpl->ipv6.length - offset_tcp, px + offset_tcp);
+    xsum_ndp = checksum_ipv6_upper(px + offset_ip + 8, px + offset_ip + 24,
+                                   IP_PROTO_IPv6_ICMP, r_len - offset_tcp,
+                                   px + offset_tcp);
 
-    U16_TO_BE(px + offset_tcp + 2, xsum_icmp);
+    U16_TO_BE(px + offset_tcp + 2, xsum_ndp);
 
     return r_len;
 }
