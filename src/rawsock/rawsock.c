@@ -960,7 +960,7 @@ void rawsock_close_cache(AdapterCache *acache) {
 
 /***************************************************************************
  ***************************************************************************/
-int stack_if_datalink(Adapter *adapter) {
+int rawsock_if_datalink(Adapter *adapter) {
     if (adapter->ring)
         return PCAP_DLT_ETHERNET;
     else {

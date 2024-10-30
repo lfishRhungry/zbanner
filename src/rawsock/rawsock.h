@@ -189,7 +189,7 @@ void rawsock_set_nonblock(Adapter *adapter);
 /**
  * Retrieve the datalink type of the adapter
  */
-int stack_if_datalink(Adapter *adapter);
+int rawsock_if_datalink(Adapter *adapter);
 
 int rawsock_selftest_if(const char *ifname);
 

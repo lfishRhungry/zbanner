@@ -117,7 +117,7 @@ int stack_arp_resolve(Adapter *adapter, AdapterCache *acache,
      * [KLUDGE]
      *  If this is a raw ip connection
      */
-    if (stack_if_datalink(adapter) == PCAP_DLT_RAW) {
+    if (rawsock_if_datalink(adapter) == PCAP_DLT_RAW) {
         memcpy(your_mac_address->addr, "\0\0\0\0\0\2", 6);
         return 0; /* success */
     }

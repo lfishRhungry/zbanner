@@ -318,7 +318,7 @@ int stack_ndpv6_resolve(Adapter *adapter, AdapterCache *acache,
      * [KLUDGE]
      *  If this is a VPN connection, then there is no answer
      */
-    if (stack_if_datalink(adapter) == PCAP_DLT_NULL) {
+    if (rawsock_if_datalink(adapter) == PCAP_DLT_NULL) {
         memcpy(router_mac->addr, "\0\0\0\0\0\2", 6);
         return 0; /* success */
     }

@@ -242,7 +242,7 @@ static int _main_scan(XConf *xconf) {
 
     template_packet_init(xconf->tmplset, xconf->nic.source_mac,
                          xconf->nic.router_mac_ipv4, xconf->nic.router_mac_ipv6,
-                         stack_if_datalink(xconf->nic.adapter), xconf->seed,
+                         rawsock_if_datalink(xconf->nic.adapter), xconf->seed,
                          xconf->templ_opts);
 
     if (xconf->packet_ttl)

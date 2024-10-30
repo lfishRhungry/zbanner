@@ -182,7 +182,7 @@ void receive_thread(void *v) {
     const XConf     *xconf        = parms->xconf;
     OutConf         *out_conf     = (OutConf *)(&xconf->out_conf);
     Adapter         *adapter      = xconf->nic.adapter;
-    int              data_link    = stack_if_datalink(adapter);
+    int              data_link    = rawsock_if_datalink(adapter);
     uint64_t         entropy      = xconf->seed;
     STACK           *stack        = xconf->stack;
     Scanner         *scan_module  = xconf->scanner;
