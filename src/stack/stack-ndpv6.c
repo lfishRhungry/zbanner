@@ -387,6 +387,7 @@ int stack_ndpv6_resolve(Adapter *adapter, AdapterCache *acache,
     buf[offset_icmpv6 + 2] = (unsigned char)(xsum >> 8);
     buf[offset_icmpv6 + 3] = (unsigned char)(xsum >> 0);
     rawsock_send_packet(adapter, acache, buf, (unsigned)offset);
+    rawsock_flush(adapter, acache);
 
     /*
      * Send a shorter version after the long version. I don't know
