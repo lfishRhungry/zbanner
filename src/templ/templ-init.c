@@ -274,10 +274,8 @@ static void _template_init_ipv6(TmplPkt *tmpl, macaddress_t router_mac_ipv6,
     unsigned       x;
 
     /* Zero out everything and start from scratch */
-    if (tmpl->ipv6.packet) {
-        free(tmpl->ipv6.packet);
-        memset(&tmpl->ipv6, 0, sizeof(tmpl->ipv6));
-    }
+    FREE(tmpl->ipv6.packet);
+    memset(&tmpl->ipv6, 0, sizeof(tmpl->ipv6));
 
     /* Parse the existing IPv4 packet */
     x = preprocess_frame(tmpl->ipv4.packet, tmpl->ipv4.length, data_link_type,
@@ -298,7 +296,9 @@ static void _template_init_ipv6(TmplPkt *tmpl, macaddress_t router_mac_ipv6,
     memcpy(buf, tmpl->ipv4.packet, tmpl->ipv4.length);
     tmpl->ipv6.packet = buf;
 
-    /* destination = end of IPv6 header
+    /**
+     * Align the offset of ip payload.
+     * destination = end of IPv6 header
      * source = end of IPv4 header
      * contents = everything after IPv4/IPv6 header */
     offset_tcp6 = offset_ip + 40;
@@ -309,7 +309,7 @@ static void _template_init_ipv6(TmplPkt *tmpl, macaddress_t router_mac_ipv6,
     tmpl->ipv6.length = offset_ip + 40 + payload_length;
 
     /**
-     * we have rm useless header in initing of ipv4.
+     * we have removed useless header in initing of ipv4.
      */
     switch (data_link_type) {
         case PCAP_DLT_NULL:
@@ -349,6 +349,10 @@ static void _template_init_ipv6(TmplPkt *tmpl, macaddress_t router_mac_ipv6,
      * */
     buf[offset_ip + 6] = (unsigned char)parsed.ip_protocol;
 
+    /**
+     * ICMP is different between IPv4 & IPv6 from protocol number of IP layer to
+     * internal field. So it should be handle specially.
+     */
     if (parsed.ip_protocol == IP_PROTO_ICMP) {
         buf[offset_ip + 6] = IP_PROTO_IPv6_ICMP;
         if (payload_length > 0 &&
@@ -408,8 +412,9 @@ static void _template_init(TmplPkt *tmpl, macaddress_t source_mac,
     tmpl->ipv4.offset_app = parsed.app_offset;
     if (parsed.found == FOUND_ARP) {
         tmpl->ipv4.length = parsed.ip_offset + 28;
-    } else
+    } else {
         tmpl->ipv4.length = parsed.ip_offset + parsed.ip_v4_length;
+    }
 
     /*
      * Overwrite the MAC and IP addresses
@@ -444,12 +449,12 @@ static void _template_init(TmplPkt *tmpl, macaddress_t source_mac,
 
     tmpl->ipv4.ip_ttl = parsed.ip_ttl;
 
-    /*
-     * Higher layer protocols: zero out dest/checksum fields, then calculate
-     * a partial checksum
+    /**
+     * Higher layer protocols: zero out dest/checksum fields
      */
     switch (parsed.ip_protocol) {
         case IP_PROTO_ICMP:
+            memset(px + tmpl->ipv4.offset_tcp + 2, 0, 2); /* checksum */
             switch (px[tmpl->ipv4.offset_tcp]) {
                 case ICMPv4_TYPE_ECHO_REQUEST:
                     tmpl->tmpl_type = TmplType_ICMP_ECHO;
@@ -463,17 +468,19 @@ static void _template_init(TmplPkt *tmpl, macaddress_t source_mac,
             }
             break;
         case IP_PROTO_TCP:
-            /* zero out fields that'll be overwritten */
-            memset(px + tmpl->ipv4.offset_tcp + 0, 0,
-                   8); /* destination port and seqno */
+            /* port, seqno and ackno */
+            memset(px + tmpl->ipv4.offset_tcp + 0, 0, 12);
             memset(px + tmpl->ipv4.offset_tcp + 16, 0, 2); /* checksum */
             tmpl->tmpl_type = TmplType_TCP;
             break;
         case IP_PROTO_UDP:
+            memset(px + tmpl->ipv4.offset_tcp + 0, 0, 4); /*port*/
             memset(px + tmpl->ipv4.offset_tcp + 6, 0, 2); /* checksum */
             tmpl->tmpl_type = TmplType_UDP;
             break;
         case IP_PROTO_SCTP:
+            /*port, veri tag and checksum*/
+            memset(px + tmpl->ipv4.offset_tcp + 0, 0, 12);
             tmpl->tmpl_type = TmplType_SCTP;
             break;
     }
@@ -504,7 +511,7 @@ static void _template_init(TmplPkt *tmpl, macaddress_t source_mac,
         /* the default, do nothing */
     } else {
         LOG(LEVEL_ERROR, "bad packet template, unknown data link type\n");
-        LOG(LEVEL_OUT,
+        LOG(LEVEL_ERROR,
             "    " XTATE_NAME_TITLE_CASE
             " doesn't know how to format packets for this interface\n");
         exit(1);
