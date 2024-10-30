@@ -3315,8 +3315,8 @@ ConfParam config_parameters[] = {
     {"no-back-trace",
      SET_nothing,
      Type_FLAG,
-     {0},
-     "Turn off the backtrace switch."},
+     {"nobt", 0},
+     "Turn off the backtrace to program call stack for debugging."},
 
     /*Put it at last for better "help" output*/
     {"TARGET_OUTPUT", SET_target_output, 0, {0}, NULL},

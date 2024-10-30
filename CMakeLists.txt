@@ -48,10 +48,10 @@ if (UNIX)
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_link_options(-no-pie)
         if (NOT MINGW)
-            add_link_options(-rdynamic)
+            add_link_options(-rdynamic) # for backtrace debugging
         endif ()
     endif ()
-    add_definitions(-D_GNU_SOURCE) # using sendmmsg need this GNU 
+    add_definitions(-D_GNU_SOURCE) # using sendmmsg need this GNU extension
 endif ()
 
 if (CMAKE_C_COMPILER_ID STREQUAL "Clang")

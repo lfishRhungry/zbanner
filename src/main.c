@@ -636,7 +636,7 @@ int main(int argc, char *argv[]) {
     if (is_backtrace) {
         pixie_backtrace_init(argv[0]);
     } else {
-        LOG(LEVEL_WARN, "backtrace is off\n");
+        LOG(LEVEL_WARN, "backtrace to program call stack is off.\n");
     }
 
     //=================================================Define default params
