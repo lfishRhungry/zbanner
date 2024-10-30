@@ -2784,7 +2784,7 @@ ConfParam config_parameters[] = {
     {"fake-router-mac",
      SET_fake_router_mac,
      Type_FLAG,
-     {"no-router-mac", 0},
+     {"no-router-mac", "fake-gateway-mac", 0},
      "Set the router MAC address to a invalid address(01-02-03-04-05-06). "
      "This can stop " XTATE_NAME_TITLE_CASE " to resolve router MAC address."
      "It's useful when the ScanModule will specify destination MAC address "
