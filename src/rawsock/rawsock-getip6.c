@@ -48,7 +48,7 @@ ipv6address rawsock_get_adapter_ipv6(const char *ifname) {
     /* Fetch the list of addresses */
     err = getifaddrs(&list);
     if (err == -1) {
-        LOG(LEVEL_ERROR, "getifaddrs(): %s\n", strerror(errno));
+        LOGPERROR("getifaddrs");
         return result;
     }
 

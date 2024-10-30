@@ -401,6 +401,7 @@ int stack_ndpv6_resolve(Adapter *adapter, AdapterCache *acache,
     buf[offset_icmpv6 + 2] = (unsigned char)(xsum >> 8);
     buf[offset_icmpv6 + 3] = (unsigned char)(xsum >> 0);
     rawsock_send_packet(adapter, acache, buf, (unsigned)offset);
+    rawsock_flush(adapter, acache);
 
     start = time(0);
     i     = 0;
@@ -416,6 +417,7 @@ int stack_ndpv6_resolve(Adapter *adapter, AdapterCache *acache,
         if (time(0) != start) {
             start = time(0);
             rawsock_send_packet(adapter, acache, buf, (unsigned)offset);
+            rawsock_flush(adapter, acache);
             if (i++ >= 10)
                 break; /* timeout */
 

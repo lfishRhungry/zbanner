@@ -331,12 +331,11 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4) {
     *ipv4 = 0;
 
     /*
-     * Create 'netlink' socket to query kernel
+     * Create 'netlink' socket to query routing subsystem of kernel.
      */
     fd = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_ROUTE);
     if (fd < 0) {
-        LOG(LEVEL_ERROR, "%s:%d: socket(NETLINK_ROUTE): %d\n", __FILE__,
-            __LINE__, errno);
+        LOGPERROR("socket(NETLINK_ROUTE)");
         return errno;
     }
 
@@ -371,7 +370,7 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4) {
     }
 
     /*
-     * Parse the response
+     * Parse the response(a route table)
      */
     for (; NLMSG_OK(nlMsg, len); nlMsg = NLMSG_NEXT(nlMsg, len)) {
         struct route_info rtInfo[1] = {{.ifName = {0}}};

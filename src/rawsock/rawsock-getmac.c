@@ -38,7 +38,7 @@ int rawsock_get_adapter_mac(const char *ifname, unsigned char *mac) {
     safe_strcpy(ifr.ifr_name, IFNAMSIZ, ifname);
     x = ioctl(fd, SIOCGIFHWADDR, (char *)&ifr);
     if (x < 0) {
-        LOGPERROR("ioctl");
+        LOGPERROR("ioctl(SIOCGIFHWADDR)");
         goto end;
     }
 

@@ -65,6 +65,7 @@ int init_nic(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets) {
     }
     xconf->nic.link_type = xconf->nic.adapter->link_type;
     LOG(LEVEL_DEBUG, "interface-type = %u\n", xconf->nic.link_type);
+
     rawsock_ignore_transmits(xconf->nic.adapter, ifname);
 
     /*

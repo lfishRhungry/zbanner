@@ -160,6 +160,7 @@ int stack_arp_resolve(Adapter *adapter, AdapterCache *acache,
      * Now loop for a few seconds looking for the response
      */
     rawsock_send_packet(adapter, acache, arp_packet, 60);
+    rawsock_flush(adapter, acache);
     start = time(0);
     i     = 0;
     for (;;) {
@@ -172,6 +173,7 @@ int stack_arp_resolve(Adapter *adapter, AdapterCache *acache,
         if (time(0) != start) {
             start = time(0);
             rawsock_send_packet(adapter, acache, arp_packet, 60);
+            rawsock_flush(adapter, acache);
             if (i++ >= 10)
                 break; /* timeout */
 
