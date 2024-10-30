@@ -23,8 +23,8 @@
  * @return len of packet generated.
  */
 size_t ndp_create_ns_packet(ipaddress ip_them, ipaddress ip_me,
-                            macaddress_t src_mac, uint8_t ttl,
-                            unsigned char *px, size_t sizeof_px);
+                            macaddress_t src_mac, unsigned char *px,
+                            size_t sizeof_px);
 
 /**
  * Check if an NA is for solicitation by checking the target IP in IP header is

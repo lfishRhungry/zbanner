@@ -57,9 +57,8 @@ static bool ndpns_transmit(uint64_t entropy, ScanTarget *target,
         return false;
 
     /*no cookie for NDP NS*/
-
     *len = ndp_create_ns_packet(target->target.ip_them, target->target.ip_me,
-                                src_mac, 0, px, PKT_BUF_SIZE);
+                                src_mac, px, PKT_BUF_SIZE);
 
     return false;
 }
@@ -93,20 +92,33 @@ static void ndpns_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     safe_strcpy(item->reason, OUT_RSN_SIZE, "ndp na");
     safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");
 
-    dach_printf(&item->report, "mac_addr", LinkType_String,
-                "%02X:%02X:%02X:%02X:%02X:%02X",
-                recved->packet[recved->parsed.transport_offset + 26],
-                recved->packet[recved->parsed.transport_offset + 27],
-                recved->packet[recved->parsed.transport_offset + 28],
-                recved->packet[recved->parsed.transport_offset + 29],
-                recved->packet[recved->parsed.transport_offset + 30],
-                recved->packet[recved->parsed.transport_offset + 31]);
+    /**
+     * NdpNsScan works without cookie. Sometimes we may capture NA from router
+     * without mac addr within NDP. We'll take mac addr from link layer in that
+     * case.
+     */
+    if (recved->parsed.transport_offset + 31 < recved->length) {
+        dach_printf(&item->report, "mac addr from ndp", LinkType_String,
+                    "%02X:%02X:%02X:%02X:%02X:%02X",
+                    recved->packet[recved->parsed.transport_offset + 26],
+                    recved->packet[recved->parsed.transport_offset + 27],
+                    recved->packet[recved->parsed.transport_offset + 28],
+                    recved->packet[recved->parsed.transport_offset + 29],
+                    recved->packet[recved->parsed.transport_offset + 30],
+                    recved->packet[recved->parsed.transport_offset + 31]);
+    } else {
+        dach_printf(&item->report, "mac addr from link", LinkType_String,
+                    "%02X:%02X:%02X:%02X:%02X:%02X", recved->parsed.mac_src[0],
+                    recved->parsed.mac_src[1], recved->parsed.mac_src[2],
+                    recved->parsed.mac_src[3], recved->parsed.mac_src[4],
+                    recved->parsed.mac_src[5]);
+    }
 
     if (NDP_NA_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
                         NDP_NA_FLAG_ROUTER)) {
-        dach_set_bool(&item->report, "from_router", true);
+        dach_set_bool(&item->report, "from router", true);
     } else {
-        dach_set_bool(&item->report, "from_router", false);
+        dach_set_bool(&item->report, "from router", false);
     }
 
     if (ndpns_conf.record_ttl)

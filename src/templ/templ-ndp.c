@@ -155,9 +155,10 @@ Source/Target Link-layer Address
 
 */
 
-static size_t ndp_create_ns_by_template_ipv6(
-    const TmplPkt *tmpl, ipv6address ip_them, ipv6address ip_me,
-    macaddress_t src_mac, uint8_t ttl, unsigned char *px, size_t sizeof_px) {
+static size_t
+ndp_create_ns_by_template_ipv6(const TmplPkt *tmpl, ipv6address ip_them,
+                               ipv6address ip_me, macaddress_t src_mac,
+                               unsigned char *px, size_t sizeof_px) {
     if (tmpl->tmpl_type != TmplType_NDP_NS) {
         LOG(LEVEL_ERROR, "(ndp_create_by_template_ipv6) need a TmplType_NDP_NS "
                          "TemplatePacket.\n");
@@ -217,8 +218,10 @@ static size_t ndp_create_ns_by_template_ipv6(
     ndp_length = r_len - tmpl->ipv6.offset_ip - 40;
     U16_TO_BE(px + offset_ip + 4, ndp_length);
 
-    if (ttl)
-        px[offset_ip + 7] = (unsigned char)(ttl);
+    /**
+     * !Must be 255. ref:RFC4861
+     */
+    px[offset_ip + 7] = 0xFF;
 
     U64_TO_BE(px + offset_ip + 8, ip_me.hi);
     U64_TO_BE(px + offset_ip + 16, ip_me.lo);
@@ -267,8 +270,8 @@ static size_t ndp_create_ns_by_template_ipv6(
 }
 
 size_t ndp_create_ns_packet(ipaddress ip_them, ipaddress ip_me,
-                            macaddress_t src_mac, uint8_t ttl,
-                            unsigned char *px, size_t sizeof_px) {
+                            macaddress_t src_mac, unsigned char *px,
+                            size_t sizeof_px) {
     /*just for IPv6*/
     if (ip_them.version == 4) {
         LOG(LEVEL_ERROR, "(ndp_create_ns_packet) cannot create for ipv4.\n");
@@ -277,7 +280,7 @@ size_t ndp_create_ns_packet(ipaddress ip_them, ipaddress ip_me,
 
     return ndp_create_ns_by_template_ipv6(
         &global_tmplset->pkts[TmplType_NDP_NS], ip_them.ipv6, ip_me.ipv6,
-        src_mac, ttl, px, sizeof_px);
+        src_mac, px, sizeof_px);
 }
 
 bool ndp_is_solicited_advertise(ipv6address ip_them, const unsigned char *px,
