@@ -250,7 +250,7 @@ void rangeport_print(const struct RangeList *ports, FILE *fp,
     }
 }
 
-uint8_t get_actual_proto_port(unsigned *raw_port) {
+uint16_t get_actual_proto_port(unsigned *raw_port) {
     if (*raw_port <= TCP_LAST)
         return IP_PROTO_TCP;
     else if (*raw_port <= UDP_LAST) {
@@ -265,6 +265,17 @@ uint8_t get_actual_proto_port(unsigned *raw_port) {
     } else {
         return IP_PROTO_Other;
     }
+}
+
+unsigned get_complex_port(uint16_t port, unsigned ip_proto) {
+    if (ip_proto == IP_PROTO_TCP)
+        return (unsigned)port + TCP_START;
+    else if (ip_proto == IP_PROTO_UDP)
+        return (unsigned)port + UDP_START;
+    else if (ip_proto == IP_PROTO_SCTP)
+        return (unsigned)port + SCTP_START;
+    else
+        return ~0;
 }
 
 int rangesport_selftest() {

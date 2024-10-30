@@ -52,7 +52,13 @@ void rangeport_print(const struct RangeList *ports, FILE *fp,
  * @param raw_port port Proto Port range format
  * @return ip proto number
  */
-uint8_t get_actual_proto_port(unsigned *raw_port);
+uint16_t get_actual_proto_port(unsigned *raw_port);
+
+/**
+ * transfer port from real port and ip proto to range format
+ * @return port in range format
+ */
+unsigned get_complex_port(uint16_t port, unsigned ip_proto);
 
 int rangesport_selftest();
 

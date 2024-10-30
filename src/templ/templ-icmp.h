@@ -128,8 +128,7 @@ size_t icmp_timestamp_create_packet(ipaddress ip_them, const ipaddress ip_me,
 bool parse_icmp_port_unreachable(const unsigned char *transport_px,
                                  unsigned length, ipaddress *r_ip_them,
                                  unsigned *r_port_them, ipaddress *r_ip_me,
-                                 unsigned *r_port_me, unsigned *r_ip_proto,
-                                 unsigned char **r_app_px, size_t *r_app_len);
+                                 unsigned *r_port_me, unsigned *r_ip_proto);
 
 /**
  * get upper proto number of icmp if exists.

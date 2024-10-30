@@ -366,76 +366,56 @@ size_t icmp_timestamp_create_packet(ipaddress ip_them, const ipaddress ip_me,
 bool parse_icmp_port_unreachable(const unsigned char *transport_px,
                                  unsigned length, ipaddress *r_ip_them,
                                  unsigned *r_port_them, ipaddress *r_ip_me,
-                                 unsigned *r_port_me, unsigned *r_ip_proto,
-                                 unsigned char **r_app_px, size_t *r_app_len) {
-    const unsigned char *ip_header        = transport_px + 8;
-    unsigned             icmp_payload_len = length - (ip_header - transport_px);
-    unsigned char       *trans_header;
-    unsigned             trans_len;
-    unsigned             ipv4_header_len;
-    unsigned             tcp_app_offset;
+                                 unsigned *r_port_me, unsigned *r_ip_proto) {
+    const unsigned char *icmp_ip_px = transport_px + 8;
+    unsigned       icmp_payload_len = length - (icmp_ip_px - transport_px);
+    unsigned char *trans_header;
+    unsigned       trans_len;
+    unsigned       ipv4_header_len;
 
-    if (ip_header[0] >> 4 == 4) {
+    if (icmp_ip_px[0] >> 4 == 4) {
         /*ipv4*/
         r_ip_them->version = 4;
         r_ip_me->version   = 4;
 
-        r_ip_me->ipv4   = BE_TO_U32(ip_header + 12);
-        r_ip_them->ipv4 = BE_TO_U32(ip_header + 16);
+        r_ip_me->ipv4   = BE_TO_U32(icmp_ip_px + 12);
+        r_ip_them->ipv4 = BE_TO_U32(icmp_ip_px + 16);
 
-        *r_ip_proto = ip_header[9];
+        *r_ip_proto = icmp_ip_px[9];
         if (*r_ip_proto != IP_PROTO_TCP && *r_ip_proto != IP_PROTO_UDP)
             return false;
 
-        ipv4_header_len = (ip_header[0] & 0xF) << 2;
+        ipv4_header_len = (icmp_ip_px[0] & 0xF) << 2;
         trans_len       = icmp_payload_len - ipv4_header_len;
-        trans_header    = (unsigned char *)ip_header + ipv4_header_len;
+        trans_header    = (unsigned char *)icmp_ip_px + ipv4_header_len;
 
-    } else if (ip_header[0] >> 4 == 6) {
+    } else if (icmp_ip_px[0] >> 4 == 6) {
         /*ipv6*/
         r_ip_them->version = 6;
         r_ip_me->version   = 6;
 
-        r_ip_me->ipv6.hi   = BE_TO_U64(ip_header + 8);
-        r_ip_me->ipv6.lo   = BE_TO_U64(ip_header + 16);
-        r_ip_them->ipv6.hi = BE_TO_U64(ip_header + 24);
-        r_ip_them->ipv6.lo = BE_TO_U64(ip_header + 32);
+        r_ip_me->ipv6.hi   = BE_TO_U64(icmp_ip_px + 8);
+        r_ip_me->ipv6.lo   = BE_TO_U64(icmp_ip_px + 16);
+        r_ip_them->ipv6.hi = BE_TO_U64(icmp_ip_px + 24);
+        r_ip_them->ipv6.lo = BE_TO_U64(icmp_ip_px + 32);
 
-        *r_ip_proto = ip_header[6];
+        *r_ip_proto = icmp_ip_px[6];
         if (*r_ip_proto != IP_PROTO_TCP && *r_ip_proto != IP_PROTO_UDP)
             return false;
 
         /*length of ipv6 header is fixed*/
-        trans_header = (unsigned char *)ip_header + 40;
+        trans_header = (unsigned char *)icmp_ip_px + 40;
         trans_len    = icmp_payload_len - 40;
     } else {
         /*invalid ip version*/
         return false;
     }
 
-    if (*r_ip_proto == IP_PROTO_UDP) {
-        if (trans_len < 8) /*src_port+dst_port+length+checksum*/
-            return false;
+    if (trans_len < 4)
+        return false;
 
-        *r_port_me   = BE_TO_U16(trans_header);
-        *r_port_them = BE_TO_U16(trans_header + 2);
-        *r_app_px    = trans_header + 8;
-        *r_app_len   = trans_len - 8;
-    } else {
-
-        if (trans_len < 12) /*find tcp data_offset*/
-            return false;
-
-        *r_port_me     = BE_TO_U16(trans_header);
-        *r_port_them   = BE_TO_U16(trans_header + 2);
-        tcp_app_offset = trans_header[12] >> 2;
-
-        if (trans_len < tcp_app_offset)
-            return false;
-
-        *r_app_px  = trans_header + tcp_app_offset;
-        *r_app_len = trans_len - tcp_app_offset;
-    }
+    *r_port_me   = BE_TO_U16(trans_header);
+    *r_port_them = BE_TO_U16(trans_header + 2);
 
     return true;
 }
