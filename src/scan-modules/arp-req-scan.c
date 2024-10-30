@@ -10,10 +10,19 @@
 
 extern Scanner ArpReqScan; /*for internal x-ref*/
 
+static const TargetSet *_targets = NULL;
+
 static bool arpreq_init(const XConf *xconf) {
     if (xconf->nic.link_type != 1) {
         LOG(LEVEL_ERROR, "ArpReqScan cannot work on non-ethernet link type.\n");
         return false;
+    }
+
+    if (strcmp(xconf->generator->name, "blackrock") == 0) {
+        _targets = &xconf->targets;
+    } else {
+        LOG(LEVEL_WARN, "use non-default generator so that may get "
+                        "irrelated results.\n");
     }
 
     return true;
@@ -39,10 +48,15 @@ static void arpreq_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     /*do not care about any other types of arp packet.*/
     if (recved->parsed.found == FOUND_ARP && recved->is_myip &&
         recved->parsed.arp_info.opcode == ARP_OPCODE_REPLY)
-        pre->go_record = 1;
+        ;
     else
         return;
 
+    if (_targets && !targetset_has_ip(_targets, recved->parsed.src_ip)) {
+        return;
+    }
+
+    pre->go_record       = 1;
     pre->dedup_port_them = 0;
     pre->dedup_port_me   = 0;
     pre->go_dedup        = 1;

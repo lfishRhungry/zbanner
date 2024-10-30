@@ -10,7 +10,8 @@
 
 extern Scanner NdpNsScan; /*for internal x-ref*/
 
-static macaddress_t src_mac;
+static macaddress_t     _src_mac;
+static const TargetSet *_targets = NULL;
 
 struct NdpNsConf {
     unsigned record_ttl : 1;
@@ -43,7 +44,14 @@ static bool ndpns_init(const XConf *xconf) {
         return false;
     }
 
-    src_mac = xconf->nic.source_mac;
+    if (strcmp(xconf->generator->name, "blackrock") == 0) {
+        _targets = &xconf->targets;
+    } else {
+        LOG(LEVEL_WARN, "use non-default generator so that may get "
+                        "irrelated results.\n");
+    }
+
+    _src_mac = xconf->nic.source_mac;
     return true;
 }
 
@@ -58,7 +66,7 @@ static bool ndpns_transmit(uint64_t entropy, ScanTarget *target,
 
     /*no cookie for NDP NS*/
     *len = ndp_create_ns_packet(target->target.ip_them, target->target.ip_me,
-                                src_mac, px, PKT_BUF_SIZE);
+                                _src_mac, px, PKT_BUF_SIZE);
 
     return false;
 }
@@ -67,9 +75,15 @@ static void ndpns_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     /*record icmpv4 to my ip*/
     if (recved->parsed.found == FOUND_NDPv6 && recved->is_myip &&
         recved->parsed.src_ip.version == 6)
-        pre->go_record = 1;
+        ;
     else
         return;
+
+    if (_targets && !targetset_has_ip(_targets, recved->parsed.src_ip)) {
+        return;
+    }
+
+    pre->go_record = 1;
 
     /*validate both for ICMPv6 type, code and is it for solicitation*/
     if (recved->parsed.icmp_type == ICMPv6_TYPE_NA &&
@@ -93,12 +107,12 @@ static void ndpns_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");
 
     /**
-     * NdpNsScan works without cookie. Sometimes we may capture NA from router
+     * NdpNsScan may work without cookie. Sometimes we capture NA from router
      * without mac addr within NDP. We'll take mac addr from link layer in that
      * case.
      */
     if (recved->parsed.transport_offset + 31 < recved->length) {
-        dach_printf(&item->report, "mac addr from ndp", LinkType_String,
+        dach_printf(&item->report, "mac addr(ndp)", LinkType_String,
                     "%02X:%02X:%02X:%02X:%02X:%02X",
                     recved->packet[recved->parsed.transport_offset + 26],
                     recved->packet[recved->parsed.transport_offset + 27],
@@ -107,7 +121,7 @@ static void ndpns_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                     recved->packet[recved->parsed.transport_offset + 30],
                     recved->packet[recved->parsed.transport_offset + 31]);
     } else {
-        dach_printf(&item->report, "mac addr from link", LinkType_String,
+        dach_printf(&item->report, "mac addr(link)", LinkType_String,
                     "%02X:%02X:%02X:%02X:%02X:%02X", recved->parsed.mac_src[0],
                     recved->parsed.mac_src[1], recved->parsed.mac_src[2],
                     recved->parsed.mac_src[3], recved->parsed.mac_src[4],
