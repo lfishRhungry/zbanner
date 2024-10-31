@@ -121,14 +121,14 @@ size_t icmp_timestamp_create_packet(ipaddress ip_them, const ipaddress ip_me,
  * @param r_port_them for ret port_them
  * @param r_ip_me for ret ip_me
  * @param r_port_me for ret port_me
- * @param r_ip_proto for ret ip protocol number, 6 for tcp or 17 for udp
+ * @param r_icmp_proto for ret ip protocol number, 6 for tcp or 17 for udp
  * @param r_app_px app layer pointer in udp of icmp
  * @return TRUE if parse successfully
  */
 bool parse_icmp_port_unreachable(const unsigned char *transport_px,
                                  unsigned length, ipaddress *r_ip_them,
                                  unsigned *r_port_them, ipaddress *r_ip_me,
-                                 unsigned *r_port_me, unsigned *r_ip_proto);
+                                 unsigned *r_port_me, unsigned *r_icmp_proto);
 
 /**
  * get upper proto number of icmp if exists.

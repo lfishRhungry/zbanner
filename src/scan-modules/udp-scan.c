@@ -100,12 +100,16 @@ static ConfParam udp_parameters[] = {
      SET_record_banner,
      Type_FLAG,
      {"banner", 0},
-     "Records banner content in escaped text style."},
+     "Records banner content in escaped text style. Banner is also valid for "
+     "ICMP port unreachable, it means internal IP header plus some original "
+     "data of datagram."},
     {"record-data",
      SET_record_data,
      Type_FLAG,
      {"data", 0},
-     "Records data content in binary format."},
+     "Records data content in binary format. Data is also valid for ICMP port "
+     "unreachable, it means internal IP header plus some original data of "
+     "datagram."},
     {"record-ttl",
      SET_record_ttl,
      Type_FLAG,
@@ -120,13 +124,16 @@ static ConfParam udp_parameters[] = {
      SET_record_data_len,
      Type_FLAG,
      {"data-len", "len", 0},
-     "Records payload data length."},
+     "Records payload data length. Data length is also valid for ICMP port "
+     "unreachable, it means length of internal IP header plus some original "
+     "data of datagram."},
     {"no-port-unreachable",
      SET_no_port_unreachable,
      Type_FLAG,
      {"no-closed", "no-close", 0},
      "Do not care ICMP port unreachable for target port. UdpScan would check "
-     "ICMP port unreachable by target range while using default generator."},
+     "ICMP port unreachable by target range while using default generator. "
+     "This checking could be inaccurate in some extreme cases."},
     {"port-failure",
      SET_port_failure,
      Type_FLAG,
@@ -278,18 +285,6 @@ static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             th_idx, &ptarget, &recved->packet[recved->parsed.app_offset],
             recved->parsed.app_length, item);
 
-        if (udp_conf.record_banner)
-            dach_append_normalized(&item->report, "banner",
-                                   &recved->packet[recved->parsed.app_offset],
-                                   recved->parsed.app_length, LinkType_String);
-        if (udp_conf.record_data)
-            dach_append(&item->report, "data",
-                        &recved->packet[recved->parsed.app_offset],
-                        recved->parsed.app_length, LinkType_Binary);
-        if (udp_conf.record_data_len) {
-            dach_set_int(&item->report, "data len", recved->parsed.app_length);
-        }
-
         /*for multi-probe Multi_AfterHandle*/
         if (UdpScan.probe->multi_mode == Multi_AfterHandle && is_multi &&
             recved->parsed.port_dst == src_port_start &&
@@ -359,20 +354,39 @@ static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         /**
          * I'm not sure if the output ip proto should be UDP or ICMP
          */
-        unsigned ip_proto = IP_PROTO_Other;
+        unsigned icmp_proto = IP_PROTO_Other;
         parse_icmp_port_unreachable(
             recved->packet + recved->parsed.transport_offset,
             recved->parsed.transport_length, &item->target.ip_them,
             &item->target.port_them, &item->target.ip_me, &item->target.port_me,
-            &ip_proto);
+            &icmp_proto);
 
         if (udp_conf.is_port_failure)
             item->level = OUT_FAILURE;
 
+        item->no_port = 1;
+
         safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
-        safe_strcpy(item->reason, OUT_RSN_SIZE, "udp port unreachable");
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "port unreachable");
+
+        const char *icmp_proto_str = ip_proto_to_string(icmp_proto);
+        dach_set_int(&item->report, "icmp port_me", item->target.port_me);
+        dach_set_int(&item->report, "icmp port_them", item->target.port_them);
+        dach_append(&item->report, "icmp proto", icmp_proto_str,
+                    strlen(icmp_proto_str), LinkType_String);
     }
 
+    if (udp_conf.record_banner)
+        dach_append_normalized(&item->report, "banner",
+                               &recved->packet[recved->parsed.app_offset],
+                               recved->parsed.app_length, LinkType_String);
+    if (udp_conf.record_data)
+        dach_append(&item->report, "data",
+                    &recved->packet[recved->parsed.app_offset],
+                    recved->parsed.app_length, LinkType_Binary);
+    if (udp_conf.record_data_len) {
+        dach_set_int(&item->report, "data len", recved->parsed.app_length);
+    }
     if (udp_conf.record_ttl)
         dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
     if (udp_conf.record_ipid && recved->parsed.src_ip.version == 4)

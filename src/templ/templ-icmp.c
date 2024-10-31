@@ -366,7 +366,7 @@ size_t icmp_timestamp_create_packet(ipaddress ip_them, const ipaddress ip_me,
 bool parse_icmp_port_unreachable(const unsigned char *transport_px,
                                  unsigned length, ipaddress *r_ip_them,
                                  unsigned *r_port_them, ipaddress *r_ip_me,
-                                 unsigned *r_port_me, unsigned *r_ip_proto) {
+                                 unsigned *r_port_me, unsigned *r_icmp_proto) {
     const unsigned char *icmp_ip_px = transport_px + 8;
     unsigned       icmp_payload_len = length - (icmp_ip_px - transport_px);
     unsigned char *trans_header;
@@ -381,8 +381,8 @@ bool parse_icmp_port_unreachable(const unsigned char *transport_px,
         r_ip_me->ipv4   = BE_TO_U32(icmp_ip_px + 12);
         r_ip_them->ipv4 = BE_TO_U32(icmp_ip_px + 16);
 
-        *r_ip_proto = icmp_ip_px[9];
-        if (*r_ip_proto != IP_PROTO_TCP && *r_ip_proto != IP_PROTO_UDP)
+        *r_icmp_proto = icmp_ip_px[9];
+        if (*r_icmp_proto != IP_PROTO_TCP && *r_icmp_proto != IP_PROTO_UDP)
             return false;
 
         ipv4_header_len = (icmp_ip_px[0] & 0xF) << 2;
@@ -399,8 +399,8 @@ bool parse_icmp_port_unreachable(const unsigned char *transport_px,
         r_ip_them->ipv6.hi = BE_TO_U64(icmp_ip_px + 24);
         r_ip_them->ipv6.lo = BE_TO_U64(icmp_ip_px + 32);
 
-        *r_ip_proto = icmp_ip_px[6];
-        if (*r_ip_proto != IP_PROTO_TCP && *r_ip_proto != IP_PROTO_UDP)
+        *r_icmp_proto = icmp_ip_px[6];
+        if (*r_icmp_proto != IP_PROTO_TCP && *r_icmp_proto != IP_PROTO_UDP)
             return false;
 
         /*length of ipv6 header is fixed*/
