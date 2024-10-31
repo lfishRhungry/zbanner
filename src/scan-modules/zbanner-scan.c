@@ -28,9 +28,42 @@ struct ZBannerConf {
     unsigned record_data     : 1;
     unsigned with_ack        : 1;
     unsigned no_rst          : 1;
+    unsigned no_dedup_banner : 1;
+    unsigned no_dedup_synack : 1;
+    unsigned no_dedup_rst    : 1;
 };
 
 static struct ZBannerConf zbanner_conf = {0};
+
+static ConfRes SET_no_dedup_rst(void *conf, const char *name,
+                                const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.no_dedup_rst = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_no_dedup_synack(void *conf, const char *name,
+                                   const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.no_dedup_synack = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_no_dedup_banner(void *conf, const char *name,
+                                   const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.no_dedup_banner = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_record_data(void *conf, const char *name,
                                const char *value) {
@@ -287,6 +320,28 @@ static ConfParam zbanner_parameters[] = {
      {0},
      "Set TTL of ACK segment with probe data to specified value instead of "
      "global default."},
+    {"no-dedup-banner",
+     SET_no_dedup_banner,
+     Type_FLAG,
+     {0},
+     "Just close the deduplication for received packets with banner. This is "
+     "useful to test the retransmission of target port after tcp connection "
+     "established. e.g. we can close banner deduplication and RST sending to "
+     "test it. In that case, use global `-nodedup` to close all deduplication "
+     "would cause our possible probe retransmission if received multiple "
+     "SYN-ACK segments."},
+    {"no-dedup-synack",
+     SET_no_dedup_synack,
+     Type_FLAG,
+     {0},
+     "Just close the deduplication for received SYN-ACK segments. This is "
+     "useful to some researches."},
+    {"no-dedup-rst",
+     SET_no_dedup_rst,
+     Type_FLAG,
+     {0},
+     "Just close the deduplication for received RST segments. This is useful "
+     "to some researches."},
 
     {0}};
 
@@ -348,6 +403,7 @@ static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
         if (cookie == seqno_me - 1) {
             pre->go_dedup   = 1;
             pre->dedup_type = 0;
+            pre->no_dedup   = zbanner_conf.no_dedup_synack;
         }
     }
     /*
@@ -376,6 +432,7 @@ static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
         if (seqno_me == cookie + payload_len + 1) {
             pre->go_dedup   = 1;
             pre->dedup_type = 1;
+            pre->no_dedup   = zbanner_conf.no_dedup_banner;
         }
     }
     /*rst for syn (a little different)*/
@@ -383,6 +440,7 @@ static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
         if (seqno_me == cookie + 1 || seqno_me == cookie) {
             pre->go_dedup   = 1;
             pre->dedup_type = 0;
+            pre->no_dedup   = zbanner_conf.no_dedup_rst;
         }
     }
 }

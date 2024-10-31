@@ -11,17 +11,39 @@ extern Scanner TcpSynScan; /*for internal x-ref*/
 struct TcpSynConf {
     uint8_t  syn_ttl;
     uint8_t  rst_ttl;
-    unsigned send_rst     : 1;
-    unsigned zero_fail    : 1;
-    unsigned record_ttl   : 1;
-    unsigned record_ipid  : 1;
-    unsigned record_win   : 1;
-    unsigned record_mss   : 1;
-    unsigned record_seqno : 1;
-    unsigned record_ackno : 1;
+    unsigned send_rst        : 1;
+    unsigned zero_fail       : 1;
+    unsigned record_ttl      : 1;
+    unsigned record_ipid     : 1;
+    unsigned record_win      : 1;
+    unsigned record_mss      : 1;
+    unsigned record_seqno    : 1;
+    unsigned record_ackno    : 1;
+    unsigned no_dedup_synack : 1;
+    unsigned no_dedup_rst    : 1;
 };
 
 static struct TcpSynConf tcpsyn_conf = {0};
+
+static ConfRes SET_no_dedup_rst(void *conf, const char *name,
+                                const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.no_dedup_rst = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_no_dedup_synack(void *conf, const char *name,
+                                   const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.no_dedup_synack = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_record_ackno(void *conf, const char *name,
                                 const char *value) {
@@ -170,6 +192,18 @@ static ConfParam tcpsyn_parameters[] = {
      Type_ARG,
      {0},
      "Set TTL of RST segment to specified value instead of global default."},
+    {"no-dedup-synack",
+     SET_no_dedup_synack,
+     Type_FLAG,
+     {0},
+     "Just close the deduplication for received SYN-ACK segments. This is "
+     "useful to some researches."},
+    {"no-dedup-rst",
+     SET_no_dedup_rst,
+     Type_FLAG,
+     {0},
+     "Just close the deduplication for received RST segments. This is useful "
+     "to some researches."},
 
     {0}};
 
@@ -213,6 +247,7 @@ static void tcpsyn_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     if (TCP_FLAG_HAS(flags_them, TCP_FLAG_SYN | TCP_FLAG_ACK)) {
         if (cookie == seqno_me - 1) {
             pre->go_dedup = 1;
+            pre->no_dedup = tcpsyn_conf.no_dedup_synack;
         }
     }
     /*RST*/
@@ -220,6 +255,7 @@ static void tcpsyn_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
         /*NOTE: diff from SYNACK*/
         if (cookie == seqno_me - 1 || cookie == seqno_me) {
             pre->go_dedup = 1;
+            pre->no_dedup = tcpsyn_conf.no_dedup_rst;
         }
     }
 }
