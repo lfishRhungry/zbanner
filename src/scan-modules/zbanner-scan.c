@@ -21,8 +21,8 @@ struct ZBannerConf {
     unsigned record_ipid     : 1;
     unsigned record_win      : 1;
     unsigned record_mss      : 1;
-    unsigned record_seq      : 1;
-    unsigned record_ack      : 1;
+    unsigned record_seqno    : 1;
+    unsigned record_ackno    : 1;
     unsigned record_data_len : 1;
     unsigned record_banner   : 1;
     unsigned record_data     : 1;
@@ -62,20 +62,22 @@ static ConfRes SET_record_data_len(void *conf, const char *name,
     return Conf_OK;
 }
 
-static ConfRes SET_record_ack(void *conf, const char *name, const char *value) {
+static ConfRes SET_record_ackno(void *conf, const char *name,
+                                const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_ack = parse_str_bool(value);
+    zbanner_conf.record_ackno = parse_str_bool(value);
 
     return Conf_OK;
 }
 
-static ConfRes SET_record_seq(void *conf, const char *name, const char *value) {
+static ConfRes SET_record_seqno(void *conf, const char *name,
+                                const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_seq = parse_str_bool(value);
+    zbanner_conf.record_seqno = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -233,15 +235,15 @@ static ConfParam zbanner_parameters[] = {
      Type_FLAG,
      {"mss", 0},
      "Records TCP MSS option value of SYN-ACK if the option exists."},
-    {"record-seq",
-     SET_record_seq,
+    {"record-seqno",
+     SET_record_seqno,
      Type_FLAG,
-     {"seq", 0},
+     {"seqno", 0},
      "Records TCP sequence number."},
-    {"record-ack",
-     SET_record_ack,
+    {"record-ackno",
+     SET_record_ackno,
      Type_FLAG,
-     {"ack", 0},
+     {"ackno", 0},
      "Records TCP acknowledge number."},
     {"record-data-len",
      SET_record_data_len,
@@ -251,7 +253,7 @@ static ConfParam zbanner_parameters[] = {
     {"with-ack",
      SET_with_ack,
      Type_FLAG,
-     {0},
+     {"ack", 0},
      "Send an seperate ACK segment after receiving non-zerowin SYNACK segment "
      "from target port. This makes a complete standard TCP 3-way handshake "
      "before sending segment with data(probe) and spends more bandwidth while "
@@ -420,11 +422,11 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                 mss_them = 0;
             dach_set_int(&item->report, "mss", mss_them);
         }
-        if (zbanner_conf.record_seq) {
-            dach_set_int(&item->report, "seq", seqno_them);
+        if (zbanner_conf.record_seqno) {
+            dach_set_int(&item->report, "seqno", seqno_them);
         }
-        if (zbanner_conf.record_ack) {
-            dach_set_int(&item->report, "ack", seqno_me);
+        if (zbanner_conf.record_ackno) {
+            dach_set_int(&item->report, "ackno", seqno_me);
         }
 
         if (win_them == 0) {
@@ -508,11 +510,11 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
         if (zbanner_conf.record_win)
             dach_set_int(&item->report, "win", win_them);
-        if (zbanner_conf.record_seq) {
-            dach_set_int(&item->report, "seq", seqno_them);
+        if (zbanner_conf.record_seqno) {
+            dach_set_int(&item->report, "seqno", seqno_them);
         }
-        if (zbanner_conf.record_ack) {
-            dach_set_int(&item->report, "ack", seqno_me);
+        if (zbanner_conf.record_ackno) {
+            dach_set_int(&item->report, "ackno", seqno_me);
         }
 
         safe_strcpy(item->reason, OUT_RSN_SIZE, "rst");
@@ -563,11 +565,11 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
         if (zbanner_conf.record_ipid && recved->parsed.src_ip.version == 4)
             dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
-        if (zbanner_conf.record_seq) {
-            dach_set_int(&item->report, "seq", seqno_them);
+        if (zbanner_conf.record_seqno) {
+            dach_set_int(&item->report, "seqno", seqno_them);
         }
-        if (zbanner_conf.record_ack) {
-            dach_set_int(&item->report, "ack", seqno_me);
+        if (zbanner_conf.record_ackno) {
+            dach_set_int(&item->report, "ackno", seqno_me);
         }
         if (zbanner_conf.record_data_len) {
             dach_set_int(&item->report, "data len", recved->parsed.app_length);

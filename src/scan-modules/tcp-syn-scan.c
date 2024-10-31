@@ -11,32 +11,34 @@ extern Scanner TcpSynScan; /*for internal x-ref*/
 struct TcpSynConf {
     uint8_t  syn_ttl;
     uint8_t  rst_ttl;
-    unsigned send_rst    : 1;
-    unsigned zero_fail   : 1;
-    unsigned record_ttl  : 1;
-    unsigned record_ipid : 1;
-    unsigned record_win  : 1;
-    unsigned record_mss  : 1;
-    unsigned record_seq  : 1;
-    unsigned record_ack  : 1;
+    unsigned send_rst     : 1;
+    unsigned zero_fail    : 1;
+    unsigned record_ttl   : 1;
+    unsigned record_ipid  : 1;
+    unsigned record_win   : 1;
+    unsigned record_mss   : 1;
+    unsigned record_seqno : 1;
+    unsigned record_ackno : 1;
 };
 
 static struct TcpSynConf tcpsyn_conf = {0};
 
-static ConfRes SET_record_ack(void *conf, const char *name, const char *value) {
+static ConfRes SET_record_ackno(void *conf, const char *name,
+                                const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.record_ack = parse_str_bool(value);
+    tcpsyn_conf.record_ackno = parse_str_bool(value);
 
     return Conf_OK;
 }
 
-static ConfRes SET_record_seq(void *conf, const char *name, const char *value) {
+static ConfRes SET_record_seqno(void *conf, const char *name,
+                                const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.record_seq = parse_str_bool(value);
+    tcpsyn_conf.record_seqno = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -148,15 +150,15 @@ static ConfParam tcpsyn_parameters[] = {
      Type_FLAG,
      {"mss", 0},
      "Records TCP MSS option value of SYN-ACK if the option exists."},
-    {"record-seq",
-     SET_record_seq,
+    {"record-seqno",
+     SET_record_seqno,
      Type_FLAG,
-     {"seq", 0},
+     {"seqno", 0},
      "Records TCP sequence number."},
-    {"record-ack",
-     SET_record_ack,
+    {"record-ackno",
+     SET_record_ackno,
      Type_FLAG,
-     {"ack", 0},
+     {"ackno", 0},
      "Records TCP acknowledge number."},
     {"syn-ttl",
      SET_syn_ttl,
@@ -283,11 +285,11 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
     if (tcpsyn_conf.record_win)
         dach_set_int(&item->report, "win", win_them);
-    if (tcpsyn_conf.record_seq) {
-        dach_set_int(&item->report, "seq", seqno_them);
+    if (tcpsyn_conf.record_seqno) {
+        dach_set_int(&item->report, "seqno", seqno_them);
     }
-    if (tcpsyn_conf.record_ack) {
-        dach_set_int(&item->report, "ack", seqno_me);
+    if (tcpsyn_conf.record_ackno) {
+        dach_set_int(&item->report, "ackno", seqno_me);
     }
 }
 

@@ -42,20 +42,20 @@ static unsigned  src_port_start;
 
 struct TcpStateConf {
     unsigned conn_expire;
-    unsigned is_port_success : 1;
-    unsigned record_ttl      : 1;
-    unsigned record_ipid     : 1;
-    unsigned record_win      : 1;
-    unsigned record_mss      : 1;
-    unsigned record_seq      : 1;
-    unsigned record_ack      : 1;
-    unsigned record_all_ttl  : 1;
-    unsigned record_all_ipid : 1;
-    unsigned record_all_win  : 1;
-    unsigned record_all_seq  : 1;
-    unsigned record_all_ack  : 1;
-    unsigned record_all_len  : 1;
-    unsigned record_any_all  : 1;
+    unsigned is_port_success  : 1;
+    unsigned record_ttl       : 1;
+    unsigned record_ipid      : 1;
+    unsigned record_win       : 1;
+    unsigned record_mss       : 1;
+    unsigned record_seqno     : 1;
+    unsigned record_ackno     : 1;
+    unsigned record_all_ttl   : 1;
+    unsigned record_all_ipid  : 1;
+    unsigned record_all_win   : 1;
+    unsigned record_all_seqno : 1;
+    unsigned record_all_ackno : 1;
+    unsigned record_all_len   : 1;
+    unsigned record_any_all   : 1;
 };
 
 static struct TcpStateConf tcpstate_conf = {0};
@@ -70,22 +70,22 @@ static ConfRes SET_record_all_len(void *conf, const char *name,
     return Conf_OK;
 }
 
-static ConfRes SET_record_all_ack(void *conf, const char *name,
-                                  const char *value) {
+static ConfRes SET_record_all_ackno(void *conf, const char *name,
+                                    const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_all_ack = parse_str_bool(value);
+    tcpstate_conf.record_all_ackno = parse_str_bool(value);
 
     return Conf_OK;
 }
 
-static ConfRes SET_record_all_seq(void *conf, const char *name,
-                                  const char *value) {
+static ConfRes SET_record_all_seqno(void *conf, const char *name,
+                                    const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_all_seq = parse_str_bool(value);
+    tcpstate_conf.record_all_seqno = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -120,20 +120,22 @@ static ConfRes SET_record_all_win(void *conf, const char *name,
     return Conf_OK;
 }
 
-static ConfRes SET_record_ack(void *conf, const char *name, const char *value) {
+static ConfRes SET_record_ackno(void *conf, const char *name,
+                                const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_ack = parse_str_bool(value);
+    tcpstate_conf.record_ackno = parse_str_bool(value);
 
     return Conf_OK;
 }
 
-static ConfRes SET_record_seq(void *conf, const char *name, const char *value) {
+static ConfRes SET_record_seqno(void *conf, const char *name,
+                                const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_seq = parse_str_bool(value);
+    tcpstate_conf.record_seqno = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -233,15 +235,15 @@ static ConfParam tcpstate_parameters[] = {
      Type_FLAG,
      {"mss", 0},
      "Records TCP MSS option value of SYN-ACK if the option exists."},
-    {"record-seq",
-     SET_record_seq,
+    {"record-seqno",
+     SET_record_seqno,
      Type_FLAG,
-     {"seq", 0},
+     {"seqno", 0},
      "Records TCP sequence number of SYN-ACK."},
-    {"record-ack",
-     SET_record_ack,
+    {"record-ackno",
+     SET_record_ackno,
      Type_FLAG,
-     {"ack", 0},
+     {"ackno", 0},
      "Records TCP acknowledge number of SYN-ACK."},
     {"record-all-ttl",
      SET_record_all_ttl,
@@ -259,15 +261,15 @@ static ConfParam tcpstate_parameters[] = {
      Type_FLAG,
      {"all-win", "all-window", 0},
      "Records TCP window size of all segments for debugging."},
-    {"record-all-seq",
-     SET_record_all_seq,
+    {"record-all-seqno",
+     SET_record_all_seqno,
      Type_FLAG,
-     {"all-seq", 0},
+     {"all-seqno", 0},
      "Records TCP sequence number of all segments for debugging."},
-    {"record-all-ack",
-     SET_record_all_ack,
+    {"record-all-ackno",
+     SET_record_all_ackno,
      Type_FLAG,
-     {"all-ack", 0},
+     {"all-ackno", 0},
      "Records TCP acknowledge number of all segments for debugging."},
     {"record-all-len",
      SET_record_all_len,
@@ -301,8 +303,8 @@ static bool tcpstate_init(const XConf *xconf) {
     tcb_count      = &((XConf *)xconf)->tcb_count;
     src_port_start = xconf->nic.src.port.first;
     tcpstate_conf.record_any_all =
-        tcpstate_conf.record_all_ack | tcpstate_conf.record_all_ipid |
-        tcpstate_conf.record_all_seq | tcpstate_conf.record_all_ttl |
+        tcpstate_conf.record_all_ackno | tcpstate_conf.record_all_ipid |
+        tcpstate_conf.record_all_seqno | tcpstate_conf.record_all_ttl |
         tcpstate_conf.record_all_win | tcpstate_conf.record_all_len;
 
     return true;
@@ -409,11 +411,11 @@ static void tcpstate_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                 mss_them = 0;
             dach_set_int(&item->report, "mss", mss_them);
         }
-        if (tcpstate_conf.record_seq || tcpstate_conf.record_all_seq) {
-            dach_set_int(&item->report, "seq", seqno_them);
+        if (tcpstate_conf.record_seqno || tcpstate_conf.record_all_seqno) {
+            dach_set_int(&item->report, "seqno", seqno_them);
         }
-        if (tcpstate_conf.record_ack || tcpstate_conf.record_all_ack) {
-            dach_set_int(&item->report, "ack", seqno_me);
+        if (tcpstate_conf.record_ackno || tcpstate_conf.record_all_ackno) {
+            dach_set_int(&item->report, "ackno", seqno_me);
         }
 
         /**
@@ -469,11 +471,11 @@ static void tcpstate_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
         if (tcpstate_conf.record_all_win)
             dach_set_int(&item->report, "win", win_them);
-        if (tcpstate_conf.record_all_seq) {
-            dach_set_int(&item->report, "seq", seqno_them);
+        if (tcpstate_conf.record_all_seqno) {
+            dach_set_int(&item->report, "seqno", seqno_them);
         }
-        if (tcpstate_conf.record_all_ack) {
-            dach_set_int(&item->report, "ack", seqno_me);
+        if (tcpstate_conf.record_all_ackno) {
+            dach_set_int(&item->report, "ackno", seqno_me);
         }
         if (tcpstate_conf.record_all_len) {
             dach_set_int(&item->report, "data len", recved->parsed.app_length);
