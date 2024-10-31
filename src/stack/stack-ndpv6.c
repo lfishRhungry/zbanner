@@ -8,8 +8,184 @@
 #include "../target/target.h"
 #include "../stub/stub-pcap-dlt.h"
 #include "../templ/templ-icmp.h"
+#include "../templ/templ-ndp.h"
 
 #include <string.h>
+
+/* ICMPv6 NDP Router Solicitation according to RFC4861
+
+   Hosts send Router Solicitations in order to prompt routers to
+   generate Router Advertisements quickly.
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |     Type      |     Code      |          Checksum             |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                            Reserved                           |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |   Options ...
+     +-+-+-+-+-+-+-+-+-+-+-+-
+
+   IP Fields:
+
+      Source Address
+                     An IP address assigned to the sending interface, or
+                     the unspecified address if no address is assigned
+                     to the sending interface.
+
+      Destination Address
+                     Typically the all-routers multicast address.
+
+      Hop Limit      255
+
+   ICMP Fields:
+
+      Type           133
+
+      Code           0
+
+      Checksum       The ICMP checksum.  See [ICMPv6].
+
+      Reserved       This field is unused.  It MUST be initialized to
+                     zero by the sender and MUST be ignored by the
+                     receiver.
+   Valid Options:
+
+      Source link-layer address The link-layer address of the sender, if
+                     known.  MUST NOT be included if the Source Address
+                     is the unspecified address.  Otherwise, it SHOULD
+                     be included on link layers that have addresses.
+
+      Future versions of this protocol may define new option types.
+      Receivers MUST silently ignore any options they do not recognize
+      and continue processing the message.
+*/
+
+/* ICMPv6 NDP Router Advertisement according to RFC4861
+
+   Routers send out Router Advertisement messages periodically, or in
+   response to Router Solicitations.
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |     Type      |     Code      |          Checksum             |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     | Cur Hop Limit |M|O|  Reserved |       Router Lifetime         |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                         Reachable Time                        |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                          Retrans Timer                        |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |   Options ...
+     +-+-+-+-+-+-+-+-+-+-+-+-
+
+   IP Fields:
+
+      Source Address
+                     MUST be the link-local address assigned to the
+                     interface from which this message is sent.
+      Destination Address
+                     Typically the Source Address of an invoking Router
+                     Solicitation or the all-nodes multicast address.
+
+      Hop Limit      255
+
+   ICMP Fields:
+
+      Type           134
+
+      Code           0
+
+      Checksum       The ICMP checksum.  See [ICMPv6].
+
+      Cur Hop Limit  8-bit unsigned integer.  The default value that
+                     should be placed in the Hop Count field of the IP
+                     header for outgoing IP packets.  A value of zero
+                     means unspecified (by this router).
+
+      M              1-bit "Managed address configuration" flag.  When
+                     set, it indicates that addresses are available via
+                     Dynamic Host Configuration Protocol [DHCPv6].
+
+                     If the M flag is set, the O flag is redundant and
+                     can be ignored because DHCPv6 will return all
+                     available configuration information.
+
+      O              1-bit "Other configuration" flag.  When set, it
+                     indicates that other configuration information is
+                     available via DHCPv6.  Examples of such information
+                     are DNS-related information or information on other
+                     servers within the network.
+
+        Note: If neither M nor O flags are set, this indicates that no
+        information is available via DHCPv6.
+
+      Reserved       A 6-bit unused field.  It MUST be initialized to
+                     zero by the sender and MUST be ignored by the
+                     receiver.
+
+      Router Lifetime
+                     16-bit unsigned integer.  The lifetime associated
+                     with the default router in units of seconds.  The
+                     field can contain values up to 65535 and receivers
+                     should handle any value, while the sending rules in
+                     Section 6 limit the lifetime to 9000 seconds.  A
+                     Lifetime of 0 indicates that the router is not a
+                     default router and SHOULD NOT appear on the default
+                     router list.  The Router Lifetime applies only to
+                     the router's usefulness as a default router; it
+                     does not apply to information contained in other
+                     message fields or options.  Options that need time
+                     limits for their information include their own
+                     lifetime fields.
+
+      Reachable Time 32-bit unsigned integer.  The time, in
+                     milliseconds, that a node assumes a neighbor is
+                     reachable after having received a reachability
+                     confirmation.  Used by the Neighbor Unreachability
+                     Detection algorithm (see Section 7.3).  A value of
+                     zero means unspecified (by this router).
+
+      Retrans Timer  32-bit unsigned integer.  The time, in
+                     milliseconds, between retransmitted Neighbor
+                     Solicitation messages.  Used by address resolution
+                     and the Neighbor Unreachability Detection algorithm
+                     (see Sections 7.2 and 7.3).  A value of zero means
+                     unspecified (by this router).
+
+   Possible options:
+
+      Source link-layer address
+                     The link-layer address of the interface from which
+                     the Router Advertisement is sent.  Only used on
+                     link layers that have addresses.  A router MAY omit
+                     this option in order to enable inbound load sharing
+                     across multiple link-layer addresses.
+
+      MTU            SHOULD be sent on links that have a variable MTU
+                     (as specified in the document that describes how to
+                     run IP over the particular link type).  MAY be sent
+                     on other links.
+
+      Prefix Information
+                     These options specify the prefixes that are on-link
+                     and/or are used for stateless address
+                     autoconfiguration.  A router SHOULD include all its
+                     on-link prefixes (except the link-local prefix) so
+                     that multihomed hosts have complete prefix
+                     information about on-link destinations for the
+                     links to which they attach.  If complete
+                     information is lacking, a host with multiple
+                     interfaces may not be able to choose the correct
+                     outgoing interface when sending traffic to its
+                     neighbors.
+*/
+
+/**
+ * NOTE: Detailed Option info could be checked in templ-ndp.c file.
+ */
 
 static inline void _append(unsigned char *buf, size_t *r_offset, size_t max,
                            unsigned x) {
@@ -192,11 +368,9 @@ static int _extract_router_advertisement(const unsigned char *buf,
         return 1;
     offset = parsed->transport_offset;
 
-    /* type = Router Advertisement */
     if (_read_byte(buf, &offset, length) != ICMPv6_TYPE_RA)
         return 1;
 
-    /* code = 0 */
     if (_read_byte(buf, &offset, length) != ICMPv6_CODE_RA)
         return 1;
 
@@ -225,8 +399,7 @@ static int _extract_router_advertisement(const unsigned char *buf,
         const unsigned char *buf2 = buf + offset;
 
         switch (type) {
-            case 3: /* prefix info */
-            {
+            case NDP_OPT_TYPE_PREFIX_INFO: {
                 unsigned              prefix_len;
                 ipv6address           prefix;
                 ipaddress_formatted_t fmt;
@@ -248,14 +421,14 @@ static int _extract_router_advertisement(const unsigned char *buf,
                     ipaddress_formatted_t fmt1 = ipv6address_fmt(my_ipv6);
                     ipaddress_formatted_t fmt2 = ipv6address_fmt(prefix);
 
-                    LOG(LEVEL_HINT,
+                    LOG(LEVEL_WARN,
                         "our source-ip is %s, but router prefix announces "
                         "%s/%u\n",
                         fmt1.string, fmt2.string, prefix_len);
                     is_same_prefix = 0;
                 }
             } break;
-            case 25: /* recursive DNS server */
+            case NDP_OPT_TYPE_RDNS_SERVER: /* recursive DNS server */
                 _read_short(buf2, &off2, len2);
                 _read_number(buf2, &off2, len2);
 
@@ -265,7 +438,7 @@ static int _extract_router_advertisement(const unsigned char *buf,
                     LOG(LEVEL_DETAIL, "IPv6.DNS = %s\n", fmt.string);
                 }
                 break;
-            case 1:
+            case NDP_OPT_TYPE_SRC_LINK_ADDR:
                 if (len2 == 8) {
                     memcpy(router_mac->addr, buf2 + 2, 6);
                     is_mac_explicit = 1;
@@ -344,7 +517,7 @@ int stack_ndpv6_resolve(Adapter *adapter, AdapterCache *acache,
     _append_short(buf, &offset, max, 0);
     _append_short(buf, &offset, max, 0); /* length = 0 */
     _append(buf, &offset, max, IP_PROTO_IPv6_ICMP);
-    _append(buf, &offset, max, 255); /*hop limit = 255 */
+    _append(buf, &offset, max, 255); /*hop limit must be 255 */
 
     /* Link local source address based on MAC address */
     offset_ip_src = offset;

@@ -136,7 +136,13 @@
 
 */
 
-/* ICMPv6 NDP Option Format according to RFC4861
+/* ICMPv6 NDP general Option Format according to RFC4861
+
+   Neighbor Discovery messages include zero or more options, some of
+   which may appear multiple times in the same message.  Options should
+   be padded when necessary to ensure that they end on their natural
+   64-bit boundaries.  All options are of the form:
+
         0                   1                   2                   3
         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -145,13 +151,238 @@
        ~                              ...                              ~
        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-Source/Target Link-layer Address
+   Fields:
+
+      Type           8-bit identifier of the type of option.  The
+                     options defined in this document are:
+
+                           Option Name                             Type
+
+                        Source Link-Layer Address                    1
+                        Target Link-Layer Address                    2
+                        Prefix Information                           3
+                        Redirected Header                            4
+                        MTU                                          5
+
+      Length         8-bit unsigned integer.  The length of the option
+                     (including the type and length fields) in units of
+                     8 octets.  The value 0 is invalid.  Nodes MUST
+                     silently discard an ND packet that contains an
+                     option with length zero.
+*/
+
+/* NDP Source/Target Link-layer Address Option according to RFC4861
 
       0                   1                   2                   3
       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |     Type      |    Length     |    Link-Layer Address ...
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Fields:
+
+      Type
+                     1 for Source Link-layer Address
+                     2 for Target Link-layer Address
+      Length         The length of the option (including the type and
+                     length fields) in units of 8 octets.  For example,
+                     the length for IEEE 802 addresses is 1
+                     [IPv6-ETHER].
+
+      Link-Layer Address
+                     The variable length link-layer address.
+
+                     The content and format of this field (including
+                     byte and bit ordering) is expected to be specified
+                     in specific documents that describe how IPv6
+                     operates over different link layers.  For instance,
+                     [IPv6-ETHER].
+
+   Description
+                     The Source Link-Layer Address option contains the
+                     link-layer address of the sender of the packet.  It
+                     is used in the Neighbor Solicitation, Router
+                     Solicitation, and Router Advertisement packets.
+
+                     The Target Link-Layer Address option contains the
+                     link-layer address of the target.  It is used in
+                     Neighbor Advertisement and Redirect packets.
+
+                     These options MUST be silently ignored for other
+                     Neighbor Discovery messages.
+
+*/
+
+/* NDP Prefix Information Option according to RFC4861
+
+       0                   1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |     Type      |    Length     | Prefix Length |L|A| Reserved1 |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                         Valid Lifetime                        |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                       Preferred Lifetime                      |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                           Reserved2                           |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                                                               |
+      +                                                               +
+      |                                                               |
+      +                            Prefix                             +
+      |                                                               |
+      +                                                               +
+      |                                                               |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   Fields:
+
+      Type           3
+
+      Length         4
+
+      Prefix Length  8-bit unsigned integer.  The number of leading bits
+                     in the Prefix that are valid.  The value ranges
+                     from 0 to 128.  The prefix length field provides
+                     necessary information for on-link determination
+                     (when combined with the L flag in the prefix
+                     information option).  It also assists with address
+                     autoconfiguration as specified in [ADDRCONF], for
+                     which there may be more restrictions on the prefix
+                     length.
+
+      L              1-bit on-link flag.  When set, indicates that this
+                     prefix can be used for on-link determination.  When
+                     not set the advertisement makes no statement about
+                     on-link or off-link properties of the prefix.  In
+                     other words, if the L flag is not set a host MUST
+                     NOT conclude that an address derived from the
+                     prefix is off-link.  That is, it MUST NOT update a
+                     previous indication that the address is on-link.
+
+      A              1-bit autonomous address-configuration flag.  When
+                     set indicates that this prefix can be used for
+                     stateless address configuration as specified in
+                     [ADDRCONF].
+
+      Reserved1      6-bit unused field.  It MUST be initialized to zero
+                     by the sender and MUST be ignored by the receiver.
+
+      Valid Lifetime
+                     32-bit unsigned integer.  The length of time in
+                     seconds (relative to the time the packet is sent)
+                     that the prefix is valid for the purpose of on-link
+                     determination.  A value of all one bits
+                     (0xffffffff) represents infinity.  The Valid
+                     Lifetime is also used by [ADDRCONF].
+
+      Preferred Lifetime
+                     32-bit unsigned integer.  The length of time in
+                     seconds (relative to the time the packet is sent)
+                     that addresses generated from the prefix via
+                     stateless address autoconfiguration remain
+                     preferred [ADDRCONF].  A value of all one bits
+                     (0xffffffff) represents infinity.  See [ADDRCONF].
+
+                     Note that the value of this field MUST NOT exceed
+                     the Valid Lifetime field to avoid preferring
+                     addresses that are no longer valid.
+
+      Reserved2      This field is unused.  It MUST be initialized to
+                     zero by the sender and MUST be ignored by the
+                     receiver.
+
+      Prefix         An IP address or a prefix of an IP address.  The
+                     Prefix Length field contains the number of valid
+                     leading bits in the prefix.  The bits in the prefix
+                     after the prefix length are reserved and MUST be
+                     initialized to zero by the sender and ignored by
+                     the receiver.  A router SHOULD NOT send a prefix
+                     option for the link-local prefix and a host SHOULD
+                     ignore such a prefix option.
+
+   Description
+                     The Prefix Information option provide hosts with
+                     on-link prefixes and prefixes for Address
+                     Autoconfiguration.  The Prefix Information option
+                     appears in Router Advertisement packets and MUST be
+                     silently ignored for other messages.
+
+*/
+
+/* NDP RA Options for DNS Configuration Option according to RFC8106
+
+Recursive DNS Server Option
+
+   The RDNSS option contains one or more IPv6 addresses of RDNSSes.  All
+   of the addresses share the same Lifetime value.  If it is desirable
+   to have different Lifetime values, multiple RDNSS options can be
+   used.  Figure 1 shows the format of the RDNSS option.
+
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |     Type      |     Length    |           Reserved            |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                           Lifetime                            |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                                                               |
+     :            Addresses of IPv6 Recursive DNS Servers            :
+     |                                                               |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+                       Figure 1: RDNSS Option Format
+
+   Fields:
+
+   Type        8-bit identifier of the RDNSS option type as assigned by
+               IANA: 25
+
+   Length      8-bit unsigned integer.  The length of the option
+               (including the Type and Length fields) is in units of
+               8 octets.  The minimum value is 3 if one IPv6 address is
+               contained in the option.  Every additional RDNSS address
+               increases the length by 2.  The Length field is used by
+               the receiver to determine the number of IPv6 addresses in
+               the option.
+
+   Lifetime    32-bit unsigned integer.  The maximum time in seconds
+               (relative to the time the packet is received) over which
+               these RDNSS addresses MAY be used for name resolution.
+               The value of Lifetime SHOULD by default be at least
+               3 * MaxRtrAdvInterval, where MaxRtrAdvInterval is the
+               maximum RA interval as defined in [RFC4861].  A value of
+               all one bits (0xffffffff) represents infinity.  A value
+               of zero means that the RDNSS addresses MUST no longer
+               be used.
+   Addresses of IPv6 Recursive DNS Servers
+               One or more 128-bit IPv6 addresses of the RDNSSes.  The
+               number of addresses is determined by the Length field.
+               That is, the number of addresses is equal to
+               (Length - 1) / 2.
+
+   Note: The addresses for RDNSSes in the RDNSS option MAY be link-local
+         addresses.  Such link-local addresses SHOULD be registered in
+         the Resolver Repository along with the corresponding link zone
+         indices of the links that receive the RDNSS option(s) for them.
+         The link-local addresses MAY be represented in the Resolver
+         Repository with their link zone indices in the textual format
+         for scoped addresses as described in [RFC4007].  When a
+         resolver sends a DNS query message to an RDNSS identified by a
+         link-local address, it MUST use the corresponding link.
+
+         The rationale of the default value of the Lifetime field is as
+         follows.  The Router Lifetime field, set by AdvDefaultLifetime,
+         has the default of 3 * MaxRtrAdvInterval as specified in
+         [RFC4861], so such a default or a larger default can allow for
+         the reliability of DNS options even under the loss of RAs on
+         links with a relatively high rate of packet loss.  Note that
+         the ratio of AdvDefaultLifetime to MaxRtrAdvInterval is the
+         number of unsolicited multicast RAs sent by the router.  Since
+         the DNS option entries can survive for at most three
+         consecutive losses of RAs containing DNS options, the default
+         value of the Lifetime lets the DNS option entries be resilient
+         to packet-loss environments.
 
 */
 

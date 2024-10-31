@@ -15,6 +15,14 @@
 #define NDP_NA_HAS_FLAG(px, transport_offset, flag)                            \
     ((NDP_NA_FLAGS((px), (transport_offset)) & (flag)) == (flag))
 
+#define NDP_OPT_TYPE_SRC_LINK_ADDR   1
+#define NDP_OPT_TYPE_TGT_LINK_ADDR   2
+#define NDP_OPT_TYPE_PREFIX_INFO     3
+#define NDP_OPT_TYPE_REDIRECT_HDR    4
+#define NDP_OPT_TYPE_MTU             5
+#define NDP_OPT_TYPE_RDNS_SERVER     25
+#define NDP_OPT_TYPE_DNS_SEARCH_LIST 31
+
 /**
  * This is a wrapped func that uses global_tmplset to create ndp neighbor
  * solicit packet.
