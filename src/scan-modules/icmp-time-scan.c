@@ -10,11 +10,33 @@
 extern Scanner IcmpTimeScan; /*for internal x-ref*/
 
 struct IcmpTimeConf {
-    unsigned record_ttl  : 1;
-    unsigned record_ipid : 1;
+    unsigned record_ttl        : 1;
+    unsigned record_ipid       : 1;
+    unsigned record_icmp_id    : 1;
+    unsigned record_icmp_seqno : 1;
 };
 
 static struct IcmpTimeConf icmptime_conf = {0};
+
+static ConfRes SET_record_icmp_seqno(void *conf, const char *name,
+                                     const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    icmptime_conf.record_icmp_seqno = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_icmp_id(void *conf, const char *name,
+                                  const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    icmptime_conf.record_icmp_id = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -46,6 +68,16 @@ static ConfParam icmptime_parameters[] = {
      Type_FLAG,
      {"ipid", 0},
      "Records IPID of ICMP Timestamp for IPv4."},
+    {"record-icmp-id",
+     SET_record_icmp_id,
+     Type_FLAG,
+     {"icmp-id", 0},
+     "Records ICMP identifier number."},
+    {"record-icmp-seqno",
+     SET_record_icmp_seqno,
+     Type_FLAG,
+     {"icmp-seqno", 0},
+     "Records ICMP sequence number."},
 
     {0}};
 
@@ -109,6 +141,10 @@ static void icmptime_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
     if (icmptime_conf.record_ipid && recved->parsed.src_ip.version == 4)
         dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+    if (icmptime_conf.record_icmp_id)
+        dach_set_int(&item->report, "icmp id", recved->parsed.icmp_id);
+    if (icmptime_conf.record_icmp_seqno)
+        dach_set_int(&item->report, "icmp seqno", recved->parsed.icmp_seq);
 }
 
 Scanner IcmpTimeScan = {
