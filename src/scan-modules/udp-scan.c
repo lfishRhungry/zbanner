@@ -130,7 +130,7 @@ static ConfParam udp_parameters[] = {
     {"no-port-unreachable",
      SET_no_port_unreachable,
      Type_FLAG,
-     {"no-closed", "no-close", 0},
+     {"no-icmp", "no-closed", "no-close", 0},
      "Do not care ICMP port unreachable for target port. UdpScan would check "
      "ICMP port unreachable by target range while using default generator. "
      "This checking could be inaccurate in some extreme cases."},
