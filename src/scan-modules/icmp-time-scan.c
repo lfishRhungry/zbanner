@@ -120,7 +120,7 @@ static void icmptime_validate(uint64_t entropy, Recved *recved,
     if (recved->parsed.icmp_type == ICMPv4_TYPE_TIMESTAMP_REPLY &&
         recved->parsed.icmp_code == ICMPv4_CODE_TIMESTAMP_REPLY &&
         recved->parsed.icmp_id == ((cookie >> 16) & 0xFF) &&
-        recved->parsed.icmp_seq == ((cookie >> 0) & 0xFF)) {
+        recved->parsed.icmp_seqno == ((cookie >> 0) & 0xFF)) {
         pre->go_dedup        = 1;
         pre->dedup_port_them = 0;
         pre->dedup_port_me   = 0;
@@ -144,7 +144,7 @@ static void icmptime_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     if (icmptime_conf.record_icmp_id)
         dach_set_int(&item->report, "icmp id", recved->parsed.icmp_id);
     if (icmptime_conf.record_icmp_seqno)
-        dach_set_int(&item->report, "icmp seqno", recved->parsed.icmp_seq);
+        dach_set_int(&item->report, "icmp seqno", recved->parsed.icmp_seqno);
 }
 
 Scanner IcmpTimeScan = {

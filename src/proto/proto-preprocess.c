@@ -165,7 +165,7 @@ parse_icmp: {
     info->icmp_type  = px[offset + 0];
     info->icmp_code  = px[offset + 1];
     info->icmp_id    = BE_TO_U16(px + offset + 4);
-    info->icmp_seq   = BE_TO_U16(px + offset + 6);
+    info->icmp_seqno = BE_TO_U16(px + offset + 6);
     /*for icmp echo*/
     info->app_offset = offset + 8;
     info->app_length = length - info->app_offset;
@@ -266,7 +266,7 @@ parse_icmpv6: {
     info->icmp_type  = px[offset + 0];
     info->icmp_code  = px[offset + 1];
     info->icmp_id    = BE_TO_U16(px + offset + 4);
-    info->icmp_seq   = BE_TO_U16(px + offset + 6);
+    info->icmp_seqno = BE_TO_U16(px + offset + 6);
     /*for icmp echo*/
     info->app_offset = offset + 8;
     info->app_length = length - info->app_offset;

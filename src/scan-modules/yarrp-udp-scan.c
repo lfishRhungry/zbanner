@@ -60,9 +60,42 @@ struct YarrpUdpConf {
     unsigned init_port_them_set : 1;
     unsigned record_ttl         : 1;
     unsigned record_ipid        : 1;
+    unsigned record_icmp_id     : 1;
+    unsigned record_icmp_seqno  : 1;
+    unsigned record_icmp_ip_me  : 1;
 };
 
 static struct YarrpUdpConf yarrpudp_conf = {0};
+
+static ConfRes SET_record_icmp_ip_me(void *conf, const char *name,
+                                     const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    yarrpudp_conf.record_icmp_ip_me = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_icmp_seqno(void *conf, const char *name,
+                                     const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    yarrpudp_conf.record_icmp_seqno = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_icmp_id(void *conf, const char *name,
+                                  const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    yarrpudp_conf.record_icmp_id = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_port_me(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -155,6 +188,22 @@ static ConfParam yarrpudp_parameters[] = {
      {"ipid", 0},
      "Records IPID just for IPv4 of ICMP Port Unreachable or ttl/hop limit "
      "exceeded response."},
+    {"record-icmp-id",
+     SET_record_icmp_id,
+     Type_FLAG,
+     {"icmp-id", 0},
+     "Records ICMP identifier number."},
+    {"record-icmp-seqno",
+     SET_record_icmp_seqno,
+     Type_FLAG,
+     {"icmp-seqno", 0},
+     "Records ICMP sequence number."},
+    {"record-icmp-ip-me",
+     SET_record_icmp_ip_me,
+     Type_FLAG,
+     {"icmp-ip-me", 0},
+     "Records source IP in ICMP messages. It can be different from the outside "
+     "source IP sometimes."},
 
     {0}};
 
@@ -253,15 +302,31 @@ static void yarrpudp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     preprocess_frame(recved->packet + recved->parsed.app_offset,
                      recved->length - recved->parsed.app_offset, PCAP_DLT_RAW,
                      &info);
+
+    if (yarrpudp_conf.record_ttl)
+        dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+    if (yarrpudp_conf.record_ipid && recved->parsed.src_ip.version == 4)
+        dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+    if (yarrpudp_conf.record_icmp_id)
+        dach_set_int(&item->report, "icmp id", info.icmp_id);
+    if (yarrpudp_conf.record_icmp_seqno)
+        dach_set_int(&item->report, "icmp seqno", info.icmp_seqno);
+    if (yarrpudp_conf.record_icmp_ip_me) {
+        ipaddress_formatted_t icmp_ip_me_fmt = ipaddress_fmt(info.src_ip);
+        dach_append(&item->report, "icmp ip_me", icmp_ip_me_fmt.string,
+                    strlen(icmp_ip_me_fmt.string), LinkType_String);
+    }
+
     /**
      * NOTE:Must use saved TTL instead of the fake one in IP header from
      * ICMP payload.
      */
     unsigned distance = info.port_dst - yarrpudp_conf.port_them_offset;
-    ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(info.dst_ip);
+
+    ipaddress_formatted_t icmp_ip_them_fmt = ipaddress_fmt(info.dst_ip);
     dach_set_int(&item->report, "distance", distance);
-    dach_append(&item->report, "destination", ip_them_fmt.string,
-                strlen(ip_them_fmt.string), LinkType_String);
+    dach_append(&item->report, "destination", icmp_ip_them_fmt.string,
+                strlen(icmp_ip_them_fmt.string), LinkType_String);
 
     /*port unreachable*/
     if ((recved->parsed.src_ip.version == 4 &&
@@ -277,11 +342,6 @@ static void yarrpudp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         safe_strcpy(item->reason, OUT_RSN_SIZE, "ttl exceeded");
         safe_strcpy(item->classification, OUT_CLS_SIZE, "path");
     }
-
-    if (yarrpudp_conf.record_ttl)
-        dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
-    if (yarrpudp_conf.record_ipid && recved->parsed.src_ip.version == 4)
-        dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
 }
 
 Scanner YarrpUdpScan = {

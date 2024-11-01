@@ -22,11 +22,33 @@ struct UdpConf {
     unsigned record_data_len     : 1;
     unsigned record_icmp_id      : 1;
     unsigned record_icmp_seqno   : 1;
+    unsigned record_icmp_ip_them : 1;
+    unsigned record_icmp_ip_me   : 1;
     unsigned no_port_unreachable : 1;
     unsigned is_port_failure     : 1;
 };
 
 static struct UdpConf udp_conf = {0};
+
+static ConfRes SET_record_icmp_ip_them(void *conf, const char *name,
+                                       const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    udp_conf.record_icmp_ip_them = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_icmp_ip_me(void *conf, const char *name,
+                                     const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    udp_conf.record_icmp_ip_me = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_record_icmp_seqno(void *conf, const char *name,
                                      const char *value) {
@@ -159,6 +181,18 @@ static ConfParam udp_parameters[] = {
      Type_FLAG,
      {"icmp-seqno", 0},
      "Records ICMP sequence number of port unreachable messages."},
+    {"record-icmp-ip-them",
+     SET_record_icmp_ip_them,
+     Type_FLAG,
+     {"icmp-ip-them", 0},
+     "Records target IP in ICMP port unreachable messages. It can be different "
+     "from the outside target IP sometimes."},
+    {"record-icmp-ip-me",
+     SET_record_icmp_ip_me,
+     Type_FLAG,
+     {"icmp-ip-me", 0},
+     "Records source IP in ICMP port unreachable messages. It can be different "
+     "from the outside source IP sometimes."},
     {"no-port-unreachable",
      SET_no_port_unreachable,
      Type_FLAG,
@@ -282,13 +316,19 @@ static void udp_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     }
 
     /*parse UDP packet in ICMP port unreachable message payload*/
-    unsigned ip_proto = IP_PROTO_Other;
+    unsigned  icmp_proto = IP_PROTO_Other;
+    ipaddress icmp_ip_them;
+    ipaddress icmp_ip_me;
+    /**
+     * NOTE: just replace the ports for deduplication. IPs in ICMP payload can
+     * not be our original target sometimes.
+     */
     if (parse_icmp_port_unreachable(
             recved->packet + recved->parsed.transport_offset,
-            recved->parsed.transport_length, &pre->dedup_ip_them,
-            &pre->dedup_port_them, &pre->dedup_ip_me, &pre->dedup_port_me,
-            &ip_proto)) {
-        if (ip_proto == IP_PROTO_UDP &&
+            recved->parsed.transport_length, &icmp_ip_them,
+            &pre->dedup_port_them, &icmp_ip_me, &pre->dedup_port_me,
+            &icmp_proto)) {
+        if (icmp_proto == IP_PROTO_UDP &&
             targetset_has_ip(_targets, pre->dedup_ip_them) &&
             targetset_has_port(_targets, get_complex_port(pre->dedup_port_them,
                                                           IP_PROTO_UDP))) {
@@ -386,11 +426,17 @@ static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         /**
          * I'm not sure if the output ip proto should be UDP or ICMP
          */
-        unsigned icmp_proto = IP_PROTO_Other;
+        unsigned  icmp_proto = IP_PROTO_Other;
+        ipaddress icmp_ip_them;
+        ipaddress icmp_ip_me;
+        /**
+         * NOTE: Do not replace the IPs of output item. IPs in ICMP payload can
+         * not be our original target sometimes.
+         */
         parse_icmp_port_unreachable(
             recved->packet + recved->parsed.transport_offset,
-            recved->parsed.transport_length, &item->target.ip_them,
-            &item->target.port_them, &item->target.ip_me, &item->target.port_me,
+            recved->parsed.transport_length, &icmp_ip_them,
+            &item->target.port_them, &icmp_ip_me, &item->target.port_me,
             &icmp_proto);
 
         if (udp_conf.is_port_failure)
@@ -404,11 +450,23 @@ static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         if (udp_conf.record_icmp_id)
             dach_set_int(&item->report, "icmp id", recved->parsed.icmp_id);
         if (udp_conf.record_icmp_seqno)
-            dach_set_int(&item->report, "icmp seqno", recved->parsed.icmp_seq);
+            dach_set_int(&item->report, "icmp seqno",
+                         recved->parsed.icmp_seqno);
 
         const char *icmp_proto_str = ip_proto_to_string(icmp_proto);
         dach_set_int(&item->report, "icmp port_me", item->target.port_me);
+        if (udp_conf.record_icmp_ip_me) {
+            ipaddress_formatted_t icmp_ip_me_fmt = ipaddress_fmt(icmp_ip_me);
+            dach_append(&item->report, "icmp ip_me", icmp_ip_me_fmt.string,
+                        strlen(icmp_ip_me_fmt.string), LinkType_String);
+        }
         dach_set_int(&item->report, "icmp port_them", item->target.port_them);
+        if (udp_conf.record_icmp_ip_them) {
+            ipaddress_formatted_t icmp_ip_them_fmt =
+                ipaddress_fmt(icmp_ip_them);
+            dach_append(&item->report, "icmp ip_them", icmp_ip_them_fmt.string,
+                        strlen(icmp_ip_them_fmt.string), LinkType_String);
+        }
         dach_append(&item->report, "icmp proto", icmp_proto_str,
                     strlen(icmp_proto_str), LinkType_String);
     }

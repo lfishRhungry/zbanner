@@ -82,7 +82,7 @@ typedef struct PreprocessedInfo {
     uint8_t              icmp_type;
     uint8_t              icmp_code;
     uint16_t             icmp_id;
-    uint16_t             icmp_seq;
+    uint16_t             icmp_seqno;
     uint16_t             port_src;
     uint16_t             port_dst;
     /**

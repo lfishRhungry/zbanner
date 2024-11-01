@@ -37,11 +37,44 @@
 extern Scanner YarrpEchoScan; /*for internal x-ref*/
 
 struct YarrpEchoConf {
-    unsigned record_ttl  : 1;
-    unsigned record_ipid : 1;
+    unsigned record_ttl        : 1;
+    unsigned record_ipid       : 1;
+    unsigned record_icmp_id    : 1;
+    unsigned record_icmp_seqno : 1;
+    unsigned record_icmp_ip_me : 1;
 };
 
 static struct YarrpEchoConf yarrpecho_conf = {0};
+
+static ConfRes SET_record_icmp_ip_me(void *conf, const char *name,
+                                     const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    yarrpecho_conf.record_icmp_ip_me = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_icmp_seqno(void *conf, const char *name,
+                                     const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    yarrpecho_conf.record_icmp_seqno = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_icmp_id(void *conf, const char *name,
+                                  const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    yarrpecho_conf.record_icmp_id = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -67,14 +100,28 @@ static ConfParam yarrpecho_parameters[] = {
      SET_record_ttl,
      Type_FLAG,
      {"ttl", 0},
-     "Records TTL for IPv4 or Hop Limit for IPv6 in ICMP Echo Reply or ICMP "
-     "ttl/hop limit exceeded response."},
+     "Records TTL for IPv4 or Hop Limit for IPv6."},
     {"record-ipid",
      SET_record_ipid,
      Type_FLAG,
      {"ipid", 0},
-     "Records IPID just for IPv4 of ICMP Echo Reply or ICMP ttl/hop limit "
-     "exceeded response."},
+     "Records IPID just for IPv4."},
+    {"record-icmp-id",
+     SET_record_icmp_id,
+     Type_FLAG,
+     {"icmp-id", 0},
+     "Records ICMP identifier number of ttl/hop limit exceeded message."},
+    {"record-icmp-seqno",
+     SET_record_icmp_seqno,
+     Type_FLAG,
+     {"icmp-seqno", 0},
+     "Records ICMP sequence number of ttl/hop limit exceeded message."},
+    {"record-icmp-ip-me",
+     SET_record_icmp_ip_me,
+     Type_FLAG,
+     {"icmp-ip-me", 0},
+     "Records source IP in ICMP ttl/hop limit exceeded message. It can be "
+     "different from the outside source IP sometimes."},
 
     {0}};
 
@@ -126,7 +173,7 @@ static void yarrpecho_validate(uint64_t entropy, Recved *recved,
         ipaddress ip_them = recved->parsed.src_ip;
         ipaddress ip_me   = recved->parsed.dst_ip;
         unsigned  cookie =
-            get_cookie(ip_them, recved->parsed.icmp_seq, ip_me, 0, entropy);
+            get_cookie(ip_them, recved->parsed.icmp_seqno, ip_me, 0, entropy);
 
         if (recved->parsed.icmp_id == (cookie & 0xFF)) {
             /**
@@ -134,7 +181,7 @@ static void yarrpecho_validate(uint64_t entropy, Recved *recved,
              * is not always come back firstly.
              */
             pre->go_dedup        = 1;
-            pre->dedup_port_them = recved->parsed.icmp_seq;
+            pre->dedup_port_them = recved->parsed.icmp_seqno;
             pre->dedup_port_me   = 0;
         }
 
@@ -161,11 +208,11 @@ static void yarrpecho_validate(uint64_t entropy, Recved *recved,
             ipaddress ip_them = info.dst_ip;
             ipaddress ip_me   = info.src_ip;
             unsigned  cookie =
-                get_cookie(ip_them, info.icmp_seq, ip_me, 0, entropy);
+                get_cookie(ip_them, info.icmp_seqno, ip_me, 0, entropy);
 
             if (info.icmp_id == (cookie & 0xFF)) {
                 pre->go_dedup        = 1;
-                pre->dedup_port_them = info.icmp_seq;
+                pre->dedup_port_them = info.icmp_seqno;
                 pre->dedup_port_me   = 0;
             }
         }
@@ -179,6 +226,11 @@ static void yarrpecho_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     item->no_port          = 1;
     item->level            = OUT_SUCCESS;
 
+    if (yarrpecho_conf.record_ttl)
+        dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+    if (yarrpecho_conf.record_ipid && recved->parsed.src_ip.version == 4)
+        dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+
     /*echo reply*/
     if ((recved->parsed.src_ip.version == 4 &&
          recved->parsed.icmp_type == ICMPv4_TYPE_ECHO_REPLY &&
@@ -189,7 +241,7 @@ static void yarrpecho_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
         safe_strcpy(item->reason, OUT_RSN_SIZE, "echo reply");
         safe_strcpy(item->classification, OUT_CLS_SIZE, "destination");
-        dach_set_int(&item->report, "distance", recved->parsed.icmp_seq);
+        dach_set_int(&item->report, "distance", recved->parsed.icmp_seqno);
         dach_append(&item->report, "destination", ip_them_fmt.string,
                     strlen(ip_them_fmt.string), LinkType_String);
     } else {
@@ -198,6 +250,17 @@ static void yarrpecho_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         preprocess_frame(recved->packet + recved->parsed.app_offset,
                          recved->length - recved->parsed.app_offset,
                          PCAP_DLT_RAW, &info);
+
+        if (yarrpecho_conf.record_icmp_id)
+            dach_set_int(&item->report, "icmp id", info.icmp_id);
+        if (yarrpecho_conf.record_icmp_seqno)
+            dach_set_int(&item->report, "icmp seqno", info.icmp_seqno);
+        if (yarrpecho_conf.record_icmp_ip_me) {
+            ipaddress_formatted_t icmp_ip_me_fmt = ipaddress_fmt(info.src_ip);
+            dach_append(&item->report, "icmp ip_me", icmp_ip_me_fmt.string,
+                        strlen(icmp_ip_me_fmt.string), LinkType_String);
+        }
+
         ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(info.dst_ip);
         safe_strcpy(item->reason, OUT_RSN_SIZE, "ttl exceeded");
         safe_strcpy(item->classification, OUT_CLS_SIZE, "path");
@@ -205,15 +268,10 @@ static void yarrpecho_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
          * NOTE:Must use saved TTL instead of the fake one in IP header from
          * ICMP payload.
          */
-        dach_set_int(&item->report, "distance", info.icmp_seq);
+        dach_set_int(&item->report, "distance", info.icmp_seqno);
         dach_append(&item->report, "destination", ip_them_fmt.string,
                     strlen(ip_them_fmt.string), LinkType_String);
     }
-
-    if (yarrpecho_conf.record_ttl)
-        dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
-    if (yarrpecho_conf.record_ipid && recved->parsed.src_ip.version == 4)
-        dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
 }
 
 Scanner YarrpEchoScan = {
