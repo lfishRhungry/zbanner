@@ -1,6 +1,10 @@
-/* The latest version of this library is available on GitHub;
+/**
+ * The latest version of this library is available on GitHub;
  * https://github.com/sheredom/utf8.h
- * snapshot on 2024.11.01 */
+ *
+ * This version was downloaded on 2024.11.01
+ * Modified by sharkocha 2024
+ * */
 
 /* This is free and unencumbered software released into the public domain.
  *
@@ -426,9 +430,6 @@ utf8_constexpr14_impl int utf8cmp(const utf8_int8_t *src1,
     return 0;
 }
 
-utf8_constexpr14_impl int utf8coll(const utf8_int8_t *src1,
-                                   const utf8_int8_t *src2);
-
 utf8_int8_t *utf8cpy(utf8_int8_t *utf8_restrict       dst,
                      const utf8_int8_t *utf8_restrict src) {
     utf8_int8_t *d = dst;
@@ -525,21 +526,21 @@ utf8_int8_t *utf8dup_ex(const utf8_int8_t *src,
         /* out of memory so we bail */
         return utf8_null;
     } else {
-        bytes = 0;
-
+        size_t i = 0;
         /* copy src byte-by-byte into our new utf8 string */
-        while ('\0' != src[bytes]) {
-            n[bytes] = src[bytes];
-            bytes++;
+        while ('\0' != src[i] && i < bytes) {
+            n[i] = src[i];
+            i++;
         }
-
         /* append null terminating byte */
-        n[bytes] = '\0';
+        if (i < bytes)
+            n[i] = '\0';
+        else
+            n[bytes - 1] = '\0';
+
         return n;
     }
 }
-
-utf8_constexpr14_impl utf8_int8_t *utf8fry(const utf8_int8_t *str);
 
 utf8_constexpr14_impl size_t utf8len(const utf8_int8_t *str) {
     return utf8nlen(str, SIZE_MAX);
