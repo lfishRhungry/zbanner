@@ -8,6 +8,10 @@
 #include "../util-data/fine-malloc.h"
 #include "../util-out/logger.h"
 
+#define ZBANNER_DEDUP_TYPE_PORT   0
+#define ZBANNER_DEDUP_TYPE_ACK    1
+#define ZBANNER_DEDUP_TYPE_BANNER 2
+
 extern Scanner ZBannerScan; /*for internal x-ref*/
 
 struct ZBannerConf {
@@ -17,6 +21,7 @@ struct ZBannerConf {
     uint8_t  probe_ttl;
     unsigned is_port_success : 1;
     unsigned is_port_failure : 1;
+    unsigned is_ack_success  : 1;
     unsigned record_ttl      : 1;
     unsigned record_ipid     : 1;
     unsigned record_win      : 1;
@@ -26,14 +31,35 @@ struct ZBannerConf {
     unsigned record_data_len : 1;
     unsigned record_banner   : 1;
     unsigned record_data     : 1;
+    unsigned record_ack      : 1;
     unsigned with_ack        : 1;
     unsigned no_rst          : 1;
     unsigned no_dedup_banner : 1;
     unsigned no_dedup_synack : 1;
     unsigned no_dedup_rst    : 1;
+    unsigned no_dedup_ack    : 1;
 };
 
 static struct ZBannerConf zbanner_conf = {0};
+
+static ConfRes SET_record_ack(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.record_ack = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_no_dedup_ack(void *conf, const char *name,
+                                const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.no_dedup_ack = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_no_dedup_rst(void *conf, const char *name,
                                 const char *value) {
@@ -226,6 +252,16 @@ static ConfRes SET_port_failure(void *conf, const char *name,
     return Conf_OK;
 }
 
+static ConfRes SET_ack_success(void *conf, const char *name,
+                               const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.is_ack_success = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
 static ConfParam zbanner_parameters[] = {
     {"record-banner",
      SET_record_banner,
@@ -283,10 +319,21 @@ static ConfParam zbanner_parameters[] = {
      Type_FLAG,
      {"data-len", "len", 0},
      "Records payload data length of ACK segments if data exists."},
+    {"record-ack",
+     SET_record_ack,
+     Type_FLAG,
+     {"ack", 0},
+     "Records ACK segments for our probe but without payload data as info."},
+    {"ack-success",
+     SET_ack_success,
+     Type_FLAG,
+     {"success-ack", 0},
+     "Let ACK semgents without payload for our probe results as success level."
+     "(Default is info level)"},
     {"with-ack",
      SET_with_ack,
      Type_FLAG,
-     {"ack", 0},
+     {0},
      "Send an seperate ACK segment after receiving non-zerowin SYNACK segment "
      "from target port. This makes a complete standard TCP 3-way handshake "
      "before sending segment with data(probe) and spends more bandwidth while "
@@ -342,6 +389,12 @@ static ConfParam zbanner_parameters[] = {
      {0},
      "Just close the deduplication for received RST segments. This is useful "
      "to some researches."},
+    {"no-dedup-ack",
+     SET_no_dedup_ack,
+     Type_FLAG,
+     {0},
+     "Just close the deduplication for received ACK segments without payload. "
+     "This is useful to some researches."},
 
     {0}};
 
@@ -402,7 +455,7 @@ static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     if (TCP_FLAG_HAS(flags_them, TCP_FLAG_SYN | TCP_FLAG_ACK)) {
         if (cookie == seqno_me - 1) {
             pre->go_dedup   = 1;
-            pre->dedup_type = 0;
+            pre->dedup_type = ZBANNER_DEDUP_TYPE_PORT;
             pre->no_dedup   = zbanner_conf.no_dedup_synack;
         }
     }
@@ -431,15 +484,39 @@ static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
 
         if (seqno_me == cookie + payload_len + 1) {
             pre->go_dedup   = 1;
-            pre->dedup_type = 1;
+            pre->dedup_type = ZBANNER_DEDUP_TYPE_BANNER;
             pre->no_dedup   = zbanner_conf.no_dedup_banner;
+        }
+    }
+    /*
+     * ACK for our probe without payload.
+     */
+    else if (TCP_FLAG_HAS(flags_them, TCP_FLAG_ACK) &&
+             !recved->parsed.app_length && zbanner_conf.record_ack) {
+        ProbeTarget ptarget = {
+            .target.ip_proto  = recved->parsed.ip_protocol,
+            .target.ip_them   = recved->parsed.src_ip,
+            .target.ip_me     = recved->parsed.dst_ip,
+            .target.port_them = recved->parsed.port_src,
+            .target.port_me   = recved->parsed.port_dst,
+            .cookie           = 0, /*zbanner can recognize reponse by itself*/
+            .index            = recved->parsed.port_dst - src_port_start,
+        };
+
+        size_t payload_len;
+        payload_len = ZBannerScan.probe->get_payload_length_cb(&ptarget);
+
+        if (seqno_me == cookie + payload_len + 1) {
+            pre->go_dedup   = 1;
+            pre->dedup_type = ZBANNER_DEDUP_TYPE_ACK;
+            pre->no_dedup   = zbanner_conf.no_dedup_ack;
         }
     }
     /*rst for syn (a little different)*/
     else if (TCP_FLAG_HAS(flags_them, TCP_FLAG_RST)) {
         if (seqno_me == cookie + 1 || seqno_me == cookie) {
             pre->go_dedup   = 1;
-            pre->dedup_type = 0;
+            pre->dedup_type = ZBANNER_DEDUP_TYPE_PORT;
             pre->no_dedup   = zbanner_conf.no_dedup_rst;
         }
     }
@@ -583,7 +660,7 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         }
     }
     /*Banner*/
-    else {
+    else if (recved->parsed.app_length) {
         /*send rst first to disconn*/
         if (!zbanner_conf.no_rst) {
             PktBuf *pkt_buffer = stack_get_pktbuf(stack);
@@ -670,6 +747,30 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                 PKT_BUF_SIZE);
 
             stack_transmit_pktbuf(stack, pkt_buffer);
+        }
+    }
+    /*ACK for our probe without payload*/
+    else {
+        win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
+
+        if (zbanner_conf.record_ttl)
+            dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+        if (zbanner_conf.record_ipid && recved->parsed.src_ip.version == 4)
+            dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+        if (zbanner_conf.record_win)
+            dach_set_int(&item->report, "win", win_them);
+        if (zbanner_conf.record_seqno) {
+            dach_set_int(&item->report, "seqno", seqno_them);
+        }
+        if (zbanner_conf.record_ackno) {
+            dach_set_int(&item->report, "ackno", seqno_me);
+        }
+
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "ack");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "acked");
+
+        if (zbanner_conf.is_ack_success) {
+            item->level = OUT_SUCCESS;
         }
     }
 }
