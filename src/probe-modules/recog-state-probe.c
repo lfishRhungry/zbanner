@@ -16,14 +16,56 @@ struct RecogStateConf {
     size_t           hello_len;
     char            *xml_filename;
     struct Recog_FP *recog_fp;
-    unsigned         banner_while_regex : 1;
-    unsigned         banner_if_fail     : 1;
     unsigned         unprefix           : 1;
     unsigned         unsuffix           : 1;
+    unsigned         record_banner      : 1;
+    unsigned         record_utf8        : 1;
+    unsigned         record_data        : 1;
+    unsigned         record_data_len    : 1;
     unsigned         get_whole_response : 1;
 };
 
 static struct RecogStateConf recogstate_conf = {0};
+
+static ConfRes SET_record_data_len(void *conf, const char *name,
+                                   const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    recogstate_conf.record_data_len = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_data(void *conf, const char *name,
+                               const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    recogstate_conf.record_data = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_utf8(void *conf, const char *name,
+                               const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    recogstate_conf.record_utf8 = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_banner(void *conf, const char *name,
+                                 const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    recogstate_conf.record_banner = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_unsuffix(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -39,26 +81,6 @@ static ConfRes SET_unprefix(void *conf, const char *name, const char *value) {
     UNUSEDPARM(name);
 
     recogstate_conf.unprefix = parse_str_bool(value);
-
-    return Conf_OK;
-}
-
-static ConfRes SET_banner_if_fail(void *conf, const char *name,
-                                  const char *value) {
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    recogstate_conf.banner_if_fail = parse_str_bool(value);
-
-    return Conf_OK;
-}
-
-static ConfRes SET_show_banner(void *conf, const char *name,
-                               const char *value) {
-    UNUSEDPARM(conf);
-    UNUSEDPARM(name);
-
-    recogstate_conf.banner_while_regex = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -213,16 +235,6 @@ static ConfParam recogstate_parameters[] = {
      {"xml", "xml-file", 0},
      "Specifies a xml file in Recog fingerprint format as the matching "
      "source."},
-    {"banner",
-     SET_show_banner,
-     Type_FLAG,
-     {0},
-     "Show normalized banner after regex matching."},
-    {"banner-if-fail",
-     SET_banner_if_fail,
-     Type_FLAG,
-     {"banner-fail", "fail-banner", 0},
-     "Show normalized banner in results if regex matching failed."},
     {"unprefix",
      SET_unprefix,
      Type_FLAG,
@@ -235,6 +247,26 @@ static ConfParam recogstate_parameters[] = {
      {0},
      "Unprefix the '$' from the tail of all regex. It's useful if we cannot "
      "extract exactly the proper part of string for matching."},
+    {"record-banner",
+     SET_record_banner,
+     Type_FLAG,
+     {"banner", 0},
+     "Records banner content in escaped text style."},
+    {"record-utf8",
+     SET_record_utf8,
+     Type_FLAG,
+     {"utf8", 0},
+     "Records banner content with escaped valid utf8 encoding."},
+    {"record-data",
+     SET_record_data,
+     Type_FLAG,
+     {"data", 0},
+     "Records data content in binary format."},
+    {"record-data-len",
+     SET_record_data_len,
+     Type_FLAG,
+     {"data-len", "len", 0},
+     "Records payload data length."},
 
     {0}};
 
@@ -302,21 +334,21 @@ static unsigned recogstate_parse_response(DataPass *pass, ProbeState *state,
         safe_strcpy(item.classification, OUT_CLS_SIZE, "matched");
         dach_append(&item.report, "result", match_res, strlen(match_res),
                     LinkType_String);
-
-        if (recogstate_conf.banner_while_regex) {
-            dach_append_normalized(&item.report, "banner", px, sizeof_px,
-                                   LinkType_String);
-        }
     } else {
         item.level = OUT_FAILURE;
         safe_strcpy(item.classification, OUT_CLS_SIZE, "not matched");
-
-        if (recogstate_conf.banner_while_regex ||
-            recogstate_conf.banner_if_fail) {
-            dach_append_normalized(&item.report, "banner", px, sizeof_px,
-                                   LinkType_String);
-        }
     }
+
+    if (recogstate_conf.record_data_len) {
+        dach_set_int(&item.report, "data len", sizeof_px);
+    }
+    if (recogstate_conf.record_data)
+        dach_append(&item.report, "data", px, sizeof_px, LinkType_Binary);
+    if (recogstate_conf.record_utf8)
+        dach_append_utf8(&item.report, "utf8", px, sizeof_px, LinkType_String);
+    if (recogstate_conf.record_banner)
+        dach_append_banner(&item.report, "banner", px, sizeof_px,
+                           LinkType_String);
 
     output_result(out, &item);
 

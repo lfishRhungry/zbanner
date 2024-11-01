@@ -244,8 +244,8 @@ static void snmp_banner(struct SMACK *global_mib, const unsigned char *oid,
             break;
         case 4:
         default:
-            dach_append_normalized(dach, SNMP_DACH_NAME, var, var_length,
-                                   LinkType_String);
+            dach_append_banner(dach, SNMP_DACH_NAME, var, var_length,
+                               LinkType_String);
             break;
     }
 

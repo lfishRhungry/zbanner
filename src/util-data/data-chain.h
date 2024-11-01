@@ -279,8 +279,8 @@ DataLink *dach_printf(DataChain *dach, const char *name, LinkType type,
 void dach_no_escape_char();
 
 /**
- * Append after removing bad characters, especially new lines and HTML
- * control codes for data type link.
+ * Append in one line after removing bad characters, especially backslashes and
+ * single/double quotes.
  * If this exceeds the buffer, then the buffer will be expanded.
  * NOTE: The normalized string is not standard for JSON string value if use
  * escaped char...
@@ -288,12 +288,12 @@ void dach_no_escape_char();
  * @param length len of px, can be DACH_AUTO_LEN if px is c string.
  * @return target link after append.
  */
-DataLink *dach_append_normalized_by_link(DataLink *link, const void *px,
-                                         size_t length);
+DataLink *dach_append_banner_by_link(DataLink *link, const void *px,
+                                     size_t length);
 
 /**
- * Append after removing bad characters, especially new lines and HTML
- * control codes for data type link.
+ * Append in one line after removing bad characters, especially backslashes and
+ * single/double quotes.
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
  * NOTE: The normalized string is not standard for JSON string value if use
@@ -301,8 +301,34 @@ DataLink *dach_append_normalized_by_link(DataLink *link, const void *px,
  * @param length len of px, can be DACH_AUTO_LEN if px is c string.
  * @return target link after append.
  */
-DataLink *dach_append_normalized(DataChain *dach, const char *name,
-                                 const void *px, size_t length, LinkType type);
+DataLink *dach_append_banner(DataChain *dach, const char *name, const void *px,
+                             size_t length, LinkType type);
+
+/**
+ * Append valid utf8 chars in one line after removing bad characters, especially
+ * backslashes and single/double quotes.
+ * If this exceeds the buffer, then the buffer will be expanded.
+ * NOTE: The normalized string is not standard for JSON string value if use
+ * escaped char...
+ * @param link expected link and must not be NULL
+ * @param length len of px, can be DACH_AUTO_LEN if px is c string.
+ * @return target link after append.
+ */
+DataLink *dach_append_utf8_by_link(DataLink *link, const void *px,
+                                   size_t length);
+
+/**
+ * Append valid utf8 chars in one line after removing bad characters, especially
+ * backslashes and single/double quotes.
+ * If this exceeds the buffer, then the buffer will be expanded.
+ * If data with this name doesn't exist, it'll be create.
+ * NOTE: The normalized string is not standard for JSON string value if use
+ * escaped char...
+ * @param length len of px, can be DACH_AUTO_LEN if px is c string.
+ * @return target link after append.
+ */
+DataLink *dach_append_utf8(DataChain *dach, const char *name, const void *px,
+                           size_t length, LinkType type);
 
 /**
  * @param link data type link and must not be NULL

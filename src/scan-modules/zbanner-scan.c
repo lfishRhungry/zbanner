@@ -30,6 +30,7 @@ struct ZBannerConf {
     unsigned record_ackno    : 1;
     unsigned record_data_len : 1;
     unsigned record_banner   : 1;
+    unsigned record_utf8     : 1;
     unsigned record_data     : 1;
     unsigned record_ack      : 1;
     unsigned with_ack        : 1;
@@ -107,6 +108,16 @@ static ConfRes SET_record_banner(void *conf, const char *name,
     UNUSEDPARM(name);
 
     zbanner_conf.record_banner = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_utf8(void *conf, const char *name,
+                               const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.record_utf8 = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -268,6 +279,11 @@ static ConfParam zbanner_parameters[] = {
      Type_FLAG,
      {"banner", 0},
      "Records banner content in escaped text style."},
+    {"record-utf8",
+     SET_record_utf8,
+     Type_FLAG,
+     {"utf8", 0},
+     "Records banner content with escaped valid utf8 encoding."},
     {"record-data",
      SET_record_data,
      Type_FLAG,
@@ -688,14 +704,6 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             th_idx, &ptarget, &recved->packet[recved->parsed.app_offset],
             recved->parsed.app_length, item);
 
-        if (zbanner_conf.record_banner)
-            dach_append_normalized(&item->report, "banner",
-                                   &recved->packet[recved->parsed.app_offset],
-                                   recved->parsed.app_length, LinkType_String);
-        if (zbanner_conf.record_data)
-            dach_append(&item->report, "data",
-                        &recved->packet[recved->parsed.app_offset],
-                        recved->parsed.app_length, LinkType_Binary);
         if (zbanner_conf.record_ttl)
             dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
         if (zbanner_conf.record_ipid && recved->parsed.src_ip.version == 4)
@@ -709,6 +717,18 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
         if (zbanner_conf.record_data_len) {
             dach_set_int(&item->report, "data len", recved->parsed.app_length);
         }
+        if (zbanner_conf.record_data)
+            dach_append(&item->report, "data",
+                        &recved->packet[recved->parsed.app_offset],
+                        recved->parsed.app_length, LinkType_Binary);
+        if (zbanner_conf.record_utf8)
+            dach_append_utf8(&item->report, "utf8",
+                             &recved->packet[recved->parsed.app_offset],
+                             recved->parsed.app_length, LinkType_String);
+        if (zbanner_conf.record_banner)
+            dach_append_banner(&item->report, "banner",
+                               &recved->packet[recved->parsed.app_offset],
+                               recved->parsed.app_length, LinkType_String);
 
         /*multi-probe Multi_AfterHandle*/
         if (ZBannerScan.probe->multi_mode == Multi_AfterHandle && is_multi &&

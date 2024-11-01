@@ -80,12 +80,14 @@ struct HttpStateConf {
     size_t               regex_len;
     pcre2_code          *compiled_re;
     pcre2_match_context *match_ctx;
-    unsigned             re_case_insensitive : 1;
-    unsigned             re_include_newlines : 1;
-
-    unsigned match_whole_response : 1;
-    unsigned report_while_regex   : 1;
+    unsigned             re_case_insensitive  : 1;
+    unsigned             re_include_newlines  : 1;
+    unsigned             match_whole_response : 1;
 #endif
+    unsigned record_banner      : 1;
+    unsigned record_utf8        : 1;
+    unsigned record_data        : 1;
+    unsigned record_data_len    : 1;
     /*dynamic set ip:port as Host field*/
     unsigned dynamic_host       : 1;
     unsigned get_whole_response : 1;
@@ -105,12 +107,42 @@ static ConfRes SET_get_whole_response(void *conf, const char *name,
 
 #ifndef NOT_FOUND_PCRE2
 
-static ConfRes SET_show_banner(void *conf, const char *name,
+static ConfRes SET_record_data_len(void *conf, const char *name,
+                                   const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    httpstate_conf.record_data_len = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_data(void *conf, const char *name,
                                const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    httpstate_conf.report_while_regex = parse_str_bool(value);
+    httpstate_conf.record_data = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_utf8(void *conf, const char *name,
+                               const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    httpstate_conf.record_utf8 = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_banner(void *conf, const char *name,
+                                 const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    httpstate_conf.record_banner = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -477,12 +509,28 @@ static ConfParam httpstate_parameters[] = {
      {"match-whole", 0},
      "Continue to match the whole response after matched previous content.\n"
      "NOTE: it works while using --get-whole-response."},
-    {"report",
-     SET_show_banner,
-     Type_FLAG,
-     {0},
-     "Report response data after regex matching."},
 #endif
+
+    {"record-banner",
+     SET_record_banner,
+     Type_FLAG,
+     {"banner", 0},
+     "Records banner content in escaped text style."},
+    {"record-utf8",
+     SET_record_utf8,
+     Type_FLAG,
+     {"utf8", 0},
+     "Records banner content with escaped valid utf8 encoding."},
+    {"record-data",
+     SET_record_data,
+     Type_FLAG,
+     {"data", 0},
+     "Records data content in binary format."},
+    {"record-data-len",
+     SET_record_data_len,
+     Type_FLAG,
+     {"data-len", "len", 0},
+     "Records payload data length."},
 
     {0}};
 
@@ -714,21 +762,26 @@ static unsigned httpstate_parse_response(DataPass *pass, ProbeState *state,
             safe_strcpy(item.classification, OUT_CLS_SIZE, "not matched");
         }
 
-        if (httpstate_conf.report_while_regex) {
-            dach_append_normalized(&item.report, "banner", px, sizeof_px,
-                                   LinkType_String);
-        }
         pcre2_match_data_free(match_data);
     } else {
 #endif
 
         item.level = OUT_SUCCESS;
-        dach_append_normalized(&item.report, "banner", px, sizeof_px,
-                               LinkType_String);
 
 #ifndef NOT_FOUND_PCRE2
     }
 #endif
+
+    if (httpstate_conf.record_data_len) {
+        dach_set_int(&item.report, "data len", sizeof_px);
+    }
+    if (httpstate_conf.record_data)
+        dach_append(&item.report, "data", px, sizeof_px, LinkType_Binary);
+    if (httpstate_conf.record_utf8)
+        dach_append_utf8(&item.report, "utf8", px, sizeof_px, LinkType_String);
+    if (httpstate_conf.record_banner)
+        dach_append_banner(&item.report, "banner", px, sizeof_px,
+                           LinkType_String);
 
     output_result(out, &item);
 

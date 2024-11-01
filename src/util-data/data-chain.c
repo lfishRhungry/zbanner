@@ -18,6 +18,7 @@
 #include "fine-malloc.h"
 #include "safe-string.h"
 #include "../util-out/logger.h"
+#include "../util-data/utf8.h"
 
 #include <stddef.h>
 #include <stdarg.h>
@@ -486,14 +487,13 @@ void dach_no_escape_char() { no_escape_char = true; }
 
 /***************************************************************************
  ***************************************************************************/
-DataLink *dach_append_normalized_by_link(DataLink *link, const void *px,
-                                         size_t length) {
+DataLink *dach_append_banner_by_link(DataLink *link, const void *px,
+                                     size_t length) {
     int c;
 
     for (size_t i = 0; i < length; i++) {
         c = ((const char *)px)[i];
-        if (c >= -1 && isprint(c) && c != '<' && c != '>' && c != '&' &&
-            c != '\\' && c != '"' && c != '\'') {
+        if (c >= -1 && isprint(c) && c != '\\' && c != '"' && c != '\'') {
             link = dach_append_char_by_link(link, c);
         } else {
             if (no_escape_char) {
@@ -511,8 +511,8 @@ DataLink *dach_append_normalized_by_link(DataLink *link, const void *px,
 
 /***************************************************************************
  ***************************************************************************/
-DataLink *dach_append_normalized(DataChain *dach, const char *name,
-                                 const void *px, size_t length, LinkType type) {
+DataLink *dach_append_banner(DataChain *dach, const char *name, const void *px,
+                             size_t length, LinkType type) {
     DataLink *link = dach_find_link(dach, name);
 
     if (link == NULL) {
@@ -522,7 +522,67 @@ DataLink *dach_append_normalized(DataChain *dach, const char *name,
                               type); /*estimate the encoded length*/
     }
 
-    return dach_append_normalized_by_link(link, px, length);
+    return dach_append_banner_by_link(link, px, length);
+}
+
+/***************************************************************************
+ ***************************************************************************/
+DataLink *dach_append_utf8_by_link(DataLink *link, const void *px,
+                                   size_t length) {
+    int          c;
+    utf8_int32_t utf8_c;
+    size_t       utf8_len;
+    const void  *next_ptr = px;
+    const void  *ptr      = px;
+
+    for (; next_ptr - px < length;) {
+        next_ptr = utf8codepoint(ptr, &utf8_c);
+        utf8_len = utf8codepointsize(utf8_c);
+
+        if (utf8_len == 1) {
+            c = ((char *)ptr)[0];
+
+            if (isprint(c) && c != '\\' && c != '"' && c != '\'') {
+
+                link = dach_append_char_by_link(link, c);
+
+            } else {
+
+                if (no_escape_char) {
+                    link = dach_append_by_link(link, "\\\\x", 3);
+                } else {
+                    link = dach_append_by_link(link, "\\x", 2);
+                }
+                link =
+                    dach_append_char_by_link(link, HEX_ARRAY[(c >> 4) & 0xF]);
+                link =
+                    dach_append_char_by_link(link, HEX_ARRAY[(c >> 0) & 0xF]);
+            }
+
+        } else {
+            link = dach_append_by_link(link, ptr, utf8_len);
+        }
+
+        ptr = next_ptr;
+    }
+
+    return link;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+DataLink *dach_append_utf8(DataChain *dach, const char *name, const void *px,
+                           size_t length, LinkType type) {
+    DataLink *link = dach_find_link(dach, name);
+
+    if (link == NULL) {
+        link = _dach_new_link(dach, name,
+                              length * 4 < DACH_DEFAULT_DATA_SIZE ? length * 4
+                                                                  : length * 2,
+                              type); /*estimate the encoded length*/
+    }
+
+    return dach_append_utf8_by_link(link, px, length);
 }
 
 /***************************************************************************
@@ -831,8 +891,8 @@ int datachain_selftest(void) {
         /**
          * Add data type links in formatting or printf style
          */
-        dach_append_normalized(dach, "normal", "<hello>\n", strlen("<hello>\n"),
-                               LinkType_String);
+        dach_append_banner(dach, "normal", "<hello>\n", strlen("<hello>\n"),
+                           LinkType_String);
         link = dach_find_link(dach, "normal");
         if (link == NULL) {
             line = __LINE__;

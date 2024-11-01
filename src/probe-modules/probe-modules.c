@@ -295,8 +295,7 @@ unsigned probe_just_report_banner(unsigned th_idx, ProbeTarget *target,
                                   const unsigned char *px, unsigned sizeof_px,
                                   OutItem *item) {
     item->level = OUT_SUCCESS;
-    dach_append_normalized(&item->report, "banner", px, sizeof_px,
-                           LinkType_String);
+    dach_append_banner(&item->report, "banner", px, sizeof_px, LinkType_String);
 
     return 0;
 }
