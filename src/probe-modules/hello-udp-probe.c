@@ -257,11 +257,13 @@ static size_t helloudp_make_payload(ProbeTarget   *target,
     return helloudp_conf.hello_len;
 }
 
-static bool helloudp_validate_response(ProbeTarget         *target,
-                                       const unsigned char *px,
-                                       unsigned             sizeof_px) {
+static unsigned helloudp_handle_response(unsigned th_idx, ProbeTarget *target,
+                                         const unsigned char *px,
+                                         unsigned sizeof_px, OutItem *item) {
+    bool matched = false;
     if (sizeof_px == 0) {
-        return false;
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "null payload");
+        goto is_match;
     }
 
     pcre2_match_data *match_data;
@@ -271,7 +273,8 @@ static bool helloudp_validate_response(ProbeTarget         *target,
         pcre2_match_data_create_from_pattern(helloudp_conf.compiled_re, NULL);
     if (!match_data) {
         LOG(LEVEL_ERROR, "cannot allocate match_data when matching.\n");
-        return false;
+        safe_strcpy(item->reason, OUT_RSN_SIZE, "matching err");
+        goto is_match;
     }
 
     rc = pcre2_match(helloudp_conf.compiled_re, (PCRE2_SPTR8)px, (int)sizeof_px,
@@ -281,17 +284,18 @@ static bool helloudp_validate_response(ProbeTarget         *target,
 
     /*matched one. ps: "offset is too small" means successful, too*/
     if (rc >= 0) {
-        return true;
-    } else {
-        return false;
+        matched = true;
     }
-}
 
-static unsigned helloudp_handle_response(unsigned th_idx, ProbeTarget *target,
-                                         const unsigned char *px,
-                                         unsigned sizeof_px, OutItem *item) {
-    item->level = OUT_SUCCESS;
-    safe_strcpy(item->classification, OUT_CLS_SIZE, "matched");
+is_match:
+
+    if (matched) {
+        item->level = OUT_SUCCESS;
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "matched");
+    } else {
+        item->level = OUT_FAILURE;
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "not matched");
+    }
 
     return 0;
 }
@@ -330,7 +334,7 @@ Probe HelloUdpProbe = {
 
     .init_cb              = &helloudp_init,
     .make_payload_cb      = &helloudp_make_payload,
-    .validate_response_cb = &helloudp_validate_response,
+    .validate_response_cb = &probe_all_response_valid,
     .handle_response_cb   = &helloudp_handle_response,
     .close_cb             = &helloudp_close,
 };
