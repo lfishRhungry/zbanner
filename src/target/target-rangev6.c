@@ -158,17 +158,51 @@ int128_t targetset_count(TargetSet *targetset) {
 }
 
 /***************************************************************************
+ * Does a linear/binary search to see if the list contains the ipv6 address
  ***************************************************************************/
 bool range6list_is_contains(const struct Range6List *targets,
                             const ipv6address        ip) {
-    unsigned i;
+    unsigned maxmax = targets->list_len;
+    unsigned min    = 0;
+    unsigned max    = targets->list_len;
+    unsigned mid;
 
-    for (i = 0; i < targets->list_len; i++) {
-        struct Range6 *range = &targets->list[i];
+    /**
+     * Do linear search if not sorted
+     */
+    if (!targets->is_sorted) {
+        LOG(LEVEL_DETAIL, "(%s) non-sorted range6list", __func__);
+        unsigned i;
 
-        if (LESSEQ(range->begin, ip) && LESSEQ(ip, range->end))
-            return true;
+        for (i = 0; i < targets->list_len; i++) {
+            struct Range6 *range = &targets->list[i];
+
+            if (LESSEQ(range->begin, ip) && LESSEQ(ip, range->end))
+                return true;
+        }
+        return false;
     }
+
+    /**
+     * Do binary search
+     */
+    for (;;) {
+        mid = min + (max - min) / 2;
+        if (LESS(ip, targets->list[mid].begin)) {
+            max = mid;
+            continue;
+        } else if (LESS(targets->list[mid].end, ip)) {
+            if (mid + 1 == maxmax)
+                break;
+            else if (LESS(ip, targets->list[mid + 1].begin))
+                break;
+            else
+                min = mid + 1;
+        } else {
+            return true;
+        }
+    }
+
     return false;
 }
 
@@ -465,8 +499,8 @@ ipv6address range6list_pick(const struct Range6List *targets, uint64_t index) {
     size_t        mid;
     const size_t *picker = targets->picker;
 
-    if (picker == NULL) {
-        LOG(LEVEL_ERROR, "ipv6 picker is null\n");
+    if (!targets->is_sorted || !picker) {
+        LOG(LEVEL_ERROR, "(%s) pick non-optimized range6list", __func__);
         exit(1);
     }
 

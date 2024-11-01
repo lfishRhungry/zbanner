@@ -164,6 +164,26 @@ uint64_t rangelist_count(const struct RangeList *targets);
 unsigned rangelist_pick(const struct RangeList *targets, uint64_t i);
 
 /**
+ * Get's the indexed port/address.
+ *
+ * Note that this requires a search of all the ranges. Currently, this is
+ * done by a linear search of the ranges. This needs to change, because
+ * once we start adding in a lot of "exclude ranges", the address space
+ * will get fragmented, and the linear search will take too long.
+ *
+ * @param targets
+ *      A list of IP address ranges, or a list of port ranges (one or the
+ *      other, but not both).
+ * @param index
+ *      An integer starting at 0 up to (but not including) the value returned
+ *      by 'rangelist_count()' for this target list.
+ * @return
+ *      an IP address or port corresponding to this index.
+ */
+unsigned rangelist_pick_linearsearch(const struct RangeList *targets,
+                                     uint64_t                index);
+
+/**
  * Remove all the ranges in the range list.
  */
 void rangelist_remove_all(struct RangeList *list);

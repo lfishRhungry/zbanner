@@ -55,19 +55,49 @@
 static struct Range INVALID_RANGE = {2, 1};
 
 /***************************************************************************
- * Does a linear search to see if the list contains the address/port.
- * FIXME: This should be upgraded to a binary search. However, we don't
- * really use it in any performance critical code, so it's okay
- * as a linear search.
+ * Does a linear/binary search to see if the list contains the address/port.
  ***************************************************************************/
 bool rangelist_is_contains(const struct RangeList *targets, unsigned addr) {
-    unsigned i;
-    for (i = 0; i < targets->list_len; i++) {
-        struct Range *range = &targets->list[i];
+    unsigned maxmax = targets->list_len;
+    unsigned min    = 0;
+    unsigned max    = targets->list_len;
+    unsigned mid;
 
-        if (range->begin <= addr && addr <= range->end)
-            return true;
+    /**
+     * Do linear search if not sorted
+     */
+    if (!targets->is_sorted) {
+        LOG(LEVEL_DETAIL, "(%s) non-sorted rangelist", __func__);
+        unsigned i;
+        for (i = 0; i < targets->list_len; i++) {
+            struct Range *range = &targets->list[i];
+
+            if (range->begin <= addr && addr <= range->end)
+                return true;
+        }
+        return false;
     }
+
+    /**
+     * Do binary search
+     */
+    for (;;) {
+        mid = min + (max - min) / 2;
+        if (addr < targets->list[mid].begin) {
+            max = mid;
+            continue;
+        } else if (addr > targets->list[mid].end) {
+            if (mid + 1 == maxmax)
+                break;
+            else if (addr < targets->list[mid + 1].begin)
+                break;
+            else
+                min = mid + 1;
+        } else {
+            return true;
+        }
+    }
+
     return false;
 }
 
@@ -747,12 +777,12 @@ uint64_t rangelist_count(const struct RangeList *targets) {
  * Get's the indexed port/address.
  *
  * Note that this requires a search of all the ranges. Currently, this is
- * done by a learn search of the ranges. This needs to change, because
+ * done by a linear search of the ranges. This needs to change, because
  * once we start adding in a lot of "exclude ranges", the address space
  * will get fragmented, and the linear search will take too long.
  ***************************************************************************/
-static unsigned rangelist_pick_linearsearch(const struct RangeList *targets,
-                                            uint64_t                index) {
+unsigned rangelist_pick_linearsearch(const struct RangeList *targets,
+                                     uint64_t                index) {
     unsigned i;
 
     for (i = 0; i < targets->list_len; i++) {
@@ -777,13 +807,9 @@ unsigned rangelist_pick(const struct RangeList *targets, uint64_t index) {
     unsigned        mid;
     const unsigned *picker = targets->picker;
 
-    if (!targets->is_sorted)
-        rangelist_sort((struct RangeList *)targets);
-    assert(targets->is_sorted);
-
-    if (picker == NULL) {
-        /* optimization wasn't done */
-        return rangelist_pick_linearsearch(targets, index);
+    if (!targets->is_sorted || !picker) {
+        LOG(LEVEL_ERROR, "(%s) pick non-optimized rangelist", __func__);
+        exit(1);
     }
 
     for (;;) {
