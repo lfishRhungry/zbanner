@@ -87,17 +87,13 @@ Scanner ArpReqScan = {
     .params              = NULL,
     .bpf_filter          = "arp && arp[6:2]==2", /*arp reply*/
     .short_desc          = "ARP scan for local network.",
-    .desc = "ArpReqScan sends an ARP Request packet to broadcast mac addr"
-            "(all one) with target ipv4 addr we request. Expect an ARP Reply "
-            "packet "
+    .desc = "ArpReqScan sends an ARP Request packet to broadcast mac addr(all "
+            "one) with target ipv4 addr we request. Expect an ARP Reply packet "
             "with actual mac addr of requested target and print mac addr as "
-            "report. "
-            "ArpReqScan does not support ipv6 target because ipv6 use neighbor "
-            "discovery messages of Neighbor Dicovery Protocol(NDP) implemented "
-            "by ICMPv6 "
-            " to dicovery neighbors and their mac addr. ArpReqScan will ignore "
-            "ipv6 "
-            "targets.\n"
+            "report. ArpReqScan does not support ipv6 target because ipv6 use "
+            "neighbor discovery messages of Neighbor Dicovery Protocol(NDP) "
+            "implemented by ICMPv6 to dicovery neighbors and their mac addr. "
+            "ArpReqScan will ignore ipv6 targets.\n"
             "NOTE1: ArpReqScan works in local area network only, so remember "
             "to use\n"
             "    `--lan-mode`\n"

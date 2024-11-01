@@ -1335,9 +1335,8 @@ Probe TlsStateProbe = {
     .desc =
         "TlsState Probe emulates SSL/TLS layer by OpenSSL BIO machanism. "
         "It is used with TcpState ScanModule to perform TLS probing based on "
-        "our"
-        " user-spase TCP stack. TlsState is just a middle layer(probe), so we "
-        "should specify a subprobe for it.\n"
+        "our user-spase TCP stack. TlsState is just a middle layer(probe), so "
+        "we should specify a subprobe for it.\n"
         "NOTE1: TlsState doesn't support initial waiting before hello for "
         "subprobe because the nesting.\n"
         "NOTE2: TlsState probe is designed to be compatible with wide range of "

@@ -155,8 +155,7 @@ Scanner IcmpTimeScan = {
     .bpf_filter          = "icmp && (icmp[0]==14 && icmp[1]==0)",
     .short_desc          = "ICMP timestamp scan to find alive hosts.",
     .desc = "IcmpTimeScan sends an ICMP Timestamp mesage to IPv4 target host. "
-            "Expect an "
-            "ICMP Timestamp Reply to believe the host is alive.\n"
+            "Expect an ICMP Timestamp Reply to believe the host is alive.\n"
             "NOTE: Don't specify any ports for this module.",
 
     .init_cb     = &scan_init_nothing,

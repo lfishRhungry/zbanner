@@ -340,11 +340,10 @@ Probe LzrProbe = {
     .desc =
         "LzrProbe is an implementation of LZR-like service identifier "
         "in " XTATE_NAME_TITLE_CASE
-        ". It sends a serias specified LZR handshakes"
-        "(subprobes) until identified the service by matching responsed data "
-        "with all LZR handshakes. "
-        "I had fixed some matching bugs and errors from original LZR "
-        "and added more useful handshakes. So, enjoy it!\n"
+        ". It sends a serias specified LZR handshakes(subprobes) until "
+        "identified the service by matching responsed data with all LZR "
+        "handshakes. I had fixed some matching bugs and errors from original "
+        "LZR and added more useful handshakes. So, enjoy it!\n"
         "NOTE1: Recommended optimal handshake order by LZR paper:\n"
         "1)wait\n"
         "2)tls\n"

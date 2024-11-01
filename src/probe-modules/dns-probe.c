@@ -350,15 +350,12 @@ Probe DnsProbe = {
     .desc =
         "DnsProbe sends a dns request specified by user to target udp port and "
         "expects a dns reply. DnsProbe is used for scanning multiple dns "
-        "servers"
-        " by one type request, instead of doing multiple dns requests to one "
-        "dns server.\n"
+        "servers by one type request, instead of doing multiple dns requests "
+        "to one dns server.\n"
         "NOTE: If we have not added iptables rules to ban the outwards ICMP "
-        "Port"
-        " Unreachable sending, dns response retransmission will happen and "
-        "waste"
-        " resource both on scanner and targets. And an interesting thing will "
-        "happen: every retransmited dns reply carries a different answer.",
+        "Port Unreachable sending, dns response retransmission will happen and "
+        "waste resource both on scanner and targets. And an interesting thing "
+        "will happen: every retransmited dns reply carries a different answer.",
 
     .init_cb              = &dns_init,
     .make_payload_cb      = &dns_make_payload,

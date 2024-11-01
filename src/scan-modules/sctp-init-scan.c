@@ -129,9 +129,8 @@ Scanner SctpInitScan = {
                            "|| (ip6 && sctp && (ip6[40+12]==2 || ip6[40+12]==6))",
     .short_desc          = "SCTP INIT scan to find open or closed SCTP port.",
     .desc = "SctpInitScan sends an SCTP INIT packet(chunk) to target port. "
-            "Expect an "
-            "INIT ACK response to believe the port is open or an ABORT for "
-            "closed in SCTP protocol.",
+            "Expect an INIT ACK response to believe the port is open or an "
+            "ABORT for closed in SCTP protocol.",
 
     .init_cb     = &scan_init_nothing,
     .transmit_cb = &sctpinit_transmit,

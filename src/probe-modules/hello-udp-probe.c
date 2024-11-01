@@ -327,8 +327,8 @@ Probe HelloUdpProbe = {
     .short_desc = "Send user-specified payload and get response in UDP scan.",
     .desc = "HelloUdpProbe is the udp version of HelloPorbe, it uses static"
             " content set by user as hello data and reports banner if it "
-            "matches regex"
-            " that user set. It is used to test POC immediatly under udp.\n"
+            "matches regex that user set. It is used to test POC immediatly "
+            "under udp.\n"
             "NOTE: We must specify hello data and regex for HelloUdpProbe.\n"
             "Dependencies: PCRE2.",
 

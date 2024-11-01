@@ -99,13 +99,11 @@ Probe GetStateProbe = {
     .params     = getstate_parameters,
     .short_desc = "A probe that sends HTTP GET request to test and debug "
                   "stateful TCP scan",
-    .desc =
-        "GetState Probe sends target port a simple HTTP GET request:\n"
-        "    `GET / HTTP/1.0\\r\\n\\r\\n`\n"
-        "And could get a simple result from http server fastly. GetState is "
-        "the "
-        "state version of GetRequest Probe for testing ScanModules that needs a"
-        " probe of state type.",
+    .desc = "GetState Probe sends target port a simple HTTP GET request:\n"
+            "    `GET / HTTP/1.0\\r\\n\\r\\n`\n"
+            "And could get a simple result from http server fastly. GetState "
+            "is the state version of GetRequest Probe for testing ScanModules "
+            "that needs a probe of state type.",
 
     .init_cb           = &getstate_init,
     .conn_init_cb      = &getstate_conn_init,

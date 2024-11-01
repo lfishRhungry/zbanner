@@ -159,8 +159,7 @@ Scanner IcmpEchoScan = {
                            "|| (icmp6 && (icmp6[0]==129 && icmp6[1]==0))",
     .short_desc          = "ICMP Ping scan to find alive hosts.",
     .desc = "IcmpEchoScan sends an ICMP ECHO Request packet to target host. "
-            "Expect an "
-            "ICMP ECHO Reply to believe the host is alive.\n"
+            "Expect an ICMP ECHO Reply to believe the host is alive.\n"
             "NOTE: Don't specify any ports for this module.",
 
     .init_cb     = &scan_init_nothing,
