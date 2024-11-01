@@ -27,9 +27,20 @@ struct UdpConf {
     unsigned record_icmp_ip_me   : 1;
     unsigned no_port_unreachable : 1;
     unsigned is_port_failure     : 1;
+    unsigned no_pre_validate     : 1;
 };
 
 static struct UdpConf udp_conf = {0};
+
+static ConfRes SET_no_pre_validate(void *conf, const char *name,
+                                   const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    udp_conf.no_pre_validate = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_record_icmp_ip_them(void *conf, const char *name,
                                        const char *value) {
@@ -216,6 +227,12 @@ static ConfParam udp_parameters[] = {
      "Do not care ICMP port unreachable for target port. UdpScan would check "
      "ICMP port unreachable by target range while using default generator. "
      "This checking could be inaccurate in some extreme cases."},
+    {"no-pre-validate",
+     SET_no_pre_validate,
+     Type_FLAG,
+     {0},
+     "Do not use target range containing as connection pre-validation.\n"
+     "NOTE: Some probes do not have own validation and rely on it."},
     {"port-failure",
      SET_port_failure,
      Type_FLAG,
@@ -239,8 +256,9 @@ static bool udp_init(const XConf *xconf) {
     if (strcmp(xconf->generator->name, "blackrock") == 0) {
         _targets = &xconf->targets;
     } else {
-        LOG(LEVEL_WARN, "use non-default generator so that cannot get ICMP "
-                        "port unreachable results.\n");
+        LOG(LEVEL_WARN,
+            "use non-default generator so that cannot do pre-validation and "
+            "get ICMP port unreachable results.\n");
     }
 
     return true;
@@ -288,6 +306,20 @@ static void udp_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     /*record packet to our source port*/
     if (recved->parsed.found == FOUND_UDP && recved->is_myip &&
         recved->is_myport) {
+
+        /**
+         * pre-validate by target range
+         */
+        if (_targets && !udp_conf.no_pre_validate) {
+            if (targetset_has_ip(_targets, recved->parsed.src_ip) &&
+                targetset_has_port(
+                    _targets,
+                    get_complex_port(recved->parsed.port_src, IP_PROTO_UDP)))
+                ;
+            else
+                return;
+        }
+
         pre->go_record = 1;
 
         ProbeTarget ptarget = {
@@ -516,23 +548,20 @@ Scanner UdpScan = {
     .bpf_filter = "udp || (icmp && icmp[0]=3 && icmp[1]=3) || (icmp6 && "
                   "icmp6[0]=1 && icmp6[1]=4)",
     .short_desc = "Single-packet UDP scan with specified ProbeModule.",
-    .desc =
-        "UdpScan sends a udp packet with ProbeModule data to target port "
-        "and expects a udp response to believe the port is open or an icmp "
-        "port "
-        "unreachable message if closed. Responsed data will be processed and "
-        "formed a report by ProbeModule.\n"
-        "UdpScan prefer the first reponse udp packet. But all packets to us "
-        "could be record to pcap file.\n"
-        "NOTE: Our host may send an ICMP Port Unreachable message to target "
-        "after"
-        " received udp response because we send udp packets bypassing the "
-        "protocol"
-        " stack of OS. Sometimes it can cause problems or needless "
-        "retransmission"
-        " from server side. We could add iptables rules displayed in "
-        "`firewall` "
-        "directory to ban this. Or we could observe some strange things.",
+    .desc = "UdpScan sends a udp packet with ProbeModule data to target port "
+            "and expects a udp response to believe the port is open or an icmp "
+            "port unreachable message if closed. Responsed data will be "
+            "processed and formed a report by ProbeModule.\n"
+            "NOTE1: Our host may send an ICMP Port Unreachable message to "
+            "target after received udp response because we send udp packets "
+            "bypassing the protocol stack of OS. Sometimes it can cause "
+            "problems or needless retransmission from server side. We could "
+            "add iptables rules displayed in `firewall` directory to ban this. "
+            "Or we could observe some strange things.\n"
+            "NOTE2: udp is stateless by itself so there's no connection "
+            "validation from protocol level. UdpScan uses target range "
+            "containing as pre-validation if uses default generator. Some udp "
+            "type probes can have their own validations.",
 
     .init_cb     = &udp_init,
     .transmit_cb = &udp_transmit,

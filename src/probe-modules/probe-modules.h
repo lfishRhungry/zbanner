@@ -82,9 +82,10 @@ typedef size_t (*probe_modules_get_payload_length)(ProbeTarget *target);
 /**
  * !Happens in Rx Thread
  *
- * Validate whether the response is for us(because of stateless).
- * This is useful when ScanModule cannot validate through the
- * packet attributes.
+ * Validate whether the response is for us(because of stateless udp).
+ * This is useful when ScanModule cannot validate perfectly in protocol level.
+ * But UdpScanner uses target range containing as default pre-validation. This
+ * is enough for most cases.
  *
  * !Must be implemented for ProbeType_UDP.
  * !Must be thread safe for other funcs.
