@@ -3519,9 +3519,9 @@ void xconf_print_usage() {
            6, 80);
     printf("\n");
     printf("  " XTATE_NAME
-           " -p u:80 -ip 10.0.0.0/8 -scan udp -probe echo -show fail\n");
+           " -p u:80 -ip 10.0.0.0/8 -scan udp -probe echo -show info\n");
     xprint("use UdpProbe ScanModule to scan UDP 80 port with echo ProbeModule "
-           "and also show failed results.\n",
+           "and also show info results.\n",
            6, 80);
     printf("\n");
     printf("  " XTATE_NAME
@@ -3529,15 +3529,15 @@ void xconf_print_usage() {
     xprint("use IcmpEcho ScanModule to do ping scan and record TTL.\n", 6, 80);
     printf("\n");
     printf("  " XTATE_NAME " -p 80 -ip 10.0.0.0/8 -scan zbanner -probe http "
-           "-probe-arg \"-ver HTTP/1.1\"\n");
+           "-scan-arg \"-banner\"\n");
     xprint("use ZBanner ScanModule to grab http banners with http ProbeModule "
-           "and module-specific param.\n",
+           "and ScanModule-specific param.\n",
            6, 80);
     printf("\n");
     printf("  " XTATE_NAME
-           " -p s:38412 -ip 10.0.0.0/8 -scan sctp-init -show info\n");
+           " -p s:38412 -ip 10.0.0.0/8 -scan sctp-init -show fail\n");
     xprint("use SctpInit ScanModule to scan SCTP 38412(36412) port and show "
-           "info results.\n",
+           "fail results.\n",
            6, 80);
     printf("\n");
     printf("  " XTATE_NAME " -ip 192.168.0.1/24 -scan arp-req -lan\n");

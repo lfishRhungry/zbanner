@@ -176,19 +176,19 @@ basic use examples of xtate:
   xtate -p 80,8000-8100 -ip 10.0.0.0/8 --rate 10000
       use default TcpSyn ScanModule to scan web ports on 10.x.x.x at 10kpps.
       
-  xtate -p u:80 -ip 10.0.0.0/8 -scan udp -probe echo -show fail
+  xtate -p u:80 -ip 10.0.0.0/8 -scan udp -probe echo -show info
       use UdpProbe ScanModule to scan UDP 80 port with echo ProbeModule and also
-      show failed results.
+      show info results.
       
   xtate -ip 10.0.0.0/8 -scan icmp-echo -scan-arg "-ttl"
       use IcmpEcho ScanModule to do ping scan and record TTL.
       
-  xtate -p 80 -ip 10.0.0.0/8 -scan zbanner -probe http -probe-arg "-ver HTTP/1.1"
-      use ZBanner ScanModule to grab http banners with http ProbeModule and modu
-      le-specific param.
+  xtate -p 80 -ip 10.0.0.0/8 -scan zbanner -probe http -scan-arg "-banner"
+      use ZBanner ScanModule to grab http banners with http ProbeModule and Scan
+      Module-specific param.
       
-  xtate -p s:38412 -ip 10.0.0.0/8 -scan sctp-init -show info
-      use SctpInit ScanModule to scan SCTP 38412(36412) port and show info resul
+  xtate -p s:38412 -ip 10.0.0.0/8 -scan sctp-init -show fail
+      use SctpInit ScanModule to scan SCTP 38412(36412) port and show fail resul
       ts.
       
   xtate -ip 192.168.0.1/24 -scan arp-req -lan
