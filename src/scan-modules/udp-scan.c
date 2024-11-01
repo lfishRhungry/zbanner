@@ -20,11 +20,33 @@ struct UdpConf {
     unsigned record_ttl          : 1;
     unsigned record_ipid         : 1;
     unsigned record_data_len     : 1;
+    unsigned record_icmp_id      : 1;
+    unsigned record_icmp_seqno   : 1;
     unsigned no_port_unreachable : 1;
     unsigned is_port_failure     : 1;
 };
 
 static struct UdpConf udp_conf = {0};
+
+static ConfRes SET_record_icmp_seqno(void *conf, const char *name,
+                                     const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    udp_conf.record_icmp_seqno = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_record_icmp_id(void *conf, const char *name,
+                                  const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    udp_conf.record_icmp_id = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_port_failure(void *conf, const char *name,
                                 const char *value) {
@@ -127,6 +149,16 @@ static ConfParam udp_parameters[] = {
      "Records payload data length. Data length is also valid for ICMP port "
      "unreachable, it means length of internal IP header plus some original "
      "data of datagram."},
+    {"record-icmp-id",
+     SET_record_icmp_id,
+     Type_FLAG,
+     {"icmp-id", 0},
+     "Records ICMP identifier number of port unreachable messages."},
+    {"record-icmp-seqno",
+     SET_record_icmp_seqno,
+     Type_FLAG,
+     {"icmp-seqno", 0},
+     "Records ICMP sequence number of port unreachable messages."},
     {"no-port-unreachable",
      SET_no_port_unreachable,
      Type_FLAG,
@@ -368,6 +400,11 @@ static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
 
         safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");
         safe_strcpy(item->reason, OUT_RSN_SIZE, "port unreachable");
+
+        if (udp_conf.record_icmp_id)
+            dach_set_int(&item->report, "icmp id", recved->parsed.icmp_id);
+        if (udp_conf.record_icmp_seqno)
+            dach_set_int(&item->report, "icmp seqno", recved->parsed.icmp_seq);
 
         const char *icmp_proto_str = ip_proto_to_string(icmp_proto);
         dach_set_int(&item->report, "icmp port_me", item->target.port_me);
