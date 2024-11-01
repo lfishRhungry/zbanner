@@ -72,21 +72,22 @@ typedef struct TemplateOptions TmplOpt;
 #define TCP_OPT_TYPE_EXP1       253
 /*RFC3692-style Experiment 2 (also improperly used for shipping products) */
 #define TCP_OPT_TYPE_EXP2       254
-#define TCP_OPT_LEN_EOL         1
-#define TCP_OPT_LEN_NOP         1
-#define TCP_OPT_LEN_MSS         4
-#define TCP_OPT_LEN_WS          3
-#define TCP_OPT_LEN_ECHO        6
-#define TCP_OPT_LEN_ECHO_REPLY  6
-#define TCP_OPT_LEN_SACK_PERM   2
-#define TCP_OPT_LEN_TS          10
-#define TCP_OPT_LEN_POCP        2
-#define TCP_OPT_LEN_POSP        3
-#define TCP_OPT_LEN_ACR         3
-#define TCP_OPT_LEN_TCO         3
-#define TCP_OPT_LEN_MD5         18
-#define TCP_OPT_LEN_QSR         8
-#define TCP_OPT_LEN_UTO         4
+
+#define TCP_OPT_LEN_EOL        1
+#define TCP_OPT_LEN_NOP        1
+#define TCP_OPT_LEN_MSS        4
+#define TCP_OPT_LEN_WS         3
+#define TCP_OPT_LEN_ECHO       6
+#define TCP_OPT_LEN_ECHO_REPLY 6
+#define TCP_OPT_LEN_SACK_PERM  2
+#define TCP_OPT_LEN_TS         10
+#define TCP_OPT_LEN_POCP       2
+#define TCP_OPT_LEN_POSP       3
+#define TCP_OPT_LEN_ACR        3
+#define TCP_OPT_LEN_TCO        3
+#define TCP_OPT_LEN_MD5        18
+#define TCP_OPT_LEN_QSR        8
+#define TCP_OPT_LEN_UTO        4
 
 #define TCP_DEFAULT_MSS    1460
 #define TCP_DEFAULT_TSECHO 0x12345678

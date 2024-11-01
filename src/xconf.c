@@ -3107,7 +3107,10 @@ ConfParam config_parameters[] = {
      " should TCP SYN packets use for timestamp echoing. e.g. --tcp-tsecho "
      "true, --tcp-tsecho <value>. The default timestamp value is 0x12345678 "
      " and is not be used in template of TCP SYN packet. The value in packet "
-     "templates will be used if not set."},
+     "templates will be used if not set.\n"
+     "NOTE: Some router would delete timestamp option. So we cannot received "
+     "an SYN-ACK segment with 4 NOP in a row instead of expected timestamp "
+     "option."},
     {"packet-trace",
      SET_packet_trace,
      Type_FLAG,
