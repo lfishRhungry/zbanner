@@ -13,6 +13,7 @@
 
 #include "stub/stub-pcap.h"
 #include "templ/templ-init.h"
+#include "nmap/nmap-service.h"
 
 #include "target/target-cookie.h"
 #include "target/target-parse.h"
@@ -776,6 +777,12 @@ int main(int argc, char *argv[]) {
 #ifndef NOT_FOUND_BSON
         case Operation_ParseBson:
             parse_bson_file(xconf->bson_file);
+            break;
+#endif
+
+#ifndef NOT_FOUND_PCRE2
+        case Operation_ListNmapProbes:
+            nmapservice_print_probes_by_file(xconf->nmap_file, stdout);
             break;
 #endif
     }

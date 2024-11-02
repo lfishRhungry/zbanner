@@ -113,9 +113,20 @@ void nmapservice_match_free(struct NmapServiceProbeList *list);
 void nmapservice_free(struct NmapServiceProbeList *service_probes);
 
 /**
- * Print to a file for testing purposes
+ * Print all info of loaded probe list
  */
 void nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp);
+
+/**
+ * Print only probe info of loaded probe list
+ */
+void nmapservice_print_probes(const struct NmapServiceProbeList *list,
+                              FILE                              *fp);
+
+/**
+ * Print only probe info of loaded probe list by nmap sevice probe file name
+ */
+void nmapservice_print_probes_by_file(const char *filename, FILE *fp);
 
 /**
  * @param list loaded NmapServiceProbeList
@@ -139,7 +150,7 @@ nmapservice_get_probe_by_name(struct NmapServiceProbeList *list,
  * Match service from matches in specified probe with fallback and null match.
  * Match result could be a softmatch if hardmatch isn't be specified.
  * @param list nmap probe list
- * @param probe_idx index of probe used to do matching
+ * @param probe probe used to do matching
  * @param payload data of payload
  * @param payload_len len of data
  * @param protocol NMAP_IPPROTO_TCP or NMAP_IPPROTO_UDP
@@ -148,9 +159,9 @@ nmapservice_get_probe_by_name(struct NmapServiceProbeList *list,
  */
 struct ServiceProbeMatch *
 nmapservice_match_service(const struct NmapServiceProbeList *list,
-                          unsigned probe_idx, const unsigned char *payload,
-                          size_t payload_len, unsigned protocol,
-                          const char *hardmatch);
+                          const struct NmapServiceProbe     *probe,
+                          const unsigned char *payload, size_t payload_len,
+                          unsigned protocol, const char *softmatch);
 
 int nmapservice_selftest();
 

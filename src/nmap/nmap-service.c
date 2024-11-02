@@ -27,8 +27,8 @@
 /*****************************************************************************
  * Translate string name into enumerated type
  *****************************************************************************/
-static enum SvcP_RecordType parse_type(const char *line, size_t *r_offset,
-                                       size_t line_length) {
+static enum SvcP_RecordType _parse_type(const char *line, size_t *r_offset,
+                                        size_t line_length) {
     static const struct {
         const char          *name;
         size_t               length;
@@ -77,7 +77,7 @@ static enum SvcP_RecordType parse_type(const char *line, size_t *r_offset,
 
 /*****************************************************************************
  *****************************************************************************/
-static int is_hexchar(int c) {
+static int _is_hexchar(int c) {
     switch (c) {
         case '0':
         case '1':
@@ -109,7 +109,7 @@ static int is_hexchar(int c) {
 
 /*****************************************************************************
  *****************************************************************************/
-static unsigned hexval(int c) {
+static unsigned _hexval(int c) {
     switch (c) {
         case '0':
         case '1':
@@ -143,9 +143,9 @@ static unsigned hexval(int c) {
 
 /*****************************************************************************
  *****************************************************************************/
-static struct RangeList parse_ports(struct NmapServiceProbeList *list,
-                                    const char *line, size_t offset,
-                                    size_t line_length) {
+static struct RangeList _parse_ports(struct NmapServiceProbeList *list,
+                                     const char *line, size_t offset,
+                                     size_t line_length) {
     /* Examples:
         Exclude 53,T:9100,U:30000-40000
         ports 21,43,110,113,199,505,540,1248,5432,30444
@@ -171,9 +171,9 @@ static struct RangeList parse_ports(struct NmapServiceProbeList *list,
 
 /*****************************************************************************
  *****************************************************************************/
-static unsigned parse_number(struct NmapServiceProbeList *list,
-                             const char *line, size_t offset,
-                             size_t line_length) {
+static unsigned _parse_number(struct NmapServiceProbeList *list,
+                              const char *line, size_t offset,
+                              size_t line_length) {
     /* Examples:
      totalwaitms 6000
      tcpwrappedms 3000
@@ -200,8 +200,8 @@ static unsigned parse_number(struct NmapServiceProbeList *list,
 
 /*****************************************************************************
  *****************************************************************************/
-static char *parse_name(const char *line, size_t *r_offset,
-                        size_t line_length) {
+static char *_parse_name(const char *line, size_t *r_offset,
+                         size_t line_length) {
     size_t name_offset = *r_offset;
     size_t name_length;
     char  *result;
@@ -228,8 +228,8 @@ static char *parse_name(const char *line, size_t *r_offset,
 /*****************************************************************************
  *****************************************************************************/
 static struct ServiceProbeFallback *
-parse_fallback(struct NmapServiceProbeList *list, const char *line,
-               size_t offset, size_t line_length) {
+_parse_fallback(struct NmapServiceProbeList *list, const char *line,
+                size_t offset, size_t line_length) {
     /* Examples:
      fallback GetRequest,GenericLines
      */
@@ -276,8 +276,8 @@ parse_fallback(struct NmapServiceProbeList *list, const char *line,
 
 /*****************************************************************************
  *****************************************************************************/
-static void parse_probe(struct NmapServiceProbeList *list, const char *line,
-                        size_t offset, size_t line_length) {
+static void _parse_probe(struct NmapServiceProbeList *list, const char *line,
+                         size_t offset, size_t line_length) {
     /* Examples:
      Probe TCP GetRequest q|GET / HTTP/1.0\r\n\r\n|
      Probe UDP DNSStatusRequest q|\0\0\x10\0\0\0\0\0\0\0\0\0|
@@ -328,7 +328,7 @@ static void parse_probe(struct NmapServiceProbeList *list, const char *line,
     /*
      * <probename>
      */
-    probe->name = parse_name(line, &offset, line_length);
+    probe->name = _parse_name(line, &offset, line_length);
     if (probe->name == 0) {
         LOG(LEVEL_ERROR, "%s:%u:%u: probename parse error\n", filename,
             line_number, (unsigned)offset);
@@ -438,8 +438,8 @@ static void parse_probe(struct NmapServiceProbeList *list, const char *line,
                     }
 
                     /* make sure those two characters are hex digits */
-                    if (!is_hexchar(line[offset + 0]) ||
-                        !is_hexchar(line[offset + 1])) {
+                    if (!_is_hexchar(line[offset + 0]) ||
+                        !_is_hexchar(line[offset + 1])) {
                         LOG(LEVEL_ERROR,
                             "%s:%u:%u: expected hex, found '%c%c'\n", filename,
                             line_number, (unsigned)offset,
@@ -449,8 +449,8 @@ static void parse_probe(struct NmapServiceProbeList *list, const char *line,
                     }
 
                     /* parse those two hex digits */
-                    x[x_offset++] = (char)(hexval(line[offset + 0]) << 4 |
-                                           hexval(line[offset + 1]));
+                    x[x_offset++] = (char)(_hexval(line[offset + 0]) << 4 |
+                                           _hexval(line[offset + 1]));
                     offset += 2;
                     break;
             }
@@ -477,9 +477,9 @@ parse_error:
 
 /*****************************************************************************
  *****************************************************************************/
-static struct ServiceProbeMatch *parse_match(struct NmapServiceProbeList *list,
-                                             const char *line, size_t offset,
-                                             size_t line_length) {
+static struct ServiceProbeMatch *_parse_match(struct NmapServiceProbeList *list,
+                                              const char *line, size_t offset,
+                                              size_t line_length) {
     /* Examples:
      match ftp m/^220.*Welcome to .*Pure-?FTPd (\d\S+\s*)/ p/Pure-FTPd/ v/$1/
      cpe:/a:pureftpd:pure-ftpd:$1/ match ssh
@@ -500,7 +500,7 @@ static struct ServiceProbeMatch *parse_match(struct NmapServiceProbeList *list,
     /*
      * <servicename>
      */
-    match->service = parse_name(line, &offset, line_length);
+    match->service = _parse_name(line, &offset, line_length);
     if (match->service == 0) {
         LOG(LEVEL_ERROR, "%s:%u:%u: servicename is empty\n", filename,
             line_number, (unsigned)offset);
@@ -723,7 +723,7 @@ parse_error:
 
 /*****************************************************************************
  *****************************************************************************/
-static void parse_line(struct NmapServiceProbeList *list, const char *line) {
+static void _parse_line(struct NmapServiceProbeList *list, const char *line) {
     const char              *filename    = list->filename;
     unsigned                 line_number = list->line_number;
     size_t                   line_length;
@@ -749,7 +749,7 @@ static void parse_line(struct NmapServiceProbeList *list, const char *line) {
         return;
 
     /* parse the type field field */
-    type = parse_type(line, &offset, line_length);
+    type = _parse_type(line, &offset, line_length);
 
     /* parse the remainder of the line, depending upon the type */
     switch ((int)type) {
@@ -766,7 +766,7 @@ static void parse_line(struct NmapServiceProbeList *list, const char *line) {
                     "'Probe'\n",
                     filename, line_number, (unsigned)offset);
             } else {
-                ranges = parse_ports(list, line, offset, line_length);
+                ranges = _parse_ports(list, line, offset, line_length);
                 if (ranges.list_len == 0) {
                     LOG(LEVEL_ERROR, "%s:%u:%u: 'Exclude' bad format\n",
                         filename, line_number, (unsigned)offset);
@@ -779,7 +779,7 @@ static void parse_line(struct NmapServiceProbeList *list, const char *line) {
         case SvcP_Probe:
             /* Creates a new probe record, all the other types (except
              * 'Exclude') operate on the current probe record */
-            parse_probe(list, line, offset, line_length);
+            _parse_probe(list, line, offset, line_length);
             return;
     }
 
@@ -796,7 +796,7 @@ static void parse_line(struct NmapServiceProbeList *list, const char *line) {
 
     switch ((int)type) {
         case SvcP_Ports:
-            ranges = parse_ports(list, line, offset, line_length);
+            ranges = _parse_ports(list, line, offset, line_length);
             if (ranges.list_len == 0) {
                 LOG(LEVEL_ERROR, "%s:%u:%u: bad ports format\n", filename,
                     line_number, (unsigned)offset);
@@ -806,7 +806,7 @@ static void parse_line(struct NmapServiceProbeList *list, const char *line) {
             }
             break;
         case SvcP_Sslports:
-            ranges = parse_ports(list, line, offset, line_length);
+            ranges = _parse_ports(list, line, offset, line_length);
             if (ranges.list_len == 0) {
                 LOG(LEVEL_ERROR, "%s:%u:%u: bad ports format\n", filename,
                     line_number, (unsigned)offset);
@@ -819,7 +819,7 @@ static void parse_line(struct NmapServiceProbeList *list, const char *line) {
         case SvcP_Softmatch: {
             struct ServiceProbeMatch *match;
 
-            match = parse_match(list, line, offset, line_length);
+            match = _parse_match(list, line, offset, line_length);
             if (match) {
                 struct ServiceProbeMatch **r_match;
 
@@ -834,17 +834,18 @@ static void parse_line(struct NmapServiceProbeList *list, const char *line) {
         } break;
 
         case SvcP_Totalwaitms:
-            probe->totalwaitms = parse_number(list, line, offset, line_length);
+            probe->totalwaitms = _parse_number(list, line, offset, line_length);
             break;
         case SvcP_Tcpwrappedms:
-            probe->tcpwrappedms = parse_number(list, line, offset, line_length);
+            probe->tcpwrappedms =
+                _parse_number(list, line, offset, line_length);
             break;
         case SvcP_Rarity:
-            probe->rarity = parse_number(list, line, offset, line_length);
+            probe->rarity = _parse_number(list, line, offset, line_length);
             break;
         case SvcP_Fallback: {
             struct ServiceProbeFallback *fallback;
-            fallback = parse_fallback(list, line, offset, line_length);
+            fallback = _parse_fallback(list, line, offset, line_length);
             if (fallback) {
                 fallback->next  = probe->fallback;
                 probe->fallback = fallback;
@@ -856,7 +857,7 @@ static void parse_line(struct NmapServiceProbeList *list, const char *line) {
 /*****************************************************************************
  *****************************************************************************/
 static struct NmapServiceProbeList *
-nmapserviceprobes_new(const char *filename) {
+_nmapservice_new_list(const char *filename) {
     struct NmapServiceProbeList *result;
 
     result           = CALLOC(1, sizeof(*result));
@@ -884,7 +885,7 @@ struct NmapServiceProbeList *nmapservice_read_file(const char *filename) {
     /*
      * Create the result structure
      */
-    result = nmapserviceprobes_new(filename);
+    result = _nmapservice_new_list(filename);
 
     /*
      * parse all lines in the text file
@@ -894,7 +895,7 @@ struct NmapServiceProbeList *nmapservice_read_file(const char *filename) {
         result->line_number++;
 
         /* Parse this string into a record */
-        parse_line(result, line);
+        _parse_line(result, line);
     }
 
     fclose(fp);
@@ -941,9 +942,9 @@ static void nmapserviceprobes_free_record(struct NmapServiceProbe *probe) {
 
 /*****************************************************************************
  *****************************************************************************/
-static void nmapserviceprobes_print_ports(const struct RangeList *ranges,
-                                          FILE *fp, const char *prefix,
-                                          unsigned default_proto) {
+static void _nmapservice_print_ports(const struct RangeList *ranges, FILE *fp,
+                                     const char *prefix,
+                                     unsigned    default_proto) {
     /* don't print anything if no ports */
     if (ranges == NULL || ranges->list_len == 0)
         return;
@@ -1064,12 +1065,73 @@ static void nmapserviceprobes_print_hello(FILE *fp, const char *string,
 
 /*****************************************************************************
  *****************************************************************************/
+void nmapservice_print_probes(const struct NmapServiceProbeList *list,
+                              FILE                              *fp) {
+    unsigned i;
+    if (list == NULL)
+        return;
+
+    _nmapservice_print_ports(&list->exclude, fp, "Exclude", ~0);
+
+    for (i = 0; i < list->count; i++) {
+        struct NmapServiceProbe *probe = list->probes[i];
+
+        /* print the first part of the probe */
+        fprintf(fp, "Probe %s %s q",
+                (probe->protocol == IP_PROTO_TCP) ? "TCP" : "UDP", probe->name);
+
+        /* print the query/hello string */
+        nmapserviceprobes_print_hello(fp, probe->hellostring,
+                                      probe->hellolength, '|');
+
+        fprintf(fp, "\n");
+        if (probe->rarity)
+            fprintf(fp, "rarity %u\n", probe->rarity);
+        if (probe->totalwaitms)
+            fprintf(fp, "totalwaitms %u\n", probe->totalwaitms);
+        if (probe->tcpwrappedms)
+            fprintf(fp, "tcpwrappedms %u\n", probe->tcpwrappedms);
+        _nmapservice_print_ports(&probe->ports, fp, "ports", probe->protocol);
+        _nmapservice_print_ports(&probe->sslports, fp, "sslports",
+                                 probe->protocol);
+        fprintf(fp, "\n");
+    }
+}
+
+void nmapservice_print_probes_by_file(const char *filename, FILE *fp) {
+    if (!filename) {
+        LOG(LEVEL_ERROR, "(%s) no nmap-service-probes file specified.\n",
+            __func__);
+        exit(1);
+    }
+
+    struct NmapServiceProbeList *list = nmapservice_read_file(filename);
+
+    if (!list) {
+        LOG(LEVEL_ERROR, "(%s) invalid nmap-service-probes file: %s\n",
+            __func__, filename);
+        exit(1);
+    }
+
+    if (!list->count) {
+        LOG(LEVEL_ERROR, "(%s) no probe has been loaded from %s\n", __func__,
+            filename);
+        nmapservice_free(list);
+        exit(1);
+    }
+
+    nmapservice_print_probes(list, fp);
+    nmapservice_free(list);
+}
+
+/*****************************************************************************
+ *****************************************************************************/
 void nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp) {
     unsigned i;
     if (list == NULL)
         return;
 
-    nmapserviceprobes_print_ports(&list->exclude, fp, "Exclude", ~0);
+    _nmapservice_print_ports(&list->exclude, fp, "Exclude", ~0);
 
     for (i = 0; i < list->count; i++) {
         struct NmapServiceProbe  *probe = list->probes[i];
@@ -1090,10 +1152,9 @@ void nmapservice_print_all(const struct NmapServiceProbeList *list, FILE *fp) {
             fprintf(fp, "totalwaitms %u\n", probe->totalwaitms);
         if (probe->tcpwrappedms)
             fprintf(fp, "tcpwrappedms %u\n", probe->tcpwrappedms);
-        nmapserviceprobes_print_ports(&probe->ports, fp, "ports",
-                                      probe->protocol);
-        nmapserviceprobes_print_ports(&probe->sslports, fp, "sslports",
-                                      probe->protocol);
+        _nmapservice_print_ports(&probe->ports, fp, "ports", probe->protocol);
+        _nmapservice_print_ports(&probe->sslports, fp, "sslports",
+                                 probe->protocol);
 
         for (match = probe->match; match; match = match->next) {
             struct ServiceVersionInfo *vi;
@@ -1367,19 +1428,19 @@ match_service_in_one_probe(const struct NmapServiceProbe *probe,
 
 struct ServiceProbeMatch *
 nmapservice_match_service(const struct NmapServiceProbeList *list,
-                          unsigned probe_idx, const unsigned char *payload,
-                          size_t payload_len, unsigned protocol,
-                          const char *softmatch) {
+                          const struct NmapServiceProbe     *probe,
+                          const unsigned char *payload, size_t payload_len,
+                          unsigned protocol, const char *softmatch) {
     struct ServiceProbeMatch *match_res = NULL;
 
-    match_res = match_service_in_one_probe(list->probes[probe_idx], payload,
-                                           payload_len, softmatch);
+    match_res =
+        match_service_in_one_probe(probe, payload, payload_len, softmatch);
 
     if (match_res)
         return match_res;
 
     /*has fallback? try match all*/
-    struct ServiceProbeFallback *fallback = list->probes[probe_idx]->fallback;
+    struct ServiceProbeFallback *fallback = probe->fallback;
 
     for (; fallback; fallback = fallback->next) {
         /*fallback must have been linked*/
@@ -1396,7 +1457,7 @@ nmapservice_match_service(const struct NmapServiceProbeList *list,
         return match_res;
 
     /*match with NULL probe at last if it's TCP and probe is not NULL*/
-    if (protocol == IP_PROTO_TCP && probe_idx != 0) {
+    if (protocol == IP_PROTO_TCP && probe->hellolength != 0) {
         match_res = match_service_in_one_probe(list->probes[0], payload,
                                                payload_len, softmatch);
     }
@@ -1431,11 +1492,11 @@ int nmapservice_selftest() {
         "p/$1/ v/$2/\n",
         0};
     unsigned                     i;
-    struct NmapServiceProbeList *list = nmapserviceprobes_new("<selftest>");
+    struct NmapServiceProbeList *list = _nmapservice_new_list("<selftest>");
 
     for (i = 0; lines[i]; i++) {
         list->line_number = i;
-        parse_line(list, lines[i]);
+        _parse_line(list, lines[i]);
     }
 
     // nmapserviceprobes_print(list, stdout);

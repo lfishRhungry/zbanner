@@ -5,7 +5,7 @@
 
 /*****************************************************************************
  *****************************************************************************/
-static int is_hexchar(int c) {
+static int _is_hexchar(int c) {
     switch (c) {
         case '0':
         case '1':
@@ -37,7 +37,7 @@ static int is_hexchar(int c) {
 
 /*****************************************************************************
  *****************************************************************************/
-static unsigned hexval(int c) {
+static unsigned _hexval(int c) {
     switch (c) {
         case '0':
         case '1':
@@ -133,8 +133,8 @@ size_t nmapprobe_decode(const char *str, size_t slen, void *buf,
                 }
 
                 /* make sure those two characters are hex digits */
-                if (!is_hexchar(str[offset + 0]) ||
-                    !is_hexchar(str[offset + 1])) {
+                if (!_is_hexchar(str[offset + 0]) ||
+                    !_is_hexchar(str[offset + 1])) {
                     LOG(LEVEL_ERROR, "expected hex, found '%c%c'\n",
                         isprint(str[offset + 1]) ? str[offset + 1] : '.',
                         isprint(str[offset + 2]) ? str[offset + 2] : '.');
@@ -142,8 +142,8 @@ size_t nmapprobe_decode(const char *str, size_t slen, void *buf,
                 }
 
                 /* parse those two hex digits */
-                x[x_offset++] = (char)(hexval(str[offset + 0]) << 4 |
-                                       hexval(str[offset + 1]));
+                x[x_offset++] = (char)(_hexval(str[offset + 0]) << 4 |
+                                       _hexval(str[offset + 1]));
                 offset += 2;
                 break;
         }

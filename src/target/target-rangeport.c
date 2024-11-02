@@ -210,15 +210,15 @@ void rangeport_print(const struct RangeList *ports, FILE *fp,
             proto = IP_PROTO_UDP;
             begin -= UDP_START;
             end -= UDP_START;
-        } else {
+        } else if (SCTP_START <= begin && begin < OPROTO_START) {
             proto = IP_PROTO_SCTP;
             begin -= SCTP_START;
             end -= SCTP_START;
+        } else {
+            proto = IP_PROTO_Other;
+            begin -= OPROTO_START;
+            end -= OPROTO_START;
         }
-
-        /* If UDP, shift down */
-        begin -= proto;
-        end -= proto;
 
         /* print comma between ports, but not for first port */
         if (i)
@@ -228,7 +228,7 @@ void rangeport_print(const struct RangeList *ports, FILE *fp,
          * Print either one number for a single port, or two numbers for a range
          */
         if (default_ipproto != proto) {
-            default_ipproto = proto;
+            proto = default_ipproto;
             switch (proto) {
                 case IP_PROTO_TCP:
                     fprintf(fp, "T:");

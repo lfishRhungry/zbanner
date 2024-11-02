@@ -71,6 +71,9 @@ enum Operation {
 #ifndef NOT_FOUND_BSON
     Operation_ParseBson, /*parse BSON result file to JSON format*/
 #endif
+#ifndef NOT_FOUND_PCRE2
+    Operation_ListNmapProbes, /* list all nmap probes */
+#endif
 };
 
 struct source_t {
@@ -232,6 +235,12 @@ typedef struct XtateConf {
      */
 #ifndef NOT_FOUND_BSON
     char *bson_file;
+#endif
+    /**
+     * list nmap probes
+     */
+#ifndef NOT_FOUND_PCRE2
+    char *nmap_file;
 #endif
 
 } XConf;

@@ -30,6 +30,8 @@ extern Probe RecogUdpProbe;
 extern Probe RecogStateProbe;
 extern Probe CloseStateProbe;
 extern Probe TlsHelloProbe;
+extern Probe NmapProbe;
+extern Probe NmapUdpProbe;
 /*for lzr probes*/
 extern Probe LzrProbe;
 extern Probe LzrHttpProbe;
@@ -104,6 +106,11 @@ static Probe *probe_modules_list[] = {
 
     &CloseStateProbe,
     &TlsHelloProbe,
+
+#ifndef NOT_FOUND_PCRE2
+    &NmapProbe,
+    &NmapUdpProbe,
+#endif
 
     /*for lzr probes*/
     &LzrProbe,

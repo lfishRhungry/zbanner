@@ -825,6 +825,21 @@ static ConfRes SET_list_range(void *conf, const char *name, const char *value) {
     return Conf_OK;
 }
 
+#ifndef NOT_FOUND_PCRE2
+static ConfRes SET_list_nmap_probes(void *conf, const char *name,
+                                    const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+
+    xconf->nmap_file = STRDUP(value);
+    xconf->op        = Operation_ListNmapProbes;
+
+    return Conf_OK;
+}
+#endif
+
 #ifndef NOT_FOUND_BSON
 static ConfRes SET_parse_bson(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
@@ -2865,6 +2880,14 @@ ConfParam config_parameters[] = {
      {"if-list", "list-interface", "list-adapter", 0},
      "Do not run, but instead print informations of all adapters in this "
      "machine."},
+#ifndef NOT_FOUND_PCRE2
+    {"list-nmap-probes",
+     SET_list_nmap_probes,
+     Type_ARG,
+     {"list-nmap-probe", "list-nmap", 0},
+     "Do not run, but instead print all probes within specified nmap service "
+     "probes file."},
+#endif
 #ifndef NOT_FOUND_BSON
     {"parse-bson-file",
      SET_parse_bson,
