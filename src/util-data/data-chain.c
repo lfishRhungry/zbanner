@@ -532,10 +532,10 @@ DataLink *dach_append_utf8_by_link(DataLink *link, const void *px,
     int          c;
     utf8_int32_t utf8_c;
     size_t       utf8_len;
-    const void  *next_ptr = px;
-    const void  *ptr      = px;
+    const char  *next_ptr = px;
+    const char  *ptr      = px;
 
-    for (; next_ptr - px < length;) {
+    for (; next_ptr - (char *)px < length;) {
         next_ptr = utf8codepoint(ptr, &utf8_c);
         utf8_len = utf8codepointsize(utf8_c);
 

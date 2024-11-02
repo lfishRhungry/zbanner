@@ -16,6 +16,10 @@
 struct HelloStateConf {
     unsigned char *hello;
     size_t         hello_len;
+    unsigned       record_banner   : 1;
+    unsigned       record_utf8     : 1;
+    unsigned       record_data     : 1;
+    unsigned       record_data_len : 1;
 #ifndef NOT_FOUND_PCRE2
     char                *regex;
     size_t               regex_len;
@@ -24,10 +28,6 @@ struct HelloStateConf {
     unsigned             re_case_insensitive  : 1;
     unsigned             re_include_newlines  : 1;
     unsigned             match_whole_response : 1;
-    unsigned             record_banner        : 1;
-    unsigned             record_utf8          : 1;
-    unsigned             record_data          : 1;
-    unsigned             record_data_len      : 1;
 #endif
     unsigned get_whole_response : 1;
 };
@@ -43,8 +43,6 @@ static ConfRes SET_get_whole_response(void *conf, const char *name,
 
     return Conf_OK;
 }
-
-#ifndef NOT_FOUND_PCRE2
 
 static ConfRes SET_record_data_len(void *conf, const char *name,
                                    const char *value) {
@@ -85,6 +83,8 @@ static ConfRes SET_record_banner(void *conf, const char *name,
 
     return Conf_OK;
 }
+
+#ifndef NOT_FOUND_PCRE2
 
 static ConfRes SET_match_whole_response(void *conf, const char *name,
                                         const char *value) {
@@ -163,7 +163,7 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
     return Conf_OK;
 }
 
-#endif
+#endif /*NOT_FOUND_PCRE2*/
 
 static ConfRes SET_hello_string(void *conf, const char *name,
                                 const char *value) {
