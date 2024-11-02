@@ -15,7 +15,7 @@
 /*for internal x-ref*/
 extern Probe NmapUdpProbe;
 
-struct NmapTcpConf {
+struct NmapUdpConf {
     struct NmapServiceProbeList *probe_list;
     struct NmapServiceProbe     *probe;
     char                        *probe_file;
@@ -23,7 +23,7 @@ struct NmapTcpConf {
     char                        *softmatch;
 };
 
-static struct NmapTcpConf nmapudp_conf = {0};
+static struct NmapUdpConf nmapudp_conf = {0};
 
 static ConfRes SET_softmatch(void *conf, const char *name, const char *value) {
     UNUSEDPARM(name);
@@ -190,9 +190,11 @@ Probe NmapUdpProbe = {
                   "target udp port. Unlike real Nmap, we just send one "
                   "specified probe and try to match the results. We can load "
                   "specific version of nmap-service-probes file by using "
-                  "`--probe-file` subparam.\n"
-                  "NOTE: This cannot perform a complete Nmap service "
-                  "identification. Just for researching now.\n"
+                  "`-probe-file` subparam and specify probe name by `-probe`.\n"
+                  "NOTE1: This cannot perform a complete Nmap service "
+                  "identification. Just for researches now.\n"
+                  "NOTE2: All probe info can be check with global param "
+                  "`-list-nmap-probe`.\n"
                   "Dependencies: PCRE2.",
 
     .init_cb              = &nmapudp_init,
