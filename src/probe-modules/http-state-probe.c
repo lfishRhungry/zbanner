@@ -105,8 +105,6 @@ static ConfRes SET_get_whole_response(void *conf, const char *name,
     return Conf_OK;
 }
 
-#ifndef NOT_FOUND_PCRE2
-
 static ConfRes SET_record_data_len(void *conf, const char *name,
                                    const char *value) {
     UNUSEDPARM(conf);
@@ -146,6 +144,8 @@ static ConfRes SET_record_banner(void *conf, const char *name,
 
     return Conf_OK;
 }
+
+#ifndef NOT_FOUND_PCRE2
 
 static ConfRes SET_match_whole_response(void *conf, const char *name,
                                         const char *value) {
