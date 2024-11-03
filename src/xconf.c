@@ -1,6 +1,10 @@
 #include <ctype.h>
 #include <limits.h>
 
+#ifndef NOT_FOUND_MONGOC
+#include <mongoc/mongoc.h>
+#endif
+
 #include "xconf.h"
 #include "version.h"
 #include "smack/smack.h"
@@ -3763,9 +3767,9 @@ void xconf_print_version() {
 #ifndef NOT_FOUND_OPENSSL
 #include <openssl/opensslv.h>
     /*This macro is backward compatible*/
-    printf("    OpenSSL  %s\n", &OPENSSL_VERSION_TEXT[8]);
+    printf("    OpenSSL    %s\n", &OPENSSL_VERSION_TEXT[8]);
 #else
-    printf("    OpenSSL  (null)\n");
+    printf("    OpenSSL    (null)\n");
 #endif
 
 #ifndef NOT_FOUND_PCRE2
@@ -3773,28 +3777,38 @@ void xconf_print_version() {
 #include <pcre2.h>
     char version[120];
     pcre2_config(PCRE2_CONFIG_VERSION, version);
-    printf("    PCRE2    %s\n", version);
+    printf("    PCRE2      %s\n", version);
 #else
-    printf("    PCRE2    (null)\n");
+    printf("    PCRE2      (null)\n");
 #endif
 
 #ifndef NOT_FOUND_LIBXML2
 #include <libxml/xmlversion.h>
-    printf("    LibXml2  %s\n", LIBXML_DOTTED_VERSION);
+    printf("    LibXml2    %s\n", LIBXML_DOTTED_VERSION);
 #else
-    printf("    LibXml2  (null)\n");
+    printf("    LibXml2    (null)\n");
 #endif
 
 #ifndef NOT_FOUND_JUDY
-    printf("    LibJudy  " JUDY_PATH "\n");
+    printf("    LibJudy    " JUDY_PATH "\n");
 #else
-    printf("    LibJudy  (null)\n");
+    printf("    LibJudy    (null)\n");
 #endif
 
 #ifndef NOT_FOUND_BSON
-    printf("    libbson  " BSON_PATH "\n");
+#include <bson/bson.h>
+    printf("    libbson    %s\n", BSON_VERSION_S);
 #else
-    printf("    libbson  (null)\n");
+    printf("    libbson    (null)\n");
+#endif
+
+#ifndef NOT_FOUND_MONGOC
+    /**
+     * header include must put on top.
+     */
+    printf("    libmongoc  %s\n", mongoc_get_version());
+#else
+    printf("    libmongoc  (null)\n");
 #endif
 
     printf("\n");

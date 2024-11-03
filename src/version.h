@@ -20,7 +20,6 @@
 #define XTATE_DEFAULT_CONF     "/etc/xtate/xtate.conf"
 #define XTATE_BANNER           "God is Stateless"
 #define JUDY_PATH              "/usr/lib/x86_64-linux-gnu/libJudy.so"
-#define BSON_PATH              "/usr/lib/x86_64-linux-gnu/libbson-1.0.so"
 
 #endif
 // clang-format on

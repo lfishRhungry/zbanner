@@ -20,7 +20,6 @@
 #define XTATE_DEFAULT_CONF     "@PROJECT_CONF_PATH@"
 #define XTATE_BANNER           "@PROJECT_BANNER@"
 #define JUDY_PATH              "@FOUND_JUDY@"
-#define BSON_PATH              "@LIBBSON_LIBRARY@"
 
 #endif
 // clang-format on
