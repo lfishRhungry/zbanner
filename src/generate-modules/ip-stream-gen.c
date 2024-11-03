@@ -72,7 +72,8 @@ static ConfParam ipstream_parameters[] = {
      SET_port,
      Type_ARG,
      {"port", "p", 0},
-     "Specifies target ports if the input stream has no port info. like -p 80. "
+     "Specifies target ports for the input stream has no port info. like -p "
+     "80. "
      "UDP ports can be specified, like --ports U:161,u:1024-1100. SCTP ports "
      "can be specified like --ports S:36412,s:38412, too.\n"
      "NOTE: We also support `--ports O:16` to present non-port number in range"
