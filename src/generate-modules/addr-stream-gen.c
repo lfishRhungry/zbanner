@@ -65,10 +65,10 @@ static ConfRes SET_file(void *conf, const char *name, const char *value) {
 }
 
 static ConfParam addrstream_parameters[] = {
-    {"ip-file",
+    {"address-file",
      SET_file,
      Type_ARG,
-     {"file", "f", 0},
+     {"addr-file", "file", "f", 0},
      "Specifies a file as input stream. Default is stdin."},
     {"splitter",
      SET_splitter,

@@ -9,6 +9,7 @@ extern Generator BlackRockGen;
 extern Generator IpStreamGen;
 extern Generator AddrStreamGen;
 extern Generator IpListGen;
+extern Generator AddrListGen;
 
 
 //! ADD YOUR GENERATOR HERE
@@ -17,6 +18,7 @@ static Generator *generate_modules_list[] = {
     &IpStreamGen,
     &AddrStreamGen,
     &IpListGen,
+    &AddrListGen,
 
 };
 // clang-format on
