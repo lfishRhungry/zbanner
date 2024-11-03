@@ -364,7 +364,8 @@ Dependent libraries for building:
 - PCRE2 8bits (optional or use `-DWITH_PCRE2=<ON/OFF>` to switch explicitly)
 - LibXml2 (optional or use `-DWITH_LIBXML2=<ON/OFF>` to switch explicitly)
 - Judy (optional on Linux or use `-DWITH_JUDY=<ON/OFF>` to switch explicitly)
-- libbson (optional or use `-DWITH_BSON=<ON/OFF>` to switch explicitly)
+- libbson>=1.7 (optional or use `-DWITH_BSON=<ON/OFF>` to switch explicitly)
+- libmongoc>=1.7 (optional or use `-DWITH_MONGOC=<ON/OFF>` to switch explicitly)
 
 Optional dependencies for building won't be compiled with if Cmake didn't find the packages on your system or you can switch off it by CMake parameters.
 
@@ -375,7 +376,7 @@ Dependent libraries for running:
 - PFRING driver(optional on Linux)
 - lua5.3/5.4(optional for lua probe support)
 
-All of them can be installed on Windows in some way you like but always easier on Linux like Ubuntu22:
+All of them can be installed on Windows in some way you like but always easier on Linux like Ubuntu(e.g. 22/24):
 
 ```
 sudo apt install \
@@ -385,7 +386,8 @@ libpcre2-dev \
 libxml2-dev \
 liblua5.X-0 \
 libjudy-dev \
-libbson-dev
+libbson-dev \
+libmongoc-dev
 ```
 
 Use `xtate --version` to check details of version, binary info after building.
