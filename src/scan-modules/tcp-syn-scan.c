@@ -386,7 +386,7 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy,
         }
 
         if (tcpsyn_conf.synack_floor &&
-            valid_pkt->repeats < tcpsyn_conf.synack_floor) {
+            valid_pkt->repeats < tcpsyn_conf.synack_floor - 1) {
             item->no_output = 1;
             return;
         }

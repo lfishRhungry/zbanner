@@ -92,9 +92,20 @@ struct HttpStateConf {
     unsigned dynamic_host    : 1;
     unsigned all_banner      : 1;
     unsigned all_banner_limit;
+    unsigned all_banner_floor;
 };
 
 static struct HttpStateConf httpstate_conf = {0};
+
+static ConfRes SET_all_banner_floor(void *conf, const char *name,
+                                    const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    httpstate_conf.all_banner_floor = parse_str_int(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_all_banner_limit(void *conf, const char *name,
                                     const char *value) {
@@ -490,18 +501,26 @@ static ConfParam httpstate_parameters[] = {
      {0},
      "Removes the first field from the header that matches. We may need "
      "multiple times for fields like `Cookie` that can exist multiple times."},
-    {"get-whole-response",
+    {"all-banner",
      SET_all_banner,
      Type_FLAG,
-     {"whole", 0},
+     {"banner-all", 0},
      "Get the whole responsed banner before connection timeout, not just the "
      "banner in the first segment."},
-    {"banner-limit",
+    {"all-banner-limit",
      SET_all_banner_limit,
      Type_ARG,
-     {0},
-     "Just receive limited number of ACK segments with banner data and close "
-     "the connection if the number is enough in all-banner mode."},
+     {"banner-limit", "limit-banner", 0},
+     "Just record limited number of ACK segments with banner data as results "
+     "in all-banner mode. Exceeded ACK segments with banner data won't trigger "
+     "Multi_DynamicNext or Multi_AfterHandle."},
+    {"banner-floor",
+     SET_all_banner_floor,
+     Type_ARG,
+     {"banner-floor", "floor-banner", 0},
+     "Do not record ACK segments with banner data as results if the number is "
+     "less than the floor value while in all-banner mode. And non-recorded "
+     "segments won't trigger Multi_DynamicNext or Multi_AfterHandle."},
 
 #ifndef NOT_FOUND_PCRE2
     {"regex",
@@ -523,9 +542,10 @@ static ConfParam httpstate_parameters[] = {
     {"match-whole-response",
      SET_match_whole_response,
      Type_FLAG,
-     {"match-whole", 0},
-     "Continue to match the whole response after matched previous content.\n"
-     "NOTE: it works while using --get-whole-response."},
+     {"match-whole", "whole-match", 0},
+     "Continue to match the whole response after matched previous content "
+     "instead of trying to close the connection.\n"
+     "NOTE: it works while using -all-banner."},
 #endif
 
     {"record-banner",
@@ -731,15 +751,29 @@ static unsigned httpstate_parse_response(DataPass *pass, ProbeState *state,
                                          OutConf *out, ProbeTarget *target,
                                          const unsigned char *px,
                                          unsigned             sizeof_px) {
-    if (state->state)
-        return 0;
+    state->state++;
 
     if (!httpstate_conf.all_banner) {
-        state->state   = 1;
         pass->is_close = 1;
+
+        if (state->state > 1)
+            return 0;
     }
 
-    state->state++;
+    if (httpstate_conf.all_banner && httpstate_conf.all_banner_limit &&
+        state->state >= httpstate_conf.all_banner_limit) {
+        pass->is_close = 1;
+
+        if (state->state > httpstate_conf.all_banner_limit)
+            return 0;
+        if (state->state < httpstate_conf.all_banner_floor)
+            return 0;
+    }
+
+    if (httpstate_conf.all_banner && httpstate_conf.all_banner_floor &&
+        state->state < httpstate_conf.all_banner_floor) {
+        return 0;
+    }
 
     OutItem item = {
         .target.ip_proto  = target->target.ip_proto,
@@ -773,7 +807,6 @@ static unsigned httpstate_parse_response(DataPass *pass, ProbeState *state,
             safe_strcpy(item.classification, OUT_CLS_SIZE, "matched");
 
             if (!httpstate_conf.match_whole_response) {
-                state->state   = 1;
                 pass->is_close = 1;
             }
         } else {
@@ -791,6 +824,9 @@ static unsigned httpstate_parse_response(DataPass *pass, ProbeState *state,
     }
 #endif
 
+    if (httpstate_conf.all_banner) {
+        dach_set_int(&item.report, "banner idx", state->state - 1);
+    }
     if (httpstate_conf.record_data_len) {
         dach_set_int(&item.report, "data len", sizeof_px);
     }

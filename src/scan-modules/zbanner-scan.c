@@ -449,7 +449,7 @@ static ConfParam zbanner_parameters[] = {
     {"all-banner",
      SET_all_banner,
      Type_FLAG,
-     {"whole", 0},
+     {"banner-all", 0},
      "Try to get all banner by acknowledging all received segments with "
      "data(deduped by data length) instead of sending RST segment to close the "
      "connection.\n"
@@ -868,7 +868,7 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy,
         }
 
         if (zbanner_conf.all_banner && zbanner_conf.all_banner_floor &&
-            valid_pkt->repeats < zbanner_conf.all_banner_floor) {
+            valid_pkt->repeats < zbanner_conf.all_banner_floor - 1) {
             item->no_output = 1;
             return;
         }
