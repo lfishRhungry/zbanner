@@ -16,13 +16,13 @@ struct RecogStateConf {
     size_t           hello_len;
     char            *xml_filename;
     struct Recog_FP *recog_fp;
-    unsigned         unprefix           : 1;
-    unsigned         unsuffix           : 1;
-    unsigned         record_banner      : 1;
-    unsigned         record_utf8        : 1;
-    unsigned         record_data        : 1;
-    unsigned         record_data_len    : 1;
-    unsigned         get_whole_response : 1;
+    unsigned         unprefix        : 1;
+    unsigned         unsuffix        : 1;
+    unsigned         record_banner   : 1;
+    unsigned         record_utf8     : 1;
+    unsigned         record_data     : 1;
+    unsigned         record_data_len : 1;
+    unsigned         all_banner      : 1;
 };
 
 static struct RecogStateConf recogstate_conf = {0};
@@ -85,12 +85,11 @@ static ConfRes SET_unprefix(void *conf, const char *name, const char *value) {
     return Conf_OK;
 }
 
-static ConfRes SET_get_whole_response(void *conf, const char *name,
-                                      const char *value) {
+static ConfRes SET_all_banner(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    recogstate_conf.get_whole_response = parse_str_bool(value);
+    recogstate_conf.all_banner = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -225,7 +224,7 @@ static ConfParam recogstate_parameters[] = {
      "Specifies a file and set the content of file as hello data."
      " This will overwrite hello data set by other parameters."},
     {"get-whole-response",
-     SET_get_whole_response,
+     SET_all_banner,
      Type_FLAG,
      {"whole", 0},
      "Get the whole response before connection timeout, not just the banner."},
@@ -313,7 +312,7 @@ static unsigned recogstate_parse_response(DataPass *pass, ProbeState *state,
     if (state->state)
         return 0;
 
-    if (!recogstate_conf.get_whole_response) {
+    if (!recogstate_conf.all_banner) {
         state->state   = 1;
         pass->is_close = 1;
     }

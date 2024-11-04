@@ -61,16 +61,16 @@ static void dispatch_thread(void *v) {
 
     DispatchConf *parms = v;
     while (!time_to_finish_rx) {
-        int     err    = 1;
-        Recved *recved = NULL;
+        int          err       = 1;
+        ValidPacket *valid_pkt = NULL;
 
-        err = rte_ring_sc_dequeue(parms->dispatch_queue, (void **)&recved);
+        err = rte_ring_sc_dequeue(parms->dispatch_queue, (void **)&valid_pkt);
         if (err != 0) {
             pixie_usleep(RTE_XTATE_DEQ_USEC);
             continue;
         }
 
-        if (recved == NULL) {
+        if (valid_pkt == NULL) {
             LOG(LEVEL_ERROR,
                 "got empty Recved in dispatch thread. (IMPOSSIBLE)\n");
             fflush(stdout);
@@ -81,11 +81,11 @@ static void dispatch_thread(void *v) {
          * Send packet to recv handle queue according to ip_them.
          * Ensure same target ip was dispatched to same handle thread.
          */
-        uint8_t dsp_hash = _dispatch_hash(recved->parsed.src_ip);
+        uint8_t dsp_hash = _dispatch_hash(valid_pkt->recved.parsed.src_ip);
 
         for (err = 1; err != 0;) {
             unsigned i = dsp_hash & parms->recv_handle_mask;
-            err        = rte_ring_sp_enqueue(parms->handle_queue[i], recved);
+            err        = rte_ring_sp_enqueue(parms->handle_queue[i], valid_pkt);
             if (err != 0) {
                 LOG(LEVEL_ERROR,
                     "handle queue #%d full from dispatch thread.\n", i);
@@ -141,14 +141,14 @@ static void handle_thread(void *v) {
          */
         parms->scanner->poll_cb(parms->index);
 
-        Recved *recved = NULL;
-        int err = rte_ring_sc_dequeue(parms->handle_queue, (void **)&recved);
+        ValidPacket *valid_pkt = NULL;
+        int err = rte_ring_sc_dequeue(parms->handle_queue, (void **)&valid_pkt);
         if (err != 0) {
             pixie_usleep(RTE_XTATE_DEQ_USEC);
             continue;
         }
 
-        if (recved == NULL) {
+        if (valid_pkt == NULL) {
             LOG(LEVEL_ERROR,
                 "got empty Recved in handle thread #%d. (IMPOSSIBLE)\n",
                 parms->index);
@@ -157,20 +157,20 @@ static void handle_thread(void *v) {
         }
 
         OutItem item = {
-            .target.ip_proto  = recved->parsed.ip_protocol,
-            .target.ip_them   = recved->parsed.src_ip,
-            .target.ip_me     = recved->parsed.dst_ip,
-            .target.port_them = recved->parsed.port_src,
-            .target.port_me   = recved->parsed.port_dst,
+            .target.ip_proto  = valid_pkt->recved.parsed.ip_protocol,
+            .target.ip_them   = valid_pkt->recved.parsed.src_ip,
+            .target.ip_me     = valid_pkt->recved.parsed.dst_ip,
+            .target.port_them = valid_pkt->recved.parsed.port_src,
+            .target.port_me   = valid_pkt->recved.parsed.port_dst,
         };
 
-        parms->scanner->handle_cb(parms->index, parms->entropy, recved, &item,
-                                  parms->stack);
+        parms->scanner->handle_cb(parms->index, parms->entropy, valid_pkt,
+                                  &item, parms->stack);
 
         output_result(parms->out_conf, &item);
 
-        FREE(recved->packet);
-        FREE(recved);
+        FREE(valid_pkt->recved.packet);
+        FREE(valid_pkt);
     }
 
     LOG(LEVEL_DEBUG, "exiting handle thread #%u                    \n",
@@ -195,7 +195,7 @@ void receive_thread(void *v) {
     size_t           dispatcher;
     DispatchConf     dispatch_parms;
     PACKET_QUEUE    *dispatch_q;
-    Recved          *recved;
+    ValidPacket     *valid_pkt;
 
     LOG(LEVEL_DEBUG, "starting receive thread\n");
 
@@ -280,31 +280,32 @@ void receive_thread(void *v) {
          * recved will not be handle in this thread.
          * and packet received from Adapters cannot exist too long.
          */
-        recved         = CALLOC(1, sizeof(Recved));
-        recved->packet = MALLOC(pkt_len);
-        recved->length = pkt_len;
-        recved->secs   = pkt_secs;
-        recved->usecs  = pkt_usecs;
-        memcpy(recved->packet, pkt_data, pkt_len);
+        valid_pkt                = CALLOC(1, sizeof(ValidPacket));
+        valid_pkt->recved.packet = MALLOC(pkt_len);
+        valid_pkt->recved.length = pkt_len;
+        valid_pkt->recved.secs   = pkt_secs;
+        valid_pkt->recved.usecs  = pkt_usecs;
+        memcpy(valid_pkt->recved.packet, pkt_data, pkt_len);
 
-        unsigned x = preprocess_frame(recved->packet, recved->length, data_link,
-                                      &recved->parsed);
+        unsigned x =
+            preprocess_frame(valid_pkt->recved.packet, valid_pkt->recved.length,
+                             data_link, &valid_pkt->recved.parsed);
         if (!x) {
-            FREE(recved->packet);
-            FREE(recved);
+            FREE(valid_pkt->recved.packet);
+            FREE(valid_pkt);
             continue; /* corrupt packet */
         }
 
-        ipaddress ip_them   = recved->parsed.src_ip;
-        ipaddress ip_me     = recved->parsed.dst_ip;
-        unsigned  port_them = recved->parsed.port_src;
-        unsigned  port_me   = recved->parsed.port_dst;
+        ipaddress ip_them   = valid_pkt->recved.parsed.src_ip;
+        ipaddress ip_me     = valid_pkt->recved.parsed.dst_ip;
+        unsigned  port_them = valid_pkt->recved.parsed.port_src;
+        unsigned  port_me   = valid_pkt->recved.parsed.port_dst;
 
         assert(ip_me.version != 0);
         assert(ip_them.version != 0);
 
-        recved->is_myip   = is_my_ip(stack->src, ip_me);
-        recved->is_myport = is_my_port(stack->src, port_me);
+        valid_pkt->recved.is_myip   = is_my_ip(stack->src, ip_me);
+        valid_pkt->recved.is_myport = is_my_port(stack->src, port_me);
 
         /**
          * Do response for special arp&ndp packets while bypassing OS protocol
@@ -312,33 +313,36 @@ void receive_thread(void *v) {
          */
         if (xconf->is_bypass_os) {
             /*NDP Neighbor Solicitations to a multicast address */
-            if (!recved->is_myip && is_ipv6_multicast(ip_me) &&
-                recved->parsed.found == FOUND_NDPv6 &&
-                recved->parsed.icmp_type == ICMPv6_TYPE_NS) {
-                stack_ndpv6_incoming_request(stack, &recved->parsed,
-                                             recved->packet, recved->length);
+            if (!valid_pkt->recved.is_myip && is_ipv6_multicast(ip_me) &&
+                valid_pkt->recved.parsed.found == FOUND_NDPv6 &&
+                valid_pkt->recved.parsed.icmp_type == ICMPv6_TYPE_NS) {
+                stack_ndpv6_incoming_request(stack, &valid_pkt->recved.parsed,
+                                             valid_pkt->recved.packet,
+                                             valid_pkt->recved.length);
             }
 
-            if (recved->is_myip) {
-                if (recved->parsed.found == FOUND_NDPv6 &&
-                    recved->parsed.icmp_type == ICMPv6_TYPE_NS) {
+            if (valid_pkt->recved.is_myip) {
+                if (valid_pkt->recved.parsed.found == FOUND_NDPv6 &&
+                    valid_pkt->recved.parsed.icmp_type == ICMPv6_TYPE_NS) {
                     /* When responses come back from our scans, the router will
                      * send us these packets. We need to respond to them, so
                      * that the router can then forward the packets to us. If we
                      * don't respond, we'll get no responses. */
                     stack_ndpv6_incoming_request(
-                        stack, &recved->parsed, recved->packet, recved->length);
+                        stack, &valid_pkt->recved.parsed,
+                        valid_pkt->recved.packet, valid_pkt->recved.length);
                 }
-                if (recved->parsed.found == FOUND_ARP &&
-                    recved->parsed.arp_info.opcode == ARP_OPCODE_REQUEST) {
+                if (valid_pkt->recved.parsed.found == FOUND_ARP &&
+                    valid_pkt->recved.parsed.arp_info.opcode ==
+                        ARP_OPCODE_REQUEST) {
                     /* This function will transmit a "reply" to somebody's ARP
                      * request for our IP address (as part of our user-mode
                      * TCP/IP). Since we completely bypass the TCP/IP stack, we
                      * have to handle ARPs ourself, or the router will lose
                      * track of us.*/
-                    stack_arp_incoming_request(stack, ip_me.ipv4,
-                                               stack->source_mac,
-                                               recved->packet, recved->length);
+                    stack_arp_incoming_request(
+                        stack, ip_me.ipv4, stack->source_mac,
+                        valid_pkt->recved.packet, valid_pkt->recved.length);
                 }
             }
         }
@@ -351,45 +355,43 @@ void receive_thread(void *v) {
             .dedup_type      = SM_DFT_DEDUP_TYPE,
         };
 
-        scan_module->validate_cb(entropy, recved, &pre);
+        scan_module->validate_cb(entropy, &valid_pkt->recved, &pre);
 
         if (!pre.go_record) {
-            FREE(recved->packet);
-            FREE(recved);
+            FREE(valid_pkt->recved.packet);
+            FREE(valid_pkt);
             continue;
         }
 
         if (parms->xconf->is_packet_trace)
-            packet_trace(stdout, parms->pt_start, recved->packet,
-                         recved->length, false);
+            packet_trace(stdout, parms->pt_start, valid_pkt->recved.packet,
+                         valid_pkt->recved.length, false);
 
         /* Save raw packet in --pcap file */
         if (pcapfile && !pre.no_record) {
-            pcapfile_writeframe(pcapfile, recved->packet, recved->length,
-                                recved->length, recved->secs, recved->usecs);
+            pcapfile_writeframe(
+                pcapfile, valid_pkt->recved.packet, valid_pkt->recved.length,
+                valid_pkt->recved.length, valid_pkt->recved.secs,
+                valid_pkt->recved.usecs);
         }
 
         if (!pre.go_dedup) {
-            FREE(recved->packet);
-            FREE(recved);
+            FREE(valid_pkt->recved.packet);
+            FREE(valid_pkt);
             continue;
         }
 
         if (!xconf->is_nodedup && !pre.no_dedup) {
-            if (dedup_is_dup(dedup, pre.dedup_ip_them, pre.dedup_port_them,
-                             pre.dedup_ip_me, pre.dedup_port_me,
-                             pre.dedup_type)) {
-                FREE(recved->packet);
-                FREE(recved);
-                continue;
-            }
+            valid_pkt->repeats = dedup_is_dup(
+                dedup, pre.dedup_ip_them, pre.dedup_port_them, pre.dedup_ip_me,
+                pre.dedup_port_me, pre.dedup_type);
         }
 
         /**
          * give it to dispatcher
          */
         for (err = 1; err != 0;) {
-            err = rte_ring_sp_enqueue(dispatch_q, recved);
+            err = rte_ring_sp_enqueue(dispatch_q, valid_pkt);
             if (err != 0) {
                 LOG(LEVEL_ERROR,
                     "dispatch queue full from rx thread with too fast rate.\n");

@@ -90,6 +90,11 @@ typedef struct PacketReceived {
     unsigned       is_myport : 1;
 } Recved;
 
+typedef struct PacketValidated {
+    Recved   recved;
+    unsigned repeats;
+} ValidPacket;
+
 /**
  * How we do prehandling for a packet.
  * The processes of prehandling has following step:
@@ -142,12 +147,12 @@ typedef void (*scan_modules_validate)(uint64_t entropy, Recved *recved,
  *
  * @param th_idx the index of receive handler thread.
  * @param entropy a rand seed (generated or user-specified).
- * @param recved info of received packet.
+ * @param valid_pkt info of validated packet.
  * @param item results we have to fill to output.
  * @param stack packet buffer queue stack for preparing transmitting by us.
  */
 typedef void (*scan_modules_handle)(unsigned th_idx, uint64_t entropy,
-                                    Recved *recved, OutItem *item,
+                                    ValidPacket *valid_pkt, OutItem *item,
                                     STACK *stack);
 
 /***************************************************************************

@@ -219,8 +219,15 @@ static void yarrpecho_validate(uint64_t entropy, Recved *recved,
     }
 }
 
-static void yarrpecho_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
-                             OutItem *item, STACK *stack) {
+static void yarrpecho_handle(unsigned th_idx, uint64_t entropy,
+                             ValidPacket *valid_pkt, OutItem *item,
+                             STACK *stack) {
+    if (valid_pkt->repeats) {
+        item->no_output = 1;
+        return;
+    }
+    Recved *recved = &valid_pkt->recved;
+
     item->target.port_them = 0;
     item->target.port_me   = 0;
     item->no_port          = 1;

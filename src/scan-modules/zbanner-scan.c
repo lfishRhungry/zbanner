@@ -20,6 +20,8 @@ struct ZBannerConf {
     uint8_t  rst_ttl;
     uint8_t  probe_ttl;
     uint8_t  ack_banner_ttl;
+    unsigned all_banner_limit;
+    unsigned all_banner_floor;
     unsigned all_banner      : 1;
     unsigned is_port_success : 1;
     unsigned is_port_failure : 1;
@@ -41,9 +43,71 @@ struct ZBannerConf {
     unsigned no_dedup_synack : 1;
     unsigned no_dedup_rst    : 1;
     unsigned no_dedup_ack    : 1;
+    unsigned repeat_banner   : 1;
+    unsigned repeat_synack   : 1;
+    unsigned repeat_rst      : 1;
+    unsigned repeat_ack      : 1;
 };
 
 static struct ZBannerConf zbanner_conf = {0};
+
+static ConfRes SET_all_banner_floor(void *conf, const char *name,
+                                    const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.all_banner_floor = parse_str_int(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_all_banner_limit(void *conf, const char *name,
+                                    const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.all_banner_limit = parse_str_int(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_repeat_ack(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.repeat_ack = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_repeat_rst(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.repeat_rst = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_repeat_synack(void *conf, const char *name,
+                                 const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.repeat_synack = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_repeat_banner(void *conf, const char *name,
+                                 const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.repeat_banner = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_all_banner(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -385,7 +449,7 @@ static ConfParam zbanner_parameters[] = {
     {"all-banner",
      SET_all_banner,
      Type_FLAG,
-     {0},
+     {"whole", 0},
      "Try to get all banner by acknowledging all received segments with "
      "data(deduped by data length) instead of sending RST segment to close the "
      "connection.\n"
@@ -394,6 +458,22 @@ static ConfParam zbanner_parameters[] = {
      "NOTE2: This may get so many segments with banner data. We can use some "
      "global params to adjust it. (e.g. --tcp-win, --max-packet-len, "
      "--snaplen)"},
+    {"all-banner-limit",
+     SET_all_banner_limit,
+     Type_ARG,
+     {"banner-limit", "limit-banner", 0},
+     "After received limited number of ACK segments with banner data then send "
+     "RST segment to close the connection if the number is enough in "
+     "all-banner mode. Exceeded ACK segments with banner data won't be "
+     "recorded as results and won't trigger Multi_DynamicNext and "
+     "Multi_AfterHandle."},
+    {"all-banner-floor",
+     SET_all_banner_floor,
+     Type_ARG,
+     {"banner-floor", "floor-banner", 0},
+     "Do not record ACK segments with banner data as results if the number is "
+     "less than the floor value while in all-banner mode. And non-recorded "
+     "segments won't trigger Multi_DynamicNext and Multi_AfterHandle."},
     {"syn-ttl",
      SET_syn_ttl,
      Type_ARG,
@@ -450,6 +530,26 @@ static ConfParam zbanner_parameters[] = {
      {0},
      "Just close the deduplication for received ACK segments without payload. "
      "This is useful to some researches."},
+    {"repeat-banner",
+     SET_repeat_banner,
+     Type_FLAG,
+     {0},
+     "Allow repeated ACK segments with banner data."},
+    {"repeat-synack",
+     SET_repeat_synack,
+     Type_FLAG,
+     {0},
+     "Allow repeated SYN-ACK segments."},
+    {"repeat-ack",
+     SET_repeat_ack,
+     Type_FLAG,
+     {0},
+     "Allow repeated ACK segments without data."},
+    {"repeat-rst",
+     SET_repeat_rst,
+     Type_FLAG,
+     {0},
+     "Allow repeated RST segments."},
 
     {0}};
 
@@ -500,8 +600,6 @@ static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
 
     unsigned seqno_me =
         TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
-    unsigned seqno_them =
-        TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
     unsigned cookie =
         get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                    recved->parsed.dst_ip, recved->parsed.port_dst, entropy);
@@ -541,9 +639,7 @@ static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
 
         if (seqno_me == cookie + payload_len + 1) {
             pre->go_dedup   = 1;
-            pre->dedup_type = zbanner_conf.all_banner
-                                  ? seqno_them
-                                  : ZBANNER_DEDUP_TYPE_BANNER;
+            pre->dedup_type = ZBANNER_DEDUP_TYPE_BANNER;
             pre->no_dedup   = zbanner_conf.no_dedup_banner;
         }
     }
@@ -581,8 +677,11 @@ static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     }
 }
 
-static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
-                           OutItem *item, STACK *stack) {
+static void zbanner_handle(unsigned th_idx, uint64_t entropy,
+                           ValidPacket *valid_pkt, OutItem *item,
+                           STACK *stack) {
+    Recved *recved = &valid_pkt->recved;
+
     unsigned mss_them;
     bool     mss_found;
     uint16_t win_them;
@@ -596,6 +695,14 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
 
     /*SYNACK*/
     if (TCP_FLAG_HAS(flags_them, TCP_FLAG_SYN | TCP_FLAG_ACK)) {
+
+        if (!zbanner_conf.repeat_synack && valid_pkt->repeats) {
+            item->no_output = 1;
+            return;
+        } else if (zbanner_conf.repeat_synack) {
+            dach_set_int(&item->report, "repeats", valid_pkt->repeats);
+        }
+
         /*zerowin could be a kind of port open*/
         if (zbanner_conf.is_port_success) {
             item->level = OUT_SUCCESS;
@@ -696,6 +803,14 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     }
     /*RST*/
     else if (TCP_FLAG_HAS(flags_them, TCP_FLAG_RST)) {
+
+        if (!zbanner_conf.repeat_rst && valid_pkt->repeats) {
+            item->no_output = 1;
+            return;
+        } else if (zbanner_conf.repeat_rst) {
+            dach_set_int(&item->report, "repeats", valid_pkt->repeats);
+        }
+
         win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
         if (zbanner_conf.record_ttl)
@@ -720,8 +835,21 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     }
     /*Banner*/
     else if (recved->parsed.app_length) {
-        /*send rst first to disconn*/
-        if (!zbanner_conf.no_rst && !zbanner_conf.all_banner) {
+
+        if (!zbanner_conf.repeat_banner && !zbanner_conf.all_banner &&
+            valid_pkt->repeats) {
+            item->no_output = 1;
+            return;
+        } else if (zbanner_conf.repeat_banner) {
+            dach_set_int(&item->report, "repeats", valid_pkt->repeats);
+        } else if (zbanner_conf.all_banner) {
+            dach_set_int(&item->report, "banner idx", valid_pkt->repeats);
+        }
+
+        if (!zbanner_conf.no_rst &&
+            (!zbanner_conf.all_banner ||
+             (zbanner_conf.all_banner && zbanner_conf.all_banner_limit &&
+              valid_pkt->repeats >= zbanner_conf.all_banner_limit - 1))) {
             PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
             pkt_buffer->length = tcp_create_packet(
@@ -731,6 +859,18 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                 pkt_buffer->px, PKT_BUF_SIZE);
 
             stack_transmit_pktbuf(stack, pkt_buffer);
+        }
+
+        if (zbanner_conf.all_banner && zbanner_conf.all_banner_limit &&
+            valid_pkt->repeats >= zbanner_conf.all_banner_limit) {
+            item->no_output = 1;
+            return;
+        }
+
+        if (zbanner_conf.all_banner && zbanner_conf.all_banner_floor &&
+            valid_pkt->repeats < zbanner_conf.all_banner_floor) {
+            item->no_output = 1;
+            return;
         }
 
         /*acknowledge data if set all-banner*/
@@ -805,12 +945,10 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
 
                 stack_transmit_pktbuf(stack, pkt_buffer);
             }
-
-            return;
         }
-
         /*multi-probe Multi_DynamicNext*/
-        if (ZBannerScan.probe->multi_mode == Multi_DynamicNext && is_multi) {
+        else if (ZBannerScan.probe->multi_mode == Multi_DynamicNext &&
+                 is_multi) {
             unsigned cookie = get_cookie(
                 recved->parsed.src_ip, recved->parsed.port_src,
                 recved->parsed.dst_ip, src_port_start + is_multi - 1, entropy);
@@ -828,6 +966,14 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     }
     /*ACK for our probe without payload*/
     else {
+
+        if (!zbanner_conf.repeat_ack && valid_pkt->repeats) {
+            item->no_output = 1;
+            return;
+        } else if (zbanner_conf.repeat_ack) {
+            dach_set_int(&item->report, "repeats", valid_pkt->repeats);
+        }
+
         win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
         if (zbanner_conf.record_ttl)

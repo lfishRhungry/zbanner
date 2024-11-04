@@ -99,8 +99,15 @@ static void sctpinit_validate(uint64_t entropy, Recved *recved,
     }
 }
 
-static void sctpinit_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
-                            OutItem *item, STACK *stack) {
+static void sctpinit_handle(unsigned th_idx, uint64_t entropy,
+                            ValidPacket *valid_pkt, OutItem *item,
+                            STACK *stack) {
+    if (valid_pkt->repeats) {
+        item->no_output = 1;
+        return;
+    }
+    Recved *recved = &valid_pkt->recved;
+
     if (SCTP_IS_CHUNK_TYPE(recved->packet, recved->parsed.transport_offset,
                            SCTP_CHUNK_TYPE_INIT_ACK)) {
         item->level = OUT_SUCCESS;

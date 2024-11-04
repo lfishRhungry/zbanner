@@ -11,6 +11,8 @@ extern Scanner TcpSynScan; /*for internal x-ref*/
 struct TcpSynConf {
     uint8_t  syn_ttl;
     uint8_t  rst_ttl;
+    unsigned synack_limit;
+    unsigned synack_floor;
     unsigned send_rst        : 1;
     unsigned zero_fail       : 1;
     unsigned record_ttl      : 1;
@@ -21,9 +23,50 @@ struct TcpSynConf {
     unsigned record_ackno    : 1;
     unsigned no_dedup_synack : 1;
     unsigned no_dedup_rst    : 1;
+    unsigned repeat_synack   : 1;
+    unsigned repeat_rst      : 1;
 };
 
 static struct TcpSynConf tcpsyn_conf = {0};
+
+static ConfRes SET_synack_floor(void *conf, const char *name,
+                                const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.synack_floor = parse_str_int(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_synack_limit(void *conf, const char *name,
+                                const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.synack_limit = parse_str_int(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_repeat_rst(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.repeat_rst = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_repeat_synack(void *conf, const char *name,
+                                 const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    tcpsyn_conf.repeat_synack = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_no_dedup_rst(void *conf, const char *name,
                                 const char *value) {
@@ -204,6 +247,29 @@ static ConfParam tcpsyn_parameters[] = {
      {0},
      "Just close the deduplication for received RST segments. This is useful "
      "to some researches."},
+    {"repeat-synack",
+     SET_repeat_synack,
+     Type_FLAG,
+     {0},
+     "Allow repeated SYN-ACK segments."},
+    {"repeat-rst",
+     SET_repeat_rst,
+     Type_FLAG,
+     {0},
+     "Allow repeated RST segments."},
+    {"synack-limit",
+     SET_synack_limit,
+     Type_ARG,
+     {"limit-synack", 0},
+     "Send RST segment to stop SYN-ACK retransmission after received enough "
+     "limitation number while using -send-rst and -repeat-synack params. And "
+     "exceeded SYN-ACK segments won't be recorded as results."},
+    {"synack-floor",
+     SET_synack_floor,
+     Type_ARG,
+     {"floor-synack", "floor-synack", 0},
+     "Do not record SYN-ACK segments as results if the number is less than the "
+     "floor value while using -repeat-synack param."},
 
     {0}};
 
@@ -260,13 +326,14 @@ static void tcpsyn_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     }
 }
 
-static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
-                          OutItem *item, STACK *stack) {
+static void tcpsyn_handle(unsigned th_idx, uint64_t entropy,
+                          ValidPacket *valid_pkt, OutItem *item, STACK *stack) {
     unsigned mss_them;
     bool     mss_found;
-    uint16_t win_them;
+    Recved  *recved = &valid_pkt->recved;
 
-    win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
+    uint16_t win_them =
+        TCP_WIN(recved->packet, recved->parsed.transport_offset);
     unsigned seqno_me =
         TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
     unsigned seqno_them =
@@ -275,6 +342,14 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     /*SYNACK*/
     if (TCP_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
                      TCP_FLAG_SYN | TCP_FLAG_ACK)) {
+
+        if (!tcpsyn_conf.repeat_synack && valid_pkt->repeats) {
+            item->no_output = 1;
+            return;
+        } else if (tcpsyn_conf.repeat_synack) {
+            dach_set_int(&item->report, "repeats", valid_pkt->repeats);
+        }
+
         item->level = OUT_SUCCESS;
 
         if (win_them == 0) {
@@ -288,7 +363,10 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             safe_strcpy(item->reason, OUT_RSN_SIZE, "syn-ack");
         }
 
-        if (tcpsyn_conf.send_rst) {
+        if (tcpsyn_conf.send_rst &&
+            (!tcpsyn_conf.synack_limit ||
+             (tcpsyn_conf.synack_limit &&
+              valid_pkt->repeats >= tcpsyn_conf.synack_limit - 1))) {
 
             PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
@@ -301,6 +379,18 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
             stack_transmit_pktbuf(stack, pkt_buffer);
         }
 
+        if (tcpsyn_conf.synack_limit &&
+            valid_pkt->repeats >= tcpsyn_conf.synack_limit) {
+            item->no_output = 1;
+            return;
+        }
+
+        if (tcpsyn_conf.synack_floor &&
+            valid_pkt->repeats < tcpsyn_conf.synack_floor) {
+            item->no_output = 1;
+            return;
+        }
+
         if (tcpsyn_conf.record_mss) {
             /*comput of mss is not easy*/
             mss_them = tcp_get_mss(recved->packet, recved->length, &mss_found);
@@ -310,6 +400,14 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     }
     /*RST*/
     else {
+
+        if (!tcpsyn_conf.repeat_rst && valid_pkt->repeats) {
+            item->no_output = 1;
+            return;
+        } else if (tcpsyn_conf.repeat_rst) {
+            dach_set_int(&item->report, "repeats", valid_pkt->repeats);
+        }
+
         item->level = OUT_FAILURE;
         safe_strcpy(item->reason, OUT_RSN_SIZE, "rst");
         safe_strcpy(item->classification, OUT_CLS_SIZE, "closed");

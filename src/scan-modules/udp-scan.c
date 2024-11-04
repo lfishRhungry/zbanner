@@ -28,9 +28,20 @@ struct UdpConf {
     unsigned no_port_unreachable : 1;
     unsigned is_port_failure     : 1;
     unsigned no_pre_validate     : 1;
+    unsigned repeat_packet       : 1;
 };
 
 static struct UdpConf udp_conf = {0};
+
+static ConfRes SET_repeat_packet(void *conf, const char *name,
+                                 const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    udp_conf.repeat_packet = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_no_pre_validate(void *conf, const char *name,
                                    const char *value) {
@@ -238,6 +249,11 @@ static ConfParam udp_parameters[] = {
      Type_FLAG,
      {"failure-port", "port-fail", "fail-port", 0},
      "Let port closed results as failure level.(Default is info level)"},
+    {"repeat-packets",
+     SET_repeat_packet,
+     Type_FLAG,
+     {"repeat-packet", "repeat", 0},
+     "Allow repeated packets."},
 
     {0}};
 
@@ -386,8 +402,16 @@ static void udp_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
     }
 }
 
-static void udp_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
-                       OutItem *item, STACK *stack) {
+static void udp_handle(unsigned th_idx, uint64_t entropy,
+                       ValidPacket *valid_pkt, OutItem *item, STACK *stack) {
+    if (!udp_conf.repeat_packet && valid_pkt->repeats) {
+        item->no_output = 1;
+        return;
+    } else if (udp_conf.repeat_packet) {
+        dach_set_int(&item->report, "repeats", valid_pkt->repeats);
+    }
+    Recved *recved = &valid_pkt->recved;
+
     if (recved->parsed.found == FOUND_UDP) {
         ProbeTarget ptarget = {
             .target.ip_proto  = recved->parsed.ip_protocol,

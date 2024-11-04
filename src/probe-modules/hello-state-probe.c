@@ -29,17 +29,16 @@ struct HelloStateConf {
     unsigned             re_include_newlines  : 1;
     unsigned             match_whole_response : 1;
 #endif
-    unsigned get_whole_response : 1;
+    unsigned all_banner : 1;
 };
 
 static struct HelloStateConf hellostate_conf = {0};
 
-static ConfRes SET_get_whole_response(void *conf, const char *name,
-                                      const char *value) {
+static ConfRes SET_all_banner(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    hellostate_conf.get_whole_response = parse_str_bool(value);
+    hellostate_conf.all_banner = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -330,7 +329,7 @@ static ConfParam hellostate_parameters[] = {
 #endif
 
     {"get-whole-response",
-     SET_get_whole_response,
+     SET_all_banner,
      Type_FLAG,
      {"whole", 0},
      "Get the whole response before connection timeout, not just the banner."},
@@ -364,7 +363,7 @@ static unsigned hellostate_parse_response(DataPass *pass, ProbeState *state,
     if (state->state)
         return 0;
 
-    if (!hellostate_conf.get_whole_response) {
+    if (!hellostate_conf.all_banner) {
         state->state   = 1;
         pass->is_close = 1;
     }

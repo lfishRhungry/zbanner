@@ -126,9 +126,9 @@ typedef unsigned (*probe_modules_handle_response)(unsigned             th_idx,
 
 typedef struct StateOfProbe {
     /*impossible to exceed the state limitation*/
-    uint8_t state;
+    unsigned state;
     /*defined by probe itself in need*/
-    void   *data;
+    void    *data;
 } ProbeState;
 
 /**
