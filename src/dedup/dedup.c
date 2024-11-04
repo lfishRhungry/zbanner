@@ -19,8 +19,8 @@ struct DedupEntry_IPv4 {
     unsigned port_them;
     unsigned ip_me;
     unsigned port_me;
-    /*for more flexible dedup*/
-    unsigned type;
+    unsigned type;    /*for more flexible dedup*/
+    unsigned repeats; /*increase every time duplicate*/
 };
 
 struct DedupEntry_IPv6 {
@@ -28,8 +28,8 @@ struct DedupEntry_IPv6 {
     ipv6address ip_me;
     unsigned    port_them;
     unsigned    port_me;
-    /*for more flexible dedup*/
-    unsigned    type;
+    unsigned    type;    /*for more flexible dedup*/
+    unsigned    repeats; /*increase every time duplicate*/
 };
 
 struct DedupEntry {
@@ -191,13 +191,15 @@ static inline void _swap6(struct DedupEntry_IPv6 *lhs,
 /**
  * This implements the same algorithm as for IPv4 addresses, but for
  * IPv6 addresses instead.
+ * @return count of repeats
  */
-static bool _dedup_is_dup_ipv6(DedupTable *dedup, ipaddress ip_them,
-                               unsigned port_them, ipaddress ip_me,
-                               unsigned port_me, unsigned type) {
+static unsigned _dedup_is_dup_ipv6(DedupTable *dedup, ipaddress ip_them,
+                                   unsigned port_them, ipaddress ip_me,
+                                   unsigned port_me, unsigned type) {
     unsigned                hash;
     struct DedupEntry_IPv6 *bucket;
     unsigned                i;
+    unsigned                repeats;
 
     hash   = _dedup_hash_ipv6(ip_them, port_them, ip_me, port_me, type);
     bucket = dedup->all_entries[hash & dedup->mask].entries6;
@@ -211,6 +213,10 @@ static bool _dedup_is_dup_ipv6(DedupTable *dedup, ipaddress ip_them,
             bucket[i].port_them == port_them &&
             _is_equal6(bucket[i].ip_me, ip_me.ipv6) &&
             bucket[i].port_me == port_me && bucket[i].type == type) {
+
+            /*record increased repeats*/
+            repeats = bucket[i].repeats + 1;
+
             /* move to head of list so constant repeats get attention */
             if (i > 0) {
                 // _swap6(&bucket[0], &bucket[i]);
@@ -223,7 +229,10 @@ static bool _dedup_is_dup_ipv6(DedupTable *dedup, ipaddress ip_them,
                 bucket[0].port_me    = (unsigned short)port_me;
                 bucket[0].type       = type;
             }
-            return true;
+
+            /*save and return repeats*/
+            bucket[0].repeats = repeats;
+            return repeats;
         }
     }
 
@@ -239,8 +248,9 @@ static bool _dedup_is_dup_ipv6(DedupTable *dedup, ipaddress ip_them,
     bucket[0].ip_me.lo   = ip_me.ipv6.lo;
     bucket[0].port_me    = (unsigned short)port_me;
     bucket[0].type       = type;
+    bucket[0].repeats    = 0;
 
-    return false;
+    return 0;
 }
 
 /**
@@ -294,13 +304,15 @@ static inline void _swap4(struct DedupEntry_IPv4 *lhs,
 #endif
 
 /***************************************************************************
+ * @return count of repeats
  ***************************************************************************/
-static bool _dedup_is_dup_ipv4(DedupTable *dedup, ipaddress ip_them,
-                               unsigned port_them, ipaddress ip_me,
-                               unsigned port_me, unsigned type) {
+static unsigned _dedup_is_dup_ipv4(DedupTable *dedup, ipaddress ip_them,
+                                   unsigned port_them, ipaddress ip_me,
+                                   unsigned port_me, unsigned type) {
     unsigned                hash;
     struct DedupEntry_IPv4 *bucket;
     unsigned                i;
+    unsigned                repeats;
 
     hash   = _dedup_hash_ipv4(ip_them, port_them, ip_me, port_me, type);
     bucket = dedup->all_entries[hash & dedup->mask].entries;
@@ -313,6 +325,10 @@ static bool _dedup_is_dup_ipv4(DedupTable *dedup, ipaddress ip_them,
         if (bucket[i].ip_them == ip_them.ipv4 &&
             bucket[i].port_them == port_them && bucket[i].ip_me == ip_me.ipv4 &&
             bucket[i].port_me == port_me && bucket[i].type == type) {
+
+            /*record increased repeats*/
+            repeats = bucket[i].repeats + 1;
+
             /* move to head of list so constant repeats get attention */
             if (i > 0) {
                 // _swap4(&bucket[0], &bucket[i]);
@@ -323,7 +339,10 @@ static bool _dedup_is_dup_ipv4(DedupTable *dedup, ipaddress ip_them,
                 bucket[0].port_me   = port_me;
                 bucket[0].type      = type;
             }
-            return true;
+
+            /*save and return repeats*/
+            bucket[0].repeats = repeats;
+            return repeats;
         }
     }
 
@@ -337,14 +356,15 @@ static bool _dedup_is_dup_ipv4(DedupTable *dedup, ipaddress ip_them,
     bucket[0].ip_me     = ip_me.ipv4;
     bucket[0].port_me   = port_me;
     bucket[0].type      = type;
+    bucket[0].repeats   = 0;
 
-    return false;
+    return 0;
 }
 
 /***************************************************************************
  ***************************************************************************/
-bool dedup_is_dup(DedupTable *dedup, ipaddress ip_them, unsigned port_them,
-                  ipaddress ip_me, unsigned port_me, unsigned type) {
+unsigned dedup_is_dup(DedupTable *dedup, ipaddress ip_them, unsigned port_them,
+                      ipaddress ip_me, unsigned port_me, unsigned type) {
     if (ip_them.version == 6)
         return _dedup_is_dup_ipv6(dedup, ip_them, port_them, ip_me, port_me,
                                   type);

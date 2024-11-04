@@ -14,8 +14,11 @@ DedupTable *dedup_create(unsigned dedup_win);
 
 void dedup_destroy(DedupTable *table);
 
-bool dedup_is_dup(DedupTable *dedup, ipaddress ip_them, unsigned port_them,
-                  ipaddress ip_me, unsigned port_me, unsigned type);
+/**
+ * @return count of repeats
+ */
+unsigned dedup_is_dup(DedupTable *dedup, ipaddress ip_them, unsigned port_them,
+                      ipaddress ip_me, unsigned port_me, unsigned type);
 
 int dedup_selftest();
 
