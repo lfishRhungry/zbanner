@@ -19,6 +19,8 @@ struct ZBannerConf {
     uint8_t  ack_ttl;
     uint8_t  rst_ttl;
     uint8_t  probe_ttl;
+    uint8_t  ack_banner_ttl;
+    unsigned all_banner      : 1;
     unsigned is_port_success : 1;
     unsigned is_port_failure : 1;
     unsigned is_ack_success  : 1;
@@ -42,6 +44,15 @@ struct ZBannerConf {
 };
 
 static struct ZBannerConf zbanner_conf = {0};
+
+static ConfRes SET_all_banner(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.all_banner = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_record_ack(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -148,6 +159,16 @@ static ConfRes SET_record_seqno(void *conf, const char *name,
     UNUSEDPARM(name);
 
     zbanner_conf.record_seqno = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_ack_banner_ttl(void *conf, const char *name,
+                                  const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    zbanner_conf.ack_banner_ttl = parse_str_int(value);
 
     return Conf_OK;
 }
@@ -361,6 +382,18 @@ static ConfParam zbanner_parameters[] = {
      Type_FLAG,
      {0},
      "Do not send RST segment after got banner. It's used for research."},
+    {"all-banner",
+     SET_all_banner,
+     Type_FLAG,
+     {0},
+     "Try to get all banner by acknowledging all received segments with "
+     "data(deduped by data length) instead of sending RST segment to close the "
+     "connection.\n"
+     "NOTE1: This could cause some problem while using ProbeModule in "
+     "Multi_AfterHandle mode.\n"
+     "NOTE2: This may get so many segments with banner data. We can use some "
+     "global params to adjust it. (e.g. --tcp-win, --max-packet-len, "
+     "--snaplen)"},
     {"syn-ttl",
      SET_syn_ttl,
      Type_ARG,
@@ -383,6 +416,12 @@ static ConfParam zbanner_parameters[] = {
      {0},
      "Set TTL of ACK segment with probe data to specified value instead of "
      "global default."},
+    {"ack-banner-ttl",
+     SET_ack_banner_ttl,
+     Type_ARG,
+     {"banner-ttl", 0},
+     "Set TTL of ACK segment for received banner data to specified value "
+     "instead of global default in all-banner mode."},
     {"no-dedup-banner",
      SET_no_dedup_banner,
      Type_FLAG,
@@ -461,6 +500,8 @@ static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
 
     unsigned seqno_me =
         TCP_ACKNO(recved->packet, recved->parsed.transport_offset);
+    unsigned seqno_them =
+        TCP_SEQNO(recved->packet, recved->parsed.transport_offset);
     unsigned cookie =
         get_cookie(recved->parsed.src_ip, recved->parsed.port_src,
                    recved->parsed.dst_ip, recved->parsed.port_dst, entropy);
@@ -500,7 +541,9 @@ static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
 
         if (seqno_me == cookie + payload_len + 1) {
             pre->go_dedup   = 1;
-            pre->dedup_type = ZBANNER_DEDUP_TYPE_BANNER;
+            pre->dedup_type = zbanner_conf.all_banner
+                                  ? seqno_them
+                                  : ZBANNER_DEDUP_TYPE_BANNER;
             pre->no_dedup   = zbanner_conf.no_dedup_banner;
         }
     }
@@ -678,7 +721,7 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
     /*Banner*/
     else if (recved->parsed.app_length) {
         /*send rst first to disconn*/
-        if (!zbanner_conf.no_rst) {
+        if (!zbanner_conf.no_rst && !zbanner_conf.all_banner) {
             PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
             pkt_buffer->length = tcp_create_packet(
@@ -686,6 +729,20 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy, Recved *recved,
                 recved->parsed.dst_ip, recved->parsed.port_dst, seqno_me,
                 seqno_them + 1, TCP_FLAG_RST, zbanner_conf.rst_ttl, 0, NULL, 0,
                 pkt_buffer->px, PKT_BUF_SIZE);
+
+            stack_transmit_pktbuf(stack, pkt_buffer);
+        }
+
+        /*acknowledge data if set all-banner*/
+        if (zbanner_conf.all_banner) {
+            PktBuf *pkt_buffer = stack_get_pktbuf(stack);
+
+            pkt_buffer->length = tcp_create_packet(
+                recved->parsed.src_ip, recved->parsed.port_src,
+                recved->parsed.dst_ip, recved->parsed.port_dst, seqno_me,
+                seqno_them + recved->parsed.app_length, TCP_FLAG_ACK,
+                zbanner_conf.ack_banner_ttl, 0, NULL, 0, pkt_buffer->px,
+                PKT_BUF_SIZE);
 
             stack_transmit_pktbuf(stack, pkt_buffer);
         }
