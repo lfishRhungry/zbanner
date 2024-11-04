@@ -2820,9 +2820,11 @@ ConfParam config_parameters[] = {
      " will do reponse to special ARP "
      "& NDP request for our new IP as if we are real member of the local "
      "subnet.\n"
-     "NOTE: There's no need to set some firewall rules for Linux while we are"
+     "NOTE1: There's no need to set some firewall rules for Linux while we are"
      " in bypassing mode. And we can't use the feature of OS protocol stack "
-     "like responsing TCP RST or ICMP Port Unreachable."},
+     "like responsing TCP RST or ICMP Port Unreachable.\n"
+     "NOTE2: This function may need to receive different type of packets from "
+     "ScanModule so that the BPF filter needs to be configured properly."},
     {"init-ipv4-adapter",
      SET_init_ipv4,
      Type_FLAG,
