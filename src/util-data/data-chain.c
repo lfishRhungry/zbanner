@@ -898,7 +898,7 @@ int datachain_selftest(void) {
             line = __LINE__;
             goto fail;
         }
-        if (!dach_equals_str(dach, "normal", "\\x3chello\\x3e\\x0a")) {
+        if (!dach_equals_str(dach, "normal", "<hello>\\x0a")) {
             line = __LINE__;
             goto fail;
         }
