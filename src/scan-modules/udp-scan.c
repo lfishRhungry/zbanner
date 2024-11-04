@@ -15,6 +15,9 @@ extern Scanner UdpScan; /*for internal x-ref*/
 static const TargetSet *_targets = NULL;
 
 struct UdpConf {
+    unsigned packet_limit;
+    unsigned packet_floor;
+    unsigned repeat_packet       : 1;
     unsigned record_banner       : 1;
     unsigned record_utf8         : 1;
     unsigned record_data         : 1;
@@ -28,10 +31,29 @@ struct UdpConf {
     unsigned no_port_unreachable : 1;
     unsigned is_port_failure     : 1;
     unsigned no_pre_validate     : 1;
-    unsigned repeat_packet       : 1;
 };
 
 static struct UdpConf udp_conf = {0};
+
+static ConfRes SET_packet_floor(void *conf, const char *name,
+                                const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    udp_conf.packet_floor = parse_str_int(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_packet_limit(void *conf, const char *name,
+                                const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    udp_conf.packet_limit = parse_str_int(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_repeat_packet(void *conf, const char *name,
                                  const char *value) {
@@ -254,6 +276,20 @@ static ConfParam udp_parameters[] = {
      Type_FLAG,
      {"repeat-packet", "repeat", 0},
      "Allow repeated packets."},
+    {"packet-limit",
+     SET_packet_limit,
+     Type_ARG,
+     {"limit-packet", 0},
+     "Stop to handle the packet if after received enough limitation number "
+     "while using -repeat-packet params. Exceeded packets won't be recorded as "
+     "results and won't trigger Multi_DynamicNext or Multi_AfterHandle."},
+    {"packet-floor",
+     SET_packet_floor,
+     Type_ARG,
+     {"floor-packet", 0},
+     "Stop to handle the packet if the number is less than the floor value "
+     "while using -repeat-packet params. Exceeded packets won't be recorded as "
+     "results and won't trigger Multi_DynamicNext or Multi_AfterHandle."},
 
     {0}};
 
@@ -410,6 +446,17 @@ static void udp_handle(unsigned th_idx, uint64_t entropy,
     } else if (udp_conf.repeat_packet) {
         dach_set_int(&item->report, "repeats", valid_pkt->repeats);
     }
+
+    if (udp_conf.packet_limit && valid_pkt->repeats >= udp_conf.packet_limit) {
+        item->no_output = 1;
+        return;
+    }
+
+    if (udp_conf.packet_floor && valid_pkt->repeats < udp_conf.packet_floor) {
+        item->no_output = 1;
+        return;
+    }
+
     Recved *recved = &valid_pkt->recved;
 
     if (recved->parsed.found == FOUND_UDP) {
@@ -460,12 +507,9 @@ static void udp_handle(unsigned th_idx, uint64_t entropy,
 
                 stack_transmit_pktbuf(stack, pkt_buffer);
             }
-
-            return;
         }
-
         /*for multi-probe Multi_DynamicNext*/
-        if (UdpScan.probe->multi_mode == Multi_DynamicNext && is_multi) {
+        else if (UdpScan.probe->multi_mode == Multi_DynamicNext && is_multi) {
             PktBuf *pkt_buffer = stack_get_pktbuf(stack);
 
             ProbeTarget ptarget = {

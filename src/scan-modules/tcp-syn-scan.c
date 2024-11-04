@@ -267,7 +267,7 @@ static ConfParam tcpsyn_parameters[] = {
     {"synack-floor",
      SET_synack_floor,
      Type_ARG,
-     {"floor-synack", "floor-synack", 0},
+     {"floor-synack", 0},
      "Do not record SYN-ACK segments as results if the number is less than the "
      "floor value while using -repeat-synack param."},
 

@@ -465,7 +465,7 @@ static ConfParam zbanner_parameters[] = {
      "After received limited number of ACK segments with banner data then send "
      "RST segment to close the connection if the number is enough in "
      "all-banner mode. Exceeded ACK segments with banner data won't be "
-     "recorded as results and won't trigger Multi_DynamicNext and "
+     "recorded as results and won't trigger Multi_DynamicNext or "
      "Multi_AfterHandle."},
     {"all-banner-floor",
      SET_all_banner_floor,
@@ -473,7 +473,7 @@ static ConfParam zbanner_parameters[] = {
      {"banner-floor", "floor-banner", 0},
      "Do not record ACK segments with banner data as results if the number is "
      "less than the floor value while in all-banner mode. And non-recorded "
-     "segments won't trigger Multi_DynamicNext and Multi_AfterHandle."},
+     "segments won't trigger Multi_DynamicNext or Multi_AfterHandle."},
     {"syn-ttl",
      SET_syn_ttl,
      Type_ARG,
