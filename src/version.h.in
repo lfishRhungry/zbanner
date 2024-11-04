@@ -19,7 +19,6 @@
 #define XTATE_ISSUES_URL       "@PROJECT_ISSUES_URL@"
 #define XTATE_DEFAULT_CONF     "@PROJECT_CONF_PATH@"
 #define XTATE_BANNER           "@PROJECT_BANNER@"
-#define JUDY_PATH              "@FOUND_JUDY@"
 
 #endif
 // clang-format on

@@ -363,7 +363,6 @@ Dependent libraries for building:
 - OpenSSL>=1.1.1 (optional or use `-DWITH_OPENSSL=<ON/OFF>` to switch explicitly)
 - PCRE2 8bits (optional or use `-DWITH_PCRE2=<ON/OFF>` to switch explicitly)
 - LibXml2 (optional or use `-DWITH_LIBXML2=<ON/OFF>` to switch explicitly)
-- Judy (optional on Linux or use `-DWITH_JUDY=<ON/OFF>` to switch explicitly)
 - libbson>=1.7 (optional or use `-DWITH_BSON=<ON/OFF>` to switch explicitly)
 - libmongoc>=1.7 (optional or use `-DWITH_MONGOC=<ON/OFF>` to switch explicitly)
 
@@ -385,7 +384,6 @@ libssl-dev \
 libpcre2-dev \
 libxml2-dev \
 liblua5.X-0 \
-libjudy-dev \
 libbson-dev \
 libmongoc-dev
 ```

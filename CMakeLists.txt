@@ -19,7 +19,6 @@ set(PROJECT_BANNER          "God is Stateless")
 option(WITH_OPENSSL        "Build with OpenSSL library"                   ON)
 option(WITH_PCRE2          "Build with PCRE2 library"                     ON)
 option(WITH_LIBXML2        "Build with LibXml2 library"                   ON)
-option(WITH_JUDY           "Build with libjudy library"                   ON)
 option(WITH_BSON           "Build with libbson library"                   ON)
 option(WITH_MONGOC         "Build with libmongoc library"                 ON)
 # option(WITH_FANN           "Build with Fann library"                      ON)
@@ -136,23 +135,6 @@ if (LibXml2_FOUND)
     endif ()
 else ()
     add_compile_definitions(NOT_FOUND_LIBXML2)
-endif ()
-
-
-# Unix--------------------libjudy
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    if (WITH_JUDY)
-        find_library(FOUND_JUDY HINTS /usr/include/ NAMES Judy libjudy-dev judy dev-libs/judy judy-devel)
-    endif ()
-endif ()
-
-if (FOUND_JUDY)
-    #include_directories(${LIBXML2_INCLUDE_DIR})
-    target_link_libraries(${exe_name} Judy)
-    message(STATUS "Found libjudy: ${FOUND_JUDY}")
-    message(STATUS "Found libjudy: ${Judy_VERSION}")
-else ()
-    add_compile_definitions(NOT_FOUND_JUDY)
 endif ()
 
 

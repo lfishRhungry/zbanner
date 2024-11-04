@@ -186,7 +186,7 @@ void receive_thread(void *v) {
     uint64_t         entropy      = xconf->seed;
     STACK           *stack        = xconf->stack;
     Scanner         *scan_module  = xconf->scanner;
-    Dedup           *dedup        = NULL;
+    DedupTable      *dedup        = NULL;
     struct PcapFile *pcapfile     = NULL;
     unsigned         handler_num  = xconf->rx_handler_count;
     size_t          *handler      = MALLOC(handler_num * sizeof(size_t));
@@ -227,7 +227,7 @@ void receive_thread(void *v) {
     }
 
     if (!xconf->is_nodedup)
-        dedup = dedup_init(xconf->dedup_win);
+        dedup = dedup_create(xconf->dedup_win);
 
     /**
      * init dispatch and handle threads
@@ -413,7 +413,7 @@ void receive_thread(void *v) {
     }
 
     if (!xconf->is_nodedup && dedup) {
-        dedup_close(dedup);
+        dedup_destroy(dedup);
         dedup = NULL;
     }
     if (pcapfile) {

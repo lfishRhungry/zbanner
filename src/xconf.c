@@ -3789,12 +3789,6 @@ void xconf_print_version() {
     printf("    LibXml2    (null)\n");
 #endif
 
-#ifndef NOT_FOUND_JUDY
-    printf("    LibJudy    " JUDY_PATH "\n");
-#else
-    printf("    LibJudy    (null)\n");
-#endif
-
 #ifndef NOT_FOUND_BSON
 #include <bson/bson.h>
     printf("    libbson    %s\n", BSON_VERSION_S);

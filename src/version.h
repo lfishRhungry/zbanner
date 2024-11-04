@@ -19,7 +19,6 @@
 #define XTATE_ISSUES_URL       "https://github.com/sharkocha/xtate/issues"
 #define XTATE_DEFAULT_CONF     "/etc/xtate/xtate.conf"
 #define XTATE_BANNER           "God is Stateless"
-#define JUDY_PATH              "/usr/lib/x86_64-linux-gnu/libJudy.so"
 
 #endif
 // clang-format on

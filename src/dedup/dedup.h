@@ -1,28 +1,20 @@
-/*
-    Originally, I modified dedup funcs from masscan to adapt xtate and support
-    different type of dedup entry. But I'm confused about the performance
-    between mas-dedup and judy-dedup from ZMap.
-    So I decided to let users to enjoy both of them and give you guys the
-    freedom of choice.
-
-    Created by sharkocha 2024
-*/
+/**
+ * Born and updated from Masscan
+ *
+ * Modified by sharkocha 2024
+ */
 #ifndef DEDUP_H
 #define DEDUP_H
 #include "../target/target-ipaddress.h"
 #include "../util-misc/cross.h"
 
-#ifndef NOT_FOUND_JUDY
-typedef struct cachehash_s Dedup;
-#else
-typedef struct DeduplicateTable Dedup;
-#endif
+typedef struct DeduplicateTable DedupTable;
 
-Dedup *dedup_init(unsigned dedup_win);
+DedupTable *dedup_create(unsigned dedup_win);
 
-void dedup_close(Dedup *dedup);
+void dedup_destroy(DedupTable *table);
 
-bool dedup_is_dup(Dedup *dedup, ipaddress ip_them, unsigned port_them,
+bool dedup_is_dup(DedupTable *dedup, ipaddress ip_them, unsigned port_them,
                   ipaddress ip_me, unsigned port_me, unsigned type);
 
 int dedup_selftest();
