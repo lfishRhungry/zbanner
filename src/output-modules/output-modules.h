@@ -65,7 +65,6 @@ typedef struct OutputConfig {
     struct OutputModule *output_module;
     char                *output_args;
     char                 output_filename[256];
-    FILE                *output_file;
     uint64_t             total_successed;
     uint64_t             total_failed;
     uint64_t             total_info;
@@ -100,7 +99,7 @@ typedef struct OutputModule {
     const char *name;
     const char *short_desc; /*an optional short description*/
     const char *desc;
-    bool        need_file;
+    bool        need_file; /*need to specify an output file string*/
     ConfParam  *params;
 
     output_modules_init   init_cb;

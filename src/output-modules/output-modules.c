@@ -20,6 +20,9 @@ extern Output BsonOutput;
 extern Output CsvOutput;
 extern Output ListOutput;
 extern Output NullOutput;
+#ifndef NOT_FOUND_MONGOC
+extern Output MongodbOutput;
+#endif
 //! REGIST YOUR OUTPUT MODULE HERE
 
 static Output *output_modules_list[] = {
@@ -31,6 +34,9 @@ static Output *output_modules_list[] = {
 #endif
     &CsvOutput,
     &ListOutput,
+#ifndef NOT_FOUND_MONGOC
+    &MongodbOutput,
+#endif
     &NullOutput,
     //! REGIST YOUR OUTPUT MODULE HERE
 };
@@ -161,7 +167,6 @@ bool output_init(const XConf *xconf, OutConf *out_conf) {
         }
 
         if (!out_conf->output_module->init_cb(xconf, out_conf)) {
-            LOG(LEVEL_ERROR, "OutputModule initing.\n");
             return false;
         }
     }

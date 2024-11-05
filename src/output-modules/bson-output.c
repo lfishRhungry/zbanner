@@ -18,7 +18,7 @@ static FILE *file;
 static char format_time[32];
 
 struct BsonConf {
-    unsigned compact : 1;
+    unsigned is_compact : 1;
 };
 
 static struct BsonConf bson_conf = {0};
@@ -27,7 +27,7 @@ static ConfRes SET_compact(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    bson_conf.compact = parse_str_bool(value);
+    bson_conf.is_compact = parse_str_bool(value);
 
     return Conf_OK;
 }
@@ -66,7 +66,7 @@ static bool bsonout_init(const XConf *xconf, const OutConf *out) {
 static void bsonout_result(OutItem *item) {
     bson_t *res_doc = bson_new();
 
-    if (bson_conf.compact) {
+    if (bson_conf.is_compact) {
         BSON_APPEND_DATE_TIME(res_doc, "time",
                               (uint64_t)item->timestamp * 1000);
         BSON_APPEND_INT32(res_doc, "level", item->level);
@@ -144,7 +144,7 @@ Output BsonOutput = {
         "to JSON but stores data in a binary format, making it more efficient "
         "for data storage and transmission.\n"
         "NOTE1: BsonOutput saves all results as a series of BSON documents to "
-        "file.\n "
+        "file.\n"
         "NOTE2: BsonOutput could save complete binary type fields in results.\n"
         "NOTE3: " XTATE_NAME_TITLE_CASE
         " could decode BSON result file to JSON format with `--parse-bson` "
