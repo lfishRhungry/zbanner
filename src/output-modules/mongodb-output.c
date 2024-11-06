@@ -250,6 +250,7 @@ static bool mongodbout_init(const XConf *xconf, const OutConf *out) {
 static void mongodbout_result(OutItem *item) {
     bson_error_t error;
     bson_t      *res_doc = bson_new();
+    bson_t       report_doc;
 
     /**
      * Add _id at first.
@@ -292,25 +293,30 @@ static void mongodbout_result(OutItem *item) {
         BSON_APPEND_INT32(res_doc, "port_me", item->target.port_me);
     }
 
+    bson_append_document_begin(res_doc, "report", -1, &report_doc);
     DataLink *pre = item->report.link;
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
-            BSON_APPEND_UTF8(res_doc, pre->next->name,
+            BSON_APPEND_UTF8(&report_doc, pre->next->name,
                              (char *)pre->next->value_data);
         } else if (pre->next->link_type == LinkType_Int) {
-            BSON_APPEND_INT64(res_doc, pre->next->name, pre->next->value_int);
+            BSON_APPEND_INT64(&report_doc, pre->next->name,
+                              pre->next->value_int);
         } else if (pre->next->link_type == LinkType_Double) {
-            BSON_APPEND_DOUBLE(res_doc, pre->next->name,
+            BSON_APPEND_DOUBLE(&report_doc, pre->next->name,
                                pre->next->value_double);
         } else if (pre->next->link_type == LinkType_Bool) {
-            BSON_APPEND_BOOL(res_doc, pre->next->name, pre->next->value_bool);
+            BSON_APPEND_BOOL(&report_doc, pre->next->name,
+                             pre->next->value_bool);
         } else if (pre->next->link_type == LinkType_Binary) {
-            BSON_APPEND_BINARY(res_doc, pre->next->name, BSON_SUBTYPE_BINARY,
-                               pre->next->value_data, pre->next->data_len);
+            BSON_APPEND_BINARY(&report_doc, pre->next->name,
+                               BSON_SUBTYPE_BINARY, pre->next->value_data,
+                               pre->next->data_len);
         }
 
         pre = pre->next;
     }
+    bson_append_document_end(res_doc, &report_doc);
 
     /*Insert the documantation*/
     if (!mongoc_collection_insert_one(mongodb_conf.collection, res_doc, NULL,
@@ -320,6 +326,7 @@ static void mongodbout_result(OutItem *item) {
     }
 
     bson_destroy(res_doc);
+    bson_destroy(&report_doc);
 
     return;
 }

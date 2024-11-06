@@ -2982,7 +2982,9 @@ ConfParam config_parameters[] = {
      {"store-json", "json-store", 0},
      "Specifies NDJSON format result file generated from NDJSON Output Module "
      "and store the results to MongoDB.\n"
-     "NOTE: This need every JSON result in NDJSON file be valid. So we'd better use --no-escape param to avoid single backslash while recording banner data to that NDJSON file."},
+     "NOTE: This need every JSON result in NDJSON file be valid. So we'd "
+     "better use --no-escape param to avoid single backslash while recording "
+     "banner data to that NDJSON file."},
     {"store-bson-file",
      SET_store_bson,
      Type_ARG,
