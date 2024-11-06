@@ -12,22 +12,49 @@
 
 #include <mongoc/mongoc.h>
 
+#define DFT_BULK_SIZE 200;
+
 extern Output MongodbOutput; /*for internal x-ref*/
 
 static char format_time[32];
 
 struct MongodbConf {
-    char                *db_name;
-    char                *col_name;
-    char                *app_name;
-    mongoc_uri_t        *uri;
-    mongoc_client_t     *client;
-    mongoc_database_t   *database;
-    mongoc_collection_t *collection;
-    unsigned             is_compact : 1;
+    char                    *db_name;
+    char                    *col_name;
+    char                    *app_name;
+    mongoc_uri_t            *uri;
+    mongoc_client_t         *client;
+    mongoc_database_t       *database;
+    mongoc_collection_t     *collection;
+    mongoc_bulk_operation_t *bulk;
+    bson_t                  *bulk_opts;
+    bson_t                  *bulk_insert_opts;
+    unsigned                 bulk_idx;
+    unsigned                 bulk_size;
+    unsigned                 is_bulk    : 1;
+    unsigned                 is_compact : 1;
 };
 
 static struct MongodbConf mongodb_conf = {0};
+
+static ConfRes SET_bulk_size(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    mongodb_conf.bulk_size = parse_str_int(value);
+    mongodb_conf.is_bulk   = 1;
+
+    return Conf_OK;
+}
+
+static ConfRes SET_is_bulk(void *conf, const char *name, const char *value) {
+    UNUSEDPARM(conf);
+    UNUSEDPARM(name);
+
+    mongodb_conf.is_bulk = parse_str_bool(value);
+
+    return Conf_OK;
+}
 
 static ConfRes SET_app_name(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
@@ -83,6 +110,18 @@ static ConfParam mongodb_parameters[] = {
      {"app-name", "application", "app", 0},
      "Specifies the application name to register for tracking in the profile "
      "logs in MongoDB. Default is " XTATE_NAME " with version."},
+    {"insert-bulk",
+     SET_is_bulk,
+     Type_FLAG,
+     {"bulk-insert", "bulk", 0},
+     "Insert results into MongoDB in bulks. This may improve the inserting "
+     "performance sometimes."},
+    {"bulk-size",
+     SET_bulk_size,
+     Type_ARG,
+     {0},
+     "Insert results into MongoDB in bulks and specify the bulk size. Default "
+     "is 200."},
     {"compact-mode",
      SET_compact,
      Type_FLAG,
@@ -208,6 +247,22 @@ static bool _init_and_test_db(const char *uri_name, const char *db_name,
         return false;
     }
 
+    /*
+     * prepare for bulk inserting
+     */
+    if (mongodb_conf.is_bulk) {
+        mongodb_conf.bulk_opts = bson_new();
+        BSON_APPEND_BOOL(mongodb_conf.bulk_opts, "ordered", false);
+        mongodb_conf.bulk = mongoc_collection_create_bulk_operation_with_opts(
+            mongodb_conf.collection, mongodb_conf.bulk_opts);
+
+        if (!mongodb_conf.bulk_size)
+            mongodb_conf.bulk_size = DFT_BULK_SIZE;
+
+        mongodb_conf.bulk_insert_opts = bson_new();
+        BSON_APPEND_BOOL(mongodb_conf.bulk_insert_opts, "validate", false);
+    }
+
     bson_destroy(test_ping);
     bson_destroy(test_insert);
     bson_destroy(test_remove);
@@ -217,6 +272,27 @@ static bool _init_and_test_db(const char *uri_name, const char *db_name,
 }
 
 static void _close_and_clean_db() {
+    if (mongodb_conf.bulk) {
+        if (mongodb_conf.is_bulk && mongodb_conf.bulk_idx) {
+            bson_error_t error;
+            bool         ret =
+                mongoc_bulk_operation_execute(mongodb_conf.bulk, NULL, &error);
+            if (!ret) {
+                LOG(LEVEL_ERROR, "(MongoDB %s) %s\n", __func__, error.message);
+            }
+        }
+        mongoc_bulk_operation_destroy(mongodb_conf.bulk);
+        mongodb_conf.bulk     = NULL;
+        mongodb_conf.bulk_idx = 0;
+    }
+    if (mongodb_conf.bulk_opts) {
+        bson_destroy(mongodb_conf.bulk_opts);
+        mongodb_conf.bulk_opts = NULL;
+    }
+    if (mongodb_conf.bulk_insert_opts) {
+        bson_destroy(mongodb_conf.bulk_insert_opts);
+        mongodb_conf.bulk_insert_opts = NULL;
+    }
     if (mongodb_conf.collection) {
         mongoc_collection_destroy(mongodb_conf.collection);
         mongodb_conf.collection = NULL;
@@ -248,9 +324,10 @@ static bool mongodbout_init(const XConf *xconf, const OutConf *out) {
 }
 
 static void mongodbout_result(OutItem *item) {
+    bool         ret;
     bson_error_t error;
-    bson_t      *res_doc = bson_new();
     bson_t       report_doc;
+    bson_t      *res_doc = bson_new();
 
     /**
      * Add _id at first.
@@ -318,11 +395,37 @@ static void mongodbout_result(OutItem *item) {
     }
     bson_append_document_end(res_doc, &report_doc);
 
-    /*Insert the documantation*/
-    if (!mongoc_collection_insert_one(mongodb_conf.collection, res_doc, NULL,
-                                      NULL, &error)) {
-        LOG(LEVEL_ERROR, "(MongodbOut insert) %s: %u\n", error.message,
-            error.code);
+    /**
+     * Insert the documantation in bulks or one by one.
+     * */
+    if (mongodb_conf.is_bulk) {
+        /*flush if bulk is full*/
+        if (mongodb_conf.bulk_idx >= mongodb_conf.bulk_size) {
+            ret =
+                mongoc_bulk_operation_execute(mongodb_conf.bulk, NULL, &error);
+            if (!ret) {
+                LOG(LEVEL_ERROR, "(MongodbOut execute) %s\n", error.message);
+            }
+            mongoc_bulk_operation_destroy(mongodb_conf.bulk);
+            mongodb_conf.bulk =
+                mongoc_collection_create_bulk_operation_with_opts(
+                    mongodb_conf.collection, mongodb_conf.bulk_opts);
+            mongodb_conf.bulk_idx = 0;
+        }
+        /*then add new result*/
+        ret = mongoc_bulk_operation_insert_with_opts(
+            mongodb_conf.bulk, res_doc, mongodb_conf.bulk_insert_opts, &error);
+        if (!ret) {
+            LOG(LEVEL_ERROR, "(MongodbOut bulk insert) %s\n", error.message);
+        } else {
+            mongodb_conf.bulk_idx++;
+        }
+    } else {
+        if (!mongoc_collection_insert_one(mongodb_conf.collection, res_doc,
+                                          NULL, NULL, &error)) {
+            LOG(LEVEL_ERROR, "(MongodbOut insert) %s: %u\n", error.message,
+                error.code);
+        }
     }
 
     bson_destroy(res_doc);
