@@ -8,7 +8,7 @@
         <img src="https://img.shields.io/badge/license-AGPL-blue.svg">
     </a>
     <img src="https://img.shields.io/badge/build-passing-green.svg">
-    <img src="https://img.shields.io/badge/build%20with-pure c-yellow.svg">
+    <img src="https://img.shields.io/badge/language-C99-yellow.svg">
     <img src="https://img.shields.io/badge/platform-%20Linux%20|%20Windows-orange.svg">
     <a href="https://cmake.org/">
         <img src="https://img.shields.io/badge/CMake-v3.20-yellow.svg">
@@ -246,7 +246,7 @@ I support users to write their own scan or probe modules to present unique scan 
 And xtate support to result in a formatted item with standard and self-defined key-value field.
 This makes output modules to save results in various ways.
 
-Xtate could save results in text, csv and ndjson, etc.
+Xtate could save results in text, csv, ndjson, MongoDB, etc.
 You can write your own output module for better saving.
 
 ## Generate Modules
