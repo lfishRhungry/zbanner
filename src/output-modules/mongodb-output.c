@@ -354,12 +354,12 @@ Output MongodbOutput = {
 /**
  * @return is stored successful.
  */
-static bool _store_bson_to_db(const uint8_t *bson_data, size_t bson_size) {
+static bool _store_bson_to_db(const uint8_t *bson_data, size_t bson_len) {
     bson_t       bson_doc;
     bson_error_t error;
     bool         is_success = true;
 
-    if (!bson_init_static(&bson_doc, bson_data, bson_size)) {
+    if (!bson_init_static(&bson_doc, bson_data, bson_len)) {
         LOG(LEVEL_ERROR, "(StoreBson) Failed to initialize BSON document.\n");
         is_success = false;
         goto bson_to_db_err1;
@@ -397,6 +397,7 @@ void store_bson_file(const char *filename, const char *uri_name,
 
     LOG(LEVEL_HINT, "(StoreBson) start inserting result data...\n");
 
+    uint64_t store_count = 0;
     while (true) {
         /*read the first 4 bytes as length of a BSON doc*/
         uint32_t doc_length = 0;
@@ -438,15 +439,94 @@ void store_bson_file(const char *filename, const char *uri_name,
         }
 
         // print BSON as JSON
-        _store_bson_to_db(bson_data, doc_length);
+        if (_store_bson_to_db(bson_data, doc_length))
+            store_count++;
 
         FREE(bson_data);
     }
 
-    LOG(LEVEL_HINT, "(StoreBson) data insertion is complete!\n");
+    LOG(LEVEL_HINT, "(StoreBson) %" PRIu64 " results insertion is complete!\n",
+        store_count);
 
     _close_and_clean_db();
     fclose(bsonfile);
+}
+
+/**
+ * @return is stored successful.
+ */
+static bool _store_json_to_db(const char *json_string) {
+    bson_t      *bson_doc;
+    bson_error_t error;
+    bool         is_success = true;
+
+    bson_doc = bson_new_from_json((const uint8_t *)json_string, -1, &error);
+    if (!bson_doc) {
+        LOG(LEVEL_ERROR, "(StoreJson transform) %s\n", error.message);
+        is_success = false;
+        goto json_to_db_err1;
+    }
+
+    /*Insert the documantation*/
+    if (!mongoc_collection_insert_one(mongodb_conf.collection, bson_doc, NULL,
+                                      NULL, &error)) {
+        LOG(LEVEL_ERROR, "(StoreJson insert) %s: %u\n", error.message,
+            error.code);
+    }
+
+    bson_destroy(bson_doc);
+
+json_to_db_err1:
+    return is_success;
+}
+
+void store_json_file(const char *filename, const char *uri_name,
+                     const char *db_name, const char *col_name,
+                     const char *app_name) {
+
+    FILE *jsonfile = fopen(filename, "rb");
+    if (jsonfile == NULL) {
+        LOG(LEVEL_ERROR, "(StoreJson) could not open NDJSON file %s.\n",
+            filename);
+        LOGPERROR(filename);
+        return;
+    }
+
+    if (!_init_and_test_db(uri_name, db_name, col_name, app_name)) {
+        _close_and_clean_db();
+        return;
+    }
+
+    LOG(LEVEL_HINT, "(StoreJson) start inserting result data...\n");
+
+    /*the result size can be large if it contains banner data*/
+    uint64_t store_count = 0;
+    char     line[65536 * 4];
+    while (true) {
+        char *s = fgets(line, sizeof(line), jsonfile);
+
+        if (s == NULL) {
+            if (ferror(jsonfile))
+                LOG(LEVEL_DEBUG, "(StoreJson) error of file.\n");
+            else if (feof(jsonfile))
+                LOG(LEVEL_DEBUG, "(StoreJson) EOF of file.\n");
+            break;
+        }
+
+        /*absolute null line or the last line*/
+        if (s[0] == '\n' || s[0] == '\r') {
+            continue;
+        }
+
+        if (_store_json_to_db(s))
+            store_count++;
+    }
+
+    LOG(LEVEL_HINT, "(StoreJson) %" PRIu64 " results insertion is complete!\n",
+        store_count);
+
+    _close_and_clean_db();
+    fclose(jsonfile);
 }
 
 #endif

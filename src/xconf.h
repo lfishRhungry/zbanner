@@ -73,6 +73,7 @@ enum Operation {
 #endif
 #ifndef NOT_FOUND_MONGOC
     Operation_StoreBson, /*store BSON result file to MongoDB*/
+    Operation_StoreJson, /*store NDJSON result file to MongoDB*/
 #endif
 #ifndef NOT_FOUND_PCRE2
     Operation_ListNmapProbes, /* list all nmap probes */
@@ -243,6 +244,7 @@ typedef struct XtateConf {
      * store BSON file to MongoDB
      */
 #ifndef NOT_FOUND_MONGOC
+    char *store_json_file;
     char *store_bson_file;
     char *mongodb_uri;
     char *mongodb_db;

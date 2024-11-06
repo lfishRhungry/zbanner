@@ -787,6 +787,12 @@ int main(int argc, char *argv[]) {
                             xconf->mongodb_db, xconf->mongodb_col,
                             xconf->mongodb_app);
             break;
+
+        case Operation_StoreJson:
+            store_json_file(xconf->store_json_file, xconf->mongodb_uri,
+                            xconf->mongodb_db, xconf->mongodb_col,
+                            xconf->mongodb_app);
+            break;
 #endif
 
 #ifndef NOT_FOUND_PCRE2

@@ -859,6 +859,18 @@ static ConfRes SET_parse_bson(void *conf, const char *name, const char *value) {
 #endif
 
 #ifndef NOT_FOUND_MONGOC
+static ConfRes SET_store_json(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+
+    xconf->store_json_file = STRDUP(value);
+    xconf->op              = Operation_StoreJson;
+
+    return Conf_OK;
+}
+
 static ConfRes SET_store_bson(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
@@ -879,7 +891,6 @@ static ConfRes SET_mongodb_uri(void *conf, const char *name,
     }
 
     xconf->mongodb_uri = STRDUP(value);
-    xconf->op          = Operation_StoreBson;
 
     return Conf_OK;
 }
@@ -891,7 +902,6 @@ static ConfRes SET_mongodb_db(void *conf, const char *name, const char *value) {
     }
 
     xconf->mongodb_db = STRDUP(value);
-    xconf->op         = Operation_StoreBson;
 
     return Conf_OK;
 }
@@ -904,7 +914,6 @@ static ConfRes SET_mongodb_col(void *conf, const char *name,
     }
 
     xconf->mongodb_col = STRDUP(value);
-    xconf->op          = Operation_StoreBson;
 
     return Conf_OK;
 }
@@ -917,7 +926,6 @@ static ConfRes SET_mongodb_app(void *conf, const char *name,
     }
 
     xconf->mongodb_app = STRDUP(value);
-    xconf->op          = Operation_StoreBson;
 
     return Conf_OK;
 }
@@ -2968,6 +2976,13 @@ ConfParam config_parameters[] = {
      "format and output to stdout."},
 #endif
 #ifndef NOT_FOUND_MONGOC
+    {"store-json-file",
+     SET_store_json,
+     Type_ARG,
+     {"store-json", "json-store", 0},
+     "Specifies NDJSON format result file generated from NDJSON Output Module "
+     "and store the results to MongoDB.\n"
+     "NOTE: This need every JSON result in NDJSON file be valid. So we'd better use --no-escape param to avoid single backslash while recording banner data to that NDJSON file."},
     {"store-bson-file",
      SET_store_bson,
      Type_ARG,
@@ -2978,27 +2993,27 @@ ConfParam config_parameters[] = {
      SET_mongodb_uri,
      Type_ARG,
      {"mongodb", 0},
-     "Specifies MongoDB URI to store results from BSON format file generated "
-     "from Bson Output Module."},
+     "Specifies MongoDB URI to store result file generated "
+     "from some Output Module."},
     {"mongodb-db-name",
      SET_mongodb_db,
      Type_ARG,
      {"mongodb-db", "mongodb-database", 0},
-     "Specifies MongoDB DataBase to store results from BSON format file "
-     "generated from Bson Output Module."},
+     "Specifies MongoDB DataBase to store result file "
+     "generated from some Output Module."},
     {"mongodb-col-name",
      SET_mongodb_col,
      Type_ARG,
      {"mongodb-col", "mongodb-collection", 0},
-     "Specifies MongoDB collection to store results from BSON format file "
-     "generated from Bson Output Module."},
+     "Specifies MongoDB collection to store result file "
+     "generated from some Output Module."},
     {"mongodb-app-name",
      SET_mongodb_app,
      Type_ARG,
      {"mongodb-app", "mongodb-application", 0},
      "Specifies MongoDB application name to register for tracking in the "
-     "profile logs while storing results from BSON format file generated from "
-     "Bson Output Module."},
+     "profile logs while storing result file generated from "
+     "some Output Module."},
 #endif
 
     {"SCAN MODULES CONFIG", SET_nothing, 0, {0}, NULL},

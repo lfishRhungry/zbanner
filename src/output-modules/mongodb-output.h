@@ -10,5 +10,12 @@ void store_bson_file(const char *filename, const char *uri_name,
                      const char *db_name, const char *col_name,
                      const char *app_name);
 
+/**
+ * store results from NDJSON file to MongoDB.
+ */
+void store_json_file(const char *filename, const char *uri_name,
+                     const char *db_name, const char *col_name,
+                     const char *app_name);
+
 #endif
 #endif
