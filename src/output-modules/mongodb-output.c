@@ -1,6 +1,7 @@
 #ifndef NOT_FOUND_MONGOC
 
 #include "output-modules.h"
+#include "mongodb-output.h"
 #include "../version.h"
 #include "../globals.h"
 
@@ -94,8 +95,8 @@ static ConfParam mongodb_parameters[] = {
      "int32 number,."},
     {0}};
 
-static bool mongodbout_init(const XConf *xconf, const OutConf *out) {
-
+static bool _init_and_test_db(const char *uri_name, const char *db_name,
+                              const char *col_name, const char *app_name) {
     char         tm_buf[80];
     bool         retval;
     bson_error_t error;
@@ -104,9 +105,9 @@ static bool mongodbout_init(const XConf *xconf, const OutConf *out) {
     bson_t      *test_remove;
     bson_t       reply;
     bson_oid_t   oid;
-    const char  *db_name;
-    const char  *col_name;
-    const char  *app_name;
+    const char  *final_db_name;
+    const char  *final_col_name;
+    const char  *final_app_name;
 
     /*
      * Required to initialize libmongoc's internals
@@ -116,10 +117,10 @@ static bool mongodbout_init(const XConf *xconf, const OutConf *out) {
     /*
      * Safely create a MongoDB URI object from the given string
      */
-    mongodb_conf.uri = mongoc_uri_new_with_error(out->output_filename, &error);
+    mongodb_conf.uri = mongoc_uri_new_with_error(uri_name, &error);
     if (!mongodb_conf.uri) {
-        LOG(LEVEL_ERROR, "(MongodbOut) failed to parse URI[%s]: %s\n",
-            out->output_filename, error.message);
+        LOG(LEVEL_ERROR, "(MongoDB) failed to parse URI[%s]: %s\n", uri_name,
+            error.message);
         return false;
     }
 
@@ -128,8 +129,7 @@ static bool mongodbout_init(const XConf *xconf, const OutConf *out) {
      */
     mongodb_conf.client = mongoc_client_new_from_uri(mongodb_conf.uri);
     if (!mongodb_conf.client) {
-        LOG(LEVEL_ERROR,
-            "(MongodbOut) failed to create a new client instance.\n");
+        LOG(LEVEL_ERROR, "(MongoDB) failed to create a new client instance.\n");
         return false;
     }
 
@@ -137,36 +137,37 @@ static bool mongodbout_init(const XConf *xconf, const OutConf *out) {
      * Register the application name so we can track it in the profile logs
      * on the server. This can also be done from the URI.
      */
-    if (mongodb_conf.app_name && mongodb_conf.app_name[0]) {
-        app_name = mongodb_conf.app_name;
+    if (app_name && app_name[0]) {
+        final_app_name = app_name;
     } else {
-        app_name = XTATE_WITH_VERSION;
+        final_app_name = XTATE_WITH_VERSION;
     }
-    if (!mongoc_client_set_appname(mongodb_conf.client, app_name)) {
-        LOG(LEVEL_ERROR, "(MongodbOut) failed to set appname: %s\n", app_name);
+    if (!mongoc_client_set_appname(mongodb_conf.client, final_app_name)) {
+        LOG(LEVEL_ERROR, "(MongoDB) failed to set appname: %s\n",
+            final_app_name);
         return false;
     }
 
     /*
      * Get a handle on the database "db_name" and collection "coll_name"
      */
-    if (mongodb_conf.db_name && mongodb_conf.db_name[0]) {
-        db_name = mongodb_conf.db_name;
+    if (db_name && db_name[0]) {
+        final_db_name = db_name;
     } else {
-        db_name = XTATE_NAME;
+        final_db_name = XTATE_NAME;
     }
     mongodb_conf.database =
-        mongoc_client_get_database(mongodb_conf.client, db_name);
-    if (mongodb_conf.col_name && mongodb_conf.col_name[0]) {
-        col_name = mongodb_conf.col_name;
+        mongoc_client_get_database(mongodb_conf.client, final_db_name);
+    if (col_name && col_name[0]) {
+        final_col_name = col_name;
     } else {
         struct tm *timeinfo;
         timeinfo = localtime(&global_now);
         strftime(tm_buf, 80, "%Y-%m-%d %H:%M:%S", timeinfo);
-        col_name = tm_buf;
+        final_col_name = tm_buf;
     }
-    mongodb_conf.collection =
-        mongoc_client_get_collection(mongodb_conf.client, db_name, col_name);
+    mongodb_conf.collection = mongoc_client_get_collection(
+        mongodb_conf.client, final_db_name, final_col_name);
 
     /*
      * Test server alive by pinging the database
@@ -175,7 +176,7 @@ static bool mongodbout_init(const XConf *xconf, const OutConf *out) {
     retval    = mongoc_client_command_simple(mongodb_conf.client, "admin",
                                              test_ping, NULL, &reply, &error);
     if (!retval) {
-        LOG(LEVEL_ERROR, "(MongodbOut ping test) %s(%u)\n", error.message,
+        LOG(LEVEL_ERROR, "(MongoDB ping test) %s(%u)\n", error.message,
             error.code);
         return false;
     }
@@ -190,7 +191,7 @@ static bool mongodbout_init(const XConf *xconf, const OutConf *out) {
     BSON_APPEND_OID(test_insert, "_id", &oid);
     if (!mongoc_collection_insert_one(mongodb_conf.collection, test_insert,
                                       NULL, NULL, &error)) {
-        LOG(LEVEL_ERROR, "(MongodbOut insert test) %s(%u)\n", error.message,
+        LOG(LEVEL_ERROR, "(MongoDB insert test) %s(%u)\n", error.message,
             error.code);
         return false;
     }
@@ -202,7 +203,7 @@ static bool mongodbout_init(const XConf *xconf, const OutConf *out) {
     BSON_APPEND_OID(test_remove, "_id", &oid);
     if (!mongoc_collection_delete_one(mongodb_conf.collection, test_remove,
                                       NULL, &reply, &error)) {
-        LOG(LEVEL_ERROR, "(MongodbOut remove test) %s(%u)\n", error.message,
+        LOG(LEVEL_ERROR, "(MongoDB remove test) %s(%u)\n", error.message,
             error.code);
         return false;
     }
@@ -211,6 +212,37 @@ static bool mongodbout_init(const XConf *xconf, const OutConf *out) {
     bson_destroy(test_insert);
     bson_destroy(test_remove);
     bson_destroy(&reply);
+
+    return true;
+}
+
+static void _close_and_clean_db() {
+    if (mongodb_conf.collection) {
+        mongoc_collection_destroy(mongodb_conf.collection);
+        mongodb_conf.collection = NULL;
+    }
+    if (mongodb_conf.database) {
+        mongoc_database_destroy(mongodb_conf.database);
+        mongodb_conf.database = NULL;
+    }
+    if (mongodb_conf.uri) {
+        mongoc_uri_destroy(mongodb_conf.uri);
+        mongodb_conf.uri = NULL;
+    }
+    if (mongodb_conf.client) {
+        mongoc_client_destroy(mongodb_conf.client);
+        mongodb_conf.client = NULL;
+    }
+    mongoc_cleanup();
+}
+
+static bool mongodbout_init(const XConf *xconf, const OutConf *out) {
+
+    if (!_init_and_test_db(out->output_filename, mongodb_conf.db_name,
+                           mongodb_conf.col_name, mongodb_conf.app_name)) {
+        _close_and_clean_db();
+        return false;
+    }
 
     return true;
 }
@@ -292,25 +324,7 @@ static void mongodbout_result(OutItem *item) {
     return;
 }
 
-static void mongodbout_close(const OutConf *out) {
-    if (mongodb_conf.collection) {
-        mongoc_collection_destroy(mongodb_conf.collection);
-        mongodb_conf.collection = NULL;
-    }
-    if (mongodb_conf.database) {
-        mongoc_database_destroy(mongodb_conf.database);
-        mongodb_conf.database = NULL;
-    }
-    if (mongodb_conf.uri) {
-        mongoc_uri_destroy(mongodb_conf.uri);
-        mongodb_conf.uri = NULL;
-    }
-    if (mongodb_conf.client) {
-        mongoc_client_destroy(mongodb_conf.client);
-        mongodb_conf.client = NULL;
-    }
-    mongoc_cleanup();
-}
+static void mongodbout_close(const OutConf *out) { _close_and_clean_db(); }
 
 Output MongodbOutput = {
     .name       = "mongodb",
@@ -336,5 +350,103 @@ Output MongodbOutput = {
     .result_cb = &mongodbout_result,
     .close_cb  = &mongodbout_close,
 };
+
+/**
+ * @return is stored successful.
+ */
+static bool _store_bson_to_db(const uint8_t *bson_data, size_t bson_size) {
+    bson_t       bson_doc;
+    bson_error_t error;
+    bool         is_success = true;
+
+    if (!bson_init_static(&bson_doc, bson_data, bson_size)) {
+        LOG(LEVEL_ERROR, "(StoreBson) Failed to initialize BSON document.\n");
+        is_success = false;
+        goto bson_to_db_err1;
+    }
+
+    /*Insert the documantation*/
+    if (!mongoc_collection_insert_one(mongodb_conf.collection, &bson_doc, NULL,
+                                      NULL, &error)) {
+        LOG(LEVEL_ERROR, "(StoreBson insert) %s: %u\n", error.message,
+            error.code);
+    }
+
+    bson_destroy(&bson_doc);
+
+bson_to_db_err1:
+    return is_success;
+}
+
+void store_bson_file(const char *filename, const char *uri_name,
+                     const char *db_name, const char *col_name,
+                     const char *app_name) {
+
+    FILE *bsonfile = fopen(filename, "rb");
+    if (bsonfile == NULL) {
+        LOG(LEVEL_ERROR, "(StoreBson) could not open BSON file %s.\n",
+            filename);
+        LOGPERROR(filename);
+        return;
+    }
+
+    if (!_init_and_test_db(uri_name, db_name, col_name, app_name)) {
+        _close_and_clean_db();
+        return;
+    }
+
+    LOG(LEVEL_HINT, "(StoreBson) start inserting result data...\n");
+
+    while (true) {
+        /*read the first 4 bytes as length of a BSON doc*/
+        uint32_t doc_length = 0;
+        size_t   read_size  = fread(&doc_length, 1, 4, bsonfile);
+        if (read_size == 0) {
+            /*EOF*/
+            break;
+        } else if (read_size < 4) {
+            LOG(LEVEL_ERROR,
+                "(StoreBson) Incomplete length field. Corrupted file?\n");
+            break;
+        }
+
+        /*get real doc len*/
+        doc_length = BSON_UINT32_FROM_LE(doc_length);
+
+        /*the shortest doc len*/
+        if (doc_length < 5) {
+            LOG(LEVEL_ERROR, "(StoreBson) Invalid BSON document length: %u\n",
+                doc_length);
+            break;
+        }
+
+        // read remaining doc data
+        size_t   remaining = doc_length - 4;
+        uint8_t *bson_data = MALLOC(doc_length);
+
+        // contains the len field
+        ((uint32_t *)bson_data)[0] = BSON_UINT32_TO_LE(doc_length);
+
+        read_size = fread(bson_data + 4, 1, remaining, bsonfile);
+        if (read_size < remaining) {
+            LOG(LEVEL_ERROR,
+                "(StoreBson) Incomplete BSON document. Expected %zu bytes, got "
+                "%zu bytes.\n",
+                remaining, read_size);
+            FREE(bson_data);
+            break;
+        }
+
+        // print BSON as JSON
+        _store_bson_to_db(bson_data, doc_length);
+
+        FREE(bson_data);
+    }
+
+    LOG(LEVEL_HINT, "(StoreBson) data insertion is complete!\n");
+
+    _close_and_clean_db();
+    fclose(bsonfile);
+}
 
 #endif

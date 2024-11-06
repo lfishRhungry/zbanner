@@ -31,6 +31,7 @@
 #include "util-data/fine-malloc.h"
 
 #include "output-modules/bson-output.h"
+#include "output-modules/mongodb-output.h"
 
 #if defined(WIN32)
 #include <WinSock.h>
@@ -776,7 +777,15 @@ int main(int argc, char *argv[]) {
 
 #ifndef NOT_FOUND_BSON
         case Operation_ParseBson:
-            parse_bson_file(xconf->bson_file);
+            parse_bson_file(xconf->parse_bson_file);
+            break;
+#endif
+
+#ifndef NOT_FOUND_MONGOC
+        case Operation_StoreBson:
+            store_bson_file(xconf->store_bson_file, xconf->mongodb_uri,
+                            xconf->mongodb_db, xconf->mongodb_col,
+                            xconf->mongodb_app);
             break;
 #endif
 

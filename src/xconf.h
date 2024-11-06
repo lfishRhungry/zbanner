@@ -71,6 +71,9 @@ enum Operation {
 #ifndef NOT_FOUND_BSON
     Operation_ParseBson, /*parse BSON result file to JSON format*/
 #endif
+#ifndef NOT_FOUND_MONGOC
+    Operation_StoreBson, /*store BSON result file to MongoDB*/
+#endif
 #ifndef NOT_FOUND_PCRE2
     Operation_ListNmapProbes, /* list all nmap probes */
 #endif
@@ -234,7 +237,17 @@ typedef struct XtateConf {
      * parse BSON file
      */
 #ifndef NOT_FOUND_BSON
-    char *bson_file;
+    char *parse_bson_file;
+#endif
+    /**
+     * store BSON file to MongoDB
+     */
+#ifndef NOT_FOUND_MONGOC
+    char *store_bson_file;
+    char *mongodb_uri;
+    char *mongodb_db;
+    char *mongodb_col;
+    char *mongodb_app;
 #endif
     /**
      * list nmap probes

@@ -159,7 +159,7 @@ Output BsonOutput = {
 /**
  * @return is printed successful.
  */
-static bool print_bson_as_json(const uint8_t *bson_data, size_t bson_size) {
+static bool _print_bson_as_json(const uint8_t *bson_data, size_t bson_size) {
     char  *json_str;
     bson_t bson_doc;
     bool   is_success = true;
@@ -205,7 +205,7 @@ void parse_bson_file(const char *filename) {
             break;
         } else if (read_size < 4) {
             LOG(LEVEL_ERROR,
-                "ParseBson: Incomplete length field. Corrupted file?\n");
+                "(ParseBson) Incomplete length field. Corrupted file?\n");
             break;
         }
 
@@ -229,7 +229,7 @@ void parse_bson_file(const char *filename) {
         read_size = fread(bson_data + 4, 1, remaining, bsonfile);
         if (read_size < remaining) {
             LOG(LEVEL_ERROR,
-                "ParseBson: Incomplete BSON document. Expected %zu bytes, got "
+                "(ParseBson) Incomplete BSON document. Expected %zu bytes, got "
                 "%zu bytes.\n",
                 remaining, read_size);
             FREE(bson_data);
@@ -237,7 +237,7 @@ void parse_bson_file(const char *filename) {
         }
 
         // print BSON as JSON
-        print_bson_as_json(bson_data, doc_length);
+        _print_bson_as_json(bson_data, doc_length);
 
         FREE(bson_data);
     }

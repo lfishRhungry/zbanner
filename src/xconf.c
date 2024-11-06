@@ -851,8 +851,73 @@ static ConfRes SET_parse_bson(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->bson_file = STRDUP(value);
-    xconf->op        = Operation_ParseBson;
+    xconf->parse_bson_file = STRDUP(value);
+    xconf->op              = Operation_ParseBson;
+
+    return Conf_OK;
+}
+#endif
+
+#ifndef NOT_FOUND_MONGOC
+static ConfRes SET_store_bson(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+
+    xconf->store_bson_file = STRDUP(value);
+    xconf->op              = Operation_StoreBson;
+
+    return Conf_OK;
+}
+
+static ConfRes SET_mongodb_uri(void *conf, const char *name,
+                               const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+
+    xconf->mongodb_uri = STRDUP(value);
+    xconf->op          = Operation_StoreBson;
+
+    return Conf_OK;
+}
+
+static ConfRes SET_mongodb_db(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+
+    xconf->mongodb_db = STRDUP(value);
+    xconf->op         = Operation_StoreBson;
+
+    return Conf_OK;
+}
+
+static ConfRes SET_mongodb_col(void *conf, const char *name,
+                               const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+
+    xconf->mongodb_col = STRDUP(value);
+    xconf->op          = Operation_StoreBson;
+
+    return Conf_OK;
+}
+
+static ConfRes SET_mongodb_app(void *conf, const char *name,
+                               const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        return 0;
+    }
+
+    xconf->mongodb_app = STRDUP(value);
+    xconf->op          = Operation_StoreBson;
 
     return Conf_OK;
 }
@@ -2898,9 +2963,42 @@ ConfParam config_parameters[] = {
     {"parse-bson-file",
      SET_parse_bson,
      Type_ARG,
-     {"parse-bson", "bson-file", "bson", 0},
+     {"parse-bson", "bson-parse", 0},
      "Parse BSON format result file generated from Bson Output Module to JSON "
      "format and output to stdout."},
+#endif
+#ifndef NOT_FOUND_MONGOC
+    {"store-bson-file",
+     SET_store_bson,
+     Type_ARG,
+     {"store-bson", "bson-store", 0},
+     "Specifies BSON format result file generated from Bson Output Module and "
+     "store the results to MongoDB."},
+    {"mongodb-uri",
+     SET_mongodb_uri,
+     Type_ARG,
+     {"mongodb", 0},
+     "Specifies MongoDB URI to store results from BSON format file generated "
+     "from Bson Output Module."},
+    {"mongodb-db-name",
+     SET_mongodb_db,
+     Type_ARG,
+     {"mongodb-db", "mongodb-database", 0},
+     "Specifies MongoDB DataBase to store results from BSON format file "
+     "generated from Bson Output Module."},
+    {"mongodb-col-name",
+     SET_mongodb_col,
+     Type_ARG,
+     {"mongodb-col", "mongodb-collection", 0},
+     "Specifies MongoDB collection to store results from BSON format file "
+     "generated from Bson Output Module."},
+    {"mongodb-app-name",
+     SET_mongodb_app,
+     Type_ARG,
+     {"mongodb-app", "mongodb-application", 0},
+     "Specifies MongoDB application name to register for tracking in the "
+     "profile logs while storing results from BSON format file generated from "
+     "Bson Output Module."},
 #endif
 
     {"SCAN MODULES CONFIG", SET_nothing, 0, {0}, NULL},
