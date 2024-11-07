@@ -64,7 +64,7 @@ typedef struct DataLink {
         bool          value_bool;
         uint64_t      value_int;
         double        value_double;
-        unsigned char value_data[1]; /*MSVC doesn't support zero size array */
+        unsigned char value_data[1]; /*MSVC doesn't on-stack zero size array */
     };
 } DataLink;
 

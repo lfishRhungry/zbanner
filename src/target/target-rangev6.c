@@ -15,11 +15,9 @@
 #include <string.h>
 #include <stdint.h>
 
-#define BUCKET_COUNT 16
-
 #define REGRESS(i, x)                                                          \
     if (!(x)) {                                                                \
-        LOG(LEVEL_ERROR, "%u: regression failed %s:%d\n", (unsigned)i,         \
+        LOG(LEVEL_ERROR, "%u: regression failed %s:%d\n", (unsigned)(i),       \
             __FILE__, __LINE__);                                               \
         return 1;                                                              \
     }
