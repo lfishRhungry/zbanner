@@ -522,6 +522,36 @@ static ConfRes SET_output_module(void *conf, const char *name,
     return Conf_OK;
 }
 
+static ConfRes SET_ip2asn_v6(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        if (xconf->out_conf.ip2asn_v6_filename) {
+            fprintf(xconf->echo, "ip2asn-v6 = \"%s\"\n",
+                    xconf->out_conf.ip2asn_v6_filename);
+        }
+        return 0;
+    }
+
+    xconf->out_conf.ip2asn_v6_filename = STRDUP(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_ip2asn_v4(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        if (xconf->out_conf.ip2asn_v4_filename) {
+            fprintf(xconf->echo, "ip2asn-v4 = \"%s\"\n",
+                    xconf->out_conf.ip2asn_v4_filename);
+        }
+        return 0;
+    }
+
+    xconf->out_conf.ip2asn_v4_filename = STRDUP(value);
+
+    return Conf_OK;
+}
+
 static ConfRes SET_output_filename(void *conf, const char *name,
                                    const char *value) {
     XConf *xconf = (XConf *)conf;
@@ -3145,6 +3175,20 @@ ConfParam config_parameters[] = {
      "NOTE2: Some output modules could accept escaped chars and will escape "
      "unprinted chars automaticlly(e.g. Bson Output Module). So don't use the "
      "flag for those modules or we'll get weired string results."},
+    {"ip2asn-v4-file",
+     SET_ip2asn_v4,
+     Type_ARG,
+     {"ip2asn-v4", "asn-4", 0},
+     "Specifies a 'ip2asn-v4.tsv' file to load and add IPv4 ASN info to "
+     "scan results or list target results.\n"
+     "NOTE: Maybe a little bit less efficient because of querying."},
+    {"ip2asn-v6-file",
+     SET_ip2asn_v6,
+     Type_ARG,
+     {"ip2asn-v6", "asn-6", 0},
+     "Specifies a 'ip2asn-v6.tsv' file to load and add IPv6 ASN info to "
+     "scan results or list target results.\n"
+     "NOTE: Maybe a little bit less efficient because of querying."},
 
     {"GENERATE MODULES CONFIG", SET_nothing, 0, {0}, NULL},
 

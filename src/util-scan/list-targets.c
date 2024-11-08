@@ -2,16 +2,18 @@
 #include <assert.h>
 #include "../util-out/logger.h"
 #include "../crypto/crypto-blackrock.h"
+#include "../as/as-query.h"
 
 void list_ip_port(XConf *xconf) {
-    uint64_t  i;
-    uint64_t  range;
-    uint64_t  start;
-    uint64_t  end;
-    BlackRock blackrock;
-    unsigned  increment    = xconf->shard.of;
-    uint64_t  dynamic_seed = xconf->seed;
-    bool      in_order     = xconf->listtargets_in_order;
+    uint64_t         i;
+    uint64_t         range;
+    uint64_t         start;
+    uint64_t         end;
+    BlackRock        blackrock;
+    struct AS_Query *as_query;
+    unsigned         increment    = xconf->shard.of;
+    uint64_t         dynamic_seed = xconf->seed;
+    bool             in_order     = xconf->listtargets_in_order;
 
     /* If called with no ports, then create a pseudo-port needed
      * for the internal algorithm. */
@@ -24,6 +26,12 @@ void list_ip_port(XConf *xconf) {
      * The "range" is the total number of IP/port combinations that
      * the scan can produce */
     range = targetset_count(&xconf->targets).lo;
+
+    /**
+     * load as info
+     */
+    as_query = as_query_new(xconf->out_conf.ip2asn_v4_filename,
+                            xconf->out_conf.ip2asn_v6_filename);
 
 infinite:
     if (!in_order)
@@ -45,34 +53,33 @@ infinite:
 
         ip_proto = get_actual_proto_port(&port);
 
-        if (xconf->targets.count_ports == 1) {
-            ipaddress_formatted_t fmt = ipaddress_fmt(addr);
-            /* This is the normal case */
-            printf("%s\n", fmt.string);
-        } else {
-            ipaddress_formatted_t fmt = ipaddress_fmt(addr);
-            if (addr.version == 6)
-                printf("%s ", fmt.string);
-            else
-                printf("%s ", fmt.string);
+        ipaddress_formatted_t fmt = ipaddress_fmt(addr);
+        printf("%s", fmt.string);
 
+        if (xconf->targets.count_ports != 1) {
             switch (ip_proto) {
                 case IP_PROTO_TCP:
-                    printf("%u", port);
+                    printf(" %u", port);
                     break;
                 case IP_PROTO_UDP:
-                    printf("u:%u", port);
+                    printf(" u:%u", port);
                     break;
                 case IP_PROTO_SCTP:
-                    printf("s:%u", port);
+                    printf(" s:%u", port);
                     break;
                 default:
-                    printf("o:%u", port);
+                    printf(" o:%u", port);
                     break;
             }
-
-            printf("\n");
         }
+
+        if (as_query) {
+            struct AS_Info as_info = as_query_search_ip(as_query, addr);
+            printf(", AS%u, %s, %s", as_info.asn, as_info.country_code,
+                   as_info.desc);
+        }
+
+        printf("\n");
 
         i += increment; /* <------ increment by 1 normally, more with
                            shards/NICs */
@@ -84,6 +91,8 @@ infinite:
         }
         goto infinite;
     }
+
+    as_query_destroy(as_query);
 }
 
 /***************************************************************************

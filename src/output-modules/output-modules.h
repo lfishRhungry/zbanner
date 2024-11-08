@@ -12,6 +12,7 @@
 #include "../target/target.h"
 #include "../target/target-set.h"
 #include "../target/target-ipaddress.h"
+#include "../as/as-query.h"
 
 #define OUT_RSN_SIZE 30
 #define OUT_CLS_SIZE 30
@@ -73,6 +74,9 @@ typedef struct OutputConfig {
     void                *info_mutex;
     void                *module_mutex;
     void                *stdout_mutex;
+    struct AS_Query     *as_query;
+    char                *ip2asn_v4_filename;
+    char                *ip2asn_v6_filename;
     unsigned             is_append       : 1;
     unsigned             is_interactive  : 1;
     unsigned             is_show_failed  : 1;

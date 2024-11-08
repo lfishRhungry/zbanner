@@ -179,6 +179,9 @@ bool output_init(const XConf *xconf, OutConf *out_conf) {
     out_conf->fail_mutex   = pixie_create_mutex();
     out_conf->info_mutex   = pixie_create_mutex();
 
+    out_conf->as_query = as_query_new(out_conf->ip2asn_v4_filename,
+                                      out_conf->ip2asn_v6_filename);
+
     return true;
 }
 
@@ -302,6 +305,17 @@ void output_result(const OutConf *out, OutItem *item) {
     if (item->level == OUT_SUCCESS && out->no_show_success)
         goto error0;
 
+    if (out->as_query) {
+        struct AS_Info as_info =
+            as_query_search_ip(out->as_query, item->target.ip_them);
+        dach_append_banner(&item->report, "AS desc", as_info.desc,
+                           strlen(as_info.desc), LinkType_String);
+        dach_append_banner(&item->report, "AS country code",
+                           as_info.country_code, strlen(as_info.country_code),
+                           LinkType_String);
+        dach_set_int(&item->report, "ASN", as_info.asn);
+    }
+
     if (out->output_module) {
         pixie_acquire_mutex(out->module_mutex);
         out->output_module->result_cb(item);
@@ -331,6 +345,8 @@ void output_close(OutConf *out_conf) {
     pixie_delete_mutex(out_conf->succ_mutex);
     pixie_delete_mutex(out_conf->fail_mutex);
     pixie_delete_mutex(out_conf->info_mutex);
+
+    as_query_destroy(out_conf->as_query);
 }
 
 bool output_init_nothing(const XConf *xconf, const OutConf *out_conf) {
