@@ -203,7 +203,7 @@ static void snmp_banner_oid(struct SMACK *global_mib, const unsigned char *oid,
     /* Do the string */
     if (found_id != SMACK_NOT_FOUND) {
         const char *str = mib[found_id].name;
-        dach_append(dach, SNMP_DACH_NAME, str, strlen(str), LinkType_String);
+        dach_append_str(dach, SNMP_DACH_NAME, str, strlen(str));
     }
 
     /* Do remaining OIDs */
@@ -213,7 +213,7 @@ static void snmp_banner_oid(struct SMACK *global_mib, const unsigned char *oid,
         if (x == 0 && i >= oid_length)
             break;
 
-        dach_printf(dach, SNMP_DACH_NAME, LinkType_String, ".%" PRIu64 "", x);
+        dach_printf(dach, SNMP_DACH_NAME, ".%" PRIu64 "", x);
     }
 }
 
@@ -229,23 +229,21 @@ static void snmp_banner(struct SMACK *global_mib, const unsigned char *oid,
     /* print the OID */
     snmp_banner_oid(global_mib, oid, oid_length, dach);
 
-    dach_append(dach, SNMP_DACH_NAME, ": ", 2, LinkType_String);
+    dach_append_str(dach, SNMP_DACH_NAME, ": ", 2);
 
     switch (var_tag) {
         case 2: {
             uint64_t result = 0;
             for (i = 0; i < var_length; i++)
                 result = result << 8 | var[i];
-            dach_printf(dach, SNMP_DACH_NAME, LinkType_String, "%" PRIu64 "",
-                        result);
+            dach_printf(dach, SNMP_DACH_NAME, "%" PRIu64 "", result);
         } break;
         case 6:
             snmp_banner_oid(global_mib, var, var_length, dach);
             break;
         case 4:
         default:
-            dach_append_banner(dach, SNMP_DACH_NAME, var, var_length,
-                               LinkType_String);
+            dach_append_banner(dach, SNMP_DACH_NAME, var, var_length);
             break;
     }
 

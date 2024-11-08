@@ -249,8 +249,8 @@ static void yarrpecho_handle(unsigned th_idx, uint64_t entropy,
         safe_strcpy(item->reason, OUT_RSN_SIZE, "echo reply");
         safe_strcpy(item->classification, OUT_CLS_SIZE, "destination");
         dach_set_int(&item->report, "distance", recved->parsed.icmp_seqno);
-        dach_append(&item->report, "destination", ip_them_fmt.string,
-                    strlen(ip_them_fmt.string), LinkType_String);
+        dach_append_str(&item->report, "destination", ip_them_fmt.string,
+                        strlen(ip_them_fmt.string));
     } else {
         /*ttl/hop limit exceeded*/
         PreInfo info = {0};
@@ -264,8 +264,8 @@ static void yarrpecho_handle(unsigned th_idx, uint64_t entropy,
             dach_set_int(&item->report, "icmp seqno", info.icmp_seqno);
         if (yarrpecho_conf.record_icmp_ip_me) {
             ipaddress_formatted_t icmp_ip_me_fmt = ipaddress_fmt(info.src_ip);
-            dach_append(&item->report, "icmp ip_me", icmp_ip_me_fmt.string,
-                        strlen(icmp_ip_me_fmt.string), LinkType_String);
+            dach_append_str(&item->report, "icmp ip_me", icmp_ip_me_fmt.string,
+                            strlen(icmp_ip_me_fmt.string));
         }
 
         ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(info.dst_ip);
@@ -276,8 +276,8 @@ static void yarrpecho_handle(unsigned th_idx, uint64_t entropy,
          * ICMP payload.
          */
         dach_set_int(&item->report, "distance", info.icmp_seqno);
-        dach_append(&item->report, "destination", ip_them_fmt.string,
-                    strlen(ip_them_fmt.string), LinkType_String);
+        dach_append_str(&item->report, "destination", ip_them_fmt.string,
+                        strlen(ip_them_fmt.string));
     }
 }
 

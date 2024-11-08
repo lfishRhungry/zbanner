@@ -481,7 +481,7 @@ static unsigned luaudp_handle_response(unsigned th_idx, ProbeTarget *target,
         return 0;
     }
     lua_ret = lua_tolstring(luaudp_conf.Lhx, -1, &ret_len);
-    dach_append(&item->report, "lua report", lua_ret, ret_len, LinkType_String);
+    dach_append_banner(&item->report, "lua report", lua_ret, ret_len);
 
     lua_settop(luaudp_conf.Lhx, 0);
     return ret;

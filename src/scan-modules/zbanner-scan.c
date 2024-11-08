@@ -915,17 +915,17 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy,
             dach_set_int(&item->report, "data len", recved->parsed.app_length);
         }
         if (zbanner_conf.record_data)
-            dach_append(&item->report, "data",
-                        &recved->packet[recved->parsed.app_offset],
-                        recved->parsed.app_length, LinkType_Binary);
+            dach_append_bin(&item->report, "data",
+                            &recved->packet[recved->parsed.app_offset],
+                            recved->parsed.app_length);
         if (zbanner_conf.record_utf8)
             dach_append_utf8(&item->report, "utf8",
                              &recved->packet[recved->parsed.app_offset],
-                             recved->parsed.app_length, LinkType_String);
+                             recved->parsed.app_length);
         if (zbanner_conf.record_banner)
             dach_append_banner(&item->report, "banner",
                                &recved->packet[recved->parsed.app_offset],
-                               recved->parsed.app_length, LinkType_String);
+                               recved->parsed.app_length);
 
         /*multi-probe Multi_AfterHandle*/
         if (ZBannerScan.probe->multi_mode == Multi_AfterHandle && is_multi &&

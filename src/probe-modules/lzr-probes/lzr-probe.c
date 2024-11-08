@@ -289,9 +289,9 @@ static unsigned lzr_handle_response(unsigned th_idx, ProbeTarget *target,
         }
     }
 
-    dach_append(
-        &item->report, "handshake", lzr_conf.handshake[target->index]->name,
-        strlen(lzr_conf.handshake[target->index]->name), LinkType_String);
+    dach_append_str(&item->report, "handshake",
+                    lzr_conf.handshake[target->index]->name,
+                    strlen(lzr_conf.handshake[target->index]->name));
 
     if (identified) {
         item->level = OUT_SUCCESS;

@@ -573,18 +573,19 @@ static void udp_handle(unsigned th_idx, uint64_t entropy,
         dach_set_int(&item->report, "icmp port_me", item->target.port_me);
         if (udp_conf.record_icmp_ip_me) {
             ipaddress_formatted_t icmp_ip_me_fmt = ipaddress_fmt(icmp_ip_me);
-            dach_append(&item->report, "icmp ip_me", icmp_ip_me_fmt.string,
-                        strlen(icmp_ip_me_fmt.string), LinkType_String);
+            dach_append_str(&item->report, "icmp ip_me", icmp_ip_me_fmt.string,
+                            strlen(icmp_ip_me_fmt.string));
         }
         dach_set_int(&item->report, "icmp port_them", item->target.port_them);
         if (udp_conf.record_icmp_ip_them) {
             ipaddress_formatted_t icmp_ip_them_fmt =
                 ipaddress_fmt(icmp_ip_them);
-            dach_append(&item->report, "icmp ip_them", icmp_ip_them_fmt.string,
-                        strlen(icmp_ip_them_fmt.string), LinkType_String);
+            dach_append_str(&item->report, "icmp ip_them",
+                            icmp_ip_them_fmt.string,
+                            strlen(icmp_ip_them_fmt.string));
         }
-        dach_append(&item->report, "icmp proto", icmp_proto_str,
-                    strlen(icmp_proto_str), LinkType_String);
+        dach_append_str(&item->report, "icmp proto", icmp_proto_str,
+                        strlen(icmp_proto_str));
     }
 
     if (udp_conf.record_ttl)
@@ -595,17 +596,17 @@ static void udp_handle(unsigned th_idx, uint64_t entropy,
         dach_set_int(&item->report, "data len", recved->parsed.app_length);
     }
     if (udp_conf.record_data)
-        dach_append(&item->report, "data",
-                    &recved->packet[recved->parsed.app_offset],
-                    recved->parsed.app_length, LinkType_Binary);
+        dach_append_bin(&item->report, "data",
+                        &recved->packet[recved->parsed.app_offset],
+                        recved->parsed.app_length);
     if (udp_conf.record_utf8)
         dach_append_utf8(&item->report, "utf8",
                          &recved->packet[recved->parsed.app_offset],
-                         recved->parsed.app_length, LinkType_String);
+                         recved->parsed.app_length);
     if (udp_conf.record_banner)
         dach_append_banner(&item->report, "banner",
                            &recved->packet[recved->parsed.app_offset],
-                           recved->parsed.app_length, LinkType_String);
+                           recved->parsed.app_length);
 }
 
 Scanner UdpScan = {

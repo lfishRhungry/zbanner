@@ -238,7 +238,7 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line) {
     };
 
     safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
-    dach_append(&item.report, "key_log", line, strlen(line), LinkType_String);
+    dach_append_str(&item.report, "key_log", line, strlen(line));
 
     output_result(_tls_out, &item);
 }
@@ -259,8 +259,8 @@ static void ssl_info_cb(const SSL *ssl, int where, int ret) {
         };
 
         safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
-        dach_printf(&item.report, "openssl alert", LinkType_String,
-                    "0x%04x %s: %s", ret, SSL_alert_type_string_long(ret),
+        dach_printf(&item.report, "openssl alert", "0x%04x %s: %s", ret,
+                    SSL_alert_type_string_long(ret),
                     SSL_alert_desc_string_long(ret));
 
         output_result(_tls_out, &item);
@@ -551,7 +551,7 @@ static bool output_cipher_suite(OutConf *out, ProbeTarget *target, SSL *ssl) {
     safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
 
     cipher_suite = SSL_CIPHER_get_protocol_id(ssl_cipher);
-    dach_printf(&item.report, "cipher", LinkType_String, "0x%x", cipher_suite);
+    dach_printf(&item.report, "cipher", "0x%x", cipher_suite);
 
     output_result(_tls_out, &item);
 
@@ -572,28 +572,28 @@ static bool output_tls_version(OutConf *out, ProbeTarget *target, SSL *ssl) {
 
     switch (version) {
         case SSL3_VERSION:
-            dach_append(&item.report, "version", "SSLv3.0",
-                        sizeof("SSLv3.0") - 1, LinkType_String);
+            dach_append_str(&item.report, "version", "SSLv3.0",
+                            sizeof("SSLv3.0") - 1);
             break;
         case TLS1_VERSION:
-            dach_append(&item.report, "version", "TLSv1.0",
-                        sizeof("TLSv1.0") - 1, LinkType_String);
+            dach_append_str(&item.report, "version", "TLSv1.0",
+                            sizeof("TLSv1.0") - 1);
             break;
         case TLS1_1_VERSION:
-            dach_append(&item.report, "version", "TLSv1.1",
-                        sizeof("TLSv1.1") - 1, LinkType_String);
+            dach_append_str(&item.report, "version", "TLSv1.1",
+                            sizeof("TLSv1.1") - 1);
             break;
         case TLS1_2_VERSION:
-            dach_append(&item.report, "version", "TLSv1.2",
-                        sizeof("TLSv1.2") - 1, LinkType_String);
+            dach_append_str(&item.report, "version", "TLSv1.2",
+                            sizeof("TLSv1.2") - 1);
             break;
         case TLS1_3_VERSION:
-            dach_append(&item.report, "version", "TLSv1.3",
-                        sizeof("TLSv1.3") - 1, LinkType_String);
+            dach_append_str(&item.report, "version", "TLSv1.3",
+                            sizeof("TLSv1.3") - 1);
             break;
         default:
-            dach_append(&item.report, "version", "Other", sizeof("Other") - 1,
-                        LinkType_String);
+            dach_append_str(&item.report, "version", "Other",
+                            sizeof("Other") - 1);
     }
 
     safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");

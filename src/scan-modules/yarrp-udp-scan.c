@@ -320,8 +320,8 @@ static void yarrpudp_handle(unsigned th_idx, uint64_t entropy,
         dach_set_int(&item->report, "icmp seqno", info.icmp_seqno);
     if (yarrpudp_conf.record_icmp_ip_me) {
         ipaddress_formatted_t icmp_ip_me_fmt = ipaddress_fmt(info.src_ip);
-        dach_append(&item->report, "icmp ip_me", icmp_ip_me_fmt.string,
-                    strlen(icmp_ip_me_fmt.string), LinkType_String);
+        dach_append_str(&item->report, "icmp ip_me", icmp_ip_me_fmt.string,
+                        strlen(icmp_ip_me_fmt.string));
     }
 
     /**
@@ -332,8 +332,8 @@ static void yarrpudp_handle(unsigned th_idx, uint64_t entropy,
 
     ipaddress_formatted_t icmp_ip_them_fmt = ipaddress_fmt(info.dst_ip);
     dach_set_int(&item->report, "distance", distance);
-    dach_append(&item->report, "destination", icmp_ip_them_fmt.string,
-                strlen(icmp_ip_them_fmt.string), LinkType_String);
+    dach_append_str(&item->report, "destination", icmp_ip_them_fmt.string,
+                    strlen(icmp_ip_them_fmt.string));
 
     /*port unreachable*/
     if ((recved->parsed.src_ip.version == 4 &&

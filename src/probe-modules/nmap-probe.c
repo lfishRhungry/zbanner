@@ -167,11 +167,11 @@ unsigned nmap_handle_response(unsigned th_idx, ProbeTarget *target,
 
         dach_set_int(&item->report, "line", match->line);
         if (!match->is_softmatch && match->versioninfo) {
-            dach_append(&item->report, "info", match->versioninfo->value,
-                        strlen(match->versioninfo->value), LinkType_String);
+            dach_append_str(&item->report, "info", match->versioninfo->value,
+                            strlen(match->versioninfo->value));
         }
-        dach_append(&item->report, "service", match->service,
-                    strlen(match->service), LinkType_String);
+        dach_append_str(&item->report, "service", match->service,
+                        strlen(match->service));
 
         return 0;
     }

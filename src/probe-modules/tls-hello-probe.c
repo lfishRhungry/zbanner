@@ -381,9 +381,8 @@ static unsigned tlshello_handle_reponse(unsigned th_idx, ProbeTarget *target,
 #ifndef NOT_FOUND_PCRE2
                     }
 #endif
-                    dach_append_banner(&item->report, "type", "handshake",
-                                       sizeof("handshake") - 1,
-                                       LinkType_String);
+                    dach_append_str(&item->report, "type", "handshake",
+                                    sizeof("handshake") - 1);
                     return 0;
                 }
             }
@@ -400,8 +399,8 @@ static unsigned tlshello_handle_reponse(unsigned th_idx, ProbeTarget *target,
 
         item->level = OUT_SUCCESS;
         safe_strcpy(item->reason, OUT_RSN_SIZE, "protocol matched");
-        dach_append_banner(&item->report, "type", "handshake",
-                           sizeof("handshake") - 1, LinkType_String);
+        dach_append_str(&item->report, "type", "handshake",
+                        sizeof("handshake") - 1);
 
         /*we can do further regex matching here*/
 #ifndef NOT_FOUND_PCRE2
@@ -482,8 +481,7 @@ static unsigned tlshello_handle_reponse(unsigned th_idx, ProbeTarget *target,
 
         item->level = OUT_SUCCESS;
         safe_strcpy(item->reason, OUT_RSN_SIZE, "protocol matched");
-        dach_append_banner(&item->report, "type", "alert", sizeof("alert") - 1,
-                           LinkType_String);
+        dach_append_str(&item->report, "type", "alert", sizeof("alert") - 1);
         dach_set_int(&item->report, "level", px[5]);
         dach_set_int(&item->report, "desc", px[6]);
 

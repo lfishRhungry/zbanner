@@ -831,12 +831,11 @@ static unsigned httpstate_parse_response(DataPass *pass, ProbeState *state,
         dach_set_int(&item.report, "data len", sizeof_px);
     }
     if (httpstate_conf.record_data)
-        dach_append(&item.report, "data", px, sizeof_px, LinkType_Binary);
+        dach_append_bin(&item.report, "data", px, sizeof_px);
     if (httpstate_conf.record_utf8)
-        dach_append_utf8(&item.report, "utf8", px, sizeof_px, LinkType_String);
+        dach_append_utf8(&item.report, "utf8", px, sizeof_px);
     if (httpstate_conf.record_banner)
-        dach_append_banner(&item.report, "banner", px, sizeof_px,
-                           LinkType_String);
+        dach_append_banner(&item.report, "banner", px, sizeof_px);
 
     output_result(out, &item);
 

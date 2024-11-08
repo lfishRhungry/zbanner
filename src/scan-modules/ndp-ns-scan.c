@@ -118,7 +118,7 @@ static void ndpns_handle(unsigned th_idx, uint64_t entropy,
      * case.
      */
     if (recved->parsed.transport_offset + 31 < recved->length) {
-        dach_printf(&item->report, "mac addr(ndp)", LinkType_String,
+        dach_printf(&item->report, "mac addr(ndp)",
                     "%02X:%02X:%02X:%02X:%02X:%02X",
                     recved->packet[recved->parsed.transport_offset + 26],
                     recved->packet[recved->parsed.transport_offset + 27],
@@ -127,7 +127,7 @@ static void ndpns_handle(unsigned th_idx, uint64_t entropy,
                     recved->packet[recved->parsed.transport_offset + 30],
                     recved->packet[recved->parsed.transport_offset + 31]);
     } else {
-        dach_printf(&item->report, "mac addr(link)", LinkType_String,
+        dach_printf(&item->report, "mac addr(link)",
                     "%02X:%02X:%02X:%02X:%02X:%02X", recved->parsed.mac_src[0],
                     recved->parsed.mac_src[1], recved->parsed.mac_src[2],
                     recved->parsed.mac_src[3], recved->parsed.mac_src[4],

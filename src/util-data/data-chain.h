@@ -182,7 +182,7 @@ DataLink *dach_set_bool(DataChain *dach, const char *name, bool value);
 /**
  * Append data to the data type link.
  * @param link expected link and must not be NULL
- * @param length len of px, can be DACH_AUTO_LEN if px is c string.
+ * @param length len of px
  * @return target link after append.
  */
 DataLink *dach_append_by_link(DataLink *pre, const void *px, size_t length);
@@ -191,7 +191,7 @@ DataLink *dach_append_by_link(DataLink *pre, const void *px, size_t length);
  * Append data to the data type link.
  * If this exceeds the buffer, then the buffer will be expanded.
  * If data with this name doesn't exist, it'll be create.
- * @param length len of px, can be DACH_AUTO_LEN if px is c string.
+ * @param length len of px
  * @return target link after append.
  */
 DataLink *dach_append(DataChain *dach, const char *name, const void *px,
@@ -268,8 +268,7 @@ DataLink *dach_printf_by_link(DataLink *link, const char *fmt, ...);
  * If data with this name doesn't exist, it'll be create.
  * @return target link after append.
  */
-DataLink *dach_printf(DataChain *dach, const char *name, LinkType type,
-                      const char *fmt, ...);
+DataLink *dach_printf(DataChain *dach, const char *name, const char *fmt, ...);
 
 /**
  * Use no escape char for unprinted chars while normalizing the data. This is a
@@ -279,13 +278,47 @@ DataLink *dach_printf(DataChain *dach, const char *name, LinkType type,
 void dach_no_escape_char();
 
 /**
+ * Append string type data.
+ * @param link expected link and must not be NULL
+ * @param length len of px
+ * @return target link after append.
+ */
+DataLink *dach_append_str_by_link(DataLink *link, const void *px,
+                                  size_t length);
+
+/**
+ * Append string type data.
+ * @param length len of px
+ * @return target link after append.
+ */
+DataLink *dach_append_str(DataChain *dach, const char *name, const void *px,
+                          size_t length);
+
+/**
+ * Append binary type data.
+ * @param link expected link and must not be NULL
+ * @param length len of px
+ * @return target link after append.
+ */
+DataLink *dach_append_bin_by_link(DataLink *link, const void *px,
+                                  size_t length);
+
+/**
+ * Append binary type data.
+ * @param length len of px
+ * @return target link after append.
+ */
+DataLink *dach_append_bin(DataChain *dach, const char *name, const void *px,
+                          size_t length);
+
+/**
  * Append in one line after removing bad characters, especially backslashes and
  * single/double quotes.
  * If this exceeds the buffer, then the buffer will be expanded.
  * NOTE: The normalized string is not standard for JSON string value if use
  * escaped char...
  * @param link expected link and must not be NULL
- * @param length len of px, can be DACH_AUTO_LEN if px is c string.
+ * @param length len of px
  * @return target link after append.
  */
 DataLink *dach_append_banner_by_link(DataLink *link, const void *px,
@@ -298,11 +331,11 @@ DataLink *dach_append_banner_by_link(DataLink *link, const void *px,
  * If data with this name doesn't exist, it'll be create.
  * NOTE: The normalized string is not standard for JSON string value if use
  * escaped char...
- * @param length len of px, can be DACH_AUTO_LEN if px is c string.
+ * @param length len of px
  * @return target link after append.
  */
 DataLink *dach_append_banner(DataChain *dach, const char *name, const void *px,
-                             size_t length, LinkType type);
+                             size_t length);
 
 /**
  * Append valid utf8 chars in one line after removing bad characters, especially
@@ -311,7 +344,7 @@ DataLink *dach_append_banner(DataChain *dach, const char *name, const void *px,
  * NOTE: The normalized string is not standard for JSON string value if use
  * escaped char...
  * @param link expected link and must not be NULL
- * @param length len of px, can be DACH_AUTO_LEN if px is c string.
+ * @param length len of px
  * @return target link after append.
  */
 DataLink *dach_append_utf8_by_link(DataLink *link, const void *px,
@@ -324,11 +357,11 @@ DataLink *dach_append_utf8_by_link(DataLink *link, const void *px,
  * If data with this name doesn't exist, it'll be create.
  * NOTE: The normalized string is not standard for JSON string value if use
  * escaped char...
- * @param length len of px, can be DACH_AUTO_LEN if px is c string.
+ * @param length len of px
  * @return target link after append.
  */
 DataLink *dach_append_utf8(DataChain *dach, const char *name, const void *px,
-                           size_t length, LinkType type);
+                           size_t length);
 
 /**
  * @param link data type link and must not be NULL
@@ -363,7 +396,7 @@ void dach_init_base64(struct DachBase64 *base64);
  * fragment.
  * If this exceeds the buffer, then the buffer will be expanded.
  * @param link expected link and must not be NULL
- * @param length len of vpx, can be DACH_AUTO_LEN if px is c string.
+ * @param length len of vpx
  * @return target link after append.
  */
 DataLink *dach_append_base64_by_link(DataLink *link, const void *vpx,
@@ -376,12 +409,11 @@ DataLink *dach_append_base64_by_link(DataLink *link, const void *vpx,
  * And a call to dach_finalize_base64() must be called after the last
  * fragment.
  * If data with this name doesn't exist, it'll be create.
- * @param length len of vpx, can be DACH_AUTO_LEN if px is c string.
+ * @param length len of vpx
  * @return target link after append.
  */
 DataLink *dach_append_base64(DataChain *dach, const char *name, const void *vpx,
-                             size_t length, LinkType type,
-                             struct DachBase64 *base64);
+                             size_t length, struct DachBase64 *base64);
 
 /**
  * Finish encoding the BASE64 string, appending the '==' things on the

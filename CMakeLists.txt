@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(
     xtate
     LANGUAGES               C
-    VERSION                 2.1.0
+    VERSION                 2.2.0
     DESCRIPTION             "A modular all-stack network scanner for next-generation internet surveys."
     HOMEPAGE_URL            "https://github.com/sharkocha/xtate"
     )

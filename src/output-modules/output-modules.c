@@ -308,11 +308,10 @@ void output_result(const OutConf *out, OutItem *item) {
     if (out->as_query) {
         struct AS_Info as_info =
             as_query_search_ip(out->as_query, item->target.ip_them);
-        dach_append_banner(&item->report, "AS desc", as_info.desc,
-                           strlen(as_info.desc), LinkType_String);
-        dach_append_banner(&item->report, "AS country code",
-                           as_info.country_code, strlen(as_info.country_code),
-                           LinkType_String);
+        dach_append_str(&item->report, "AS desc", as_info.desc,
+                        strlen(as_info.desc));
+        dach_append_str(&item->report, "AS country code", as_info.country_code,
+                        strlen(as_info.country_code));
         dach_set_int(&item->report, "ASN", as_info.asn);
     }
 
