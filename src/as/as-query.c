@@ -390,7 +390,7 @@ const struct AS_Info as_query_search_ip(const struct AS_Query *as_query,
 }
 
 void as_query_destroy(struct AS_Query *as_query) {
-    if (as_query) {
+    if (as_query == NULL) {
         return;
     }
 
