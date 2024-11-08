@@ -1,5 +1,8 @@
 #!/bin/bash
 
+cd "$(dirname "$0")"
+cd ..
+
 total_lines=0
 effective_lines=0
 
