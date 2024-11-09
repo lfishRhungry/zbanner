@@ -87,7 +87,7 @@ static void ndjson_result(OutItem *item) {
     if (err < 0)
         goto error;
 
-    pre = &item->scan_report.link;
+    pre = item->scan_report.link;
     if (pre->next) {
         err = fprintf(file, fmt_ndjson_scan_inffix);
         if (err < 0)
@@ -127,7 +127,7 @@ static void ndjson_result(OutItem *item) {
             goto error;
     }
 
-    pre = &item->probe_report.link;
+    pre = item->probe_report.link;
     if (pre->next) {
         err = fprintf(file, fmt_ndjson_probe_inffix);
         if (err < 0)
@@ -167,7 +167,7 @@ static void ndjson_result(OutItem *item) {
             goto error;
     }
 
-    pre = &item->output_report.link;
+    pre = item->output_report.link;
     if (pre->next) {
         err = fprintf(file, fmt_ndjson_output_inffix);
         if (err < 0)

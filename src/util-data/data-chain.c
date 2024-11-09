@@ -62,10 +62,10 @@ static DataLink *_dach_new_link(DataChain *dach, const char *name, size_t len,
 
     safe_strcpy(p->name, DACH_MAX_NAME_SIZE, name);
 
-    p->name_hash    = _name_hash(name);
-    p->next         = dach->link.next;
-    p->prev         = &dach->link;
-    dach->link.next = p;
+    p->name_hash     = _name_hash(name);
+    p->next          = dach->link->next;
+    p->prev          = dach->link;
+    dach->link->next = p;
     if (p->next)
         p->next->prev = p;
 
@@ -94,7 +94,7 @@ DataLink *dach_new_link(DataChain *dach, const char *name, size_t data_size,
 DataLink *dach_find_link(DataChain *dach, const char *name) {
     unsigned hash = _name_hash(name);
 
-    DataLink *pre = &dach->link;
+    DataLink *pre = dach->link;
     while (pre->next && pre->next->name_hash != hash) {
         pre = pre->next;
     }
@@ -180,7 +180,7 @@ static DataLink *_dach_link_expand(DataLink *link, size_t mlen) {
 /***************************************************************************
  ***************************************************************************/
 void dach_release(DataChain *dach) {
-    DataLink *pre = &dach->link;
+    DataLink *pre = dach->link;
     DataLink *tmp;
 
     /*release all except dummy node*/
@@ -831,7 +831,7 @@ int datachain_selftest(void) {
         dach_set_double(dach, "double", num_double);
         dach_set_bool(dach, "bool", num_bool);
 
-        if (dach->link.next == NULL) {
+        if (dach->link->next == NULL) {
             line = __LINE__;
             goto fail;
         }
@@ -973,7 +973,7 @@ int datachain_selftest(void) {
         }
 
         dach_release(dach);
-        if (dach->link.next != NULL) {
+        if (dach->link->next != NULL) {
             line = __LINE__;
             goto fail;
         }

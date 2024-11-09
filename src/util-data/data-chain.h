@@ -65,7 +65,7 @@ typedef struct DataLink {
         uint64_t value_int;
         double   value_double;
     };
-    unsigned char value_data[0];
+    unsigned char value_data[1]; /*MSVC doesn't support zero array there*/
 } DataLink;
 
 /**
@@ -74,7 +74,7 @@ typedef struct DataLink {
 typedef struct DataChain {
 
     unsigned count;
-    DataLink link; /*dummy node for using out of the box*/
+    DataLink link[1]; /*dummy node for using out of the box*/
 } DataChain;
 
 typedef struct DachBase64 {

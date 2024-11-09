@@ -85,7 +85,7 @@ static void text_result(OutItem *item) {
             goto error;
     }
 
-    pre = &item->scan_report.link;
+    pre = item->scan_report.link;
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
             fprintf(file, fmt_report_str, pre->next->name,
@@ -107,7 +107,7 @@ static void text_result(OutItem *item) {
         pre = pre->next;
     }
 
-    pre = &item->probe_report.link;
+    pre = item->probe_report.link;
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
             fprintf(file, fmt_report_str, pre->next->name,
@@ -129,7 +129,7 @@ static void text_result(OutItem *item) {
         pre = pre->next;
     }
 
-    pre = &item->output_report.link;
+    pre = item->output_report.link;
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
             fprintf(file, fmt_report_str, pre->next->name,

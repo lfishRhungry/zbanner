@@ -107,7 +107,7 @@ static void csv_result(OutItem *item) {
     if (err < 0)
         goto error;
 
-    pre      = &item->scan_report.link;
+    pre      = item->scan_report.link;
     is_first = 1; /*no comma for first item*/
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
@@ -141,7 +141,7 @@ static void csv_result(OutItem *item) {
     if (err < 0)
         goto error;
 
-    pre      = &item->probe_report.link;
+    pre      = item->probe_report.link;
     is_first = 1; /*no comma for first item*/
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
@@ -175,7 +175,7 @@ static void csv_result(OutItem *item) {
     if (err < 0)
         goto error;
 
-    pre      = &item->output_report.link;
+    pre      = item->output_report.link;
     is_first = 1; /*no comma for first item*/
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {

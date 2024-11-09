@@ -239,7 +239,7 @@ static void output_result_to_stdout(OutItem *item) {
     if (_output_ansi)
         fprintf(stdout, XPRINT_CH_COLOR_YELLOW);
 
-    pre = &item->scan_report.link;
+    pre = item->scan_report.link;
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
             count += fprintf(stdout, fmt_report_str, pre->next->name,
@@ -263,7 +263,7 @@ static void output_result_to_stdout(OutItem *item) {
         pre = pre->next;
     }
 
-    pre = &item->probe_report.link;
+    pre = item->probe_report.link;
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
             count += fprintf(stdout, fmt_report_str, pre->next->name,
@@ -287,7 +287,7 @@ static void output_result_to_stdout(OutItem *item) {
         pre = pre->next;
     }
 
-    pre = &item->output_report.link;
+    pre = item->output_report.link;
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
             count += fprintf(stdout, fmt_report_str, pre->next->name,

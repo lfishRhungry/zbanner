@@ -381,7 +381,7 @@ static void mongodbout_result(OutItem *item) {
         BSON_APPEND_UTF8(res_doc, "reason", item->reason);
     }
 
-    pre = &item->scan_report.link;
+    pre = item->scan_report.link;
     if (pre->next) {
         bson_append_document_begin(res_doc, "scan report", -1,
                                    &scan_report_doc);
@@ -410,7 +410,7 @@ static void mongodbout_result(OutItem *item) {
         bson_destroy(&scan_report_doc);
     }
 
-    pre = &item->probe_report.link;
+    pre = item->probe_report.link;
     if (pre->next) {
         bson_append_document_begin(res_doc, "probe report", -1,
                                    &probe_report_doc);
@@ -439,7 +439,7 @@ static void mongodbout_result(OutItem *item) {
         bson_destroy(&probe_report_doc);
     }
 
-    pre = &item->output_report.link;
+    pre = item->output_report.link;
     if (pre->next) {
         bson_append_document_begin(res_doc, "output report", -1,
                                    &output_report_doc);
