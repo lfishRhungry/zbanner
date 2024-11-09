@@ -234,7 +234,7 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line) {
         .target.port_them = tgt->target.port_them,
         .target.ip_me     = tgt->target.ip_me,
         .target.port_me   = tgt->target.port_me,
-        .level            = OUT_INFO,
+        .level            = OUT_SUCCESS,
     };
 
     safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
@@ -295,7 +295,7 @@ static bool output_subject_info(OutConf *out, ProbeTarget *target, SSL *ssl) {
         .target.port_them = target->target.port_them,
         .target.ip_me     = target->target.ip_me,
         .target.port_me   = target->target.port_me,
-        .level            = OUT_INFO,
+        .level            = OUT_SUCCESS,
     };
     safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
 
@@ -446,7 +446,7 @@ static bool output_x502_cert(OutConf *out, ProbeTarget *target, SSL *ssl) {
             .target.port_them = target->target.port_them,
             .target.ip_me     = target->target.ip_me,
             .target.port_me   = target->target.port_me,
-            .level            = OUT_INFO,
+            .level            = OUT_SUCCESS,
         };
 
         safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
@@ -545,7 +545,7 @@ static bool output_cipher_suite(OutConf *out, ProbeTarget *target, SSL *ssl) {
         .target.port_them = target->target.port_them,
         .target.ip_me     = target->target.ip_me,
         .target.port_me   = target->target.port_me,
-        .level            = OUT_INFO,
+        .level            = OUT_SUCCESS,
     };
 
     safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
@@ -567,7 +567,7 @@ static bool output_tls_version(OutConf *out, ProbeTarget *target, SSL *ssl) {
         .target.port_them = target->target.port_them,
         .target.ip_me     = target->target.ip_me,
         .target.port_me   = target->target.port_me,
-        .level            = OUT_INFO,
+        .level            = OUT_SUCCESS,
     };
 
     switch (version) {
