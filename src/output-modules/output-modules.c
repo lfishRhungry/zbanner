@@ -240,7 +240,7 @@ static void output_result_to_stdout(OutItem *item) {
     if (_output_ansi)
         fprintf(stdout, XPRINT_CH_COLOR_YELLOW);
 
-    DataLink *pre = item->report.link;
+    DataLink *pre = &item->report.link;
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
             count += fprintf(stdout, fmt_report_str, pre->next->name,

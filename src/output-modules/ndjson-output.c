@@ -87,7 +87,7 @@ static void ndjson_result(OutItem *item) {
     if (err < 0)
         goto error;
 
-    DataLink *pre      = item->report.link;
+    DataLink *pre      = &item->report.link;
     unsigned  is_first = 1; /*no comma for first item*/
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {

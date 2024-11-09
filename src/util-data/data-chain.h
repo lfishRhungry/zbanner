@@ -61,20 +61,20 @@ typedef struct DataLink {
     unsigned         data_len;  /*decription for LinkType_String*/
     unsigned         data_size; /*decription for LinkType_String*/
     union {
-        bool          value_bool;
-        uint64_t      value_int;
-        double        value_double;
-        unsigned char value_data[1]; /*MSVC doesn't on-stack zero size array */
+        bool     value_bool;
+        uint64_t value_int;
+        double   value_double;
     };
+    unsigned char value_data[0];
 } DataLink;
 
 /**
  * wrapper of a bunch of data links, must be initiated in all zero
  * */
 typedef struct DataChain {
-    /*dummy node for using out of the box*/
-    DataLink link[1];
+
     unsigned count;
+    DataLink link; /*dummy node for using out of the box*/
 } DataChain;
 
 typedef struct DachBase64 {

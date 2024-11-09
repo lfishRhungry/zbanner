@@ -99,7 +99,7 @@ static void json_result(OutItem *item) {
     if (err < 0)
         goto error;
 
-    DataLink *pre      = item->report.link;
+    DataLink *pre      = &item->report.link;
     unsigned  is_first = 1; /*no comma for first item*/
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
@@ -130,7 +130,7 @@ static void json_result(OutItem *item) {
     }
 
     /*at least one report, overwrite the last comma*/
-    if (item->report.link->next) {
+    if (item->report.link.next) {
         err = fprintf(file, fmt_json_suffix1);
     } else {
         err = fprintf(file, fmt_json_suffix2);

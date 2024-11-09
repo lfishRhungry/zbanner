@@ -371,7 +371,7 @@ static void mongodbout_result(OutItem *item) {
     }
 
     bson_append_document_begin(res_doc, "report", -1, &report_doc);
-    DataLink *pre = item->report.link;
+    DataLink *pre = &item->report.link;
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
             BSON_APPEND_UTF8(&report_doc, pre->next->name,
