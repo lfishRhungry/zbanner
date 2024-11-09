@@ -262,7 +262,7 @@ static unsigned lzr_handle_response(unsigned th_idx, ProbeTarget *target,
      */
     bool      identified = false;
     DataLink *res_link;
-    res_link = dach_new_link(&item->report, "result", 1, false);
+    res_link = dach_new_link(&item->probe_report, "result", 1, false);
 
     size_t i = 0;
     for (; i < ARRAY_SIZE(lzr_handshakes); i++) {
@@ -289,7 +289,7 @@ static unsigned lzr_handle_response(unsigned th_idx, ProbeTarget *target,
         }
     }
 
-    dach_append_str(&item->report, "handshake",
+    dach_append_str(&item->probe_report, "handshake",
                     lzr_conf.handshake[target->index]->name,
                     strlen(lzr_conf.handshake[target->index]->name));
 
@@ -306,7 +306,7 @@ static unsigned lzr_handle_response(unsigned th_idx, ProbeTarget *target,
         item->level = OUT_FAILURE;
         safe_strcpy(item->classification, OUT_CLS_SIZE, "unknown");
         safe_strcpy(item->reason, OUT_RSN_SIZE, "not matched");
-        dach_del_by_link(&item->report, res_link);
+        dach_del_by_link(&item->probe_report, res_link);
 
         /*last handshake*/
         if (target->index != lzr_conf.hs_count - 1 &&

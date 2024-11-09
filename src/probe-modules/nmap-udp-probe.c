@@ -160,12 +160,13 @@ unsigned nmapudp_handle_response(unsigned th_idx, ProbeTarget *target,
         safe_strcpy(item->reason, OUT_RSN_SIZE,
                     match->is_softmatch ? "softmatch" : "matched");
 
-        dach_set_int(&item->report, "line", match->line);
+        dach_set_int(&item->probe_report, "line", match->line);
         if (!match->is_softmatch && match->versioninfo) {
-            dach_append_str(&item->report, "info", match->versioninfo->value,
+            dach_append_str(&item->probe_report, "info",
+                            match->versioninfo->value,
                             strlen(match->versioninfo->value));
         }
-        dach_append_str(&item->report, "service", match->service,
+        dach_append_str(&item->probe_report, "service", match->service,
                         strlen(match->service));
 
         return 0;

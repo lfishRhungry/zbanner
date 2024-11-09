@@ -311,16 +311,16 @@ static void yarrpudp_handle(unsigned th_idx, uint64_t entropy,
                      &info);
 
     if (yarrpudp_conf.record_ttl)
-        dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+        dach_set_int(&item->scan_report, "ttl", recved->parsed.ip_ttl);
     if (yarrpudp_conf.record_ipid && recved->parsed.src_ip.version == 4)
-        dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+        dach_set_int(&item->scan_report, "ipid", recved->parsed.ip_v4_id);
     if (yarrpudp_conf.record_icmp_id)
-        dach_set_int(&item->report, "icmp id", info.icmp_id);
+        dach_set_int(&item->scan_report, "icmp id", info.icmp_id);
     if (yarrpudp_conf.record_icmp_seqno)
-        dach_set_int(&item->report, "icmp seqno", info.icmp_seqno);
+        dach_set_int(&item->scan_report, "icmp seqno", info.icmp_seqno);
     if (yarrpudp_conf.record_icmp_ip_me) {
         ipaddress_formatted_t icmp_ip_me_fmt = ipaddress_fmt(info.src_ip);
-        dach_append_str(&item->report, "icmp ip_me", icmp_ip_me_fmt.string,
+        dach_append_str(&item->scan_report, "icmp ip_me", icmp_ip_me_fmt.string,
                         strlen(icmp_ip_me_fmt.string));
     }
 
@@ -331,8 +331,8 @@ static void yarrpudp_handle(unsigned th_idx, uint64_t entropy,
     unsigned distance = info.port_dst - yarrpudp_conf.port_them_offset;
 
     ipaddress_formatted_t icmp_ip_them_fmt = ipaddress_fmt(info.dst_ip);
-    dach_set_int(&item->report, "distance", distance);
-    dach_append_str(&item->report, "destination", icmp_ip_them_fmt.string,
+    dach_set_int(&item->scan_report, "distance", distance);
+    dach_append_str(&item->scan_report, "destination", icmp_ip_them_fmt.string,
                     strlen(icmp_ip_them_fmt.string));
 
     /*port unreachable*/

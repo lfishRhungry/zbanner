@@ -324,9 +324,12 @@ static bool mongodbout_init(const XConf *xconf, const OutConf *out) {
 }
 
 static void mongodbout_result(OutItem *item) {
+    DataLink    *pre;
     bool         ret;
     bson_error_t error;
-    bson_t       report_doc;
+    bson_t       scan_report_doc;
+    bson_t       probe_report_doc;
+    bson_t       output_report_doc;
     bson_t      *res_doc = bson_new();
 
     /**
@@ -370,30 +373,100 @@ static void mongodbout_result(OutItem *item) {
         BSON_APPEND_INT32(res_doc, "port_me", item->target.port_me);
     }
 
-    bson_append_document_begin(res_doc, "report", -1, &report_doc);
-    DataLink *pre = &item->report.link;
-    while (pre->next) {
-        if (pre->next->link_type == LinkType_String) {
-            BSON_APPEND_UTF8(&report_doc, pre->next->name,
-                             (char *)pre->next->value_data);
-        } else if (pre->next->link_type == LinkType_Int) {
-            BSON_APPEND_INT64(&report_doc, pre->next->name,
-                              pre->next->value_int);
-        } else if (pre->next->link_type == LinkType_Double) {
-            BSON_APPEND_DOUBLE(&report_doc, pre->next->name,
-                               pre->next->value_double);
-        } else if (pre->next->link_type == LinkType_Bool) {
-            BSON_APPEND_BOOL(&report_doc, pre->next->name,
-                             pre->next->value_bool);
-        } else if (pre->next->link_type == LinkType_Binary) {
-            BSON_APPEND_BINARY(&report_doc, pre->next->name,
-                               BSON_SUBTYPE_BINARY, pre->next->value_data,
-                               pre->next->data_len);
-        }
-
-        pre = pre->next;
+    if (item->classification[0]) {
+        BSON_APPEND_UTF8(res_doc, "classification", item->classification);
     }
-    bson_append_document_end(res_doc, &report_doc);
+
+    if (item->reason[0]) {
+        BSON_APPEND_UTF8(res_doc, "reason", item->reason);
+    }
+
+    pre = &item->scan_report.link;
+    if (pre->next) {
+        bson_append_document_begin(res_doc, "scan report", -1,
+                                   &scan_report_doc);
+        while (pre->next) {
+            if (pre->next->link_type == LinkType_String) {
+                BSON_APPEND_UTF8(&scan_report_doc, pre->next->name,
+                                 (char *)pre->next->value_data);
+            } else if (pre->next->link_type == LinkType_Int) {
+                BSON_APPEND_INT64(&scan_report_doc, pre->next->name,
+                                  pre->next->value_int);
+            } else if (pre->next->link_type == LinkType_Double) {
+                BSON_APPEND_DOUBLE(&scan_report_doc, pre->next->name,
+                                   pre->next->value_double);
+            } else if (pre->next->link_type == LinkType_Bool) {
+                BSON_APPEND_BOOL(&scan_report_doc, pre->next->name,
+                                 pre->next->value_bool);
+            } else if (pre->next->link_type == LinkType_Binary) {
+                BSON_APPEND_BINARY(&scan_report_doc, pre->next->name,
+                                   BSON_SUBTYPE_BINARY, pre->next->value_data,
+                                   pre->next->data_len);
+            }
+
+            pre = pre->next;
+        }
+        bson_append_document_end(res_doc, &scan_report_doc);
+        bson_destroy(&scan_report_doc);
+    }
+
+    pre = &item->probe_report.link;
+    if (pre->next) {
+        bson_append_document_begin(res_doc, "probe report", -1,
+                                   &probe_report_doc);
+        while (pre->next) {
+            if (pre->next->link_type == LinkType_String) {
+                BSON_APPEND_UTF8(&probe_report_doc, pre->next->name,
+                                 (char *)pre->next->value_data);
+            } else if (pre->next->link_type == LinkType_Int) {
+                BSON_APPEND_INT64(&probe_report_doc, pre->next->name,
+                                  pre->next->value_int);
+            } else if (pre->next->link_type == LinkType_Double) {
+                BSON_APPEND_DOUBLE(&probe_report_doc, pre->next->name,
+                                   pre->next->value_double);
+            } else if (pre->next->link_type == LinkType_Bool) {
+                BSON_APPEND_BOOL(&probe_report_doc, pre->next->name,
+                                 pre->next->value_bool);
+            } else if (pre->next->link_type == LinkType_Binary) {
+                BSON_APPEND_BINARY(&probe_report_doc, pre->next->name,
+                                   BSON_SUBTYPE_BINARY, pre->next->value_data,
+                                   pre->next->data_len);
+            }
+
+            pre = pre->next;
+        }
+        bson_append_document_end(res_doc, &probe_report_doc);
+        bson_destroy(&probe_report_doc);
+    }
+
+    pre = &item->output_report.link;
+    if (pre->next) {
+        bson_append_document_begin(res_doc, "output report", -1,
+                                   &output_report_doc);
+        while (pre->next) {
+            if (pre->next->link_type == LinkType_String) {
+                BSON_APPEND_UTF8(&output_report_doc, pre->next->name,
+                                 (char *)pre->next->value_data);
+            } else if (pre->next->link_type == LinkType_Int) {
+                BSON_APPEND_INT64(&output_report_doc, pre->next->name,
+                                  pre->next->value_int);
+            } else if (pre->next->link_type == LinkType_Double) {
+                BSON_APPEND_DOUBLE(&output_report_doc, pre->next->name,
+                                   pre->next->value_double);
+            } else if (pre->next->link_type == LinkType_Bool) {
+                BSON_APPEND_BOOL(&output_report_doc, pre->next->name,
+                                 pre->next->value_bool);
+            } else if (pre->next->link_type == LinkType_Binary) {
+                BSON_APPEND_BINARY(&output_report_doc, pre->next->name,
+                                   BSON_SUBTYPE_BINARY, pre->next->value_data,
+                                   pre->next->data_len);
+            }
+
+            pre = pre->next;
+        }
+        bson_append_document_end(res_doc, &output_report_doc);
+        bson_destroy(&output_report_doc);
+    }
 
     /**
      * Insert the documantation in bulks or one by one.
@@ -429,7 +502,6 @@ static void mongodbout_result(OutItem *item) {
     }
 
     bson_destroy(res_doc);
-    bson_destroy(&report_doc);
 
     return;
 }

@@ -52,10 +52,10 @@ typedef struct OutputItem {
      * set it*/
     char      reason[OUT_RSN_SIZE];
     /**Other thing need to be report. It's a dynamic and user-defined field in
-     * key-value format. You can set data link is_number to mention it is a num
-     * type. No double or single quotes in it for output format. It won't be
-     * outputting in stdout and text if start with zero, suggest to set it*/
-    DataChain report;
+     * key-value format.*/
+    DataChain scan_report;   /*report from scan module*/
+    DataChain probe_report;  /*report from probe module*/
+    DataChain output_report; /*report from output module*/
     /**This result item won't be output if it set to true*/
     unsigned  no_output : 1;
     /**Port info won't be output if it set to true*/

@@ -444,7 +444,7 @@ static void udp_handle(unsigned th_idx, uint64_t entropy,
         item->no_output = 1;
         return;
     } else if (udp_conf.repeat_packet) {
-        dach_set_int(&item->report, "repeats", valid_pkt->repeats);
+        dach_set_int(&item->scan_report, "repeats", valid_pkt->repeats);
     }
 
     if (udp_conf.packet_limit && valid_pkt->repeats >= udp_conf.packet_limit) {
@@ -564,47 +564,49 @@ static void udp_handle(unsigned th_idx, uint64_t entropy,
         safe_strcpy(item->reason, OUT_RSN_SIZE, "port unreachable");
 
         if (udp_conf.record_icmp_id)
-            dach_set_int(&item->report, "icmp id", recved->parsed.icmp_id);
+            dach_set_int(&item->scan_report, "icmp id", recved->parsed.icmp_id);
         if (udp_conf.record_icmp_seqno)
-            dach_set_int(&item->report, "icmp seqno",
+            dach_set_int(&item->scan_report, "icmp seqno",
                          recved->parsed.icmp_seqno);
 
         const char *icmp_proto_str = ip_proto_to_string(icmp_proto);
-        dach_set_int(&item->report, "icmp port_me", item->target.port_me);
+        dach_set_int(&item->scan_report, "icmp port_me", item->target.port_me);
         if (udp_conf.record_icmp_ip_me) {
             ipaddress_formatted_t icmp_ip_me_fmt = ipaddress_fmt(icmp_ip_me);
-            dach_append_str(&item->report, "icmp ip_me", icmp_ip_me_fmt.string,
+            dach_append_str(&item->scan_report, "icmp ip_me",
+                            icmp_ip_me_fmt.string,
                             strlen(icmp_ip_me_fmt.string));
         }
-        dach_set_int(&item->report, "icmp port_them", item->target.port_them);
+        dach_set_int(&item->scan_report, "icmp port_them",
+                     item->target.port_them);
         if (udp_conf.record_icmp_ip_them) {
             ipaddress_formatted_t icmp_ip_them_fmt =
                 ipaddress_fmt(icmp_ip_them);
-            dach_append_str(&item->report, "icmp ip_them",
+            dach_append_str(&item->scan_report, "icmp ip_them",
                             icmp_ip_them_fmt.string,
                             strlen(icmp_ip_them_fmt.string));
         }
-        dach_append_str(&item->report, "icmp proto", icmp_proto_str,
+        dach_append_str(&item->scan_report, "icmp proto", icmp_proto_str,
                         strlen(icmp_proto_str));
     }
 
     if (udp_conf.record_ttl)
-        dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+        dach_set_int(&item->scan_report, "ttl", recved->parsed.ip_ttl);
     if (udp_conf.record_ipid && recved->parsed.src_ip.version == 4)
-        dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+        dach_set_int(&item->scan_report, "ipid", recved->parsed.ip_v4_id);
     if (udp_conf.record_data_len) {
-        dach_set_int(&item->report, "data len", recved->parsed.app_length);
+        dach_set_int(&item->scan_report, "data len", recved->parsed.app_length);
     }
     if (udp_conf.record_data)
-        dach_append_bin(&item->report, "data",
+        dach_append_bin(&item->scan_report, "data",
                         &recved->packet[recved->parsed.app_offset],
                         recved->parsed.app_length);
     if (udp_conf.record_utf8)
-        dach_append_utf8(&item->report, "utf8",
+        dach_append_utf8(&item->scan_report, "utf8",
                          &recved->packet[recved->parsed.app_offset],
                          recved->parsed.app_length);
     if (udp_conf.record_banner)
-        dach_append_banner(&item->report, "banner",
+        dach_append_banner(&item->scan_report, "banner",
                            &recved->packet[recved->parsed.app_offset],
                            recved->parsed.app_length);
 }

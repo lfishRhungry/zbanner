@@ -239,7 +239,7 @@ static unsigned recog_handle_response(unsigned th_idx, ProbeTarget *target,
     if (match_res) {
         item->level = OUT_SUCCESS;
         safe_strcpy(item->classification, OUT_CLS_SIZE, "matched");
-        dach_append(&item->report, "result", match_res, strlen(match_res),
+        dach_append(&item->probe_report, "result", match_res, strlen(match_res),
                     LinkType_String);
     } else {
         item->level = OUT_FAILURE;

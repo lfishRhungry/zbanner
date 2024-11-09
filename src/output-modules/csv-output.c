@@ -17,7 +17,9 @@ static const char header_csv[]             = "time,"
                                              "port_me,"
                                              "classification,"
                                              "reason,"
-                                             "report"
+                                             "scan report,"
+                                             "probe report,"
+                                             "output report"
                                              "\n";
 static const char fmt_csv_prefix[]         = "%s,"
                                              "%s,"
@@ -45,6 +47,7 @@ static const char fmt_csv_int_inffix[] = ",\"\"%s\"\":%" PRIu64;
 static const char fmt_csv_double_inffix[] = ",\"\"%s\"\":%.2f";
 static const char fmt_csv_true_inffix[]   = ",\"\"%s\"\":true";
 static const char fmt_csv_false_inffix[]  = ",\"\"%s\"\":false";
+static const char fmt_csv_inffix[]        = "}\",\"{";
 static const char fmt_csv_suffix[]        = "}\""
                                             "\n";
 
@@ -77,7 +80,9 @@ static bool csv_init(const XConf *xconf, const OutConf *out) {
 }
 
 static void csv_result(OutItem *item) {
-    int err = 0;
+    unsigned  is_first;
+    DataLink *pre;
+    int       err = 0;
 
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
     ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(item->target.ip_me);
@@ -102,8 +107,76 @@ static void csv_result(OutItem *item) {
     if (err < 0)
         goto error;
 
-    DataLink *pre      = &item->report.link;
-    unsigned  is_first = 1; /*no comma for first item*/
+    pre      = &item->scan_report.link;
+    is_first = 1; /*no comma for first item*/
+    while (pre->next) {
+        if (pre->next->link_type == LinkType_String) {
+            err = fprintf(file, fmt_csv_str_inffix + is_first, pre->next->name,
+                          pre->next->value_data);
+        } else if (pre->next->link_type == LinkType_Int) {
+            err = fprintf(file, fmt_csv_int_inffix + is_first, pre->next->name,
+                          pre->next->value_int);
+        } else if (pre->next->link_type == LinkType_Double) {
+            err = fprintf(file, fmt_csv_double_inffix + is_first,
+                          pre->next->name, pre->next->value_double);
+        } else if (pre->next->link_type == LinkType_Bool) {
+            err =
+                fprintf(file,
+                        pre->next->value_bool ? fmt_csv_true_inffix + is_first
+                                              : fmt_csv_false_inffix + is_first,
+                        pre->next->name);
+        } else if (pre->next->link_type == LinkType_Binary) {
+            err = fprintf(file, fmt_csv_bin_inffix + is_first, pre->next->name,
+                          pre->next->data_len);
+        }
+
+        if (err < 0)
+            goto error;
+
+        pre      = pre->next;
+        is_first = 0;
+    }
+
+    err = fprintf(file, fmt_csv_inffix);
+    if (err < 0)
+        goto error;
+
+    pre      = &item->probe_report.link;
+    is_first = 1; /*no comma for first item*/
+    while (pre->next) {
+        if (pre->next->link_type == LinkType_String) {
+            err = fprintf(file, fmt_csv_str_inffix + is_first, pre->next->name,
+                          pre->next->value_data);
+        } else if (pre->next->link_type == LinkType_Int) {
+            err = fprintf(file, fmt_csv_int_inffix + is_first, pre->next->name,
+                          pre->next->value_int);
+        } else if (pre->next->link_type == LinkType_Double) {
+            err = fprintf(file, fmt_csv_double_inffix + is_first,
+                          pre->next->name, pre->next->value_double);
+        } else if (pre->next->link_type == LinkType_Bool) {
+            err =
+                fprintf(file,
+                        pre->next->value_bool ? fmt_csv_true_inffix + is_first
+                                              : fmt_csv_false_inffix + is_first,
+                        pre->next->name);
+        } else if (pre->next->link_type == LinkType_Binary) {
+            err = fprintf(file, fmt_csv_bin_inffix + is_first, pre->next->name,
+                          pre->next->data_len);
+        }
+
+        if (err < 0)
+            goto error;
+
+        pre      = pre->next;
+        is_first = 0;
+    }
+
+    err = fprintf(file, fmt_csv_inffix);
+    if (err < 0)
+        goto error;
+
+    pre      = &item->output_report.link;
+    is_first = 1; /*no comma for first item*/
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
             err = fprintf(file, fmt_csv_str_inffix + is_first, pre->next->name,

@@ -194,14 +194,16 @@ static unsigned jarm_handle_response(unsigned th_idx, ProbeTarget *target,
                 item->level = OUT_SUCCESS;
                 safe_strcpy(item->classification, OUT_CLS_SIZE, "jarmed");
                 jarm_decipher_one(px, sizeof_px, tmp_data, sizeof(tmp_data));
-                dach_append_str(&item->report, "fingerprint", tmp_data,
+                dach_append_str(&item->probe_report, "fingerprint", tmp_data,
                                 strlen(tmp_data));
 
                 if (jarm_conf.probe_index) {
-                    dach_set_int(&item->report, "index", jarm_conf.probe_index);
+                    dach_set_int(&item->probe_report, "index",
+                                 jarm_conf.probe_index);
                     return 0;
                 } else {
-                    dach_set_int(&item->report, "index", target->index + 1);
+                    dach_set_int(&item->probe_report, "index",
+                                 target->index + 1);
                     return 1;
                 }
             }

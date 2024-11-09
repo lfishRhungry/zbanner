@@ -238,7 +238,7 @@ static void ssl_keylog_cb(const SSL *ssl, const char *line) {
     };
 
     safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
-    dach_append_str(&item.report, "key_log", line, strlen(line));
+    dach_append_str(&item.probe_report, "key_log", line, strlen(line));
 
     output_result(_tls_out, &item);
 }
@@ -259,7 +259,7 @@ static void ssl_info_cb(const SSL *ssl, int where, int ret) {
         };
 
         safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
-        dach_printf(&item.report, "openssl alert", "0x%04x %s: %s", ret,
+        dach_printf(&item.probe_report, "openssl alert", "0x%04x %s: %s", ret,
                     SSL_alert_type_string_long(ret),
                     SSL_alert_desc_string_long(ret));
 
@@ -353,8 +353,8 @@ static bool output_subject_info(OutConf *out, ProbeTarget *target, SSL *ssl) {
             "(TSP output_subject_info) X509_get_subject_name failed\n");
     }
 
-    link = dach_new_link(&item.report, "subject name", DACH_DEFAULT_DATA_SIZE,
-                         LinkType_String);
+    link = dach_new_link(&item.probe_report, "subject name",
+                         DACH_DEFAULT_DATA_SIZE, LinkType_String);
 
     while (true) {
         res = BIO_read(bio, s_names, sizeof(s_names));
@@ -403,7 +403,7 @@ static bool output_subject_info(OutConf *out, ProbeTarget *target, SSL *ssl) {
         sk_GENERAL_NAME_pop_free(x509_alt_names, GENERAL_NAME_free);
     }
 
-    link = dach_new_link(&item.report, "alt name", DACH_DEFAULT_DATA_SIZE,
+    link = dach_new_link(&item.probe_report, "alt name", DACH_DEFAULT_DATA_SIZE,
                          LinkType_String);
 
     while (true) {
@@ -502,7 +502,7 @@ static bool output_x502_cert(OutConf *out, ProbeTarget *target, SSL *ssl) {
         }
 
         /*cert is a little bit large*/
-        link = dach_new_link_printf(&item.report, 2048, LinkType_String,
+        link = dach_new_link_printf(&item.probe_report, 2048, LinkType_String,
                                     "cert_%d", i_cert + 1);
 
         while (true) {
@@ -551,7 +551,7 @@ static bool output_cipher_suite(OutConf *out, ProbeTarget *target, SSL *ssl) {
     safe_strcpy(item.classification, OUT_CLS_SIZE, "tls info");
 
     cipher_suite = SSL_CIPHER_get_protocol_id(ssl_cipher);
-    dach_printf(&item.report, "cipher", "0x%x", cipher_suite);
+    dach_printf(&item.probe_report, "cipher", "0x%x", cipher_suite);
 
     output_result(_tls_out, &item);
 
@@ -572,27 +572,27 @@ static bool output_tls_version(OutConf *out, ProbeTarget *target, SSL *ssl) {
 
     switch (version) {
         case SSL3_VERSION:
-            dach_append_str(&item.report, "version", "SSLv3.0",
+            dach_append_str(&item.probe_report, "version", "SSLv3.0",
                             sizeof("SSLv3.0") - 1);
             break;
         case TLS1_VERSION:
-            dach_append_str(&item.report, "version", "TLSv1.0",
+            dach_append_str(&item.probe_report, "version", "TLSv1.0",
                             sizeof("TLSv1.0") - 1);
             break;
         case TLS1_1_VERSION:
-            dach_append_str(&item.report, "version", "TLSv1.1",
+            dach_append_str(&item.probe_report, "version", "TLSv1.1",
                             sizeof("TLSv1.1") - 1);
             break;
         case TLS1_2_VERSION:
-            dach_append_str(&item.report, "version", "TLSv1.2",
+            dach_append_str(&item.probe_report, "version", "TLSv1.2",
                             sizeof("TLSv1.2") - 1);
             break;
         case TLS1_3_VERSION:
-            dach_append_str(&item.report, "version", "TLSv1.3",
+            dach_append_str(&item.probe_report, "version", "TLSv1.3",
                             sizeof("TLSv1.3") - 1);
             break;
         default:
-            dach_append_str(&item.report, "version", "Other",
+            dach_append_str(&item.probe_report, "version", "Other",
                             sizeof("Other") - 1);
     }
 

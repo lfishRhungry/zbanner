@@ -400,24 +400,24 @@ static void tcpstate_handle(unsigned th_idx, uint64_t entropy,
         }
 
         if (tcpstate_conf.record_ttl || tcpstate_conf.record_all_ttl)
-            dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+            dach_set_int(&item->scan_report, "ttl", recved->parsed.ip_ttl);
         if ((tcpstate_conf.record_ipid || tcpstate_conf.record_all_ipid) &&
             recved->parsed.src_ip.version == 4)
-            dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+            dach_set_int(&item->scan_report, "ipid", recved->parsed.ip_v4_id);
         if (tcpstate_conf.record_win || tcpstate_conf.record_all_win)
-            dach_set_int(&item->report, "win", win_them);
+            dach_set_int(&item->scan_report, "win", win_them);
         if (tcpstate_conf.record_mss) {
             /*comput of mss is not easy*/
             mss_them = tcp_get_mss(recved->packet, recved->length, &mss_found);
             if (!mss_found)
                 mss_them = 0;
-            dach_set_int(&item->report, "mss", mss_them);
+            dach_set_int(&item->scan_report, "mss", mss_them);
         }
         if (tcpstate_conf.record_seqno || tcpstate_conf.record_all_seqno) {
-            dach_set_int(&item->report, "seqno", seqno_them);
+            dach_set_int(&item->scan_report, "seqno", seqno_them);
         }
         if (tcpstate_conf.record_ackno || tcpstate_conf.record_all_ackno) {
-            dach_set_int(&item->report, "ackno", seqno_me);
+            dach_set_int(&item->scan_report, "ackno", seqno_me);
         }
 
         /**
@@ -468,19 +468,20 @@ static void tcpstate_handle(unsigned th_idx, uint64_t entropy,
     } else if (tcb) {
 
         if (tcpstate_conf.record_all_ttl)
-            dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+            dach_set_int(&item->scan_report, "ttl", recved->parsed.ip_ttl);
         if (tcpstate_conf.record_all_ipid && recved->parsed.src_ip.version == 4)
-            dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+            dach_set_int(&item->scan_report, "ipid", recved->parsed.ip_v4_id);
         if (tcpstate_conf.record_all_win)
-            dach_set_int(&item->report, "win", win_them);
+            dach_set_int(&item->scan_report, "win", win_them);
         if (tcpstate_conf.record_all_seqno) {
-            dach_set_int(&item->report, "seqno", seqno_them);
+            dach_set_int(&item->scan_report, "seqno", seqno_them);
         }
         if (tcpstate_conf.record_all_ackno) {
-            dach_set_int(&item->report, "ackno", seqno_me);
+            dach_set_int(&item->scan_report, "ackno", seqno_me);
         }
         if (tcpstate_conf.record_all_len) {
-            dach_set_int(&item->report, "data len", recved->parsed.app_length);
+            dach_set_int(&item->scan_report, "data len",
+                         recved->parsed.app_length);
         }
 
         if (tcpstate_conf.record_any_all) {

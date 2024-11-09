@@ -825,17 +825,17 @@ static unsigned httpstate_parse_response(DataPass *pass, ProbeState *state,
 #endif
 
     if (httpstate_conf.all_banner) {
-        dach_set_int(&item.report, "banner idx", state->state - 1);
+        dach_set_int(&item.probe_report, "banner idx", state->state - 1);
     }
     if (httpstate_conf.record_data_len) {
-        dach_set_int(&item.report, "data len", sizeof_px);
+        dach_set_int(&item.probe_report, "data len", sizeof_px);
     }
     if (httpstate_conf.record_data)
-        dach_append_bin(&item.report, "data", px, sizeof_px);
+        dach_append_bin(&item.probe_report, "data", px, sizeof_px);
     if (httpstate_conf.record_utf8)
-        dach_append_utf8(&item.report, "utf8", px, sizeof_px);
+        dach_append_utf8(&item.probe_report, "utf8", px, sizeof_px);
     if (httpstate_conf.record_banner)
-        dach_append_banner(&item.report, "banner", px, sizeof_px);
+        dach_append_banner(&item.probe_report, "banner", px, sizeof_px);
 
     output_result(out, &item);
 

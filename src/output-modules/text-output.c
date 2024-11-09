@@ -41,7 +41,8 @@ static bool text_init(const XConf *xconf, const OutConf *out) {
 }
 
 static void text_result(OutItem *item) {
-    int err = 0;
+    DataLink *pre;
+    int       err = 0;
 
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
 
@@ -84,7 +85,51 @@ static void text_result(OutItem *item) {
             goto error;
     }
 
-    DataLink *pre = &item->report.link;
+    pre = &item->scan_report.link;
+    while (pre->next) {
+        if (pre->next->link_type == LinkType_String) {
+            fprintf(file, fmt_report_str, pre->next->name,
+                    pre->next->value_data);
+        } else if (pre->next->link_type == LinkType_Int) {
+            fprintf(file, fmt_report_int, pre->next->name,
+                    pre->next->value_int);
+        } else if (pre->next->link_type == LinkType_Double) {
+            fprintf(file, fmt_report_double, pre->next->name,
+                    pre->next->value_double);
+        } else if (pre->next->link_type == LinkType_Bool) {
+            fprintf(file,
+                    pre->next->value_bool ? fmt_report_true : fmt_report_false,
+                    pre->next->name);
+        } else if (pre->next->link_type == LinkType_Binary) {
+            fprintf(file, fmt_report_bin, pre->next->name, pre->next->data_len);
+        }
+
+        pre = pre->next;
+    }
+
+    pre = &item->probe_report.link;
+    while (pre->next) {
+        if (pre->next->link_type == LinkType_String) {
+            fprintf(file, fmt_report_str, pre->next->name,
+                    pre->next->value_data);
+        } else if (pre->next->link_type == LinkType_Int) {
+            fprintf(file, fmt_report_int, pre->next->name,
+                    pre->next->value_int);
+        } else if (pre->next->link_type == LinkType_Double) {
+            fprintf(file, fmt_report_double, pre->next->name,
+                    pre->next->value_double);
+        } else if (pre->next->link_type == LinkType_Bool) {
+            fprintf(file,
+                    pre->next->value_bool ? fmt_report_true : fmt_report_false,
+                    pre->next->name);
+        } else if (pre->next->link_type == LinkType_Binary) {
+            fprintf(file, fmt_report_bin, pre->next->name, pre->next->data_len);
+        }
+
+        pre = pre->next;
+    }
+
+    pre = &item->output_report.link;
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
             fprintf(file, fmt_report_str, pre->next->name,

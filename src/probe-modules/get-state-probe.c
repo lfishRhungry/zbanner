@@ -83,7 +83,7 @@ static unsigned getstate_parse_response(DataPass *pass, ProbeState *state,
         .target.port_me   = target->target.port_me,
     };
 
-    dach_append_banner(&item.report, "banner", px, sizeof_px);
+    dach_append_banner(&item.probe_report, "banner", px, sizeof_px);
 
     output_result(out, &item);
 

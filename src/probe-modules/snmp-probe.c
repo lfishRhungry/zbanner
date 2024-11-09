@@ -519,7 +519,7 @@ static unsigned snmp_handle_response(unsigned th_idx, ProbeTarget *target,
                 continue; /* null */
 
             snmp_banner(global_mib, oid, (size_t)oid_length, var_tag, var,
-                        (size_t)var_length, &item->report);
+                        (size_t)var_length, &item->probe_report);
         }
     }
 

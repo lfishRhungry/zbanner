@@ -234,9 +234,9 @@ static void yarrpecho_handle(unsigned th_idx, uint64_t entropy,
     item->level            = OUT_SUCCESS;
 
     if (yarrpecho_conf.record_ttl)
-        dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+        dach_set_int(&item->scan_report, "ttl", recved->parsed.ip_ttl);
     if (yarrpecho_conf.record_ipid && recved->parsed.src_ip.version == 4)
-        dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+        dach_set_int(&item->scan_report, "ipid", recved->parsed.ip_v4_id);
 
     /*echo reply*/
     if ((recved->parsed.src_ip.version == 4 &&
@@ -248,8 +248,8 @@ static void yarrpecho_handle(unsigned th_idx, uint64_t entropy,
         ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
         safe_strcpy(item->reason, OUT_RSN_SIZE, "echo reply");
         safe_strcpy(item->classification, OUT_CLS_SIZE, "destination");
-        dach_set_int(&item->report, "distance", recved->parsed.icmp_seqno);
-        dach_append_str(&item->report, "destination", ip_them_fmt.string,
+        dach_set_int(&item->scan_report, "distance", recved->parsed.icmp_seqno);
+        dach_append_str(&item->scan_report, "destination", ip_them_fmt.string,
                         strlen(ip_them_fmt.string));
     } else {
         /*ttl/hop limit exceeded*/
@@ -259,12 +259,13 @@ static void yarrpecho_handle(unsigned th_idx, uint64_t entropy,
                          PCAP_DLT_RAW, &info);
 
         if (yarrpecho_conf.record_icmp_id)
-            dach_set_int(&item->report, "icmp id", info.icmp_id);
+            dach_set_int(&item->scan_report, "icmp id", info.icmp_id);
         if (yarrpecho_conf.record_icmp_seqno)
-            dach_set_int(&item->report, "icmp seqno", info.icmp_seqno);
+            dach_set_int(&item->scan_report, "icmp seqno", info.icmp_seqno);
         if (yarrpecho_conf.record_icmp_ip_me) {
             ipaddress_formatted_t icmp_ip_me_fmt = ipaddress_fmt(info.src_ip);
-            dach_append_str(&item->report, "icmp ip_me", icmp_ip_me_fmt.string,
+            dach_append_str(&item->scan_report, "icmp ip_me",
+                            icmp_ip_me_fmt.string,
                             strlen(icmp_ip_me_fmt.string));
         }
 
@@ -275,8 +276,8 @@ static void yarrpecho_handle(unsigned th_idx, uint64_t entropy,
          * NOTE:Must use saved TTL instead of the fake one in IP header from
          * ICMP payload.
          */
-        dach_set_int(&item->report, "distance", info.icmp_seqno);
-        dach_append_str(&item->report, "destination", ip_them_fmt.string,
+        dach_set_int(&item->scan_report, "distance", info.icmp_seqno);
+        dach_append_str(&item->scan_report, "destination", ip_them_fmt.string,
                         strlen(ip_them_fmt.string));
     }
 }

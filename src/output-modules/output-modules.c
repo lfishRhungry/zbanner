@@ -13,7 +13,6 @@
 // clang-format off
 extern Output TextOutput;
 extern Output NdjsonOutput;
-extern Output JsonOutput;
 #ifndef NOT_FOUND_BSON
 extern Output BsonOutput;
 #endif
@@ -28,7 +27,6 @@ extern Output MongodbOutput;
 static Output *output_modules_list[] = {
     &TextOutput,
     &NdjsonOutput,
-    &JsonOutput,
 #ifndef NOT_FOUND_BSON
     &BsonOutput,
 #endif
@@ -191,7 +189,8 @@ static void output_result_to_stdout(OutItem *item) {
     // ipaddress_formatted_t ip_me_fmt = ipaddress_fmt(item->target.ip_me);
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
 
-    unsigned count = 0;
+    unsigned  count = 0;
+    DataLink *pre;
 
     if (_output_ansi) {
         fprintf(stdout, XPRINT_CLEAR_LINE);
@@ -240,7 +239,55 @@ static void output_result_to_stdout(OutItem *item) {
     if (_output_ansi)
         fprintf(stdout, XPRINT_CH_COLOR_YELLOW);
 
-    DataLink *pre = &item->report.link;
+    pre = &item->scan_report.link;
+    while (pre->next) {
+        if (pre->next->link_type == LinkType_String) {
+            count += fprintf(stdout, fmt_report_str, pre->next->name,
+                             pre->next->value_data);
+        } else if (pre->next->link_type == LinkType_Int) {
+            count += fprintf(stdout, fmt_report_int, pre->next->name,
+                             pre->next->value_int);
+        } else if (pre->next->link_type == LinkType_Double) {
+            count += fprintf(stdout, fmt_report_double, pre->next->name,
+                             pre->next->value_double);
+        } else if (pre->next->link_type == LinkType_Bool) {
+            count += fprintf(stdout,
+                             pre->next->value_bool ? fmt_report_true
+                                                   : fmt_report_false,
+                             pre->next->name);
+        } else if (pre->next->link_type == LinkType_Binary) {
+            count += fprintf(stdout, fmt_report_bin, pre->next->name,
+                             pre->next->data_len);
+        }
+
+        pre = pre->next;
+    }
+
+    pre = &item->probe_report.link;
+    while (pre->next) {
+        if (pre->next->link_type == LinkType_String) {
+            count += fprintf(stdout, fmt_report_str, pre->next->name,
+                             pre->next->value_data);
+        } else if (pre->next->link_type == LinkType_Int) {
+            count += fprintf(stdout, fmt_report_int, pre->next->name,
+                             pre->next->value_int);
+        } else if (pre->next->link_type == LinkType_Double) {
+            count += fprintf(stdout, fmt_report_double, pre->next->name,
+                             pre->next->value_double);
+        } else if (pre->next->link_type == LinkType_Bool) {
+            count += fprintf(stdout,
+                             pre->next->value_bool ? fmt_report_true
+                                                   : fmt_report_false,
+                             pre->next->name);
+        } else if (pre->next->link_type == LinkType_Binary) {
+            count += fprintf(stdout, fmt_report_bin, pre->next->name,
+                             pre->next->data_len);
+        }
+
+        pre = pre->next;
+    }
+
+    pre = &item->output_report.link;
     while (pre->next) {
         if (pre->next->link_type == LinkType_String) {
             count += fprintf(stdout, fmt_report_str, pre->next->name,
@@ -308,11 +355,11 @@ void output_result(const OutConf *out, OutItem *item) {
     if (out->as_query) {
         struct AS_Info as_info =
             as_query_search_ip(out->as_query, item->target.ip_them);
-        dach_append_str(&item->report, "AS desc", as_info.desc,
+        dach_append_str(&item->output_report, "AS desc", as_info.desc,
                         strlen(as_info.desc));
-        dach_append_str(&item->report, "AS country code", as_info.country_code,
-                        strlen(as_info.country_code));
-        dach_set_int(&item->report, "ASN", as_info.asn);
+        dach_append_str(&item->output_report, "AS country code",
+                        as_info.country_code, strlen(as_info.country_code));
+        dach_set_int(&item->output_report, "ASN", as_info.asn);
     }
 
     if (out->output_module) {
@@ -331,7 +378,9 @@ void output_result(const OutConf *out, OutItem *item) {
     }
 
 error0:
-    dach_release(&item->report);
+    dach_release(&item->scan_report);
+    dach_release(&item->probe_report);
+    dach_release(&item->output_report);
 }
 
 void output_close(OutConf *out_conf) {

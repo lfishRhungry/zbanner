@@ -700,7 +700,7 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy,
             item->no_output = 1;
             return;
         } else if (zbanner_conf.repeat_synack) {
-            dach_set_int(&item->report, "repeats", valid_pkt->repeats);
+            dach_set_int(&item->scan_report, "repeats", valid_pkt->repeats);
         }
 
         /*zerowin could be a kind of port open*/
@@ -711,23 +711,23 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy,
         win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
         if (zbanner_conf.record_ttl)
-            dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+            dach_set_int(&item->scan_report, "ttl", recved->parsed.ip_ttl);
         if (zbanner_conf.record_ipid && recved->parsed.src_ip.version == 4)
-            dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+            dach_set_int(&item->scan_report, "ipid", recved->parsed.ip_v4_id);
         if (zbanner_conf.record_win)
-            dach_set_int(&item->report, "win", win_them);
+            dach_set_int(&item->scan_report, "win", win_them);
         if (zbanner_conf.record_mss) {
             /*comput of mss is not easy*/
             mss_them = tcp_get_mss(recved->packet, recved->length, &mss_found);
             if (!mss_found)
                 mss_them = 0;
-            dach_set_int(&item->report, "mss", mss_them);
+            dach_set_int(&item->scan_report, "mss", mss_them);
         }
         if (zbanner_conf.record_seqno) {
-            dach_set_int(&item->report, "seqno", seqno_them);
+            dach_set_int(&item->scan_report, "seqno", seqno_them);
         }
         if (zbanner_conf.record_ackno) {
-            dach_set_int(&item->report, "ackno", seqno_me);
+            dach_set_int(&item->scan_report, "ackno", seqno_me);
         }
 
         if (win_them == 0) {
@@ -808,22 +808,22 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy,
             item->no_output = 1;
             return;
         } else if (zbanner_conf.repeat_rst) {
-            dach_set_int(&item->report, "repeats", valid_pkt->repeats);
+            dach_set_int(&item->scan_report, "repeats", valid_pkt->repeats);
         }
 
         win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
         if (zbanner_conf.record_ttl)
-            dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+            dach_set_int(&item->scan_report, "ttl", recved->parsed.ip_ttl);
         if (zbanner_conf.record_ipid && recved->parsed.src_ip.version == 4)
-            dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+            dach_set_int(&item->scan_report, "ipid", recved->parsed.ip_v4_id);
         if (zbanner_conf.record_win)
-            dach_set_int(&item->report, "win", win_them);
+            dach_set_int(&item->scan_report, "win", win_them);
         if (zbanner_conf.record_seqno) {
-            dach_set_int(&item->report, "seqno", seqno_them);
+            dach_set_int(&item->scan_report, "seqno", seqno_them);
         }
         if (zbanner_conf.record_ackno) {
-            dach_set_int(&item->report, "ackno", seqno_me);
+            dach_set_int(&item->scan_report, "ackno", seqno_me);
         }
 
         safe_strcpy(item->reason, OUT_RSN_SIZE, "rst");
@@ -841,9 +841,9 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy,
             item->no_output = 1;
             return;
         } else if (zbanner_conf.repeat_banner) {
-            dach_set_int(&item->report, "repeats", valid_pkt->repeats);
+            dach_set_int(&item->scan_report, "repeats", valid_pkt->repeats);
         } else if (zbanner_conf.all_banner) {
-            dach_set_int(&item->report, "banner idx", valid_pkt->repeats);
+            dach_set_int(&item->scan_report, "banner idx", valid_pkt->repeats);
         }
 
         if (!zbanner_conf.no_rst &&
@@ -902,28 +902,29 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy,
             recved->parsed.app_length, item);
 
         if (zbanner_conf.record_ttl)
-            dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+            dach_set_int(&item->scan_report, "ttl", recved->parsed.ip_ttl);
         if (zbanner_conf.record_ipid && recved->parsed.src_ip.version == 4)
-            dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+            dach_set_int(&item->scan_report, "ipid", recved->parsed.ip_v4_id);
         if (zbanner_conf.record_seqno) {
-            dach_set_int(&item->report, "seqno", seqno_them);
+            dach_set_int(&item->scan_report, "seqno", seqno_them);
         }
         if (zbanner_conf.record_ackno) {
-            dach_set_int(&item->report, "ackno", seqno_me);
+            dach_set_int(&item->scan_report, "ackno", seqno_me);
         }
         if (zbanner_conf.record_data_len) {
-            dach_set_int(&item->report, "data len", recved->parsed.app_length);
+            dach_set_int(&item->scan_report, "data len",
+                         recved->parsed.app_length);
         }
         if (zbanner_conf.record_data)
-            dach_append_bin(&item->report, "data",
+            dach_append_bin(&item->scan_report, "data",
                             &recved->packet[recved->parsed.app_offset],
                             recved->parsed.app_length);
         if (zbanner_conf.record_utf8)
-            dach_append_utf8(&item->report, "utf8",
+            dach_append_utf8(&item->scan_report, "utf8",
                              &recved->packet[recved->parsed.app_offset],
                              recved->parsed.app_length);
         if (zbanner_conf.record_banner)
-            dach_append_banner(&item->report, "banner",
+            dach_append_banner(&item->scan_report, "banner",
                                &recved->packet[recved->parsed.app_offset],
                                recved->parsed.app_length);
 
@@ -971,22 +972,22 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy,
             item->no_output = 1;
             return;
         } else if (zbanner_conf.repeat_ack) {
-            dach_set_int(&item->report, "repeats", valid_pkt->repeats);
+            dach_set_int(&item->scan_report, "repeats", valid_pkt->repeats);
         }
 
         win_them = TCP_WIN(recved->packet, recved->parsed.transport_offset);
 
         if (zbanner_conf.record_ttl)
-            dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+            dach_set_int(&item->scan_report, "ttl", recved->parsed.ip_ttl);
         if (zbanner_conf.record_ipid && recved->parsed.src_ip.version == 4)
-            dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+            dach_set_int(&item->scan_report, "ipid", recved->parsed.ip_v4_id);
         if (zbanner_conf.record_win)
-            dach_set_int(&item->report, "win", win_them);
+            dach_set_int(&item->scan_report, "win", win_them);
         if (zbanner_conf.record_seqno) {
-            dach_set_int(&item->report, "seqno", seqno_them);
+            dach_set_int(&item->scan_report, "seqno", seqno_them);
         }
         if (zbanner_conf.record_ackno) {
-            dach_set_int(&item->report, "ackno", seqno_me);
+            dach_set_int(&item->scan_report, "ackno", seqno_me);
         }
 
         safe_strcpy(item->reason, OUT_RSN_SIZE, "ack");

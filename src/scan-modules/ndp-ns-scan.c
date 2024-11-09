@@ -118,7 +118,7 @@ static void ndpns_handle(unsigned th_idx, uint64_t entropy,
      * case.
      */
     if (recved->parsed.transport_offset + 31 < recved->length) {
-        dach_printf(&item->report, "mac addr(ndp)",
+        dach_printf(&item->scan_report, "mac addr(ndp)",
                     "%02X:%02X:%02X:%02X:%02X:%02X",
                     recved->packet[recved->parsed.transport_offset + 26],
                     recved->packet[recved->parsed.transport_offset + 27],
@@ -127,7 +127,7 @@ static void ndpns_handle(unsigned th_idx, uint64_t entropy,
                     recved->packet[recved->parsed.transport_offset + 30],
                     recved->packet[recved->parsed.transport_offset + 31]);
     } else {
-        dach_printf(&item->report, "mac addr(link)",
+        dach_printf(&item->scan_report, "mac addr(link)",
                     "%02X:%02X:%02X:%02X:%02X:%02X", recved->parsed.mac_src[0],
                     recved->parsed.mac_src[1], recved->parsed.mac_src[2],
                     recved->parsed.mac_src[3], recved->parsed.mac_src[4],
@@ -136,13 +136,13 @@ static void ndpns_handle(unsigned th_idx, uint64_t entropy,
 
     if (NDP_NA_HAS_FLAG(recved->packet, recved->parsed.transport_offset,
                         NDP_NA_FLAG_ROUTER)) {
-        dach_set_bool(&item->report, "from router", true);
+        dach_set_bool(&item->scan_report, "from router", true);
     } else {
-        dach_set_bool(&item->report, "from router", false);
+        dach_set_bool(&item->scan_report, "from router", false);
     }
 
     if (ndpns_conf.record_ttl)
-        dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+        dach_set_int(&item->scan_report, "ttl", recved->parsed.ip_ttl);
 }
 
 Scanner NdpNsScan = {

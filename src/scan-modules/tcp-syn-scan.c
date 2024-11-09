@@ -347,7 +347,7 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy,
             item->no_output = 1;
             return;
         } else if (tcpsyn_conf.repeat_synack) {
-            dach_set_int(&item->report, "repeats", valid_pkt->repeats);
+            dach_set_int(&item->scan_report, "repeats", valid_pkt->repeats);
         }
 
         item->level = OUT_SUCCESS;
@@ -395,7 +395,7 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy,
             /*comput of mss is not easy*/
             mss_them = tcp_get_mss(recved->packet, recved->length, &mss_found);
             if (mss_found)
-                dach_set_int(&item->report, "mss", mss_them);
+                dach_set_int(&item->scan_report, "mss", mss_them);
         }
     }
     /*RST*/
@@ -405,7 +405,7 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy,
             item->no_output = 1;
             return;
         } else if (tcpsyn_conf.repeat_rst) {
-            dach_set_int(&item->report, "repeats", valid_pkt->repeats);
+            dach_set_int(&item->scan_report, "repeats", valid_pkt->repeats);
         }
 
         item->level = OUT_FAILURE;
@@ -414,16 +414,16 @@ static void tcpsyn_handle(unsigned th_idx, uint64_t entropy,
     }
 
     if (tcpsyn_conf.record_ttl)
-        dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+        dach_set_int(&item->scan_report, "ttl", recved->parsed.ip_ttl);
     if (tcpsyn_conf.record_ipid && recved->parsed.src_ip.version == 4)
-        dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+        dach_set_int(&item->scan_report, "ipid", recved->parsed.ip_v4_id);
     if (tcpsyn_conf.record_win)
-        dach_set_int(&item->report, "win", win_them);
+        dach_set_int(&item->scan_report, "win", win_them);
     if (tcpsyn_conf.record_seqno) {
-        dach_set_int(&item->report, "seqno", seqno_them);
+        dach_set_int(&item->scan_report, "seqno", seqno_them);
     }
     if (tcpsyn_conf.record_ackno) {
-        dach_set_int(&item->report, "ackno", seqno_me);
+        dach_set_int(&item->scan_report, "ackno", seqno_me);
     }
 }
 

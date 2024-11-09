@@ -235,7 +235,8 @@ static unsigned dns_handle_response(unsigned th_idx, ProbeTarget *target,
         const char *type_str  = dns_record_type2str(rec->type);
         const char *class_str = dns_class2str(rec->class);
 
-        link = dach_append_char(&item->report, "answer", '[', LinkType_String);
+        link = dach_append_char(&item->probe_report, "answer", '[',
+                                LinkType_String);
         link = dach_append_by_link(link, type_str, strlen(type_str));
         link = dach_append_char_by_link(link, ' ');
         link = dach_append_by_link(link, class_str, strlen(class_str));
@@ -270,8 +271,8 @@ static unsigned dns_handle_response(unsigned th_idx, ProbeTarget *target,
         const char *type_str  = dns_record_type2str(rec->type);
         const char *class_str = dns_class2str(rec->class);
 
-        link =
-            dach_append_char(&item->report, "authority", '[', LinkType_String);
+        link = dach_append_char(&item->probe_report, "authority", '[',
+                                LinkType_String);
         link = dach_append_by_link(link, type_str, strlen(type_str));
         link = dach_append_char_by_link(link, ' ');
         link = dach_append_by_link(link, class_str, strlen(class_str));
@@ -306,8 +307,8 @@ static unsigned dns_handle_response(unsigned th_idx, ProbeTarget *target,
         const char *type_str  = dns_record_type2str(rec->type);
         const char *class_str = dns_class2str(rec->class);
 
-        link =
-            dach_append_char(&item->report, "additional", '[', LinkType_String);
+        link = dach_append_char(&item->probe_report, "additional", '[',
+                                LinkType_String);
         link = dach_append_by_link(link, type_str, strlen(type_str));
         link = dach_append_char_by_link(link, ' ');
         link = dach_append_by_link(link, class_str, strlen(class_str));

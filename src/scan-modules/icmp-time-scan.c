@@ -145,13 +145,14 @@ static void icmptime_handle(unsigned th_idx, uint64_t entropy,
     safe_strcpy(item->classification, OUT_CLS_SIZE, "alive");
 
     if (icmptime_conf.record_ttl)
-        dach_set_int(&item->report, "ttl", recved->parsed.ip_ttl);
+        dach_set_int(&item->scan_report, "ttl", recved->parsed.ip_ttl);
     if (icmptime_conf.record_ipid && recved->parsed.src_ip.version == 4)
-        dach_set_int(&item->report, "ipid", recved->parsed.ip_v4_id);
+        dach_set_int(&item->scan_report, "ipid", recved->parsed.ip_v4_id);
     if (icmptime_conf.record_icmp_id)
-        dach_set_int(&item->report, "icmp id", recved->parsed.icmp_id);
+        dach_set_int(&item->scan_report, "icmp id", recved->parsed.icmp_id);
     if (icmptime_conf.record_icmp_seqno)
-        dach_set_int(&item->report, "icmp seqno", recved->parsed.icmp_seqno);
+        dach_set_int(&item->scan_report, "icmp seqno",
+                     recved->parsed.icmp_seqno);
 }
 
 Scanner IcmpTimeScan = {
