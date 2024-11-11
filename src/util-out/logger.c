@@ -20,7 +20,7 @@
 
 static int   _debug_level = 0;
 static void *_log_mutex   = NULL;
-static bool  _no_ansi     = false;
+static bool  _no_ansi     = true; /*don't use ansi until setting*/
 
 /***************************************************************************
  ***************************************************************************/

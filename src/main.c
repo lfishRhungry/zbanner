@@ -611,7 +611,7 @@ static int _main_scan(XConf *xconf) {
 /***************************************************************************
  ***************************************************************************/
 int main(int argc, char *argv[]) {
-    /*init logger*/
+    /*init logger at first*/
     LOG_init();
 
     XConf xconf[1];
