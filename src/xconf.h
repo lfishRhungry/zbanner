@@ -199,6 +199,8 @@ typedef struct XtateConf {
     char            *ip2asn_v6_filename;
     char            *target_asn_v4;
     char            *target_asn_v6;
+    char            *exclude_asn_v4;
+    char            *exclude_asn_v6;
     /**
      * other switches
      * */

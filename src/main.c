@@ -706,6 +706,36 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    /**
+     * Add exclude target by ASN
+     */
+    if (xconf->exclude_asn_v4) {
+        if (xconf->as_query == NULL) {
+            LOG(LEVEL_ERROR,
+                "cannot add ipv4 exclude by ASN because no AS info loaded.\n");
+            exit(1);
+        }
+        int err = targetset_add_asn_v4_string(&xconf->exclude, xconf->as_query,
+                                              xconf->exclude_asn_v4);
+        if (err) {
+            LOG(LEVEL_ERROR, "add ipv4 exclude failed by ASN string.\n");
+            exit(1);
+        }
+    }
+    if (xconf->exclude_asn_v6) {
+        if (xconf->as_query == NULL) {
+            LOG(LEVEL_ERROR,
+                "cannot add ipv6 exclude by ASN because no AS info loaded.\n");
+            exit(1);
+        }
+        int err = targetset_add_asn_v6_string(&xconf->exclude, xconf->as_query,
+                                              xconf->exclude_asn_v6);
+        if (err) {
+            LOG(LEVEL_ERROR, "add ipv6 exclude failed by ASN string.\n");
+            exit(1);
+        }
+    }
+
     targetset_apply_excludes(&xconf->targets, &xconf->exclude);
 
     /* Optimize target selection so it's a quick binary search instead

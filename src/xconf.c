@@ -1529,6 +1529,38 @@ static ConfRes SET_target_asn_v6(void *conf, const char *name,
     return Conf_OK;
 }
 
+static ConfRes SET_exclude_asn_v4(void *conf, const char *name,
+                                  const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        /*echo in SET_target_output*/
+        return 0;
+    }
+
+    xconf->exclude_asn_v4 = STRDUP(value);
+
+    if (xconf->op == Operation_Default)
+        xconf->op = Operation_Scan;
+
+    return Conf_OK;
+}
+
+static ConfRes SET_exclude_asn_v6(void *conf, const char *name,
+                                  const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        /*echo in SET_target_output*/
+        return 0;
+    }
+
+    xconf->exclude_asn_v6 = STRDUP(value);
+
+    if (xconf->op == Operation_Default)
+        xconf->op = Operation_Scan;
+
+    return Conf_OK;
+}
+
 static ConfRes SET_adapter_snaplen(void *conf, const char *name,
                                    const char *value) {
     XConf *xconf = (XConf *)conf;
@@ -2900,7 +2932,20 @@ ConfParam config_parameters[] = {
      {"asn-v6", "asn-6", 0},
      "Specifies a series of ASNs to add IPv6 addresses of them as targets. AS "
      "info is from ip2asn file specified by --ip2asn-v6.\n"
-     "NOTE: addr range of one IPv6 AS is also too large for scanning."},
+     "NOTE: Range of one IPv6 AS is also too large for scanning. Maybe we "
+     "needs some excluding."},
+    {"exclude-asn-v4",
+     SET_exclude_asn_v4,
+     Type_ARG,
+     {"exclude-asn-v4", "exclude-asn-4", 0},
+     "Specifies a series of ASNs to exclude IPv4 addresses of them as targets. "
+     "AS info is from ip2asn file specified by --ip2asn-v4."},
+    {"exclude-asn-v6",
+     SET_exclude_asn_v6,
+     Type_ARG,
+     {"exclude-asn-v6", "exclude-asn-6", 0},
+     "Specifies a series of ASNs to exclude IPv6 addresses of them as targets. "
+     "AS info is from ip2asn file specified by --ip2asn-v6."},
 
     {"INTERFACE ADJUSTMENT", SET_nothing, 0, {0}, NULL},
 
