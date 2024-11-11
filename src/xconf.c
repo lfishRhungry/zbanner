@@ -307,24 +307,40 @@ static unsigned count_cidr6_bits(struct Range6 *range, bool *exact) {
             mask_hi = 0;
             mask_lo = 0xFFFFFFFFffffffffull >> (i - 64);
         }
+        /*let begin's low mask is all-zero*/
         if ((range->begin.hi & mask_hi) != 0 ||
             (range->begin.lo & mask_lo) != 0) {
             continue;
         }
+        /*high mask of begin & end must be same*/
         if ((range->begin.hi & ~mask_hi) == (range->end.hi & ~mask_hi) &&
             (range->begin.lo & ~mask_lo) == (range->end.lo & ~mask_lo)) {
+            /*if end's low mask is all-one, range is an exactly CIDR*/
             if (((range->end.hi & mask_hi) == mask_hi) &&
                 ((range->end.lo & mask_lo) == mask_lo)) {
                 *exact = true;
                 return (unsigned)i;
             }
         } else {
-            *exact          = false;
-            range->begin.hi = range->begin.hi + mask_hi;
-            if (range->begin.lo >= 0xffffffffffffffff - 1 - mask_lo) {
+            /*return the bits of first CIDR and adjust the range*/
+            *exact                = false;
+            range->begin.hi       = range->begin.hi + mask_hi;
+            /**
+             * NOTE: be careful to the wraparound, we'd better to calculate in
+             * two steps if need to do sum for 3 num:
+             *   begin.lo+mask_lo+1
+             */
+            uint64_t mask_lo_plus = mask_lo + 1;
+            if (mask_lo_plus == 0) {
+                /*mask_lo_plus is already wraparound to zero*/
                 range->begin.hi += 1;
+            } else {
+                /*check the second step is wraparound*/
+                if (range->begin.lo > 0xffffffffffffffff - mask_lo_plus)
+                    range->begin.hi += 1;
+                range->begin.lo = range->begin.lo + mask_lo + 1;
             }
-            range->begin.lo = range->begin.lo + mask_lo + 1;
+
             return (unsigned)i;
         }
     }
