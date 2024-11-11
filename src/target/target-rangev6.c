@@ -145,7 +145,7 @@ static ipv6address PLUS_ONE(const ipv6address ip) {
 
 /***************************************************************************
  ***************************************************************************/
-int128_t targetset_count(TargetSet *targetset) {
+int128_t targetset_count(const TargetSet *targetset) {
     int128_t result;
 
     result = range6list_count(&targetset->ipv6);

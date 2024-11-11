@@ -75,8 +75,7 @@ typedef struct OutputConfig {
     void                *module_mutex;
     void                *stdout_mutex;
     struct AS_Query     *as_query;
-    char                *ip2asn_v4_filename;
-    char                *ip2asn_v6_filename;
+    unsigned             output_as_info  : 1;
     unsigned             is_append       : 1;
     unsigned             is_interactive  : 1;
     unsigned             is_show_failed  : 1;

@@ -13,6 +13,8 @@
 #define AS_QUERY_H
 
 #include "../target/target-ipaddress.h"
+#include "../target/target-rangev4.h"
+#include "../target/target-rangev6.h"
 
 struct AS_Query;
 
@@ -37,6 +39,18 @@ struct AS_Query *as_query_new(const char *filename_v4, const char *filename_v6);
  */
 const struct AS_Info as_query_search_ip(const struct AS_Query *as_query,
                                         const ipaddress        ip);
+
+/**
+ * @return true if added any ip to range.
+ */
+bool as_query_add_as_to_range(const struct AS_Query *as_query,
+                              struct RangeList *ipv4_list, unsigned asn);
+
+/**
+ * @return true if added any ip to range.
+ */
+bool as_query_add_as_to_range6(const struct AS_Query *as_query,
+                               struct Range6List *ipv6_list, unsigned asn);
 
 void as_query_destroy(struct AS_Query *as_query);
 

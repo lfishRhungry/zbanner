@@ -664,12 +664,47 @@ int main(int argc, char *argv[]) {
     //=================================================read conf from args
     xconf_command_line(xconf, argc, argv);
 
-    // logger should be prepared early
+    /* logger should be prepared early */
     LOG_set_ansi(xconf->is_no_ansi);
 
     /* entropy for randomness */
     if (xconf->seed == 0)
         xconf->seed = get_one_entropy();
+
+    /* init AS info for global and output module*/
+    xconf->as_query =
+        as_query_new(xconf->ip2asn_v4_filename, xconf->ip2asn_v6_filename);
+    xconf->out_conf.as_query = xconf->as_query;
+
+    /**
+     * Add target by ASN
+     */
+    if (xconf->target_asn_v4) {
+        if (xconf->as_query == NULL) {
+            LOG(LEVEL_ERROR,
+                "cannot add ipv4 target by ASN because no AS info loaded.\n");
+            exit(1);
+        }
+        int err = targetset_add_asn_v4_string(&xconf->targets, xconf->as_query,
+                                              xconf->target_asn_v4);
+        if (err) {
+            LOG(LEVEL_ERROR, "add ipv4 target failed by ASN string.\n");
+            exit(1);
+        }
+    }
+    if (xconf->target_asn_v6) {
+        if (xconf->as_query == NULL) {
+            LOG(LEVEL_ERROR,
+                "cannot add ipv6 target by ASN because no AS info loaded.\n");
+            exit(1);
+        }
+        int err = targetset_add_asn_v6_string(&xconf->targets, xconf->as_query,
+                                              xconf->target_asn_v6);
+        if (err) {
+            LOG(LEVEL_ERROR, "add ipv6 target failed by ASN string.\n");
+            exit(1);
+        }
+    }
 
     targetset_apply_excludes(&xconf->targets, &xconf->exclude);
 
@@ -678,17 +713,6 @@ int main(int argc, char *argv[]) {
      * our --excludefile will chop up our pristine 0.0.0.0/0 range into
      * hundreds of subranges. This allows us to grab addresses faster. */
     targetset_optimize(&xconf->targets);
-
-    /**
-     * FIXME: we only support 63-bit scans for non-dynamic generators
-     */
-    if (int128_bitcount(targetset_count(&xconf->targets)) > 63) {
-        LOG(LEVEL_ERROR, "scan range too large for non-dynamic: %u-bits\n",
-            int128_bitcount(targetset_count(&xconf->targets)));
-        LOG(LEVEL_HINT, "target_count = ip_count * port_count\n");
-        LOG(LEVEL_HINT, "max targets count is within 63-bits\n");
-        exit(1);
-    }
 
     switch (xconf->op) {
         case Operation_Default:
@@ -801,6 +825,9 @@ int main(int argc, char *argv[]) {
             break;
 #endif
     }
+
+    /*release as query*/
+    as_query_destroy(xconf->as_query);
 
     /*close logger*/
     LOG_close();

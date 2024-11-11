@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include "target-rangev4.h"
 #include "target-rangev6.h"
+#include "../as/as-query.h"
 
 typedef struct TargetRangeSet {
     struct RangeList  ipv4;
@@ -32,7 +33,7 @@ typedef struct TargetRangeSet {
      */
     uint64_t count_ports;
     uint64_t count_ipv4s;
-    uint64_t count_ipv6s;
+    int128_t count_ipv6s;
 } TargetSet;
 
 /**
@@ -40,7 +41,7 @@ typedef struct TargetRangeSet {
  * the (IPv6 addresses + IPv4 addresses) * ports. This can produce
  * a 128-bit number (larger, actually).
  */
-int128_t targetset_count(TargetSet *targetset);
+int128_t targetset_count(const TargetSet *targetset);
 
 /**
  * Remove everything in "targets" that's listed in the "exclude"
@@ -85,6 +86,20 @@ int targetset_add_ip_string(TargetSet *targetset, const char *string);
  */
 int targetset_add_port_string(TargetSet *targetset, const char *string,
                               unsigned proto_offset);
+
+/**
+ * add ipv4 addr to targetset by ASN
+ */
+int targetset_add_asn_v4_string(TargetSet             *targetset,
+                                const struct AS_Query *as_query,
+                                const char            *asn_str);
+
+/**
+ * add ipv6 addr to targetset by ASN
+ */
+int targetset_add_asn_v6_string(TargetSet             *targetset,
+                                const struct AS_Query *as_query,
+                                const char            *asn_str);
 
 /**
  * Indicates whether there are IPv4 targets. If so, we'll have to

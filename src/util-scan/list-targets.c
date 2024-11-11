@@ -15,11 +15,30 @@ void list_ip_port(XConf *xconf) {
     uint64_t         dynamic_seed = xconf->seed;
     bool             in_order     = xconf->listtargets_in_order;
 
+    if (xconf->out_conf.output_as_info && !xconf->as_query) {
+        LOG(LEVEL_ERROR, "cannot output AS info to listed targets because no "
+                         "ip2asn files are specified.\n");
+        LOG(LEVEL_HINT,
+            "load AS info by specifying --ip2asn-v4 or/and --ip2asn-v6.\n");
+        return;
+    }
+
     /* If called with no ports, then create a pseudo-port needed
      * for the internal algorithm. */
     if (!targetset_has_any_ports(&xconf->targets)) {
         targetset_add_port_string(&xconf->targets, "o:0", 0);
         targetset_optimize(&xconf->targets);
+    }
+
+    /**
+     * !only support 63-bit scans
+     */
+    if (int128_bitcount(targetset_count(&xconf->targets)) > 63) {
+        LOG(LEVEL_ERROR, "range too large for target listing: %u-bits\n",
+            int128_bitcount(targetset_count(&xconf->targets)));
+        LOG(LEVEL_HINT, "target_count = ip_count * port_count\n");
+        LOG(LEVEL_HINT, "max targets count is within 63-bits\n");
+        return;
     }
 
     /**
@@ -30,8 +49,7 @@ void list_ip_port(XConf *xconf) {
     /**
      * load as info
      */
-    as_query = as_query_new(xconf->out_conf.ip2asn_v4_filename,
-                            xconf->out_conf.ip2asn_v6_filename);
+    as_query = xconf->as_query;
 
 infinite:
     if (!in_order)
@@ -73,7 +91,7 @@ infinite:
             }
         }
 
-        if (as_query) {
+        if (xconf->out_conf.output_as_info) {
             struct AS_Info as_info = as_query_search_ip(as_query, addr);
             printf(", AS%u, %s, %s", as_info.asn, as_info.country_code,
                    as_info.desc);
@@ -91,8 +109,6 @@ infinite:
         }
         goto infinite;
     }
-
-    as_query_destroy(as_query);
 }
 
 /***************************************************************************

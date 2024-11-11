@@ -145,6 +145,13 @@ static const char fmt_report_false[]  = ", %s: false";
 static bool _output_ansi;
 
 bool output_init(const XConf *xconf, OutConf *out_conf) {
+    if (out_conf->output_as_info && !out_conf->as_query) {
+        LOG(LEVEL_ERROR, "cannot output AS info to scan results because no "
+                         "ip2asn files are specified.\n");
+        LOG(LEVEL_HINT,
+            "load AS info by specifying --ip2asn-v4 or/and --ip2asn-v6.\n");
+    }
+
     if (out_conf->output_module) {
         if (out_conf->output_module->need_file &&
             !out_conf->output_filename[0]) {
@@ -176,9 +183,6 @@ bool output_init(const XConf *xconf, OutConf *out_conf) {
     out_conf->succ_mutex   = pixie_create_mutex();
     out_conf->fail_mutex   = pixie_create_mutex();
     out_conf->info_mutex   = pixie_create_mutex();
-
-    out_conf->as_query = as_query_new(out_conf->ip2asn_v4_filename,
-                                      out_conf->ip2asn_v6_filename);
 
     return true;
 }
@@ -352,7 +356,7 @@ void output_result(const OutConf *out, OutItem *item) {
     if (item->level == OUT_SUCCESS && out->no_show_success)
         goto error0;
 
-    if (out->as_query) {
+    if (out->output_as_info) {
         struct AS_Info as_info =
             as_query_search_ip(out->as_query, item->target.ip_them);
         dach_append_str(&item->output_report, "AS desc", as_info.desc,
@@ -393,8 +397,6 @@ void output_close(OutConf *out_conf) {
     pixie_delete_mutex(out_conf->succ_mutex);
     pixie_delete_mutex(out_conf->fail_mutex);
     pixie_delete_mutex(out_conf->info_mutex);
-
-    as_query_destroy(out_conf->as_query);
 }
 
 bool output_init_nothing(const XConf *xconf, const OutConf *out_conf) {

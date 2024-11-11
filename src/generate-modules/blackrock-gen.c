@@ -81,6 +81,17 @@ bool blackrock_init(const XConf *xconf, uint64_t *count_targets,
     }
 
     /**
+     * !only support 63-bit scans
+     */
+    if (int128_bitcount(targetset_count(&xconf->targets)) > 63) {
+        LOG(LEVEL_ERROR, "range too large for target scanning: %u-bits\n",
+            int128_bitcount(targetset_count(&xconf->targets)));
+        LOG(LEVEL_HINT, "target_count = ip_count * port_count\n");
+        LOG(LEVEL_HINT, "max targets count is within 63-bits\n");
+        return false;
+    }
+
+    /**
      * If the IP address range is very big, then require the
      * user apply an exclude range
      */

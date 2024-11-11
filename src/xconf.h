@@ -16,6 +16,7 @@
 #include "output-modules/output-modules.h"
 #include "probe-modules/probe-modules.h"
 #include "scan-modules/scan-modules.h"
+#include "as/as-query.h"
 
 /**
  * some default config
@@ -138,48 +139,48 @@ typedef struct XtateConf {
      * save scanning targets(ip*port).
      * but generator may not use this.
      * */
-    TargetSet      targets;
-    TargetSet      exclude;
+    TargetSet        targets;
+    TargetSet        exclude;
     /**
      * Temporary file to echo parameters to, used for saving configuration
      * to a file
      */
-    FILE          *echo;
-    unsigned       echo_all;
+    FILE            *echo;
+    unsigned         echo_all;
     /**
      * info of the abstract whole network tx/rx stack
      * */
-    STACK         *stack;
-    unsigned       stack_buf_count;
+    STACK           *stack;
+    unsigned         stack_buf_count;
     /**
      * PCAP info
      * */
-    char          *bpf_filter;
-    char           pcap_filename[256];
+    char            *bpf_filter;
+    char             pcap_filename[256];
     /**
      * template for packet making quickly.
      */
-    TmplSet       *tmplset;
-    TmplOpt       *templ_opts;
+    TmplSet         *tmplset;
+    TmplOpt         *templ_opts;
     /**
      * probe module
      * */
-    Probe         *probe;
-    char          *probe_args;
+    Probe           *probe;
+    char            *probe_args;
     /**
      * scan module
      * */
-    Scanner       *scanner;
-    char          *scanner_args;
+    Scanner         *scanner;
+    char            *scanner_args;
     /**
      * generate module
      * */
-    Generator     *generator;
-    char          *generator_args;
+    Generator       *generator;
+    char            *generator_args;
     /**
      * output module
      * */
-    OutConf        out_conf;
+    OutConf          out_conf;
     /**
      * We could set the number of transmit threads.
      * NOTE: Always only one receiving thread for consistency of dedup, timeout
@@ -188,51 +189,59 @@ typedef struct XtateConf {
      * ScanModule. Now we could set the number of recv-handlers in the power
      * of 2.
      */
-    unsigned       tx_thread_count;
-    unsigned       rx_handler_count;
+    unsigned         tx_thread_count;
+    unsigned         rx_handler_count;
+    /**
+     * AS info from ip2asn files
+     */
+    struct AS_Query *as_query;
+    char            *ip2asn_v4_filename;
+    char            *ip2asn_v6_filename;
+    char            *target_asn_v4;
+    char            *target_asn_v6;
     /**
      * other switches
      * */
-    enum Operation op;
-    uint64_t       seed;
-    uint64_t       repeat;
-    double         max_rate;
-    unsigned       wait;
-    unsigned       dedup_win;
-    unsigned       dispatch_buf_count;
-    uint64_t       tcb_count;
-    unsigned       tcp_init_window;
-    unsigned       tcp_window;
-    unsigned       packet_ttl;
-    unsigned       max_packet_len;
-    unsigned       sendq_size;
-    unsigned       sendmmsg_batch;
-    unsigned       sendmmsg_retries;
-    unsigned       is_packet_trace      : 1;
-    unsigned       is_no_ansi           : 1;
-    unsigned       is_no_status         : 1;
-    unsigned       is_status_ndjson     : 1;
-    unsigned       is_status_queue      : 1;
-    unsigned       is_status_info_num   : 1;
-    unsigned       is_status_hit_rate   : 1;
-    unsigned       is_pfring            : 1;
-    unsigned       is_rawsocket         : 1;
-    unsigned       is_sendmmsg          : 1;
-    unsigned       is_sendq             : 1;
-    unsigned       is_offline           : 1;
-    unsigned       is_nodedup           : 1;
-    unsigned       is_noresume          : 1;
-    unsigned       is_infinite          : 1;
-    unsigned       is_bypass_os         : 1;
-    unsigned       is_no_bpf            : 1;
-    unsigned       is_no_cpu_bind       : 1;
-    unsigned       is_static_seed       : 1;
-    unsigned       no_escape_char       : 1;
-    unsigned       set_ipv4_adapter     : 1;
-    unsigned       set_ipv6_adapter     : 1;
-    unsigned       init_ipv4_adapter    : 1;
-    unsigned       init_ipv6_adapter    : 1;
-    unsigned       listtargets_in_order : 1;
+    enum Operation   op;
+    uint64_t         seed;
+    uint64_t         repeat;
+    double           max_rate;
+    unsigned         wait;
+    unsigned         dedup_win;
+    unsigned         dispatch_buf_count;
+    uint64_t         tcb_count;
+    unsigned         tcp_init_window;
+    unsigned         tcp_window;
+    unsigned         packet_ttl;
+    unsigned         max_packet_len;
+    unsigned         sendq_size;
+    unsigned         sendmmsg_batch;
+    unsigned         sendmmsg_retries;
+    unsigned         is_packet_trace      : 1;
+    unsigned         is_no_ansi           : 1;
+    unsigned         is_no_status         : 1;
+    unsigned         is_status_ndjson     : 1;
+    unsigned         is_status_queue      : 1;
+    unsigned         is_status_info_num   : 1;
+    unsigned         is_status_hit_rate   : 1;
+    unsigned         is_pfring            : 1;
+    unsigned         is_rawsocket         : 1;
+    unsigned         is_sendmmsg          : 1;
+    unsigned         is_sendq             : 1;
+    unsigned         is_offline           : 1;
+    unsigned         is_nodedup           : 1;
+    unsigned         is_noresume          : 1;
+    unsigned         is_infinite          : 1;
+    unsigned         is_bypass_os         : 1;
+    unsigned         is_no_bpf            : 1;
+    unsigned         is_no_cpu_bind       : 1;
+    unsigned         is_static_seed       : 1;
+    unsigned         no_escape_char       : 1;
+    unsigned         set_ipv4_adapter     : 1;
+    unsigned         set_ipv6_adapter     : 1;
+    unsigned         init_ipv4_adapter    : 1;
+    unsigned         init_ipv6_adapter    : 1;
+    unsigned         listtargets_in_order : 1;
 
     /**
      * parse BSON file

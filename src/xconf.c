@@ -522,17 +522,33 @@ static ConfRes SET_output_module(void *conf, const char *name,
     return Conf_OK;
 }
 
-static ConfRes SET_ip2asn_v6(void *conf, const char *name, const char *value) {
+static ConfRes SET_output_as_info(void *conf, const char *name,
+                                  const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->out_conf.ip2asn_v6_filename) {
-            fprintf(xconf->echo, "ip2asn-v6 = \"%s\"\n",
-                    xconf->out_conf.ip2asn_v6_filename);
+        if (xconf->echo_all || xconf->out_conf.output_as_info) {
+            fprintf(xconf->echo, "output-as-info = \"%s\"\n",
+                    xconf->out_conf.output_as_info ? "true" : "false");
         }
         return 0;
     }
 
-    xconf->out_conf.ip2asn_v6_filename = STRDUP(value);
+    xconf->out_conf.output_as_info = parse_str_bool(value);
+
+    return Conf_OK;
+}
+
+static ConfRes SET_ip2asn_v6(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        if (xconf->ip2asn_v6_filename) {
+            fprintf(xconf->echo, "ip2asn-v6 = \"%s\"\n",
+                    xconf->ip2asn_v6_filename);
+        }
+        return 0;
+    }
+
+    xconf->ip2asn_v6_filename = STRDUP(value);
 
     return Conf_OK;
 }
@@ -540,14 +556,14 @@ static ConfRes SET_ip2asn_v6(void *conf, const char *name, const char *value) {
 static ConfRes SET_ip2asn_v4(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->out_conf.ip2asn_v4_filename) {
+        if (xconf->ip2asn_v4_filename) {
             fprintf(xconf->echo, "ip2asn-v4 = \"%s\"\n",
-                    xconf->out_conf.ip2asn_v4_filename);
+                    xconf->ip2asn_v4_filename);
         }
         return 0;
     }
 
-    xconf->out_conf.ip2asn_v4_filename = STRDUP(value);
+    xconf->ip2asn_v4_filename = STRDUP(value);
 
     return Conf_OK;
 }
@@ -1458,6 +1474,38 @@ static ConfRes SET_target_ip(void *conf, const char *name, const char *value) {
         LOG(LEVEL_ERROR, "Bad IP address/range: %s\n", value);
         return Conf_ERR;
     }
+
+    if (xconf->op == Operation_Default)
+        xconf->op = Operation_Scan;
+
+    return Conf_OK;
+}
+
+static ConfRes SET_target_asn_v4(void *conf, const char *name,
+                                 const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        /*echo in SET_target_output*/
+        return 0;
+    }
+
+    xconf->target_asn_v4 = STRDUP(value);
+
+    if (xconf->op == Operation_Default)
+        xconf->op = Operation_Scan;
+
+    return Conf_OK;
+}
+
+static ConfRes SET_target_asn_v6(void *conf, const char *name,
+                                 const char *value) {
+    XConf *xconf = (XConf *)conf;
+    if (xconf->echo) {
+        /*echo in SET_target_output*/
+        return 0;
+    }
+
+    xconf->target_asn_v6 = STRDUP(value);
 
     if (xconf->op == Operation_Default)
         xconf->op = Operation_Scan;
@@ -2824,6 +2872,19 @@ ConfParam config_parameters[] = {
      "Reads in a list of exclude ranges, in the same target format described "
      "above. These ranges override any targets, preventing them from being "
      "scanned."},
+    {"target-asn-v4",
+     SET_target_asn_v4,
+     Type_ARG,
+     {"asn-v4", "asn-4", 0},
+     "Specifies a series of ASNs to add IPv4 addresses of them as targets. AS "
+     "info is from ip2asn file specified by --ip2asn-v4."},
+    {"target-asn-v6",
+     SET_target_asn_v6,
+     Type_ARG,
+     {"asn-v6", "asn-6", 0},
+     "Specifies a series of ASNs to add IPv6 addresses of them as targets. AS "
+     "info is from ip2asn file specified by --ip2asn-v6.\n"
+     "NOTE: addr range of one IPv6 AS is also too large for scanning."},
 
     {"INTERFACE ADJUSTMENT", SET_nothing, 0, {0}, NULL},
 
@@ -3175,19 +3236,12 @@ ConfParam config_parameters[] = {
      "NOTE2: Some output modules could accept escaped chars and will escape "
      "unprinted chars automaticlly(e.g. Bson Output Module). So don't use the "
      "flag for those modules or we'll get weired string results."},
-    {"ip2asn-v4-file",
-     SET_ip2asn_v4,
-     Type_ARG,
-     {"ip2asn-v4", "asn-4", 0},
-     "Specifies a 'ip2asn-v4.tsv' file to load and add IPv4 ASN info to "
-     "scan results or list target results.\n"
-     "NOTE: Maybe a little bit less efficient because of querying."},
-    {"ip2asn-v6-file",
-     SET_ip2asn_v6,
-     Type_ARG,
-     {"ip2asn-v6", "asn-6", 0},
-     "Specifies a 'ip2asn-v6.tsv' file to load and add IPv6 ASN info to "
-     "scan results or list target results.\n"
+    {"output-as-info",
+     SET_output_as_info,
+     Type_FLAG,
+     {"output-as", "out-as", 0},
+     "Add AS info to scan results and listed targets. AS info is from ip2asn "
+     "files specified by --ip2asn-v4 or/and ip2asn-v6.\n"
      "NOTE: Maybe a little bit less efficient because of querying."},
 
     {"GENERATE MODULES CONFIG", SET_nothing, 0, {0}, NULL},
@@ -3502,6 +3556,16 @@ ConfParam config_parameters[] = {
      "    3.Rx Handle Threads\n"
      "NOTE2: As you can see, 3 threads need to be binded at least. (1 tx "
      "thread, 1 rx thread and 1 rx handle thread)"},
+    {"ip2asn-v4-file",
+     SET_ip2asn_v4,
+     Type_ARG,
+     {"ip2asn-v4", "ip2asn-4", 0},
+     "Specifies a 'ip2asn-v4.tsv' file to load IPv4 ASN info."},
+    {"ip2asn-v6-file",
+     SET_ip2asn_v6,
+     Type_ARG,
+     {"ip2asn-v6", "ip2asn-6", 0},
+     "Specifies a 'ip2asn-v6.tsv' file to load IPv6 ASN info."},
 
     {"no-back-trace",
      SET_nothing,

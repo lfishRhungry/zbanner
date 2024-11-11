@@ -165,19 +165,32 @@ bool ipstream_hasmore(unsigned tx_index, uint64_t index) {
             LOG(LEVEL_ERROR, "(stream generator) invalid ip in address: %s",
                 line);
             continue;
-        } else
-            break;
+        }
+
+        /*update relevant info*/
+        rangelist_optimize(&cur_tgt->ipv4);
+        range6list_optimize(&cur_tgt->ipv6);
+
+        cur_tgt->count_ipv4s    = rangelist_count(&cur_tgt->ipv4);
+        cur_tgt->count_ipv6s    = range6list_count(&cur_tgt->ipv6);
+        cur_tgt->ipv4_threshold = cur_tgt->count_ipv4s * cur_tgt->count_ports;
+
+        /**
+         * !only support 63-bit scans for every line
+         */
+        if (int128_bitcount(targetset_count(cur_tgt)) > 63) {
+            LOG(LEVEL_ERROR,
+                "(stream generator) range too large for scanning: "
+                "%u-bits(>63).\n",
+                int128_bitcount(targetset_count(cur_tgt)));
+            continue;
+        }
+
+        break;
     }
 
-    /*update relevant info*/
-    rangelist_optimize(&cur_tgt->ipv4);
-    range6list_optimize(&cur_tgt->ipv6);
-
-    cur_tgt->count_ipv4s    = rangelist_count(&cur_tgt->ipv4);
-    cur_tgt->count_ipv6s    = range6list_count(&cur_tgt->ipv6).lo;
-    cur_tgt->ipv4_threshold = cur_tgt->count_ipv4s * cur_tgt->count_ports;
     ipstream_conf.range_all =
-        (cur_tgt->count_ipv4s + cur_tgt->count_ipv6s) * cur_tgt->count_ports;
+        (cur_tgt->count_ipv4s + cur_tgt->count_ipv6s.lo) * cur_tgt->count_ports;
     ipstream_conf.index = 0;
 
     /*init blackrock again*/
@@ -232,9 +245,9 @@ Target ipstream_generate(unsigned tx_index, uint64_t index, uint64_t repeat,
         target.ip_me.version   = 6;
 
         target.ip_them.ipv6 =
-            range6list_pick(&cur_tgt->ipv6, xXx % cur_tgt->count_ipv6s);
+            range6list_pick(&cur_tgt->ipv6, xXx % cur_tgt->count_ipv6s.lo);
         target.port_them =
-            rangelist_pick(&cur_tgt->ports, xXx / cur_tgt->count_ipv6s);
+            rangelist_pick(&cur_tgt->ports, xXx / cur_tgt->count_ipv6s.lo);
 
         target.ip_me.ipv6 = src->ipv6;
 

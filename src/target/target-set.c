@@ -21,7 +21,7 @@ void targetset_optimize(TargetSet *targets) {
 
     targets->count_ports    = rangelist_count(&targets->ports);
     targets->count_ipv4s    = rangelist_count(&targets->ipv4);
-    targets->count_ipv6s    = range6list_count(&targets->ipv6).lo;
+    targets->count_ipv6s    = range6list_count(&targets->ipv6);
     targets->ipv4_threshold = targets->count_ipv4s * targets->count_ports;
 }
 
@@ -39,10 +39,10 @@ void targetset_pick(const TargetSet *targetset, uint64_t index, ipaddress *addr,
     } else {
         index -= targetset->ipv4_threshold;
         addr->version = 6;
-        addr->ipv6 =
-            range6list_pick(&targetset->ipv6, index % targetset->count_ipv6s);
-        *port =
-            rangelist_pick(&targetset->ports, index / targetset->count_ipv6s);
+        addr->ipv6    = range6list_pick(&targetset->ipv6,
+                                        index % targetset->count_ipv6s.lo);
+        *port         = rangelist_pick(&targetset->ports,
+                                       index / targetset->count_ipv6s.lo);
     }
 }
 
@@ -101,6 +101,86 @@ int targetset_add_ip_string(TargetSet *targetset, const char *string) {
     return 0;
 }
 
+int targetset_add_asn_v4_string(TargetSet             *targetset,
+                                const struct AS_Query *as_query,
+                                const char            *asn_str) {
+    bool   added      = false;
+    size_t offset     = 0;
+    size_t max_offset = strlen(asn_str);
+
+    while (offset < max_offset) {
+        while (offset < max_offset && !isdigit(asn_str[offset])) {
+            if (asn_str[offset] != ',' && !isspace(asn_str[offset])) {
+                LOG(LEVEL_ERROR, "(%s) invalid ASN string: %s\n", __func__,
+                    asn_str);
+                return -1;
+            }
+
+            offset++;
+        }
+
+        if (offset >= max_offset)
+            break;
+
+        unsigned asn = 0;
+        while (asn_str[offset] && isdigit(asn_str[offset])) {
+            asn = asn * 10 + (asn_str[offset] - '0');
+            offset++;
+        }
+
+        if (!as_query_add_as_to_range(as_query, &targetset->ipv4, asn)) {
+            return -1;
+        } else {
+            added = true;
+        }
+    }
+
+    if (added)
+        return 0;
+    else
+        return -1;
+}
+
+int targetset_add_asn_v6_string(TargetSet             *targetset,
+                                const struct AS_Query *as_query,
+                                const char            *asn_str) {
+    bool   added      = false;
+    size_t offset     = 0;
+    size_t max_offset = strlen(asn_str);
+
+    while (offset < max_offset) {
+        while (offset < max_offset && !isdigit(asn_str[offset])) {
+            if (asn_str[offset] != ',' && !isspace(asn_str[offset])) {
+                LOG(LEVEL_ERROR, "(%s) invalid ASN string: %s\n", __func__,
+                    asn_str);
+                return -1;
+            }
+
+            offset++;
+        }
+
+        if (offset >= max_offset)
+            break;
+
+        unsigned asn = 0;
+        while (asn_str[offset] && isdigit(asn_str[offset])) {
+            asn = asn * 10 + (asn_str[offset] - '0');
+            offset++;
+        }
+
+        if (!as_query_add_as_to_range6(as_query, &targetset->ipv6, asn)) {
+            return -1;
+        } else {
+            added = true;
+        }
+    }
+
+    if (added)
+        return 0;
+    else
+        return -1;
+}
+
 int targetset_add_port_string(TargetSet *targets, const char *string,
                               unsigned proto_offset) {
     unsigned is_error = 0;
@@ -116,7 +196,8 @@ void targetset_remove_all(TargetSet *targets) {
     rangelist_remove_all(&targets->ports);
     range6list_remove_all(&targets->ipv6);
     targets->count_ipv4s    = 0;
-    targets->count_ipv6s    = 0;
+    targets->count_ipv6s.hi = 0;
+    targets->count_ipv6s.lo = 0;
     targets->count_ports    = 0;
     targets->ipv4_threshold = 0;
 }
@@ -125,7 +206,8 @@ void targetset_remove_ip(TargetSet *targets) {
     rangelist_remove_all(&targets->ipv4);
     range6list_remove_all(&targets->ipv6);
     targets->count_ipv4s    = 0;
-    targets->count_ipv6s    = 0;
+    targets->count_ipv6s.hi = 0;
+    targets->count_ipv6s.lo = 0;
     targets->ipv4_threshold = 0;
 }
 

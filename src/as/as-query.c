@@ -389,6 +389,56 @@ const struct AS_Info as_query_search_ip(const struct AS_Query *as_query,
     }
 }
 
+bool as_query_add_as_to_range(const struct AS_Query *as_query,
+                              struct RangeList *ipv4_list, unsigned asn) {
+    bool added = false;
+    if (as_query->as_table == NULL) {
+        LOG(LEVEL_WARN, "(%s) no ipv4 AS info loaded.\n", __func__);
+        return added;
+    }
+
+    struct AS_Table *as_table = as_query->as_table;
+    for (uint64_t i = 0; i < as_table->list_len; i++) {
+
+        if (as_table->list[i].as_info.asn == asn) {
+            added = true;
+            rangelist_add_range(ipv4_list, as_table->list[i].begin,
+                                as_table->list[i].end);
+        }
+    }
+
+    if (!added) {
+        LOG(LEVEL_WARN, "no ipv4 AS info for AS%u.\n", asn);
+    }
+
+    return added;
+}
+
+bool as_query_add_as_to_range6(const struct AS_Query *as_query,
+                               struct Range6List *ipv6_list, unsigned asn) {
+    bool added = false;
+    if (as_query->as6_table == NULL) {
+        LOG(LEVEL_WARN, "(%s) no ipv6 AS info loaded.\n", __func__);
+        return added;
+    }
+
+    struct AS6_Table *as6_table = as_query->as6_table;
+    for (uint64_t i = 0; i < as6_table->list_len; i++) {
+
+        if (as6_table->list[i].as_info.asn == asn) {
+            added = true;
+            range6list_add_range(ipv6_list, as6_table->list[i].begin,
+                                 as6_table->list[i].end);
+        }
+    }
+
+    if (!added) {
+        LOG(LEVEL_WARN, "no ipv6 AS info for AS%u.\n", asn);
+    }
+
+    return added;
+}
+
 void as_query_destroy(struct AS_Query *as_query) {
     if (as_query == NULL) {
         return;
