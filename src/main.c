@@ -206,7 +206,7 @@ static int _main_scan(XConf *xconf) {
         exit(1);
     if (!xconf->nic.is_usable) {
         LOG(LEVEL_ERROR, "failed to detect IP of interface\n");
-        LOG(LEVEL_OUT, "    did you spell the name correctly?\n");
+        LOG(LEVEL_HINT, "did you spell the interface name correctly?\n");
         LOG(LEVEL_HINT, "if it has no IP address, "
                         "manually set with \"--adapter-ip 192.168.100.5\"\n");
         exit(1);
