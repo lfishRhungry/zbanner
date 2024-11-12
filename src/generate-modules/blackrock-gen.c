@@ -61,16 +61,14 @@ bool blackrock_init(const XConf *xconf, uint64_t *count_targets,
     blackrock_conf.seed    = xconf->seed;
 
     /**
-     * NOTE: Must has at least one real ip and one fake port.
-     * Xtate will promise the existing of at least one fake port.
-     * But we validate it again cautiously.
+     * NOTE: Must has at least one ip and one port.
      */
-    uint64_t count_ips = rangelist_count(&xconf->targets.ipv4) +
-                         range6list_count(&xconf->targets.ipv6).lo;
-    if (count_ips == 0) {
-        LOG(LEVEL_ERROR, "target IP address list empty\n");
+    if (xconf->targets.count_ipv4s == 0 && xconf->targets.count_ipv6s.hi == 0 &&
+        xconf->targets.count_ipv6s.lo == 0) {
+        LOG(LEVEL_ERROR, "target IP address list empty.\n");
         return false;
     }
+
     uint64_t count_ports = rangelist_count(&xconf->targets.ports);
     if (count_ports == 0) {
         targetset_add_port_string((TargetSet *)(&xconf->targets), "o:0", 0);
@@ -95,6 +93,8 @@ bool blackrock_init(const XConf *xconf, uint64_t *count_targets,
      * If the IP address range is very big, then require the
      * user apply an exclude range
      */
+    uint64_t count_ips = rangelist_count(&xconf->targets.ipv4) +
+                         range6list_count(&xconf->targets.ipv6).lo;
     if (count_ips > 1000000000ULL &&
         rangelist_count(&xconf->exclude.ipv4) == 0) {
         LOG(LEVEL_ERROR, "range too big, need confirmation\n");

@@ -23,6 +23,15 @@ void list_ip_port(XConf *xconf) {
         return;
     }
 
+    /**
+     * NOTE: Must has at least one ip and one port.
+     */
+    if (xconf->targets.count_ipv4s == 0 && xconf->targets.count_ipv6s.hi == 0 &&
+        xconf->targets.count_ipv6s.lo == 0) {
+        LOG(LEVEL_ERROR, "target IP address list empty.\n");
+        return;
+    }
+
     /* If called with no ports, then create a pseudo-port needed
      * for the internal algorithm. */
     if (!targetset_has_any_ports(&xconf->targets)) {

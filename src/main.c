@@ -738,10 +738,10 @@ int main(int argc, char *argv[]) {
 
     targetset_apply_excludes(&xconf->targets, &xconf->exclude);
 
-    /* Optimize target selection so it's a quick binary search instead
-     * of walking large memory tables. When we scan the entire Internet
-     * our --excludefile will chop up our pristine 0.0.0.0/0 range into
-     * hundreds of subranges. This allows us to grab addresses faster. */
+    /**
+     * Optimize target set so that continuous code could get count or searching
+     * directly.
+     * */
     targetset_optimize(&xconf->targets);
 
     switch (xconf->op) {

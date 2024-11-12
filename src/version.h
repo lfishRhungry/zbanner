@@ -7,11 +7,11 @@
 #define XTATE_NAME             "xtate"
 #define XTATE_NAME_ALL_CAPS    "XTATE"
 #define XTATE_NAME_TITLE_CASE  "Xtate"
-#define XTATE_VERSION          "2.4.1"
+#define XTATE_VERSION          "2.4.2"
 #define XTATE_VERSION_MAJOR    2
 #define XTATE_VERSION_MINOR    4
-#define XTATE_VERSION_PATCH    1
-#define XTATE_WITH_VERSION     "xtate/2.4.1"
+#define XTATE_VERSION_PATCH    2
+#define XTATE_WITH_VERSION     "xtate/2.4.2"
 #define XTATE_DESCRIPTION      "A modular all-stack network scanner for next-generation internet surveys."
 #define XTATE_AUTHOR           "Sharkocha"
 #define XTATE_CONTACT          "chenchiyu14@nudt.edu.cn"
