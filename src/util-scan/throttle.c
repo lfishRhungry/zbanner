@@ -73,11 +73,11 @@ again:
      * We record that last batch of buckets, and average the rate over all of
      * them.
      */
-    index                               = (throttler->index) & (THR_CACHE - 1);
-    throttler->buckets[index].timestamp = timestamp;
+    index                                  = throttler->index & _THR_MASK;
+    throttler->buckets[index].timestamp    = timestamp;
     throttler->buckets[index].packet_count = packet_count;
 
-    index            = (++throttler->index) & (THR_CACHE - 1);
+    index            = (++throttler->index) & _THR_MASK;
     old_timestamp    = throttler->buckets[index].timestamp;
     old_packet_count = throttler->buckets[index].packet_count;
 

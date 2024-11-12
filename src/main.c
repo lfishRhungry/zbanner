@@ -630,8 +630,8 @@ int main(int argc, char *argv[]) {
     /* Set system to report debug information on crash */
     int is_backtrace = 1;
     for (unsigned i = 1; i < (unsigned)argc; i++) {
-        if (argv[i][0] == '-' && (EQUALS(argv[i] + 1, "nobacktrace") ||
-                                  EQUALS(argv[i] + 1, "nobt"))) {
+        if (argv[i][0] == '-' && (EQUALS(argv[i] + 1, "no-backtrace") ||
+                                  EQUALS(argv[i] + 1, "no-bt"))) {
             is_backtrace = 0;
         }
     }

@@ -3386,6 +3386,70 @@ ConfParam config_parameters[] = {
      "max-packet-len. Default is 1514."
      "NOTE: Be cared to the interaction with --tcp-win and --snaplen."},
 
+    {"TRANSMITTING WAYS", SET_nothing, 0, {0}, NULL},
+
+    {"raw-socket",
+     SET_rawsocket,
+     Type_FLAG,
+     {"raw-sock", 0},
+     "Use raw socket to send packets instead of pcap on Linux if possible. Just"
+     " support working on link layer because " XTATE_NAME_TITLE_CASE
+     " needs to handle both IPv4/IPv6.\n"
+     "NOTE: " XTATE_NAME_TITLE_CASE " always uses pcap to recv in default."},
+    {"sendmmsg",
+     SET_sendmmsg,
+     Type_FLAG,
+     {0},
+     "Use sendmmsg syscall to send packets in batch on Linux if raw socket can "
+     "be used. This may break the bottle-neck of sending one by one.\n"
+     "NOTE: Use sendmmsg in slow send rate is not recommended because of the "
+     "latency and packet lossing."},
+    {"sendmmsg-batch",
+     SET_sendmmsg_batch,
+     Type_ARG,
+     {0},
+     "Set the batch size while sending packets with sendmmsg syscall. Default "
+     "is 64."},
+    {"sendmmsg-retries",
+     SET_sendmmsg_retries,
+     Type_ARG,
+     {"sendmmsg-retry", 0},
+     "Max number of times to try to do sendmmsg syscall if failed."
+     "is 64."},
+    {"send-queue",
+     SET_send_queue,
+     Type_FLAG,
+     {"sendq", 0},
+     "Use sendqueue feature of Npcap/Winpcap on Windows to transmit packets. "
+     "The transmit rate on Windows is really slow, like 40-kpps. The speed "
+     "can be increased by using the sendqueue feature to roughly 300-kpps.\n"
+     "NOTE: It's not recommended to use sendqueue feature in low send rate, "
+     "because this may cause a lot latency for every single packet and affect"
+     " some scan modules working with connections."},
+    {"send-queue-size",
+     SET_sendq_size,
+     Type_ARG,
+     {"sendq-size", 0},
+     "Set the buffer size while sending packets with sendqueue of "
+     "Npcap/Winpcap on Windows. Default size is 65535*8."},
+    {"pfring",
+     SET_pfring,
+     Type_FLAG,
+     {0},
+     "Force the use of the PF_RING driver. The program will exit if PF_RING "
+     "DNA drvers are not available.\n"
+     "NOTE: " XTATE_NAME_TITLE_CASE
+     " will try to use PF_RING automatically in default."},
+    {"offline",
+     SET_offline,
+     Type_FLAG,
+     {"dry-run", 0},
+     "Do not actually transmit packets. This is useful with a low rate and "
+     "--packet-trace to look at what packets might've been transmitted. Or, "
+     "it's useful with --rate 100000000 in order to benchmark how fast "
+     "transmit would work (assuming a zero-overhead driver). PF_RING is about"
+     " 20% slower than the benchmark result from offline mode."},
+
     {"MISCELLANEOUS", SET_nothing, 0, {0}, NULL},
 
     {"conf",
@@ -3454,65 +3518,6 @@ ConfParam config_parameters[] = {
      "Set the buffer size of dispatch queue from receive thread to receive "
      "handler threads.\n"
      "The value of packets queue must be power of 2. (Default 16384)"},
-    {"pfring",
-     SET_pfring,
-     Type_FLAG,
-     {0},
-     "Force the use of the PF_RING driver. The program will exit if PF_RING "
-     "DNA drvers are not available."},
-    {"raw-socket",
-     SET_rawsocket,
-     Type_FLAG,
-     {"raw-sock", 0},
-     "Use raw socket to send packets instead of pcap on Linux if possible. Just"
-     " support working on link layer because " XTATE_NAME_TITLE_CASE
-     " needs to handle both IPv4/IPv6.\n"
-     "NOTE: " XTATE_NAME_TITLE_CASE " always uses pcap to recv in default."},
-    {"sendmmsg",
-     SET_sendmmsg,
-     Type_FLAG,
-     {0},
-     "Use sendmmsg syscall to send packets in batch on Linux if raw socket can "
-     "be used. This may break the bottle-neck of sending one by one.\n"
-     "NOTE: Use sendmmsg in slow send rate is not recommended because of the "
-     "latency and packet lossing."},
-    {"sendmmsg-batch",
-     SET_sendmmsg_batch,
-     Type_ARG,
-     {0},
-     "Set the batch size while sending packets with sendmmsg syscall. Default "
-     "is 64."},
-    {"sendmmsg-retries",
-     SET_sendmmsg_retries,
-     Type_ARG,
-     {"sendmmsg-retry", 0},
-     "Max number of times to try to do sendmmsg syscall if failed."
-     "is 64."},
-    {"send-queue",
-     SET_send_queue,
-     Type_FLAG,
-     {"sendq", 0},
-     "Use sendqueue feature of Npcap/Winpcap on Windows to transmit packets. "
-     "The transmit rate on Windows is really slow, like 40-kpps. The speed "
-     "can be increased by using the sendqueue feature to roughly 300-kpps.\n"
-     "NOTE: It's not recommended to use sendqueue feature in low send rate, "
-     "because this may cause a lot latency for every single packet and affect"
-     " some scan modules working with connections."},
-    {"send-queue-size",
-     SET_sendq_size,
-     Type_ARG,
-     {"sendq-size", 0},
-     "Set the buffer size while sending packets with sendqueue of "
-     "Npcap/Winpcap. Default size is 65535*8."},
-    {"offline",
-     SET_offline,
-     Type_FLAG,
-     {"dry-run", 0},
-     "Do not actually transmit packets. This is useful with a low rate and "
-     "--packet-trace to look at what packets might've been transmitted. Or, "
-     "it's useful with --rate 100000000 in order to benchmark how fast "
-     "transmit would work (assuming a zero-overhead driver). PF_RING is about"
-     " 20% slower than the benchmark result from offline mode."},
     {"infinite",
      SET_infinite,
      Type_FLAG,
@@ -3523,7 +3528,9 @@ ConfParam config_parameters[] = {
      "HINT: If we just want to test the highest sending rate, try to set an "
      "invalid router mac like `--router-mac 11:22:33:44:55:66` or use `--fake"
      "-router-mac` to send packets in local network.\n"
-     "NOTE: We should be careful to the deduplication in the infinite mode."},
+     "NOTE1: We should be careful to the deduplication in the infinite mode.\n"
+     "NOTE2: This switch is useful for default and some generators which "
+     "implemented the feature."},
     {"repeat",
      SET_repeat,
      Type_ARG,
@@ -3532,8 +3539,8 @@ ConfParam config_parameters[] = {
      " It also means the hit count for every target + 1. So default is 0."
      " `--infinite` will be automatically set when we use repeat.\n"
      "NOTE1: We should be careful to the deduplication in the repeat mode.\n"
-     "NOTE2: This switch is useful for default and some generators instead of "
-     "all"},
+     "NOTE2: This switch is useful for default and some generators which "
+     "implemented the feature."},
     {"static-seed",
      SET_static_seed,
      Type_FLAG,
@@ -3561,18 +3568,20 @@ ConfParam config_parameters[] = {
      SET_ip2asn_v4,
      Type_ARG,
      {"ip2asn-v4", "ip2asn-4", 0},
-     "Specifies a 'ip2asn-v4.tsv' file to load IPv4 ASN info."},
+     "Specifies a 'ip2asn-v4.tsv' file to load IPv4 ASN info for relative "
+     "features like --out-as-info."},
     {"ip2asn-v6-file",
      SET_ip2asn_v6,
      Type_ARG,
      {"ip2asn-v6", "ip2asn-6", 0},
-     "Specifies a 'ip2asn-v6.tsv' file to load IPv6 ASN info."},
-
+     "Specifies a 'ip2asn-v6.tsv' file to load IPv6 ASN info for relative "
+     "features like --out-as-info."},
     {"no-back-trace",
-     SET_nothing,
+     SET_nothing, /*It will be handle before commandline parsing*/
      Type_FLAG,
      {"nobt", 0},
-     "Turn off the backtrace to program call stack for debugging."},
+     "Turn off the backtrace of program call stack after segment fault for "
+     "debugging."},
 
     /*Put it at last for better "help" output*/
     {"TARGET_OUTPUT", SET_target_output, 0, {0}, NULL},
@@ -4082,16 +4091,16 @@ void xconf_print_help() {
         count++;
     }
 
+    // printf(XPRINT_EQUAL_LINE);
     printf("\n\n");
-    printf("   "
-           "*******************************************************************"
-           "*******\n");
-    printf("   * Now contains [%d] parameters in total, use them to unleash "
-           "your power! *\n",
-           count);
-    printf("   "
-           "*******************************************************************"
-           "*******\n");
+    printf(XPRINT_STAR_LINE "\n");
+    printf(
+        "            That's all. " XTATE_NAME_TITLE_CASE
+        " contains [%d] global parameters now.\n"
+        "            Use them to unleash your power!\n"
+        "                                                       --Sharkocha\n",
+        count);
+    printf(XPRINT_STAR_LINE "\n");
     printf("\n\n\n");
 }
 
