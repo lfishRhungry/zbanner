@@ -31,7 +31,7 @@ static inline ipv6address _int128_add(ipv6address x, ipv6address y) {
     return result;
 }
 
-static inline ipv6address _int128_subtract(ipv6address x, ipv6address y) {
+static inline ipv6address _int128_sub(ipv6address x, ipv6address y) {
     ipv6address result;
     result.lo = x.lo - y.lo;
     result.hi = x.hi - y.hi - (result.lo > x.lo);
@@ -85,7 +85,7 @@ static inline int128_t _int128_mult64(int128_t lhs, uint64_t rhs) {
     return result;
 }
 
-static bool LESS(const ipv6address lhs, const ipv6address rhs) {
+static bool _int128_is_lt(const ipv6address lhs, const ipv6address rhs) {
     if (lhs.hi < rhs.hi)
         return true;
     else if (lhs.hi == rhs.hi && lhs.lo < rhs.lo)
@@ -93,9 +93,9 @@ static bool LESS(const ipv6address lhs, const ipv6address rhs) {
     else
         return false;
 }
-#define GREATEREQ(x, y) (!LESS(x, y))
+#define _int128_is_gte(x, y) (!_int128_is_lt((x), (y)))
 
-static bool LESSEQ(const ipv6address lhs, const ipv6address rhs) {
+static bool _int128_is_lte(const ipv6address lhs, const ipv6address rhs) {
     if (lhs.hi < rhs.hi)
         return true;
     if (lhs.hi > rhs.hi)
@@ -108,14 +108,14 @@ static bool LESSEQ(const ipv6address lhs, const ipv6address rhs) {
 }
 
 bool range6_is_bad_address(const struct Range6 *range) {
-    return LESS(range->end, range->begin);
+    return _int128_is_lt(range->end, range->begin);
 }
 
-static bool _int128_is_equals(const ipv6address lhs, const ipv6address rhs) {
+static bool _int128_is_eq(const ipv6address lhs, const ipv6address rhs) {
     return lhs.hi == rhs.hi && lhs.lo == rhs.lo;
 }
 
-static ipv6address MINUS_ONE(const ipv6address ip) {
+static ipv6address _int128_dec(const ipv6address ip) {
     ipv6address result;
 
     if (ip.lo == 0) {
@@ -129,7 +129,7 @@ static ipv6address MINUS_ONE(const ipv6address ip) {
     return result;
 }
 
-static ipv6address PLUS_ONE(const ipv6address ip) {
+static ipv6address _int128_inc(const ipv6address ip) {
     ipv6address result;
 
     if (ip.lo == ~0) {
@@ -175,7 +175,8 @@ bool range6list_is_contains(const struct Range6List *targets,
         for (i = 0; i < targets->list_len; i++) {
             struct Range6 *range = &targets->list[i];
 
-            if (LESSEQ(range->begin, ip) && LESSEQ(ip, range->end))
+            if (_int128_is_lte(range->begin, ip) &&
+                _int128_is_lte(ip, range->end))
                 return true;
         }
         return false;
@@ -186,13 +187,13 @@ bool range6list_is_contains(const struct Range6List *targets,
      */
     for (;;) {
         mid = min + (max - min) / 2;
-        if (LESS(ip, targets->list[mid].begin)) {
+        if (_int128_is_lt(ip, targets->list[mid].begin)) {
             max = mid;
             continue;
-        } else if (LESS(targets->list[mid].end, ip)) {
+        } else if (_int128_is_lt(targets->list[mid].end, ip)) {
             if (mid + 1 == maxmax)
                 break;
-            else if (LESS(ip, targets->list[mid + 1].begin))
+            else if (_int128_is_lt(ip, targets->list[mid + 1].begin))
                 break;
             else
                 min = mid + 1;
@@ -222,36 +223,38 @@ static void todo_remove_at(struct Range6List *targets, unsigned index) {
 static int range6_is_overlap(const struct Range6 lhs, const struct Range6 rhs) {
     static const ipv6address FFFF = {~0ULL, ~0ULL};
 
-    if (LESS(lhs.begin, rhs.begin)) {
-        if (EQUAL(lhs.end, FFFF) || GREATEREQ(PLUS_ONE(lhs.end), rhs.begin))
+    if (_int128_is_lt(lhs.begin, rhs.begin)) {
+        if (EQUAL(lhs.end, FFFF) ||
+            _int128_is_gte(_int128_inc(lhs.end), rhs.begin))
             return 1;
     }
-    if (GREATEREQ(lhs.begin, rhs.begin)) {
-        if (LESSEQ(lhs.end, rhs.end))
+    if (_int128_is_gte(lhs.begin, rhs.begin)) {
+        if (_int128_is_lte(lhs.end, rhs.end))
             return 1;
     }
 
-    if (LESS(rhs.begin, lhs.begin)) {
-        if (EQUAL(rhs.end, FFFF) || GREATEREQ(PLUS_ONE(rhs.end), lhs.begin))
+    if (_int128_is_lt(rhs.begin, lhs.begin)) {
+        if (EQUAL(rhs.end, FFFF) ||
+            _int128_is_gte(_int128_inc(rhs.end), lhs.begin))
             return 1;
     }
-    if (GREATEREQ(rhs.begin, lhs.begin)) {
-        if (LESSEQ(rhs.end, lhs.end))
+    if (_int128_is_gte(rhs.begin, lhs.begin)) {
+        if (_int128_is_lte(rhs.end, lhs.end))
             return 1;
     }
 
     return 0;
 #if 0
     static const ipv6address zero = {0, 0};
-    ipv6address lhs_endm = MINUS_ONE(lhs.end);
-    ipv6address rhs_endm = MINUS_ONE(rhs.end);
+    ipv6address lhs_endm = _int128_dec(lhs.end);
+    ipv6address rhs_endm = _int128_dec(rhs.end);
 
     /* llll rrrr */
-    if (LESS(zero, lhs.end) && LESS(lhs_endm, rhs.begin))
+    if (_int128_is_lt(zero, lhs.end) && _int128_is_lt(lhs_endm, rhs.begin))
         return 0;
 
     /* rrrr llll */
-    if (LESS(zero, rhs.end) && LESS(rhs_endm, lhs.begin))
+    if (_int128_is_lt(zero, rhs.end) && _int128_is_lt(rhs_endm, lhs.begin))
         return 0;
 
     return 1;
@@ -262,9 +265,9 @@ static int range6_is_overlap(const struct Range6 lhs, const struct Range6 rhs) {
  * Combine two ranges, such as when they overlap.
  ***************************************************************************/
 static void range6_combine(struct Range6 *lhs, const struct Range6 rhs) {
-    if (LESSEQ(rhs.begin, lhs->begin))
+    if (_int128_is_lte(rhs.begin, lhs->begin))
         lhs->begin = rhs.begin;
-    if (LESSEQ(lhs->end, rhs.end))
+    if (_int128_is_lte(lhs->end, rhs.end))
         lhs->end = rhs.end;
 }
 
@@ -277,7 +280,7 @@ static int range6_compare(const void *lhs, const void *rhs) {
 
     if (ipv6address_is_equal(left->begin, right->begin))
         return 0;
-    else if (LESS(left->begin, right->begin))
+    else if (_int128_is_lt(left->begin, right->begin))
         return -1;
     else
         return 1;
@@ -407,8 +410,8 @@ void range6list_remove_range(struct Range6List *targets,
 
         /* If the removal-range wholly covers the range, delete
          * it completely */
-        if (LESSEQ(begin, targets->list[i].begin) &&
-            LESSEQ(targets->list[i].end, end)) {
+        if (_int128_is_lte(begin, targets->list[i].begin) &&
+            _int128_is_lte(targets->list[i].end, end)) {
             todo_remove_at(targets, i);
             i--;
             continue;
@@ -416,14 +419,14 @@ void range6list_remove_range(struct Range6List *targets,
 
         /* If the removal-range bisects the target-rage, truncate
          * the lower end and add a new high-end */
-        if (LESSEQ(targets->list[i].begin, begin) &&
-            LESSEQ(end, targets->list[i].end)) {
+        if (_int128_is_lte(targets->list[i].begin, begin) &&
+            _int128_is_lte(end, targets->list[i].end)) {
             struct Range6 newrange;
 
-            newrange.begin = PLUS_ONE(end);
+            newrange.begin = _int128_inc(end);
             newrange.end   = targets->list[i].end;
 
-            targets->list[i].end = MINUS_ONE(begin);
+            targets->list[i].end = _int128_dec(begin);
 
             range6list_add_range(targets, newrange.begin, newrange.end);
             i--;
@@ -431,15 +434,15 @@ void range6list_remove_range(struct Range6List *targets,
         }
 
         /* If overlap on the lower side */
-        if (LESSEQ(targets->list[i].begin, end) &&
-            LESSEQ(end, targets->list[i].end)) {
-            targets->list[i].begin = PLUS_ONE(end);
+        if (_int128_is_lte(targets->list[i].begin, end) &&
+            _int128_is_lte(end, targets->list[i].end)) {
+            targets->list[i].begin = _int128_inc(end);
         }
 
         /* If overlap on the upper side */
-        if (LESSEQ(targets->list[i].begin, begin) &&
-            LESSEQ(begin, targets->list[i].end)) {
-            targets->list[i].end = MINUS_ONE(begin);
+        if (_int128_is_lte(targets->list[i].begin, begin) &&
+            _int128_is_lte(begin, targets->list[i].end)) {
+            targets->list[i].end = _int128_dec(begin);
         }
     }
 }
@@ -459,7 +462,7 @@ ipv6address range6list_exclude(struct Range6List       *targets,
         struct Range6 range = excludes->list[i];
         ipv6address   x;
 
-        x = _int128_subtract(range.end, range.begin);
+        x = _int128_sub(range.end, range.begin);
         x = _int128_add64(x, 1);
 
         count = _int128_add(count, x);
@@ -478,7 +481,7 @@ int128_t range6list_count(const struct Range6List *targets) {
     for (i = 0; i < targets->list_len; i++) {
         ipv6address x;
 
-        x = _int128_subtract(targets->list[i].end, targets->list[i].begin);
+        x = _int128_sub(targets->list[i].end, targets->list[i].begin);
         if (x.hi == ~0ULL && x.lo == ~0ULL)
             return x; /* overflow */
         x      = _int128_add64(x, 1);
@@ -548,12 +551,56 @@ void range6list_optimize(struct Range6List *targets) {
     for (i = 0; i < targets->list_len; i++) {
         ipv6address x;
         picker[i] = (size_t)total.lo;
-        x     = _int128_subtract(targets->list[i].end, targets->list[i].begin);
-        x     = _int128_add64(x, 1);
-        total = _int128_add(total, x);
+        x         = _int128_sub(targets->list[i].end, targets->list[i].begin);
+        x         = _int128_add64(x, 1);
+        total     = _int128_add(total, x);
     }
 
     targets->picker = picker;
+}
+
+unsigned range6list_cidr_bits(struct Range6 *range, bool *exact) {
+    uint64_t i;
+
+    /* for the comments of this function, see  count_cidr_bits */
+    *exact = false;
+
+    for (i = 0; i < 128; i++) {
+        int128_t mask;
+        if (i < 64) {
+            mask.hi = 0xFFFFFFFFffffffffull >> i;
+            mask.lo = 0xFFFFFFFFffffffffull;
+        } else {
+            mask.hi = 0;
+            mask.lo = 0xFFFFFFFFffffffffull >> (i - 64);
+        }
+        /*let begin's value in low mask is all-zero*/
+        if ((range->begin.hi & mask.hi) != 0 ||
+            (range->begin.lo & mask.lo) != 0) {
+            continue;
+        }
+        /*high mask of begin & end must be same*/
+        if ((range->begin.hi & ~mask.hi) == (range->end.hi & ~mask.hi) &&
+            (range->begin.lo & ~mask.lo) == (range->end.lo & ~mask.lo)) {
+            /*if end's value in low mask is all-one, range is an exactly CIDR*/
+            if ((range->end.hi & mask.hi) == mask.hi &&
+                (range->end.lo & mask.lo) == mask.lo) {
+                *exact = true;
+                return (unsigned)i;
+            }
+        } else {
+            /*return the bits of first CIDR and adjust the range*/
+            *exact       = false;
+            range->begin = _int128_add(range->begin, mask);
+            range->begin = _int128_inc(range->begin);
+
+            return (unsigned)i;
+        }
+    }
+
+    range->begin = _int128_inc(range->begin);
+
+    return 128;
 }
 
 /***************************************************************************
@@ -589,9 +636,9 @@ static int regress_pick2() {
         b.lo = 0x8765432100000000ULL;
 
         c = _int128_add(a, b);
-        d = _int128_subtract(c, b);
+        d = _int128_sub(c, b);
 
-        if (!_int128_is_equals(a, d)) {
+        if (!_int128_is_eq(a, d)) {
             LOG(LEVEL_ERROR, "%s:%d: test failed (%u)\n", __FILE__, __LINE__,
                 (unsigned)i);
             return 1;

@@ -113,27 +113,6 @@ infinite:
 
 /***************************************************************************
  ***************************************************************************/
-static unsigned count_cidr6_bits(struct Range6 range) {
-    uint64_t i;
-
-    /* Kludge: can't handle more than 64-bits of CIDR ranges */
-    if (range.begin.hi != range.begin.lo)
-        return 0;
-
-    for (i = 0; i < 64; i++) {
-        uint64_t mask = 0xFFFFFFFFffffffffull >> i;
-
-        if ((range.begin.lo & ~mask) == (range.end.lo & ~mask)) {
-            if ((range.begin.lo & mask) == 0 && (range.end.lo & mask) == mask)
-                return (unsigned)i;
-        }
-    }
-
-    return 0;
-}
-
-/***************************************************************************
- ***************************************************************************/
 void list_range(XConf *xconf) {
     struct RangeList  *list4 = &xconf->targets.ipv4;
     struct Range6List *list6 = &xconf->targets.ipv6;
@@ -162,12 +141,15 @@ void list_range(XConf *xconf) {
     }
 
     for (i = 0; i < list6->list_len; i++) {
+        bool                  exact = false;
         struct Range6         range = list6->list[i];
         ipaddress_formatted_t fmt   = ipv6address_fmt(range.begin);
+
         fprintf(fp, "%s", fmt.string);
         if (!ipv6address_is_equal(range.begin, range.end)) {
-            unsigned cidr_bits = count_cidr6_bits(range);
-            if (cidr_bits) {
+            unsigned cidr_bits = range6list_cidr_bits(&range, &exact);
+
+            if (exact && cidr_bits) {
                 fprintf(fp, "/%u", cidr_bits);
             } else {
                 fmt = ipv6address_fmt(range.end);

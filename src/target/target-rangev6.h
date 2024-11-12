@@ -162,6 +162,14 @@ void range6list_optimize(struct Range6List *targets);
  */
 void range6list_sort(struct Range6List *targets);
 
+/**
+ * Count CIDR bits
+ * @param exact is returned bits count exact for original range.
+ * @return exact CIDR bits count if exact is true. Or the largest CIDR bits
+ * count for the range, range will be shrinked in this case.
+ */
+unsigned range6list_cidr_bits(struct Range6 *range, bool *exact);
+
 int ranges6_selftest();
 
 #endif

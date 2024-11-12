@@ -291,68 +291,6 @@ static const unsigned short top_tcp_ports[] = {
 
 /***************************************************************************
  ***************************************************************************/
-static unsigned count_cidr6_bits(struct Range6 *range, bool *exact) {
-    uint64_t i;
-
-    /* for the comments of this function, see  count_cidr_bits */
-    *exact = false;
-
-    for (i = 0; i < 128; i++) {
-        uint64_t mask_hi;
-        uint64_t mask_lo;
-        if (i < 64) {
-            mask_hi = 0xFFFFFFFFffffffffull >> i;
-            mask_lo = 0xFFFFFFFFffffffffull;
-        } else {
-            mask_hi = 0;
-            mask_lo = 0xFFFFFFFFffffffffull >> (i - 64);
-        }
-        /*let begin's low mask is all-zero*/
-        if ((range->begin.hi & mask_hi) != 0 ||
-            (range->begin.lo & mask_lo) != 0) {
-            continue;
-        }
-        /*high mask of begin & end must be same*/
-        if ((range->begin.hi & ~mask_hi) == (range->end.hi & ~mask_hi) &&
-            (range->begin.lo & ~mask_lo) == (range->end.lo & ~mask_lo)) {
-            /*if end's low mask is all-one, range is an exactly CIDR*/
-            if (((range->end.hi & mask_hi) == mask_hi) &&
-                ((range->end.lo & mask_lo) == mask_lo)) {
-                *exact = true;
-                return (unsigned)i;
-            }
-        } else {
-            /*return the bits of first CIDR and adjust the range*/
-            *exact                = false;
-            range->begin.hi       = range->begin.hi + mask_hi;
-            /**
-             * NOTE: be careful to the wraparound, we'd better to calculate in
-             * two steps if need to do sum for 3 num:
-             *   begin.lo+mask_lo+1
-             */
-            uint64_t mask_lo_plus = mask_lo + 1;
-            if (mask_lo_plus == 0) {
-                /*mask_lo_plus is already wraparound to zero*/
-                range->begin.hi += 1;
-            } else {
-                /*check the second step is wraparound*/
-                if (range->begin.lo > 0xffffffffffffffff - mask_lo_plus)
-                    range->begin.hi += 1;
-                range->begin.lo = range->begin.lo + mask_lo + 1;
-            }
-
-            return (unsigned)i;
-        }
-    }
-    range->begin.lo = range->begin.lo + 1;
-    if (range->begin.lo == 0) {
-        range->begin.hi = range->begin.hi + 1;
-    }
-    return 128;
-}
-
-/***************************************************************************
- ***************************************************************************/
 void xconf_save_state(XConf *xconf) {
     char  filename[512];
     FILE *fp;
@@ -1461,7 +1399,7 @@ static ConfRes SET_target_output(void *conf, const char *name,
 
             fprintf(xconf->echo, "range = %s", fmt.string);
             if (!ipv6address_is_equal(range.begin, range.end)) {
-                unsigned cidr_bits = count_cidr6_bits(&range, &exact);
+                unsigned cidr_bits = range6list_cidr_bits(&range, &exact);
 
                 if (exact && cidr_bits) {
                     fprintf(xconf->echo, "/%u", cidr_bits);
@@ -2797,7 +2735,9 @@ ConfParam config_parameters[] = {
      "id for this scan, while y is the total number of instances. For example,"
      " --shard 1/2 tells an instance to send every other packet, starting with"
      " index 0. Likewise, --shard 2/2 sends every other packet, but starting "
-     "with index 1, so that it doesn't overlap with the first example."},
+     "with index 1, so that it doesn't overlap with the first example.\n"
+     "NOTE: This effective for default Generate Module. Others may not "
+     "implement this feature."},
     {"tx-thread-count",
      SET_tx_thread_count,
      Type_ARG,
@@ -3757,7 +3697,7 @@ void xconf_echo_cidr(XConf *xconf, FILE *fp) {
                 fprintf(fp, "/128");
                 exact = true;
             } else {
-                unsigned cidr_bits = count_cidr6_bits(&range, &exact);
+                unsigned cidr_bits = range6list_cidr_bits(&range, &exact);
                 fprintf(fp, "/%u", cidr_bits);
             }
             fprintf(fp, "\n");
