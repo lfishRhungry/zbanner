@@ -75,6 +75,7 @@ bool blackrock_init(const XConf *xconf, uint64_t *count_targets,
         LOG(LEVEL_WARN, "(BlackRock) no ports were specified or remained, a "
                         "fake port o:0 was"
                         " specified automaticlly.\n");
+        targetset_optimize((TargetSet *)&xconf->targets);
         count_ports = 1;
     }
 
