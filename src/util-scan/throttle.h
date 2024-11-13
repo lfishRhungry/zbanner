@@ -4,6 +4,9 @@
 
 #define _THR_MASK 0xFF
 
+/**
+ * NOTE: functions about throttler is not thread safe.
+ */
 typedef struct RateThrottler {
     double   max_rate;
     double   current_rate;
