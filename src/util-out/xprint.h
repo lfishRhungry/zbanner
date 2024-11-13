@@ -38,7 +38,7 @@
 #define XPRINT_COLUMN_RIGHT     "\033[C"
 #define XPRINT_COLUMN_LEFT      "\033[D"
 #define XPRINT_CLEAR_SCREEN     "\033[2J"
-#define XPRINT_CLEAR_LINE       "\033[K"
+#define XPRINT_CLEAR_LINE       "\033[K" /*clear contents after the cursor*/
 
 /*print documents with an indent*/
 void xprint(const char *text, unsigned indent, unsigned count);

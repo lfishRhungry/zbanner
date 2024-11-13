@@ -3044,7 +3044,8 @@ ConfParam config_parameters[] = {
      Type_FLAG,
      {"list-targets", "list-ip", "ip-list", 0},
      "Do not run, but print every unique targets in random. We can got ordered "
-     "targets with `--list-target[order]` or `--list-target[norandom]`."},
+     "targets with `--list-target[order]` or `--list-target[norandom]`. Also "
+     "can print relative AS info if `--out-as-info` is on."},
     {"list-if",
      SET_listif,
      Type_FLAG,
@@ -3637,81 +3638,6 @@ void xconf_echo(XConf *xconf, FILE *fp) {
 
     xconf->echo     = 0;
     xconf->echo_all = 0;
-}
-
-/***************************************************************************
- * Prints the list of CIDR to scan to the command-line then exits.
- * Use: provide this list to other tools. Unlike xconf -sL, it keeps
- * the CIDR aggretated format, and does not randomize the order of output.
- * For example, given the starting range of [10.0.0.1-10.0.0.255], this will
- * print all the CIDR ranges that make this up:
- *  10.0.0.1/32
- *  10.0.0.2/31
- *  10.0.0.4/30
- *  10.0.0.8/29
- *  10.0.0.16/28
- *  10.0.0.32/27
- *  10.0.0.64/26
- *  10.0.0.128/25
- ***************************************************************************/
-void xconf_echo_cidr(XConf *xconf, FILE *fp) {
-    unsigned i;
-
-    xconf->echo = fp;
-
-    /*
-     * For all IPv4 ranges ...
-     */
-    for (i = 0; i < xconf->targets.ipv4.list_len; i++) {
-        /* Get the next range in the list */
-        struct Range range = xconf->targets.ipv4.list[i];
-
-        /* If not a single CIDR range, print all the CIDR ranges
-         * needed to completely represent this addres */
-        for (;;) {
-            unsigned     prefix_length;
-            struct Range cidr;
-
-            /* Find the largest CIDR range (one that can be specified
-             * with a /prefix) at the start of this range. */
-            cidr = range_first_cidr(range, &prefix_length);
-            fprintf(fp, "%u.%u.%u.%u/%u\n", (cidr.begin >> 24) & 0xFF,
-                    (cidr.begin >> 16) & 0xFF, (cidr.begin >> 8) & 0xFF,
-                    (cidr.begin >> 0) & 0xFF, prefix_length);
-
-            /* If this is the last range, then stop. There are multiple
-             * ways to gets to see if we get to the end, but I think
-             * this is the best. */
-            if (cidr.end >= range.end)
-                break;
-
-            /* If the CIDR range didn't cover the entire range,
-             * then remove it from the beginning of the range
-             * and process the remainder */
-            range.begin = cidr.end + 1;
-        }
-    }
-
-    /*
-     * For all IPv6 ranges...
-     */
-    for (i = 0; i < xconf->targets.ipv6.list_len; i++) {
-        struct Range6 range = xconf->targets.ipv6.list[i];
-        bool          exact = false;
-        while (!exact) {
-            ipaddress_formatted_t fmt = ipv6address_fmt(range.begin);
-            fprintf(fp, "%s", fmt.string);
-            if (range.begin.hi == range.end.hi &&
-                range.begin.lo == range.end.lo) {
-                fprintf(fp, "/128");
-                exact = true;
-            } else {
-                unsigned cidr_bits = range6list_cidr_bits(&range, &exact);
-                fprintf(fp, "/%u", cidr_bits);
-            }
-            fprintf(fp, "\n");
-        }
-    }
 }
 
 /***************************************************************************

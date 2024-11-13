@@ -762,15 +762,15 @@ int main(int argc, char *argv[]) {
             break;
 
         case Operation_ListCidr:
-            xconf_echo_cidr(xconf, stdout);
+            listtargets_cidr(xconf, stdout);
             break;
 
         case Operation_ListRange:
-            list_range(xconf);
+            listtargets_range(xconf, stdout);
             break;
 
         case Operation_ListTargets:
-            list_ip_port(xconf);
+            listtargets_ip_port(xconf, stdout);
             return 0;
 
         case Operation_ListAdapters:

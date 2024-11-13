@@ -292,11 +292,6 @@ void xconf_set_parameter(XConf *xconf, const char *name, const char *value);
  */
 void xconf_echo(XConf *xconf, FILE *fp);
 
-/**
- * Echoes the list of CIDR ranges to scan.
- */
-void xconf_echo_cidr(XConf *xconf, FILE *fp);
-
 void xconf_print_intro();
 
 void xconf_print_usage();

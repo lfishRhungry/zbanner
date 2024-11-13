@@ -4,7 +4,7 @@
 #include "../crypto/crypto-blackrock.h"
 #include "../as/as-query.h"
 
-void list_ip_port(XConf *xconf) {
+void listtargets_ip_port(XConf *xconf, FILE *fp) {
     uint64_t         i;
     uint64_t         range;
     uint64_t         start;
@@ -43,12 +43,21 @@ void list_ip_port(XConf *xconf) {
      * !only support 63-bit scans
      */
     if (int128_bitcount(targetset_count(&xconf->targets)) > 63) {
-        LOG(LEVEL_ERROR, "range too large for target listing: %u-bits\n",
+        LOG(LEVEL_ERROR, "range is too large for listing: %u-bits\n",
             int128_bitcount(targetset_count(&xconf->targets)));
-        LOG(LEVEL_HINT, "target_count = ip_count * port_count\n");
-        LOG(LEVEL_HINT, "max targets count is within 63-bits\n");
+        LOG(LEVEL_HINT, "range = target_count * endpoint_count\n");
+        LOG(LEVEL_HINT, "max range is within 63-bits.\n");
+        LOG(LEVEL_HINT, "may try to list them in range format or CIDR.\n");
         return;
     }
+
+    LOG(LEVEL_HINT, "Listing %" PRIu64 " targets",
+        xconf->targets.count_ipv4s + xconf->targets.count_ipv6s.lo);
+    if (xconf->targets.count_ports > 1) {
+        LOG(LEVEL_OUT, " [%" PRIu64 " endpoints each]",
+            xconf->targets.count_ports);
+    }
+    LOG(LEVEL_OUT, ".\n");
 
     /**
      * The "range" is the total number of IP/port combinations that
@@ -81,32 +90,32 @@ infinite:
         ip_proto = get_actual_proto_port(&port);
 
         ipaddress_formatted_t fmt = ipaddress_fmt(addr);
-        printf("%s", fmt.string);
+        fprintf(fp, "%s", fmt.string);
 
         if (xconf->targets.count_ports != 1) {
             switch (ip_proto) {
                 case IP_PROTO_TCP:
-                    printf(" %u", port);
+                    fprintf(fp, " %u", port);
                     break;
                 case IP_PROTO_UDP:
-                    printf(" u:%u", port);
+                    fprintf(fp, " u:%u", port);
                     break;
                 case IP_PROTO_SCTP:
-                    printf(" s:%u", port);
+                    fprintf(fp, " s:%u", port);
                     break;
                 default:
-                    printf(" o:%u", port);
+                    fprintf(fp, " o:%u", port);
                     break;
             }
         }
 
         if (xconf->out_conf.output_as_info) {
             struct AS_Info as_info = as_query_search_ip(as_query, addr);
-            printf(", AS%u, %s, %s", as_info.asn, as_info.country_code,
-                   as_info.desc);
+            fprintf(fp, ", AS%u, %s, %s", as_info.asn, as_info.country_code,
+                    as_info.desc);
         }
 
-        printf("\n");
+        fprintf(fp, "\n");
 
         i += increment; /* <------ increment by 1 normally, more with
                            shards/NICs */
@@ -122,11 +131,13 @@ infinite:
 
 /***************************************************************************
  ***************************************************************************/
-void list_range(XConf *xconf) {
+void listtargets_range(XConf *xconf, FILE *fp) {
     struct RangeList  *list4 = &xconf->targets.ipv4;
     struct Range6List *list6 = &xconf->targets.ipv6;
     unsigned           i;
-    FILE              *fp = stdout;
+
+    LOG(LEVEL_HINT, "listing %u IPv4 ranges and %u IPv6 ranges.\n",
+        xconf->targets.ipv4.list_len, xconf->targets.ipv6.list_len);
 
     for (i = 0; i < list4->list_len; i++) {
         unsigned     prefix_length;
@@ -166,5 +177,68 @@ void list_range(XConf *xconf) {
             }
         }
         fprintf(fp, "\n");
+    }
+}
+
+/***************************************************************************
+ ***************************************************************************/
+void listtargets_cidr(XConf *xconf, FILE *fp) {
+    unsigned i;
+
+    LOG(LEVEL_HINT, "listing %u IPv4 ranges and %u IPv6 ranges in CIDR.\n",
+        xconf->targets.ipv4.list_len, xconf->targets.ipv6.list_len);
+
+    /*
+     * For all IPv4 ranges ...
+     */
+    for (i = 0; i < xconf->targets.ipv4.list_len; i++) {
+        /* Get the next range in the list */
+        struct Range range = xconf->targets.ipv4.list[i];
+
+        /* If not a single CIDR range, print all the CIDR ranges
+         * needed to completely represent this addres */
+        for (;;) {
+            unsigned     prefix_length;
+            struct Range cidr;
+
+            /* Find the largest CIDR range (one that can be specified
+             * with a /prefix) at the start of this range. */
+            cidr = range_first_cidr(range, &prefix_length);
+            fprintf(fp, "%u.%u.%u.%u/%u\n", (cidr.begin >> 24) & 0xFF,
+                    (cidr.begin >> 16) & 0xFF, (cidr.begin >> 8) & 0xFF,
+                    (cidr.begin >> 0) & 0xFF, prefix_length);
+
+            /* If this is the last range, then stop. There are multiple
+             * ways to gets to see if we get to the end, but I think
+             * this is the best. */
+            if (cidr.end >= range.end)
+                break;
+
+            /* If the CIDR range didn't cover the entire range,
+             * then remove it from the beginning of the range
+             * and process the remainder */
+            range.begin = cidr.end + 1;
+        }
+    }
+
+    /*
+     * For all IPv6 ranges...
+     */
+    for (i = 0; i < xconf->targets.ipv6.list_len; i++) {
+        struct Range6 range = xconf->targets.ipv6.list[i];
+        bool          exact = false;
+        while (!exact) {
+            ipaddress_formatted_t fmt = ipv6address_fmt(range.begin);
+            fprintf(fp, "%s", fmt.string);
+            if (range.begin.hi == range.end.hi &&
+                range.begin.lo == range.end.lo) {
+                fprintf(fp, "/128");
+                exact = true;
+            } else {
+                unsigned cidr_bits = range6list_cidr_bits(&range, &exact);
+                fprintf(fp, "/%u", cidr_bits);
+            }
+            fprintf(fp, "\n");
+        }
     }
 }
