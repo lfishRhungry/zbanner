@@ -333,7 +333,7 @@ static const struct AS_Info _search_ipv4(const struct AS_Table *as_table,
         }
     }
 
-err0:
+err0:; /*compatible to low version gcc*/
 
     struct AS_Info nul_info = {
         .asn = 0, .country_code = "(null)", .desc = "(null)"};
@@ -372,7 +372,7 @@ static const struct AS_Info _search_ipv6(const struct AS6_Table *as6_table,
         }
     }
 
-err0:
+err0:; /*compatible to low version gcc*/
 
     struct AS_Info nul_info = {
         .asn = 0, .country_code = "(null)", .desc = "(null)"};
