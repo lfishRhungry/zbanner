@@ -574,7 +574,7 @@ TCB *tcpcon_create_tcb(TCP_Table *tcpcon, ipaddress ip_me, ipaddress ip_them,
     tcb->seqno_them       = seqno_them;
     tcb->seqno_me_first   = seqno_me;
     tcb->seqno_them_first = seqno_them;
-    tcb->when_created     = global_now;
+    tcb->when_created     = global_get_time();
     tcb->ttl              = (unsigned char)ttl;
     tcb->probe            = probe;
 

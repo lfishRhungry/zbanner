@@ -9,6 +9,7 @@
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
 #include "../pixie/pixie-file.h"
+#include "../pixie/pixie-threads.h"
 
 #include <mongoc/mongoc.h>
 
@@ -201,7 +202,8 @@ static bool _init_and_test_db(const char *uri_name, const char *db_name,
         final_col_name = col_name;
     } else {
         struct tm *timeinfo;
-        timeinfo = localtime(&global_now);
+        time_t     now = global_get_time();
+        timeinfo       = localtime(&now);
         strftime(tm_buf, 80, "%Y-%m-%d %H:%M:%S", timeinfo);
         final_col_name = tm_buf;
     }

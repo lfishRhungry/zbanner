@@ -329,7 +329,7 @@ void output_result(const OutConf *out, OutItem *item) {
         goto error0;
 
     if (!item->timestamp)
-        ((OutItem *)item)->timestamp = global_now;
+        ((OutItem *)item)->timestamp = global_get_time();
 
     if (item->level == OUT_SUCCESS) {
         pixie_acquire_mutex(out->succ_mutex);

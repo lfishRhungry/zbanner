@@ -48,6 +48,8 @@ bool     pixie_delete_mutex(void *p_mutex);
 #if defined(_MSC_VER)
 #define pixie_locked_add_u32(dst, src)                                         \
     _InterlockedExchangeAdd((volatile long *)(dst), (src))
+#define pixie_locked_add_u64(dst, src)                                         \
+    _InterlockedExchangeAdd64((volatile __int64 *)(dst), (src))
 #define pixie_locked_CAS32(dst, src, expected)                                 \
     (_InterlockedCompareExchange((volatile long *)dst, src, expected) ==       \
      (expected))
@@ -61,6 +63,8 @@ bool     pixie_delete_mutex(void *p_mutex);
 #elif defined(__GNUC__)
 #define pixie_locked_add_u32(dst, src)                                         \
     __sync_add_and_fetch((volatile int *)(dst), (int)(src))
+#define pixie_locked_add_u64(dst, src)                                         \
+    __sync_add_and_fetch((volatile long long *)(dst), (long long)(src))
 #define pixie_locked_CAS32(dst, src, expected)                                 \
     __sync_bool_compare_and_swap((volatile int *)(dst), (int)expected, (int)src)
 #define pixie_locked_CAS64(dst, src, expected)                                 \
@@ -80,6 +84,7 @@ bool     pixie_delete_mutex(void *p_mutex);
 #endif
 #else
 unsigned pixie_locked_add_u32(volatile unsigned *lhs, unsigned rhs);
+unsigned pixie_locked_add_u64(volatile uint64_t *lhs, uint64_t rhs);
 int pixie_locked_CAS32(volatile unsigned *dst, unsigned src, unsigned expected);
 int pixie_locked_CAS64(volatile uint64_t *dst, uint64_t src, uint64_t expected);
 #endif

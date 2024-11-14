@@ -84,6 +84,11 @@ static void _control_c_handler(int x) {
     }
 }
 
+static void _update_global_time() {
+    while (!pixie_locked_CAS64(&global_now, time(0), global_now)) {
+    }
+}
+
 static int _main_scan(XConf *xconf) {
     /**
      * According to C99 standards while using designated initializer:
@@ -400,6 +405,7 @@ static int _main_scan(XConf *xconf) {
      */
     pixie_usleep(1000 * 100);
     LOG(LEVEL_INFO, "waiting for threads to finish\n");
+    _update_global_time();
     while (!pixie_locked_add_u32(&time_to_finish_tx, 0)) {
         /* Find the min-index, repeat and rate */
         status_item.total_sent   = 0;
@@ -476,7 +482,8 @@ static int _main_scan(XConf *xconf) {
          * NOTE: ths sleep time decides the accuracy of the global time variable
          * because we update it periodically in loops.
          */
-        global_now = time(0);
+
+        _update_global_time();
         pixie_mssleep(_LOOP_SLEEP_MS);
     }
 
@@ -497,8 +504,8 @@ static int _main_scan(XConf *xconf) {
      * `time_to_finish_rx` according to time waiting. So `time_to_finish_rx` is
      * the important signal both for Tx/Rx Thread to exit.
      */
-    global_now = time(0);
-    now        = global_now;
+    _update_global_time();
+    now = pixie_locked_add_u64(&global_now, 0);
     for (;;) {
         /* Find the min-index, repeat and rate */
         status_item.total_sent   = 0;
@@ -572,7 +579,7 @@ static int _main_scan(XConf *xconf) {
          * NOTE: ths sleep time decides the accuracy of the global time variable
          * because we update it periodically in loops.
          */
-        global_now = time(0);
+        _update_global_time();
         pixie_mssleep(_LOOP_SLEEP_MS);
     }
 
@@ -631,7 +638,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     _usec_start = pixie_gettime();
-    global_now  = time(0);
+    _update_global_time();
 
     /* Set system to report debug information on crash */
     int is_backtrace = 1;
