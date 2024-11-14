@@ -63,6 +63,7 @@ Welcome to Xtate -- A modular all-stack network scanner for next-generation inte
 1. ✍[Author](#author)
 1. 📄[Papers](#papers)
 1. 🪪[License](#license)
+1. ⭐[404Starlink](#404starlink)
 
 <h1 id="introduction">🎤 Introduction</h1>
 
@@ -495,3 +496,11 @@ GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+<h1 id="404starlink">⭐ 404Starlink</h1>
+
+<img src lazysrc="https://github.com/knownsec/404StarLink-Project/raw/master/logo.png" width="30%">
+
+Xtate has joined [404Starlink](https://github.com/knownsec/404StarLink)
+
+<a href="#top">🔝back to top</a>
