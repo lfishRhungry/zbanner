@@ -150,6 +150,7 @@ bool output_init(const XConf *xconf, OutConf *out_conf) {
                          "ip2asn files are specified.\n");
         LOG(LEVEL_HINT,
             "load AS info by specifying --ip2asn-v4 or/and --ip2asn-v6.\n");
+        return false;
     }
 
     if (out_conf->output_module) {
