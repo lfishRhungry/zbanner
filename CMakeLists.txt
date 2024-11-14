@@ -35,7 +35,7 @@ option(WITH_MONGOC         "Build with libmongoc library"                 ON)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED True)
 
-# Some operations need fixed width for numbe types
+# Some operations need fixed width for number types
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     message(FATAL_ERROR "This project requires a 64-bit system.")
 endif()
@@ -44,6 +44,12 @@ CHECK_TYPE_SIZE("int" INT_SIZE)
 if(NOT INT_SIZE EQUAL 4)
     message(FATAL_ERROR "This project requires an environment with 32-bit int type.")
 endif()
+
+# Some calculations need big-endian
+if(NOT CMAKE_C_BYTE_ORDER STREQUAL "LITTLE_ENDIAN")
+    message(FATAL_ERROR "This project requires a little-endian byte order.")
+endif()
+
 
 if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "Release")
