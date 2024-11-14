@@ -499,7 +499,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 <h1 id="404starlink">⭐ 404Starlink</h1>
 
-<img src lazysrc="https://github.com/knownsec/404StarLink-Project/raw/master/logo.png" width="30%">
+<img src="https://github.com/knownsec/404StarLink/raw/master/Images/logo.png" width="30%">
 
 Xtate has joined [404Starlink](https://github.com/knownsec/404StarLink)
 
