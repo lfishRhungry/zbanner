@@ -24,7 +24,7 @@ extern struct TemplateSet *global_tmplset;
 /**
  * These are used for hinting tx/rx threads to finish there work. They are
  * updatet and read by multiple threads. We'd better to get the latest value
- * every time we read. I recommend to update them by atomic operations.
+ * every time we read. I recommend to read/update them by atomic operations.
  */
 extern unsigned volatile time_to_finish_tx;
 extern unsigned volatile time_to_finish_rx;

@@ -161,7 +161,7 @@ infinite:;
         parms->my_index = i;
 
         /* If the user pressed <ctrl-c>, then we need to exit and save state.*/
-        if (time_to_finish_tx) {
+        if (pixie_locked_add_u32(&time_to_finish_tx, 0)) {
             break;
         }
     }
@@ -170,7 +170,7 @@ infinite:;
      * --infinite, --repeat, --static-seed
      * Set repeat as condition to avoid more packets sending.
      */
-    if (xconf->is_infinite && !time_to_finish_tx) {
+    if (xconf->is_infinite && !pixie_locked_add_u32(&time_to_finish_tx, 0)) {
         if ((xconf->repeat && parms->my_repeat < xconf->repeat) ||
             !xconf->repeat) {
             parms->my_repeat++;
@@ -190,7 +190,7 @@ infinite:;
      * Packets for sending here are not always enough to trigger implicit sock
      * flush. So do explicit flush for less latency.
      */
-    while (!time_to_finish_rx) {
+    while (!pixie_locked_add_u32(&time_to_finish_rx, 0)) {
         batch_size = throttler_next_batch(throttler, packets_sent);
         stack_flush_packets(xconf->stack, adapter, acache, &packets_sent,
                             &batch_size);

@@ -60,7 +60,7 @@ static void dispatch_thread(void *v) {
     pixie_set_thread_name(XTATE_NAME "-dsp");
 
     DispatchConf *parms = v;
-    while (!time_to_finish_rx) {
+    while (!pixie_locked_add_u32(&time_to_finish_rx, 0)) {
         int          err       = 1;
         ValidPacket *valid_pkt = NULL;
 
@@ -135,7 +135,7 @@ static void handle_thread(void *v) {
             pixie_cpu_set_affinity(cpu_index);
     }
 
-    while (!time_to_finish_rx) {
+    while (!pixie_locked_add_u32(&time_to_finish_rx, 0)) {
         /**
          * Do polling for scan module in each loop
          */
@@ -202,7 +202,7 @@ void receive_thread(void *v) {
     pixie_set_thread_name(XTATE_NAME "-recv");
 
     if (xconf->is_offline) {
-        while (!time_to_finish_rx)
+        while (!pixie_locked_add_u32(&time_to_finish_rx, 0))
             pixie_usleep(10000);
         parms->done_receiving = true;
         return;
@@ -263,7 +263,7 @@ void receive_thread(void *v) {
     }
 
     LOG(LEVEL_DEBUG, "(rx thread) starting main loop\n");
-    while (!time_to_finish_rx) {
+    while (!pixie_locked_add_u32(&time_to_finish_rx, 0)) {
         unsigned             pkt_len, pkt_secs, pkt_usecs;
         const unsigned char *pkt_data;
 

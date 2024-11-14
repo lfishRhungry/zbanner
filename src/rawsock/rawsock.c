@@ -347,7 +347,7 @@ int rawsock_recv_packet(Adapter *adapter, unsigned *length, unsigned *secs,
         );
         if (err == PF_RING_ERROR_NO_PKT_AVAILABLE || hdr.caplen == 0) {
             PFRING.poll(adapter->ring, 1);
-            if (time_to_finish_tx)
+            if (pixie_locked_add_u32(&time_to_finish_tx, 0))
                 return 1;
             goto again;
         }

@@ -67,12 +67,12 @@ static void _control_c_handler(int x) {
         control_c_pressed = 1;
         pixie_locked_CAS32(&time_to_finish_tx, 1, 0);
     } else {
-        if (time_to_finish_rx) {
+        if (pixie_locked_add_u32(&time_to_finish_rx, 0)) {
             /*Not first time of <ctrl-c> */
             /*and Rx is exiting, we just warn*/
             LOG(LEVEL_OUT, "\nERROR: Rx Thread is still running\n");
             /*Exit many <ctrl-c>*/
-            if (time_to_finish_rx > 1)
+            if (pixie_locked_add_u32(&time_to_finish_rx, 0) > 1)
                 exit(1);
             pixie_locked_add_u32(&time_to_finish_rx, 1);
         } else {
@@ -400,7 +400,7 @@ static int _main_scan(XConf *xconf) {
      */
     pixie_usleep(1000 * 100);
     LOG(LEVEL_INFO, "waiting for threads to finish\n");
-    while (!time_to_finish_tx) {
+    while (!pixie_locked_add_u32(&time_to_finish_tx, 0)) {
         /* Find the min-index, repeat and rate */
         status_item.total_sent   = 0;
         status_item.cur_pps      = 0.0;
@@ -560,7 +560,8 @@ static int _main_scan(XConf *xconf) {
             xtatus_print(&status, &status_item);
 
         /*no more waiting or too many <ctrl-c>*/
-        if (time(0) - now >= xconf->wait || time_to_finish_rx) {
+        if (time(0) - now >= xconf->wait ||
+            pixie_locked_add_u32(&time_to_finish_rx, 0)) {
             LOG(LEVEL_DEBUG, "telling threads to exit...\n");
             pixie_locked_CAS32(&time_to_finish_rx, 1, 0);
             break;

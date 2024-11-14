@@ -1,5 +1,6 @@
 #include "xtatus.h"
 #include "../pixie/pixie-timer.h"
+#include "../pixie/pixie-threads.h"
 #include "../util-misc/cross.h"
 #include "../globals.h"
 #include "../util-data/safe-string.h"
@@ -181,7 +182,7 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
      * to a file (<stdout> reports what systems were found).
      */
     if (xtatus->is_infinite) {
-        if (time_to_finish_tx) {
+        if (pixie_locked_add_u32(&time_to_finish_tx, 0)) {
             if (item->print_in_json) {
                 fmt = json_fmt_exiting;
 
@@ -245,7 +246,7 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
             }
         }
     } else {
-        if (time_to_finish_tx) {
+        if (pixie_locked_add_u32(&time_to_finish_tx, 0)) {
             if (item->print_in_json) {
                 fmt = json_fmt_waiting;
 
