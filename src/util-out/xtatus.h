@@ -29,7 +29,6 @@ typedef struct XtatusPrinter {
      */
     struct {
         double   clock;
-        time_t   time;
         uint64_t count;
     } last;
     double   last_rates[XTS_RATE_CACHE];

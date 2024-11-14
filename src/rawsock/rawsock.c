@@ -701,9 +701,10 @@ Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
              * packets to caller just when the buffer is full or reaches
              * `timeout` in pcap's default config. Not setting or set timeout to
              * 0, negative will cause undefined action. It is recommended to set
-             * timeout to a non-zero value. NOTE: Manual says timeout will be
-             * disgarded if pcap is in immediate mode. But I saw it has effect
-             * while setting both block mode and immediate mode.
+             * timeout to a non-zero value.
+             * NOTE: Manual says timeout will be disgarded if pcap is in
+             * immediate mode. But I saw it has effect while setting both block
+             * mode and immediate mode.
              */
             err = PCAP.set_timeout(adapter->pcap, PCAP_READ_TIMEOUT_MS);
             if (err) {

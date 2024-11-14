@@ -8,9 +8,10 @@
  ******************************************************************************/
 
 /**
- * Update in `xtatus_print` just by main thread periodically and read by other
- * threads to know a non-accurate time. We use this to avoid much syscal to
- * time(0). I havn't use thread-safe method for it.
+ * Update just in main thread periodically and read by other threads to know a
+ * non-accurate time. We use this to avoid much syscal to time(0). I havn't use
+ * thread-safe method for it. And according to Masscan's author: PF_RING doesn't
+ * timestamp packets well, so we can't always base time from incoming packets.
  */
 extern time_t              global_now;
 /**

@@ -44,6 +44,8 @@
 #include <unistd.h>
 #endif
 
+#define _LOOP_SLEEP_MS 350
+
 /*
  * These are global variables, see globals.h
  */
@@ -469,8 +471,13 @@ static int _main_scan(XConf *xconf) {
         if (!xconf->is_no_status)
             xtatus_print(&status, &status_item);
 
-        /* Sleep for almost a second */
-        pixie_mssleep(500);
+        /**
+         * Update global time and sleep less than 1 sec.
+         * NOTE: ths sleep time decides the accuracy of the global time variable
+         * because we update it periodically in loops.
+         */
+        global_now = time(0);
+        pixie_mssleep(_LOOP_SLEEP_MS);
     }
 
     /*
@@ -490,7 +497,8 @@ static int _main_scan(XConf *xconf) {
      * `time_to_finish_rx` according to time waiting. So `time_to_finish_rx` is
      * the important signal both for Tx/Rx Thread to exit.
      */
-    now = time(0);
+    global_now = time(0);
+    now        = global_now;
     for (;;) {
         /* Find the min-index, repeat and rate */
         status_item.total_sent   = 0;
@@ -558,7 +566,13 @@ static int _main_scan(XConf *xconf) {
             break;
         }
 
-        pixie_mssleep(350);
+        /**
+         * Update global time and sleep less than 1 sec.
+         * NOTE: ths sleep time decides the accuracy of the global time variable
+         * because we update it periodically in loops.
+         */
+        global_now = time(0);
+        pixie_mssleep(_LOOP_SLEEP_MS);
     }
 
     for (unsigned i = 0; i < xconf->tx_thread_count; i++) {

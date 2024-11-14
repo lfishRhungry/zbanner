@@ -34,7 +34,7 @@ typedef struct NetworkAdapter {
     unsigned         is_packet_trace : 1;
     unsigned         is_vlan         : 1;
     unsigned         vlan_id;
-    double           pt_start;
+    double           pt_start; /*start time for packet trace*/
     int              link_type;
 } Adapter;
 

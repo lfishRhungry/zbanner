@@ -3,12 +3,12 @@
 #include <stdint.h>
 
 /**
- * The current time, in microseconds
+ * Get monotonic time for interval calc, in microseconds
  */
 uint64_t pixie_gettime(void);
 
 /**
- * The current time, in nanoseconds
+ * Get monotonic time for interval calc, in nanoseconds
  */
 uint64_t pixie_nanotime(void);
 

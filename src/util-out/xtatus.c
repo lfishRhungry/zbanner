@@ -116,17 +116,6 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
                                    "\"add status\":\"%s\""
                                    "}\n";
 
-    /*
-     * ####  FUGGLY TIME HACK  ####
-     *
-     * PF_RING doesn't timestamp packets well, so we can't base time from
-     * incoming packets. Checking the time ourself is too ugly on per-packet
-     * basis. Therefore, we are going to create a global variable that keeps
-     * the time, and update that variable whenever it's convenient. This
-     * is one of those convenient places.
-     */
-    global_now = time(0);
-
     /* Get the time. NOTE: this is CLOCK_MONOTONIC_RAW on Linux, not
      * wall-clock time. */
     now = (double)pixie_gettime();
@@ -139,8 +128,8 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
     if (elapsed_time <= 0)
         return;
 
-    /* Figure out the "packets-per-second" number, which is just:
-     *
+    /*
+     * Figure out the "packets-per-second" number, which is just:
      *  rate = packets_sent / elapsed_time;
      */
     rate = (item->cur_count - xtatus->last.count) * 1.0 / elapsed_time;
@@ -361,7 +350,6 @@ void xtatus_finish(Xtatus *xtatus) {
  ***************************************************************************/
 void xtatus_start(Xtatus *xtatus) {
     memset(xtatus, 0, sizeof(*xtatus));
-    xtatus->last.clock = clock();
-    xtatus->last.time  = time(0);
+    xtatus->last.clock = pixie_gettime();
     xtatus->last.count = 0;
 }
