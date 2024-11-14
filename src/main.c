@@ -45,25 +45,14 @@
 #endif
 
 /*
- * Use to hint Tx & Rx threads.
- * Should not be modified by Tx or Rx thread themselves but by
- * `mainscan` or `control_c_handler`
+ * These are global variables, see globals.h
  */
 unsigned volatile time_to_finish_tx = 0;
 unsigned volatile time_to_finish_rx = 0;
-
-/*
- * We update a global time in xtatus.c for less syscall.
- * Use this if you need rough and not accurate current time.
- */
 time_t   global_now;
-/**
- * This is for some wrappered functions that use TemplateSet to create packets.
- * !Do not modify it unless u know what u are doing.
- */
 TmplSet *global_tmplset;
 
-static uint64_t usec_start;
+static uint64_t _usec_start;
 
 static void _control_c_handler(int x) {
     static unsigned control_c_pressed = 0;
@@ -74,20 +63,21 @@ static void _control_c_handler(int x) {
                        "                    \n");
         /*First time of <ctrl-c>, tell Tx to stop*/
         control_c_pressed = 1;
-        time_to_finish_tx = 1;
+        pixie_locked_CAS32(&time_to_finish_tx, 1, 0);
     } else {
         if (time_to_finish_rx) {
             /*Not first time of <ctrl-c> */
             /*and Rx is exiting, we just warn*/
             LOG(LEVEL_OUT, "\nERROR: Rx Thread is still running\n");
             /*Exit many <ctrl-c>*/
-            if (time_to_finish_rx++ > 1)
+            if (time_to_finish_rx > 1)
                 exit(1);
+            pixie_locked_add_u32(&time_to_finish_rx, 1);
         } else {
             /*Not first time of <ctrl-c> */
             /*and we are waiting now*/
             /*tell Rx to exit*/
-            time_to_finish_rx = 1;
+            pixie_locked_add_u32(&time_to_finish_rx, 1);
         }
     }
 }
@@ -455,10 +445,10 @@ static int _main_scan(XConf *xconf) {
         /* Note: This is how we tell the Tx has ended */
         if (xconf->is_infinite) {
             if (xconf->repeat && status_item.repeat_count >= xconf->repeat)
-                time_to_finish_tx = 1;
+                pixie_locked_CAS32(&time_to_finish_tx, 1, 0);
         } else {
             if (stop_tx)
-                time_to_finish_tx = 1;
+                pixie_locked_CAS32(&time_to_finish_tx, 1, 0);
         }
 
         /**
@@ -564,7 +554,7 @@ static int _main_scan(XConf *xconf) {
         /*no more waiting or too many <ctrl-c>*/
         if (time(0) - now >= xconf->wait || time_to_finish_rx) {
             LOG(LEVEL_DEBUG, "telling threads to exit...\n");
-            time_to_finish_rx = 1;
+            pixie_locked_CAS32(&time_to_finish_rx, 1, 0);
             break;
         }
 
@@ -581,8 +571,9 @@ static int _main_scan(XConf *xconf) {
     LOG(LEVEL_OUT,
         "\n%u milliseconds elapsed: [+]=%" PRIu64 " [x]=%" PRIu64
         " [*]=%" PRIu64 "\n",
-        (unsigned)((usec_now - usec_start) / 1000), status_item.total_successed,
-        status_item.total_failed, status_item.total_info);
+        (unsigned)((usec_now - _usec_start) / 1000),
+        status_item.total_successed, status_item.total_failed,
+        status_item.total_info);
 
     /*
      * Now cleanup everything
@@ -624,8 +615,8 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    usec_start = pixie_gettime();
-    global_now = time(0);
+    _usec_start = pixie_gettime();
+    global_now  = time(0);
 
     /* Set system to report debug information on crash */
     int is_backtrace = 1;

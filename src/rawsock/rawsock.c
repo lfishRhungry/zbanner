@@ -375,8 +375,8 @@ int rawsock_recv_packet(Adapter *adapter, unsigned *length, unsigned *secs,
         if (err != 1) {
             if (is_pcap_file) {
                 // pixie_time_set_offset(10*100000);
-                time_to_finish_tx = 1;
-                time_to_finish_rx = 1;
+                pixie_locked_CAS32(&time_to_finish_tx, 1, 0);
+                pixie_locked_CAS32(&time_to_finish_rx, 1, 0);
             }
             return 1;
         }
