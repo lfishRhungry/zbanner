@@ -35,11 +35,16 @@ option(WITH_MONGOC         "Build with libmongoc library"                 ON)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED True)
 
+# Some operations need fixed width for numbe types
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(FATAL_ERROR "This project requires a 64-bit system.")
+endif()
+
 if (NOT CMAKE_BUILD_TYPE)
-   set (CMAKE_BUILD_TYPE "Release")
-   message (
-      STATUS "No CMAKE_BUILD_TYPE selected, defaulting to ${CMAKE_BUILD_TYPE}"
-   )
+    set (CMAKE_BUILD_TYPE "Release")
+    message (
+       STATUS "No CMAKE_BUILD_TYPE selected, defaulting to ${CMAKE_BUILD_TYPE}"
+    )
 endif ()
 
 if (UNIX)
@@ -158,7 +163,7 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     if (WITH_BSON)
         find_package(bson-1.0 1.7)
     endif ()
-    
+
     if (bson-1.0_FOUND)
         target_link_libraries(${exe_name} mongo::bson_shared)
         get_target_property(LIBBSON_LIBRARY mongo::bson_shared LOCATION)
