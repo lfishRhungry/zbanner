@@ -158,6 +158,10 @@ typedef struct XtateConf {
     char            *bpf_filter;
     char             pcap_filename[256];
     /**
+     * meta info file
+     * */
+    char             meta_filename[256];
+    /**
      * template for packet making quickly.
      */
     TmplSet         *tmplset;

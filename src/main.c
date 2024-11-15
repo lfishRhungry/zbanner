@@ -23,6 +23,7 @@
 #include "pixie/pixie-backtrace.h"
 #include "pixie/pixie-threads.h"
 #include "pixie/pixie-timer.h"
+#include "pixie/pixie-file.h"
 
 #include "util-out/logger.h"
 #include "util-out/xtatus.h"
@@ -101,6 +102,7 @@ static int _main_scan(XConf *xconf) {
      * This is more efficient to got an all-zero var than memset and could got
      * a partial-zero var conveniently.
      */
+    FILE      *meta_fp         = NULL;
     bool       stop_tx         = true;
     uint64_t   count_targets   = 0;
     uint64_t   count_endpoints = 0;
@@ -332,7 +334,21 @@ static int _main_scan(XConf *xconf) {
     rx_thread->pt_start           = 1.0 * pixie_gettime() / 1000000.0;
 
     /*
-     * Print helpful text
+     * prepare meta info file
+     */
+    if (xconf->meta_filename[0]) {
+        int err = pixie_fopen_shareable(&meta_fp, xconf->meta_filename, false);
+
+        if (err != 0 || meta_fp == NULL) {
+            LOG(LEVEL_ERROR, "Could not open file %s to write meta info.\n",
+                xconf->meta_filename);
+            LOGPERROR(xconf->meta_filename);
+            meta_fp = NULL;
+        }
+    }
+
+    /*
+     * Print meta information before scanning
      */
     char      buffer[80];
     struct tm x;
@@ -375,6 +391,94 @@ static int _main_scan(XConf *xconf) {
         LOG(LEVEL_OUT, "Scanning a dynamic number of targets\n");
     }
     LOG(LEVEL_OUT, "\n");
+
+    /**
+     * Print meta information to file before scanning
+     */
+    while (meta_fp) {
+        int err;
+        err = fprintf(meta_fp,
+                      "Starting " XTATE_WITH_VERSION " at %s\n"
+                      "(" XTATE_GITHUB_URL ")\n\n"
+                      "Generator: %s\n"
+                      "Scanner: %s\n",
+                      buffer, xconf->generator->name, xconf->scanner->name);
+        if (err < 0)
+            goto meta_error0;
+
+        if (xconf->probe) {
+            err = fprintf(meta_fp, "Probe: %s\n", xconf->probe->name);
+            if (err < 0)
+                goto meta_error0;
+        }
+
+        if (xconf->out_conf.output_module) {
+            err = fprintf(meta_fp, "Output: %s\n",
+                          xconf->out_conf.output_module->name);
+            if (err < 0)
+                goto meta_error0;
+        }
+
+        err = fprintf(meta_fp,
+                      "Interface: %s\n"
+                      "IP version:",
+                      xconf->nic.ifname);
+        if (err < 0)
+            goto meta_error0;
+
+        if (init_ipv4) {
+            err = fprintf(meta_fp, " v4");
+            if (err < 0)
+                goto meta_error0;
+        }
+        if (init_ipv6) {
+            err = fprintf(meta_fp, " v6");
+            if (err < 0)
+                goto meta_error0;
+        }
+        err = fprintf(meta_fp, "\n");
+        if (err < 0)
+            goto meta_error0;
+        /**
+         * We use target and endpoint for generalizing.
+         * Not all modules would using host and port. A target can be an IP, URL
+         * or any others. An endpoint can be a port, TTL, IP protocol,
+         * sub-directory or any others.
+         */
+        if (count_targets > 0) {
+            err =
+                fprintf(meta_fp, "Scanning %" PRIu64 " targets", count_targets);
+            if (err < 0)
+                goto meta_error0;
+
+            if (count_endpoints > 1) {
+                err = fprintf(meta_fp, " [%" PRIu64 " endpoints each]",
+                              count_endpoints);
+                if (err < 0)
+                    goto meta_error0;
+            }
+
+            err = fprintf(meta_fp, "\n");
+            if (err < 0)
+                goto meta_error0;
+        } else {
+            err = fprintf(meta_fp, "Scanning a dynamic number of targets\n");
+            if (err < 0)
+                goto meta_error0;
+        }
+        err = fprintf(meta_fp, "\n");
+        if (err < 0)
+            goto meta_error0;
+
+        break;
+
+    meta_error0:
+        LOG(LEVEL_ERROR,
+            "could not write before-scanning meta info to file %s\n",
+            xconf->meta_filename);
+        LOGPERROR(xconf->meta_filename);
+        break;
+    }
 
     /*
      * Start tx & rx threads
@@ -592,6 +696,9 @@ static int _main_scan(XConf *xconf) {
     _update_global_time();
     pixie_thread_join(rx_thread->thread_handle_recv);
 
+    /*
+     * Print meta information after scanning
+     */
     uint64_t usec_now = pixie_gettime();
     LOG(LEVEL_OUT,
         "\n%u milliseconds elapsed: [+]=%" PRIu64 " [x]=%" PRIu64
@@ -599,6 +706,37 @@ static int _main_scan(XConf *xconf) {
         (unsigned)((usec_now - _usec_start) / 1000),
         status_item.total_successed, status_item.total_failed,
         status_item.total_info);
+
+    /**
+     * Print meta information to file before scanning
+     */
+    while (meta_fp) {
+        int err;
+        err = fprintf(meta_fp,
+                      "scanning duration = %ums\n"
+                      "successful results = %" PRIu64 "\n"
+                      "failed results = %" PRIu64 "\n"
+                      "information results = %" PRIu64 "\n",
+                      (unsigned)((usec_now - _usec_start) / 1000),
+                      status_item.total_successed, status_item.total_failed,
+                      status_item.total_info);
+        if (err < 0)
+            goto meta_error1;
+
+        break;
+
+    meta_error1:
+        LOG(LEVEL_ERROR,
+            "could not write after-scanning meta info to file %s\n",
+            xconf->meta_filename);
+        LOGPERROR(xconf->meta_filename);
+        break;
+    }
+
+    if (meta_fp) {
+        fclose(meta_fp);
+        meta_fp = NULL;
+    }
 
     /*
      * Now cleanup everything

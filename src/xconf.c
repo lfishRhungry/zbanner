@@ -1809,6 +1809,22 @@ static ConfRes SET_router_mac(void *conf, const char *name, const char *value) {
     return Conf_OK;
 }
 
+static ConfRes SET_meta_filename(void *conf, const char *name,
+                                 const char *value) {
+    XConf *xconf = (XConf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->meta_filename[0])
+            fprintf(xconf->echo, "meta-file = %s\n", xconf->meta_filename);
+        return 0;
+    }
+
+    safe_strcpy(xconf->meta_filename, sizeof(xconf->meta_filename), value);
+
+    return Conf_OK;
+}
+
 /**
  * read conf file and set params directly
  */
@@ -3491,6 +3507,11 @@ ConfParam config_parameters[] = {
      "Do not save scan info to resume file(paused.conf) for resuming. This is"
      " useful when our target list is too large and scattered and spend too "
      "much time to save."},
+    {"meta-filename",
+     SET_meta_filename,
+     Type_ARG,
+     {"meta-file", "meta", 0},
+     "Save meta information of scanning to a specified file."},
     {"pcap-filename",
      SET_pcap_filename,
      Type_ARG,

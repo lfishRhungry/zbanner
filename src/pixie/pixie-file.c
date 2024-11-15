@@ -48,7 +48,6 @@ int pixie_fopen_shareable(FILE **in_fp, const char *filename, bool is_append) {
         fd = _open_osfhandle((intptr_t)hFile,
                              _O_CREAT | _O_RDONLY | _O_TEMPORARY);
         if (fd == -1) {
-            LOGPERROR("_open_osfhandle");
             return -1;
         }
 
