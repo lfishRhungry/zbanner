@@ -583,10 +583,13 @@ static int _main_scan(XConf *xconf) {
         pixie_mssleep(_LOOP_SLEEP_MS);
     }
 
+    _update_global_time();
     for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
         TxThread *parms = &tx_thread[i];
         pixie_thread_join(parms->thread_handle_xmit);
     }
+
+    _update_global_time();
     pixie_thread_join(rx_thread->thread_handle_recv);
 
     uint64_t usec_now = pixie_gettime();
