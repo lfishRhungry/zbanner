@@ -1,6 +1,23 @@
 #include <ctype.h>
 #include <limits.h>
 
+#ifndef NOT_FOUND_OPENSSL
+#include <openssl/opensslv.h>
+#endif
+
+#ifndef NOT_FOUND_PCRE2
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
+#endif
+
+#ifndef NOT_FOUND_LIBXML2
+#include <libxml/xmlversion.h>
+#endif
+
+#ifndef NOT_FOUND_BSON
+#include <bson/bson.h>
+#endif
+
 #ifndef NOT_FOUND_MONGOC
 #include <mongoc/mongoc.h>
 #endif
@@ -3926,7 +3943,6 @@ void xconf_print_version() {
     printf("  Build with libraries:\n");
 
 #ifndef NOT_FOUND_OPENSSL
-#include <openssl/opensslv.h>
     /*This macro is backward compatible*/
     printf("    OpenSSL    %s\n", &OPENSSL_VERSION_TEXT[8]);
 #else
@@ -3934,8 +3950,6 @@ void xconf_print_version() {
 #endif
 
 #ifndef NOT_FOUND_PCRE2
-#define PCRE2_CODE_UNIT_WIDTH 8
-#include <pcre2.h>
     char version[120];
     pcre2_config(PCRE2_CONFIG_VERSION, version);
     printf("    PCRE2      %s\n", version);
@@ -3944,14 +3958,12 @@ void xconf_print_version() {
 #endif
 
 #ifndef NOT_FOUND_LIBXML2
-#include <libxml/xmlversion.h>
     printf("    LibXml2    %s\n", LIBXML_DOTTED_VERSION);
 #else
     printf("    LibXml2    (null)\n");
 #endif
 
 #ifndef NOT_FOUND_BSON
-#include <bson/bson.h>
     printf("    libbson    %s\n", BSON_VERSION_S);
 #else
     printf("    libbson    (null)\n");
