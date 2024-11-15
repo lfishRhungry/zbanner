@@ -3494,9 +3494,9 @@ ConfParam config_parameters[] = {
     {"pcap-filename",
      SET_pcap_filename,
      Type_ARG,
-     {"pcap", 0},
-     "Saves received packets (but not transmitted packets) to the "
-     "libpcap-format file."},
+     {"pcap", "pcap-file", 0},
+     "Save received packets (but not transmitted packets) to the pcap-format "
+     "file."},
     {"no-ansi-control",
      SET_no_ansi,
      Type_FLAG,
