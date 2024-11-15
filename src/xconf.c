@@ -498,7 +498,7 @@ static ConfRes SET_output_as_info(void *conf, const char *name,
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->echo_all || xconf->out_conf.output_as_info) {
-            fprintf(xconf->echo, "output-as-info = \"%s\"\n",
+            fprintf(xconf->echo, "output-as-info = %s\n",
                     xconf->out_conf.output_as_info ? "true" : "false");
         }
         return 0;
@@ -513,8 +513,7 @@ static ConfRes SET_ip2asn_v6(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->ip2asn_v6_filename) {
-            fprintf(xconf->echo, "ip2asn-v6 = \"%s\"\n",
-                    xconf->ip2asn_v6_filename);
+            fprintf(xconf->echo, "ip2asn-v6 = %s\n", xconf->ip2asn_v6_filename);
         }
         return 0;
     }
@@ -528,8 +527,7 @@ static ConfRes SET_ip2asn_v4(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->ip2asn_v4_filename) {
-            fprintf(xconf->echo, "ip2asn-v4 = \"%s\"\n",
-                    xconf->ip2asn_v4_filename);
+            fprintf(xconf->echo, "ip2asn-v4 = %s\n", xconf->ip2asn_v4_filename);
         }
         return 0;
     }
@@ -544,7 +542,7 @@ static ConfRes SET_output_filename(void *conf, const char *name,
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
         if (xconf->out_conf.output_filename[0]) {
-            fprintf(xconf->echo, "output-file = \"%s\"\n",
+            fprintf(xconf->echo, "output-file = %s\n",
                     xconf->out_conf.output_filename);
         }
         return 0;
@@ -676,7 +674,7 @@ static ConfRes SET_scan_module_args(void *conf, const char *name,
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->scanner_args) {
-            fprintf(xconf->echo, "scan-module-args = \"%s\"\n",
+            fprintf(xconf->echo, "scan-module-args = %s\n",
                     xconf->scanner_args);
         }
         return 0;
@@ -696,8 +694,7 @@ static ConfRes SET_probe_module_args(void *conf, const char *name,
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->probe_args) {
-            fprintf(xconf->echo, "probe-module-args = \"%s\"\n",
-                    xconf->probe_args);
+            fprintf(xconf->echo, "probe-module-args = %s\n", xconf->probe_args);
         }
         return 0;
     }
@@ -716,7 +713,7 @@ static ConfRes SET_generate_module_args(void *conf, const char *name,
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->generator_args) {
-            fprintf(xconf->echo, "generate-module-args = \"%s\"\n",
+            fprintf(xconf->echo, "generate-module-args = %s\n",
                     xconf->generator_args);
         }
         return 0;
@@ -736,7 +733,7 @@ static ConfRes SET_output_module_args(void *conf, const char *name,
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->out_conf.output_args) {
-            fprintf(xconf->echo, "output-module-args = \"%s\"\n",
+            fprintf(xconf->echo, "output-module-args = %s\n",
                     xconf->out_conf.output_args);
         }
         return 0;
@@ -1234,7 +1231,7 @@ static ConfRes SET_adapter(void *conf, const char *name, const char *value) {
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->nic.ifname[0]) {
-            fprintf(xconf->echo, "adapter = \"%s\"\n", xconf->nic.ifname);
+            fprintf(xconf->echo, "adapter = %s\n", xconf->nic.ifname);
         }
         return 0;
     }
@@ -1869,8 +1866,9 @@ static ConfRes SET_read_conf(void *conf, const char *name, const char *value) {
         value++;
         trim(name, 65535);
 
-        /**
+        /*
          * For value, must consider wrapper of double quotes or single quotes.
+         * In other word, we don't need to wrap with quotes while echoing.
          * */
         trim(value, 65535);
         if (value[0] == '"') {
@@ -2027,8 +2025,7 @@ static ConfRes SET_pcap_filename(void *conf, const char *name,
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->pcap_filename[0])
-            fprintf(xconf->echo, "pcap-filename = \"%s\"\n",
-                    xconf->pcap_filename);
+            fprintf(xconf->echo, "pcap-filename = %s\n", xconf->pcap_filename);
         return 0;
     }
     if (value)
@@ -2277,7 +2274,7 @@ static ConfRes SET_bpf_filter(void *conf, const char *name, const char *value) {
     UNUSEDPARM(name);
     if (xconf->echo) {
         if (xconf->bpf_filter)
-            fprintf(xconf->echo, "bpf-filter = \"%s\"\n", xconf->bpf_filter);
+            fprintf(xconf->echo, "bpf-filter = %s\n", xconf->bpf_filter);
         return 0;
     }
 
