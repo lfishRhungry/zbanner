@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(
     xtate
     LANGUAGES               C
-    VERSION                 2.4.5
+    VERSION                 2.4.6
     DESCRIPTION             "A modular all-stack network scanner for next-generation internet surveys."
     HOMEPAGE_URL            "https://github.com/sharkocha/xtate"
     )
@@ -65,13 +65,39 @@ endif ()
 if (UNIX)
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall -O0 -ggdb -fno-pie")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -Wall -DNDEBUG")
+
+    # set debug option
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        add_link_options(-no-pie)
+
+        # -no-pie link option is invalid for low version of gcc & clang
+        if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+            execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpfullversion -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+            string(REGEX MATCHALL "[0-9]+" GCC_VERSION_COMPONENTS ${GCC_VERSION})
+            list(GET GCC_VERSION_COMPONENTS 0 GCC_MAJOR)
+            list(GET GCC_VERSION_COMPONENTS 1 GCC_MINOR)
+            if (NOT GCC_VERSION VERSION_LESS "6.5")
+                add_link_options(-no-pie)
+            endif()
+        endif()
+        if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+            execute_process(COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE clang_full_version_string)
+            string(REGEX REPLACE ".*clang version ([0-9]+\\.[0-9]+(\\.[0-9]+)?).*" "\\1" CLANG_VERSION_STRING ${clang_full_version_string})
+            string(REGEX REPLACE "([0-9]+)\\.[0-9]+(\\.[0-9]+)?" "\\1" CLANG_MAJOR_VERSION ${CLANG_VERSION_STRING})
+            string(REGEX REPLACE "[0-9]+\\.([0-9]+)(\\.[0-9]+)?" "\\1" CLANG_MINOR_VERSION ${CLANG_VERSION_STRING})
+            if (NOT CLANG_VERSION_STRING VERSION_LESS 15.0)
+                add_link_options(-no-pie)
+            endif()
+        endif()
+
+        # -rdynamic is not suitable for MinGW
         if (NOT MINGW)
             add_link_options(-rdynamic) # for backtrace debugging
         endif ()
+
     endif ()
-    add_definitions(-D_GNU_SOURCE) # using sendmmsg need this GNU extension
+
+    # using sendmmsg need this GNU extension
+    add_definitions(-D_GNU_SOURCE) 
 endif ()
 
 if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
