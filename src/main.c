@@ -386,6 +386,10 @@ static int _main_scan(XConf *xconf) {
         if (count_endpoints > 1) {
             LOG(LEVEL_OUT, " [%" PRIu64 " endpoints each]", count_endpoints);
         }
+        if (xconf->shard.of > 1) {
+            LOG(LEVEL_OUT, " in shard %u/%u", xconf->shard.one,
+                xconf->shard.of);
+        }
         LOG(LEVEL_OUT, "\n");
     } else {
         LOG(LEVEL_OUT, "Scanning a dynamic number of targets\n");
@@ -454,6 +458,13 @@ static int _main_scan(XConf *xconf) {
             if (count_endpoints > 1) {
                 err = fprintf(meta_fp, " [%" PRIu64 " endpoints each]",
                               count_endpoints);
+                if (err < 0)
+                    goto meta_error0;
+            }
+
+            if (xconf->shard.of > 1) {
+                err = fprintf(meta_fp, " in shard %u/%u", xconf->shard.one,
+                              xconf->shard.of);
                 if (err < 0)
                     goto meta_error0;
             }

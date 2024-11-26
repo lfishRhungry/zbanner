@@ -57,6 +57,9 @@ void listtargets_ip_port(XConf *xconf, FILE *fp) {
         LOG(LEVEL_OUT, " [%" PRIu64 " endpoints each]",
             xconf->targets.count_ports);
     }
+    if (xconf->shard.of > 1) {
+        LOG(LEVEL_OUT, " in shard %u/%u", xconf->shard.one, xconf->shard.of);
+    }
     LOG(LEVEL_OUT, ".\n");
 
     /**

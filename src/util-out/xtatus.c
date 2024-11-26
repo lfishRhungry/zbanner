@@ -146,14 +146,21 @@ void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
     rate /= XTS_RATE_CACHE;
 
     /*
-     * Calculate "percent-done", which is just the total number of
-     * packets sent divided by the number we need to send.
+     * Calculate "percent-done" if the generator is not dynamic.
+     * "percent-done" is just the total number of packets sent divided by the
+     * number we need to send.
      */
-    if (item->max_count)
+    if (item->max_count) {
         percent_done = (double)(item->cur_count * 100.0 / item->max_count);
+        /**
+         * cur_count may be greater than max_count while sharding, so we limit
+         * the final percent_done less equal to 100.0
+         */
+        percent_done = percent_done > 100.0 ? 100.0 : percent_done;
+    }
 
     /*
-     * Calculate the time remaining in the scan
+     * Calculate the time remaining in the scan if the generator is not dynamic.
      */
     if (item->max_count)
         time_remaining =
