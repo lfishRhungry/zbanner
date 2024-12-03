@@ -56,7 +56,7 @@ static ConfRes SET_all_banner_floor(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.all_banner_floor = parse_str_int(value);
+    zbanner_conf.all_banner_floor = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -66,7 +66,7 @@ static ConfRes SET_all_banner_limit(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.all_banner_limit = parse_str_int(value);
+    zbanner_conf.all_banner_limit = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -75,7 +75,7 @@ static ConfRes SET_repeat_ack(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.repeat_ack = parse_str_bool(value);
+    zbanner_conf.repeat_ack = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -84,7 +84,7 @@ static ConfRes SET_repeat_rst(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.repeat_rst = parse_str_bool(value);
+    zbanner_conf.repeat_rst = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -94,7 +94,7 @@ static ConfRes SET_repeat_synack(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.repeat_synack = parse_str_bool(value);
+    zbanner_conf.repeat_synack = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -104,7 +104,7 @@ static ConfRes SET_repeat_banner(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.repeat_banner = parse_str_bool(value);
+    zbanner_conf.repeat_banner = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -113,7 +113,7 @@ static ConfRes SET_all_banner(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.all_banner = parse_str_bool(value);
+    zbanner_conf.all_banner = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -122,7 +122,7 @@ static ConfRes SET_record_ack(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_ack = parse_str_bool(value);
+    zbanner_conf.record_ack = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -132,7 +132,7 @@ static ConfRes SET_no_dedup_ack(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.no_dedup_ack = parse_str_bool(value);
+    zbanner_conf.no_dedup_ack = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -142,7 +142,7 @@ static ConfRes SET_no_dedup_rst(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.no_dedup_rst = parse_str_bool(value);
+    zbanner_conf.no_dedup_rst = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -152,7 +152,7 @@ static ConfRes SET_no_dedup_synack(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.no_dedup_synack = parse_str_bool(value);
+    zbanner_conf.no_dedup_synack = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -162,7 +162,7 @@ static ConfRes SET_no_dedup_banner(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.no_dedup_banner = parse_str_bool(value);
+    zbanner_conf.no_dedup_banner = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -172,7 +172,7 @@ static ConfRes SET_record_data(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_data = parse_str_bool(value);
+    zbanner_conf.record_data = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -182,7 +182,7 @@ static ConfRes SET_record_banner(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_banner = parse_str_bool(value);
+    zbanner_conf.record_banner = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -192,7 +192,7 @@ static ConfRes SET_record_utf8(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_utf8 = parse_str_bool(value);
+    zbanner_conf.record_utf8 = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -202,7 +202,7 @@ static ConfRes SET_record_data_len(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_data_len = parse_str_bool(value);
+    zbanner_conf.record_data_len = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -212,7 +212,7 @@ static ConfRes SET_record_ackno(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_ackno = parse_str_bool(value);
+    zbanner_conf.record_ackno = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -222,7 +222,7 @@ static ConfRes SET_record_seqno(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_seqno = parse_str_bool(value);
+    zbanner_conf.record_seqno = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -232,7 +232,7 @@ static ConfRes SET_ack_banner_ttl(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.ack_banner_ttl = parse_str_int(value);
+    zbanner_conf.ack_banner_ttl = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -241,7 +241,7 @@ static ConfRes SET_probe_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.probe_ttl = parse_str_int(value);
+    zbanner_conf.probe_ttl = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -250,7 +250,7 @@ static ConfRes SET_rst_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.rst_ttl = parse_str_int(value);
+    zbanner_conf.rst_ttl = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -259,7 +259,7 @@ static ConfRes SET_ack_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.ack_ttl = parse_str_int(value);
+    zbanner_conf.ack_ttl = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -268,7 +268,7 @@ static ConfRes SET_syn_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.syn_ttl = parse_str_int(value);
+    zbanner_conf.syn_ttl = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -277,7 +277,7 @@ static ConfRes SET_no_rst(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.no_rst = parse_str_bool(value);
+    zbanner_conf.no_rst = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -286,7 +286,7 @@ static ConfRes SET_with_ack(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.with_ack = parse_str_bool(value);
+    zbanner_conf.with_ack = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -295,7 +295,7 @@ static ConfRes SET_record_mss(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_mss = parse_str_bool(value);
+    zbanner_conf.record_mss = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -304,7 +304,7 @@ static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_ttl = parse_str_bool(value);
+    zbanner_conf.record_ttl = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -314,7 +314,7 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_ipid = parse_str_bool(value);
+    zbanner_conf.record_ipid = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -323,7 +323,7 @@ static ConfRes SET_record_win(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.record_win = parse_str_bool(value);
+    zbanner_conf.record_win = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -333,7 +333,7 @@ static ConfRes SET_port_success(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.is_port_success = parse_str_bool(value);
+    zbanner_conf.is_port_success = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -343,7 +343,7 @@ static ConfRes SET_port_failure(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.is_port_failure = parse_str_bool(value);
+    zbanner_conf.is_port_failure = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -353,7 +353,7 @@ static ConfRes SET_ack_success(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    zbanner_conf.is_ack_success = parse_str_bool(value);
+    zbanner_conf.is_ack_success = conf_parse_bool(value);
 
     return Conf_OK;
 }

@@ -42,7 +42,7 @@ static ConfRes SET_bulk_size(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    mongodb_conf.bulk_size = parse_str_int(value);
+    mongodb_conf.bulk_size = conf_parse_int(value);
     mongodb_conf.is_bulk   = 1;
 
     return Conf_OK;
@@ -52,7 +52,7 @@ static ConfRes SET_is_bulk(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    mongodb_conf.is_bulk = parse_str_bool(value);
+    mongodb_conf.is_bulk = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -88,7 +88,7 @@ static ConfRes SET_compact(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    mongodb_conf.is_compact = parse_str_bool(value);
+    mongodb_conf.is_compact = conf_parse_bool(value);
 
     return Conf_OK;
 }

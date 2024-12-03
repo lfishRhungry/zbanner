@@ -167,7 +167,7 @@ struct AS_Query *as_query_new(const char *filename_v4,
             }
 
             as_table_v4->list[as_item_count_v4].as_info.asn =
-                parse_str_int(asn_str);
+                conf_parse_int(asn_str);
             as_table_v4->list[as_item_count_v4].as_info.country_code =
                 STRDUP(cc_str);
             as_table_v4->list[as_item_count_v4].as_info.desc = STRDUP(desc_str);
@@ -275,7 +275,7 @@ no_as_v4:
             }
 
             as_table_v6->list[as_item_count_v6].as_info.asn =
-                parse_str_int(asn_str);
+                conf_parse_int(asn_str);
             as_table_v6->list[as_item_count_v6].as_info.country_code =
                 STRDUP(cc_str);
             as_table_v6->list[as_item_count_v6].as_info.desc = STRDUP(desc_str);

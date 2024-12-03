@@ -102,7 +102,7 @@ static ConfRes SET_all_banner_floor(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    httpstate_conf.all_banner_floor = parse_str_int(value);
+    httpstate_conf.all_banner_floor = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -112,7 +112,7 @@ static ConfRes SET_all_banner_limit(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    httpstate_conf.all_banner_limit = parse_str_int(value);
+    httpstate_conf.all_banner_limit = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -121,7 +121,7 @@ static ConfRes SET_all_banner(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    httpstate_conf.all_banner = parse_str_bool(value);
+    httpstate_conf.all_banner = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -131,7 +131,7 @@ static ConfRes SET_record_data_len(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    httpstate_conf.record_data_len = parse_str_bool(value);
+    httpstate_conf.record_data_len = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -141,7 +141,7 @@ static ConfRes SET_record_data(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    httpstate_conf.record_data = parse_str_bool(value);
+    httpstate_conf.record_data = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -151,7 +151,7 @@ static ConfRes SET_record_utf8(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    httpstate_conf.record_utf8 = parse_str_bool(value);
+    httpstate_conf.record_utf8 = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -161,7 +161,7 @@ static ConfRes SET_record_banner(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    httpstate_conf.record_banner = parse_str_bool(value);
+    httpstate_conf.record_banner = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -173,7 +173,7 @@ static ConfRes SET_match_whole_response(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    httpstate_conf.match_whole_response = parse_str_bool(value);
+    httpstate_conf.match_whole_response = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -182,7 +182,7 @@ static ConfRes SET_newlines(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    httpstate_conf.re_include_newlines = parse_str_bool(value);
+    httpstate_conf.re_include_newlines = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -192,7 +192,7 @@ static ConfRes SET_insensitive(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    httpstate_conf.re_case_insensitive = parse_str_bool(value);
+    httpstate_conf.re_case_insensitive = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -342,7 +342,7 @@ static ConfRes SET_header(void *conf, const char *name, const char *value) {
         newname[name_length] = '\0';
     } else if (strchr(value, ':')) {
         /* Specified as: "--header Name:value" */
-        name_length = INDEX_OF(value, ':');
+        name_length = conf_index_of(value, ':');
         newname     = MALLOC(name_length + 1);
         memcpy(newname, value, name_length + 1);
 
@@ -431,7 +431,7 @@ static ConfRes SET_dynamic_host(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    httpstate_conf.dynamic_host = parse_str_bool(value);
+    httpstate_conf.dynamic_host = conf_parse_bool(value);
 
     return Conf_OK;
 }

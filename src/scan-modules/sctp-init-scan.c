@@ -19,7 +19,7 @@ static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    sctpinit_conf.record_ttl = parse_str_bool(value);
+    sctpinit_conf.record_ttl = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -29,7 +29,7 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    sctpinit_conf.record_ipid = parse_str_bool(value);
+    sctpinit_conf.record_ipid = conf_parse_bool(value);
 
     return Conf_OK;
 }

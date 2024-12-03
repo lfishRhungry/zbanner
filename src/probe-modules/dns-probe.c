@@ -47,7 +47,7 @@ static ConfRes SET_recursive_desired(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    dns_conf.recursive_desired = parse_str_bool(value);
+    dns_conf.recursive_desired = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -57,7 +57,7 @@ static ConfRes SET_print_all_add(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    dns_conf.print_all_add = parse_str_bool(value);
+    dns_conf.print_all_add = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -67,7 +67,7 @@ static ConfRes SET_print_all_auth(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    dns_conf.print_all_auth = parse_str_bool(value);
+    dns_conf.print_all_auth = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -77,7 +77,7 @@ static ConfRes SET_print_all_answer(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    dns_conf.print_all_ans = parse_str_bool(value);
+    dns_conf.print_all_ans = conf_parse_bool(value);
 
     return Conf_OK;
 }

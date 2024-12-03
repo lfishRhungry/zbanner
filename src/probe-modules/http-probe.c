@@ -95,7 +95,7 @@ static ConfRes SET_newlines(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    http_conf.re_include_newlines = parse_str_bool(value);
+    http_conf.re_include_newlines = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -105,7 +105,7 @@ static ConfRes SET_insensitive(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    http_conf.re_case_insensitive = parse_str_bool(value);
+    http_conf.re_case_insensitive = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -255,7 +255,7 @@ static ConfRes SET_header(void *conf, const char *name, const char *value) {
         newname[name_length] = '\0';
     } else if (strchr(value, ':')) {
         /* Specified as: "--header Name:value" */
-        name_length = INDEX_OF(value, ':');
+        name_length = conf_index_of(value, ':');
         newname     = MALLOC(name_length + 1);
         memcpy(newname, value, name_length + 1);
 
@@ -344,7 +344,7 @@ static ConfRes SET_dynamic_host(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    http_conf.dynamic_host = parse_str_bool(value);
+    http_conf.dynamic_host = conf_parse_bool(value);
 
     return Conf_OK;
 }

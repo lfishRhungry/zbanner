@@ -164,9 +164,9 @@ bool output_init(const XConf *xconf, OutConf *out_conf) {
         }
 
         if (out_conf->output_module->params && out_conf->output_args) {
-            if (set_parameters_from_substring(NULL,
-                                              out_conf->output_module->params,
-                                              out_conf->output_args)) {
+            if (conf_set_params_from_substr(NULL,
+                                            out_conf->output_module->params,
+                                            out_conf->output_args)) {
                 LOG(LEVEL_ERROR, "sub param parsing of OutputModule.\n");
                 return false;
             }

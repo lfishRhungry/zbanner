@@ -34,7 +34,7 @@ static ConfRes SET_synack_floor(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.synack_floor = parse_str_int(value);
+    tcpsyn_conf.synack_floor = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -44,7 +44,7 @@ static ConfRes SET_synack_limit(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.synack_limit = parse_str_int(value);
+    tcpsyn_conf.synack_limit = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -53,7 +53,7 @@ static ConfRes SET_repeat_rst(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.repeat_rst = parse_str_bool(value);
+    tcpsyn_conf.repeat_rst = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -63,7 +63,7 @@ static ConfRes SET_repeat_synack(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.repeat_synack = parse_str_bool(value);
+    tcpsyn_conf.repeat_synack = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -73,7 +73,7 @@ static ConfRes SET_no_dedup_rst(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.no_dedup_rst = parse_str_bool(value);
+    tcpsyn_conf.no_dedup_rst = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -83,7 +83,7 @@ static ConfRes SET_no_dedup_synack(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.no_dedup_synack = parse_str_bool(value);
+    tcpsyn_conf.no_dedup_synack = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -93,7 +93,7 @@ static ConfRes SET_record_ackno(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.record_ackno = parse_str_bool(value);
+    tcpsyn_conf.record_ackno = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -103,7 +103,7 @@ static ConfRes SET_record_seqno(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.record_seqno = parse_str_bool(value);
+    tcpsyn_conf.record_seqno = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -112,7 +112,7 @@ static ConfRes SET_syn_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.syn_ttl = parse_str_int(value);
+    tcpsyn_conf.syn_ttl = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -121,7 +121,7 @@ static ConfRes SET_rst_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.rst_ttl = parse_str_int(value);
+    tcpsyn_conf.rst_ttl = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -130,7 +130,7 @@ static ConfRes SET_record_mss(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.record_mss = parse_str_bool(value);
+    tcpsyn_conf.record_mss = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -139,7 +139,7 @@ static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.record_ttl = parse_str_bool(value);
+    tcpsyn_conf.record_ttl = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -149,7 +149,7 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.record_ipid = parse_str_bool(value);
+    tcpsyn_conf.record_ipid = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -158,7 +158,7 @@ static ConfRes SET_record_win(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.record_win = parse_str_bool(value);
+    tcpsyn_conf.record_win = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -167,7 +167,7 @@ static ConfRes SET_zero_fail(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.zero_fail = parse_str_bool(value);
+    tcpsyn_conf.zero_fail = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -176,7 +176,7 @@ static ConfRes SET_send_rst(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpsyn_conf.send_rst = parse_str_bool(value);
+    tcpsyn_conf.send_rst = conf_parse_bool(value);
 
     return Conf_OK;
 }

@@ -45,31 +45,32 @@ typedef struct ConfigParam {
     const char      *help_text; /*set NULL if it's not a normal prarameter*/
 } ConfParam;
 
-bool is_str_bool(const char *str);
-bool is_str_int(const char *value);
-bool is_power_of_two(uint64_t x);
+bool conf_is_bool(const char *str);
+bool conf_is_int(const char *value);
+bool conf_is_power_of_2(uint64_t x);
 
-uint64_t parse_str_time(const char *value);
-uint64_t parse_str_size(const char *value);
-int      parse_str_mac(const char *text, macaddress_t *mac);
-uint64_t parse_str_int(const char *str);
-bool     parse_str_bool(const char *str);
+uint64_t conf_parse_time(const char *value);
+uint64_t conf_parse_size(const char *value);
+int      conf_parse_mac(const char *text, macaddress_t *mac);
+uint64_t conf_parse_int(const char *str);
+bool     conf_parse_bool(const char *str);
 
-unsigned parse_char_hex(char c);
+unsigned conf_char2hex(char c);
 
-unsigned parse_opt_int(const char *name);
-char    *parse_opt_str(const char *name);
+unsigned conf_parse_opt_int(const char *name);
+char    *conf_parse_opt_str(const char *name);
 
-bool is_parm_flag(const ConfParam *cp, const char *name);
+bool conf_is_parm_flag(const ConfParam *cp, const char *name);
 
-bool     EQUALS(const char *lhs, const char *rhs);
-bool     EQUALSx(const char *lhs, const char *rhs, size_t rhs_length);
-unsigned INDEX_OF(const char *str, char c);
+bool     conf_equals(const char *lhs, const char *rhs);
+bool     conf_equals_x(const char *lhs, const char *rhs, size_t rhs_length);
+unsigned conf_index_of(const char *str, char c);
 
-void set_one_parameter(void *conf, ConfParam *cp, const char *name,
-                       const char *value);
-void set_parameters_from_args(void *conf, ConfParam *cp, int argc, char **argv);
-int  set_parameters_from_string(void *conf, ConfParam *cp, char *string);
-int  set_parameters_from_substring(void *conf, ConfParam *cp, char *substring);
+void conf_set_one_param(void *conf, ConfParam *cp, const char *name,
+                        const char *value);
+void conf_set_params_from_args(void *conf, ConfParam *cp, int argc,
+                               char **argv);
+int  conf_set_params_from_str(void *conf, ConfParam *cp, char *string);
+int  conf_set_params_from_substr(void *conf, ConfParam *cp, char *substring);
 
 #endif

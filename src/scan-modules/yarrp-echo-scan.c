@@ -51,7 +51,7 @@ static ConfRes SET_record_icmp_ip_me(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpecho_conf.record_icmp_ip_me = parse_str_bool(value);
+    yarrpecho_conf.record_icmp_ip_me = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -61,7 +61,7 @@ static ConfRes SET_record_icmp_seqno(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpecho_conf.record_icmp_seqno = parse_str_bool(value);
+    yarrpecho_conf.record_icmp_seqno = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -71,7 +71,7 @@ static ConfRes SET_record_icmp_id(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpecho_conf.record_icmp_id = parse_str_bool(value);
+    yarrpecho_conf.record_icmp_id = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -80,7 +80,7 @@ static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpecho_conf.record_ttl = parse_str_bool(value);
+    yarrpecho_conf.record_ttl = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -90,7 +90,7 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpecho_conf.record_ipid = parse_str_bool(value);
+    yarrpecho_conf.record_ipid = conf_parse_bool(value);
 
     return Conf_OK;
 }

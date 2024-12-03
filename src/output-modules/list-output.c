@@ -21,7 +21,7 @@ static ConfRes SET_no_port(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    list_conf.no_port = parse_str_bool(value);
+    list_conf.no_port = conf_parse_bool(value);
 
     return Conf_OK;
 }

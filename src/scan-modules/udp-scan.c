@@ -40,7 +40,7 @@ static ConfRes SET_packet_floor(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.packet_floor = parse_str_int(value);
+    udp_conf.packet_floor = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -50,7 +50,7 @@ static ConfRes SET_packet_limit(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.packet_limit = parse_str_int(value);
+    udp_conf.packet_limit = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -60,7 +60,7 @@ static ConfRes SET_repeat_packet(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.repeat_packet = parse_str_bool(value);
+    udp_conf.repeat_packet = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -70,7 +70,7 @@ static ConfRes SET_no_pre_validate(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.no_pre_validate = parse_str_bool(value);
+    udp_conf.no_pre_validate = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -80,7 +80,7 @@ static ConfRes SET_record_icmp_ip_them(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.record_icmp_ip_them = parse_str_bool(value);
+    udp_conf.record_icmp_ip_them = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -90,7 +90,7 @@ static ConfRes SET_record_icmp_ip_me(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.record_icmp_ip_me = parse_str_bool(value);
+    udp_conf.record_icmp_ip_me = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -100,7 +100,7 @@ static ConfRes SET_record_icmp_seqno(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.record_icmp_seqno = parse_str_bool(value);
+    udp_conf.record_icmp_seqno = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -110,7 +110,7 @@ static ConfRes SET_record_icmp_id(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.record_icmp_id = parse_str_bool(value);
+    udp_conf.record_icmp_id = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -120,7 +120,7 @@ static ConfRes SET_port_failure(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.is_port_failure = parse_str_bool(value);
+    udp_conf.is_port_failure = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -130,7 +130,7 @@ static ConfRes SET_no_port_unreachable(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.no_port_unreachable = parse_str_bool(value);
+    udp_conf.no_port_unreachable = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -140,7 +140,7 @@ static ConfRes SET_record_data(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.record_data = parse_str_bool(value);
+    udp_conf.record_data = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -150,7 +150,7 @@ static ConfRes SET_record_utf8(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.record_utf8 = parse_str_bool(value);
+    udp_conf.record_utf8 = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -160,7 +160,7 @@ static ConfRes SET_record_banner(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.record_banner = parse_str_bool(value);
+    udp_conf.record_banner = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -170,7 +170,7 @@ static ConfRes SET_record_data_len(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.record_data_len = parse_str_bool(value);
+    udp_conf.record_data_len = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -179,7 +179,7 @@ static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.record_ttl = parse_str_bool(value);
+    udp_conf.record_ttl = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -189,7 +189,7 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    udp_conf.record_ipid = parse_str_bool(value);
+    udp_conf.record_ipid = conf_parse_bool(value);
 
     return Conf_OK;
 }

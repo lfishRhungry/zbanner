@@ -65,7 +65,7 @@ static ConfRes SET_record_all_len(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_all_len = parse_str_bool(value);
+    tcpstate_conf.record_all_len = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -75,7 +75,7 @@ static ConfRes SET_record_all_ackno(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_all_ackno = parse_str_bool(value);
+    tcpstate_conf.record_all_ackno = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -85,7 +85,7 @@ static ConfRes SET_record_all_seqno(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_all_seqno = parse_str_bool(value);
+    tcpstate_conf.record_all_seqno = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -95,7 +95,7 @@ static ConfRes SET_record_all_ttl(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_all_ttl = parse_str_bool(value);
+    tcpstate_conf.record_all_ttl = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -105,7 +105,7 @@ static ConfRes SET_record_all_ipid(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_all_ipid = parse_str_bool(value);
+    tcpstate_conf.record_all_ipid = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -115,7 +115,7 @@ static ConfRes SET_record_all_win(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_all_win = parse_str_bool(value);
+    tcpstate_conf.record_all_win = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -125,7 +125,7 @@ static ConfRes SET_record_ackno(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_ackno = parse_str_bool(value);
+    tcpstate_conf.record_ackno = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -135,7 +135,7 @@ static ConfRes SET_record_seqno(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_seqno = parse_str_bool(value);
+    tcpstate_conf.record_seqno = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -144,7 +144,7 @@ static ConfRes SET_record_mss(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_mss = parse_str_bool(value);
+    tcpstate_conf.record_mss = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -153,7 +153,7 @@ static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_ttl = parse_str_bool(value);
+    tcpstate_conf.record_ttl = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -163,7 +163,7 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_ipid = parse_str_bool(value);
+    tcpstate_conf.record_ipid = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -172,7 +172,7 @@ static ConfRes SET_record_win(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.record_win = parse_str_bool(value);
+    tcpstate_conf.record_win = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -182,7 +182,7 @@ static ConfRes SET_port_success(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tcpstate_conf.is_port_success = parse_str_bool(value);
+    tcpstate_conf.is_port_success = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -191,7 +191,7 @@ static ConfRes SET_conn_expire(void *conf, const char *name,
                                const char *value) {
     UNUSEDPARM(conf);
 
-    unsigned tm = parse_str_int(value);
+    unsigned tm = conf_parse_int(value);
 
     if (tm <= 0) {
         LOG(LEVEL_ERROR, "%s must be positive.\n", name);

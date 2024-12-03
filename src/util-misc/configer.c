@@ -7,7 +7,7 @@
 #include "../util-data/safe-string.h"
 #include "../util-out/logger.h"
 
-uint64_t parse_str_int(const char *str) {
+uint64_t conf_parse_int(const char *str) {
     uint64_t result = 0;
 
     while (*str && isdigit(*str & 0xFF)) {
@@ -20,7 +20,7 @@ uint64_t parse_str_int(const char *str) {
 /**
  * a stricter function for determining if something is boolean.
  */
-bool is_str_bool(const char *str) {
+bool conf_is_bool(const char *str) {
     size_t length = str ? strlen(str) : 0;
 
     if (length == 0)
@@ -85,7 +85,7 @@ bool is_str_bool(const char *str) {
     }
 }
 
-bool parse_str_bool(const char *str) {
+bool conf_parse_bool(const char *str) {
     if (str == NULL || str[0] == 0)
         return true;
     if (isdigit(str[0])) {
@@ -138,7 +138,7 @@ bool parse_str_bool(const char *str) {
  * 10-months
  * 3600
  ***************************************************************************/
-uint64_t parse_str_time(const char *value) {
+uint64_t conf_parse_time(const char *value) {
     uint64_t num         = 0;
     unsigned is_negative = 0;
 
@@ -194,7 +194,7 @@ uint64_t parse_str_time(const char *value) {
  * Parses a size integer, which can be suffixed with "tera", "giga",
  * "mega", and "kilo". These numbers are in units of 1024 so suck it.
  ***************************************************************************/
-uint64_t parse_str_size(const char *value) {
+uint64_t conf_parse_size(const char *value) {
     uint64_t num = 0;
 
     while (isdigit(value[0] & 0xFF)) {
@@ -236,7 +236,7 @@ uint64_t parse_str_size(const char *value) {
     return num;
 }
 
-unsigned parse_char_hex(char c) {
+unsigned conf_char2hex(char c) {
     if ('0' <= c && c <= '9')
         return (unsigned)(c - '0');
     if ('a' <= c && c <= 'f')
@@ -246,7 +246,7 @@ unsigned parse_char_hex(char c) {
     return 0xFF;
 }
 
-int parse_str_mac(const char *text, macaddress_t *mac) {
+int conf_parse_mac(const char *text, macaddress_t *mac) {
     unsigned i;
 
     for (i = 0; i < 6; i++) {
@@ -259,13 +259,13 @@ int parse_str_mac(const char *text, macaddress_t *mac) {
         c = *text;
         if (!isxdigit(c & 0xFF))
             return -1;
-        x = parse_char_hex(c) << 4;
+        x = conf_char2hex(c) << 4;
         text++;
 
         c = *text;
         if (!isxdigit(c & 0xFF))
             return -1;
-        x |= parse_char_hex(c);
+        x |= conf_char2hex(c);
         text++;
 
         mac->addr[i] = (unsigned char)x;
@@ -277,16 +277,16 @@ int parse_str_mac(const char *text, macaddress_t *mac) {
     return 0;
 }
 
-unsigned parse_opt_int(const char *name) {
+unsigned conf_parse_opt_int(const char *name) {
     const char *p = strchr(name, '[');
     if (p == NULL)
         return 0;
     else
         p++;
-    return (unsigned)parse_str_int(p);
+    return (unsigned)conf_parse_int(p);
 }
 
-char *parse_opt_str(const char *name) {
+char *conf_parse_opt_str(const char *name) {
     const char *p1 = strchr(name, '[');
     const char *p2 = strchr(name, ']');
 
@@ -306,8 +306,10 @@ char *parse_opt_str(const char *name) {
  * whether parameter have punctuation. Is it "--excludefile" or
  * "--exclude-file"? I don't know if it's got that dash. Screw it,
  * I'll just make the code so it don't care.
+ * @param lhs param name in config
+ * @param rhs param name from user input
  ***************************************************************************/
-bool EQUALS(const char *lhs, const char *rhs) {
+bool conf_equals(const char *lhs, const char *rhs) {
     for (;;) {
         while (*lhs == '-' || *lhs == '.' || *lhs == '_')
             lhs++;
@@ -324,7 +326,11 @@ bool EQUALS(const char *lhs, const char *rhs) {
     }
 }
 
-bool EQUALSx(const char *lhs, const char *rhs, size_t rhs_length) {
+/**
+ * @param lhs param name in config
+ * @param rhs param name from user input
+ */
+bool conf_equals_x(const char *lhs, const char *rhs, size_t rhs_length) {
     for (;;) {
         while (*lhs == '-' || *lhs == '.' || *lhs == '_')
             lhs++;
@@ -343,14 +349,14 @@ bool EQUALSx(const char *lhs, const char *rhs, size_t rhs_length) {
     }
 }
 
-unsigned INDEX_OF(const char *str, char c) {
+unsigned conf_index_of(const char *str, char c) {
     unsigned i;
     for (i = 0; str[i] && str[i] != c; i++)
         ;
     return i;
 }
 
-bool is_str_int(const char *value) {
+bool conf_is_int(const char *value) {
     size_t i;
 
     if (value == NULL)
@@ -362,7 +368,7 @@ bool is_str_int(const char *value) {
     return true;
 }
 
-bool is_power_of_two(uint64_t x) {
+bool conf_is_power_of_2(uint64_t x) {
     while ((x & 1) == 0)
         x >>= 1;
     return x == 1;
@@ -372,14 +378,14 @@ bool is_power_of_two(uint64_t x) {
  * Command-line parsing code assumes every --parm is followed by a value.
  * This is a list of the parameters that don't follow the default.
  ***************************************************************************/
-bool is_parm_flag(const ConfParam *cp, const char *name) {
+bool conf_is_parm_flag(const ConfParam *cp, const char *name) {
     for (size_t i = 0; cp[i].name; i++) {
-        if (EQUALS(cp[i].name, name)) {
+        if (conf_equals(cp[i].name, name)) {
             return (cp[i].type & Type_FLAG) == Type_FLAG;
         } else {
             size_t j;
             for (j = 0; cp[i].alt_names[j]; j++) {
-                if (EQUALS(cp[i].alt_names[j], name)) {
+                if (conf_equals(cp[i].alt_names[j], name)) {
                     return (cp[i].type & Type_FLAG) == Type_FLAG;
                 }
             }
@@ -392,19 +398,19 @@ bool is_parm_flag(const ConfParam *cp, const char *name) {
 /*
  * Go through configured list of parameters
  */
-void set_one_parameter(void *conf, ConfParam *cp, const char *name,
-                       const char *value) {
+void conf_set_one_param(void *conf, ConfParam *cp, const char *name,
+                        const char *value) {
     size_t i;
 
     for (i = 0; cp[i].name; i++) {
-        if (EQUALS(cp[i].name, name)) {
+        if (conf_equals(cp[i].name, name)) {
             if (Conf_ERR == cp[i].setter(conf, name, value))
                 exit(0);
             return;
         } else {
             size_t j;
             for (j = 0; cp[i].alt_names[j]; j++) {
-                if (EQUALS(cp[i].alt_names[j], name)) {
+                if (conf_equals(cp[i].alt_names[j], name)) {
                     if (Conf_ERR == cp[i].setter(conf, name, value))
                         exit(0);
                     return;
@@ -420,8 +426,8 @@ void set_one_parameter(void *conf, ConfParam *cp, const char *name,
 /**
  * argc and argv do not contain process file name
  */
-void set_parameters_from_args(void *conf, ConfParam *cp, int argc,
-                              char **argv) {
+void conf_set_params_from_args(void *conf, ConfParam *cp, int argc,
+                               char **argv) {
     int      i;
     unsigned name_length;
 
@@ -446,7 +452,7 @@ void set_parameters_from_args(void *conf, ConfParam *cp, int argc,
                 value = strchr(&argv[i][2], ':');
             if (value == NULL) {
                 /*Type_FLAG doesn't carry args*/
-                if (is_parm_flag(cp, argname))
+                if (conf_is_parm_flag(cp, argname))
                     value = "";
                 else
                     value = argv[++i];
@@ -471,7 +477,7 @@ void set_parameters_from_args(void *conf, ConfParam *cp, int argc,
             memcpy(name2, argname, name_length);
             name2[name_length] = '\0';
 
-            set_one_parameter(conf, cp, name2, value);
+            conf_set_one_param(conf, cp, name2, value);
 
             continue;
         }
@@ -496,7 +502,7 @@ void set_parameters_from_args(void *conf, ConfParam *cp, int argc,
  * @param string whole string contains all params
  * @return 0 if success
  */
-int set_parameters_from_string(void *conf, ConfParam *cp, char *string) {
+int conf_set_params_from_str(void *conf, ConfParam *cp, char *string) {
     int    sub_argc;
     char **sub_argv;
 
@@ -505,7 +511,7 @@ int set_parameters_from_string(void *conf, ConfParam *cp, char *string) {
         return 1;
     }
 
-    set_parameters_from_args(conf, cp, sub_argc, sub_argv);
+    conf_set_params_from_args(conf, cp, sub_argc, sub_argv);
     free(sub_argv);
     return 0;
 }
@@ -518,7 +524,7 @@ int set_parameters_from_string(void *conf, ConfParam *cp, char *string) {
  * @param substring whole string contains all params
  * @return 0 if success
  */
-int set_parameters_from_substring(void *conf, ConfParam *cp, char *substring) {
+int conf_set_params_from_substr(void *conf, ConfParam *cp, char *substring) {
     int    sub_argc;
     char **sub_argv;
 
@@ -527,7 +533,7 @@ int set_parameters_from_substring(void *conf, ConfParam *cp, char *substring) {
         return 1;
     }
 
-    set_parameters_from_args(conf, cp, sub_argc, sub_argv);
+    conf_set_params_from_args(conf, cp, sub_argc, sub_argv);
     free(sub_argv);
     return 0;
 }

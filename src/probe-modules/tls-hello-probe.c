@@ -145,7 +145,7 @@ static ConfRes SET_support_tls1_3(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlshello_conf.support_tls1_3 = parse_str_bool(value);
+    tlshello_conf.support_tls1_3 = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -156,7 +156,7 @@ static ConfRes SET_newlines(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlshello_conf.re_include_newlines = parse_str_bool(value);
+    tlshello_conf.re_include_newlines = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -166,7 +166,7 @@ static ConfRes SET_insensitive(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlshello_conf.re_case_insensitive = parse_str_bool(value);
+    tlshello_conf.re_case_insensitive = conf_parse_bool(value);
 
     return Conf_OK;
 }

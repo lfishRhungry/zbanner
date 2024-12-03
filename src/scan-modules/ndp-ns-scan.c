@@ -23,7 +23,7 @@ static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    ndpns_conf.record_ttl = parse_str_bool(value);
+    ndpns_conf.record_ttl = conf_parse_bool(value);
 
     return Conf_OK;
 }

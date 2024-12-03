@@ -27,7 +27,7 @@ static ConfRes SET_compact(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    bson_conf.is_compact = parse_str_bool(value);
+    bson_conf.is_compact = conf_parse_bool(value);
 
     return Conf_OK;
 }

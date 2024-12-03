@@ -21,7 +21,7 @@ static ConfRes SET_whole_page(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    getstate_conf.get_whole_page = parse_str_bool(value);
+    getstate_conf.get_whole_page = conf_parse_bool(value);
 
     return Conf_OK;
 }

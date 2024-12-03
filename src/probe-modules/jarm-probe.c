@@ -116,7 +116,7 @@ static ConfRes SET_probe_index(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    jarm_conf.probe_index = parse_str_int(value);
+    jarm_conf.probe_index = conf_parse_int(value);
 
     if (jarm_conf.probe_index < 1 || jarm_conf.probe_index > 10) {
         LOG(LEVEL_ERROR, "(JarmProbe) probe index should be in 1..10\n");

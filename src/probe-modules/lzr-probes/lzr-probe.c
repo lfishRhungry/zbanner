@@ -129,7 +129,7 @@ static ConfRes SET_force_all_match(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    lzr_conf.force_all_match = parse_str_bool(value);
+    lzr_conf.force_all_match = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -139,7 +139,7 @@ static ConfRes SET_force_all_handshake(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    lzr_conf.force_all_handshakes = parse_str_bool(value);
+    lzr_conf.force_all_handshakes = conf_parse_bool(value);
 
     return Conf_OK;
 }

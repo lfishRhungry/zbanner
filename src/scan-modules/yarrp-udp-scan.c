@@ -72,7 +72,7 @@ static ConfRes SET_record_icmp_ip_me(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpudp_conf.record_icmp_ip_me = parse_str_bool(value);
+    yarrpudp_conf.record_icmp_ip_me = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -82,7 +82,7 @@ static ConfRes SET_record_icmp_seqno(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpudp_conf.record_icmp_seqno = parse_str_bool(value);
+    yarrpudp_conf.record_icmp_seqno = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -92,7 +92,7 @@ static ConfRes SET_record_icmp_id(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpudp_conf.record_icmp_id = parse_str_bool(value);
+    yarrpudp_conf.record_icmp_id = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -101,7 +101,7 @@ static ConfRes SET_port_me(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpudp_conf.port_me           = parse_str_int(value);
+    yarrpudp_conf.port_me           = conf_parse_int(value);
     yarrpudp_conf.fixed_port_me_set = 1;
 
     return Conf_OK;
@@ -112,7 +112,7 @@ static ConfRes SET_init_port_me(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpudp_conf.port_me_offset   = parse_str_int(value) + 1;
+    yarrpudp_conf.port_me_offset   = conf_parse_int(value) + 1;
     yarrpudp_conf.init_port_me_set = 1;
 
     return Conf_OK;
@@ -123,7 +123,7 @@ static ConfRes SET_init_port_them(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpudp_conf.port_them_offset   = parse_str_int(value) - 1;
+    yarrpudp_conf.port_them_offset   = conf_parse_int(value) - 1;
     yarrpudp_conf.init_port_them_set = 1;
 
     return Conf_OK;
@@ -133,7 +133,7 @@ static ConfRes SET_record_ttl(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpudp_conf.record_ttl = parse_str_bool(value);
+    yarrpudp_conf.record_ttl = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -143,7 +143,7 @@ static ConfRes SET_record_ipid(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    yarrpudp_conf.record_ipid = parse_str_bool(value);
+    yarrpudp_conf.record_ipid = conf_parse_bool(value);
 
     return Conf_OK;
 }

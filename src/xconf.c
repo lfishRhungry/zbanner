@@ -504,7 +504,7 @@ static ConfRes SET_output_as_info(void *conf, const char *name,
         return 0;
     }
 
-    xconf->out_conf.output_as_info = parse_str_bool(value);
+    xconf->out_conf.output_as_info = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -570,12 +570,14 @@ static ConfRes SET_show_output(void *conf, const char *name,
         return 0;
     }
 
-    if (EQUALS("failed", value) || EQUALS("fail", value) ||
-        EQUALS("failure", value)) {
+    if (conf_equals("failed", value) || conf_equals("fail", value) ||
+        conf_equals("failure", value)) {
         xconf->out_conf.is_show_failed = true;
-    } else if (EQUALS("info", value) || EQUALS("information", value)) {
+    } else if (conf_equals("info", value) ||
+               conf_equals("information", value)) {
         xconf->out_conf.is_show_info = true;
-    } else if (EQUALS("success", value) || EQUALS("successed", value)) {
+    } else if (conf_equals("success", value) ||
+               conf_equals("successed", value)) {
         xconf->out_conf.no_show_success = false;
     } else {
         LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
@@ -593,11 +595,12 @@ static ConfRes SET_no_show_output(void *conf, const char *name,
         return 0;
     }
 
-    if (EQUALS("failed", value) || EQUALS("fail", value)) {
+    if (conf_equals("failed", value) || conf_equals("fail", value)) {
         xconf->out_conf.is_show_failed = false;
-    } else if (EQUALS("info", value) || EQUALS("information", value)) {
+    } else if (conf_equals("info", value) ||
+               conf_equals("information", value)) {
         xconf->out_conf.is_show_info = false;
-    } else if (EQUALS("success", value)) {
+    } else if (conf_equals("success", value)) {
         xconf->out_conf.no_show_success = true;
     } else {
         LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
@@ -617,7 +620,7 @@ static ConfRes SET_no_ansi(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->is_no_ansi = parse_str_bool(value);
+    xconf->is_no_ansi = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -632,7 +635,7 @@ static ConfRes SET_no_escape(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->no_escape_char = parse_str_bool(value);
+    xconf->no_escape_char = conf_parse_bool(value);
     dach_no_escape_char();
 
     return Conf_OK;
@@ -654,11 +657,11 @@ static ConfRes SET_print_status(void *conf, const char *name,
         return 0;
     }
 
-    if (EQUALS("queue", value)) {
+    if (conf_equals("queue", value)) {
         xconf->is_status_queue = true;
-    } else if (EQUALS("info-num", value) || EQUALS("info", value)) {
+    } else if (conf_equals("info-num", value) || conf_equals("info", value)) {
         xconf->is_status_info_num = true;
-    } else if (EQUALS("hit-rate", value) || EQUALS("hit", value)) {
+    } else if (conf_equals("hit-rate", value) || conf_equals("hit", value)) {
         xconf->is_status_hit_rate = true;
     } else {
         LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
@@ -755,7 +758,7 @@ static ConfRes SET_list_scan_modules(void *conf, const char *name,
     if (xconf->echo) {
         return 0;
     }
-    xconf->op = parse_str_bool(value) ? Operation_ListScanModules : xconf->op;
+    xconf->op = conf_parse_bool(value) ? Operation_ListScanModules : xconf->op;
     return Conf_OK;
 }
 
@@ -767,7 +770,7 @@ static ConfRes SET_list_probe_modules(void *conf, const char *name,
     if (xconf->echo) {
         return 0;
     }
-    xconf->op = parse_str_bool(value) ? Operation_ListProbeModules : xconf->op;
+    xconf->op = conf_parse_bool(value) ? Operation_ListProbeModules : xconf->op;
     return Conf_OK;
 }
 
@@ -780,7 +783,7 @@ static ConfRes SET_list_generate_modules(void *conf, const char *name,
         return 0;
     }
     xconf->op =
-        parse_str_bool(value) ? Operation_ListGenerateModules : xconf->op;
+        conf_parse_bool(value) ? Operation_ListGenerateModules : xconf->op;
     return Conf_OK;
 }
 
@@ -792,7 +795,8 @@ static ConfRes SET_list_output_modules(void *conf, const char *name,
     if (xconf->echo) {
         return 0;
     }
-    xconf->op = parse_str_bool(value) ? Operation_ListOutputModules : xconf->op;
+    xconf->op =
+        conf_parse_bool(value) ? Operation_ListOutputModules : xconf->op;
     return Conf_OK;
 }
 
@@ -804,7 +808,7 @@ static ConfRes SET_listif(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parse_str_bool(value))
+    if (conf_parse_bool(value))
         xconf->op = Operation_ListAdapters;
     return Conf_OK;
 }
@@ -817,10 +821,10 @@ static ConfRes SET_list_target(void *conf, const char *name,
         return 0;
     }
 
-    if (parse_str_bool(value))
+    if (conf_parse_bool(value))
         xconf->op = Operation_ListTargets;
 
-    char *opt = parse_opt_str(name);
+    char *opt = conf_parse_opt_str(name);
     if (opt) {
         if (strcmp(opt, "order") == 0 || strcmp(opt, "norandom") == 0)
             xconf->listtargets_in_order = 1;
@@ -837,7 +841,7 @@ static ConfRes SET_list_range(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parse_str_bool(value))
+    if (conf_parse_bool(value))
         xconf->op = Operation_ListRange;
 
     return Conf_OK;
@@ -956,7 +960,7 @@ static ConfRes SET_pfring(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->is_pfring = parse_str_bool(value);
+    xconf->is_pfring = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -972,7 +976,7 @@ static ConfRes SET_rawsocket(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->is_rawsocket = parse_str_bool(value);
+    xconf->is_rawsocket = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -987,7 +991,7 @@ static ConfRes SET_noresume(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->is_noresume = parse_str_bool(value);
+    xconf->is_noresume = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -1002,7 +1006,7 @@ static ConfRes SET_nodedup(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->is_nodedup = parse_str_bool(value);
+    xconf->is_nodedup = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -1015,7 +1019,7 @@ static ConfRes SET_tcp_window(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    unsigned x = parse_str_int(value);
+    unsigned x = conf_parse_int(value);
     if (x > 65535) {
         LOG(LEVEL_ERROR, "%s=<n>: expected number less than 65535\n", name);
         return Conf_ERR;
@@ -1037,7 +1041,7 @@ static ConfRes SET_tcp_init_window(void *conf, const char *name,
         return 0;
     }
 
-    unsigned x = parse_str_int(value);
+    unsigned x = conf_parse_int(value);
     if (x > 65535) {
         LOG(LEVEL_ERROR, "%s=<n>: expected number less than 65535\n", name);
         return Conf_ERR;
@@ -1056,7 +1060,7 @@ static ConfRes SET_packet_ttl(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    unsigned x = parse_str_int(value);
+    unsigned x = conf_parse_int(value);
     if (x >= 256) {
         LOG(LEVEL_ERROR, "%s=%u: expected number less than 256\n", name, x);
         return Conf_ERR;
@@ -1075,12 +1079,12 @@ static ConfRes SET_dedup_win(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parse_str_int(value) < 1024) {
+    if (conf_parse_int(value) < 1024) {
         LOG(LEVEL_ERROR, "%s: dedup-win must >= 1024.\n", name);
         return Conf_ERR;
     }
 
-    xconf->dedup_win = parse_str_int(value);
+    xconf->dedup_win = conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -1098,11 +1102,11 @@ static ConfRes SET_stack_buf_count(void *conf, const char *name,
         return 0;
     }
 
-    uint64_t v = parse_str_int(value);
+    uint64_t v = conf_parse_int(value);
     if (v < 2048) {
         LOG(LEVEL_ERROR, "%s: stack-buf-count must >= 2048.\n", value);
         return Conf_ERR;
-    } else if (!is_power_of_two(v)) {
+    } else if (!conf_is_power_of_2(v)) {
         LOG(LEVEL_ERROR, "%s: stack-buf-count must be power of 2.\n", value);
         return Conf_ERR;
     } else if (v > RTE_RING_SZ_MASK) {
@@ -1128,11 +1132,11 @@ static ConfRes SET_dispatch_buf_count(void *conf, const char *name,
         return 0;
     }
 
-    uint64_t v = parse_str_int(value);
+    uint64_t v = conf_parse_int(value);
     if (v < 2048) {
         LOG(LEVEL_ERROR, "%s: dispatch-buf-count must >= 2048.\n", value);
         return Conf_ERR;
-    } else if (!is_power_of_two(v)) {
+    } else if (!conf_is_power_of_2(v)) {
         LOG(LEVEL_ERROR, "%s: dispatch-buf-count must be power of 2.\n", value);
         return Conf_ERR;
     } else if (v > RTE_RING_SZ_MASK) {
@@ -1172,7 +1176,7 @@ static ConfRes SET_wait(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->wait = (unsigned)parse_str_int(value);
+    xconf->wait = (unsigned)conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -1188,12 +1192,12 @@ static ConfRes SET_rx_handler_count(void *conf, const char *name,
         return 0;
     }
 
-    unsigned count = parse_str_int(value);
+    unsigned count = conf_parse_int(value);
     if (count <= 0) {
         LOG(LEVEL_ERROR, "%s: receive handler thread count cannot be zero.\n",
             name);
         return Conf_ERR;
-    } else if (!is_power_of_two(count)) {
+    } else if (!conf_is_power_of_2(count)) {
         LOG(LEVEL_ERROR,
             "%s: receive handler thread count must be power of 2.\n", value);
         return Conf_ERR;
@@ -1215,7 +1219,7 @@ static ConfRes SET_tx_thread_count(void *conf, const char *name,
         return 0;
     }
 
-    unsigned count = parse_str_int(value);
+    unsigned count = conf_parse_int(value);
     if (count == 0) {
         LOG(LEVEL_ERROR, "%s: transmit thread count cannot be zero.\n", name);
         return Conf_ERR;
@@ -1290,7 +1294,7 @@ static ConfRes SET_source_ip(void *conf, const char *name, const char *value) {
         case Ipv4_Address:
             /* If more than one IP address given, make the range is
              * a power of two (1, 2, 4, 8, 16, ...) */
-            if (!is_power_of_two((uint64_t)range.end - range.begin + 1)) {
+            if (!conf_is_power_of_2((uint64_t)range.end - range.begin + 1)) {
                 LOG(LEVEL_ERROR, "range must be power of two: %s=%s\n", name,
                     value);
                 return Conf_ERR;
@@ -1307,7 +1311,7 @@ static ConfRes SET_source_ip(void *conf, const char *name, const char *value) {
             }
             /* If more than one IP address given, make the range is
              * a power of two (1, 2, 4, 8, 16, ...) */
-            if (!is_power_of_two(range6.end.lo - range6.begin.lo + 1)) {
+            if (!conf_is_power_of_2(range6.end.lo - range6.begin.lo + 1)) {
                 LOG(LEVEL_ERROR, "range must be power of two: %s=%s\n", name,
                     value);
                 return Conf_ERR;
@@ -1362,7 +1366,7 @@ static ConfRes SET_source_port(void *conf, const char *name,
     }
 
     /* verify range is power of 2 (1, 2, 4, 8, 16, ...) */
-    if (!is_power_of_two(ports.list[0].end - ports.list[0].begin + 1)) {
+    if (!conf_is_power_of_2(ports.list[0].end - ports.list[0].begin + 1)) {
         LOG(LEVEL_ERROR, "source port range must be power of two: %s=%s\n",
             name, value);
         return Conf_ERR;
@@ -1524,7 +1528,7 @@ static ConfRes SET_adapter_snaplen(void *conf, const char *name,
         return 0;
     }
 
-    xconf->nic.snaplen = (unsigned)parse_str_int(value);
+    xconf->nic.snaplen = (unsigned)conf_parse_int(value);
     if (xconf->nic.snaplen > 65535) {
         LOG(LEVEL_ERROR, "snaplen must be less than 65535.\n");
         return Conf_ERR;
@@ -1545,7 +1549,7 @@ static ConfRes SET_adapter_vlan(void *conf, const char *name,
     }
 
     xconf->nic.is_vlan = 1;
-    xconf->nic.vlan_id = (unsigned)parse_str_int(value);
+    xconf->nic.vlan_id = (unsigned)conf_parse_int(value);
 
     return Conf_OK;
 }
@@ -1579,7 +1583,7 @@ static ConfRes SET_top_port(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    unsigned maxports = parse_str_int(value);
+    unsigned maxports = conf_parse_int(value);
 
     if (!maxports) {
         LOG(LEVEL_ERROR, "FAIL %s: value of top-port must > 0.\n", name);
@@ -1714,7 +1718,7 @@ static ConfRes SET_source_mac(void *conf, const char *name, const char *value) {
     macaddress_t source_mac;
     int          err;
 
-    err = parse_str_mac(value, &source_mac);
+    err = conf_parse_mac(value, &source_mac);
     if (err) {
         LOG(LEVEL_ERROR, "(CONF) bad MAC address: %s = %s\n", name, value);
         return Conf_ERR;
@@ -1789,14 +1793,14 @@ static ConfRes SET_router_mac(void *conf, const char *name, const char *value) {
 
     macaddress_t router_mac;
     int          err;
-    err = parse_str_mac(value, &router_mac);
+    err = conf_parse_mac(value, &router_mac);
     if (err) {
         LOG(LEVEL_ERROR, "(CONF): bad MAC address: %s = %s\n", name, value);
         return Conf_ERR;
     }
-    if (EQUALS("router-mac-ipv4", name))
+    if (conf_equals("router-mac-ipv4", name))
         xconf->nic.router_mac_ipv4 = router_mac;
-    else if (EQUALS("router-mac-ipv6", name))
+    else if (conf_equals("router-mac-ipv6", name))
         xconf->nic.router_mac_ipv6 = router_mac;
     else {
         xconf->nic.router_mac_ipv4 = router_mac;
@@ -1899,7 +1903,7 @@ static ConfRes SET_packet_trace(void *conf, const char *name,
                     xconf->is_packet_trace ? "true" : "false");
         return 0;
     }
-    xconf->is_packet_trace = parse_str_bool(value);
+    xconf->is_packet_trace = conf_parse_bool(value);
     return Conf_OK;
 }
 
@@ -1914,7 +1918,7 @@ static ConfRes SET_ndjson_status(void *conf, const char *name,
                     xconf->is_status_ndjson ? "true" : "false");
         return 0;
     }
-    xconf->is_status_ndjson = parse_str_bool(value);
+    xconf->is_status_ndjson = conf_parse_bool(value);
     return Conf_OK;
 }
 
@@ -1928,7 +1932,7 @@ static ConfRes SET_no_status(void *conf, const char *name, const char *value) {
                     xconf->is_no_status ? "true" : "false");
         return 0;
     }
-    xconf->is_no_status = parse_str_bool(value);
+    xconf->is_no_status = conf_parse_bool(value);
     return Conf_OK;
 }
 
@@ -1942,7 +1946,7 @@ static ConfRes SET_append(void *conf, const char *name, const char *value) {
                     xconf->out_conf.is_append ? "true" : "false");
         return 0;
     }
-    xconf->out_conf.is_append = parse_str_bool(value);
+    xconf->out_conf.is_append = conf_parse_bool(value);
     return Conf_OK;
 }
 
@@ -1957,7 +1961,7 @@ static ConfRes SET_interactive(void *conf, const char *name,
                     xconf->out_conf.is_interactive ? "true" : "false");
         return 0;
     }
-    xconf->out_conf.is_interactive = parse_str_bool(value);
+    xconf->out_conf.is_interactive = conf_parse_bool(value);
     return Conf_OK;
 }
 
@@ -1971,7 +1975,7 @@ static ConfRes SET_offline(void *conf, const char *name, const char *value) {
                     xconf->is_offline ? "true" : "false");
         return 0;
     }
-    xconf->is_offline = parse_str_bool(value);
+    xconf->is_offline = conf_parse_bool(value);
     return Conf_OK;
 }
 
@@ -1986,7 +1990,7 @@ static ConfRes SET_no_cpu_bind(void *conf, const char *name,
                     xconf->is_no_cpu_bind ? "true" : "false");
         return 0;
     }
-    xconf->is_no_cpu_bind = parse_str_bool(value);
+    xconf->is_no_cpu_bind = conf_parse_bool(value);
     return Conf_OK;
 }
 
@@ -2001,7 +2005,7 @@ static ConfRes SET_static_seed(void *conf, const char *name,
                     xconf->is_static_seed ? "true" : "false");
         return 0;
     }
-    xconf->is_static_seed = parse_str_bool(value);
+    xconf->is_static_seed = conf_parse_bool(value);
     return Conf_OK;
 }
 
@@ -2015,7 +2019,7 @@ static ConfRes SET_infinite(void *conf, const char *name, const char *value) {
                     xconf->is_infinite ? "true" : "false");
         return 0;
     }
-    xconf->is_infinite = parse_str_bool(value);
+    xconf->is_infinite = conf_parse_bool(value);
     return Conf_OK;
 }
 
@@ -2039,9 +2043,9 @@ static ConfRes SET_echo(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (EQUALS("echo", name) && parse_str_bool(value))
+    if (conf_equals("echo", name) && conf_parse_bool(value))
         xconf->op = Operation_Echo;
-    else if (EQUALS("echo-all", name) && parse_str_bool(value)) {
+    else if (conf_equals("echo-all", name) && conf_parse_bool(value)) {
         xconf->op       = Operation_Echo;
         xconf->echo_all = 1;
     }
@@ -2055,7 +2059,7 @@ static ConfRes SET_debugif(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parse_str_bool(value))
+    if (conf_parse_bool(value))
         xconf->op = Operation_DebugIF;
 
     return Conf_OK;
@@ -2067,7 +2071,7 @@ static ConfRes SET_benchmark(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parse_str_bool(value))
+    if (conf_parse_bool(value))
         xconf->op = Operation_Benchmark;
 
     return Conf_OK;
@@ -2079,7 +2083,7 @@ static ConfRes SET_selftest(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parse_str_bool(value))
+    if (conf_parse_bool(value))
         xconf->op = Operation_Selftest;
 
     return Conf_OK;
@@ -2091,7 +2095,7 @@ static ConfRes SET_list_cidr(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parse_str_bool(value))
+    if (conf_parse_bool(value))
         xconf->op = Operation_ListCidr;
 
     return Conf_OK;
@@ -2105,7 +2109,7 @@ static ConfRes SET_lan_mode(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (parse_str_bool(value)) {
+    if (conf_parse_bool(value)) {
         SET_router_mac(xconf, "router-mac", "ff-ff-ff-ff-ff-ff");
     }
 
@@ -2123,7 +2127,7 @@ static ConfRes SET_bypass_os(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->is_bypass_os = parse_str_bool(value);
+    xconf->is_bypass_os = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -2140,7 +2144,7 @@ static ConfRes SET_init_ipv4(void *conf, const char *name, const char *value) {
     }
 
     xconf->set_ipv4_adapter  = 1;
-    xconf->init_ipv4_adapter = parse_str_bool(value);
+    xconf->init_ipv4_adapter = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -2157,7 +2161,7 @@ static ConfRes SET_init_ipv6(void *conf, const char *name, const char *value) {
     }
 
     xconf->set_ipv6_adapter  = 1;
-    xconf->init_ipv6_adapter = parse_str_bool(value);
+    xconf->init_ipv6_adapter = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -2171,7 +2175,7 @@ static ConfRes SET_fake_router_mac(void *conf, const char *name,
         return 0;
     }
 
-    if (parse_str_bool(value)) {
+    if (conf_parse_bool(value)) {
         SET_router_mac(xconf, "router-mac", "01-02-03-04-05-06");
     }
 
@@ -2236,7 +2240,7 @@ static ConfRes SET_max_packet_len(void *conf, const char *name,
         }
         return 0;
     }
-    xconf->max_packet_len = parse_str_int(value);
+    xconf->max_packet_len = conf_parse_int(value);
     return Conf_OK;
 }
 
@@ -2251,7 +2255,7 @@ static ConfRes SET_resume_index(void *conf, const char *name,
         }
         return 0;
     }
-    xconf->resume.index = parse_str_int(value);
+    xconf->resume.index = conf_parse_int(value);
     return Conf_OK;
 }
 
@@ -2265,7 +2269,7 @@ static ConfRes SET_no_bpf(void *conf, const char *name, const char *value) {
                     xconf->is_no_bpf ? "true" : "false");
         return 0;
     }
-    xconf->is_no_bpf = parse_str_bool(value);
+    xconf->is_no_bpf = conf_parse_bool(value);
     return Conf_OK;
 }
 
@@ -2293,10 +2297,10 @@ static ConfRes SET_seed(void *conf, const char *name, const char *value) {
         fprintf(xconf->echo, "seed = %" PRIu64 "\n", xconf->seed);
         return 0;
     }
-    if (EQUALS("time", value))
+    if (conf_equals("time", value))
         xconf->seed = time(0);
     else
-        xconf->seed = parse_str_int(value);
+        xconf->seed = conf_parse_int(value);
     return Conf_OK;
 }
 
@@ -2448,17 +2452,17 @@ static ConfRes SET_tcp_mss(void *conf, const char *name, const char *value) {
         /* no following parameter, so interpret this to mean "enable" */
         xconf->templ_opts->tcp.is_mss = Add;
         xconf->templ_opts->tcp.mss    = TCP_DEFAULT_MSS;
-    } else if (is_str_bool(value)) {
+    } else if (conf_is_bool(value)) {
         /* looking for "enable" or "disable", but any boolean works,
          * like "true/false" or "off/on" */
-        if (parse_str_bool(value)) {
+        if (conf_parse_bool(value)) {
             xconf->templ_opts->tcp.is_mss = Add;
             xconf->templ_opts->tcp.mss    = TCP_DEFAULT_MSS;
         } else
             xconf->templ_opts->tcp.is_mss = Remove;
-    } else if (is_str_int(value)) {
+    } else if (conf_is_int(value)) {
         /* A specific number was specified */
-        uint64_t num = parse_str_int(value);
+        uint64_t num = conf_parse_int(value);
         if (num >= 0x10000)
             goto fail;
         xconf->templ_opts->tcp.is_mss = Add;
@@ -2504,14 +2508,14 @@ static ConfRes SET_tcp_wscale(void *conf, const char *name, const char *value) {
     if (value == 0 || value[0] == '\0') {
         xconf->templ_opts->tcp.is_wscale = Add;
         xconf->templ_opts->tcp.wscale    = default_value;
-    } else if (is_str_bool(value)) {
-        if (parse_str_bool(value)) {
+    } else if (conf_is_bool(value)) {
+        if (conf_parse_bool(value)) {
             xconf->templ_opts->tcp.is_wscale = Add;
             xconf->templ_opts->tcp.wscale    = default_value;
         } else
             xconf->templ_opts->tcp.is_wscale = Remove;
-    } else if (is_str_int(value)) {
-        uint64_t num = parse_str_int(value);
+    } else if (conf_is_int(value)) {
+        uint64_t num = conf_parse_int(value);
         if (num >= 255)
             goto fail;
         xconf->templ_opts->tcp.is_wscale = Add;
@@ -2557,14 +2561,14 @@ static ConfRes SET_tcp_tsecho(void *conf, const char *name, const char *value) {
     if (value == 0 || value[0] == '\0') {
         xconf->templ_opts->tcp.is_tsecho = Add;
         xconf->templ_opts->tcp.tsecho    = default_value;
-    } else if (is_str_bool(value)) {
-        if (parse_str_bool(value)) {
+    } else if (conf_is_bool(value)) {
+        if (conf_parse_bool(value)) {
             xconf->templ_opts->tcp.is_tsecho = Add;
             xconf->templ_opts->tcp.tsecho    = default_value;
         } else
             xconf->templ_opts->tcp.is_tsecho = Remove;
-    } else if (is_str_int(value)) {
-        uint64_t num                     = parse_str_int(value);
+    } else if (conf_is_int(value)) {
+        uint64_t num                     = conf_parse_int(value);
         xconf->templ_opts->tcp.is_tsecho = Add;
         xconf->templ_opts->tcp.tsecho    = (unsigned)num;
     } else
@@ -2601,13 +2605,13 @@ static ConfRes SET_tcp_sackok(void *conf, const char *name, const char *value) {
 
     if (value == 0 || value[0] == '\0') {
         xconf->templ_opts->tcp.is_sackok = Add;
-    } else if (is_str_bool(value)) {
-        if (parse_str_bool(value)) {
+    } else if (conf_is_bool(value)) {
+        if (conf_parse_bool(value)) {
             xconf->templ_opts->tcp.is_sackok = Add;
         } else
             xconf->templ_opts->tcp.is_sackok = Remove;
-    } else if (is_str_int(value)) {
-        if (parse_str_int(value) != 0)
+    } else if (conf_is_int(value)) {
+        if (conf_parse_int(value) != 0)
             xconf->templ_opts->tcp.is_sackok = Add;
     } else
         goto fail;
@@ -2628,7 +2632,7 @@ static ConfRes SET_repeat(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->repeat = (unsigned)parse_str_int(value);
+    xconf->repeat = (unsigned)conf_parse_int(value);
     if (xconf->repeat) {
         xconf->is_infinite = 1;
     } else {
@@ -2649,7 +2653,7 @@ static ConfRes SET_sendmmsg(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->is_sendmmsg = parse_str_bool(value);
+    xconf->is_sendmmsg = conf_parse_bool(value);
     return Conf_OK;
 }
 
@@ -2666,7 +2670,7 @@ static ConfRes SET_sendmmsg_batch(void *conf, const char *name,
         return 0;
     }
 
-    xconf->sendmmsg_batch = parse_str_int(value);
+    xconf->sendmmsg_batch = conf_parse_int(value);
     return Conf_OK;
 }
 
@@ -2683,7 +2687,7 @@ static ConfRes SET_sendmmsg_retries(void *conf, const char *name,
         return 0;
     }
 
-    xconf->sendmmsg_retries = parse_str_int(value);
+    xconf->sendmmsg_retries = conf_parse_int(value);
     return Conf_OK;
 }
 
@@ -2697,7 +2701,7 @@ static ConfRes SET_sendq_size(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->sendq_size = parse_str_int(value);
+    xconf->sendq_size = conf_parse_int(value);
     return Conf_OK;
 }
 
@@ -2712,7 +2716,7 @@ static ConfRes SET_send_queue(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->is_sendq = parse_str_bool(value);
+    xconf->is_sendq = conf_parse_bool(value);
     return Conf_OK;
 }
 
@@ -3628,7 +3632,7 @@ ConfParam config_parameters[] = {
  * Exit process if CONF_ERR happens.
  ***************************************************************************/
 void xconf_set_parameter(XConf *xconf, const char *name, const char *value) {
-    set_one_parameter(xconf, config_parameters, name, value);
+    conf_set_one_param(xconf, config_parameters, name, value);
 }
 
 /***************************************************************************
@@ -3636,7 +3640,7 @@ void xconf_set_parameter(XConf *xconf, const char *name, const char *value) {
  * Called by 'main()' when starting up.
  ***************************************************************************/
 void xconf_command_line(XConf *xconf, int argc, char *argv[]) {
-    set_parameters_from_args(xconf, config_parameters, argc - 1, argv + 1);
+    conf_set_params_from_args(xconf, config_parameters, argc - 1, argv + 1);
 
     if (xconf->shard.of > 1 && xconf->seed == 0) {
         LOG(LEVEL_WARN, "using shards without -seed being specified\n");

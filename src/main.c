@@ -159,8 +159,8 @@ static int _main_scan(XConf *xconf) {
      * Config params & Do global init for GenerateModule
      */
     if (xconf->generator_args && xconf->generator->params) {
-        if (set_parameters_from_substring(NULL, xconf->generator->params,
-                                          xconf->generator_args)) {
+        if (conf_set_params_from_substr(NULL, xconf->generator->params,
+                                        xconf->generator_args)) {
             LOG(LEVEL_ERROR, "sub param parsing of GenerateModule.\n");
             exit(1);
         }
@@ -258,8 +258,8 @@ static int _main_scan(XConf *xconf) {
     xconf->scanner->probe = xconf->probe;
 
     if (xconf->scanner_args && xconf->scanner->params) {
-        if (set_parameters_from_substring(NULL, xconf->scanner->params,
-                                          xconf->scanner_args)) {
+        if (conf_set_params_from_substr(NULL, xconf->scanner->params,
+                                        xconf->scanner_args)) {
             LOG(LEVEL_ERROR, "sub param parsing of ScanModule.\n");
             exit(1);
         }
@@ -274,8 +274,8 @@ static int _main_scan(XConf *xconf) {
      */
     if (xconf->probe) {
         if (xconf->probe_args && xconf->probe->params) {
-            if (set_parameters_from_substring(NULL, xconf->probe->params,
-                                              xconf->probe_args)) {
+            if (conf_set_params_from_substr(NULL, xconf->probe->params,
+                                            xconf->probe_args)) {
                 LOG(LEVEL_ERROR, "sub param parsing of ProbeModule.\n");
                 exit(1);
             }
@@ -795,8 +795,8 @@ int main(int argc, char *argv[]) {
     /* Set system to report debug information on crash */
     int is_backtrace = 1;
     for (unsigned i = 1; i < (unsigned)argc; i++) {
-        if (argv[i][0] == '-' && (EQUALS(argv[i] + 1, "no-backtrace") ||
-                                  EQUALS(argv[i] + 1, "no-bt"))) {
+        if (argv[i][0] == '-' && (conf_equals(argv[i] + 1, "no-backtrace") ||
+                                  conf_equals(argv[i] + 1, "no-bt"))) {
             is_backtrace = 0;
         }
     }

@@ -25,7 +25,7 @@ static ConfRes SET_no_random(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    blackrock_conf.no_random = parse_str_bool(value);
+    blackrock_conf.no_random = conf_parse_bool(value);
     return Conf_OK;
 }
 
@@ -33,7 +33,7 @@ static ConfRes SET_rounds(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    blackrock_conf.rounds = (unsigned)parse_str_int(value);
+    blackrock_conf.rounds = (unsigned)conf_parse_int(value);
     return Conf_OK;
 }
 

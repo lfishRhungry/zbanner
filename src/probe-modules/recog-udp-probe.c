@@ -26,7 +26,7 @@ static ConfRes SET_unsuffix(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    recogudp_conf.unsuffix = parse_str_bool(value);
+    recogudp_conf.unsuffix = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -35,7 +35,7 @@ static ConfRes SET_unprefix(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    recogudp_conf.unprefix = parse_str_bool(value);
+    recogudp_conf.unprefix = conf_parse_bool(value);
 
     return Conf_OK;
 }

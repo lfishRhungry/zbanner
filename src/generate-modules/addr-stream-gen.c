@@ -29,7 +29,7 @@ static ConfRes SET_no_random(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    addrstream_conf.no_random = parse_str_bool(value);
+    addrstream_conf.no_random = conf_parse_bool(value);
     return Conf_OK;
 }
 
@@ -48,7 +48,7 @@ static ConfRes SET_rounds(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    addrstream_conf.rounds = (unsigned)parse_str_int(value);
+    addrstream_conf.rounds = (unsigned)conf_parse_int(value);
     return Conf_OK;
 }
 

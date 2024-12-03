@@ -122,7 +122,7 @@ static ConfRes SET_ssl_keylog(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlsstate_conf.ssl_keylog = parse_str_bool(value);
+    tlsstate_conf.ssl_keylog = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -132,7 +132,7 @@ static ConfRes SET_dump_version(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlsstate_conf.dump_version = parse_str_bool(value);
+    tlsstate_conf.dump_version = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -142,7 +142,7 @@ static ConfRes SET_dump_cipher(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlsstate_conf.dump_cipher = parse_str_bool(value);
+    tlsstate_conf.dump_cipher = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -151,7 +151,7 @@ static ConfRes SET_dump_cert(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlsstate_conf.dump_cert = parse_str_bool(value);
+    tlsstate_conf.dump_cert = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -161,7 +161,7 @@ static ConfRes SET_dump_subject(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlsstate_conf.dump_subject = parse_str_bool(value);
+    tlsstate_conf.dump_subject = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -171,7 +171,7 @@ static ConfRes SET_fail_handshake(void *conf, const char *name,
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    tlsstate_conf.fail_handshake = parse_str_bool(value);
+    tlsstate_conf.fail_handshake = conf_parse_bool(value);
 
     return Conf_OK;
 }
@@ -696,8 +696,8 @@ static bool tlsstate_init(const XConf *xconf) {
     _general_ssl_ctx = ctx;
 
     if (tlsstate_conf.subprobe_args && tlsstate_conf.subprobe->params) {
-        if (set_parameters_from_substring(NULL, tlsstate_conf.subprobe->params,
-                                          tlsstate_conf.subprobe_args)) {
+        if (conf_set_params_from_substr(NULL, tlsstate_conf.subprobe->params,
+                                        tlsstate_conf.subprobe_args)) {
             LOG(LEVEL_ERROR, "subparam parsing of subprobe of TlsState.\n");
             goto error0;
         }
