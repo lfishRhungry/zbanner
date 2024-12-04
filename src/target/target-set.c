@@ -69,7 +69,7 @@ bool targetset_has_any_ports(const TargetSet *targetset) {
     return targetset->ports.list_len != 0;
 }
 
-int targetset_add_ip_string(TargetSet *targetset, const char *string) {
+int targetset_add_ip_str(TargetSet *targetset, const char *string) {
     const char *ranges     = string;
     size_t      offset     = 0;
     size_t      max_offset = strlen(ranges);
@@ -101,9 +101,9 @@ int targetset_add_ip_string(TargetSet *targetset, const char *string) {
     return 0;
 }
 
-int targetset_add_asn_v4_string(TargetSet             *targetset,
-                                const struct AS_Query *as_query,
-                                const char            *asn_str) {
+int targetset_add_asn4_str(TargetSet             *targetset,
+                           const struct AS_Query *as_query,
+                           const char            *asn_str) {
     bool   added      = false;
     size_t offset     = 0;
     size_t max_offset = strlen(asn_str);
@@ -141,9 +141,9 @@ int targetset_add_asn_v4_string(TargetSet             *targetset,
         return -1;
 }
 
-int targetset_add_asn_v6_string(TargetSet             *targetset,
-                                const struct AS_Query *as_query,
-                                const char            *asn_str) {
+int targetset_add_asn6_str(TargetSet             *targetset,
+                           const struct AS_Query *as_query,
+                           const char            *asn_str) {
     bool   added      = false;
     size_t offset     = 0;
     size_t max_offset = strlen(asn_str);
@@ -181,8 +181,8 @@ int targetset_add_asn_v6_string(TargetSet             *targetset,
         return -1;
 }
 
-int targetset_add_port_string(TargetSet *targets, const char *string,
-                              unsigned proto_offset) {
+int targetset_add_port_str(TargetSet *targets, const char *string,
+                           unsigned proto_offset) {
     unsigned is_error = 0;
     rangelist_parse_ports(&targets->ports, string, &is_error, proto_offset);
     if (is_error)
@@ -191,10 +191,10 @@ int targetset_add_port_string(TargetSet *targets, const char *string,
         return 0;
 }
 
-void targetset_remove_all(TargetSet *targets) {
-    rangelist_remove_all(&targets->ipv4);
-    rangelist_remove_all(&targets->ports);
-    range6list_remove_all(&targets->ipv6);
+void targetset_rm_all(TargetSet *targets) {
+    rangelist_rm_all(&targets->ipv4);
+    rangelist_rm_all(&targets->ports);
+    range6list_rm_all(&targets->ipv6);
     targets->count_ipv4s    = 0;
     targets->count_ipv6s.hi = 0;
     targets->count_ipv6s.lo = 0;
@@ -202,17 +202,17 @@ void targetset_remove_all(TargetSet *targets) {
     targets->ipv4_threshold = 0;
 }
 
-void targetset_remove_ip(TargetSet *targets) {
-    rangelist_remove_all(&targets->ipv4);
-    range6list_remove_all(&targets->ipv6);
+void targetset_rm_ip(TargetSet *targets) {
+    rangelist_rm_all(&targets->ipv4);
+    range6list_rm_all(&targets->ipv6);
     targets->count_ipv4s    = 0;
     targets->count_ipv6s.hi = 0;
     targets->count_ipv6s.lo = 0;
     targets->ipv4_threshold = 0;
 }
 
-void targetset_remove_port(TargetSet *targets) {
-    rangelist_remove_all(&targets->ports);
+void targetset_rm_port(TargetSet *targets) {
+    rangelist_rm_all(&targets->ports);
     targets->ipv4_threshold = 0;
     targets->count_ports    = 0;
 }
@@ -228,15 +228,15 @@ int targetset_selftest() {
 
     /* First, create a list of targets */
     line = __LINE__;
-    err  = targetset_add_ip_string(&targets,
-                                   "2607:f8b0:4002:801::2004/124,1111::1");
+    err =
+        targetset_add_ip_str(&targets, "2607:f8b0:4002:801::2004/124,1111::1");
     if (err)
         goto fail;
 
     /* Second, create an exclude list */
     line = __LINE__;
-    err  = targetset_add_ip_string(&excludes,
-                                   "2607:f8b0:4002:801::2004/126,1111::/16");
+    err  = targetset_add_ip_str(&excludes,
+                                "2607:f8b0:4002:801::2004/126,1111::/16");
     if (err)
         goto fail;
 

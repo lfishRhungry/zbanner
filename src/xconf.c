@@ -1482,7 +1482,7 @@ static ConfRes SET_target_ip(void *conf, const char *name, const char *value) {
     }
 
     int err;
-    err = targetset_add_ip_string(&xconf->targets, value);
+    err = targetset_add_ip_str(&xconf->targets, value);
     if (err) {
         LOG(LEVEL_ERROR, "Bad IP address/range: %s\n", value);
         return Conf_ERR;
@@ -1664,7 +1664,7 @@ static ConfRes SET_exclude_ip(void *conf, const char *name, const char *value) {
     }
 
     int err;
-    err = targetset_add_ip_string(&xconf->exclude, value);
+    err = targetset_add_ip_str(&xconf->exclude, value);
     if (err) {
         LOG(LEVEL_ERROR, "Bad exclude address/range: %s\n", value);
         return Conf_ERR;
@@ -1686,7 +1686,7 @@ static ConfRes SET_exclude_port(void *conf, const char *name,
     unsigned defaultrange = 0;
     int      err;
 
-    err = targetset_add_port_string(&xconf->exclude, value, defaultrange);
+    err = targetset_add_port_str(&xconf->exclude, value, defaultrange);
     if (err) {
         LOG(LEVEL_ERROR, "bad exclude port: %s\n", value);
         LOG(LEVEL_HINT, "a port is a number [0..65535]\n");
@@ -4211,6 +4211,31 @@ void xconf_search_param(const char *param) {
         // xprint(config_parameters[i].help_text, 6, 80);
         printf("\n\n");
     }
+}
+
+void xconf_free_str(XConf *xconf) {
+    FREE(xconf->ip2asn_v4_filename);
+    FREE(xconf->ip2asn_v6_filename);
+    FREE(xconf->target_asn_v4);
+    FREE(xconf->target_asn_v6);
+    FREE(xconf->exclude_asn_v4);
+    FREE(xconf->exclude_asn_v6);
+    FREE(xconf->help_param);
+    FREE(xconf->search_param);
+#ifndef NOT_FOUND_BSON
+    FREE(xconf->parse_bson_file);
+#endif
+#ifndef NOT_FOUND_MONGOC
+    FREE(xconf->store_json_file);
+    FREE(xconf->store_bson_file);
+    FREE(xconf->mongodb_uri);
+    FREE(xconf->mongodb_db);
+    FREE(xconf->mongodb_col);
+    FREE(xconf->mongodb_app);
+#endif
+#ifndef NOT_FOUND_PCRE2
+    FREE(xconf->nmap_file);
+#endif
 }
 
 void xconf_benchmark(unsigned blackrock_rounds) {

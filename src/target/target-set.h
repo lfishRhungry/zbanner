@@ -78,28 +78,28 @@ bool targetset_has_ip(const TargetSet *targetset, ipaddress ip);
 
 bool targetset_has_port(const TargetSet *targetset, unsigned port);
 
-int targetset_add_ip_string(TargetSet *targetset, const char *string);
+int targetset_add_ip_str(TargetSet *targetset, const char *string);
 
 /**
  * Parse the string contain port specifier.
  * NOTE: this func may add no port in final.
  */
-int targetset_add_port_string(TargetSet *targetset, const char *string,
-                              unsigned proto_offset);
+int targetset_add_port_str(TargetSet *targetset, const char *string,
+                           unsigned proto_offset);
 
 /**
  * add ipv4 addr to targetset by ASN
  */
-int targetset_add_asn_v4_string(TargetSet             *targetset,
-                                const struct AS_Query *as_query,
-                                const char            *asn_str);
+int targetset_add_asn4_str(TargetSet             *targetset,
+                           const struct AS_Query *as_query,
+                           const char            *asn_str);
 
 /**
  * add ipv6 addr to targetset by ASN
  */
-int targetset_add_asn_v6_string(TargetSet             *targetset,
-                                const struct AS_Query *as_query,
-                                const char            *asn_str);
+int targetset_add_asn6_str(TargetSet             *targetset,
+                           const struct AS_Query *as_query,
+                           const char            *asn_str);
 
 /**
  * Indicates whether there are IPv4 targets. If so, we'll have to
@@ -119,9 +119,9 @@ bool targetset_has_any_ipv6(const TargetSet *targetset);
 
 bool targetset_has_any_ports(const TargetSet *targetset);
 
-void targetset_remove_all(TargetSet *targets);
-void targetset_remove_ip(TargetSet *targets);
-void targetset_remove_port(TargetSet *targets);
+void targetset_rm_all(TargetSet *targets);
+void targetset_rm_ip(TargetSet *targets);
+void targetset_rm_port(TargetSet *targets);
 
 int targetset_selftest();
 

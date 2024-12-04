@@ -355,7 +355,7 @@ void rangelist_add_range(struct RangeList *targets, unsigned begin,
  * This is the "free" function for the list, freeing up any memory we've
  * allocated.
  ***************************************************************************/
-void rangelist_remove_all(struct RangeList *targets) {
+void rangelist_rm_all(struct RangeList *targets) {
     FREE(targets->list);
     FREE(targets->picker);
     memset(targets, 0, sizeof(*targets));
@@ -920,8 +920,8 @@ static int regress_pick2() {
         REGRESS(memcmp(targets->list, duplicate->list,
                        targets->list_len * sizeof(targets->list[0])) == 0);
 
-        rangelist_remove_all(targets);
-        rangelist_remove_all(duplicate);
+        rangelist_rm_all(targets);
+        rangelist_rm_all(duplicate);
     }
 
     return 0;
@@ -1129,7 +1129,7 @@ int ranges_selftest(void) {
         return 1;
     }
 
-    rangelist_remove_all(targets);
+    rangelist_rm_all(targets);
 
     /*
      * Test removal
@@ -1186,7 +1186,7 @@ int ranges_selftest(void) {
         ERROR();
         return 1;
     }
-    rangelist_remove_all(targets);
+    rangelist_rm_all(targets);
 
     /* test ports */
     {

@@ -43,7 +43,7 @@ static ConfRes SET_port(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    int err = targetset_add_port_string(&ipstream_conf.targets, value, 0);
+    int err = targetset_add_port_str(&ipstream_conf.targets, value, 0);
     if (err) {
         LOG(LEVEL_ERROR, "(stream generator) invalid port: %s.\n", value);
         return Conf_ERR;
@@ -110,7 +110,7 @@ bool ipstream_init(const XConf *xconf, uint64_t *count_targets,
     if (ipstream_conf.targets.count_ports == 0) {
         LOG(LEVEL_HINT,
             "(stream generator) use o:0 as default port for no specified.\n");
-        targetset_add_port_string(&ipstream_conf.targets, "o:0", 0);
+        targetset_add_port_str(&ipstream_conf.targets, "o:0", 0);
         rangelist_optimize(&ipstream_conf.targets.ports);
         ipstream_conf.targets.count_ports =
             rangelist_count(&ipstream_conf.targets.ports);
@@ -140,7 +140,7 @@ bool ipstream_hasmore(unsigned tx_index, uint64_t index) {
 
     /*remove old ips */
     TargetSet *cur_tgt = &ipstream_conf.targets;
-    targetset_remove_ip(cur_tgt);
+    targetset_rm_ip(cur_tgt);
 
     /*add new ips*/
     char line[256];
@@ -160,7 +160,7 @@ bool ipstream_hasmore(unsigned tx_index, uint64_t index) {
             continue;
         }
 
-        int err = targetset_add_ip_string(cur_tgt, line);
+        int err = targetset_add_ip_str(cur_tgt, line);
         if (err) {
             LOG(LEVEL_ERROR, "(stream generator) invalid ip in address: %s",
                 line);
@@ -277,6 +277,7 @@ void ipstream_close() {
         fclose(ipstream_conf.fp);
     }
     ipstream_conf.fp = NULL;
+    targetset_rm_all(&ipstream_conf.targets);
 }
 
 Generator IpStreamGen = {

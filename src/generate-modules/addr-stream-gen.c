@@ -131,7 +131,7 @@ bool addrstream_hasmore(unsigned tx_index, uint64_t index) {
 
     /*remove old ips */
     TargetSet *cur_tgt = &addrstream_conf.targets;
-    targetset_remove_all(cur_tgt);
+    targetset_rm_all(cur_tgt);
 
     /*add new ips*/
     char line[256];
@@ -162,7 +162,7 @@ bool addrstream_hasmore(unsigned tx_index, uint64_t index) {
         sub[0]         = '\0';
         char *port_str = sub + addrstream_conf.splitter_len;
 
-        int err = targetset_add_ip_string(cur_tgt, s);
+        int err = targetset_add_ip_str(cur_tgt, s);
         if (err) {
             sub[0] = addrstream_conf.splitter[0];
             LOG(LEVEL_ERROR, "(stream generator) invalid ip in address: %s",
@@ -170,12 +170,12 @@ bool addrstream_hasmore(unsigned tx_index, uint64_t index) {
             continue;
         }
 
-        err = targetset_add_port_string(cur_tgt, port_str, 0);
+        err = targetset_add_port_str(cur_tgt, port_str, 0);
         if (err) {
             sub[0] = addrstream_conf.splitter[0];
             LOG(LEVEL_ERROR, "(stream generator) invalid port in address: %s",
                 line);
-            targetset_remove_ip(cur_tgt);
+            targetset_rm_ip(cur_tgt);
             continue;
         }
 
@@ -188,7 +188,7 @@ bool addrstream_hasmore(unsigned tx_index, uint64_t index) {
             sub[0] = addrstream_conf.splitter[0];
             LOG(LEVEL_ERROR, "(stream generator) not valid port in address: %s",
                 line);
-            targetset_remove_ip(cur_tgt);
+            targetset_rm_ip(cur_tgt);
             continue;
         }
 
@@ -296,6 +296,7 @@ void addrstream_close() {
         fclose(addrstream_conf.fp);
     }
     addrstream_conf.fp = NULL;
+    targetset_rm_all(&addrstream_conf.targets);
 }
 
 Generator AddrStreamGen = {

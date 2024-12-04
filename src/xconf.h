@@ -315,6 +315,11 @@ void xconf_help_param(const char *param);
 
 void xconf_search_param(const char *param);
 
+/**
+ * free dynamic string in xconf
+ */
+void xconf_free_str(XConf *xconf);
+
 void xconf_selftest();
 
 void xconf_benchmark(unsigned blackrock_rounds);

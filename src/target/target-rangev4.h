@@ -186,7 +186,7 @@ unsigned rangelist_pick_linearsearch(const struct RangeList *targets,
 /**
  * Remove all the ranges in the range list.
  */
-void rangelist_remove_all(struct RangeList *list);
+void rangelist_rm_all(struct RangeList *list);
 
 /**
  * Merge two range lists

@@ -239,6 +239,7 @@ void iplist_close() {
         fclose(iplist_conf.fp);
     }
     iplist_conf.fp = NULL;
+    rangelist_rm_all(&iplist_conf.ports);
 }
 
 Generator IpListGen = {

@@ -140,7 +140,7 @@ ipv6address range6list_pick(const struct Range6List *targets, uint64_t index);
 /**
  * Remove all the ranges in the range list.
  */
-void range6list_remove_all(struct Range6List *list);
+void range6list_rm_all(struct Range6List *list);
 
 /**
  * Merge two range lists

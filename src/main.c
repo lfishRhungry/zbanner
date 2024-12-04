@@ -755,18 +755,27 @@ static int _main_scan(XConf *xconf) {
     xtatus_finish(&status);
 
     xconf->scanner->close_cb();
+    xconf->scanner = NULL;
 
     if (xconf->probe) {
         xconf->probe->close_cb();
+        xconf->probe = NULL;
     }
 
     xconf->generator->close_cb();
+    xconf->generator = NULL;
 
     output_close(&xconf->out_conf);
 
     FREE(tx_thread);
 
     rawsock_close_adapter(xconf->nic.adapter);
+    xconf->nic.adapter = NULL;
+
+    FREE(xconf->stack);
+
+    xconf->tmplset = NULL;
+    FREE(xconf->templ_opts);
 
     LOG(LEVEL_INFO, "all threads exited...\n");
 
@@ -850,8 +859,8 @@ int main(int argc, char *argv[]) {
                 "cannot add ipv4 target by ASN because no AS info loaded.\n");
             exit(1);
         }
-        int err = targetset_add_asn_v4_string(&xconf->targets, xconf->as_query,
-                                              xconf->target_asn_v4);
+        int err = targetset_add_asn4_str(&xconf->targets, xconf->as_query,
+                                         xconf->target_asn_v4);
         if (err) {
             LOG(LEVEL_ERROR, "add ipv4 target failed by ASN string.\n");
             exit(1);
@@ -863,8 +872,8 @@ int main(int argc, char *argv[]) {
                 "cannot add ipv6 target by ASN because no AS info loaded.\n");
             exit(1);
         }
-        int err = targetset_add_asn_v6_string(&xconf->targets, xconf->as_query,
-                                              xconf->target_asn_v6);
+        int err = targetset_add_asn6_str(&xconf->targets, xconf->as_query,
+                                         xconf->target_asn_v6);
         if (err) {
             LOG(LEVEL_ERROR, "add ipv6 target failed by ASN string.\n");
             exit(1);
@@ -880,8 +889,8 @@ int main(int argc, char *argv[]) {
                 "cannot add ipv4 exclude by ASN because no AS info loaded.\n");
             exit(1);
         }
-        int err = targetset_add_asn_v4_string(&xconf->exclude, xconf->as_query,
-                                              xconf->exclude_asn_v4);
+        int err = targetset_add_asn4_str(&xconf->exclude, xconf->as_query,
+                                         xconf->exclude_asn_v4);
         if (err) {
             LOG(LEVEL_ERROR, "add ipv4 exclude failed by ASN string.\n");
             exit(1);
@@ -893,8 +902,8 @@ int main(int argc, char *argv[]) {
                 "cannot add ipv6 exclude by ASN because no AS info loaded.\n");
             exit(1);
         }
-        int err = targetset_add_asn_v6_string(&xconf->exclude, xconf->as_query,
-                                              xconf->exclude_asn_v6);
+        int err = targetset_add_asn6_str(&xconf->exclude, xconf->as_query,
+                                         xconf->exclude_asn_v6);
         if (err) {
             LOG(LEVEL_ERROR, "add ipv6 exclude failed by ASN string.\n");
             exit(1);
@@ -936,7 +945,7 @@ int main(int argc, char *argv[]) {
 
         case Operation_ListTargets:
             listtargets_ip_port(xconf, stdout);
-            return 0;
+            break;
 
         case Operation_ListAdapters:
             rawsock_list_adapters();
@@ -1029,11 +1038,20 @@ int main(int argc, char *argv[]) {
 #endif
     }
 
+    targetset_rm_all(&xconf->targets);
+    targetset_rm_all(&xconf->exclude);
+
+    if (xconf->echo && xconf->echo != stdout)
+        fclose(xconf->echo);
+
     /*release as query*/
     as_query_destroy(xconf->as_query);
+    FREE(xconf->as_query);
 
     /*close logger*/
     LOG_close();
+
+    xconf_free_str(xconf);
 
     return 0;
 }

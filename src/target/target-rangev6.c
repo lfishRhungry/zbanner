@@ -375,7 +375,7 @@ void range6list_add_range(struct Range6List *targets, ipv6address begin,
 
 /***************************************************************************
  ***************************************************************************/
-void range6list_remove_all(struct Range6List *targets) {
+void range6list_rm_all(struct Range6List *targets) {
     FREE(targets->list);
     FREE(targets->picker);
     memset(targets, 0, sizeof(*targets));
@@ -691,8 +691,8 @@ static int regress_pick2() {
         REGRESS(i, memcmp(targets->list, duplicate->list,
                           targets->list_len * sizeof(targets->list[0])) == 0);
 
-        range6list_remove_all(targets);
-        range6list_remove_all(duplicate);
+        range6list_rm_all(targets);
+        range6list_rm_all(duplicate);
     }
 
     return 0;

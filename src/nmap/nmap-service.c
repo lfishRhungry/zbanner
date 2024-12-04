@@ -163,7 +163,7 @@ static struct RangeList _parse_ports(struct NmapServiceProbeList *list,
     if (is_error) {
         LOG(LEVEL_ERROR, "%s:%u:%u: bad port spec\n", list->filename,
             list->line_number, (unsigned)(p - line));
-        rangelist_remove_all(&ranges);
+        rangelist_rm_all(&ranges);
     }
 
     return ranges;
@@ -772,7 +772,7 @@ static void _parse_line(struct NmapServiceProbeList *list, const char *line) {
                         filename, line_number, (unsigned)offset);
                 } else {
                     rangelist_merge(&list->exclude, &ranges);
-                    rangelist_remove_all(&ranges);
+                    rangelist_rm_all(&ranges);
                 }
             }
             return;
@@ -802,7 +802,7 @@ static void _parse_line(struct NmapServiceProbeList *list, const char *line) {
                     line_number, (unsigned)offset);
             } else {
                 rangelist_merge(&probe->ports, &ranges);
-                rangelist_remove_all(&ranges);
+                rangelist_rm_all(&ranges);
             }
             break;
         case SvcP_Sslports:
@@ -812,7 +812,7 @@ static void _parse_line(struct NmapServiceProbeList *list, const char *line) {
                     line_number, (unsigned)offset);
             } else {
                 rangelist_merge(&probe->sslports, &ranges);
-                rangelist_remove_all(&ranges);
+                rangelist_rm_all(&ranges);
             }
             break;
         case SvcP_Match:
@@ -913,8 +913,8 @@ struct NmapServiceProbeList *nmapservice_read_file(const char *filename) {
 static void nmapserviceprobes_free_record(struct NmapServiceProbe *probe) {
     FREE(probe->name);
     FREE(probe->hellostring);
-    rangelist_remove_all(&probe->ports);
-    rangelist_remove_all(&probe->sslports);
+    rangelist_rm_all(&probe->ports);
+    rangelist_rm_all(&probe->sslports);
     while (probe->match) {
         struct ServiceProbeMatch *match = probe->match;
         probe->match                    = match->next;

@@ -35,7 +35,7 @@ void listtargets_ip_port(XConf *xconf, FILE *fp) {
     /* If called with no ports, then create a pseudo-port needed
      * for the internal algorithm. */
     if (!targetset_has_any_ports(&xconf->targets)) {
-        targetset_add_port_string(&xconf->targets, "o:0", 0);
+        targetset_add_port_str(&xconf->targets, "o:0", 0);
         targetset_optimize(&xconf->targets);
     }
 
