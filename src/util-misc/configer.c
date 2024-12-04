@@ -472,39 +472,40 @@ bool conf_is_parm_flag(const ConfParam *cp, const char *name) {
     return false;
 }
 
-/*
- * Go through configured list of parameters
+/**
+ * @return non-zero if err
  */
-void conf_set_one_param(void *conf, ConfParam *cp, const char *name,
-                        const char *value) {
+int conf_set_one_param(void *conf, ConfParam *cp, const char *name,
+                       const char *value) {
     size_t i;
 
     for (i = 0; cp[i].name; i++) {
         if (conf_equals(cp[i].name, name)) {
             if (Conf_ERR == cp[i].setter(conf, name, value))
-                exit(0);
-            return;
+                return -1;
+            return 0;
         } else {
             size_t j;
             for (j = 0; cp[i].alt_names[j]; j++) {
                 if (conf_equals(cp[i].alt_names[j], name)) {
                     if (Conf_ERR == cp[i].setter(conf, name, value))
-                        exit(0);
-                    return;
+                        return -1;
+                    return 0;
                 }
             }
         }
     }
 
     LOG(LEVEL_ERROR, "(CONF) unknown config option: %s=%s\n", name, value);
-    exit(1);
+    return -1;
 }
 
 /**
  * argc and argv do not contain process file name
+ * @return non-zero if err
  */
-void conf_set_params_from_args(void *conf, ConfParam *cp, int argc,
-                               char **argv) {
+int conf_set_params_from_args(void *conf, ConfParam *cp, int argc,
+                              char **argv) {
     int      i;
     unsigned name_length;
 
@@ -543,7 +544,7 @@ void conf_set_params_from_args(void *conf, ConfParam *cp, int argc,
                 LOG(LEVEL_ERROR, "%.*s: empty parameter\n", name_length,
                     argname);
                 // break;
-                exit(1);
+                return -1;
             }
 
             if (name_length > sizeof(name2) - 1) {
@@ -554,14 +555,15 @@ void conf_set_params_from_args(void *conf, ConfParam *cp, int argc,
             memcpy(name2, argname, name_length);
             name2[name_length] = '\0';
 
-            conf_set_one_param(conf, cp, name2, value);
+            if (conf_set_one_param(conf, cp, name2, value))
+                return -1;
 
             continue;
         }
 
         if (!isdigit(argv[i][0]) && argv[i][0] != ':' && argv[i][0] != '[') {
             LOG(LEVEL_ERROR, "unknown parameter \"%s\"\n", argv[i]);
-            exit(1);
+            return -1;
         }
 
         /* If parameter doesn't start with '-', assume it's an
@@ -569,6 +571,8 @@ void conf_set_params_from_args(void *conf, ConfParam *cp, int argc,
          */
         // xconf_set_parameter(xconf, "range", argv[i]);
     }
+
+    return 0;
 }
 
 /**
@@ -580,6 +584,7 @@ void conf_set_params_from_args(void *conf, ConfParam *cp, int argc,
  * @return 0 if success
  */
 int conf_set_params_from_str(void *conf, ConfParam *cp, char *string) {
+    int    err = 0;
     int    sub_argc;
     char **sub_argv;
 
@@ -588,9 +593,9 @@ int conf_set_params_from_str(void *conf, ConfParam *cp, char *string) {
         return 1;
     }
 
-    conf_set_params_from_args(conf, cp, sub_argc, sub_argv);
+    err = conf_set_params_from_args(conf, cp, sub_argc, sub_argv);
     free(sub_argv);
-    return 0;
+    return err;
 }
 
 /**
@@ -602,6 +607,7 @@ int conf_set_params_from_str(void *conf, ConfParam *cp, char *string) {
  * @return 0 if success
  */
 int conf_set_params_from_substr(void *conf, ConfParam *cp, char *substring) {
+    int    err = 0;
     int    sub_argc;
     char **sub_argv;
 
@@ -610,7 +616,7 @@ int conf_set_params_from_substr(void *conf, ConfParam *cp, char *substring) {
         return 1;
     }
 
-    conf_set_params_from_args(conf, cp, sub_argc, sub_argv);
+    err = conf_set_params_from_args(conf, cp, sub_argc, sub_argv);
     free(sub_argv);
-    return 0;
+    return err;
 }

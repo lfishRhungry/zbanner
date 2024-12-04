@@ -294,8 +294,9 @@ bool xconf_contains(const char *x, int argc, char **argv);
 
 /**
  * Called to set a <name=value> pair.
+ * @return non-zero if err
  */
-void xconf_set_parameter(XConf *xconf, const char *name, const char *value);
+int xconf_set_parameter(XConf *xconf, const char *name, const char *value);
 
 /**
  * Echoes the settings to the command-line. By default, echoes only

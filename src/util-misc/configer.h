@@ -76,11 +76,10 @@ unsigned conf_index_of(const char *str, char c);
  */
 int conf_fuzzy_distance(const char *s1, const char *s2);
 
-void conf_set_one_param(void *conf, ConfParam *cp, const char *name,
-                        const char *value);
-void conf_set_params_from_args(void *conf, ConfParam *cp, int argc,
-                               char **argv);
-int  conf_set_params_from_str(void *conf, ConfParam *cp, char *string);
-int  conf_set_params_from_substr(void *conf, ConfParam *cp, char *substring);
+int conf_set_one_param(void *conf, ConfParam *cp, const char *name,
+                       const char *value);
+int conf_set_params_from_args(void *conf, ConfParam *cp, int argc, char **argv);
+int conf_set_params_from_str(void *conf, ConfParam *cp, char *string);
+int conf_set_params_from_substr(void *conf, ConfParam *cp, char *substring);
 
 #endif

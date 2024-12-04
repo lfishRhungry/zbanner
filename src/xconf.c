@@ -1882,6 +1882,7 @@ static ConfRes SET_read_conf(void *conf, const char *name, const char *value) {
 
     FILE *fp;
     char *line = MALLOC(65535 * sizeof(char));
+    int   err  = 0;
 
     fp = fopen(value, "rt");
     if (fp == NULL) {
@@ -1928,11 +1929,16 @@ static ConfRes SET_read_conf(void *conf, const char *name, const char *value) {
             trim(value, 65535);
         }
 
-        xconf_set_parameter(xconf, name, value);
+        err = xconf_set_parameter(xconf, name, value);
+        if (err)
+            break;
     }
 
     fclose(fp);
     FREE(line);
+
+    if (err)
+        return Conf_ERR;
 
     return Conf_OK;
 }
@@ -3684,11 +3690,8 @@ ConfParam config_parameters[] = {
 
     {0}};
 
-/***************************************************************************
- * Exit process if CONF_ERR happens.
- ***************************************************************************/
-void xconf_set_parameter(XConf *xconf, const char *name, const char *value) {
-    conf_set_one_param(xconf, config_parameters, name, value);
+int xconf_set_parameter(XConf *xconf, const char *name, const char *value) {
+    return conf_set_one_param(xconf, config_parameters, name, value);
 }
 
 /***************************************************************************
