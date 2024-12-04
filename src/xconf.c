@@ -3206,7 +3206,7 @@ ConfParam config_parameters[] = {
     {"scan-module",
      SET_scan_module,
      Type_ARG,
-     {"scan", 0},
+     {"scan", "scanner", 0},
      "Specifies a ScanModule to perform scanning. Use --list-scan to get "
      "informations of all ScanModules.\nNOTE: A ScanModule must be used in "
      "every time we scan. TcpSynModule will be default if we did not "
@@ -3214,17 +3214,17 @@ ConfParam config_parameters[] = {
     {"list-scan-modules",
      SET_list_scan_modules,
      Type_FLAG,
-     {"list-scan-module", "list-scan", "list-scans", 0},
+     {"list-scan-module", "list-scan", "list-scanner", 0},
      "List informations of all ScanModules."},
     {"help-scan-module",
      SET_help_scan_module,
      Type_ARG,
-     {"help-scan", "scan-help", 0},
+     {"help-scan", "scan-help", "help-scanner", 0},
      "Print information and help of specified ScanModule."},
     {"scan-module-args",
      SET_scan_module_args,
      Type_ARG,
-     {"scan-module-arg", "scan-args", "scan-arg", 0},
+     {"scan-module-arg", "scan-arg", "scanner-arg", 0},
      "Specifies module-specific parameters for used ScanModule. Information "
      "of parameters for each ScanModule could be found in --list-scan."},
 
@@ -3359,7 +3359,7 @@ ConfParam config_parameters[] = {
     {"generate-module-args",
      SET_generate_module_args,
      Type_ARG,
-     {"generate-module-arg", "gen-args", "gen-arg", 0},
+     {"generate-module-arg", "generator-arg", "gen-arg", 0},
      "Specifies module-specific parameters for used GenerateModule. "
      "Information "
      "of parameters for each GenerateModule could be found in --help-gen."},
