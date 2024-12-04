@@ -66,6 +66,7 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
 
     int        pcre2_errcode;
     PCRE2_SIZE pcre2_erroffset;
+    FREE(hello_conf.regex);
     hello_conf.regex = STRDUP(value);
     hello_conf.compiled_re =
         pcre2_compile((PCRE2_SPTR)hello_conf.regex, PCRE2_ZERO_TERMINATED,
@@ -75,12 +76,14 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
 
     if (!hello_conf.compiled_re) {
         LOG(LEVEL_ERROR, "Regex compiled failed.\n");
+        FREE(hello_conf.regex);
         return Conf_ERR;
     }
 
     hello_conf.match_ctx = pcre2_match_context_create(NULL);
     if (!hello_conf.match_ctx) {
         LOG(LEVEL_ERROR, "Regex allocates match_ctx failed.\n");
+        FREE(hello_conf.regex);
         return Conf_ERR;
     }
 

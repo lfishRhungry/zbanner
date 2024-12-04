@@ -67,6 +67,8 @@ enum Operation {
     Operation_PrintHelp,           /* print help text for all parameters*/
     Operation_PrintIntro,          /* print introduction text of work flow*/
     Operation_PrintVersion,        /* print version and build info*/
+    Operation_HelpParam,           /* print help text for specific param*/
+    Operation_SearchParam,         /* print help text for specific param*/
     Operation_Selftest,            /* do global regression test*/
     Operation_Benchmark,           /* do global benchmark for key units */
 #ifndef NOT_FOUND_BSON
@@ -206,6 +208,11 @@ typedef struct XtateConf {
     char            *exclude_asn_v4;
     char            *exclude_asn_v6;
     /**
+     * param help
+     */
+    char            *help_param;
+    char            *search_param;
+    /**
      * other switches
      * */
     enum Operation   op;
@@ -303,6 +310,10 @@ void xconf_print_usage();
 void xconf_print_help();
 
 void xconf_print_version();
+
+void xconf_help_param(const char *param);
+
+void xconf_search_param(const char *param);
 
 void xconf_selftest();
 

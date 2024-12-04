@@ -986,6 +986,14 @@ int main(int argc, char *argv[]) {
             xconf_print_version();
             break;
 
+        case Operation_HelpParam:
+            xconf_help_param(xconf->help_param);
+            break;
+
+        case Operation_SearchParam:
+            xconf_search_param(xconf->search_param);
+            break;
+
         case Operation_Selftest:
             xconf_selftest();
             break;

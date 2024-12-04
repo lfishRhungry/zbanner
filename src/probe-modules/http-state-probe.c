@@ -214,6 +214,7 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
 
     int        pcre2_errcode;
     PCRE2_SIZE pcre2_erroffset;
+    FREE(httpstate_conf.regex);
     httpstate_conf.regex       = STRDUP(value);
     httpstate_conf.compiled_re = pcre2_compile(
         (PCRE2_SPTR)httpstate_conf.regex, PCRE2_ZERO_TERMINATED,
@@ -223,12 +224,14 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
 
     if (!httpstate_conf.compiled_re) {
         LOG(LEVEL_ERROR, "Regex compiled failed.\n");
+        FREE(httpstate_conf.regex);
         return Conf_ERR;
     }
 
     httpstate_conf.match_ctx = pcre2_match_context_create(NULL);
     if (!httpstate_conf.match_ctx) {
         LOG(LEVEL_ERROR, "Regex allocates match_ctx failed.\n");
+        FREE(httpstate_conf.regex);
         return Conf_ERR;
     }
 

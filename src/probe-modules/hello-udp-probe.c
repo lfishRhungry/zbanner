@@ -62,6 +62,7 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
 
     int        pcre2_errcode;
     PCRE2_SIZE pcre2_erroffset;
+    FREE(helloudp_conf.regex);
     helloudp_conf.regex       = STRDUP(value);
     helloudp_conf.compiled_re = pcre2_compile(
         (PCRE2_SPTR)helloudp_conf.regex, PCRE2_ZERO_TERMINATED,
@@ -71,12 +72,14 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
 
     if (!helloudp_conf.compiled_re) {
         LOG(LEVEL_ERROR, "Regex compiled failed.\n");
+        FREE(helloudp_conf.regex);
         return Conf_ERR;
     }
 
     helloudp_conf.match_ctx = pcre2_match_context_create(NULL);
     if (!helloudp_conf.match_ctx) {
         LOG(LEVEL_ERROR, "Regex allocates match_ctx failed.\n");
+        FREE(helloudp_conf.regex);
         return Conf_ERR;
     }
 

@@ -61,6 +61,7 @@ static ConfRes SET_app_name(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
+    FREE(mongodb_conf.app_name);
     mongodb_conf.app_name = STRDUP(value);
 
     return Conf_OK;
@@ -70,6 +71,7 @@ static ConfRes SET_col_name(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
+    FREE(mongodb_conf.col_name);
     mongodb_conf.col_name = STRDUP(value);
 
     return Conf_OK;
@@ -79,6 +81,7 @@ static ConfRes SET_db_name(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
+    FREE(mongodb_conf.db_name);
     mongodb_conf.db_name = STRDUP(value);
 
     return Conf_OK;

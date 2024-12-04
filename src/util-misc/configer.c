@@ -349,6 +349,83 @@ bool conf_equals_x(const char *lhs, const char *rhs, size_t rhs_length) {
     }
 }
 
+static int levenshtein_distance(const char *s1, const char *s2) {
+    int   len1 = strlen(s1), len2 = strlen(s2);
+    int **dp = MALLOC(sizeof(int *) * (len1 + 1));
+    for (int i = 0; i <= len1; i++) {
+        dp[i] = MALLOC(sizeof(int) * (len2 + 1));
+    }
+
+    for (int i = 0; i <= len1; i++) {
+        dp[i][0] = i;
+    }
+    for (int j = 0; j <= len2; j++) {
+        dp[0][j] = j;
+    }
+
+    for (int i = 1; i <= len1; i++) {
+        for (int j = 1; j <= len2; j++) {
+            int cost = s1[i - 1] == s2[j - 1] ? 0 : 1;
+            dp[i][j] = min(dp[i - 1][j] + 1, dp[i][j - 1] + 1);
+            dp[i][j] = min(dp[i][j], dp[i - 1][j - 1] + cost);
+        }
+    }
+
+    int distance = dp[len1][len2];
+    for (int i = 0; i <= len1; i++) {
+        FREE(dp[i]);
+    }
+    FREE(dp);
+    return distance;
+}
+
+static void str2LowerCase(char *str) {
+    while (*str) {
+        *str = tolower((unsigned char)*str);
+        str++;
+    }
+}
+
+static void rm_special_chars(char *str, const char *chars) {
+    char *src = str, *dst = str;
+    while (*src) {
+        int isSpecial = 0;
+        for (int i = 0; chars[i] != '\0'; i++) {
+            if (*src == chars[i]) {
+                isSpecial = 1;
+                break;
+            }
+        }
+        if (!isSpecial) {
+            *dst++ = *src;
+        }
+        src++;
+    }
+    *dst = '\0';
+}
+
+int conf_fuzzy_distance(const char *s1, const char *s2) {
+    if (strlen(s1) > 99 || strlen(s2) > 99) {
+        LOG(LEVEL_ERROR, "(%s) string length exceeded.\n", __func__);
+        return -1;
+    }
+
+    char s1_cleaned[100] = {0};
+    char s2_cleaned[100] = {0};
+    strncpy(s1_cleaned, s1, 100);
+    strncpy(s2_cleaned, s2, 100);
+    rm_special_chars(s1_cleaned, "-_.");
+    rm_special_chars(s2_cleaned, "-_.");
+    str2LowerCase(s1_cleaned);
+    str2LowerCase(s2_cleaned);
+
+    if (strstr(s1_cleaned, s2_cleaned))
+        return 0;
+
+    int distance = levenshtein_distance(s1_cleaned, s2_cleaned);
+    return distance;
+}
+
 unsigned conf_index_of(const char *str, char c) {
     unsigned i;
     for (i = 0; str[i] && str[i] != c; i++)

@@ -66,6 +66,16 @@ bool     conf_equals(const char *lhs, const char *rhs);
 bool     conf_equals_x(const char *lhs, const char *rhs, size_t rhs_length);
 unsigned conf_index_of(const char *str, char c);
 
+/**
+ * Get the edit distance of two param name. Our edit distance will ignore
+ * case and some special chars like "-", "_" and "."
+ * Also, if s2 is substring, the distance will be zero.
+ *
+ * @param s1 param of config
+ * @param s2 param by user inputing
+ */
+int conf_fuzzy_distance(const char *s1, const char *s2);
+
 void conf_set_one_param(void *conf, ConfParam *cp, const char *name,
                         const char *value);
 void conf_set_params_from_args(void *conf, ConfParam *cp, int argc,

@@ -153,6 +153,7 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
 
     int        pcre2_errcode;
     PCRE2_SIZE pcre2_erroffset;
+    FREE(hellostate_conf.regex);
     hellostate_conf.regex       = STRDUP(value);
     hellostate_conf.compiled_re = pcre2_compile(
         (PCRE2_SPTR)hellostate_conf.regex, PCRE2_ZERO_TERMINATED,
@@ -162,12 +163,14 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
 
     if (!hellostate_conf.compiled_re) {
         LOG(LEVEL_ERROR, "Regex compiled failed.\n");
+        FREE(hellostate_conf.regex);
         return Conf_ERR;
     }
 
     hellostate_conf.match_ctx = pcre2_match_context_create(NULL);
     if (!hellostate_conf.match_ctx) {
         LOG(LEVEL_ERROR, "Regex allocates match_ctx failed.\n");
+        FREE(hellostate_conf.regex);
         return Conf_ERR;
     }
 

@@ -518,6 +518,7 @@ static ConfRes SET_ip2asn_v6(void *conf, const char *name, const char *value) {
         return 0;
     }
 
+    FREE(xconf->ip2asn_v6_filename);
     xconf->ip2asn_v6_filename = STRDUP(value);
 
     return Conf_OK;
@@ -532,6 +533,7 @@ static ConfRes SET_ip2asn_v4(void *conf, const char *name, const char *value) {
         return 0;
     }
 
+    FREE(xconf->ip2asn_v4_filename);
     xconf->ip2asn_v4_filename = STRDUP(value);
 
     return Conf_OK;
@@ -813,6 +815,37 @@ static ConfRes SET_listif(void *conf, const char *name, const char *value) {
     return Conf_OK;
 }
 
+static ConfRes SET_help_param(void *conf, const char *name, const char *value) {
+    XConf *xconf = (XConf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        return 0;
+    }
+
+    FREE(xconf->help_param);
+    xconf->help_param = STRDUP(value);
+    xconf->op         = Operation_HelpParam;
+
+    return Conf_OK;
+}
+
+static ConfRes SET_search_param(void *conf, const char *name,
+                                const char *value) {
+    XConf *xconf = (XConf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        return 0;
+    }
+
+    FREE(xconf->search_param);
+    xconf->search_param = STRDUP(value);
+    xconf->op           = Operation_SearchParam;
+
+    return Conf_OK;
+}
+
 static ConfRes SET_list_target(void *conf, const char *name,
                                const char *value) {
     XConf *xconf = (XConf *)conf;
@@ -855,6 +888,7 @@ static ConfRes SET_list_nmap_probes(void *conf, const char *name,
         return 0;
     }
 
+    FREE(xconf->nmap_file);
     xconf->nmap_file = STRDUP(value);
     xconf->op        = Operation_ListNmapProbes;
 
@@ -869,6 +903,7 @@ static ConfRes SET_parse_bson(void *conf, const char *name, const char *value) {
         return 0;
     }
 
+    FREE(xconf->parse_bson_file);
     xconf->parse_bson_file = STRDUP(value);
     xconf->op              = Operation_ParseBson;
 
@@ -883,6 +918,7 @@ static ConfRes SET_store_json(void *conf, const char *name, const char *value) {
         return 0;
     }
 
+    FREE(xconf->store_json_file);
     xconf->store_json_file = STRDUP(value);
     xconf->op              = Operation_StoreJson;
 
@@ -895,6 +931,7 @@ static ConfRes SET_store_bson(void *conf, const char *name, const char *value) {
         return 0;
     }
 
+    FREE(xconf->store_bson_file);
     xconf->store_bson_file = STRDUP(value);
     xconf->op              = Operation_StoreBson;
 
@@ -908,6 +945,7 @@ static ConfRes SET_mongodb_uri(void *conf, const char *name,
         return 0;
     }
 
+    FREE(xconf->mongodb_uri);
     xconf->mongodb_uri = STRDUP(value);
 
     return Conf_OK;
@@ -919,6 +957,7 @@ static ConfRes SET_mongodb_db(void *conf, const char *name, const char *value) {
         return 0;
     }
 
+    FREE(xconf->mongodb_db);
     xconf->mongodb_db = STRDUP(value);
 
     return Conf_OK;
@@ -931,6 +970,7 @@ static ConfRes SET_mongodb_col(void *conf, const char *name,
         return 0;
     }
 
+    FREE(xconf->mongodb_col);
     xconf->mongodb_col = STRDUP(value);
 
     return Conf_OK;
@@ -943,6 +983,7 @@ static ConfRes SET_mongodb_app(void *conf, const char *name,
         return 0;
     }
 
+    FREE(xconf->mongodb_app);
     xconf->mongodb_app = STRDUP(value);
 
     return Conf_OK;
@@ -1461,6 +1502,7 @@ static ConfRes SET_target_asn_v4(void *conf, const char *name,
         return 0;
     }
 
+    FREE(xconf->target_asn_v4);
     xconf->target_asn_v4 = STRDUP(value);
 
     if (xconf->op == Operation_Default)
@@ -1477,6 +1519,7 @@ static ConfRes SET_target_asn_v6(void *conf, const char *name,
         return 0;
     }
 
+    FREE(xconf->target_asn_v6);
     xconf->target_asn_v6 = STRDUP(value);
 
     if (xconf->op == Operation_Default)
@@ -1493,6 +1536,7 @@ static ConfRes SET_exclude_asn_v4(void *conf, const char *name,
         return 0;
     }
 
+    FREE(xconf->exclude_asn_v4);
     xconf->exclude_asn_v4 = STRDUP(value);
 
     if (xconf->op == Operation_Default)
@@ -1509,6 +1553,7 @@ static ConfRes SET_exclude_asn_v6(void *conf, const char *name,
         return 0;
     }
 
+    FREE(xconf->exclude_asn_v6);
     xconf->exclude_asn_v6 = STRDUP(value);
 
     if (xconf->op == Operation_Default)
@@ -3086,6 +3131,17 @@ ConfParam config_parameters[] = {
      {"if-list", "list-interface", "list-adapter", 0},
      "Do not run, but instead print informations of all adapters in this "
      "machine."},
+    {"help-parameter",
+     SET_help_param,
+     Type_ARG,
+     {"help-param", 0},
+     "Print the help text for specified parameter if it exists in global "
+     "configuration."},
+    {"search-parameter",
+     SET_search_param,
+     Type_ARG,
+     {"search-param", 0},
+     "Search specified parameter in global configuration by fuzzy matching."},
 #ifndef NOT_FOUND_PCRE2
     {"list-nmap-probes",
      SET_list_nmap_probes,
@@ -3275,7 +3331,7 @@ ConfParam config_parameters[] = {
     {"output-as-info",
      SET_output_as_info,
      Type_FLAG,
-     {"output-as", "out-as", 0},
+     {"output-as", "out-as", "as-output", "as-out", 0},
      "Add AS info to scan results and listed targets. AS info is from ip2asn "
      "files specified by --ip2asn-v4 or/and ip2asn-v6.\n"
      "NOTE: Maybe a little bit less efficient because of querying."},
@@ -4062,6 +4118,99 @@ void xconf_print_help() {
         count);
     printf(XPRINT_STAR_LINE "\n");
     printf("\n\n\n");
+}
+
+void xconf_help_param(const char *param) {
+    if (!param || !param[0]) {
+        LOG(LEVEL_ERROR, "(help param) invalid param.\n");
+        return;
+    }
+
+    bool found = false;
+    for (unsigned i = 0; config_parameters[i].name; i++) {
+        if (!config_parameters[i].help_text) {
+            continue;
+        }
+
+        if (conf_equals(config_parameters[i].name, param)) {
+            found = true;
+        } else {
+            for (unsigned j = 0; config_parameters[i].alt_names[j]; j++) {
+                if (conf_equals(config_parameters[i].alt_names[j], param)) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        if (!found)
+            continue;
+
+        printf("\n");
+        printf("  --%s", config_parameters[i].name);
+
+        for (unsigned j = 0; config_parameters[i].alt_names[j]; j++) {
+            printf(", --%s", config_parameters[i].alt_names[j]);
+        }
+
+        printf("\n\n");
+        xprint(config_parameters[i].help_text, 6, 80);
+        printf("\n\n");
+
+        return;
+    }
+
+    LOG(LEVEL_ERROR, "(help param) no global param named \"%s\"\n", param);
+}
+
+void xconf_search_param(const char *param) {
+    if (!param || !param[0]) {
+        LOG(LEVEL_ERROR, "(search param) invalid param.\n");
+        return;
+    }
+
+    int distance;
+
+    printf("\n");
+
+    for (unsigned i = 0; config_parameters[i].name; i++) {
+        bool found = false;
+        if (!config_parameters[i].help_text) {
+            continue;
+        }
+
+        distance = conf_fuzzy_distance(config_parameters[i].name, param);
+        if (distance < 0) {
+            LOG(LEVEL_ERROR, "(search param) failed to matching.\n");
+            break;
+        }
+
+        if (distance <= 2) {
+            found = true;
+        } else {
+            for (unsigned j = 0; config_parameters[i].alt_names[j]; j++) {
+                distance = conf_fuzzy_distance(
+                    config_parameters[i].alt_names[j], param);
+                if (distance <= 2) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        if (!found)
+            continue;
+
+        printf("  --%s", config_parameters[i].name);
+
+        for (unsigned j = 0; config_parameters[i].alt_names[j]; j++) {
+            printf(", --%s", config_parameters[i].alt_names[j]);
+        }
+
+        // printf("\n\n");
+        // xprint(config_parameters[i].help_text, 6, 80);
+        printf("\n\n");
+    }
 }
 
 void xconf_benchmark(unsigned blackrock_rounds) {

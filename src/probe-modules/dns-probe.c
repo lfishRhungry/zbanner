@@ -31,6 +31,7 @@ static ConfRes SET_ptr(void *conf, const char *name, const char *value) {
 
     ipaddress_ptr_t ip_ptr = ipaddress_ptr_fmt(ip);
 
+    FREE(dns_conf.req_name);
     dns_conf.req_name = STRDUP(ip_ptr.string);
     dns_conf.req_type = dns_str_to_record_type("ptr");
 
@@ -86,14 +87,14 @@ static ConfRes SET_req_name(void *conf, const char *name, const char *value) {
     UNUSEDPARM(conf);
     UNUSEDPARM(name);
 
-    char  *str     = STRDUP(value);
-    size_t str_len = strlen(str);
+    size_t str_len = strlen(value);
     if (str_len == 0) {
         LOG(LEVEL_ERROR, "request name of dns is error.\n");
         return Conf_ERR;
     }
 
-    dns_conf.req_name = str;
+    FREE(dns_conf.req_name);
+    dns_conf.req_name = STRDUP(value);
 
     return Conf_OK;
 }
