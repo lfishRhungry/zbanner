@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(
     xtate
     LANGUAGES               C
-    VERSION                 2.6.0
+    VERSION                 2.6.1
     DESCRIPTION             "A modular all-stack network scanner for next-generation internet surveys."
     HOMEPAGE_URL            "https://github.com/sharkocha/xtate"
     )
@@ -39,14 +39,21 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     message(FATAL_ERROR "This project requires a 64-bit system.")
 endif()
+
 INCLUDE (CheckTypeSize)
 CHECK_TYPE_SIZE("int" INT_SIZE)
 if(NOT INT_SIZE EQUAL 4)
     message(FATAL_ERROR "This project requires an environment with 32-bit int type.")
 endif()
+
 CHECK_TYPE_SIZE("time_t" TIME_SIZE)
 if(NOT TIME_SIZE EQUAL 8)
     message(FATAL_ERROR "This project requires an environment with 64-bit time_t type.")
+endif()
+
+CHECK_TYPE_SIZE("size_t" SIZE_SIZE)
+if(NOT SIZE_SIZE EQUAL 8)
+    message(FATAL_ERROR "This project requires an environment with 64-bit size_t type.")
 endif()
 
 # Some calculations need big-endian
