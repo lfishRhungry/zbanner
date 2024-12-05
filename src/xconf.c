@@ -2801,7 +2801,7 @@ ConfParam config_parameters[] = {
     {"wait",
      SET_wait,
      Type_ARG,
-     {"cooldown", 0},
+     {0},
      "How many seconds should " XTATE_NAME_TITLE_CASE " waiting and handling "
      "incoming packets after all transmit threads finished. Default is 10s."
      "Specifies the number of seconds after transmit is done to wait for "
@@ -2871,7 +2871,7 @@ ConfParam config_parameters[] = {
     {"help",
      SET_print_help,
      Type_FLAG,
-     {"h", "?", 0},
+     {"h", 0},
      "Print the detailed help text of all parameters."},
     {"introduction",
      SET_print_intro,
@@ -2907,12 +2907,12 @@ ConfParam config_parameters[] = {
     {"top-port",
      SET_top_port,
      Type_ARG,
-     {"top", "tcp-top", "tcp-top-port", 0},
+     {"top", "tcp-top", "top-tcp", 0},
      "Add a number of tcp ports to scan from predefined top list."},
     {"udp-top-port",
      SET_top_port,
      Type_ARG,
-     {"udp-top", 0},
+     {"udp-top", "top-udp", 0},
      "Add a number of udp ports to scan from predefined top list."},
     {"include-file",
      SET_include_file,
@@ -3107,7 +3107,7 @@ ConfParam config_parameters[] = {
     {"benchmark",
      SET_benchmark,
      Type_FLAG,
-     {"bench", 0},
+     {0},
      "Run a global benchmark for key units."},
     {"selftest",
      SET_selftest,
@@ -3117,7 +3117,7 @@ ConfParam config_parameters[] = {
     {"list-cidr",
      SET_list_cidr,
      Type_FLAG,
-     {"cidr", 0},
+     {0},
      "Do not run, but instead print all IP targets in CIDR format."},
     {"list-range",
      SET_list_range,
@@ -3127,14 +3127,14 @@ ConfParam config_parameters[] = {
     {"list-target",
      SET_list_target,
      Type_FLAG,
-     {"list-targets", "list-ip", "ip-list", 0},
+     {"list-targets", "list-ip", "list-ip-port", 0},
      "Do not run, but print every unique targets in random. We can got ordered "
      "targets with `--list-target[order]` or `--list-target[norandom]`. Also "
      "can print relative AS info if `--out-as-info` is on."},
     {"list-if",
      SET_listif,
      Type_FLAG,
-     {"if-list", "list-interface", "list-adapter", 0},
+     {"list-interface", "list-adapter", 0},
      "Do not run, but instead print informations of all adapters in this "
      "machine."},
     {"help-parameter",
@@ -3160,7 +3160,7 @@ ConfParam config_parameters[] = {
     {"parse-bson-file",
      SET_parse_bson,
      Type_ARG,
-     {"parse-bson", "bson-parse", 0},
+     {"parse-bson", 0},
      "Parse BSON format result file generated from Bson Output Module to JSON "
      "format and output to stdout."},
 #endif
@@ -3168,7 +3168,7 @@ ConfParam config_parameters[] = {
     {"store-json-file",
      SET_store_json,
      Type_ARG,
-     {"store-json", "json-store", 0},
+     {"store-json", 0},
      "Specifies NDJSON format result file generated from NDJSON Output Module "
      "and store the results to MongoDB.\n"
      "NOTE: This need every JSON result in NDJSON file be valid. So we'd "
@@ -3177,13 +3177,13 @@ ConfParam config_parameters[] = {
     {"store-bson-file",
      SET_store_bson,
      Type_ARG,
-     {"store-bson", "bson-store", 0},
+     {"store-bson", 0},
      "Specifies BSON format result file generated from Bson Output Module and "
      "store the results to MongoDB."},
     {"mongodb-uri",
      SET_mongodb_uri,
      Type_ARG,
-     {"mongodb", 0},
+     {0},
      "Specifies MongoDB URI to store result file generated "
      "from some Output Module."},
     {"mongodb-db-name",
@@ -3225,7 +3225,7 @@ ConfParam config_parameters[] = {
     {"help-scan-module",
      SET_help_scan_module,
      Type_ARG,
-     {"help-scan", "scan-help", "help-scanner", 0},
+     {"help-scan", "help-scanner", 0},
      "Print information and help of specified ScanModule."},
     {"scan-module-args",
      SET_scan_module_args,
@@ -3252,7 +3252,7 @@ ConfParam config_parameters[] = {
     {"help-probe-module",
      SET_help_probe_module,
      Type_ARG,
-     {"help-probe", "probe-help", 0},
+     {"help-probe", 0},
      "Print information and help of specified ProbeModule."},
     {"probe-module-args",
      SET_probe_module_args,
@@ -3281,7 +3281,7 @@ ConfParam config_parameters[] = {
     {"help-output-module",
      SET_help_output_module,
      Type_ARG,
-     {"help-output", "output-help", "help-out", "out-help", 0},
+     {"help-output", "help-out", 0},
      "Print information and help of specified OutputModule."},
     {"output-module-args",
      SET_output_module_args,
@@ -3305,10 +3305,10 @@ ConfParam config_parameters[] = {
      {"output-append", "append", 0},
      "Causes output to append mode, rather than overwriting. Performance of "
      "OutputModules can be different for this flag."},
-    {"interactive",
+    {"output-screen",
      SET_interactive,
      Type_FLAG,
-     {"interact", 0},
+     {"out-screen", 0},
      "Also print the results to screen while specifying an OutputModule."},
     {"show-output",
      SET_show_output,
@@ -3337,7 +3337,7 @@ ConfParam config_parameters[] = {
     {"output-as-info",
      SET_output_as_info,
      Type_FLAG,
-     {"output-as", "out-as", "as-output", "as-out", 0},
+     {"output-as", "out-as", "output-asn", "out-asn", 0},
      "Add AS info to scan results and listed targets. AS info is from ip2asn "
      "files specified by --ip2asn-v4 or/and ip2asn-v6.\n"
      "NOTE: Maybe a little bit less efficient because of querying."},
@@ -3360,7 +3360,7 @@ ConfParam config_parameters[] = {
     {"help-generate-module",
      SET_help_generate_module,
      Type_ARG,
-     {"help-generate", "help-generator", "help-gen", "gen-help", 0},
+     {"help-generate", "help-generator", "help-gen", 0},
      "Print information and help of specified GenerateModule."},
     {"generate-module-args",
      SET_generate_module_args,
@@ -3375,7 +3375,7 @@ ConfParam config_parameters[] = {
     {"print-status",
      SET_print_status,
      Type_ARG,
-     {"print", 0},
+     {"status-print", "print", 0},
      "Tells which type of status should be printed explicitly, such as:\n"
      "'queue' for real-time capacity of transmit queue and receive queues.\n"
      "'info-num'/'info' for count of information type results.\n"
@@ -3549,10 +3549,10 @@ ConfParam config_parameters[] = {
 
     {"MISCELLANEOUS", SET_nothing, 0, {0}, NULL},
 
-    {"conf",
+    {"config-file",
      SET_read_conf,
      Type_ARG,
-     {"config", "resume", 0},
+     {"conf-file", "conf", "resume", 0},
      "Reads in a configuration file. If not specified, then will read from "
      "/etc/xtate/xtate.conf by default. We could specifies a configuration "
      "file generated by " XTATE_NAME_TITLE_CASE
@@ -3563,10 +3563,10 @@ ConfParam config_parameters[] = {
      Type_ARG,
      {0},
      "The point in the scan at when it was paused."},
-    {"no-resume",
+    {"no-resume-file",
      SET_noresume,
      Type_FLAG,
-     {0},
+     {"no-resume", 0},
      "Do not save scan info to resume file(paused.conf) for resuming. This is"
      " useful when our target list is too large and scattered and spend too "
      "much time to save."},
@@ -3655,7 +3655,7 @@ ConfParam config_parameters[] = {
     {"no-cpu-bind",
      SET_no_cpu_bind,
      Type_FLAG,
-     {"no-bind", 0},
+     {0},
      "In default, " XTATE_NAME_TITLE_CASE " bind its threads to CPU kernels for"
      " better performance if the number of kernels is great than 1. This "
      "switch allows no CPU binding for all threads and is useful for computers"
@@ -3681,7 +3681,7 @@ ConfParam config_parameters[] = {
     {"no-back-trace",
      SET_nothing, /*It will be handle before commandline parsing*/
      Type_FLAG,
-     {"nobt", 0},
+     {"no-bt", 0},
      "Turn off the backtrace of program call stack after segment fault for "
      "debugging."},
 
