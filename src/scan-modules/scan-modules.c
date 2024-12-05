@@ -101,7 +101,7 @@ void help_scan_module(Scanner *module) {
 
             printf("  --%s", module->params[j].name);
             for (unsigned k = 0; module->params[j].alt_names[k]; k++) {
-                printf(", --%s", module->params[j].alt_names[k]);
+                printf(", %s", module->params[j].alt_names[k]);
             }
             printf("\n");
             xprint(module->params[j].help_text, 6, 80);

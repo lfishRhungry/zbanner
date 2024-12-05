@@ -4100,7 +4100,7 @@ void xconf_print_help() {
         printf("  --%s", config_parameters[i].name);
 
         for (unsigned j = 0; config_parameters[i].alt_names[j]; j++) {
-            printf(", --%s", config_parameters[i].alt_names[j]);
+            printf(", %s", config_parameters[i].alt_names[j]);
         }
 
         printf("\n\n");
@@ -4153,7 +4153,7 @@ void xconf_help_param(const char *param) {
         printf("  --%s", config_parameters[i].name);
 
         for (unsigned j = 0; config_parameters[i].alt_names[j]; j++) {
-            printf(", --%s", config_parameters[i].alt_names[j]);
+            printf(", %s", config_parameters[i].alt_names[j]);
         }
 
         printf("\n\n");
@@ -4207,7 +4207,7 @@ void xconf_search_param(const char *param) {
         printf("  --%s", config_parameters[i].name);
 
         for (unsigned j = 0; config_parameters[i].alt_names[j]; j++) {
-            printf(", --%s", config_parameters[i].alt_names[j]);
+            printf(", %s", config_parameters[i].alt_names[j]);
         }
 
         // printf("\n\n");
