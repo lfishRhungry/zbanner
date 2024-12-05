@@ -37,7 +37,7 @@ static Scanner *scan_modules_list[] = {
 Scanner *get_scan_module_by_name(const char *name) {
     int len = (int)(ARRAY_SIZE(scan_modules_list));
     for (int i = 0; i < len; i++) {
-        if (!strcmp(scan_modules_list[i]->name, name)) {
+        if (conf_equals(scan_modules_list[i]->name, name)) {
             return scan_modules_list[i];
         }
     }

@@ -57,7 +57,7 @@ const char *output_level_to_string(OutLevel level) {
 Output *get_output_module_by_name(const char *name) {
     int len = (int)ARRAY_SIZE(output_modules_list);
     for (int i = 0; i < len; i++) {
-        if (!strcmp(output_modules_list[i]->name, name)) {
+        if (conf_equals(output_modules_list[i]->name, name)) {
             return output_modules_list[i];
         }
     }

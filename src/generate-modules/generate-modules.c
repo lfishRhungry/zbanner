@@ -26,7 +26,7 @@ static Generator *generate_modules_list[] = {
 Generator *get_generate_module_by_name(const char *name) {
     int len = (int)ARRAY_SIZE(generate_modules_list);
     for (int i = 0; i < len; i++) {
-        if (!strcmp(generate_modules_list[i]->name, name)) {
+        if (conf_equals(generate_modules_list[i]->name, name)) {
             return generate_modules_list[i];
         }
     }

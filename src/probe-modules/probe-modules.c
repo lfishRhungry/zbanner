@@ -158,7 +158,7 @@ static Probe *probe_modules_list[] = {
 Probe *get_probe_module_by_name(const char *name) {
     int len = (int)ARRAY_SIZE(probe_modules_list);
     for (int i = 0; i < len; i++) {
-        if (!strcmp(probe_modules_list[i]->name, name)) {
+        if (conf_equals(probe_modules_list[i]->name, name)) {
             return probe_modules_list[i];
         }
     }
