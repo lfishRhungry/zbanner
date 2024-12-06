@@ -1,11 +1,12 @@
 #include "target-cookie.h"
-#include "../pixie/pixie-timer.h"
-#include "../util-data/safe-string.h"
-#include "../crypto/crypto-siphash24.h"
 
 #include <assert.h>
 #include <time.h>
 #include <stdarg.h>
+#include <stdio.h>
+
+#include "../pixie/pixie-timer.h"
+#include "../crypto/crypto-siphash24.h"
 
 #if defined(_MSC_VER)
 #include <intrin.h>

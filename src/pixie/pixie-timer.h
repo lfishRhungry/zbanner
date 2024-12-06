@@ -1,5 +1,6 @@
 #ifndef PIXIE_TIMER_H
 #define PIXIE_TIMER_H
+
 #include <stdint.h>
 
 /**

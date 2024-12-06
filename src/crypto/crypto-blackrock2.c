@@ -1,16 +1,14 @@
 #include "crypto-blackrock.h"
-#include "../pixie/pixie-timer.h"
-#include "../util-misc/cross.h"
-#include "../util-data/fine-malloc.h"
-#include "../util-data/safe-string.h"
-#include "../util-out/logger.h"
+
 #include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <ctype.h>
 #include <time.h>
+
+#include "../pixie/pixie-timer.h"
+#include "../util-misc/misc.h"
+#include "../util-data/fine-malloc.h"
+#include "../util-out/logger.h"
 
 #if defined(_MSC_VER)
 #define inline _inline

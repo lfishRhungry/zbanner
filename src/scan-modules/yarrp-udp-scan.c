@@ -1,14 +1,14 @@
+#include "scan-modules.h"
+
 #include <stdlib.h>
 
-#include "scan-modules.h"
 #include "../xconf.h"
-#include "../stub/stub-pcap-dlt.h"
-#include "../target/target-cookie.h"
-#include "../templ/templ-icmp.h"
 #include "../templ/templ-udp.h"
+#include "../templ/templ-icmp.h"
+#include "../stub/stub-pcap-dlt.h"
+#include "../util-out/logger.h"
 #include "../util-data/safe-string.h"
-#include "../util-data/fine-malloc.h"
-#include "../util-data/data-convert.h"
+#include "../util-misc/misc.h"
 
 /**
  * RFC 768

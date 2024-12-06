@@ -4,13 +4,12 @@
  * Modified by sharkocha 2024
  */
 #include "dedup.h"
-#include "../target/target-cookie.h"
-#include "../util-data/fine-malloc.h"
-#include "../util-out/logger.h"
 
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include "../util-data/fine-malloc.h"
+#include "../util-out/logger.h"
 
 #define DEDUP_BUCKET_SIZE 4
 

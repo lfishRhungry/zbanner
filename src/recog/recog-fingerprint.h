@@ -4,8 +4,7 @@
 #define RECOG_FINGERPRINT_H
 
 #include <stddef.h>
-
-#include "../util-misc/cross.h"
+#include <stdbool.h>
 
 struct Recog_FP;
 

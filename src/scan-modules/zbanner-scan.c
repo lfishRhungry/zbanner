@@ -1,12 +1,12 @@
+#include "scan-modules.h"
+
 #include <stdlib.h>
 
-#include "scan-modules.h"
 #include "../xconf.h"
 #include "../target/target-cookie.h"
 #include "../templ/templ-tcp.h"
 #include "../util-data/safe-string.h"
-#include "../util-data/fine-malloc.h"
-#include "../util-out/logger.h"
+#include "../util-misc/misc.h"
 
 #define ZBANNER_DEDUP_TYPE_PORT   0
 #define ZBANNER_DEDUP_TYPE_ACK    1

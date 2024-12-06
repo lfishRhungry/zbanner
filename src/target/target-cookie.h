@@ -4,7 +4,9 @@
  */
 #ifndef TARGET_COOKIE_H
 #define TARGET_COOKIE_H
+
 #include <stdint.h>
+
 #include "target-ipaddress.h"
 
 /**

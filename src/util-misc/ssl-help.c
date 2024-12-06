@@ -1,12 +1,13 @@
 #ifndef NOT_FOUND_OPENSSL
 
+#include "ssl-help.h"
+
 #include <assert.h>
 
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
 #include "../util-out/logger.h"
-#include "ssl-help.h"
 
 char *ipaddr_to_asc(unsigned char *p, int len) {
     /*

@@ -1,5 +1,5 @@
-#ifndef PRIMEGEN_H
-#define PRIMEGEN_H
+#ifndef CRYPTO_PRIMEGEN_H
+#define CRYPTO_PRIMEGEN_H
 
 #include <stdint.h>
 

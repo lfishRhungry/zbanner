@@ -1,9 +1,9 @@
 #include "probe-modules.h"
+
 #include "../xconf.h"
 #include "../smack/smack.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
-#include "../util-data/data-convert.h"
 #include "../util-data/data-chain.h"
 
 #define SNMP_DACH_NAME "result"

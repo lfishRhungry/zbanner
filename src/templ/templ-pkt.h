@@ -6,8 +6,6 @@
 
 #include <stdint.h>
 
-#include "../util-out/logger.h"
-
 typedef enum Template_TYPE {
     TmplType_TCP = 0,
     /*for specific SYN settings and belongs to TCP*/

@@ -1,9 +1,5 @@
 #include "output-modules.h"
 
-#include "../util-out/logger.h"
-#include "../util-data/safe-string.h"
-#include "../pixie/pixie-file.h"
-
 extern Output NullOutput; /*for internal x-ref*/
 
 Output NullOutput = {

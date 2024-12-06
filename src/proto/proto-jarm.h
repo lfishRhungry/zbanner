@@ -3,7 +3,8 @@
 #ifndef PROTO_JARM_H
 #define PROTO_JARM_H
 
-#include "proto-tls.h"
+#include <stddef.h>
+#include <stdint.h>
 
 enum JarmCipherChoice {
     CipherList_ALL,

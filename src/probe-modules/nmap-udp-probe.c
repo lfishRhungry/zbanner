@@ -1,14 +1,14 @@
 #ifndef NOT_FOUND_PCRE2
 
+#include "probe-modules.h"
+
 #include <string.h>
 
-#include "probe-modules.h"
-#include "../version.h"
 #include "../util-out/logger.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
+#include "../util-misc/misc.h"
 #include "../nmap/nmap-service.h"
-#include "../target/target-set.h"
 
 #define PROBER "NmapUdpProbe"
 

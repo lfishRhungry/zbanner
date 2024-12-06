@@ -6,12 +6,12 @@
 
     NOTE: This is for maintaining a policy of "no unsafe functions"
 */
-#include <errno.h>
-#include <ctype.h>
-#include <errno.h>
-#include <string.h>
 
 #include "safe-string.h"
+
+#include <ctype.h>
+#include <string.h>
+
 #include "fine-malloc.h"
 #include "../util-out/logger.h"
 /**

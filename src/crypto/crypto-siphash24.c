@@ -13,10 +13,11 @@
    with this software. If not, see
    <http://creativecommons.org/publicdomain/zero/1.0/>.
 */
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 #include "crypto-siphash24.h"
+
+#include <stdint.h>
+#include <string.h>
+
 #include "../util-out/logger.h"
 
 typedef uint64_t u64;

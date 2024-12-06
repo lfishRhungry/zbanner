@@ -1,8 +1,12 @@
 #include "list-targets.h"
+
 #include <assert.h>
+
+#include "../xconf.h"
+#include "../as/as-query.h"
 #include "../util-out/logger.h"
 #include "../crypto/crypto-blackrock.h"
-#include "../as/as-query.h"
+#include "../target/target-rangeport.h"
 
 void listtargets_ip_port(XConf *xconf, FILE *fp) {
     uint64_t         i;

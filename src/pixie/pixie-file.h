@@ -9,7 +9,7 @@
 #include <unistd.h>
 #endif
 
-#include "../util-misc/cross.h"
+#include <stdbool.h>
 
 /**
  * On Windows, files aren't shareable, so we need to have a portable function

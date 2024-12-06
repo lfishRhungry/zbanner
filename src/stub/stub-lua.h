@@ -5,11 +5,11 @@
 
 #ifndef STUB_LUA_H
 #define STUB_LUA_H
+
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
-
-#include "../util-misc/cross.h"
+#include <stdbool.h>
 
 /**
  * Called to load the Lua dynamic library, suh as lua53.dll or lua5.3.so.0,

@@ -1,8 +1,11 @@
+#include "scan-modules.h"
+
 #include <string.h>
 #include <stdio.h>
 
-#include "scan-modules.h"
 #include "../util-out/xprint.h"
+#include "../util-out/logger.h"
+#include "../util-misc/misc.h"
 
 // clang-format off
 extern Scanner TcpSynScan;

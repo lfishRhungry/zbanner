@@ -1,10 +1,10 @@
 #ifndef TEMPL_INIT_H
 #define TEMPL_INIT_H
-#include <stdio.h>
+
 #include <stdint.h>
 
-#include "../target/target-ipaddress.h"
 #include "templ-pkt.h"
+#include "../target/target-ipaddress.h"
 
 typedef struct TemplateOptions TmplOpt;
 

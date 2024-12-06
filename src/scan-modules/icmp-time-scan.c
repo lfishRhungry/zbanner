@@ -1,11 +1,11 @@
+#include "scan-modules.h"
+
 #include <stdlib.h>
 
-#include "scan-modules.h"
-#include "../xconf.h"
 #include "../target/target-cookie.h"
 #include "../templ/templ-icmp.h"
 #include "../util-data/safe-string.h"
-#include "../util-data/fine-malloc.h"
+#include "../util-misc/misc.h"
 
 extern Scanner IcmpTimeScan; /*for internal x-ref*/
 

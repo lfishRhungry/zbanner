@@ -1,9 +1,10 @@
-#include <stdio.h>
+#include "templ-icmp.h"
+
 #include <string.h>
 
-#include "templ-icmp.h"
 #include "../globals.h"
 #include "../target/target.h"
+#include "../util-out/logger.h"
 #include "../util-misc/checksum.h"
 #include "../util-data/data-convert.h"
 

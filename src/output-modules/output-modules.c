@@ -1,14 +1,15 @@
+#include "output-modules.h"
+
 #include <stdio.h>
 #include <string.h>
 
-#include "output-modules.h"
 #include "../xconf.h"
 #include "../globals.h"
-#include "../pixie/pixie-file.h"
 #include "../pixie/pixie-threads.h"
 #include "../util-out/logger.h"
 #include "../util-out/xprint.h"
 #include "../util-data/fine-malloc.h"
+#include "../util-misc/misc.h"
 
 // clang-format off
 extern Output TextOutput;

@@ -1,9 +1,12 @@
 #include "generate-modules.h"
+
 #include "../xconf.h"
 #include "../version.h"
+#include "../target/target-rangeport.h"
 #include "../crypto/crypto-blackrock.h"
-#include "../util-data/fine-malloc.h"
 #include "../target/target-cookie.h"
+#include "../util-out/logger.h"
+#include "../util-misc/misc.h"
 
 Generator BlackRockGen;
 

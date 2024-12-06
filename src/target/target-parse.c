@@ -7,16 +7,16 @@
     files containing millions of addresses and ranges using a
     "state-machine parser".
 */
-#include "target-set.h"
 #include "target-parse.h"
-#include "target-rangev4.h"
-#include "target-rangev6.h"
-#include "../util-out/logger.h"
-#include "../util-misc/cross.h"
-#include "../util-data/fine-malloc.h"
-#include "../util-data/safe-string.h"
 
 #include <string.h>
+
+#include "target-set.h"
+#include "target-rangev4.h"
+#include "target-rangev6.h"
+
+#include "../util-out/logger.h"
+#include "../util-misc/misc.h"
 
 struct targetset_parser {
     unsigned long long line_number;

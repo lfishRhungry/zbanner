@@ -14,13 +14,14 @@
 
  ****************************************************************************/
 #include "proto-preprocess.h"
+
+#include <assert.h>
+#include <string.h>
+
 #include "../target/target.h"
 #include "../util-data/data-convert.h"
 #include "../stub/stub-pcap-dlt.h"
 #include "../templ/templ-icmp.h"
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
 
 /**
  *  Call this frequently while parsing through the headers to make sure that

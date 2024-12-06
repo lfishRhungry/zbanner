@@ -1,5 +1,4 @@
 #include "pixie-file.h"
-#include "../util-out/logger.h"
 
 #if defined(WIN32)
 #include <Windows.h>

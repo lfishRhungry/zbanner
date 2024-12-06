@@ -102,9 +102,6 @@
 
  ****************************************************************************/
 #include "smack.h"
-#include "smackqueue.h"
-#include "../util-out/logger.h"
-#include "../util-misc/cross.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -112,6 +109,9 @@
 #include <ctype.h>
 #include <time.h>
 #include <assert.h>
+
+#include "smackqueue.h"
+#include "../util-out/logger.h"
 
 #ifndef NOBENCHMARK
 #include "../pixie/pixie-timer.h"
@@ -684,7 +684,8 @@ void smack_add_pattern(struct SMACK *smack, const void *v_pattern,
         unsigned              new_max;
 
         new_max  = smack->m_pattern_max * 2 + 1;
-        new_list = (struct SmackPattern **)malloc(sizeof(*new_list) * new_max);
+        new_list = (struct SmackPattern **)malloc(
+            sizeof(struct SmackPattern *) * new_max);
         if (new_list == NULL) {
             LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
             exit(1);
@@ -692,7 +693,7 @@ void smack_add_pattern(struct SMACK *smack, const void *v_pattern,
 
         if (smack->m_pattern_list) {
             memcpy(new_list, smack->m_pattern_list,
-                   sizeof(*new_list) * smack->m_pattern_count);
+                   sizeof(struct SmackPattern *) * smack->m_pattern_count);
             free(smack->m_pattern_list);
         }
 

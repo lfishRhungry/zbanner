@@ -90,18 +90,14 @@
        \                                                               \
        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 */
+#include "templ-sctp.h"
 
 #include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
 
-#include "templ-sctp.h"
 #include "../globals.h"
-#include "../target/target.h"
 #include "../util-out/logger.h"
 #include "../util-misc/checksum.h"
 #include "../util-data/data-convert.h"
-#include "../proto/proto-preprocess.h"
 
 static size_t
 sctp_create_by_template_ipv4(const TmplPkt *tmpl, ipv4address ip_them,

@@ -5,8 +5,6 @@
     This works on both Linux and windows.
 */
 #include "rawsock.h"
-#include "../util-data/safe-string.h"
-#include "../target/target-parse.h"
 #include "../util-out/logger.h"
 
 #if defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) ||       \
@@ -220,9 +218,7 @@ fail:
 #elif defined(__linux__)
 #include <netinet/in.h>
 #include <net/if.h>
-#include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>

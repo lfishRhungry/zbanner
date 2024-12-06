@@ -2,9 +2,10 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <arpa/inet.h>
 
-#include "../target/target-parse.h"
-#include "../util-data/data-convert.h"
+#include "../util-misc/misc.h"
 #include "../util-data/safe-string.h"
 
 static char *hexchars = "0123456789abcdef";

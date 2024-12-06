@@ -2,9 +2,7 @@
 #define TEMPL_ARP_H
 
 #include "templ-pkt.h"
-#include "../util-misc/cross.h"
 #include "../target/target-ipaddress.h"
-#include "../proto/proto-preprocess.h"
 
 #define ARP_OPCODE_REQUEST 1
 #define ARP_OPCODE_REPLY   2

@@ -9,7 +9,6 @@
 #include "globals.h"
 #include "xconf.h"
 #include "version.h"
-#include "target/target-cookie.h"
 
 #include "rawsock/rawsock.h"
 #include "util-out/pcapfile.h"

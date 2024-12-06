@@ -15,15 +15,16 @@
     Create by sharkocha 2024
 */
 #include "data-chain.h"
-#include "fine-malloc.h"
-#include "safe-string.h"
-#include "../util-out/logger.h"
-#include "../util-data/utf8.h"
 
 #include <stddef.h>
 #include <stdarg.h>
 #include <assert.h>
 #include <ctype.h>
+
+#include "fine-malloc.h"
+#include "safe-string.h"
+#include "../util-out/logger.h"
+#include "../util-data/utf8.h"
 
 #define HEX_ARRAY "0123456789abcdef"
 

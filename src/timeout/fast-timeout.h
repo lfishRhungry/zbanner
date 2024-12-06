@@ -5,8 +5,6 @@
 #include <stdint.h>
 #include <time.h>
 
-#include "../util-data/lfqueue.h"
-
 typedef struct FastTmHandler FHandler;
 typedef struct FastTmTable   FTable;
 

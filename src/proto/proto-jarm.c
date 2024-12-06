@@ -1,11 +1,13 @@
 #ifndef NOT_FOUND_OPENSSL
 
+#include "proto-jarm.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
 
-#include "proto-jarm.h"
-#include "../util-out/logger.h"
+#include "proto-tls.h"
+#include "../util-misc/misc.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/data-convert.h"
 

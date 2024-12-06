@@ -1,8 +1,7 @@
 #ifndef XTATUS_H
 #define XTATUS_H
+
 #include <stdint.h>
-#include <time.h>
-#include "../util-misc/cross.h"
 
 #define XTS_RATE_CACHE 8 /*must be power of 2*/
 #define XTS_ADD_SIZE   30

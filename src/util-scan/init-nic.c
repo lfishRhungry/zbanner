@@ -1,8 +1,11 @@
 #include "./init-nic.h"
+
 #include "../rawsock/rawsock.h"
 #include "../stub/stub-pcap-dlt.h"
 #include "../stack/stack-arpv4.h"
 #include "../stack/stack-ndpv6.h"
+#include "../util-out/logger.h"
+#include "../util-data/safe-string.h"
 
 /***************************************************************************
  * Initialize the struct NIC in XConf.

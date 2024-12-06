@@ -1,13 +1,9 @@
 #ifndef XCONF_H
 #define XCONF_H
 
-#include <string.h>
 #include <stdio.h>
 #include <stdint.h>
-#include <time.h>
 
-#include "util-data/safe-string.h"
-#include "util-misc/cross.h"
 #include "target/target-ipaddress.h"
 #include "target/target-set.h"
 #include "stack/stack-src.h"
@@ -43,7 +39,6 @@ very low impact on scan rate */
 #define XCONF_DFT_SENDMMSG_RETRIES   10
 #define XCONF_DFT_SENDQUEUE_SIZE     (65535 * 8)
 
-typedef struct NetworkAdapter  Adapter;
 typedef struct TemplateSet     TmplSet;
 typedef struct TemplateOptions TmplOpt;
 
@@ -98,7 +93,7 @@ struct source_t {
  * The transmit and receive threads have only a "const" pointer to this
  * structure.
  */
-typedef struct XtateConf {
+struct XtateConf {
     /**
      * Just one network adapters that we'll use for scanning. Adapter
      * should have a set of IP source addresses, except in the case
@@ -279,8 +274,7 @@ typedef struct XtateConf {
 #ifndef NOT_FOUND_PCRE2
     char *nmap_file;
 #endif
-
-} XConf;
+};
 
 void xconf_command_line(XConf *xconf, int argc, char *argv[]);
 

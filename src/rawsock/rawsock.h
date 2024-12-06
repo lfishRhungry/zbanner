@@ -11,13 +11,9 @@
 #include <sys/socket.h>
 #endif
 
-#include <stdio.h>
-
 #include "../xconf.h"
 #include "../target/target-ipaddress.h"
 #include "../stack/stack-queue.h"
-
-typedef struct TemplateSet TmplSet;
 
 /**
  * In fact the struct is like a socket in different types.
@@ -27,7 +23,7 @@ typedef struct TemplateSet TmplSet;
  * NOTE: Multiple tx threads will use it to send. For raw packet, it is thread
  * safe. But recving is not thread safe because of getting data repeatedly.
  */
-typedef struct NetworkAdapter {
+struct NetworkAdapter {
     struct pcap     *pcap;     /**/
     struct __pfring *ring;     /*optional*/
     int              raw_sock; /*for sendmmsg*/
@@ -36,12 +32,12 @@ typedef struct NetworkAdapter {
     unsigned         vlan_id;
     double           pt_start; /*start time for packet trace*/
     int              link_type;
-} Adapter;
+};
 
 /**
  * For every Tx thread to maintain its own cache for sendqueue or sendmmsg.
  */
-typedef struct Adapter_Cache {
+struct Adapter_Cache {
     struct pcap_send_queue *sendq;
     unsigned                sendq_size;
 #ifndef WIN32
@@ -53,7 +49,7 @@ typedef struct Adapter_Cache {
     unsigned        pkt_index;
     unsigned        msg_retries;
 #endif
-} AdapterCache;
+};
 
 /**
  * Do some preparation before rawsock init.

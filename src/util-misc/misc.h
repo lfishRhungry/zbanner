@@ -1,29 +1,5 @@
-#ifndef CROSS_H
-#define CROSS_H
-
-/**
- * nonstandard extension used : nameless struct/union
- */
-#if defined(_MSC_VER)
-#pragma warning(disable : 4201)
-#endif
-
-// inline
-#if defined(_MSC_VER)
-#define inline _inline
-#endif
-
-// bool
-#if _MSC_VER && _MSC_VER < 1800
-typedef enum { false = 0, true = 1 } bool;
-#else
-#include <stdbool.h>
-#endif
-
-// strncasecmp
-#if defined(WIN32)
-#define strncasecmp _strnicmp
-#endif
+#ifndef MISC_H
+#define MISC_H
 
 // ARRAY
 #if defined(_MSC_VER)

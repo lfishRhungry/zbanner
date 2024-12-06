@@ -11,12 +11,10 @@
 #include "version.h"
 #include "xconf.h"
 
-#include "stub/stub-pcap.h"
 #include "templ/templ-init.h"
 #include "nmap/nmap-service.h"
 
 #include "target/target-cookie.h"
-#include "target/target-parse.h"
 
 #include "rawsock/rawsock.h"
 
@@ -30,6 +28,7 @@
 #include "util-scan/init-nic.h"
 #include "util-scan/list-targets.h"
 #include "util-data/fine-malloc.h"
+#include "util-data/safe-string.h"
 
 #include "output-modules/bson-output.h"
 #include "output-modules/mongodb-output.h"

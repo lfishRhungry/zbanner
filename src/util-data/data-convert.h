@@ -2,8 +2,7 @@
 #define DATA_CONVERT_H
 
 #include <stdint.h>
-
-#include "../util-misc/cross.h"
+#include <stdbool.h>
 
 /*******************************************************************
   convert big endian or little endian to unsigned

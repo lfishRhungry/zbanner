@@ -1,3 +1,5 @@
+#include "probe-modules.h"
+
 #include <string.h>
 
 #ifndef NOT_FOUND_PCRE2
@@ -5,11 +7,10 @@
 #include <pcre2.h>
 #endif
 
-#include "probe-modules.h"
-#include "../proto/proto-http-maker.h"
-#include "../proto/proto-http-parser.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
+#include "../util-out/logger.h"
+#include "../util-misc/misc.h"
 #include "../crypto/crypto-base64.h"
 #include "../crypto/crypto-nmapprobe.h"
 

@@ -28,9 +28,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#include "lfqueue.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 
 #include "../util-out/logger.h"
 
@@ -89,7 +92,6 @@ inline BOOL __SYNC_BOOL_CAS(LONG volatile *dest, LONG input, LONG comparand) {
 #define __LFQ_YIELD_THREAD SwitchToThread
 #endif
 
-#include "lfqueue.h"
 #define DEF_LFQ_ASSIGNED_SPIN 2048
 
 #if defined __GNUC__ || defined __CYGWIN__ || defined __MINGW32__ ||           \

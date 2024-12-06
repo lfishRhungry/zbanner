@@ -1,5 +1,6 @@
 #ifndef STACK_SOURCE_H
 #define STACK_SOURCE_H
+
 #include "../target/target-ipaddress.h"
 
 /**

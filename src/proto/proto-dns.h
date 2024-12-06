@@ -15,12 +15,9 @@
 
 #include <stdint.h>
 #include <inttypes.h>
-#include <ctype.h>
 #include <stdio.h>
-
-#include "../target/target-ipaddress.h"
-#include "../util-misc/cross.h"
-#include "../pixie/pixie-sockets.h"
+#include <stdbool.h>
+#include <netinet/in.h>
 
 typedef enum {
     DNS_REC_INVALID    = -1, // Error code

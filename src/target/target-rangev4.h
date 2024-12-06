@@ -4,9 +4,9 @@
  */
 #ifndef TARGET_RANGEV4_H
 #define TARGET_RANGEV4_H
+
 #include <stdint.h>
-#include <stdio.h>
-#include "../util-misc/cross.h"
+#include <stdbool.h>
 
 /**
  * A range of either IP addresses or ports

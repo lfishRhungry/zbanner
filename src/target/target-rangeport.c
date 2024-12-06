@@ -1,13 +1,15 @@
-#include "target.h"
-#include "target-set.h"
 #include "target-rangeport.h"
-#include "target-rangev4.h"
-
-#include "../util-out/logger.h"
 
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "target.h"
+#include "target-set.h"
+#include "target-rangev4.h"
+
+#include "../util-out/logger.h"
+#include "../util-misc/misc.h"
 
 /*
  * Ports are 16-bit numbers ([0..65535], but different

@@ -1,10 +1,12 @@
 #include "stack-queue.h"
-#include "../pixie/pixie-timer.h"
-#include "../rawsock/rawsock.h"
-#include "../util-data/fine-malloc.h"
-#include "../util-out/logger.h"
+
 #include <string.h>
 #include <stdio.h>
+
+#include "../util-out/logger.h"
+#include "../rawsock/rawsock.h"
+#include "../pixie/pixie-timer.h"
+#include "../util-data/fine-malloc.h"
 
 PktBuf *stack_get_pktbuf(STACK *stack) {
     PktBuf *response = NULL;

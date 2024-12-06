@@ -18,11 +18,11 @@
 */
 #include "throttle.h"
 
+#include <string.h>
+
 #include "../pixie/pixie-timer.h"
 #include "../util-out/logger.h"
-
-#include <string.h>
-#include <stdio.h>
+#include "../util-misc/misc.h"
 
 /***************************************************************************
  ***************************************************************************/

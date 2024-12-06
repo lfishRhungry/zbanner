@@ -2,16 +2,16 @@
 
 #include "output-modules.h"
 #include "mongodb-output.h"
+
+#include <mongoc/mongoc.h>
+
 #include "../version.h"
 #include "../globals.h"
 
 #include "../util-out/logger.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
-#include "../pixie/pixie-file.h"
-#include "../pixie/pixie-threads.h"
-
-#include <mongoc/mongoc.h>
+#include "../util-misc/misc.h"
 
 #define DFT_BULK_SIZE 200;
 

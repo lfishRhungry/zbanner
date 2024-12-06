@@ -37,8 +37,8 @@
 #ifndef CRYPTO_BASE64_H
 #define CRYPTO_BASE64_H
 
-#include "../util-misc/cross.h"
 #include <stddef.h>
+#include <stdbool.h>
 
 /**
  * base64_maps_t - structure to hold maps for encode/decode

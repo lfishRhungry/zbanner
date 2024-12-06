@@ -1,7 +1,4 @@
 #include "logger.h"
-#include "../util-data/safe-string.h"
-#include "../pixie/pixie-threads.h"
-#include "../util-out/xprint.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -9,6 +6,9 @@
 #ifndef NOT_FOUND_OPENSSL
 #include <openssl/err.h>
 #endif
+
+#include "../pixie/pixie-threads.h"
+#include "../util-out/xprint.h"
 
 #define PREFIX_OUT    ""
 #define PREFIX_HINT   "[HIN] "

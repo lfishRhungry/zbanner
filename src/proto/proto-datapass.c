@@ -1,8 +1,8 @@
 #include "proto-datapass.h"
 
-#include "../util-data/fine-malloc.h"
-
 #include <string.h>
+
+#include "../util-data/fine-malloc.h"
 
 void datapass_set_data(DataPass *pass, unsigned char *data, size_t len,
                        bool is_dynamic) {

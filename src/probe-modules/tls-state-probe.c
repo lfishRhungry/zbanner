@@ -7,6 +7,8 @@
  */
 #ifndef NOT_FOUND_OPENSSL
 
+#include "probe-modules.h"
+
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
@@ -17,15 +19,13 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 
-#include "probe-modules.h"
-#include "../pixie/pixie-timer.h"
+#include "../xconf.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
 #include "../output-modules/output-modules.h"
 #include "../util-out/logger.h"
 #include "../util-misc/ssl-help.h"
-#include "../util-misc/cross.h"
-#include "../xconf.h"
+#include "../util-misc/misc.h"
 
 #define TSP_BIO_MEM_LIMIT  16384
 #define TSP_DATA_INIT_SIZE 4096

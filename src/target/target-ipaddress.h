@@ -12,9 +12,10 @@
  */
 #ifndef TARGET_IPADDRESS_H
 #define TARGET_IPADDRESS_H
+
 #include <stdint.h>
 #include <stddef.h>
-#include "../util-misc/cross.h"
+#include <stdbool.h>
 
 /**
  * An IPv6 address is represented as two 64-bit integers instead of a single

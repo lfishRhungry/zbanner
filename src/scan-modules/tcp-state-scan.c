@@ -1,16 +1,19 @@
+#include "scan-modules.h"
+
 #include <stdlib.h>
 #include <time.h>
 
-#include "scan-modules.h"
 #include "../xconf.h"
+#include "../globals.h"
 #include "../version.h"
 #include "../target/target-cookie.h"
 #include "../templ/templ-tcp.h"
 #include "../stack/stack-tcp-core.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
-#include "../util-scan/rst-filter.h"
 #include "../util-out/logger.h"
+#include "../util-out/xtatus.h"
+#include "../util-misc/misc.h"
 
 extern Scanner TcpStateScan; /*for internal x-ref*/
 

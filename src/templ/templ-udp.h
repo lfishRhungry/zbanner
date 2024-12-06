@@ -4,7 +4,6 @@
 #include <stdio.h>
 
 #include "templ-pkt.h"
-#include "../util-misc/cross.h"
 #include "../target/target-ipaddress.h"
 
 /**

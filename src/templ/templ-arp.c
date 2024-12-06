@@ -1,9 +1,8 @@
-#include <stdio.h>
+#include "templ-arp.h"
+
 #include <string.h>
 
-#include "templ-arp.h"
 #include "../globals.h"
-#include "../util-misc/checksum.h"
 #include "../util-out/logger.h"
 #include "../util-data/data-convert.h"
 

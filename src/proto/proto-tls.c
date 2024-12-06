@@ -1,9 +1,11 @@
 #ifndef NOT_FOUND_OPENSSL
 
+#include "proto-tls.h"
+
 #include <string.h>
 
-#include "proto-tls.h"
 #include "../util-data/data-convert.h"
+#include "../util-misc/misc.h"
 
 static const char *TlsGreaseList[] = {
     "\x0a\x0a", "\x1a\x1a", "\x2a\x2a", "\x3a\x3a", "\x4a\x4a", "\x5a\x5a",

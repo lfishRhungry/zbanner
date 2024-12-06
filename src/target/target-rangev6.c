@@ -2,18 +2,18 @@
     for tracking IP/port ranges
 */
 #include "target-rangev6.h"
-#include "target-rangev4.h"
-#include "../util-data/fine-malloc.h"
-#include "../util-out/logger.h"
-#include "target-set.h"
-#include "target-parse.h"
 
 #include <assert.h>
-#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+
+#include "target-set.h"
+#include "target-parse.h"
+#include "target-rangev4.h"
+#include "../util-out/logger.h"
+#include "../util-data/fine-malloc.h"
 
 #define REGRESS(i, x)                                                          \
     if (!(x)) {                                                                \

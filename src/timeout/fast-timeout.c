@@ -10,7 +10,9 @@
  * I'm lazy to get a new one. I feel tired to fix new bugs in these days...
  */
 #include "fast-timeout.h"
+
 #include "../util-data/fine-malloc.h"
+#include "../util-data/lfqueue.h"
 
 typedef struct FastTmEntry FEntry;
 

@@ -2,17 +2,12 @@
 #define OUTPUT_MODULES_H
 
 #include <time.h>
-#include <ctype.h>
-#include <stdio.h>
 #include <inttypes.h>
 
+#include "../target/target.h"
+#include "../as/as-query.h"
 #include "../util-data/data-chain.h"
 #include "../util-misc/configer.h"
-#include "../util-misc/cross.h"
-#include "../target/target.h"
-#include "../target/target-set.h"
-#include "../target/target-ipaddress.h"
-#include "../as/as-query.h"
 
 #define OUT_RSN_SIZE 30
 #define OUT_CLS_SIZE 30

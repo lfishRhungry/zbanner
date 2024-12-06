@@ -1,11 +1,7 @@
 #ifndef TEMPL_NDP_H
 #define TEMPL_NDP_H
 
-#include "templ-pkt.h"
-#include "templ-icmp.h"
-#include "../util-misc/cross.h"
 #include "../target/target-ipaddress.h"
-#include "../proto/proto-preprocess.h"
 
 #define NDP_NA_FLAG_ROUTER    0B10000000
 #define NDP_NA_FLAG_SOLICITED 0B01000000

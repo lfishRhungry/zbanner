@@ -1,9 +1,10 @@
 /**
  * Add to LZR by sharkocha 2024
  */
+#include "../probe-modules.h"
+
 #include <string.h>
 
-#include "../probe-modules.h"
 #include "../../util-data/safe-string.h"
 
 #define BGP_PREFIX                                                             \

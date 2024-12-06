@@ -17,7 +17,6 @@
 #include "pixie-timer.h"
 
 #include <time.h>
-#include <stdio.h>
 #include <errno.h>
 #include <string.h>
 

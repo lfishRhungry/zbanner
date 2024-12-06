@@ -1,11 +1,13 @@
-#include <stdio.h>
+#include "templ-ndp.h"
+
 #include <string.h>
 
-#include "templ-ndp.h"
+#include "templ-pkt.h"
 #include "../globals.h"
+#include "../target/target.h"
+#include "../util-out/logger.h"
 #include "../util-misc/checksum.h"
 #include "../util-data/data-convert.h"
-#include "../target/target.h"
 
 /* ICMPv6 NDP Nerghbor Solicitation according to RFC4861
       0                   1                   2                   3

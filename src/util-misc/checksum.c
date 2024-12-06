@@ -8,9 +8,10 @@
 
     Modified: sharkocha 2024
 */
+#include "checksum.h"
+
 #include <stdint.h>
 
-#include "checksum.h"
 #include "../target/target.h"
 #include "../util-out/logger.h"
 

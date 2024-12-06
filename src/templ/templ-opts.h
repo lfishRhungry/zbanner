@@ -1,5 +1,6 @@
 #ifndef TEMPL_OPTS_H
 #define TEMPL_OPTS_H
+
 #include "../target/target-ipaddress.h"
 
 #ifdef _MSC_VER

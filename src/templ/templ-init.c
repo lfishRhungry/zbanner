@@ -1,24 +1,21 @@
+#include "templ-init.h"
+
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include "templ-init.h"
 #include "templ-tcp.h"
 #include "templ-opts.h"
 #include "templ-icmp.h"
+
 #include "../version.h"
-#include "../target/target-rangeport.h"
+#include "../target/target.h"
+#include "../stub/stub-pcap-dlt.h"
 #include "../proto/proto-preprocess.h"
-#include "../util-data/safe-string.h"
-#include "../pixie/pixie-timer.h"
+
 #include "../util-out/logger.h"
 #include "../util-data/data-convert.h"
-#include "../target/target.h"
-#include "../target/target-cookie.h"
-#include "../util-misc/cross.h"
-#include "../util-misc/checksum.h"
 #include "../util-data/fine-malloc.h"
-#include "../stub/stub-pcap-dlt.h"
 
 /**
  * ! All of templs are hard coded in IPv4.

@@ -22,14 +22,15 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define _FILE_OFFSET_BITS 64
 
+#include "pcapfile.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/stat.h>
-#include "pcapfile.h"
-#include "../util-misc/cross.h"
+
 #include "../util-out/logger.h"
 #include "../stub/stub-pcap-dlt.h"
 

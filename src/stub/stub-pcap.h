@@ -12,7 +12,9 @@
 */
 #ifndef STUB_PCAP_H
 #define STUB_PCAP_H
+
 #include <stdio.h>
+
 #include "../util-out/logger.h"
 
 /* Including the right ".h" file to define "timeval" is difficult, so instead

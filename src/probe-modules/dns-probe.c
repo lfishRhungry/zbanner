@@ -1,9 +1,12 @@
 #include "probe-modules.h"
+
 #include "../proto/proto-dns.h"
 #include "../target/target-parse.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/data-convert.h"
+#include "../util-out/logger.h"
+#include "../util-misc/misc.h"
 
 /*for internal x-ref*/
 extern Probe DnsProbe;

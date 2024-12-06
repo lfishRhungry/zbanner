@@ -124,8 +124,8 @@
 #ifndef CRYPTO_JSON_H
 #define CRYPTO_JSON_H
 
-#include "../util-misc/cross.h"
 #include <stddef.h>
+#include <stdbool.h>
 
 typedef enum {
     JSON_NULL,

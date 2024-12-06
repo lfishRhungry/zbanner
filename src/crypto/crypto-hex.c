@@ -1,6 +1,6 @@
 #include "crypto-hex.h"
+
 #include <assert.h>
-#include <stdio.h>
 
 static bool char_to_hex(unsigned char *val, char c) {
     if (c >= '0' && c <= '9') {

@@ -12,7 +12,7 @@
 #ifndef STACK_NDPV6_H
 #define STACK_NDPV6_H
 #include <stddef.h>
-#include <time.h>
+
 #include "stack-queue.h"
 #include "../target/target-ipaddress.h"
 

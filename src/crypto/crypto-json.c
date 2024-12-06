@@ -24,14 +24,15 @@
 */
 
 #include "crypto-json.h"
-#include "../util-data/fine-malloc.h"
-#include "../util-out/logger.h"
 
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "../util-data/fine-malloc.h"
+#include "../util-out/logger.h"
 
 #define out_of_memory()                                                        \
     do {                                                                       \

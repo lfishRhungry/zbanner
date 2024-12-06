@@ -1,5 +1,6 @@
 #ifndef STACK_ARP_H
 #define STACK_ARP_H
+
 #include "stack-queue.h"
 #include "../target/target-ipaddress.h"
 

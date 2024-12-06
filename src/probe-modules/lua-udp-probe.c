@@ -1,11 +1,11 @@
 #include "probe-modules.h"
 
-#include "../version.h"
+#include <string.h>
+
 #include "../xconf.h"
 #include "../util-data/fine-malloc.h"
-#include "../util-data/safe-string.h"
-#include "../util-misc/cross.h"
-
+#include "../util-out/logger.h"
+#include "../util-misc/misc.h"
 #include "../stub/stub-lua.h"
 
 #define LUA_PROBE_NAME "LuaUdpProbe"

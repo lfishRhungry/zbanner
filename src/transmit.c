@@ -5,27 +5,15 @@
 #include <string.h>
 #include <time.h>
 
-#include "target/target-cookie.h"
 #include "globals.h"
 #include "xconf.h"
 #include "version.h"
-
-#include "target/target-parse.h"
-#include "target/target-rangeport.h"
-
-#include "templ/templ-init.h"
-
 #include "rawsock/rawsock.h"
-
-#include "stack/stack-arpv4.h"
 
 #include "pixie/pixie-threads.h"
 #include "pixie/pixie-timer.h"
 
-#include "crypto/crypto-blackrock.h"
-
 #include "util-out/logger.h"
-#include "util-data/fine-malloc.h"
 #include "util-scan/throttle.h"
 
 static void _adapter_get_source_addresses(const XConf     *xconf,

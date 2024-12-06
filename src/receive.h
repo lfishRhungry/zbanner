@@ -1,7 +1,13 @@
 #ifndef RECEIVE_H
 #define RECEIVE_H
 
-#include "xconf.h"
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#include "stack/stack-queue.h"
+
+typedef struct XtateConf XConf;
 
 /***************************************************************************
  * Correspond to a receive thread.

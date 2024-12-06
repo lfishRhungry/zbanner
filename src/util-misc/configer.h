@@ -15,7 +15,6 @@
 
 #include <stdint.h>
 
-#include "cross.h"
 #include "../target/target-ipaddress.h"
 
 typedef enum Config_RES {

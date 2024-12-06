@@ -1,6 +1,7 @@
+#include "../probe-modules.h"
+
 #include <string.h>
 
-#include "../probe-modules.h"
 #include "../../version.h"
 #include "../../util-data/safe-string.h"
 

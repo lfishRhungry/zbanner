@@ -4,7 +4,9 @@
  */
 #ifndef TARGET_SET_H
 #define TARGET_SET_H
+
 #include <stddef.h>
+
 #include "target-rangev4.h"
 #include "target-rangev6.h"
 #include "../as/as-query.h"

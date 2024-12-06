@@ -1,5 +1,6 @@
-#ifndef RAND_LCG_H
-#define RAND_LCG_H
+#ifndef CRYPTO_LCG_H
+#define CRYPTO_LCG_H
+
 #include <stdint.h>
 
 void lcg_calculate_constants(uint64_t m, uint64_t *out_a, uint64_t *inout_c,

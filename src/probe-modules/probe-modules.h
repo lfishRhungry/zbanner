@@ -4,14 +4,9 @@
 #include <stdlib.h>
 
 #include "../target/target.h"
-#include "../target/target-ipaddress.h"
-#include "../output-modules/output-modules.h"
 #include "../util-misc/configer.h"
-#include "../util-misc/cross.h"
-#include "../util-out/logger.h"
 #include "../proto/proto-datapass.h"
-
-typedef struct XtateConf XConf;
+#include "../output-modules/output-modules.h"
 
 /**
  * FIXME: It should be a value a little less than PKT_BUF_SIZE,

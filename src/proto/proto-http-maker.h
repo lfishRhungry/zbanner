@@ -3,8 +3,6 @@
 
 #include <stddef.h>
 
-#include "../version.h"
-
 enum http_field_action {
     http_field_replace,
     http_field_add,

@@ -1,15 +1,19 @@
+#include "probe-modules.h"
+
 #include <string.h>
+#include <ctype.h>
 
 #ifndef NOT_FOUND_PCRE2
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
 #endif
 
-#include "probe-modules.h"
+#include "../version.h"
 #include "../proto/proto-http-maker.h"
-#include "../proto/proto-http-parser.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
+#include "../util-misc/misc.h"
+#include "../util-out/logger.h"
 
 static const char default_http_header[] =
     "GET / HTTP/1.0\r\n"

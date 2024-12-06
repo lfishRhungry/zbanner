@@ -27,10 +27,6 @@
 
 */
 #include "target-rangev4.h"
-#include "target-rangeport.h"
-#include "../util-out/logger.h"
-#include "../util-misc/cross.h"
-#include "../util-data/fine-malloc.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -38,6 +34,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+
+#include "target-rangeport.h"
+#include "../util-out/logger.h"
+#include "../util-data/fine-malloc.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4204)

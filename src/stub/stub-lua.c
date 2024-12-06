@@ -1,6 +1,5 @@
 #define LUAAPI
 #include "stub-lua.h"
-#include "../util-out/logger.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4133 4113 4047)
@@ -12,6 +11,8 @@
 #else
 #include <dlfcn.h>
 #endif
+
+#include "../util-out/logger.h"
 
 #if defined(__MINGW32__) || defined(__MINGW64__)
 /* Disable MinGW warnings for Windows */

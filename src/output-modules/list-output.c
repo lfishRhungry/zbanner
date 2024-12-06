@@ -1,8 +1,10 @@
 #include "output-modules.h"
 
 #include <string.h>
-#include "../util-out/logger.h"
+
+#include "../util-misc/misc.h"
 #include "../pixie/pixie-file.h"
+#include "../util-out/logger.h"
 
 static const char fmt_host[] = "%s";
 static const char fmt_port[] = " %s%u";

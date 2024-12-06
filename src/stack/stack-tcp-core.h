@@ -7,13 +7,10 @@
 #define STACK_TCP_CORE_H
 
 #include "stack-queue.h"
-#include "../util-misc/cross.h"
-#include "../output-modules/output-modules.h"
-#include "../templ/templ-tcp.h"
+#include "../templ/templ-pkt.h"
 #include "../target/target-ipaddress.h"
-#include "../proto/proto-datapass.h"
-#include "../timeout/event-timeout.h"
 #include "../probe-modules/probe-modules.h"
+#include "../output-modules/output-modules.h"
 
 typedef enum TCP_What {
     TCP_WHAT_TIMEOUT, /*The connection time is expired*/

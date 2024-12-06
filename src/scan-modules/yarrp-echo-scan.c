@@ -1,12 +1,14 @@
+#include "scan-modules.h"
+
 #include <stdlib.h>
 
-#include "scan-modules.h"
 #include "../xconf.h"
 #include "../stub/stub-pcap-dlt.h"
 #include "../target/target-cookie.h"
 #include "../templ/templ-icmp.h"
+#include "../util-out/logger.h"
 #include "../util-data/safe-string.h"
-#include "../util-data/fine-malloc.h"
+#include "../util-misc/misc.h"
 
 /** echo request and reply ICMP(v4/v6) according to RFC792 and RFC4443.
     0                   1                   2                   3

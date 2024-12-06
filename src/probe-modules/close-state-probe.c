@@ -1,10 +1,9 @@
+#include "probe-modules.h"
+
 #include <string.h>
 #include <stdio.h>
 
-#include "probe-modules.h"
-#include "../util-data/safe-string.h"
 #include "../output-modules/output-modules.h"
-#include "../util-out/logger.h"
 
 /*for internal x-ref*/
 extern Probe CloseStateProbe;

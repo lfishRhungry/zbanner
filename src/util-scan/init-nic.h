@@ -1,7 +1,9 @@
 #ifndef INIT_NIC_H
 #define INIT_NIC_H
 
-#include "../xconf.h"
+#include <stdbool.h>
+
+typedef struct XtateConf XConf;
 
 /**
  * Init struct NIC and adapter within it.

@@ -15,7 +15,6 @@
  * that is actually sent. But the `q` and delimiters are not necessary here.
  */
 
-#include "../util-misc/cross.h"
 #include <stdlib.h>
 
 /**

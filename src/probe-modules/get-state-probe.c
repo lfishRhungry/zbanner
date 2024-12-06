@@ -1,10 +1,10 @@
-#include <string.h>
-#include <stdio.h>
-
 #include "probe-modules.h"
-#include "../util-data/safe-string.h"
+
+#include <string.h>
+
 #include "../output-modules/output-modules.h"
 #include "../util-out/logger.h"
+#include "../util-misc/misc.h"
 
 #define GET_STATE_PAYLOAD "GET / HTTP/1.0\r\n\r\n"
 

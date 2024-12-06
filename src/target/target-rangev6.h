@@ -6,9 +6,10 @@
 #ifndef TARGET_RANGEV6_H
 #define TARGET_RANGEV6_H
 
-#include "target-ipaddress.h"
 #include <stdio.h>
 #include <stdint.h>
+
+#include "target-ipaddress.h"
 
 struct Range;
 

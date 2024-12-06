@@ -1,14 +1,15 @@
+#include "scan-modules.h"
+
 #include <stdlib.h>
 
-#include "scan-modules.h"
 #include "../xconf.h"
-#include "../stub/stub-pcap-dlt.h"
 #include "../target/target-cookie.h"
+#include "../target/target-rangeport.h"
 #include "../templ/templ-udp.h"
 #include "../templ/templ-icmp.h"
 #include "../util-data/safe-string.h"
-#include "../util-data/fine-malloc.h"
 #include "../util-out/logger.h"
+#include "../util-misc/misc.h"
 
 extern Scanner UdpScan; /*for internal x-ref*/
 

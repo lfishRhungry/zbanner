@@ -2,7 +2,7 @@
 #define PROTO_DATAPASS_H
 
 #include <stdio.h>
-#include "../util-misc/cross.h"
+#include <stdbool.h>
 
 /**
  * DataPass is a media of different protocol layer to pass data

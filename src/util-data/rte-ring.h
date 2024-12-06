@@ -72,8 +72,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ***************************************************************************/
-#include "../pixie/pixie-threads.h"
 #include <errno.h>
+
+#include "../pixie/pixie-threads.h"
 
 #define RTE_XTATE_DEQ_USEC 100
 #define RTE_XTATE_ENQ_USEC 1000

@@ -34,6 +34,7 @@
 #define PROTO_HTTP_PARSER_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 /* contains name and value of a header (name == NULL if is a continuing line
  * of a multiline header */

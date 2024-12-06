@@ -1,6 +1,7 @@
+#include "../probe-modules.h"
+
 #include <string.h>
 
-#include "../probe-modules.h"
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/

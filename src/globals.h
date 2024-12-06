@@ -1,5 +1,6 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
+
 #include <time.h>
 #include "pixie/pixie-threads.h"
 

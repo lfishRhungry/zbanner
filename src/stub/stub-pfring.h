@@ -1,7 +1,7 @@
 #ifndef STUB_PFRING_H
 #define STUB_PFRING_H
+
 #include <stdint.h>
-#include <time.h>
 
 /*
  * Various PF_RING defines

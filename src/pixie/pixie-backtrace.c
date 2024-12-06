@@ -1,15 +1,14 @@
 /*
     When program crashes, print backtrace with line numbers
 */
-#include "../version.h"
 #include "pixie-backtrace.h"
-#include "../util-misc/cross.h"
-#include "../util-data/fine-malloc.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
+
+#include "../version.h"
 
 char global_self[512] = "";
 

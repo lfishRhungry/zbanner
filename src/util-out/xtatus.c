@@ -1,13 +1,15 @@
 #include "xtatus.h"
-#include "../pixie/pixie-timer.h"
-#include "../pixie/pixie-threads.h"
-#include "../util-misc/cross.h"
-#include "../globals.h"
-#include "../util-data/safe-string.h"
-#include "../util-out/logger.h"
-#include "../util-out/xprint.h"
 
 #include <stdio.h>
+#include <inttypes.h>
+#include <string.h>
+
+#include "../pixie/pixie-timer.h"
+#include "../pixie/pixie-threads.h"
+#include "../util-misc/misc.h"
+#include "../globals.h"
+#include "../util-out/logger.h"
+#include "../util-out/xprint.h"
 
 void xtatus_print(Xtatus *xtatus, XtatusItem *item) {
     const char *fmt;

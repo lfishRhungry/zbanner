@@ -1,12 +1,14 @@
+#include "scan-modules.h"
+
 #include <stdlib.h>
 
-#include "scan-modules.h"
 #include "../xconf.h"
-#include "../target/target-cookie.h"
 #include "../version.h"
 #include "../templ/templ-ndp.h"
+#include "../templ/templ-icmp.h"
 #include "../util-data/safe-string.h"
-#include "../util-data/fine-malloc.h"
+#include "../util-out/logger.h"
+#include "../util-misc/misc.h"
 
 extern Scanner NdpNsScan; /*for internal x-ref*/
 

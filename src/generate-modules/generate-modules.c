@@ -1,7 +1,10 @@
 #include "generate-modules.h"
+
+#include <stdio.h>
+
 #include "../util-out/xprint.h"
 #include "../util-out/logger.h"
-#include "../util-data/safe-string.h"
+#include "../util-misc/misc.h"
 
 // clang-format off
 //! ADD YOUR GENERATOR HERE

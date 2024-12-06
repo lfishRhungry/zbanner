@@ -1,11 +1,12 @@
 #ifndef NOT_FOUND_OPENSSL
 
-#include <stdio.h>
-
 #include "probe-modules.h"
-#include "../util-data/safe-string.h"
+
 #include "../proto/proto-jarm.h"
+#include "../proto/proto-tls.h"
 #include "../util-out/logger.h"
+#include "../util-data/safe-string.h"
+#include "../util-misc/misc.h"
 
 static struct JarmConfig jc_list[] = {
     {

@@ -26,8 +26,7 @@
 #ifndef DATA_CHAIN_H
 #define DATA_CHAIN_H
 
-#include "../util-misc/cross.h"
-
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 

@@ -2,14 +2,15 @@
 
 #include "output-modules.h"
 #include "bson-output.h"
-#include "../version.h"
 
+#include <bson/bson.h>
+
+#include "../version.h"
+#include "../util-misc/misc.h"
 #include "../util-out/logger.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/fine-malloc.h"
 #include "../pixie/pixie-file.h"
-
-#include <bson/bson.h>
 
 extern Output BsonOutput; /*for internal x-ref*/
 

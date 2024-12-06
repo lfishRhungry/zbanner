@@ -1,12 +1,16 @@
 #include "generate-modules.h"
+
+#include <string.h>
+
 #include "../xconf.h"
-#include "../version.h"
-#include "../util-data/fine-malloc.h"
 #include "../target/target-cookie.h"
 #include "../target/target-set.h"
 #include "../target/target-rangev4.h"
 #include "../target/target-rangev6.h"
+#include "../target/target-rangeport.h"
 #include "../crypto/crypto-blackrock.h"
+#include "../util-out/logger.h"
+#include "../util-misc/misc.h"
 
 Generator IpStreamGen;
 

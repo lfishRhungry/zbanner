@@ -4,7 +4,7 @@
 
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
-#include "../util-misc/cross.h"
+#include "../util-misc/misc.h"
 #include "../util-out/logger.h"
 
 #include "../target/target.h"

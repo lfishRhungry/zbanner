@@ -5,6 +5,9 @@
 #ifndef TARGET_RANGE_PORT_H
 #define TARGET_RANGE_PORT_H
 
+#include <stdint.h>
+#include <stdio.h>
+
 struct RangeList;
 
 void rangelist_add_range_tcp(struct RangeList *targets, unsigned begin,

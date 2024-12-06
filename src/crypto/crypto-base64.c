@@ -1,12 +1,13 @@
 /* Licensed under BSD-MIT - see LICENSE file for details */
 #include "crypto-base64.h"
-#include "../util-out/logger.h"
 
 #include <time.h>
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
 #include <stdint.h>
+
+#include "../util-out/logger.h"
 
 /**
  * sixbit_to_b64 - maps a 6-bit value to the base64 alphabet

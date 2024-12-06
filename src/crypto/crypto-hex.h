@@ -28,8 +28,8 @@
 #ifndef CRYPTO_HEX_H
 #define CRYPTO_HEX_H
 
-#include "../util-misc/cross.h"
 #include <stdlib.h>
+#include <stdbool.h>
 
 /**
  * hex_decode - Unpack a hex string.

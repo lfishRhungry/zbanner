@@ -1,5 +1,4 @@
 #include "pixie-threads.h"
-#include "../util-data/fine-malloc.h"
 
 #if defined(WIN32)
 #include <Windows.h>
@@ -32,6 +31,7 @@
 #include <inttypes.h>
 
 #include "../util-out/logger.h"
+#include "../util-data/fine-malloc.h"
 
 /****************************************************************************
  ****************************************************************************/

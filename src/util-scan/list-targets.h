@@ -1,7 +1,9 @@
 #ifndef LIST_TARGETS_H
 #define LIST_TARGETS_H
 
-#include "../xconf.h"
+#include <stdio.h>
+
+typedef struct XtateConf XConf;
 
 /***************************************************************************
  * Prints IPs and ports in the targetsets of xconf in IP/Port pairs or in IPs

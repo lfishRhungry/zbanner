@@ -12,10 +12,10 @@ cd ./build
 
 if [[ "$1" == "debug" ]]; then
     echo "=====Configuring project for Debug build..."
-    cmake -DCMAKE_BUILD_TYPE=Debug ..
+    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
 else
     echo "=====Configuring project for Release build..."
-    cmake ..
+    cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ..
 fi
 
 echo "=====Building the project..."

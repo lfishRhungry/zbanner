@@ -65,7 +65,6 @@
 #include "stack-tcp-core.h"
 
 #include <assert.h>
-#include <ctype.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -76,16 +75,13 @@
 
 #include "stack-queue.h"
 #include "stack-src.h"
-#include "../target/target-set.h"
+
+#include "../globals.h"
+#include "../templ/templ-tcp.h"
 #include "../target/target-cookie.h"
 #include "../timeout/event-timeout.h"
-#include "../rawsock/rawsock.h"
+#include "../util-misc/misc.h"
 #include "../util-out/logger.h"
-#include "../templ/templ-tcp.h"
-#include "../pixie/pixie-timer.h"
-#include "../util-data/safe-string.h"
-#include "../globals.h"
-#include "../crypto/crypto-base64.h"
 #include "../util-data/fine-malloc.h"
 
 #ifdef _MSC_VER
@@ -340,8 +336,8 @@ TCP_Table *tcpcon_create_table(size_t entry_count, STACK *stack,
     }
 
     /* Create the table. */
-    tcpcon->entries = MALLOC(entry_count * sizeof(*tcpcon->entries));
-    memset(tcpcon->entries, 0, entry_count * sizeof(*tcpcon->entries));
+    tcpcon->entries = MALLOC(entry_count * sizeof(TCB *));
+    memset(tcpcon->entries, 0, entry_count * sizeof(TCB *));
 
     tcpcon->expire = expire;
     if (tcpcon->expire == 0)

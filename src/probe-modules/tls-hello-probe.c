@@ -1,3 +1,5 @@
+#include "probe-modules.h"
+
 #include <string.h>
 #include <time.h>
 
@@ -6,11 +8,11 @@
 #include <pcre2.h>
 #endif
 
-#include "probe-modules.h"
-#include "../version.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/data-convert.h"
 #include "../util-data/fine-malloc.h"
+#include "../util-out/logger.h"
+#include "../util-misc/misc.h"
 
 /*for internal x-ref*/
 extern Probe TlsHelloProbe;

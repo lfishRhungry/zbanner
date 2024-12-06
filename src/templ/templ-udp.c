@@ -27,17 +27,14 @@
                  +--------+--------+--------+--------+
 
 */
+#include "templ-udp.h"
 
 #include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
 
-#include "templ-udp.h"
 #include "../globals.h"
 #include "../util-out/logger.h"
 #include "../util-misc/checksum.h"
 #include "../util-data/data-convert.h"
-#include "../proto/proto-preprocess.h"
 #include "../target/target.h"
 
 static size_t udp_create_by_template_ipv4(

@@ -23,15 +23,16 @@
     leading to a memory leak. I keep fixing this bug, then changing the
     code and causing the bug to come back again.
 */
+#include "event-timeout.h"
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-#include "event-timeout.h"
 #include "../util-out/logger.h"
 #include "../util-data/fine-malloc.h"
-#include "../util-misc/cross.h"
+#include "../util-misc/misc.h"
 
 #define EVENT_TM_SLOTS 1024 * 1024
 

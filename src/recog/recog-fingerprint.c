@@ -1,9 +1,6 @@
 #ifndef NOT_FOUND_PCRE2
 
 #include "recog-fingerprint.h"
-#include "../util-out/logger.h"
-#include "../util-data/fine-malloc.h"
-#include "../util-data/safe-string.h"
 
 #ifndef NOT_FOUND_LIBXML2
 #include <libxml/parser.h>
@@ -12,6 +9,10 @@
 
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
+
+#include "../util-out/logger.h"
+#include "../util-data/fine-malloc.h"
+#include "../util-data/safe-string.h"
 
 struct RecogMatch {
     char                *desc;

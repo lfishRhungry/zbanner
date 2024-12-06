@@ -12,9 +12,10 @@
  I think it'll work the same on any BSD system.
 */
 #include "rawsock.h"
-#include "../util-data/safe-string.h"
+
+#include <string.h>
+
 #include "../util-out/logger.h"
-#include "../target/target-parse.h"
 
 /*****************************************************************************
  *****************************************************************************/
@@ -22,6 +23,7 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netdb.h>

@@ -1,11 +1,11 @@
 /**
  * modified from LZR by sharkocha 2024
  */
+#include "../probe-modules.h"
+
 #include <string.h>
 #include <time.h>
 
-#include "../probe-modules.h"
-#include "../../version.h"
 #include "../../util-data/safe-string.h"
 
 /*for internal x-ref*/

@@ -14,16 +14,8 @@
 #ifndef GENERATE_MODULES_H
 #define GENERATE_MODULES_H
 
-#include <time.h>
-#include <ctype.h>
-#include <stdio.h>
-
-#include "../util-data/data-chain.h"
 #include "../util-misc/configer.h"
-#include "../util-misc/cross.h"
 #include "../target/target.h"
-#include "../target/target-set.h"
-#include "../target/target-ipaddress.h"
 
 typedef struct XtateConf XConf;
 

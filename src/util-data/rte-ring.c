@@ -69,19 +69,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  ***************************************************************************/
-#include <errno.h>
-#include <signal.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
-
-#include "../util-out/logger.h"
-#include "../pixie/pixie-timer.h"
 
 #if 0
 #include <rte_atomic.h>
@@ -103,6 +90,18 @@
 
 #include "rte-ring.h"
 
+#include <errno.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdlib.h>
+#include <string.h>
+#include <inttypes.h>
+
+#include "../util-out/logger.h"
+#include "../pixie/pixie-timer.h"
 /* true if x is a power of 2 */
 #define POWEROF2(x) ((((x) - 1) & (x)) == 0)
 

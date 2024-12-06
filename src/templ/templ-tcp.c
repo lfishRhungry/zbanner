@@ -76,6 +76,8 @@ TCP pseudo header
                      |  zero  |  PTCL  |    TCP Length   |
                      +--------+--------+--------+--------+
  */
+#include "templ-tcp.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>

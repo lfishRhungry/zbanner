@@ -48,16 +48,15 @@
     probably better constructions than what I'm using.
 */
 #include "crypto-blackrock.h"
+
+#include <stdint.h>
+#include <stdio.h>
+#include <math.h>
+#include <time.h>
+
 #include "../pixie/pixie-timer.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-out/logger.h"
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <ctype.h>
-#include <time.h>
 
 #if defined(_MSC_VER)
 #define inline _inline

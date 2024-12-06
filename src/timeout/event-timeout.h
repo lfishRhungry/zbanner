@@ -1,10 +1,10 @@
 #ifndef EVENT_TIMEOUT_H
 #define EVENT_TIMEOUT_H
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stddef.h> /* offsetof*/
-
-#include "../util-misc/cross.h"
+#include <stdbool.h>
 
 typedef struct TimeoutTables Timeouts;
 

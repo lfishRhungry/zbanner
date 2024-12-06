@@ -1,4 +1,7 @@
 #include "stack-ndpv6.h"
+
+#include <string.h>
+
 #include "stack-src.h"
 #include "../proto/proto-preprocess.h"
 #include "../templ/templ-icmp.h"
@@ -9,8 +12,6 @@
 #include "../stub/stub-pcap-dlt.h"
 #include "../templ/templ-icmp.h"
 #include "../templ/templ-ndp.h"
-
-#include <string.h>
 
 /* ICMPv6 NDP Router Solicitation according to RFC4861
 

@@ -5,8 +5,8 @@
  */
 #ifndef DEDUP_H
 #define DEDUP_H
+
 #include "../target/target-ipaddress.h"
-#include "../util-misc/cross.h"
 
 typedef struct DeduplicateTable DedupTable;
 

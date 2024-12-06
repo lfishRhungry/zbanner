@@ -1,5 +1,6 @@
 #ifndef _SMACK_H
 #define _SMACK_H
+
 #include <stdio.h>
 
 #define SMACK_NOT_FOUND ((size_t)(~0))

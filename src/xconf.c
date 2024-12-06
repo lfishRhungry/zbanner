@@ -1,3 +1,5 @@
+#include "xconf.h"
+
 #include <ctype.h>
 #include <limits.h>
 
@@ -22,7 +24,6 @@
 #include <mongoc/mongoc.h>
 #endif
 
-#include "xconf.h"
 #include "version.h"
 #include "smack/smack.h"
 #include "nmap/nmap-service.h"
@@ -43,7 +44,7 @@
 #include "util-data/data-chain.h"
 #include "util-out/xprint.h"
 #include "util-out/logger.h"
-#include "util-misc/cross.h"
+#include "util-misc/misc.h"
 #include "util-misc/checksum.h"
 #include "util-misc/configer.h"
 

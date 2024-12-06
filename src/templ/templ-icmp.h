@@ -2,9 +2,7 @@
 #define TEMPL_ICMP_H
 
 #include "templ-pkt.h"
-#include "../util-misc/cross.h"
 #include "../target/target-ipaddress.h"
-#include "../proto/proto-preprocess.h"
 
 /**
  * I list some often used type and code of ICMP

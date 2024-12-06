@@ -1,10 +1,12 @@
 #include "target-set.h"
+
+#include <string.h>
+#include <ctype.h>
+
 #include "target-parse.h"
 #include "target-rangev4.h"
 #include "target-rangev6.h"
 #include "target-rangeport.h"
-#include <string.h>
-#include <ctype.h>
 
 #include "../util-out/logger.h"
 

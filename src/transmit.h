@@ -1,8 +1,12 @@
 #ifndef TRANSMIT_H
 #define TRANSMIT_H
 
-#include "xconf.h"
+#include <stdbool.h>
+#include <stddef.h>
+
 #include "util-scan/throttle.h"
+
+typedef struct XtateConf XConf;
 
 /***************************************************************************
  * Correspond to a transmit thread.

@@ -12,15 +12,14 @@
         IP address. Every so often, the local router may drop it's route
         entry and re-request our address.
 */
-#include "stack-src.h"
 #include "stack-arpv4.h"
+
+#include <string.h>
+
 #include "stack-queue.h"
 #include "../rawsock/rawsock.h"
-#include "../util-data/safe-string.h"
 #include "../util-out/logger.h"
-#include "../pixie/pixie-timer.h"
 #include "../proto/proto-preprocess.h"
-#include "../util-misc/checksum.h"
 #include "../stub/stub-pcap-dlt.h"
 #include "../templ/templ-arp.h"
 #include "../util-data/data-convert.h"

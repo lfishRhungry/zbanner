@@ -14,14 +14,12 @@
 */
 #ifndef SAFE_STRING_H
 #define SAFE_STRING_H
-#include <errno.h>
+
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <stdint.h>
-
-#include "../util-misc/cross.h"
+#include <stdbool.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4996)

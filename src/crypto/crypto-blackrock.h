@@ -1,5 +1,6 @@
 #ifndef RAND_BLACKROCK_H
 #define RAND_BLACKROCK_H
+
 #include <stdint.h>
 
 typedef struct BlackRock {

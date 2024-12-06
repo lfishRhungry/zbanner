@@ -1,7 +1,9 @@
+#include "as-query.h"
+
 #include <stdio.h>
 #include <inttypes.h>
+#include <string.h>
 
-#include "as-query.h"
 #include "../target/target-parse.h"
 #include "../util-misc/configer.h"
 #include "../util-out/logger.h"

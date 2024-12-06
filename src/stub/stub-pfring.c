@@ -7,14 +7,17 @@
 
 */
 #include "stub-pfring.h"
-#include "../util-data/safe-string.h"
-#include "../util-out/logger.h"
-
-struct PFRING PFRING;
 
 #if defined(__linux__)
 #include <dlfcn.h>
 #endif
+
+#include <stdio.h>
+#include <string.h>
+
+#include "../util-out/logger.h"
+
+struct PFRING PFRING;
 
 /***************************************************************************
  * This checks whether the "pf_ring" driver is installed.

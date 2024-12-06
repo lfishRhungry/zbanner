@@ -1,11 +1,13 @@
+#include "configer.h"
+
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 
-#include "configer.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
 #include "../util-out/logger.h"
+#include "../util-misc/misc.h"
 
 uint64_t conf_parse_int(const char *str) {
     uint64_t result = 0;

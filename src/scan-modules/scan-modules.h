@@ -9,22 +9,14 @@
 #define SCAN_MODULES
 
 #include <stdlib.h>
-#include <ctype.h>
 
-#include "../globals.h"
 #include "../util-misc/configer.h"
-#include "../util-misc/cross.h"
-#include "../util-out/xtatus.h"
 #include "../output-modules/output-modules.h"
 #include "../stack/stack-queue.h"
 #include "../target/target.h"
-#include "../target/target-set.h"
 #include "../target/target-ipaddress.h"
-#include "../target/target-rangeport.h"
 #include "../proto/proto-preprocess.h"
 #include "../probe-modules/probe-modules.h"
-
-typedef struct XtateConf XConf;
 
 #define SM_DFT_DEDUP_TYPE 0
 
