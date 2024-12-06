@@ -71,6 +71,8 @@ unsigned rawsock_get_adapter_ip(const char *ifname) {
 #pragma comment(lib, "IPHLPAPI.lib")
 #endif
 
+#include "../target/target-parse.h"
+
 unsigned rawsock_get_adapter_ip(const char *ifname) {
     PIP_ADAPTER_INFO pAdapterInfo;
     PIP_ADAPTER_INFO pAdapter = NULL;

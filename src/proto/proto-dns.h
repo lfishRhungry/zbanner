@@ -17,7 +17,13 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdbool.h>
+
+#ifdef WIN32
+#include <winsock2.h>
+#include <in6addr.h>
+#else
 #include <netinet/in.h>
+#endif
 
 typedef enum {
     DNS_REC_INVALID    = -1, // Error code

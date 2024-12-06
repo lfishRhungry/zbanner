@@ -411,6 +411,8 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4) {
 #pragma comment(lib, "IPHLPAPI.lib")
 #endif
 
+#include "../target/target-parse.h"
+
 int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4) {
     PIP_ADAPTER_INFO pAdapterInfo;
     PIP_ADAPTER_INFO pAdapter = NULL;

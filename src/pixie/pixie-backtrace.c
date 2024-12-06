@@ -86,6 +86,9 @@ void pixie_backtrace_init(const char *self) {}
 #elif defined(WIN32)
 #include <Windows.h>
 
+#include "../util-misc/misc.h"
+#include "../util-data/fine-malloc.h"
+
 typedef struct _SYMBOL_INFO {
     ULONG   SizeOfStruct;
     ULONG   TypeIndex; // Type Index of symbol

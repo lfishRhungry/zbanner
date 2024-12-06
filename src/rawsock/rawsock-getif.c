@@ -387,7 +387,9 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname) {
 
 #include <winsock2.h>
 #include <iphlpapi.h>
+
 #include "../target/target-parse.h"
+#include "../util-data/fine-malloc.h"
 
 #ifdef _MSC_VER
 #pragma comment(lib, "IPHLPAPI.lib")

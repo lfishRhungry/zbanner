@@ -3,7 +3,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+
+#ifdef WIN32
+#include <ws2ipdef.h>
+#include <ws2tcpip.h>
+#else
 #include <arpa/inet.h>
+#endif
 
 #include "../util-misc/misc.h"
 #include "../util-data/safe-string.h"

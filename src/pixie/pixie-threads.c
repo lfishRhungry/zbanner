@@ -3,6 +3,7 @@
 #if defined(WIN32)
 #include <Windows.h>
 #include <process.h>
+#include "../util-misc/misc.h"
 #endif
 
 #if defined(__GNUC__) && !defined(WIN32)
