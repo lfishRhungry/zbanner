@@ -15,14 +15,14 @@
 
 #include "stack-queue.h"
 #include "../target/target-ipaddress.h"
-
-typedef struct PreprocessedInfo PreInfo;
+#include "../proto/proto-preprocess.h"
+#include "../rawsock/rawsock.h"
 
 /**
  * Handle an incoming IPv6 neighbor notification request. We must send
  * back our MAC address.
  */
-int stack_ndpv6_incoming_request(STACK *stack, PreInfo *parsed,
+int stack_ndpv6_incoming_request(NetStack *stack, PreInfo *parsed,
                                  const unsigned char *px, size_t length);
 
 /**

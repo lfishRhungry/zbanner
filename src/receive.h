@@ -5,9 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "xconf.h"
 #include "stack/stack-queue.h"
-
-typedef struct XtateConf XConf;
 
 /***************************************************************************
  * Correspond to a receive thread.
@@ -16,19 +15,19 @@ typedef struct RxThreadConfig {
     /** This points to the central configuration. Note that it's 'const',
      * meaning that the thread cannot change the contents. That'd be
      * unsafe */
-    const XConf   *xconf;
+    const XConf *xconf;
     /*start time info for packet trace*/
-    double         pt_start;
+    double       pt_start;
     /*unhandled fast-timeout event*/
-    uint64_t       total_tm_event;
+    uint64_t     total_tm_event;
     /*all queue from dispatch thread to handle threads*/
-    PACKET_QUEUE **handle_q;
+    PktQueue   **handle_q;
     /*queue from rx thread to dispatch thread*/
-    PACKET_QUEUE  *dispatch_q;
+    PktQueue    *dispatch_q;
     /*thread handler(id for process)*/
-    size_t         thread_handle_recv;
+    size_t       thread_handle_recv;
     /*is finished*/
-    bool           done_receiving;
+    bool         done_receiving;
 } RxThread;
 
 /***************************************************************************

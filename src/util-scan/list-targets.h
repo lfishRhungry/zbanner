@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-typedef struct XtateConf XConf;
+#include "../xconf.h"
 
 /***************************************************************************
  * Prints IPs and ports in the targetsets of xconf in IP/Port pairs or in IPs

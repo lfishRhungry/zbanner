@@ -4,9 +4,8 @@
 #include <stdint.h>
 
 #include "templ-pkt.h"
+#include "templ-opts.h"
 #include "../target/target-ipaddress.h"
-
-typedef struct TemplateOptions TmplOpt;
 
 /**
  * Initialize the "template" packets. As we spew out probes, we simply make

@@ -4,9 +4,8 @@
 #include <stdio.h>
 
 #include "templ-pkt.h"
+#include "templ-opts.h"
 #include "../target/target-ipaddress.h"
-
-typedef struct TemplateOptions TmplOpt;
 
 #define TCP_FLAG_CWR 0B10000000
 #define TCP_FLAG_ECE 0B01000000

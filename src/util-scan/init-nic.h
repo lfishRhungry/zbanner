@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-typedef struct XtateConf XConf;
+#include "../xconf.h"
 
 /**
  * Init struct NIC and adapter within it.

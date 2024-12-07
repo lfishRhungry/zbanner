@@ -4,9 +4,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "xconf.h"
 #include "util-scan/throttle.h"
-
-typedef struct XtateConf XConf;
 
 /***************************************************************************
  * Correspond to a transmit thread.

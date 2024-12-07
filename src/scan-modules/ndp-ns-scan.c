@@ -99,7 +99,8 @@ static void ndpns_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
 }
 
 static void ndpns_handle(unsigned th_idx, uint64_t entropy,
-                         ValidPacket *valid_pkt, OutItem *item, STACK *stack) {
+                         ValidPacket *valid_pkt, OutItem *item,
+                         NetStack *stack) {
     if (valid_pkt->repeats) {
         item->no_output = 1;
         return;

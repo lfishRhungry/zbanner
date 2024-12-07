@@ -6,13 +6,20 @@
 
 #include "target/target-ipaddress.h"
 #include "target/target-set.h"
+
 #include "stack/stack-src.h"
 #include "stack/stack-queue.h"
+
 #include "generate-modules/generate-modules.h"
 #include "output-modules/output-modules.h"
 #include "probe-modules/probe-modules.h"
 #include "scan-modules/scan-modules.h"
+
+#include "templ/templ-opts.h"
+#include "templ/templ-pkt.h"
+
 #include "as/as-query.h"
+#include "rawsock/rawsock.h"
 
 /**
  * some default config
@@ -38,9 +45,6 @@ very low impact on scan rate */
 #define XCONF_DFT_SENDMMSG_BATCH     64
 #define XCONF_DFT_SENDMMSG_RETRIES   10
 #define XCONF_DFT_SENDQUEUE_SIZE     (65535 * 8)
-
-typedef struct TemplateSet     TmplSet;
-typedef struct TemplateOptions TmplOpt;
 
 enum Operation {
     Operation_Default = 0,  /* nothing specified, so print usage */
@@ -147,7 +151,7 @@ typedef struct XtateConf {
     /**
      * info of the abstract whole network tx/rx stack
      * */
-    STACK           *stack;
+    NetStack        *stack;
     unsigned         stack_buf_count;
     /**
      * PCAP info

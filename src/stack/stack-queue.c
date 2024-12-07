@@ -8,7 +8,7 @@
 #include "../pixie/pixie-timer.h"
 #include "../util-data/fine-malloc.h"
 
-PktBuf *stack_get_pktbuf(STACK *stack) {
+PktBuf *stack_get_pktbuf(NetStack *stack) {
     PktBuf *response = NULL;
 
     int err = rte_ring_mc_dequeue(stack->packet_buffers, (void **)&response);
@@ -30,7 +30,7 @@ PktBuf *stack_get_pktbuf(STACK *stack) {
     return response;
 }
 
-void stack_transmit_pktbuf(STACK *stack, PktBuf *response) {
+void stack_transmit_pktbuf(NetStack *stack, PktBuf *response) {
     int err;
     for (err = 1; err;) {
         err = rte_ring_mp_enqueue(stack->transmit_queue, response);
@@ -50,8 +50,9 @@ void stack_transmit_pktbuf(STACK *stack, PktBuf *response) {
  * than individually. It increases latency, but increases performance. We
  * don't really care about latency.
  ***************************************************************************/
-void stack_flush_packets(STACK *stack, Adapter *adapter, AdapterCache *acache,
-                         uint64_t *packets_sent, uint64_t *batchsize) {
+void stack_flush_packets(NetStack *stack, Adapter *adapter,
+                         AdapterCache *acache, uint64_t *packets_sent,
+                         uint64_t *batchsize) {
     /*
      * Send a batch of queued packets
      */
@@ -95,10 +96,10 @@ void stack_flush_packets(STACK *stack, Adapter *adapter, AdapterCache *acache,
     }
 }
 
-STACK *stack_create(macaddress_t source_mac, StackSrc *src,
-                    unsigned buf_count) {
-    STACK *stack;
-    size_t i;
+NetStack *stack_create(macaddress_t source_mac, StackSrc *src,
+                       unsigned buf_count) {
+    NetStack *stack;
+    size_t    i;
 
     stack             = CALLOC(1, sizeof(*stack));
     stack->source_mac = source_mac;

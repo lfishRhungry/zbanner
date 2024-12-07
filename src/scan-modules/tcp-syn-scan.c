@@ -328,7 +328,8 @@ static void tcpsyn_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
 }
 
 static void tcpsyn_handle(unsigned th_idx, uint64_t entropy,
-                          ValidPacket *valid_pkt, OutItem *item, STACK *stack) {
+                          ValidPacket *valid_pkt, OutItem *item,
+                          NetStack *stack) {
     unsigned mss_them;
     bool     mss_found;
     Recved  *recved = &valid_pkt->recved;

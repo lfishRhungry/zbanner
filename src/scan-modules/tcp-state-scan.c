@@ -367,7 +367,7 @@ static void tcpstate_validate(uint64_t entropy, Recved *recved,
 
 static void tcpstate_handle(unsigned th_idx, uint64_t entropy,
                             ValidPacket *valid_pkt, OutItem *item,
-                            STACK *stack) {
+                            NetStack *stack) {
     Recved *recved  = &valid_pkt->recved;
     /*in default*/
     item->no_output = 1;

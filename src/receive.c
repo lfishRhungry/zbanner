@@ -47,11 +47,11 @@ static uint8_t _dispatch_hash(ipaddress addr) {
 }
 
 typedef struct RxDispatchConfig {
-    PACKET_QUEUE **handle_queue;
-    PACKET_QUEUE  *dispatch_queue;
-    unsigned       recv_handle_num;
-    unsigned       recv_handle_mask;
-    uint64_t       entropy;
+    PktQueue **handle_queue;
+    PktQueue  *dispatch_queue;
+    unsigned   recv_handle_num;
+    unsigned   recv_handle_mask;
+    uint64_t   entropy;
 } DispatchConf;
 
 static void dispatch_thread(void *v) {
@@ -100,14 +100,14 @@ typedef struct RxHandleConfig {
     /** This points to the central configuration. Note that it's 'const',
      * meaning that the thread cannot change the contents. That'd be
      * unsafe */
-    const XConf  *xconf;
-    Scanner      *scanner;
-    PACKET_QUEUE *handle_queue;
-    STACK        *stack;
-    OutConf      *out_conf;
-    uint64_t      entropy;
+    const XConf *xconf;
+    Scanner     *scanner;
+    PktQueue    *handle_queue;
+    NetStack    *stack;
+    OutConf     *out_conf;
+    uint64_t     entropy;
     /*unique index of the handle thread that count from 0*/
-    unsigned      index;
+    unsigned     index;
 } HandleConf;
 
 static void handle_thread(void *v) {
@@ -183,17 +183,17 @@ void receive_thread(void *v) {
     Adapter         *adapter      = xconf->nic.adapter;
     int              data_link    = rawsock_if_datalink(adapter);
     uint64_t         entropy      = xconf->seed;
-    STACK           *stack        = xconf->stack;
+    NetStack        *stack        = xconf->stack;
     Scanner         *scan_module  = xconf->scanner;
     DedupTable      *dedup        = NULL;
     struct PcapFile *pcapfile     = NULL;
     unsigned         handler_num  = xconf->rx_handler_count;
     size_t          *handler      = MALLOC(handler_num * sizeof(size_t));
     HandleConf      *handle_parms = MALLOC(handler_num * sizeof(HandleConf));
-    PACKET_QUEUE   **handle_q = MALLOC(handler_num * sizeof(PACKET_QUEUE *));
+    PktQueue       **handle_q     = MALLOC(handler_num * sizeof(PktQueue *));
     size_t           dispatcher;
     DispatchConf     dispatch_parms;
-    PACKET_QUEUE    *dispatch_q;
+    PktQueue        *dispatch_q;
     ValidPacket     *valid_pkt;
 
     LOG(LEVEL_DEBUG, "starting receive thread\n");

@@ -15,6 +15,7 @@
 #include "stack-arpv4.h"
 
 #include <string.h>
+#include <time.h>
 
 #include "stack-queue.h"
 #include "../rawsock/rawsock.h"
@@ -264,7 +265,7 @@ int stack_arp_resolve(Adapter *adapter, AdapterCache *acache,
 /****************************************************************************
  * Handle an incoming ARP request.
  ****************************************************************************/
-int stack_arp_incoming_request(STACK *stack, ipv4address_t my_ip,
+int stack_arp_incoming_request(NetStack *stack, ipv4address_t my_ip,
                                macaddress_t my_mac, const unsigned char *px,
                                unsigned length) {
     PktBuf                    *response = 0;

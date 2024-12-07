@@ -1,6 +1,7 @@
 #include "stack-ndpv6.h"
 
 #include <string.h>
+#include <time.h>
 
 #include "stack-src.h"
 #include "../proto/proto-preprocess.h"
@@ -264,7 +265,7 @@ static inline ipv6address_t _read_ipv6(const unsigned char *buf, size_t *offset,
  * packet. The router sends us a solicitation, like an ARP request,
  * to which we must respond.
  */
-int stack_ndpv6_incoming_request(STACK *stack, PreInfo *parsed,
+int stack_ndpv6_incoming_request(NetStack *stack, PreInfo *parsed,
                                  const unsigned char *px, size_t length) {
     PktBuf              *response = 0;
     size_t               offset;

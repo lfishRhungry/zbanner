@@ -29,7 +29,7 @@ typedef struct TCP_StackHandler    TCP_Stack;
 typedef struct TCP_Control_Block   TCB;
 typedef struct TCP_ConnectionTable TCP_Table;
 
-TCP_Table *tcpcon_create_table(size_t entry_count, STACK *stack,
+TCP_Table *tcpcon_create_table(size_t entry_count, NetStack *stack,
                                TmplPkt *tcp_template, TmplPkt *syn_template,
                                TmplPkt *rst_template, OutConf *out,
                                unsigned timeout, uint64_t entropy);

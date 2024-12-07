@@ -3,6 +3,7 @@
 
 #include "stack-queue.h"
 #include "../target/target-ipaddress.h"
+#include "../rawsock/rawsock.h"
 
 /**
  * Response to an ARP request for our IP address.
@@ -21,7 +22,7 @@
  *      I put the formatted response onto this queue for later
  *      transmission by a transmit thread.
  */
-int stack_arp_incoming_request(STACK *stack, ipv4address_t my_ip,
+int stack_arp_incoming_request(NetStack *stack, ipv4address_t my_ip,
                                macaddress_t my_mac, const unsigned char *px,
                                unsigned length);
 

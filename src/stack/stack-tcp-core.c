@@ -172,7 +172,7 @@ struct TCP_ConnectionTable {
     TmplPkt  *syn_template;
     TmplPkt  *rst_template;
     Timeouts *timeouts;
-    STACK    *stack;
+    NetStack *stack;
     OutConf  *out_conf;
 
     unsigned count;
@@ -310,7 +310,7 @@ void tcpcon_timeouts(TCP_Table *tcpcon, unsigned secs, unsigned usecs) {
 
 /***************************************************************************
  ***************************************************************************/
-TCP_Table *tcpcon_create_table(size_t entry_count, STACK *stack,
+TCP_Table *tcpcon_create_table(size_t entry_count, NetStack *stack,
                                TmplPkt *tcp_template, TmplPkt *syn_template,
                                TmplPkt *rst_template, OutConf *out,
                                unsigned expire, uint64_t entropy) {

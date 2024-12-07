@@ -679,7 +679,7 @@ static void zbanner_validate(uint64_t entropy, Recved *recved, PreHandle *pre) {
 
 static void zbanner_handle(unsigned th_idx, uint64_t entropy,
                            ValidPacket *valid_pkt, OutItem *item,
-                           STACK *stack) {
+                           NetStack *stack) {
     Recved *recved = &valid_pkt->recved;
 
     unsigned mss_them;

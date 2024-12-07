@@ -102,7 +102,7 @@ static void sctpinit_validate(uint64_t entropy, Recved *recved,
 
 static void sctpinit_handle(unsigned th_idx, uint64_t entropy,
                             ValidPacket *valid_pkt, OutItem *item,
-                            STACK *stack) {
+                            NetStack *stack) {
     if (valid_pkt->repeats) {
         item->no_output = 1;
         return;

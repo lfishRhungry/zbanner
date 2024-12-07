@@ -13,7 +13,7 @@
 
 #include "target-ipaddress.h"
 
-typedef struct TargetRangeSet TargetSet;
+struct TargetRangeSet;
 struct Range;
 struct Range6;
 
@@ -32,7 +32,8 @@ struct Range6;
  * @return
         0 on success, any other number on failure.
  */
-int targetset_parse_file(TargetSet *targetset, const char *filename);
+int targetset_parse_file(struct TargetRangeSet *targetset,
+                         const char            *filename);
 
 enum RangeParseResult {
     Bad_Address,

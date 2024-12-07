@@ -147,7 +147,7 @@ typedef void (*scan_modules_validate)(uint64_t entropy, Recved *recved,
  */
 typedef void (*scan_modules_handle)(unsigned th_idx, uint64_t entropy,
                                     ValidPacket *valid_pkt, OutItem *item,
-                                    STACK *stack);
+                                    NetStack *stack);
 
 /***************************************************************************
  * * callback functions for Polling
