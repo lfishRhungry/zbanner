@@ -1,5 +1,6 @@
 #include "probe-modules.h"
 
+#include "../xconf.h"
 #include "../proto/proto-dns.h"
 #include "../target/target-parse.h"
 #include "../util-data/safe-string.h"

@@ -12,8 +12,7 @@
 #define OUT_RSN_SIZE 30
 #define OUT_CLS_SIZE 30
 
-typedef struct XtateConf XConf;
-
+struct XtateConf;
 struct OutputModule;
 
 typedef enum OutputLevel {
@@ -81,7 +80,8 @@ typedef struct OutputConfig {
 /**
  * Do init for outputing
  */
-typedef bool (*output_modules_init)(const XConf *xconf, const OutConf *out);
+typedef bool (*output_modules_init)(const struct XtateConf *xconf,
+                                    const OutConf          *out);
 
 /**
  * Output one result
@@ -108,7 +108,7 @@ typedef struct OutputModule {
 const char *output_level_to_string(OutLevel level);
 
 /*prepare for outputing results*/
-bool output_init(const XConf *xconf, OutConf *out);
+bool output_init(const struct XtateConf *xconf, OutConf *out);
 
 /**
  * output a result within item and release datachain(report) in it.
@@ -128,7 +128,7 @@ void help_output_module(Output *module);
 Some useful implemented interfaces
 ************************************************************************/
 
-bool output_init_nothing(const XConf *xconf, const OutConf *out);
+bool output_init_nothing(const struct XtateConf *xconf, const OutConf *out);
 
 void output_result_nothing(OutItem *item);
 

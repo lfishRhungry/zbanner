@@ -17,8 +17,7 @@
 #include "../util-misc/configer.h"
 #include "../target/target.h"
 
-typedef struct XtateConf XConf;
-
+struct XtateConf;
 struct source_t;
 
 /**
@@ -44,9 +43,9 @@ struct source_t;
  * setted manually by global conf.
  * @return FALSE to exit process if init failed
  */
-typedef bool (*generate_modules_init)(const XConf *xconf,
-                                      uint64_t    *count_targets,
-                                      uint64_t    *count_endpoints,
+typedef bool (*generate_modules_init)(const struct XtateConf *xconf,
+                                      uint64_t               *count_targets,
+                                      uint64_t               *count_endpoints,
                                       bool *init_ipv4, bool *init_ipv6);
 
 /**
@@ -110,11 +109,11 @@ void list_all_generate_modules();
 void help_generate_module(Generator *module);
 
 /*implemented `generate_modules_init`*/
-bool generate_init_nothing(const XConf *xconf, uint64_t *count_targets,
-                           uint64_t *count_endpoints, bool *init_ipv4,
-                           bool *init_ipv6);
+bool generate_init_nothing(const struct XtateConf *xconf,
+                           uint64_t *count_targets, uint64_t *count_endpoints,
+                           bool *init_ipv4, bool *init_ipv6);
 
 /*implemented `generate_modules_close`*/
-void generate_close_nothing(const XConf *xconf);
+void generate_close_nothing(const struct XtateConf *xconf);
 
 #endif

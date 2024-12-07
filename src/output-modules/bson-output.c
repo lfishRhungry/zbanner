@@ -5,6 +5,7 @@
 
 #include <bson/bson.h>
 
+#include "../xconf.h"
 #include "../version.h"
 #include "../util-misc/misc.h"
 #include "../util-out/logger.h"

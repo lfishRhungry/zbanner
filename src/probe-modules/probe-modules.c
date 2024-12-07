@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "../xconf.h"
 #include "../util-out/xprint.h"
 #include "../util-out/logger.h"
 #include "../util-misc/misc.h"

@@ -5,6 +5,7 @@
 
 #include <mongoc/mongoc.h>
 
+#include "../xconf.h"
 #include "../version.h"
 #include "../globals.h"
 

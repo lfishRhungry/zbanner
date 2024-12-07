@@ -1,5 +1,6 @@
 #include "output-modules.h"
 
+#include "../xconf.h"
 #include "../util-out/logger.h"
 #include "../util-data/safe-string.h"
 #include "../pixie/pixie-file.h"

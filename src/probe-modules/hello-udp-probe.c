@@ -7,6 +7,7 @@
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
 
+#include "../xconf.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
 #include "../util-out/logger.h"

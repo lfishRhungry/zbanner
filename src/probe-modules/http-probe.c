@@ -8,6 +8,7 @@
 #include <pcre2.h>
 #endif
 
+#include "../xconf.h"
 #include "../version.h"
 #include "../proto/proto-http-maker.h"
 #include "../util-data/fine-malloc.h"

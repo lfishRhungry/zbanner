@@ -1,7 +1,7 @@
+#include "scan-modules.h"
+
 #include <stdlib.h>
 
-#include "scan-modules.h"
-#include "../xconf.h"
 #include "../target/target-cookie.h"
 #include "../templ/templ-icmp.h"
 #include "../util-data/safe-string.h"

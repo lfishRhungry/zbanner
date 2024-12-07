@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#include "../../xconf.h"
 #include "../../version.h"
 #include "../../util-data/safe-string.h"
 #include "../../util-data/fine-malloc.h"

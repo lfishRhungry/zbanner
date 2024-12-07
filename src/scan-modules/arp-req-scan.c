@@ -1,7 +1,8 @@
+#include "scan-modules.h"
+
 #include <stdlib.h>
 #include <string.h>
 
-#include "scan-modules.h"
 #include "../xconf.h"
 #include "../templ/templ-arp.h"
 #include "../util-data/safe-string.h"

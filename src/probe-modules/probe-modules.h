@@ -8,6 +8,8 @@
 #include "../proto/proto-datapass.h"
 #include "../output-modules/output-modules.h"
 
+struct XtateConf;
+
 /**
  * FIXME: It should be a value a little less than PKT_BUF_SIZE,
  * but I'm lazy to estimate the actual number.
@@ -24,7 +26,7 @@
  * @param xconf main conf of xtate
  * @return FALSE to exit process if init failed
  */
-typedef bool (*probe_modules_init)(const XConf *xconf);
+typedef bool (*probe_modules_init)(const struct XtateConf *xconf);
 
 /***************************************************************************
  * * callback functions for probe(hello) payload making in Non-STATE type
@@ -273,7 +275,7 @@ Some useful implemented interfaces
 ************************************************************************/
 
 /*implemented `probe_modules_init`*/
-bool probe_init_nothing(const XConf *xconf);
+bool probe_init_nothing(const struct XtateConf *xconf);
 
 size_t probe_make_no_payload(ProbeTarget *target, unsigned char *payload_buf);
 

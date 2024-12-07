@@ -2,6 +2,7 @@
 
 #include <string.h>
 
+#include "../xconf.h"
 #include "../util-misc/misc.h"
 #include "../pixie/pixie-file.h"
 #include "../util-out/logger.h"

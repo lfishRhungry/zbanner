@@ -1,6 +1,8 @@
 #include "output-modules.h"
 
 #include <string.h>
+
+#include "../xconf.h"
 #include "../util-out/logger.h"
 #include "../pixie/pixie-file.h"
 

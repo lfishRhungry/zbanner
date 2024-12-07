@@ -93,7 +93,7 @@ struct source_t {
  * The transmit and receive threads have only a "const" pointer to this
  * structure.
  */
-struct XtateConf {
+typedef struct XtateConf {
     /**
      * Just one network adapters that we'll use for scanning. Adapter
      * should have a set of IP source addresses, except in the case
@@ -274,7 +274,7 @@ struct XtateConf {
 #ifndef NOT_FOUND_PCRE2
     char *nmap_file;
 #endif
-};
+} XConf;
 
 void xconf_command_line(XConf *xconf, int argc, char *argv[]);
 

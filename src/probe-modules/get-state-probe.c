@@ -2,6 +2,7 @@
 
 #include <string.h>
 
+#include "../xconf.h"
 #include "../output-modules/output-modules.h"
 #include "../util-out/logger.h"
 #include "../util-misc/misc.h"

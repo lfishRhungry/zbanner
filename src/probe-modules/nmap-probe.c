@@ -4,6 +4,7 @@
 
 #include <string.h>
 
+#include "../xconf.h"
 #include "../util-out/logger.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"

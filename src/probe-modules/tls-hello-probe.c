@@ -8,6 +8,7 @@
 #include <pcre2.h>
 #endif
 
+#include "../xconf.h"
 #include "../util-data/safe-string.h"
 #include "../util-data/data-convert.h"
 #include "../util-data/fine-malloc.h"

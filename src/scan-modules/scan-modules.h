@@ -18,6 +18,8 @@
 #include "../proto/proto-preprocess.h"
 #include "../probe-modules/probe-modules.h"
 
+struct XtateConf;
+
 #define SM_DFT_DEDUP_TYPE 0
 
 /***************************************************************************
@@ -33,7 +35,7 @@
  * @param xconf main conf of xtate
  * @return false for initing failed and exit process.
  */
-typedef bool (*scan_modules_init)(const XConf *xconf);
+typedef bool (*scan_modules_init)(const struct XtateConf *xconf);
 
 /***************************************************************************
  * * callback functions for Transmit
@@ -234,7 +236,7 @@ Some useful implemented interfaces
 ************************************************************************/
 
 /*implemented `scan_modules_init`*/
-bool scan_init_nothing(const XConf *params);
+bool scan_init_nothing(const struct XtateConf *params);
 
 /*implemented `scan_modules_poll`*/
 void scan_poll_nothing(unsigned th_idx);
