@@ -401,7 +401,7 @@ Recommended compile suites:
 After dependencies installed we can build xtate by CMake with parameters or with given script quickly:
 
 ```
-./build.sh [debug]
+./build.sh [debug] [compiler]
 ```
 
 ## Compile on Windows
