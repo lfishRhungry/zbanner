@@ -1002,6 +1002,10 @@ int main(int argc, char *argv[]) {
             xconf_search_param(xconf->search_param);
             break;
 
+        case Operation_SearchModule:
+            xconf_search_module(xconf->search_module);
+            break;
+
         case Operation_Selftest:
             xconf_selftest();
             break;

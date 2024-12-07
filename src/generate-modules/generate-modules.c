@@ -37,6 +37,21 @@ Generator *get_generate_module_by_name(const char *name) {
     return NULL;
 }
 
+void list_searched_generate_modules(const char *name) {
+    int len = (int)(ARRAY_SIZE(generate_modules_list));
+    int distance;
+    for (int i = 0; i < len; i++) {
+        distance = conf_fuzzy_distance(generate_modules_list[i]->name, name);
+        if (distance < 0) {
+            LOG(LEVEL_ERROR, "(%s) failed to matching.\n", __func__);
+            break;
+        }
+        if (distance <= 2) {
+            printf("    %s\n", generate_modules_list[i]->name);
+        }
+    }
+}
+
 void list_all_generate_modules() {
     int len = (int)ARRAY_SIZE(generate_modules_list);
 

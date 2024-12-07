@@ -67,7 +67,8 @@ enum Operation {
     Operation_PrintIntro,          /* print introduction text of work flow*/
     Operation_PrintVersion,        /* print version and build info*/
     Operation_HelpParam,           /* print help text for specific param*/
-    Operation_SearchParam,         /* print help text for specific param*/
+    Operation_SearchParam,         /* fuzzy searching for specific param*/
+    Operation_SearchModule,        /* fuzzy searching for specific module*/
     Operation_Selftest,            /* do global regression test*/
     Operation_Benchmark,           /* do global benchmark for key units */
 #ifndef NOT_FOUND_BSON
@@ -211,6 +212,7 @@ typedef struct XtateConf {
      */
     char            *help_param;
     char            *search_param;
+    char            *search_module;
     /**
      * other switches
      * */
@@ -313,6 +315,8 @@ void xconf_print_version();
 void xconf_help_param(const char *param);
 
 void xconf_search_param(const char *param);
+
+void xconf_search_module(const char *param);
 
 /**
  * free dynamic string in xconf

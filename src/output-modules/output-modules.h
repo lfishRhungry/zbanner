@@ -120,6 +120,9 @@ void output_close(OutConf *out);
 
 Output *get_output_module_by_name(const char *name);
 
+/*list fuzzy matched modules*/
+void list_searched_output_modules(const char *name);
+
 void list_all_output_modules();
 
 void help_output_module(Output *module);

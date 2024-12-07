@@ -227,6 +227,9 @@ typedef struct ScanModule {
 
 struct ScanModule *get_scan_module_by_name(const char *name);
 
+/*list fuzzy matched modules*/
+void list_searched_scan_modules(const char *name);
+
 void list_all_scan_modules();
 
 void help_scan_module(Scanner *module);

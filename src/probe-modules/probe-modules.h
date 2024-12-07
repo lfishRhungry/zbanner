@@ -266,6 +266,9 @@ const char *get_probe_type_name(const ProbeType type);
 
 int probe_type_to_string(unsigned type, char *string, size_t str_len);
 
+/*list fuzzy matched modules*/
+void list_searched_probe_modules(const char *name);
+
 void list_all_probe_modules();
 
 void help_probe_module(Probe *module);

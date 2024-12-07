@@ -1,4 +1,5 @@
 #include "xconf.h"
+#include "scan-modules/scan-modules.h"
 
 #include <ctype.h>
 #include <limits.h>
@@ -843,6 +844,22 @@ static ConfRes SET_search_param(void *conf, const char *name,
     FREE(xconf->search_param);
     xconf->search_param = STRDUP(value);
     xconf->op           = Operation_SearchParam;
+
+    return Conf_OK;
+}
+
+static ConfRes SET_search_module(void *conf, const char *name,
+                                 const char *value) {
+    XConf *xconf = (XConf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        return 0;
+    }
+
+    FREE(xconf->search_module);
+    xconf->search_module = STRDUP(value);
+    xconf->op            = Operation_SearchModule;
 
     return Conf_OK;
 }
@@ -3147,8 +3164,13 @@ ConfParam config_parameters[] = {
     {"search-parameter",
      SET_search_param,
      Type_ARG,
-     {"search-param", 0},
+     {"search-param", "param-search", 0},
      "Search specified parameter in global configuration by fuzzy matching."},
+    {"search-module",
+     SET_search_module,
+     Type_ARG,
+     {"module-search", 0},
+     "Search specified module by fuzzy matching."},
 #ifndef NOT_FOUND_PCRE2
     {"list-nmap-probes",
      SET_list_nmap_probes,
@@ -4217,6 +4239,22 @@ void xconf_search_param(const char *param) {
     }
 }
 
+void xconf_search_module(const char *module) {
+    if (!module || !module[0]) {
+        LOG(LEVEL_ERROR, "(search module) invalid module name.\n");
+        return;
+    }
+
+    printf("SCAN MODULES:\n");
+    list_searched_scan_modules(module);
+    printf("PROBE MODULES:\n");
+    list_searched_probe_modules(module);
+    printf("OUTPUT MODULES:\n");
+    list_searched_output_modules(module);
+    printf("GENERATE MODULES:\n");
+    list_searched_generate_modules(module);
+}
+
 void xconf_free_str(XConf *xconf) {
     FREE(xconf->ip2asn_v4_filename);
     FREE(xconf->ip2asn_v6_filename);
@@ -4226,6 +4264,7 @@ void xconf_free_str(XConf *xconf) {
     FREE(xconf->exclude_asn_v6);
     FREE(xconf->help_param);
     FREE(xconf->search_param);
+    FREE(xconf->search_module);
 #ifndef NOT_FOUND_BSON
     FREE(xconf->parse_bson_file);
 #endif

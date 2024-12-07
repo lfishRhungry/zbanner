@@ -65,6 +65,21 @@ Output *get_output_module_by_name(const char *name) {
     return NULL;
 }
 
+void list_searched_output_modules(const char *name) {
+    int len = (int)(ARRAY_SIZE(output_modules_list));
+    int distance;
+    for (int i = 0; i < len; i++) {
+        distance = conf_fuzzy_distance(output_modules_list[i]->name, name);
+        if (distance < 0) {
+            LOG(LEVEL_ERROR, "(%s) failed to matching.\n", __func__);
+            break;
+        }
+        if (distance <= 2) {
+            printf("    %s\n", output_modules_list[i]->name);
+        }
+    }
+}
+
 void list_all_output_modules() {
     int len = (int)ARRAY_SIZE(output_modules_list);
 

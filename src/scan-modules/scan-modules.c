@@ -48,6 +48,21 @@ Scanner *get_scan_module_by_name(const char *name) {
     return NULL;
 }
 
+void list_searched_scan_modules(const char *name) {
+    int len = (int)(ARRAY_SIZE(scan_modules_list));
+    int distance;
+    for (int i = 0; i < len; i++) {
+        distance = conf_fuzzy_distance(scan_modules_list[i]->name, name);
+        if (distance < 0) {
+            LOG(LEVEL_ERROR, "(%s) failed to matching.\n", __func__);
+            break;
+        }
+        if (distance <= 2) {
+            printf("    %s\n", scan_modules_list[i]->name);
+        }
+    }
+}
+
 void list_all_scan_modules() {
     int len = (int)(ARRAY_SIZE(scan_modules_list));
 

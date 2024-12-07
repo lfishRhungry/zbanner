@@ -104,6 +104,9 @@ typedef struct GenerateModule {
 
 Generator *get_generate_module_by_name(const char *name);
 
+/*list fuzzy matched modules*/
+void list_searched_generate_modules(const char *name);
+
 void list_all_generate_modules();
 
 void help_generate_module(Generator *module);

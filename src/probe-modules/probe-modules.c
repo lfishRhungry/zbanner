@@ -217,6 +217,21 @@ int probe_type_to_string(unsigned type, char *string, size_t str_len) {
     return ret;
 }
 
+void list_searched_probe_modules(const char *name) {
+    int len = (int)(ARRAY_SIZE(probe_modules_list));
+    int distance;
+    for (int i = 0; i < len; i++) {
+        distance = conf_fuzzy_distance(probe_modules_list[i]->name, name);
+        if (distance < 0) {
+            LOG(LEVEL_ERROR, "(%s) failed to matching.\n", __func__);
+            break;
+        }
+        if (distance <= 2) {
+            printf("    %s\n", probe_modules_list[i]->name);
+        }
+    }
+}
+
 void list_all_probe_modules() {
     int len = (int)ARRAY_SIZE(probe_modules_list);
 
