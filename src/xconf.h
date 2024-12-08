@@ -256,6 +256,7 @@ typedef struct XtateConf {
     unsigned         init_ipv4_adapter    : 1;
     unsigned         init_ipv6_adapter    : 1;
     unsigned         listtargets_in_order : 1;
+    unsigned         interactive_setting  : 1;
 
     /**
      * parse BSON file
@@ -284,7 +285,7 @@ typedef struct XtateConf {
 
 void xconf_command_line(XConf *xconf, int argc, char *argv[]);
 
-void xconf_save_state(XConf *xconf);
+void xconf_save_conf(XConf *xconf);
 
 /**
  * Pre-scan the command-line looking for options that may affect how
@@ -317,6 +318,11 @@ void xconf_help_param(const char *param);
 void xconf_search_param(const char *param);
 
 void xconf_search_module(const char *param);
+
+/**
+ * setting params in a readline-style interactive way.
+ */
+void xconf_interactive_readline(XConf *xconf);
 
 /**
  * free dynamic string in xconf

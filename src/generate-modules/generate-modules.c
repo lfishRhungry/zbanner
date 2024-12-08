@@ -47,38 +47,26 @@ void list_searched_generate_modules(const char *name) {
             break;
         }
         if (distance <= 2) {
-            printf("    %s\n", generate_modules_list[i]->name);
+            printf("    %s -> %s\n", generate_modules_list[i]->name,
+                   generate_modules_list[i]->short_desc
+                       ? generate_modules_list[i]->short_desc
+                       : generate_modules_list[i]->desc);
         }
     }
 }
 
 void list_all_generate_modules() {
-    int len = (int)ARRAY_SIZE(generate_modules_list);
+    int len = (int)(ARRAY_SIZE(generate_modules_list));
 
-    printf("\n");
-    printf(XPRINT_STAR_LINE);
-    printf("\n");
-    printf("      Now contains [%d] GenerateModules\n", len);
-    printf(XPRINT_STAR_LINE);
-    printf("\n");
     printf("\n");
 
     for (int i = 0; i < len; i++) {
-        printf(XPRINT_DASH_LINE);
-        printf("\n");
-        printf("\n");
-        printf("  GenerateModule Name: %s\n", generate_modules_list[i]->name);
-        printf("  Description:\n");
-        xprint(generate_modules_list[i]->short_desc
-                   ? generate_modules_list[i]->short_desc
-                   : generate_modules_list[i]->desc,
-               6, 80);
-        printf("\n");
+        printf("  %d.%s\n", i + 1, generate_modules_list[i]->name);
+        printf("    %s\n", generate_modules_list[i]->short_desc
+                               ? generate_modules_list[i]->short_desc
+                               : generate_modules_list[i]->desc);
         printf("\n");
     }
-    printf(XPRINT_DASH_LINE);
-    printf("\n");
-    printf("\n");
 }
 
 void help_generate_module(Generator *module) {

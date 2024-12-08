@@ -227,38 +227,26 @@ void list_searched_probe_modules(const char *name) {
             break;
         }
         if (distance <= 2) {
-            printf("    %s\n", probe_modules_list[i]->name);
+            printf("    %s -> %s\n", probe_modules_list[i]->name,
+                   probe_modules_list[i]->short_desc
+                       ? probe_modules_list[i]->short_desc
+                       : probe_modules_list[i]->desc);
         }
     }
 }
 
 void list_all_probe_modules() {
-    int len = (int)ARRAY_SIZE(probe_modules_list);
+    int len = (int)(ARRAY_SIZE(probe_modules_list));
 
-    printf("\n");
-    printf(XPRINT_STAR_LINE);
-    printf("\n");
-    printf("      Now contains [%d] ProbeModules\n", len);
-    printf(XPRINT_STAR_LINE);
-    printf("\n");
     printf("\n");
 
     for (int i = 0; i < len; i++) {
-        printf(XPRINT_DASH_LINE);
-        printf("\n");
-        printf("\n");
-        printf("  ProbeModule Name: %s\n", probe_modules_list[i]->name);
-        printf("  Description:\n");
-        xprint(probe_modules_list[i]->short_desc
-                   ? probe_modules_list[i]->short_desc
-                   : probe_modules_list[i]->desc,
-               6, 80);
-        printf("\n");
+        printf("  %d.%s\n", i + 1, probe_modules_list[i]->name);
+        printf("    %s\n", probe_modules_list[i]->short_desc
+                               ? probe_modules_list[i]->short_desc
+                               : probe_modules_list[i]->desc);
         printf("\n");
     }
-    printf(XPRINT_DASH_LINE);
-    printf("\n");
-    printf("\n");
 }
 
 void help_probe_module(Probe *module) {

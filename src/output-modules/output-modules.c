@@ -75,38 +75,26 @@ void list_searched_output_modules(const char *name) {
             break;
         }
         if (distance <= 2) {
-            printf("    %s\n", output_modules_list[i]->name);
+            printf("    %s -> %s\n", output_modules_list[i]->name,
+                   output_modules_list[i]->short_desc
+                       ? output_modules_list[i]->short_desc
+                       : output_modules_list[i]->desc);
         }
     }
 }
 
 void list_all_output_modules() {
-    int len = (int)ARRAY_SIZE(output_modules_list);
+    int len = (int)(ARRAY_SIZE(output_modules_list));
 
-    printf("\n");
-    printf(XPRINT_STAR_LINE);
-    printf("\n");
-    printf("      Now contains [%d] OutputModules\n", len);
-    printf(XPRINT_STAR_LINE);
-    printf("\n");
     printf("\n");
 
     for (int i = 0; i < len; i++) {
-        printf(XPRINT_DASH_LINE);
-        printf("\n");
-        printf("\n");
-        printf("  Name of OutputModule: %s\n", output_modules_list[i]->name);
-        printf("  Description:\n");
-        xprint(output_modules_list[i]->short_desc
-                   ? output_modules_list[i]->short_desc
-                   : output_modules_list[i]->desc,
-               6, 80);
-        printf("\n");
+        printf("  %d.%s\n", i + 1, output_modules_list[i]->name);
+        printf("    %s\n", output_modules_list[i]->short_desc
+                               ? output_modules_list[i]->short_desc
+                               : output_modules_list[i]->desc);
         printf("\n");
     }
-    printf(XPRINT_DASH_LINE);
-    printf("\n");
-    printf("\n");
 }
 
 void help_output_module(Output *module) {
@@ -387,7 +375,7 @@ void output_result(const OutConf *out, OutItem *item) {
         pixie_acquire_mutex(out->module_mutex);
         out->output_module->result_cb(item);
         pixie_release_mutex(out->module_mutex);
-        if (out->is_interactive) {
+        if (out->is_out_screen) {
             pixie_acquire_mutex(out->stdout_mutex);
             output_result_to_stdout(item);
             pixie_release_mutex(out->stdout_mutex);

@@ -3,6 +3,8 @@
 
 #include <ctype.h>
 #include <limits.h>
+#include <stdio.h>
+#include <string.h>
 
 #ifndef NOT_FOUND_OPENSSL
 #include <openssl/opensslv.h>
@@ -26,8 +28,12 @@
 #endif
 
 #include "version.h"
+#include "dedup/dedup.h"
 #include "smack/smack.h"
 #include "nmap/nmap-service.h"
+#include "pixie/pixie-timer.h"
+#include "crossline/crossline.h"
+#include "proto/proto-http-maker.h"
 
 #include "templ/templ-init.h"
 #include "templ/templ-opts.h"
@@ -38,7 +44,6 @@
 #include "crypto/crypto-siphash24.h"
 #include "crypto/crypto-lcg.h"
 
-#include "dedup/dedup.h"
 #include "util-scan/rst-filter.h"
 #include "util-data/safe-string.h"
 #include "util-data/fine-malloc.h"
@@ -54,13 +59,11 @@
 #include "target/target-parse.h"
 #include "target/target-rangeport.h"
 
-#include "proto/proto-http-maker.h"
-
-#include "pixie/pixie-timer.h"
-
 #ifdef WIN32
 #include <direct.h>
-#define getcwd _getcwd
+#define getcwd      _getcwd
+#define strcasecmp  _stricmp
+#define strncasecmp _strnicmp
 #else
 #include <unistd.h>
 #endif
@@ -308,27 +311,42 @@ static const unsigned short top_tcp_ports[] = {
     58080, 60020, 60443, 61532, 61900, 62078, 63331, 64623, 64680, 65000, 65129,
     65389};
 
-/***************************************************************************
- ***************************************************************************/
-void xconf_save_state(XConf *xconf) {
-    char  filename[512];
-    FILE *fp;
+/**
+ * set a parameter by "key=value" string style
+ * @return zero if successed, -1 if error, 1 if comments
+ */
+static int _set_parameter_in_key_value(XConf *xconf, char *line, size_t len) {
+    char *name;
+    char *value;
 
-    safe_strcpy(filename, sizeof(filename), "paused.conf");
-    LOG(LEVEL_OUT, "                                   "
-                   "                                   \r");
-    LOG(LEVEL_HINT, "saving resume file to: %s\n", filename);
+    trim(line, len);
 
-    fp = fopen(filename, "wt");
-    if (fp == NULL) {
-        LOG(LEVEL_ERROR, "saving resume file\n");
-        LOG(LEVEL_ERROR, "%s: %s\n", filename, strerror(errno));
-        return;
+    /*filter out comments*/
+    if (ispunct(line[0] & 0xFF) || line[0] == '\0')
+        return 1;
+
+    name  = line;
+    value = strchr(line, '=');
+    if (value == NULL)
+        return -1;
+    *value = '\0';
+    value++;
+    trim(name, len);
+
+    /*
+     * For value, must consider wrapper of double quotes or single quotes.
+     * In other word, we don't need to wrap with quotes while echoing.
+     * */
+    trim(value, len);
+    if (value[0] == '"') {
+        trim_char(value, len, '"');
+        trim(value, len);
+    } else if (value[0] == '\'') {
+        trim_char(value, len, '\'');
+        trim(value, len);
     }
 
-    xconf_echo(xconf, fp);
-
-    fclose(fp);
+    return xconf_set_parameter(xconf, name, value);
 }
 
 static ConfRes SET_scan_module(void *conf, const char *name,
@@ -1917,45 +1935,15 @@ static ConfRes SET_read_conf(void *conf, const char *name, const char *value) {
     }
 
     while (fgets(line, 65535, fp)) {
-        char *name;
-        char *value;
-
-        trim(line, 65535);
-
-        /*filter out comments*/
-        if (ispunct(line[0] & 0xFF) || line[0] == '\0')
-            continue;
-
-        name  = line;
-        value = strchr(line, '=');
-        if (value == NULL)
-            continue;
-        *value = '\0';
-        value++;
-        trim(name, 65535);
-
-        /*
-         * For value, must consider wrapper of double quotes or single quotes.
-         * In other word, we don't need to wrap with quotes while echoing.
-         * */
-        trim(value, 65535);
-        if (value[0] == '"') {
-            trim_char(value, 65535, '"');
-            trim(value, 65535);
-        } else if (value[0] == '\'') {
-            trim_char(value, 65535, '\'');
-            trim(value, 65535);
-        }
-
-        err = xconf_set_parameter(xconf, name, value);
-        if (err)
+        err = _set_parameter_in_key_value(xconf, line, 65535);
+        if (err == -1)
             break;
     }
 
     fclose(fp);
     FREE(line);
 
-    if (err)
+    if (err == -1)
         return Conf_ERR;
 
     return Conf_OK;
@@ -2019,18 +2007,32 @@ static ConfRes SET_append(void *conf, const char *name, const char *value) {
     return Conf_OK;
 }
 
-static ConfRes SET_interactive(void *conf, const char *name,
-                               const char *value) {
+static ConfRes SET_out_screen(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->out_conf.is_interactive || xconf->echo_all)
-            fprintf(xconf->echo, "interactive = %s\n",
-                    xconf->out_conf.is_interactive ? "true" : "false");
+        if (xconf->out_conf.is_out_screen || xconf->echo_all)
+            fprintf(xconf->echo, "output-screen = %s\n",
+                    xconf->out_conf.is_out_screen ? "true" : "false");
         return 0;
     }
-    xconf->out_conf.is_interactive = conf_parse_bool(value);
+    xconf->out_conf.is_out_screen = conf_parse_bool(value);
+    return Conf_OK;
+}
+
+static ConfRes SET_interactive_setting(void *conf, const char *name,
+                                       const char *value) {
+    XConf *xconf = (XConf *)conf;
+    UNUSEDPARM(name);
+
+    if (xconf->echo) {
+        if (xconf->interactive_setting || xconf->echo_all)
+            fprintf(xconf->echo, "interactive-setting = %s\n",
+                    xconf->interactive_setting ? "true" : "false");
+        return 0;
+    }
+    xconf->interactive_setting = conf_parse_bool(value);
     return Conf_OK;
 }
 
@@ -2876,6 +2878,12 @@ ConfParam config_parameters[] = {
      "Level 1: print INFO logs in addition to level 0.\n"
      "Level 2: print DEBUG logs in addition to level 1.\n"
      "Level 3: print DETAIL logs in addition to level 2."},
+    {"interactive-setting",
+     SET_interactive_setting,
+     Type_FLAG,
+     {"interactive", "interact", 0},
+     "Start " XTATE_NAME_TITLE_CASE
+     " in a mode which can set parameters interactively."},
     {"version",
      SET_version,
      Type_FLAG,
@@ -3295,7 +3303,7 @@ ConfParam config_parameters[] = {
      " is non-essential because " XTATE_NAME_TITLE_CASE " output results to "
      "stdout in default.\n"
      "NOTE: " XTATE_NAME_TITLE_CASE " won't output to stdout if we specified "
-     "an OutputModule unless we use `--interactive` switch."},
+     "an OutputModule unless we use `--screen` switch."},
     {"list-output-modules",
      SET_list_output_modules,
      Type_FLAG,
@@ -3320,7 +3328,7 @@ ConfParam config_parameters[] = {
      "\"file\" name can be variable for different OutputModule. (e.g. It can "
      "be a database connecting string)\n"
      "NOTE: For some OutputModules, we can use `-o -` to let them output to "
-     "stdout. But we should be care of the conflict while using the `-interact`"
+     "stdout. But we should be care of the conflict while using the `-screen`"
      " flag."},
     {"append-output",
      SET_append,
@@ -3329,7 +3337,7 @@ ConfParam config_parameters[] = {
      "Causes output to append mode, rather than overwriting. Performance of "
      "OutputModules can be different for this flag."},
     {"output-screen",
-     SET_interactive,
+     SET_out_screen,
      Type_FLAG,
      {"out-screen", 0},
      "Also print the results to screen while specifying an OutputModule."},
@@ -3759,6 +3767,29 @@ void xconf_echo(XConf *xconf, FILE *fp) {
 
     xconf->echo     = 0;
     xconf->echo_all = 0;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+void xconf_save_conf(XConf *xconf) {
+    char  filename[512];
+    FILE *fp;
+
+    safe_strcpy(filename, sizeof(filename), "paused.conf");
+    LOG(LEVEL_OUT, "                                   "
+                   "                                   \r");
+    LOG(LEVEL_HINT, "saving resume file to: %s\n", filename);
+
+    fp = fopen(filename, "wt");
+    if (fp == NULL) {
+        LOG(LEVEL_ERROR, "saving resume file\n");
+        LOG(LEVEL_ERROR, "%s: %s\n", filename, strerror(errno));
+        return;
+    }
+
+    xconf_echo(xconf, fp);
+
+    fclose(fp);
 }
 
 /***************************************************************************
@@ -4253,6 +4284,35 @@ void xconf_search_module(const char *module) {
     list_searched_output_modules(module);
     printf("GENERATE MODULES:\n");
     list_searched_generate_modules(module);
+}
+
+void xconf_interactive_readline(XConf *xconf) {
+    int   err;
+    char *line = MALLOC(65535 * sizeof(char));
+
+    crossline_prompt_color_set(CROSSLINE_FGCOLOR_BRIGHT |
+                               CROSSLINE_FGCOLOR_CYAN);
+
+    while (NULL != crossline_readline(XTATE_NAME_ALL_CAPS "> ", line, 65535)) {
+
+        if (conf_equals("execute", line) || conf_equals("run", line)) {
+            break;
+        } else if (conf_equals("exit", line)) {
+            LOG(LEVEL_HINT, "(" XTATE_NAME ") See you next time, bye~\n");
+            exit(0);
+        }
+
+        err = _set_parameter_in_key_value(xconf, line, 65535);
+        if (err == -1) {
+            LOG(LEVEL_ERROR, "(interact) failed to set the param.\n");
+        } else if (err == 1) {
+            LOG(LEVEL_HINT, "(interact) input was a comments.\n");
+        } else {
+            LOG(LEVEL_HINT, "(interact) set param successfully.\n");
+        }
+    }
+
+    FREE(line);
 }
 
 void xconf_free_str(XConf *xconf) {

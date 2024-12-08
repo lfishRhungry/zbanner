@@ -22,6 +22,7 @@ Probe LzrWaitProbe = {
     .multi_mode = Multi_Null,
     .multi_num  = 1,
     .params     = NULL,
+    .short_desc = "LzrWait Probe sends nothing and identifies no service.",
     .desc = "LzrWait Probe sends nothing and identifies no service. It is the "
             "default subprobe of LzrProbe to help other subprobes to match "
             "services.",

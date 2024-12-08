@@ -608,7 +608,7 @@ static int _main_scan(XConf *xconf) {
     if (status_item.cur_count < scan_range && !xconf->is_infinite &&
         !xconf->is_noresume) {
         xconf->resume.index = status_item.cur_count;
-        xconf_save_state(xconf);
+        xconf_save_conf(xconf);
     }
 
     /*
@@ -797,9 +797,6 @@ int main(int argc, char *argv[]) {
     }
 #endif
 
-    _usec_start = pixie_gettime();
-    _update_global_time();
-
     /* Set system to report debug information on crash */
     int is_backtrace = 1;
     for (unsigned i = 1; i < (unsigned)argc; i++) {
@@ -836,6 +833,10 @@ int main(int argc, char *argv[]) {
 
     //=================================================read conf from args
     xconf_command_line(xconf, argc, argv);
+
+    if (xconf->interactive_setting) {
+        xconf_interactive_readline(xconf);
+    }
 
     /* logger should be prepared early */
     LOG_set_ansi(xconf->is_no_ansi);
@@ -916,6 +917,12 @@ int main(int argc, char *argv[]) {
      * directly.
      * */
     targetset_optimize(&xconf->targets);
+
+    /**
+     * Begin to update time
+     */
+    _usec_start = pixie_gettime();
+    _update_global_time();
 
     switch (xconf->op) {
         case Operation_Default:

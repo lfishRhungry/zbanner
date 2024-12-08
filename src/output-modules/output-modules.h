@@ -13,7 +13,9 @@
 #define OUT_CLS_SIZE 30
 
 struct XtateConf;
-struct OutputModule;
+
+typedef struct OutputModule Output;
+typedef struct OutputConfig OutConf;
 
 typedef enum OutputLevel {
     OUT_INFO    = 0,
@@ -56,26 +58,26 @@ typedef struct OutputItem {
     unsigned  no_port   : 1;
 } OutItem;
 
-typedef struct OutputConfig {
-    struct OutputModule *output_module;
-    char                *output_args;
-    char                 output_filename[256];
-    uint64_t             total_successed;
-    uint64_t             total_failed;
-    uint64_t             total_info;
-    void                *succ_mutex;
-    void                *fail_mutex;
-    void                *info_mutex;
-    void                *module_mutex;
-    void                *stdout_mutex;
-    struct AS_Query     *as_query;
-    unsigned             output_as_info  : 1;
-    unsigned             is_append       : 1;
-    unsigned             is_interactive  : 1;
-    unsigned             is_show_failed  : 1;
-    unsigned             is_show_info    : 1;
-    unsigned             no_show_success : 1;
-} OutConf;
+struct OutputConfig {
+    Output          *output_module;
+    char            *output_args;
+    char             output_filename[256];
+    uint64_t         total_successed;
+    uint64_t         total_failed;
+    uint64_t         total_info;
+    void            *succ_mutex;
+    void            *fail_mutex;
+    void            *info_mutex;
+    void            *module_mutex;
+    void            *stdout_mutex;
+    struct AS_Query *as_query;
+    unsigned         output_as_info  : 1;
+    unsigned         is_append       : 1;
+    unsigned         is_out_screen   : 1;
+    unsigned         is_show_failed  : 1;
+    unsigned         is_show_info    : 1;
+    unsigned         no_show_success : 1;
+};
 
 /**
  * Do init for outputing
@@ -93,7 +95,7 @@ typedef void (*output_modules_result)(OutItem *item);
  */
 typedef void (*output_modules_close)(const OutConf *out);
 
-typedef struct OutputModule {
+struct OutputModule {
     const char *name;
     const char *short_desc; /*an optional short description*/
     const char *desc;
@@ -103,7 +105,7 @@ typedef struct OutputModule {
     output_modules_init   init_cb;
     output_modules_result result_cb;
     output_modules_close  close_cb;
-} Output;
+};
 
 const char *output_level_to_string(OutLevel level);
 
