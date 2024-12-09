@@ -10,7 +10,7 @@ extern Probe LzrFixProbe;
 static unsigned lzr_fix_handle_response(unsigned th_idx, ProbeTarget *target,
                                         const unsigned char *px,
                                         unsigned sizeof_px, OutItem *item) {
-    if (bytes_equals(px, sizeof_px, "8=FIX", strlen("8=FIX"))) {
+    if (safe_bytes_equals(px, sizeof_px, "8=FIX", strlen("8=FIX"))) {
         item->level = OUT_SUCCESS;
         safe_strcpy(item->classification, OUT_CLS_SIZE, "fix");
         safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");

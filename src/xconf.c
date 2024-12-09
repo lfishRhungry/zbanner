@@ -3,6 +3,7 @@
 
 #include <ctype.h>
 #include <limits.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -313,13 +314,14 @@ static const unsigned short top_tcp_ports[] = {
 
 /**
  * set a parameter by "key=value" string style
- * @return zero if successed, -1 if error, 1 if comments
+ * @return zero if successed, -1 if setting error, 1 if comments, 2 if invalid
+ * format.
  */
-static int _set_parameter_in_key_value(XConf *xconf, char *line, size_t len) {
+static int _set_parameter_in_kv(XConf *xconf, char *line, size_t len) {
     char *name;
     char *value;
 
-    trim(line, len);
+    safe_trim(line, len);
 
     /*filter out comments*/
     if (ispunct(line[0] & 0xFF) || line[0] == '\0')
@@ -328,22 +330,22 @@ static int _set_parameter_in_key_value(XConf *xconf, char *line, size_t len) {
     name  = line;
     value = strchr(line, '=');
     if (value == NULL)
-        return -1;
+        return 2;
     *value = '\0';
     value++;
-    trim(name, len);
+    safe_trim(name, len);
 
     /*
      * For value, must consider wrapper of double quotes or single quotes.
      * In other word, we don't need to wrap with quotes while echoing.
      * */
-    trim(value, len);
+    safe_trim(value, len);
     if (value[0] == '"') {
-        trim_char(value, len, '"');
-        trim(value, len);
+        safe_trim_char(value, len, '"');
+        safe_trim(value, len);
     } else if (value[0] == '\'') {
-        trim_char(value, len, '\'');
-        trim(value, len);
+        safe_trim_char(value, len, '\'');
+        safe_trim(value, len);
     }
 
     return xconf_set_parameter(xconf, name, value);
@@ -1517,6 +1519,12 @@ static ConfRes SET_target_ip(void *conf, const char *name, const char *value) {
         return 0;
     }
 
+    rangelist_rm_all(&xconf->targets.ipv4);
+    range6list_rm_all(&xconf->targets.ipv6);
+    xconf->targets.count_ipv4s    = 0;
+    xconf->targets.count_ipv6s.hi = 0;
+    xconf->targets.count_ipv6s.lo = 0;
+
     int err;
     err = targetset_add_ip_str(&xconf->targets, value);
     if (err) {
@@ -1642,6 +1650,9 @@ static ConfRes SET_port_them(void *conf, const char *name, const char *value) {
         return 0;
     }
 
+    rangelist_rm_all(&xconf->targets.ports);
+    xconf->targets.count_ports = 0;
+
     unsigned is_error = 0;
 
     rangelist_parse_ports(&xconf->targets.ports, value, &is_error, 0);
@@ -1699,6 +1710,12 @@ static ConfRes SET_exclude_ip(void *conf, const char *name, const char *value) {
         return 0;
     }
 
+    rangelist_rm_all(&xconf->exclude.ipv4);
+    range6list_rm_all(&xconf->exclude.ipv6);
+    xconf->exclude.count_ipv4s    = 0;
+    xconf->exclude.count_ipv6s.hi = 0;
+    xconf->exclude.count_ipv6s.lo = 0;
+
     int err;
     err = targetset_add_ip_str(&xconf->exclude, value);
     if (err) {
@@ -1719,6 +1736,10 @@ static ConfRes SET_exclude_port(void *conf, const char *name,
         /*echo in SET_target_output*/
         return 0;
     }
+
+    rangelist_rm_all(&xconf->exclude.ports);
+    xconf->exclude.count_ports = 0;
+
     unsigned defaultrange = 0;
     int      err;
 
@@ -1742,12 +1763,25 @@ static ConfRes SET_include_file(void *conf, const char *name,
         return 0;
     }
 
+    rangelist_rm_all(&xconf->targets.ipv4);
+    range6list_rm_all(&xconf->targets.ipv6);
+    xconf->targets.count_ipv4s    = 0;
+    xconf->targets.count_ipv6s.hi = 0;
+    xconf->targets.count_ipv6s.lo = 0;
+
     int         err;
     const char *filename = value;
 
     err = targetset_parse_file(&xconf->targets, filename);
     if (err) {
         LOG(LEVEL_ERROR, "reading from include file\n");
+
+        rangelist_rm_all(&xconf->targets.ipv4);
+        range6list_rm_all(&xconf->targets.ipv6);
+        xconf->targets.count_ipv4s    = 0;
+        xconf->targets.count_ipv6s.hi = 0;
+        xconf->targets.count_ipv6s.lo = 0;
+
         return Conf_ERR;
     }
     if (xconf->op == Operation_Default)
@@ -1764,6 +1798,12 @@ static ConfRes SET_exclude_file(void *conf, const char *name,
         return 0;
     }
 
+    rangelist_rm_all(&xconf->exclude.ipv4);
+    range6list_rm_all(&xconf->exclude.ipv6);
+    xconf->exclude.count_ipv4s    = 0;
+    xconf->exclude.count_ipv6s.hi = 0;
+    xconf->exclude.count_ipv6s.lo = 0;
+
     unsigned    count1 = xconf->exclude.ipv4.list_len;
     unsigned    count2;
     int         err;
@@ -1773,6 +1813,13 @@ static ConfRes SET_exclude_file(void *conf, const char *name,
     err = targetset_parse_file(&xconf->exclude, filename);
     if (err) {
         LOG(LEVEL_ERROR, "fail reading from exclude file\n");
+
+        rangelist_rm_all(&xconf->exclude.ipv4);
+        range6list_rm_all(&xconf->exclude.ipv6);
+        xconf->exclude.count_ipv4s    = 0;
+        xconf->exclude.count_ipv6s.hi = 0;
+        xconf->exclude.count_ipv6s.lo = 0;
+
         return Conf_ERR;
     }
     /* Detect if this file has made any change, otherwise don't print
@@ -1935,9 +1982,11 @@ static ConfRes SET_read_conf(void *conf, const char *name, const char *value) {
     }
 
     while (fgets(line, 65535, fp)) {
-        err = _set_parameter_in_key_value(xconf, line, 65535);
+        err = _set_parameter_in_kv(xconf, line, 65535);
         if (err == -1)
             break;
+        else if (err == 2)
+            LOG(LEVEL_WARN, "invalid param conf format: %s.\n", line);
     }
 
     fclose(fp);
@@ -2027,11 +2076,9 @@ static ConfRes SET_interactive_setting(void *conf, const char *name,
     UNUSEDPARM(name);
 
     if (xconf->echo) {
-        if (xconf->interactive_setting || xconf->echo_all)
-            fprintf(xconf->echo, "interactive-setting = %s\n",
-                    xconf->interactive_setting ? "true" : "false");
         return 0;
     }
+
     xconf->interactive_setting = conf_parse_bool(value);
     return Conf_OK;
 }
@@ -3303,7 +3350,7 @@ ConfParam config_parameters[] = {
      " is non-essential because " XTATE_NAME_TITLE_CASE " output results to "
      "stdout in default.\n"
      "NOTE: " XTATE_NAME_TITLE_CASE " won't output to stdout if we specified "
-     "an OutputModule unless we use `--screen` switch."},
+     "an OutputModule unless we use `-out-screen` switch."},
     {"list-output-modules",
      SET_list_output_modules,
      Type_FLAG,
@@ -3328,7 +3375,8 @@ ConfParam config_parameters[] = {
      "\"file\" name can be variable for different OutputModule. (e.g. It can "
      "be a database connecting string)\n"
      "NOTE: For some OutputModules, we can use `-o -` to let them output to "
-     "stdout. But we should be care of the conflict while using the `-screen`"
+     "stdout. But we should be care of the conflict while using the "
+     "`-out-screen`"
      " flag."},
     {"append-output",
      SET_append,
@@ -4295,18 +4343,57 @@ void xconf_interactive_readline(XConf *xconf) {
 
     while (NULL != crossline_readline(XTATE_NAME_ALL_CAPS "> ", line, 65535)) {
 
-        if (conf_equals("execute", line) || conf_equals("run", line)) {
+        safe_trim(line, 65535);
+
+        if (!strcasecmp("execute", line) || !strcasecmp("run", line) ||
+            !strcasecmp("r", line)) {
             break;
-        } else if (conf_equals("exit", line)) {
-            LOG(LEVEL_HINT, "(" XTATE_NAME ") See you next time, bye~\n");
-            exit(0);
+        } else if (!strcasecmp("exit", line) || !strcasecmp("quit", line) ||
+                   !strcasecmp("q", line) || !strcasecmp("e", line)) {
+            printf("Are you sure to exit " XTATE_NAME "? [y/N]: ");
+            if (NULL == fgets(line, 65535, stdin)) {
+                LOG(LEVEL_ERROR, "(interact) faile input.\n");
+                exit(1);
+            }
+            if (line[0] == 'y' || line[0] == 'Y') {
+                LOG(LEVEL_HINT, "(" XTATE_NAME ") See you next time, bye~\n");
+                exit(0);
+            }
+            continue;
+        } else if (!strcasecmp("clear", line)) {
+            printf("Are you sure to clear configuration of " XTATE_NAME
+                   "? [y/N]: ");
+            if (NULL == fgets(line, 65535, stdin)) {
+                LOG(LEVEL_ERROR, "(interact) faile input.\n");
+                exit(1);
+            }
+            if (line[0] == 'y' || line[0] == 'Y') {
+                xconf_global_refresh(xconf);
+                LOG(LEVEL_HINT, "(interact) configuration cleared!\n");
+            }
+            continue;
+        } else if (!strcasecmp("version", line)) {
+            xconf_print_version();
+            continue;
+        } else if (!strcasecmp("echo", line)) {
+            xconf_echo(xconf, stdout);
+            continue;
+        } else if (!strcasecmp("help", line) || !strcasecmp("h", line)) {
+            printf("Interactive Setting Mode Usage:\n");
+            continue;
         }
 
-        err = _set_parameter_in_key_value(xconf, line, 65535);
+        err = _set_parameter_in_kv(xconf, line, 65535);
         if (err == -1) {
             LOG(LEVEL_ERROR, "(interact) failed to set the param.\n");
         } else if (err == 1) {
-            LOG(LEVEL_HINT, "(interact) input was a comments.\n");
+            LOG(LEVEL_HINT,
+                "(interact) input was not a command or param conf.\n");
+        } else if (err == 2) {
+            LOG(LEVEL_HINT,
+                "(interact) invalid command or param conf format.\n");
+            LOG(LEVEL_HINT,
+                "(interact) please set param in \"key = value\" format.\n");
         } else {
             LOG(LEVEL_HINT, "(interact) set param successfully.\n");
         }
@@ -4315,7 +4402,28 @@ void xconf_interactive_readline(XConf *xconf) {
     FREE(line);
 }
 
-void xconf_free_str(XConf *xconf) {
+void xconf_global_refresh(XConf *xconf) {
+    uint64_t seed = xconf->seed;
+
+    /**
+     * Clear by provided func
+     */
+    if (xconf->nic.adapter)
+        rawsock_close_adapter(xconf->nic.adapter);
+    targetset_rm_all(&xconf->targets);
+    targetset_rm_all(&xconf->exclude);
+    as_query_destroy(xconf->as_query);
+    if (xconf->echo && xconf->echo != stdout)
+        fclose(xconf->echo);
+
+    /**
+     * Free dynamic memory
+     */
+    FREE(xconf->probe_args);
+    FREE(xconf->scanner_args);
+    FREE(xconf->generator_args);
+    FREE(xconf->out_conf.output_args);
+    FREE(xconf->as_query);
     FREE(xconf->ip2asn_v4_filename);
     FREE(xconf->ip2asn_v6_filename);
     FREE(xconf->target_asn_v4);
@@ -4339,6 +4447,33 @@ void xconf_free_str(XConf *xconf) {
 #ifndef NOT_FOUND_PCRE2
     FREE(xconf->nmap_file);
 #endif
+
+    /**
+     * Clear static memory
+     */
+    memset(xconf, 0, sizeof(XConf));
+
+    /**
+     * Set param in default
+     */
+    xconf->seed               = seed;
+    xconf->tx_thread_count    = XCONF_DFT_TX_THD_COUNT;
+    xconf->rx_handler_count   = XCONF_DFT_RX_HDL_COUNT;
+    xconf->stack_buf_count    = XCONF_DFT_STACK_BUF_COUNT;
+    xconf->dispatch_buf_count = XCONF_DFT_DISPATCH_BUF_COUNT;
+    xconf->max_rate           = XCONF_DFT_MAX_RATE;
+    xconf->dedup_win          = XCONF_DFT_DEDUP_WIN;
+    xconf->shard.one          = XCONF_DFT_SHARD_ONE;
+    xconf->shard.of           = XCONF_DFT_SHARD_OF;
+    xconf->wait               = XCONF_DFT_WAIT;
+    xconf->nic.snaplen        = XCONF_DFT_SNAPLEN;
+    xconf->max_packet_len     = XCONF_DFT_MAX_PKT_LEN;
+    xconf->packet_ttl         = XCONF_DFT_PACKET_TTL;
+    xconf->tcp_init_window    = XCONF_DFT_TCP_SYN_WINSIZE;
+    xconf->tcp_window         = XCONF_DFT_TCP_OTHER_WINSIZE;
+    xconf->sendmmsg_batch     = XCONF_DFT_SENDMMSG_BATCH;
+    xconf->sendmmsg_retries   = XCONF_DFT_SENDMMSG_RETRIES;
+    xconf->sendq_size         = XCONF_DFT_SENDQUEUE_SIZE;
 }
 
 void xconf_benchmark(unsigned blackrock_rounds) {
@@ -4353,7 +4488,7 @@ void xconf_benchmark(unsigned blackrock_rounds) {
 static int xconf_self_selftest() {
     char test[] = " test 1 ";
 
-    trim(test, sizeof(test));
+    safe_trim(test, sizeof(test));
     if (strcmp(test, "test 1") != 0) {
         goto failure;
     }

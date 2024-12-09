@@ -97,6 +97,7 @@ static int (*null_PCAP_LOOKUPNET)(const char *device, uint32_t *netp,
 static int (*null_PCAP_COMPILE)(pcap_t *p, struct bpf_program *fp,
                                 const char *str, int optimize,
                                 uint32_t netmask);
+static void (*null_PCAP_FREECODE)(struct bpf_program *fp);
 static int (*null_PCAP_SETFILTER)(pcap_t *p, struct bpf_program *fp);
 static int (*null_PCAP_SETNONBLOCK)(pcap_t *p, int nonblock, char *errbuf);
 #else
@@ -119,8 +120,9 @@ static int null_PCAP_COMPILE(pcap_t *p, struct bpf_program *fp, const char *str,
                              int optimize, uint32_t netmask) {
     return 0;
 }
-static int null_PCAP_SETFILTER(pcap_t *p, struct bpf_program *fp) { return 0; }
-static int null_PCAP_SETNONBLOCK(pcap_t *p, int nonblock, char *errbuf) {
+static void null_PCAP_FREECODE(struct bpf_program *fp) { return; }
+static int  null_PCAP_SETFILTER(pcap_t *p, struct bpf_program *fp) { return 0; }
+static int  null_PCAP_SETNONBLOCK(pcap_t *p, int nonblock, char *errbuf) {
     return 0;
 }
 #endif
@@ -451,6 +453,7 @@ int pcap_init(void) {
     DOLINK(PCAP_ACTIVATE, activate);
 
     DOLINK(PCAP_COMPILE, compile);
+    DOLINK(PCAP_FREECODE, freecode);
     DOLINK(PCAP_SETFILTER, setfilter);
     DOLINK(PCAP_LOOKUPNET, lookupnet);
     DOLINK(PCAP_SETNONBLOCK, setnonblock);

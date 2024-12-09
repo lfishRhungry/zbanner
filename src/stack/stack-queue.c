@@ -115,7 +115,7 @@ NetStack *stack_create(macaddress_t source_mac, StackSrc *src,
         PktBuf *p;
         int     err;
 
-        p   = MALLOC(sizeof(*p));
+        p   = MALLOC(sizeof(PktBuf));
         err = rte_ring_sp_enqueue(stack->packet_buffers, p);
         if (err) {
             /* I dunno why but I can't queue all 256 packets, just 255 */
@@ -124,4 +124,19 @@ NetStack *stack_create(macaddress_t source_mac, StackSrc *src,
     }
 
     return stack;
+}
+
+void stack_clear(NetStack *stack) {
+    void *tmp;
+    while (!rte_ring_empty(stack->packet_buffers)) {
+        rte_ring_dequeue(stack->packet_buffers, &tmp);
+        FREE(tmp);
+    }
+    while (!rte_ring_empty(stack->transmit_queue)) {
+        rte_ring_dequeue(stack->transmit_queue, &tmp);
+        FREE(tmp);
+    }
+    FREE(stack->packet_buffers);
+    FREE(stack->transmit_queue);
+    FREE(stack);
 }

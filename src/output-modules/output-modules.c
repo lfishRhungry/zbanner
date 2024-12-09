@@ -8,7 +8,6 @@
 #include "../pixie/pixie-threads.h"
 #include "../util-out/logger.h"
 #include "../util-out/xprint.h"
-#include "../util-data/fine-malloc.h"
 #include "../util-misc/misc.h"
 
 // clang-format off
@@ -395,10 +394,7 @@ error0:
 void output_close(OutConf *out_conf) {
     if (out_conf->output_module) {
         out_conf->output_module->close_cb(out_conf);
-        out_conf->output_module = NULL;
     }
-
-    FREE(out_conf->output_args);
 
     pixie_delete_mutex(out_conf->stdout_mutex);
     pixie_delete_mutex(out_conf->module_mutex);

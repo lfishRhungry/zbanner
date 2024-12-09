@@ -579,8 +579,10 @@ static size_t extract_ext(const unsigned char *payload, size_t payload_len,
 
     if (payload[counter + 47] == 11)
         return snprintf(res_buf, res_max, "|");
-    else if (bytes_equals(payload + counter + 50, 3, "\x0e\xac\x0b", 3) > 0 ||
-             bytes_equals(payload + counter + 82, 3, "\x0f\xf0\x0b", 3) > 0)
+    else if (safe_bytes_equals(payload + counter + 50, 3, "\x0e\xac\x0b", 3) >
+                 0 ||
+             safe_bytes_equals(payload + counter + 82, 3, "\x0f\xf0\x0b", 3) >
+                 0)
         return snprintf(res_buf, res_max, "|");
     else if (counter + 42 >= sh_len)
         return snprintf(res_buf, res_max, "|");
@@ -600,7 +602,7 @@ static size_t extract_ext(const unsigned char *payload, size_t payload_len,
         } else {
             CHECK_IDX(count + 4 + ext_length)
 
-            if (bytes_equals(type, 2, "\x00\x10", 2)) {
+            if (safe_bytes_equals(type, 2, "\x00\x10", 2)) {
                 memcpy(res_buf + res_len, payload + count + 4 + 3,
                        ext_length - 3);
                 res_len += (ext_length - 3);

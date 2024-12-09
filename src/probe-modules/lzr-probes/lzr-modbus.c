@@ -24,8 +24,8 @@ static size_t lzr_modbus_get_payload_length(ProbeTarget *target) {
 static unsigned lzr_modbus_handle_reponse(unsigned th_idx, ProbeTarget *target,
                                           const unsigned char *px,
                                           unsigned sizeof_px, OutItem *item) {
-    if (sizeof_px >= 4 && bytes_equals(px, sizeof_px, "\x5a\x47\x00\x00",
-                                       sizeof("\x5a\x47\x00\x00") - 1)) {
+    if (sizeof_px >= 4 && safe_bytes_equals(px, sizeof_px, "\x5a\x47\x00\x00",
+                                            sizeof("\x5a\x47\x00\x00") - 1)) {
         item->level = OUT_SUCCESS;
         safe_strcpy(item->classification, OUT_CLS_SIZE, "modbus");
         safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");

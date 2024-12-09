@@ -87,7 +87,7 @@ int safe_gmtime(struct tm *_tm, const time_t *time) {
     return 0;
 }
 
-char *stristr(const char *haystack, const char *needle) {
+char *safe_stristr(const char *haystack, const char *needle) {
     char *cp = (char *)haystack;
     char *s1, *s2;
 
@@ -135,7 +135,7 @@ void *safe_memismem(const void *haystack, size_t haystacklen,
     return (NULL);
 }
 
-void trim(char *line, size_t sizeof_line) {
+void safe_trim(char *line, size_t sizeof_line) {
     if (sizeof_line > strlen(line))
         sizeof_line = strlen(line);
 
@@ -145,7 +145,7 @@ void trim(char *line, size_t sizeof_line) {
         line[--sizeof_line] = '\0';
 }
 
-void trim_char(char *line, size_t sizeof_line, char c) {
+void safe_trim_char(char *line, size_t sizeof_line, char c) {
     if (sizeof_line > strlen(line))
         sizeof_line = strlen(line);
 
@@ -155,8 +155,8 @@ void trim_char(char *line, size_t sizeof_line, char c) {
         line[--sizeof_line] = '\0';
 }
 
-const char *normalize_string(const unsigned char *px, size_t length, char *buf,
-                             size_t buf_len) {
+const char *safe_normalize_str(const unsigned char *px, size_t length,
+                               char *buf, size_t buf_len) {
     size_t i      = 0;
     size_t offset = 0;
 
@@ -236,7 +236,7 @@ void *safe_memmem(const void *src, int srclen, const void *trg, int trglen) {
  * - in unquoted strings, the first quote opens the quoted string and the
  *   remaining consecutive quotes follow the above rule.
  */
-char **string_to_args(char *string, int *arg_count) {
+char **safe_str_to_args(char *string, int *arg_count) {
     int    argc;
     char **argv;
     char  *s;
@@ -417,7 +417,7 @@ char **string_to_args(char *string, int *arg_count) {
  * This func handle single quote rather than quote.
  * So it cannot contains quotes.
  */
-char **substring_to_args(char *substring, int *arg_count) {
+char **safe_substr_to_args(char *substring, int *arg_count) {
     int    argc;
     char **argv;
     char  *s;
@@ -596,7 +596,7 @@ char **substring_to_args(char *substring, int *arg_count) {
 
 /***************************************************************************
  ***************************************************************************/
-int name_equals(const char *lhs, const char *rhs) {
+int safe_name_equals(const char *lhs, const char *rhs) {
     for (;;) {
         while (*lhs == '-' || *lhs == '.' || *lhs == '_')
             lhs++;
@@ -619,7 +619,7 @@ int name_equals(const char *lhs, const char *rhs) {
  * When setting parameters, this will parse integers from the config
  * parameter strings.
  ***************************************************************************/
-uint64_t parseIntBytes(const void *vstr, size_t length) {
+uint64_t safe_parse_int(const void *vstr, size_t length) {
     const char *str    = (const char *)vstr;
     uint64_t    result = 0;
     size_t      i;
@@ -630,8 +630,8 @@ uint64_t parseIntBytes(const void *vstr, size_t length) {
     return result;
 }
 
-bool bytes_equals(const void *src, size_t src_len, const void *byt,
-                  size_t byt_len) {
+bool safe_bytes_equals(const void *src, size_t src_len, const void *byt,
+                       size_t byt_len) {
     bool equal = false;
 
     for (size_t i = 0; i < src_len && i < byt_len; i++) {
@@ -644,7 +644,7 @@ bool bytes_equals(const void *src, size_t src_len, const void *byt,
     return equal;
 }
 
-int iso8601_time_str(char *format_time, size_t size, const time_t *time) {
+int safe_iso8601_time(char *format_time, size_t size, const time_t *time) {
 #if defined(__MINGW64__) || defined(__MINGW32__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat="

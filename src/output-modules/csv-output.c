@@ -88,7 +88,7 @@ static void csv_result(OutItem *item) {
     ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(item->target.ip_them);
     ipaddress_formatted_t ip_me_fmt   = ipaddress_fmt(item->target.ip_me);
 
-    iso8601_time_str(format_time, sizeof(format_time), &item->timestamp);
+    safe_iso8601_time(format_time, sizeof(format_time), &item->timestamp);
 
     if (item->no_port) {
         err = fprintf(file, fmt_csv_prefix_no_port, format_time,

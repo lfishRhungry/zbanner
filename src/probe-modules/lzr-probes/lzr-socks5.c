@@ -54,7 +54,8 @@ static unsigned lzr_socks5_handle_reponse(unsigned th_idx, ProbeTarget *target,
         return 0;
     }
 
-    if (bytes_equals(px, sizeof_px, "\x05\0\x05", sizeof("\x05\0\x05") - 1) &&
+    if (safe_bytes_equals(px, sizeof_px, "\x05\0\x05",
+                          sizeof("\x05\0\x05") - 1) &&
         px[3] <= 8) {
         item->level = OUT_SUCCESS;
         safe_strcpy(item->classification, OUT_CLS_SIZE, "socks5");

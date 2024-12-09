@@ -24,7 +24,7 @@ static unsigned lzr_ftp_handle_response(unsigned th_idx, ProbeTarget *target,
      * must be compatible with rules of lzr-smtp.
      */
 
-    if (bytes_equals(px, sizeof_px, "220", 3) &&
+    if (safe_bytes_equals(px, sizeof_px, "220", 3) &&
         !safe_memismem(px, sizeof_px, "mail", strlen("mail")) &&
         !safe_memismem(px, sizeof_px, "smtp", strlen("smtp"))) {
         item->level = OUT_SUCCESS;
@@ -33,8 +33,8 @@ static unsigned lzr_ftp_handle_response(unsigned th_idx, ProbeTarget *target,
         return 0;
     }
 
-    if (bytes_equals(px, sizeof_px, "501", 3) ||
-        bytes_equals(px, sizeof_px, "500", 3)) {
+    if (safe_bytes_equals(px, sizeof_px, "501", 3) ||
+        safe_bytes_equals(px, sizeof_px, "500", 3)) {
         item->level = OUT_SUCCESS;
         safe_strcpy(item->classification, OUT_CLS_SIZE, "ftp");
         safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");

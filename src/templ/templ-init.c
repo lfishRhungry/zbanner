@@ -589,11 +589,20 @@ void template_packet_init(TmplSet *templset, macaddress_t source_mac,
     templset->count++;
 }
 
-void template_set_tcp_syn_window_of_default(unsigned window) {
+void template_packet_clear(TmplSet *templset) {
+    for (unsigned i = 0; i < templset->count; i++) {
+        FREE(templset->pkts[i].ipv4.packet);
+        FREE(templset->pkts[i].ipv6.packet);
+    }
+
+    memset(templset, 1, sizeof(TmplSet));
+}
+
+void template_set_tcp_syn_win_of_default(unsigned window) {
     U16_TO_BE(default_tcp_syn_template + 48, window);
 }
 
-void template_set_tcp_window_of_default(unsigned window) {
+void template_set_tcp_win_of_default(unsigned window) {
     U16_TO_BE(default_tcp_template + 48, window);
 }
 

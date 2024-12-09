@@ -7,6 +7,7 @@
 #include <time.h>
 
 #include "globals.h"
+#include "util-data/rte-ring.h"
 #include "xconf.h"
 #include "version.h"
 
@@ -421,12 +422,31 @@ void receive_thread(void *v) {
         pcapfile_close(pcapfile);
         pcapfile = NULL;
     }
-    if (dispatch_q) {
-        parms->handle_q = NULL;
-    }
+
     FREE(handler);
     FREE(handle_parms);
-    FREE(handle_q);
+
+    void *tmp;
+    parms->dispatch_q = NULL;
+    if (dispatch_q) {
+        while (!rte_ring_empty(dispatch_q)) {
+            rte_ring_dequeue(dispatch_q, &tmp);
+            FREE(tmp);
+        }
+        FREE(dispatch_q);
+    }
+
+    parms->handle_q = NULL;
+    if (handle_q) {
+        for (unsigned i = 0; i < handler_num; i++) {
+            while (!rte_ring_empty(handle_q[i])) {
+                rte_ring_dequeue(handle_q[i], &tmp);
+                FREE(tmp);
+            }
+            FREE(handle_q[i]);
+        }
+        FREE(handle_q);
+    }
 
     /* Thread is about to exit */
     parms->done_receiving = true;

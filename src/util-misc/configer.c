@@ -590,7 +590,7 @@ int conf_set_params_from_str(void *conf, ConfParam *cp, char *string) {
     int    sub_argc;
     char **sub_argv;
 
-    sub_argv = string_to_args(string, &sub_argc);
+    sub_argv = safe_str_to_args(string, &sub_argc);
     if (!sub_argv) {
         return 1;
     }
@@ -613,7 +613,7 @@ int conf_set_params_from_substr(void *conf, ConfParam *cp, char *substring) {
     int    sub_argc;
     char **sub_argv;
 
-    sub_argv = substring_to_args(substring, &sub_argc);
+    sub_argv = safe_substr_to_args(substring, &sub_argc);
     if (!sub_argv) {
         return 1;
     }

@@ -150,6 +150,7 @@ typedef int (*PCAP_LOOKUPNET)(const char *device, uint32_t *netp,
                               uint32_t *maskp, char *errbuf);
 typedef int (*PCAP_COMPILE)(pcap_t *p, struct bpf_program *fp, const char *str,
                             int optimize, uint32_t netmask);
+typedef void (*PCAP_FREECODE)(struct bpf_program *fp);
 typedef int (*PCAP_SETFILTER)(pcap_t *p, struct bpf_program *fp);
 typedef int (*PCAP_SETNONBLOCK)(pcap_t *p, int nonblock, char *errbuf);
 typedef int (*PCAP_NEXT_EX)(pcap_t *p, struct pcap_pkthdr **h,
@@ -220,6 +221,7 @@ struct PcapFunctions {
     /* for bpf filter*/
     PCAP_LOOKUPNET            lookupnet;
     PCAP_COMPILE              compile;
+    PCAP_FREECODE             freecode;
     PCAP_SETFILTER            setfilter;
     PCAP_SETNONBLOCK          setnonblock;
     PCAP_NEXT_EX              next_ex;

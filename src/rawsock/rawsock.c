@@ -5,24 +5,24 @@
     basic raw sockets, bypassing libpcap for better performance.
 */
 #include "rawsock.h"
+
+#include <assert.h>
+#include <ctype.h>
+#include <string.h>
+
 #include "../version.h"
-#include "../templ/templ-init.h"
+#include "../globals.h"
+#include "../pixie/pixie-timer.h"
+
 #include "../util-out/logger.h"
 #include "../util-scan/ptrace.h"
-#include "../util-data/safe-string.h"
+#include "../util-data/fine-malloc.h"
+
 #include "../stub/stub-pcap.h"
 #include "../stub/stub-pcap-dlt.h"
 #include "../stub/stub-pfring.h"
-#include "../pixie/pixie-timer.h"
-#include "../globals.h"
-#include "../proto/proto-preprocess.h"
 #include "../stack/stack-arpv4.h"
 #include "../stack/stack-ndpv6.h"
-
-#include "../util-misc/misc.h"
-#include "../util-data/fine-malloc.h"
-#include <assert.h>
-#include <ctype.h>
 
 static int is_pcap_file = 0;
 
@@ -874,6 +874,8 @@ void rawsock_set_filter(Adapter *adapter, const char *scan_filter,
         LOGPCAPERROR(adapter->pcap, "pcap_setfilter");
         exit(1);
     }
+
+    PCAP.freecode(&bpfp);
 }
 
 /**

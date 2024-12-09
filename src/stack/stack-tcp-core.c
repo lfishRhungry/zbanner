@@ -511,6 +511,7 @@ void tcpcon_destroy_table(TCP_Table *tcpcon) {
     }
 
     FREE(tcpcon->entries);
+    FREE(tcpcon->timeouts);
     FREE(tcpcon);
 }
 

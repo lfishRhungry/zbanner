@@ -33,15 +33,17 @@ void template_packet_init(TmplSet *templset, macaddress_t source_mac,
                           macaddress_t router_mac_ipv6, int data_link,
                           uint64_t entropy, const TmplOpt *templ_opts);
 
+void template_packet_clear(TmplSet *templset);
+
 /***************************************************************************
  * Overwrites the Window of default tcp syn template
  ***************************************************************************/
-void template_set_tcp_syn_window_of_default(unsigned window);
+void template_set_tcp_syn_win_of_default(unsigned window);
 
 /***************************************************************************
  * Overwrites the Window of default tcp template
  ***************************************************************************/
-void template_set_tcp_window_of_default(unsigned window);
+void template_set_tcp_win_of_default(unsigned window);
 
 /***************************************************************************
  * Overwrites the TTL of all packet in templateset both IPv4&IPv6

@@ -7,6 +7,7 @@
 
 #include "globals.h"
 #include "receive.h"
+#include "stack/stack-queue.h"
 #include "transmit.h"
 #include "version.h"
 #include "xconf.h"
@@ -235,10 +236,10 @@ static int _main_scan(XConf *xconf) {
 
     /* it should be set before template init*/
     if (xconf->tcp_init_window)
-        template_set_tcp_syn_window_of_default(xconf->tcp_init_window);
+        template_set_tcp_syn_win_of_default(xconf->tcp_init_window);
 
     if (xconf->tcp_window)
-        template_set_tcp_window_of_default(xconf->tcp_window);
+        template_set_tcp_win_of_default(xconf->tcp_window);
 
     template_packet_init(xconf->tmplset, xconf->nic.source_mac,
                          xconf->nic.router_mac_ipv4, xconf->nic.router_mac_ipv6,
@@ -546,15 +547,17 @@ static int _main_scan(XConf *xconf) {
          * Rx handle queue is the bottle-neck, we got the most severe one.
          */
         status_item.rx_queue_ratio = 100.0;
-        if (rx_thread->handle_q) {
-            for (unsigned i = 0; i < xconf->rx_handler_count; i++) {
+        for (unsigned i = 0; i < xconf->rx_handler_count; i++) {
+            if (rx_thread->handle_q && rx_thread->handle_q[i]) {
                 rx_free_entries = rte_ring_free_count(rx_thread->handle_q[i]);
-                rx_queue_ratio_tmp = rx_free_entries * 100.0 /
-                                     (double)(xconf->dispatch_buf_count);
-
-                if (status_item.rx_queue_ratio > rx_queue_ratio_tmp)
-                    status_item.rx_queue_ratio = rx_queue_ratio_tmp;
+            } else {
+                rx_free_entries = 0;
             }
+            rx_queue_ratio_tmp =
+                rx_free_entries * 100.0 / (double)(xconf->dispatch_buf_count);
+
+            if (status_item.rx_queue_ratio > rx_queue_ratio_tmp)
+                status_item.rx_queue_ratio = rx_queue_ratio_tmp;
         }
 
         /**
@@ -643,15 +646,17 @@ static int _main_scan(XConf *xconf) {
          * Rx handle queue is the bottle-neck, we got the most severe one.
          */
         status_item.rx_queue_ratio = 100.0;
-        if (rx_thread->handle_q) {
-            for (unsigned i = 0; i < xconf->rx_handler_count; i++) {
+        for (unsigned i = 0; i < xconf->rx_handler_count; i++) {
+            if (rx_thread->handle_q && rx_thread->handle_q[i]) {
                 rx_free_entries = rte_ring_free_count(rx_thread->handle_q[i]);
-                rx_queue_ratio_tmp = rx_free_entries * 100.0 /
-                                     (double)(xconf->dispatch_buf_count);
-
-                if (status_item.rx_queue_ratio > rx_queue_ratio_tmp)
-                    status_item.rx_queue_ratio = rx_queue_ratio_tmp;
+            } else {
+                rx_free_entries = 0;
             }
+            rx_queue_ratio_tmp =
+                rx_free_entries * 100.0 / (double)(xconf->dispatch_buf_count);
+
+            if (status_item.rx_queue_ratio > rx_queue_ratio_tmp)
+                status_item.rx_queue_ratio = rx_queue_ratio_tmp;
         }
 
         /**
@@ -696,6 +701,11 @@ static int _main_scan(XConf *xconf) {
         _update_global_time();
         pixie_mssleep(_LOOP_SLEEP_MS);
     }
+
+    /*
+     * untrap <ctrl-c>
+     */
+    signal(SIGINT, SIG_DFL);
 
     _update_global_time();
     for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
@@ -754,26 +764,22 @@ static int _main_scan(XConf *xconf) {
     xtatus_finish(&status);
 
     xconf->scanner->close_cb();
-    xconf->scanner = NULL;
 
     if (xconf->probe) {
         xconf->probe->close_cb();
-        xconf->probe = NULL;
     }
 
     xconf->generator->close_cb();
-    xconf->generator = NULL;
 
     output_close(&xconf->out_conf);
 
     FREE(tx_thread);
 
     rawsock_close_adapter(xconf->nic.adapter);
-    xconf->nic.adapter = NULL;
 
-    FREE(xconf->stack);
+    stack_clear(xconf->stack);
 
-    xconf->tmplset = NULL;
+    template_packet_clear(xconf->tmplset);
     FREE(xconf->templ_opts);
 
     LOG(LEVEL_INFO, "all threads exited...\n");
@@ -788,7 +794,7 @@ int main(int argc, char *argv[]) {
     LOG_init();
 
     XConf xconf[1];
-    memset(xconf, 0, sizeof(xconf));
+    memset(xconf, 0, sizeof(XConf));
 
 #if defined(WIN32)
     {
@@ -811,39 +817,23 @@ int main(int argc, char *argv[]) {
         LOG(LEVEL_WARN, "backtrace to program call stack is off.\n");
     }
 
-    //=================================================Define default params
-    xconf->tx_thread_count    = XCONF_DFT_TX_THD_COUNT;
-    xconf->rx_handler_count   = XCONF_DFT_RX_HDL_COUNT;
-    xconf->stack_buf_count    = XCONF_DFT_STACK_BUF_COUNT;
-    xconf->dispatch_buf_count = XCONF_DFT_DISPATCH_BUF_COUNT;
-    xconf->max_rate           = XCONF_DFT_MAX_RATE;
-    xconf->dedup_win          = XCONF_DFT_DEDUP_WIN;
-    xconf->shard.one          = XCONF_DFT_SHARD_ONE;
-    xconf->shard.of           = XCONF_DFT_SHARD_OF;
-    xconf->wait               = XCONF_DFT_WAIT;
-    xconf->nic.snaplen        = XCONF_DFT_SNAPLEN;
-    xconf->max_packet_len     = XCONF_DFT_MAX_PKT_LEN;
-    xconf->packet_ttl         = XCONF_DFT_PACKET_TTL;
-    xconf->tcp_init_window    = XCONF_DFT_TCP_SYN_WINSIZE;
-    xconf->tcp_window         = XCONF_DFT_TCP_OTHER_WINSIZE;
-    xconf->sendmmsg_batch     = XCONF_DFT_SENDMMSG_BATCH;
-    xconf->sendmmsg_retries   = XCONF_DFT_SENDMMSG_RETRIES;
-    xconf->sendq_size         = XCONF_DFT_SENDQUEUE_SIZE;
-    //=================================================
+    // Define default params
+    xconf_global_refresh(xconf);
 
-    //=================================================read conf from args
+    // read conf from args
     xconf_command_line(xconf, argc, argv);
 
+    /* entropy for randomness */
+    if (xconf->seed == 0)
+        xconf->seed = get_one_entropy();
+
+    /* into interactive setting mode*/
     if (xconf->interactive_setting) {
         xconf_interactive_readline(xconf);
     }
 
     /* logger should be prepared early */
     LOG_set_ansi(xconf->is_no_ansi);
-
-    /* entropy for randomness */
-    if (xconf->seed == 0)
-        xconf->seed = get_one_entropy();
 
     /* init AS info for global and output module*/
     xconf->as_query =
@@ -1048,20 +1038,10 @@ int main(int argc, char *argv[]) {
 #endif
     }
 
-    targetset_rm_all(&xconf->targets);
-    targetset_rm_all(&xconf->exclude);
-
-    if (xconf->echo && xconf->echo != stdout)
-        fclose(xconf->echo);
-
-    /*release as query*/
-    as_query_destroy(xconf->as_query);
-    FREE(xconf->as_query);
-
     /*close logger*/
     LOG_close();
 
-    xconf_free_str(xconf);
+    xconf_global_refresh(xconf);
 
     return 0;
 }

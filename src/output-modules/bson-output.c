@@ -89,7 +89,7 @@ static void bsonout_result(OutItem *item) {
             BSON_APPEND_INT64(res_doc, "ip_me_lo", item->target.ip_me.ipv6.lo);
         }
     } else {
-        iso8601_time_str(format_time, sizeof(format_time), &item->timestamp);
+        safe_iso8601_time(format_time, sizeof(format_time), &item->timestamp);
         BSON_APPEND_UTF8(res_doc, "time", format_time);
         BSON_APPEND_UTF8(res_doc, "level", output_level_to_string(item->level));
         BSON_APPEND_UTF8(res_doc, "ip_proto",

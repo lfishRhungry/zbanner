@@ -35,7 +35,7 @@ static unsigned lzr_smtp_handle_reponse(unsigned th_idx, ProbeTarget *target,
      * must be compatible with rules of lzr-ftp.
      */
 
-    if (bytes_equals(px, sizeof_px, "220", 3) &&
+    if (safe_bytes_equals(px, sizeof_px, "220", 3) &&
         safe_memismem(px, sizeof_px, "mail", strlen("mail"))) {
         item->level = OUT_SUCCESS;
         safe_strcpy(item->classification, OUT_CLS_SIZE, "smtp");
@@ -46,10 +46,10 @@ static unsigned lzr_smtp_handle_reponse(unsigned th_idx, ProbeTarget *target,
     /**
      * ref to nmap
      * also can start with `220`, but must contain an `smtp` or `mail`*/
-    if (bytes_equals(px, sizeof_px, "572", 3) ||
-        bytes_equals(px, sizeof_px, "554", 3) ||
-        bytes_equals(px, sizeof_px, "450", 3) ||
-        bytes_equals(px, sizeof_px, "550", 3)) {
+    if (safe_bytes_equals(px, sizeof_px, "572", 3) ||
+        safe_bytes_equals(px, sizeof_px, "554", 3) ||
+        safe_bytes_equals(px, sizeof_px, "450", 3) ||
+        safe_bytes_equals(px, sizeof_px, "550", 3)) {
         item->level = OUT_SUCCESS;
         safe_strcpy(item->classification, OUT_CLS_SIZE, "smtp");
         safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");

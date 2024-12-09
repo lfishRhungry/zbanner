@@ -49,4 +49,6 @@ void stack_flush_packets(NetStack *stack, struct NetworkAdapter *adapter,
 NetStack *stack_create(macaddress_t source_mac, StackSrc *src,
                        unsigned buf_count);
 
+void stack_clear(NetStack *stack);
+
 #endif

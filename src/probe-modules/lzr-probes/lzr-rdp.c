@@ -28,8 +28,8 @@ static size_t lzr_rdp_get_payload_length(ProbeTarget *target) {
 static unsigned lzr_rdp_handle_reponse(unsigned th_idx, ProbeTarget *target,
                                        const unsigned char *px,
                                        unsigned sizeof_px, OutItem *item) {
-    if (sizeof_px >= 11 && bytes_equals(px, sizeof_px, lzr_rdp_verify,
-                                        sizeof(lzr_rdp_verify) - 1)) {
+    if (sizeof_px >= 11 && safe_bytes_equals(px, sizeof_px, lzr_rdp_verify,
+                                             sizeof(lzr_rdp_verify) - 1)) {
         item->level = OUT_SUCCESS;
         safe_strcpy(item->classification, OUT_CLS_SIZE, "rdp");
         safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");

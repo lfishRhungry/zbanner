@@ -23,10 +23,10 @@ static unsigned lzr_bgp_handle_response(unsigned th_idx, ProbeTarget *target,
         return 0;
     }
 
-    if (bytes_equals(px, sizeof_px, BGP_PREFIX, sizeof(BGP_PREFIX) - 1)) {
-        if (bytes_equals(px + 16, sizeof_px - 16, "\x00\x15\x03\x06", 4) ||
-            bytes_equals(px + 16, sizeof_px - 16, "\x00\x1d\x01\x04", 4) ||
-            bytes_equals(px + 18, sizeof_px - 18, "\x01\x04", 2)) {
+    if (safe_bytes_equals(px, sizeof_px, BGP_PREFIX, sizeof(BGP_PREFIX) - 1)) {
+        if (safe_bytes_equals(px + 16, sizeof_px - 16, "\x00\x15\x03\x06", 4) ||
+            safe_bytes_equals(px + 16, sizeof_px - 16, "\x00\x1d\x01\x04", 4) ||
+            safe_bytes_equals(px + 18, sizeof_px - 18, "\x01\x04", 2)) {
             item->level = OUT_SUCCESS;
             safe_strcpy(item->classification, OUT_CLS_SIZE, "bgp");
             safe_strcpy(item->reason, OUT_RSN_SIZE, "matched");

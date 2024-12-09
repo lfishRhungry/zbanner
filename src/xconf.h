@@ -325,9 +325,9 @@ void xconf_search_module(const char *param);
 void xconf_interactive_readline(XConf *xconf);
 
 /**
- * free dynamic string in xconf
+ * Clear global used param in `main` except seed and set xconf to default
  */
-void xconf_free_str(XConf *xconf);
+void xconf_global_refresh(XConf *xconf);
 
 void xconf_selftest();
 

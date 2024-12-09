@@ -25,10 +25,6 @@
 #pragma warning(disable : 4996)
 #endif
 
-#if defined(WIN32)
-#define strncasecmp _strnicmp
-#endif
-
 #undef strcpy
 #define strcpy STRCPY_FUNCTION_IS_BAD
 
@@ -72,14 +68,15 @@ int  safe_localtime(struct tm *_tm, const time_t *time);
 int  safe_gmtime(struct tm *_tm, const time_t *time);
 
 /*`strstr` but in case insensitive*/
-char *stristr(const char *haystack, const char *needle);
+char *safe_stristr(const char *haystack, const char *needle);
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1900)
 /*Visual Studio 2015 and 2017*/
 #include <stdio.h>
 #include <string.h>
-#define strcasecmp _stricmp
-#define memcasecmp _memicmp
+#define strcasecmp  _stricmp
+#define strncasecmp _strnicmp
+#define memcasecmp  _memicmp
 #ifndef PRIu64
 #define PRIu64 "llu"
 #define PRId64 "lld"
@@ -91,9 +88,10 @@ char *stristr(const char *haystack, const char *needle);
 #include <stdio.h>
 #include <string.h>
 #pragma warning(disable : 4996)
-#define snprintf   _snprintf
-#define strcasecmp _stricmp
-#define memcasecmp _memicmp
+#define snprintf    _snprintf
+#define strcasecmp  _stricmp
+#define strncasecmp _strnicmp
+#define memcasecmp  _memicmp
 #ifndef PRIu64
 #define PRIu64 "llu"
 #define PRId64 "lld"
@@ -102,10 +100,11 @@ char *stristr(const char *haystack, const char *needle);
 
 #elif defined(_MSC_VER) && (_MSC_VER == 1200)
 /* Visual Studio 6.0 */
-#define snprintf   _snprintf
-#define strcasecmp _stricmp
-#define memcasecmp _memicmp
-#define vsnprintf  _vsnprintf
+#define snprintf    _snprintf
+#define strcasecmp  _stricmp
+#define strncasecmp _strnicmp
+#define memcasecmp  _memicmp
+#define vsnprintf   _vsnprintf
 
 #elif defined(__GNUC__) && (__GNUC__ >= 4)
 #include <inttypes.h>
@@ -119,19 +118,19 @@ int memcasecmp(const void *lhs, const void *rhs, size_t length);
 /***************************************************************************
  * remove leading/trailing whitespace
  ***************************************************************************/
-void trim(char *line, size_t sizeof_line);
+void safe_trim(char *line, size_t sizeof_line);
 
 /***************************************************************************
  * remove specified leading/trailing chars
  ***************************************************************************/
-void trim_char(char *line, size_t sizeof_line, char c);
+void safe_trim_char(char *line, size_t sizeof_line, char c);
 
 /*****************************************************************************
  * Remove bad characters from the banner, especially new lines and HTML
  * control codes.
  *****************************************************************************/
-const char *normalize_string(const unsigned char *px, size_t length, char *buf,
-                             size_t buf_len);
+const char *safe_normalize_str(const unsigned char *px, size_t length,
+                               char *buf, size_t buf_len);
 
 /*****************************************************************************
  * os undependant memmem
@@ -157,26 +156,26 @@ void safe_memset(unsigned char *buf, size_t length, size_t offset, int c,
 /**
  * is byt the header of src
  */
-bool bytes_equals(const void *src, size_t src_len, const void *byt,
-                  size_t byt_len);
+bool safe_bytes_equals(const void *src, size_t src_len, const void *byt,
+                       size_t byt_len);
 
 /**
  * Transfer C string to argc argv.
  * Could handle quotes(ignore single quotes).
  * Argv should be freed.
  */
-char **string_to_args(char *string, int *arg_count);
+char **safe_str_to_args(char *string, int *arg_count);
 
 /**
  * Transfer C string to argc argv.
  * just handle  single quotes(ignore double quotes).
  * Argv should be freed.
  */
-char **substring_to_args(char *substring, int *arg_count);
+char **safe_substr_to_args(char *substring, int *arg_count);
 
-int name_equals(const char *lhs, const char *rhs);
+int safe_name_equals(const char *lhs, const char *rhs);
 
-uint64_t parseIntBytes(const void *vstr, size_t length);
+uint64_t safe_parse_int(const void *vstr, size_t length);
 
 /**
  * @param format_time buffer to save time str at least 32 bytes.
@@ -184,6 +183,6 @@ uint64_t parseIntBytes(const void *vstr, size_t length);
  * @return number of bytes placed in format_time (excluding terminating null
  * byte)
  */
-int iso8601_time_str(char *format_time, size_t size, const time_t *time);
+int safe_iso8601_time(char *format_time, size_t size, const time_t *time);
 
 #endif
