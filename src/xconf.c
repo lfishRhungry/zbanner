@@ -4077,7 +4077,7 @@ void xconf_print_version() {
             compiler_version = "2022-post VC++17.11-post";
     }
 
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) /*clang and mingw also have __GNUC__*/
 #if defined(__clang__)
     compiler         = "clang";
     compiler_version = __clang_version__;
@@ -4408,8 +4408,6 @@ void xconf_global_refresh(XConf *xconf) {
     /**
      * Clear by provided func
      */
-    if (xconf->nic.adapter)
-        rawsock_close_adapter(xconf->nic.adapter);
     targetset_rm_all(&xconf->targets);
     targetset_rm_all(&xconf->exclude);
     as_query_destroy(xconf->as_query);

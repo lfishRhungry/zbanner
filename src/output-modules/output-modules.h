@@ -65,9 +65,6 @@ struct OutputConfig {
     uint64_t         total_successed;
     uint64_t         total_failed;
     uint64_t         total_info;
-    void            *succ_mutex;
-    void            *fail_mutex;
-    void            *info_mutex;
     void            *module_mutex;
     void            *stdout_mutex;
     struct AS_Query *as_query;

@@ -66,14 +66,14 @@ static void _control_c_handler(int x) {
                        "                    \n");
         /*First time of <ctrl-c>, tell Tx to stop*/
         control_c_pressed = 1;
-        pixie_locked_CAS32(&time_to_finish_tx, 1, 0);
+        pixie_locked_cas_u32(&time_to_finish_tx, 1, 0);
     } else {
-        if (pixie_locked_add_u32(&time_to_finish_rx, 0)) {
+        if (pixie_locked_fetch_u32(&time_to_finish_rx)) {
             /*Not first time of <ctrl-c> */
             /*and Rx is exiting, we just warn*/
             LOG(LEVEL_OUT, "\nERROR: Rx Thread is still running\n");
             /*Exit many <ctrl-c>*/
-            if (pixie_locked_add_u32(&time_to_finish_rx, 0) > 1)
+            if (pixie_locked_fetch_u32(&time_to_finish_rx) > 1)
                 exit(1);
             pixie_locked_add_u32(&time_to_finish_rx, 1);
         } else {
@@ -82,11 +82,6 @@ static void _control_c_handler(int x) {
             /*tell Rx to exit*/
             pixie_locked_add_u32(&time_to_finish_rx, 1);
         }
-    }
-}
-
-static void _update_global_time() {
-    while (!pixie_locked_CAS64(&global_now, time(0), global_now)) {
     }
 }
 
@@ -520,8 +515,8 @@ static int _main_scan(XConf *xconf) {
      */
     pixie_usleep(1000 * 100);
     LOG(LEVEL_INFO, "waiting for threads to finish\n");
-    _update_global_time();
-    while (!pixie_locked_add_u32(&time_to_finish_tx, 0)) {
+    global_update_time();
+    while (!pixie_locked_fetch_u32(&time_to_finish_tx)) {
         /* Find the min-index, repeat and rate */
         status_item.total_sent   = 0;
         status_item.cur_pps      = 0.0;
@@ -531,16 +526,23 @@ static int _main_scan(XConf *xconf) {
         for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
             TxThread *parms = &tx_thread[i];
 
-            if (status_item.cur_count > parms->my_index)
-                status_item.cur_count = parms->my_index;
+            if (status_item.cur_count >
+                pixie_locked_fetch_u64(&parms->my_index))
+                status_item.cur_count =
+                    pixie_locked_fetch_u64(&parms->my_index);
 
-            if (status_item.repeat_count > parms->my_repeat)
-                status_item.repeat_count = parms->my_repeat;
+            if (status_item.repeat_count >
+                pixie_locked_fetch_u64(&parms->my_repeat))
+                status_item.repeat_count =
+                    pixie_locked_fetch_u64(&parms->my_repeat);
 
-            status_item.cur_pps += parms->throttler->current_rate;
-            status_item.total_sent += parms->total_sent;
+            status_item.cur_pps +=
+                pixie_locked_fetch_double(&parms->throttler->current_rate);
+            status_item.total_sent +=
+                pixie_locked_fetch_u64(&parms->total_sent);
 
-            stop_tx &= (!xconf->generator->hasmore_cb(i, parms->my_index));
+            stop_tx &= (!xconf->generator->hasmore_cb(
+                i, pixie_locked_fetch_u64(&parms->my_index)));
         }
 
         /**
@@ -570,10 +572,10 @@ static int _main_scan(XConf *xconf) {
         /* Note: This is how we tell the Tx has ended */
         if (xconf->is_infinite) {
             if (xconf->repeat && status_item.repeat_count >= xconf->repeat)
-                pixie_locked_CAS32(&time_to_finish_tx, 1, 0);
+                pixie_locked_cas_u32(&time_to_finish_tx, 1, 0);
         } else {
             if (stop_tx)
-                pixie_locked_CAS32(&time_to_finish_tx, 1, 0);
+                pixie_locked_cas_u32(&time_to_finish_tx, 1, 0);
         }
 
         /**
@@ -585,11 +587,14 @@ static int _main_scan(XConf *xconf) {
         /**
          * update other status item fields
          */
-        status_item.total_successed = xconf->out_conf.total_successed;
-        status_item.total_failed    = xconf->out_conf.total_failed;
-        status_item.total_info      = xconf->out_conf.total_info;
-        status_item.max_count       = scan_range;
-        status_item.print_in_json   = xconf->is_status_ndjson;
+        status_item.total_successed =
+            pixie_locked_fetch_u64(&xconf->out_conf.total_successed);
+        status_item.total_failed =
+            pixie_locked_fetch_u64(&xconf->out_conf.total_failed);
+        status_item.total_info =
+            pixie_locked_fetch_u64(&xconf->out_conf.total_info);
+        status_item.max_count     = scan_range;
+        status_item.print_in_json = xconf->is_status_ndjson;
 
         if (!xconf->is_no_status)
             xtatus_print(&status, &status_item);
@@ -600,7 +605,7 @@ static int _main_scan(XConf *xconf) {
          * because we update it periodically in loops.
          */
 
-        _update_global_time();
+        global_update_time();
         pixie_mssleep(_LOOP_SLEEP_MS);
     }
 
@@ -621,8 +626,8 @@ static int _main_scan(XConf *xconf) {
      * `time_to_finish_rx` according to time waiting. So `time_to_finish_rx` is
      * the important signal both for Tx/Rx Thread to exit.
      */
-    _update_global_time();
-    now = pixie_locked_add_u64(&global_now, 0);
+    global_update_time();
+    now = global_get_time();
     for (;;) {
         /* Find the min-index, repeat and rate */
         status_item.total_sent   = 0;
@@ -632,14 +637,20 @@ static int _main_scan(XConf *xconf) {
         for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
             TxThread *parms = &tx_thread[i];
 
-            if (status_item.cur_count > parms->my_index)
-                status_item.cur_count = parms->my_index;
+            if (status_item.cur_count >
+                pixie_locked_fetch_u64(&parms->my_index))
+                status_item.cur_count =
+                    pixie_locked_fetch_u64(&parms->my_index);
 
-            if (status_item.repeat_count > parms->my_repeat)
-                status_item.repeat_count = parms->my_repeat;
+            if (status_item.repeat_count >
+                pixie_locked_fetch_u64(&parms->my_repeat))
+                status_item.repeat_count =
+                    pixie_locked_fetch_u64(&parms->my_repeat);
 
-            status_item.cur_pps += parms->throttler->current_rate;
-            status_item.total_sent += parms->total_sent;
+            status_item.cur_pps +=
+                pixie_locked_fetch_double(&parms->throttler->current_rate);
+            status_item.total_sent +=
+                pixie_locked_fetch_u64(&parms->total_sent);
         }
 
         /**
@@ -675,21 +686,24 @@ static int _main_scan(XConf *xconf) {
         /**
          * update other status item fields
          */
-        status_item.total_successed = xconf->out_conf.total_successed;
-        status_item.total_failed    = xconf->out_conf.total_failed;
-        status_item.total_info      = xconf->out_conf.total_info;
-        status_item.max_count       = scan_range;
-        status_item.print_in_json   = xconf->is_status_ndjson;
-        status_item.exiting_secs    = xconf->wait - (time(0) - now);
+        status_item.total_successed =
+            pixie_locked_fetch_u64(&xconf->out_conf.total_successed);
+        status_item.total_failed =
+            pixie_locked_fetch_u64(&xconf->out_conf.total_failed);
+        status_item.total_info =
+            pixie_locked_fetch_u64(&xconf->out_conf.total_info);
+        status_item.max_count     = scan_range;
+        status_item.print_in_json = xconf->is_status_ndjson;
+        status_item.exiting_secs  = xconf->wait - (time(0) - now);
 
         if (!xconf->is_no_status)
             xtatus_print(&status, &status_item);
 
         /*no more waiting or too many <ctrl-c>*/
         if (time(0) - now >= xconf->wait ||
-            pixie_locked_add_u32(&time_to_finish_rx, 0)) {
+            pixie_locked_fetch_u32(&time_to_finish_rx)) {
             LOG(LEVEL_DEBUG, "telling threads to exit...\n");
-            pixie_locked_CAS32(&time_to_finish_rx, 1, 0);
+            pixie_locked_cas_u32(&time_to_finish_rx, 1, 0);
             break;
         }
 
@@ -698,7 +712,7 @@ static int _main_scan(XConf *xconf) {
          * NOTE: ths sleep time decides the accuracy of the global time variable
          * because we update it periodically in loops.
          */
-        _update_global_time();
+        global_update_time();
         pixie_mssleep(_LOOP_SLEEP_MS);
     }
 
@@ -707,13 +721,13 @@ static int _main_scan(XConf *xconf) {
      */
     signal(SIGINT, SIG_DFL);
 
-    _update_global_time();
+    global_update_time();
     for (unsigned i = 0; i < xconf->tx_thread_count; i++) {
         TxThread *parms = &tx_thread[i];
         pixie_thread_join(parms->thread_handle_xmit);
     }
 
-    _update_global_time();
+    global_update_time();
     pixie_thread_join(rx_thread->thread_handle_recv);
 
     /*
@@ -912,7 +926,7 @@ int main(int argc, char *argv[]) {
      * Begin to update time
      */
     _usec_start = pixie_gettime();
-    _update_global_time();
+    global_update_time();
 
     switch (xconf->op) {
         case Operation_Default:

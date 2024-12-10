@@ -102,6 +102,8 @@
 
 #include "../util-out/logger.h"
 #include "../pixie/pixie-timer.h"
+#include "../pixie/pixie-threads.h"
+
 /* true if x is a power of 2 */
 #define POWEROF2(x) ((((x) - 1) & (x)) == 0)
 

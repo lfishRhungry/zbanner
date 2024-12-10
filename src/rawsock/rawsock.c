@@ -347,7 +347,7 @@ int rawsock_recv_packet(Adapter *adapter, unsigned *length, unsigned *secs,
         );
         if (err == PF_RING_ERROR_NO_PKT_AVAILABLE || hdr.caplen == 0) {
             PFRING.poll(adapter->ring, 1);
-            if (pixie_locked_add_u32(&time_to_finish_tx, 0))
+            if (pixie_locked_fetch_u32(&time_to_finish_tx))
                 return 1;
             goto again;
         }
@@ -375,8 +375,8 @@ int rawsock_recv_packet(Adapter *adapter, unsigned *length, unsigned *secs,
         if (err != 1) {
             if (is_pcap_file) {
                 // pixie_time_set_offset(10*100000);
-                pixie_locked_CAS32(&time_to_finish_tx, 1, 0);
-                pixie_locked_CAS32(&time_to_finish_rx, 1, 0);
+                pixie_locked_cas_u32(&time_to_finish_tx, 1, 0);
+                pixie_locked_cas_u32(&time_to_finish_rx, 1, 0);
             }
             return 1;
         }

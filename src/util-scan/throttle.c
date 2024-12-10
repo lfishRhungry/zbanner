@@ -18,20 +18,25 @@
 */
 #include "throttle.h"
 
-#include <string.h>
-
 #include "../pixie/pixie-timer.h"
+#include "../pixie/pixie-threads.h"
 #include "../util-out/logger.h"
 #include "../util-misc/misc.h"
 
 /***************************************************************************
+
  ***************************************************************************/
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
 void throttler_start(Throttler *throttler, double max_rate) {
     unsigned i;
 
-    memset(throttler, 0, sizeof(*throttler));
+    throttler->test_packet_count = 0;
+    throttler->test_timestamp    = 0;
 
-    throttler->max_rate = max_rate;
+    pixie_locked_store_double(&throttler->current_rate, 0.0);
+    pixie_locked_store_double(&throttler->max_rate, max_rate);
 
     for (i = 0; i < ARRAY_SIZE(throttler->buckets); i++) {
         throttler->buckets[i].timestamp    = pixie_gettime();
@@ -41,7 +46,7 @@ void throttler_start(Throttler *throttler, double max_rate) {
     throttler->batch_size = 1;
 
     LOG(LEVEL_DEBUG, "starting throttler, rate = %0.2f-pps\n",
-        throttler->max_rate);
+        pixie_locked_fetch_double(&throttler->max_rate));
 }
 
 /***************************************************************************
@@ -61,7 +66,7 @@ uint64_t throttler_next_batch(Throttler *throttler, uint64_t packet_count) {
     uint64_t old_packet_count;
 
     double current_rate;
-    double max_rate = throttler->max_rate;
+    double max_rate = pixie_locked_fetch_double(&throttler->max_rate);
 
 again:
 
@@ -86,7 +91,8 @@ again:
      * in order to avoid transmitting too fast.
      */
     if (timestamp - old_timestamp > 1000000) {
-        // throttler_start(throttler, throttler->max_rate);
+        // throttler_start(throttler,
+        // pixie_locked_fetch_double(&throttler->max_rate));
         throttler->batch_size = 1;
         goto again;
     }
@@ -108,7 +114,7 @@ again:
         double waittime;
 
         /* calculate waittime, in seconds */
-        waittime = (current_rate - max_rate) / throttler->max_rate;
+        waittime = (current_rate - max_rate) / max_rate;
 
         /* At higher rates of speed, we don't actually need to wait the full
          * interval. It's better to have a much smaller interval, so that
@@ -153,7 +159,7 @@ again:
     throttler->batch_size *= 1.005;
     if (throttler->batch_size > 10000)
         throttler->batch_size = 10000;
-    throttler->current_rate = current_rate;
+    pixie_locked_store_double(&throttler->current_rate, current_rate);
 
     throttler->test_timestamp    = timestamp;
     throttler->test_packet_count = packet_count;

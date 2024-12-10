@@ -8,8 +8,8 @@
  * NOTE: functions about throttler is not thread safe.
  */
 typedef struct RateThrottler {
-    double   max_rate;
-    double   current_rate;
+    double   max_rate;     /*could be modified by multi-threadl atomicly */
+    double   current_rate; /*could be accessed by multi-threadl atomicly */
     double   batch_size;
     unsigned index;
 

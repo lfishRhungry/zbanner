@@ -60,7 +60,7 @@ static void dispatch_thread(void *v) {
     pixie_set_thread_name(XTATE_NAME "-dsp");
 
     DispatchConf *parms = v;
-    while (!pixie_locked_add_u32(&time_to_finish_rx, 0)) {
+    while (!pixie_locked_fetch_u32(&time_to_finish_rx)) {
         int          err       = 1;
         ValidPacket *valid_pkt = NULL;
 
@@ -85,7 +85,7 @@ static void dispatch_thread(void *v) {
 
         for (err = 1; err != 0;) {
             unsigned i = dsp_hash & parms->recv_handle_mask;
-            err        = rte_ring_sp_enqueue(parms->handle_queue[i], valid_pkt);
+            err        = rte_ring_enqueue(parms->handle_queue[i], valid_pkt);
             if (err != 0) {
                 LOG(LEVEL_ERROR,
                     "handle queue #%d full from dispatch thread.\n", i);
@@ -135,7 +135,7 @@ static void handle_thread(void *v) {
             pixie_cpu_set_affinity(cpu_index);
     }
 
-    while (!pixie_locked_add_u32(&time_to_finish_rx, 0)) {
+    while (!pixie_locked_fetch_u32(&time_to_finish_rx)) {
         /**
          * Do polling for scan module in each loop
          */
@@ -202,7 +202,7 @@ void receive_thread(void *v) {
     pixie_set_thread_name(XTATE_NAME "-recv");
 
     if (xconf->is_offline) {
-        while (!pixie_locked_add_u32(&time_to_finish_rx, 0))
+        while (!pixie_locked_fetch_u32(&time_to_finish_rx))
             pixie_usleep(10000);
         parms->done_receiving = true;
         return;
@@ -263,7 +263,7 @@ void receive_thread(void *v) {
     }
 
     LOG(LEVEL_DEBUG, "(rx thread) starting main loop\n");
-    while (!pixie_locked_add_u32(&time_to_finish_rx, 0)) {
+    while (!pixie_locked_fetch_u32(&time_to_finish_rx)) {
         unsigned             pkt_len, pkt_secs, pkt_usecs;
         const unsigned char *pkt_data;
 
@@ -391,7 +391,7 @@ void receive_thread(void *v) {
          * give it to dispatcher
          */
         for (err = 1; err != 0;) {
-            err = rte_ring_sp_enqueue(dispatch_q, valid_pkt);
+            err = rte_ring_enqueue(dispatch_q, valid_pkt);
             if (err != 0) {
                 LOG(LEVEL_ERROR,
                     "dispatch queue full from rx thread with too fast rate.\n");

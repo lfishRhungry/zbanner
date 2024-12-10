@@ -46,6 +46,12 @@ if(NOT INT_SIZE EQUAL 4)
     message(FATAL_ERROR "This project requires an environment with 32-bit int type.")
 endif()
 
+INCLUDE (CheckTypeSize)
+CHECK_TYPE_SIZE("float" FLOAT_SIZE)
+if(NOT FLOAT_SIZE EQUAL 4)
+    message(FATAL_ERROR "This project requires an environment with 32-bit float type.")
+endif()
+
 CHECK_TYPE_SIZE("time_t" TIME_SIZE)
 if(NOT TIME_SIZE EQUAL 8)
     message(FATAL_ERROR "This project requires an environment with 64-bit time_t type.")
@@ -54,6 +60,11 @@ endif()
 CHECK_TYPE_SIZE("size_t" SIZE_SIZE)
 if(NOT SIZE_SIZE EQUAL 8)
     message(FATAL_ERROR "This project requires an environment with 64-bit size_t type.")
+endif()
+
+CHECK_TYPE_SIZE("double" DOUBLE_SIZE)
+if(NOT DOUBLE_SIZE EQUAL 8)
+    message(FATAL_ERROR "This project requires an environment with 64-bit double type.")
 endif()
 
 # Some calculations need big-endian
@@ -70,6 +81,9 @@ if (NOT CMAKE_BUILD_TYPE)
 endif ()
 
 if (UNIX)
+    ######################################################################
+    # Suggest to use sanitizers to find bugs with Clang in Debug mode.
+    ######################################################################
     # set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=leak")
     # set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address")
     # set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=thread")

@@ -91,7 +91,7 @@ infinite:;
      * NOTE: This init insures the stop of tx while the tx thread got no target
      * to scan.
      */
-    parms->my_index = start;
+    pixie_locked_store_u64(&parms->my_index, start);
 
     LOG(LEVEL_DEBUG, "(tx thread) starting main loop from: %llu inc: %llu\n",
         start, increment);
@@ -107,8 +107,9 @@ infinite:;
         while (batch_size && generator->hasmore_cb(parms->tx_index, i)) {
             ScanTarget target = {.index = more_idx};
 
-            target.target = generator->generate_cb(parms->tx_index, i,
-                                                   parms->my_repeat, &src);
+            target.target = generator->generate_cb(
+                parms->tx_index, i, pixie_locked_fetch_u64(&parms->my_repeat),
+                &src);
 
             unsigned char pkt_buf[PKT_BUF_SIZE];
             size_t        pkt_len = 0;
@@ -127,7 +128,7 @@ infinite:;
 
                 batch_size--;
                 packets_sent++;
-                parms->total_sent++;
+                pixie_locked_add_u64(&parms->total_sent, 1);
             }
 
             if (more) {
@@ -146,10 +147,10 @@ infinite:;
         } /* end of batch */
 
         /* save our current location for resuming */
-        parms->my_index = i;
+        pixie_locked_store_u64(&parms->my_index, i);
 
         /* If the user pressed <ctrl-c>, then we need to exit and save state.*/
-        if (pixie_locked_add_u32(&time_to_finish_tx, 0)) {
+        if (pixie_locked_fetch_u32(&time_to_finish_tx)) {
             break;
         }
     }
@@ -158,10 +159,11 @@ infinite:;
      * --infinite, --repeat, --static-seed
      * Set repeat as condition to avoid more packets sending.
      */
-    if (xconf->is_infinite && !pixie_locked_add_u32(&time_to_finish_tx, 0)) {
-        if ((xconf->repeat && parms->my_repeat < xconf->repeat) ||
-            !xconf->repeat) {
-            parms->my_repeat++;
+    if (xconf->is_infinite && !pixie_locked_fetch_u32(&time_to_finish_tx)) {
+        if ((xconf->repeat &&
+             pixie_locked_fetch_u64(&parms->my_repeat) < xconf->repeat) ||
+            !pixie_locked_fetch_u64(&parms->my_repeat)) {
+            pixie_locked_add_u64(&parms->my_repeat, 1);
             goto infinite;
         }
     }
@@ -178,7 +180,7 @@ infinite:;
      * Packets for sending here are not always enough to trigger implicit sock
      * flush. So do explicit flush for less latency.
      */
-    while (!pixie_locked_add_u32(&time_to_finish_rx, 0)) {
+    while (!pixie_locked_fetch_u32(&time_to_finish_rx)) {
         batch_size = throttler_next_batch(throttler, packets_sent);
         stack_flush_packets(xconf->stack, adapter, acache, &packets_sent,
                             &batch_size);

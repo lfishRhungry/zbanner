@@ -18,8 +18,6 @@ typedef struct RxThreadConfig {
     const XConf *xconf;
     /*start time info for packet trace*/
     double       pt_start;
-    /*unhandled fast-timeout event*/
-    uint64_t     total_tm_event;
     /*all queue from dispatch thread to handle threads*/
     PktQueue   **handle_q;
     /*queue from rx thread to dispatch thread*/

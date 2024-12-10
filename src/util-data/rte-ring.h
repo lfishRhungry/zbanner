@@ -74,8 +74,6 @@
  ***************************************************************************/
 #include <errno.h>
 
-#include "../pixie/pixie-threads.h"
-
 #define RTE_XTATE_DEQ_USEC 100
 #define RTE_XTATE_ENQ_USEC 1000
 
@@ -101,6 +99,21 @@
 #endif
 #define rte_snprintf snprintf
 #define PRIu32       "u"
+#elif defined(__GNUC__)
+
+#define rte_atomic32_cmpset(dst, expected, src)                                \
+    __sync_bool_compare_and_swap((volatile int *)(dst), (int)expected, (int)src)
+
+#if !defined(__x86_64__) && !defined(__i386__)
+#define rte_wmb() __sync_synchronize()
+#define rte_rmb() __sync_synchronize()
+#define rte_pause()
+#else
+#define rte_wmb()   asm volatile("sfence;" : : : "memory")
+#define rte_rmb()   asm volatile("lfence;" : : : "memory")
+#define rte_pause() asm volatile("pause")
+#endif
+
 #endif
 
 /**
@@ -316,6 +329,9 @@ void rte_ring_dump(const struct rte_ring *r);
  * enqueued. if behavior = RTE_RING_QUEUE_VARIABLE
  *   - n: Actual number of objects enqueued.
  */
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
 static inline int
 __rte_ring_mp_do_enqueue(struct rte_ring *r, void *const *obj_table, unsigned n,
                          enum rte_ring_queue_behavior behavior) {
@@ -411,6 +427,9 @@ __rte_ring_mp_do_enqueue(struct rte_ring *r, void *const *obj_table, unsigned n,
  * enqueued. if behavior = RTE_RING_QUEUE_VARIABLE
  *   - n: Actual number of objects enqueued.
  */
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
 static inline int
 __rte_ring_sp_do_enqueue(struct rte_ring *r, void *const *obj_table, unsigned n,
                          enum rte_ring_queue_behavior behavior) {
@@ -494,6 +513,9 @@ __rte_ring_sp_do_enqueue(struct rte_ring *r, void *const *obj_table, unsigned n,
  *   - n: Actual number of objects dequeued.
  */
 
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
 static inline int
 __rte_ring_mc_do_dequeue(struct rte_ring *r, void **obj_table, unsigned n,
                          enum rte_ring_queue_behavior behavior) {
@@ -581,6 +603,9 @@ __rte_ring_mc_do_dequeue(struct rte_ring *r, void **obj_table, unsigned n,
  *   if behavior = RTE_RING_QUEUE_VARIABLE
  *   - n: Actual number of objects dequeued.
  */
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
 static inline int
 __rte_ring_sc_do_dequeue(struct rte_ring *r, void **obj_table, unsigned n,
                          enum rte_ring_queue_behavior behavior) {
@@ -646,8 +671,12 @@ __rte_ring_sc_do_dequeue(struct rte_ring *r, void **obj_table, unsigned n,
  *   - -ENOBUFS: Not enough room in the ring to enqueue, no object is
  * enqueued.
  */
-static inline int rte_ring_mp_enqueue_bulk(struct rte_ring *r,
-                                           void *const *obj_table, unsigned n) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_mp_enqueue_bulk(struct rte_ring *r, void *const *obj_table,
+                         unsigned n) {
     return __rte_ring_mp_do_enqueue(r, obj_table, n, RTE_RING_QUEUE_FIXED);
 }
 
@@ -667,8 +696,12 @@ static inline int rte_ring_mp_enqueue_bulk(struct rte_ring *r,
  *   - -ENOBUFS: Not enough room in the ring to enqueue; no object is
  * enqueued.
  */
-static inline int rte_ring_sp_enqueue_bulk(struct rte_ring *r,
-                                           void *const *obj_table, unsigned n) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_sp_enqueue_bulk(struct rte_ring *r, void *const *obj_table,
+                         unsigned n) {
     return __rte_ring_sp_do_enqueue(r, obj_table, n, RTE_RING_QUEUE_FIXED);
 }
 
@@ -692,8 +725,11 @@ static inline int rte_ring_sp_enqueue_bulk(struct rte_ring *r,
  *   - -ENOBUFS: Not enough room in the ring to enqueue; no object is
  * enqueued.
  */
-static inline int rte_ring_enqueue_bulk(struct rte_ring *r,
-                                        void *const *obj_table, unsigned n) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_enqueue_bulk(struct rte_ring *r, void *const *obj_table, unsigned n) {
     if (r->prod.sp_enqueue)
         return rte_ring_sp_enqueue_bulk(r, obj_table, n);
     else
@@ -717,7 +753,11 @@ static inline int rte_ring_enqueue_bulk(struct rte_ring *r,
  *   - -ENOBUFS: Not enough room in the ring to enqueue; no object is
  * enqueued.
  */
-static inline int rte_ring_mp_enqueue(struct rte_ring *r, void *obj) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_mp_enqueue(struct rte_ring *r, void *obj) {
     return rte_ring_mp_enqueue_bulk(r, &obj, 1);
 }
 
@@ -735,7 +775,11 @@ static inline int rte_ring_mp_enqueue(struct rte_ring *r, void *obj) {
  *   - -ENOBUFS: Not enough room in the ring to enqueue; no object is
  * enqueued.
  */
-static inline int rte_ring_sp_enqueue(struct rte_ring *r, void *obj) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_sp_enqueue(struct rte_ring *r, void *obj) {
     return rte_ring_sp_enqueue_bulk(r, &obj, 1);
 }
 
@@ -757,7 +801,11 @@ static inline int rte_ring_sp_enqueue(struct rte_ring *r, void *obj) {
  *   - -ENOBUFS: Not enough room in the ring to enqueue; no object is
  * enqueued.
  */
-static inline int rte_ring_enqueue(struct rte_ring *r, void *obj) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_enqueue(struct rte_ring *r, void *obj) {
     if (r->prod.sp_enqueue)
         return rte_ring_sp_enqueue(r, obj);
     else
@@ -781,8 +829,11 @@ static inline int rte_ring_enqueue(struct rte_ring *r, void *obj) {
  *   - -ENOENT: Not enough entries in the ring to dequeue; no object is
  *     dequeued.
  */
-static inline int rte_ring_mc_dequeue_bulk(struct rte_ring *r, void **obj_table,
-                                           unsigned n) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_mc_dequeue_bulk(struct rte_ring *r, void **obj_table, unsigned n) {
     return __rte_ring_mc_do_dequeue(r, obj_table, n, RTE_RING_QUEUE_FIXED);
 }
 
@@ -801,8 +852,11 @@ static inline int rte_ring_mc_dequeue_bulk(struct rte_ring *r, void **obj_table,
  *   - -ENOENT: Not enough entries in the ring to dequeue; no object is
  *     dequeued.
  */
-static inline int rte_ring_sc_dequeue_bulk(struct rte_ring *r, void **obj_table,
-                                           unsigned n) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_sc_dequeue_bulk(struct rte_ring *r, void **obj_table, unsigned n) {
     return __rte_ring_sc_do_dequeue(r, obj_table, n, RTE_RING_QUEUE_FIXED);
 }
 
@@ -847,7 +901,11 @@ static inline int rte_ring_dequeue_bulk(struct rte_ring *r, void **obj_table,
  *   - -ENOENT: Not enough entries in the ring to dequeue; no object is
  *     dequeued.
  */
-static inline int rte_ring_mc_dequeue(struct rte_ring *r, void **obj_p) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_mc_dequeue(struct rte_ring *r, void **obj_p) {
     return rte_ring_mc_dequeue_bulk(r, obj_p, 1);
 }
 
@@ -863,7 +921,11 @@ static inline int rte_ring_mc_dequeue(struct rte_ring *r, void **obj_p) {
  *   - -ENOENT: Not enough entries in the ring to dequeue, no object is
  *     dequeued.
  */
-static inline int rte_ring_sc_dequeue(struct rte_ring *r, void **obj_p) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_sc_dequeue(struct rte_ring *r, void **obj_p) {
     return rte_ring_sc_dequeue_bulk(r, obj_p, 1);
 }
 
@@ -883,7 +945,11 @@ static inline int rte_ring_sc_dequeue(struct rte_ring *r, void **obj_p) {
  *   - -ENOENT: Not enough entries in the ring to dequeue, no object is
  *     dequeued.
  */
-static inline int rte_ring_dequeue(struct rte_ring *r, void **obj_p) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_dequeue(struct rte_ring *r, void **obj_p) {
     if (r->cons.sc_dequeue)
         return rte_ring_sc_dequeue(r, obj_p);
     else
@@ -914,7 +980,11 @@ static inline int rte_ring_full(const struct rte_ring *r) {
  *   - 1: The ring is empty.
  *   - 0: The ring is not empty.
  */
-static inline int rte_ring_empty(const struct rte_ring *r) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_empty(const struct rte_ring *r) {
     uint32_t prod_tail = r->prod.tail;
     uint32_t cons_tail = r->cons.tail;
     return !!(cons_tail == prod_tail);
@@ -928,7 +998,11 @@ static inline int rte_ring_empty(const struct rte_ring *r) {
  * @return
  *   The number of entries in the ring.
  */
-static inline unsigned rte_ring_count(const struct rte_ring *r) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline unsigned
+rte_ring_count(const struct rte_ring *r) {
     uint32_t prod_tail = r->prod.tail;
     uint32_t cons_tail = r->cons.tail;
     return ((prod_tail - cons_tail) & r->prod.mask);
@@ -942,7 +1016,11 @@ static inline unsigned rte_ring_count(const struct rte_ring *r) {
  * @return
  *   The number of free entries in the ring.
  */
-static inline unsigned rte_ring_free_count(const struct rte_ring *r) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline unsigned
+rte_ring_free_count(const struct rte_ring *r) {
     uint32_t prod_tail = r->prod.tail;
     uint32_t cons_tail = r->cons.tail;
     return ((cons_tail - prod_tail - 1) & r->prod.mask);
@@ -980,9 +1058,12 @@ struct rte_ring *rte_ring_lookup(const char *name);
  * @return
  *   - n: Actual number of objects enqueued.
  */
-static inline int rte_ring_mp_enqueue_burst(struct rte_ring *r,
-                                            void *const     *obj_table,
-                                            unsigned         n) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_mp_enqueue_burst(struct rte_ring *r, void *const *obj_table,
+                          unsigned n) {
     return __rte_ring_mp_do_enqueue(r, obj_table, n, RTE_RING_QUEUE_VARIABLE);
 }
 
@@ -998,9 +1079,12 @@ static inline int rte_ring_mp_enqueue_burst(struct rte_ring *r,
  * @return
  *   - n: Actual number of objects enqueued.
  */
-static inline int rte_ring_sp_enqueue_burst(struct rte_ring *r,
-                                            void *const     *obj_table,
-                                            unsigned         n) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_sp_enqueue_burst(struct rte_ring *r, void *const *obj_table,
+                          unsigned n) {
     return __rte_ring_sp_do_enqueue(r, obj_table, n, RTE_RING_QUEUE_VARIABLE);
 }
 
@@ -1020,8 +1104,11 @@ static inline int rte_ring_sp_enqueue_burst(struct rte_ring *r,
  * @return
  *   - n: Actual number of objects enqueued.
  */
-static inline int rte_ring_enqueue_burst(struct rte_ring *r,
-                                         void *const *obj_table, unsigned n) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_enqueue_burst(struct rte_ring *r, void *const *obj_table, unsigned n) {
     if (r->prod.sp_enqueue)
         return rte_ring_sp_enqueue_burst(r, obj_table, n);
     else
@@ -1045,8 +1132,11 @@ static inline int rte_ring_enqueue_burst(struct rte_ring *r,
  * @return
  *   - n: Actual number of objects dequeued, 0 if ring is empty
  */
-static inline int rte_ring_mc_dequeue_burst(struct rte_ring *r,
-                                            void **obj_table, unsigned n) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_mc_dequeue_burst(struct rte_ring *r, void **obj_table, unsigned n) {
     return __rte_ring_mc_do_dequeue(r, obj_table, n, RTE_RING_QUEUE_VARIABLE);
 }
 
@@ -1064,8 +1154,11 @@ static inline int rte_ring_mc_dequeue_burst(struct rte_ring *r,
  * @return
  *   - n: Actual number of objects dequeued, 0 if ring is empty
  */
-static inline int rte_ring_sc_dequeue_burst(struct rte_ring *r,
-                                            void **obj_table, unsigned n) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_sc_dequeue_burst(struct rte_ring *r, void **obj_table, unsigned n) {
     return __rte_ring_sc_do_dequeue(r, obj_table, n, RTE_RING_QUEUE_VARIABLE);
 }
 
@@ -1085,8 +1178,11 @@ static inline int rte_ring_sc_dequeue_burst(struct rte_ring *r,
  * @return
  *   - Number of objects dequeued, or a negative error code on error
  */
-static inline int rte_ring_dequeue_burst(struct rte_ring *r, void **obj_table,
-                                         unsigned n) {
+#if defined(__clang__)
+__attribute__((no_sanitize("thread")))
+#endif
+static inline int
+rte_ring_dequeue_burst(struct rte_ring *r, void **obj_table, unsigned n) {
     if (r->cons.sc_dequeue)
         return rte_ring_sc_dequeue_burst(r, obj_table, n);
     else

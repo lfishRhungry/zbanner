@@ -1,6 +1,7 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#include <stdint.h>
 #include <time.h>
 #include "pixie/pixie-threads.h"
 
@@ -35,7 +36,9 @@ extern time_t global_now;
  * Update global time atomically.
  */
 static inline void global_update_time() {
-    while (!pixie_locked_CAS64(&global_now, time(0), global_now)) {
+    while (!pixie_locked_cas_u64(
+        (uint64_t *)&global_now, time(0),
+        pixie_locked_fetch_u64((uint64_t *)&global_now))) {
     }
 }
 
@@ -43,7 +46,7 @@ static inline void global_update_time() {
  * Get global time atomically.
  */
 static inline time_t global_get_time() {
-    return pixie_locked_add_u64(&global_now, 0);
+    return (time_t)pixie_locked_fetch_u64((uint64_t *)&global_now);
 }
 
 #endif

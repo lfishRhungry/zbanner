@@ -184,9 +184,6 @@ bool output_init(const XConf *xconf, OutConf *out_conf) {
 
     out_conf->stdout_mutex = pixie_create_mutex();
     out_conf->module_mutex = pixie_create_mutex();
-    out_conf->succ_mutex   = pixie_create_mutex();
-    out_conf->fail_mutex   = pixie_create_mutex();
-    out_conf->info_mutex   = pixie_create_mutex();
 
     return true;
 }
@@ -336,21 +333,15 @@ void output_result(const OutConf *out, OutItem *item) {
         ((OutItem *)item)->timestamp = global_get_time();
 
     if (item->level == OUT_SUCCESS) {
-        pixie_acquire_mutex(out->succ_mutex);
-        ((OutConf *)out)->total_successed++;
-        pixie_release_mutex(out->succ_mutex);
+        pixie_locked_add_u64(&((OutConf *)out)->total_successed, 1);
     }
 
     if (item->level == OUT_FAILURE) {
-        pixie_acquire_mutex(out->fail_mutex);
-        ((OutConf *)out)->total_failed++;
-        pixie_release_mutex(out->fail_mutex);
+        pixie_locked_add_u64(&((OutConf *)out)->total_failed, 1);
     }
 
     if (item->level == OUT_INFO) {
-        pixie_acquire_mutex(out->info_mutex);
-        ((OutConf *)out)->total_info++;
-        pixie_release_mutex(out->info_mutex);
+        pixie_locked_add_u64(&((OutConf *)out)->total_info, 1);
     }
 
     if (item->level == OUT_INFO && !out->is_show_info)
@@ -398,9 +389,6 @@ void output_close(OutConf *out_conf) {
 
     pixie_delete_mutex(out_conf->stdout_mutex);
     pixie_delete_mutex(out_conf->module_mutex);
-    pixie_delete_mutex(out_conf->succ_mutex);
-    pixie_delete_mutex(out_conf->fail_mutex);
-    pixie_delete_mutex(out_conf->info_mutex);
 }
 
 bool output_init_nothing(const XConf *xconf, const OutConf *out_conf) {

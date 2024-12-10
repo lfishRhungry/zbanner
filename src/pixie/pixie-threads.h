@@ -45,15 +45,18 @@ void     pixie_acquire_mutex(void *p_mutex);
 void     pixie_release_mutex(void *p_mutex);
 bool     pixie_delete_mutex(void *p_mutex);
 
+/**
+ * !NOTE: Do not use
+ */
 #if defined(_MSC_VER)
 #define pixie_locked_add_u32(dst, src)                                         \
-    _InterlockedExchangeAdd((volatile long *)(dst), (src))
+    (void)_InterlockedExchangeAdd((volatile long *)(dst), (src))
 #define pixie_locked_add_u64(dst, src)                                         \
-    _InterlockedExchangeAdd64((volatile __int64 *)(dst), (src))
-#define pixie_locked_CAS32(dst, src, expected)                                 \
+    (void)_InterlockedExchangeAdd64((volatile __int64 *)(dst), (src))
+#define pixie_locked_cas_u32(dst, src, expected)                               \
     (_InterlockedCompareExchange((volatile long *)dst, src, expected) ==       \
      (expected))
-#define pixie_locked_CAS64(dst, src, expected)                                 \
+#define pixie_locked_cas_u64(dst, src, expected)                               \
     (_InterlockedCompareExchange64((volatile long long *)dst, src,             \
                                    expected) == (expected))
 #define rte_atomic32_cmpset(dst, exp, src)                                     \
@@ -62,31 +65,86 @@ bool     pixie_delete_mutex(void *p_mutex);
 
 #elif defined(__GNUC__)
 #define pixie_locked_add_u32(dst, src)                                         \
-    __sync_add_and_fetch((volatile int *)(dst), (int)(src))
+    (void)__sync_add_and_fetch((volatile int *)(dst), (int)(src))
 #define pixie_locked_add_u64(dst, src)                                         \
-    __sync_add_and_fetch((volatile long long *)(dst), (long long)(src))
-#define pixie_locked_CAS32(dst, src, expected)                                 \
+    (void)__sync_add_and_fetch((volatile long long *)(dst), (long long)(src))
+#define pixie_locked_cas_u32(dst, src, expected)                               \
     __sync_bool_compare_and_swap((volatile int *)(dst), (int)expected, (int)src)
-#define pixie_locked_CAS64(dst, src, expected)                                 \
+#define pixie_locked_cas_u64(dst, src, expected)                               \
     __sync_bool_compare_and_swap((volatile long long int *)(dst),              \
                                  (long long int)expected, (long long int)src)
-#define rte_atomic32_cmpset(dst, expected, src)                                \
-    __sync_bool_compare_and_swap((volatile int *)(dst), (int)expected, (int)src)
+#else
+#warning unknown compiler
+#endif
 
-#if !defined(__x86_64__) && !defined(__i386__)
-#define rte_wmb() __sync_synchronize()
-#define rte_rmb() __sync_synchronize()
-#define rte_pause()
+static inline bool pixie_locked_cas_float(volatile float *dst, float src,
+                                          float expected) {
+    return pixie_locked_cas_u32((uint32_t *)dst, (uint32_t)src,
+                                (uint32_t)expected);
+}
+
+static inline bool pixie_locked_cas_double(volatile double *dst, double src,
+                                           double expected) {
+    return pixie_locked_cas_u64((uint64_t *)dst, (uint64_t)src,
+                                (uint64_t)expected);
+}
+
+static inline void pixie_locked_add_float(volatile float *dst, float src) {
+    pixie_locked_add_u32((uint32_t *)dst, (uint32_t)src);
+}
+
+static inline void pixie_locked_add_double(volatile double *dst, double src) {
+    pixie_locked_add_u64((uint64_t *)dst, (uint64_t)src);
+}
+
+static inline uint32_t pixie_locked_fetch_u32(volatile uint32_t *dst) {
+#if defined(_MSC_VER)
+    return _InterlockedExchangeAdd(dst, 0)
+#elif defined(__GNUC__)
+    return __sync_add_and_fetch(dst, 0);
 #else
-#define rte_wmb()   asm volatile("sfence;" : : : "memory")
-#define rte_rmb()   asm volatile("lfence;" : : : "memory")
-#define rte_pause() asm volatile("pause")
+#warning unknown compiler
+    return 0;
 #endif
+}
+
+static inline uint64_t pixie_locked_fetch_u64(volatile uint64_t *dst) {
+#if defined(_MSC_VER)
+    return _InterlockedExchangeAdd64(dst, 0)
+#elif defined(__GNUC__)
+    return __sync_add_and_fetch(dst, 0);
 #else
-unsigned pixie_locked_add_u32(volatile unsigned *lhs, unsigned rhs);
-unsigned pixie_locked_add_u64(volatile uint64_t *lhs, uint64_t rhs);
-int pixie_locked_CAS32(volatile unsigned *dst, unsigned src, unsigned expected);
-int pixie_locked_CAS64(volatile uint64_t *dst, uint64_t src, uint64_t expected);
+#warning unknown compiler
+    return 0;
 #endif
+}
+
+static inline float pixie_locked_fetch_float(volatile float *dst) {
+    return (float)pixie_locked_fetch_u32((uint32_t *)dst);
+}
+
+static inline double pixie_locked_fetch_double(volatile double *dst) {
+    return (double)pixie_locked_fetch_u64((uint64_t *)dst);
+}
+
+static inline void pixie_locked_store_u32(volatile uint32_t *old,
+                                          uint32_t new) {
+    while (!pixie_locked_cas_u32(old, new, pixie_locked_fetch_u32(old))) {
+    }
+}
+
+static inline void pixie_locked_store_u64(volatile uint64_t *old,
+                                          uint64_t new) {
+    while (!pixie_locked_cas_u64(old, new, pixie_locked_fetch_u64(old))) {
+    }
+}
+
+static inline void pixie_locked_store_float(volatile float *old, float new) {
+    pixie_locked_store_u32((uint32_t *)old, (uint32_t) new);
+}
+
+static inline void pixie_locked_store_double(volatile double *old, float new) {
+    pixie_locked_store_u64((uint64_t *)old, (uint64_t) new);
+}
 
 #endif
