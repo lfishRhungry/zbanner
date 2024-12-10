@@ -99,6 +99,10 @@
 #endif
 #define rte_snprintf snprintf
 #define PRIu32       "u"
+
+#define rte_atomic32_cmpset(dst, exp, src)                                     \
+    (_InterlockedCompareExchange((volatile long *)dst, (long)src,              \
+                                 (long)exp) == (long)(exp))
 #elif defined(__GNUC__)
 
 #define rte_atomic32_cmpset(dst, expected, src)                                \

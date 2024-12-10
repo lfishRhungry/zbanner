@@ -59,9 +59,6 @@ bool     pixie_delete_mutex(void *p_mutex);
 #define pixie_locked_cas_u64(dst, src, expected)                               \
     (_InterlockedCompareExchange64((volatile long long *)dst, src,             \
                                    expected) == (expected))
-#define rte_atomic32_cmpset(dst, exp, src)                                     \
-    (_InterlockedCompareExchange((volatile long *)dst, (long)src,              \
-                                 (long)exp) == (long)(exp))
 
 #elif defined(__GNUC__)
 #define pixie_locked_add_u32(dst, src)                                         \
@@ -99,7 +96,7 @@ static inline void pixie_locked_add_double(volatile double *dst, double src) {
 
 static inline uint32_t pixie_locked_fetch_u32(volatile uint32_t *dst) {
 #if defined(_MSC_VER)
-    return _InterlockedExchangeAdd(dst, 0)
+    return _InterlockedExchangeAdd(dst, 0);
 #elif defined(__GNUC__)
     return __sync_add_and_fetch(dst, 0);
 #else
@@ -110,7 +107,7 @@ static inline uint32_t pixie_locked_fetch_u32(volatile uint32_t *dst) {
 
 static inline uint64_t pixie_locked_fetch_u64(volatile uint64_t *dst) {
 #if defined(_MSC_VER)
-    return _InterlockedExchangeAdd64(dst, 0)
+    return _InterlockedExchangeAdd64(dst, 0);
 #elif defined(__GNUC__)
     return __sync_add_and_fetch(dst, 0);
 #else
