@@ -33,7 +33,6 @@
 #include "smack/smack.h"
 #include "nmap/nmap-service.h"
 #include "pixie/pixie-timer.h"
-#include "crossline/crossline.h"
 #include "proto/proto-http-maker.h"
 
 #include "templ/templ-init.h"
@@ -56,8 +55,8 @@
 #include "util-misc/configer.h"
 
 #include "target/target-set.h"
-#include "target/target-ipaddress.h"
 #include "target/target-parse.h"
+#include "target/target-ipaddress.h"
 #include "target/target-rangeport.h"
 
 #ifdef WIN32
@@ -76,7 +75,7 @@
 extern ConfParam config_parameters[];
 
 // clang-format off
-const char ascii_xtate1[] =
+static const char ascii_xtate1[] =
 " /$$   /$$ /$$$$$$$$ /$$$$$$  /$$$$$$$$ /$$$$$$$$\n"
 "| $$  / $$|__  $$__//$$__  $$|__  $$__/| $$_____/\n"
 "|  $$/ $$/   | $$  | $$  \\ $$   | $$   | $$      \n"
@@ -88,7 +87,7 @@ const char ascii_xtate1[] =
 ;
 
 
-const char ascii_xtate2[] =
+static const char ascii_xtate2[] =
 "`YMM'   `MP'MMP\"\"MM\"\"YMM   db   MMP\"\"MM\"\"YMM `7MM\"\"\"YMM  \n"
 "  VMb.  ,P  P'   MM   `7  ;MM:  P'   MM   `7   MM    `7  \n"
 "   `MM.M'        MM      ,V^MM.      MM        MM   d    \n"
@@ -98,7 +97,7 @@ const char ascii_xtate2[] =
 ".MM:.  .:MMa.  .JMML..AMA.   .AMMA..JMML.    .JMMmmmmMMM \n"
 ;
 
-const char work_flow[] =
+static const char work_flow[] =
 "+--------------------------------------------------------------------------------------------+\n"
 "|                                                                                            |\n"
 "|      New Targets Generation     Tx Threads           Packet  Transmit         Tx Threads   |\n"
@@ -124,7 +123,7 @@ const char work_flow[] =
 "+--------------------------------------------------------------------------------------------+\n"
 ;
 
-const char scan_probe_module_rela[] =
+static const char scan_probe_module_rela[] =
 "+----------------------------------------------------------------------+\n"
 "|    Free supporting for new scan strategies and protocols through     |\n"
 "|    flexible ScanModules and ProbeModules creating and combination    |\n"
@@ -312,12 +311,7 @@ static const unsigned short top_tcp_ports[] = {
     58080, 60020, 60443, 61532, 61900, 62078, 63331, 64623, 64680, 65000, 65129,
     65389};
 
-/**
- * set a parameter by "key=value" string style
- * @return zero if successed, -1 if setting error, 1 if comments, 2 if invalid
- * format.
- */
-static int _set_parameter_in_kv(XConf *xconf, char *line, size_t len) {
+int xconf_set_parameter_in_kv(XConf *xconf, char *line, size_t len) {
     char *name;
     char *value;
 
@@ -460,6 +454,12 @@ static ConfRes SET_probe_module(void *conf, const char *name,
         return 0;
     }
 
+    /* support cancellation */
+    if (value[0] == 0) {
+        xconf->probe = NULL;
+        return Conf_OK;
+    }
+
     xconf->probe = get_probe_module_by_name(value);
     if (!xconf->probe) {
         LOG(LEVEL_ERROR, "FAIL %s: no such probe module\n", value);
@@ -503,6 +503,12 @@ static ConfRes SET_output_module(void *conf, const char *name,
         return 0;
     }
 
+    /* allow cancellation*/
+    if (value[0] == 0) {
+        xconf->out_conf.output_module = NULL;
+        return Conf_OK;
+    }
+
     xconf->out_conf.output_module = get_output_module_by_name(value);
     if (!xconf->out_conf.output_module) {
         LOG(LEVEL_ERROR, "FAIL %s: no such output module\n", value);
@@ -534,7 +540,7 @@ static ConfRes SET_output_as_info(void *conf, const char *name,
 static ConfRes SET_ip2asn_v6(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->ip2asn_v6_filename) {
+        if (xconf->ip2asn_v6_filename && xconf->ip2asn_v6_filename[0]) {
             fprintf(xconf->echo, "ip2asn-v6 = %s\n", xconf->ip2asn_v6_filename);
         }
         return 0;
@@ -549,7 +555,7 @@ static ConfRes SET_ip2asn_v6(void *conf, const char *name, const char *value) {
 static ConfRes SET_ip2asn_v4(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     if (xconf->echo) {
-        if (xconf->ip2asn_v4_filename) {
+        if (xconf->ip2asn_v4_filename && xconf->ip2asn_v4_filename[0]) {
             fprintf(xconf->echo, "ip2asn-v4 = %s\n", xconf->ip2asn_v4_filename);
         }
         return 0;
@@ -700,17 +706,15 @@ static ConfRes SET_scan_module_args(void *conf, const char *name,
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->scanner_args) {
+        if (xconf->scanner_args && xconf->scanner_args[0]) {
             fprintf(xconf->echo, "scan-module-args = %s\n",
                     xconf->scanner_args);
         }
         return 0;
     }
 
-    size_t len = strlen(value) + 1;
     FREE(xconf->scanner_args);
-    xconf->scanner_args = CALLOC(1, len);
-    memcpy(xconf->scanner_args, value, len);
+    xconf->scanner_args = STRDUP(value);
 
     return Conf_OK;
 }
@@ -720,16 +724,14 @@ static ConfRes SET_probe_module_args(void *conf, const char *name,
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->probe_args) {
+        if (xconf->probe_args && xconf->probe_args[0]) {
             fprintf(xconf->echo, "probe-module-args = %s\n", xconf->probe_args);
         }
         return 0;
     }
 
-    size_t len = strlen(value) + 1;
     FREE(xconf->probe_args);
-    xconf->probe_args = CALLOC(1, len);
-    memcpy(xconf->probe_args, value, len);
+    xconf->probe_args = STRDUP(value);
 
     return Conf_OK;
 }
@@ -739,17 +741,15 @@ static ConfRes SET_generate_module_args(void *conf, const char *name,
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->generator_args) {
+        if (xconf->generator_args && xconf->generator_args[0]) {
             fprintf(xconf->echo, "generate-module-args = %s\n",
                     xconf->generator_args);
         }
         return 0;
     }
 
-    size_t len = strlen(value) + 1;
     FREE(xconf->generator_args);
-    xconf->generator_args = CALLOC(1, len);
-    memcpy(xconf->generator_args, value, len);
+    xconf->generator_args = STRDUP(value);
 
     return Conf_OK;
 }
@@ -759,17 +759,15 @@ static ConfRes SET_output_module_args(void *conf, const char *name,
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->out_conf.output_args) {
+        if (xconf->out_conf.output_args && xconf->out_conf.output_args[0]) {
             fprintf(xconf->echo, "output-module-args = %s\n",
                     xconf->out_conf.output_args);
         }
         return 0;
     }
 
-    size_t len = strlen(value) + 1;
     FREE(xconf->out_conf.output_args);
-    xconf->out_conf.output_args = CALLOC(1, len);
-    memcpy(xconf->out_conf.output_args, value, len);
+    xconf->out_conf.output_args = STRDUP(value);
 
     return Conf_OK;
 }
@@ -1319,10 +1317,6 @@ static ConfRes SET_adapter(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    if (xconf->nic.ifname[0]) {
-        LOG(LEVEL_HINT, "(CONF) overwriting \"adapter=%s\"\n",
-            xconf->nic.ifname);
-    }
     snprintf(xconf->nic.ifname, sizeof(xconf->nic.ifname), "%s", value);
 
     return Conf_OK;
@@ -1982,7 +1976,7 @@ static ConfRes SET_read_conf(void *conf, const char *name, const char *value) {
     }
 
     while (fgets(line, 65535, fp)) {
-        err = _set_parameter_in_kv(xconf, line, 65535);
+        err = xconf_set_parameter_in_kv(xconf, line, 65535);
         if (err == -1)
             break;
         else if (err == 2)
@@ -2395,15 +2389,13 @@ static ConfRes SET_bpf_filter(void *conf, const char *name, const char *value) {
     XConf *xconf = (XConf *)conf;
     UNUSEDPARM(name);
     if (xconf->echo) {
-        if (xconf->bpf_filter)
+        if (xconf->bpf_filter && xconf->bpf_filter[0])
             fprintf(xconf->echo, "bpf-filter = %s\n", xconf->bpf_filter);
         return 0;
     }
 
-    size_t len = strlen(value) + 1;
     FREE(xconf->bpf_filter);
-    xconf->bpf_filter = MALLOC(len);
-    memcpy(xconf->bpf_filter, value, len);
+    xconf->bpf_filter = STRDUP(value);
 
     return Conf_OK;
 }
@@ -4332,74 +4324,6 @@ void xconf_search_module(const char *module) {
     list_searched_output_modules(module);
     printf("GENERATE MODULES:\n");
     list_searched_generate_modules(module);
-}
-
-void xconf_interactive_readline(XConf *xconf) {
-    int   err;
-    char *line = MALLOC(65535 * sizeof(char));
-
-    crossline_prompt_color_set(CROSSLINE_FGCOLOR_BRIGHT |
-                               CROSSLINE_FGCOLOR_CYAN);
-
-    while (NULL != crossline_readline(XTATE_NAME_ALL_CAPS "> ", line, 65535)) {
-
-        safe_trim(line, 65535);
-
-        if (!strcasecmp("execute", line) || !strcasecmp("run", line) ||
-            !strcasecmp("r", line)) {
-            break;
-        } else if (!strcasecmp("exit", line) || !strcasecmp("quit", line) ||
-                   !strcasecmp("q", line) || !strcasecmp("e", line)) {
-            printf("Are you sure to exit " XTATE_NAME "? [y/N]: ");
-            if (NULL == fgets(line, 65535, stdin)) {
-                LOG(LEVEL_ERROR, "(interact) faile input.\n");
-                exit(1);
-            }
-            if (line[0] == 'y' || line[0] == 'Y') {
-                LOG(LEVEL_HINT, "(" XTATE_NAME ") See you next time, bye~\n");
-                exit(0);
-            }
-            continue;
-        } else if (!strcasecmp("clear", line)) {
-            printf("Are you sure to clear configuration of " XTATE_NAME
-                   "? [y/N]: ");
-            if (NULL == fgets(line, 65535, stdin)) {
-                LOG(LEVEL_ERROR, "(interact) faile input.\n");
-                exit(1);
-            }
-            if (line[0] == 'y' || line[0] == 'Y') {
-                xconf_global_refresh(xconf);
-                LOG(LEVEL_HINT, "(interact) configuration cleared!\n");
-            }
-            continue;
-        } else if (!strcasecmp("version", line)) {
-            xconf_print_version();
-            continue;
-        } else if (!strcasecmp("echo", line)) {
-            xconf_echo(xconf, stdout);
-            continue;
-        } else if (!strcasecmp("help", line) || !strcasecmp("h", line)) {
-            printf("Interactive Setting Mode Usage:\n");
-            continue;
-        }
-
-        err = _set_parameter_in_kv(xconf, line, 65535);
-        if (err == -1) {
-            LOG(LEVEL_ERROR, "(interact) failed to set the param.\n");
-        } else if (err == 1) {
-            LOG(LEVEL_HINT,
-                "(interact) input was not a command or param conf.\n");
-        } else if (err == 2) {
-            LOG(LEVEL_HINT,
-                "(interact) invalid command or param conf format.\n");
-            LOG(LEVEL_HINT,
-                "(interact) please set param in \"key = value\" format.\n");
-        } else {
-            LOG(LEVEL_HINT, "(interact) set param successfully.\n");
-        }
-    }
-
-    FREE(line);
 }
 
 void xconf_global_refresh(XConf *xconf) {

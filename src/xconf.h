@@ -294,6 +294,13 @@ void xconf_save_conf(XConf *xconf);
 bool xconf_contains(const char *x, int argc, char **argv);
 
 /**
+ * set a parameter by "key=value" string style
+ * @return zero if successed, -1 if setting error, 1 if comments, 2 if invalid
+ * format.
+ */
+int xconf_set_parameter_in_kv(XConf *xconf, char *line, size_t len);
+
+/**
  * Called to set a <name=value> pair.
  * @return non-zero if err
  */
@@ -318,11 +325,6 @@ void xconf_help_param(const char *param);
 void xconf_search_param(const char *param);
 
 void xconf_search_module(const char *param);
-
-/**
- * setting params in a readline-style interactive way.
- */
-void xconf_interactive_readline(XConf *xconf);
 
 /**
  * Clear global used param in `main` except seed and set xconf to default

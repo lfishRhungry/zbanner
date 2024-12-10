@@ -5,31 +5,30 @@
 #include <string.h>
 #include <time.h>
 
+#include "xconf.h"
+#include "xcmd.h"
 #include "globals.h"
 #include "receive.h"
-#include "stack/stack-queue.h"
-#include "transmit.h"
 #include "version.h"
-#include "xconf.h"
-
-#include "templ/templ-init.h"
-#include "nmap/nmap-service.h"
-
-#include "target/target-cookie.h"
+#include "transmit.h"
 
 #include "rawsock/rawsock.h"
+#include "templ/templ-init.h"
+#include "nmap/nmap-service.h"
+#include "stack/stack-queue.h"
+#include "target/target-cookie.h"
 
-#include "pixie/pixie-backtrace.h"
-#include "pixie/pixie-threads.h"
-#include "pixie/pixie-timer.h"
 #include "pixie/pixie-file.h"
+#include "pixie/pixie-timer.h"
+#include "pixie/pixie-threads.h"
+#include "pixie/pixie-backtrace.h"
 
 #include "util-out/logger.h"
 #include "util-out/xtatus.h"
 #include "util-scan/init-nic.h"
-#include "util-scan/list-targets.h"
 #include "util-data/fine-malloc.h"
 #include "util-data/safe-string.h"
+#include "util-scan/list-targets.h"
 
 #include "output-modules/bson-output.h"
 #include "output-modules/mongodb-output.h"
@@ -153,7 +152,8 @@ static int _main_scan(XConf *xconf) {
     /*
      * Config params & Do global init for GenerateModule
      */
-    if (xconf->generator_args && xconf->generator->params) {
+    if (xconf->generator_args && xconf->generator_args[0] &&
+        xconf->generator->params) {
         if (conf_set_params_from_substr(NULL, xconf->generator->params,
                                         xconf->generator_args)) {
             LOG(LEVEL_ERROR, "sub param parsing of GenerateModule.\n");
@@ -252,7 +252,8 @@ static int _main_scan(XConf *xconf) {
      */
     xconf->scanner->probe = xconf->probe;
 
-    if (xconf->scanner_args && xconf->scanner->params) {
+    if (xconf->scanner_args && xconf->scanner_args[0] &&
+        xconf->scanner->params) {
         if (conf_set_params_from_substr(NULL, xconf->scanner->params,
                                         xconf->scanner_args)) {
             LOG(LEVEL_ERROR, "sub param parsing of ScanModule.\n");
@@ -268,7 +269,7 @@ static int _main_scan(XConf *xconf) {
      * Config params & Do global init for ProbeModule
      */
     if (xconf->probe) {
-        if (xconf->probe_args && xconf->probe->params) {
+        if (xconf->probe_args && xconf->probe_args[0] && xconf->probe->params) {
             if (conf_set_params_from_substr(NULL, xconf->probe->params,
                                             xconf->probe_args)) {
                 LOG(LEVEL_ERROR, "sub param parsing of ProbeModule.\n");
@@ -843,7 +844,7 @@ int main(int argc, char *argv[]) {
 
     /* into interactive setting mode*/
     if (xconf->interactive_setting) {
-        xconf_interactive_readline(xconf);
+        xcmd_interactive_readline(xconf);
     }
 
     /* logger should be prepared early */

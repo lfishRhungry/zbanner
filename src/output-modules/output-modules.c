@@ -166,7 +166,8 @@ bool output_init(const XConf *xconf, OutConf *out_conf) {
             return false;
         }
 
-        if (out_conf->output_module->params && out_conf->output_args) {
+        if (out_conf->output_module->params && out_conf->output_args &&
+            out_conf->output_args[0]) {
             if (conf_set_params_from_substr(NULL,
                                             out_conf->output_module->params,
                                             out_conf->output_args)) {
