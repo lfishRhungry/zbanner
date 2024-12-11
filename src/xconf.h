@@ -256,7 +256,7 @@ typedef struct XtateConf {
     unsigned         init_ipv4_adapter    : 1;
     unsigned         init_ipv6_adapter    : 1;
     unsigned         listtargets_in_order : 1;
-    unsigned         interactive_setting  : 1;
+    unsigned         interactive_mode     : 1;
 
     /**
      * parse BSON file

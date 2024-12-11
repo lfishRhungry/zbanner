@@ -20,9 +20,10 @@ extern Scanner UdpScan;
 extern Scanner TcpStateScan;
 extern Scanner YarrpEchoScan;
 extern Scanner YarrpUdpScan;
-//! REGIST YOUR SCAN MODULE HERE
+//! ADD YOUR SCAN MODULE HERE
 
-static Scanner *scan_modules_list[] = {
+
+Scanner *scan_modules_list[] = {
     &TcpSynScan, /*default scan module*/
     &IcmpEchoScan,
     &IcmpTimeScan,
@@ -34,12 +35,14 @@ static Scanner *scan_modules_list[] = {
     &TcpStateScan,
     &YarrpEchoScan,
     &YarrpUdpScan,
-    //! REGIST YOUR SCAN MODULE HERE
+    //! REGISTER YOUR SCAN MODULE HERE
+
+    NULL /*keep the null tail*/
 };
 // clang-format on
 
 Scanner *get_scan_module_by_name(const char *name) {
-    int len = (int)(ARRAY_SIZE(scan_modules_list));
+    int len = (int)(ARRAY_SIZE(scan_modules_list)) - 1;
     for (int i = 0; i < len; i++) {
         if (conf_equals(scan_modules_list[i]->name, name)) {
             return scan_modules_list[i];
@@ -49,7 +52,7 @@ Scanner *get_scan_module_by_name(const char *name) {
 }
 
 void list_searched_scan_modules(const char *name) {
-    int len = (int)(ARRAY_SIZE(scan_modules_list));
+    int len = (int)(ARRAY_SIZE(scan_modules_list)) - 1;
     int distance;
     for (int i = 0; i < len; i++) {
         distance = conf_fuzzy_distance(scan_modules_list[i]->name, name);
@@ -67,7 +70,7 @@ void list_searched_scan_modules(const char *name) {
 }
 
 void list_all_scan_modules() {
-    int len = (int)(ARRAY_SIZE(scan_modules_list));
+    int len = (int)(ARRAY_SIZE(scan_modules_list)) - 1;
 
     printf("\n");
 
@@ -86,9 +89,6 @@ void help_scan_module(Scanner *module) {
         return;
     }
 
-    printf("\n");
-    printf(XPRINT_DASH_LINE);
-    printf("\n");
     printf("\n");
     printf("  Name of ScanModule:  %s\n", module->name);
     printf("  Probe Type Required: %s\n",
@@ -116,9 +116,6 @@ void help_scan_module(Scanner *module) {
         }
     }
 
-    printf("\n");
-    printf(XPRINT_DASH_LINE);
-    printf("\n");
     printf("\n");
 }
 

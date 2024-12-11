@@ -8,27 +8,28 @@
 #include "../util-misc/misc.h"
 
 // clang-format off
-//! ADD YOUR GENERATOR HERE
 extern Generator BlackRockGen;
 extern Generator IpStreamGen;
 extern Generator AddrStreamGen;
 extern Generator IpListGen;
 extern Generator AddrListGen;
+//! ADD YOUR GENERATE MODULE HERE
 
 
-//! ADD YOUR GENERATOR HERE
-static Generator *generate_modules_list[] = {
+Generator *generate_modules_list[] = {
     &BlackRockGen, /* its also the default generator*/
     &IpStreamGen,
     &AddrStreamGen,
     &IpListGen,
     &AddrListGen,
+    //! REGISTER YOUR GENERATE MODULE HERE
 
+    NULL /*keep the null tail*/
 };
 // clang-format on
 
 Generator *get_generate_module_by_name(const char *name) {
-    int len = (int)ARRAY_SIZE(generate_modules_list);
+    int len = (int)ARRAY_SIZE(generate_modules_list) - 1;
     for (int i = 0; i < len; i++) {
         if (conf_equals(generate_modules_list[i]->name, name)) {
             return generate_modules_list[i];
@@ -38,7 +39,7 @@ Generator *get_generate_module_by_name(const char *name) {
 }
 
 void list_searched_generate_modules(const char *name) {
-    int len = (int)(ARRAY_SIZE(generate_modules_list));
+    int len = (int)(ARRAY_SIZE(generate_modules_list)) - 1;
     int distance;
     for (int i = 0; i < len; i++) {
         distance = conf_fuzzy_distance(generate_modules_list[i]->name, name);
@@ -56,7 +57,7 @@ void list_searched_generate_modules(const char *name) {
 }
 
 void list_all_generate_modules() {
-    int len = (int)(ARRAY_SIZE(generate_modules_list));
+    int len = (int)(ARRAY_SIZE(generate_modules_list)) - 1;
 
     printf("\n");
 
@@ -75,9 +76,6 @@ void help_generate_module(Generator *module) {
         return;
     }
 
-    printf("\n");
-    printf(XPRINT_DASH_LINE);
-    printf("\n");
     printf("\n");
     printf("  GenerateModule Name: %s\n", module->name);
     printf("\n");
@@ -99,8 +97,7 @@ void help_generate_module(Generator *module) {
             printf("\n\n");
         }
     }
-    printf(XPRINT_DASH_LINE);
-    printf("\n");
+
     printf("\n");
 }
 

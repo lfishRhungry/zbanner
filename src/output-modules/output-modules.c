@@ -22,9 +22,10 @@ extern Output NullOutput;
 #ifndef NOT_FOUND_MONGOC
 extern Output MongodbOutput;
 #endif
-//! REGIST YOUR OUTPUT MODULE HERE
+//! ADD YOUR OUTPUT MODULE HERE
 
-static Output *output_modules_list[] = {
+
+Output *output_modules_list[] = {
     &TextOutput,
     &NdjsonOutput,
 #ifndef NOT_FOUND_BSON
@@ -36,7 +37,9 @@ static Output *output_modules_list[] = {
     &MongodbOutput,
 #endif
     &NullOutput,
-    //! REGIST YOUR OUTPUT MODULE HERE
+    //! REGISTER YOUR OUTPUT MODULE HERE
+
+    NULL /*keep the null tail*/
 };
 // clang-format on
 
@@ -55,7 +58,7 @@ const char *output_level_to_string(OutLevel level) {
 }
 
 Output *get_output_module_by_name(const char *name) {
-    int len = (int)ARRAY_SIZE(output_modules_list);
+    int len = (int)ARRAY_SIZE(output_modules_list) - 1;
     for (int i = 0; i < len; i++) {
         if (conf_equals(output_modules_list[i]->name, name)) {
             return output_modules_list[i];
@@ -65,7 +68,7 @@ Output *get_output_module_by_name(const char *name) {
 }
 
 void list_searched_output_modules(const char *name) {
-    int len = (int)(ARRAY_SIZE(output_modules_list));
+    int len = (int)(ARRAY_SIZE(output_modules_list)) - 1;
     int distance;
     for (int i = 0; i < len; i++) {
         distance = conf_fuzzy_distance(output_modules_list[i]->name, name);
@@ -83,7 +86,7 @@ void list_searched_output_modules(const char *name) {
 }
 
 void list_all_output_modules() {
-    int len = (int)(ARRAY_SIZE(output_modules_list));
+    int len = (int)(ARRAY_SIZE(output_modules_list)) - 1;
 
     printf("\n");
 
@@ -102,9 +105,6 @@ void help_output_module(Output *module) {
         return;
     }
 
-    printf("\n");
-    printf(XPRINT_DASH_LINE);
-    printf("\n");
     printf("\n");
     printf("  Name of OutputModule: %s\n", module->name);
     printf("  Need to Specify file: %s\n",
@@ -128,9 +128,7 @@ void help_output_module(Output *module) {
             printf("\n\n");
         }
     }
-    printf("\n");
-    printf(XPRINT_DASH_LINE);
-    printf("\n");
+
     printf("\n");
 }
 

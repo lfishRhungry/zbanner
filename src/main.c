@@ -843,7 +843,7 @@ int main(int argc, char *argv[]) {
         xconf->seed = get_one_entropy();
 
     /* into interactive setting mode*/
-    if (xconf->interactive_setting) {
+    if (xconf->interactive_mode) {
         xcmd_interactive_readline(xconf);
     }
 

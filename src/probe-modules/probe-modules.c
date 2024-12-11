@@ -13,7 +13,6 @@ This is an Application-layer Probe(or Request) Plugin System
 */
 
 // clang-format off
-//! ADD YOUR PROBE HERE
 extern Probe NullProbe;
 extern Probe HttpProbe;
 extern Probe HttpStateProbe;
@@ -75,9 +74,10 @@ extern Probe LzrIppProbe;
 extern Probe LzrWaitProbe;
 extern Probe LzrNewlinesProbe;
 extern Probe LzrNewlines50Probe;
+//! ADD YOUR PROBE MODULE HERE
 
-//! ADD YOUR PROBE HERE
-static Probe *probe_modules_list[] = {
+
+Probe *probe_modules_list[] = {
     &NullProbe, /* its also the default probe*/
     &HttpProbe,
     &HttpStateProbe,
@@ -155,11 +155,14 @@ static Probe *probe_modules_list[] = {
     &LzrWaitProbe,
     &LzrNewlinesProbe,
     &LzrNewlines50Probe,
+    //! REGISTER YOUR PROBE MODULE HERE
+
+    NULL /*keep the null tail*/
 };
 // clang-format on
 
 Probe *get_probe_module_by_name(const char *name) {
-    int len = (int)ARRAY_SIZE(probe_modules_list);
+    int len = (int)ARRAY_SIZE(probe_modules_list) - 1;
     for (int i = 0; i < len; i++) {
         if (conf_equals(probe_modules_list[i]->name, name)) {
             return probe_modules_list[i];
@@ -218,7 +221,7 @@ int probe_type_to_string(unsigned type, char *string, size_t str_len) {
 }
 
 void list_searched_probe_modules(const char *name) {
-    int len = (int)(ARRAY_SIZE(probe_modules_list));
+    int len = (int)(ARRAY_SIZE(probe_modules_list)) - 1;
     int distance;
     for (int i = 0; i < len; i++) {
         distance = conf_fuzzy_distance(probe_modules_list[i]->name, name);
@@ -236,7 +239,7 @@ void list_searched_probe_modules(const char *name) {
 }
 
 void list_all_probe_modules() {
-    int len = (int)(ARRAY_SIZE(probe_modules_list));
+    int len = (int)(ARRAY_SIZE(probe_modules_list)) - 1;
 
     printf("\n");
 
@@ -255,9 +258,6 @@ void help_probe_module(Probe *module) {
         return;
     }
 
-    printf("\n");
-    printf(XPRINT_DASH_LINE);
-    printf("\n");
     printf("\n");
     printf("  ProbeModule Name: %s\n", module->name);
     printf("  ProbeModule Type: %s\n", get_probe_type_name(module->type));
@@ -284,8 +284,7 @@ void help_probe_module(Probe *module) {
             printf("\n\n");
         }
     }
-    printf(XPRINT_DASH_LINE);
-    printf("\n");
+
     printf("\n");
 }
 

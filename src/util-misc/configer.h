@@ -41,7 +41,8 @@ typedef struct ConfigParam {
     CONFIG_SET_PARAM setter;
     ConfType         type;
     const char      *alt_names[8];
-    const char      *help_text; /*set NULL if it's not a normal prarameter*/
+    const char      *help_text;  /*set NULL if it's not a normal prarameter*/
+    const char      *short_hint; /*concise version of help, could be NULL*/
 } ConfParam;
 
 bool conf_is_bool(const char *str);
