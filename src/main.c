@@ -931,7 +931,8 @@ int main(int argc, char *argv[]) {
 
     switch (xconf->op) {
         case Operation_Default:
-            xconf_print_banner();
+            if (!xconf->interactive_mode)
+                xconf_print_banner();
             break;
 
         case Operation_Scan:
