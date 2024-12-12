@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(
     xtate
     LANGUAGES               C
-    VERSION                 2.8.0
+    VERSION                 2.8.1
     DESCRIPTION             "A modular all-stack network scanner for next-generation internet surveys."
     HOMEPAGE_URL            "https://github.com/sharkocha/xtate"
     )
@@ -250,18 +250,6 @@ if (mongoc-1.0_FOUND)
 else ()
     add_compile_definitions(NOT_FOUND_MONGOC)
 endif ()
-
-
-# --------------------fann
-# if (${WITH_FANN})
-#     find_package(fann)
-# endif ()
-
-# if (${fann_FOUND})
-#     target_link_libraries(${exe_name} fann)
-# else ()
-#     add_compile_definitions(NOT_FOUND_FANN)
-# endif ()
 
 # --------------------lua5.3
 # set(LUA_USE_STATIC_LIBS TRUE)
