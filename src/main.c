@@ -931,7 +931,7 @@ int main(int argc, char *argv[]) {
 
     switch (xconf->op) {
         case Operation_Default:
-            xconf_print_usage();
+            xconf_print_banner();
             break;
 
         case Operation_Scan:
@@ -992,6 +992,10 @@ int main(int argc, char *argv[]) {
 
         case Operation_HelpGenerateModule:
             help_generate_module(xconf->generator);
+            break;
+
+        case Operation_PrintUsage:
+            xconf_print_usage();
             break;
 
         case Operation_PrintHelp:

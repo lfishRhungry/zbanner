@@ -63,6 +63,7 @@ enum Operation {
     Operation_HelpOutputModule,    /* print help of specified output module */
     Operation_ListGenerateModules, /* list all generate modules */
     Operation_HelpGenerateModule,  /* print help of specified generate module */
+    Operation_PrintUsage,          /* print usage examples*/
     Operation_PrintHelp,           /* print help text for all parameters*/
     Operation_PrintIntro,          /* print introduction text of work flow*/
     Operation_PrintVersion,        /* print version and build info*/
@@ -313,6 +314,8 @@ int xconf_set_parameter(XConf *xconf, const char *name, const char *value);
 void xconf_echo(XConf *xconf, FILE *fp);
 
 void xconf_print_intro();
+
+void xconf_print_banner();
 
 void xconf_print_usage();
 

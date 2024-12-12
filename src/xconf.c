@@ -2445,7 +2445,7 @@ static ConfRes SET_usage(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf_print_usage();
+    xconf->op = Operation_PrintUsage;
 
     return Conf_ERR;
 }
@@ -3957,12 +3957,38 @@ void xconf_print_intro() {
     printf("\n");
 }
 
-void xconf_print_usage() {
+void xconf_print_banner() {
     printf("\n\n\n");
     xprint_with_head(ascii_xtate2, 10, 80);
     printf("\n                             " XTATE_BANNER "\n\n");
     printf("\n");
 
+    printf("\n");
+    printf("Welcome to " XTATE_NAME_TITLE_CASE "!");
+    printf("\n");
+    xprint(XTATE_DESCRIPTION, 2, 80);
+    printf("\n");
+    printf("\n");
+    printf("  Author : " XTATE_AUTHOR "\n");
+    printf("  Github : " XTATE_GITHUB_URL "\n");
+    printf("  Contact: " XTATE_CONTACT "\n");
+    printf("\n");
+    printf("usage format with params:\n");
+    printf("  " XTATE_NAME " [options] [-ip IPs -p PORTs [-scan SCANMODULE "
+           "[-probe PROBEMODULE]]]\n");
+    printf("\n");
+    printf("use interactive mode:\n");
+    printf("  " XTATE_NAME " -interactive\n");
+    printf("\n");
+    printf("check basic usage examples:\n");
+    printf("  " XTATE_NAME " -usage\n");
+    printf("\n");
+    printf("detailed help info of global params:\n");
+    printf("  " XTATE_NAME " -help\n");
+    printf("\n");
+}
+
+void xconf_print_usage() {
     printf("\n");
     printf("Welcome to " XTATE_NAME_TITLE_CASE "!");
     printf("\n");
@@ -4020,6 +4046,10 @@ void xconf_print_usage() {
     printf("\n");
     printf("  " XTATE_NAME " -help-scan tcp-syn\n");
     xprint("see help of TcpSyn ScanModule in detail.\n", 6, 80);
+    printf("\n");
+    printf("  " XTATE_NAME " -interactive\n");
+    xprint("set params and do scanning in an user-friendly interactive mode.\n",
+           6, 80);
     printf("\n");
     printf("  " XTATE_NAME " -version\n");
     xprint("print version and compilation info.\n", 6, 80);

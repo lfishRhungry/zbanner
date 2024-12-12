@@ -53,6 +53,7 @@ Welcome to Xtate -- A modular all-stack network scanner for next-generation inte
     1. [Some Generalizable Probe Modules](#some-generalizable-probe-modules)
     1. [Output Modules](#output-modules)
     1. [Generate Modules](#generate-modules)
+1. ⚛️[Interactive mode](#interactivemode)
 1. 💁[Helps in Detail](#💁helps-in-detail)
 1. 🥽[Scan Rate](#scanrate)
 1. ❗[️Set Your Firewall](#setyourfirewall)
@@ -201,6 +202,7 @@ basic use examples of xtate:
 
 <a href="#top">🔝back to top</a>
 
+
 <h1 id="modules">📦 Modules</h1>
 
 ## Some Typical Scan Modules
@@ -256,6 +258,15 @@ GenerateModule or Generator is an abstraction for scan targets generation. It ma
 I expect that users can design their own target generation algorithms, or method like gererating from database or files, even design it with OutputModule together.
 
 <a href="#top">🔝back to top</a>
+
+<h1 id="interactivemode">⚛️ Interactive Mode</h1>
+
+Xtate has a huge amount of params to set and many modules to choose so that it can do some fine-grained measurements.
+However, it maybe complex for beginners to learn every usage from scratch.
+So I make Xtate to support an interactive mode which is more user-friendly to use.
+We can adjust params and choose modules comfortablely with auto completion in this mode.
+
+Use `xtate --interact` to start Xtate in an user-friendly interactive mode.
 
 <h1 id="helpsindetail">💁 Helps in Detail</h1>
 
