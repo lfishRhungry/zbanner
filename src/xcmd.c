@@ -13,6 +13,7 @@
 #include <openssl/ec.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #define READLINE_SIZE 65535
 
@@ -505,6 +506,7 @@ void xcmd_interactive_readline(XConf *xconf) {
     printf("\n");
 
     size_t prefix_len;
+    size_t line_len;
     ActRes act_res;
     char  *line = MALLOC(READLINE_SIZE * sizeof(char));
 
@@ -522,6 +524,8 @@ void xcmd_interactive_readline(XConf *xconf) {
         safe_trim(line, READLINE_SIZE);
         if (line[0] == 0)
             continue;
+
+        line_len = strlen(line);
 
         /**
          * Command
@@ -547,16 +551,24 @@ void xcmd_interactive_readline(XConf *xconf) {
         for (i = 0; config_prefix[i].prefix; i++) {
             prefix_len = strlen(config_prefix[i].prefix);
             /*like `prefix-cmd subcmd`*/
-            if (!strncasecmp(config_prefix[i].prefix, line, prefix_len) &&
-                strlen(line) > prefix_len + 1 && line[prefix_len] == ' ') {
+            if (!strncasecmp(config_prefix[i].prefix, line, prefix_len)) {
                 prefix_matched = true;
-                config_prefix[i].handle(xconf, line + prefix_len + 1,
-                                        READLINE_SIZE - prefix_len - 1);
+                break;
             }
         }
 
-        if (prefix_matched)
-            continue;
+        if (prefix_matched) {
+            if (line_len > prefix_len + 1 && line[prefix_len] == ' ') {
+                config_prefix[i].handle(xconf, line + prefix_len + 1,
+                                        READLINE_SIZE - prefix_len - 1);
+                continue;
+            } else if (line_len == prefix_len) {
+                LOG(LEVEL_ERROR,
+                    "(" XTATE_NAME
+                    ") need to specify a param for the command.\n");
+                continue;
+            }
+        }
 
         LOG(LEVEL_ERROR, "(" XTATE_NAME ") unknown input, use <TAB> to get.\n");
     }
