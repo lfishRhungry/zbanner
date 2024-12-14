@@ -598,11 +598,14 @@ static const char ascii_banner[] =
 
 void xcmd_interactive_readline(XConf *xconf) {
     printf("\n");
-    xprint_with_head(ascii_banner, 15, 80);
+    xprint_with_head(ascii_banner, 8, 80);
     printf("\n");
-    xprint("Welcome to " XTATE_NAME_TITLE_CASE "!", 2, 80);
+    xprint("Welcome to interactive-mode " XTATE_NAME_TITLE_CASE ":", 2, 80);
     printf("\n");
-    xprint(XTATE_DESCRIPTION, 4, 80);
+    xprint("Configure params by `set` and `run` " XTATE_NAME " to scan.", 4,
+           80);
+    printf("\n");
+    xprint("Use <TAB> to see all commands and do auto completions.", 4, 80);
     printf("\n");
     printf("\n");
 
