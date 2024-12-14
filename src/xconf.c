@@ -4181,8 +4181,10 @@ void xconf_print_version() {
             compiler_version = "2022 VC++17.10";
         else if (msc_ver == 1941)
             compiler_version = "2022 VC++17.11";
+        else if (msc_ver == 1942)
+            compiler_version = "2022 VC++17.12";
         else
-            compiler_version = "2022-post VC++17.11-post";
+            compiler_version = "2022-post VC++17.12-post";
     }
 
 #elif defined(__GNUC__) /*clang and mingw also have __GNUC__*/
