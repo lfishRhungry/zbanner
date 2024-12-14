@@ -1,5 +1,6 @@
 #include "xcmd.h"
 
+#include "generate-modules/generate-modules.h"
 #include "scan-modules/scan-modules.h"
 #include "version.h"
 #include "crossline/crossline.h"
@@ -74,7 +75,7 @@ static ActRes ACT_clear(void *conf) {
 
     if ((line[0] == 'y' || line[0] == 'Y') && line[1] == '\n') {
         xconf_global_refresh(xconf);
-        LOG(LEVEL_HINT, "Configuration cleared!\n");
+        LOG(LEVEL_HINT, "configuration cleared!\n");
     }
 
     return ActRes_Next;
@@ -116,7 +117,7 @@ static ActRes ACT_update_seed(void *conf) {
 
     uint64_t old = xconf->seed;
     xconf->seed  = get_one_entropy();
-    LOG(LEVEL_HINT, "Seed updated from %" PRIu64 " to %" PRIu64 "\n", old,
+    LOG(LEVEL_HINT, "updated seed from %" PRIu64 " to %" PRIu64 "\n", old,
         xconf->seed);
     return ActRes_Next;
 }
@@ -146,9 +147,45 @@ static ActRes ACT_list_gen(void *conf) {
     return ActRes_Next;
 }
 
+static ActRes ACT_unset_scan(void *conf) {
+    XConf *xconf = conf;
+
+    xconf->scanner = NULL;
+    LOG(LEVEL_HINT, "previous scan module was unsetted.\n");
+    return ActRes_Next;
+}
+
+static ActRes ACT_unset_probe(void *conf) {
+    XConf *xconf = conf;
+
+    xconf->probe = NULL;
+    LOG(LEVEL_HINT, "previous probe module was unsetted.\n");
+    return ActRes_Next;
+}
+
+static ActRes ACT_unset_out(void *conf) {
+    XConf *xconf = conf;
+
+    xconf->out_conf.output_module = NULL;
+    LOG(LEVEL_HINT, "previous output module was unsetted.\n");
+    return ActRes_Next;
+}
+
+static ActRes ACT_unset_gen(void *conf) {
+    XConf *xconf = conf;
+
+    xconf->generator = NULL;
+    LOG(LEVEL_HINT, "previous generate module was unsetted.\n");
+    return ActRes_Next;
+}
+
 static ActRes ACT_prefix(void *conf) { return ActRes_Prefix; }
 
 #define PRE_SET_PARAM     "set"
+#define PRE_SET_SCAN      "set-scan"
+#define PRE_SET_PROBE     "set-probe"
+#define PRE_SET_OUT       "set-out"
+#define PRE_SET_GEN       "set-gen"
 #define PRE_HELP_PARAM    "help-param"
 #define PRE_HELP_SCAN     "help-scan"
 #define PRE_HELP_PROBE    "help-probe"
@@ -159,37 +196,45 @@ static ActRes ACT_prefix(void *conf) { return ActRes_Prefix; }
 
 static const XCmd config_cmd[] = {
     {"run", "Execute " XTATE_NAME " with configured parmas.", ACT_run},
-    {PRE_SET_PARAM,
-     "Set a global param of " XTATE_NAME_TITLE_CASE " like `set key = value`.",
+    {PRE_SET_PARAM, "Set a global param of like `set key = value`.",
      ACT_prefix},
-    {"echo", "Print current configuration of " XTATE_NAME_TITLE_CASE, ACT_echo},
-    {"echo-all", "Print all configuration of " XTATE_NAME_TITLE_CASE,
+    {PRE_SET_SCAN, "Choose a scan module.", ACT_prefix},
+    {PRE_SET_PROBE, "Choose a probe module.", ACT_prefix},
+    {PRE_SET_OUT, "Choose an output module.", ACT_prefix},
+    {PRE_SET_GEN, "Choose a generate module.", ACT_prefix},
+    {"echo", "Print current configuration.", ACT_echo},
+    {"echo-all", "Print all configuration includes default settings.",
      ACT_echo_all},
     {"clear", "Refresh configuration to default except `seed`.", ACT_clear},
-    {"exit", "Exit the program directly.", ACT_exit},
-    {PRE_SEARCH_PARAM,
-     "Fuzzy search global params of " XTATE_NAME_TITLE_CASE ".", ACT_prefix},
-    {"list-param", "List all global params and detailed help.", ACT_list_param},
-    {PRE_HELP_PARAM, "Print detailed help of a specified global param.",
-     ACT_prefix},
-    {PRE_SEARCH_MODULE, "Fuzzy search modules of " XTATE_NAME_TITLE_CASE ".",
-     ACT_prefix},
-    {"list-scan", "List all scan modules.", ACT_list_scan},
-    {PRE_HELP_SCAN, "Print detailed help of a specified Scan Module.",
-     ACT_prefix},
-    {"list-probe", "List all probe modules.", ACT_list_probe},
-    {PRE_HELP_PROBE, "Print detailed help of a specified Probe Module.",
-     ACT_prefix},
-    {"list-out", "List all output modules.", ACT_list_out},
-    {PRE_HELP_OUT, "Print detailed help of a specified Output Module.",
-     ACT_prefix},
-    {"list-gen", "List all generate modules.", ACT_list_gen},
-    {PRE_HELP_GEN, "Print detailed help of a specified Generate Module.",
-     ACT_prefix},
     {"update-seed", "Update the global seed to a new rand number.",
      ACT_update_seed},
+    {"unset-scan", "Unset previous scan module.", ACT_unset_scan},
+    {"unset-probe", "Unset previous probe module.", ACT_unset_probe},
+    {"unset-out", "Unset previous output module.", ACT_unset_out},
+    {"unset-gen", "Unset previous generate module.", ACT_unset_gen},
+    {"list-param", "List all global params and detailed help.", ACT_list_param},
+    {"list-scan", "List all scan modules.", ACT_list_scan},
+    {"list-probe", "List all probe modules.", ACT_list_probe},
+    {"list-out", "List all output modules.", ACT_list_out},
+    {"list-gen", "List all generate modules.", ACT_list_gen},
+    {PRE_HELP_PARAM, "Print detailed help of a specified global param.",
+     ACT_prefix},
+    {PRE_HELP_SCAN, "Print detailed help of a specified Scan Module.",
+     ACT_prefix},
+    {PRE_HELP_PROBE, "Print detailed help of a specified Probe Module.",
+     ACT_prefix},
+    {PRE_HELP_OUT, "Print detailed help of a specified Output Module.",
+     ACT_prefix},
+    {PRE_HELP_GEN, "Print detailed help of a specified Generate Module.",
+     ACT_prefix},
+    {PRE_SEARCH_PARAM,
+     "Fuzzy search in all global params of " XTATE_NAME_TITLE_CASE ".",
+     ACT_prefix},
+    {PRE_SEARCH_MODULE,
+     "Fuzzy search in all modules of " XTATE_NAME_TITLE_CASE ".", ACT_prefix},
     {"version", "Print version info of " XTATE_NAME_TITLE_CASE, ACT_version},
     {"help", "Print help information for interactive command mode.", ACT_help},
+    {"exit", "Exit " XTATE_NAME_TITLE_CASE " directly.", ACT_exit},
 
     {0}};
 
@@ -221,6 +266,54 @@ static void HDL_set(void *conf, char *subcmd, size_t len) {
     } else {
         LOG(LEVEL_HINT, "set param successfully.\n");
     }
+}
+
+static void HDL_set_scan(void *conf, char *subcmd, size_t len) {
+    XConf *xconf = conf;
+
+    Scanner *scan = get_scan_module_by_name(subcmd);
+    if (!scan) {
+        LOG(LEVEL_ERROR, "no such scan module named %s\n", subcmd);
+        return;
+    }
+
+    xconf->scanner = scan;
+}
+
+static void HDL_set_probe(void *conf, char *subcmd, size_t len) {
+    XConf *xconf = conf;
+
+    Probe *probe = get_probe_module_by_name(subcmd);
+    if (!probe) {
+        LOG(LEVEL_ERROR, "no such probe module named %s\n", subcmd);
+        return;
+    }
+
+    xconf->probe = probe;
+}
+
+static void HDL_set_out(void *conf, char *subcmd, size_t len) {
+    XConf *xconf = conf;
+
+    Output *out = get_output_module_by_name(subcmd);
+    if (!out) {
+        LOG(LEVEL_ERROR, "no such output module named %s\n", subcmd);
+        return;
+    }
+
+    xconf->out_conf.output_module = out;
+}
+
+static void HDL_set_gen(void *conf, char *subcmd, size_t len) {
+    XConf *xconf = conf;
+
+    Generator *gen = get_generate_module_by_name(subcmd);
+    if (!gen) {
+        LOG(LEVEL_ERROR, "no such generate module named %s\n", subcmd);
+        return;
+    }
+
+    xconf->generator = gen;
 }
 
 static void HDL_help_param(void *conf, char *subcmd, size_t len) {
@@ -277,7 +370,7 @@ static void HDL_search_module(void *conf, char *subcmd, size_t len) {
 
 static void CPL_scan_module(const char              *cmd,
                             crossline_completions_t *p_completion) {
-    crossline_color_e cmd_color = CROSSLINE_FGCOLOR_YELLOW |
+    crossline_color_e cmd_color = CROSSLINE_FGCOLOR_GREEN |
                                   CROSSLINE_FGCOLOR_BRIGHT |
                                   CROSSLINE_BGCOLOR_DEFAULT;
     crossline_color_e help_color = CROSSLINE_COLOR_DEFAULT;
@@ -295,7 +388,7 @@ static void CPL_scan_module(const char              *cmd,
 
 static void CPL_probe_module(const char              *cmd,
                              crossline_completions_t *p_completion) {
-    crossline_color_e cmd_color = CROSSLINE_FGCOLOR_YELLOW |
+    crossline_color_e cmd_color = CROSSLINE_FGCOLOR_GREEN |
                                   CROSSLINE_FGCOLOR_BRIGHT |
                                   CROSSLINE_BGCOLOR_DEFAULT;
     crossline_color_e help_color = CROSSLINE_COLOR_DEFAULT;
@@ -313,7 +406,7 @@ static void CPL_probe_module(const char              *cmd,
 
 static void CPL_output_module(const char              *cmd,
                               crossline_completions_t *p_completion) {
-    crossline_color_e cmd_color = CROSSLINE_FGCOLOR_YELLOW |
+    crossline_color_e cmd_color = CROSSLINE_FGCOLOR_GREEN |
                                   CROSSLINE_FGCOLOR_BRIGHT |
                                   CROSSLINE_BGCOLOR_DEFAULT;
     crossline_color_e help_color = CROSSLINE_COLOR_DEFAULT;
@@ -331,7 +424,7 @@ static void CPL_output_module(const char              *cmd,
 
 static void CPL_generate_module(const char              *cmd,
                                 crossline_completions_t *p_completion) {
-    crossline_color_e cmd_color = CROSSLINE_FGCOLOR_YELLOW |
+    crossline_color_e cmd_color = CROSSLINE_FGCOLOR_GREEN |
                                   CROSSLINE_FGCOLOR_BRIGHT |
                                   CROSSLINE_BGCOLOR_DEFAULT;
     crossline_color_e help_color = CROSSLINE_COLOR_DEFAULT;
@@ -351,7 +444,7 @@ static void CPL_global_conf(const char              *cmd,
                             crossline_completions_t *p_completion) {
     char              help_buf[2048];
     size_t            help_mas  = sizeof(help_buf);
-    crossline_color_e cmd_color = CROSSLINE_FGCOLOR_YELLOW |
+    crossline_color_e cmd_color = CROSSLINE_FGCOLOR_GREEN |
                                   CROSSLINE_FGCOLOR_BRIGHT |
                                   CROSSLINE_BGCOLOR_DEFAULT;
     crossline_color_e help_color = CROSSLINE_COLOR_DEFAULT;
@@ -432,6 +525,10 @@ static void CPL_global_conf(const char              *cmd,
 
 static const XPrefix config_prefix[] = {
     {PRE_SET_PARAM, HDL_set, CPL_global_conf},
+    {PRE_SET_SCAN, HDL_set_scan, CPL_scan_module},
+    {PRE_SET_PROBE, HDL_set_probe, CPL_probe_module},
+    {PRE_SET_OUT, HDL_set_out, CPL_output_module},
+    {PRE_SET_GEN, HDL_set_gen, CPL_generate_module},
     {PRE_HELP_PARAM, HDL_help_param, CPL_global_conf},
     {PRE_HELP_SCAN, HDL_help_scan, CPL_scan_module},
     {PRE_HELP_PROBE, HDL_help_probe, CPL_probe_module},
@@ -445,6 +542,7 @@ static const XPrefix config_prefix[] = {
 static void _completion_hook(const char              *cmd,
                              crossline_completions_t *p_completion) {
     unsigned i;
+    unsigned prefix_i;
     size_t   len;
     bool     cmd_matched    = false;
     bool     prefix_matched = false;
@@ -472,18 +570,21 @@ static void _completion_hook(const char              *cmd,
         return;
 
     /**
-     * Prefix
+     * Prefix: find the longest matched prefix cmd
      */
+    len = 0;
     for (i = 0; config_prefix[i].prefix; i++) {
-        len = strlen(config_prefix[i].prefix);
-        if (!strncasecmp(config_prefix[i].prefix, cmd, len)) {
+        size_t tmp_len = strlen(config_prefix[i].prefix);
+        if (!strncasecmp(config_prefix[i].prefix, cmd, tmp_len) &&
+            tmp_len >= len) {
             prefix_matched = true;
-            break;
+            prefix_i       = i;
+            len            = tmp_len;
         }
     }
 
-    if (prefix_matched && config_prefix[i].completion) {
-        config_prefix[i].completion(cmd + len + 1, p_completion);
+    if (prefix_matched && config_prefix[prefix_i].completion) {
+        config_prefix[prefix_i].completion(cmd + len + 1, p_completion);
     }
 }
 
