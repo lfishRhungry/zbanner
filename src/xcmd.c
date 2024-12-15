@@ -193,6 +193,8 @@ static ActRes ACT_prefix(void *conf) { return ActRes_Prefix; }
 #define PRE_HELP_GEN      "help-gen"
 #define PRE_SEARCH_PARAM  "search-param"
 #define PRE_SEARCH_MODULE "search-module"
+#define PRE_SAVE_CONF     "save-conf"
+#define PRE_READ_CONF     "read-conf"
 
 static const XCmd config_cmd[] = {
     {"run", "Execute " XTATE_NAME " with configured parmas.", ACT_run},
@@ -232,6 +234,10 @@ static const XCmd config_cmd[] = {
      ACT_prefix},
     {PRE_SEARCH_MODULE,
      "Fuzzy search in all modules of " XTATE_NAME_TITLE_CASE ".", ACT_prefix},
+    {PRE_SAVE_CONF, "Save current configuration to specified file.",
+     ACT_prefix},
+    {PRE_READ_CONF, "Read and load configuration from specified file.",
+     ACT_prefix},
     {"version", "Print version info of " XTATE_NAME_TITLE_CASE, ACT_version},
     {"help", "Print help information for interactive command mode.", ACT_help},
     {"exit", "Exit " XTATE_NAME_TITLE_CASE " directly.", ACT_exit},
@@ -366,6 +372,28 @@ static void HDL_search_param(void *conf, char *subcmd, size_t len) {
 
 static void HDL_search_module(void *conf, char *subcmd, size_t len) {
     xconf_search_module(subcmd);
+}
+
+static void HDL_save_conf(void *conf, char *subcmd, size_t len) {
+    XConf *xconf = conf;
+
+    int err = xconf_save_conf(xconf, subcmd);
+    if (err) {
+        LOG(LEVEL_ERROR, "failed to save configuration to %s.\n", subcmd);
+    } else {
+        LOG(LEVEL_HINT, "save configuration successfully!\n");
+    }
+}
+
+static void HDL_read_conf(void *conf, char *subcmd, size_t len) {
+    XConf *xconf = conf;
+
+    int err = xconf_read_conf(xconf, subcmd);
+    if (err) {
+        LOG(LEVEL_ERROR, "failed to read configuration from %s.\n", subcmd);
+    } else {
+        LOG(LEVEL_HINT, "read and load configuration successfully!\n");
+    }
 }
 
 static void CPL_scan_module(const char              *cmd,
@@ -536,6 +564,8 @@ static const XPrefix config_prefix[] = {
     {PRE_HELP_GEN, HDL_help_gen, CPL_generate_module},
     {PRE_SEARCH_PARAM, HDL_search_param, NULL},
     {PRE_SEARCH_MODULE, HDL_search_module, NULL},
+    {PRE_SAVE_CONF, HDL_save_conf, NULL},
+    {PRE_READ_CONF, HDL_read_conf, NULL},
 
     {0}};
 

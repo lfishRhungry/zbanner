@@ -45,6 +45,7 @@ very low impact on scan rate */
 #define XCONF_DFT_SENDMMSG_BATCH     64
 #define XCONF_DFT_SENDMMSG_RETRIES   10
 #define XCONF_DFT_SENDQUEUE_SIZE     (65535 * 8)
+#define XCONF_DFT_RESUME_FILENAME    "paused.conf"
 
 enum Operation {
     Operation_Default = 0,  /* nothing specified, so print usage */
@@ -286,7 +287,17 @@ typedef struct XtateConf {
 
 void xconf_command_line(XConf *xconf, int argc, char *argv[]);
 
-void xconf_save_conf(XConf *xconf);
+/**
+ * read configuration from specified file.
+ * @return zero if successed.
+ */
+int xconf_read_conf(XConf *xconf, const char *filename);
+
+/**
+ * save current configuration to specified file.
+ * @return zero if successed.
+ */
+int xconf_save_conf(XConf *xconf, const char *filename);
 
 /**
  * Pre-scan the command-line looking for options that may affect how

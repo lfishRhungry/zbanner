@@ -1957,36 +1957,8 @@ static ConfRes SET_read_conf(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    FILE *fp;
-    char *line = MALLOC(65535 * sizeof(char));
-    int   err  = 0;
-
-    fp = fopen(value, "rt");
-    if (fp == NULL) {
-        char  dir[512];
-        char *x;
-
-        LOG(LEVEL_ERROR, "reading configuration file\n");
-        LOG(LEVEL_ERROR, "%s: %s\n", value, strerror(errno));
-
-        x = getcwd(dir, sizeof(dir));
-        if (x)
-            LOG(LEVEL_ERROR, "cwd = %s\n", dir);
-        return Conf_ERR;
-    }
-
-    while (fgets(line, 65535, fp)) {
-        err = xconf_set_parameter_in_kv(xconf, line, 65535);
-        if (err == -1)
-            break;
-        else if (err == 2)
-            LOG(LEVEL_WARN, "invalid param conf format: %s.\n", line);
-    }
-
-    fclose(fp);
-    FREE(line);
-
-    if (err == -1)
+    int err = xconf_read_conf(xconf, value);
+    if (err)
         return Conf_ERR;
 
     return Conf_OK;
@@ -2307,7 +2279,7 @@ static ConfRes SET_rate(void *conf, const char *name, const char *value) {
         } else {
             /* pretty print as just an integer, which is what most people
              * expect */
-            fprintf(xconf->echo, "rate = %-10.0f\n", xconf->max_rate);
+            fprintf(xconf->echo, "rate = %.0f\n", xconf->max_rate);
         }
         return 0;
     }
@@ -3897,25 +3869,58 @@ void xconf_echo(XConf *xconf, FILE *fp) {
 
 /***************************************************************************
  ***************************************************************************/
-void xconf_save_conf(XConf *xconf) {
-    char  filename[512];
+int xconf_read_conf(XConf *xconf, const char *filename) {
     FILE *fp;
+    char *line = MALLOC(65535 * sizeof(char));
+    int   err  = 0;
 
-    safe_strcpy(filename, sizeof(filename), "paused.conf");
-    LOG(LEVEL_OUT, "                                   "
-                   "                                   \r");
-    LOG(LEVEL_HINT, "saving resume file to: %s\n", filename);
-
-    fp = fopen(filename, "wt");
+    fp = fopen(filename, "rt");
     if (fp == NULL) {
-        LOG(LEVEL_ERROR, "saving resume file\n");
-        LOG(LEVEL_ERROR, "%s: %s\n", filename, strerror(errno));
-        return;
+        char  dir[512];
+        char *x;
+
+        LOGPERROR("reading configuration file");
+
+        x = getcwd(dir, sizeof(dir));
+        if (x)
+            LOG(LEVEL_ERROR, "cwd = %s\n", dir);
+        return -1;
+    }
+
+    while (fgets(line, 65535, fp)) {
+        err = xconf_set_parameter_in_kv(xconf, line, 65535);
+        if (err == -1) {
+            break;
+        } else if (err == 2) {
+            LOG(LEVEL_WARN, "invalid param conf format: %s\n", line);
+            break;
+        }
+    }
+
+    fclose(fp);
+    FREE(line);
+
+    if (err)
+        return -1;
+
+    return 0;
+}
+
+/***************************************************************************
+ ***************************************************************************/
+int xconf_save_conf(XConf *xconf, const char *filename) {
+    FILE *fp = fopen(filename, "wt");
+
+    if (fp == NULL) {
+        LOGPERROR("saving configuration file");
+        return -1;
     }
 
     xconf_echo(xconf, fp);
 
     fclose(fp);
+
+    return 0;
 }
 
 /***************************************************************************

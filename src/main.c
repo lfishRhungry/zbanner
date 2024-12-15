@@ -617,7 +617,9 @@ static int _main_scan(XConf *xconf) {
     if (status_item.cur_count < scan_range && !xconf->is_infinite &&
         !xconf->is_noresume) {
         xconf->resume.index = status_item.cur_count;
-        xconf_save_conf(xconf);
+        LOG(LEVEL_HINT, "saving resume file to: %s\n",
+            XCONF_DFT_RESUME_FILENAME);
+        xconf_save_conf(xconf, XCONF_DFT_RESUME_FILENAME);
     }
 
     /*
