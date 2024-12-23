@@ -196,7 +196,8 @@ static ActRes ACT_unset_scan(void *conf) {
     XConf *xconf = conf;
 
     xconf->scanner = NULL;
-    LOG(LEVEL_HINT, "previous scan module was unsetted.\n");
+    FREE(xconf->scanner_args);
+    LOG(LEVEL_HINT, "previous scan module and its args were unsetted.\n");
     return ActRes_Next;
 }
 
@@ -204,7 +205,8 @@ static ActRes ACT_unset_probe(void *conf) {
     XConf *xconf = conf;
 
     xconf->probe = NULL;
-    LOG(LEVEL_HINT, "previous probe module was unsetted.\n");
+    FREE(xconf->probe_args);
+    LOG(LEVEL_HINT, "previous probe module and its args were unsetted.\n");
     return ActRes_Next;
 }
 
@@ -212,7 +214,8 @@ static ActRes ACT_unset_out(void *conf) {
     XConf *xconf = conf;
 
     xconf->out_conf.output_module = NULL;
-    LOG(LEVEL_HINT, "previous output module was unsetted.\n");
+    FREE(xconf->out_conf.output_args);
+    LOG(LEVEL_HINT, "previous output module and its args were unsetted.\n");
     return ActRes_Next;
 }
 
@@ -220,7 +223,8 @@ static ActRes ACT_unset_gen(void *conf) {
     XConf *xconf = conf;
 
     xconf->generator = NULL;
-    LOG(LEVEL_HINT, "previous generate module was unsetted.\n");
+    FREE(xconf->generator_args);
+    LOG(LEVEL_HINT, "previous generate module and its args were unsetted.\n");
     return ActRes_Next;
 }
 
@@ -256,10 +260,12 @@ static const XCmd config_cmd[] = {
     {"clear", "Refresh configuration to default except `seed`.", ACT_clear},
     {"update-seed", "Update the global seed to a new rand number.",
      ACT_update_seed},
-    {"unset-scan", "Unset previous scan module.", ACT_unset_scan},
-    {"unset-probe", "Unset previous probe module.", ACT_unset_probe},
-    {"unset-out", "Unset previous output module.", ACT_unset_out},
-    {"unset-gen", "Unset previous generate module.", ACT_unset_gen},
+    {"unset-scan", "Unset previous scan module and its args.", ACT_unset_scan},
+    {"unset-probe", "Unset previous probe module and its args.",
+     ACT_unset_probe},
+    {"unset-out", "Unset previous output module and its args.", ACT_unset_out},
+    {"unset-gen", "Unset previous generate module and its args.",
+     ACT_unset_gen},
     {"list-param", "List all global params and detailed help.", ACT_list_param},
     {"list-scan", "List all scan modules.", ACT_list_scan},
     {"list-probe", "List all probe modules.", ACT_list_probe},
