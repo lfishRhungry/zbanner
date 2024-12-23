@@ -46,7 +46,7 @@ void     pixie_release_mutex(void *p_mutex);
 bool     pixie_delete_mutex(void *p_mutex);
 
 /**
- * !NOTE: Do not use
+ * NOTE: Atomic operations
  */
 #if defined(_MSC_VER)
 #define pixie_locked_add_u32(dst, src)                                         \
@@ -84,14 +84,6 @@ static inline bool pixie_locked_cas_double(volatile double *dst, double src,
                                            double expected) {
     return pixie_locked_cas_u64((uint64_t *)dst, (uint64_t)src,
                                 (uint64_t)expected);
-}
-
-static inline void pixie_locked_add_float(volatile float *dst, float src) {
-    pixie_locked_add_u32((uint32_t *)dst, (uint32_t)src);
-}
-
-static inline void pixie_locked_add_double(volatile double *dst, double src) {
-    pixie_locked_add_u64((uint64_t *)dst, (uint64_t)src);
 }
 
 static inline uint32_t pixie_locked_fetch_u32(volatile uint32_t *dst) {
