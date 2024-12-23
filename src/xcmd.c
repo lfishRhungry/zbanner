@@ -248,7 +248,7 @@ static const XCmd config_cmd[] = {
  * Handle subcommand for prefix command
  * @return false if need to exit interactive cmd mode.
  */
-typedef void (*xcmd_handle)(void *conf, char *subcmd, size_t len);
+typedef void (*xcmd_handle)(void *conf, char *subcmd);
 
 typedef struct {
     char                         *prefix;
@@ -256,10 +256,10 @@ typedef struct {
     crossline_completion_callback completion;
 } XPrefix;
 
-static void HDL_set(void *conf, char *subcmd, size_t len) {
+static void HDL_set(void *conf, char *subcmd) {
     XConf *xconf = conf;
     int    err;
-    err = xconf_set_parameter_in_kv(xconf, subcmd, len);
+    err = xconf_set_parameter_in_kv(xconf, subcmd, strlen(subcmd));
     if (err == -1) {
         LOG(LEVEL_ERROR, "failed to set the param.\n");
     } else if (err == 1) {
@@ -274,7 +274,7 @@ static void HDL_set(void *conf, char *subcmd, size_t len) {
     }
 }
 
-static void HDL_set_scan(void *conf, char *subcmd, size_t len) {
+static void HDL_set_scan(void *conf, char *subcmd) {
     XConf *xconf = conf;
 
     Scanner *scan = get_scan_module_by_name(subcmd);
@@ -286,7 +286,7 @@ static void HDL_set_scan(void *conf, char *subcmd, size_t len) {
     xconf->scanner = scan;
 }
 
-static void HDL_set_probe(void *conf, char *subcmd, size_t len) {
+static void HDL_set_probe(void *conf, char *subcmd) {
     XConf *xconf = conf;
 
     Probe *probe = get_probe_module_by_name(subcmd);
@@ -298,7 +298,7 @@ static void HDL_set_probe(void *conf, char *subcmd, size_t len) {
     xconf->probe = probe;
 }
 
-static void HDL_set_out(void *conf, char *subcmd, size_t len) {
+static void HDL_set_out(void *conf, char *subcmd) {
     XConf *xconf = conf;
 
     Output *out = get_output_module_by_name(subcmd);
@@ -310,7 +310,7 @@ static void HDL_set_out(void *conf, char *subcmd, size_t len) {
     xconf->out_conf.output_module = out;
 }
 
-static void HDL_set_gen(void *conf, char *subcmd, size_t len) {
+static void HDL_set_gen(void *conf, char *subcmd) {
     XConf *xconf = conf;
 
     Generator *gen = get_generate_module_by_name(subcmd);
@@ -322,11 +322,11 @@ static void HDL_set_gen(void *conf, char *subcmd, size_t len) {
     xconf->generator = gen;
 }
 
-static void HDL_help_param(void *conf, char *subcmd, size_t len) {
+static void HDL_help_param(void *conf, char *subcmd) {
     xconf_help_param(subcmd);
 }
 
-static void HDL_help_scan(void *conf, char *subcmd, size_t len) {
+static void HDL_help_scan(void *conf, char *subcmd) {
     Scanner *scan = get_scan_module_by_name(subcmd);
     if (!scan) {
         LOG(LEVEL_ERROR, "no such scan module named %s\n", subcmd);
@@ -336,7 +336,7 @@ static void HDL_help_scan(void *conf, char *subcmd, size_t len) {
     help_scan_module(scan);
 }
 
-static void HDL_help_probe(void *conf, char *subcmd, size_t len) {
+static void HDL_help_probe(void *conf, char *subcmd) {
     Probe *probe = get_probe_module_by_name(subcmd);
     if (!probe) {
         LOG(LEVEL_ERROR, "no such probe module named %s\n", subcmd);
@@ -346,7 +346,7 @@ static void HDL_help_probe(void *conf, char *subcmd, size_t len) {
     help_probe_module(probe);
 }
 
-static void HDL_help_out(void *conf, char *subcmd, size_t len) {
+static void HDL_help_out(void *conf, char *subcmd) {
     Output *output = get_output_module_by_name(subcmd);
     if (!output) {
         LOG(LEVEL_ERROR, "no such output module named %s\n", subcmd);
@@ -356,7 +356,7 @@ static void HDL_help_out(void *conf, char *subcmd, size_t len) {
     help_output_module(output);
 }
 
-static void HDL_help_gen(void *conf, char *subcmd, size_t len) {
+static void HDL_help_gen(void *conf, char *subcmd) {
     Generator *gen = get_generate_module_by_name(subcmd);
     if (!gen) {
         LOG(LEVEL_ERROR, "no such generate module named %s\n", subcmd);
@@ -366,15 +366,15 @@ static void HDL_help_gen(void *conf, char *subcmd, size_t len) {
     help_generate_module(gen);
 }
 
-static void HDL_search_param(void *conf, char *subcmd, size_t len) {
+static void HDL_search_param(void *conf, char *subcmd) {
     xconf_search_param(subcmd);
 }
 
-static void HDL_search_module(void *conf, char *subcmd, size_t len) {
+static void HDL_search_module(void *conf, char *subcmd) {
     xconf_search_module(subcmd);
 }
 
-static void HDL_save_conf(void *conf, char *subcmd, size_t len) {
+static void HDL_save_conf(void *conf, char *subcmd) {
     XConf *xconf = conf;
 
     int err = xconf_save_conf(xconf, subcmd);
@@ -385,7 +385,7 @@ static void HDL_save_conf(void *conf, char *subcmd, size_t len) {
     }
 }
 
-static void HDL_read_conf(void *conf, char *subcmd, size_t len) {
+static void HDL_read_conf(void *conf, char *subcmd) {
     XConf *xconf = conf;
 
     int err = xconf_read_conf(xconf, subcmd);
@@ -693,8 +693,7 @@ void xcmd_interactive_readline(XConf *xconf) {
 
         if (prefix_matched) {
             if (line_len > prefix_len + 1 && line[prefix_len] == ' ') {
-                config_prefix[i].handle(xconf, line + prefix_len + 1,
-                                        READLINE_SIZE - prefix_len - 1);
+                config_prefix[i].handle(xconf, line + prefix_len + 1);
                 continue;
             } else if (line_len == prefix_len) {
                 LOG(LEVEL_ERROR,
