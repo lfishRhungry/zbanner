@@ -575,9 +575,14 @@ static const XPrefix config_prefix[] = {
 
 static void _completion_hook(const char              *cmd,
                              crossline_completions_t *p_completion) {
+    /**
+     * NOTE: the cmd is original and not trimed.
+     */
+
     unsigned i;
     unsigned prefix_i;
-    size_t   len;
+    size_t   cmd_len;
+    size_t   prefix_len;
     bool     cmd_matched    = false;
     bool     prefix_matched = false;
 
@@ -591,8 +596,8 @@ static void _completion_hook(const char              *cmd,
      * Command
      */
     for (i = 0; config_cmd[i].cmd; i++) {
-        len = strlen(cmd);
-        if (!strncasecmp(config_cmd[i].cmd, cmd, len)) {
+        cmd_len = strlen(cmd);
+        if (!strncasecmp(config_cmd[i].cmd, cmd, cmd_len)) {
             cmd_matched = true;
             crossline_completion_add_color(p_completion, config_cmd[i].cmd,
                                            cmd_color, config_cmd[i].hint,
@@ -606,19 +611,19 @@ static void _completion_hook(const char              *cmd,
     /**
      * Prefix: find the longest matched prefix cmd
      */
-    len = 0;
+    prefix_len = 0;
     for (i = 0; config_prefix[i].prefix; i++) {
         size_t tmp_len = strlen(config_prefix[i].prefix);
         if (!strncasecmp(config_prefix[i].prefix, cmd, tmp_len) &&
-            tmp_len >= len) {
+            tmp_len >= prefix_len && cmd[tmp_len] == ' ') {
             prefix_matched = true;
             prefix_i       = i;
-            len            = tmp_len;
+            prefix_len     = tmp_len;
         }
     }
 
     if (prefix_matched && config_prefix[prefix_i].completion) {
-        config_prefix[prefix_i].completion(cmd + len + 1, p_completion);
+        config_prefix[prefix_i].completion(cmd + prefix_len + 1, p_completion);
     }
 }
 
@@ -667,6 +672,9 @@ void xcmd_interactive_readline(XConf *xconf) {
         cmd_matched    = false;
         prefix_matched = false;
 
+        /**
+         * NOTE: the line is trimed.
+         */
         safe_trim(line, READLINE_SIZE);
         if (line[0] == 0)
             continue;
