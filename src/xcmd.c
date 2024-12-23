@@ -704,7 +704,8 @@ void xcmd_interactive_readline(XConf *xconf) {
             }
         }
 
-        LOG(LEVEL_ERROR, "(" XTATE_NAME ") unknown input, use <TAB> to get.\n");
+        LOG(LEVEL_ERROR, "(" XTATE_NAME
+                         ") unknown input, use <TAB> to get valid commands.\n");
     }
 
     FREE(line);
