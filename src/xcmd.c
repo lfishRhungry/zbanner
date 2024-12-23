@@ -284,6 +284,7 @@ static void HDL_set_scan(void *conf, char *subcmd) {
     }
 
     xconf->scanner = scan;
+    LOG(LEVEL_HINT, "set scan module successfully.\n");
 }
 
 static void HDL_set_probe(void *conf, char *subcmd) {
@@ -296,6 +297,7 @@ static void HDL_set_probe(void *conf, char *subcmd) {
     }
 
     xconf->probe = probe;
+    LOG(LEVEL_HINT, "set probe module successfully.\n");
 }
 
 static void HDL_set_out(void *conf, char *subcmd) {
@@ -308,6 +310,7 @@ static void HDL_set_out(void *conf, char *subcmd) {
     }
 
     xconf->out_conf.output_module = out;
+    LOG(LEVEL_HINT, "set output module successfully.\n");
 }
 
 static void HDL_set_gen(void *conf, char *subcmd) {
@@ -320,6 +323,7 @@ static void HDL_set_gen(void *conf, char *subcmd) {
     }
 
     xconf->generator = gen;
+    LOG(LEVEL_HINT, "set generate module successfully.\n");
 }
 
 static void HDL_help_param(void *conf, char *subcmd) {
@@ -627,6 +631,9 @@ static const char ascii_banner[] =
     "YP    YP    YP    YP   YP    YP    Y88888P \n";
 
 void xcmd_interactive_readline(XConf *xconf) {
+    /**
+     * Print Banner
+     */
     printf("\n");
     xprint_with_head(ascii_banner, 8, 80);
     printf("\n");
@@ -639,10 +646,14 @@ void xcmd_interactive_readline(XConf *xconf) {
     printf("\n");
     printf("\n");
 
-    size_t prefix_len;
-    size_t line_len;
-    ActRes act_res;
-    char  *line = MALLOC(READLINE_SIZE * sizeof(char));
+    unsigned i;
+    unsigned prefix_idx;
+    size_t   prefix_len;
+    size_t   line_len;
+    bool     cmd_matched;
+    bool     prefix_matched;
+    ActRes   act_res;
+    char    *line = MALLOC(READLINE_SIZE * sizeof(char));
 
     crossline_completion_register(_completion_hook);
     crossline_prompt_color_set(CROSSLINE_FGCOLOR_BRIGHT |
@@ -651,9 +662,10 @@ void xcmd_interactive_readline(XConf *xconf) {
 
     while (NULL !=
            crossline_readline(XTATE_NAME_ALL_CAPS "> ", line, READLINE_SIZE)) {
-        unsigned i;
-        bool     cmd_matched    = false;
-        bool     prefix_matched = false;
+        prefix_idx     = 0;
+        prefix_len     = 0;
+        cmd_matched    = false;
+        prefix_matched = false;
 
         safe_trim(line, READLINE_SIZE);
         if (line[0] == 0)
@@ -680,20 +692,24 @@ void xcmd_interactive_readline(XConf *xconf) {
         }
 
         /**
-         * Prefix Command
+         * Prefix Command: matched the longest
          */
         for (i = 0; config_prefix[i].prefix; i++) {
-            prefix_len = strlen(config_prefix[i].prefix);
+            size_t len = strlen(config_prefix[i].prefix);
             /*like `prefix-cmd subcmd`*/
-            if (!strncasecmp(config_prefix[i].prefix, line, prefix_len)) {
+            if (!strncasecmp(config_prefix[i].prefix, line, len)) {
                 prefix_matched = true;
-                break;
+                if (len > prefix_len) {
+                    prefix_len = len;
+                    prefix_idx = i;
+                }
             }
         }
 
         if (prefix_matched) {
+            /*has valid subcmd*/
             if (line_len > prefix_len + 1 && line[prefix_len] == ' ') {
-                config_prefix[i].handle(xconf, line + prefix_len + 1);
+                config_prefix[prefix_idx].handle(xconf, line + prefix_len + 1);
                 continue;
             } else if (line_len == prefix_len) {
                 LOG(LEVEL_ERROR,
@@ -703,6 +719,7 @@ void xcmd_interactive_readline(XConf *xconf) {
             }
         }
 
+        /*cannot match cmds and prefixes*/
         LOG(LEVEL_ERROR, "(" XTATE_NAME
                          ") unknown input, use <TAB> to get valid commands.\n");
     }
