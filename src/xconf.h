@@ -45,7 +45,8 @@ very low impact on scan rate */
 #define XCONF_DFT_SENDMMSG_BATCH     64
 #define XCONF_DFT_SENDMMSG_RETRIES   10
 #define XCONF_DFT_SENDQUEUE_SIZE     (65535 * 8)
-#define XCONF_DFT_RESUME_FILENAME    "paused.conf"
+#define XCONF_DFT_RESUME_FILENAME    "resume.conf"  /*paused while scanning*/
+#define XCONF_DFT_RECOVER_FILENAME   "recover.conf" /*for interact mode*/
 
 enum Operation {
     Operation_Default = 0,  /* nothing specified, so print usage */

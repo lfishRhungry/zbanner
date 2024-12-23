@@ -3684,10 +3684,11 @@ ConfParam config_parameters[] = {
      SET_noresume,
      Type_FLAG,
      {"no-resume", 0},
-     "Do not save scan info to resume file(paused.conf) for resuming. This is"
-     " useful when our target list is too large and scattered and spend too "
-     "much time to save.",
-     "Do not save scan info to resume file(paused.conf) for resuming."},
+     "Do not save scan info to resume file(" XCONF_DFT_RESUME_FILENAME ") for "
+     "resuming. This is useful when our target list is too large and scattered "
+     "and spend too much time to save.",
+     "Do not save scan info to resume file(" XCONF_DFT_RESUME_FILENAME ") for "
+     "resuming."},
     {"meta-filename",
      SET_meta_filename,
      Type_ARG,

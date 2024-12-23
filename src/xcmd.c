@@ -47,7 +47,7 @@ static ActRes ACT_run(void *conf) { return ActRes_Finish; }
 static ActRes ACT_exit(void *conf) {
     char line[128];
 
-    printf("Are you sure to exit " XTATE_NAME "? [y/N]: ");
+    printf("Are you sure to exit " XTATE_NAME " without saving conf? [y/N]: ");
 
     if (NULL == fgets(line, 128, stdin)) {
         LOG(LEVEL_ERROR, "(%s) failed input.\n", __func__);
@@ -55,6 +55,47 @@ static ActRes ACT_exit(void *conf) {
     }
 
     if ((line[0] == 'y' || line[0] == 'Y') && line[1] == '\n') {
+        LOG(LEVEL_HINT, "See you next time, bye~\n");
+        exit(0);
+    }
+
+    return ActRes_Next;
+}
+
+static ActRes ACT_conf_recover(void *conf) {
+    XConf *xconf = conf;
+
+    int err = xconf_read_conf(xconf, XCONF_DFT_RECOVER_FILENAME);
+    if (err) {
+        LOG(LEVEL_ERROR, "failed to read configuration from %s.\n",
+            XCONF_DFT_RECOVER_FILENAME);
+    } else {
+        LOG(LEVEL_HINT, "read and load configuration successfully!\n");
+    }
+
+    return ActRes_Next;
+}
+
+static ActRes ACT_quit(void *conf) {
+    char   line[128];
+    XConf *xconf = conf;
+
+    printf("Are you sure to save conf and quit " XTATE_NAME "? [y/N]: ");
+
+    if (NULL == fgets(line, 128, stdin)) {
+        LOG(LEVEL_ERROR, "(%s) failed input.\n", __func__);
+        return ActRes_Next;
+    }
+
+    if ((line[0] == 'y' || line[0] == 'Y') && line[1] == '\n') {
+        int err = xconf_save_conf(xconf, XCONF_DFT_RECOVER_FILENAME);
+        if (err) {
+            LOG(LEVEL_ERROR, "failed to save configuration to %s.\n",
+                XCONF_DFT_RECOVER_FILENAME);
+        } else {
+            LOG(LEVEL_HINT, "configuration was saved to %s.\n",
+                XCONF_DFT_RECOVER_FILENAME);
+        }
         LOG(LEVEL_HINT, "See you next time, bye~\n");
         exit(0);
     }
@@ -101,13 +142,17 @@ static ActRes ACT_echo_all(void *conf) {
 
 static ActRes ACT_help(void *conf) {
     xprint(XTATE_NAME_TITLE_CASE
-           "'s interactive mode allows users to set param and do scan research "
-           "in a more comfortable way.\n"
-           "We can set params in key/value's way one by one and adjust them "
+           "'s interactive mode allows users to set params and do scan research"
+           " in a more comfortable way.\n"
+           "We can set params in key-value way one by one and adjust them "
            "conveniently. Also, we can watch help text of all modules and "
            "global params by `help-xxx` commands.\n"
            "More important, interactive mode supports auto completion by <TAB> "
-           "for commands. This could be used to check concise help, too.\n",
+           "for commands. This could be used to check concise help, too.\n"
+           "NOTE: " XTATE_NAME_TITLE_CASE
+           " would automatically save conf to `" XCONF_DFT_RECOVER_FILENAME
+           "` in every running of interactive mode, except exiting directly. So"
+           " we can recover our param settings easily.\n",
            4, 80);
     return ActRes_Next;
 }
@@ -193,8 +238,9 @@ static ActRes ACT_prefix(void *conf) { return ActRes_Prefix; }
 #define PRE_HELP_GEN      "help-gen"
 #define PRE_SEARCH_PARAM  "search-param"
 #define PRE_SEARCH_MODULE "search-module"
-#define PRE_SAVE_CONF     "save-conf"
-#define PRE_READ_CONF     "read-conf"
+#define PRE_CONF_SAVE     "conf-save"
+#define PRE_CONF_READ     "conf-read"
+#define PRE_CONF_RECOVER  "conf-recover"
 
 static const XCmd config_cmd[] = {
     {"run", "Execute " XTATE_NAME " with configured parmas.", ACT_run},
@@ -234,12 +280,19 @@ static const XCmd config_cmd[] = {
      ACT_prefix},
     {PRE_SEARCH_MODULE,
      "Fuzzy search in all modules of " XTATE_NAME_TITLE_CASE ".", ACT_prefix},
-    {PRE_SAVE_CONF, "Save current configuration to specified file.",
+    {PRE_CONF_SAVE, "Save current configuration to specified file.",
      ACT_prefix},
-    {PRE_READ_CONF, "Read and load configuration from specified file.",
+    {PRE_CONF_READ, "Read and load configuration from specified file.",
      ACT_prefix},
+    {PRE_CONF_RECOVER,
+     "Read and load configuration from " XCONF_DFT_RECOVER_FILENAME ".",
+     ACT_conf_recover},
     {"version", "Print version info of " XTATE_NAME_TITLE_CASE, ACT_version},
     {"help", "Print help information for interactive command mode.", ACT_help},
+    {"quit",
+     "Quit " XTATE_NAME_TITLE_CASE
+     " after saving configurations to " XCONF_DFT_RECOVER_FILENAME ".",
+     ACT_quit},
     {"exit", "Exit " XTATE_NAME_TITLE_CASE " directly.", ACT_exit},
 
     {0}};
@@ -378,7 +431,7 @@ static void HDL_search_module(void *conf, char *subcmd) {
     xconf_search_module(subcmd);
 }
 
-static void HDL_save_conf(void *conf, char *subcmd) {
+static void HDL_conf_save(void *conf, char *subcmd) {
     XConf *xconf = conf;
 
     int err = xconf_save_conf(xconf, subcmd);
@@ -389,7 +442,7 @@ static void HDL_save_conf(void *conf, char *subcmd) {
     }
 }
 
-static void HDL_read_conf(void *conf, char *subcmd) {
+static void HDL_conf_read(void *conf, char *subcmd) {
     XConf *xconf = conf;
 
     int err = xconf_read_conf(xconf, subcmd);
@@ -568,8 +621,8 @@ static const XPrefix config_prefix[] = {
     {PRE_HELP_GEN, HDL_help_gen, CPL_generate_module},
     {PRE_SEARCH_PARAM, HDL_search_param, NULL},
     {PRE_SEARCH_MODULE, HDL_search_module, NULL},
-    {PRE_SAVE_CONF, HDL_save_conf, NULL},
-    {PRE_READ_CONF, HDL_read_conf, NULL},
+    {PRE_CONF_SAVE, HDL_conf_save, NULL},
+    {PRE_CONF_READ, HDL_conf_read, NULL},
 
     {0}};
 
@@ -651,6 +704,7 @@ void xcmd_interactive_readline(XConf *xconf) {
     printf("\n");
     printf("\n");
 
+    int      err;
     unsigned i;
     unsigned prefix_idx;
     size_t   prefix_len;
@@ -730,6 +784,15 @@ void xcmd_interactive_readline(XConf *xconf) {
         /*cannot match cmds and prefixes*/
         LOG(LEVEL_ERROR, "(" XTATE_NAME
                          ") unknown input, use <TAB> to get valid commands.\n");
+    }
+
+    err = xconf_save_conf(xconf, XCONF_DFT_RECOVER_FILENAME);
+    if (err) {
+        LOG(LEVEL_ERROR, "failed to save configuration to %s.\n",
+            XCONF_DFT_RECOVER_FILENAME);
+    } else {
+        LOG(LEVEL_HINT, "configuration was saved to %s.\n",
+            XCONF_DFT_RECOVER_FILENAME);
     }
 
     FREE(line);
