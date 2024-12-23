@@ -964,6 +964,14 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy,
 
             stack_transmit_pktbuf(stack, pkt_buffer);
         }
+
+        /**
+         * Complement reason and classification if Probe module didn't set.
+         */
+        if (item->classification[0] == 0) {
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "ack with data");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "responsed");
+        }
     }
     /*ACK for our probe without payload*/
     else {
@@ -991,7 +999,7 @@ static void zbanner_handle(unsigned th_idx, uint64_t entropy,
         }
 
         safe_strcpy(item->reason, OUT_RSN_SIZE, "ack");
-        safe_strcpy(item->classification, OUT_CLS_SIZE, "acked");
+        safe_strcpy(item->classification, OUT_CLS_SIZE, "acknowledged");
 
         if (zbanner_conf.is_ack_success) {
             item->level = OUT_SUCCESS;

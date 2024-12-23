@@ -538,6 +538,14 @@ static void udp_handle(unsigned th_idx, uint64_t entropy,
 
             stack_transmit_pktbuf(stack, pkt_buffer);
         }
+
+        /**
+         * Complement reason and classification if Probe module didn't set.
+         */
+        if (item->classification[0] == 0) {
+            safe_strcpy(item->reason, OUT_RSN_SIZE, "carrying data");
+            safe_strcpy(item->classification, OUT_CLS_SIZE, "responsed");
+        }
     } else { /*ICMP port unreachable*/
 
         /**
