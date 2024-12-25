@@ -5,16 +5,15 @@
 
 #include "crypto-lcg.h"
 #include "crypto-primegen.h" /* DJB's prime factoring code */
-#include "../util-data/safe-string.h"
-#include "../util-data/fine-malloc.h"
-#include "../util-out/logger.h"
 
 #include <math.h> /* for 'sqrt()', may need -lm for gcc */
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <time.h>
+#include <inttypes.h>
+
+#include "../util-data/fine-malloc.h"
+#include "../util-out/logger.h"
 
 /**
  * A 64 bit number can't have more than 16 prime factors. The first factors
