@@ -1437,6 +1437,6 @@ int target_parse_selftest() {
     x += rangefile_test_error("#bad ipv4\n 1.1.1.1.1\n", 2, 9, __LINE__);
 
     if (x)
-        LOG(LEVEL_ERROR, "(target parse) selftest failed\n");
+        LOG(LEVEL_ERROR, "(%s) selftest failed\n", __func__);
     return x;
 }

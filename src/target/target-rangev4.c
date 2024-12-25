@@ -1068,7 +1068,8 @@ int ranges_selftest(void) {
         return 1;
 
 #define ERROR()                                                                \
-    LOG(LEVEL_ERROR, "(range) selftest failed %s:%u\n", __FILE__, __LINE__);
+    LOG(LEVEL_ERROR, "(%s) selftest failed %s:%u\n", __func__, __FILE__,       \
+        __LINE__);
 
     /* test for the /0 CIDR block, since we'll be using that a lot to scan the
      * entire Internet */

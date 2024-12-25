@@ -533,7 +533,7 @@ int dedup_selftest() {
     return 0; /* success :) */
 
 fail:
-    LOG(LEVEL_ERROR, "(dedup) selftest failed, file=%s, line=%u\n", __FILE__,
-        line);
+    LOG(LEVEL_ERROR, "(%s) selftest failed, file=%s, line=%u\n", __func__,
+        __FILE__, line);
     return 1;
 }

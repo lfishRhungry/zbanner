@@ -401,9 +401,10 @@ static struct {
     {0}};
 
 int checksum_selftest() {
+    int      line;
     unsigned sum;
     unsigned xsum;
-    size_t   i;
+    unsigned i;
 
     /* Run through some IPv6 examples of TCP, UDP, and ICMP */
     for (i = 0; ipv6packets[i].buf; i++) {
@@ -411,8 +412,11 @@ int checksum_selftest() {
                                   (const unsigned char *)ipv6packets[i].ip_dst,
                                   ipv6packets[i].ip_proto,
                                   ipv6packets[i].length, ipv6packets[i].buf);
-        if (sum != ipv6packets[i].checksum)
+        if (sum != ipv6packets[i].checksum) {
+            line = __LINE__;
+            LOG(LEVEL_ERROR, "(%s) line=%d, index=%u \n", __func__, line, i);
             return 1; /* fail */
+        }
     }
 
     /* Run through some IPv4 examples of TCP, UDP, and ICMP */
@@ -420,8 +424,11 @@ int checksum_selftest() {
         sum = checksum_ipv4_upper(ipv4packets[i].ip_src, ipv4packets[i].ip_dst,
                                   ipv4packets[i].ip_proto,
                                   ipv4packets[i].length, ipv4packets[i].buf);
-        if (sum != ipv4packets[i].checksum)
+        if (sum != ipv4packets[i].checksum) {
+            line = __LINE__;
+            LOG(LEVEL_ERROR, "(%s) line=%d, index=%u \n", __func__, line, i);
             return 1; /* fail */
+        }
     }
 
     /*sctp*/
@@ -431,8 +438,11 @@ int checksum_selftest() {
 
     xsum = checksum_sctp(sctp_testcase, 32);
 
-    if (xsum != 0x58e45d36)
+    if (xsum != 0x58e45d36) {
+        line = __LINE__;
+        LOG(LEVEL_ERROR, "(%s) line=%d, sum error\n", __func__);
         return 1;
+    }
 
     return 0; /* success */
 }

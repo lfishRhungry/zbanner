@@ -3,12 +3,10 @@
 #include "nmap-service.h"
 
 #include "../util-data/fine-malloc.h"
-#include "../util-data/safe-string.h"
 #include "../util-misc/misc.h"
 #include "../util-out/logger.h"
 
 #include "../target/target.h"
-#include "../target/target-set.h"
 #include "../target/target-rangeport.h"
 
 #include <ctype.h>
@@ -294,8 +292,8 @@ static void _parse_probe(struct NmapServiceProbeList *list, const char *line,
     probe = CALLOC(1, sizeof(*probe));
     if (list->count + 1 >= list->max_slot) {
         list->max_slot = list->max_slot * 2 + 1;
-        list->probes =
-            REALLOCARRAY(list->probes, sizeof(list->probes[0]), list->max_slot);
+        list->probes   = REALLOCARRAY(
+            list->probes, sizeof(struct NmapServiceProbe *), list->max_slot);
     }
     list->probes[list->count++] = probe;
 

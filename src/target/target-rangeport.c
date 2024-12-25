@@ -309,6 +309,6 @@ int rangesport_selftest() {
     return 0;
 
 fail:
-    LOG(LEVEL_ERROR, "(rangesport) selftest fail, line=%d\n", line);
+    LOG(LEVEL_ERROR, "(%s) selftest fail, line=%d\n", __func__, line);
     return 1;
 }

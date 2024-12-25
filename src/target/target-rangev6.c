@@ -705,7 +705,8 @@ int ranges6_selftest() {
     REGRESS(0, regress_pick2() == 0);
 
 #define ERROR()                                                                \
-    LOG(LEVEL_ERROR, "(range6) selftest failed %s:%u\n", __FILE__, __LINE__);
+    LOG(LEVEL_ERROR, "(%s) selftest failed %s:%u\n", __func__, __FILE__,       \
+        __LINE__);
 
     err = target_parse_range("2001:0db8:85a3:0000:0000:8a2e:0370:7334", 0, 0, 0,
                              &r);
