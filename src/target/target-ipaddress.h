@@ -189,5 +189,6 @@ struct ipaddress_ptr ipaddress_ptr_fmt(ipaddress a);
 unsigned int128_bitcount(int128_t num);
 
 int ipv6address_selftest();
+int ipv4address_selftest();
 
 #endif

@@ -4568,6 +4568,7 @@ void xconf_selftest() {
     {
         x += targetset_selftest();
         x += target_parse_selftest();
+        x += ipv4address_selftest();
         x += ipv6address_selftest();
         x += ranges_selftest();
         x += ranges6_selftest();
