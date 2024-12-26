@@ -827,7 +827,7 @@ int xcmd_reboot_for_interact(const char *path, const char *conf) {
 
 #ifdef WIN32
     return 0;
-#endif
+#else
 
     if (path == NULL || path[0] == 0) {
         LOG(LEVEL_ERROR, "(%s) invalid executable path.\n", __func__);
@@ -864,4 +864,6 @@ int xcmd_reboot_for_interact(const char *path, const char *conf) {
     }
 
     return 0;
+
+#endif
 }
