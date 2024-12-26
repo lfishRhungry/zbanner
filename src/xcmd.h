@@ -18,9 +18,8 @@ void xcmd_interactive_readline(XConf *xconf);
  *
  * @param path path of our executable
  * @param conf path of conf file
- * @param is_sudo whether use `sudo` to reboot
  * @return zero if success or on Windows. 1 if invalid path. -1 if reboot error.
  */
-int xcmd_reboot_for_interact(const char *path, const char *conf, bool is_sudo);
+int xcmd_reboot_for_interact(const char *path, const char *conf);
 
 #endif

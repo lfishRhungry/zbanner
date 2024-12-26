@@ -932,9 +932,9 @@ int main(int argc, char *argv[]) {
     global_update_time();
 
     switch (xconf->op) {
+        /* interactive mode should avoid this case for better printing */
         case Operation_Default:
-            if (!xconf->interactive_mode)
-                xconf_print_banner();
+            xconf_print_banner();
             break;
 
         case Operation_Scan:
@@ -1064,8 +1064,7 @@ int main(int argc, char *argv[]) {
     LOG_close();
 
     if (xconf->interactive_mode) {
-        if (xcmd_reboot_for_interact(argv[0], XCONF_DFT_RECOVER_FILENAME,
-                                     false)) {
+        if (xcmd_reboot_for_interact(argv[0], XCONF_DFT_RECOVER_FILENAME)) {
             LOG(LEVEL_ERROR, "failed to reboot.\n");
         }
     }

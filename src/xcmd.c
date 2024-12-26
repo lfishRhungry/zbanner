@@ -47,7 +47,17 @@ typedef struct {
     xcmd_action action;
 } XCmd;
 
-static ActRes ACT_run(void *conf) { return ActRes_Finish; }
+static ActRes ACT_run(void *conf) {
+    XConf *xconf = conf;
+
+    if (xconf->op == Operation_Default) {
+        LOG(LEVEL_HINT, "params are not enough, " XTATE_NAME
+                        " doesn't know how to operate.\n");
+        return ActRes_Next;
+    }
+
+    return ActRes_Finish;
+}
 
 static ActRes ACT_exit(void *conf) {
     char line[128];
@@ -703,7 +713,9 @@ void xcmd_interactive_readline(XConf *xconf) {
     /**
      * Print Banner
      */
-    if (!xconf->have_read_conf) {
+    if (xconf->have_read_conf) {
+        LOG(LEVEL_HINT, "configuration has been read and loaded.\n");
+    } else {
         printf("\n");
         xprint_with_head(ascii_banner, 8, 80);
         printf("\n");
@@ -714,8 +726,8 @@ void xcmd_interactive_readline(XConf *xconf) {
         printf("\n");
         xprint("Use <TAB> to see all commands and do auto completions.", 4, 80);
         printf("\n");
-        printf("\n");
     }
+    printf("\n");
 
     int      err;
     unsigned i;
@@ -811,7 +823,7 @@ void xcmd_interactive_readline(XConf *xconf) {
     FREE(line);
 }
 
-int xcmd_reboot_for_interact(const char *path, const char *conf, bool is_sudo) {
+int xcmd_reboot_for_interact(const char *path, const char *conf) {
 
 #ifdef WIN32
     return 0;
@@ -831,17 +843,9 @@ int xcmd_reboot_for_interact(const char *path, const char *conf, bool is_sudo) {
      */
     char *args[6] = {0}; /*params with NULL*/
 
-    const char *exe = is_sudo ? "sudo" : path_cp;
-
     unsigned i = 0;
-    if (is_sudo) {
-        args[i] = path_cp;
-        i++;
-    }
-
-    args[i] = path_cp;
+    args[i]    = path_cp;
     i++;
-
     args[i] = "-interact";
     i++;
 
@@ -852,7 +856,7 @@ int xcmd_reboot_for_interact(const char *path, const char *conf, bool is_sudo) {
         i++;
     }
 
-    if (execv(exe, args)) {
+    if (execv(path, args)) {
         LOGPERROR("execv");
         FREE(path_cp);
         FREE(conf_cp);
