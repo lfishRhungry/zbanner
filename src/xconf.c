@@ -1961,6 +1961,8 @@ static ConfRes SET_read_conf(void *conf, const char *name, const char *value) {
     if (err)
         return Conf_ERR;
 
+    xconf->have_read_conf = 1;
+
     return Conf_OK;
 }
 
@@ -2901,8 +2903,12 @@ ConfParam config_parameters[] = {
      Type_FLAG,
      {"interactive", "interact", 0},
      "Start " XTATE_NAME_TITLE_CASE " in an interactive mode.\n"
-     "NOTE: Interactive mode need a modern terminal that supports controlling "
-     "chars",
+     "NOTE1: Interactive mode need a modern terminal that supports controlling "
+     "chars.\n"
+     "NOTE2: " XTATE_NAME_TITLE_CASE
+     " will save conf to " XCONF_DFT_RECOVER_FILENAME " automatically.\n"
+     "NOTE3: " XTATE_NAME_TITLE_CASE " will automatically reboot with conf "
+     "after finishing one scanning task while using interactive mode on Linux.",
      "Start " XTATE_NAME_TITLE_CASE " in an interactive mode."},
     {"version",
      SET_version,

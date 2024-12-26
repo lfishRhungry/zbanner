@@ -1,20 +1,25 @@
 #include "xcmd.h"
 
-#include "generate-modules/generate-modules.h"
-#include "scan-modules/scan-modules.h"
+#include <openssl/ec.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "xconf.h"
 #include "version.h"
 #include "crossline/crossline.h"
 #include "target/target-cookie.h"
+#include "scan-modules/scan-modules.h"
+#include "generate-modules/generate-modules.h"
 
 #include "util-out/logger.h"
 #include "util-out/xprint.h"
 #include "util-data/safe-string.h"
 #include "util-data/fine-malloc.h"
-#include "xconf.h"
-#include <openssl/ec.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+
+#ifndef WIN32
+#include <unistd.h>
+#endif
 
 #define READLINE_SIZE 65535
 
@@ -698,17 +703,19 @@ void xcmd_interactive_readline(XConf *xconf) {
     /**
      * Print Banner
      */
-    printf("\n");
-    xprint_with_head(ascii_banner, 8, 80);
-    printf("\n");
-    xprint("Welcome to interactive-mode " XTATE_NAME_TITLE_CASE ":", 2, 80);
-    printf("\n");
-    xprint("Configure params by `set` and `run` " XTATE_NAME " to scan.", 4,
-           80);
-    printf("\n");
-    xprint("Use <TAB> to see all commands and do auto completions.", 4, 80);
-    printf("\n");
-    printf("\n");
+    if (!xconf->have_read_conf) {
+        printf("\n");
+        xprint_with_head(ascii_banner, 8, 80);
+        printf("\n");
+        xprint("Welcome to interactive-mode " XTATE_NAME_TITLE_CASE ":", 2, 80);
+        printf("\n");
+        xprint("Configure params by `set` and `run` " XTATE_NAME " to scan.", 4,
+               80);
+        printf("\n");
+        xprint("Use <TAB> to see all commands and do auto completions.", 4, 80);
+        printf("\n");
+        printf("\n");
+    }
 
     int      err;
     unsigned i;
@@ -802,4 +809,55 @@ void xcmd_interactive_readline(XConf *xconf) {
     }
 
     FREE(line);
+}
+
+int xcmd_reboot_for_interact(const char *path, const char *conf, bool is_sudo) {
+
+#ifdef WIN32
+    return 0;
+#endif
+
+    if (path == NULL || path[0] == 0) {
+        LOG(LEVEL_ERROR, "(%s) invalid executable path.\n", __func__);
+        return 1;
+    }
+
+    char *path_cp = STRDUP(path);
+    char *conf_cp = STRDUP(conf);
+
+    /**
+     * Complete command:
+     * `[sudo] path -interact [-conf conf]`
+     */
+    char *args[6] = {0}; /*params with NULL*/
+
+    const char *exe = is_sudo ? "sudo" : path_cp;
+
+    unsigned i = 0;
+    if (is_sudo) {
+        args[i] = path_cp;
+        i++;
+    }
+
+    args[i] = path_cp;
+    i++;
+
+    args[i] = "-interact";
+    i++;
+
+    if (conf) {
+        args[i] = "-conf";
+        i++;
+        args[i] = conf_cp;
+        i++;
+    }
+
+    if (execv(exe, args)) {
+        LOGPERROR("execv");
+        FREE(path_cp);
+        FREE(conf_cp);
+        return -1;
+    }
+
+    return 0;
 }

@@ -260,6 +260,7 @@ typedef struct XtateConf {
     unsigned         init_ipv6_adapter    : 1;
     unsigned         listtargets_in_order : 1;
     unsigned         interactive_mode     : 1;
+    unsigned         have_read_conf       : 1;
 
     /**
      * parse BSON file

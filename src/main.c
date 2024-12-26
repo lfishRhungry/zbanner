@@ -1063,6 +1063,13 @@ int main(int argc, char *argv[]) {
     /*close logger*/
     LOG_close();
 
+    if (xconf->interactive_mode) {
+        if (xcmd_reboot_for_interact(argv[0], XCONF_DFT_RECOVER_FILENAME,
+                                     false)) {
+            LOG(LEVEL_ERROR, "failed to reboot.\n");
+        }
+    }
+
     xconf_global_refresh(xconf);
 
     return 0;
