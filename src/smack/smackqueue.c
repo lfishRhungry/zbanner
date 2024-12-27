@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../xcmd.h"
 #include "../util-out/logger.h"
 
 /****************************************************************************
@@ -23,7 +24,8 @@ struct Queue *queue_create(void) {
     struct Queue *queue;
     queue = (struct Queue *)malloc(sizeof(*queue));
     if (queue == NULL) {
-        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory.\n", __func__, __LINE__);
+        xcmd_try_reboot();
         exit(1);
     }
     memset(queue, 0, sizeof(*queue));
@@ -43,7 +45,8 @@ void enqueue(struct Queue *queue, unsigned data) {
 
     element = (struct QueueElement *)malloc(sizeof(struct QueueElement));
     if (element == NULL) {
-        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory.\n", __func__, __LINE__);
+        xcmd_try_reboot();
         exit(1);
     }
 

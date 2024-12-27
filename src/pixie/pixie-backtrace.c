@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <signal.h>
 
+#include "../xcmd.h"
 #include "../version.h"
 
 char global_self[512] = "";
@@ -47,6 +48,7 @@ static void handle_segfault(int sig) {
         }
         size--;
     }
+    xcmd_try_reboot();
     exit(1);
     return;
 }
@@ -160,6 +162,7 @@ static void handle_segfault(int sig) {
     printf("==================================================================="
            "===\n");
     printStack();
+    xcmd_try_reboot();
     exit(1);
 }
 

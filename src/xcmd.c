@@ -23,6 +23,9 @@
 
 #define READLINE_SIZE 65535
 
+static bool _should_recover = false;
+static char _exe_path[256];
+
 extern ConfParam  config_parameters[];
 extern Scanner   *scan_modules_list[];
 extern Probe     *probe_modules_list[];
@@ -709,12 +712,15 @@ static const char ascii_banner[] =
     ".8P  Y8.    88    88   88    88    88.     \n"
     "YP    YP    YP    YP   YP    YP    Y88888P \n";
 
-void xcmd_interactive_readline(XConf *xconf) {
+void xcmd_interactive_readline(XConf *xconf, const char *exe_path) {
+    _should_recover = true;
+    safe_strcpy(_exe_path, 256, exe_path);
+
     /**
      * Print Banner
      */
     if (xconf->have_read_conf) {
-        LOG(LEVEL_HINT, "configuration has been read and loaded.\n");
+        LOG(LEVEL_HINT, "configuration has been recovered.\n");
     } else {
         printf("\n");
         xprint_with_head(ascii_banner, 8, 80);
@@ -866,4 +872,12 @@ int xcmd_reboot_for_interact(const char *path, const char *conf) {
     return 0;
 
 #endif
+}
+
+void xcmd_try_reboot() {
+    if (_should_recover) {
+        if (xcmd_reboot_for_interact(_exe_path, XCONF_DFT_RECOVER_FILENAME)) {
+            LOG(LEVEL_ERROR, "failed to recover.\n");
+        }
+    }
 }

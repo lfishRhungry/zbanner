@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <sys/stat.h>
 
+#include "../xcmd.h"
 #include "../util-out/logger.h"
 #include "../stub/stub-pcap-dlt.h"
 
@@ -644,8 +645,11 @@ struct PcapFile *pcapfile_openread(const char *capfilename) {
     {
         struct PcapFile *capfile = 0;
         capfile                  = (struct PcapFile *)malloc(sizeof(*capfile));
-        if (capfile == NULL)
+        if (capfile == NULL) {
+            LOG(LEVEL_ERROR, "(%s:%u) out of memory\n", __func__, __LINE__);
+            xcmd_try_reboot();
             exit(1);
+        }
         memset(capfile, 0, sizeof(*capfile));
         capfile->byte_order = byte_order;
 
@@ -690,8 +694,11 @@ struct PcapFile *pcapfile_openwrite(const char *capfilename,
     {
         struct PcapFile *capfile = 0;
         capfile                  = (struct PcapFile *)malloc(sizeof(*capfile));
-        if (capfile == NULL)
+        if (capfile == NULL) {
+            LOG(LEVEL_ERROR, "(%s:%u) out of memory\n", __func__, __LINE__);
+            xcmd_try_reboot();
             exit(1);
+        }
         memset(capfile, 0, sizeof(*capfile));
 
         snprintf(capfile->filename, sizeof(capfile->filename), "%s",
@@ -819,8 +826,11 @@ struct PcapFile *pcapfile_openappend(const char *capfilename,
      * return it */
     {
         capfile = (struct PcapFile *)malloc(sizeof(*capfile));
-        if (capfile == NULL)
+        if (capfile == NULL) {
+            LOG(LEVEL_ERROR, "(%s:%u) out of memory\n", __func__, __LINE__);
+            xcmd_try_reboot();
             exit(1);
+        }
         memset(capfile, 0, sizeof(*capfile));
         capfile->byte_order = byte_order;
         snprintf(capfile->filename, sizeof(capfile->filename), "%s",

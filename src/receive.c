@@ -6,10 +6,11 @@
 #include <string.h>
 #include <time.h>
 
-#include "globals.h"
-#include "util-data/rte-ring.h"
+#include "xcmd.h"
 #include "xconf.h"
+#include "globals.h"
 #include "version.h"
+#include "util-data/rte-ring.h"
 
 #include "rawsock/rawsock.h"
 #include "util-out/pcapfile.h"
@@ -74,6 +75,7 @@ static void dispatch_thread(void *v) {
             LOG(LEVEL_ERROR,
                 "got empty Recved in dispatch thread. (IMPOSSIBLE)\n");
             fflush(stdout);
+            xcmd_try_reboot();
             exit(1);
         }
 
@@ -153,6 +155,7 @@ static void handle_thread(void *v) {
                 "got empty Recved in handle thread #%d. (IMPOSSIBLE)\n",
                 parms->index);
             fflush(stdout);
+            xcmd_try_reboot();
             exit(1);
         }
 

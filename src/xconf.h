@@ -107,7 +107,6 @@ typedef struct XtateConf {
      * should have a set of IP source addresses, except in the case
      * of PF_RING dnaX:Y adapters.
      */
-
     struct {
         char          ifname[256];
         Adapter      *adapter;

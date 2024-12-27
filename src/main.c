@@ -72,8 +72,10 @@ static void _control_c_handler(int x) {
             /*and Rx is exiting, we just warn*/
             LOG(LEVEL_OUT, "\nERROR: Rx Thread is still running\n");
             /*Exit many <ctrl-c>*/
-            if (pixie_locked_fetch_u32(&time_to_finish_rx) > 1)
+            if (pixie_locked_fetch_u32(&time_to_finish_rx) > 1) {
+                xcmd_try_reboot();
                 exit(1);
+            }
             pixie_locked_add_u32(&time_to_finish_rx, 1);
         } else {
             /*Not first time of <ctrl-c> */
@@ -137,6 +139,7 @@ static int _main_scan(XConf *xconf) {
         if (xconf->probe) {
             LOG(LEVEL_ERROR, "ScanModule %s does not support any probe.\n",
                 xconf->scanner->name);
+            xcmd_try_reboot();
             exit(1);
         }
     } else {
@@ -145,6 +148,7 @@ static int _main_scan(XConf *xconf) {
             LOG(LEVEL_ERROR, "ScanModule %s needs probe of %s type.\n",
                 xconf->scanner->name,
                 get_probe_type_name(xconf->scanner->required_probe_type));
+            xcmd_try_reboot();
             exit(1);
         }
     }
@@ -157,12 +161,14 @@ static int _main_scan(XConf *xconf) {
         if (conf_set_params_from_substr(NULL, xconf->generator->params,
                                         xconf->generator_args)) {
             LOG(LEVEL_ERROR, "sub param parsing of GenerateModule.\n");
+            xcmd_try_reboot();
             exit(1);
         }
     }
     if (!xconf->generator->init_cb(xconf, &count_targets, &count_endpoints,
                                    &init_ipv4, &init_ipv6)) {
         LOG(LEVEL_ERROR, "global init of GenerateModule.\n");
+        xcmd_try_reboot();
         exit(1);
     }
 
@@ -176,6 +182,7 @@ static int _main_scan(XConf *xconf) {
     if (!init_ipv4 && !init_ipv6) {
         LOG(LEVEL_ERROR, "neither ipv4 & ipv6 adapter would be inited.\n");
         LOG(LEVEL_HINT, "we can manually init adapter like `-init-ipv4`.\n");
+        xcmd_try_reboot();
         exit(1);
     }
 
@@ -196,13 +203,16 @@ static int _main_scan(XConf *xconf) {
     rawsock_prepare();
 
     /*init NIC & rawsock*/
-    if (init_nic(xconf, init_ipv4, init_ipv6) != 0)
+    if (init_nic(xconf, init_ipv4, init_ipv6) != 0) {
+        xcmd_try_reboot();
         exit(1);
+    }
     if (!xconf->nic.is_usable) {
         LOG(LEVEL_ERROR, "failed to detect IP of interface\n");
         LOG(LEVEL_HINT, "did you spell the interface name correctly?\n");
         LOG(LEVEL_HINT, "if it has no IP address, "
                         "manually set with \"--adapter-ip 192.168.100.5\"\n");
+        xcmd_try_reboot();
         exit(1);
     }
 
@@ -257,11 +267,13 @@ static int _main_scan(XConf *xconf) {
         if (conf_set_params_from_substr(NULL, xconf->scanner->params,
                                         xconf->scanner_args)) {
             LOG(LEVEL_ERROR, "sub param parsing of ScanModule.\n");
+            xcmd_try_reboot();
             exit(1);
         }
     }
     if (!xconf->scanner->init_cb(xconf)) {
         LOG(LEVEL_ERROR, "global init of ScanModule.\n");
+        xcmd_try_reboot();
         exit(1);
     }
 
@@ -273,12 +285,14 @@ static int _main_scan(XConf *xconf) {
             if (conf_set_params_from_substr(NULL, xconf->probe->params,
                                             xconf->probe_args)) {
                 LOG(LEVEL_ERROR, "sub param parsing of ProbeModule.\n");
+                xcmd_try_reboot();
                 exit(1);
             }
         }
 
         if (!xconf->probe->init_cb(xconf)) {
             LOG(LEVEL_ERROR, "ProbeModule global initializing\n");
+            xcmd_try_reboot();
             exit(1);
         }
     }
@@ -288,6 +302,7 @@ static int _main_scan(XConf *xconf) {
      */
     if (!output_init(xconf, &xconf->out_conf)) {
         LOG(LEVEL_ERROR, "OutputModule initializing\n");
+        xcmd_try_reboot();
         exit(1);
     }
 
@@ -846,7 +861,7 @@ int main(int argc, char *argv[]) {
 
     /* into interactive setting mode*/
     if (xconf->interactive_mode) {
-        xcmd_interactive_readline(xconf);
+        xcmd_interactive_readline(xconf, argv[0]);
     }
 
     /* logger should be prepared early */
@@ -864,12 +879,14 @@ int main(int argc, char *argv[]) {
         if (xconf->as_query == NULL) {
             LOG(LEVEL_ERROR,
                 "cannot add ipv4 target by ASN because no AS info loaded.\n");
+            xcmd_try_reboot();
             exit(1);
         }
         int err = targetset_add_asn4_str(&xconf->targets, xconf->as_query,
                                          xconf->target_asn_v4);
         if (err) {
             LOG(LEVEL_ERROR, "add ipv4 target failed by ASN string.\n");
+            xcmd_try_reboot();
             exit(1);
         }
     }
@@ -877,12 +894,14 @@ int main(int argc, char *argv[]) {
         if (xconf->as_query == NULL) {
             LOG(LEVEL_ERROR,
                 "cannot add ipv6 target by ASN because no AS info loaded.\n");
+            xcmd_try_reboot();
             exit(1);
         }
         int err = targetset_add_asn6_str(&xconf->targets, xconf->as_query,
                                          xconf->target_asn_v6);
         if (err) {
             LOG(LEVEL_ERROR, "add ipv6 target failed by ASN string.\n");
+            xcmd_try_reboot();
             exit(1);
         }
     }
@@ -894,12 +913,14 @@ int main(int argc, char *argv[]) {
         if (xconf->as_query == NULL) {
             LOG(LEVEL_ERROR,
                 "cannot add ipv4 exclude by ASN because no AS info loaded.\n");
+            xcmd_try_reboot();
             exit(1);
         }
         int err = targetset_add_asn4_str(&xconf->exclude, xconf->as_query,
                                          xconf->exclude_asn_v4);
         if (err) {
             LOG(LEVEL_ERROR, "add ipv4 exclude failed by ASN string.\n");
+            xcmd_try_reboot();
             exit(1);
         }
     }
@@ -907,12 +928,14 @@ int main(int argc, char *argv[]) {
         if (xconf->as_query == NULL) {
             LOG(LEVEL_ERROR,
                 "cannot add ipv6 exclude by ASN because no AS info loaded.\n");
+            xcmd_try_reboot();
             exit(1);
         }
         int err = targetset_add_asn6_str(&xconf->exclude, xconf->as_query,
                                          xconf->exclude_asn_v6);
         if (err) {
             LOG(LEVEL_ERROR, "add ipv6 exclude failed by ASN string.\n");
+            xcmd_try_reboot();
             exit(1);
         }
     }
@@ -1063,13 +1086,9 @@ int main(int argc, char *argv[]) {
     /*close logger*/
     LOG_close();
 
-    if (xconf->interactive_mode) {
-        if (xcmd_reboot_for_interact(argv[0], XCONF_DFT_RECOVER_FILENAME)) {
-            LOG(LEVEL_ERROR, "failed to reboot.\n");
-        }
-    }
-
     xconf_global_refresh(xconf);
+
+    xcmd_try_reboot();
 
     return 0;
 }

@@ -35,6 +35,7 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "../xcmd.h"
 #include "target-rangeport.h"
 #include "../util-out/logger.h"
 #include "../util-data/fine-malloc.h"
@@ -809,6 +810,7 @@ unsigned rangelist_pick(const struct RangeList *targets, uint64_t index) {
 
     if (!targets->is_sorted || !picker) {
         LOG(LEVEL_ERROR, "(%s) pick non-optimized rangelist", __func__);
+        xcmd_try_reboot();
         exit(1);
     }
 

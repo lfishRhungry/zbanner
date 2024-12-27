@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "../xcmd.h"
 #include "../util-out/logger.h"
 #include "../rawsock/rawsock.h"
 #include "../pixie/pixie-timer.h"
@@ -17,6 +18,7 @@ PktBuf *stack_get_pktbuf(NetStack *stack) {
         //! No need to proceed
         LOG(LEVEL_ERROR, "failed to get packet buffer. (IMPOSSIBLE)\n");
         fflush(stdout);
+        xcmd_try_reboot();
         exit(1);
     }
 
@@ -24,6 +26,7 @@ PktBuf *stack_get_pktbuf(NetStack *stack) {
         //! No need to proceed
         LOG(LEVEL_ERROR, "got empty packet buffer. (IMPOSSIBLE)\n");
         fflush(stdout);
+        xcmd_try_reboot();
         exit(1);
     }
 
@@ -85,6 +88,7 @@ void stack_flush_packets(NetStack *stack, Adapter *adapter,
             //! No need to proceed
             LOG(LEVEL_ERROR, "transmit queue full from `stack_flush_packets` "
                              "(should be impossible).\n");
+            xcmd_try_reboot();
             exit(1);
         }
 

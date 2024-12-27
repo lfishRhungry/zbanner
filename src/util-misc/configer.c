@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <string.h>
 
+#include "../xcmd.h"
 #include "../util-data/fine-malloc.h"
 #include "../util-data/safe-string.h"
 #include "../util-out/logger.h"
@@ -180,10 +181,12 @@ uint64_t conf_parse_time(const char *value) {
             break;
         default:
             LOG(LEVEL_ERROR, "unknown character\n");
+            xcmd_try_reboot();
             exit(1);
     }
     if (num >= 24 * 60 * 60) {
         LOG(LEVEL_ERROR, "value is greater than 1 day\n");
+        xcmd_try_reboot();
         exit(1);
     }
     if (is_negative)
@@ -233,6 +236,7 @@ uint64_t conf_parse_size(const char *value) {
             break;
         default:
             LOG(LEVEL_ERROR, "unknown character\n");
+            xcmd_try_reboot();
             exit(1);
     }
     return num;

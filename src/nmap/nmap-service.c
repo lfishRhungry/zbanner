@@ -2,17 +2,19 @@
 
 #include "nmap-service.h"
 
-#include "../util-data/fine-malloc.h"
-#include "../util-misc/misc.h"
-#include "../util-out/logger.h"
-
-#include "../target/target.h"
-#include "../target/target-rangeport.h"
-
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "../xcmd.h"
+
+#include "../target/target.h"
+#include "../target/target-rangeport.h"
+
+#include "../util-misc/misc.h"
+#include "../util-out/logger.h"
+#include "../util-data/fine-malloc.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4996)
@@ -1100,6 +1102,7 @@ void nmapservice_print_probes_by_file(const char *filename, FILE *fp) {
     if (!filename) {
         LOG(LEVEL_ERROR, "(%s) no nmap-service-probes file specified.\n",
             __func__);
+        xcmd_try_reboot();
         exit(1);
     }
 
@@ -1108,6 +1111,7 @@ void nmapservice_print_probes_by_file(const char *filename, FILE *fp) {
     if (!list) {
         LOG(LEVEL_ERROR, "(%s) invalid nmap-service-probes file: %s\n",
             __func__, filename);
+        xcmd_try_reboot();
         exit(1);
     }
 
@@ -1115,6 +1119,7 @@ void nmapservice_print_probes_by_file(const char *filename, FILE *fp) {
         LOG(LEVEL_ERROR, "(%s) no probe has been loaded from %s\n", __func__,
             filename);
         nmapservice_free(list);
+        xcmd_try_reboot();
         exit(1);
     }
 

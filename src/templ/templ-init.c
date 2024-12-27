@@ -8,6 +8,7 @@
 #include "templ-opts.h"
 #include "templ-icmp.h"
 
+#include "../xcmd.h"
 #include "../version.h"
 #include "../target/target.h"
 #include "../stub/stub-pcap-dlt.h"
@@ -279,6 +280,7 @@ static void _template_init_ipv6(TmplPkt *tmpl, macaddress_t router_mac_ipv6,
                          &parsed);
     if (!x || parsed.found == FOUND_NOTHING) {
         LOG(LEVEL_ERROR, "Bad packet template\n");
+        xcmd_try_reboot();
         exit(1);
     }
 
@@ -366,6 +368,7 @@ static void _template_init_ipv6(TmplPkt *tmpl, macaddress_t router_mac_ipv6,
     x = preprocess_frame(buf, tmpl->ipv6.length, data_link_type, &parsed);
     if (!x || parsed.found == FOUND_NOTHING) {
         LOG(LEVEL_ERROR, "bad packet template\n");
+        xcmd_try_reboot();
         exit(1);
     }
 
@@ -402,6 +405,7 @@ static void _template_init(TmplPkt *tmpl, macaddress_t source_mac,
     x = preprocess_frame(px, tmpl->ipv4.length, PCAP_DLT_ETHERNET, &parsed);
     if (!x || parsed.found == FOUND_NOTHING) {
         LOG(LEVEL_ERROR, "Bad packet template\n");
+        xcmd_try_reboot();
         exit(1);
     }
     tmpl->ipv4.offset_ip  = parsed.ip_offset;
@@ -511,6 +515,7 @@ static void _template_init(TmplPkt *tmpl, macaddress_t source_mac,
         LOG(LEVEL_ERROR,
             "    " XTATE_NAME_TITLE_CASE
             " doesn't know how to format packets for this interface\n");
+        xcmd_try_reboot();
         exit(1);
     }
 

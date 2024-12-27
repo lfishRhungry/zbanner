@@ -87,7 +87,7 @@ unsigned rawsock_get_adapter_ip(const char *ifname) {
      */
     pAdapterInfo = malloc(sizeof(IP_ADAPTER_INFO));
     if (pAdapterInfo == NULL) {
-        LOG(LEVEL_ERROR, "malloc(): for GetAdaptersinfo\n");
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory.\n", __func__, __LINE__);
         return 0;
     }
 
@@ -101,7 +101,7 @@ again:
         free(pAdapterInfo);
         pAdapterInfo = (IP_ADAPTER_INFO *)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL) {
-            LOG(LEVEL_ERROR, "malloc(): for GetAdaptersinfo\n");
+            LOG(LEVEL_ERROR, "(%s:%u) out of memory.\n", __func__, __LINE__);
             return 0;
         }
         goto again;

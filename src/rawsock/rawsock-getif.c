@@ -406,8 +406,7 @@ int rawsock_get_default_interface(char *ifname, size_t sizeof_ifname) {
      */
     pAdapterInfo = (IP_ADAPTER_INFO *)malloc(sizeof(IP_ADAPTER_INFO));
     if (pAdapterInfo == NULL) {
-        LOG(LEVEL_ERROR,
-            "fail to allocate memory for calling GetAdaptersinfo\n");
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory.\n", __func__, __LINE__);
         return EFAULT;
     }
 
@@ -421,8 +420,7 @@ again:
         FREE(pAdapterInfo);
         pAdapterInfo = (IP_ADAPTER_INFO *)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL) {
-            LOG(LEVEL_ERROR,
-                "fail to allocate memory for calling GetAdaptersinfo\n");
+            LOG(LEVEL_ERROR, "(%s:%u) out of memory.\n", __func__, __LINE__);
             return EFAULT;
         }
         goto again;

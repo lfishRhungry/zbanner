@@ -141,8 +141,10 @@ struct rte_ring *rte_ring_create(unsigned count, unsigned flags) {
     ring_size = count * sizeof(void *) + sizeof(struct rte_ring);
 
     r = (struct rte_ring *)malloc(ring_size);
-    if (r == NULL)
+    if (r == NULL) {
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory.\n", __func__, __LINE__);
         abort();
+    }
 
     /* init the ring structure */
     memset(r, 0, sizeof(*r));

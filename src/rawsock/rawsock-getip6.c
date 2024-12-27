@@ -123,8 +123,7 @@ again:
         free(adapters);
         adapters = malloc(sizeof_addrs);
         if (adapters == NULL) {
-            LOG(LEVEL_ERROR,
-                "GetAdaptersAddresses():malloc(): failed: out of memory\n");
+            LOG(LEVEL_ERROR, "(%s:%u) out of memory.\n", __func__, __LINE__);
             return result;
         }
         goto again;

@@ -10,6 +10,7 @@
 #include <ctype.h>
 #include <string.h>
 
+#include "../xcmd.h"
 #include "../version.h"
 #include "../globals.h"
 #include "../pixie/pixie-timer.h"
@@ -866,12 +867,14 @@ void rawsock_set_filter(Adapter *adapter, const char *scan_filter,
     err = PCAP.compile(adapter->pcap, &bpfp, final_filter, 1, 0);
     if (err) {
         LOGPCAPERROR(adapter->pcap, "pcap_compile");
+        xcmd_try_reboot();
         exit(1);
     }
 
     err = PCAP.setfilter(adapter->pcap, &bpfp);
     if (err) {
         LOGPCAPERROR(adapter->pcap, "pcap_setfilter");
+        xcmd_try_reboot();
         exit(1);
     }
 
@@ -889,6 +892,7 @@ void rawsock_set_nonblock(Adapter *adapter) {
         err = PCAP.setnonblock(adapter->pcap, 1, errbuf);
         if (err) {
             LOGPCAPERROR(adapter->pcap, "pcap_setnonblock");
+            xcmd_try_reboot();
             exit(1);
         }
     }
@@ -916,6 +920,7 @@ AdapterCache *rawsock_init_cache(bool is_sendmmsg, unsigned sendmmsg_batch,
     if (is_sendq) {
         if (sendq_size == 0) {
             LOG(LEVEL_ERROR, "(%s) sendqueue size cannot be zero\n", __func__);
+            xcmd_try_reboot();
             exit(1);
         }
         acache->sendq_size = sendq_size;
@@ -925,11 +930,13 @@ AdapterCache *rawsock_init_cache(bool is_sendmmsg, unsigned sendmmsg_batch,
     if (is_sendmmsg) {
         if (sendmmsg_batch == 0) {
             LOG(LEVEL_ERROR, "(%s) sendmmsg batch cannot be zero\n", __func__);
+            xcmd_try_reboot();
             exit(1);
         }
         if (sendmmsg_retries == 0) {
             LOG(LEVEL_ERROR, "(%s) sendmmsg retries cannot be zero\n",
                 __func__);
+            xcmd_try_reboot();
             exit(1);
         }
         acache->msg_capacity = sendmmsg_batch;

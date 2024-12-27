@@ -31,12 +31,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../util-data/fine-malloc.h"
+#include "../xcmd.h"
 #include "../util-out/logger.h"
+#include "../util-data/fine-malloc.h"
 
 #define out_of_memory()                                                        \
     do {                                                                       \
-        LOG(LEVEL_ERROR, "Out of memory.\n");                                  \
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory.\n", __func__, __LINE__);      \
+        xcmd_try_reboot();                                                     \
         exit(EXIT_FAILURE);                                                    \
     } while (0)
 

@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "../xcmd.h"
 #include "target-set.h"
 #include "target-parse.h"
 #include "target-rangev4.h"
@@ -502,6 +503,7 @@ ipv6address range6list_pick(const struct Range6List *targets, uint64_t index) {
 
     if (!targets->is_sorted || !picker) {
         LOG(LEVEL_ERROR, "(%s) pick non-optimized range6list", __func__);
+        xcmd_try_reboot();
         exit(1);
     }
 

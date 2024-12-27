@@ -16,6 +16,8 @@
 #include <net/if_dl.h>
 #include <ctype.h>
 
+#include "../xcmd.h"
+
 #define ROUNDUP2(a, n) ((a) > 0 ? (1 + (((a) - 1U) | ((n) - 1))) : (n))
 
 #if defined(__APPLE__)
@@ -198,6 +200,7 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4) {
             if (memcmp(ifname, sdl->sdl_data, sdl->sdl_nlen) != 0) {
                 LOG(LEVEL_ERROR, "Route doesn't match interface\n");
                 LOG(LEVEL_ERROR, "You'll have to set --router-mac manually\n");
+                xcmd_try_reboot();
                 exit(1);
             }
         }
@@ -430,8 +433,7 @@ int rawsock_get_default_gateway(const char *ifname, unsigned *ipv4) {
      */
     pAdapterInfo = (IP_ADAPTER_INFO *)malloc(sizeof(IP_ADAPTER_INFO));
     if (pAdapterInfo == NULL) {
-        LOG(LEVEL_ERROR,
-            "fail to allocate memory for calling GetAdaptersinfo\n");
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory.\n", __func__, __LINE__);
         return EFAULT;
     }
 
@@ -445,8 +447,7 @@ again:
         free(pAdapterInfo);
         pAdapterInfo = (IP_ADAPTER_INFO *)malloc(ulOutBufLen);
         if (pAdapterInfo == NULL) {
-            LOG(LEVEL_ERROR,
-                "fail to allocate memory for calling GetAdaptersinfo\n");
+            LOG(LEVEL_ERROR, "(%s:%u) out of memory.\n", __func__, __LINE__);
             return EFAULT;
         }
         goto again;

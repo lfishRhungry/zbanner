@@ -111,6 +111,7 @@
 #include <assert.h>
 
 #include "smackqueue.h"
+#include "../xcmd.h"
 #include "../util-out/logger.h"
 
 #ifndef NOBENCHMARK
@@ -384,7 +385,8 @@ struct SMACK *smack_create(const char *name, unsigned nocase) {
 
     smack = (struct SMACK *)malloc(sizeof(struct SMACK));
     if (smack == NULL) {
-        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory\n", __func__, __LINE__);
+        xcmd_try_reboot();
         exit(1);
     }
     memset(smack, 0, sizeof(struct SMACK));
@@ -392,7 +394,8 @@ struct SMACK *smack_create(const char *name, unsigned nocase) {
     smack->is_nocase = nocase;
     smack->name      = (char *)malloc(strlen(name) + 1);
     if (smack->name == NULL) {
-        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory\n", __func__, __LINE__);
+        xcmd_try_reboot();
         exit(1);
     }
     memcpy(smack->name, name, strlen(name) + 1);
@@ -406,7 +409,8 @@ static void create_intermediate_table(struct SMACK *smack, unsigned size) {
 
     x = (struct SmackRow *)malloc(sizeof(*x) * size);
     if (x == NULL) {
-        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory\n", __func__, __LINE__);
+        xcmd_try_reboot();
         exit(1);
     }
     memset(x, 0, sizeof(*x) * size);
@@ -429,7 +433,8 @@ static void create_matches_table(struct SMACK *smack, unsigned size) {
 
     x = (struct SmackMatches *)malloc(sizeof(*x) * size);
     if (x == NULL) {
-        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory\n", __func__, __LINE__);
+        xcmd_try_reboot();
         exit(1);
     }
     memset(x, 0, sizeof(*x) * size);
@@ -532,7 +537,8 @@ static void smack_copy_matches(struct SmackMatches *row, const size_t *new_ids,
     /* Allocate space for both lists */
     total_ids = (size_t *)malloc((old_count + new_count) * sizeof(*total_ids));
     if (total_ids == NULL) {
-        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory\n", __func__, __LINE__);
+        xcmd_try_reboot();
         exit(1);
     }
 
@@ -616,7 +622,8 @@ static unsigned char *make_copy_of_pattern(const unsigned char *pattern,
     /* allocate space */
     result = (unsigned char *)malloc(pattern_length + 1);
     if (result == NULL) {
-        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory\n", __func__, __LINE__);
+        xcmd_try_reboot();
         exit(1);
     }
 
@@ -650,7 +657,8 @@ void smack_add_pattern(struct SMACK *smack, const void *v_pattern,
      */
     pat = (struct SmackPattern *)malloc(sizeof(struct SmackPattern));
     if (pat == NULL) {
-        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory\n", __func__, __LINE__);
+        xcmd_try_reboot();
         exit(1);
     }
     pat->pattern_length  = pattern_length;
@@ -687,7 +695,8 @@ void smack_add_pattern(struct SMACK *smack, const void *v_pattern,
         new_list = (struct SmackPattern **)malloc(
             sizeof(struct SmackPattern *) * new_max);
         if (new_list == NULL) {
-            LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
+            LOG(LEVEL_ERROR, "(%s:%u) out of memory\n", __func__, __LINE__);
+            xcmd_try_reboot();
             exit(1);
         }
 
@@ -715,7 +724,8 @@ static void DEBUG_set_name(struct SMACK *smack, const void *pattern,
                            unsigned length, unsigned state) {
     char *name = (char *)malloc(length + 1);
     if (name == NULL) {
-        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory\n", __func__, __LINE__);
+        xcmd_try_reboot();
         exit(1);
     }
     memcpy(name, pattern, length);
@@ -931,7 +941,8 @@ static void smack_stage4_make_final_table(struct SMACK *smack) {
      */
     table = malloc(sizeof(transition_t) * row_count * column_count);
     if (table == NULL) {
-        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory\n", __func__, __LINE__);
+        xcmd_try_reboot();
         exit(1);
     }
     memset(table, 0, sizeof(transition_t) * row_count * column_count);
@@ -1481,7 +1492,8 @@ int smack_benchmark() {
     /* Fill a buffer full of junk */
     buf = (char *)malloc(BUF_SIZE);
     if (buf == NULL) {
-        LOG(LEVEL_ERROR, "%s: out of memory error\n", "smack");
+        LOG(LEVEL_ERROR, "(%s:%u) out of memory\n", __func__, __LINE__);
+        xcmd_try_reboot();
         exit(1);
     }
     for (i = 0; i < BUF_SIZE; i++)
