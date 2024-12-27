@@ -1526,9 +1526,6 @@ static ConfRes SET_target_ip(void *conf, const char *name, const char *value) {
         return Conf_ERR;
     }
 
-    if (xconf->op == Operation_Default)
-        xconf->op = Operation_Scan;
-
     return Conf_OK;
 }
 
@@ -1542,9 +1539,6 @@ static ConfRes SET_target_asn_v4(void *conf, const char *name,
 
     FREE(xconf->target_asn_v4);
     xconf->target_asn_v4 = STRDUP(value);
-
-    if (xconf->op == Operation_Default)
-        xconf->op = Operation_Scan;
 
     return Conf_OK;
 }
@@ -1560,9 +1554,6 @@ static ConfRes SET_target_asn_v6(void *conf, const char *name,
     FREE(xconf->target_asn_v6);
     xconf->target_asn_v6 = STRDUP(value);
 
-    if (xconf->op == Operation_Default)
-        xconf->op = Operation_Scan;
-
     return Conf_OK;
 }
 
@@ -1577,9 +1568,6 @@ static ConfRes SET_exclude_asn_v4(void *conf, const char *name,
     FREE(xconf->exclude_asn_v4);
     xconf->exclude_asn_v4 = STRDUP(value);
 
-    if (xconf->op == Operation_Default)
-        xconf->op = Operation_Scan;
-
     return Conf_OK;
 }
 
@@ -1593,9 +1581,6 @@ static ConfRes SET_exclude_asn_v6(void *conf, const char *name,
 
     FREE(xconf->exclude_asn_v6);
     xconf->exclude_asn_v6 = STRDUP(value);
-
-    if (xconf->op == Operation_Default)
-        xconf->op = Operation_Scan;
 
     return Conf_OK;
 }
@@ -1656,9 +1641,6 @@ static ConfRes SET_port_them(void *conf, const char *name, const char *value) {
         return Conf_ERR;
     }
 
-    if (xconf->op == Operation_Default)
-        xconf->op = Operation_Scan;
-
     return Conf_OK;
 }
 
@@ -1717,9 +1699,6 @@ static ConfRes SET_exclude_ip(void *conf, const char *name, const char *value) {
         return Conf_ERR;
     }
 
-    if (xconf->op == Operation_Default)
-        xconf->op = Operation_Scan;
-
     return Conf_OK;
 }
 
@@ -1743,8 +1722,6 @@ static ConfRes SET_exclude_port(void *conf, const char *name,
         LOG(LEVEL_HINT, "a port is a number [0..65535]\n");
         return Conf_ERR;
     }
-    if (xconf->op == Operation_Default)
-        xconf->op = Operation_Scan;
 
     return Conf_OK;
 }
@@ -1778,8 +1755,6 @@ static ConfRes SET_include_file(void *conf, const char *name,
 
         return Conf_ERR;
     }
-    if (xconf->op == Operation_Default)
-        xconf->op = Operation_Scan;
 
     return Conf_OK;
 }
@@ -3830,17 +3805,16 @@ int xconf_set_parameter(XConf *xconf, const char *name, const char *value) {
     return conf_set_one_param(xconf, config_parameters, name, value);
 }
 
-/***************************************************************************
- * Read the configuration from the command-line.
- * Called by 'main()' when starting up.
- ***************************************************************************/
-void xconf_command_line(XConf *xconf, int argc, char *argv[]) {
-    conf_set_params_from_args(xconf, config_parameters, argc - 1, argv + 1);
+int xconf_command_line(XConf *xconf, int argc, char *argv[]) {
+    int err =
+        conf_set_params_from_args(xconf, config_parameters, argc - 1, argv + 1);
 
     if (xconf->shard.of > 1 && xconf->seed == 0) {
         LOG(LEVEL_WARN, "using shards without -seed being specified\n");
         LOG(LEVEL_HINT, "all shards must share the same seed\n");
     }
+
+    return err;
 }
 
 /***************************************************************************
@@ -3972,8 +3946,7 @@ void xconf_print_intro() {
 void xconf_print_banner() {
     printf("\n\n\n");
     xprint_with_head(ascii_xtate2, 10, 80);
-    printf("\n                             " XTATE_BANNER "\n\n");
-    printf("\n");
+    printf("\n                             " XTATE_BANNER "\n");
 
     printf("\n");
     printf("Welcome to " XTATE_NAME_TITLE_CASE "!");
@@ -3989,14 +3962,14 @@ void xconf_print_banner() {
     printf("  " XTATE_NAME " [options] [-ip IPs -p PORTs [-scan SCANMODULE "
            "[-probe PROBEMODULE]]]\n");
     printf("\n");
-    printf("use interactive mode:\n");
-    printf("  " XTATE_NAME " -interactive\n");
+    printf("enter interactive mode:");
+    printf("  `" XTATE_NAME " -interactive`\n");
     printf("\n");
-    printf("check basic usage examples:\n");
-    printf("  " XTATE_NAME " -usage\n");
+    printf("check basic usage examples:");
+    printf("  `" XTATE_NAME " -usage`\n");
     printf("\n");
-    printf("detailed help info of global params:\n");
-    printf("  " XTATE_NAME " -help\n");
+    printf("detailed help of global params:");
+    printf("  `" XTATE_NAME " -help`\n");
     printf("\n");
 }
 

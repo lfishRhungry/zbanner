@@ -123,15 +123,14 @@ static int _main_scan(XConf *xconf) {
      */
     if (!xconf->generator) {
         xconf->generator = get_generate_module_by_name("blackrock");
-        LOG(LEVEL_DEBUG, "Default GenerateModule `blackrock` is chosen because "
-                         "no GenerateModule "
-                         "was specified.\n");
+        LOG(LEVEL_INFO, "default GenerateModule `blackrock` is chosen because "
+                        "no GenerateModule was specified.\n");
     }
     if (!xconf->scanner) {
-        xconf->scanner = get_scan_module_by_name("tcp-syn");
-        LOG(LEVEL_DEBUG,
-            "Default ScanModule `tcpsyn` is chosen because no ScanModule "
-            "was specified.\n");
+        LOG(LEVEL_ERROR, "no scan module was specified.\n");
+        LOG(LEVEL_HINT, "use `-scan` to specify a scan module.\n");
+        xcmd_try_reboot();
+        exit(1);
     }
 
     /*validate probe type*/
@@ -822,6 +821,9 @@ static int _main_scan(XConf *xconf) {
 /***************************************************************************
  ***************************************************************************/
 int main(int argc, char *argv[]) {
+
+    int err;
+
     /*init logger at first*/
     LOG_init();
 
@@ -853,7 +855,12 @@ int main(int argc, char *argv[]) {
     xconf_global_refresh(xconf);
 
     // read conf from args
-    xconf_command_line(xconf, argc, argv);
+    err = xconf_command_line(xconf, argc, argv);
+    if (err) {
+        LOG(LEVEL_ERROR, "failed to parse cmdline parameters.\n");
+        xcmd_try_reboot();
+        exit(1);
+    }
 
     /* entropy for randomness */
     if (xconf->seed == 0)
@@ -882,8 +889,8 @@ int main(int argc, char *argv[]) {
             xcmd_try_reboot();
             exit(1);
         }
-        int err = targetset_add_asn4_str(&xconf->targets, xconf->as_query,
-                                         xconf->target_asn_v4);
+        err = targetset_add_asn4_str(&xconf->targets, xconf->as_query,
+                                     xconf->target_asn_v4);
         if (err) {
             LOG(LEVEL_ERROR, "add ipv4 target failed by ASN string.\n");
             xcmd_try_reboot();
@@ -897,8 +904,8 @@ int main(int argc, char *argv[]) {
             xcmd_try_reboot();
             exit(1);
         }
-        int err = targetset_add_asn6_str(&xconf->targets, xconf->as_query,
-                                         xconf->target_asn_v6);
+        err = targetset_add_asn6_str(&xconf->targets, xconf->as_query,
+                                     xconf->target_asn_v6);
         if (err) {
             LOG(LEVEL_ERROR, "add ipv6 target failed by ASN string.\n");
             xcmd_try_reboot();
@@ -916,8 +923,8 @@ int main(int argc, char *argv[]) {
             xcmd_try_reboot();
             exit(1);
         }
-        int err = targetset_add_asn4_str(&xconf->exclude, xconf->as_query,
-                                         xconf->exclude_asn_v4);
+        err = targetset_add_asn4_str(&xconf->exclude, xconf->as_query,
+                                     xconf->exclude_asn_v4);
         if (err) {
             LOG(LEVEL_ERROR, "add ipv4 exclude failed by ASN string.\n");
             xcmd_try_reboot();
@@ -931,8 +938,8 @@ int main(int argc, char *argv[]) {
             xcmd_try_reboot();
             exit(1);
         }
-        int err = targetset_add_asn6_str(&xconf->exclude, xconf->as_query,
-                                         xconf->exclude_asn_v6);
+        err = targetset_add_asn6_str(&xconf->exclude, xconf->as_query,
+                                     xconf->exclude_asn_v6);
         if (err) {
             LOG(LEVEL_ERROR, "add ipv6 exclude failed by ASN string.\n");
             xcmd_try_reboot();

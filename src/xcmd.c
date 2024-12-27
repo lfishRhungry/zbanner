@@ -54,7 +54,7 @@ static ActRes ACT_run(void *conf) {
     XConf *xconf = conf;
 
     if (xconf->op == Operation_Default) {
-        LOG(LEVEL_HINT, "params are not enough, " XTATE_NAME
+        LOG(LEVEL_HINT, "confused parameters, " XTATE_NAME
                         " doesn't know how to operate.\n");
         return ActRes_Next;
     }
@@ -732,8 +732,8 @@ void xcmd_interactive_readline(XConf *xconf, const char *exe_path) {
         printf("\n");
         xprint("Use <TAB> to see all commands and do auto completions.", 4, 80);
         printf("\n");
+        printf("\n");
     }
-    printf("\n");
 
     int      err;
     unsigned i;

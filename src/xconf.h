@@ -286,7 +286,13 @@ typedef struct XtateConf {
 #endif
 } XConf;
 
-void xconf_command_line(XConf *xconf, int argc, char *argv[]);
+/**
+ * Read the configuration from the command-line.
+ * Called by 'main()' when starting up.
+ *
+ * @return zero if success.
+ */
+int xconf_command_line(XConf *xconf, int argc, char *argv[]);
 
 /**
  * read configuration from specified file.
