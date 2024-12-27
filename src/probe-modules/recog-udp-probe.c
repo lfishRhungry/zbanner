@@ -51,7 +51,7 @@ static ConfRes SET_hello_string(void *conf, const char *name,
 
     recogudp_conf.hello_len = strlen(value);
     if (recogudp_conf.hello_len == 0) {
-        LOG(LEVEL_ERROR, "Invalid hello string.\n");
+        LOG(LEVEL_ERROR, "invalid hello string.\n");
         return Conf_ERR;
     }
     recogudp_conf.hello = MALLOC(recogudp_conf.hello_len);
@@ -68,7 +68,7 @@ static ConfRes SET_hello_nmap(void *conf, const char *name, const char *value) {
 
     recogudp_conf.hello_len = strlen(value);
     if (recogudp_conf.hello_len == 0) {
-        LOG(LEVEL_ERROR, "Invalid hello string in nmap probe format.\n");
+        LOG(LEVEL_ERROR, "invalid hello string in nmap probe format.\n");
         return Conf_ERR;
     }
 
@@ -89,7 +89,7 @@ static ConfRes SET_hello_base64(void *conf, const char *name,
 
     recogudp_conf.hello_len = strlen(value);
     if (recogudp_conf.hello_len == 0) {
-        LOG(LEVEL_ERROR, "Invalid hello string in base64 format.\n");
+        LOG(LEVEL_ERROR, "invalid hello string in base64 format.\n");
         return Conf_ERR;
     }
 
@@ -109,7 +109,7 @@ static ConfRes SET_hello_file(void *conf, const char *name, const char *value) {
 
     FILE *fp = fopen(value, "rb");
     if (fp == NULL) {
-        LOG(LEVEL_ERROR, "Failed to open file %s.\n", value);
+        LOG(LEVEL_ERROR, "failed to open file %s.\n", value);
         return Conf_ERR;
     }
 
@@ -119,7 +119,7 @@ static ConfRes SET_hello_file(void *conf, const char *name, const char *value) {
     unsigned char buf[PM_PAYLOAD_SIZE];
     size_t        bytes_read = fread(buf, 1, PM_PAYLOAD_SIZE, fp);
     if (bytes_read == 0) {
-        LOG(LEVEL_ERROR, "Failed to read valid hello in file %s.\n", value);
+        LOG(LEVEL_ERROR, "failed to read valid hello in file %s.\n", value);
         LOGPERROR(value);
         fclose(fp);
         return Conf_ERR;
@@ -212,7 +212,7 @@ static bool recogudp_init(const XConf *xconf) {
         load_recog_fp(recogudp_conf.xml_filename, recogudp_conf.unprefix,
                       recogudp_conf.unsuffix);
     if (recogudp_conf.recog_fp == NULL) {
-        LOG(LEVEL_ERROR, "Failed to load recog xml file %s.\n",
+        LOG(LEVEL_ERROR, "failed to load recog xml file %s.\n",
             recogudp_conf.xml_filename);
         return Conf_ERR;
     }

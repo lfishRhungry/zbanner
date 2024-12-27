@@ -44,7 +44,7 @@ int init_nic(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets) {
         err        = rawsock_get_default_interface(ifname2, sizeof(ifname2));
         if (err || ifname2[0] == '\0') {
             LOG(LEVEL_ERROR, "could not determine default interface\n");
-            LOG(LEVEL_ERROR, "    try \"--interface ethX\"\n");
+            LOG(LEVEL_ERROR, "try \"--interface ethX\"\n");
             rawsock_close_cache(tmp_acache);
             return -1;
         }
@@ -93,7 +93,7 @@ int init_nic(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets) {
                     "failed to detect MAC address of interface:"
                     " \"%s\"\n",
                     ifname);
-                LOG(LEVEL_ERROR, " try something like "
+                LOG(LEVEL_ERROR, "try something like "
                                  "\"--source-mac 00-11-22-33-44-55\"\n");
                 rawsock_close_cache(tmp_acache);
                 return -1;
@@ -121,9 +121,9 @@ int init_nic(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets) {
              * operating system stack. */
             LOG(LEVEL_ERROR, "failed to detect IP of interface \"%s\"\n",
                 ifname);
-            LOG(LEVEL_ERROR, "    did you spell the name correctly?\n");
-            LOG(LEVEL_ERROR,
-                "    if it has no IP address, manually set with something like "
+            LOG(LEVEL_HINT, "did you spell the name correctly?\n");
+            LOG(LEVEL_HINT,
+                "if it has no IP address, manually set with something like "
                 "\"--source-ip 198.51.100.17\"\n");
             if (targetset_has_any_ipv4(&xconf->targets)) {
                 rawsock_close_cache(tmp_acache);
@@ -175,15 +175,15 @@ int init_nic(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets) {
             if (macaddress_is_zero(xconf->nic.router_mac_ipv4)) {
                 fmt = ipv4address_fmt(xconf->nic.router_ip);
                 LOG(LEVEL_ERROR,
-                    "ARP timed-out resolving MAC address for router %s: "
+                    "arp timed-out resolving MAC address for router %s: "
                     "\"%s\"\n",
                     ifname, fmt.string);
-                LOG(LEVEL_ERROR, "    try \"--router ip 192.0.2.1\" to specify "
-                                 "different router\n");
-                LOG(LEVEL_ERROR, "    try \"--router-mac 66-55-44-33-22-11\" "
-                                 "instead to bypass ARP\n");
-                LOG(LEVEL_ERROR,
-                    "    try \"--interface eth0\" to change interface\n");
+                LOG(LEVEL_HINT, "try \"--router ip 192.0.2.1\" to specify "
+                                "different router\n");
+                LOG(LEVEL_HINT, "try \"--router-mac 66-55-44-33-22-11\" "
+                                "instead to bypass ARP\n");
+                LOG(LEVEL_HINT,
+                    "try \"--interface eth0\" to change interface\n");
                 rawsock_close_cache(tmp_acache);
                 return -1;
             }
@@ -204,9 +204,9 @@ int init_nic(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets) {
         if (ipv6address_is_zero(adapter_ipv6)) {
             LOG(LEVEL_ERROR,
                 "failed to detect IPv6 address of interface \"%s\"\n", ifname);
-            LOG(LEVEL_ERROR, "    did you spell the name correctly?\n");
-            LOG(LEVEL_ERROR,
-                "    if it has no IP address, manually set with something like "
+            LOG(LEVEL_HINT, "did you spell the name correctly?\n");
+            LOG(LEVEL_HINT,
+                "if it has no IP address, manually set with something like "
                 "\"--source-ip 2001:3b8::1234\"\n");
             rawsock_close_cache(tmp_acache);
             return -1;
@@ -237,12 +237,11 @@ int init_nic(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets) {
         if (macaddress_is_zero(xconf->nic.router_mac_ipv6)) {
             fmt = ipv4address_fmt(xconf->nic.router_ip);
             LOG(LEVEL_ERROR,
-                "NDP timed-out resolving MAC address for router %s: \"%s\"\n",
+                "ndp timed-out resolving MAC address for router %s: \"%s\"\n",
                 ifname, fmt.string);
-            LOG(LEVEL_ERROR, "    try \"--router-mac-ipv6 66-55-44-33-22-11\" "
-                             "instead to bypass ARP\n");
-            LOG(LEVEL_ERROR,
-                "    try \"--interface eth0\" to change interface\n");
+            LOG(LEVEL_HINT, "try \"--router-mac-ipv6 66-55-44-33-22-11\" "
+                            "instead to bypass ARP\n");
+            LOG(LEVEL_HINT, "try \"--interface eth0\" to change interface\n");
             rawsock_close_cache(tmp_acache);
             return -1;
         }

@@ -166,12 +166,12 @@ static ConfParam dns_parameters[] = {
 
 static bool dns_init(const XConf *xconf) {
     if (!dns_conf.req_name) {
-        LOG(LEVEL_ERROR, "Please specify a dns request name by --req-name.\n");
+        LOG(LEVEL_ERROR, "please specify a dns request name by --req-name.\n");
         return false;
     }
 
     if (dns_conf.req_type == 0) {
-        LOG(LEVEL_HINT, "Use default dns A record type because no request type "
+        LOG(LEVEL_HINT, "use default dns A record type because no request type "
                         "was specified by --req-type.\n");
         dns_conf.req_type = DNS_REC_A;
     }

@@ -85,7 +85,7 @@ void list_all_scan_modules() {
 
 void help_scan_module(Scanner *module) {
     if (!module) {
-        LOG(LEVEL_ERROR, "No specified scan module.\n");
+        LOG(LEVEL_ERROR, "no specified scan module.\n");
         return;
     }
 

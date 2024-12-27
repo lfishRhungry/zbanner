@@ -437,7 +437,7 @@ static void _tcpcon_destroy_tcb(TCP_Table *tcpcon, TCB *tcb,
     if (*one_entry == NULL) {
         ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(tcb->ip_them);
         LOG(LEVEL_WARN,
-            "TCP.tcb: (%s %u) double freed, tcp state: %s.                     "
+            "tcp.tcb: (%s %u) double freed, tcp state: %s.                     "
             " \n",
             ip_them_fmt.string, tcb->port_them,
             _tcp_state_to_string(tcb->tcpstate));
@@ -710,7 +710,7 @@ static bool _tcb_seg_resend(TCP_Table *tcpcon, TCB *tcb) {
         if (!seg->length || !seg->buf) {
             ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(tcb->ip_them);
             LOG(LEVEL_WARN,
-                "TCP.seqno: (%s %u) cannot resend packet without data, conn "
+                "tcp.seqno: (%s %u) cannot resend packet without data, conn "
                 "will be closed.    \n",
                 ip_them_fmt.string, tcb->port_them);
             return false;
@@ -719,7 +719,7 @@ static bool _tcb_seg_resend(TCP_Table *tcpcon, TCB *tcb) {
         if (tcb->seqno_me != seg->seqno) {
             ipaddress_formatted_t ip_them_fmt = ipaddress_fmt(tcb->ip_them);
             LOG(LEVEL_WARN,
-                "TCP.seqno: (%s %u) failed in diff=%d, conn will be closed.    "
+                "tcp.seqno: (%s %u) failed in diff=%d, conn will be closed.    "
                 "\n",
                 ip_them_fmt.string, tcb->port_them, tcb->seqno_me - seg->seqno);
             return false;
@@ -812,7 +812,7 @@ static bool _tcp_seg_acknowledge(TCB *tcb, uint32_t ackno) {
     if (ackno - tcb->seqno_me > 100000) {
         ipaddress_formatted_t fmt = ipaddress_fmt(tcb->ip_them);
         LOG(LEVEL_DEBUG,
-            "TCP.tcb: (%s %u) "
+            "tcp.tcb: (%s %u) "
             "ackno from past: "
             "old ackno = 0x%08x, this ackno = 0x%08x\n",
             fmt.string, tcb->port_them, tcb->ackno_me, ackno);
@@ -824,7 +824,7 @@ static bool _tcp_seg_acknowledge(TCB *tcb, uint32_t ackno) {
     if (tcb->seqno_me - ackno < 100000) {
         ipaddress_formatted_t fmt = ipaddress_fmt(tcb->ip_them);
         LOG(LEVEL_DEBUG,
-            "TCP.tcb: (%s %u) "
+            "tcp.tcb: (%s %u) "
             "ackno from future: "
             "my seqno = 0x%08x, their ackno = 0x%08x\n",
             fmt.string, tcb->port_them, tcb->seqno_me, ackno);
@@ -938,7 +938,7 @@ SockRes tcpapi_send_data(TCP_Stack *socket, const void *buf, size_t length,
             return SOCKERR_NONE;
         default: {
             ipaddress_formatted_t fmt = ipaddress_fmt(tcb->ip_them);
-            LOG(LEVEL_WARN, "TCP.app: (%s %u) attempted SEND in wrong state\n",
+            LOG(LEVEL_WARN, "tcp.app: (%s %u) attempted SEND in wrong state\n",
                 fmt.string, tcb->port_them);
             return SOCKERR_EBADF;
         }
@@ -1318,7 +1318,7 @@ again:
                     ipaddress_formatted_t fmt =
                         ipaddress_fmt(socket->tcb->ip_them);
                     LOG(LEVEL_WARN,
-                        "TCP.app: (%s %u) unhandled event: state=%s event=%s\n",
+                        "tcp.app: (%s %u) unhandled event: state=%s event=%s\n",
                         fmt.string, socket->tcb->port_them,
                         _app_state_to_string(cur_state),
                         _event_to_string(cur_event));
@@ -1348,7 +1348,7 @@ again:
                     ipaddress_formatted_t fmt =
                         ipaddress_fmt(socket->tcb->ip_them);
                     LOG(LEVEL_WARN,
-                        "TCP.app: (%s %u) unhandled event: state=%s event=%s\n",
+                        "tcp.app: (%s %u) unhandled event: state=%s event=%s\n",
                         fmt.string, socket->tcb->port_them,
                         _app_state_to_string(cur_state),
                         _event_to_string(cur_event));
@@ -1455,7 +1455,7 @@ again:
                     ipaddress_formatted_t fmt =
                         ipaddress_fmt(socket->tcb->ip_them);
                     LOG(LEVEL_WARN,
-                        "TCP.app: (%s %u) unhandled event: state=%s event=%s\n",
+                        "tcp.app: (%s %u) unhandled event: state=%s event=%s\n",
                         fmt.string, socket->tcb->port_them,
                         _app_state_to_string(cur_state),
                         _event_to_string(cur_event));
@@ -1510,7 +1510,7 @@ again:
                     ipaddress_formatted_t fmt =
                         ipaddress_fmt(socket->tcb->ip_them);
                     LOG(LEVEL_WARN,
-                        "TCP.app: (%s %u) unhandled event: state=%s event=%s\n",
+                        "tcp.app: (%s %u) unhandled event: state=%s event=%s\n",
                         fmt.string, socket->tcb->port_them,
                         _app_state_to_string(cur_state),
                         _event_to_string(cur_event));
@@ -1523,7 +1523,7 @@ again:
         default: {
             ipaddress_formatted_t fmt = ipaddress_fmt(socket->tcb->ip_them);
             LOG(LEVEL_WARN,
-                "TCP.app: (%s %u) unhandled event: state=%s event=%s\n",
+                "tcp.app: (%s %u) unhandled event: state=%s event=%s\n",
                 fmt.string, socket->tcb->port_them,
                 _app_state_to_string(cur_state), _event_to_string(cur_event));
             break;

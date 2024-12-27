@@ -114,9 +114,9 @@ static void _vLOGnet(ipaddress ip_them, unsigned port_them, const char *fmt,
         fputs(XPRINT_CLEAR_LINE, stderr);
 
     if (ip_them.version == 4) {
-        fprintf(stderr, "[Net](%s:%u) ", fmt1.string, port_them);
+        fprintf(stderr, "[NET](%s:%u) ", fmt1.string, port_them);
     } else {
-        fprintf(stderr, "[Net]([%s]:%u) ", fmt1.string, port_them);
+        fprintf(stderr, "[NET]([%s]:%u) ", fmt1.string, port_them);
     }
     vfprintf(stderr, fmt, marker);
     fflush(stderr);
@@ -175,7 +175,7 @@ void LOGip(int level, ipaddress ip, unsigned port, const char *fmt, ...) {
  ***************************************************************************/
 static int _LOGopenssl_cb(const char *str, size_t len, void *bp) {
     if (len > INT16_MAX) {
-        fputs("Error string is too long\n", stderr);
+        fputs("error string is too long\n", stderr);
     }
     fprintf(stderr, "%.*s", (int)len, str);
     return 1;
@@ -192,7 +192,7 @@ int LOGopenssl(int level) {
             fputs(XPRINT_CLEAR_LINE, stderr);
 
         fputs(_level_to_string(level), stderr);
-        fprintf(stderr, "(OpenSSL) ");
+        fprintf(stderr, "(openssl) ");
         ERR_print_errors_cb(_LOGopenssl_cb, NULL);
         fflush(stderr);
 

@@ -350,7 +350,7 @@ static int _main_scan(XConf *xconf) {
         int err = pixie_fopen_shareable(&meta_fp, xconf->meta_filename, false);
 
         if (err != 0 || meta_fp == NULL) {
-            LOG(LEVEL_ERROR, "Could not open file %s to write meta info.\n",
+            LOG(LEVEL_ERROR, "could not open file %s to write meta info.\n",
                 xconf->meta_filename);
             LOGPERROR(xconf->meta_filename);
             meta_fp = NULL;

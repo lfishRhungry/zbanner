@@ -73,7 +73,7 @@ static ActRes ACT_exit(void *conf) {
     }
 
     if ((line[0] == 'y' || line[0] == 'Y') && line[1] == '\n') {
-        LOG(LEVEL_HINT, "See you next time, bye~\n");
+        LOG(LEVEL_HINT, "see you next time, bye~\n");
         exit(0);
     }
 
@@ -114,7 +114,7 @@ static ActRes ACT_quit(void *conf) {
             LOG(LEVEL_HINT, "configuration was saved to %s.\n",
                 XCONF_DFT_RECOVER_FILENAME);
         }
-        LOG(LEVEL_HINT, "See you next time, bye~\n");
+        LOG(LEVEL_HINT, "see you next time, bye~\n");
         exit(0);
     }
 

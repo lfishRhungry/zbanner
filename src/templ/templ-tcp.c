@@ -425,7 +425,7 @@ static void _adjust_length(unsigned char *buf, size_t length, int adjustment,
             U16_TO_BE(buf + ip_offset + 2, total_length);
             total_length = BE_TO_U16(buf + ip_offset + 2);
             if (total_length + 14 != length) {
-                LOG(LEVEL_ERROR, "IP length mismatch\n");
+                LOG(LEVEL_ERROR, "ip length mismatch\n");
             }
             break;
         }

@@ -132,7 +132,7 @@ struct rte_ring *rte_ring_create(unsigned count, unsigned flags) {
     if ((!POWEROF2(count)) || (count > RTE_RING_SZ_MASK)) {
         rte_errno = EINVAL;
         LOG(LEVEL_ERROR,
-            "Requested size is invalid, must be power of 2, and "
+            "requested size is invalid, must be power of 2, and "
             "do not exceed the size limit %u\n",
             RTE_RING_SZ_MASK);
         return NULL;

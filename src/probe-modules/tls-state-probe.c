@@ -98,7 +98,7 @@ static ConfRes SET_subprobe(void *conf, const char *name, const char *value) {
 
     tlsstate_conf.subprobe = get_probe_module_by_name(value);
     if (!tlsstate_conf.subprobe) {
-        LOG(LEVEL_ERROR, "Invalid name of subprobe: %s.\n", value);
+        LOG(LEVEL_ERROR, "invalid name of subprobe: %s.\n", value);
         return Conf_ERR;
     }
 

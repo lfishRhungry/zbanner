@@ -101,7 +101,7 @@ void list_all_output_modules() {
 
 void help_output_module(Output *module) {
     if (!module) {
-        LOG(LEVEL_ERROR, "No specified output module.\n");
+        LOG(LEVEL_ERROR, "no specified output module.\n");
         return;
     }
 

@@ -185,9 +185,8 @@ static bool luatcp_init(const XConf *xconf) {
 
     /* Dynamically link the library*/
     if (!stublua_init()) {
-        LOG(LEVEL_ERROR, "Failed to init lua library dynamicly.\n");
-        LOG(LEVEL_ERROR,
-            "    HINT: make sure lua library 5.3/5.4 was installed.\n");
+        LOG(LEVEL_ERROR, "failed to init lua library dynamicly.\n");
+        LOG(LEVEL_HINT, "make sure lua library 5.3/5.4 was installed.\n");
         return false;
     }
 
@@ -204,7 +203,7 @@ static bool luatcp_init(const XConf *xconf) {
     /* Get lua version*/
     lua_getglobal(luatcp_conf.Ltx, "_VERSION");
     const char *version = lua_tostring(luatcp_conf.Ltx, -1);
-    LOG(LEVEL_INFO, "Loaded lua library in %s\n", version);
+    LOG(LEVEL_INFO, "loaded lua library in %s\n", version);
     lua_pop(luatcp_conf.Ltx, 1);
 
     /* Load the script. This will verify the syntax.*/

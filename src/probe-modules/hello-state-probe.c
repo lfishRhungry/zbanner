@@ -149,7 +149,7 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
 
     hellostate_conf.regex_len = strlen(value);
     if (hellostate_conf.regex_len == 0) {
-        LOG(LEVEL_ERROR, "Invalid regex.\n");
+        LOG(LEVEL_ERROR, "invalid regex.\n");
         return Conf_ERR;
     }
 
@@ -164,14 +164,14 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
         &pcre2_errcode, &pcre2_erroffset, NULL);
 
     if (!hellostate_conf.compiled_re) {
-        LOG(LEVEL_ERROR, "Regex compiled failed.\n");
+        LOG(LEVEL_ERROR, "regex compiled failed.\n");
         FREE(hellostate_conf.regex);
         return Conf_ERR;
     }
 
     hellostate_conf.match_ctx = pcre2_match_context_create(NULL);
     if (!hellostate_conf.match_ctx) {
-        LOG(LEVEL_ERROR, "Regex allocates match_ctx failed.\n");
+        LOG(LEVEL_ERROR, "regex allocates match_ctx failed.\n");
         FREE(hellostate_conf.regex);
         return Conf_ERR;
     }
@@ -200,7 +200,7 @@ static ConfRes SET_hello_string(void *conf, const char *name,
 
     hellostate_conf.hello_len = strlen(value);
     if (hellostate_conf.hello_len == 0) {
-        LOG(LEVEL_ERROR, "Invalid hello string.\n");
+        LOG(LEVEL_ERROR, "invalid hello string.\n");
         return Conf_ERR;
     }
     hellostate_conf.hello = MALLOC(hellostate_conf.hello_len);
@@ -217,7 +217,7 @@ static ConfRes SET_hello_nmap(void *conf, const char *name, const char *value) {
 
     hellostate_conf.hello_len = strlen(value);
     if (hellostate_conf.hello_len == 0) {
-        LOG(LEVEL_ERROR, "Invalid hello string in nmap probe format.\n");
+        LOG(LEVEL_ERROR, "invalid hello string in nmap probe format.\n");
         return Conf_ERR;
     }
 
@@ -238,7 +238,7 @@ static ConfRes SET_hello_base64(void *conf, const char *name,
 
     hellostate_conf.hello_len = strlen(value);
     if (hellostate_conf.hello_len == 0) {
-        LOG(LEVEL_ERROR, "Invalid hello string in base64 format.\n");
+        LOG(LEVEL_ERROR, "invalid hello string in base64 format.\n");
         return Conf_ERR;
     }
 
@@ -258,7 +258,7 @@ static ConfRes SET_hello_file(void *conf, const char *name, const char *value) {
 
     FILE *fp = fopen(value, "rb");
     if (fp == NULL) {
-        LOG(LEVEL_ERROR, "Failed to open file %s.\n", value);
+        LOG(LEVEL_ERROR, "failed to open file %s.\n", value);
         return Conf_ERR;
     }
 
@@ -268,7 +268,7 @@ static ConfRes SET_hello_file(void *conf, const char *name, const char *value) {
     unsigned char buf[PM_PAYLOAD_SIZE];
     size_t        bytes_read = fread(buf, 1, PM_PAYLOAD_SIZE, fp);
     if (bytes_read == 0) {
-        LOG(LEVEL_ERROR, "Failed to read valid hello in file %s.\n", value);
+        LOG(LEVEL_ERROR, "failed to read valid hello in file %s.\n", value);
         LOGPERROR(value);
         fclose(fp);
         return Conf_ERR;

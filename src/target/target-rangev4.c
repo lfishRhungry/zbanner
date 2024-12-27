@@ -599,7 +599,7 @@ struct Range range_parse_ipv4(const char *line, unsigned *inout_offset,
             result.begin = 0xFFFFFFFF;
             result.end   = 0x00000000;
             LOG(LEVEL_ERROR,
-                "Ending addr %u.%u.%u.%u cannot come before starting addr "
+                "ending addr %u.%u.%u.%u cannot come before starting addr "
                 "%u.%u.%u.%u\n",
                 ((ip >> 24) & 0xFF), ((ip >> 16) & 0xFF), ((ip >> 8) & 0xFF),
                 ((ip >> 0) & 0xFF), ((result.begin >> 24) & 0xFF),

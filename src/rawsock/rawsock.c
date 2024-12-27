@@ -569,7 +569,7 @@ Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
         !is_pfring_dna(
             adapter_name)) { /*First ensure pfring dna adapter is available*/
         LOG(LEVEL_ERROR,
-            "No pfring adapter available. Please install pfring or "
+            "no pfring adapter available. Please install pfring or "
             "run " XTATE_NAME " without the --pfring option.\n");
         return 0;
     }
@@ -834,7 +834,7 @@ pcap_error:
     if (adapter->pcap == NULL) {
         if (strcmp(adapter_name, "vmnet1") == 0) {
             LOG(LEVEL_ERROR,
-                " VMware on Macintosh doesn't support " XTATE_NAME "\n");
+                "VMware on Macintosh doesn't support " XTATE_NAME "\n");
         }
         return 0;
     }

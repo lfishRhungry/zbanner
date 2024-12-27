@@ -51,7 +51,7 @@ static ConfRes SET_hello_string(void *conf, const char *name,
 
     recog_conf.hello_len = strlen(value);
     if (recog_conf.hello_len == 0) {
-        LOG(LEVEL_ERROR, "Invalid hello string.\n");
+        LOG(LEVEL_ERROR, "invalid hello string.\n");
         return Conf_ERR;
     }
     recog_conf.hello = MALLOC(recog_conf.hello_len);
@@ -68,7 +68,7 @@ static ConfRes SET_hello_nmap(void *conf, const char *name, const char *value) {
 
     recog_conf.hello_len = strlen(value);
     if (recog_conf.hello_len == 0) {
-        LOG(LEVEL_ERROR, "Invalid hello string in nmap probe format.\n");
+        LOG(LEVEL_ERROR, "invalid hello string in nmap probe format.\n");
         return Conf_ERR;
     }
 
@@ -88,7 +88,7 @@ static ConfRes SET_hello_base64(void *conf, const char *name,
 
     recog_conf.hello_len = strlen(value);
     if (recog_conf.hello_len == 0) {
-        LOG(LEVEL_ERROR, "Invalid hello string in base64 format.\n");
+        LOG(LEVEL_ERROR, "invalid hello string in base64 format.\n");
         return Conf_ERR;
     }
 
@@ -108,7 +108,7 @@ static ConfRes SET_hello_file(void *conf, const char *name, const char *value) {
 
     FILE *fp = fopen(value, "rb");
     if (fp == NULL) {
-        LOG(LEVEL_ERROR, "Failed to open file %s.\n", value);
+        LOG(LEVEL_ERROR, "failed to open file %s.\n", value);
         return Conf_ERR;
     }
 
@@ -118,7 +118,7 @@ static ConfRes SET_hello_file(void *conf, const char *name, const char *value) {
     unsigned char buf[PM_PAYLOAD_SIZE];
     size_t        bytes_read = fread(buf, 1, PM_PAYLOAD_SIZE, fp);
     if (bytes_read == 0) {
-        LOG(LEVEL_ERROR, "Failed to read valid hello in file %s.\n", value);
+        LOG(LEVEL_ERROR, "failed to read valid hello in file %s.\n", value);
         LOGPERROR(value);
         fclose(fp);
         return Conf_ERR;
@@ -211,7 +211,7 @@ static bool recog_init(const XConf *xconf) {
     recog_conf.recog_fp = load_recog_fp(
         recog_conf.xml_filename, recog_conf.unprefix, recog_conf.unsuffix);
     if (recog_conf.recog_fp == NULL) {
-        LOG(LEVEL_ERROR, "Failed to load recog xml file %s.\n",
+        LOG(LEVEL_ERROR, "failed to load recog xml file %s.\n",
             recog_conf.xml_filename);
         return Conf_ERR;
     }

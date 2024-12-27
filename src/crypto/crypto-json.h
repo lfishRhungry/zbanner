@@ -71,7 +71,7 @@
  *        int a_given, b_given, c_given;
  *
  *        if (triple->tag != JSON_OBJECT) {
- *            LOG(LEVEL_ERROR, "Expected a JSON object.\n");
+ *            LOG(LEVEL_ERROR, "expect a JSON object.\n");
  *            exit(EXIT_FAILURE);
  *        }
  *
@@ -80,7 +80,7 @@
  *        c_given = find_number(triple, "c", &c);
  *
  *        if (a_given + b_given + c_given != 2) {
- *            LOG(LEVEL_ERROR, " need two sides to compute the length of the
+ *            LOG(LEVEL_ERROR, "need two sides to compute the length of the
  * third.\n"); exit(EXIT_FAILURE);
  *        }
  *

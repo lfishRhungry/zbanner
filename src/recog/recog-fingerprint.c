@@ -32,7 +32,7 @@ struct Recog_FP *load_recog_fp(const char *filename, bool unprefix,
 #ifndef NOT_FOUND_LIBXML2
 
     if (filename == NULL || filename[0] == '\0') {
-        LOG(LEVEL_ERROR, "Invalid file name\n");
+        LOG(LEVEL_ERROR, "invalid file name\n");
         return NULL;
     }
 
@@ -43,7 +43,7 @@ struct Recog_FP *load_recog_fp(const char *filename, bool unprefix,
 
     doc = xmlParseFile(filename);
     if (doc == NULL) {
-        LOG(LEVEL_ERROR, "Failed to load xml file %s.\n", filename);
+        LOG(LEVEL_ERROR, "failed to load xml file %s.\n", filename);
         return NULL;
     }
 
@@ -175,13 +175,13 @@ struct Recog_FP *load_recog_fp(const char *filename, bool unprefix,
     if (!fp->count)
         goto error;
 
-    LOG(LEVEL_HINT, "Loaded %u recog fingerprints in file %s.\n", fp->count,
+    LOG(LEVEL_HINT, "loaded %u recog fingerprints in file %s.\n", fp->count,
         fp->filename);
 
     return fp;
 
 error:
-    LOG(LEVEL_ERROR, "Failed to load fingerprints in file %s.\n", filename);
+    LOG(LEVEL_ERROR, "failed to load fingerprints in file %s.\n", filename);
     xmlFreeDoc(doc);
     xmlCleanupParser();
     FREE(fp->filename);
@@ -194,7 +194,7 @@ error:
 #else
 
     LOG(LEVEL_ERROR,
-        "Failed to load recog fingerprints because no libxml2 build with.\n");
+        "failed to load recog fingerprints because no libxml2 build with.\n");
     return NULL;
 
 #endif

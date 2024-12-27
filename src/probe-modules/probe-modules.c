@@ -254,7 +254,7 @@ void list_all_probe_modules() {
 
 void help_probe_module(Probe *module) {
     if (!module) {
-        LOG(LEVEL_ERROR, "No specified probe module.\n");
+        LOG(LEVEL_ERROR, "no specified probe module.\n");
         return;
     }
 

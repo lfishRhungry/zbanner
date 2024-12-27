@@ -339,8 +339,7 @@ int pcap_init(void) {
             switch (GetLastError()) {
                 case ERROR_MOD_NOT_FOUND:
                     LOG(LEVEL_ERROR, "%s: not found\n", "Packet.dll");
-                    LOG(LEVEL_ERROR,
-                        "  HINT: you must install either WinPcap or Npcap\n");
+                    LOG(LEVEL_HINT, "must install either WinPcap or Npcap\n");
                     return -1;
                 default:
                     LOG(LEVEL_ERROR, "%s: couldn't load %d\n", "Packet.dll",

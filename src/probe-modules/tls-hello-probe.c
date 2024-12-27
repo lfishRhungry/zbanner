@@ -185,7 +185,7 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
 
     tlshello_conf.regex_len = strlen(value);
     if (tlshello_conf.regex_len == 0) {
-        LOG(LEVEL_ERROR, "Invalid regex.\n");
+        LOG(LEVEL_ERROR, "invalid regex.\n");
         return Conf_ERR;
     }
 
@@ -200,14 +200,14 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
         &pcre2_errcode, &pcre2_erroffset, NULL);
 
     if (!tlshello_conf.compiled_re) {
-        LOG(LEVEL_ERROR, "Regex compiled failed.\n");
+        LOG(LEVEL_ERROR, "regex compiled failed.\n");
         FREE(tlshello_conf.regex);
         return Conf_ERR;
     }
 
     tlshello_conf.match_ctx = pcre2_match_context_create(NULL);
     if (!tlshello_conf.match_ctx) {
-        LOG(LEVEL_ERROR, "Regex allocates match_ctx failed.\n");
+        LOG(LEVEL_ERROR, "regex allocates match_ctx failed.\n");
         FREE(tlshello_conf.regex);
         return Conf_ERR;
     }

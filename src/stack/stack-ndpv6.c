@@ -414,7 +414,7 @@ static int _extract_router_advertisement(const unsigned char *buf,
                 prefix = _read_ipv6(buf2, &off2, len2);
 
                 fmt = ipv6address_fmt(prefix);
-                LOG(LEVEL_DETAIL, "IPv6.prefix = %s/%u\n", fmt.string,
+                LOG(LEVEL_DETAIL, "ipv6.prefix = %s/%u\n", fmt.string,
                     prefix_len);
                 if (ipv6address_is_equal_prefixed(my_ipv6, prefix,
                                                   prefix_len)) {
@@ -437,7 +437,7 @@ static int _extract_router_advertisement(const unsigned char *buf,
                 while (off2 + 16 <= len2) {
                     ipv6address resolver      = _read_ipv6(buf2, &off2, len2);
                     ipaddress_formatted_t fmt = ipv6address_fmt(resolver);
-                    LOG(LEVEL_DETAIL, "IPv6.DNS = %s\n", fmt.string);
+                    LOG(LEVEL_DETAIL, "ipv6.dns = %s\n", fmt.string);
                 }
                 break;
             case NDP_OPT_TYPE_SRC_LINK_ADDR:

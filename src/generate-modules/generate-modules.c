@@ -72,7 +72,7 @@ void list_all_generate_modules() {
 
 void help_generate_module(Generator *module) {
     if (!module) {
-        LOG(LEVEL_ERROR, "No specified generate module.\n");
+        LOG(LEVEL_ERROR, "no specified generate module.\n");
         return;
     }
 

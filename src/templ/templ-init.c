@@ -279,7 +279,7 @@ static void _template_init_ipv6(TmplPkt *tmpl, macaddress_t router_mac_ipv6,
     x = preprocess_frame(tmpl->ipv4.packet, tmpl->ipv4.length, data_link_type,
                          &parsed);
     if (!x || parsed.found == FOUND_NOTHING) {
-        LOG(LEVEL_ERROR, "Bad packet template\n");
+        LOG(LEVEL_ERROR, "bad packet template\n");
         xcmd_try_reboot();
         exit(1);
     }
@@ -404,7 +404,7 @@ static void _template_init(TmplPkt *tmpl, macaddress_t source_mac,
 
     x = preprocess_frame(px, tmpl->ipv4.length, PCAP_DLT_ETHERNET, &parsed);
     if (!x || parsed.found == FOUND_NOTHING) {
-        LOG(LEVEL_ERROR, "Bad packet template\n");
+        LOG(LEVEL_ERROR, "bad packet template\n");
         xcmd_try_reboot();
         exit(1);
     }
@@ -512,8 +512,7 @@ static void _template_init(TmplPkt *tmpl, macaddress_t source_mac,
         /* the default, do nothing */
     } else {
         LOG(LEVEL_ERROR, "bad packet template, unknown data link type\n");
-        LOG(LEVEL_ERROR,
-            "    " XTATE_NAME_TITLE_CASE
+        LOG(LEVEL_ERROR, XTATE_NAME_TITLE_CASE
             " doesn't know how to format packets for this interface\n");
         xcmd_try_reboot();
         exit(1);

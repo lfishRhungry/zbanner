@@ -55,7 +55,7 @@ void listtargets_ip_port(XConf *xconf, FILE *fp) {
         return;
     }
 
-    LOG(LEVEL_HINT, "Listing %" PRIu64 " targets",
+    LOG(LEVEL_HINT, "listing %" PRIu64 " targets",
         xconf->targets.count_ipv4s + xconf->targets.count_ipv6s.lo);
     if (xconf->targets.count_ports > 1) {
         LOG(LEVEL_OUT, " [%" PRIu64 " endpoints each]",

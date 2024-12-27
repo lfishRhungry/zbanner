@@ -475,7 +475,7 @@ again:
 
         /* If we get to this point, we are totally hosed and the corruption
          * is more severe than a few packets. */
-        LOG(LEVEL_ERROR, "No valid packet found in chunk\n");
+        LOG(LEVEL_ERROR, "no valid packet found in chunk\n");
     }
 
     /*
@@ -679,13 +679,13 @@ struct PcapFile *pcapfile_openwrite(const char *capfilename,
 
     fp = fopen(capfilename, "wb");
     if (fp == NULL) {
-        LOG(LEVEL_ERROR, "Could not open capture file\n");
+        LOG(LEVEL_ERROR, "could not open capture file\n");
         LOGPERROR(capfilename);
         return 0;
     }
 
     if (fwrite(buf, 1, 24, fp) != 24) {
-        LOG(LEVEL_ERROR, "Could not write capture file header\n");
+        LOG(LEVEL_ERROR, "could not write capture file header\n");
         LOGPERROR(capfilename);
         fclose(fp);
         return 0;
@@ -731,7 +731,7 @@ struct PcapFile *pcapfile_openappend(const char *capfilename,
         return pcapfile_openwrite(capfilename, linktype);
     }
     if (fp == NULL) {
-        LOG(LEVEL_ERROR, "Could not open capture file to append frame\n");
+        LOG(LEVEL_ERROR, "could not open capture file to append frame\n");
         LOGPERROR(capfilename);
         return pcapfile_openappend(capfilename, linktype);
     }
@@ -749,7 +749,7 @@ struct PcapFile *pcapfile_openappend(const char *capfilename,
      * are corrupt at the end (which happens when the program crashes),
      * so we may end up writing these frames in a way that cannot be read. */
     if (fseek(fp, 0, SEEK_END) != 0) {
-        LOG(LEVEL_ERROR, "Could not seek to end of capture file\n");
+        LOG(LEVEL_ERROR, "could not seek to end of capture file\n");
         LOGPERROR(capfilename);
         fclose(fp);
         return 0;
@@ -804,7 +804,7 @@ struct PcapFile *pcapfile_openappend(const char *capfilename,
              * has the previous linktype in its name for some reason. At this
              * unlikely point, we just give up */
             LOG(LEVEL_ERROR,
-                "Giving up on appending %u-type frames onto a %u-type file\n",
+                "giving up on appending %u-type frames onto a %u-type file\n",
                 linktype, file_linktype);
             return 0;
         }

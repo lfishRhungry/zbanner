@@ -213,7 +213,7 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
 
     httpstate_conf.regex_len = strlen(value);
     if (httpstate_conf.regex_len == 0) {
-        LOG(LEVEL_ERROR, "Invalid regex.\n");
+        LOG(LEVEL_ERROR, "invalid regex.\n");
         return Conf_ERR;
     }
 
@@ -228,14 +228,14 @@ static ConfRes SET_regex(void *conf, const char *name, const char *value) {
         &pcre2_errcode, &pcre2_erroffset, NULL);
 
     if (!httpstate_conf.compiled_re) {
-        LOG(LEVEL_ERROR, "Regex compiled failed.\n");
+        LOG(LEVEL_ERROR, "regex compiled failed.\n");
         FREE(httpstate_conf.regex);
         return Conf_ERR;
     }
 
     httpstate_conf.match_ctx = pcre2_match_context_create(NULL);
     if (!httpstate_conf.match_ctx) {
-        LOG(LEVEL_ERROR, "Regex allocates match_ctx failed.\n");
+        LOG(LEVEL_ERROR, "regex allocates match_ctx failed.\n");
         FREE(httpstate_conf.regex);
         return Conf_ERR;
     }
@@ -365,7 +365,7 @@ static ConfRes SET_header(void *conf, const char *name, const char *value) {
         newname[name_length] = '\0';
     } else {
         LOG(LEVEL_ERROR, "--header needs both a name and value\n");
-        LOG(LEVEL_HINT, "    \"--header Name:value\"\n");
+        LOG(LEVEL_HINT, "specify it like \"--header Name:value\"\n");
         return Conf_ERR;
     }
 

@@ -357,7 +357,7 @@ static ConfRes SET_scan_module(void *conf, const char *name,
 
     xconf->scanner = get_scan_module_by_name(value);
     if (!xconf->scanner) {
-        LOG(LEVEL_ERROR, "FAIL %s: no such scan module named %s\n", name,
+        LOG(LEVEL_ERROR, "fail %s: no such scan module named %s\n", name,
             value);
         return Conf_ERR;
     }
@@ -377,7 +377,7 @@ static ConfRes SET_help_scan_module(void *conf, const char *name,
 
     xconf->scanner = get_scan_module_by_name(value);
     if (!xconf->scanner) {
-        LOG(LEVEL_ERROR, "FAIL %s: no such scan module named %s\n", name,
+        LOG(LEVEL_ERROR, "fail %s: no such scan module named %s\n", name,
             value);
         return Conf_ERR;
     }
@@ -396,7 +396,7 @@ static ConfRes SET_help_probe_module(void *conf, const char *name,
 
     xconf->probe = get_probe_module_by_name(value);
     if (!xconf->probe) {
-        LOG(LEVEL_ERROR, "FAIL %s: no such probe module named %s\n", name,
+        LOG(LEVEL_ERROR, "fail %s: no such probe module named %s\n", name,
             value);
         return Conf_ERR;
     }
@@ -415,7 +415,7 @@ static ConfRes SET_help_generate_module(void *conf, const char *name,
 
     xconf->generator = get_generate_module_by_name(value);
     if (!xconf->generator) {
-        LOG(LEVEL_ERROR, "FAIL %s: no such generate module named %s\n", name,
+        LOG(LEVEL_ERROR, "fail %s: no such generate module named %s\n", name,
             value);
         return Conf_ERR;
     }
@@ -434,7 +434,7 @@ static ConfRes SET_help_output_module(void *conf, const char *name,
 
     xconf->out_conf.output_module = get_output_module_by_name(value);
     if (!xconf->out_conf.output_module) {
-        LOG(LEVEL_ERROR, "FAIL %s: no such output module named %s\n", name,
+        LOG(LEVEL_ERROR, "fail %s: no such output module named %s\n", name,
             value);
         return Conf_ERR;
     }
@@ -462,7 +462,7 @@ static ConfRes SET_probe_module(void *conf, const char *name,
 
     xconf->probe = get_probe_module_by_name(value);
     if (!xconf->probe) {
-        LOG(LEVEL_ERROR, "FAIL %s: no such probe module\n", value);
+        LOG(LEVEL_ERROR, "fail %s: no such probe module\n", value);
         return Conf_ERR;
     }
 
@@ -482,7 +482,7 @@ static ConfRes SET_generate_module(void *conf, const char *name,
 
     xconf->generator = get_generate_module_by_name(value);
     if (!xconf->generator) {
-        LOG(LEVEL_ERROR, "FAIL %s: no such generate module\n", value);
+        LOG(LEVEL_ERROR, "fail %s: no such generate module\n", value);
         return Conf_ERR;
     }
 
@@ -511,7 +511,7 @@ static ConfRes SET_output_module(void *conf, const char *name,
 
     xconf->out_conf.output_module = get_output_module_by_name(value);
     if (!xconf->out_conf.output_module) {
-        LOG(LEVEL_ERROR, "FAIL %s: no such output module\n", value);
+        LOG(LEVEL_ERROR, "fail %s: no such output module\n", value);
         return Conf_ERR;
     }
 
@@ -610,7 +610,7 @@ static ConfRes SET_show_output(void *conf, const char *name,
                conf_equals("successed", value)) {
         xconf->out_conf.no_show_success = false;
     } else {
-        LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
+        LOG(LEVEL_ERROR, "fail %s: no item named %s\n", name, value);
         return Conf_ERR;
     }
 
@@ -633,7 +633,7 @@ static ConfRes SET_no_show_output(void *conf, const char *name,
     } else if (conf_equals("success", value)) {
         xconf->out_conf.no_show_success = true;
     } else {
-        LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
+        LOG(LEVEL_ERROR, "fail %s: no item named %s\n", name, value);
         return Conf_ERR;
     }
 
@@ -694,7 +694,7 @@ static ConfRes SET_print_status(void *conf, const char *name,
     } else if (conf_equals("hit-rate", value) || conf_equals("hit", value)) {
         xconf->is_status_hit_rate = true;
     } else {
-        LOG(LEVEL_ERROR, "FAIL %s: no item named %s\n", name, value);
+        LOG(LEVEL_ERROR, "fail %s: no item named %s\n", name, value);
         return Conf_ERR;
     }
 
@@ -1395,7 +1395,7 @@ static ConfRes SET_source_ip(void *conf, const char *name, const char *value) {
             break;
         default:
             LOG(LEVEL_ERROR, "bad source IP address: %s=%s\n", name, value);
-            LOG(LEVEL_HINT, "Addresses looks like \"192.168.1.23\" or "
+            LOG(LEVEL_HINT, "addresses looks like \"192.168.1.23\" or "
                             "\"2001:db8:1::1ce9\".\n");
             return Conf_ERR;
     }
@@ -1522,7 +1522,7 @@ static ConfRes SET_target_ip(void *conf, const char *name, const char *value) {
     int err;
     err = targetset_add_ip_str(&xconf->targets, value);
     if (err) {
-        LOG(LEVEL_ERROR, "Bad IP address/range: %s\n", value);
+        LOG(LEVEL_ERROR, "bad IP address/range: %s\n", value);
         return Conf_ERR;
     }
 
@@ -1654,7 +1654,7 @@ static ConfRes SET_top_port(void *conf, const char *name, const char *value) {
     unsigned maxports = conf_parse_int(value);
 
     if (!maxports) {
-        LOG(LEVEL_ERROR, "FAIL %s: value of top-port must > 0.\n", name);
+        LOG(LEVEL_ERROR, "fail %s: value of top-port must > 0.\n", name);
         return Conf_ERR;
     }
 
@@ -1695,7 +1695,7 @@ static ConfRes SET_exclude_ip(void *conf, const char *name, const char *value) {
     int err;
     err = targetset_add_ip_str(&xconf->exclude, value);
     if (err) {
-        LOG(LEVEL_ERROR, "Bad exclude address/range: %s\n", value);
+        LOG(LEVEL_ERROR, "bad exclude address/range: %s\n", value);
         return Conf_ERR;
     }
 
@@ -1778,7 +1778,7 @@ static ConfRes SET_exclude_file(void *conf, const char *name,
     int         err;
     const char *filename = value;
 
-    // LOG(LEVEL_DETAIL, "EXCLUDING: %s\n", value);
+    // LOG(LEVEL_DETAIL, "excluding: %s\n", value);
     err = targetset_parse_file(&xconf->exclude, filename);
     if (err) {
         LOG(LEVEL_ERROR, "fail reading from exclude file\n");
@@ -1862,7 +1862,7 @@ static ConfRes SET_router_ip(void *conf, const char *name, const char *value) {
     /* Check for bad format */
     if (range.begin != range.end) {
         LOG(LEVEL_ERROR, "bad source IPv4 address: %s=%s\n", name, value);
-        LOG(LEVEL_HINT, "Addresses look like \"19.168.1.23\"\n");
+        LOG(LEVEL_HINT, "addresses look like \"19.168.1.23\"\n");
         return Conf_ERR;
     }
 

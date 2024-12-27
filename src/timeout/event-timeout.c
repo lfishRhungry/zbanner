@@ -96,7 +96,7 @@ void timeouts_add(Timeouts *timeouts, TmEntry *entry, size_t offset,
     timeout_unlink(entry);
 
     if (entry->prev) {
-        LOG(LEVEL_DETAIL, "EVENT-TM CHANGE %d-seconds\n",
+        LOG(LEVEL_DETAIL, "event-tm change %d-seconds\n",
             (int)((timestamp - entry->timestamp) / TICKS_PER_SECOND));
     }
 

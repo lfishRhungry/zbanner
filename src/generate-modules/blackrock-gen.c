@@ -102,9 +102,8 @@ bool blackrock_init(const XConf *xconf, uint64_t *count_targets,
     if (count_ips > 1000000000ULL &&
         rangelist_count(&xconf->exclude.ipv4) == 0) {
         LOG(LEVEL_ERROR, "range too big, need confirmation\n");
-        LOG(LEVEL_OUT,
-            "    to prevent accidents, at least one --exclude must be "
-            "specified\n");
+        LOG(LEVEL_HINT,
+            "to prevent accidents, at least one --exclude must be specified\n");
         LOG(LEVEL_HINT,
             "use \"--exclude 255.255.255.255\" as a simple confirmation\n");
         return false;
