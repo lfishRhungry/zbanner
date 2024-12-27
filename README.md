@@ -404,7 +404,7 @@ Use `xtate --version` to check details of version, binary info after building.
 
 ## Compile on Linux
 
-Recommended compile suites:
+Recommended compilers:
 
 - GCC
 - Clang
@@ -417,7 +417,7 @@ After dependencies installed we can build xtate by CMake with parameters or with
 
 ## Compile on Windows
 
-Recommended compile suites:
+Recommended compiler:
 
 - MSVC
 - MinGW-w64
@@ -434,14 +434,28 @@ cmake --build . \
     --parallel 4
 ```
 
-Generate a unix-style Makefile and build with MinGW-w64 :
+Generate a unix-style Makefile and build with MinGW-w64:
 
 ```
 cd build
 cmake .. \
     -G "Unix Makefiles" \
     -DCMAKE_BUILD_TYPE=<Release/Debug>
-make -j4
+    -DCMAKE_C_COMPILER=gcc
+make
+```
+
+NOTE: Do not use `-j` flag in make command on Windows, may cause errors.
+
+Use ninja to accelerate the building with MinGW-w64:
+
+```
+cd build
+cmake .. \
+    -G Ninja\
+    -DCMAKE_BUILD_TYPE=<Release/Debug>
+    -DCMAKE_C_COMPILER=gcc
+ninja -j4
 ```
 
 <a href="#top">🔝back to top</a>
