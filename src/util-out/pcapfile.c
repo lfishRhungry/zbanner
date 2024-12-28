@@ -40,9 +40,11 @@
  ****************************************************************************/
 #ifdef _MSC_VER
 #define snprintf _snprintf
-#define PRId64   "I64d"
-#define PRIu64   "I64u"
-#define PRIx64   "I64x"
+#ifndef PRId64
+#define PRId64 "I64d"
+#define PRIu64 "I64u"
+#define PRIx64 "I64x"
+#endif
 #else
 #include <inttypes.h>
 #endif
