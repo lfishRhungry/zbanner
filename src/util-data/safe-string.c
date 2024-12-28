@@ -244,8 +244,12 @@ char **safe_str_to_args(char *string, int *arg_count) {
     char  *cmdline;
     int    qcount, bcount;
 
+    /*skip spaces*/
+    while (*string == ' ')
+        string++;
+
     if (!arg_count || *string == 0) {
-        LOG(LEVEL_ERROR, "string_to_args has invalid parameter.\n");
+        LOG(LEVEL_DEBUG, "string_to_args has invalid parameter.\n");
         return NULL;
     }
 
@@ -425,8 +429,12 @@ char **safe_substr_to_args(char *substring, int *arg_count) {
     char  *cmdline;
     int    qcount, bcount;
 
+    /*skip spaces*/
+    while (*substring == ' ')
+        substring++;
+
     if (!arg_count || *substring == 0) {
-        LOG(LEVEL_ERROR, "string_to_args has invalid parameter.\n");
+        LOG(LEVEL_DEBUG, "string_to_args has invalid parameter.\n");
         return NULL;
     }
 
