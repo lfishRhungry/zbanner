@@ -216,6 +216,11 @@ static ActRes ACT_unset_scan(void *conf) {
     xconf->scanner = NULL;
     FREE(xconf->scanner_args);
     LOG(LEVEL_HINT, "previous scan module and its args were unsetted.\n");
+
+    /*just reset op for scan module's unsetting*/
+    if (xconf->op == Operation_Scan)
+        xconf->op = Operation_Default;
+
     return ActRes_Next;
 }
 
@@ -361,6 +366,10 @@ static void HDL_set_scan(void *conf, char *subcmd) {
     }
 
     xconf->scanner = scan;
+
+    if (xconf->op == Operation_Default)
+        xconf->op = Operation_Scan;
+
     LOG(LEVEL_HINT, "set scan module successfully.\n");
 }
 
@@ -374,6 +383,10 @@ static void HDL_set_probe(void *conf, char *subcmd) {
     }
 
     xconf->probe = probe;
+
+    if (xconf->op == Operation_Default)
+        xconf->op = Operation_Scan;
+
     LOG(LEVEL_HINT, "set probe module successfully.\n");
 }
 
@@ -387,6 +400,10 @@ static void HDL_set_out(void *conf, char *subcmd) {
     }
 
     xconf->out_conf.output_module = out;
+
+    if (xconf->op == Operation_Default)
+        xconf->op = Operation_Scan;
+
     LOG(LEVEL_HINT, "set output module successfully.\n");
 }
 
@@ -400,6 +417,10 @@ static void HDL_set_gen(void *conf, char *subcmd) {
     }
 
     xconf->generator = gen;
+
+    if (xconf->op == Operation_Default)
+        xconf->op = Operation_Scan;
+
     LOG(LEVEL_HINT, "set generate module successfully.\n");
 }
 
