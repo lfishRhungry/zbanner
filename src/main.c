@@ -963,120 +963,120 @@ int main(int argc, char *argv[]) {
 
     switch (xconf->op) {
         /* interactive mode should avoid this case for better printing */
-        case Operation_Default:
+        case Op_Default:
             xconf_print_banner();
             break;
 
-        case Operation_Scan:
+        case Op_Scan:
             _main_scan(xconf);
             break;
 
-        case Operation_Echo:
+        case Op_Echo:
             xconf_echo(xconf, stdout);
             break;
 
-        case Operation_DebugIF:
+        case Op_DebugIF:
             rawsock_selftest_if(xconf->nic.ifname);
             break;
 
-        case Operation_ListCidr:
+        case Op_ListCidr:
             listtargets_cidr(xconf, stdout);
             break;
 
-        case Operation_ListRange:
+        case Op_ListRange:
             listtargets_range(xconf, stdout);
             break;
 
-        case Operation_ListTargets:
+        case Op_ListTargets:
             listtargets_ip_port(xconf, stdout);
             break;
 
-        case Operation_ListAdapters:
+        case Op_ListAdapters:
             rawsock_list_adapters();
             break;
 
-        case Operation_ListScanModules:
+        case Op_ListScanModules:
             list_all_scan_modules();
             break;
 
-        case Operation_HelpScanModule:
+        case Op_HelpScanModule:
             help_scan_module(xconf->scanner);
             break;
 
-        case Operation_ListProbeModules:
+        case Op_ListProbeModules:
             list_all_probe_modules();
             break;
 
-        case Operation_HelpProbeModule:
+        case Op_HelpProbeModule:
             help_probe_module(xconf->probe);
             break;
 
-        case Operation_ListOutputModules:
+        case Op_ListOutputModules:
             list_all_output_modules();
             break;
 
-        case Operation_HelpOutputModule:
+        case Op_HelpOutputModule:
             help_output_module(xconf->out_conf.output_module);
             break;
 
-        case Operation_ListGenerateModules:
+        case Op_ListGenerateModules:
             list_all_generate_modules();
             break;
 
-        case Operation_HelpGenerateModule:
+        case Op_HelpGenerateModule:
             help_generate_module(xconf->generator);
             break;
 
-        case Operation_PrintUsage:
+        case Op_PrintUsage:
             xconf_print_usage();
             break;
 
-        case Operation_PrintHelp:
+        case Op_PrintHelp:
             xconf_print_help();
             break;
 
-        case Operation_PrintIntro:
+        case Op_PrintIntro:
             xconf_print_intro();
             break;
 
-        case Operation_PrintVersion:
+        case Op_PrintVersion:
             xconf_print_version();
             break;
 
-        case Operation_HelpParam:
+        case Op_HelpParam:
             xconf_help_param(xconf->help_param);
             break;
 
-        case Operation_SearchParam:
+        case Op_SearchParam:
             xconf_search_param(xconf->search_param);
             break;
 
-        case Operation_SearchModule:
+        case Op_SearchModule:
             xconf_search_module(xconf->search_module);
             break;
 
-        case Operation_Selftest:
+        case Op_Selftest:
             xconf_selftest();
             break;
 
-        case Operation_Benchmark:
+        case Op_Benchmark:
             xconf_benchmark(XCONF_DFT_BLACKROCK_ROUNDS);
             break;
 
 #ifndef NOT_FOUND_BSON
-        case Operation_ParseBson:
+        case Op_ParseBson:
             parse_bson_file(xconf->parse_bson_file);
             break;
 #endif
 
 #ifndef NOT_FOUND_MONGOC
-        case Operation_StoreBson:
+        case Op_StoreBson:
             store_bson_file(xconf->store_bson_file, xconf->mongodb_uri,
                             xconf->mongodb_db, xconf->mongodb_col,
                             xconf->mongodb_app);
             break;
 
-        case Operation_StoreJson:
+        case Op_StoreJson:
             store_json_file(xconf->store_json_file, xconf->mongodb_uri,
                             xconf->mongodb_db, xconf->mongodb_col,
                             xconf->mongodb_app);
@@ -1084,7 +1084,7 @@ int main(int argc, char *argv[]) {
 #endif
 
 #ifndef NOT_FOUND_PCRE2
-        case Operation_ListNmapProbes:
+        case Op_ListNmapProbes:
             nmapservice_print_probes_by_file(xconf->nmap_file, stdout);
             break;
 #endif

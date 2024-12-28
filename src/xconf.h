@@ -49,40 +49,40 @@ very low impact on scan rate */
 #define XCONF_DFT_RECOVER_FILENAME   "recover.conf" /*for interact mode*/
 
 enum Operation {
-    Operation_Default = 0,  /* nothing specified, so print usage */
-    Operation_Scan,         /* do scan */
-    Operation_Echo,         /* echo the config or all configs with --echo-all */
-    Operation_DebugIF,      /* do special selftest to interface for debugging*/
-    Operation_ListCidr,     /* list all target IPs in CIDR */
-    Operation_ListRange,    /* list all target IPs in range */
-    Operation_ListTargets,  /* list all target in IPs and Ports*/
-    Operation_ListAdapters, /* list all usable interfaces */
-    Operation_ListScanModules,     /* list all scan modules */
-    Operation_HelpScanModule,      /* print help of specified scan module */
-    Operation_ListProbeModules,    /* list all probes */
-    Operation_HelpProbeModule,     /* print help of specified probe module */
-    Operation_ListOutputModules,   /* list all probes */
-    Operation_HelpOutputModule,    /* print help of specified output module */
-    Operation_ListGenerateModules, /* list all generate modules */
-    Operation_HelpGenerateModule,  /* print help of specified generate module */
-    Operation_PrintUsage,          /* print usage examples*/
-    Operation_PrintHelp,           /* print help text for all parameters*/
-    Operation_PrintIntro,          /* print introduction text of work flow*/
-    Operation_PrintVersion,        /* print version and build info*/
-    Operation_HelpParam,           /* print help text for specific param*/
-    Operation_SearchParam,         /* fuzzy searching for specific param*/
-    Operation_SearchModule,        /* fuzzy searching for specific module*/
-    Operation_Selftest,            /* do global regression test*/
-    Operation_Benchmark,           /* do global benchmark for key units */
+    Op_Default = 0,         /* nothing specified, so print usage */
+    Op_Scan,                /* do scan */
+    Op_Echo,                /* echo the config or all configs with --echo-all */
+    Op_DebugIF,             /* do special selftest to interface for debugging*/
+    Op_ListCidr,            /* list all target IPs in CIDR */
+    Op_ListRange,           /* list all target IPs in range */
+    Op_ListTargets,         /* list all target in IPs and Ports*/
+    Op_ListAdapters,        /* list all usable interfaces */
+    Op_ListScanModules,     /* list all scan modules */
+    Op_HelpScanModule,      /* print help of specified scan module */
+    Op_ListProbeModules,    /* list all probes */
+    Op_HelpProbeModule,     /* print help of specified probe module */
+    Op_ListOutputModules,   /* list all probes */
+    Op_HelpOutputModule,    /* print help of specified output module */
+    Op_ListGenerateModules, /* list all generate modules */
+    Op_HelpGenerateModule,  /* print help of specified generate module */
+    Op_PrintUsage,          /* print usage examples*/
+    Op_PrintHelp,           /* print help text for all parameters*/
+    Op_PrintIntro,          /* print introduction text of work flow*/
+    Op_PrintVersion,        /* print version and build info*/
+    Op_HelpParam,           /* print help text for specific param*/
+    Op_SearchParam,         /* fuzzy searching for specific param*/
+    Op_SearchModule,        /* fuzzy searching for specific module*/
+    Op_Selftest,            /* do global regression test*/
+    Op_Benchmark,           /* do global benchmark for key units */
 #ifndef NOT_FOUND_BSON
-    Operation_ParseBson, /*parse BSON result file to JSON format*/
+    Op_ParseBson, /*parse BSON result file to JSON format*/
 #endif
 #ifndef NOT_FOUND_MONGOC
-    Operation_StoreBson, /*store BSON result file to MongoDB*/
-    Operation_StoreJson, /*store NDJSON result file to MongoDB*/
+    Op_StoreBson, /*store BSON result file to MongoDB*/
+    Op_StoreJson, /*store NDJSON result file to MongoDB*/
 #endif
 #ifndef NOT_FOUND_PCRE2
-    Operation_ListNmapProbes, /* list all nmap probes */
+    Op_ListNmapProbes, /* list all nmap probes */
 #endif
 };
 

@@ -54,7 +54,7 @@ static ActRes ACT_run(void *conf) {
     XConf *xconf = conf;
 
     /*Just do scanning while running in interactive mode*/
-    xconf->op = Operation_Scan;
+    xconf->op = Op_Scan;
 
     return ActRes_Finish;
 }

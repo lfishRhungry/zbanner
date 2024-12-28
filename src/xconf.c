@@ -362,8 +362,8 @@ static ConfRes SET_scan_module(void *conf, const char *name,
         return Conf_ERR;
     }
 
-    if (xconf->op == Operation_Default)
-        xconf->op = Operation_Scan;
+    if (xconf->op == Op_Default)
+        xconf->op = Op_Scan;
 
     return Conf_OK;
 }
@@ -382,7 +382,7 @@ static ConfRes SET_help_scan_module(void *conf, const char *name,
         return Conf_ERR;
     }
 
-    xconf->op = Operation_HelpScanModule;
+    xconf->op = Op_HelpScanModule;
 
     return Conf_OK;
 }
@@ -401,7 +401,7 @@ static ConfRes SET_help_probe_module(void *conf, const char *name,
         return Conf_ERR;
     }
 
-    xconf->op = Operation_HelpProbeModule;
+    xconf->op = Op_HelpProbeModule;
 
     return Conf_OK;
 }
@@ -420,7 +420,7 @@ static ConfRes SET_help_generate_module(void *conf, const char *name,
         return Conf_ERR;
     }
 
-    xconf->op = Operation_HelpGenerateModule;
+    xconf->op = Op_HelpGenerateModule;
 
     return Conf_OK;
 }
@@ -439,7 +439,7 @@ static ConfRes SET_help_output_module(void *conf, const char *name,
         return Conf_ERR;
     }
 
-    xconf->op = Operation_HelpOutputModule;
+    xconf->op = Op_HelpOutputModule;
 
     return Conf_OK;
 }
@@ -486,8 +486,8 @@ static ConfRes SET_generate_module(void *conf, const char *name,
         return Conf_ERR;
     }
 
-    if (xconf->op == Operation_Default)
-        xconf->op = Operation_Scan;
+    if (xconf->op == Op_Default)
+        xconf->op = Op_Scan;
 
     return Conf_OK;
 }
@@ -515,8 +515,8 @@ static ConfRes SET_output_module(void *conf, const char *name,
         return Conf_ERR;
     }
 
-    if (xconf->op == Operation_Default)
-        xconf->op = Operation_Scan;
+    if (xconf->op == Op_Default)
+        xconf->op = Op_Scan;
 
     return Conf_OK;
 }
@@ -780,7 +780,7 @@ static ConfRes SET_list_scan_modules(void *conf, const char *name,
     if (xconf->echo) {
         return 0;
     }
-    xconf->op = conf_parse_bool(value) ? Operation_ListScanModules : xconf->op;
+    xconf->op = conf_parse_bool(value) ? Op_ListScanModules : xconf->op;
     return Conf_OK;
 }
 
@@ -792,7 +792,7 @@ static ConfRes SET_list_probe_modules(void *conf, const char *name,
     if (xconf->echo) {
         return 0;
     }
-    xconf->op = conf_parse_bool(value) ? Operation_ListProbeModules : xconf->op;
+    xconf->op = conf_parse_bool(value) ? Op_ListProbeModules : xconf->op;
     return Conf_OK;
 }
 
@@ -804,8 +804,7 @@ static ConfRes SET_list_generate_modules(void *conf, const char *name,
     if (xconf->echo) {
         return 0;
     }
-    xconf->op =
-        conf_parse_bool(value) ? Operation_ListGenerateModules : xconf->op;
+    xconf->op = conf_parse_bool(value) ? Op_ListGenerateModules : xconf->op;
     return Conf_OK;
 }
 
@@ -817,8 +816,7 @@ static ConfRes SET_list_output_modules(void *conf, const char *name,
     if (xconf->echo) {
         return 0;
     }
-    xconf->op =
-        conf_parse_bool(value) ? Operation_ListOutputModules : xconf->op;
+    xconf->op = conf_parse_bool(value) ? Op_ListOutputModules : xconf->op;
     return Conf_OK;
 }
 
@@ -831,7 +829,7 @@ static ConfRes SET_listif(void *conf, const char *name, const char *value) {
     }
 
     if (conf_parse_bool(value))
-        xconf->op = Operation_ListAdapters;
+        xconf->op = Op_ListAdapters;
     return Conf_OK;
 }
 
@@ -845,7 +843,7 @@ static ConfRes SET_help_param(void *conf, const char *name, const char *value) {
 
     FREE(xconf->help_param);
     xconf->help_param = STRDUP(value);
-    xconf->op         = Operation_HelpParam;
+    xconf->op         = Op_HelpParam;
 
     return Conf_OK;
 }
@@ -861,7 +859,7 @@ static ConfRes SET_search_param(void *conf, const char *name,
 
     FREE(xconf->search_param);
     xconf->search_param = STRDUP(value);
-    xconf->op           = Operation_SearchParam;
+    xconf->op           = Op_SearchParam;
 
     return Conf_OK;
 }
@@ -877,7 +875,7 @@ static ConfRes SET_search_module(void *conf, const char *name,
 
     FREE(xconf->search_module);
     xconf->search_module = STRDUP(value);
-    xconf->op            = Operation_SearchModule;
+    xconf->op            = Op_SearchModule;
 
     return Conf_OK;
 }
@@ -891,7 +889,7 @@ static ConfRes SET_list_target(void *conf, const char *name,
     }
 
     if (conf_parse_bool(value))
-        xconf->op = Operation_ListTargets;
+        xconf->op = Op_ListTargets;
 
     char *opt = conf_parse_opt_str(name);
     if (opt) {
@@ -911,7 +909,7 @@ static ConfRes SET_list_range(void *conf, const char *name, const char *value) {
     }
 
     if (conf_parse_bool(value))
-        xconf->op = Operation_ListRange;
+        xconf->op = Op_ListRange;
 
     return Conf_OK;
 }
@@ -926,7 +924,7 @@ static ConfRes SET_list_nmap_probes(void *conf, const char *name,
 
     FREE(xconf->nmap_file);
     xconf->nmap_file = STRDUP(value);
-    xconf->op        = Operation_ListNmapProbes;
+    xconf->op        = Op_ListNmapProbes;
 
     return Conf_OK;
 }
@@ -941,7 +939,7 @@ static ConfRes SET_parse_bson(void *conf, const char *name, const char *value) {
 
     FREE(xconf->parse_bson_file);
     xconf->parse_bson_file = STRDUP(value);
-    xconf->op              = Operation_ParseBson;
+    xconf->op              = Op_ParseBson;
 
     return Conf_OK;
 }
@@ -956,7 +954,7 @@ static ConfRes SET_store_json(void *conf, const char *name, const char *value) {
 
     FREE(xconf->store_json_file);
     xconf->store_json_file = STRDUP(value);
-    xconf->op              = Operation_StoreJson;
+    xconf->op              = Op_StoreJson;
 
     return Conf_OK;
 }
@@ -969,7 +967,7 @@ static ConfRes SET_store_bson(void *conf, const char *name, const char *value) {
 
     FREE(xconf->store_bson_file);
     xconf->store_bson_file = STRDUP(value);
-    xconf->op              = Operation_StoreBson;
+    xconf->op              = Op_StoreBson;
 
     return Conf_OK;
 }
@@ -2105,9 +2103,9 @@ static ConfRes SET_echo(void *conf, const char *name, const char *value) {
     }
 
     if (conf_equals("echo", name) && conf_parse_bool(value))
-        xconf->op = Operation_Echo;
+        xconf->op = Op_Echo;
     else if (conf_equals("echo-all", name) && conf_parse_bool(value)) {
-        xconf->op       = Operation_Echo;
+        xconf->op       = Op_Echo;
         xconf->echo_all = 1;
     }
 
@@ -2121,7 +2119,7 @@ static ConfRes SET_debugif(void *conf, const char *name, const char *value) {
     }
 
     if (conf_parse_bool(value))
-        xconf->op = Operation_DebugIF;
+        xconf->op = Op_DebugIF;
 
     return Conf_OK;
 }
@@ -2133,7 +2131,7 @@ static ConfRes SET_benchmark(void *conf, const char *name, const char *value) {
     }
 
     if (conf_parse_bool(value))
-        xconf->op = Operation_Benchmark;
+        xconf->op = Op_Benchmark;
 
     return Conf_OK;
 }
@@ -2145,7 +2143,7 @@ static ConfRes SET_selftest(void *conf, const char *name, const char *value) {
     }
 
     if (conf_parse_bool(value))
-        xconf->op = Operation_Selftest;
+        xconf->op = Op_Selftest;
 
     return Conf_OK;
 }
@@ -2157,7 +2155,7 @@ static ConfRes SET_list_cidr(void *conf, const char *name, const char *value) {
     }
 
     if (conf_parse_bool(value))
-        xconf->op = Operation_ListCidr;
+        xconf->op = Op_ListCidr;
 
     return Conf_OK;
 }
@@ -2381,7 +2379,7 @@ static ConfRes SET_version(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->op = Operation_PrintVersion;
+    xconf->op = Op_PrintVersion;
 
     return Conf_OK;
 }
@@ -2394,7 +2392,7 @@ static ConfRes SET_usage(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->op = Operation_PrintUsage;
+    xconf->op = Op_PrintUsage;
 
     return Conf_ERR;
 }
@@ -2408,7 +2406,7 @@ static ConfRes SET_print_intro(void *conf, const char *name,
         return 0;
     }
 
-    xconf->op = Operation_PrintIntro;
+    xconf->op = Op_PrintIntro;
 
     return Conf_OK;
 }
@@ -2421,7 +2419,7 @@ static ConfRes SET_print_help(void *conf, const char *name, const char *value) {
         return 0;
     }
 
-    xconf->op = Operation_PrintHelp;
+    xconf->op = Op_PrintHelp;
 
     return Conf_OK;
 }
