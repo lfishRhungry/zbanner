@@ -561,7 +561,7 @@ static void CPL_global_conf(const char              *cmd,
     for (unsigned i = 0; config_parameters[i].name; i++) {
         bool     matched      = false;
         bool     name_matched = false;
-        unsigned j;
+        unsigned j            = 0;
 
         if (!config_parameters[i].help_text) {
             continue;
