@@ -321,6 +321,8 @@ static const struct AS_Info _search_ipv4(const struct AS_Table *as_table,
     for (;;) {
         mid = min + (max - min) / 2;
         if (ip < as_table->list[mid].begin) {
+            if (max == mid)
+                break;
             max = mid;
             continue;
         } else if (ip > as_table->list[mid].end) {
@@ -359,6 +361,8 @@ static const struct AS_Info _search_ipv6(const struct AS6_Table *as6_table,
     for (;;) {
         mid = min + (max - min) / 2;
         if (ipv6address_is_lessthan(ip, as6_table->list[mid].begin)) {
+            if (max == mid)
+                break;
             max = mid;
             continue;
         } else if (ipv6address_is_lessthan(as6_table->list[mid].end, ip)) {

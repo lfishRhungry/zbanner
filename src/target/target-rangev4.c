@@ -85,6 +85,8 @@ bool rangelist_is_contains(const struct RangeList *targets, unsigned addr) {
     for (;;) {
         mid = min + (max - min) / 2;
         if (addr < targets->list[mid].begin) {
+            if (max == mid)
+                break;
             max = mid;
             continue;
         } else if (addr > targets->list[mid].end) {

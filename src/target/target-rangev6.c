@@ -189,6 +189,8 @@ bool range6list_is_contains(const struct Range6List *targets,
     for (;;) {
         mid = min + (max - min) / 2;
         if (_int128_is_lt(ip, targets->list[mid].begin)) {
+            if (max == mid)
+                break;
             max = mid;
             continue;
         } else if (_int128_is_lt(targets->list[mid].end, ip)) {
