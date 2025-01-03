@@ -161,17 +161,17 @@ int128_t targetset_count(const TargetSet *targetset) {
  ***************************************************************************/
 bool range6list_is_contains(const struct Range6List *targets,
                             const ipv6address        ip) {
-    unsigned maxmax = targets->list_len;
-    unsigned min    = 0;
-    unsigned max    = targets->list_len;
-    unsigned mid;
+    size_t maxmax = targets->list_len;
+    size_t min    = 0;
+    size_t max    = targets->list_len;
+    size_t mid;
 
     /**
      * Do linear search if not sorted
      */
     if (!targets->is_sorted) {
         LOG(LEVEL_DETAIL, "(%s) non-sorted range6list", __func__);
-        unsigned i;
+        size_t i;
 
         for (i = 0; i < targets->list_len; i++) {
             struct Range6 *range = &targets->list[i];
@@ -388,7 +388,7 @@ void range6list_rm_all(struct Range6List *targets) {
  ***************************************************************************/
 void range6list_merge(struct Range6List       *list1,
                       const struct Range6List *list2) {
-    unsigned i;
+    size_t i;
 
     for (i = 0; i < list2->list_len; i++) {
         range6list_add_range(list1, list2->list[i].begin, list2->list[i].end);
@@ -399,7 +399,7 @@ void range6list_merge(struct Range6List       *list1,
  ***************************************************************************/
 void range6list_remove_range(struct Range6List *targets,
                              const ipv6address begin, const ipv6address end) {
-    unsigned      i;
+    size_t        i;
     struct Range6 x;
 
     x.begin = begin;
@@ -459,7 +459,7 @@ void range6list_remove_range2(struct Range6List *targets, struct Range6 range) {
 ipv6address range6list_exclude(struct Range6List       *targets,
                                const struct Range6List *excludes) {
     ipv6address count = {0, 0};
-    unsigned    i;
+    size_t      i;
 
     for (i = 0; i < excludes->list_len; i++) {
         struct Range6 range = excludes->list[i];
@@ -478,7 +478,7 @@ ipv6address range6list_exclude(struct Range6List       *targets,
 /***************************************************************************
  ***************************************************************************/
 int128_t range6list_count(const struct Range6List *targets) {
-    unsigned    i;
+    size_t      i;
     ipv6address result = {0, 0};
 
     for (i = 0; i < targets->list_len; i++) {
