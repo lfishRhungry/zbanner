@@ -72,7 +72,7 @@ end:
 
 /*****************************************************************************
  *****************************************************************************/
-#elif defined(WIN32)
+#elif defined(_WIN32)
 /* From:
  * https://stackoverflow.com/questions/10972794/undefined-reference-to-getadaptersaddresses20-but-i-included-liphlpapi
  * I think this fixes issue #734

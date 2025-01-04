@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock2.h>
 #include <in6addr.h>
 #else

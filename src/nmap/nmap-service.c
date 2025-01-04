@@ -20,7 +20,7 @@
 #pragma warning(disable : 4996)
 #endif
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #define strncasecmp _strnicmp
 #endif
 

@@ -261,7 +261,7 @@ int init_nic(XConf *xconf, bool has_ipv4_targets, bool has_ipv6_targets) {
      *
      * The good news is xtate's tx/rx mechanism won't be affected by the mode.
      */
-#ifndef WIN32
+#ifndef _WIN32
     rawsock_set_nonblock(xconf->nic.adapter);
 #endif
 

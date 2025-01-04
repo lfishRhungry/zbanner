@@ -33,7 +33,7 @@
 #include "output-modules/bson-output.h"
 #include "output-modules/mongodb-output.h"
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #include <WinSock.h>
 #if defined(_MSC_VER)
 #pragma comment(lib, "Ws2_32.lib")
@@ -830,7 +830,7 @@ int main(int argc, char *argv[]) {
     XConf xconf[1];
     memset(xconf, 0, sizeof(XConf));
 
-#if defined(WIN32)
+#if defined(_WIN32)
     {
         WSADATA x;
         WSAStartup(0x101, &x);

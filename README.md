@@ -415,12 +415,31 @@ After dependencies installed we can build xtate by CMake with parameters or with
 ./build.sh [debug] [compiler]
 ```
 
+For example with default compiler in Release mode:
+
+```
+./build.sh
+```
+
+Or specify Clang in Release mode:
+
+```
+./build.sh clang
+```
+
+Or use Clang in Debug mode:
+
+```
+./build.sh debug clang
+```
+
 ## Compile on Windows
 
 Recommended compiler:
 
 - MSVC
 - MinGW-w64
+- Clang
 
 Generate a Visual Studio solution (e.g. VS2022) and build with MSVC:
 
@@ -445,7 +464,7 @@ cmake .. \
 make
 ```
 
-NOTE: Do not use `-j` flag in make command on Windows, may cause errors.
+NOTE: Do not use `-j` flag with `make` on Windows, may cause errors.
 
 Use ninja to accelerate the building with MinGW-w64:
 
@@ -457,6 +476,19 @@ cmake .. \
     -DCMAKE_C_COMPILER=gcc
 ninja -j4
 ```
+
+Use ninja with Clang on Windows:
+
+```
+cd build
+cmake .. \
+    -G Ninja\
+    -DCMAKE_BUILD_TYPE=<Release/Debug>
+    -DCMAKE_C_COMPILER=clang
+ninja -j4
+```
+
+NOTE: clang may report some neglectable warnings on Windows.
 
 <a href="#top">🔝back to top</a>
 

@@ -4,7 +4,7 @@
 #ifndef RAWSOCK_H
 #define RAWSOCK_H
 
-#ifndef WIN32
+#ifndef _WIN32
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
@@ -39,7 +39,7 @@ typedef struct NetworkAdapter {
 typedef struct Adapter_Cache {
     struct pcap_send_queue *sendq;
     unsigned                sendq_size;
-#ifndef WIN32
+#ifndef _WIN32
     struct mmsghdr *msgvec;
     struct msghdr  *msgs;
     struct iovec   *iovs;

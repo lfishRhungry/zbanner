@@ -5,7 +5,7 @@
 #pragma warning(disable : 4133 4113 4047)
 #endif
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #else
@@ -29,7 +29,7 @@ bool stublua_init(void) {
             "liblua5.4.dylib",    "liblua.5.3.5.dylib",
             "liblua.5.3.dylib",   "liblua5.3.dylib",
             "liblua.dylib",       0};
-#elif defined(WIN32) || defined(WIN64) || defined(_WIN32) || defined(_WIN64)
+#elif defined(_WIN32)
         static const char *possible_names[] = {"lua53.dll", "lua54.dll",
                                                "lua.dll", 0};
 #else
@@ -43,7 +43,7 @@ bool stublua_init(void) {
 #endif
         unsigned i;
         for (i = 0; possible_names[i]; i++) {
-#if defined(WIN32)
+#if defined(_WIN32)
             lib = LoadLibraryA(possible_names[i]);
 #else
             lib = dlopen(possible_names[i], RTLD_LAZY);
@@ -62,7 +62,7 @@ bool stublua_init(void) {
         }
     }
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #define DOLINK(name)                                                           \
     name = (void (*)())GetProcAddress(lib, #name);                             \
     if (name == NULL) {                                                        \
@@ -76,6 +76,12 @@ bool stublua_init(void) {
         LOG(LEVEL_ERROR, "(liblua: %s) failed\n", #name);                      \
         return false;                                                          \
     }
+#endif
+
+/*warning happens on Windows*/
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wincompatible-function-pointer-types"
 #endif
 
     DOLINK(lua_version);
@@ -128,6 +134,10 @@ bool stublua_init(void) {
     DOLINK(luaL_setfuncs)
     DOLINK(luaL_setmetatable)
     DOLINK(luaL_unref)
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
     return true;
 }

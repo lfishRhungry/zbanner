@@ -251,7 +251,7 @@ static unsigned char default_ndp_ns_template[] =
     "\x00\x00\x00\x00\x00\x00" /* Link-layer address */
     ;
 
-#if defined(WIN32) || defined(_WIN32)
+#if defined(_WIN32)
 #define AF_INET6 23
 #else
 #include <sys/socket.h>

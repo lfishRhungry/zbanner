@@ -2,7 +2,7 @@
 #define PIXIE_SOCKETS_H
 
 #include <stddef.h>
-#if defined(WIN32)
+#if defined(_WIN32)
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #else

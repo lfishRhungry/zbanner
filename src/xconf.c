@@ -59,7 +59,7 @@
 #include "target/target-ipaddress.h"
 #include "target/target-rangeport.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <direct.h>
 #define getcwd      _getcwd
 #define strcasecmp  _stricmp
@@ -4081,6 +4081,12 @@ void xconf_print_version() {
     cpu = "arm";
 #endif
 
+/* clang on Windows defines both _MSC_VER and __clang__ */
+#if defined(__clang__)
+    compiler         = "clang";
+    compiler_version = __clang_version__;
+#else
+
     {
         int msc_ver = _MSC_VER;
 
@@ -4169,6 +4175,7 @@ void xconf_print_version() {
         else
             compiler_version = "2022-post VC++17.12-post";
     }
+#endif
 
 #elif defined(__GNUC__) /*clang and mingw also have __GNUC__*/
 #if defined(__clang__)
@@ -4195,7 +4202,7 @@ void xconf_print_version() {
 
 #endif
 
-#if defined(WIN32)
+#if defined(_WIN32)
     os = "Windows";
 #elif defined(__linux__)
     os = "Linux";

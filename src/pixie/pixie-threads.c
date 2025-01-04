@@ -1,12 +1,12 @@
 #include "pixie-threads.h"
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #include <Windows.h>
 #include <process.h>
 #include "../util-misc/misc.h"
 #endif
 
-#if defined(__GNUC__) && !defined(WIN32)
+#if defined(__GNUC__) && !defined(_WIN32)
 #include <unistd.h>
 #include <pthread.h>
 #include <sched.h>
@@ -21,7 +21,7 @@
 
 #ifndef UNUSEDPARM
 #ifdef _MSC_VER
-#define UNUSEDPARM(x) x
+#define UNUSEDPARM(x) x = (x)
 #else
 #define UNUSEDPARM(x)
 #endif
@@ -37,7 +37,7 @@
 /****************************************************************************
  ****************************************************************************/
 void pixie_cpu_raise_priority(void) {
-#if defined WIN32
+#if defined _WIN32
     DWORD_PTR result;
     result = SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
     if (result == 0) {
@@ -67,7 +67,7 @@ void pixie_cpu_raise_priority(void) {
  * http://en.wikipedia.org/wiki/Processor_affinity
  ****************************************************************************/
 void pixie_cpu_set_affinity(unsigned processor) {
-#if defined WIN32
+#if defined _WIN32
     DWORD_PTR mask;
     DWORD_PTR result;
     if (processor > 0)
@@ -104,7 +104,7 @@ void pixie_cpu_set_affinity(unsigned processor) {
 /****************************************************************************
  ****************************************************************************/
 unsigned pixie_cpu_get_count(void) {
-#if defined WIN32
+#if defined _WIN32
     /* WINDOWS - use GetProcessAffinityMask() function */
     size_t x;
 #if defined _M_X64
@@ -193,7 +193,7 @@ unsigned pixie_cpu_get_count(void) {
  ****************************************************************************/
 size_t pixie_begin_thread(void (*worker_thread)(void *), unsigned flags,
                           void *worker_data) {
-#if defined(WIN32)
+#if defined(_WIN32)
     UNUSEDPARM(flags);
     return _beginthread(worker_thread, 0, worker_data);
 #else
@@ -207,7 +207,7 @@ size_t pixie_begin_thread(void (*worker_thread)(void *), unsigned flags,
 /****************************************************************************
  ****************************************************************************/
 void pixie_thread_join(size_t thread_handle) {
-#if defined(WIN32)
+#if defined(_WIN32)
     WaitForSingleObject((HANDLE)thread_handle, INFINITE);
 #else
     void *p;
@@ -216,7 +216,7 @@ void pixie_thread_join(size_t thread_handle) {
 #endif
 }
 
-#if defined(WIN32)
+#if defined(_WIN32)
 const DWORD MS_VC_EXCEPTION = 0x406D1388;
 #pragma pack(push, 8)
 typedef struct tagTHREADNAME_INFO {
@@ -229,7 +229,7 @@ typedef struct tagTHREADNAME_INFO {
 #endif
 
 void pixie_set_thread_name(const char *name) {
-#if defined(WIN32)
+#if defined(_WIN32)
     // https://docs.microsoft.com/ru-ru/visualstudio/debugger/how-to-set-a-thread-name-in-native-code
 #if defined(__MINGW64__) || defined(__MINGW32__)
 #pragma GCC diagnostic push
@@ -300,7 +300,7 @@ void pixie_set_thread_name(const char *name) {
 }
 
 void *pixie_create_barrier(unsigned total_threads) {
-#if defined(WIN32)
+#if defined(_WIN32)
     BOOL                      is_succces;
     LPSYNCHRONIZATION_BARRIER p_barrier;
     p_barrier = CALLOC(1, sizeof(SYNCHRONIZATION_BARRIER));
@@ -328,7 +328,7 @@ void *pixie_create_barrier(unsigned total_threads) {
 }
 
 void pixie_wait_barrier(void *p_barrier) {
-#if defined(WIN32)
+#if defined(_WIN32)
     EnterSynchronizationBarrier(p_barrier,
                                 SYNCHRONIZATION_BARRIER_FLAGS_BLOCK_ONLY);
 #else
@@ -338,7 +338,7 @@ void pixie_wait_barrier(void *p_barrier) {
 }
 
 bool pixie_delete_barrier(void *p_barrier) {
-#if defined(WIN32)
+#if defined(_WIN32)
     BOOL is_succces;
     is_succces = DeleteSynchronizationBarrier(p_barrier);
     free(p_barrier);
@@ -352,7 +352,7 @@ bool pixie_delete_barrier(void *p_barrier) {
 }
 
 void *pixie_create_rwlock() {
-#if defined(WIN32)
+#if defined(_WIN32)
     PSRWLOCK p_rwlock;
     p_rwlock = CALLOC(1, sizeof(SRWLOCK));
     if (p_rwlock == NULL) {
@@ -376,7 +376,7 @@ void *pixie_create_rwlock() {
 }
 
 void pixie_acquire_rwlock_read(void *p_rwlock) {
-#if defined(WIN32)
+#if defined(_WIN32)
     AcquireSRWLockShared(p_rwlock);
 #else
     pthread_rwlock_rdlock(p_rwlock);
@@ -384,7 +384,7 @@ void pixie_acquire_rwlock_read(void *p_rwlock) {
 }
 
 void pixie_release_rwlock_read(void *p_rwlock) {
-#if defined(WIN32)
+#if defined(_WIN32)
     ReleaseSRWLockShared(p_rwlock);
 #else
     pthread_rwlock_unlock(p_rwlock);
@@ -392,7 +392,7 @@ void pixie_release_rwlock_read(void *p_rwlock) {
 }
 
 void pixie_acquire_rwlock_write(void *p_rwlock) {
-#if defined(WIN32)
+#if defined(_WIN32)
     AcquireSRWLockExclusive(p_rwlock);
 #else
     pthread_rwlock_wrlock(p_rwlock);
@@ -400,7 +400,7 @@ void pixie_acquire_rwlock_write(void *p_rwlock) {
 }
 
 void pixie_release_rwlock_write(void *p_rwlock) {
-#if defined(WIN32)
+#if defined(_WIN32)
     ReleaseSRWLockExclusive(p_rwlock);
 #else
     pthread_rwlock_unlock(p_rwlock);
@@ -408,7 +408,7 @@ void pixie_release_rwlock_write(void *p_rwlock) {
 }
 
 bool pixie_delete_rwlock(void *p_rwlock) {
-#if defined(WIN32)
+#if defined(_WIN32)
     FREE(p_rwlock);
     return true;
 #else
@@ -420,7 +420,7 @@ bool pixie_delete_rwlock(void *p_rwlock) {
 }
 
 void *pixie_create_mutex() {
-#if defined(WIN32)
+#if defined(_WIN32)
     HANDLE p_mutex;
     p_mutex = CreateMutexW(NULL, FALSE, NULL);
     return (void *)p_mutex;
@@ -440,7 +440,7 @@ void *pixie_create_mutex() {
 }
 
 void pixie_acquire_mutex(void *p_mutex) {
-#if defined(WIN32)
+#if defined(_WIN32)
     WaitForSingleObject((HANDLE)p_mutex, INFINITE);
 #else
     pthread_mutex_lock(p_mutex);
@@ -448,7 +448,7 @@ void pixie_acquire_mutex(void *p_mutex) {
 }
 
 void pixie_release_mutex(void *p_mutex) {
-#if defined(WIN32)
+#if defined(_WIN32)
     ReleaseMutex((HANDLE)p_mutex);
 #else
     pthread_mutex_unlock(p_mutex);
@@ -456,7 +456,7 @@ void pixie_release_mutex(void *p_mutex) {
 }
 
 bool pixie_delete_mutex(void *p_mutex) {
-#if defined(WIN32)
+#if defined(_WIN32)
     CloseHandle((HANDLE)p_mutex);
     return true;
 #else

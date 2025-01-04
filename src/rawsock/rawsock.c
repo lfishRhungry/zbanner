@@ -27,7 +27,7 @@
 
 static int is_pcap_file = 0;
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <winsock.h>
 #include <iphlpapi.h>
 
@@ -47,7 +47,7 @@ static int is_pcap_file = 0;
 #else
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <netpacket/packet.h>
 static struct sockaddr_ll _sockaddr;
 #endif
@@ -56,7 +56,7 @@ static struct sockaddr_ll _sockaddr;
 
 /***************************************************************************
  ***************************************************************************/
-#ifdef WIN32
+#ifdef _WIN32
 int pcap_setdirection(pcap_t *pcap, pcap_direction_t direction) {
     static int (*real_setdirection)(pcap_t *, pcap_direction_t) = 0;
 
@@ -87,7 +87,7 @@ void rawsock_prepare(void) {
     /* load pcap as stub dynamically */
     if (pcap_init() != 0)
         LOG(LEVEL_ERROR, "(libpcap) failed to load\n");
-#ifndef WIN32
+#ifndef _WIN32
     PFRING_init();
 #endif
     return;
@@ -170,7 +170,7 @@ void rawsock_flush(Adapter *adapter, AdapterCache *acache) {
         return;
     }
 
-#ifndef WIN32
+#ifndef _WIN32
     /**
      * Send in batch with sendmmsg just like ZMap v4.0
      */
@@ -261,7 +261,7 @@ int rawsock_send_packet(Adapter *adapter, AdapterCache *acache,
     }
 
 /*raw socket in link layer on Linux*/
-#ifndef WIN32
+#ifndef _WIN32
     /*use sendmmsg to send in batch*/
     if (adapter->raw_sock && acache->msg_capacity) {
         memcpy(acache->pkt_buf[acache->pkt_index].px, packet, length);
@@ -472,7 +472,7 @@ void rawsock_close_adapter(Adapter *adapter) {
         PCAP.close(adapter->pcap);
         adapter->pcap = NULL;
     }
-#ifndef WIN32
+#ifndef _WIN32
     if (adapter->raw_sock) {
         close(adapter->raw_sock);
         adapter->raw_sock = 0;
@@ -773,7 +773,7 @@ Adapter *rawsock_init_adapter(const char *adapter_name, bool is_pfring,
 /**
  * init raw socket for sendto or sendmmsg
  */
-#ifndef WIN32
+#ifndef _WIN32
 #include <netinet/if_ether.h>
     if (is_rawsock || is_sendmmsg) {
         /**
@@ -916,7 +916,7 @@ AdapterCache *rawsock_init_cache(bool is_sendmmsg, unsigned sendmmsg_batch,
                                  unsigned sendmmsg_retries, bool is_sendq,
                                  unsigned sendq_size) {
     AdapterCache *acache = CALLOC(1, sizeof(AdapterCache));
-#ifdef WIN32
+#ifdef _WIN32
     if (is_sendq) {
         if (sendq_size == 0) {
             LOG(LEVEL_ERROR, "(%s) sendqueue size cannot be zero\n", __func__);
@@ -952,7 +952,7 @@ AdapterCache *rawsock_init_cache(bool is_sendmmsg, unsigned sendmmsg_batch,
 }
 
 void rawsock_close_cache(AdapterCache *acache) {
-#ifdef WIN32
+#ifdef _WIN32
     if (acache->sendq) {
         PCAP.sendqueue_destroy(acache->sendq);
     }

@@ -17,7 +17,7 @@
 #include "util-data/safe-string.h"
 #include "util-data/fine-malloc.h"
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <unistd.h>
 #endif
 
@@ -833,7 +833,7 @@ void xcmd_interactive_readline(XConf *xconf, const char *exe_path) {
 
 int xcmd_reboot_for_interact(const char *path, const char *conf) {
 
-#ifdef WIN32
+#ifdef _WIN32
     return 0;
 #else
 

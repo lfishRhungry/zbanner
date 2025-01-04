@@ -13,7 +13,7 @@
 
 char global_self[512] = "";
 
-#if defined(__GLIBC__) && !defined(WIN32)
+#if defined(__GLIBC__) && !defined(_WIN32)
 #include <unistd.h>
 #include <execinfo.h>
 #include <dlfcn.h>
@@ -85,7 +85,7 @@ void pixie_backtrace_init(const char *self) {
 
 void pixie_backtrace_init(const char *self) {}
 
-#elif defined(WIN32)
+#elif defined(_WIN32)
 #include <Windows.h>
 
 #include "../util-misc/misc.h"
