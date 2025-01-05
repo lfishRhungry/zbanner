@@ -521,6 +521,20 @@ And It would be my honored if you cite our papers about Xtate despite my poor ac
 publishing...
 ```
 
+And some of the methods are originated from research points in my master's thesis. There are more detailed descriptions and experiments in the thesis:
+
+```
+@mastersthesis{chen2024,
+  author = {Chen Chiyu},
+  title = {Research on Technologies of Network Protocol and Device Identification Based on Application-Layer Scanning},
+  school = {National University of Defense Technology},
+  year = {2024},
+  month = {December}
+}
+```
+
+Thesis name in Chinese:《基于应用层探测的网络协议与设备识别技术研究》
+
 **Well...bad papers and thesis, but wonderful scanner**😜
 
 <a href="#top">🔝back to top</a>
