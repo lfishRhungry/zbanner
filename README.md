@@ -533,7 +533,17 @@ And some of the methods are originated from research points in my master's thesi
 }
 ```
 
-Thesis name in Chinese:《基于应用层探测的网络协议与设备识别技术研究》
+Or in Chinese:
+
+```
+@mastersthesis{chen2024,
+  author = {陈驰昱},
+  title = {基于应用层探测的网络协议与设备识别技术研究},
+  school = {国防科技大学},
+  year = {2024},
+  month = {12}
+}
+```
 
 **Well...bad papers and thesis, but wonderful scanner**😜
 
