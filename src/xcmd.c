@@ -1,6 +1,5 @@
 #include "xcmd.h"
 
-#include <openssl/ec.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
