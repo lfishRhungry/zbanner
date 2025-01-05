@@ -88,15 +88,22 @@ endif ()
 # Use Clang or GCC
 if (CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "GNU")
 
-    ######################################################################
-    # Suggest to use sanitizers to find bugs with Clang in Debug mode.
-    ######################################################################
-    # set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=leak")
-    # set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address")
-    # set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=thread")
-
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall -O0 -ggdb -fno-pie")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -Wall -DNDEBUG")
+
+    ######################################################################
+    # Suggest to use sanitizers to find bugs with Clang in Debug on Linux.
+    ######################################################################
+    if (CMAKE_C_COMPILER_ID STREQUAL "Clang" AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        # set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=leak")
+        # set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address")
+        # set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=thread")
+    endif()
+
+    # low version of Clang doesn't support attributes about sanitizer
+    if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+        add_compile_options(-Wno-attributes)
+    endif()
 
     # some neglectable warnings on Windows with Clang
     # you can uncomment them to see what the warnings are
