@@ -78,12 +78,6 @@ bool stublua_init(void) {
     }
 #endif
 
-/*warning happens on Windows*/
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wincompatible-function-pointer-types"
-#endif
-
     DOLINK(lua_version);
 
     DOLINK(lua_close)
@@ -134,10 +128,6 @@ bool stublua_init(void) {
     DOLINK(luaL_setfuncs)
     DOLINK(luaL_setmetatable)
     DOLINK(luaL_unref)
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
 
     return true;
 }

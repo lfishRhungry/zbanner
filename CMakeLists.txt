@@ -85,15 +85,28 @@ if (NOT CMAKE_BUILD_TYPE)
     )
 endif ()
 
-if (UNIX)
+# Use Clang or GCC
+if (CMAKE_C_COMPILER_ID STREQUAL "Clang" OR CMAKE_C_COMPILER_ID STREQUAL "GNU")
+
     ######################################################################
     # Suggest to use sanitizers to find bugs with Clang in Debug mode.
     ######################################################################
     # set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=leak")
     # set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address")
     # set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=thread")
+
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall -O0 -ggdb -fno-pie")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -Wall -DNDEBUG")
+
+    # some neglectable warnings on Windows with Clang
+    # you can uncomment them to see what the warnings are
+    if (CMAKE_C_COMPILER_ID STREQUAL "Clang" AND CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        add_compile_options(-Wno-deprecated-declarations)
+        add_compile_options(-Wno-incompatible-pointer-types)
+        add_compile_options(-Wno-pointer-sign)
+        add_compile_options(-Wno-microsoft-enum-forward-reference)
+        add_compile_options(-Wno-incompatible-function-pointer-types)
+    endif ()
 
     # set debug option
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -104,29 +117,35 @@ if (UNIX)
             string(REGEX MATCHALL "[0-9]+" GCC_VERSION_COMPONENTS ${GCC_VERSION})
             list(GET GCC_VERSION_COMPONENTS 0 GCC_MAJOR)
             list(GET GCC_VERSION_COMPONENTS 1 GCC_MINOR)
-            if (NOT GCC_VERSION VERSION_LESS "6.5")
+            # -no-pie is invalid in low version or Windows
+            if (NOT GCC_VERSION VERSION_LESS "6.5" AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
                 add_link_options(-no-pie)
             endif()
         endif()
+
         if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
             execute_process(COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE clang_full_version_string)
             string(REGEX REPLACE ".*clang version ([0-9]+\\.[0-9]+(\\.[0-9]+)?).*" "\\1" CLANG_VERSION_STRING ${clang_full_version_string})
             string(REGEX REPLACE "([0-9]+)\\.[0-9]+(\\.[0-9]+)?" "\\1" CLANG_MAJOR_VERSION ${CLANG_VERSION_STRING})
             string(REGEX REPLACE "[0-9]+\\.([0-9]+)(\\.[0-9]+)?" "\\1" CLANG_MINOR_VERSION ${CLANG_VERSION_STRING})
-            if (NOT CLANG_VERSION_STRING VERSION_LESS 15.0)
+            # -no-pie is invalid in low version or Windows
+            if (NOT CLANG_VERSION_STRING VERSION_LESS 15.0 AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
                 add_link_options(-no-pie)
             endif()
         endif()
 
-        # -rdynamic is not suitable for MinGW
-        if (NOT MINGW)
+        # -rdynamic is not suitable for Windows
+        if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
             add_link_options(-rdynamic) # for backtrace debugging
         endif ()
 
     endif ()
 
     # using sendmmsg need this GNU extension
-    add_definitions(-D_GNU_SOURCE) 
+    if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        add_definitions(-D_GNU_SOURCE) 
+    endif ()
+
 endif ()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")

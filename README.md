@@ -453,42 +453,29 @@ cmake --build . \
     --parallel 4
 ```
 
-Generate a unix-style Makefile and build with MinGW-w64:
+Generate a unix-style Makefile and build with MinGW-w64/Clang:
 
 ```
 cd build
 cmake .. \
     -G "Unix Makefiles" \
     -DCMAKE_BUILD_TYPE=<Release/Debug>
-    -DCMAKE_C_COMPILER=gcc
+    -DCMAKE_C_COMPILER=<gcc/clang>
 make
 ```
 
 NOTE: Do not use `-j` flag with `make` on Windows, may cause errors.
 
-Use ninja to accelerate the building with MinGW-w64:
+Use ninja to accelerate the building with MinGW-w64/Clang:
 
 ```
 cd build
 cmake .. \
     -G Ninja\
     -DCMAKE_BUILD_TYPE=<Release/Debug>
-    -DCMAKE_C_COMPILER=gcc
+    -DCMAKE_C_COMPILER=<gcc/clang>
 ninja -j4
 ```
-
-Use ninja with Clang on Windows:
-
-```
-cd build
-cmake .. \
-    -G Ninja\
-    -DCMAKE_BUILD_TYPE=<Release/Debug>
-    -DCMAKE_C_COMPILER=clang
-ninja -j4
-```
-
-NOTE: clang may report some neglectable warnings on Windows.
 
 <a href="#top">🔝back to top</a>
 
